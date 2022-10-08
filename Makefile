@@ -10,5 +10,6 @@ gnuefi:
 	make -C gnu-efi
 
 prepare: gnuefi
+	$(info Nothing to prepare)
 
 clean:
