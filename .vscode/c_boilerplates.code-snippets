@@ -1,0 +1,20 @@
+{
+	"Fennix Kernel Header": {
+		"scope": "c",
+		"prefix": [
+			"head",
+		],
+		"body": [
+			"#ifndef __FENNIX_KERNEL_${2:header}_H__",
+			"#define __FENNIX_KERNEL_${2:header}_H__",
+			"",
+			"#include <types.h>",
+			"",
+			"$0",
+			"",
+			"#endif // !__FENNIX_KERNEL_${2:header}_H__",
+			""
+		],
+		"description": "Create kernel header."
+	}
+}

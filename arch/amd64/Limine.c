@@ -1,0 +1,233 @@
+#include <boot/protocols/limine.h>
+#include <boot/binfo.h>
+#include <types.h>
+#include <debug.h>
+#include <string.h>
+
+#include "../../kernel.h"
+
+void init_limine();
+
+static volatile struct limine_entry_point_request EntryPointRequest = {
+    .id = LIMINE_ENTRY_POINT_REQUEST,
+    .revision = 0,
+    .response = NULL,
+    .entry = init_limine};
+static volatile struct limine_bootloader_info_request BootloaderInfoRequest = {
+    .id = LIMINE_BOOTLOADER_INFO_REQUEST,
+    .revision = 0};
+static volatile struct limine_terminal_request TerminalRequest = {
+    .id = LIMINE_TERMINAL_REQUEST,
+    .revision = 0};
+static volatile struct limine_framebuffer_request FramebufferRequest = {
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0};
+static volatile struct limine_memmap_request MemmapRequest = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .revision = 0};
+static volatile struct limine_kernel_address_request KernelAddressRequest = {
+    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0};
+static volatile struct limine_rsdp_request RsdpRequest = {
+    .id = LIMINE_RSDP_REQUEST,
+    .revision = 0};
+static volatile struct limine_kernel_file_request KernelFileRequest = {
+    .id = LIMINE_KERNEL_FILE_REQUEST,
+    .revision = 0};
+static volatile struct limine_module_request ModuleRequest = {
+    .id = LIMINE_MODULE_REQUEST,
+    .revision = 0};
+
+void init_limine()
+{
+    struct BootInfo binfo;
+    struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;
+    info("Bootloader: %s %s", BootloaderInfoResponse->name, BootloaderInfoResponse->version);
+
+    struct limine_terminal_response *TerminalResponse = TerminalRequest.response;
+
+    if (TerminalResponse == NULL || TerminalResponse->terminal_count < 1)
+    {
+        warn("No terminal available.");
+        while (1)
+            asmv("hlt");
+    }
+    TerminalResponse->write(TerminalResponse->terminals[0], "Please wait... ", 15);
+
+    struct limine_framebuffer_response *FrameBufferResponse = FramebufferRequest.response;
+    struct limine_memmap_response *MemmapResponse = MemmapRequest.response;
+    struct limine_kernel_address_response *KernelAddressResponse = KernelAddressRequest.response;
+    struct limine_rsdp_response *RsdpResponse = RsdpRequest.response;
+    struct limine_kernel_file_response *KernelFileResponse = KernelFileRequest.response;
+    struct limine_module_response *ModuleResponse = ModuleRequest.response;
+
+    if (FrameBufferResponse == NULL || FrameBufferResponse->framebuffer_count < 1)
+    {
+        error("No framebuffer available [%p;%ld]", FrameBufferResponse,
+              (FrameBufferResponse == NULL) ? 0 : FrameBufferResponse->framebuffer_count);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No framebuffer available", 24);
+        while (1)
+            asmv("hlt");
+    }
+
+    if (MemmapResponse == NULL || MemmapResponse->entry_count < 1)
+    {
+        error("No memory map available [%p;%ld]", MemmapResponse,
+              (MemmapResponse == NULL) ? 0 : MemmapResponse->entry_count);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No memory map available", 23);
+        while (1)
+            asmv("hlt");
+    }
+
+    if (KernelAddressResponse == NULL)
+    {
+        error("No kernel address available [%p]", KernelAddressResponse);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No kernel address available", 27);
+        while (1)
+            asmv("hlt");
+    }
+
+    if (RsdpResponse == NULL || RsdpResponse->address == 0)
+    {
+        error("No RSDP address available [%p;%p]", RsdpResponse,
+              (RsdpResponse == NULL) ? 0 : RsdpResponse->address);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No RSDP address available", 25);
+        while (1)
+            asmv("hlt");
+    }
+
+    if (KernelFileResponse == NULL || KernelFileResponse->kernel_file == NULL)
+    {
+        error("No kernel file available [%p;%p]", KernelFileResponse,
+              (KernelFileResponse == NULL) ? 0 : KernelFileResponse->kernel_file);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No kernel file available", 24);
+        while (1)
+            asmv("hlt");
+    }
+
+    if (ModuleResponse == NULL || ModuleResponse->module_count < 1)
+    {
+        error("No module information available [%p;%ld]", ModuleResponse,
+              (ModuleResponse == NULL) ? 0 : ModuleResponse->module_count);
+        TerminalResponse->write(TerminalResponse->terminals[0], "No module information available", 31);
+        while (1)
+            asmv("hlt");
+    }
+
+    for (uint64_t i = 0; i < FrameBufferResponse->framebuffer_count; i++)
+    {
+        struct limine_framebuffer *framebuffer = FrameBufferResponse->framebuffers[i];
+        binfo.Framebuffer[i].BaseAddress = framebuffer->address - 0xffff800000000000;
+        binfo.Framebuffer[i].Width = framebuffer->width;
+        binfo.Framebuffer[i].Height = framebuffer->height;
+        binfo.Framebuffer[i].Pitch = framebuffer->pitch;
+        binfo.Framebuffer[i].BitsPerPixel = framebuffer->bpp;
+        binfo.Framebuffer[i].MemoryModel = framebuffer->memory_model;
+        binfo.Framebuffer[i].RedMaskSize = framebuffer->red_mask_size;
+        binfo.Framebuffer[i].RedMaskShift = framebuffer->red_mask_shift;
+        binfo.Framebuffer[i].GreenMaskSize = framebuffer->green_mask_size;
+        binfo.Framebuffer[i].GreenMaskShift = framebuffer->green_mask_shift;
+        binfo.Framebuffer[i].BlueMaskSize = framebuffer->blue_mask_size;
+        binfo.Framebuffer[i].BlueMaskShift = framebuffer->blue_mask_shift;
+        binfo.Framebuffer[i].ExtendedDisplayIdentificationData = framebuffer->edid;
+        binfo.Framebuffer[i].EDIDSize = framebuffer->edid_size;
+        debug("Framebuffer %d: %dx%d %d bpp", i, framebuffer->width, framebuffer->height, framebuffer->bpp);
+        debug("More info:\nAddress: %p\nPitch: %ld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d\nEDID: %p\nEDIDSize: %d",
+              framebuffer->address - 0xffff800000000000, framebuffer->pitch, framebuffer->memory_model, framebuffer->red_mask_size, framebuffer->red_mask_shift, framebuffer->green_mask_size, framebuffer->green_mask_shift, framebuffer->blue_mask_size, framebuffer->blue_mask_shift, framebuffer->edid, framebuffer->edid_size);
+    }
+
+    binfo.Memory.Entries = MemmapResponse->entry_count;
+    for (uint64_t i = 0; i < MemmapResponse->entry_count; i++)
+    {
+        if (MemmapResponse->entry_count > MAX_MEMORY_ENTRIES)
+        {
+            warn("Too many memory entries, skipping the rest...");
+            break;
+        }
+
+        struct limine_memmap_entry *entry = MemmapResponse->entries[i];
+        binfo.Memory.Size += entry->length;
+        switch (entry->type)
+        {
+        case LIMINE_MEMMAP_USABLE:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = Usable;
+            break;
+        case LIMINE_MEMMAP_RESERVED:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = Reserved;
+            break;
+        case LIMINE_MEMMAP_ACPI_RECLAIMABLE:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = ACPIReclaimable;
+            break;
+        case LIMINE_MEMMAP_ACPI_NVS:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = ACPINVS;
+            break;
+        case LIMINE_MEMMAP_BAD_MEMORY:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = BadMemory;
+            break;
+        case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = BootloaderReclaimable;
+            break;
+        case LIMINE_MEMMAP_KERNEL_AND_MODULES:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = KernelAndModules;
+            break;
+        case LIMINE_MEMMAP_FRAMEBUFFER:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = Framebuffer;
+            break;
+        default:
+            binfo.Memory.Entry[i].BaseAddress = (void *)entry->base;
+            binfo.Memory.Entry[i].Length = entry->length;
+            binfo.Memory.Entry[i].Type = Unknown;
+            break;
+        }
+    }
+
+    for (uint64_t i = 0; i < ModuleResponse->module_count; i++)
+    {
+        if (i > MAX_MODULES)
+        {
+            warn("Too many modules, skipping the rest...");
+            break;
+        }
+
+        binfo.Modules[i].Address = ModuleResponse->modules[i]->address - 0xffff800000000000;
+        strcpy(binfo.Modules[i].Path, ModuleResponse->modules[i]->path);
+        strcpy(binfo.Modules[i].CommandLine, ModuleResponse->modules[i]->cmdline);
+        binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
+        debug("Module %d:\nAddress: %p\nPath: %s\nCommand Line: %s\nSize: %ld", i,
+              ModuleResponse->modules[i]->address - 0xffff800000000000, ModuleResponse->modules[i]->path,
+              ModuleResponse->modules[i]->cmdline, ModuleResponse->modules[i]->size);
+    }
+
+    binfo.RSDP = (struct RSDPInfo *)(RsdpResponse->address - 0xffff800000000000);
+    trace("RSDP: %p(%p) [Signature: %.8s] [OEM: %.6s]",
+          RsdpResponse->address, binfo.RSDP, binfo.RSDP->Signature, binfo.RSDP->OEMID);
+
+    binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
+    binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
+    strcpy(binfo.Kernel.CommandLine, KernelFileResponse->kernel_file->cmdline);
+    binfo.Kernel.Size = KernelFileResponse->kernel_file->size;
+    trace("Kernel physical address: %p", KernelAddressResponse->physical_base);
+    trace("Kernel virtual address: %p", KernelAddressResponse->virtual_base);
+
+    strcpy(binfo.Bootloader.Name, BootloaderInfoResponse->name);
+    strcpy(binfo.Bootloader.Version, BootloaderInfoResponse->version);
+
+    // Call kernel entry point
+    kernel_entry(&binfo);
+}

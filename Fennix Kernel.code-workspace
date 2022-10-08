@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"debug.allowBreakpointsEverywhere": true,
+		"files.associations": {
+			"limine.h": "c",
+			"types.h": "c",
+			"binfo.h": "c",
+			"liballoc_1_1.h": "c"
+		}
+	}
+}

@@ -15,17 +15,19 @@ SECTIONS
     _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
+    .data :
+    {
+        *(.data .data.*)
+    }
+    _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    . += CONSTANT(MAXPAGESIZE);
+
     .rodata :
     {
         *(.rodata .rodata.*)
     }
     _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
-
-    .data :
-    {
-        *(.data .data.*)
-    }
 
     .bss :
     {
