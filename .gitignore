@@ -2,3 +2,4 @@
 *.map
 *.fsys
 *.log
+files/*.psf
