@@ -5,6 +5,7 @@
 
 #include <boot/binfo.h>
 #include <memory.hpp>
+#include <cstring>
 
 namespace Video
 {
@@ -105,10 +106,10 @@ namespace Video
             buffer->CursorX = 0;
             buffer->CursorY = 0;
             Buffers[Index] = buffer;
-            __builtin_memset(buffer->Buffer, 0, Size);
+            memset(buffer->Buffer, 0, Size);
         }
-        void SetBuffer(int Index) { __builtin_memcpy(framebuffer.BaseAddress, Buffers[Index]->Buffer, Buffers[Index]->Size); }
-        void ClearBuffer(int Index) { __builtin_memset(Buffers[Index]->Buffer, 0, Buffers[Index]->Size); }
+        void SetBuffer(int Index) { memcpy(framebuffer.BaseAddress, Buffers[Index]->Buffer, Buffers[Index]->Size); }
+        void ClearBuffer(int Index) { memset(Buffers[Index]->Buffer, 0, Buffers[Index]->Size); }
         void DeleteBuffer(int Index)
         {
             if (Buffers[Index] == nullptr)
@@ -140,13 +141,13 @@ namespace Video
 
             if (Lines > 0)
             {
-                __builtin_memmove(Buffers[Index]->Buffer,
-                                  (uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines),
-                                  Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines));
+                memmove(Buffers[Index]->Buffer,
+                        (uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines),
+                        Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines));
 
-                __builtin_memset((uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines)),
-                                 0,
-                                 Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines);
+                memset((uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines)),
+                       0,
+                       Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines);
             }
         }
 

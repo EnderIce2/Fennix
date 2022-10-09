@@ -11,7 +11,7 @@ extern "C"
     unsigned int isdelim(char c, char *delim);
 
     void *memcpy(void *dest, const void *src, size_t n);
-    void *memset(void *dest, int data, size_t nbytes);
+    void *memset(void *dest, int c, size_t n);
     void *memmove(void *dest, const void *src, size_t n);
     int memcmp(const void *vl, const void *vr, size_t n);
     long unsigned strlen(const char s[]);
