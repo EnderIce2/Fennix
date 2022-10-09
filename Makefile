@@ -69,7 +69,7 @@ else ifeq ($(OSARCH), i686)
 
 CFLAGS += -fno-pic -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
 		  -mno-red-zone -mno-sse -mno-sse2					\
-		  -march=i686 -pipe -msoft-float -fno-builtin
+		  -march=i686 -pipe -msoft-float -fno-builtin -fpermissive
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -Tarch/i686/linker.ld 			\
 	-fno-pic -fno-pie 						\
