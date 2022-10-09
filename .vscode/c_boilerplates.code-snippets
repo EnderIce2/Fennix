@@ -1,6 +1,5 @@
 {
 	"Fennix Kernel Header": {
-		"scope": "c",
 		"prefix": [
 			"head",
 		],
