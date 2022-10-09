@@ -28,7 +28,7 @@ void tracepagetable(PageTable *pt)
     for (int i = 0; i < 512; i++)
     {
         if (pt->Entries[i].Value.Present)
-            debug("Entry %d: %x %x %x %x %x %x %x %x %x %x %x %p-%#lx", i,
+            debug("Entry %03d: %x %x %x %x %x %x %x %x %x %x %x %p-%#lx", i,
                   pt->Entries[i].Value.Present, pt->Entries[i].Value.ReadWrite,
                   pt->Entries[i].Value.UserSupervisor, pt->Entries[i].Value.WriteThrough,
                   pt->Entries[i].Value.CacheDisable, pt->Entries[i].Value.Accessed,

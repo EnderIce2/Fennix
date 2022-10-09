@@ -8,127 +8,134 @@
  */
 namespace CPU
 {
-    /**
-     * @brief Enum for CPU::Interrupts() function.
-     */
-    enum InterruptsType
-    {
         /**
-         * @brief Check if interrupts are enabled.
+         * @brief Enum for CPU::Interrupts() function.
          */
-        Check,
+        enum InterruptsType
+        {
+                /**
+                 * @brief Check if interrupts are enabled.
+                 */
+                Check,
+                /**
+                 * @brief Enable interrupts.
+                 */
+                Enable,
+                /**
+                 * @brief Disable interrupts.
+                 */
+                Disable
+        };
+
         /**
-         * @brief Enable interrupts.
+         * @brief Pause the CPU
          */
-        Enable,
+        void Pause();
         /**
-         * @brief Disable interrupts.
+         * @brief Halt the CPU
          */
-        Disable
-    };
+        void Halt();
+        /**
+         * @brief Check if interrupts are enabled
+         *
+         * @return true If InterruptsType::Check and interrupts are enabled, or if other InterruptsType were executed successfully
+         * @return false If InterruptsType::Check and interrupts are disabled, or if other InterruptsType failed
+         */
+        bool Interrupts(InterruptsType Type = Check);
+        /**
+         * @brief Get/Set the CPU's page table
+         *
+         * @param PT The new page table, if empty, the current page table will be returned
+         * @return void* The current page table
+         */
+        void *PageTable(void *PT = nullptr);
 
-    /**
-     * @brief Pause the CPU
-     */
-    void Pause();
-    /**
-     * @brief Halt the CPU
-     */
-    void Halt();
-    /**
-     * @brief Check if interrupts are enabled
-     *
-     * @return true If InterruptsType::Check and interrupts are enabled, or if other InterruptsType were executed successfully
-     * @return false If InterruptsType::Check and interrupts are disabled, or if other InterruptsType failed
-     */
-    bool Interrupts(InterruptsType Type = Check);
-
-    namespace MemBar
-    {
-        static inline void Barrier()
+        namespace MemBar
         {
+                static inline void Barrier()
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("" ::
-                     : "memory");
+                        asmv("" ::
+                                 : "memory");
 #elif defined(__aarch64__)
-            asmv("dmb ish" ::
-                     : "memory");
+                        asmv("dmb ish" ::
+                                 : "memory");
 #endif
-        }
+                }
 
-        static inline void Fence()
-        {
+                static inline void Fence()
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("mfence" ::
-                     : "memory");
+                        asmv("mfence" ::
+                                 : "memory");
 #elif defined(__aarch64__)
-            asmv("dmb ish" ::
-                     : "memory");
+                        asmv("dmb ish" ::
+                                 : "memory");
 #endif
-        }
+                }
 
-        static inline void StoreFence()
-        {
+                static inline void StoreFence()
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("sfence" ::
-                     : "memory");
+                        asmv("sfence" ::
+                                 : "memory");
 #elif defined(__aarch64__)
-            asmv("dmb ishst" ::
-                     : "memory");
+                        asmv("dmb ishst" ::
+                                 : "memory");
 #endif
-        }
+                }
 
-        static inline void LoadFence()
-        {
+                static inline void LoadFence()
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("lfence" ::
-                     : "memory");
+                        asmv("lfence" ::
+                                 : "memory");
 #elif defined(__aarch64__)
-            asmv("dmb ishld" ::
-                     : "memory");
+                        asmv("dmb ishld" ::
+                                 : "memory");
 #endif
-        }
-    }
-
-    namespace x86
-    {
-        static inline void lgdt(void *gdt)
-        {
-#if defined(__amd64__) || defined(__i386__)
-            asmv("lgdt (%0)"
-                 :
-                 : "r"(gdt));
-#endif
+                }
         }
 
-        static inline void lidt(void *idt)
+        namespace x86
         {
+                static inline void lgdt(void *gdt)
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("lidt (%0)"
-                 :
-                 : "r"(idt));
+                        asmv("lgdt (%0)"
+                             :
+                             : "r"(gdt));
 #endif
-        }
+                }
 
-        static inline void ltr(uint16_t Segment)
-        {
+                static inline void lidt(void *idt)
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("ltr %0"
-                 :
-                 : "r"(Segment));
+                        asmv("lidt (%0)"
+                             :
+                             : "r"(idt));
 #endif
-        }
+                }
 
-        static inline void invlpg(void *Address)
-        {
+                static inline void ltr(uint16_t Segment)
+                {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("invlpg (%0)"
-                 :
-                 : "r"(Address)
-                 : "memory");
+                        asmv("ltr %0"
+                             :
+                             : "r"(Segment));
 #endif
+                }
+
+                static inline void invlpg(void *Address)
+                {
+#if defined(__amd64__) || defined(__i386__)
+                        asmv("invlpg (%0)"
+                             :
+                             : "r"(Address)
+                             : "memory");
+#endif
+                }
         }
-    }
 }
 
 #endif // !__FENNIX_KERNEL_CPU_H__

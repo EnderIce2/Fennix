@@ -396,9 +396,9 @@ namespace Memory
         /**
          * @brief Construct a new Virtual object
          *
-         * @param Table Page table
+         * @param Table Page table. If null, it will use the current page table.
          */
-        Virtual(PageTable *Table);
+        Virtual(PageTable *Table = nullptr);
         /**
          * @brief Destroy the Virtual object
          *

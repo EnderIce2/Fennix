@@ -32,6 +32,8 @@
 #define in :
 #endif
 
+#define UNUSED(x) (void)(x)
+
 #ifndef __va_list__
 typedef __builtin_va_list va_list;
 #endif

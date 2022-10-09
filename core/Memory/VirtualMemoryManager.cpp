@@ -118,6 +118,13 @@ namespace Memory
             this->Unmap((void *)((uint64_t)VirtualAddress + (i * PAGE_SIZE)));
     }
 
-    Virtual::Virtual(PageTable *Table) { this->Table = Table; }
+    Virtual::Virtual(PageTable *Table)
+    {
+        if (Table)
+            this->Table = Table;
+        else
+            this->Table = (PageTable *)CPU::PageTable();
+    }
+
     Virtual::~Virtual() {}
 }

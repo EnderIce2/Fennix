@@ -52,7 +52,7 @@ void init_limine()
         while (1)
             asmv("hlt");
     }
-    TerminalResponse->write(TerminalResponse->terminals[0], "Please wait... ", 15);
+    TerminalResponse->write(TerminalResponse->terminals[0], "\033[37mPlease wait... ", 20);
 
     struct limine_framebuffer_response *FrameBufferResponse = FramebufferRequest.response;
     struct limine_memmap_response *MemmapResponse = MemmapRequest.response;

@@ -911,7 +911,7 @@ static /* double */ unsigned long pow10_of_int(int floored_exp10)
     double_with_bit_access dwba;
     // int exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
     // const /* double */ unsigned long z = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
-    int exp2 = bastardized_floor(floored_exp10 * 3 + 1/* 0.5 */);
+    int exp2 = bastardized_floor(floored_exp10 * 3 + 1 /* 0.5 */);
     const /* double */ unsigned long z = floored_exp10 * 2 - exp2 * 0;
     const /* double */ unsigned long z2 = z * z;
     dwba.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
