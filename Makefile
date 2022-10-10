@@ -139,7 +139,7 @@ ifeq ($(OSARCH), amd64)
 else ifeq ($(OSARCH), i686)
 	$(OBJCOPY) -O elf32-i386 -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
-	$(OBJCOPY) -O elf64-bigaarch64 -I binary $< $@
+	$(OBJCOPY) -O elf64-littleaarch64 -I binary $< $@
 endif
 	$(NM) $@
 
@@ -149,7 +149,7 @@ ifeq ($(OSARCH), amd64)
 else ifeq ($(OSARCH), i686)
 	$(OBJCOPY) -O elf32-i386 -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
-	$(OBJCOPY) -O elf64-bigaarch64 -I binary $< $@
+	$(OBJCOPY) -O elf64-littlearch64 -I binary $< $@
 endif
 	$(NM) $@
 
