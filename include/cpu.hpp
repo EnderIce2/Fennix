@@ -28,13 +28,36 @@ namespace CPU
         };
 
         /**
+         * @brief Get CPU vendor identifier.
+         *
+         * @return char* CPU Vendor ID.
+         */
+        char *Vendor();
+
+        /**
+         * @brief Get CPU name.
+         *
+         * @return char* CPU Name.
+         */
+        char *Name();
+
+        /**
+         * @brief Get CPU hypervisor vendor.
+         *
+         * @return char* Hypervisor vendor.
+         */
+        char *Hypervisor();
+
+        /**
          * @brief Pause the CPU
          */
         void Pause();
+
         /**
          * @brief Halt the CPU
          */
         void Halt();
+
         /**
          * @brief Check if interrupts are enabled
          *
@@ -42,6 +65,7 @@ namespace CPU
          * @return false If InterruptsType::Check and interrupts are disabled, or if other InterruptsType failed
          */
         bool Interrupts(InterruptsType Type = Check);
+
         /**
          * @brief Get/Set the CPU's page table
          *
@@ -133,6 +157,15 @@ namespace CPU
                              :
                              : "r"(Address)
                              : "memory");
+#endif
+                }
+
+                static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+                {
+#if defined(__amd64__) || defined(__i386__)
+                        asmv("cpuid"
+                             : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+                             : "a"(Function));
 #endif
                 }
         }
