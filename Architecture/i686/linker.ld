@@ -6,6 +6,7 @@ ENTRY(Entry)
 SECTIONS
 {
     . += 0xC0000000;
+    _kernel_start = .;
 
     .text :
     {
