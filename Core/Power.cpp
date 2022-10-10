@@ -5,7 +5,7 @@
 #include <debug.h>
 
 #if defined(__amd64__)
-#include "../arch/amd64/acpi.hpp"
+#include "../Architecture/amd64/acpi.hpp"
 
 namespace Power
 {

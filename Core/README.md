@@ -19,4 +19,4 @@ It is responsible for printing text to the screen.
 
 Contains the CPU management code.
 It is responsible for initializing the GDT and IDT.
-More code related is in the `arch` directory.
+More code related is in the `Architecture` directory.
