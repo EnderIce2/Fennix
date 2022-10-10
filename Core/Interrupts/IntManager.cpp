@@ -20,4 +20,9 @@ namespace Interrupts
 #elif defined(__aarch64__)
 #endif
     }
+
+    void Enable()
+    {
+        
+    }
 }

@@ -77,7 +77,7 @@ namespace Video
 
     struct ScreenBuffer
     {
-        void *Buffer;
+        void *Buffer = nullptr;
         uint32_t Width, Height;
         uint64_t Size;
         uint32_t Color;
@@ -90,6 +90,8 @@ namespace Video
         BootInfo::FramebufferInfo framebuffer;
         Font *CurrentFont;
         ScreenBuffer *Buffers[16];
+        bool ColorIteration = false;
+        int ColorPickerIteration = 0;
 
     public:
         Font *GetCurrentFont() { return CurrentFont; }

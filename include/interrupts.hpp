@@ -6,6 +6,7 @@
 namespace Interrupts
 {
     void Initialize();
+    void Enable();
 }
 
 #endif // !__FENNIX_KERNEL_INTERRUPTS_H__

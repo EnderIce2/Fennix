@@ -13,8 +13,35 @@ namespace Video
     char Display::Print(char Char, int Index)
     {
         SMARTLOCK(PrintLock);
+
+        if (this->ColorIteration)
+        {
+            // RRGGBB
+            if (Char >= '0' && Char <= '9')
+                this->Buffers[Index]->Color = (this->Buffers[Index]->Color << 4) | (Char - '0');
+            else if (Char >= 'a' && Char <= 'f')
+                this->Buffers[Index]->Color = (this->Buffers[Index]->Color << 4) | (Char - 'a' + 10);
+            else if (Char >= 'A' && Char <= 'F')
+                this->Buffers[Index]->Color = (this->Buffers[Index]->Color << 4) | (Char - 'A' + 10);
+            else
+                this->Buffers[Index]->Color = 0;
+
+            this->ColorPickerIteration++;
+            if (this->ColorPickerIteration == 6)
+            {
+                this->ColorPickerIteration = 0;
+                this->ColorIteration = false;
+            }
+            return Char;
+        }
+
         switch (Char)
         {
+        case '\e':
+        {
+            this->ColorIteration = true;
+            return Char;
+        }
         case '\b':
         {
             if (this->Buffers[Index]->CursorX > 0)
@@ -86,7 +113,7 @@ namespace Video
                 for (uint64_t X = this->Buffers[Index]->CursorX; X < this->Buffers[Index]->CursorX + fonthdrWidth; X++)
                     if ((*FontPtr & (0b10000000 >> (X - this->Buffers[Index]->CursorX))) > 0)
                         *(uint32_t *)((uint64_t)this->Buffers[Index]->Buffer +
-                                      (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = 0xFFFFFF;
+                                      (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = this->Buffers[Index]->Color;
 
                 FontPtr += BytesPerLine;
             }
