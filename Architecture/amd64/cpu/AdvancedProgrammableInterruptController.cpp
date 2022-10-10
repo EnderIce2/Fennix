@@ -153,7 +153,8 @@ namespace APIC
         if (!Status)
             Value |= (1 << 16);
 
-        Value |= (((uintptr_t)GetCPU(CPU)->Data->LAPIC.APICId) << 56);
+        // Value |= (((uintptr_t)GetCPU(CPU)->Data->LAPIC.APICId) << 56);
+        Value |= (((uintptr_t)0) << 56);
         uint32_t IORegister = (GSI - ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->GSIBase) * 2 + 16;
 
         this->IOWrite(((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->Address, IORegister, (uint32_t)Value);
