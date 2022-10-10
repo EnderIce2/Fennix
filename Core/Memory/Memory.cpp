@@ -4,7 +4,7 @@
 #include <debug.h>
 
 #include "HeapAllocators/Xalloc.hpp"
-#include "../lib/liballoc_1_1.h"
+#include "../Library/liballoc_1_1.h"
 
 using namespace Memory;
 

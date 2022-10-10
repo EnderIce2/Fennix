@@ -100,9 +100,9 @@ default:
 	$(error Please specify a target)
 
 prepare:
-	rm -f ./files/ter-powerline-v12n.psf
-	wget https://raw.githubusercontent.com/powerline/fonts/master/Terminus/PSF/ter-powerline-v12n.psf.gz -P files
-	gzip -d files/ter-powerline-v12n.psf.gz
+	rm -f ./Files/ter-powerline-v12n.psf
+	wget https://raw.githubusercontent.com/powerline/fonts/master/Terminus/PSF/ter-powerline-v12n.psf.gz -P Files
+	gzip -d Files/ter-powerline-v12n.psf.gz
 
 build: $(KERNEL_FILENAME)
 	$(OBJDUMP) -D -d $(KERNEL_FILENAME) > kernel_dump.map

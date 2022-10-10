@@ -4,6 +4,7 @@
 #include <display.hpp>
 #include <symbols.hpp>
 #include <memory.hpp>
+#include <power.hpp>
 #include <string.h>
 #include <printf.h>
 #include <time.hpp>
@@ -12,6 +13,7 @@
 BootInfo *bInfo = nullptr;
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
+Power::Power *PowerManager = nullptr;
 
 // For the Display class. Printing on first buffer.
 extern "C" void putchar(char c) { Display->Print(c, 0); }
@@ -33,14 +35,14 @@ void KPrint(const char *format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC void kernel_aarch64_entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
+EXTERNC void aarch64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
 {
     trace("Hello, World!");
     while (1)
         CPU::Halt();
 }
 
-EXTERNC void kernel_entry(BootInfo *Info)
+EXTERNC void Entry(BootInfo *Info)
 {
     trace("Hello, World!");
     InitializeMemoryManagement(Info);
@@ -54,6 +56,8 @@ EXTERNC void kernel_entry(BootInfo *Info)
     Interrupts::Initialize();
     KPrint("Loading kernel symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
+    KPrint("Initializing Power Manager");
+    PowerManager = new Power::Power;
     while (1)
         CPU::Halt();
 }

@@ -1,7 +1,7 @@
 OUTPUT_FORMAT(elf64-x86-64)
 OUTPUT_ARCH(i386:x86-64)
 
-ENTRY(kernel_entry)
+ENTRY(Entry)
 
 SECTIONS
 {
@@ -36,10 +36,4 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
     _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
-
-    /DISCARD/ :
-    {
-        *(.eh_frame)
-        *(.note .note.*)
-    }
 }

@@ -78,6 +78,20 @@ namespace CPU
 #endif
 	}
 
+	void Stop()
+	{
+		while (1)
+		{
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cli");
+			asmv("hlt");
+#elif defined(__aarch64__)
+			asmv("msr daifset, #2");
+			asmv("wfe");
+#endif
+		}
+	}
+
 	void Halt()
 	{
 #if defined(__amd64__) || defined(__i386__)

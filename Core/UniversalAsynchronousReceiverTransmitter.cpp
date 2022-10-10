@@ -4,16 +4,15 @@
 #include <debug.h>
 #include <io.h>
 
+volatile bool serialports[8] = {false, false, false, false, false, false, false, false};
+Vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
+
 namespace UniversalAsynchronousReceiverTransmitter
 {
 #define SERIAL_ENABLE_DLAB 0x80
 #define SERIAL_RATE_38400_LO 0x03
 #define SERIAL_RATE_38400_HI 0x00
 #define SERIAL_BUFFER_EMPTY 0x20
-
-    volatile bool serialports[8] = {false, false, false, false, false, false, false, false};
-
-    Vector<Events *> RegisteredEvents;
 
     UART::UART(SerialPorts Port)
     {

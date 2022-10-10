@@ -2,9 +2,9 @@
 #include <lock.hpp>
 #include <debug.h>
 
-extern uint64_t _binary_files_ter_powerline_v12n_psf_start;
-extern uint64_t _binary_files_ter_powerline_v12n_psf_end;
-extern uint64_t _binary_files_ter_powerline_v12n_psf_size;
+extern uint64_t _binary_Files_ter_powerline_v12n_psf_start;
+extern uint64_t _binary_Files_ter_powerline_v12n_psf_end;
+extern uint64_t _binary_Files_ter_powerline_v12n_psf_size;
 
 NEWLOCK(PrintLock);
 
@@ -105,7 +105,7 @@ namespace Video
         this->framebuffer = Info;
         if (LoadDefaultFont)
         {
-            this->CurrentFont = new Font(&_binary_files_ter_powerline_v12n_psf_start, &_binary_files_ter_powerline_v12n_psf_end, FontType::PCScreenFont2);
+            this->CurrentFont = new Font(&_binary_Files_ter_powerline_v12n_psf_start, &_binary_Files_ter_powerline_v12n_psf_end, FontType::PCScreenFont2);
             FontInfo Info = this->CurrentFont->GetInfo();
             debug("Font loaded: %dx%d %s",
                   Info.Width, Info.Height, Info.Type == FontType::PCScreenFont1 ? "PSF1" : "PSF2");

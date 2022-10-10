@@ -230,5 +230,5 @@ void init_limine()
     strcpy(binfo.Bootloader.Version, BootloaderInfoResponse->version);
 
     // Call kernel entry point
-    kernel_entry(&binfo);
+    Entry(&binfo);
 }

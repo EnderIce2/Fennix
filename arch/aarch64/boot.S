@@ -11,7 +11,7 @@ _start:
     str     xzr, [x5], #8
     sub     w6, w6, #1
     cbnz    w6, 1b
-2:  bl      kernel_aarch64_entry
+2:  bl      aarch64Entry
 Halt:
     wfe
     b Halt

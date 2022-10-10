@@ -6,6 +6,6 @@
 
 extern struct BootInfo *bInfo;
 
-EXTERNC void kernel_entry(struct BootInfo *Info);
+EXTERNC void Entry(struct BootInfo *Info);
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__
