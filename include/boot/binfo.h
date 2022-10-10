@@ -106,6 +106,7 @@ struct BootInfo
     {
         void *PhysicalBase;
         void *VirtualBase;
+        void *FileBase;
         char CommandLine[256];
         uint64_t Size;
     } Kernel;

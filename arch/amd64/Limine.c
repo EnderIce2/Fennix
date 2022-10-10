@@ -220,6 +220,7 @@ void init_limine()
 
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
+    binfo.Kernel.FileBase = KernelFileResponse->kernel_file->address;
     strcpy(binfo.Kernel.CommandLine, KernelFileResponse->kernel_file->cmdline);
     binfo.Kernel.Size = KernelFileResponse->kernel_file->size;
     trace("Kernel physical address: %p", KernelAddressResponse->physical_base);
