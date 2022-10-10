@@ -444,6 +444,8 @@ namespace PCI
             {
                 switch (DeviceID)
                 {
+                case 0x1371:
+                    return "ES1371/ES1373 / Creative Labs CT2518";
                 case 0x5000:
                     return "ES1370 [AudioPCI]";
                 default:
@@ -480,6 +482,8 @@ namespace PCI
                     return "USB2 EHCI Controller";
                 case 0x0779:
                     return "USB3 xHCI 1.0 Controller";
+                case 0x07E0:
+                    return "SATA AHCI controller";
                 case 0x07F0:
                     return "NVM Express";
                 default:
