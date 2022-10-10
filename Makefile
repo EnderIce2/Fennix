@@ -86,6 +86,14 @@ LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC
 
 endif
 
+ifeq ($(OSARCH), amd64)
+NASMFLAGS := -f elf64
+else ifeq ($(OSARCH), i686)
+NASMFLAGS := -f elf32
+else ifeq ($(OSARCH), aarch64)
+NASMFLAGS :=
+endif
+
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb -O0 -fdiagnostics-color=always
 	LDFLAGS += -ggdb -O0 -g
