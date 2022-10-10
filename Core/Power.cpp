@@ -9,13 +9,8 @@
 
 namespace Power
 {
-    void Power::Reboot()
-    {
-    }
-
-    void Power::Shutdown()
-    {
-    }
+    void Power::Reboot() { ((ACPI::DSDT *)this->dsdt)->Reboot(); }
+    void Power::Shutdown() { ((ACPI::DSDT *)this->dsdt)->Shutdown(); }
 
     Power::Power()
     {
