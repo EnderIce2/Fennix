@@ -16,6 +16,8 @@ SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
 
+Time BootClock;
+
 // For the Display class. Printing on first buffer.
 extern "C" void putchar(char c) { Display->Print(c, 0); }
 
@@ -46,6 +48,7 @@ EXTERNC void aarch64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t
 
 EXTERNC void Entry(BootInfo *Info)
 {
+    BootClock = ReadClock();
     trace("Hello, World!");
     InitializeMemoryManagement(Info);
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
@@ -54,6 +57,9 @@ EXTERNC void Entry(BootInfo *Info)
     Display = new Video::Display(bInfo->Framebuffer[0]);
     printf_("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     /**************************************************************************************/
+    KPrint("Time: \e8888FF%02d:%02d:%02d %02d/%02d/%02d UTC",
+           BootClock.Hour, BootClock.Minute, BootClock.Second,
+           BootClock.Day, BootClock.Month, BootClock.Year);
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize();
     KPrint("Loading kernel symbols");
@@ -64,13 +70,16 @@ EXTERNC void Entry(BootInfo *Info)
     PCIManager = new PCI::PCI;
     foreach (auto hdr in PCIManager->GetDevices())
     {
-        KPrint("Found PCI device: %s / %s / %s / %s / %s",
+        KPrint("Found PCI device: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
                PCI::Descriptors::GetVendorName(hdr->VendorID),
                PCI::Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
                PCI::Descriptors::DeviceClasses[hdr->Class],
                PCI::Descriptors::GetSubclassName(hdr->Class, hdr->Subclass),
                PCI::Descriptors::GetProgIFName(hdr->Class, hdr->Subclass, hdr->ProgIF));
     }
+    KPrint("Enabling interrupts");
+    Interrupts::Enable();
+    KPrint("\e058C19######## \eE85230END \e058C19########");
     while (1)
         CPU::Halt();
 }

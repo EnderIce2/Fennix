@@ -199,8 +199,8 @@ namespace ACPI
             struct APICHeader Header;
             uint8_t APICID;
             uint8_t reserved;
-            uint32_t addr;
-            uint32_t gsib;
+            uint32_t Address;
+            uint32_t GSIBase;
         } __attribute__((packed));
 
         struct MADTIso
@@ -239,7 +239,7 @@ namespace ACPI
         Vector<MADTIso *> iso;
         Vector<MADTNmi *> nmi;
         Vector<LocalAPIC *> lapic;
-        struct LAPIC *LAPICAddr;
+        struct LAPIC *LAPICAddress;
         uint8_t CPUCores;
 
         MADT(ACPI::MADTHeader *madt);

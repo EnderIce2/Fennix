@@ -7,7 +7,7 @@ namespace ACPI
 {
     MADT::MADT(ACPI::MADTHeader *madt)
     {
-        LAPICAddr = (LAPIC *)(uintptr_t)madt->LocalControllerAddress;
+        LAPICAddress = (LAPIC *)(uintptr_t)madt->LocalControllerAddress;
         for (uint8_t *ptr = (uint8_t *)(madt->Entries);
              (uintptr_t)(ptr) < (uintptr_t)(madt) + madt->Header.Length;
              ptr += *(ptr + 1))
@@ -27,8 +27,8 @@ namespace ACPI
             case 1:
             {
                 ioapic.push_back((MADTIOApic *)ptr);
-                trace("I/O APIC %#llx (Address %#llx) found.", ioapic.back()->APICID, ioapic.back()->addr);
-                Memory::Virtual().Map((void *)(uintptr_t)ioapic.back()->addr, (void *)(uintptr_t)ioapic.back()->addr, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
+                trace("I/O APIC %#llx (Address %#llx) found.", ioapic.back()->APICID, ioapic.back()->Address);
+                Memory::Virtual().Map((void *)(uintptr_t)ioapic.back()->Address, (void *)(uintptr_t)ioapic.back()->Address, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
                 break;
             }
             case 2:
@@ -48,12 +48,12 @@ namespace ACPI
             }
             case 5:
             {
-                LAPICAddr = (LAPIC *)ptr;
-                trace("APIC found at %#llx", LAPICAddr);
+                LAPICAddress = (LAPIC *)ptr;
+                trace("APIC found at %#llx", LAPICAddress);
                 break;
             }
             }
-            Memory::Virtual().Map((void *)LAPICAddr, (void *)LAPICAddr, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
+            Memory::Virtual().Map((void *)LAPICAddress, (void *)LAPICAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
         }
         trace("Total CPU cores: %d", CPUCores);
     }
