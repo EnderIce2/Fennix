@@ -7,9 +7,9 @@ namespace InterruptDescriptorTable
 {
     typedef enum _InterruptDescriptorTableFlags
     {
-        FlagGate_TASK = 0b0101,
-        FlagGate_16BIT_INT = 0b0110,
-        FlagGate_16BIT_TRAP = 0b0111,
+        FlagGate_TASK = 0b101,
+        FlagGate_16BIT_INT = 0b110,
+        FlagGate_16BIT_TRAP = 0b111,
         FlagGate_32BIT_INT = 0b1110,
         FlagGate_32BIT_TRAP = 0b1111,
         FlagGate_RING0 = 0b0,

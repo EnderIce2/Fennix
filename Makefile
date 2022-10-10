@@ -89,7 +89,7 @@ endif
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb -O0 -fdiagnostics-color=always
 	LDFLAGS += -ggdb -O0 -g
-	NASMFLAGS += -F dwarf -g
+	NASMFLAGS += -felf32 -g
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
 ifeq ($(TESTING), 1)
 	CFLAGS += -DTESTING
