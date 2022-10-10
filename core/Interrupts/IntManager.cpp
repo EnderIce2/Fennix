@@ -7,8 +7,6 @@
 #include "../arch/i686/cpu/gdt.hpp"
 #include "../arch/i686/cpu/idt.hpp"
 #elif defined(__aarch64__)
-#include "../arch/aarch64/cpu/gdt.hpp"
-#include "../arch/aarch64/cpu/idt.hpp"
 #endif
 
 namespace Interrupts
