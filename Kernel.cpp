@@ -24,7 +24,7 @@ extern "C" int printf_(const char *format, ...);
 extern "C" int vprintf_(const char *format, va_list arg);
 #endif
 
-void KPrint(const char *format, ...)
+EXTERNC void KPrint(const char *format, ...)
 {
     SMARTLOCK(KernelLock);
     Time tm = ReadClock();

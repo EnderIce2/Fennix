@@ -19,6 +19,7 @@ extern Power::Power *PowerManager;
 extern PCI::PCI *PCIManager;
 #endif
 
+EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__
