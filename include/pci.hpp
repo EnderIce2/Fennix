@@ -142,6 +142,7 @@ namespace PCI
         Vector<PCIDeviceHeader *> Devices;
 
     public:
+        Vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
         void EnumerateFunction(uint64_t DeviceAddress, uint64_t Function);
         void EnumerateDevice(uint64_t BusAddress, uint64_t Device);
         void EnumerateBus(uint64_t BaseAddress, uint64_t Bus);

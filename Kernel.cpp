@@ -58,6 +58,15 @@ EXTERNC void Entry(BootInfo *Info)
     PowerManager = new Power::Power;
     KPrint("Initializing PCI Manager");
     PCIManager = new PCI::PCI;
+    foreach (auto hdr in PCIManager->GetDevices())
+    {
+        KPrint("Found PCI device: %s / %s / %s / %s / %s",
+               PCI::Descriptors::GetVendorName(hdr->VendorID),
+               PCI::Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
+               PCI::Descriptors::DeviceClasses[hdr->Class],
+               PCI::Descriptors::GetSubclassName(hdr->Class, hdr->Subclass),
+               PCI::Descriptors::GetProgIFName(hdr->Class, hdr->Subclass, hdr->ProgIF));
+    }
     while (1)
         CPU::Halt();
 }
