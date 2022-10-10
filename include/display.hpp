@@ -96,7 +96,7 @@ namespace Video
         void SetCurrentFont(Font *Font) { CurrentFont = Font; }
         void CreateBuffer(uint32_t Width, uint32_t Height, int Index)
         {
-            uint64_t Size = framebuffer.Pitch * Height;
+            uint64_t Size = this->framebuffer.Pitch * Height;
             ScreenBuffer *buffer = new ScreenBuffer;
             buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
             buffer->Width = Width;
@@ -105,32 +105,32 @@ namespace Video
             buffer->Color = 0x000000;
             buffer->CursorX = 0;
             buffer->CursorY = 0;
-            Buffers[Index] = buffer;
+            this->Buffers[Index] = buffer;
             memset(buffer->Buffer, 0, Size);
         }
-        void SetBuffer(int Index) { memcpy(framebuffer.BaseAddress, Buffers[Index]->Buffer, Buffers[Index]->Size); }
-        void ClearBuffer(int Index) { memset(Buffers[Index]->Buffer, 0, Buffers[Index]->Size); }
+        void SetBuffer(int Index) { memcpy(this->framebuffer.BaseAddress, this->Buffers[Index]->Buffer, this->Buffers[Index]->Size); }
+        void ClearBuffer(int Index) { memset(this->Buffers[Index]->Buffer, 0, this->Buffers[Index]->Size); }
         void DeleteBuffer(int Index)
         {
-            if (Buffers[Index] == nullptr)
+            if (this->Buffers[Index] == nullptr)
                 return;
-            KernelAllocator.FreePages(Buffers[Index]->Buffer, TO_PAGES(Buffers[Index]->Size));
-            delete Buffers[Index];
+            KernelAllocator.FreePages(this->Buffers[Index]->Buffer, TO_PAGES(this->Buffers[Index]->Size));
+            delete this->Buffers[Index];
         }
 
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
         {
-            if (X >= Buffers[Index]->Width || Y >= Buffers[Index]->Height)
+            if (X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height)
                 return;
-            uint32_t *Pixel = (uint32_t *)((uint64_t)Buffers[Index]->Buffer + (Y * Buffers[Index]->Width + X) * (framebuffer.BitsPerPixel / 8));
+            uint32_t *Pixel = (uint32_t *)((uint64_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             *Pixel = Color;
         }
 
         uint32_t GetPixel(uint32_t X, uint32_t Y, int Index)
         {
-            if (X >= Buffers[Index]->Width || Y >= Buffers[Index]->Height)
+            if (X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height)
                 return 0;
-            uint32_t *Pixel = (uint32_t *)((uint64_t)Buffers[Index]->Buffer + (Y * Buffers[Index]->Width + X) * (framebuffer.BitsPerPixel / 8));
+            uint32_t *Pixel = (uint32_t *)((uint64_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             return *Pixel;
         }
 
@@ -141,13 +141,16 @@ namespace Video
 
             if (Lines > 0)
             {
-                memmove(Buffers[Index]->Buffer,
-                        (uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines),
-                        Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines));
+                for (uint32_t i = 0; i < this->CurrentFont->GetInfo().Height; i++) // TODO: Make this more efficient.
+                {
+                    memmove(this->Buffers[Index]->Buffer,
+                            (uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines),
+                            this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines));
 
-                memset((uint8_t *)Buffers[Index]->Buffer + (Buffers[Index]->Size - (Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines)),
-                       0,
-                       Buffers[Index]->Width * (framebuffer.BitsPerPixel / 8) * Lines);
+                    memset((uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines)),
+                           0,
+                           this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines);
+                }
             }
         }
 

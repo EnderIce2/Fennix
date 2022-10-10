@@ -127,9 +127,9 @@ void InitializeMemoryManagement(BootInfo *Info)
     tracepagetable(KernelPageTable);
 #endif
 #if defined(__amd64__) || defined(__i386__)
-    asm volatile("mov %0, %%cr3" ::"r"(KernelPageTable));
+    asmv("mov %0, %%cr3" ::"r"(KernelPageTable));
 #elif defined(__aarch64__)
-    asm volatile("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
+    asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
 #endif
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))
     {
