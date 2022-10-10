@@ -1,6 +1,14 @@
 #include <pci.hpp>
 
 #include <memory.hpp>
+#include <power.hpp>
+#if defined(__amd64__)
+#include "../Architecture/amd64/acpi.hpp"
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
+
+#include "../kernel.h"
 
 namespace PCI
 {
@@ -703,6 +711,7 @@ namespace PCI
                 switch (SubclassCode)
                 {
                 case 0x00:
+                {
                     switch (ProgIF)
                     {
                     case 0x00:
@@ -712,7 +721,10 @@ namespace PCI
                     default:
                         break;
                     }
+                    break;
+                }
                 case 0x03:
+                {
                     switch (ProgIF)
                     {
                     case 0x00:
@@ -730,6 +742,8 @@ namespace PCI
                     default:
                         break;
                     }
+                    break;
+                }
                 default:
                     break;
                 }
@@ -826,16 +840,22 @@ namespace PCI
 
     PCI::PCI()
     {
-        // int Entries = ((MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
-        // for (int t = 0; t < Entries; t++)
-        // {
-        //     DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uint64_t)MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
-        //     Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
-        //     trace("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
-        //           NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
-        //     for (uint64_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
-        //         EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
-        // }
+#if defined(__amd64__)
+        int Entries = ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
+        for (int t = 0; t < Entries; t++)
+        {
+            DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uint64_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
+            Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
+            trace("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
+                  NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
+            for (uint64_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
+                EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
+        }
+#elif defined(__i386__)
+        error("PCI not implemented on i386");
+#elif defined(__aarch64__)
+        error("PCI not implemented on aarch64");
+#endif
     }
 
     PCI::~PCI()

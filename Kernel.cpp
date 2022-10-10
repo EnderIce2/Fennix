@@ -1,10 +1,7 @@
 #include "kernel.h"
 
 #include <interrupts.hpp>
-#include <display.hpp>
-#include <symbols.hpp>
 #include <memory.hpp>
-#include <power.hpp>
 #include <string.h>
 #include <printf.h>
 #include <time.hpp>
@@ -14,6 +11,7 @@ BootInfo *bInfo = nullptr;
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
+PCI::PCI *PCIManager = nullptr;
 
 // For the Display class. Printing on first buffer.
 extern "C" void putchar(char c) { Display->Print(c, 0); }
@@ -58,6 +56,8 @@ EXTERNC void Entry(BootInfo *Info)
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
+    KPrint("Initializing PCI Manager");
+    PCIManager = new PCI::PCI;
     while (1)
         CPU::Halt();
 }

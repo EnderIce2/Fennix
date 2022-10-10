@@ -14,6 +14,9 @@ namespace Power
         void *madt;
 
     public:
+        void *GetACPI() { return this->acpi; }
+        void *GetDSDT() { return this->dsdt; }
+        void *GetMADT() { return this->madt; }
         void Reboot();
         void Shutdown();
         Power();
