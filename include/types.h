@@ -45,6 +45,8 @@ typedef __builtin_va_list va_list;
 #define ALIGN_UP(x, align) ((__typeof__(x))(((uint64_t)(x) + ((align)-1)) & (~((align)-1))))
 #define ALIGN_DOWN(x, align) ((__typeof__(x))((x) & (~((align)-1))))
 
+#define offsetof(type, member) __builtin_offsetof(type, member)
+
 typedef __INT8_TYPE__ int8_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;
