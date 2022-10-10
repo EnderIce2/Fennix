@@ -54,13 +54,6 @@ EXTERNC void kernel_entry(BootInfo *Info)
     Interrupts::Initialize();
     KPrint("Loading kernel symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
-    // printf_("%s\n", CPU::Vendor());
-    // printf_("%s\n", CPU::Name());
-    // printf_("%s\n", CPU::Hypervisor());
-    Display->SetBuffer(0);
-    for (size_t i = 0; i < 250; i++)
-        KPrint("Hello, World! (%02ld)", i);
-    asm("int $0x1");
     while (1)
         CPU::Halt();
 }
