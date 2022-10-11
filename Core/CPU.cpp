@@ -1,19 +1,25 @@
 #include <cpu.hpp>
+
 #include <memory.hpp>
+#include <string.h>
 
 namespace CPU
 {
 	char *Vendor()
 	{
-		static char Vendor[16];
+		static char Vendor[13];
 #if defined(__amd64__)
-		asmv("cpuid"
-			 : "=a"(Vendor[0]), "=b"(Vendor[4]), "=c"(Vendor[8]), "=d"(Vendor[12])
-			 : "a"(0));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
+		memcpy(Vendor + 0, &rbx, 4);
+		memcpy(Vendor + 4, &rdx, 4);
+		memcpy(Vendor + 8, &rcx, 4);
 #elif defined(__i386__)
-		asmv("cpuid"
-			 : "=a"(Vendor[0]), "=b"(Vendor[4]), "=c"(Vendor[8]), "=d"(Vendor[12])
-			 : "a"(0));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
+		memcpy(Vendor + 0, &rbx, 4);
+		memcpy(Vendor + 4, &rdx, 4);
+		memcpy(Vendor + 8, &rcx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Vendor[0]));
@@ -25,25 +31,39 @@ namespace CPU
 	{
 		static char Name[48];
 #if defined(__amd64__)
-		asmv("cpuid"
-			 : "=a"(Name[0]), "=b"(Name[4]), "=c"(Name[8]), "=d"(Name[12])
-			 : "a"(0x80000002));
-		asmv("cpuid"
-			 : "=a"(Name[16]), "=b"(Name[20]), "=c"(Name[24]), "=d"(Name[28])
-			 : "a"(0x80000003));
-		asmv("cpuid"
-			 : "=a"(Name[32]), "=b"(Name[36]), "=c"(Name[40]), "=d"(Name[44])
-			 : "a"(0x80000004));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 0, &rax, 4);
+		memcpy(Name + 4, &rbx, 4);
+		memcpy(Name + 8, &rcx, 4);
+		memcpy(Name + 12, &rdx, 4);
+		CPU::x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 16, &rax, 4);
+		memcpy(Name + 20, &rbx, 4);
+		memcpy(Name + 24, &rcx, 4);
+		memcpy(Name + 28, &rdx, 4);
+		CPU::x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 32, &rax, 4);
+		memcpy(Name + 36, &rbx, 4);
+		memcpy(Name + 40, &rcx, 4);
+		memcpy(Name + 44, &rdx, 4);
 #elif defined(__i386__)
-		asmv("cpuid"
-			 : "=a"(Name[0]), "=b"(Name[4]), "=c"(Name[8]), "=d"(Name[12])
-			 : "a"(0x80000002));
-		asmv("cpuid"
-			 : "=a"(Name[16]), "=b"(Name[20]), "=c"(Name[24]), "=d"(Name[28])
-			 : "a"(0x80000003));
-		asmv("cpuid"
-			 : "=a"(Name[32]), "=b"(Name[36]), "=c"(Name[40]), "=d"(Name[44])
-			 : "a"(0x80000004));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 0, &rax, 4);
+		memcpy(Name + 4, &rbx, 4);
+		memcpy(Name + 8, &rcx, 4);
+		memcpy(Name + 12, &rdx, 4);
+		CPU::x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 16, &rax, 4);
+		memcpy(Name + 20, &rbx, 4);
+		memcpy(Name + 24, &rcx, 4);
+		memcpy(Name + 28, &rdx, 4);
+		CPU::x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
+		memcpy(Name + 32, &rax, 4);
+		memcpy(Name + 36, &rbx, 4);
+		memcpy(Name + 40, &rcx, 4);
+		memcpy(Name + 44, &rdx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Name[0]));
@@ -53,15 +73,19 @@ namespace CPU
 
 	char *Hypervisor()
 	{
-		static char Hypervisor[16];
+		static char Hypervisor[13];
 #if defined(__amd64__)
-		asmv("cpuid"
-			 : "=a"(Hypervisor[0]), "=b"(Hypervisor[4]), "=c"(Hypervisor[8]), "=d"(Hypervisor[12])
-			 : "a"(0x40000000));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
+		memcpy(Hypervisor + 0, &rbx, 4);
+		memcpy(Hypervisor + 4, &rcx, 4);
+		memcpy(Hypervisor + 8, &rdx, 4);
 #elif defined(__i386__)
-		asmv("cpuid"
-			 : "=a"(Hypervisor[0]), "=b"(Hypervisor[4]), "=c"(Hypervisor[8]), "=d"(Hypervisor[12])
-			 : "a"(0x40000000));
+		uint32_t rax, rbx, rcx, rdx;
+		CPU::x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
+		memcpy(Hypervisor + 0, &rbx, 4);
+		memcpy(Hypervisor + 4, &rcx, 4);
+		memcpy(Hypervisor + 8, &rdx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Hypervisor[0]));
