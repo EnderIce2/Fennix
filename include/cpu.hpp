@@ -3,6 +3,91 @@
 
 #include <types.h>
 
+#define x86_CPUID_VENDOR_OLDAMD "AMDisbetter!" /* Early engineering samples of AMD K5 processor */
+#define x86_CPUID_VENDOR_AMD "AuthenticAMD"
+#define x86_CPUID_VENDOR_INTEL "GenuineIntel"
+#define x86_CPUID_VENDOR_VIA "CentaurHauls"
+#define x86_CPUID_VENDOR_OLDTRANSMETA "TransmetaCPU"
+#define x86_CPUID_VENDOR_TRANSMETA "GenuineTMx86"
+#define x86_CPUID_VENDOR_CYRIX "CyrixInstead"
+#define x86_CPUID_VENDOR_CENTAUR "CentaurHauls"
+#define x86_CPUID_VENDOR_NEXGEN "NexGenDriven"
+#define x86_CPUID_VENDOR_UMC "UMC UMC UMC "
+#define x86_CPUID_VENDOR_SIS "SiS SiS SiS "
+#define x86_CPUID_VENDOR_NSC "Geode by NSC"
+#define x86_CPUID_VENDOR_RISE "RiseRiseRise"
+#define x86_CPUID_VENDOR_VORTEX "Vortex86 SoC"
+#define x86_CPUID_VENDOR_VIA2 "VIA VIA VIA "
+#define x86_CPUID_VENDOR_HYGON "HygonGenuine"
+#define x86_CPUID_VENDOR_E2K "E2K MACHINE"
+#define x86_CPUID_VENDOR_MISTER "MiSTer AO486"
+
+/* Vendor-strings from Virtual Machines. */
+#define x86_CPUID_VENDOR_VMWARE "VMwareVMware"
+#define x86_CPUID_VENDOR_XENHVM "XenVMMXenVMM"
+#define x86_CPUID_VENDOR_MICROSOFT_HV "Microsoft Hv"
+#define x86_CPUID_VENDOR_MICROSOFT_XTA "MicrosoftXTA"
+#define x86_CPUID_VENDOR_PARALLELS " lrpepyh vr"
+#define x86_CPUID_VENDOR_KVM "KVMKVMKVM"
+#define x86_CPUID_VENDOR_VIRTUALBOX "VBoxVBoxVBox"
+#define x86_CPUID_VENDOR_TCG "TCGTCGTCGTCG"
+#define x86_CPUID_VENDOR_BHYVE "bhyve bhyve "
+#define x86_CPUID_VENDOR_ACRN "ACRNACRNACRN"
+#define x86_CPUID_VENDOR_QNX "QNXQVMBSQG"
+#define x86_CPUID_VENDOR_APPLE "VirtualApple"
+
+#define x86_CPUID_SIGNATURE_INTEL_b 0x756e6547
+#define x86_CPUID_SIGNATURE_INTEL_c 0x6c65746e
+#define x86_CPUID_SIGNATURE_INTEL_d 0x49656e69
+
+#define x86_CPUID_SIGNATURE_AMD_b 0x68747541
+#define x86_CPUID_SIGNATURE_AMD_c 0x444d4163
+#define x86_CPUID_SIGNATURE_AMD_d 0x69746e65
+
+#define x86_CPUID_SIGNATURE_CENTAUR_b 0x746e6543
+#define x86_CPUID_SIGNATURE_CENTAUR_c 0x736c7561
+#define x86_CPUID_SIGNATURE_CENTAUR_d 0x48727561
+
+#define x86_CPUID_SIGNATURE_CYRIX_b 0x69727943
+#define x86_CPUID_SIGNATURE_CYRIX_c 0x64616574
+#define x86_CPUID_SIGNATURE_CYRIX_d 0x736e4978
+
+#define x86_CPUID_SIGNATURE_TM1_b 0x6e617254
+#define x86_CPUID_SIGNATURE_TM1_c 0x55504361
+#define x86_CPUID_SIGNATURE_TM1_d 0x74656d73
+
+#define x86_CPUID_SIGNATURE_TM2_b 0x756e6547
+#define x86_CPUID_SIGNATURE_TM2_c 0x3638784d
+#define x86_CPUID_SIGNATURE_TM2_d 0x54656e69
+
+#define x86_CPUID_SIGNATURE_NSC_b 0x646f6547
+#define x86_CPUID_SIGNATURE_NSC_c 0x43534e20
+#define x86_CPUID_SIGNATURE_NSC_d 0x79622065
+
+#define x86_CPUID_SIGNATURE_NEXGEN_b 0x4778654e
+#define x86_CPUID_SIGNATURE_NEXGEN_c 0x6e657669
+#define x86_CPUID_SIGNATURE_NEXGEN_d 0x72446e65
+
+#define x86_CPUID_SIGNATURE_RISE_b 0x65736952
+#define x86_CPUID_SIGNATURE_RISE_c 0x65736952
+#define x86_CPUID_SIGNATURE_RISE_d 0x65736952
+
+#define x86_CPUID_SIGNATURE_SIS_b 0x20536953
+#define x86_CPUID_SIGNATURE_SIS_c 0x20536953
+#define x86_CPUID_SIGNATURE_SIS_d 0x20536953
+
+#define x86_CPUID_SIGNATURE_UMC_b 0x20434d55
+#define x86_CPUID_SIGNATURE_UMC_c 0x20434d55
+#define x86_CPUID_SIGNATURE_UMC_d 0x20434d55
+
+#define x86_CPUID_SIGNATURE_VIA_b 0x20414956
+#define x86_CPUID_SIGNATURE_VIA_c 0x20414956
+#define x86_CPUID_SIGNATURE_VIA_d 0x20414956
+
+#define x86_CPUID_SIGNATURE_VORTEX_b 0x74726f56
+#define x86_CPUID_SIGNATURE_VORTEX_c 0x436f5320
+#define x86_CPUID_SIGNATURE_VORTEX_d 0x36387865
+
 /**
  * @brief CPU related functions.
  */
@@ -955,6 +1040,132 @@ namespace CPU
             uint64_t ss;         // Stack Segment
         } TrapFrame;
 
+        typedef union CR0
+        {
+            struct
+            {
+                /** @brief Protection Enable */
+                uint64_t PE : 1;
+                /** @brief Monitor Coprocessor */
+                uint64_t MP : 1;
+                /** @brief Emulation */
+                uint64_t EM : 1;
+                /** @brief Task Switched */
+                uint64_t TS : 1;
+                /** @brief Extension Type */
+                uint64_t ET : 1;
+                /** @brief Numeric Error */
+                uint64_t NE : 1;
+                /** @brief Reserved */
+                uint64_t _reserved0 : 10;
+                /** @brief Write Protect */
+                uint64_t WP : 1;
+                /** @brief Reserved */
+                uint64_t _reserved1 : 1;
+                /** @brief Alignment Mask */
+                uint64_t AM : 1;
+                /** @brief Reserved */
+                uint64_t _reserved2 : 10;
+                /** @brief Mot Write-through */
+                uint64_t NW : 1;
+                /** @brief Cache Disable */
+                uint64_t CD : 1;
+                /** @brief Paging */
+                uint64_t PG : 1;
+            };
+            uint64_t raw;
+        } CR0;
+
+        typedef union CR2
+        {
+            struct
+            {
+                /** @brief Page Fault Linear Address */
+                uint64_t PFLA;
+            };
+            uint64_t raw;
+        } CR2;
+
+        typedef union CR3
+        {
+            struct
+            {
+                /** @brief Not used if bit 17 of CR4 is 1 */
+                uint64_t PWT : 1;
+                /** @brief Not used if bit 17 of CR4 is 1 */
+                uint64_t PCD : 1;
+                /** @brief Base of PML4T/PML5T */
+                uint64_t PDBR;
+            };
+            uint64_t raw;
+        } CR3;
+
+        typedef union CR4
+        {
+            struct
+            {
+                /** @brief Virtual-8086 Mode Extensions */
+                uint64_t VME : 1;
+                /** @brief Protected-Mode Virtual Interrupts */
+                uint64_t PVI : 1;
+                /** @brief Time Stamp Disable */
+                uint64_t TSD : 1;
+                /** @brief Debugging Extensions */
+                uint64_t DE : 1;
+                /** @brief Page Size Extensions */
+                uint64_t PSE : 1;
+                /** @brief Physical Address Extension */
+                uint64_t PAE : 1;
+                /** @brief Machine Check Enable */
+                uint64_t MCE : 1;
+                /** @brief Page Global Enable */
+                uint64_t PGE : 1;
+                /** @brief Performance Monitoring Counter */
+                uint64_t PCE : 1;
+                /** @brief Operating System Support */
+                uint64_t OSFXSR : 1;
+                /** @brief Operating System Support */
+                uint64_t OSXMMEXCPT : 1;
+                /** @brief User-Mode Instruction Prevention */
+                uint64_t UMIP : 1;
+                /** @brief Linear Address 57bit */
+                uint64_t LA57 : 1;
+                /** @brief VMX Enable */
+                uint64_t VMXE : 1;
+                /** @brief SMX Enable */
+                uint64_t SMXE : 1;
+                /** @brief Reserved */
+                uint64_t _reserved0 : 1;
+                /** @brief FSGSBASE Enable */
+                uint64_t FSGSBASE : 1;
+                /** @brief PCID Enable */
+                uint64_t PCIDE : 1;
+                /** @brief XSAVE and Processor Extended States Enable */
+                uint64_t OSXSAVE : 1;
+                /** @brief Reserved */
+                uint64_t _reserved1 : 1;
+                /** @brief SMEP Enable */
+                uint64_t SMEP : 1;
+                /** @brief SMAP Enable */
+                uint64_t SMAP : 1;
+                /** @brief Protection-Key Enable */
+                uint64_t PKE : 1;
+                /** @brief Reserved */
+                uint64_t _reserved2 : 9;
+            };
+            uint64_t raw;
+        } CR4;
+
+        typedef union CR8
+        {
+            struct
+            {
+                /** @brief Task Priority Level */
+                uint64_t TPL : 1;
+            };
+            uint64_t raw;
+        } CR8;
+
         static inline void lgdt(void *gdt)
         {
 #if defined(__amd64__)
@@ -1023,6 +1234,107 @@ namespace CPU
                  : "memory");
 #endif
         }
+
+        static inline CR0 readcr0()
+        {
+            uint64_t Result;
+#if defined(__amd64__)
+            asmv("mov %%cr0, %[Result]"
+                         : [Result] "=q"(Result));
+#endif
+            return (CR0){.raw = Result};
+        }
+
+        static inline CR2 readcr2()
+        {
+            uint64_t Result;
+#if defined(__amd64__)
+            asmv("mov %%cr2, %[Result]"
+                         : [Result] "=q"(Result));
+#endif
+            return (CR2){.raw = Result};
+        }
+
+        static inline CR3 readcr3()
+        {
+            uint64_t Result;
+#if defined(__amd64__)
+            asmv("mov %%cr3, %[Result]"
+                         : [Result] "=q"(Result));
+#endif
+            return (CR3){.raw = Result};
+        }
+
+        static inline CR4 readcr4()
+        {
+            uint64_t Result;
+#if defined(__amd64__)
+            asmv("mov %%cr4, %[Result]"
+                         : [Result] "=q"(Result));
+#endif
+            return (CR4){.raw = Result};
+        }
+
+        static inline CR8 readcr8()
+        {
+            uint64_t Result;
+#if defined(__amd64__)
+            asmv("mov %%cr8, %[Result]"
+                         : [Result] "=q"(Result));
+#endif
+            return (CR8){.raw = Result};
+        }
+
+        static inline void writecr0(CR0 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("mov %[ControlRegister], %%cr0"
+                         :
+                         : [ControlRegister] "q"(ControlRegister.raw)
+                         : "memory");
+#endif
+        }
+
+        static inline void writecr2(CR2 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("mov %[ControlRegister], %%cr2"
+                         :
+                         : [ControlRegister] "q"(ControlRegister.raw)
+                         : "memory");
+#endif
+        }
+
+        static inline void writecr3(CR3 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("mov %[ControlRegister], %%cr3"
+                         :
+                         : [ControlRegister] "q"(ControlRegister.raw)
+                         : "memory");
+#endif
+        }
+
+        static inline void writecr4(CR4 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("mov %[ControlRegister], %%cr4"
+                         :
+                         : [ControlRegister] "q"(ControlRegister.raw)
+                         : "memory");
+#endif
+        }
+
+        static inline void writecr8(CR8 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("mov %[ControlRegister], %%cr8"
+                         :
+                         : [ControlRegister] "q"(ControlRegister.raw)
+                         : "memory");
+#endif
+        }
+
     }
 }
 
