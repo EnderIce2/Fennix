@@ -1,5 +1,7 @@
 #include <interrupts.hpp>
 
+#include <syscalls.hpp>
+
 #if defined(__amd64__)
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #include "../Architecture/amd64/cpu/idt.hpp"
@@ -26,6 +28,7 @@ namespace Interrupts
 #if defined(__amd64__)
         GlobalDescriptorTable::Init(0);
         InterruptDescriptorTable::Init(0);
+        InitializeSystemCalls();
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif

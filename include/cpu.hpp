@@ -1007,7 +1007,7 @@ namespace CPU
             uint64_t raw;
         } RFLAGS;
 
-        typedef struct _TrapFrame
+        typedef struct TrapFrame
         {
             // uint64_t gs;  // General-purpose Segment
             // uint64_t fs;  // General-purpose Segment
