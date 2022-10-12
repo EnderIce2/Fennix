@@ -8,8 +8,6 @@ using namespace CPU::x64;
 
 extern "C" __attribute__((naked, used, no_stack_protector)) void SystemCallHandlerStub()
 {
-    asmv(".loop\n"
-         "jmp .loop\n");
 }
 
 extern "C" uint64_t SystemCallsHandler(SyscallsRegs *regs);
