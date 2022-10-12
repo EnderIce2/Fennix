@@ -27,6 +27,7 @@ enum SMPTrampolineAddress
 
 volatile bool CPUEnabled = false;
 
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
 
 CPUData *GetCPU(uint64_t id) { return &CPUs[id]; }
@@ -58,7 +59,7 @@ extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
     uint64_t CPU_ID;
-#if defined(__amd64__)
+
     // Enable CPU features
     {
         CPU::x64::CR0 cr0 = CPU::x64::readcr0();
@@ -103,9 +104,7 @@ extern "C" void StartCPU()
 
     // Initialize GDT and IDT
     Interrupts::Initialize(CPU_ID);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
+
     CPU::Interrupts(CPU::Enable);
     KPrint("CPU %d is online", CPU_ID);
     CPUEnabled = true;
@@ -116,7 +115,6 @@ namespace SMP
 {
     void Initialize(void *madt)
     {
-#if defined(__amd64__)
         for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores; i++)
             if ((((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {
@@ -148,8 +146,5 @@ namespace SMP
                 trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
                 CPUEnabled = false;
             }
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
     }
 }
