@@ -16,12 +16,12 @@
 namespace Interrupts
 {
 #if defined(__amd64__)
-    APIC::APIC *apic = nullptr;
+    /* APIC::APIC */ void *apic = nullptr;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
 
-    void Initialize()
+    void Initialize(int Core)
     {
 #if defined(__amd64__)
         GlobalDescriptorTable::Init(0);

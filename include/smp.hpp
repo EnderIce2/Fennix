@@ -3,6 +3,9 @@
 
 #include <types.h>
 
+/** @brief Maximum supported number of CPU cores by the kernel */
+#define MAX_CPU 256
+
 #define CPU_DATA_CHECKSUM 0xC0FFEE
 
 struct CPUData
@@ -31,5 +34,10 @@ struct CPUData
 
 CPUData *GetCurrentCPU();
 CPUData *GetCPU(uint64_t ID);
+
+namespace SMP
+{
+    void Initialize(void *madt);
+}
 
 #endif // !__FENNIX_KERNEL_SMP_H__

@@ -7,6 +7,7 @@
 #include <lock.hpp>
 #include <time.hpp>
 #include <debug.h>
+#include <smp.hpp>
 
 NEWLOCK(KernelLock);
 
@@ -61,14 +62,17 @@ EXTERNC void Entry(BootInfo *Info)
            BootClock.Hour, BootClock.Minute, BootClock.Second,
            BootClock.Day, BootClock.Month, BootClock.Year);
     KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
+    GetCPU(0)->ID = 0;
+    GetCPU(0)->IsActive = true;
+    GetCPU(0)->Checksum = CPU_DATA_CHECKSUM;
     KPrint("Initializing GDT and IDT");
-    Interrupts::Initialize();
+    Interrupts::Initialize(0);
     KPrint("Initializing CPU features");
 #if defined(__amd64__)
     CPU::x64::CR0 cr0 = CPU::x64::readcr0();
     CPU::x64::CR4 cr4 = CPU::x64::readcr4();
     uint32_t rax, rbx, rcx, rdx;
-    CPU::x64::cpuid(1, &rax, &rbx, &rcx, &rdx);
+    CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
     if (rdx & CPU::x64::CPUID_FEAT_RDX_SSE)
     {
         debug("Enabling SSE support...");
@@ -84,7 +88,7 @@ EXTERNC void Entry(BootInfo *Info)
     cr0.CD = 0;
 
     debug("Enabling UMIP, SMEP & SMAP support...");
-    CPU::x64::cpuid(1, &rax, &rbx, &rcx, &rdx);
+    CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
     if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
     {
         KPrint("UMIP is supported.");
@@ -125,6 +129,8 @@ EXTERNC void Entry(BootInfo *Info)
     }
     KPrint("Enabling interrupts");
     Interrupts::Enable();
+    KPrint("Initializing SMP");
+    SMP::Initialize(PowerManager->GetMADT());
     KPrint("\e058C19######## \eE85230END \e058C19########");
     while (1)
         CPU::Halt();

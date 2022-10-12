@@ -5,7 +5,8 @@
 
 namespace Interrupts
 {
-    void Initialize();
+    extern void *apic;
+    void Initialize(int Core);
     void Enable();
 }
 

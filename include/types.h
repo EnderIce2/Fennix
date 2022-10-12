@@ -47,6 +47,12 @@ typedef __builtin_va_list va_list;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+#define VPOKE(type, address) (*((volatile type *)(address)))
+#define POKE(type, address) (*((type *)(address)))
+
 typedef __INT8_TYPE__ int8_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;

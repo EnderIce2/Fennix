@@ -1,6 +1,7 @@
 #include "gdt.hpp"
 
 #include <memory.hpp>
+#include <smp.hpp>
 #include <cpu.hpp>
 #include <debug.h>
 
@@ -16,7 +17,7 @@ namespace GlobalDescriptorTable
 
     GlobalDescriptorTableDescriptor gdt = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries};
 
-    TaskStateSegment tss[256] = {
+    TaskStateSegment tss[MAX_CPU] = {
         0,
         {0, 0, 0},
         0,
