@@ -8,6 +8,7 @@
 #include <time.hpp>
 #include <debug.h>
 #include <smp.hpp>
+#include <io.h>
 
 NEWLOCK(KernelLock);
 
@@ -42,9 +43,9 @@ EXTERNC void KPrint(const char *format, ...)
 
 EXTERNC void Entry(BootInfo *Info)
 {
-    BootClock = ReadClock();
-    trace("Hello, World!");
     InitializeMemoryManagement(Info);
+    trace("Hello, World!");
+    BootClock = ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
     memcpy(bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);

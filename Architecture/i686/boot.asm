@@ -26,6 +26,7 @@ BOOT_PAGE_TBL1: resb 4096
 
 section .multiboot2.text
 extern x32Entry
+extern Multiboot2Initializator
 extern _kernel_start
 extern _kernel_end
 global _start
@@ -58,6 +59,7 @@ _start:
     add edi, 4
     loop .PagingLoop
 .LoopEnd:
+    call Multiboot2Initializator
     push ebx
     mov dword [BOOT_PAGE_DIR0 - KERNEL_VIRTUAL_BASE + (000 * 4)], (BOOT_PAGE_TBL0 - KERNEL_VIRTUAL_BASE + 3)
     mov dword [BOOT_PAGE_DIR0 - KERNEL_VIRTUAL_BASE + (001 * 4)], (BOOT_PAGE_TBL1 - KERNEL_VIRTUAL_BASE + 3)
