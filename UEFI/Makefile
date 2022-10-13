@@ -6,7 +6,8 @@ LD = ld
 OBJCOPY = objcopy
 
 C_SOURCES = $(shell find ./src -type f -name '*.c')
-OBJ = $(C_SOURCES:.c=.o)
+CPP_SOURCES = $(shell find ./src -type f -name '*.cpp')
+OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o)
 
 GNUEFI_RELEASE_VERSION=3.0.14
 
@@ -39,6 +40,9 @@ BOOTX64: $(OBJ)
 	$(info Compiling $<)
 	$(CC) -Ignu-efi/inc -Ignu-efi/inc/x86_64 -Ignu-efi/inc/protocol -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -c $< -o $@
 
+%.o: %.cpp
+	$(info Compiling $<)
+	$(CC) -Ignu-efi/inc -Ignu-efi/inc/x86_64 -Ignu-efi/inc/protocol -fpermissive -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -c $< -o $@
 
 clean:
 	rm -f $(NAME) $(OBJ) BOOTX64.EFI

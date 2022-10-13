@@ -5,6 +5,9 @@
 		}
 	],
 	"settings": {
-		"debug.allowBreakpointsEverywhere": true
+		"debug.allowBreakpointsEverywhere": true,
+		"files.associations": {
+			"efi.h": "c"
+		}
 	}
 }
