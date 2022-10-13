@@ -1,2 +1,7 @@
-gnu-efi
-include
+*.o
+efi-loader.bin
+loader.bin
+UEFI/gnu-efi
+UEFI/include
+UEFI/BOOTX64.EFI
+UEFI/BOOTIA32.EFI

@@ -1,15 +1,14 @@
-GNUEFI_RELEASE_VERSION=3.0.14
+prepare:
+	make -C BIOS prepare
+	make -C UEFI prepare
 
-gnuefi:
-	wget https://archive.org/download/gnu-efi-$(GNUEFI_RELEASE_VERSION).tar/gnu-efi-$(GNUEFI_RELEASE_VERSION).tar.bz2
-	tar -xf gnu-efi-$(GNUEFI_RELEASE_VERSION).tar.bz2
-	rm gnu-efi-$(GNUEFI_RELEASE_VERSION).tar.bz2
-	mv ./gnu-efi-$(GNUEFI_RELEASE_VERSION) ./gnu-efi
-	mkdir -p include
-	cp -a ./gnu-efi/inc/. ./include
-	make -C gnu-efi
-
-prepare: gnuefi
-	$(info Nothing to prepare)
+build:
+	make -C BIOS build
+	make -C UEFI build
+	cp BIOS/loader.bin .
+	cp UEFI/efi-loader.bin .
 
 clean:
+	make -C BIOS clean
+	make -C UEFI clean
+	rm -f loader.bin efi-loader.bin
