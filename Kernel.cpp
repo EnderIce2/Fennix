@@ -40,13 +40,6 @@ EXTERNC void KPrint(const char *format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC void aarch64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
-{
-    trace("Hello, World!");
-    while (1)
-        CPU::Halt();
-}
-
 EXTERNC void Entry(BootInfo *Info)
 {
     BootClock = ReadClock();
@@ -132,6 +125,20 @@ EXTERNC void Entry(BootInfo *Info)
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
     KPrint("\e058C19######## \eE85230END \e058C19########");
+    while (1)
+        CPU::Halt();
+}
+
+EXTERNC void arm64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
+{
+    trace("Hello, World!");
+    while (1)
+        CPU::Halt();
+}
+
+EXTERNC void x32Entry(uint64_t Data)
+{
+    trace("Hello, World!");
     while (1)
         CPU::Halt();
 }
