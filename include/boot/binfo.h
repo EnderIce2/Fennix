@@ -1,8 +1,6 @@
 #ifndef __FENNIX_KERNEL_BOOT_INFO_H__
 #define __FENNIX_KERNEL_BOOT_INFO_H__
 
-#include <types.h>
-
 enum MemoryType
 {
     Usable,
@@ -25,19 +23,19 @@ struct BootInfo
     struct FramebufferInfo
     {
         void *BaseAddress;
-        uint64_t Width;
-        uint64_t Height;
-        uint64_t Pitch;
-        uint16_t BitsPerPixel;
-        uint8_t MemoryModel;
-        uint8_t RedMaskSize;
-        uint8_t RedMaskShift;
-        uint8_t GreenMaskSize;
-        uint8_t GreenMaskShift;
-        uint8_t BlueMaskSize;
-        uint8_t BlueMaskShift;
+        __UINT64_TYPE__ Width;
+        __UINT64_TYPE__ Height;
+        __UINT64_TYPE__ Pitch;
+        __UINT16_TYPE__ BitsPerPixel;
+        __UINT8_TYPE__ MemoryModel;
+        __UINT8_TYPE__ RedMaskSize;
+        __UINT8_TYPE__ RedMaskShift;
+        __UINT8_TYPE__ GreenMaskSize;
+        __UINT8_TYPE__ GreenMaskShift;
+        __UINT8_TYPE__ BlueMaskSize;
+        __UINT8_TYPE__ BlueMaskShift;
         void *ExtendedDisplayIdentificationData;
-        uint64_t EDIDSize;
+        __UINT64_TYPE__ EDIDSize;
     } Framebuffer[MAX_FRAMEBUFFERS];
 
     struct MemoryInfo
@@ -45,11 +43,11 @@ struct BootInfo
         struct MemoryEntryInfo
         {
             void *BaseAddress;
-            uint64_t Length;
+            __UINT64_TYPE__ Length;
             enum MemoryType Type;
         } Entry[MAX_MEMORY_ENTRIES];
-        uint64_t Entries;
-        uint64_t Size;
+        __UINT64_TYPE__ Entries;
+        __UINT64_TYPE__ Size;
     } Memory;
 
     struct ModuleInfo
@@ -57,7 +55,7 @@ struct BootInfo
         void *Address;
         char Path[256];
         char CommandLine[256];
-        uint64_t Size;
+        __UINT64_TYPE__ Size;
     } Modules[MAX_MODULES];
 
     struct RSDPInfo
@@ -65,41 +63,41 @@ struct BootInfo
         /**
          * @brief Signature
          */
-        unsigned char Signature[8];
+        __UINT8_TYPE__ Signature[8];
         /**
          * @brief Checksum
          */
-        uint8_t Checksum;
+        __UINT8_TYPE__ Checksum;
         /**
          * @brief OEM ID
          */
-        uint8_t OEMID[6];
+        __UINT8_TYPE__ OEMID[6];
         /**
          * @brief Revision
          */
-        uint8_t Revision;
+        __UINT8_TYPE__ Revision;
         /**
          * @brief Address of the Root System Description Table
          */
-        uint32_t RSDTAddress;
+        __UINT32_TYPE__ RSDTAddress;
         /* END OF RSDP 1.0 */
 
         /**
          * @brief Length
          */
-        uint32_t Length;
+        __UINT32_TYPE__ Length;
         /**
          * @brief Extended System Descriptor Table
          */
-        uint64_t XSDTAddress;
+        __UINT64_TYPE__ XSDTAddress;
         /**
          * @brief Extended checksum
          */
-        uint8_t ExtendedChecksum;
+        __UINT8_TYPE__ ExtendedChecksum;
         /**
          * @brief Reserved
          */
-        uint8_t Reserved[3];
+        __UINT8_TYPE__ Reserved[3];
     } __attribute__((packed)) * RSDP;
 
     struct KernelInfo
@@ -108,7 +106,7 @@ struct BootInfo
         void *VirtualBase;
         void *FileBase;
         char CommandLine[256];
-        uint64_t Size;
+        __UINT64_TYPE__ Size;
     } Kernel;
 
     struct BootloaderInfo
