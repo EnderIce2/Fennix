@@ -43,22 +43,22 @@ namespace ACPI
 
         struct HPETHeader
         {
-            ACPIHeader header;
-            uint8_t hardware_rev_id;
-            uint8_t comparator_count : 5;
-            uint8_t counter_size : 1;
-            uint8_t reserved : 1;
-            uint8_t legacy_replacement : 1;
-            uint16_t pci_vendor_id;
-            struct GenericAddressStructure address;
-            uint8_t hpet_number;
-            uint16_t minimum_tick;
-            uint8_t page_protection;
+            ACPIHeader Header;
+            uint8_t HardwareRevID;
+            uint8_t ComparatorCount : 5;
+            uint8_t CounterSize : 1;
+            uint8_t Reserved : 1;
+            uint8_t LegacyReplacement : 1;
+            uint16_t PCIVendorID;
+            struct GenericAddressStructure Address;
+            uint8_t HPETNumber;
+            uint16_t MinimumTick;
+            uint8_t PageProtection;
         } __attribute__((packed));
 
         struct FADTHeader
         {
-            ACPIHeader header;
+            ACPIHeader Header;
             uint32_t FirmwareCtrl;
             uint32_t Dsdt;
             uint8_t Reserved;
