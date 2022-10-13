@@ -36,4 +36,10 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
     _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
+
+    /DISCARD/ :
+    {
+        *(.comment*)
+        *(.note*)
+    }
 }

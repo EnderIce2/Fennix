@@ -1,45 +1,56 @@
 OUTPUT_FORMAT(elf32-i386)
 OUTPUT_ARCH(i386)
 
-ENTRY(Entry)
+ENTRY(_start)
+
+KERNEL_VIRTUAL_BASE = 0xE0000000;
 
 SECTIONS
 {
-    . += 0xC0000000;
-    _kernel_start = .;
+    . = 0x00100000;
+    _kernel_start = . + KERNEL_VIRTUAL_BASE;
 
-    .text :
+    .multiboot.data :
+    {
+        *(.multiboot2.data)
+    }
+
+    .multiboot.text :
+    {
+        *(.multiboot2.text)
+    }
+
+    . += KERNEL_VIRTUAL_BASE;
+    .text ALIGN(4096) : AT(ADDR(.text) - KERNEL_VIRTUAL_BASE)
     {
         *(.text .text.*)
     }
-    _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
-    . += CONSTANT(MAXPAGESIZE);
+    _kernel_text_end = .;
 
-    .data :
+    .data ALIGN (4096) : AT(ADDR(.data) - KERNEL_VIRTUAL_BASE)
     {
         *(.data .data.*)
     }
-    _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
-    . += CONSTANT(MAXPAGESIZE);
+    _kernel_data_end = .;
 
-    .rodata :
+    .rodata ALIGN (4096) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_BASE)
     {
         *(.rodata .rodata.*)
     }
-    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
-    . += CONSTANT(MAXPAGESIZE);
+    _kernel_rodata_end = .;
 
-    .bss :
+    .bss ALIGN (4096) : AT(ADDR(.bss) - KERNEL_VIRTUAL_BASE)
     {
+        _sbss = .;
         *(COMMON)
         *(.bss .bss.*)
+        _ebss = .;
     }
-    . += CONSTANT(MAXPAGESIZE);
-    _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    _kernel_end = .;
 
     /DISCARD/ :
     {
-        *(.eh_frame)
-        *(.note .note.*)
+        *(.comment*)
+        *(.note*)
     }
 }
