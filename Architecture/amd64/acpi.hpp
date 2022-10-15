@@ -240,7 +240,7 @@ namespace ACPI
         Vector<MADTNmi *> nmi;
         Vector<LocalAPIC *> lapic;
         struct LAPIC *LAPICAddress;
-        uint8_t CPUCores;
+        uint16_t CPUCores;
 
         MADT(ACPI::MADTHeader *madt);
         ~MADT();

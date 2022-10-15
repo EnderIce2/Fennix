@@ -121,6 +121,7 @@ namespace SMP
             return;
         }
         for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores; i++)
+        {
             if ((((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {
                 ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
@@ -151,5 +152,8 @@ namespace SMP
                 trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
                 CPUEnabled = false;
             }
+            else
+                KPrint("CPU %d is the BSP", ((ACPI::MADT *)madt)->lapic[i]->APICId);
+        }
     }
 }
