@@ -115,6 +115,11 @@ namespace SMP
 {
     void Initialize(void *madt)
     {
+        if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0)
+        {
+            KPrint("VirtualBox detected, disabling SMP");
+            return;
+        }
         for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores; i++)
             if ((((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {
