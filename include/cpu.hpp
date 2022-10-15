@@ -164,7 +164,7 @@ namespace CPU
      */
     void *PageTable(void *PT = nullptr);
 
-    /** @brief Used only once. */
+    /** @brief To be used only once. */
     void InitializeFeatures();
 
     namespace MemBar
