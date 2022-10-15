@@ -58,47 +58,13 @@ CPUData *GetCurrentCPU()
 extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
-    uint64_t CPU_ID;
-
-    // Enable CPU features
-    {
-        CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-        CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-        uint32_t rax, rbx, rcx, rdx;
-        CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_SSE)
-        {
-            cr0.EM = 0;
-            cr0.MP = 1;
-            cr4.OSFXSR = 1;
-            cr4.OSXMMEXCPT = 1;
-        }
-
-        // Enable cpu cache but... how to use it?
-        cr0.NW = 0;
-        cr0.CD = 0;
-
-        CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
-        {
-            fixme("Not going to enable UMIP.");
-            // cr4.UMIP = 1;
-        }
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_SMEP)
-            cr4.SMEP = 1;
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_SMAP)
-            cr4.SMAP = 1;
-        CPU::x64::writecr0(cr0);
-        CPU::x64::writecr4(cr4);
-        CPU::x64::wrmsr(CPU::x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
-    }
+    CPU::InitializeFeatures();
 
     // Enable APIC
-    {
-        CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, (CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | 0x800) & ~(1 << 10));
-        ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_SVR, ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_SVR) | 0x1FF);
-    }
+    CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, (CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | 0x800) & ~(1 << 10));
+    ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_SVR, ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_SVR) | 0x1FF);
 
+    uint64_t CPU_ID;
     // Set CPU_ID variable using APIC
     CPU_ID = ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24;
 
@@ -120,7 +86,7 @@ namespace SMP
             KPrint("VirtualBox detected, disabling SMP");
             return;
         }
-        for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores; i++)
+        for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores + 1; i++)
         {
             if ((((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {

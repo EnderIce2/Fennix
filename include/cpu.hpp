@@ -164,6 +164,9 @@ namespace CPU
      */
     void *PageTable(void *PT = nullptr);
 
+    /** @brief Used only once. */
+    void InitializeFeatures();
+
     namespace MemBar
     {
         static inline void Barrier()
@@ -1240,7 +1243,7 @@ namespace CPU
             uint64_t Result;
 #if defined(__amd64__)
             asmv("mov %%cr0, %[Result]"
-                         : [Result] "=q"(Result));
+                 : [Result] "=q"(Result));
 #endif
             return (CR0){.raw = Result};
         }
@@ -1250,7 +1253,7 @@ namespace CPU
             uint64_t Result;
 #if defined(__amd64__)
             asmv("mov %%cr2, %[Result]"
-                         : [Result] "=q"(Result));
+                 : [Result] "=q"(Result));
 #endif
             return (CR2){.raw = Result};
         }
@@ -1260,7 +1263,7 @@ namespace CPU
             uint64_t Result;
 #if defined(__amd64__)
             asmv("mov %%cr3, %[Result]"
-                         : [Result] "=q"(Result));
+                 : [Result] "=q"(Result));
 #endif
             return (CR3){.raw = Result};
         }
@@ -1270,7 +1273,7 @@ namespace CPU
             uint64_t Result;
 #if defined(__amd64__)
             asmv("mov %%cr4, %[Result]"
-                         : [Result] "=q"(Result));
+                 : [Result] "=q"(Result));
 #endif
             return (CR4){.raw = Result};
         }
@@ -1280,7 +1283,7 @@ namespace CPU
             uint64_t Result;
 #if defined(__amd64__)
             asmv("mov %%cr8, %[Result]"
-                         : [Result] "=q"(Result));
+                 : [Result] "=q"(Result));
 #endif
             return (CR8){.raw = Result};
         }
@@ -1289,9 +1292,9 @@ namespace CPU
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr0"
-                         :
-                         : [ControlRegister] "q"(ControlRegister.raw)
-                         : "memory");
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
 #endif
         }
 
@@ -1299,9 +1302,9 @@ namespace CPU
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr2"
-                         :
-                         : [ControlRegister] "q"(ControlRegister.raw)
-                         : "memory");
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
 #endif
         }
 
@@ -1309,9 +1312,9 @@ namespace CPU
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr3"
-                         :
-                         : [ControlRegister] "q"(ControlRegister.raw)
-                         : "memory");
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
 #endif
         }
 
@@ -1319,9 +1322,9 @@ namespace CPU
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr4"
-                         :
-                         : [ControlRegister] "q"(ControlRegister.raw)
-                         : "memory");
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
 #endif
         }
 
@@ -1329,9 +1332,9 @@ namespace CPU
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr8"
-                         :
-                         : [ControlRegister] "q"(ControlRegister.raw)
-                         : "memory");
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
 #endif
         }
 

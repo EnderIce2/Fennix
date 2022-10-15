@@ -62,55 +62,7 @@ EXTERNC void Entry(BootInfo *Info)
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
     KPrint("Initializing CPU features");
-#if defined(__amd64__)
-    CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-    CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-    uint32_t rax, rbx, rcx, rdx;
-    CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-    if (rdx & CPU::x64::CPUID_FEAT_RDX_SSE)
-    {
-        debug("Enabling SSE support...");
-        KPrint("SSE is supported.");
-        cr0.EM = 0;
-        cr0.MP = 1;
-        cr4.OSFXSR = 1;
-        cr4.OSXMMEXCPT = 1;
-    }
-
-    // Enable cpu cache but... how to use it?
-    cr0.NW = 0;
-    cr0.CD = 0;
-
-    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
-    {
-        debug("Enabling UMIP, SMEP & SMAP support...");
-        CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
-        {
-            KPrint("UMIP is supported.");
-            fixme("Not going to enable UMIP.");
-            // cr4.UMIP = 1;
-        }
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_SMEP)
-        {
-            KPrint("SMEP is supported.");
-            cr4.SMEP = 1;
-        }
-        if (rdx & CPU::x64::CPUID_FEAT_RDX_SMAP)
-        {
-            KPrint("SMAP is supported.");
-            cr4.SMAP = 1;
-        }
-        CPU::x64::writecr4(cr4);
-    }
-    else
-        KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
-    CPU::x64::writecr0(cr0);
-    debug("Enabling PAT support...");
-    CPU::x64::wrmsr(CPU::x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
+    CPU::InitializeFeatures();
     KPrint("Loading kernel symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
     KPrint("Initializing Power Manager");
