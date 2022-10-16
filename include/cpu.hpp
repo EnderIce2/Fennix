@@ -1034,8 +1034,8 @@ namespace CPU
             uint64_t rbx; // Base
             uint64_t rax; // Accumulator
 
-            uint64_t int_num;    // Interrupt Number
-            uint64_t error_code; // Error code
+            uint64_t InterruptNumber;    // Interrupt Number
+            uint64_t ErrorCode; // Error code
             uint64_t rip;        // Instruction Pointer
             uint64_t cs;         // Code Segment
             RFLAGS rflags;       // Register Flags

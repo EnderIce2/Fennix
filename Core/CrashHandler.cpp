@@ -13,18 +13,6 @@
 
 #include "../kernel.h"
 
-#if defined(__amd64__) || defined(__i386__)
-static const char *PagefaultDescriptions[] = {
-    "Supervisory process tried to read a non-present page entry",
-    "Supervisory process tried to read a page and caused a protection fault",
-    "Supervisory process tried to write to a non-present page entry",
-    "Supervisory process tried to write a page and caused a protection fault",
-    "User process tried to read a non-present page entry",
-    "User process tried to read a page and caused a protection fault",
-    "User process tried to write to a non-present page entry",
-    "User process tried to write a page and caused a protection fault"};
-#endif
-
 #if defined(__amd64__)
 void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame);
 void DebugExceptionHandler(CPU::x64::TrapFrame *Frame);
@@ -69,15 +57,14 @@ namespace CrashHandler
 
     __attribute__((no_stack_protector)) void Handle(void *Data)
     {
-        CPU::Interrupts(CPU::Disable);
-
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        error("Exception: %#lx", Frame->int_num);
+        error("Exception: %#lx", Frame->InterruptNumber);
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             debug("Exception in kernel mode");
+            CPU::Interrupts(CPU::Disable);
             Display->CreateBuffer(0, 0, 255);
         }
         else
@@ -114,7 +101,7 @@ namespace CrashHandler
         asm volatile("movq %%dr7, %0"
                      : "=r"(dr7));
 
-        switch (Frame->int_num)
+        switch (Frame->InterruptNumber)
         {
         case CPU::x64::DivideByZero:
         {
@@ -237,7 +224,7 @@ namespace CrashHandler
         EHPrint("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx\n", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
         EHPrint("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx\n", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
         EHPrint("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx\n", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-        EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n", Frame->rip, Frame->rflags.raw, Frame->int_num, Frame->error_code, efer.raw);
+        EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
         EHPrint("CR0=%#lx  CR2=%#lx  CR3=%#lx  CR4=%#lx  CR8=%#lx\n", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
         EHPrint("DR0=%#lx  DR1=%#lx  DR2=%#lx  DR3=%#lx  DR6=%#lx  DR7=%#lx\n", dr0, dr1, dr2, dr3, dr6, dr7.raw);
 
@@ -314,43 +301,13 @@ namespace CrashHandler
 
         debug("Stack tracing...");
         EHPrint("\e7981FC\nStack Trace:\n");
-
         if (!frames || !frames->rip || !frames->rbp)
-        {
-            EHPrint("\eFF0000\n< No stack trace available. >\n");
-            Display->SetBuffer(255);
-            while (1)
-                CPU::Stop();
-        }
-        else
-        {
-            frames = (struct StackFrame *)Frame->rbp;
-            if (Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end)
-                debug("%p-%s <- Exception", (void *)Frame->rip, KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
-            else
-                debug("%p-OUTSIDE KERNEL <- Exception", (void *)Frame->rip);
-            for (uint64_t frame = 0; frame < 100; ++frame)
-            {
-                if (!frames->rip)
-                    break;
-                if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
-                    debug("%p-%s", (void *)frames->rip, KernelSymbolTable->GetSymbolFromAddress(frames->rip));
-                else
-                    debug("%p-OUTSIDE KERNEL", (void *)frames->rip);
-                frames = frames->rbp;
-            }
-        }
-
-        if (!frames->rip || !frames->rbp)
         {
             EHPrint("\e2565CC%p", (void *)Frame->rip);
             EHPrint("\e7925CC-");
             EHPrint("\eAA25C%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
             EHPrint("\e7981FC <- Exception");
             EHPrint("\eFF0000\n< No stack trace available. >\n");
-            Display->SetBuffer(255);
-            while (1)
-                CPU::Stop();
         }
         else
         {
@@ -365,8 +322,7 @@ namespace CrashHandler
             {
                 if (!frames->rip)
                     break;
-                EHPrint("\n");
-                EHPrint("\e2565CC%p", (void *)frames->rip);
+                EHPrint("\n\e2565CC%p", (void *)frames->rip);
                 EHPrint("\e7925CC-");
                 if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
                     EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress(frames->rip));
@@ -375,6 +331,7 @@ namespace CrashHandler
                 frames = frames->rbp;
             }
         }
+        goto CrashEnd;
 
 #elif defined(__i386__)
         void *Frame = Data;
@@ -382,23 +339,36 @@ namespace CrashHandler
         void *Frame = Data;
 #endif
 
+    CrashEnd:
         Display->SetBuffer(255);
         while (1)
             CPU::Stop();
     }
 }
 
+#if defined(__amd64__) || defined(__i386__)
+static const char *PagefaultDescriptions[] = {
+    "Supervisory process tried to read a non-present page entry\n",
+    "Supervisory process tried to read a page and caused a protection fault\n",
+    "Supervisory process tried to write to a non-present page entry\n",
+    "Supervisory process tried to write a page and caused a protection fault\n",
+    "User process tried to read a non-present page entry\n",
+    "User process tried to read a page and caused a protection fault\n",
+    "User process tried to write to a non-present page entry\n",
+    "User process tried to write a page and caused a protection fault\n"};
+#endif
+
 #if defined(__amd64__)
-// #define staticbuffer(name) char name[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
+#define staticbuffer(name) char name[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
 void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
-    fixme("Divide by zero exception");
+    fixme("Divide by zero exception\n");
 }
 void DebugExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
-    CrashHandler::EHPrint("Kernel triggered debug exception.");
+    CrashHandler::EHPrint("Kernel triggered debug exception.\n");
 }
 void NonMaskableInterruptExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("NMI exception"); }
 void BreakpointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Breakpoint exception"); }
@@ -407,7 +377,7 @@ void BoundRangeExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Bound range
 void InvalidOpcodeExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
-    CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.");
+    CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
 }
 void DeviceNotAvailableExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Device not available exception"); }
 void DoubleFaultExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Double fault exception"); }
@@ -416,41 +386,41 @@ void InvalidTSSExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Invalid TSS
 void SegmentNotPresentExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Segment not present exception"); }
 void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
-    // staticbuffer(descbuf);
-    // staticbuffer(desc_ext);
-    // staticbuffer(desc_table);
-    // staticbuffer(desc_idx);
-    // staticbuffer(desc_tmp);
-    // CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->error_code};
-    // switch (SelCode.Table)
-    // {
-    // case 0b00:
-    //     memcpy(desc_tmp, "GDT", 3);
-    //     break;
-    // case 0b01:
-    //     memcpy(desc_tmp, "IDT", 3);
-    //     break;
-    // case 0b10:
-    //     memcpy(desc_tmp, "LDT", 3);
-    //     break;
-    // case 0b11:
-    //     memcpy(desc_tmp, "IDT", 3);
-    //     break;
-    // default:
-    //     memcpy(desc_tmp, "Unknown", 7);
-    //     break;
-    // }
-    // debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
-    // sprintf_(descbuf, "Stack segment fault at address %#lx", Frame->rip);
-    // CrashHandler::EHPrint(descbuf);
-    // sprintf_(desc_ext, "External: %d", SelCode.External);
-    // CrashHandler::EHPrint(desc_ext);
-    // sprintf_(desc_table, "Table: %d (%s)", SelCode.Table, desc_tmp);
-    // CrashHandler::EHPrint(desc_table);
-    // sprintf_(desc_idx, "%s Index: %#x", desc_tmp, SelCode.Idx);
-    // CrashHandler::EHPrint(desc_idx);
-    // CrashHandler::EHPrint("\eDD2920System crashed!\n");
-    // CrashHandler::EHPrint("More info about the exception:\n");
+    staticbuffer(descbuf);
+    staticbuffer(desc_ext);
+    staticbuffer(desc_table);
+    staticbuffer(desc_idx);
+    staticbuffer(desc_tmp);
+    CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
+    switch (SelCode.Table)
+    {
+    case 0b00:
+        memcpy(desc_tmp, "GDT", 3);
+        break;
+    case 0b01:
+        memcpy(desc_tmp, "IDT", 3);
+        break;
+    case 0b10:
+        memcpy(desc_tmp, "LDT", 3);
+        break;
+    case 0b11:
+        memcpy(desc_tmp, "IDT", 3);
+        break;
+    default:
+        memcpy(desc_tmp, "Unknown", 7);
+        break;
+    }
+    debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
+    sprintf_(descbuf, "Stack segment fault at address %#lx", Frame->rip);
+    CrashHandler::EHPrint(descbuf);
+    sprintf_(desc_ext, "External: %d", SelCode.External);
+    CrashHandler::EHPrint(desc_ext);
+    sprintf_(desc_table, "Table: %d (%s)", SelCode.Table, desc_tmp);
+    CrashHandler::EHPrint(desc_table);
+    sprintf_(desc_idx, "%s Index: %#x", desc_tmp, SelCode.Idx);
+    CrashHandler::EHPrint(desc_idx);
+    CrashHandler::EHPrint("\eDD2920System crashed!\n");
+    CrashHandler::EHPrint("More info about the exception:\n");
 }
 void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
@@ -494,50 +464,43 @@ void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
 }
 void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
-    // err("Kernel Exception");
-    // PageFaultErrorCode params = {.raw = (uint32_t)ERROR_CODE};
+    CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 
-    // // We can't use an allocator in exceptions (because that can cause another exception!) so, we'll just use a static buffer.
-    // staticbuffer(ret_err);
-    // staticbuffer(page_present);
-    // staticbuffer(page_write);
-    // staticbuffer(page_user);
-    // staticbuffer(page_reserved);
-    // staticbuffer(page_fetch);
-    // staticbuffer(page_protection);
-    // staticbuffer(page_shadow);
-    // staticbuffer(page_sgx);
+    // We can't use an allocator in exceptions (because that can cause another exception!) so, we'll just use a static buffer.
+    staticbuffer(ret_err);
+    staticbuffer(page_present);
+    staticbuffer(page_write);
+    staticbuffer(page_user);
+    staticbuffer(page_reserved);
+    staticbuffer(page_fetch);
+    staticbuffer(page_protection);
+    staticbuffer(page_shadow);
+    staticbuffer(page_sgx);
 
-    // CurrentDisplay->SetPrintColor(0xDD2920);
-    // SET_PRINT_MID((char *)"System crashed!", FHeight(12));
-    // CurrentDisplay->ResetPrintColor();
-    // sprintf_(ret_err, "An exception occurred at %#lx by %#lx", cr2.PFLA, RIP);
-    // SET_PRINT_MID((char *)ret_err, FHeight(11));
-    // sprintf_(page_present, "Page: %s", params.P ? "Present" : "Not Present");
-    // SET_PRINT_MID((char *)page_present, FHeight(10));
-    // sprintf_(page_write, "Write Operation: %s", params.W ? "Read-Only" : "Read-Write");
-    // SET_PRINT_MID((char *)page_write, FHeight(9));
-    // sprintf_(page_user, "Processor Mode: %s", params.U ? "User-Mode" : "Kernel-Mode");
-    // SET_PRINT_MID((char *)page_user, FHeight(8));
-    // sprintf_(page_reserved, "CPU Reserved Bits: %s", params.R ? "Reserved" : "Unreserved");
-    // SET_PRINT_MID((char *)page_reserved, FHeight(7));
-    // sprintf_(page_fetch, "Caused By An Instruction Fetch: %s", params.I ? "Yes" : "No");
-    // SET_PRINT_MID((char *)page_fetch, FHeight(6));
-    // sprintf_(page_protection, "Caused By A Protection-Key Violation: %s", params.PK ? "Yes" : "No");
-    // SET_PRINT_MID((char *)page_protection, FHeight(5));
-    // sprintf_(page_shadow, "Caused By A Shadow Stack Access: %s", params.SS ? "Yes" : "No");
-    // SET_PRINT_MID((char *)page_shadow, FHeight(4));
-    // sprintf_(page_sgx, "Caused By An SGX Violation: %s", params.SGX ? "Yes" : "No");
-    // SET_PRINT_MID((char *)page_sgx, FHeight(3));
-    // if (ERROR_CODE & 0x00000008)
-    // {
-    //     SET_PRINT_MID((char *)"One or more page directory entries contain reserved bits which are set to 1.", FHeight(2));
-    // }
-    // else
-    // {
-    //     SET_PRINT_MID((char *)pagefault_message[ERROR_CODE & 0b111], FHeight(2));
-    // }
-    // err("\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", page_present, page_write, page_user, page_reserved, page_fetch, page_protection, page_shadow, page_sgx);
+    CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
+    sprintf_(ret_err, "An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+    CrashHandler::EHPrint(ret_err);
+    sprintf_(page_present, "Page: %s\n", params.P ? "Present" : "Not Present");
+    CrashHandler::EHPrint(page_present);
+    sprintf_(page_write, "Write Operation: %s\n", params.W ? "Read-Only" : "Read-Write");
+    CrashHandler::EHPrint(page_write);
+    sprintf_(page_user, "Processor Mode: %s\n", params.U ? "User-Mode" : "Kernel-Mode");
+    CrashHandler::EHPrint(page_user);
+    sprintf_(page_reserved, "CPU Reserved Bits: %s\n", params.R ? "Reserved" : "Unreserved");
+    CrashHandler::EHPrint(page_reserved);
+    sprintf_(page_fetch, "Caused By An Instruction Fetch: %s\n", params.I ? "Yes" : "No");
+    CrashHandler::EHPrint(page_fetch);
+    sprintf_(page_protection, "Caused By A Protection-Key Violation: %s\n", params.PK ? "Yes" : "No");
+    CrashHandler::EHPrint(page_protection);
+    sprintf_(page_shadow, "Caused By A Shadow Stack Access: %s\n", params.SS ? "Yes" : "No");
+    CrashHandler::EHPrint(page_shadow);
+    sprintf_(page_sgx, "Caused By An SGX Violation: %s\n", params.SGX ? "Yes" : "No");
+    CrashHandler::EHPrint(page_sgx);
+    if (Frame->ErrorCode & 0x00000008)
+        CrashHandler::EHPrint("One or more page directory entries contain reserved bits which are set to 1.\n");
+    else
+        CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
+    error("\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", page_present, page_write, page_user, page_reserved, page_fetch, page_protection, page_shadow, page_sgx);
 }
 void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("x87 floating point exception"); }
 void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Alignment check exception"); }
@@ -549,7 +512,8 @@ void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Unknown except
 
 void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
-    switch (Frame->int_num)
+    fixme("Handling user mode exception");
+    switch (Frame->InterruptNumber)
     {
     case CPU::x64::DivideByZero:
     {

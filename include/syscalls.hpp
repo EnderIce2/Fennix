@@ -8,11 +8,11 @@ typedef struct SyscallsRegs
 #if defined(__amd64__)
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
     uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
-    uint64_t int_num, error_code, rip, cs, rflags, rsp, ss;
+    uint64_t InterruptNumber, ErrorCode, rip, cs, rflags, rsp, ss;
 #elif defined(__i386__)
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
     uint64_t ebp, edi, esi, edx, ecx, ebx, eax;
-    uint64_t int_num, error_code, eip, cs, eflags, esp, ss;
+    uint64_t InterruptNumber, ErrorCode, eip, cs, eflags, esp, ss;
 #elif defined(__aarch64__)
 #endif
 } SyscallsRegs;

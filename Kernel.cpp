@@ -80,8 +80,7 @@ EXTERNC void Entry(BootInfo *Info)
     KPrint("Initializing timer");
     Interrupts::InitializeTimer();
     KPrint("\e058C19######## \eE85230END \e058C19########");
-    // CPU::Interrupts(CPU::Enable);
-    asmv("int $0x1");
+    CPU::Interrupts(CPU::Enable);
     while (1)
         CPU::Halt();
 }

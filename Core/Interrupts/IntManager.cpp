@@ -70,8 +70,8 @@ namespace Interrupts
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        if (RegisteredEvents[Frame->int_num])
-            RegisteredEvents[Frame->int_num]->OnInterruptReceived(Frame);
+        if (RegisteredEvents[Frame->InterruptNumber])
+            RegisteredEvents[Frame->InterruptNumber]->OnInterruptReceived(Frame);
 
         if (apic)
         {
@@ -109,7 +109,7 @@ namespace Interrupts
 #if defined(__amd64__)
     void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
-        warn("Unhandled interrupt received %#lx", Frame->int_num);
+        warn("Unhandled interrupt received %#lx", Frame->InterruptNumber);
 #elif defined(__i386__)
     void Handler::OnInterruptReceived(void *Frame);
     {
