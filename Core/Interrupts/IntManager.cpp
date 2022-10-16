@@ -41,7 +41,9 @@ namespace Interrupts
         InterruptDescriptorTable::Init(0);
         InitializeSystemCalls();
 #elif defined(__i386__)
+        warn("i386 is not supported yet");
 #elif defined(__aarch64__)
+        warn("aarch64 is not supported yet");
 #endif
     }
 
@@ -59,15 +61,20 @@ namespace Interrupts
             // TODO: PIC
         }
 #elif defined(__i386__)
+        warn("i386 is not supported yet");
 #elif defined(__aarch64__)
+        warn("aarch64 is not supported yet");
 #endif
     }
 
     void InitializeTimer()
     {
 #if defined(__amd64__)
+
 #elif defined(__i386__)
+        warn("i386 is not supported yet");
 #elif defined(__aarch64__)
+        warn("aarch64 is not supported yet");
 #endif
     }
 
@@ -109,20 +116,5 @@ namespace Interrupts
         debug("Unregistering interrupt handler for IRQ%d", InterruptNumber - 32);
         if (RegisteredEvents->DeleteNode(InterruptNumber) == 0xdeadbeef)
             warn("Node %d not found", InterruptNumber);
-    }
-
-#if defined(__amd64__)
-    void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-    {
-        trace("Unhandled interrupt IRQ%d", Frame->InterruptNumber - 32);
-#elif defined(__i386__)
-    void Handler::OnInterruptReceived(void *Frame);
-    {
-        trace("Unhandled interrupt received");
-#elif defined(__aarch64__)
-    void Handler::OnInterruptReceived(void *Frame);
-    {
-        trace("Unhandled interrupt received");
-#endif
     }
 }
