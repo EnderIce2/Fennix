@@ -26,7 +26,7 @@ namespace GlobalDescriptorTable
         0,
     };
 
-    void Init(int Core)
+    __attribute__((no_stack_protector)) void Init(int Core)
     {
         CPU::x64::lgdt(&gdt);
 

@@ -53,13 +53,13 @@ void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame);
 
 namespace CrashHandler
 {
-    void printfWrapper(char c, void *unused)
+    __attribute__((no_stack_protector)) void printfWrapper(char c, void *unused)
     {
         Display->Print(c, 255, true);
         UNUSED(unused);
     }
 
-    void EHPrint(const char *Format, ...)
+    __attribute__((no_stack_protector)) void EHPrint(const char *Format, ...)
     {
         va_list args;
         va_start(args, Format);
@@ -67,7 +67,7 @@ namespace CrashHandler
         va_end(args);
     }
 
-    void Handle(void *Data)
+    __attribute__((no_stack_protector)) void Handle(void *Data)
     {
         CPU::Interrupts(CPU::Disable);
 

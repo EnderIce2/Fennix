@@ -16,7 +16,7 @@
 #include "../crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
+extern "C" __attribute__((no_stack_protector)) void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
 
 namespace Interrupts
 {
