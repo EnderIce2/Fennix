@@ -5,21 +5,8 @@
 
 #include "gdt.hpp"
 
-// TODO: IMPLEMENT "MainInterruptHandler"
-extern "C" void MainInterruptHandler(void *Data)
-{
-    debug("Interrupt: %p", Data);
-    asmv("cli");
-    asmv("hlt");
-}
-
-// TODO: IMPLEMENT "ExceptionHandler"
-extern "C" void ExceptionHandler(void *Data)
-{
-    debug("Exception: %p", Data);
-    asmv("cli");
-    asmv("hlt");
-}
+extern "C" void MainInterruptHandler(void *Data);
+extern "C" void ExceptionHandler(void *Data);
 
 namespace InterruptDescriptorTable
 {

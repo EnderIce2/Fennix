@@ -1169,6 +1169,129 @@ namespace CPU
             uint64_t raw;
         } CR8;
 
+        typedef union EFER
+        {
+            struct
+            {
+                /** @brief Enable syscall & sysret instructions in 64-bit mode. */
+                uint64_t SCE : 1;
+                /** @brief Reserved */
+                uint64_t Reserved0 : 7;
+                /** @brief Enable long mode. */
+                uint64_t LME : 1;
+                /** @brief Reserved */
+                uint64_t Reserved1 : 1;
+                /** @brief Indicates long. */
+                uint64_t LMA : 1;
+                /** @brief Enable No-Execute Bit */
+                uint64_t NXE : 1;
+                /** @brief Enable Secure Virtual Machine */
+                uint64_t SVME : 1;
+                /** @brief Enable Long Mode Segment Limit */
+                uint64_t LMSLE : 1;
+                /** @brief Enable Fast FXSAVE/FXRSTOR */
+                uint64_t FFXSR : 1;
+                /** @brief Enable Translation Cache Extension */
+                uint64_t TCE : 1;
+                /** @brief Reserved */
+                uint64_t Reserved2 : 32;
+            };
+            uint64_t raw;
+        } __attribute__((packed)) EFER;
+
+        // ! TODO: UNTESTED!
+        typedef union DR7
+        {
+            struct
+            {
+                /** @brief Local DR0 Breakpoint (0) */
+                uint64_t LocalDR0 : 1;
+                /** @brief Global DR0 Breakpoint (1) */
+                uint64_t GlobalDR0 : 1;
+                /** @brief Local DR1 Breakpoint (2) */
+                uint64_t LocalDR1 : 1;
+                /** @brief Global DR1 Breakpoint (3) */
+                uint64_t GlobalDR1 : 1;
+                /** @brief Local DR2 Breakpoint (4) */
+                uint64_t LocalDR2 : 1;
+                /** @brief Global DR2 Breakpoint (5) */
+                uint64_t GlobalDR2 : 1;
+                /** @brief Local DR3 Breakpoint (6) */
+                uint64_t LocalDR3 : 1;
+                /** @brief Global DR3 Breakpoint (7) */
+                uint64_t GlobalDR3 : 1;
+                /** @brief Reserved [7 - (16-17)] */
+                uint64_t Reserved : 9;
+                /** @brief Conditions for DR0 (16-17) */
+                uint64_t ConditionsDR0 : 1;
+                /** @brief Size of DR0 Breakpoint (18-19) */
+                uint64_t SizeDR0 : 1;
+                /** @brief Conditions for DR1 (20-21) */
+                uint64_t ConditionsDR1 : 1;
+                /** @brief Size of DR1 Breakpoint (22-23) */
+                uint64_t SizeDR1 : 1;
+                /** @brief Conditions for DR2 (24-25) */
+                uint64_t ConditionsDR2 : 1;
+                /** @brief Size of DR2 Breakpoint (26-27) */
+                uint64_t SizeDR2 : 1;
+                /** @brief Conditions for DR3 (28-29) */
+                uint64_t ConditionsDR3 : 1;
+                /** @brief Size of DR3 Breakpoint (30-31) */
+                uint64_t SizeDR3 : 1;
+            };
+            uint64_t raw;
+        } DR7;
+
+        typedef union PageFaultErrorCode
+        {
+            struct
+            {
+                /** @brief When set, the page fault was caused by a page-protection violation. When not set, it was caused by a non-present page. */
+                uint64_t P : 1;
+                /** @brief When set, the page fault was caused by a write access. When not set, it was caused by a read access. */
+                uint64_t W : 1;
+                /** @brief When set, the page fault was caused while CPL = 3. This does not necessarily mean that the page fault was a privilege violation. */
+                uint64_t U : 1;
+                /** @brief When set, one or more page directory entries contain reserved bits which are set to 1. This only applies when the PSE or PAE flags in CR4 are set to 1. */
+                uint64_t R : 1;
+                /** @brief When set, the page fault was caused by an instruction fetch. This only applies when the No-Execute bit is supported and enabled. */
+                uint64_t I : 1;
+                /** @brief When set, the page fault was caused by a protection-key violation. The PKRU register (for user-mode accesses) or PKRS MSR (for supervisor-mode accesses) specifies the protection key rights. */
+                uint64_t PK : 1;
+                /** @brief When set, the page fault was caused by a shadow stack access. */
+                uint64_t SS : 1;
+                /** @brief Reserved */
+                uint64_t _reserved0 : 8;
+                /** @brief When set, the fault was due to an SGX violation. The fault is unrelated to ordinary paging. */
+                uint64_t SGX : 1;
+                /** @brief Reserved */
+                uint64_t _reserved1 : 16;
+            };
+            uint64_t raw;
+        } PageFaultErrorCode;
+
+        // ! TODO: UNTESTED!
+        typedef union SelectorErrorCode
+        {
+            struct
+            {
+                /** @brief When set, the exception originated externally to the processor. */
+                uint64_t External : 1;
+                /** @brief IDT/GDT/LDT Table
+                 *  @details 0b00 - The Selector Index references a descriptor in the GDT.
+                 *  @details 0b01 - The Selector Index references a descriptor in the IDT.
+                 *  @details 0b10 - The Selector Index references a descriptor in the LDT.
+                 *  @details 0b11 - The Selector Index references a descriptor in the IDT.
+                 */
+                uint64_t Table : 2;
+                /** @brief The index in the GDT, IDT or LDT. */
+                uint64_t Idx : 13;
+                /** @brief Reserved */
+                uint64_t Reserved : 16;
+            };
+            uint64_t raw;
+        } SelectorErrorCode;
+
         static inline void lgdt(void *gdt)
         {
 #if defined(__amd64__)

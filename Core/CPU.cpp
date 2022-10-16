@@ -224,41 +224,48 @@ namespace CPU
 			cr4.OSXMMEXCPT = 1;
 		}
 
+		if (!BSP)
+			KPrint("Enabling CPU cache.");
 		// Enable cpu cache but... how to use it?
 		cr0.NW = 0;
 		cr0.CD = 0;
 
-		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
+		CPU::x64::writecr0(cr0);
+
+		debug("Enabling UMIP, SMEP & SMAP support...");
+		CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
+		if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
 		{
-			debug("Enabling UMIP, SMEP & SMAP support...");
-			CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-			if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
-			{
-				if (!BSP)
-					KPrint("UMIP is supported.");
-				fixme("Not going to enable UMIP.");
-				// cr4.UMIP = 1;
-			}
-			if (rdx & CPU::x64::CPUID_FEAT_RDX_SMEP)
-			{
-				if (!BSP)
-					KPrint("SMEP is supported.");
-				cr4.SMEP = 1;
-			}
-			if (rdx & CPU::x64::CPUID_FEAT_RDX_SMAP)
-			{
-				if (!BSP)
-					KPrint("SMAP is supported.");
-				cr4.SMAP = 1;
-			}
-			CPU::x64::writecr4(cr4);
+			if (!BSP)
+				KPrint("UMIP is supported.");
+			fixme("Not going to enable UMIP.");
+			// cr4.UMIP = 1;
 		}
+		if (rdx & CPU::x64::CPUID_FEAT_RDX_SMEP)
+		{
+			if (!BSP)
+				KPrint("SMEP is supported.");
+			cr4.SMEP = 1;
+		}
+		if (rdx & CPU::x64::CPUID_FEAT_RDX_SMAP)
+		{
+			if (!BSP)
+				KPrint("SMAP is supported.");
+			cr4.SMAP = 1;
+		}
+		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
+			strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+			CPU::x64::writecr4(cr4);
 		else
 		{
 			if (!BSP)
-				KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
+			{
+				if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
+					KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
+				else if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+					KPrint("QEMU (TCG) detected. Not using UMIP, SMEP & SMAP");
+			}
 		}
-		CPU::x64::writecr0(cr0);
 		debug("Enabling PAT support...");
 		CPU::x64::wrmsr(CPU::x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)

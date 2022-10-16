@@ -70,6 +70,7 @@ extern "C" void StartCPU()
 
     // Initialize GDT and IDT
     Interrupts::Initialize(CPU_ID);
+    ((APIC::APIC *)Interrupts::apic)->RedirectIRQs(CPU_ID);
 
     CPU::Interrupts(CPU::Enable);
     KPrint("CPU %d is online", CPU_ID);

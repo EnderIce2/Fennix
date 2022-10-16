@@ -52,7 +52,6 @@ namespace APIC
         void RedirectIRQs(int CPU = 0);
         void IPI(uint8_t CPU, uint32_t InterruptNumber);
         void OneShot(uint32_t Vector, uint64_t Miliseconds);
-        bool APICSupported();
         uint32_t IOGetMaxRedirect(uint32_t APICID);
         void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
         void RedirectIRQ(int CPU, uint8_t IRQ, int Status);

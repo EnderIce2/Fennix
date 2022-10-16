@@ -850,7 +850,7 @@ namespace PCI
         {
             DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uint64_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
             Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
-            trace("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
+            trace("PCI Entry %d Address:%#lx BUS:%#lx-%#lx", t, NewDeviceConfig->BaseAddress,
                   NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
             for (uint64_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
                 EnumerateBus(NewDeviceConfig->BaseAddress, Bus);

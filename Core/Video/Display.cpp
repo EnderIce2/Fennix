@@ -1,5 +1,6 @@
 #include <display.hpp>
 #include <lock.hpp>
+#include <uart.hpp>
 #include <debug.h>
 
 extern uint64_t _binary_Files_ter_powerline_v12n_psf_start;
@@ -10,9 +11,11 @@ NEWLOCK(PrintLock);
 
 namespace Video
 {
-    char Display::Print(char Char, int Index)
+    char Display::Print(char Char, int Index, bool WriteToUART)
     {
         SMARTLOCK(PrintLock);
+        if (WriteToUART)
+            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write((char)Char);
 
         if (this->ColorIteration)
         {

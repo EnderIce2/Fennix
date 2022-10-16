@@ -4,9 +4,7 @@
 #include <debug.h>
 #include <io.h>
 
-// #include "../timer.h"
-// #include "apic.hpp"
-// #include "smp.hpp"
+#include "cpu/apic.hpp"
 
 #define ACPI_TIMER 0x0001
 #define ACPI_BUSMASTER 0x0010
@@ -31,7 +29,7 @@ namespace ACPI
 #define ACPI_GAS_IO 1
 #define ACPI_GAS_PCI 2
 
-    void DSDT::SCIHandler(CPU::x64::TrapFrame *regs)
+    void DSDT::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         debug("SCI Handle Triggered");
         uint16_t event = this->GetSCIevent();
@@ -58,7 +56,7 @@ namespace ACPI
             return;
         }
         }
-        UNUSED(regs);
+        UNUSED(Frame);
     }
 
     void DSDT::Shutdown()
@@ -163,24 +161,12 @@ namespace ACPI
         GetSCIevent();
     }
 
-    void DSDT::InitSCI()
-    {
-        // this should be done for all CPUs
-        if (ACPIShutdownSupported)
-        {
-            debug("Registering SCI Handler to vector IRQ%d", acpi->FADT->SCI_Interrupt);
-            this->RegisterSCIEvents();
-            // RegisterInterrupt(this->SCIHandler, acpi->FADT->SCI_Interrupt + CPU::x64::IRQ0, true, true);
-        }
-    }
-
-    DSDT::DSDT(ACPI *acpi)
+    DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt + CPU::x64::IRQ0)
     {
         uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);
         uint8_t *S5Address = (uint8_t *)(Address) + 36;
         ACPI::ACPI::ACPIHeader *Header = (ACPI::ACPI::ACPIHeader *)Address;
         uint64_t Length = Header->Length;
-        Address *= 2;
         while (Length-- > 0)
         {
             if (!memcmp(S5Address, "_S5_", 4))
@@ -213,6 +199,8 @@ namespace ACPI
             SCI_EN = 1;
             trace("ACPI Shutdown is supported");
             ACPIShutdownSupported = true;
+            this->RegisterSCIEvents();
+            ((APIC::APIC *)Interrupts::apic)->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);
             return;
         }
         warn("Failed to parse _S5 in ACPI");

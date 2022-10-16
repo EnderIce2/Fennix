@@ -246,7 +246,7 @@ namespace ACPI
         ~MADT();
     };
 
-    class DSDT
+    class DSDT : public Interrupts::Handler
     {
     private:
         uint32_t SMI_CMD = 0;
@@ -262,10 +262,17 @@ namespace ACPI
 
         ACPI *acpi;
 
+#if defined(__amd64__)
+        void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
+#elif defined(__i386__)
+        void OnInterruptReceived(void *Frame);
+#elif defined(__aarch64__)
+        void OnInterruptReceived(void *Frame);
+#endif
+
     public:
         bool ACPIShutdownSupported = false;
 
-        void SCIHandler(CPU::x64::TrapFrame *regs);
         void RegisterSCIEvents();
         void SetSCIevent(uint16_t value);
         uint16_t GetSCIevent();
@@ -273,7 +280,6 @@ namespace ACPI
         void Reboot();
         void Shutdown();
 
-        void InitSCI();
         DSDT(ACPI *acpi);
         ~DSDT();
     };

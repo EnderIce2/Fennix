@@ -28,14 +28,14 @@ extern "C" int printf_(const char *format, ...);
 extern "C" int vprintf_(const char *format, va_list arg);
 #endif
 
-EXTERNC void KPrint(const char *format, ...)
+EXTERNC void KPrint(const char *Format, ...)
 {
     SMARTLOCK(KernelLock);
     Time tm = ReadClock();
     printf_("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     va_list args;
-    va_start(args, format);
-    vprintf_(format, args);
+    va_start(args, Format);
+    vprintf_(Format, args);
     va_end(args);
     putchar('\n');
     Display->SetBuffer(0);
@@ -82,7 +82,11 @@ EXTERNC void Entry(BootInfo *Info)
     Interrupts::Enable();
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
+    KPrint("Initializing timer");
+    Interrupts::InitializeTimer();
     KPrint("\e058C19######## \eE85230END \e058C19########");
+    // CPU::Interrupts(CPU::Enable);
+    asmv("int $0x1");
     while (1)
         CPU::Halt();
 }

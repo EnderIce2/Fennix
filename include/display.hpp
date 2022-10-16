@@ -5,6 +5,7 @@
 
 #include <boot/binfo.h>
 #include <memory.hpp>
+#include <debug.h>
 #include <cstring>
 
 namespace Video
@@ -82,6 +83,7 @@ namespace Video
         uint64_t Size;
         uint32_t Color;
         uint32_t CursorX, CursorY;
+        long Checksum;
     };
 
     class Display
@@ -89,7 +91,7 @@ namespace Video
     private:
         BootInfo::FramebufferInfo framebuffer;
         Font *CurrentFont;
-        ScreenBuffer *Buffers[16];
+        ScreenBuffer *Buffers[256];
         bool ColorIteration = false;
         int ColorPickerIteration = 0;
 
@@ -98,17 +100,30 @@ namespace Video
         void SetCurrentFont(Font *Font) { CurrentFont = Font; }
         void CreateBuffer(uint32_t Width, uint32_t Height, int Index)
         {
+            if (Width == 0 && Height == 0)
+            {
+                Width = this->framebuffer.Width;
+                Height = this->framebuffer.Height;
+                debug("No width and height specified, using %ldx%ld", Width, Height);
+            }
+
             uint64_t Size = this->framebuffer.Pitch * Height;
-            ScreenBuffer *buffer = new ScreenBuffer;
-            buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
-            buffer->Width = Width;
-            buffer->Height = Height;
-            buffer->Size = Size;
-            buffer->Color = 0x000000;
-            buffer->CursorX = 0;
-            buffer->CursorY = 0;
-            this->Buffers[Index] = buffer;
-            memset(buffer->Buffer, 0, Size);
+            if (this->Buffers[Index]->Checksum != 0xDEAD5C9EE7)
+            {
+                ScreenBuffer *buffer = new ScreenBuffer;
+                buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
+                buffer->Width = Width;
+                buffer->Height = Height;
+                buffer->Size = Size;
+                buffer->Color = 0xFFFFFF;
+                buffer->CursorX = 0;
+                buffer->CursorY = 0;
+                this->Buffers[Index] = buffer;
+                memset(this->Buffers[Index]->Buffer, 0, Size);
+                this->Buffers[Index]->Checksum = 0xDEAD5C9EE7;
+            }
+            else
+                warn("Buffer %d already exists, skipping creation", Index);
         }
         void SetBuffer(int Index) { memcpy(this->framebuffer.BaseAddress, this->Buffers[Index]->Buffer, this->Buffers[Index]->Size); }
         void ClearBuffer(int Index) { memset(this->Buffers[Index]->Buffer, 0, this->Buffers[Index]->Size); }
@@ -117,6 +132,7 @@ namespace Video
             if (this->Buffers[Index] == nullptr)
                 return;
             KernelAllocator.FreePages(this->Buffers[Index]->Buffer, TO_PAGES(this->Buffers[Index]->Size));
+            this->Buffers[Index]->Checksum = 0; // Making sure that the buffer is not used anymore
             delete this->Buffers[Index];
         }
 
@@ -156,7 +172,7 @@ namespace Video
             }
         }
 
-        char Print(char Char, int Index);
+        char Print(char Char, int Index, bool WriteToUART = false);
         Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont = true);
         ~Display();
     };
