@@ -26,13 +26,14 @@ namespace Video
                 this->Buffers[Index]->Color = (this->Buffers[Index]->Color << 4) | (Char - 'A' + 10);
             else
                 this->Buffers[Index]->Color = 0;
-
-            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
+            if (WriteToUART)
+                UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
             this->ColorPickerIteration++;
             if (this->ColorPickerIteration == 6)
             {
                 this->ColorPickerIteration = 0;
-                UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(']');
+                if (WriteToUART)
+                    UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(']');
                 this->ColorIteration = false;
             }
             return Char;
@@ -45,7 +46,8 @@ namespace Video
         {
         case '\e':
         {
-            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('[');
+            if (WriteToUART)
+                UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('[');
             this->ColorIteration = true;
             return Char;
         }
