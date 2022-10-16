@@ -14,8 +14,6 @@ namespace Video
     char Display::Print(char Char, int Index, bool WriteToUART)
     {
         SMARTLOCK(PrintLock);
-        if (WriteToUART)
-            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write((char)Char);
 
         if (this->ColorIteration)
         {
@@ -29,19 +27,25 @@ namespace Video
             else
                 this->Buffers[Index]->Color = 0;
 
+            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
             this->ColorPickerIteration++;
             if (this->ColorPickerIteration == 6)
             {
                 this->ColorPickerIteration = 0;
+                UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(']');
                 this->ColorIteration = false;
             }
             return Char;
         }
 
+        if (WriteToUART)
+            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
+
         switch (Char)
         {
         case '\e':
         {
+            UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('[');
             this->ColorIteration = true;
             return Char;
         }
