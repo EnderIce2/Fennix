@@ -67,7 +67,7 @@ public:
             Index++;
             Index %= HashMapCapacity;
         }
-        return nullptr;
+        return 0xdeadbeef;
     }
 
     V Get(int Key)
@@ -78,14 +78,14 @@ public:
         while (Nodes[Index] != nullptr)
         {
             if (Iterate++ > HashMapCapacity)
-                return 0;
+                return 0xdeadbeef;
 
             if (Nodes[Index]->Key == Key)
                 return Nodes[Index]->Value;
             Index++;
             Index %= HashMapCapacity;
         }
-        return 0;
+        return 0xdeadbeef;
     }
 
     int Size() { return HashMapSize; }

@@ -10,7 +10,8 @@
 			"limine.h": "c",
 			"types.h": "c",
 			"binfo.h": "c",
-			"liballoc_1_1.h": "c"
+			"liballoc_1_1.h": "c",
+			"cstring": "cpp"
 		}
 	}
 }

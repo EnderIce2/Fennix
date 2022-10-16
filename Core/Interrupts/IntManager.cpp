@@ -1,6 +1,7 @@
 #include <interrupts.hpp>
 
 #include <syscalls.hpp>
+#include <hashmap.hpp>
 
 #if defined(__amd64__)
 #include "../Architecture/amd64/cpu/gdt.hpp"
@@ -20,6 +21,8 @@ extern "C" __attribute__((no_stack_protector)) void ExceptionHandler(void *Data)
 
 namespace Interrupts
 {
+    HashMap<int, uint64_t> *RegisteredEvents;
+
 #if defined(__amd64__)
     /* APIC::APIC */ void *apic = nullptr;
 #elif defined(__i386__)
@@ -29,6 +32,10 @@ namespace Interrupts
 
     void Initialize(int Core)
     {
+        static int once = 0;
+        if (!once++)
+            RegisteredEvents = new HashMap<int, uint64_t>;
+
 #if defined(__amd64__)
         GlobalDescriptorTable::Init(0);
         InterruptDescriptorTable::Init(0);
@@ -64,14 +71,16 @@ namespace Interrupts
 #endif
     }
 
-    Vector<Handler *> RegisteredEvents;
-
     extern "C" void MainInterruptHandler(void *Data)
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        if (RegisteredEvents[Frame->InterruptNumber])
-            RegisteredEvents[Frame->InterruptNumber]->OnInterruptReceived(Frame);
+
+        Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
+        if (handler != (Handler *)0xdeadbeef)
+            handler->OnInterruptReceived(Frame);
+        else
+            error("Unhandled IRQ%d on CPU %d", Frame->InterruptNumber - 32, ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24);
 
         if (apic)
         {
@@ -90,34 +99,30 @@ namespace Interrupts
 
     Handler::Handler(int InterruptNumber)
     {
-        debug("Handler::Handler(%d)", InterruptNumber);
+        debug("Registering interrupt handler for IRQ%d", InterruptNumber - 32);
         this->InterruptNumber = InterruptNumber;
-        RegisteredEvents.push_back(this);
+        RegisteredEvents->AddNode(InterruptNumber, (uint64_t)this);
     }
 
     Handler::~Handler()
     {
-        for (uint64_t i = 0; i < RegisteredEvents.size(); i++)
-            if (RegisteredEvents[i] == this)
-            {
-                debug("Handler::~Handler(%d)", InterruptNumber);
-                RegisteredEvents.remove(i);
-                return;
-            }
+        debug("Unregistering interrupt handler for IRQ%d", InterruptNumber - 32);
+        if (RegisteredEvents->DeleteNode(InterruptNumber) == 0xdeadbeef)
+            warn("Node %d not found", InterruptNumber);
     }
 
 #if defined(__amd64__)
     void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
-        warn("Unhandled interrupt received %#lx", Frame->InterruptNumber);
+        trace("Unhandled interrupt IRQ%d", Frame->InterruptNumber - 32);
 #elif defined(__i386__)
     void Handler::OnInterruptReceived(void *Frame);
     {
-        warn("Unhandled interrupt received");
+        trace("Unhandled interrupt received");
 #elif defined(__aarch64__)
     void Handler::OnInterruptReceived(void *Frame);
     {
-        warn("Unhandled interrupt received");
+        trace("Unhandled interrupt received");
 #endif
     }
 }
