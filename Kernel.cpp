@@ -20,13 +20,8 @@ PCI::PCI *PCIManager = nullptr;
 
 Time BootClock;
 
-// For the Display class. Printing on first buffer.
+// For the Display class. Printing on first buffer as default.
 extern "C" void putchar(char c) { Display->Print(c, 0); }
-
-#ifdef __debug_vscode__
-extern "C" int printf_(const char *format, ...);
-extern "C" int vprintf_(const char *format, va_list arg);
-#endif
 
 EXTERNC void KPrint(const char *Format, ...)
 {

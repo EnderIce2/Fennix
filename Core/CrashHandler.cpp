@@ -51,12 +51,6 @@ void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame);
 void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame);
 #endif
 
-#ifdef __debug_vscode__
-extern "C" int printf_(const char *format, ...);
-extern "C" int vprintf_(const char *format, va_list arg);
-extern "C" int sprintf_(char *s, const char *format, ...);
-#endif
-
 namespace CrashHandler
 {
     void printfWrapper(char c, void *unused)
