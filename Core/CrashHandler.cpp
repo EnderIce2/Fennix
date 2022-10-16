@@ -500,7 +500,6 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
         CrashHandler::EHPrint("One or more page directory entries contain reserved bits which are set to 1.\n");
     else
         CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
-    error("\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s", page_present, page_write, page_user, page_reserved, page_fetch, page_protection, page_shadow, page_sgx);
 }
 void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("x87 floating point exception"); }
 void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Alignment check exception"); }
