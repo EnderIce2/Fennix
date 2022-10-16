@@ -33,7 +33,10 @@
                 "-pipe",
                 "-mcmodel=kernel",
                 "-msoft-float",
-                "-fno-builtin"
+                "-fno-builtin",
+                "-ffreestanding",
+                "-nostdinc",
+                "-nostdinc++"
             ]
         }
     ],

@@ -39,8 +39,7 @@
 #ifndef PRINTF_H_
 #define PRINTF_H_
 
-#include <stdarg.h>
-#include <stddef.h>
+#include <types.h>
 
 #ifdef __cplusplus
 extern "C"
