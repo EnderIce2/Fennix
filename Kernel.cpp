@@ -1,5 +1,6 @@
 #include "kernel.h"
 
+#include <boot/protocols/multiboot2.h>
 #include <interrupts.hpp>
 #include <memory.hpp>
 #include <string.h>
@@ -91,9 +92,38 @@ EXTERNC void arm64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x
         CPU::Halt();
 }
 
-EXTERNC void x32Entry(uint64_t Data)
+struct multiboot_info
+{
+    multiboot_uint32_t Size;
+    multiboot_uint32_t Reserved;
+    struct multiboot_tag *Tag;
+};
+
+EXTERNC void x32Entry(multiboot_info *Info, unsigned int Magic)
 {
     trace("Hello, World!");
-    while (1)
-        CPU::Halt();
+
+    if (Info == NULL || Magic == NULL)
+    {
+        if (Magic == NULL)
+        {
+            error("Multiboot magic is NULL");
+        }
+        if (Info == NULL)
+        {
+            error("Multiboot info is NULL");
+        }
+        CPU::Stop();
+    }
+    else if (Magic != MULTIBOOT2_BOOTLOADER_MAGIC)
+    {
+        error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
+        trace("Hello, World!");
+        CPU::Stop();
+    }
+
+    ((unsigned char *)0xb8000)[2 * (80) * (25) - 2] = 'M';
+    ((unsigned char *)0xb8000)[2 * (80) * (25) - 1] = 4;
+
+    CPU::Stop();
 }
