@@ -138,11 +138,11 @@ namespace Interrupts
     {
         trace("Unhandled interrupt IRQ%d", Frame->InterruptNumber - 32);
 #elif defined(__i386__)
-    void Handler::OnInterruptReceived(void *Frame);
+    void Handler::OnInterruptReceived(void *Frame)
     {
         trace("Unhandled interrupt received");
 #elif defined(__aarch64__)
-    void Handler::OnInterruptReceived(void *Frame);
+    void Handler::OnInterruptReceived(void *Frame)
     {
         trace("Unhandled interrupt received");
 #endif
