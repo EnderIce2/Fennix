@@ -49,7 +49,8 @@ namespace APIC
 
     void APIC::Write(uint32_t Register, uint32_t Value)
     {
-        debug("APIC::Write(%#lx, %#lx)", Register, Value);
+        if (Register != APIC_EOI)
+            debug("APIC::Write(%#lx, %#lx)", Register, Value);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -216,7 +217,7 @@ namespace APIC
 
     void Timer::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
-        fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
     }
 
     Timer::Timer(APIC *apic) : Interrupts::Handler(CPU::x64::IRQ0)

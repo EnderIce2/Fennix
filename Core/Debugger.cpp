@@ -2,6 +2,9 @@
 
 #include <uart.hpp>
 #include <printf.h>
+#include <lock.hpp>
+
+NEWLOCK(DebuggerLock);
 
 using namespace UniversalAsynchronousReceiverTransmitter;
 
@@ -54,6 +57,7 @@ namespace SysDbg
 
     void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
+        SMARTLOCK(DebuggerLock);
         WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);

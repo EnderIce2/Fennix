@@ -72,7 +72,7 @@ extern "C" void StartCPU()
     CPU::Interrupts(CPU::Enable);
     KPrint("CPU %d is online", CPU_ID);
     CPUEnabled = true;
-    CPU::Stop();
+    CPU::Stop(); // Stop and surpress interrupts.
 }
 
 namespace SMP
