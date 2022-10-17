@@ -136,17 +136,48 @@ namespace CPU
     /**
      * @brief Pause the CPU
      */
-    void Pause();
+    static inline void Pause()
+    {
+#if defined(__amd64__) || defined(__i386__)
+        asmv("pause");
+#elif defined(__aarch64__)
+        asmv("yield");
+#endif
+    }
 
     /**
      * @brief Stop the CPU (infinite loop)
      */
-    void Stop();
+    static inline void Stop()
+    {
+        while (1)
+        {
+#if defined(__amd64__) || defined(__i386__)
+            asmv("CPUStopLoop:\n"
+                 "cli\n"
+                 "hlt\n"
+                 "jmp CPUStopLoop");
+#elif defined(__aarch64__)
+            while (1)
+            {
+                asmv("msr daifset, #2");
+                asmv("wfe");
+            }
+#endif
+        }
+    }
 
     /**
      * @brief Halt the CPU
      */
-    void Halt();
+    static inline void Halt()
+    {
+#if defined(__amd64__) || defined(__i386__)
+        asmv("hlt");
+#elif defined(__aarch64__)
+        asmv("wfe");
+#endif
+    }
 
     /**
      * @brief Check if interrupts are enabled
@@ -1034,13 +1065,13 @@ namespace CPU
             uint64_t rbx; // Base
             uint64_t rax; // Accumulator
 
-            uint64_t InterruptNumber;    // Interrupt Number
-            uint64_t ErrorCode; // Error code
-            uint64_t rip;        // Instruction Pointer
-            uint64_t cs;         // Code Segment
-            RFLAGS rflags;       // Register Flags
-            uint64_t rsp;        // Stack Pointer
-            uint64_t ss;         // Stack Segment
+            uint64_t InterruptNumber; // Interrupt Number
+            uint64_t ErrorCode;       // Error code
+            uint64_t rip;             // Instruction Pointer
+            uint64_t cs;              // Code Segment
+            RFLAGS rflags;            // Register Flags
+            uint64_t rsp;             // Stack Pointer
+            uint64_t ss;              // Stack Segment
         } TrapFrame;
 
         typedef union CR0
