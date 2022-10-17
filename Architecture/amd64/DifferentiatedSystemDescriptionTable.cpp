@@ -32,11 +32,27 @@ namespace ACPI
     void DSDT::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         debug("SCI Handle Triggered");
-        uint16_t event = this->GetSCIevent();
-        debug("SCI Event: %#llx", event);
-        if (event & ACPI_TIMER)
-            event &= ~ACPI_TIMER; // Remove the ACPI timer flag.
-        switch (event)
+        uint16_t Event = 0;
+
+        {
+            uint16_t a = 0, b = 0;
+            if (acpi->FADT->PM1aEventBlock)
+            {
+                a = inw(acpi->FADT->PM1aEventBlock);
+                outw(acpi->FADT->PM1aEventBlock, a);
+            }
+            if (acpi->FADT->PM1bEventBlock)
+            {
+                b = inw(acpi->FADT->PM1bEventBlock);
+                outw(acpi->FADT->PM1bEventBlock, b);
+            }
+            Event = a | b;
+        }
+
+        debug("SCI Event: %#llx", Event);
+        if (Event & ACPI_TIMER)
+            Event &= ~ACPI_TIMER; // Remove the ACPI timer flag.
+        switch (Event)
         {
         case ACPI_POWER_BUTTON:
         {
@@ -52,7 +68,7 @@ namespace ACPI
         }
         default:
         {
-            warn("unknown event 0x%04p", event);
+            warn("unknown event 0x%04p", Event);
             return;
         }
         }
@@ -62,13 +78,7 @@ namespace ACPI
     void DSDT::Shutdown()
     {
         trace("Shutting down...");
-        if (!ACPIShutdownSupported)
-        {
-            outl(0xB004, 0x2000); // for qemu
-            outl(0x604, 0x2000);  // if qemu not working, bochs and older versions of qemu
-            outl(0x4004, 0x3400); // virtual box
-        }
-        else if (SCI_EN == 1)
+        if (SCI_EN == 1)
         {
             outw(acpi->FADT->PM1aControlBlock, (inw(acpi->FADT->PM1aControlBlock) & 0xE3FF) | ((SLP_TYPa << 10) | ACPI_SLEEP));
             if (acpi->FADT->PM1bControlBlock)
@@ -77,35 +87,11 @@ namespace ACPI
             if (PM1b_CNT)
                 outw(PM1b_CNT, SLP_TYPb | SLP_EN);
         }
-        CPU::Stop();
     }
 
     void DSDT::Reboot()
     {
         trace("Rebooting...");
-        if (!ACPIShutdownSupported)
-        {
-            uint8_t val = 0x02;
-            while (val & 0x02)
-                val = inb(0x64);
-            outb(0x64, 0xFE);
-
-            warn("Executing the second attempt to reboot...");
-
-            // second attempt to reboot
-            // https://wiki.osdev.org/Reboot
-            uint8_t temp;
-            asm volatile("cli");
-            do
-            {
-                temp = inb(0x64);
-                if (((temp) & (1 << (0))) != 0)
-                    inb(0x60);
-            } while (((temp) & (1 << (1))) != 0);
-            outb(0x64, 0xFE);
-
-            CPU::Stop();
-        }
         switch (acpi->FADT->ResetReg.AddressSpace)
         {
         case ACPI_GAS_MMIO:
@@ -126,39 +112,6 @@ namespace ACPI
             */
             break;
         }
-        CPU::Stop();
-    }
-
-    uint16_t DSDT::GetSCIevent()
-    {
-        uint16_t a = 0, b = 0;
-        if (acpi->FADT->PM1aEventBlock)
-        {
-            a = inw(acpi->FADT->PM1aEventBlock);
-            outw(acpi->FADT->PM1aEventBlock, a);
-        }
-        if (acpi->FADT->PM1bEventBlock)
-        {
-            b = inw(acpi->FADT->PM1bEventBlock);
-            outw(acpi->FADT->PM1bEventBlock, b);
-        }
-        return a | b;
-    }
-
-    void DSDT::SetSCIevent(uint16_t value)
-    {
-        uint16_t a = acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2);
-        uint16_t b = acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2);
-        if (acpi->FADT->PM1aEventBlock)
-            outw(a, value);
-        if (acpi->FADT->PM1bEventBlock)
-            outw(b, value);
-    }
-
-    void DSDT::RegisterSCIEvents()
-    {
-        this->SetSCIevent(ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_WAKE);
-        GetSCIevent();
     }
 
     DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt + CPU::x64::IRQ0)
@@ -199,8 +152,32 @@ namespace ACPI
             SCI_EN = 1;
             trace("ACPI Shutdown is supported");
             ACPIShutdownSupported = true;
-            this->RegisterSCIEvents();
-            ((APIC::APIC *)Interrupts::apic)->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);
+
+            uint16_t value = ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_WAKE;
+            {
+                uint16_t a = acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2);
+                uint16_t b = acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2);
+                debug("SCI Event: %#llx [a:%#x b:%#x]", value, a, b);
+                if (acpi->FADT->PM1aEventBlock)
+                    outw(a, value);
+                if (acpi->FADT->PM1bEventBlock)
+                    outw(b, value);
+            }
+
+            {
+                uint16_t a = 0, b = 0;
+                if (acpi->FADT->PM1aEventBlock)
+                {
+                    a = inw(acpi->FADT->PM1aEventBlock);
+                    outw(acpi->FADT->PM1aEventBlock, a);
+                }
+                if (acpi->FADT->PM1bEventBlock)
+                {
+                    b = inw(acpi->FADT->PM1bEventBlock);
+                    outw(acpi->FADT->PM1bEventBlock, b);
+                }
+            }
+            ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);
             return;
         }
         warn("Failed to parse _S5 in ACPI");

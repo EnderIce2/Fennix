@@ -1,7 +1,9 @@
 #include "apic.hpp"
 
+#include <memory.hpp>
 #include <cpu.hpp>
 #include <smp.hpp>
+#include <io.h>
 
 #include "../../../kernel.h"
 #include "../acpi.hpp"
@@ -33,14 +35,7 @@ namespace APIC
 
     uint32_t APIC::Read(uint32_t Register)
     {
-        // Too repetitive
-        if (Register != APIC_EOI &&
-            Register != APIC_ID &&
-            Register != APIC_TIMER &&
-            Register != APIC_TDCR &&
-            Register != APIC_TICR &&
-            Register != APIC_TCCR)
-            debug("APIC::Read(%#lx)", Register);
+        debug("APIC::Read(%#lx)", Register);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -54,13 +49,7 @@ namespace APIC
 
     void APIC::Write(uint32_t Register, uint32_t Value)
     {
-        // Too repetitive
-        if (Register != APIC_EOI &&
-            Register != APIC_TIMER &&
-            Register != APIC_TDCR &&
-            Register != APIC_TICR &&
-            Register != APIC_TCCR)
-            debug("APIC::Write(%#lx, %#lx)", Register, Value);
+        debug("APIC::Write(%#lx, %#lx)", Register, Value);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -176,7 +165,7 @@ namespace APIC
         this->RawRedirectIRQ(IRQ + 0x20, IRQ, 0, CPU, Status);
     }
 
-    APIC::APIC()
+    APIC::APIC(int Core)
     {
         uint32_t rcx;
         CPU::x64::cpuid(1, 0, 0, &rcx, 0);
@@ -195,9 +184,82 @@ namespace APIC
 
         this->Write(APIC_TPR, 0x0);
         this->Write(APIC_SVR, this->Read(APIC_SVR) | 0x100); // 0x1FF or 0x100 ? on https://wiki.osdev.org/APIC is 0x100
+
+        if (!this->x2APICSupported)
+        {
+            this->Write(APIC_DFR, 0xF0000000);
+            this->Write(APIC_LDR, this->Read(APIC_ID));
+        }
+
+        ACPI::MADT *madt = (ACPI::MADT *)PowerManager->GetMADT();
+
+        for (size_t i = 0; i < madt->nmi.size(); i++)
+        {
+            if (madt->nmi[i]->processor != 0xFF && Core != madt->nmi[i]->processor)
+                return;
+
+            uint32_t nmi = 0x402;
+            if (madt->nmi[i]->flags & 2)
+                nmi |= 1 << 13;
+            if (madt->nmi[i]->flags & 8)
+                nmi |= 1 << 15;
+            if (madt->nmi[i]->lint == 0)
+                this->Write(0x350, nmi);
+            else if (madt->nmi[i]->lint == 1)
+                this->Write(0x360, nmi);
+        }
     }
 
     APIC::~APIC()
+    {
+    }
+
+    void Timer::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    {
+        fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+    }
+
+    Timer::Timer(APIC *apic) : Interrupts::Handler(CPU::x64::IRQ0)
+    {
+        trace("Initializing APIC timer on CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        apic->Write(APIC::APIC::APIC_TDCR, 0x3);
+
+        int IOIn = inb(0x61);
+        IOIn = (IOIn & 0xFD) | 1;
+        outb(0x61, IOIn);
+        outb(0x43, 0b10110010);
+        outb(0x42, 155);
+        inb(0x60);
+        outb(0x42, 46);
+
+        apic->Write(APIC::APIC::APIC_TICR, 0xFFFFFFFF);
+
+        IOIn = inb(0x61);
+        IOIn = (IOIn & 0xFC);
+        outb(0x61, IOIn);
+        IOIn |= 1;
+        outb(0x61, IOIn);
+        uint32_t Loop = 0;
+        while ((inb(0x61) & 0x20) != 0)
+            ++Loop;
+
+        apic->Write(APIC::APIC::APIC_TIMER, 0x10000);
+
+        outb(0x43, 0x28);
+        outb(0x40, 0x0);
+
+        outb(0x21, 0xFF);
+        outb(0xA1, 0xFF);
+
+        uint64_t ticksIn10ms = 0xFFFFFFFF - apic->Read(APIC::APIC::APIC_TCCR);
+
+        apic->Write(APIC::APIC::APIC_TIMER, (long)CPU::x64::IRQ0 | (long)APIC::APIC::APICRegisters::APIC_PERIODIC);
+        apic->Write(APIC::APIC::APIC_TDCR, 0x3);
+        apic->Write(APIC::APIC::APIC_TICR, ticksIn10ms);
+        debug("APIC Timer (CPU %d): %d ticks in 10ms", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), ticksIn10ms);
+    }
+
+    Timer::~Timer()
     {
     }
 }

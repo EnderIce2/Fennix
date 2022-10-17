@@ -2,6 +2,7 @@
 
 #include <syscalls.hpp>
 #include <hashmap.hpp>
+#include <io.h>
 
 #if defined(__amd64__)
 #include "../Architecture/amd64/cpu/gdt.hpp"
@@ -24,9 +25,10 @@ namespace Interrupts
     HashMap<int, uint64_t> *RegisteredEvents;
 
 #if defined(__amd64__)
-    /* APIC::APIC */ void *apic = nullptr;
+    /* APIC::APIC */ void *apic[MAX_CPU];
+    /* APIC::Timer */ void *apicTimer[MAX_CPU];
 #elif defined(__i386__)
-    /* APIC::APIC */ void *apic = nullptr;
+    /* APIC::APIC */ void *apic[MAX_CPU];
 #elif defined(__aarch64__)
 #endif
 
@@ -37,8 +39,8 @@ namespace Interrupts
             RegisteredEvents = new HashMap<int, uint64_t>;
 
 #if defined(__amd64__)
-        GlobalDescriptorTable::Init(0);
-        InterruptDescriptorTable::Init(0);
+        GlobalDescriptorTable::Init(Core);
+        InterruptDescriptorTable::Init(Core);
         InitializeSystemCalls();
 #elif defined(__i386__)
         warn("i386 is not supported yet");
@@ -47,13 +49,14 @@ namespace Interrupts
 #endif
     }
 
-    void Enable()
+    void Enable(int Core)
     {
 #if defined(__amd64__)
         if (((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress != nullptr)
         {
-            apic = new APIC::APIC;
-            ((APIC::APIC *)apic)->RedirectIRQs(0);
+            // TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
+            apic[Core] = new APIC::APIC(Core);
+            ((APIC::APIC *)apic[Core])->RedirectIRQs(Core);
         }
         else
         {
@@ -67,10 +70,16 @@ namespace Interrupts
 #endif
     }
 
-    void InitializeTimer()
+    void InitializeTimer(int Core)
     {
+        // TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
 #if defined(__amd64__)
-
+        if (apic[Core] != nullptr)
+            apicTimer[Core] = new APIC::Timer((APIC::APIC *)apic[Core]);
+        else
+        {
+            fixme("apic not found");
+        }
 #elif defined(__i386__)
         warn("i386 is not supported yet");
 #elif defined(__aarch64__)
@@ -82,16 +91,17 @@ namespace Interrupts
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
+        int Core = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
         Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
         if (handler != (Handler *)0xdeadbeef)
             handler->OnInterruptReceived(Frame);
         else
-            error("Unhandled IRQ%d on CPU %d", Frame->InterruptNumber - 32, ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24);
+            error("Unhandled IRQ%d on CPU %d.", Frame->InterruptNumber - 32, Core);
 
-        if (apic)
+        if (apic[Core])
         {
-            ((APIC::APIC *)Interrupts::apic)->EOI();
+            ((APIC::APIC *)Interrupts::apic[Core])->EOI();
             return;
         }
         // TODO: PIC
@@ -100,21 +110,41 @@ namespace Interrupts
 #elif defined(__aarch64__)
         void *Frame = Data;
 #endif
-        while (1)
-            CPU::Stop();
+        CPU::Stop();
     }
 
     Handler::Handler(int InterruptNumber)
     {
-        debug("Registering interrupt handler for IRQ%d", InterruptNumber - 32);
+        if (RegisteredEvents->Get(InterruptNumber) != (uint64_t)0xdeadbeef)
+        {
+            warn("IRQ%d is already registered.", InterruptNumber - 32);
+            return;
+        }
+
+        debug("Registering interrupt handler for IRQ%d.", InterruptNumber - 32);
         this->InterruptNumber = InterruptNumber;
         RegisteredEvents->AddNode(InterruptNumber, (uint64_t)this);
     }
 
     Handler::~Handler()
     {
-        debug("Unregistering interrupt handler for IRQ%d", InterruptNumber - 32);
+        debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber - 32);
         if (RegisteredEvents->DeleteNode(InterruptNumber) == 0xdeadbeef)
-            warn("Node %d not found", InterruptNumber);
+            warn("Node %d not found.", InterruptNumber);
+    }
+
+#if defined(__amd64__)
+    void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    {
+        trace("Unhandled interrupt IRQ%d", Frame->InterruptNumber - 32);
+#elif defined(__i386__)
+    void Handler::OnInterruptReceived(void *Frame);
+    {
+        trace("Unhandled interrupt received");
+#elif defined(__aarch64__)
+    void Handler::OnInterruptReceived(void *Frame);
+    {
+        trace("Unhandled interrupt received");
+#endif
     }
 }

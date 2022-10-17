@@ -30,7 +30,7 @@ namespace ACPI
             }
         }
         // warn("%s not found!", Signature);
-        return 0;
+        return nullptr;
     }
 
     void ACPI::SearchTables(ACPIHeader *Header)
@@ -116,9 +116,12 @@ namespace ACPI
 
         this->SearchTables(XSDT);
 
-        outb(FADT->SMI_CommandPort, FADT->AcpiEnable);
-        while (!(inw(FADT->PM1aControlBlock) & 1))
-            ;
+        if (FADT)
+        {
+            outb(FADT->SMI_CommandPort, FADT->AcpiEnable);
+            while (!(inw(FADT->PM1aControlBlock) & 1))
+                ;
+        }
     }
 
     ACPI::~ACPI()

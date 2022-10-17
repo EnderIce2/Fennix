@@ -74,15 +74,14 @@ EXTERNC void Entry(BootInfo *Info)
                PCI::Descriptors::GetProgIFName(hdr->Class, hdr->Subclass, hdr->ProgIF));
     }
     KPrint("Enabling interrupts");
-    Interrupts::Enable();
+    Interrupts::Enable(0);
+    KPrint("Initializing timer");
+    Interrupts::InitializeTimer(0);
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
-    KPrint("Initializing timer");
-    Interrupts::InitializeTimer();
     KPrint("\e058C19######## \eE85230END \e058C19########");
     CPU::Interrupts(CPU::Enable);
-    while (1)
-        CPU::Halt();
+    CPU::Stop();
 }
 
 EXTERNC void arm64Entry(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)

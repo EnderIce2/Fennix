@@ -3,6 +3,9 @@
 
 #include <types.h>
 
+#include <interrupts.hpp>
+#include <cpu.hpp>
+
 namespace APIC
 {
     class APIC
@@ -55,8 +58,18 @@ namespace APIC
         uint32_t IOGetMaxRedirect(uint32_t APICID);
         void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
         void RedirectIRQ(int CPU, uint8_t IRQ, int Status);
-        APIC();
+        APIC(int Core);
         ~APIC();
+    };
+
+    class Timer : public Interrupts::Handler
+    {
+    private:
+        void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
+
+    public:
+        Timer(APIC *apic);
+        ~Timer();
     };
 }
 

@@ -341,8 +341,7 @@ namespace CrashHandler
 
     CrashEnd:
         Display->SetBuffer(255);
-        while (1)
-            CPU::Stop();
+        CPU::Stop();
     }
 }
 

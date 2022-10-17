@@ -16,21 +16,21 @@ namespace Power
         /**
          * @brief Get Advanced Configuration and Power Interface. (Available only on x32 and x64)
          *
-         * @return void*
+         * @return void* (ACPI::ACPI *)
          */
         void *GetACPI() { return this->acpi; }
 
         /**
          * @brief Get Differentiated System Description Table. (Available only on x32 and x64)
          *
-         * @return void*
+         * @return void* (ACPI::DSDT *)
          */
         void *GetDSDT() { return this->dsdt; }
 
         /**
          * @brief Get Multiple APIC Description Table. (Available only on x32 and x64)
          *
-         * @return void*
+         * @return void* (ACPI::MADT *)
          */
         void *GetMADT() { return this->madt; }
 

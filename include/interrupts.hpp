@@ -3,18 +3,19 @@
 
 #include <types.h>
 #include <cpu.hpp>
+#include <smp.hpp>
 
 namespace Interrupts
 {
 #if defined(__amd64__)
-    extern void *apic;
+    extern void *apic[MAX_CPU];
 #elif defined(__i386__)
-    extern void *apic;
+    extern void *apic[MAX_CPU];
 #elif defined(__aarch64__)
 #endif
     void Initialize(int Core);
-    void Enable();
-    void InitializeTimer();
+    void Enable(int Core);
+    void InitializeTimer(int Core);
 
     class Handler
     {
@@ -36,7 +37,6 @@ namespace Interrupts
         virtual void OnInterruptReceived(void *Frame);
 #endif
     };
-
 }
 
 #endif // !__FENNIX_KERNEL_INTERRUPTS_H__

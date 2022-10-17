@@ -273,10 +273,6 @@ namespace ACPI
     public:
         bool ACPIShutdownSupported = false;
 
-        void RegisterSCIEvents();
-        void SetSCIevent(uint16_t value);
-        uint16_t GetSCIevent();
-
         void Reboot();
         void Shutdown();
 

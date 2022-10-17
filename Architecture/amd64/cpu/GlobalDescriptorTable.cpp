@@ -40,10 +40,7 @@ namespace GlobalDescriptorTable
              "1:\n"
              "movw $16, %%ax\n"
              "movw %%ax, %%ds\n"
-             "movw %%ax, %%es\n"
-             "movw $0x1b, %%ax\n"
-             "movw %%ax, %%fs\n"
-             "movw %%ax, %%gs\n" ::
+             "movw %%ax, %%es\n" ::
                  : "memory", "rax");
 
         uint64_t Base = (uint64_t)&tss[Core];

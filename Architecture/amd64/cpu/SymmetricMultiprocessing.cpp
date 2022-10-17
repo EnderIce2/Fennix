@@ -23,6 +23,7 @@ enum SMPTrampolineAddress
     STACK = 0x570,
     GDT = 0x580,
     IDT = 0x590,
+    CORE = 0x600
 };
 
 volatile bool CPUEnabled = false;
@@ -36,7 +37,7 @@ CPUData *GetCurrentCPU()
 {
     uint64_t ret = 0;
 #if defined(__amd64__)
-    ret = ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24;
+    ret = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -59,18 +60,14 @@ extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
     CPU::InitializeFeatures();
-
-    // Enable APIC
-    CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, (CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | 0x800) & ~(1 << 10));
-    ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_SVR, ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_SVR) | 0x1FF);
-
-    uint64_t CPU_ID;
-    // Set CPU_ID variable using APIC
-    CPU_ID = ((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24;
+    uintptr_t CoreID = CORE;
+    CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, (int)*reinterpret_cast<int *>(CoreID));
+    uint64_t CPU_ID = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
     // Initialize GDT and IDT
     Interrupts::Initialize(CPU_ID);
-    ((APIC::APIC *)Interrupts::apic)->RedirectIRQs(CPU_ID);
+    Interrupts::Enable(CPU_ID);
+    Interrupts::InitializeTimer(CPU_ID);
 
     CPU::Interrupts(CPU::Enable);
     KPrint("CPU %d is online", CPU_ID);
@@ -89,10 +86,11 @@ namespace SMP
         }
         for (uint8_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores + 1; i++)
         {
-            if ((((APIC::APIC *)Interrupts::apic)->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
+            debug("Initializing CPU %d", i);
+            if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {
-                ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_ICRLO, 0x500);
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRLO, 0x500);
 
                 Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
 
@@ -104,14 +102,15 @@ namespace SMP
 
                 POKE(volatile uint64_t, PAGE_TABLE) = CPU::x64::readcr3().raw;
                 POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPage();
+                POKE(volatile uint64_t, CORE) = i;
 
                 asm volatile("sgdt [0x580]\n"
                              "sidt [0x590]\n");
 
                 POKE(volatile uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
 
-                ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic)->Write(APIC::APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
 
                 while (!CPUEnabled)
                     ;
