@@ -100,15 +100,6 @@ namespace APIC
         }
     }
 
-    void APIC::OneShot(uint32_t Vector, uint64_t Miliseconds)
-    {
-        int apic_timer_ticks = 0;
-        fixme("APIC::OneShot(%#lx, %#lx)", Vector, Miliseconds);
-        this->Write(APIC_TDCR, 0x03);
-        this->Write(APIC_TIMER, (APIC::APIC::APICRegisters::APIC_ONESHOT | Vector));
-        this->Write(APIC_TICR, apic_timer_ticks * Miliseconds);
-    }
-
     uint32_t APIC::IOGetMaxRedirect(uint32_t APICID)
     {
         uint32_t TableAddress = (this->IORead((((ACPI::MADT *)PowerManager->GetMADT())->ioapic[APICID]->Address), GetIOAPICVersion));
@@ -220,20 +211,31 @@ namespace APIC
         // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
     }
 
+    void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
+    {
+        this->lapic->Write(APIC_TDCR, 0x03);
+        this->lapic->Write(APIC_TIMER, (APIC_ONESHOT | Vector));
+        this->lapic->Write(APIC_TICR, (TicksIn10ms / 10) * Miliseconds);
+    }
+
     Timer::Timer(APIC *apic) : Interrupts::Handler(CPU::x64::IRQ0)
     {
         trace("Initializing APIC timer on CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
-        apic->Write(APIC::APIC::APIC_TDCR, 0x3);
+        this->lapic = apic;
+        this->lapic->Write(APIC_TDCR, 0x3);
+
+        int Count = 10000; /* µs */
+        int Ticks = 1193180 / (Count / 100);
 
         int IOIn = inb(0x61);
         IOIn = (IOIn & 0xFD) | 1;
         outb(0x61, IOIn);
-        outb(0x43, 0b10110010);
-        outb(0x42, 155);
+        outb(0x43, 178);
+        outb(0x42, Ticks & 0xff);
         inb(0x60);
-        outb(0x42, 46);
+        outb(0x42, Ticks >> 8);
 
-        apic->Write(APIC::APIC::APIC_TICR, 0xFFFFFFFF);
+        this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 
         IOIn = inb(0x61);
         IOIn = (IOIn & 0xFC);
@@ -244,7 +246,7 @@ namespace APIC
         while ((inb(0x61) & 0x20) != 0)
             ++Loop;
 
-        apic->Write(APIC::APIC::APIC_TIMER, 0x10000);
+        this->lapic->Write(APIC_TIMER, 0x10000);
 
         outb(0x43, 0x28);
         outb(0x40, 0x0);
@@ -252,12 +254,12 @@ namespace APIC
         outb(0x21, 0xFF);
         outb(0xA1, 0xFF);
 
-        uint64_t ticksIn10ms = 0xFFFFFFFF - apic->Read(APIC::APIC::APIC_TCCR);
+        TicksIn10ms = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
 
-        apic->Write(APIC::APIC::APIC_TIMER, (long)CPU::x64::IRQ0 | (long)APIC::APIC::APICRegisters::APIC_PERIODIC);
-        apic->Write(APIC::APIC::APIC_TDCR, 0x3);
-        apic->Write(APIC::APIC::APIC_TICR, ticksIn10ms);
-        debug("APIC Timer (CPU %d): %d ticks in 10ms", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), ticksIn10ms);
+        this->lapic->Write(APIC_TIMER, (long)CPU::x64::IRQ0 | (long)APIC_PERIODIC);
+        this->lapic->Write(APIC_TDCR, 0x3);
+        this->lapic->Write(APIC_TICR, TicksIn10ms / 10);
+        debug("APIC Timer (CPU %d): %d ticks in 10ms", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), TicksIn10ms / 10);
     }
 
     Timer::~Timer()

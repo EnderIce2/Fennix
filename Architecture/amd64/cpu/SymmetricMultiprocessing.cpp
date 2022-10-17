@@ -87,10 +87,10 @@ namespace SMP
         for (uint16_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores + 1; i++)
         {
             debug("Initializing CPU %d", i);
-            if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
+            if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
             {
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRLO, 0x500);
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
 
                 Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
 
@@ -109,8 +109,8 @@ namespace SMP
 
                 POKE(volatile uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
 
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
+                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
 
                 while (!CPUEnabled)
                     ;

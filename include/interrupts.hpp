@@ -8,7 +8,8 @@
 namespace Interrupts
 {
 #if defined(__amd64__)
-    extern void *apic[MAX_CPU];
+    /* APIC::APIC */ extern void *apic[MAX_CPU];
+    /* APIC::Timer */ extern void *apicTimer[MAX_CPU];
 #elif defined(__i386__)
     extern void *apic[MAX_CPU];
 #elif defined(__aarch64__)
