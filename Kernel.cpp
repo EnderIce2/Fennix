@@ -66,7 +66,7 @@ EXTERNC void Entry(BootInfo *Info)
     PCIManager = new PCI::PCI;
     foreach (auto hdr in PCIManager->GetDevices())
     {
-        KPrint("Found PCI device: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
+        KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
                PCI::Descriptors::GetVendorName(hdr->VendorID),
                PCI::Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
                PCI::Descriptors::DeviceClasses[hdr->Class],
