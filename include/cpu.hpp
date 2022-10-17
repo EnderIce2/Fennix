@@ -1491,7 +1491,6 @@ namespace CPU
                  : "memory");
 #endif
         }
-
     }
 }
 

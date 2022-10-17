@@ -3,24 +3,36 @@ OUTPUT_ARCH(i386)
 
 ENTRY(_start)
 
-KERNEL_VIRTUAL_BASE = 0xE0000000;
+KERNEL_VIRTUAL_BASE = 0xC0000000;
 
 SECTIONS
 {
-    . = 0x00100000;
-    _kernel_start = . + KERNEL_VIRTUAL_BASE;
+    . = 1M;
 
-    .multiboot.data :
+    .boot :
     {
-        *(.multiboot2.data)
+        *(.multiboot2 .multiboot2.*)
     }
 
-    .multiboot.text :
+    .mb2bootcode.text :
     {
-        *(.multiboot2.text)
+        *(.mb2bootcode.text)
     }
 
+    .mb2bootcode.data :
+    {
+        *(.mb2bootcode.data)
+    }
+
+    .mb2bootcode.bss :
+    {
+        *(.mb2bootcode.bss)
+    }
+
+    . += ALIGN(4096);
     . += KERNEL_VIRTUAL_BASE;
+    _kernel_start = .;
+
     .text ALIGN(4096) : AT(ADDR(.text) - KERNEL_VIRTUAL_BASE)
     {
         *(.text .text.*)
@@ -41,10 +53,8 @@ SECTIONS
 
     .bss ALIGN (4096) : AT(ADDR(.bss) - KERNEL_VIRTUAL_BASE)
     {
-        _sbss = .;
         *(COMMON)
         *(.bss .bss.*)
-        _ebss = .;
     }
     _kernel_end = .;
 
