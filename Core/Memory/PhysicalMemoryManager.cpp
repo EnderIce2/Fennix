@@ -237,27 +237,40 @@ namespace Memory
             if (Info->Memory.Entry[i].Type == Usable)
                 if (Info->Memory.Entry[i].Length > LargestFreeMemorySegmentSize)
                 {
+                    // We don't want to use 0 as a memory address.
+                    if (Info->Memory.Entry[i].BaseAddress == nullptr)
+                        continue;
                     LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
                     LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
-                    debug("Largest free memory segment: %p (%dKB)",
+                    debug("Largest free memory segment: %llp (%lldMB)",
                           (void *)Info->Memory.Entry[i].BaseAddress,
-                          TO_KB(Info->Memory.Entry[i].Length));
+                          TO_MB(Info->Memory.Entry[i].Length));
                 }
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
 
-        uint64_t BitmapSize = ALIGN_UP((MemorySize / 0x1000) / 8, 0x1000);
-        trace("Initializing Bitmap (%p %dKB)", LargestFreeMemorySegment, TO_KB(BitmapSize));
+        if (LargestFreeMemorySegment == nullptr)
+        {
+            error("No free memory found!");
+            CPU::Stop();
+        }
+
+        uint64_t BitmapSize = ALIGN_UP((MemorySize / PAGE_SIZE) / 8, PAGE_SIZE);
+        trace("Initializing Bitmap at %llp-%llp (%lld Bytes)",
+              LargestFreeMemorySegment,
+              (void *)((uint64_t)LargestFreeMemorySegment + BitmapSize),
+              BitmapSize);
         PageBitmap.Size = BitmapSize;
         PageBitmap.Buffer = (uint8_t *)LargestFreeMemorySegment;
         for (uint64_t i = 0; i < BitmapSize; i++)
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
+        trace("Reserving pages...");
         this->ReservePages(0, MemorySize / PAGE_SIZE + 1);
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
             if (Info->Memory.Entry[i].Type == Usable)
                 this->UnreservePages((void *)Info->Memory.Entry[i].BaseAddress, Info->Memory.Entry[i].Length / PAGE_SIZE + 1);
-        this->ReservePages(0, 0x100); // Reserve between 0 and 0x100000
+        this->ReservePages(0, 0x100); // Reserve between 0 and 0x100000.
         this->LockPages(PageBitmap.Buffer, PageBitmap.Size / PAGE_SIZE + 1);
     }
 

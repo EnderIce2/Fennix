@@ -27,8 +27,9 @@ void tracepagetable(PageTable *pt)
 {
     for (int i = 0; i < 512; i++)
     {
+#if defined(__amd64__)
         if (pt->Entries[i].Value.Present)
-            debug("Entry %03d: %x %x %x %x %x %x %x %x %x %x %x %p-%#lx", i,
+            debug("Entry %03d: %x %x %x %x %x %x %x %x %x %x %x %p-%#llx", i,
                   pt->Entries[i].Value.Present, pt->Entries[i].Value.ReadWrite,
                   pt->Entries[i].Value.UserSupervisor, pt->Entries[i].Value.WriteThrough,
                   pt->Entries[i].Value.CacheDisable, pt->Entries[i].Value.Accessed,
@@ -36,16 +37,63 @@ void tracepagetable(PageTable *pt)
                   pt->Entries[i].Value.Global, pt->Entries[i].Value.PageAttributeTable,
                   pt->Entries[i].Value.ExecuteDisable, pt->Entries[i].GetAddress(),
                   pt->Entries[i].Value);
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
     }
 }
 #endif
 
 void InitializeMemoryManagement(BootInfo *Info)
 {
+    for (uint64_t i = 0; i < Info->Memory.Entries; i++)
+    {
+        uint64_t Base = reinterpret_cast<uint64_t>(Info->Memory.Entry[i].BaseAddress);
+        uint64_t Length = Info->Memory.Entry[i].Length;
+        uint64_t End = Base + Length;
+        const char *Type = "Unknown";
+
+        switch (Info->Memory.Entry[i].Type)
+        {
+        case Usable:
+            Type = "Usable";
+            break;
+        case Reserved:
+            Type = "Reserved";
+            break;
+        case ACPIReclaimable:
+            Type = "ACPI Reclaimable";
+            break;
+        case ACPINVS:
+            Type = "ACPI NVS";
+            break;
+        case BadMemory:
+            Type = "Bad Memory";
+            break;
+        case BootloaderReclaimable:
+            Type = "Bootloader Reclaimable";
+            break;
+        case KernelAndModules:
+            Type = "Kernel and Modules";
+            break;
+        case Framebuffer:
+            Type = "Framebuffer";
+            break;
+        default:
+            break;
+        }
+
+        trace("%lld: %#016llx-%#016llx %s",
+              i,
+              Base,
+              End,
+              Type);
+    }
+
     trace("Initializing Physical Memory Manager");
     KernelAllocator = Physical();
     KernelAllocator.Init(Info);
-    debug("Memory Info: %dMB / %dMB (%dMB reserved)",
+    debug("Memory Info: %lldMB / %lldMB (%lldMB reserved)",
           TO_MB(KernelAllocator.GetUsedMemory()),
           TO_MB(KernelAllocator.GetTotalMemory()),
           TO_MB(KernelAllocator.GetReservedMemory()));
@@ -207,8 +255,8 @@ void HeapFree(void *Address)
     }
 }
 
-void *operator new(uint64_t Size) { return HeapMalloc(Size); }
-void *operator new[](uint64_t Size) { return HeapMalloc(Size); }
+void *operator new(size_t Size) { return HeapMalloc(Size); }
+void *operator new[](size_t Size) { return HeapMalloc(Size); }
 void operator delete(void *Pointer) { HeapFree(Pointer); }
 void operator delete[](void *Pointer) { HeapFree(Pointer); }
 void operator delete(void *Pointer, long unsigned int Size) { HeapFree(Pointer); }

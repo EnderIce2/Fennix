@@ -39,7 +39,7 @@ namespace UniversalAsynchronousReceiverTransmitter
         {
             static int once = 0;
             if (!once++)
-                warn("Serial port %#lx is faulty.", Port);
+                warn("Serial port %#llx is faulty.", Port);
             // serialports[Port] = false; // ignore for now
             // return;
         }

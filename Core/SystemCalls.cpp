@@ -5,9 +5,9 @@
 extern "C" uint64_t SystemCallsHandler(SyscallsRegs *regs)
 {
 #if defined(__amd64__)
-    fixme("System call %ld", regs->rax);
+    fixme("System call %lld", regs->rax);
 #elif defined(__i386__)
-    fixme("System call %ld", regs->eax);
+    fixme("System call %lld", regs->eax);
 #elif defined(__aarch64__)
     fixme("System call");
 #endif

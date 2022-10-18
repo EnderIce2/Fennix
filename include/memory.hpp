@@ -137,6 +137,7 @@ namespace Memory
     {
         struct
         {
+#if defined(__amd64__)
             bool Present : 1;
             bool ReadWrite : 1;
             bool UserSupervisor : 1;
@@ -152,6 +153,18 @@ namespace Memory
             uint32_t Available2 : 7;
             uint16_t ProtectionKey : 4;
             bool ExecuteDisable : 1;
+#elif defined(__i386__)
+            bool Present : 1;
+            bool ReadWrite : 1;
+            bool UserSupervisor : 1;
+            bool Accessed : 1;
+            bool Dirty : 1;
+            uint8_t Available : 7;
+            uint32_t Frame : 20;
+// TODO: i386 PDEData is not tested
+#elif defined(__aarch64__)
+// TODO: aarch64 PDEData not implemented
+#endif
         };
         uint64_t raw;
     } PDEData;
@@ -338,26 +351,26 @@ namespace Memory
         class PageMapIndexer
         {
         public:
-            uint64_t PDP_i;
-            uint64_t PD_i;
-            uint64_t PT_i;
-            uint64_t P_i;
+            uint64_t PDP_i = 0;
+            uint64_t PD_i = 0;
+            uint64_t PT_i = 0;
+            uint64_t P_i = 0;
 
             PageMapIndexer(uint64_t VirtualAddress)
             {
 #if defined(__amd64__)
-                PDP_i = (VirtualAddress & ((uint64_t)0x1FF << 39)) >> 39;
-                PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-                PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-                P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
+                this->PDP_i = (VirtualAddress & ((uint64_t)0x1FF << 39)) >> 39;
+                this->PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
+                this->PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
+                this->P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
 #elif defined(__i386__)
-                PD_i = (VirtualAddress & ((uint64_t)0x3FF << 22)) >> 22;
-                PT_i = (VirtualAddress & ((uint64_t)0x3FF << 12)) >> 12;
-                P_i = (VirtualAddress & ((uint64_t)0xFFF << 0)) >> 0;
+                this->PD_i = (VirtualAddress & ((uint64_t)0x3FF << 22)) >> 22;
+                this->PT_i = (VirtualAddress & ((uint64_t)0x3FF << 12)) >> 12;
+                this->P_i = (VirtualAddress & ((uint64_t)0xFFF)) >> 0;
 #elif defined(__aarch64__)
-                PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-                PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-                P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
+                this->PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
+                this->PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
+                this->P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
 #endif
             }
         };
@@ -409,8 +422,8 @@ namespace Memory
 
 void InitializeMemoryManagement(BootInfo *Info);
 
-void *operator new(uint64_t Size);
-void *operator new[](uint64_t Size);
+void *operator new(size_t Size);
+void *operator new[](size_t Size);
 void operator delete(void *Pointer);
 void operator delete[](void *Pointer);
 void operator delete(void *Pointer, long unsigned int Size);

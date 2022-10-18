@@ -57,7 +57,7 @@ namespace SymbolResolver
 
     Symbols::Symbols(uint64_t Address)
     {
-        debug("Solving symbols for address: %#lx", Address);
+        debug("Solving symbols for address: %#llx", Address);
         Elf64_Ehdr *Header = (Elf64_Ehdr *)Address;
         if (Header->e_ident[0] != 0x7F &&
             Header->e_ident[1] != 'E' &&

@@ -104,7 +104,7 @@ namespace Video
             {
                 Width = this->framebuffer.Width;
                 Height = this->framebuffer.Height;
-                debug("No width and height specified, using %ldx%ld", Width, Height);
+                debug("No width and height specified, using %ldx%lld", Width, Height);
             }
 
             uint64_t Size = this->framebuffer.Pitch * Height;

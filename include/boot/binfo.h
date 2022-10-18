@@ -3,6 +3,7 @@
 
 enum MemoryType
 {
+    Unknown,
     Usable,
     Reserved,
     ACPIReclaimable,
@@ -10,8 +11,7 @@ enum MemoryType
     BadMemory,
     BootloaderReclaimable,
     KernelAndModules,
-    Framebuffer,
-    Unknown
+    Framebuffer
 };
 
 #define MAX_FRAMEBUFFERS 16

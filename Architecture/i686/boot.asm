@@ -18,19 +18,29 @@ KERNEL_VIRTUAL_BASE equ 0xC0000000 ; 3GB
 KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22) ; 768
 KERNEL_STACK_SIZE equ 0x4000 ; 16KB
 
-extern x32Entry
+extern x32Multiboot2Entry
 global _start
 
 section .data
 align 0x1000
 BootPageTable:
     dd 0x00000083
-    times (KERNEL_PAGE_NUMBER - 1) dd 0
+    times ((KERNEL_PAGE_NUMBER) - 1) dd 0
     dd 0x00000083
     times (1024 - KERNEL_PAGE_NUMBER - 1) dd 0
 
 section .text
 _start:
+    mov word [0xb8000], 0x074C ; L
+    mov word [0xb8002], 0x076F ; o
+    mov word [0xb8004], 0x0761 ; a
+    mov word [0xb8006], 0x0764 ; d
+    mov word [0xb8008], 0x0769 ; i
+    mov word [0xb800a], 0x076E ; n
+    mov word [0xb800c], 0x0767 ; g
+    mov word [0xb800e], 0x072E ; .
+    mov word [0xb8010], 0x072E ; .
+    mov word [0xb8012], 0x072E ; .
 	mov ecx, (BootPageTable - KERNEL_VIRTUAL_BASE)
 	mov cr3, ecx
 	mov ecx, cr4
@@ -48,7 +58,7 @@ HigherHalfStart:
 	push eax ; Multiboot2 Magic
 	add ebx, KERNEL_VIRTUAL_BASE
 	push ebx ; Multiboot2 Header
-	call x32Entry
+	call x32Multiboot2Entry
 Loop:
 	hlt
     jmp Loop

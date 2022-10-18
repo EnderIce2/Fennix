@@ -25,7 +25,7 @@ public:
         VectorCapacity = Size;
         VectorSize = Size;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( %ld )", Size);
+        debug("VECTOR ALLOCATION: Vector( %lld )", Size);
 #endif
         VectorBuffer = new T[Size];
     }
@@ -35,7 +35,7 @@ public:
         VectorSize = Size;
         VectorCapacity = Size;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( %ld %llx )", Size, Initial);
+        debug("VECTOR ALLOCATION: Vector( %lld %llx )", Size, Initial);
 #endif
         VectorBuffer = new T[Size];
         for (uint64_t i = 0; i < Size; i++)
@@ -47,7 +47,7 @@ public:
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( <vector> )->Size: %ld", VectorSize);
+        debug("VECTOR ALLOCATION: Vector( <vector> )->Size: %lld", VectorSize);
 #endif
         VectorBuffer = new T[VectorSize];
         for (uint64_t i = 0; i < VectorSize; i++)
@@ -117,7 +117,7 @@ public:
             VectorCapacity = 0;
         }
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: reverse( %ld )", Capacity);
+        debug("VECTOR ALLOCATION: reverse( %lld )", Capacity);
 #endif
         T *Newbuffer = new T[Capacity];
         uint64_t _Size = Capacity < VectorSize ? Capacity : VectorSize;
@@ -125,7 +125,7 @@ public:
             Newbuffer[i] = VectorBuffer[i];
         VectorCapacity = Capacity;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: reverse( <Capacity> )->Buffer:~%ld", VectorBuffer);
+        debug("VECTOR ALLOCATION: reverse( <Capacity> )->Buffer:~%lld", VectorBuffer);
 #endif
         delete[] VectorBuffer;
         VectorBuffer = Newbuffer;
@@ -145,7 +145,7 @@ public:
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
         #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: operator=( <vector> )->Size:%ld", VectorSize);
+        debug("VECTOR ALLOCATION: operator=( <vector> )->Size:%lld", VectorSize);
 #endif
         VectorBuffer = new T[VectorSize];
         for (uint64_t i = 0; i < VectorSize; i++)

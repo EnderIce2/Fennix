@@ -59,7 +59,7 @@ namespace CrashHandler
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        error("Exception: %#lx", Frame->InterruptNumber);
+        error("Exception: %#llx", Frame->InterruptNumber);
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
@@ -215,18 +215,18 @@ namespace CrashHandler
         }
         }
 
-        EHPrint("\e7981FCTechnical Informations on CPU %ld:\n",
+        EHPrint("\e7981FCTechnical Informations on CPU %lld:\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
-        EHPrint("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx\n",
+        EHPrint("FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                 Frame->ss, Frame->cs, Frame->ds);
-        EHPrint("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-        EHPrint("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx\n", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-        EHPrint("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx\n", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-        EHPrint("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx\n", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-        EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
-        EHPrint("CR0=%#lx  CR2=%#lx  CR3=%#lx  CR4=%#lx  CR8=%#lx\n", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
-        EHPrint("DR0=%#lx  DR1=%#lx  DR2=%#lx  DR3=%#lx  DR6=%#lx  DR7=%#lx\n", dr0, dr1, dr2, dr3, dr6, dr7.raw);
+        EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+        EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+        EHPrint("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx\n", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+        EHPrint("RSI=%#llx  RDI=%#llx  RBP=%#llx  RSP=%#llx\n", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+        EHPrint("RIP=%#llx  RFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+        EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
+        EHPrint("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx\n", dr0, dr1, dr2, dr3, dr6, dr7.raw);
 
         EHPrint("\eFC797BCR0: PE:%s     MP:%s     EM:%s     TS:%s\n     ET:%s     NE:%s     WP:%s     AM:%s\n     NW:%s     CD:%s     PG:%s\n     R0:%#x R1:%#x R2:%#x\n",
                 cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
@@ -234,10 +234,10 @@ namespace CrashHandler
                 cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
                 cr0._reserved0, cr0._reserved1, cr0._reserved2);
 
-        EHPrint("\eFCBD79CR2: PFLA: %#lx\n",
+        EHPrint("\eFCBD79CR2: PFLA: %#llx\n",
                 cr2.PFLA);
 
-        EHPrint("\e79FC84CR3: PWT:%s     PCD:%s    PDBR:%#lx\n",
+        EHPrint("\e79FC84CR3: PWT:%s     PCD:%s    PDBR:%#llx\n",
                 cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
 
         EHPrint("\eBD79FCCR4: VME:%s     PVI:%s     TSD:%s      DE:%s\n     PSE:%s     PAE:%s     MCE:%s     PGE:%s\n     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s\n    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s\n OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s\n     R0:%#x R1:%#x R2:%#x\n",
@@ -410,7 +410,7 @@ void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
         break;
     }
     debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
-    sprintf_(descbuf, "Stack segment fault at address %#lx", Frame->rip);
+    sprintf_(descbuf, "Stack segment fault at address %#llx", Frame->rip);
     CrashHandler::EHPrint(descbuf);
     sprintf_(desc_ext, "External: %d", SelCode.External);
     CrashHandler::EHPrint(desc_ext);
@@ -452,7 +452,7 @@ void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
     // SET_PRINT_MID((char *)"System crashed!", FHeight(6));
     // CurrentDisplay->ResetPrintColor();
     // SET_PRINT_MID((char *)"More info about the exception:", FHeight(4));
-    // sprintf_(descbuf, "Kernel performed an illegal operation at address %#lx", RIP);
+    // sprintf_(descbuf, "Kernel performed an illegal operation at address %#llx", RIP);
     // SET_PRINT_MID((char *)descbuf, FHeight(5));
     // sprintf_(desc_ext, "External: %d", SelCode.External);
     // SET_PRINT_MID((char *)desc_ext, FHeight(3));
@@ -477,7 +477,7 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     staticbuffer(page_sgx);
 
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
-    sprintf_(ret_err, "An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+    sprintf_(ret_err, "An exception occurred at %#llx by %#llx\n", CPU::x64::readcr2().PFLA, Frame->rip);
     CrashHandler::EHPrint(ret_err);
     sprintf_(page_present, "Page: %s\n", params.P ? "Present" : "Not Present");
     CrashHandler::EHPrint(page_present);
