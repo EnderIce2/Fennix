@@ -410,7 +410,7 @@ void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
         break;
     }
     debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
-    sprintf_(descbuf, "Stack segment fault at address %#llx", Frame->rip);
+    sprintf_(descbuf, "Stack segment fault at address %#lx", Frame->rip);
     CrashHandler::EHPrint(descbuf);
     sprintf_(desc_ext, "External: %d", SelCode.External);
     CrashHandler::EHPrint(desc_ext);
@@ -477,7 +477,7 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     staticbuffer(page_sgx);
 
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
-    sprintf_(ret_err, "An exception occurred at %#llx by %#llx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+    sprintf_(ret_err, "An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
     CrashHandler::EHPrint(ret_err);
     sprintf_(page_present, "Page: %s\n", params.P ? "Present" : "Not Present");
     CrashHandler::EHPrint(page_present);
