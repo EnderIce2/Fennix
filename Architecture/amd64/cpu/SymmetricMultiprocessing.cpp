@@ -84,7 +84,15 @@ namespace SMP
             KPrint("VirtualBox detected, disabling SMP");
             return;
         }
-        for (uint16_t i = 0; i < ((ACPI::MADT *)madt)->CPUCores + 1; i++)
+
+        int Cores = ((ACPI::MADT *)madt)->CPUCores + 1;
+
+        if (Config.Cores > ((ACPI::MADT *)madt)->CPUCores + 1)
+            KPrint("More cores requested than available. Using %d cores", ((ACPI::MADT *)madt)->CPUCores + 1);
+        else
+            Cores = Config.Cores;
+
+        for (uint16_t i = 0; i < Cores; i++)
         {
             debug("Initializing CPU %d", i);
             if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)

@@ -3,12 +3,13 @@
 #include <boot/protocols/multiboot2.h>
 #include <interrupts.hpp>
 #include <memory.hpp>
-#include <string.h>
+#include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
 #include <time.hpp>
 #include <debug.h>
 #include <smp.hpp>
+#include <cargs.h>
 #include <io.h>
 
 NEWLOCK(KernelLock);
@@ -19,6 +20,7 @@ SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
 
+KernelConfig Config;
 Time BootClock;
 
 // For the Display class. Printing on first buffer as default.
@@ -39,8 +41,8 @@ EXTERNC void KPrint(const char *Format, ...)
 
 EXTERNC void Entry(BootInfo *Info)
 {
-    InitializeMemoryManagement(Info);
     trace("Hello, World!");
+    InitializeMemoryManagement(Info);
     BootClock = ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
     memcpy(bInfo, Info, sizeof(BootInfo));
@@ -61,18 +63,20 @@ EXTERNC void Entry(BootInfo *Info)
     CPU::InitializeFeatures();
     KPrint("Loading kernel symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
+    KPrint("Reading kernel parameters");
+    Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
     KPrint("Initializing PCI Manager");
     PCIManager = new PCI::PCI;
-    foreach (auto hdr in PCIManager->GetDevices())
+    foreach (auto Device in PCIManager->GetDevices())
     {
         KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-               PCI::Descriptors::GetVendorName(hdr->VendorID),
-               PCI::Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
-               PCI::Descriptors::DeviceClasses[hdr->Class],
-               PCI::Descriptors::GetSubclassName(hdr->Class, hdr->Subclass),
-               PCI::Descriptors::GetProgIFName(hdr->Class, hdr->Subclass, hdr->ProgIF));
+               PCI::Descriptors::GetVendorName(Device->VendorID),
+               PCI::Descriptors::GetDeviceName(Device->VendorID, Device->DeviceID),
+               PCI::Descriptors::DeviceClasses[Device->Class],
+               PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
+               PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
     }
     KPrint("Enabling interrupts");
     Interrupts::Enable(0);

@@ -7,6 +7,7 @@
 #ifdef __cplusplus
 #include <display.hpp>
 #include <symbols.hpp>
+#include <kconfig.hpp>
 #include <power.hpp>
 #include <pci.hpp>
 #endif
@@ -17,6 +18,7 @@ extern Video::Display *Display;
 extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;
 extern PCI::PCI *PCIManager;
+extern KernelConfig Config;
 #endif
 
 EXTERNC void KPrint(const char *format, ...);
