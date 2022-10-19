@@ -11,7 +11,11 @@
 			"types.h": "c",
 			"binfo.h": "c",
 			"liballoc_1_1.h": "c",
-			"cstring": "cpp"
+			"cstring": "cpp",
+			"cargs.h": "c",
+			"memory.hpp": "c",
+			"convert.h": "c",
+			"limits.h": "c"
 		}
 	}
 }
