@@ -1,10 +1,14 @@
 #ifndef __FENNIX_KERNEL_INTERNAL_MEMORY_H__
 #define __FENNIX_KERNEL_INTERNAL_MEMORY_H__
 
+#ifdef __cplusplus
 #include <boot/binfo.h>
 #include <bitmap.hpp>
 #include <lock.hpp>
+#endif // __cplusplus
 #include <types.h>
+
+#ifdef __cplusplus
 
 extern uint64_t _kernel_start, _kernel_end;
 extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
@@ -51,6 +55,14 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 
 namespace Memory
 {
+    enum MemoryAllocatorType
+    {
+        None,
+        Pages,
+        XallocV1,
+        liballoc11
+    };
+
     /**
      * @brief https://wiki.osdev.org/images/4/41/64-bit_page_tables1.png
      * @brief https://wiki.osdev.org/images/6/6b/64-bit_page_tables2.png
@@ -429,17 +441,19 @@ void operator delete[](void *Pointer);
 void operator delete(void *Pointer, long unsigned int Size);
 void operator delete[](void *Pointer, long unsigned int Size);
 
-void *HeapMalloc(uint64_t Size);
-void *HeapCalloc(uint64_t n, uint64_t Size);
-void *HeapRealloc(void *Address, uint64_t Size);
-void HeapFree(void *Address);
+extern Memory::Physical KernelAllocator;
+extern Memory::PageTable *KernelPageTable;
+
+#endif // __cplusplus
+
+EXTERNC void *HeapMalloc(uint64_t Size);
+EXTERNC void *HeapCalloc(uint64_t n, uint64_t Size);
+EXTERNC void *HeapRealloc(void *Address, uint64_t Size);
+EXTERNC void HeapFree(void *Address);
 
 #define kmalloc(Size) HeapMalloc(Size)
 #define kcalloc(n, Size) HeapCalloc(n, Size)
 #define krealloc(Address, Size) HeapRealloc(Address, Size)
 #define kfree(Address) HeapFree(Address)
-
-extern Memory::Physical KernelAllocator;
-extern Memory::PageTable *KernelPageTable;
 
 #endif // !__FENNIX_KERNEL_INTERNAL_MEMORY_H__

@@ -1,6 +1,6 @@
 #include <memory.hpp>
 
-#include <string.h>
+#include <convert.h>
 #include <debug.h>
 
 #include "HeapAllocators/Xalloc.hpp"
@@ -10,14 +10,6 @@ using namespace Memory;
 
 Physical KernelAllocator;
 PageTable *KernelPageTable = nullptr;
-
-enum MemoryAllocatorType
-{
-    None,
-    Pages,
-    XallocV1,
-    liballoc11
-};
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;

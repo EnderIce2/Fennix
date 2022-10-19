@@ -1,6 +1,6 @@
 #include <memory.hpp>
 
-#include <string.h>
+#include <convert.h>
 #include <debug.h>
 
 namespace Memory

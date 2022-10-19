@@ -9,6 +9,13 @@ extern "C"
     int isspace(int c);
     int isempty(char *str);
     unsigned int isdelim(char c, char *delim);
+    int abs(int i);
+    void swap(char *x, char *y);
+    char *reverse(char *Buffer, int i, int j);
+
+    int atoi(const char *String);
+    double atof(const char *String);
+    char *itoa(int Value, char *Buffer, int Base);
 
     void *memcpy(void *dest, const void *src, size_t n);
     void *memset(void *dest, int c, size_t n);

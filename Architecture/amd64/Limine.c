@@ -2,7 +2,7 @@
 #include <boot/binfo.h>
 #include <types.h>
 #include <debug.h>
-#include <string.h>
+#include <convert.h>
 
 #include "../../kernel.h"
 

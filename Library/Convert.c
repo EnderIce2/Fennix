@@ -1,5 +1,6 @@
-#include <string.h>
+#include <convert.h>
 #include <types.h>
+#include <memory.hpp>
 
 // TODO: Replace mem* with assembly code
 
@@ -418,6 +419,23 @@ char *strstr(const char *haystack, const char *needle)
     }
 }
 
+char *strchr(const char *String, int Char)
+{
+    while (*String != (char)Char)
+    {
+        if (!*String++)
+            return 0;
+    }
+    return (char *)String;
+}
+
+char *strdup(const char *String)
+{
+    char *OutBuffer = kmalloc(strlen((char *)String) + 1);
+    strcpy(OutBuffer, String);
+    return OutBuffer;
+}
+
 int isdigit(int c)
 {
     return c >= '0' && c <= '9';
@@ -439,4 +457,143 @@ int isempty(char *str)
         str++;
     }
     return 1;
+}
+
+int abs(int i) { return i < 0 ? -i : i; }
+
+void swap(char *x, char *y)
+{
+    char t = *x;
+    *x = *y;
+    *y = t;
+}
+
+char *reverse(char *Buffer, int i, int j)
+{
+    while (i < j)
+        swap(&Buffer[i++], &Buffer[j--]);
+    return Buffer;
+}
+
+int atoi(const char *String)
+{
+    uint64_t Length = strlen((char *)String);
+    uint64_t OutBuffer = 0;
+    uint64_t Power = 1;
+    for (uint64_t i = Length; i > 0; --i)
+    {
+        OutBuffer += (String[i - 1] - 48) * Power;
+        Power *= 10;
+    }
+    return OutBuffer;
+}
+
+double atof(const char *String)
+{
+    // Originally from https://github.com/GaloisInc/minlibc/blob/master/atof.c
+    /*
+    Copyright (c) 2014 Galois Inc.
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+      * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+
+      * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in
+        the documentation and/or other materials provided with the
+        distribution.
+
+      * Neither the name of Galois, Inc. nor the names of its contributors
+        may be used to endorse or promote products derived from this
+        software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+    IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+    TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+    OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+    EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+    PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+    PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+    LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    */
+    double a = 0.0;
+    int e = 0;
+    int c;
+    while ((c = *String++) != '\0' && isdigit(c))
+    {
+        a = a * 10.0 + (c - '0');
+    }
+    if (c == '.')
+    {
+        while ((c = *String++) != '\0' && isdigit(c))
+        {
+            a = a * 10.0 + (c - '0');
+            e = e - 1;
+        }
+    }
+    if (c == 'e' || c == 'E')
+    {
+        int sign = 1;
+        int i = 0;
+        c = *String++;
+        if (c == '+')
+            c = *String++;
+        else if (c == '-')
+        {
+            c = *String++;
+            sign = -1;
+        }
+        while (isdigit(c))
+        {
+            i = i * 10 + (c - '0');
+            c = *String++;
+        }
+        e += i * sign;
+    }
+    while (e > 0)
+    {
+        a *= 10.0;
+        e--;
+    }
+    while (e < 0)
+    {
+        a *= 0.1;
+        e++;
+    }
+    return a;
+}
+
+char *itoa(int Value, char *Buffer, int Base)
+{
+    if (Base < 2 || Base > 32)
+        return Buffer;
+
+    int n = abs(Value);
+    int i = 0;
+
+    while (n)
+    {
+        int r = n % Base;
+        if (r >= 10)
+            Buffer[i++] = 65 + (r - 10);
+        else
+            Buffer[i++] = 48 + r;
+        n = n / Base;
+    }
+
+    if (i == 0)
+        Buffer[i++] = '0';
+
+    if (Value < 0 && Base == 10)
+        Buffer[i++] = '-';
+
+    Buffer[i] = '\0';
+    return reverse(Buffer, 0, i - 1);
 }

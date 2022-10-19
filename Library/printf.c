@@ -37,21 +37,21 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC diagnostic ignored "-Wtype-limits"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wtautological-compare"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-
-// Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
+// Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H=1 ...) to include the
 // printf_config.h header file
 #if PRINTF_INCLUDE_CONFIG_H
 #include "printf_config.h"
 #endif
 
+#include <printf.h>
+
+#ifdef __cplusplus
+#include <cstdint>
+#include <climits>
+#else
 #include <types.h>
 #include <limits.h>
-#include <debug.h>
-#include <printf.h>
+#endif // __cplusplus
 
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
 #define printf_ printf
@@ -104,7 +104,7 @@
 #endif
 
 // Support for the long long integral types (with the ll, z and t length modifiers for specifiers
-// %d,%i,%o,%x,%X,%u, and with the %p specifier). Note: 'L' (long / *doubl e*/unsigned long) is not supported.
+// %d,%i,%o,%x,%X,%u, and with the %p specifier). Note: 'L' (long double) is not supported.
 #ifndef PRINTF_SUPPORT_LONG_LONG
 #define PRINTF_SUPPORT_LONG_LONG 1
 #endif
@@ -118,6 +118,12 @@
 
 #if PRINTF_LOG10_TAYLOR_TERMS <= 1
 #error "At least one non-constant Taylor expansion is necessary for the log10() calculation"
+#endif
+
+// Be extra-safe, and don't assume format specifiers are completed correctly
+// before the format string end.
+#ifndef PRINTF_CHECK_FOR_NUL_IN_FORMAT_SPECIFIER
+#define PRINTF_CHECK_FOR_NUL_IN_FORMAT_SPECIFIER 1
 #endif
 
 #define PRINTF_PREFER_DECIMAL false
@@ -245,14 +251,14 @@ typedef uint64_t double_uint_t;
 #define DOUBLE_MAX_SUBNORMAL_POWER_OF_10 1e-308
 
 #else
-#error "Unsupported / *doubl e*/unsigned long type configuration"
+#error "Unsupported double type configuration"
 #endif
 #define DOUBLE_STORED_MANTISSA_BITS (DBL_MANT_DIG - 1)
 
 typedef union
 {
     double_uint_t U;
-    /* double */ unsigned long F;
+    double F;
 } double_with_bit_access;
 
 // This is unnecessary in C99, since compound initializers can be used,
@@ -260,14 +266,14 @@ typedef union
 // 1. Some compilers are finicky about this;
 // 2. Some people may want to convert this to C89;
 // 3. If you try to use it as C++, only C++20 supports compound literals
-static inline double_with_bit_access get_bit_access(/* double */ unsigned long x)
+static inline double_with_bit_access get_bit_access(double x)
 {
     double_with_bit_access dwba;
     dwba.F = x;
     return dwba;
 }
 
-static inline int get_sign_bit(/* double */ unsigned long x)
+static inline int get_sign_bit(double x)
 {
     // The sign is stored in the highest bit
     return (int)(get_bit_access(x).U >> (DOUBLE_SIZE_IN_BITS - 1));
@@ -356,7 +362,7 @@ static inline void putchar_wrapper(char c, void *unused)
     putchar(c);
 }
 
-static inline output_gadget_t discarding_gadget()
+static inline output_gadget_t discarding_gadget(void)
 {
     output_gadget_t gadget;
     gadget.function = NULL;
@@ -388,7 +394,7 @@ static inline output_gadget_t function_gadget(void (*function)(char, void *), vo
     return result;
 }
 
-static inline output_gadget_t extern_putchar_gadget()
+static inline output_gadget_t extern_putchar_gadget(void)
 {
     return function_gadget(putchar_wrapper, NULL);
 }
@@ -576,53 +582,50 @@ static void print_integer(output_gadget_t *output, printf_unsigned_value_t value
 
 #if (PRINTF_SUPPORT_DECIMAL_SPECIFIERS || PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS)
 
-// Stores a fixed-precision representation of a / *doubl e*/unsigned long relative
+// Stores a fixed-precision representation of a double relative
 // to a fixed precision (which cannot be determined by examining this structure)
 struct double_components
 {
     int_fast64_t integral;
     int_fast64_t fractional;
-    // ... truncation of the actual fractional part of the / *doubl e*/unsigned long value, scaled
+    // ... truncation of the actual fractional part of the double value, scaled
     // by the precision value
     bool is_negative;
 };
 
 #define NUM_DECIMAL_DIGITS_IN_INT64_T 18
 #define PRINTF_MAX_PRECOMPUTED_POWER_OF_10 NUM_DECIMAL_DIGITS_IN_INT64_T
-static const /* double */ unsigned long powers_of_10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
+static const double powers_of_10[NUM_DECIMAL_DIGITS_IN_INT64_T] = {
     1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08,
     1e09, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17};
 
 #define PRINTF_MAX_SUPPORTED_PRECISION NUM_DECIMAL_DIGITS_IN_INT64_T - 1
 
-// Break up a / *doubl e*/unsigned long number - which is known to be a finite non-negative number -
+// Break up a double number - which is known to be a finite non-negative number -
 // into its base-10 parts: integral - before the decimal point, and fractional - after it.
 // Taken the precision into account, but does not change it even internally.
-static struct double_components get_components(/* double */ unsigned long number, printf_size_t precision)
+static struct double_components get_components(double number, printf_size_t precision)
 {
     struct double_components number_;
     number_.is_negative = get_sign_bit(number);
-    /* double */ unsigned long abs_number = (number_.is_negative) ? -number : number;
+    double abs_number = (number_.is_negative) ? -number : number;
     number_.integral = (int_fast64_t)abs_number;
-    /* double */ unsigned long remainder = (abs_number - (/* double */ unsigned long)number_.integral) * powers_of_10[precision];
+    double remainder = (abs_number - (double)number_.integral) * powers_of_10[precision];
     number_.fractional = (int_fast64_t)remainder;
 
-    remainder -= (/* double */ unsigned long)number_.fractional;
+    remainder -= (double)number_.fractional;
 
-    // if (remainder > 0.5)
-    warn("SSE not supported.");
-    if (remainder > 1)
+    if (remainder > 0.5)
     {
         ++number_.fractional;
         // handle rollover, e.g. case 0.99 with precision 1 is 1.0
-        if ((/* double */ unsigned long)number_.fractional >= powers_of_10[precision])
+        if ((double)number_.fractional >= powers_of_10[precision])
         {
             number_.fractional = 0;
             ++number_.integral;
         }
     }
-    // else if ((remainder == 0.5) && ((number_.fractional == 0U) || (number_.fractional & 1U)))
-    else if ((remainder == 1) && ((number_.fractional == 0U) || (number_.fractional & 1U)))
+    else if ((remainder == 0.5) && ((number_.fractional == 0U) || (number_.fractional & 1U)))
     {
         // if halfway, round up if odd OR if last digit is 0
         ++number_.fractional;
@@ -630,9 +633,8 @@ static struct double_components get_components(/* double */ unsigned long number
 
     if (precision == 0U)
     {
-        remainder = abs_number - (/* double */ unsigned long)number_.integral;
-        // if ((!(remainder < 0.5) || (remainder > 0.5)) && (number_.integral & 1))
-        if ((!(remainder < 1) || (remainder > 1)) && (number_.integral & 1))
+        remainder = abs_number - (double)number_.integral;
+        if ((!(remainder < 0.5) || (remainder > 0.5)) && (number_.integral & 1))
         {
             // exactly 0.5 and ODD, then round up
             // 1.5 -> 2, but 2.5 -> 2
@@ -645,21 +647,29 @@ static struct double_components get_components(/* double */ unsigned long number
 #if PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 struct scaling_factor
 {
-    /* double */ unsigned long raw_factor;
+    double raw_factor;
     bool multiply; // if true, need to multiply by raw_factor; otherwise need to divide by it
 };
 
-static /* double */ unsigned long apply_scaling(/* double */ unsigned long num, struct scaling_factor normalization)
+static double apply_scaling(double num, struct scaling_factor normalization)
 {
     return normalization.multiply ? num * normalization.raw_factor : num / normalization.raw_factor;
 }
 
-static /* double */ unsigned long unapply_scaling(/* double */ unsigned long normalized, struct scaling_factor normalization)
+static double unapply_scaling(double normalized, struct scaling_factor normalization)
 {
+#ifdef __GNUC__
+// accounting for a static analysis bug in GCC 6.x and earlier
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     return normalization.multiply ? normalized / normalization.raw_factor : normalized * normalization.raw_factor;
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 }
 
-static struct scaling_factor update_normalization(struct scaling_factor sf, /* double */ unsigned long extra_multiplicative_factor)
+static struct scaling_factor update_normalization(struct scaling_factor sf, double extra_multiplicative_factor)
 {
     struct scaling_factor result;
     if (sf.multiply)
@@ -687,11 +697,11 @@ static struct scaling_factor update_normalization(struct scaling_factor sf, /* d
     return result;
 }
 
-static struct double_components get_normalized_components(bool negative, printf_size_t precision, /* double */ unsigned long non_normalized, struct scaling_factor normalization, int floored_exp10)
+static struct double_components get_normalized_components(bool negative, printf_size_t precision, double non_normalized, struct scaling_factor normalization, int floored_exp10)
 {
     struct double_components components;
     components.is_negative = negative;
-    /* double */ unsigned long scaled = apply_scaling(non_normalized, normalization);
+    double scaled = apply_scaling(non_normalized, normalization);
 
     bool close_to_representation_extremum = ((-floored_exp10 + (int)precision) >= DBL_MAX_10_EXP - 1);
     if (close_to_representation_extremum)
@@ -702,14 +712,14 @@ static struct double_components get_normalized_components(bool negative, printf_
         return get_components(negative ? -scaled : scaled, precision);
     }
     components.integral = (int_fast64_t)scaled;
-    /* double */ unsigned long remainder = non_normalized - unapply_scaling((/* double */ unsigned long)components.integral, normalization);
-    /* double */ unsigned long prec_power_of_10 = powers_of_10[precision];
+    double remainder = non_normalized - unapply_scaling((double)components.integral, normalization);
+    double prec_power_of_10 = powers_of_10[precision];
     struct scaling_factor account_for_precision = update_normalization(normalization, prec_power_of_10);
-    /* double */ unsigned long scaled_remainder = apply_scaling(remainder, account_for_precision);
-    /* double */ unsigned long rounding_threshold = 1; // 0.5;
+    double scaled_remainder = apply_scaling(remainder, account_for_precision);
+    double rounding_threshold = 0.5;
 
-    components.fractional = (int_fast64_t)scaled_remainder;                // when precision == 0, the assigned value should be 0
-    scaled_remainder -= (/* double */ unsigned long)components.fractional; // when precision == 0, this will not change scaled_remainder
+    components.fractional = (int_fast64_t)scaled_remainder; // when precision == 0, the assigned value should be 0
+    scaled_remainder -= (double)components.fractional;      // when precision == 0, this will not change scaled_remainder
 
     components.fractional += (scaled_remainder >= rounding_threshold);
     if (scaled_remainder == rounding_threshold)
@@ -722,7 +732,7 @@ static struct double_components get_normalized_components(bool negative, printf_
     // Note: for precision = 0, this will "translate" the rounding effect from
     // the fractional part to the integral part where it should actually be
     // felt (as prec_power_of_10 is 1)
-    if ((/* double */ unsigned long)components.fractional >= prec_power_of_10)
+    if ((double)components.fractional >= prec_power_of_10)
     {
         components.fractional = 0;
         ++components.integral;
@@ -833,7 +843,7 @@ static void print_broken_up_decimal(
 }
 
 // internal ftoa for fixed decimal floating point
-static void print_decimal_number(output_gadget_t *output, /* double */ unsigned long number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char *buf, printf_size_t len)
+static void print_decimal_number(output_gadget_t *output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char *buf, printf_size_t len)
 {
     struct double_components value_ = get_components(number, precision);
     print_broken_up_decimal(value_, output, precision, width, flags, buf, len);
@@ -843,19 +853,19 @@ static void print_decimal_number(output_gadget_t *output, /* double */ unsigned 
 
 // A floor function - but one which only works for numbers whose
 // floor value is representable by an int.
-static int bastardized_floor(/* double */ unsigned long x)
+static int bastardized_floor(double x)
 {
     if (x >= 0)
     {
         return (int)x;
     }
     int n = (int)x;
-    return (((/* double */ unsigned long)n) == x) ? n : n - 1;
+    return (((double)n) == x) ? n : n - 1;
 }
 
 // Computes the base-10 logarithm of the input number - which must be an actual
 // positive number (not infinity or NaN, nor a sub-normal)
-static /* double */ unsigned long log10_of_positive(/* double */ unsigned long positive_number)
+static double log10_of_positive(double positive_number)
 {
     // The implementation follows David Gay (https://www.ampl.com/netlib/fp/dtoa.c).
     //
@@ -871,36 +881,23 @@ static /* double */ unsigned long log10_of_positive(/* double */ unsigned long p
     // drop the exponent, so dwba.F comes into the range [1,2)
     dwba.U = (dwba.U & (((double_uint_t)(1) << DOUBLE_STORED_MANTISSA_BITS) - 1U)) |
              ((double_uint_t)DOUBLE_BASE_EXPONENT << DOUBLE_STORED_MANTISSA_BITS);
-    /* double */ unsigned long z = (dwba.F - 1 /* 1.5 */);
-    //     return (
-    //         // Taylor expansion around 1.5:
-    //         0.1760912590556812420       // Expansion term 0: ln(1.5)            / ln(10)
-    //         + z * 0.2895296546021678851 // Expansion term 1: (M - 1.5)   * 2/3  / ln(10)
-    // #if PRINTF_LOG10_TAYLOR_TERMS > 2
-    //         - z * z * 0.0965098848673892950 // Expansion term 2: (M - 1.5)^2 * 2/9  / ln(10)
-    // #if PRINTF_LOG10_TAYLOR_TERMS > 3
-    //         + z * z * z * 0.0428932821632841311 // Expansion term 2: (M - 1.5)^3 * 8/81 / ln(10)
-    // #endif
-    // #endif
-    //         // exact log_2 of the exponent x, with logarithm base change
-    //         + exp2 * 0.30102999566398119521 // = exp2 * log_10(2) = exp2 * ln(2)/ln(10)
-    //     );
+    double z = (dwba.F - 1.5);
     return (
         // Taylor expansion around 1.5:
-        0       // Expansion term 0: ln(1.5)            / ln(10)
-        + z * 0 // Expansion term 1: (M - 1.5)   * 2/3  / ln(10)
+        0.1760912590556812420       // Expansion term 0: ln(1.5)            / ln(10)
+        + z * 0.2895296546021678851 // Expansion term 1: (M - 1.5)   * 2/3  / ln(10)
 #if PRINTF_LOG10_TAYLOR_TERMS > 2
-        - z * z * 0 // Expansion term 2: (M - 1.5)^2 * 2/9  / ln(10)
+        - z * z * 0.0965098848673892950 // Expansion term 2: (M - 1.5)^2 * 2/9  / ln(10)
 #if PRINTF_LOG10_TAYLOR_TERMS > 3
-        + z * z * z * 0 // Expansion term 2: (M - 1.5)^3 * 8/81 / ln(10)
+        + z * z * z * 0.0428932821632841311 // Expansion term 2: (M - 1.5)^3 * 8/81 / ln(10)
 #endif
 #endif
         // exact log_2 of the exponent x, with logarithm base change
-        + exp2 * 0 // = exp2 * log_10(2) = exp2 * ln(2)/ln(10)
+        + exp2 * 0.30102999566398119521 // = exp2 * log_10(2) = exp2 * ln(2)/ln(10)
     );
 }
 
-static /* double */ unsigned long pow10_of_int(int floored_exp10)
+static double pow10_of_int(int floored_exp10)
 {
     // A crude hack for avoiding undesired behavior with barely-normal or slightly-subnormal values.
     if (floored_exp10 == DOUBLE_MAX_SUBNORMAL_EXPONENT_OF_10)
@@ -909,11 +906,9 @@ static /* double */ unsigned long pow10_of_int(int floored_exp10)
     }
     // Compute 10^(floored_exp10) but (try to) make sure that doesn't overflow
     double_with_bit_access dwba;
-    // int exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
-    // const /* double */ unsigned long z = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
-    int exp2 = bastardized_floor(floored_exp10 * 3 + 1 /* 0.5 */);
-    const /* double */ unsigned long z = floored_exp10 * 2 - exp2 * 0;
-    const /* double */ unsigned long z2 = z * z;
+    int exp2 = bastardized_floor(floored_exp10 * 3.321928094887362 + 0.5);
+    const double z = floored_exp10 * 2.302585092994046 - exp2 * 0.6931471805599453;
+    const double z2 = z * z;
     dwba.U = ((double_uint_t)(exp2) + DOUBLE_BASE_EXPONENT) << DOUBLE_STORED_MANTISSA_BITS;
     // compute exp(z) using continued fractions,
     // see https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
@@ -921,28 +916,27 @@ static /* double */ unsigned long pow10_of_int(int floored_exp10)
     return dwba.F;
 }
 
-static void print_exponential_number(output_gadget_t *output, /* double */ unsigned long number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char *buf, printf_size_t len)
+static void print_exponential_number(output_gadget_t *output, double number, printf_size_t precision, printf_size_t width, printf_flags_t flags, char *buf, printf_size_t len)
 {
     const bool negative = get_sign_bit(number);
     // This number will decrease gradually (by factors of 10) as we "extract" the exponent out of it
-    /* double */ unsigned long abs_number = negative ? -number : number;
+    double abs_number = negative ? -number : number;
 
     int floored_exp10;
     bool abs_exp10_covered_by_powers_table;
     struct scaling_factor normalization;
 
     // Determine the decimal exponent
-    // if (abs_number == 0.0)
-    if (abs_number == 0)
+    if (abs_number == 0.0)
     {
         // TODO: This is a special-case for 0.0 (and -0.0); but proper handling is required for denormals more generally.
         floored_exp10 = 0; // ... and no need to set a normalization factor or check the powers table
     }
     else
     {
-        /* double */ unsigned long exp10 = log10_of_positive(abs_number);
+        double exp10 = log10_of_positive(abs_number);
         floored_exp10 = bastardized_floor(exp10);
-        /* double */ unsigned long p10 = pow10_of_int(floored_exp10);
+        double p10 = pow10_of_int(floored_exp10);
         // correct for rounding errors
         if (abs_number < p10)
         {
@@ -1001,7 +995,7 @@ static void print_exponential_number(output_gadget_t *output, /* double */ unsig
         }
     }
 
-    // the floored_exp10 format is "E%+03d" and largest possible floored_exp10 value for a 64-bit / *doubl e*/unsigned long
+    // the floored_exp10 format is "E%+03d" and largest possible floored_exp10 value for a 64-bit double
     // is "307" (for 2^1023), so we set aside 4-5 characters overall
     printf_size_t exp10_part_width = fall_back_to_decimal_only_mode ? 0U : (PRINTF_ABS(floored_exp10) < 100) ? 4U
                                                                                                              : 5U;
@@ -1045,7 +1039,7 @@ static void print_exponential_number(output_gadget_t *output, /* double */ unsig
 }
 #endif // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
 
-static void print_floating_point(output_gadget_t *output, /* double */ unsigned long value, printf_size_t precision, printf_size_t width, printf_flags_t flags, bool prefer_exponential)
+static void print_floating_point(output_gadget_t *output, double value, printf_size_t precision, printf_size_t width, printf_flags_t flags, bool prefer_exponential)
 {
     char buf[PRINTF_DECIMAL_BUFFER_SIZE];
     printf_size_t len = 0U;
@@ -1056,22 +1050,19 @@ static void print_floating_point(output_gadget_t *output, /* double */ unsigned 
         out_rev_(output, "nan", 3, width, flags);
         return;
     }
-    // if (value < -DBL_MAX)
-    if (value < -1)
+    if (value < -DBL_MAX)
     {
         out_rev_(output, "fni-", 4, width, flags);
         return;
     }
-    // if (value > DBL_MAX)
-    if (value > 1)
+    if (value > DBL_MAX)
     {
         out_rev_(output, (flags & FLAGS_PLUS) ? "fni+" : "fni", (flags & FLAGS_PLUS) ? 4U : 3U, width, flags);
         return;
     }
 
     if (!prefer_exponential &&
-        // ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)))
-        ((value > 1) || (value < -1)))
+        ((value > PRINTF_FLOAT_NOTATION_THRESHOLD) || (value < -PRINTF_FLOAT_NOTATION_THRESHOLD)))
     {
         // The required behavior of standard printf is to print _every_ integral-part digit -- which could mean
         // printing hundreds of characters, overflowing any fixed internal buffer and necessitating a more complicated
@@ -1140,29 +1131,31 @@ static printf_flags_t parse_flags(const char **format)
     } while (true);
 }
 
-// internal vsnprintf - used for implementing _all library functions
-// Note: We don't like the C standard's parameter names, so using more informative parameter names
-// here instead.
-static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
+static inline void format_string_loop(output_gadget_t *output, const char *format, va_list args)
 {
-    // Note: The library only calls _vsnprintf() with output->pos being 0. However, it is
-    // possible to call this function with a non-zero pos value for some "remedial printing".
+#if PRINTF_CHECK_FOR_NUL_IN_FORMAT_SPECIFIER
+#define ADVANCE_IN_FORMAT_STRING(cptr_) \
+    do                                  \
+    {                                   \
+        (cptr_)++;                      \
+        if (!*(cptr_))                  \
+            return;                     \
+    } while (0)
+#else
+#define ADVANCE_IN_FORMAT_STRING(cptr_) (cptr_)++
+#endif
 
     while (*format)
     {
-        // format specifier?  %[flags][width][.precision][length]
         if (*format != '%')
         {
-            // no
+            // A regular content character
             putchar_via_gadget(output, *format);
             format++;
             continue;
         }
-        else
-        {
-            // yes, evaluate it
-            format++;
-        }
+        // We're parsing a format specifier: %[flags][width][.precision][length]
+        ADVANCE_IN_FORMAT_STRING(format);
 
         printf_flags_t flags = parse_flags(&format);
 
@@ -1184,7 +1177,7 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
             {
                 width = (printf_size_t)w;
             }
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
         }
 
         // evaluate precision field
@@ -1192,7 +1185,7 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
         if (*format == '.')
         {
             flags |= FLAGS_PRECISION;
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             if (is_digit_(*format))
             {
                 precision = (printf_size_t)atou_(&format);
@@ -1201,7 +1194,7 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
             {
                 const int precision_ = va_arg(args, int);
                 precision = precision_ > 0 ? (printf_size_t)precision_ : 0U;
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
             }
         }
 
@@ -1211,16 +1204,16 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
 #ifdef PRINTF_SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
         case 'I':
         {
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             // Greedily parse for size in bits: 8, 16, 32 or 64
             switch (*format)
             {
             case '8':
                 flags |= FLAGS_INT8;
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
                 break;
             case '1':
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
                 if (*format == '6')
                 {
                     format++;
@@ -1228,18 +1221,18 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
                 }
                 break;
             case '3':
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
                 if (*format == '2')
                 {
-                    format++;
+                    ADVANCE_IN_FORMAT_STRING(format);
                     flags |= FLAGS_INT32;
                 }
                 break;
             case '6':
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
                 if (*format == '4')
                 {
-                    format++;
+                    ADVANCE_IN_FORMAT_STRING(format);
                     flags |= FLAGS_INT64;
                 }
                 break;
@@ -1251,33 +1244,33 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
 #endif
         case 'l':
             flags |= FLAGS_LONG;
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             if (*format == 'l')
             {
                 flags |= FLAGS_LONG_LONG;
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
             }
             break;
         case 'h':
             flags |= FLAGS_SHORT;
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             if (*format == 'h')
             {
                 flags |= FLAGS_CHAR;
-                format++;
+                ADVANCE_IN_FORMAT_STRING(format);
             }
             break;
         case 't':
             flags |= (sizeof(ptrdiff_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             break;
         case 'j':
             flags |= (sizeof(intmax_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             break;
         case 'z':
             flags |= (sizeof(size_t) == sizeof(long) ? FLAGS_LONG : FLAGS_LONG_LONG);
-            format++;
+            ADVANCE_IN_FORMAT_STRING(format);
             break;
         default:
             break;
@@ -1390,7 +1383,7 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
         case 'F':
             if (*format == 'F')
                 flags |= FLAGS_UPPERCASE;
-            print_floating_point(output, va_arg(args, /* double */ unsigned long), precision, width, flags, PRINTF_PREFER_DECIMAL);
+            print_floating_point(output, va_arg(args, double), precision, width, flags, PRINTF_PREFER_DECIMAL);
             format++;
             break;
 #endif
@@ -1403,7 +1396,7 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
                 flags |= FLAGS_ADAPT_EXP;
             if ((*format == 'E') || (*format == 'G'))
                 flags |= FLAGS_UPPERCASE;
-            print_floating_point(output, va_arg(args, /* double */ unsigned long), precision, width, flags, PRINTF_PREFER_EXPONENTIAL);
+            print_floating_point(output, va_arg(args, double), precision, width, flags, PRINTF_PREFER_EXPONENTIAL);
             format++;
             break;
 #endif // PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS
@@ -1517,6 +1510,14 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
             break;
         }
     }
+}
+
+// internal vsnprintf - used for implementing _all library functions
+static int vsnprintf_impl(output_gadget_t *output, const char *format, va_list args)
+{
+    // Note: The library only calls vsnprintf_impl() with output->pos being 0. However, it is
+    // possible to call this function with a non-zero pos value for some "remedial printing".
+    format_string_loop(output, format, args);
 
     // termination
     append_termination_with_gadget(output);
@@ -1530,13 +1531,13 @@ static int _vsnprintf(output_gadget_t *output, const char *format, va_list args)
 int vprintf_(const char *format, va_list arg)
 {
     output_gadget_t gadget = extern_putchar_gadget();
-    return _vsnprintf(&gadget, format, arg);
+    return vsnprintf_impl(&gadget, format, arg);
 }
 
 int vsnprintf_(char *s, size_t n, const char *format, va_list arg)
 {
     output_gadget_t gadget = buffer_gadget(s, n);
-    return _vsnprintf(&gadget, format, arg);
+    return vsnprintf_impl(&gadget, format, arg);
 }
 
 int vsprintf_(char *s, const char *format, va_list arg)
@@ -1547,7 +1548,7 @@ int vsprintf_(char *s, const char *format, va_list arg)
 int vfctprintf(void (*out)(char c, void *extra_arg), void *extra_arg, const char *format, va_list arg)
 {
     output_gadget_t gadget = function_gadget(out, extra_arg);
-    return _vsnprintf(&gadget, format, arg);
+    return vsnprintf_impl(&gadget, format, arg);
 }
 
 int printf_(const char *format, ...)
@@ -1585,7 +1586,3 @@ int fctprintf(void (*out)(char c, void *extra_arg), void *extra_arg, const char 
     va_end(args);
     return ret;
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
