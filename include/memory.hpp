@@ -35,6 +35,7 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 #define TO_GPB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 
 #define PAGE_SIZE 0x1000
+#define STACK_SIZE 0x10000
 
 // to pages
 #define TO_PAGES(d) (d / PAGE_SIZE + 1)

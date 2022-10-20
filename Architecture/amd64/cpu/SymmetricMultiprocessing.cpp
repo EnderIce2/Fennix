@@ -31,46 +31,21 @@ volatile bool CPUEnabled = false;
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
 
-CPUData *GetCPU(uint64_t id) { return &CPUs[id]; }
-
-CPUData *GetCurrentCPU()
-{
-    uint64_t ret = 0;
-#if defined(__amd64__)
-    ret = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
-
-    if (!CPUs[ret].IsActive)
-    {
-        error("CPU %d is not active!", ret);
-        return &CPUs[0];
-    }
-
-    if (CPUs[ret].Checksum != CPU_DATA_CHECKSUM)
-    {
-        error("CPU %d data is corrupted!", ret);
-        return &CPUs[0];
-    }
-    return &CPUs[ret];
-}
+CPUData *GetCPU(long id) { return &CPUs[id]; }
+CPUData *GetCurrentCPU() { return (CPUData *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE); }
 
 extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
     CPU::InitializeFeatures();
-    uintptr_t CoreID = CORE;
-    CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, (int)*reinterpret_cast<int *>(CoreID));
-    uint64_t CPU_ID = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
-
+    uint64_t CoreID = (int)*reinterpret_cast<int *>(CORE);
     // Initialize GDT and IDT
-    Interrupts::Initialize(CPU_ID);
-    Interrupts::Enable(CPU_ID);
-    Interrupts::InitializeTimer(CPU_ID);
+    Interrupts::Initialize(CoreID);
+    Interrupts::Enable(CoreID);
+    Interrupts::InitializeTimer(CoreID);
 
     CPU::Interrupts(CPU::Enable);
-    KPrint("CPU %d is online", CPU_ID);
+    KPrint("CPU %d is online", CoreID);
     CPUEnabled = true;
     CPU::Stop(); // Stop and surpress interrupts.
 }
@@ -109,7 +84,7 @@ namespace SMP
                 memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
 
                 POKE(volatile uint64_t, PAGE_TABLE) = CPU::x64::readcr3().raw;
-                POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPage();
+                POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
                 POKE(volatile uint64_t, CORE) = i;
 
                 asm volatile("sgdt [0x580]\n"
@@ -124,6 +99,7 @@ namespace SMP
                     ;
 
                 trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
+                KernelAllocator.FreePages((void *)*reinterpret_cast<long *>(STACK), TO_PAGES(STACK_SIZE));
                 CPUEnabled = false;
             }
             else

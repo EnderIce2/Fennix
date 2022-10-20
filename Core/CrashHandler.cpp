@@ -3,6 +3,7 @@
 #include <display.hpp>
 #include <printf.h>
 #include <debug.h>
+#include <smp.hpp>
 #include <cpu.hpp>
 
 #if defined(__amd64__)
@@ -215,8 +216,7 @@ namespace CrashHandler
         }
         }
 
-        EHPrint("\e7981FCTechnical Informations on CPU %lld:\n",
-                CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", GetCurrentCPU()->ID);
         EHPrint("FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                 Frame->ss, Frame->cs, Frame->ds);

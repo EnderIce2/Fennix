@@ -177,8 +177,6 @@ namespace CPU
 	{
 #if defined(__amd64__)
 		static int BSP = 0;
-		if (!BSP)
-			CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, 0);
 		CPU::x64::CR0 cr0 = CPU::x64::readcr0();
 		CPU::x64::CR4 cr4 = CPU::x64::readcr4();
 		uint32_t rax, rbx, rcx, rdx;

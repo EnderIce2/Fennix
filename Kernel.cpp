@@ -54,9 +54,6 @@ EXTERNC void Entry(BootInfo *Info)
            BootClock.Hour, BootClock.Minute, BootClock.Second,
            BootClock.Day, BootClock.Month, BootClock.Year);
     KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
-    GetCPU(0)->ID = 0;
-    GetCPU(0)->IsActive = true;
-    GetCPU(0)->Checksum = CPU_DATA_CHECKSUM;
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
     KPrint("Initializing CPU features");
@@ -86,5 +83,6 @@ EXTERNC void Entry(BootInfo *Info)
     SMP::Initialize(PowerManager->GetMADT());
     KPrint("\e058C19######## \eE85230END \e058C19########");
     CPU::Interrupts(CPU::Enable);
+    // asm("int $0x1");
     CPU::Stop();
 }

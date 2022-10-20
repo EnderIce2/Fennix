@@ -220,7 +220,7 @@ namespace APIC
 
     Timer::Timer(APIC *apic) : Interrupts::Handler(CPU::x64::IRQ0)
     {
-        trace("Initializing APIC timer on CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
         this->lapic = apic;
         this->lapic->Write(APIC_TDCR, 0x3);
 
@@ -259,7 +259,7 @@ namespace APIC
         this->lapic->Write(APIC_TIMER, (long)CPU::x64::IRQ0 | (long)APIC_PERIODIC);
         this->lapic->Write(APIC_TDCR, 0x3);
         this->lapic->Write(APIC_TICR, TicksIn10ms / 10);
-        trace("APIC Timer (CPU %d): %d ticks in 10ms", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), TicksIn10ms / 10);
+        trace("APIC Timer (CPU %d): %d ticks in 10ms", GetCurrentCPU()->ID, TicksIn10ms / 10);
         KPrint("APIC Timer: %d ticks in 10ms", TicksIn10ms / 10);
     }
 
