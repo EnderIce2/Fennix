@@ -2,6 +2,7 @@
 
 #include <syscalls.hpp>
 #include <hashmap.hpp>
+#include <smp.hpp>
 #include <io.h>
 
 #if defined(__amd64__)
@@ -41,6 +42,21 @@ namespace Interrupts
 #if defined(__amd64__)
         GlobalDescriptorTable::Init(Core);
         InterruptDescriptorTable::Init(Core);
+        CPUData *CoreData = GetCPU(Core);
+        CoreData->Checksum = CPU_DATA_CHECKSUM;
+        CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, (uint64_t)CoreData);
+        CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
+        CoreData->ID = Core;
+        CoreData->IsActive = true;
+        CoreData->SystemCallStack = (uint8_t *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE);
+        CoreData->Stack = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+        if (CoreData->Checksum != CPU_DATA_CHECKSUM)
+        {
+            KPrint("CPU %d data it's corrupted!", Core);
+            CPU::Stop();
+        }
+        debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
+        asmv("movq %0, %%rsp" ::"r"(CoreData->Stack));
         InitializeSystemCalls();
 #elif defined(__i386__)
         warn("i386 is not supported yet");
@@ -91,7 +107,7 @@ namespace Interrupts
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        int Core = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
+        int Core = GetCurrentCPU()->ID;
 
         Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
         if (handler != (Handler *)0xdeadbeef)
