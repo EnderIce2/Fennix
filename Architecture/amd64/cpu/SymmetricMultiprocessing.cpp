@@ -45,7 +45,7 @@ extern "C" void StartCPU()
     Interrupts::InitializeTimer(CoreID);
 
     CPU::Interrupts(CPU::Enable);
-    KPrint("CPU %d is online", CoreID);
+    KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
     CPUEnabled = true;
     CPU::Stop(); // Stop and surpress interrupts.
 }

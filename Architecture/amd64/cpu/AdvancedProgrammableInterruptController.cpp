@@ -260,7 +260,7 @@ namespace APIC
         this->lapic->Write(APIC_TDCR, 0x3);
         this->lapic->Write(APIC_TICR, TicksIn10ms / 10);
         trace("APIC Timer (CPU %d): %d ticks in 10ms", GetCurrentCPU()->ID, TicksIn10ms / 10);
-        KPrint("APIC Timer: %d ticks in 10ms", TicksIn10ms / 10);
+        KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks in 10ms", TicksIn10ms / 10);
     }
 
     Timer::~Timer()
