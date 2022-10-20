@@ -9,6 +9,7 @@
 #include <symbols.hpp>
 #include <kconfig.hpp>
 #include <power.hpp>
+#include <task.hpp>
 #include <pci.hpp>
 #endif
 
@@ -19,9 +20,11 @@ extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;
 extern PCI::PCI *PCIManager;
 extern KernelConfig Config;
+extern Tasking::Task *TaskManager;
 #endif
 
 EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
+EXTERNC void KernelMainThread();
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__

@@ -19,6 +19,7 @@ Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
+Tasking::Task *TaskManager = nullptr;
 
 KernelConfig Config;
 Time BootClock;
@@ -83,6 +84,6 @@ EXTERNC void Entry(BootInfo *Info)
     SMP::Initialize(PowerManager->GetMADT());
     KPrint("\e058C19######## \eE85230END \e058C19########");
     CPU::Interrupts(CPU::Enable);
-    // asm("int $0x1");
+    TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     CPU::Stop();
 }
