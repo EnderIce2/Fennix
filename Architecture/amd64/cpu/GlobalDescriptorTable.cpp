@@ -63,8 +63,8 @@ namespace GlobalDescriptorTable
 
         trace("GDT_KERNEL_CODE: %#lx", GDT_KERNEL_CODE);
         trace("GDT_KERNEL_DATA: %#lx", GDT_KERNEL_DATA);
-        trace("GDT_USER_DATA: %#lx", GDT_USER_DATA);
         trace("GDT_USER_CODE: %#lx", GDT_USER_CODE);
+        trace("GDT_USER_DATA: %#lx", GDT_USER_DATA);
         trace("GDT_TSS: %#lx", GDT_TSS);
         trace("Global Descriptor Table initialized");
     }
