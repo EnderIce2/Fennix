@@ -162,60 +162,52 @@ arith64_u64 __divmoddi4(arith64_u64 a, arith64_u64 b, arith64_u64 *c)
     {
         if (c)
             *c = a;
-        return 0;   
+        return 0;
     }
-    if (!arith64_hi(b)) 
+    if (!arith64_hi(b))
     {
-        if (b == 0) 
+        if (b == 0)
         {
             volatile char x = 0;
-            x = 1 / x; 
+            x = 1 / x;
         }
-        if (b == 1) 
+        if (b == 1)
         {
             if (c)
-                *c = 0; 
-            return a;   
+                *c = 0;
+            return a;
         }
-        if (!arith64_hi(a)) 
+        if (!arith64_hi(a))
         {
-            if (c) 
+            if (c)
                 *c = arith64_lo(a) % arith64_lo(b);
             return arith64_lo(a) / arith64_lo(b);
         }
     }
 
-    
-    char bits = __clzdi2(b) - __clzdi2(a) + 1; 
-    arith64_u64 rem = a >> bits;               
-    a <<= 64 - bits;                           
-    arith64_u64 wrap = 0;                      
-    while (bits-- > 0)                         
+    char bits = __clzdi2(b) - __clzdi2(a) + 1;
+    arith64_u64 rem = a >> bits;
+    a <<= 64 - bits;
+    arith64_u64 wrap = 0;
+    while (bits-- > 0)
     {
-        rem = (rem << 1) | (a >> 63);              
-        a = (a << 1) | (wrap & 1);                 
-        wrap = ((arith64_s64)(b - rem - 1) >> 63); 
-        rem -= b & wrap;                           
+        rem = (rem << 1) | (a >> 63);
+        a = (a << 1) | (wrap & 1);
+        wrap = ((arith64_s64)(b - rem - 1) >> 63);
+        rem -= b & wrap;
     }
     if (c)
-        *c = rem;                 
-    return (a << 1) | (wrap & 1); 
+        *c = rem;
+    return (a << 1) | (wrap & 1);
 }
-
 
 arith64_s64 __divdi3(arith64_s64 a, arith64_s64 b)
 {
     arith64_u64 q = __divmoddi4(arith64_abs(a), arith64_abs(b), (void *)0);
-    return arith64_neg(q, a ^ b); 
+    return arith64_neg(q, a ^ b);
 }
 
-
-
-int __ffsdi2(arith64_u64 a)
-{
-    return a ? __ctzdi2(a) + 1 : 0;
-}
-
+int __ffsdi2(arith64_u64 a) { return a ? __ctzdi2(a) + 1 : 0; }
 
 arith64_u64 __lshrdi3(arith64_u64 a, int b)
 {
@@ -236,45 +228,37 @@ arith64_u64 __lshrdi3(arith64_u64 a, int b)
     return w.u64;
 }
 
-
 arith64_s64 __moddi3(arith64_s64 a, arith64_s64 b)
 {
     arith64_u64 r;
     __divmoddi4(arith64_abs(a), arith64_abs(b), &r);
-    return arith64_neg(r, a); 
+    return arith64_neg(r, a);
 }
-
 
 int __popcountsi2(arith64_u32 a)
 {
-    
+
     a = a - ((a >> 1) & 0x55555555);
     a = ((a >> 2) & 0x33333333) + (a & 0x33333333);
     a = (a + (a >> 4)) & 0x0F0F0F0F;
     a = (a + (a >> 16));
-    
+
     return (a + (a >> 8)) & 63;
 }
 
-
 int __popcountdi2(arith64_u64 a)
 {
-    
+
     a = a - ((a >> 1) & 0x5555555555555555ULL);
     a = ((a >> 2) & 0x3333333333333333ULL) + (a & 0x3333333333333333ULL);
     a = (a + (a >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
     a = (a + (a >> 32));
     a = (a + (a >> 16));
-    
+
     return (a + (a >> 8)) & 127;
 }
 
-
-arith64_u64 __udivdi3(arith64_u64 a, arith64_u64 b)
-{
-    return __divmoddi4(a, b, (void *)0);
-}
-
+arith64_u64 __udivdi3(arith64_u64 a, arith64_u64 b) { return __divmoddi4(a, b, (void *)0); }
 
 arith64_u64 __umoddi3(arith64_u64 a, arith64_u64 b)
 {
@@ -282,3 +266,20 @@ arith64_u64 __umoddi3(arith64_u64 a, arith64_u64 b)
     __divmoddi4(a, b, &r);
     return r;
 }
+
+/* Good documentation: https://splichal.eu/scripts/sphinx/gccint/_build/html/the-gcc-low-level-runtime-library/routines-for-floating-point-emulation.html */
+
+double __adddf3(double a, double b) { return a + b; }
+double __muldf3(double a, double b) { return a * b; }
+double __floatsidf(int i) { return (double)i; }
+int __ltdf2(double a, double b) { return a < b; }
+int __gtdf2(double a, double b) { return a > b; }
+int __nedf2(double a, double b) { return a != b; }
+int __eqdf2(double a, double b) { return a == b; }
+double __floatdidf(long i) { return (double)i; }
+double __divdf3(double a, double b) { return a / b; }
+double __subdf3(double a, double b) { return a - b; }
+int __gedf2(double a, double b) { return a >= b; }
+int __fixdfsi(double a) { return (int)a; }
+long __fixdfdi(double a) { return (long)a; }
+int __ledf2(double a, double b) { return a <= b; }
