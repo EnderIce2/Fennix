@@ -2,6 +2,7 @@
 #define __FENNIX_KERNEL_SMP_H__
 
 #include <types.h>
+#include <task.hpp>
 
 /** @brief Maximum supported number of CPU cores by the kernel */
 #define MAX_CPU 256
@@ -31,6 +32,12 @@ struct CPUData
     long ErrorCode;
     /** @brief Is CPU online? */
     bool IsActive;
+
+    /** @brief Current running process */
+    Tasking::PCB *CurrentProcess;
+    /** @brief Current running thread */
+    Tasking::TCB *CurrentThread;
+
     /** @brief Architecture-specific CPU data. */
     CPUArchData *Data;
     /** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
