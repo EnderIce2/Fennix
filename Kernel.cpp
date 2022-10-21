@@ -12,7 +12,7 @@
 #include <cargs.h>
 #include <io.h>
 
-NEWLOCK(KernelLock);
+NewLock(KernelLock);
 
 BootInfo *bInfo = nullptr;
 Video::Display *Display = nullptr;
@@ -29,7 +29,7 @@ extern "C" void putchar(char c) { Display->Print(c, 0); }
 
 EXTERNC void KPrint(const char *Format, ...)
 {
-    SMARTLOCK(KernelLock);
+    SmartLock(KernelLock);
     Time tm = ReadClock();
     printf_("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     va_list args;

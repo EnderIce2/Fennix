@@ -232,7 +232,7 @@ namespace Memory
     class Physical
     {
     private:
-        NEWLOCK(MemoryLock);
+        NewLock(MemoryLock);
 
         uint64_t TotalMemory = 0;
         uint64_t FreeMemory = 0;
@@ -358,7 +358,7 @@ namespace Memory
     class Virtual
     {
     private:
-        NEWLOCK(MemoryLock);
+        NewLock(MemoryLock);
         PageTable *Table = nullptr;
 
         class PageMapIndexer

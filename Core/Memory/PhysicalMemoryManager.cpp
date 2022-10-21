@@ -6,25 +6,25 @@ namespace Memory
 {
     uint64_t Physical::GetTotalMemory()
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         return this->TotalMemory;
     }
 
     uint64_t Physical::GetFreeMemory()
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         return this->FreeMemory;
     }
 
     uint64_t Physical::GetReservedMemory()
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         return this->ReservedMemory;
     }
 
     uint64_t Physical::GetUsedMemory()
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         return this->UsedMemory;
     }
 
@@ -58,7 +58,7 @@ namespace Memory
 
     void *Physical::RequestPage()
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         for (; PageBitmapIndex < PageBitmap.Size * 8; PageBitmapIndex++)
         {
             if (PageBitmap[PageBitmapIndex] == true)
@@ -81,7 +81,7 @@ namespace Memory
 
     void *Physical::RequestPages(uint64_t Count)
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         for (; PageBitmapIndex < PageBitmap.Size * 8; PageBitmapIndex++)
         {
             if (PageBitmap[PageBitmapIndex] == true)
@@ -119,7 +119,7 @@ namespace Memory
 
     void Physical::FreePage(void *Address)
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         if (Address == nullptr)
         {
             warn("Null pointer passed to FreePage.");
@@ -228,7 +228,7 @@ namespace Memory
 
     void Physical::Init(BootInfo *Info)
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         void *LargestFreeMemorySegment = nullptr;
         uint64_t LargestFreeMemorySegmentSize = 0;
         uint64_t MemorySize = Info->Memory.Size;

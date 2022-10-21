@@ -2,7 +2,7 @@
 #include <lock.hpp>
 #include <memory.hpp>
 
-NEWLOCK(liballocLock);
+NewLock(liballocLock);
 
 EXTERNC int liballoc_lock() { return liballocLock.Lock(); }
 EXTERNC int liballoc_unlock() { return liballocLock.Unlock(); }

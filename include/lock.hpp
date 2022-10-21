@@ -1,11 +1,15 @@
 #ifndef __FENNIX_KERNEL_LOCK_H__
 #define __FENNIX_KERNEL_LOCK_H__
 
+/*
+TODO: Add deadlock detection.
+*/
+
 #include <types.h>
 #include <cpu.hpp>
 
 #ifdef __cplusplus
-
+/** @brief Please use this macro to create a new lock. */
 class LockClass
 {
 private:
@@ -28,26 +32,50 @@ public:
         return 0;
     }
 };
-
-#define NEWLOCK(Name) LockClass Name
-
-class SmartLock
+/** @brief Please use this macro to create a new smart lock. */
+class SmartLockClass
 {
 private:
     LockClass *LockPointer = nullptr;
 
 public:
-    SmartLock(LockClass &Lock)
+    SmartLockClass(LockClass &Lock)
     {
         this->LockPointer = &Lock;
         this->LockPointer->Lock();
     }
-    ~SmartLock() { this->LockPointer->Unlock(); }
+    ~SmartLockClass() { this->LockPointer->Unlock(); }
+};
+/** @brief Please use this macro to create a new smart critical section lock. */
+class SmartCriticalSectionClass
+{
+private:
+    LockClass *LockPointer = nullptr;
+    bool InterruptsEnabled = false;
+
+public:
+    SmartCriticalSectionClass(LockClass &Lock)
+    {
+        if (CPU::Interrupts(CPU::Check))
+            InterruptsEnabled = true;
+        CPU::Interrupts(CPU::Disable);
+        this->LockPointer = &Lock;
+        this->LockPointer->Lock();
+    }
+    ~SmartCriticalSectionClass()
+    {
+        if (InterruptsEnabled)
+            CPU::Interrupts(CPU::Enable);
+        this->LockPointer->Unlock();
+    }
 };
 
-#define SL_CONCAT(x, y) x##y
-#define SMARTLOCK(LockClassName) SmartLock SL_CONCAT(lock##_, __COUNTER__)(LockClassName)
+/** @brief Create a new lock (can be used with SmartCriticalSection). */
+#define NewLock(Name) LockClass Name
+/** @brief Simple lock that is automatically released when the scope ends. */
+#define SmartLock(LockClassName) SmartLockClass CONCAT(lock##_, __COUNTER__)(LockClassName)
+/** @brief Simple critical section that is automatically released when the scope ends and interrupts are restored if they were enabled. */
+#define SmartCriticalSection(LockClassName) SmartCriticalSectionClass CONCAT(lock##_, __COUNTER__)(LockClassName)
 
-#endif
-
+#endif // __cplusplus
 #endif // !__FENNIX_KERNEL_LOCK_H__

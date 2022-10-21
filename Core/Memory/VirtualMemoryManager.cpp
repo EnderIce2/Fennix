@@ -7,7 +7,7 @@ namespace Memory
 {
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         if (!this->Table)
         {
             error("No page table");
@@ -85,7 +85,7 @@ namespace Memory
 
     void Virtual::Unmap(void *VirtualAddress)
     {
-        SMARTLOCK(this->MemoryLock);
+        SmartLock(this->MemoryLock);
         if (!this->Table)
         {
             error("No page table");

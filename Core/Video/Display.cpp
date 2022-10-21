@@ -7,13 +7,13 @@ extern uint64_t _binary_Files_ter_powerline_v12n_psf_start;
 extern uint64_t _binary_Files_ter_powerline_v12n_psf_end;
 extern uint64_t _binary_Files_ter_powerline_v12n_psf_size;
 
-NEWLOCK(PrintLock);
+NewLock(PrintLock);
 
 namespace Video
 {
     char Display::Print(char Char, int Index, bool WriteToUART)
     {
-        SMARTLOCK(PrintLock);
+        SmartLock(PrintLock);
 
         if (this->ColorIteration)
         {
