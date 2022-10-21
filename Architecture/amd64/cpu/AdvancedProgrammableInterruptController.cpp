@@ -35,7 +35,7 @@ namespace APIC
 
     uint32_t APIC::Read(uint32_t Register)
     {
-        debug("APIC::Read(%#lx)", Register);
+        debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -50,7 +50,7 @@ namespace APIC
     void APIC::Write(uint32_t Register, uint32_t Value)
     {
         if (Register != APIC_EOI)
-            debug("APIC::Write(%#lx, %#lx)", Register, Value);
+            debug("APIC::Write(%#lx, %#lx) [x2=%d]", Register, Value, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)

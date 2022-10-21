@@ -52,6 +52,8 @@ extern "C" void StartCPU()
 
 namespace SMP
 {
+    int CPUCores = 0;
+
     void Initialize(void *madt)
     {
         if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0)
@@ -66,6 +68,8 @@ namespace SMP
             KPrint("More cores requested than available. Using %d cores", ((ACPI::MADT *)madt)->CPUCores + 1);
         else if (Config.Cores != 0)
             Cores = Config.Cores;
+
+        CPUCores = Cores;
 
         for (uint16_t i = 0; i < Cores; i++)
         {
@@ -87,8 +91,8 @@ namespace SMP
                 POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
                 POKE(volatile uint64_t, CORE) = i;
 
-                asm volatile("sgdt [0x580]\n"
-                             "sidt [0x590]\n");
+                asmv("sgdt [0x580]\n"
+                     "sidt [0x590]\n");
 
                 POKE(volatile uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
 
@@ -103,7 +107,7 @@ namespace SMP
                 CPUEnabled = false;
             }
             else
-                KPrint("CPU %d is the BSP", ((ACPI::MADT *)madt)->lapic[i]->APICId);
+                KPrint("\e058C19CPU \e8888FF%d \e058C19is the BSP", ((ACPI::MADT *)madt)->lapic[i]->APICId);
         }
     }
 }

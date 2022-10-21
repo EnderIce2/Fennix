@@ -28,7 +28,7 @@ namespace Power
         // second attempt to reboot
         // https://wiki.osdev.org/Reboot
         uint8_t temp;
-        asm volatile("cli");
+        asmv("cli");
         do
         {
             temp = inb(0x64);

@@ -58,8 +58,8 @@ namespace GlobalDescriptorTable
         tss[Core].InterruptStackTable[2] = (uint64_t)KernelAllocator.RequestPage();
 
         CPU::x64::ltr(GDT_TSS);
-        asm volatile("mov %%rsp, %0"
-                     : "=r"(tss[Core].StackPointer[0]));
+        asmv("mov %%rsp, %0"
+             : "=r"(tss[Core].StackPointer[0]));
 
         trace("GDT_KERNEL_CODE: %#lx", GDT_KERNEL_CODE);
         trace("GDT_KERNEL_DATA: %#lx", GDT_KERNEL_DATA);

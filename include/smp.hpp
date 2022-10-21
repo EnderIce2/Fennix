@@ -49,6 +49,7 @@ CPUData *GetCPU(long ID);
 
 namespace SMP
 {
+    extern int CPUCores;
     void Initialize(void *madt);
 }
 

@@ -82,8 +82,8 @@ EXTERNC void Entry(BootInfo *Info)
     Interrupts::InitializeTimer(0);
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
-    KPrint("\e058C19######## \eE85230END \e058C19########");
     CPU::Interrupts(CPU::Enable);
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
+    KPrint("\e058C19######## \eE85230END \e058C19########");
     CPU::Stop();
 }

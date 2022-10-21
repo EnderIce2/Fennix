@@ -156,7 +156,8 @@ namespace InterruptDescriptorTable
             "jmp InterruptHandlerStub\n");                                         \
     }
 
-    // ISR
+    /* ISR */
+
     EXCEPTION_HANDLER(0x0);
     EXCEPTION_HANDLER(0x1);
     EXCEPTION_HANDLER(0x2);
@@ -189,7 +190,9 @@ namespace InterruptDescriptorTable
     EXCEPTION_HANDLER(0x1d);
     EXCEPTION_HANDLER(0x1e);
     EXCEPTION_HANDLER(0x1f);
-    // IRQ
+
+    /* IRQ */
+
     INTERRUPT_HANDLER(0x20)
     INTERRUPT_HANDLER(0x21)
     INTERRUPT_HANDLER(0x22)
@@ -207,7 +210,12 @@ namespace InterruptDescriptorTable
     INTERRUPT_HANDLER(0x2e)
     INTERRUPT_HANDLER(0x2f)
 
-    INTERRUPT_HANDLER(0x30)
+    /* Reserved by OS */
+
+    __attribute__((naked, used, no_stack_protector)) void InterruptHandler_0x30() { asm("pushq $0\npushq $"
+                                                                                        "0x30"
+                                                                                        "\n"
+                                                                                        "jmp SchedulerInterruptStub\n"); }
     INTERRUPT_HANDLER(0x31)
     INTERRUPT_HANDLER(0x32)
     INTERRUPT_HANDLER(0x33)
@@ -221,6 +229,9 @@ namespace InterruptDescriptorTable
     INTERRUPT_HANDLER(0x3b)
     INTERRUPT_HANDLER(0x3c)
     INTERRUPT_HANDLER(0x3d)
+
+    /* Free */
+
     INTERRUPT_HANDLER(0x3e)
     INTERRUPT_HANDLER(0x3f)
     INTERRUPT_HANDLER(0x40)
@@ -420,6 +431,8 @@ namespace InterruptDescriptorTable
 
     void Init(int Core)
     {
+        /* ISR */
+
         SetEntry(0x0, InterruptHandler_0x0, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x1, InterruptHandler_0x1, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x2, InterruptHandler_0x2, FlagGate_32BIT_TRAP, 2, FlagGate_RING0, GDT_KERNEL_CODE);
@@ -452,7 +465,9 @@ namespace InterruptDescriptorTable
         SetEntry(0x1d, InterruptHandler_0x1d, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x1e, InterruptHandler_0x1e, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x1f, InterruptHandler_0x1f, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        // IRQ
+
+        /* IRQ */
+
         SetEntry(0x20, InterruptHandler_0x20, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x21, InterruptHandler_0x21, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x22, InterruptHandler_0x22, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
@@ -470,6 +485,8 @@ namespace InterruptDescriptorTable
         SetEntry(0x2e, InterruptHandler_0x2e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x2f, InterruptHandler_0x2f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
 
+        /* Reserved by OS */
+
         SetEntry(0x30, InterruptHandler_0x30, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x31, InterruptHandler_0x31, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x32, InterruptHandler_0x32, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
@@ -484,6 +501,9 @@ namespace InterruptDescriptorTable
         SetEntry(0x3b, InterruptHandler_0x3b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x3c, InterruptHandler_0x3c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x3d, InterruptHandler_0x3d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
+
+        /* Free */
+
         SetEntry(0x3e, InterruptHandler_0x3e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x3f, InterruptHandler_0x3f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
         SetEntry(0x40, InterruptHandler_0x40, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);

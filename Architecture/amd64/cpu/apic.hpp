@@ -18,12 +18,12 @@ namespace APIC
         APIC_VER = 0x30,      // Local APIC Version
         APIC_TPR = 0x80,      // Task Priority
         APIC_APR = 0x90,      // Arbitration Priority
-        APIC_PPR = 0xa0,      // Processor Priority
-        APIC_EOI = 0xb0,      // EOI
-        APIC_RRD = 0xc0,      // Remote Read
-        APIC_LDR = 0xd0,      // Logical Destination
-        APIC_DFR = 0xe0,      // Destination Format
-        APIC_SVR = 0xf0,      // Spurious Interrupt Vector
+        APIC_PPR = 0xA0,      // Processor Priority
+        APIC_EOI = 0xB0,      // EOI
+        APIC_RRD = 0xC0,      // Remote Read
+        APIC_LDR = 0xD0,      // Logical Destination
+        APIC_DFR = 0xE0,      // Destination Format
+        APIC_SVR = 0xF0,      // Spurious Interrupt Vector
         APIC_ISR = 0x100,     // In-Service (8 registers)
         APIC_TMR = 0x180,     // Trigger Mode (8 registers)
         APIC_IRR = 0x200,     // Interrupt Request (8 registers)
@@ -38,7 +38,7 @@ namespace APIC
         APIC_ERROR = 0x370,   // LVT Error
         APIC_TICR = 0x380,    // Initial Count (for Timer)
         APIC_TCCR = 0x390,    // Current Count (for Timer)
-        APIC_TDCR = 0x3e0,    // Divide Configuration (for Timer)
+        APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
     };
     class APIC
     {

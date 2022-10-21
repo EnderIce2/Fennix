@@ -89,18 +89,18 @@ namespace CrashHandler
 
         // store debug registers
         debug("Reading debug registers...");
-        asm volatile("movq %%dr0, %0"
-                     : "=r"(dr0));
-        asm volatile("movq %%dr1, %0"
-                     : "=r"(dr1));
-        asm volatile("movq %%dr2, %0"
-                     : "=r"(dr2));
-        asm volatile("movq %%dr3, %0"
-                     : "=r"(dr3));
-        asm volatile("movq %%dr6, %0"
-                     : "=r"(dr6));
-        asm volatile("movq %%dr7, %0"
-                     : "=r"(dr7));
+        asmv("movq %%dr0, %0"
+             : "=r"(dr0));
+        asmv("movq %%dr1, %0"
+             : "=r"(dr1));
+        asmv("movq %%dr2, %0"
+             : "=r"(dr2));
+        asmv("movq %%dr3, %0"
+             : "=r"(dr3));
+        asmv("movq %%dr6, %0"
+             : "=r"(dr6));
+        asmv("movq %%dr7, %0"
+             : "=r"(dr7));
 
         switch (Frame->InterruptNumber)
         {
@@ -272,24 +272,24 @@ namespace CrashHandler
 
         // restore debug registers
         debug("Restoring debug registers...");
-        asm volatile("movq %0, %%dr0"
-                     :
-                     : "r"(dr0));
-        asm volatile("movq %0, %%dr1"
-                     :
-                     : "r"(dr1));
-        asm volatile("movq %0, %%dr2"
-                     :
-                     : "r"(dr2));
-        asm volatile("movq %0, %%dr3"
-                     :
-                     : "r"(dr3));
-        asm volatile("movq %0, %%dr6"
-                     :
-                     : "r"(dr6));
-        asm volatile("movq %0, %%dr7"
-                     :
-                     : "r"(dr7));
+        asmv("movq %0, %%dr0"
+             :
+             : "r"(dr0));
+        asmv("movq %0, %%dr1"
+             :
+             : "r"(dr1));
+        asmv("movq %0, %%dr2"
+             :
+             : "r"(dr2));
+        asmv("movq %0, %%dr3"
+             :
+             : "r"(dr3));
+        asmv("movq %0, %%dr6"
+             :
+             : "r"(dr6));
+        asmv("movq %0, %%dr7"
+             :
+             : "r"(dr7));
 
         struct StackFrame
         {
