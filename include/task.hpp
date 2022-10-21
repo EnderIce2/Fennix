@@ -8,6 +8,7 @@ namespace Tasking
     typedef unsigned long IP;
     typedef unsigned long UPID;
     typedef unsigned long UTID;
+    typedef unsigned long Token;
 
     enum ExecutionElevation
     {
@@ -31,6 +32,7 @@ namespace Tasking
     struct ExecutionSecurity
     {
         ExecutionElevation Elevation;
+        Token Token;
     };
 
     struct PCB
@@ -51,8 +53,24 @@ namespace Tasking
     class Task
     {
     public:
-        PCB *CreateProcess(char *Name, ExecutionElevation Elevation);
-        TCB *CreateThread(PCB *Parent, IP EntryPoint);
+        /**
+         * @brief Get the Current Process object
+         * @return PCB* 
+         */
+        PCB *GetCurrentProcess();
+
+        /**
+         * @brief Get the Current Thread object
+         * @return TCB* 
+         */
+        TCB *GetCurrentThread();
+
+        PCB *CreateProcess(PCB *Parent,
+                           char *Name,
+                           ExecutionElevation Elevation);
+
+        TCB *CreateThread(PCB *Parent,
+                          IP EntryPoint);
 
         Task(const IP EntryPoint);
         ~Task();
