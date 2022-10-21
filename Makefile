@@ -78,7 +78,7 @@ LDFLAGS += -TArchitecture/i686/linker.ld 	\
 
 else ifeq ($(OSARCH), aarch64)
 
-CFLAGS += -pipe -fno-builtin -fPIC -mgeneral-regs-only
+CFLAGS += -pipe -fno-builtin -fPIC
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC
 
