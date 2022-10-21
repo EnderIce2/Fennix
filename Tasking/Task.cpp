@@ -37,7 +37,7 @@ namespace Tasking
 
     PCB *Task::CreateProcess(PCB *Parent,
                              char *Name,
-                             ExecutionElevation Elevation)
+                             TaskElevation Elevation)
     {
         SmartCriticalSection(TaskingLock);
         PCB *Process = new PCB;

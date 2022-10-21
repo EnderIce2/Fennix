@@ -10,7 +10,7 @@ namespace Tasking
     typedef unsigned long UTID;
     typedef unsigned long Token;
 
-    enum ExecutionElevation
+    enum TaskElevation
     {
         UnknownElevation,
         Kernel,
@@ -19,7 +19,7 @@ namespace Tasking
         User
     };
 
-    enum ExecutionStatus
+    enum TaskStatus
     {
         UnknownStatus,
         Running,
@@ -29,18 +29,18 @@ namespace Tasking
         Terminated
     };
 
-    struct ExecutionSecurity
+    struct TaskSecurity
     {
-        ExecutionElevation Elevation;
-        Token Token;
+        TaskElevation Elevation;
+        Token UniqueToken;
     };
 
     struct PCB
     {
         UPID PID;
         char Name[256];
-        ExecutionSecurity Security;
-        ExecutionStatus Status;
+        TaskSecurity Security;
+        TaskStatus Status;
     };
 
     struct TCB
@@ -67,7 +67,7 @@ namespace Tasking
 
         PCB *CreateProcess(PCB *Parent,
                            char *Name,
-                           ExecutionElevation Elevation);
+                           TaskElevation Elevation);
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint);
