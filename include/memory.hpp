@@ -433,10 +433,23 @@ namespace Memory
     };
 }
 
+/**
+ * @brief // stub namespace for std::align_val_t and new operator
+ * @note // Found on https://gcc.gnu.org/legacy-ml/gcc-patches/2016-09/msg00628.html for "_ZnwmSt11align_val_t" compiler error
+ */
+namespace std
+{
+    typedef __SIZE_TYPE__ size_t;
+    enum class align_val_t : std::size_t
+    {
+    };
+}
+
 void InitializeMemoryManagement(BootInfo *Info);
 
 void *operator new(size_t Size);
 void *operator new[](size_t Size);
+void *operator new(size_t Size, std::align_val_t Alignment);
 void operator delete(void *Pointer);
 void operator delete[](void *Pointer);
 void operator delete(void *Pointer, long unsigned int Size);

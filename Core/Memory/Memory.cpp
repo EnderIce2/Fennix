@@ -249,6 +249,11 @@ void HeapFree(void *Address)
 
 void *operator new(size_t Size) { return HeapMalloc(Size); }
 void *operator new[](size_t Size) { return HeapMalloc(Size); }
+void *operator new(unsigned long Size, std::align_val_t Alignment)
+{
+    fixme("operator new with alignment(%#lx) is not implemented", Alignment);
+    return HeapMalloc(Size);
+}
 void operator delete(void *Pointer) { HeapFree(Pointer); }
 void operator delete[](void *Pointer) { HeapFree(Pointer); }
 void operator delete(void *Pointer, long unsigned int Size) { HeapFree(Pointer); }
