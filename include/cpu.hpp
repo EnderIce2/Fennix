@@ -197,7 +197,7 @@ namespace CPU
 
     namespace MemBar
     {
-        static inline void Barrier()
+        __attribute__((no_stack_protector)) static inline void Barrier()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("" ::
@@ -208,7 +208,7 @@ namespace CPU
 #endif
         }
 
-        static inline void Fence()
+        __attribute__((no_stack_protector)) static inline void Fence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("mfence" ::
@@ -219,7 +219,7 @@ namespace CPU
 #endif
         }
 
-        static inline void StoreFence()
+        __attribute__((no_stack_protector)) static inline void StoreFence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("sfence" ::
@@ -230,7 +230,7 @@ namespace CPU
 #endif
         }
 
-        static inline void LoadFence()
+        __attribute__((no_stack_protector)) static inline void LoadFence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("lfence" ::
