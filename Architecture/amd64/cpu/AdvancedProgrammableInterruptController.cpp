@@ -237,7 +237,10 @@ namespace APIC
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
     {
         this->lapic->Write(APIC_TDCR, 0x03);
-        this->lapic->Write(APIC_TIMER, (APIC_ONESHOT | Vector));
+        LVTTimer timer = {0, 0, 0, 0, 0, 0, 0};
+        timer.Vector = Vector;
+        timer.TimerMode = 0;
+        this->lapic->Write(APIC_TIMER, timer.raw);
         this->lapic->Write(APIC_TICR, (TicksIn10ms / 10) * Miliseconds);
     }
 
@@ -279,7 +282,12 @@ namespace APIC
 
         TicksIn10ms = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
 
-        this->lapic->Write(APIC_TIMER, (long)CPU::x64::IRQ0 | (long)APIC_PERIODIC);
+        LVTTimer timer = {0, 0, 0, 0, 0, 0, 0};
+        timer.Vector = CPU::x64::IRQ0;
+        timer.Mask = 0;
+        timer.TimerMode = 1;
+
+        this->lapic->Write(APIC_TIMER, timer.raw);
         this->lapic->Write(APIC_TDCR, 0x3);
         this->lapic->Write(APIC_TICR, TicksIn10ms / 10);
         trace("APIC Timer (CPU %d): %d ticks in 10ms", GetCurrentCPU()->ID, TicksIn10ms / 10);

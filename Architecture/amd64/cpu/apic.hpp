@@ -10,9 +10,6 @@ namespace APIC
 {
     enum APICRegisters
     {
-        APIC_ONESHOT = (0 << 17),      // LVT One-Shot Mode  (for Timer)
-        APIC_PERIODIC = (1 << 17),     // LVT Periodic Mode (for Timer)
-        APIC_TSC_DEADLINE = (2 << 17), // LVT Timer/sDeadline (for Timer)
         // source from: https://github.com/pdoane/osdev/blob/master/intr/local_apic.c
         APIC_ID = 0x20,       // Local APIC ID
         APIC_VER = 0x30,      // Local APIC Version
@@ -40,6 +37,44 @@ namespace APIC
         APIC_TCCR = 0x390,    // Current Count (for Timer)
         APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
     };
+
+    union LVTTimer
+    {
+        struct
+        {
+            /** @brief Interrupt Vector */
+            uint64_t Vector : 8;
+            /** @brief Reserved */
+            uint64_t Reserved0 : 4;
+            /**
+             * @brief Delivery Status
+             *
+             * 0: Idle
+             * 1: Send Pending
+             */
+            uint64_t DeliveryStatus : 1;
+            /** @brief Reserved */
+            uint64_t Reserved1 : 3;
+            /**
+             * @brief Mask
+             *
+             * 0: Not masked
+             * 1: Masked
+             */
+            uint64_t Mask : 1;
+            /** @brief Timer Mode
+             *
+             * 0: One-shot
+             * 1: Periodic
+             * 2: TSC-Deadline
+             */
+            uint64_t TimerMode : 1;
+            /** @brief Reserved */
+            uint64_t Reserved2 : 14;
+        };
+        uint64_t raw;
+    };
+
     class APIC
     {
     private:
