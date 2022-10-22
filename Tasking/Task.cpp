@@ -56,6 +56,7 @@ namespace Tasking
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         fixme("unimplemented");
+        OneShot(500); // test
     }
 #elif defined(__i386__)
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
