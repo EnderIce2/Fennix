@@ -45,7 +45,12 @@ namespace APIC
                 return CPU::x64::rdmsr(0x30 + 0x800);
         }
         else
-            return *((volatile uint32_t *)((uintptr_t)((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress + Register));
+        {
+            CPU::MemBar::Barrier();
+            uint32_t ret = *((volatile uint32_t *)((uintptr_t)((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress + Register));
+            CPU::MemBar::Barrier();
+            return ret;
+        }
     }
 
     void APIC::Write(uint32_t Register, uint32_t Value)
@@ -63,21 +68,32 @@ namespace APIC
                 CPU::x64::wrmsr(CPU::x64::MSR_X2APIC_ICR, Value);
         }
         else
+        {
+            CPU::MemBar::Barrier();
             *((volatile uint32_t *)(((uintptr_t)((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress) + Register)) = Value;
+            CPU::MemBar::Barrier();
+        }
     }
 
     void APIC::IOWrite(uint64_t Base, uint32_t Register, uint32_t Value)
     {
         debug("APIC::IOWrite(%#lx, %#lx, %#lx)", Base, Register, Value);
+        CPU::MemBar::Barrier();
         *((volatile uint32_t *)(((uintptr_t)Base))) = Register;
+        CPU::MemBar::Barrier();
         *((volatile uint32_t *)(((uintptr_t)Base + 16))) = Value;
+        CPU::MemBar::Barrier();
     }
 
     uint32_t APIC::IORead(uint64_t Base, uint32_t Register)
     {
         debug("APIC::IORead(%#lx, %#lx)", Base, Register);
+        CPU::MemBar::Barrier();
         *((volatile uint32_t *)(((uintptr_t)Base))) = Register;
-        return *((volatile uint32_t *)(((uintptr_t)Base + 16)));
+        CPU::MemBar::Barrier();
+        uint32_t ret = *((volatile uint32_t *)(((uintptr_t)Base + 16)));
+        CPU::MemBar::Barrier();
+        return ret;
     }
 
     void APIC::EOI() { this->Write(APIC_EOI, 0); }
