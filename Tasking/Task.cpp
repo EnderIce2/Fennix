@@ -27,6 +27,8 @@ namespace Tasking
 {
     extern "C" void OneShot(int TimeSlice)
     {
+        if (TimeSlice == 0)
+            TimeSlice = 10;
 #if defined(__amd64__)
         ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x64::IRQ16, TimeSlice);
 #elif defined(__i386__)

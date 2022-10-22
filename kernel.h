@@ -25,6 +25,8 @@ extern Tasking::Task *TaskManager;
 
 EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
+
 EXTERNC void KernelMainThread();
+EXTERNC void KernelShutdownThread(bool Reboot);
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__
