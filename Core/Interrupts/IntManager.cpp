@@ -118,6 +118,7 @@ namespace Interrupts
         if (apic[Core])
         {
             ((APIC::APIC *)Interrupts::apic[Core])->EOI();
+            // apic->IPI(CurrentCPU->ID, SchedulerInterrupt); ??????
             return;
         }
         // TODO: PIC

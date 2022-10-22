@@ -6,7 +6,8 @@ void KernelMainThread()
 {
     KPrint("Kernel main thread started!");
     // asm("int $0x1");
-    CPU::Stop();
+    while (1)
+        CPU::Halt();
 }
 
 void KernelShutdownThread(bool Reboot)

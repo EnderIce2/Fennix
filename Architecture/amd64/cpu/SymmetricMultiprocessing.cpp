@@ -47,7 +47,8 @@ extern "C" void StartCPU()
     CPU::Interrupts(CPU::Enable);
     KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
     CPUEnabled = true;
-    CPU::Stop(); // Stop and surpress interrupts.
+    while (1)
+        CPU::Halt();
 }
 
 namespace SMP
@@ -100,7 +101,7 @@ namespace SMP
                 ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
 
                 while (!CPUEnabled)
-                    ;
+                    CPU::Pause();
 
                 trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
                 KernelAllocator.FreePages((void *)*reinterpret_cast<long *>(STACK), TO_PAGES(STACK_SIZE));

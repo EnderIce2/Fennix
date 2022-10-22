@@ -13,7 +13,7 @@
 #elif defined(__aarch64__)
 #endif
 
-#define DEBUG_SCHEDULER 1
+// #define DEBUG_SCHEDULER 1
 
 #ifdef DEBUG_SCHEDULER
 #define schedbg(m, ...) debug(m, ##__VA_ARGS__)
@@ -50,15 +50,266 @@ namespace Tasking
 #endif
     }
 
-    Vector<PCB *> ListProcess;
-    PCB *IdleProcess = nullptr;
-    TCB *IdleThread = nullptr;
-
 #if defined(__amd64__)
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
-        fixme("unimplemented");
-        OneShot(500); // test
+        SmartCriticalSection(TaskingLock);
+        CPUData *CurrentCPU = GetCurrentCPU();
+        debug("Scheduler called on CPU %d.", CurrentCPU->ID);
+
+        schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
+        schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
+        schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
+                CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+                Frame->ss, Frame->cs, Frame->ds);
+        schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+        schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+        schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+        schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+        schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+
+        // Null or invalid process/thread? Let's find a new one to execute.
+        if (InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread))
+        {
+            schedbg("%d processes", ListProcess.size());
+#ifdef DEBUG_SCHEDULER
+            foreach (auto var in ListProcess)
+            {
+                schedbg("Process %d %s", var->ID, var->Name);
+            }
+#endif
+            // Find a new process to execute.
+            foreach (PCB *pcb in ListProcess)
+            {
+                if (InvalidPCB(pcb))
+                    continue;
+
+                // Check process status.
+                switch (pcb->Status)
+                {
+                case TaskStatus::Ready:
+                    schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
+                    break;
+                default:
+                    schedbg("Process %s(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+                    // RemoveProcess(pcb); // ignore for now
+                    continue;
+                }
+
+                // Get first available thread from the list.
+                foreach (TCB *tcb in pcb->Threads)
+                {
+                    if (InvalidTCB(tcb))
+                        continue;
+
+                    if (tcb->Status != TaskStatus::Ready)
+                        continue;
+
+                    // Set process and thread as the current one's.
+                    CurrentCPU->CurrentProcess = pcb;
+                    CurrentCPU->CurrentThread = tcb;
+                    // Success!
+                    goto Success;
+                }
+            }
+            schedbg("No process to run.");
+            // No process found. Idling...
+            goto Idle;
+        }
+        else
+        {
+            // Save current process and thread registries, gs, fs, fpu, etc...
+            CurrentCPU->CurrentThread->Registers = *Frame;
+            // _fxsave(CurrentCPU->CurrentThread->FXRegion);
+
+            // Set the process & thread as ready if it's running.
+            if (CurrentCPU->CurrentProcess->Status == TaskStatus::Running)
+                CurrentCPU->CurrentProcess->Status = TaskStatus::Ready;
+            if (CurrentCPU->CurrentThread->Status == TaskStatus::Running)
+                CurrentCPU->CurrentThread->Status = TaskStatus::Ready;
+
+            // Get next available thread from the list.
+            for (uint64_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
+            {
+                // Loop until we find the current thread from the process thread list.
+                if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread)
+                {
+                    // Check if the next thread is valid. If not, we search until we find, but if we reach the end of the list, we go to the next process.
+                    uint64_t tmpidx = i;
+                RetryAnotherThread:
+                    TCB *thread = CurrentCPU->CurrentProcess->Threads[tmpidx + 1];
+                    if (InvalidTCB(thread))
+                    {
+                        if (tmpidx > CurrentCPU->CurrentProcess->Threads.size())
+                            break;
+                        tmpidx++;
+                        goto RetryAnotherThread;
+                    }
+
+                    schedbg("%s(%d) and next thread is %s(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
+
+                    // Check if the thread is ready to be executed.
+                    if (thread->Status != TaskStatus::Ready)
+                    {
+                        schedbg("Thread %d is not ready", thread->ID);
+                        goto RetryAnotherThread;
+                    }
+
+                    // Everything is fine, we can set the new thread as the current one.
+                    CurrentCPU->CurrentThread = thread;
+                    schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d", thread->ID, thread->Parent->Name, CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
+                    // Yay! We found a new thread to execute.
+                    goto Success;
+                }
+            }
+
+            // If the last process didn't find a thread to execute, we search for a new process.
+            for (uint64_t i = 0; i < ListProcess.size(); i++)
+            {
+                // Loop until we find the current process from the process list.
+                if (ListProcess[i] == CurrentCPU->CurrentProcess)
+                {
+                    // Check if the next process is valid. If not, we search until we find.
+                    uint64_t tmpidx = i;
+                RetryAnotherProcess:
+                    PCB *pcb = ListProcess[tmpidx + 1];
+                    if (InvalidPCB(pcb))
+                    {
+                        if (tmpidx > ListProcess.size())
+                            break;
+                        tmpidx++;
+                        goto RetryAnotherProcess;
+                    }
+
+                    if (pcb->Status != TaskStatus::Ready)
+                        goto RetryAnotherProcess;
+
+                    // Everything good, now search for a thread.
+                    for (uint64_t j = 0; j < pcb->Threads.size(); j++)
+                    {
+                        TCB *tcb = pcb->Threads[j];
+                        if (InvalidTCB(tcb))
+                            continue;
+                        if (tcb->Status != TaskStatus::Ready)
+                            continue;
+                        // Success! We set as the current one and restore the stuff.
+                        CurrentCPU->CurrentProcess = pcb;
+                        CurrentCPU->CurrentThread = tcb;
+                        schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)", tcb->ID, tcb->Name, pcb->Threads.size(), ListProcess.size());
+                        goto Success;
+                    }
+                }
+            }
+
+            // Before checking from the beginning, we remove everything that is terminated.
+            foreach (PCB *pcb in ListProcess)
+            {
+                if (InvalidPCB(pcb))
+                    continue;
+                // RemoveProcess(pcb); // comment this until i will find a way to handle properly vectors, the memory need to be 0ed after removing.
+            }
+
+            // If we didn't find anything, we check from the start of the list. This is the last chance to find something or we go to idle.
+            foreach (PCB *pcb in ListProcess)
+            {
+                if (InvalidPCB(pcb))
+                    continue;
+                if (pcb->Status != TaskStatus::Ready)
+                    continue;
+
+                // Now do the thread search!
+                foreach (TCB *tcb in pcb->Threads)
+                {
+                    if (InvalidTCB(tcb))
+                        continue;
+                    if (tcb->Status != TaskStatus::Ready)
+                        continue;
+                    // \o/ We found a new thread to execute.
+                    CurrentCPU->CurrentProcess = pcb;
+                    CurrentCPU->CurrentThread = tcb;
+                    schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)", tcb->ID, tcb->Parent->Name, pcb->Threads.size(), ListProcess.size());
+                    goto Success;
+                }
+            }
+        }
+
+    Idle:
+    {
+        // I should remove processes that are no longer having any threads? remove only from userspace?
+        if (IdleProcess == nullptr)
+        {
+            schedbg("Idle process created");
+            IdleProcess = CreateProcess(nullptr, (char *)"idle", TaskTrustLevel::Idle);
+            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), 0);
+        }
+        CurrentCPU->CurrentProcess = IdleProcess;
+        CurrentCPU->CurrentThread = IdleThread;
+
+        *Frame = CurrentCPU->CurrentThread->Registers;
+        // UpdatePageTable(CurrentCPU->CurrentProcess->PageTable); // kernel one
+        // _fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        goto End;
+    }
+
+    Success:
+    {
+        schedbg("Success Prc:%s(%d) Thd:%s(%d)->RIP:%#lx-RSP:%#lx(STACK: %#lx)",
+                CurrentCPU->CurrentProcess->Name, CurrentCPU->CurrentProcess->ID,
+                CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
+                CurrentCPU->CurrentThread->Registers.rip, CurrentCPU->CurrentThread->Registers.rsp, CurrentCPU->CurrentThread->Stack);
+
+        CurrentCPU->CurrentProcess->Status = TaskStatus::Running;
+        CurrentCPU->CurrentThread->Status = TaskStatus::Running;
+
+        *Frame = CurrentCPU->CurrentThread->Registers;
+        // UpdatePageTable(CurrentCPU->CurrentProcess->PageTable);
+
+        switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
+        {
+        case TaskTrustLevel::System:
+        case TaskTrustLevel::Idle:
+        case TaskTrustLevel::Kernel:
+            // wrmsr(MSR_SHADOW_GS_BASE, (uint64_t)CurrentCPU->CurrentThread);
+            break;
+        case TaskTrustLevel::User:
+            // wrmsr(MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->gs);
+            break;
+        default:
+            error("Unknown trust level %d.", CurrentCPU->CurrentProcess->Security.TrustLevel);
+            break;
+        }
+        // _fxrstor(CurrentCPU->CurrentThread->FXRegion);
+    }
+    End:
+    {
+        // UpdateTimeUsed(&CurrentCPU->CurrentProcess->Info);
+        // UpdateTimeUsed(&CurrentCPU->CurrentThread->Info);
+        // UpdateCPUUsage(&CurrentCPU->CurrentProcess->Info);
+        // UpdateCPUUsage(&CurrentCPU->CurrentThread->Info);
+        OneShot(CurrentCPU->CurrentThread->Info.Priority);
+        schedbg("Scheduler end");
+    }
+        schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+        schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
+                CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+                Frame->ss, Frame->cs, Frame->ds);
+        schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+        schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+        schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+        schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+        schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+
+        schedbg("SCHEDULER FUNCTION END");
     }
 #elif defined(__i386__)
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
@@ -112,7 +363,12 @@ namespace Tasking
         Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE);
         Thread->Status = TaskStatus::Ready;
 
-        memset(&Thread->Registers, 0, sizeof(ThreadFrame)); // Just in case
+#if defined(__amd64__)
+        memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
+        Thread->Registers.rip = (EntryPoint + Offset);
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
         switch (Parent->Security.TrustLevel)
         {
         case TaskTrustLevel::System:
@@ -265,6 +521,7 @@ namespace Tasking
         Process->Info.Priority = 0;
 
         Parent->Children.push_back(Process);
+        ListProcess.push_back(Process);
         return Process;
     }
 
@@ -290,12 +547,21 @@ namespace Tasking
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock();
+
 #if defined(__amd64__) || defined(__i386__)
+        uint32_t rax, rbx, rcx, rdx;
+        CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
+        if (rcx & CPU::x64::CPUID_FEAT_RCX_MONITOR)
+        {
+            trace("CPU has MONITOR/MWAIT support.");
+        }
+
         for (int i = 0; i < SMP::CPUCores; i++)
         {
             /* do stuff i guess */
-            ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 100);
+            ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 1000);
         }
+        // ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
 #endif
         debug("Tasking Started");
     }

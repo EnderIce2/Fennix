@@ -1,6 +1,7 @@
 #include "apic.hpp"
 
 #include <memory.hpp>
+#include <uart.hpp>
 #include <cpu.hpp>
 #include <smp.hpp>
 #include <io.h>
@@ -49,7 +50,10 @@ namespace APIC
 
     void APIC::Write(uint32_t Register, uint32_t Value)
     {
-        if (Register != APIC_EOI)
+        if (Register != APIC_EOI &&
+            Register != APIC_TDCR &&
+            Register != APIC_TIMER &&
+            Register != APIC_TICR)
             debug("APIC::Write(%#lx, %#lx) [x2=%d]", Register, Value, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {
@@ -209,6 +213,9 @@ namespace APIC
     void Timer::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
+        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('H');
+        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
     }
 
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
@@ -231,9 +238,9 @@ namespace APIC
         IOIn = (IOIn & 0xFD) | 1;
         outb(0x61, IOIn);
         outb(0x43, 178);
-        outb(0x42, Ticks & 0xff);
+        outb(0x40, Ticks & 0xff);
         inb(0x60);
-        outb(0x42, Ticks >> 8);
+        outb(0x40, Ticks >> 8);
 
         this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 

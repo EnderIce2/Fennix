@@ -57,11 +57,11 @@ EXTERNC void Entry(BootInfo *Info)
     KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
-    KPrint("Initializing CPU features");
+    KPrint("Initializing CPU Features");
     CPU::InitializeFeatures();
-    KPrint("Loading kernel symbols");
+    KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
-    KPrint("Reading kernel parameters");
+    KPrint("Reading Kernel Parameters");
     Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
@@ -76,14 +76,14 @@ EXTERNC void Entry(BootInfo *Info)
                PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
                PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
     }
-    KPrint("Enabling interrupts");
+    KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
-    KPrint("Initializing timer");
+    KPrint("Initializing Bootstrap Processor Timer");
     Interrupts::InitializeTimer(0);
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
-    CPU::Interrupts(CPU::Enable);
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     KPrint("\e058C19######## \eE85230END \e058C19########");
-    CPU::Stop();
+    while (1)
+        CPU::Halt();
 }

@@ -15,90 +15,6 @@ namespace Tasking
     typedef unsigned long UTID;
     typedef unsigned long Token;
 
-    struct ThreadFrame
-    {
-#if defined(__amd64__)
-        // uint64_t gs;         // General-purpose Segment
-        // uint64_t fs;         // General-purpose Segment
-        // uint64_t es;         // Extra Segment (used for string operations)
-        uint64_t ds;         // Data Segment
-        uint64_t r15;        // General purpose
-        uint64_t r14;        // General purpose
-        uint64_t r13;        // General purpose
-        uint64_t r12;        // General purpose
-        uint64_t r11;        // General purpose
-        uint64_t r10;        // General purpose
-        uint64_t r9;         // General purpose
-        uint64_t r8;         // General purpose
-        uint64_t rbp;        // Base Pointer (meant for stack frames)
-        uint64_t rdi;        // First Argument
-        uint64_t rsi;        // Second Argument
-        uint64_t rdx;        // Data (commonly extends the A register)
-        uint64_t rcx;        // Counter
-        uint64_t rbx;        // Base
-        uint64_t rax;        // Accumulator
-        uint64_t int_num;    // Interrupt Number
-        uint64_t error_code; // Error code
-        uint64_t rip;        // Instruction Pointer
-        uint64_t cs;         // Code Segment
-        union
-        {
-            struct
-            {
-                /** @brief Carry Flag */
-                uint64_t CF : 1;
-                /** @brief Reserved */
-                uint64_t AlwaysOne : 1;
-                /** @brief Parity Flag */
-                uint64_t PF : 1;
-                /** @brief Reserved */
-                uint64_t Reserved0 : 1;
-                /** @brief Auxiliary Carry Flag */
-                uint64_t AF : 1;
-                /** @brief Reserved */
-                uint64_t Reserved1 : 1;
-                /** @brief Zero Flag */
-                uint64_t ZF : 1;
-                /** @brief Sign Flag */
-                uint64_t SF : 1;
-                /** @brief Trap Flag */
-                uint64_t TF : 1;
-                /** @brief Interrupt Enable Flag */
-                uint64_t IF : 1;
-                /** @brief Direction Flag */
-                uint64_t DF : 1;
-                /** @brief Overflow Flag */
-                uint64_t OF : 1;
-                /** @brief I/O Privilege Level */
-                uint64_t IOPL : 2;
-                /** @brief Nested Task */
-                uint64_t NT : 1;
-                /** @brief Reserved */
-                uint64_t Reserved2 : 1;
-                /** @brief Resume Flag */
-                uint64_t RF : 1;
-                /** @brief Virtual 8086 Mode */
-                uint64_t VM : 1;
-                /** @brief Alignment Check */
-                uint64_t AC : 1;
-                /** @brief Virtual Interrupt Flag */
-                uint64_t VIF : 1;
-                /** @brief Virtual Interrupt Pending */
-                uint64_t VIP : 1;
-                /** @brief ID Flag */
-                uint64_t ID : 1;
-                /** @brief Reserved */
-                uint64_t Reserved3 : 10;
-            };
-            uint64_t raw;
-        } rflags;     // Register Flags
-        uint64_t rsp; // Stack Pointer
-        uint64_t ss;  // Stack Segment / Data Segment
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
-    };
-
     enum TaskArchitecture
     {
         UnknownArchitecture,
@@ -164,7 +80,13 @@ namespace Tasking
         int ExitCode;
         void *Stack;
         TaskStatus Status;
-        ThreadFrame Registers;
+#if defined(__amd64__)
+        CPU::x64::TrapFrame Registers;
+#elif defined(__i386__)
+        uint32_t Registers; // TODO
+#elif defined(__aarch64__)
+        uint64_t Registers; // TODO
+#endif
         TaskSecurity Security;
         TaskInfo Info;
 
@@ -219,6 +141,20 @@ namespace Tasking
         Security SecurityManager;
         UPID NextPID = 0;
         UTID NextTID = 0;
+
+        Vector<PCB *> ListProcess;
+        PCB *IdleProcess = nullptr;
+        TCB *IdleThread = nullptr;
+
+        bool InvalidPCB(PCB *pcb)
+        {
+            return false;
+        }
+
+        bool InvalidTCB(TCB *tcb)
+        {
+            return false;
+        }
 
 #if defined(__amd64__)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);

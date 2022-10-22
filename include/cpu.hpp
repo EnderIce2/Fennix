@@ -136,7 +136,7 @@ namespace CPU
     /**
      * @brief Pause the CPU
      */
-    static inline void Pause()
+    __attribute__((no_stack_protector)) static inline void Pause()
     {
 #if defined(__amd64__) || defined(__i386__)
         asmv("pause");
@@ -148,7 +148,7 @@ namespace CPU
     /**
      * @brief Stop the CPU (infinite loop)
      */
-    static inline void Stop()
+    __attribute__((no_stack_protector)) static inline void Stop()
     {
         while (1)
         {
@@ -158,11 +158,8 @@ namespace CPU
                  "hlt\n"
                  "jmp CPUStopLoop");
 #elif defined(__aarch64__)
-            while (1)
-            {
-                asmv("msr daifset, #2");
-                asmv("wfe");
-            }
+            asmv("msr daifset, #2");
+            asmv("wfe");
 #endif
         }
     }
@@ -170,7 +167,7 @@ namespace CPU
     /**
      * @brief Halt the CPU
      */
-    static inline void Halt()
+    __attribute__((no_stack_protector)) static inline void Halt()
     {
 #if defined(__amd64__) || defined(__i386__)
         asmv("hlt");
