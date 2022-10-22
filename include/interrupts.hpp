@@ -3,15 +3,14 @@
 
 #include <types.h>
 #include <cpu.hpp>
-#include <smp.hpp>
 
 namespace Interrupts
 {
 #if defined(__amd64__)
-    /* APIC::APIC */ extern void *apic[MAX_CPU];
-    /* APIC::Timer */ extern void *apicTimer[MAX_CPU];
+    /* APIC::APIC */ extern void *apic[256]; // MAX_CPU
+    /* APIC::Timer */ extern void *apicTimer[256]; // MAX_CPU
 #elif defined(__i386__)
-    extern void *apic[MAX_CPU];
+    extern void *apic[256]; // MAX_CPU
 #elif defined(__aarch64__)
 #endif
     void Initialize(int Core);

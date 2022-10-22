@@ -1004,15 +1004,15 @@ namespace CPU
                 /** @brief Carry Flag */
                 uint64_t CF : 1;
                 /** @brief Reserved */
-                uint64_t always_one : 1;
+                uint64_t AlwaysOne : 1;
                 /** @brief Parity Flag */
                 uint64_t PF : 1;
                 /** @brief Reserved */
-                uint64_t _reserved0 : 1;
+                uint64_t Reserved0 : 1;
                 /** @brief Auxiliary Carry Flag */
                 uint64_t AF : 1;
                 /** @brief Reserved */
-                uint64_t _reserved1 : 1;
+                uint64_t Reserved1 : 1;
                 /** @brief Zero Flag */
                 uint64_t ZF : 1;
                 /** @brief Sign Flag */
@@ -1030,7 +1030,7 @@ namespace CPU
                 /** @brief Nested Task */
                 uint64_t NT : 1;
                 /** @brief Reserved */
-                uint64_t _reserved2 : 1;
+                uint64_t Reserved2 : 1;
                 /** @brief Resume Flag */
                 uint64_t RF : 1;
                 /** @brief Virtual 8086 Mode */
@@ -1044,7 +1044,7 @@ namespace CPU
                 /** @brief ID Flag */
                 uint64_t ID : 1;
                 /** @brief Reserved */
-                uint64_t _reserved3 : 10;
+                uint64_t Reserved3 : 10;
             };
             uint64_t raw;
         } RFLAGS;
@@ -1099,15 +1099,15 @@ namespace CPU
                 /** @brief Numeric Error */
                 uint64_t NE : 1;
                 /** @brief Reserved */
-                uint64_t _reserved0 : 10;
+                uint64_t Reserved0 : 10;
                 /** @brief Write Protect */
                 uint64_t WP : 1;
                 /** @brief Reserved */
-                uint64_t _reserved1 : 1;
+                uint64_t Reserved1 : 1;
                 /** @brief Alignment Mask */
                 uint64_t AM : 1;
                 /** @brief Reserved */
-                uint64_t _reserved2 : 10;
+                uint64_t Reserved2 : 10;
                 /** @brief Mot Write-through */
                 uint64_t NW : 1;
                 /** @brief Cache Disable */
@@ -1177,7 +1177,7 @@ namespace CPU
                 /** @brief SMX Enable */
                 uint64_t SMXE : 1;
                 /** @brief Reserved */
-                uint64_t _reserved0 : 1;
+                uint64_t Reserved0 : 1;
                 /** @brief FSGSBASE Enable */
                 uint64_t FSGSBASE : 1;
                 /** @brief PCID Enable */
@@ -1185,7 +1185,7 @@ namespace CPU
                 /** @brief XSAVE and Processor Extended States Enable */
                 uint64_t OSXSAVE : 1;
                 /** @brief Reserved */
-                uint64_t _reserved1 : 1;
+                uint64_t Reserved1 : 1;
                 /** @brief SMEP Enable */
                 uint64_t SMEP : 1;
                 /** @brief SMAP Enable */
@@ -1193,7 +1193,7 @@ namespace CPU
                 /** @brief Protection-Key Enable */
                 uint64_t PKE : 1;
                 /** @brief Reserved */
-                uint64_t _reserved2 : 9;
+                uint64_t Reserved2 : 9;
             };
             uint64_t raw;
         } CR4;
@@ -1300,11 +1300,11 @@ namespace CPU
                 /** @brief When set, the page fault was caused by a shadow stack access. */
                 uint64_t SS : 1;
                 /** @brief Reserved */
-                uint64_t _reserved0 : 8;
+                uint64_t Reserved0 : 8;
                 /** @brief When set, the fault was due to an SGX violation. The fault is unrelated to ordinary paging. */
                 uint64_t SGX : 1;
                 /** @brief Reserved */
-                uint64_t _reserved1 : 16;
+                uint64_t Reserved1 : 16;
             };
             uint64_t raw;
         } PageFaultErrorCode;

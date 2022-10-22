@@ -232,7 +232,7 @@ namespace CrashHandler
                 cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
                 cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
                 cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
-                cr0._reserved0, cr0._reserved1, cr0._reserved2);
+                cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
 
         EHPrint("\eFCBD79CR2: PFLA: %#llx\n",
                 cr2.PFLA);
@@ -246,7 +246,7 @@ namespace CrashHandler
                 cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
                 cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
                 cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
-                cr4._reserved0, cr4._reserved1, cr4._reserved2);
+                cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
 
         EHPrint("\e79FCF5CR8: TPL:%d\n", cr8.TPL);
 
@@ -255,8 +255,8 @@ namespace CrashHandler
                 Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
                 Frame->rflags.OF ? "True " : "False", Frame->rflags.IOPL ? "True " : "False", Frame->rflags.NT ? "True " : "False", Frame->rflags.RF ? "True " : "False",
                 Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
-                Frame->rflags.ID ? "True " : "False", Frame->rflags.always_one,
-                Frame->rflags._reserved0, Frame->rflags._reserved1, Frame->rflags._reserved2, Frame->rflags._reserved3);
+                Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
+                Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
 
         EHPrint("\eA0F0F0DR7: LDR0:%s     GDR0:%s     LDR1:%s     GDR1:%s\n     LDR2:%s     GDR2:%s     LDR3:%s     GDR3:%s\n     CDR0:%s     SDR0:%s     CDR1:%s     SDR1:%s\n     CDR2:%s     SDR2:%s     CDR3:%s     SDR3:%s\n     R:%#x\n",
                 dr7.LocalDR0 ? "True " : "False", dr7.GlobalDR0 ? "True " : "False", dr7.LocalDR1 ? "True " : "False", dr7.GlobalDR1 ? "True " : "False",
@@ -470,7 +470,7 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     staticbuffer(page_present);
     staticbuffer(page_write);
     staticbuffer(page_user);
-    staticbuffer(page_reserved);
+    staticbuffer(pageReserved);
     staticbuffer(page_fetch);
     staticbuffer(page_protection);
     staticbuffer(page_shadow);
@@ -485,8 +485,8 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     CrashHandler::EHPrint(page_write);
     sprintf_(page_user, "Processor Mode: %s\n", params.U ? "User-Mode" : "Kernel-Mode");
     CrashHandler::EHPrint(page_user);
-    sprintf_(page_reserved, "CPU Reserved Bits: %s\n", params.R ? "Reserved" : "Unreserved");
-    CrashHandler::EHPrint(page_reserved);
+    sprintf_(pageReserved, "CPU Reserved Bits: %s\n", params.R ? "Reserved" : "Unreserved");
+    CrashHandler::EHPrint(pageReserved);
     sprintf_(page_fetch, "Caused By An Instruction Fetch: %s\n", params.I ? "Yes" : "No");
     CrashHandler::EHPrint(page_fetch);
     sprintf_(page_protection, "Caused By A Protection-Key Violation: %s\n", params.PK ? "Yes" : "No");

@@ -212,10 +212,7 @@ namespace InterruptDescriptorTable
 
     /* Reserved by OS */
 
-    __attribute__((naked, used, no_stack_protector)) void InterruptHandler_0x30() { asm("pushq $0\npushq $"
-                                                                                        "0x30"
-                                                                                        "\n"
-                                                                                        "jmp SchedulerInterruptStub\n"); }
+    INTERRUPT_HANDLER(0x30)
     INTERRUPT_HANDLER(0x31)
     INTERRUPT_HANDLER(0x32)
     INTERRUPT_HANDLER(0x33)

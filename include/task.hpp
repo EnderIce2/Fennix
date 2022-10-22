@@ -3,6 +3,7 @@
 
 #include <types.h>
 
+#include <interrupts.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
 
@@ -47,15 +48,15 @@ namespace Tasking
                 /** @brief Carry Flag */
                 uint64_t CF : 1;
                 /** @brief Reserved */
-                uint64_t always_one : 1;
+                uint64_t AlwaysOne : 1;
                 /** @brief Parity Flag */
                 uint64_t PF : 1;
                 /** @brief Reserved */
-                uint64_t _reserved0 : 1;
+                uint64_t Reserved0 : 1;
                 /** @brief Auxiliary Carry Flag */
                 uint64_t AF : 1;
                 /** @brief Reserved */
-                uint64_t _reserved1 : 1;
+                uint64_t Reserved1 : 1;
                 /** @brief Zero Flag */
                 uint64_t ZF : 1;
                 /** @brief Sign Flag */
@@ -73,7 +74,7 @@ namespace Tasking
                 /** @brief Nested Task */
                 uint64_t NT : 1;
                 /** @brief Reserved */
-                uint64_t _reserved2 : 1;
+                uint64_t Reserved2 : 1;
                 /** @brief Resume Flag */
                 uint64_t RF : 1;
                 /** @brief Virtual 8086 Mode */
@@ -87,7 +88,7 @@ namespace Tasking
                 /** @brief ID Flag */
                 uint64_t ID : 1;
                 /** @brief Reserved */
-                uint64_t _reserved3 : 10;
+                uint64_t Reserved3 : 10;
             };
             uint64_t raw;
         } rflags;     // Register Flags
@@ -107,7 +108,7 @@ namespace Tasking
         ARM64
     };
 
-    enum TaskPlatform
+    enum TaskCompatibility
     {
         UnknownPlatform,
         Native,
@@ -115,7 +116,7 @@ namespace Tasking
         Windows
     };
 
-    enum TaskElevation
+    enum TaskTrustLevel
     {
         UnknownElevation,
         Kernel,
@@ -127,6 +128,7 @@ namespace Tasking
     enum TaskStatus
     {
         UnknownStatus,
+        Ready,
         Running,
         Sleeping,
         Waiting,
@@ -136,7 +138,7 @@ namespace Tasking
 
     struct TaskSecurity
     {
-        TaskElevation Elevation;
+        TaskTrustLevel TrustLevel;
         Token UniqueToken;
     };
 
@@ -146,10 +148,10 @@ namespace Tasking
         uint64_t OldSystemTime = 0, CurrentSystemTime = 0;
         uint64_t Year, Month, Day, Hour, Minute, Second;
         uint64_t Usage[256]; // MAX_CPU
-        TaskArchitecture Architecture;
-        TaskPlatform Platform;
+        bool Affinity[256];  // MAX_CPU
         int Priority;
-        bool Affinity[256]; // MAX_CPU
+        TaskArchitecture Architecture;
+        TaskCompatibility Compatibility;
     };
 
     struct TCB
@@ -161,11 +163,10 @@ namespace Tasking
         IPOffset Offset;
         int ExitCode;
         void *Stack;
+        TaskStatus Status;
         ThreadFrame Registers;
         TaskSecurity Security;
         TaskInfo Info;
-        TaskStatus Status;
-        TaskElevation Elevation;
 
         void Rename(const char *name)
         {
@@ -184,17 +185,49 @@ namespace Tasking
         char Name[256];
         PCB *Parent;
         int ExitCode;
+        TaskStatus Status;
         TaskSecurity Security;
         TaskInfo Info;
-        TaskStatus Status;
-        TaskElevation Elevation;
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
-        // Memory::PageTable PageTable;
+        Memory::PageTable *PageTable;
     };
 
-    class Task
+    enum TokenTrustLevel
     {
+        UnknownTrustLevel,
+        Untrusted,
+        Trusted,
+        TrustedByKernel
+    };
+
+    class Security
+    {
+    public:
+        Token CreateToken();
+        bool TrustToken(Token token,
+                        TokenTrustLevel TrustLevel);
+        bool UntrustToken(Token token);
+        bool DestroyToken(Token token);
+        Security();
+        ~Security();
+    };
+
+    class Task : public Interrupts::Handler
+    {
+    private:
+        Security SecurityManager;
+        UPID NextPID = 0;
+        UTID NextTID = 0;
+
+#if defined(__amd64__)
+        void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
+#elif defined(__i386__)
+        void OnInterruptReceived(void *Frame);
+#elif defined(__aarch64__)
+        void OnInterruptReceived(void *Frame);
+#endif
+
     public:
         /**
          * @brief Get the Current Process object
@@ -210,10 +243,13 @@ namespace Tasking
 
         PCB *CreateProcess(PCB *Parent,
                            const char *Name,
-                           TaskElevation Elevation);
+                           TaskTrustLevel TrustLevel);
 
         TCB *CreateThread(PCB *Parent,
-                          IP EntryPoint);
+                          IP EntryPoint,
+                          IPOffset Offset = 0,
+                          TaskArchitecture Architecture = TaskArchitecture::x64,
+                          TaskCompatibility Compatibility = TaskCompatibility::Native);
 
         Task(const IP EntryPoint);
         ~Task();
