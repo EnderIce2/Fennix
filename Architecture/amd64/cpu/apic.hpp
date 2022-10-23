@@ -38,6 +38,17 @@ namespace APIC
         APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
     };
 
+    enum IOAPICRegisters
+    {
+        GetIOAPICVersion = 0x1
+    };
+
+    enum IOAPICFlags
+    {
+        ActiveHighLow = 2,
+        EdgeLevel = 8
+    };
+
     typedef union
     {
         struct
@@ -75,10 +86,23 @@ namespace APIC
         uint64_t raw;
     } __attribute__((packed)) LVTTimer;
 
+    typedef union
+    {
+        struct
+        {
+            uint64_t Version : 8;
+            uint64_t Reserved : 8;
+            uint64_t MaximumRedirectionEntry : 8;
+            uint64_t Reserved2 : 8;
+        };
+        uint64_t raw;
+    } __attribute__((packed)) IOAPICVersion;
+
     class APIC
     {
     private:
         bool x2APICSupported = false;
+        uint64_t APICBaseAddress = 0;
 
     public:
         uint32_t Read(uint32_t Register);

@@ -13,25 +13,6 @@ using namespace CPU::x64;
 
 namespace APIC
 {
-    enum IOAPICRegisters
-    {
-        GetIOAPICVersion = 0x1
-    };
-
-    enum IOAPICFlags
-    {
-        ActiveHighLow = 2,
-        EdgeLevel = 8
-    };
-
-    struct IOAPICVersion
-    {
-        uint8_t Version;
-        uint8_t Reserved;
-        uint8_t MaximumRedirectionEntry;
-        uint8_t Reserved2;
-    };
-
     // headache
     // https://www.amd.com/system/files/TechDocs/24593.pdf
     // https://www.naic.edu/~phil/software/intel/318148.pdf
@@ -49,7 +30,7 @@ namespace APIC
         else
         {
             CPU::MemBar::Barrier();
-            uint32_t ret = *((volatile uint32_t *)((uintptr_t)((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress + Register));
+            uint32_t ret = *((volatile uint32_t *)((uintptr_t)APICBaseAddress + Register));
             CPU::MemBar::Barrier();
             return ret;
         }
@@ -72,7 +53,7 @@ namespace APIC
         else
         {
             CPU::MemBar::Barrier();
-            *((volatile uint32_t *)(((uintptr_t)((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress) + Register)) = Value;
+            *((volatile uint32_t *)(((uintptr_t)APICBaseAddress) + Register)) = Value;
             CPU::MemBar::Barrier();
         }
     }
@@ -182,7 +163,7 @@ namespace APIC
     APIC::APIC(int Core)
     {
         APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
-        void *APICBaseAddress = (void *)(uint64_t)(BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u);
+        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
         trace("APIC Address: %#lx", APICBaseAddress);
 
         uint32_t rcx;
