@@ -994,6 +994,35 @@ namespace CPU
             IRQ223 = 0xff,
         } Interrupts;
 
+        /**
+         * @brief MSR_APIC_BASE structure
+         * @see MSR_APIC_BASE
+         */
+        typedef union
+        {
+            struct
+            {
+                /** @brief Reserved */
+                uint32_t Reserved0 : 8;
+                /**
+                 * @brief BSP Flag
+                 * @details If the BSP flag is set to 1, the processor is the bootstrap processor.
+                 */
+                uint32_t BSP : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 1;
+                /** @brief Enable x2APIC mode */
+                uint32_t EXTD : 1;
+                /** @brief APIC Global Enable */
+                uint32_t EN : 1;
+                /** @brief APIC Base Low Address */
+                uint32_t ApicBaseLo : 20;
+                /** @brief APIC Base High Address */
+                uint32_t ApicBaseHi : 32;
+            };
+            uint64_t raw;
+        } __attribute__((packed)) APIC_BASE;
+
         typedef union
         {
             struct

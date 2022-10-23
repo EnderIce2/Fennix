@@ -9,6 +9,8 @@
 #include "../../../kernel.h"
 #include "../acpi.hpp"
 
+using namespace CPU::x64;
+
 namespace APIC
 {
     enum IOAPICRegisters
@@ -40,9 +42,9 @@ namespace APIC
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
-                return CPU::x64::rdmsr((Register >> 4) + 0x800);
+                return rdmsr((Register >> 4) + 0x800);
             else
-                return CPU::x64::rdmsr(0x30 + 0x800);
+                return rdmsr(0x30 + 0x800);
         }
         else
         {
@@ -63,9 +65,9 @@ namespace APIC
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
-                CPU::x64::wrmsr((Register >> 4) + 0x800, Value);
+                wrmsr((Register >> 4) + 0x800, Value);
             else
-                CPU::x64::wrmsr(CPU::x64::MSR_X2APIC_ICR, Value);
+                wrmsr(MSR_X2APIC_ICR, Value);
         }
         else
         {
@@ -110,7 +112,7 @@ namespace APIC
     {
         if (x2APICSupported)
         {
-            CPU::x64::wrmsr(CPU::x64::MSR_X2APIC_ICR, ((uint64_t)CPU) << 32 | InterruptNumber);
+            wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32 | InterruptNumber);
         }
         else
         {
@@ -179,20 +181,25 @@ namespace APIC
 
     APIC::APIC(int Core)
     {
+        APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
+        void *APICBaseAddress = (void *)(uint64_t)(BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u);
+        trace("APIC Address: %#lx", APICBaseAddress);
+
         uint32_t rcx;
-        CPU::x64::cpuid(1, 0, 0, &rcx, 0);
-        if (rcx & CPU::x64::CPUID_FEAT_RCX_x2APIC)
+        cpuid(1, 0, 0, &rcx, 0);
+        if (rcx & CPUID_FEAT_RCX_x2APIC)
         {
             // this->x2APICSupported = true;
             warn("x2APIC not supported yet.");
-            // CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, (CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | (1 << 11)) & ~(1 << 10));
-            CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | (1 << 11));
+            // wrmsr(MSR_APIC_BASE, (rdmsr(MSR_APIC_BASE) | (1 << 11)) & ~(1 << 10));
+            BaseStruct.EN = 1;
+            wrmsr(MSR_APIC_BASE, BaseStruct.raw);
         }
         else
         {
-            CPU::x64::wrmsr(CPU::x64::MSR_APIC_BASE, CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE) | (1 << 11));
+            BaseStruct.EN = 1;
+            wrmsr(MSR_APIC_BASE, BaseStruct.raw);
         }
-        trace("APIC Address: %#lx", CPU::x64::rdmsr(CPU::x64::MSR_APIC_BASE));
 
         this->Write(APIC_TPR, 0x0);
         this->Write(APIC_SVR, this->Read(APIC_SVR) | 0x100); // 0x1FF or 0x100 ? on https://wiki.osdev.org/APIC is 0x100
@@ -216,9 +223,9 @@ namespace APIC
             if (madt->nmi[i]->flags & 8)
                 nmi |= 1 << 15;
             if (madt->nmi[i]->lint == 0)
-                this->Write(0x350, nmi);
+                this->Write(APIC_LINT0, nmi);
             else if (madt->nmi[i]->lint == 1)
-                this->Write(0x360, nmi);
+                this->Write(APIC_LINT1, nmi);
         }
     }
 
@@ -226,9 +233,9 @@ namespace APIC
     {
     }
 
-    void Timer::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    void Timer::OnInterruptReceived(TrapFrame *Frame)
     {
-        // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE));
+        // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", rdmsr(MSR_FS_BASE));
         // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
         // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('H');
         // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
@@ -244,7 +251,7 @@ namespace APIC
         this->lapic->Write(APIC_TICR, (TicksIn10ms / 10) * Miliseconds);
     }
 
-    Timer::Timer(APIC *apic) : Interrupts::Handler(CPU::x64::IRQ0)
+    Timer::Timer(APIC *apic) : Interrupts::Handler(IRQ0)
     {
         trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
         this->lapic = apic;
@@ -283,7 +290,7 @@ namespace APIC
         TicksIn10ms = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
 
         LVTTimer timer = {0, 0, 0, 0, 0, 0, 0};
-        timer.Vector = CPU::x64::IRQ0;
+        timer.Vector = IRQ0;
         timer.Mask = 0;
         timer.TimerMode = 1;
 

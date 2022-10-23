@@ -38,7 +38,7 @@ namespace APIC
         APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
     };
 
-    union LVTTimer
+    typedef union
     {
         struct
         {
@@ -73,7 +73,7 @@ namespace APIC
             uint64_t Reserved2 : 14;
         };
         uint64_t raw;
-    };
+    } __attribute__((packed)) LVTTimer;
 
     class APIC
     {
