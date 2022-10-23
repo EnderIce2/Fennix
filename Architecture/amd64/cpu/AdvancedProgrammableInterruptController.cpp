@@ -208,6 +208,14 @@ namespace APIC
             else if (madt->nmi[i]->lint == 1)
                 this->Write(APIC_LINT1, nmi);
         }
+
+        // Disable PIT
+        outb(0x43, 0x28);
+        outb(0x40, 0x0);
+
+        // Disable PIC
+        outb(0x21, 0xFF);
+        outb(0xA1, 0xFF);
     }
 
     APIC::~APIC()
@@ -224,62 +232,84 @@ namespace APIC
 
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
     {
-        this->lapic->Write(APIC_TDCR, 0x03);
-        LVTTimer timer = {0, 0, 0, 0, 0, 0, 0};
+        LVTTimer timer = {.raw = 0};
         timer.Vector = Vector;
         timer.TimerMode = 0;
+        this->lapic->Write(APIC_TDCR, 0x0);
+        this->lapic->Write(APIC_TICR, Ticks * Miliseconds);
         this->lapic->Write(APIC_TIMER, timer.raw);
-        this->lapic->Write(APIC_TICR, (TicksIn10ms / 10) * Miliseconds);
     }
 
     Timer::Timer(APIC *apic) : Interrupts::Handler(IRQ0)
     {
-        trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
         this->lapic = apic;
-        this->lapic->Write(APIC_TDCR, 0x3);
+        trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
 
-        int Count = 10000; /* µs */
-        int Ticks = 1193180 / (Count / 100);
+        // Setup the spurrious interrupt vector
+        APICSpurious Spurious = {.raw = this->lapic->Read(APIC_SVR)};
+        Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
+        Spurious.Software = 1;
+        this->lapic->Write(APIC_SVR, Spurious.raw);
 
-        int IOIn = inb(0x61);
-        IOIn = (IOIn & 0xFD) | 1;
-        outb(0x61, IOIn);
-        outb(0x43, 178);
-        outb(0x40, Ticks & 0xff);
-        inb(0x60);
-        outb(0x40, Ticks >> 8);
-
+        this->lapic->Write(APIC_TDCR, 0x0);
         this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 
-        IOIn = inb(0x61);
-        IOIn = (IOIn & 0xFC);
-        outb(0x61, IOIn);
-        IOIn |= 1;
-        outb(0x61, IOIn);
-        uint32_t Loop = 0;
-        while ((inb(0x61) & 0x20) != 0)
-            ++Loop;
+        // After PIT sleep is completed. Mask the timer.
+        LVTTimer masktimer = {.raw = 0x10000};
 
-        this->lapic->Write(APIC_TIMER, 0x10000);
+        // // PIT Config
+        // int Count = 10000; /* µs */
+        // int Ticks = 1193180 / (Count / 100);
 
-        outb(0x43, 0x28);
-        outb(0x40, 0x0);
+        // // https://wiki.osdev.org/Programmable_Interval_Timer#I.2FO_Ports
 
-        outb(0x21, 0xFF);
-        outb(0xA1, 0xFF);
+        // // PIT Prepare
+        // int IOIn = inb(0x61);
+        // IOIn = (IOIn & 0xFD) | 1;
+        // outb(0x61, IOIn);
+        // outb(0x43, 178);
+        // outb(0x40, Ticks & 0xff);
+        // inb(0x60);
+        // outb(0x40, Ticks >> 8);
 
-        TicksIn10ms = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
+        // // PIT Start
+        // IOIn = inb(0x61);
+        // IOIn = (IOIn & 0xFC);
+        // outb(0x61, IOIn);
+        // IOIn |= 1;
+        // outb(0x61, IOIn);
+        // uint32_t Loop = 0;
+        // while ((inb(0x61) & 0x20) != 0)
+        //     ++Loop;
 
-        LVTTimer timer = {0, 0, 0, 0, 0, 0, 0};
+        // 10000ms
+        for (int i = 0; i < 10000; i++)
+            inb(0x80); // 1µs
+
+        // Mask the timer
+        this->lapic->Write(APIC_TIMER, masktimer.raw);
+
+        // // Disable the PIT
+        // outb(0x43, 0x28);
+        // outb(0x40, 0x0);
+
+        // outb(0x21, 0xFF);
+        // outb(0xA1, 0xFF);
+
+        Ticks = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
+
+        // Config for IRQ0 timer
+        LVTTimer timer = {.raw = 0};
         timer.Vector = IRQ0;
         timer.Mask = 0;
         timer.TimerMode = 1;
 
+        // Initialize APIC timer
+        this->lapic->Write(APIC_TDCR, 0x0);
+        this->lapic->Write(APIC_TICR, Ticks);
         this->lapic->Write(APIC_TIMER, timer.raw);
-        this->lapic->Write(APIC_TDCR, 0x3);
-        this->lapic->Write(APIC_TICR, TicksIn10ms / 10);
-        trace("APIC Timer (CPU %d): %d ticks in 10ms", GetCurrentCPU()->ID, TicksIn10ms / 10);
-        KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks in 10ms", TicksIn10ms / 10);
+        trace("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);
+        KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks.", Ticks);
     }
 
     Timer::~Timer()

@@ -90,6 +90,26 @@ namespace APIC
     {
         struct
         {
+            /** @brief Spurious Vector */
+            uint64_t Vector : 8;
+            /** @brief Enable or disable APIC software */
+            uint64_t Software : 1;
+            /** @brief Focus Processor Checking */
+            uint64_t FocusProcessorChecking : 1;
+            /** @brief Reserved */
+            uint64_t Reserved : 2;
+            /** @brief Disable EOI Broadcast */
+            uint64_t DisableEOIBroadcast : 1;
+            /** @brief Reserved */
+            uint64_t Reserved1 : 19;
+        };
+        uint64_t raw;
+    } __attribute__((packed)) APICSpurious;
+
+    typedef union
+    {
+        struct
+        {
             uint64_t Version : 8;
             uint64_t Reserved : 8;
             uint64_t MaximumRedirectionEntry : 8;
@@ -123,11 +143,11 @@ namespace APIC
     {
     private:
         APIC *lapic;
-        uint64_t TicksIn10ms = 0;
+        uint64_t Ticks = 0;
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
 
     public:
-        uint64_t GetTicksIn10ms() { return TicksIn10ms; }
+        uint64_t GetTicks() { return Ticks; }
         void OneShot(uint32_t Vector, uint64_t Miliseconds);
         Timer(APIC *apic);
         ~Timer();
