@@ -49,6 +49,17 @@ namespace APIC
         EdgeLevel = 8
     };
 
+    enum APICDeliveryMode
+    {
+        Fixed = 0,
+        LowestPriority = 1,
+        SMI = 2,
+        NMI = 4,
+        INIT = 5,
+        Startup = 6,
+        ExtINT = 7
+    };
+
     typedef union
     {
         struct
@@ -104,7 +115,56 @@ namespace APIC
             uint64_t Reserved1 : 19;
         };
         uint64_t raw;
-    } __attribute__((packed)) APICSpurious;
+    } __attribute__((packed)) Spurious;
+
+    typedef union
+    {
+        struct
+        {
+            /** @brief Interrupt Vector */
+            uint64_t Vector : 8;
+            /** @brief Delivery Mode */
+            uint64_t DeliveryMode : 3;
+            /** @brief Destination Mode
+             *
+             * 0: Physical
+             * 1: Logical
+             */
+            uint64_t DestinationMode : 1;
+            /** @brief Delivery Status
+             *
+             * @note Reserved when in x2APIC mode
+             */
+            uint64_t DeliveryStatus : 1;
+            /** @brief Reserved */
+            uint64_t Reserved0 : 1;
+            /** @brief Level
+             *
+             * 0: Deassert
+             * 1: Assert
+             */
+            uint64_t Level : 1;
+            /** @brief Trigger Mode
+             *
+             * 0: Edge
+             * 1: Level
+             */
+            uint64_t TriggerMode : 1;
+            /** @brief Reserved */
+            uint64_t Reserved1 : 2;
+            /** @brief Destination Shorthand
+             *
+             * 0: No shorthand
+             * 1: Self
+             * 2: All including self
+             * 3: All excluding self
+             */
+            uint64_t DestinationShorthand : 2;
+            /** @brief Reserved */
+            uint64_t Reserved2 : 12;
+        };
+        uint64_t raw;
+    } __attribute__((packed)) InterruptCommandRegisterLow;
 
     typedef union
     {
@@ -131,7 +191,10 @@ namespace APIC
         uint32_t IORead(uint64_t Base, uint32_t Register);
         void EOI();
         void RedirectIRQs(int CPU = 0);
-        void IPI(uint8_t CPU, uint32_t InterruptNumber);
+        void WaitForIPI();
+        void IPI(uint8_t CPU, InterruptCommandRegisterLow icr);
+        void SendInitIPI(uint8_t CPU);
+        void SendStartupIPI(uint8_t CPU, uint64_t StartupAddress);
         uint32_t IOGetMaxRedirect(uint32_t APICID);
         void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
         void RedirectIRQ(int CPU, uint8_t IRQ, int Status);

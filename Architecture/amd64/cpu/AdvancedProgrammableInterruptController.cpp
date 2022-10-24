@@ -2,12 +2,15 @@
 
 #include <memory.hpp>
 #include <uart.hpp>
+#include <lock.hpp>
 #include <cpu.hpp>
 #include <smp.hpp>
 #include <io.h>
 
 #include "../../../kernel.h"
 #include "../acpi.hpp"
+
+NewLock(APICLock);
 
 using namespace CPU::x64;
 
@@ -81,25 +84,67 @@ namespace APIC
 
     void APIC::EOI() { this->Write(APIC_EOI, 0); }
 
-    void APIC::RedirectIRQs(int CPU)
+    void APIC::WaitForIPI()
     {
-        debug("Redirecting IRQs...");
-        for (int i = 0; i < 16; i++)
-            this->RedirectIRQ(CPU, i, 1);
-        debug("Redirecting IRQs completed.");
+        InterruptCommandRegisterLow icr;
+        do
+        {
+            icr.raw = this->Read(APIC_ICRLO);
+        } while (icr.DeliveryStatus != 0);
     }
 
-    void APIC::IPI(uint8_t CPU, uint32_t InterruptNumber)
+    void APIC::IPI(uint8_t CPU, InterruptCommandRegisterLow icr)
     {
+        SmartCriticalSection(APICLock);
         if (x2APICSupported)
         {
-            wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32 | InterruptNumber);
+            fixme("Not implemented for x2APIC");
+            // wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32);
         }
         else
         {
-            InterruptNumber = (1 << 14) | InterruptNumber;
             this->Write(APIC_ICRHI, (CPU << 24));
-            this->Write(APIC_ICRLO, InterruptNumber);
+            this->Write(APIC_ICRLO, icr.raw);
+            this->WaitForIPI();
+        }
+    }
+
+    void APIC::SendInitIPI(uint8_t CPU)
+    {
+        SmartCriticalSection(APICLock);
+        if (x2APICSupported)
+        {
+            fixme("Not implemented for x2APIC");
+            // wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32);
+        }
+        else
+        {
+            InterruptCommandRegisterLow icr;
+            icr.DeliveryMode = INIT;
+            icr.Level = 1;
+            this->Write(APIC_ICRHI, (CPU << 24));
+            this->Write(APIC_ICRLO, icr.raw);
+            this->WaitForIPI();
+        }
+    }
+
+    void APIC::SendStartupIPI(uint8_t CPU, uint64_t StartupAddress)
+    {
+        SmartCriticalSection(APICLock);
+        if (x2APICSupported)
+        {
+            warn("Not tested for x2APIC");
+            wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32 | StartupAddress);
+        }
+        else
+        {
+            InterruptCommandRegisterLow icr;
+            icr.Vector = StartupAddress >> 12;
+            icr.DeliveryMode = Startup;
+            icr.Level = 1;
+            this->Write(APIC_ICRHI, (CPU << 24));
+            this->Write(APIC_ICRLO, icr.raw);
+            this->WaitForIPI();
         }
     }
 
@@ -160,8 +205,18 @@ namespace APIC
         this->RawRedirectIRQ(IRQ + 0x20, IRQ, 0, CPU, Status);
     }
 
+    void APIC::RedirectIRQs(int CPU)
+    {
+        SmartCriticalSection(APICLock);
+        debug("Redirecting IRQs...");
+        for (int i = 0; i < 16; i++)
+            this->RedirectIRQ(CPU, i, 1);
+        debug("Redirecting IRQs completed.");
+    }
+
     APIC::APIC(int Core)
     {
+        SmartCriticalSection(APICLock);
         APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
         APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
         trace("APIC Address: %#lx", APICBaseAddress);
@@ -232,6 +287,7 @@ namespace APIC
 
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
     {
+        SmartCriticalSection(APICLock);
         LVTTimer timer = {.raw = 0};
         timer.Vector = Vector;
         timer.TimerMode = 0;
@@ -242,11 +298,12 @@ namespace APIC
 
     Timer::Timer(APIC *apic) : Interrupts::Handler(IRQ0)
     {
+        SmartCriticalSection(APICLock);
         this->lapic = apic;
         trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
 
         // Setup the spurrious interrupt vector
-        APICSpurious Spurious = {.raw = this->lapic->Read(APIC_SVR)};
+        Spurious Spurious = {.raw = this->lapic->Read(APIC_SVR)};
         Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
         Spurious.Software = 1;
         this->lapic->Write(APIC_SVR, Spurious.raw);

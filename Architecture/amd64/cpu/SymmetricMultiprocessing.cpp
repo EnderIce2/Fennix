@@ -14,8 +14,6 @@
 
 extern "C" uint64_t _trampoline_start, _trampoline_end;
 
-#define TRAMPOLINE_START 0x2000
-
 enum SMPTrampolineAddress
 {
     PAGE_TABLE = 0x500,
@@ -23,7 +21,8 @@ enum SMPTrampolineAddress
     STACK = 0x570,
     GDT = 0x580,
     IDT = 0x590,
-    CORE = 0x600
+    CORE = 0x600,
+    TRAMPOLINE_START = 0x2000
 };
 
 volatile bool CPUEnabled = false;
@@ -97,8 +96,8 @@ namespace SMP
 
                 POKE(volatile uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
 
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x600 | ((uint32_t)TRAMPOLINE_START / PAGE_SIZE));
+                ((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(((ACPI::MADT *)madt)->lapic[i]->APICId);
+                ((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(((ACPI::MADT *)madt)->lapic[i]->APICId, TRAMPOLINE_START);
 
                 while (!CPUEnabled)
                     CPU::Pause();
