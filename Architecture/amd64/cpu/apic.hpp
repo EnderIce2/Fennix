@@ -182,6 +182,48 @@ namespace APIC
     {
         struct
         {
+            /** @brief Interrupt Vector */
+            uint64_t Vector : 8;
+            /** @brief Delivery Mode */
+            uint64_t DeliveryMode : 3;
+            /** @brief Destination Mode
+             *
+             * 0: Physical
+             * 1: Logical
+             */
+            uint64_t DestinationMode : 1;
+            /** @brief Delivery Status */
+            uint64_t DeliveryStatus : 1;
+            /** @brief Interrupt Input Pin Polarity
+             *
+             * 0: Active High
+             * 1: Active Low
+             */
+            uint64_t Polarity : 1;
+            /** @brief Remote IRR */
+            uint64_t RemoteIRR : 1;
+            /** @brief Trigger Mode
+             *
+             * 0: Edge
+             * 1: Level
+             */
+            uint64_t TriggerMode : 1;
+            /** @brief Mask */
+            uint64_t Mask : 1;
+            /** @brief Reserved */
+            uint64_t Reserved0 : 15;
+            /** @brief Reserved */
+            uint64_t Reserved1 : 24;
+            /** @brief Destination */
+            uint64_t DestinationID : 8;
+        };
+        uint64_t raw;
+    } __attribute__((packed)) RedirectEntry;
+
+    typedef union
+    {
+        struct
+        {
             uint64_t Version : 8;
             uint64_t Reserved : 8;
             uint64_t MaximumRedirectionEntry : 8;
