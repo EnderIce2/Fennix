@@ -86,7 +86,7 @@ namespace APIC
 
     void APIC::WaitForIPI()
     {
-        InterruptCommandRegisterLow icr;
+        InterruptCommandRegisterLow icr = {.raw = 0};
         do
         {
             icr.raw = this->Read(APIC_ICRLO);
@@ -119,7 +119,7 @@ namespace APIC
         }
         else
         {
-            InterruptCommandRegisterLow icr;
+            InterruptCommandRegisterLow icr = {.raw = 0};
             icr.DeliveryMode = INIT;
             icr.Level = Assert;
             this->Write(APIC_ICRHI, (CPU << 24));
@@ -138,7 +138,7 @@ namespace APIC
         }
         else
         {
-            InterruptCommandRegisterLow icr;
+            InterruptCommandRegisterLow icr = {.raw = 0};
             icr.Vector = StartupAddress >> 12;
             icr.DeliveryMode = Startup;
             icr.Level = Assert;
@@ -173,6 +173,8 @@ namespace APIC
             return;
         }
 
+        // TODO: IOAPICRedirectEntry Entry = {.raw = 0};
+
         if (Flags & ActiveHighLow)
             Value |= (1 << 13);
 
@@ -182,8 +184,7 @@ namespace APIC
         if (!Status)
             Value |= (1 << 16);
 
-        // Value |= (((uintptr_t)GetCPU(CPU)->Data->LAPIC.APICId) << 56);
-        Value |= (((uintptr_t)0) << 56);
+        Value |= (((uintptr_t)CPU) << 56);
         uint32_t IORegister = (GSI - ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->GSIBase) * 2 + 16;
 
         this->IOWrite(((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->Address, IORegister, (uint32_t)Value);
