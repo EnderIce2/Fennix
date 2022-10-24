@@ -51,13 +51,71 @@ namespace APIC
 
     enum APICDeliveryMode
     {
-        Fixed = 0,
-        LowestPriority = 1,
-        SMI = 2,
-        NMI = 4,
-        INIT = 5,
-        Startup = 6,
-        ExtINT = 7
+        Fixed = 0b000,
+        LowestPriority = 0b001, /* Reserved */
+        SMI = 0b010,
+        APIC_DELIVERY_MODE_RESERVED0 = 0b011, /* Reserved */
+        NMI = 0b100,
+        INIT = 0b101,
+        Startup = 0b110,
+        ExtINT = 0b111 /* Reserved */
+    };
+
+    enum APICDestinationMode
+    {
+        Physical = 0b0,
+        Logical = 0b1
+    };
+
+    enum APICDeliveryStatus
+    {
+        Idle = 0b0,
+        SendPending = 0b1
+    };
+
+    enum APICLevel
+    {
+        DeAssert = 0b0,
+        Assert = 0b1
+    };
+
+    enum APICTriggerMode
+    {
+        Edge = 0b0,
+        Level = 0b1
+    };
+
+    enum APICDestinationShorthand
+    {
+        NoShorthand = 0b00,
+        Self = 0b01,
+        AllIncludingSelf = 0b10,
+        AllExcludingSelf = 0b11
+    };
+
+    enum APICTimerDivide
+    {
+        DivideBy2 = 0b000,
+        DivideBy4 = 0b001,
+        DivideBy8 = 0b010,
+        DivideBy16 = 0b011,
+        DivideBy32 = 0b100,
+        DivideBy64 = 0b101,
+        DivideBy128 = 0b110,
+        DivideBy1 = 0b111
+    };
+
+    enum LVTTimerMask
+    {
+        Unmasked = 0b0,
+        Masked = 0b1
+    };
+
+    enum LVTTimerMode
+    {
+        OneShot = 0b00,
+        Periodic = 0b01,
+        TSCDeadline = 0b10
     };
 
     typedef union
@@ -218,7 +276,7 @@ namespace APIC
             uint64_t DestinationID : 8;
         };
         uint64_t raw;
-    } __attribute__((packed)) RedirectEntry;
+    } __attribute__((packed)) IOAPICRedirectEntry;
 
     typedef union
     {

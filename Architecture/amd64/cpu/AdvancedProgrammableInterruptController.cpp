@@ -90,7 +90,7 @@ namespace APIC
         do
         {
             icr.raw = this->Read(APIC_ICRLO);
-        } while (icr.DeliveryStatus != 0);
+        } while (icr.DeliveryStatus != Idle);
     }
 
     void APIC::IPI(uint8_t CPU, InterruptCommandRegisterLow icr)
@@ -121,7 +121,7 @@ namespace APIC
         {
             InterruptCommandRegisterLow icr;
             icr.DeliveryMode = INIT;
-            icr.Level = 1;
+            icr.Level = Assert;
             this->Write(APIC_ICRHI, (CPU << 24));
             this->Write(APIC_ICRLO, icr.raw);
             this->WaitForIPI();
@@ -141,7 +141,7 @@ namespace APIC
             InterruptCommandRegisterLow icr;
             icr.Vector = StartupAddress >> 12;
             icr.DeliveryMode = Startup;
-            icr.Level = 1;
+            icr.Level = Assert;
             this->Write(APIC_ICRHI, (CPU << 24));
             this->Write(APIC_ICRLO, icr.raw);
             this->WaitForIPI();
@@ -358,8 +358,8 @@ namespace APIC
         // Config for IRQ0 timer
         LVTTimer timer = {.raw = 0};
         timer.Vector = IRQ0;
-        timer.Mask = 0;
-        timer.TimerMode = 1;
+        timer.Mask = Unmasked;
+        timer.TimerMode = Periodic;
 
         // Initialize APIC timer
         this->lapic->Write(APIC_TDCR, 0x0);
