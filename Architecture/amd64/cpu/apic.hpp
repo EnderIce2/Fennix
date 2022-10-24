@@ -93,7 +93,7 @@ namespace APIC
         AllExcludingSelf = 0b11
     };
 
-    enum APICTimerDivide
+    enum LVTTimerDivide
     {
         DivideBy2 = 0b000,
         DivideBy4 = 0b001,
