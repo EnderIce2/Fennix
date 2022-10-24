@@ -275,6 +275,11 @@ namespace APIC
             /** @brief Destination */
             uint64_t DestinationID : 8;
         };
+        struct
+        {
+            uint64_t Low;
+            uint64_t High;
+        } split;
         uint64_t raw;
     } __attribute__((packed)) IOAPICRedirectEntry;
 
