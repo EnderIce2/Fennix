@@ -170,6 +170,18 @@ namespace APIC
     {
         struct
         {
+            /** @brief Reserved */
+            uint64_t Reserved0 : 24;
+            /** @brief Destination */
+            uint64_t Destination : 8;
+        };
+        uint64_t raw;
+    } __attribute__((packed)) InterruptCommandRegisterHigh;
+
+    typedef union
+    {
+        struct
+        {
             uint64_t Version : 8;
             uint64_t Reserved : 8;
             uint64_t MaximumRedirectionEntry : 8;
