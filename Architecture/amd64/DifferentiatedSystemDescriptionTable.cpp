@@ -2,6 +2,7 @@
 
 #include <time.hpp>
 #include <debug.h>
+#include <smp.hpp>
 #include <io.h>
 
 #include "cpu/apic.hpp"
@@ -33,7 +34,6 @@ namespace ACPI
     {
         debug("SCI Handle Triggered");
         uint16_t Event = 0;
-
         {
             uint16_t a = 0, b = 0;
             if (acpi->FADT->PM1aEventBlock)
@@ -49,12 +49,16 @@ namespace ACPI
             Event = a | b;
         }
 
-        debug("SCI Event: %#llx", Event);
-        if (Event & ACPI_TIMER)
-            Event &= ~ACPI_TIMER; // Remove the ACPI timer flag.
-        switch (Event)
+        debug("SCI Event: %#lx", Event);
+        if (Event & ACPI_BUSMASTER)
         {
-        case ACPI_POWER_BUTTON:
+            fixme("ACPI Busmaster");
+        }
+        else if (Event & ACPI_GLOBAL)
+        {
+            fixme("ACPI Global");
+        }
+        else if (Event & ACPI_POWER_BUTTON)
         {
             this->Shutdown();
             Time tm = ReadClock();
@@ -64,13 +68,31 @@ namespace ACPI
             outw(0x604, 0x2000);
             outw(0x4004, 0x3400);
             CPU::Stop();
-            break;
         }
-        default:
+        else if (Event & ACPI_SLEEP_BUTTON)
         {
-            warn("unknown event 0x%04p", Event);
-            return;
+            fixme("ACPI Sleep Button");
         }
+        else if (Event & ACPI_RTC_ALARM)
+        {
+            fixme("ACPI RTC Alarm");
+        }
+        else if (Event & ACPI_PCIE_WAKE)
+        {
+            fixme("ACPI PCIe Wake");
+        }
+        else if (Event & ACPI_WAKE)
+        {
+            fixme("ACPI Wake");
+        }
+        else if (Event & ACPI_TIMER)
+        {
+            fixme("ACPI Timer");
+        }
+        else
+        {
+            error("ACPI unknown event %#lx on CPU %d", Event, GetCurrentCPU()->ID);
+            CPU::Stop();
         }
         UNUSED(Frame);
     }
@@ -116,6 +138,7 @@ namespace ACPI
 
     DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt + CPU::x64::IRQ0)
     {
+        this->acpi = acpi;
         uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);
         uint8_t *S5Address = (uint8_t *)(Address) + 36;
         ACPI::ACPI::ACPIHeader *Header = (ACPI::ACPI::ACPIHeader *)Address;
