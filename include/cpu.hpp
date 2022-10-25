@@ -698,7 +698,7 @@ namespace CPU
             MSR_CR_PAT_RESET = 0x0007040600070406ULL
         };
 
-        typedef enum
+        enum ISRExceptions
         {
             DivideByZero = 0x0,
             Debug = 0x1,
@@ -721,9 +721,9 @@ namespace CPU
             SIMDFloatingPoint = 0x13,
             Virtualization = 0x14,
             Security = 0x1e
-        } ISRExceptions;
+        };
 
-        typedef enum
+        enum CPUInterrupts
         {
             /* ISR */
 
@@ -992,7 +992,7 @@ namespace CPU
             IRQ221 = 0xfd,
             IRQ222 = 0xfe,
             IRQ223 = 0xff,
-        } Interrupts;
+        };
 
         /**
          * @brief MSR_APIC_BASE structure
