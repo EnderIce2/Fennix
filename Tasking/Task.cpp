@@ -104,7 +104,7 @@ namespace Tasking
     {
         SmartCriticalSection(TaskingLock);
         CPUData *CurrentCPU = GetCurrentCPU();
-        debug("Scheduler called on CPU %d.", CurrentCPU->ID);
+        // debug("Scheduler called on CPU %d.", CurrentCPU->ID);
 
         schedbg("================================================================");
         schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
