@@ -135,10 +135,17 @@ namespace Video
             this->Buffers[Index]->Checksum = 0; // Making sure that the buffer is not used anymore
             delete this->Buffers[Index];
         }
+
         void SetBufferCursor(int Index, uint32_t X, uint32_t Y)
         {
             this->Buffers[Index]->CursorX = X;
             this->Buffers[Index]->CursorY = Y;
+        }
+
+        void GetBufferCursor(int Index, uint32_t *X, uint32_t *Y)
+        {
+            *X = this->Buffers[Index]->CursorX;
+            *Y = this->Buffers[Index]->CursorY;
         }
 
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
