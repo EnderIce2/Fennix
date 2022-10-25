@@ -293,7 +293,7 @@ namespace APIC
         timer.Vector = Vector;
         timer.TimerMode = 0;
         this->lapic->Write(APIC_TDCR, 0x0);
-        this->lapic->Write(APIC_TICR, Ticks * Miliseconds);
+        this->lapic->Write(APIC_TICR, (Ticks / 10) * Miliseconds);
         this->lapic->Write(APIC_TIMER, timer.raw);
     }
 
