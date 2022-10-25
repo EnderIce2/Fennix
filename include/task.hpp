@@ -146,15 +146,25 @@ namespace Tasking
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
 
-        bool InvalidPCB(PCB *pcb)
+        __attribute__((no_stack_protector)) static inline bool InvalidPCB(PCB *pcb)
         {
+            if (pcb == (PCB *)0xffffffffffffffff)
+                return true;
+            if (!pcb)
+                return true;
             return false;
         }
 
-        bool InvalidTCB(TCB *tcb)
+        __attribute__((no_stack_protector)) static inline bool InvalidTCB(TCB *tcb)
         {
+            if (tcb == (TCB *)0xffffffffffffffff)
+                return true;
+            if (!tcb)
+                return true;
             return false;
         }
+
+        bool FindNewProcess(void *CPUDataPointer);
 
 #if defined(__amd64__)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);

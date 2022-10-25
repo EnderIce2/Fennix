@@ -13,7 +13,7 @@
 #elif defined(__aarch64__)
 #endif
 
-#define DEBUG_SCHEDULER 1
+// #define DEBUG_SCHEDULER 1
 
 #ifdef DEBUG_SCHEDULER
 #define schedbg(m, ...) debug(m, ##__VA_ARGS__)
@@ -25,7 +25,7 @@ NewLock(TaskingLock);
 
 namespace Tasking
 {
-    extern "C" void OneShot(int TimeSlice)
+    extern "C" __attribute__((no_stack_protector)) void OneShot(int TimeSlice)
     {
         if (TimeSlice == 0)
             TimeSlice = 10;
@@ -51,12 +51,62 @@ namespace Tasking
     }
 
 #if defined(__amd64__)
+    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    {
+        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
+        schedbg("%d processes", ListProcess.size());
+#ifdef DEBUG_SCHEDULER
+        foreach (auto var in ListProcess)
+        {
+            schedbg("Process %d %s", var->ID, var->Name);
+        }
+#endif
+        // Find a new process to execute.
+        foreach (PCB *pcb in ListProcess)
+        {
+            if (InvalidPCB(pcb))
+                continue;
+
+            // Check process status.
+            switch (pcb->Status)
+            {
+            case TaskStatus::Ready:
+                schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
+                break;
+            default:
+                schedbg("Process %s(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+                // RemoveProcess(pcb); // ignore for now
+                continue;
+            }
+
+            // Get first available thread from the list.
+            foreach (TCB *tcb in pcb->Threads)
+            {
+                if (InvalidTCB(tcb))
+                    continue;
+
+                if (tcb->Status != TaskStatus::Ready)
+                    continue;
+
+                // Set process and thread as the current one's.
+                CurrentCPU->CurrentProcess = pcb;
+                CurrentCPU->CurrentThread = tcb;
+                // Success!
+                return true;
+            }
+        }
+        schedbg("No process to run.");
+        // No process found. Idling...
+        return false;
+    }
+
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(TaskingLock);
         CPUData *CurrentCPU = GetCurrentCPU();
         debug("Scheduler called on CPU %d.", CurrentCPU->ID);
 
+        schedbg("================================================================");
         schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
         schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
         schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
@@ -72,54 +122,15 @@ namespace Tasking
                 Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
         schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
                 Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+        schedbg("================================================================");
 
         // Null or invalid process/thread? Let's find a new one to execute.
         if (InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread))
         {
-            schedbg("%d processes", ListProcess.size());
-#ifdef DEBUG_SCHEDULER
-            foreach (auto var in ListProcess)
-            {
-                schedbg("Process %d %s", var->ID, var->Name);
-            }
-#endif
-            // Find a new process to execute.
-            foreach (PCB *pcb in ListProcess)
-            {
-                if (InvalidPCB(pcb))
-                    continue;
-
-                // Check process status.
-                switch (pcb->Status)
-                {
-                case TaskStatus::Ready:
-                    schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
-                    break;
-                default:
-                    schedbg("Process %s(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
-                    // RemoveProcess(pcb); // ignore for now
-                    continue;
-                }
-
-                // Get first available thread from the list.
-                foreach (TCB *tcb in pcb->Threads)
-                {
-                    if (InvalidTCB(tcb))
-                        continue;
-
-                    if (tcb->Status != TaskStatus::Ready)
-                        continue;
-
-                    // Set process and thread as the current one's.
-                    CurrentCPU->CurrentProcess = pcb;
-                    CurrentCPU->CurrentThread = tcb;
-                    // Success!
-                    goto Success;
-                }
-            }
-            schedbg("No process to run.");
-            // No process found. Idling...
-            goto Idle;
+            if (this->FindNewProcess(CurrentCPU))
+                goto Success;
+            else
+                goto Idle;
         }
         else
         {
@@ -294,6 +305,7 @@ namespace Tasking
         OneShot(CurrentCPU->CurrentThread->Info.Priority);
         schedbg("Scheduler end");
     }
+        schedbg("================================================================");
         schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
         schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
@@ -308,15 +320,24 @@ namespace Tasking
                 Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
         schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
                 Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
-
-        schedbg("SCHEDULER FUNCTION END");
+        schedbg("================================================================");
     }
+
 #elif defined(__i386__)
+    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    {
+    }
+
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
     {
         fixme("unimplemented");
     }
+
 #elif defined(__aarch64__)
+    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    {
+    }
+
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
     {
         fixme("unimplemented");
@@ -556,10 +577,16 @@ namespace Tasking
             trace("CPU has MONITOR/MWAIT support.");
         }
 
+        if (!CPU::Interrupts(CPU::Check))
+        {
+            error("Interrupts are not enabled.");
+            CPU::Interrupts(CPU::Enable);
+        }
+
         for (int i = 0; i < SMP::CPUCores; i++)
         {
             /* do stuff i guess */
-            ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 1000);
+            ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 200);
         }
         // ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
 #endif
