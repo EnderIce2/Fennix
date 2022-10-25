@@ -13,6 +13,10 @@ void KernelMainThread()
     int itrupd = 0;
     int BoxSize = 64;
 
+    uint32_t x, y;
+
+    Display->GetBufferCursor(0, &x, &y);
+
     while (1)
     {
         Color++;
@@ -41,6 +45,7 @@ void KernelMainThread()
             break;
     }
 
+    Display->SetBufferCursor(0, x, y);
     KPrint("\e22AA11Color test finished.");
 
     while (1)
