@@ -377,7 +377,10 @@ namespace Tasking
         TCB *Thread = new TCB;
         Thread->ID = this->NextTID++;
         strcpy(Thread->Name, Parent->Name);
-        Thread->Parent = Parent;
+        if (Parent == nullptr)
+            Thread->Parent = this->GetCurrentProcess();
+        else
+            Thread->Parent = Parent;
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
         Thread->ExitCode = 0xdeadbeef;
@@ -477,12 +480,17 @@ namespace Tasking
         PCB *Process = new PCB;
         Process->ID = this->NextPID++;
         strcpy(Process->Name, Name);
-        Process->Parent = Parent;
+        if (Parent == nullptr)
+            Process->Parent = this->GetCurrentProcess();
+        else
+            Process->Parent = Parent;
         Process->ExitCode = 0xdeadbeef;
         Process->Status = TaskStatus::Ready;
 
         Process->Security.TrustLevel = TrustLevel;
         Process->Security.UniqueToken = SecurityManager.CreateToken();
+
+        Process->IPCHandles = new HashMap<InterProcessCommunication::IPCPort, uint64_t>;
 
         switch (TrustLevel)
         {
