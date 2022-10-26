@@ -31,7 +31,7 @@ private:
 public:
     SpinLockData *GetLockData() { return &LockData; }
 
-    int Lock(const char *FunctionName = "Unknown")
+    int Lock(const char *FunctionName)
     {
         LockData.AttemptingToGet = FunctionName;
         SpinLock_Lock(&LockData.LockData);
