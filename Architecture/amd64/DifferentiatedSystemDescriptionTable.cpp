@@ -61,8 +61,8 @@ namespace ACPI
         else if (Event & ACPI_POWER_BUTTON)
         {
             this->Shutdown();
-            Time tm = ReadClock();
-            while (tm.Second == ReadClock().Second)
+            Time::Clock tm = Time::ReadClock();
+            while (tm.Second == Time::ReadClock().Second)
                 ;
             outw(0xB004, 0x2000);
             outw(0x604, 0x2000);

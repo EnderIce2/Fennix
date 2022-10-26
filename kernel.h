@@ -10,6 +10,7 @@
 #include <kconfig.hpp>
 #include <power.hpp>
 #include <task.hpp>
+#include <time.hpp>
 #include <pci.hpp>
 #endif
 
@@ -21,6 +22,7 @@ extern Power::Power *PowerManager;
 extern PCI::PCI *PCIManager;
 extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
+extern Time::time *TimeManager;
 #endif
 
 EXTERNC void KPrint(const char *format, ...);

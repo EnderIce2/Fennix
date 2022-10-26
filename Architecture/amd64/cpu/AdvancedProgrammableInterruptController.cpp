@@ -239,7 +239,7 @@ namespace APIC
         }
 
         this->Write(APIC_TPR, 0x0);
-        this->Write(APIC_SVR, this->Read(APIC_SVR) | 0x100); // 0x1FF or 0x100 ? on https://wiki.osdev.org/APIC is 0x100
+        // this->Write(APIC_SVR, this->Read(APIC_SVR) | 0x100); // 0x1FF or 0x100 ? on https://wiki.osdev.org/APIC is 0x100
 
         if (!this->x2APICSupported)
         {
@@ -292,8 +292,8 @@ namespace APIC
         LVTTimer timer = {.raw = 0};
         timer.Vector = Vector;
         timer.TimerMode = 0;
-        this->lapic->Write(APIC_TDCR, 0x0);
-        this->lapic->Write(APIC_TICR, (Ticks / 10) * Miliseconds);
+        this->lapic->Write(APIC_TDCR, DivideBy16);
+        this->lapic->Write(APIC_TICR, Ticks * Miliseconds);
         this->lapic->Write(APIC_TIMER, timer.raw);
     }
 
@@ -301,6 +301,8 @@ namespace APIC
     {
         SmartCriticalSection(APICLock);
         this->lapic = apic;
+        LVTTimerDivide Divider = DivideBy16;
+
         trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
 
         // Setup the spurrious interrupt vector
@@ -309,51 +311,13 @@ namespace APIC
         Spurious.Software = 1;
         this->lapic->Write(APIC_SVR, Spurious.raw);
 
-        this->lapic->Write(APIC_TDCR, 0x0);
+        this->lapic->Write(APIC_TDCR, Divider);
         this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 
-        // After PIT sleep is completed. Mask the timer.
-        LVTTimer masktimer = {.raw = 0x10000};
-
-        // // PIT Config
-        // int Count = 10000; /* µs */
-        // int Ticks = 1193180 / (Count / 100);
-
-        // // https://wiki.osdev.org/Programmable_Interval_Timer#I.2FO_Ports
-
-        // // PIT Prepare
-        // int IOIn = inb(0x61);
-        // IOIn = (IOIn & 0xFD) | 1;
-        // outb(0x61, IOIn);
-        // outb(0x43, 178);
-        // outb(0x40, Ticks & 0xff);
-        // inb(0x60);
-        // outb(0x40, Ticks >> 8);
-
-        // // PIT Start
-        // IOIn = inb(0x61);
-        // IOIn = (IOIn & 0xFC);
-        // outb(0x61, IOIn);
-        // IOIn |= 1;
-        // outb(0x61, IOIn);
-        // uint32_t Loop = 0;
-        // while ((inb(0x61) & 0x20) != 0)
-        //     ++Loop;
-
-        // 10000ms
-        for (int i = 0; i < 10000; i++)
-            inb(0x80); // 1µs
+        TimeManager->Sleep(10);
 
         // Mask the timer
-        this->lapic->Write(APIC_TIMER, masktimer.raw);
-
-        // // Disable the PIT
-        // outb(0x43, 0x28);
-        // outb(0x40, 0x0);
-
-        // outb(0x21, 0xFF);
-        // outb(0xA1, 0xFF);
-
+        this->lapic->Write(APIC_TIMER, 0x10000 /* LVTTimer.Mask flag */);
         Ticks = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
 
         // Config for IRQ0 timer
@@ -363,7 +327,7 @@ namespace APIC
         timer.TimerMode = Periodic;
 
         // Initialize APIC timer
-        this->lapic->Write(APIC_TDCR, 0x0);
+        this->lapic->Write(APIC_TDCR, Divider);
         this->lapic->Write(APIC_TICR, Ticks);
         this->lapic->Write(APIC_TIMER, timer.raw);
         trace("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);

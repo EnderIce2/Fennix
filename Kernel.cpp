@@ -6,7 +6,6 @@
 #include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
-#include <time.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cargs.h>
@@ -20,9 +19,10 @@ SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
+Time::time *TimeManager = nullptr;
 
 KernelConfig Config;
-Time BootClock;
+Time::Clock BootClock;
 
 // For the Display class. Printing on first buffer as default.
 extern "C" void putchar(char c) { Display->Print(c, 0); }
@@ -30,7 +30,7 @@ extern "C" void putchar(char c) { Display->Print(c, 0); }
 EXTERNC void KPrint(const char *Format, ...)
 {
     SmartLock(KernelLock);
-    Time tm = ReadClock();
+    Time::Clock tm = Time::ReadClock();
     printf_("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     va_list args;
     va_start(args, Format);
@@ -44,7 +44,7 @@ EXTERNC void Entry(BootInfo *Info)
 {
     trace("Hello, World!");
     InitializeMemoryManagement(Info);
-    BootClock = ReadClock();
+    BootClock = Time::ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
     memcpy(bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
@@ -78,6 +78,14 @@ EXTERNC void Entry(BootInfo *Info)
     }
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
+    KPrint("Initializing Timers");
+#if defined(__amd64__)
+    TimeManager = new Time::time(PowerManager->GetACPI());
+#elif defined(__i386__)
+    TimeManager = new Time::time(PowerManager->GetACPI());
+#elif defined(__aarch64__)
+    TimeManager = new Time::time(nullptr);
+#endif
     KPrint("Initializing Bootstrap Processor Timer");
     Interrupts::InitializeTimer(0);
     KPrint("Initializing SMP");

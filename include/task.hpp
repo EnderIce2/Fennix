@@ -6,6 +6,8 @@
 #include <interrupts.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
+#include <hashmap.hpp>
+#include <ipc.hpp>
 
 namespace Tasking
 {
@@ -99,6 +101,11 @@ namespace Tasking
                     break;
             }
         }
+
+        void SetPriority(int priority)
+        {
+            Info.Priority = priority;
+        }
     };
 
     struct PCB
@@ -113,6 +120,7 @@ namespace Tasking
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
         Memory::PageTable *PageTable;
+        HashMap<InterProcessCommunication::IPCPort, uint64_t> *IPCHandles;
     };
 
     enum TokenTrustLevel
