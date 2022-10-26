@@ -3,7 +3,6 @@
 
 #include <types.h>
 
-#include <atomic.hpp>
 #include <cpu.hpp>
 
 #pragma GCC diagnostic ignored "-Wvolatile"
