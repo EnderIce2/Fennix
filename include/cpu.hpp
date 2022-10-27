@@ -3,6 +3,8 @@
 
 #include <types.h>
 
+#include <cstring>
+
 #define x86_CPUID_VENDOR_OLDAMD "AMDisbetter!" /* Early engineering samples of AMD K5 processor */
 #define x86_CPUID_VENDOR_AMD "AuthenticAMD"
 #define x86_CPUID_VENDOR_INTEL "GenuineIntel"
@@ -1400,6 +1402,15 @@ namespace CPU
 #endif
         }
 
+        /**
+         * @brief CPUID
+         * 
+         * @param Function Leaf
+         * @param eax EAX
+         * @param ebx EBX
+         * @param ecx ECX
+         * @param edx EDX
+         */
         static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
 #if defined(__amd64__)
@@ -1407,6 +1418,20 @@ namespace CPU
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
 #endif
+        }
+
+        /**
+         * @brief Get the highest leaf function supported by CPUID
+         *
+         * @example if (GetHighestLeaf() < 0x15) { error("CPU doesn't support leaf 0x15!"); }
+         *
+         * @return uint32_t
+         */
+        static inline uint32_t GetHighestLeaf()
+        {
+            uint32_t eax, ebx, ecx, edx;
+            cpuid(0, &eax, &ebx, &ecx, &edx);
+            return eax;
         }
 
         static inline uint64_t rdmsr(uint32_t msr)
@@ -1530,6 +1555,110 @@ namespace CPU
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
 #endif
+        }
+
+        /** @brief EXPERIMENTAL IMPLEMENTATION */
+        namespace Intel
+        {
+            union FrequencyInfo0x15
+            {
+                struct
+                {
+                    /**
+                     * @brief Denominator of the TSC frequency
+                     *
+                     * @note TSC frequency = core crystal clock frequency * EBX/EAX
+                     */
+                    uint64_t Denominator : 31;
+                    /**
+                     * @brief Numerator of the TSC frequency
+                     *
+                     * @note TSC frequency = core crystal clock frequency * EBX/EAX
+                     */
+                    uint64_t Numerator : 31;
+                    /** @brief Core crystal clock frequency in Hz */
+                    uint64_t CoreCrystalClock : 31;
+                    /** @brief Reserved */
+                    uint64_t Reserved : 31;
+                };
+                uint64_t raw;
+            };
+
+            union FrequencyInfo0x16
+            {
+                /** @brief Contains Reserved and CoreBaseFrequency */
+                struct
+                {
+                    /** @brief Reserved */
+                    uint64_t Reserved : 16;
+                    /**
+                     * @brief Core base frequency in MHz
+                     *
+                     */
+                    uint64_t CoreBaseFrequency : 16;
+                } RAX;
+
+                /** @brief Contains Reserved and CoreMaxFrequency */
+                struct
+                {
+                    /** @brief Reserved */
+                    uint64_t Reserved : 16;
+                    /**
+                     * @brief Core maximum frequency in MHz
+                     *
+                     */
+                    uint64_t CoreMaxFrequency : 16;
+                } EBX;
+
+                /** @brief Contains Reserved and CoreBusFrequency */
+                struct
+                {
+                    /** @brief Reserved */
+                    uint64_t Reserved : 16;
+                    /**
+                     * @brief Core bus frequency in MHz
+                     *
+                     */
+                    uint64_t BusFrequency : 16;
+                } ECX;
+
+                /** @brief Contains Reserved and CoreBusFrequency */
+                struct
+                {
+                    /** @brief Reserved */
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+
+            static inline union FrequencyInfo0x15 FrequencyInfo0x15()
+            {
+                union FrequencyInfo0x15 Info = {.raw = 0};
+                uint32_t eax, ebx, ecx, edx;
+                CPU::x64::cpuid(0x15, &eax, &ebx, &ecx, &edx);
+                Info.Denominator = eax;
+                Info.Numerator = ebx;
+                Info.CoreCrystalClock = ecx;
+                Info.Reserved = edx;
+                return Info;
+            }
+
+            static inline union FrequencyInfo0x16 FrequencyInfo0x16()
+            {
+                union FrequencyInfo0x16 Info = {.raw = 0};
+                uint32_t eax, ebx, ecx, edx;
+                CPU::x64::cpuid(0x16, &eax, &ebx, &ecx, &edx);
+                memcpy(&Info.RAX, &eax, sizeof(Info.RAX));
+                memcpy(&Info.EBX, &ebx, sizeof(Info.EBX));
+                memcpy(&Info.ECX, &ecx, sizeof(Info.ECX));
+                memcpy(&Info.EDX, &edx, sizeof(Info.EDX));
+                return Info;
+            }
+        }
+
+        /** @brief EXPERIMENTAL IMPLEMENTATION */
+        namespace AMD
+        {
         }
     }
 }
