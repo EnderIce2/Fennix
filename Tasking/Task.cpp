@@ -252,7 +252,7 @@ namespace Tasking
 
     Idle:
     {
-        // I should remove processes that are no longer having any threads? remove only from userspace?
+        // Should I remove processes that are no longer have any threads? Remove only from userspace?
         if (IdleProcess == nullptr)
         {
             schedbg("Idle process created");
@@ -263,7 +263,7 @@ namespace Tasking
         CurrentCPU->CurrentThread = IdleThread;
 
         *Frame = CurrentCPU->CurrentThread->Registers;
-        // UpdatePageTable(CurrentCPU->CurrentProcess->PageTable); // kernel one
+        CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         // _fxrstor(CurrentCPU->CurrentThread->FXRegion);
         goto End;
     }
@@ -279,7 +279,7 @@ namespace Tasking
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
         *Frame = CurrentCPU->CurrentThread->Registers;
-        // UpdatePageTable(CurrentCPU->CurrentProcess->PageTable);
+        CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
 
         switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
         {
