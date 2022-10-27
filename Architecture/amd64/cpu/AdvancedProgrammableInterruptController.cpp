@@ -14,6 +14,14 @@ NewLock(APICLock);
 
 using namespace CPU::x64;
 
+/*
+In constructor ‘APIC::APIC::APIC(int)’:
+warning: left shift count >= width of type
+|         APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
+|                                                          ~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+*/
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+
 namespace APIC
 {
     // headache
@@ -219,7 +227,7 @@ namespace APIC
     {
         SmartCriticalSection(APICLock);
         APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
-        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | (unsigned long)BaseStruct.ApicBaseHi << 32u;
+        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
         trace("APIC Address: %#lx", APICBaseAddress);
 
         uint32_t rcx;
