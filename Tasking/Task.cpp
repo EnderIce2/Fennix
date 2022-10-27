@@ -327,6 +327,7 @@ namespace Tasking
 #elif defined(__i386__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
     {
+        fixme("unimplemented");
     }
 
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
@@ -337,6 +338,7 @@ namespace Tasking
 #elif defined(__aarch64__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
     {
+        fixme("unimplemented");
     }
 
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
@@ -353,7 +355,8 @@ namespace Tasking
         CPUData->CurrentThread->ExitCode = Code;
         debug("parent:%s tid:%d, code:%016p", CPUData->CurrentProcess->Name, CPUData->CurrentThread->ID, Code);
         trace("Exiting thread %d(%s)...", CPUData->CurrentThread->ID, CPUData->CurrentThread->Name);
-        CPU::Stop();
+        OneShot(CPUData->CurrentThread->Info.Priority);
+        CPU::Halt(true);
     }
 
     PCB *Task::GetCurrentProcess()

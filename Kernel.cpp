@@ -92,6 +92,5 @@ EXTERNC void Entry(BootInfo *Info)
     SMP::Initialize(PowerManager->GetMADT());
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     KPrint("\e058C19######## \eE85230END \e058C19########");
-    while (1)
-        CPU::Halt();
+    CPU::Halt(true);
 }

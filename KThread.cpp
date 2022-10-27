@@ -219,8 +219,7 @@ void KernelMainThread()
     Display->SetBufferCursor(0, x, y);
     KPrint("\e22AA11Color test finished.");
 
-    while (1)
-        CPU::Halt();
+    CPU::Halt(true);
 }
 
 void KernelShutdownThread(bool Reboot)

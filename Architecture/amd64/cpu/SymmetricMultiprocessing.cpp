@@ -46,8 +46,7 @@ extern "C" void StartCPU()
     CPU::Interrupts(CPU::Enable);
     KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
     CPUEnabled = true;
-    while (1)
-        CPU::Halt();
+    CPU::Halt(true);
 }
 
 namespace SMP

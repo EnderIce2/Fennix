@@ -74,8 +74,7 @@ namespace Memory
         }
 
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));
-        while (1)
-            CPU::Halt();
+        CPU::Halt(true);
         return nullptr;
     }
 
@@ -112,8 +111,7 @@ namespace Memory
         }
 
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));
-        while (1)
-            CPU::Halt();
+        CPU::Halt(true);
         return nullptr;
     }
 
