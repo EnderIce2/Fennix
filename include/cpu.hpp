@@ -136,13 +136,16 @@ namespace CPU
     /**
      * @brief Pause the CPU
      */
-    __attribute__((no_stack_protector)) static inline void Pause()
+    __attribute__((no_stack_protector)) static inline void Pause(bool Loop = false)
     {
+        do
+        {
 #if defined(__amd64__) || defined(__i386__)
-        asmv("pause");
+            asmv("pause");
 #elif defined(__aarch64__)
-        asmv("yield");
+            asmv("yield");
 #endif
+        } while (Loop);
     }
 
     /**
@@ -167,13 +170,16 @@ namespace CPU
     /**
      * @brief Halt the CPU
      */
-    __attribute__((no_stack_protector)) static inline void Halt()
+    __attribute__((no_stack_protector)) static inline void Halt(bool Loop = false)
     {
+        do
+        {
 #if defined(__amd64__) || defined(__i386__)
-        asmv("hlt");
+            asmv("hlt");
 #elif defined(__aarch64__)
-        asmv("wfe");
+            asmv("wfe");
 #endif
+        } while (Loop);
     }
 
     /**
