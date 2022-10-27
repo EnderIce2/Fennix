@@ -147,6 +147,7 @@ namespace Tasking
     {
     private:
         Security SecurityManager;
+        InterProcessCommunication::IPC *IPCManager = nullptr;
         UPID NextPID = 0;
         UTID NextTID = 0;
 

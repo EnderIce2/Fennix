@@ -53,6 +53,7 @@ namespace InterProcessCommunication
 
     IPC::IPC()
     {
+        trace("Starting IPC Service...");
         TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)IPCServiceStub);
         TaskManager->GetCurrentThread()->Rename("IPC Service");
     }

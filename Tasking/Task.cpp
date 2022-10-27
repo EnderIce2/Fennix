@@ -22,6 +22,7 @@
 #endif
 
 NewLock(TaskingLock);
+NewLock(TaskingGetCurrentLock);
 
 namespace Tasking
 {
@@ -357,13 +358,13 @@ namespace Tasking
 
     PCB *Task::GetCurrentProcess()
     {
-        SmartCriticalSection(TaskingLock);
+        SmartCriticalSection(TaskingGetCurrentLock);
         return GetCurrentCPU()->CurrentProcess;
     }
 
     TCB *Task::GetCurrentThread()
     {
-        SmartCriticalSection(TaskingLock);
+        SmartCriticalSection(TaskingGetCurrentLock);
         return GetCurrentCPU()->CurrentThread;
     }
 
@@ -447,7 +448,7 @@ namespace Tasking
         }
 
         Thread->Security.TrustLevel = Parent->Security.TrustLevel;
-        Thread->Security.UniqueToken = SecurityManager.CreateToken();
+        // Thread->Security.UniqueToken = SecurityManager.CreateToken();
 
         Thread->Info.SpawnTime = 0;
         Thread->Info.UsedTime = 0;
@@ -468,6 +469,9 @@ namespace Tasking
         Thread->Info.Priority = 0;
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
+
+        debug("Created thread %d(%s) in process %d(%s)", Thread->ID, Thread->Name, Thread->Parent->ID, Thread->Parent->Name);
+
         Parent->Threads.push_back(Thread);
         return Thread;
     }
@@ -488,7 +492,7 @@ namespace Tasking
         Process->Status = TaskStatus::Ready;
 
         Process->Security.TrustLevel = TrustLevel;
-        Process->Security.UniqueToken = SecurityManager.CreateToken();
+        // Process->Security.UniqueToken = SecurityManager.CreateToken();
 
         Process->IPCHandles = new HashMap<InterProcessCommunication::IPCPort, uint64_t>;
 
@@ -549,6 +553,8 @@ namespace Tasking
         }
         Process->Info.Priority = 0;
 
+        debug("Created process %d(%s) in process %d(%s)", Process->ID, Process->Name, Process->Parent->ID, Process->Parent->Name);
+
         Parent->Children.push_back(Process);
         ListProcess.push_back(Process);
         return Process;
@@ -575,7 +581,7 @@ namespace Tasking
         TCB *kthrd = CreateThread(kproc, EntryPoint, 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
-        TaskingLock.Lock();
+        TaskingLock.Lock(__FUNCTION__);
 
 #if defined(__amd64__) || defined(__i386__)
         uint32_t rax, rbx, rcx, rdx;
@@ -598,6 +604,9 @@ namespace Tasking
         }
         // ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
 #endif
+        TaskingLock.Unlock();
+        this->IPCManager = new InterProcessCommunication::IPC;
+        TaskingLock.Lock(__FUNCTION__);
         debug("Tasking Started");
     }
 
