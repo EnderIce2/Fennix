@@ -158,8 +158,8 @@ void KernelMainThread()
 {
     KPrint("Kernel main thread started!");
 
-    KPrint("Kernel Compiled at: %s %s with C++ Standard: %d\n", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
-    KPrint("C++ Language Version (__cplusplus) :%ld\n", __cplusplus);
+    KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
+    KPrint("C++ Language Version (__cplusplus) :%ld", __cplusplus);
 
     // asm("int $0x1");
 
