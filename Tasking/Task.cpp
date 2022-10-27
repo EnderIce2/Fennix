@@ -379,12 +379,20 @@ namespace Tasking
     {
         SmartCriticalSection(TaskingLock);
         TCB *Thread = new TCB;
-        Thread->ID = this->NextTID++;
-        strcpy(Thread->Name, Parent->Name);
         if (Parent == nullptr)
             Thread->Parent = this->GetCurrentProcess();
         else
             Thread->Parent = Parent;
+
+        if (!Parent)
+        {
+            error("Parent is null");
+            delete Thread;
+            return nullptr;
+        }
+
+        Thread->ID = this->NextTID++;
+        strcpy(Thread->Name, Parent->Name);
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
         Thread->ExitCode = 0xdeadbeef;
@@ -445,6 +453,7 @@ namespace Tasking
         {
             error("Unknown elevation.");
             KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE));
+            this->NextTID--;
             delete Thread;
             return nullptr;
         }
@@ -533,6 +542,7 @@ namespace Tasking
         default:
         {
             error("Unknown elevation.");
+            this->NextPID--;
             delete Process;
             return nullptr;
         }
@@ -556,9 +566,10 @@ namespace Tasking
         }
         Process->Info.Priority = 0;
 
-        debug("Created process %d(%s) in process %d(%s)", Process->ID, Process->Name, Process->Parent->ID, Process->Parent->Name);
+        debug("Created process %d(%s) in process %d(%s)", Process->ID, Process->Name, Parent ? Process->Parent->ID : 0, Parent ? Process->Parent->Name : "None");
 
-        Parent->Children.push_back(Process);
+        if (Parent)
+            Parent->Children.push_back(Process);
         ListProcess.push_back(Process);
         return Process;
     }
