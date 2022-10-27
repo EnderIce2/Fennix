@@ -15,5 +15,14 @@
 			""
 		],
 		"description": "Create kernel header."
+	},
+	"Fennix Kernel brief": {
+		"prefix": [
+			"brief",
+		],
+		"body": [
+			"/** @brief $0 */"
+		],
+		"description": "Create kernel documentation brief."
 	}
 }

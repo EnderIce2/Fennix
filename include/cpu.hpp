@@ -1404,7 +1404,7 @@ namespace CPU
 
         /**
          * @brief CPUID
-         * 
+         *
          * @param Function Leaf
          * @param eax EAX
          * @param ebx EBX
@@ -1430,7 +1430,7 @@ namespace CPU
         static inline uint32_t GetHighestLeaf()
         {
             uint32_t eax, ebx, ecx, edx;
-            cpuid(0, &eax, &ebx, &ecx, &edx);
+            cpuid(0x0, &eax, &ebx, &ecx, &edx);
             return eax;
         }
 
@@ -1560,7 +1560,352 @@ namespace CPU
         /** @brief EXPERIMENTAL IMPLEMENTATION */
         namespace Intel
         {
-            union FrequencyInfo0x15
+            /** @brief Basic CPU information */
+            union CPUID0x0
+            {
+                struct
+                {
+                    uint64_t HighestFunctionSupported : 32;
+                } EAX;
+                struct
+                {
+                    char rbx[4];
+                } EBX;
+                struct
+                {
+                    char rcx[4];
+                } ECX;
+                struct
+                {
+                    char rdx[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Additional CPU information */
+            union CPUID0x1
+            {
+                struct
+                {
+                    uint64_t SteppingID : 4;
+                    uint64_t ModelID : 4;
+                    uint64_t FamilyID : 4;
+                    uint64_t Type : 2;
+                    uint64_t Reserved0 : 2;
+                    uint64_t ExtendedModel : 4;
+                    uint64_t ExtendedFamily : 8;
+                    uint64_t Reserved1 : 4;
+                } EAX;
+
+                struct
+                {
+                    uint64_t BrandIndex : 8;
+                    uint64_t CLFLUSHLineSize : 8;
+                    uint64_t LogicalProcessorsPerPackage : 8;
+                    uint64_t LocalAPICID : 8;
+                } EBX;
+
+                struct
+                {
+                    uint64_t SSE3 : 1;
+                    uint64_t PCLMULQDQ : 1;
+                    uint64_t DTES64 : 1;
+                    uint64_t MONITOR : 1;
+                    uint64_t DS_CPL : 1;
+                    uint64_t VMX : 1;
+                    uint64_t SMX : 1;
+                    uint64_t EIST : 1;
+                    uint64_t TM2 : 1;
+                    uint64_t SSSE3 : 1;
+                    uint64_t CNXT_ID : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t FMA : 1;
+                    uint64_t CMPXCHG16B : 1;
+                    uint64_t xTPRUpdateControl : 1;
+                    uint64_t PDCM : 1;
+                    uint64_t Reserved1 : 1;
+                    uint64_t PCID : 1;
+                    uint64_t DCA : 1;
+                    uint64_t SSE4_1 : 1;
+                    uint64_t SSE4_2 : 1;
+                    uint64_t x2APIC : 1;
+                    uint64_t MOVBE : 1;
+                    uint64_t POPCNT : 1;
+                    uint64_t TSCDeadline : 1;
+                    uint64_t AES : 1;
+                    uint64_t XSAVE : 1;
+                    uint64_t OSXSAVE : 1;
+                    uint64_t AVX : 1;
+                    uint64_t F16C : 1;
+                    uint64_t RDRAND : 1;
+                    uint64_t Reserved2 : 1;
+                    uint64_t Hypervisor : 1;
+                } ECX;
+
+                struct
+                {
+                    uint64_t FPU : 1;
+                    uint64_t VME : 1;
+                    uint64_t DE : 1;
+                    uint64_t PSE : 1;
+                    uint64_t TSC : 1;
+                    uint64_t MSR : 1;
+                    uint64_t PAE : 1;
+                    uint64_t MCE : 1;
+                    uint64_t CX8 : 1;
+                    uint64_t APIC : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t SEP : 1;
+                    uint64_t MTRR : 1;
+                    uint64_t PGE : 1;
+                    uint64_t MCA : 1;
+                    uint64_t CMOV : 1;
+                    uint64_t PAT : 1;
+                    uint64_t PSE36 : 1;
+                    uint64_t PSN : 1;
+                    uint64_t CLFSH : 1;
+                    uint64_t Reserved1 : 1;
+                    uint64_t DS : 1;
+                    uint64_t ACPI : 1;
+                    uint64_t MMX : 1;
+                    uint64_t FXSR : 1;
+                    uint64_t SSE : 1;
+                    uint64_t SSE2 : 1;
+                    uint64_t SS : 1;
+                    uint64_t HTT : 1;
+                    uint64_t TM : 1;
+                    uint64_t Reserved2 : 1;
+                    uint64_t PBE : 1;
+                } EDX;
+
+                uint64_t raw;
+            };
+            /** @brief CPU cache and TLB */
+            union CPUID0x2
+            {
+                struct
+                {
+                    uint64_t CacheLineSize : 8;
+                    uint64_t CacheLinesPerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } EAX;
+
+                struct
+                {
+                    uint64_t CacheLineSize : 8;
+                    uint64_t CacheLinesPerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } EBX;
+
+                struct
+                {
+                    uint64_t CacheLineSize : 8;
+                    uint64_t CacheLinesPerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } ECX;
+
+                struct
+                {
+                    uint64_t CacheLineSize : 8;
+                    uint64_t CacheLinesPerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } EDX;
+
+                uint64_t raw;
+            };
+            /** @brief CPU serial number */
+            union CPUID0x3
+            {
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EAX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t ProcessorSerialNumber : 32;
+                } ECX;
+
+                struct
+                {
+                    uint64_t ProcessorSerialNumber : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Cache information */
+            union CPUID0x4_1
+            {
+                struct
+                {
+                    uint64_t Type : 5;
+                    uint64_t Level : 3;
+                    uint64_t SelfInitializing : 1;
+                    uint64_t FullyAssociative : 1;
+                    uint64_t Reserved : 4;
+                    uint64_t MaxAddressableIdsForLogicalProcessors : 12;
+                    uint64_t CoresPerPackage : 6;
+                } EAX;
+
+                struct
+                {
+                    uint64_t SystemCoherencyLineSize : 12;
+                    uint64_t PhysicalLinePartitions : 10;
+                    uint64_t WaysOfAssociativity : 10;
+                } EBX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief MONITOR information */
+            union CPUID0x5
+            {
+                struct
+                {
+                    uint64_t SmallestMonitorLineSize : 16;
+                    uint64_t Reserved : 16;
+                } EAX;
+
+                struct
+                {
+                    uint64_t LargestMonitorLineSize : 16;
+                    uint64_t Reserved : 16;
+                } EBX;
+
+                struct
+                {
+                    uint64_t MWAITEnumerationSupported : 1;
+                    uint64_t InterruptsAsBreakEvent : 1;
+                    uint64_t Reserved : 30;
+                } ECX;
+
+                struct
+                {
+                    uint64_t C0 : 4;
+                    uint64_t C1 : 4;
+                    uint64_t C2 : 4;
+                    uint64_t C3 : 4;
+                    uint64_t C4 : 4;
+                    uint64_t Reserved : 12;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Thermal and power management information */
+            union CPUID0x6
+            {
+                struct
+                {
+                    uint64_t SensorSupported : 1;
+                    uint64_t Reserved : 31;
+                } EAX;
+
+                struct
+                {
+                    uint64_t InterruptThreshold : 4;
+                    uint64_t Reserved : 26;
+                } EBX;
+
+                struct
+                {
+                    uint64_t ACNT_MCNT : 1;
+                    uint64_t Reserved : 31;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Performance monitors */
+            union CPUID0xA
+            {
+                struct
+                {
+                    uint64_t VersionID : 8;
+                    uint64_t NumberCounters : 8;
+                    uint64_t BitWidthOfCounters : 8;
+                    uint64_t LengthOfEBXBitVector : 8;
+                } EAX;
+
+                struct
+                {
+                    uint64_t CoreCycles : 1;
+                    uint64_t InstructionsRetired : 1;
+                    uint64_t ReferenceCycles : 1;
+                    uint64_t CacheReferences : 1;
+                    uint64_t CacheMisses : 1;
+                    uint64_t BranchInstructionsRetired : 1;
+                    uint64_t BranchMissesRetired : 1;
+                    uint64_t Reserved : 25;
+                } EBX;
+
+                struct
+                {
+                    uint64_t FixedFunctionCounters : 5;
+                    uint64_t CounterWidth : 8;
+                    uint64_t Reserved : 19;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Get CPU frequency information */
+            union CPUID0x15
+            {
+                struct
+                {
+                    uint64_t VersionID : 8;
+                    uint64_t NumberCounters : 8;
+                    uint64_t BitWidthOfCounters : 8;
+                    uint64_t LengthOfEBXBitVector : 8;
+                } EAX;
+
+                struct
+                {
+                    uint64_t CoreCycles : 1;
+                    uint64_t InstructionsRetired : 1;
+                    uint64_t ReferenceCycles : 1;
+                    uint64_t CacheReferences : 1;
+                    uint64_t CacheMisses : 1;
+                    uint64_t BranchInstructionsRetired : 1;
+                    uint64_t BranchMissesRetired : 1;
+                    uint64_t Reserved : 25;
+                } EBX;
+
+                struct
+                {
+                    uint64_t FixedFunctionCounters : 5;
+                    uint64_t CounterWidth : 8;
+                    uint64_t Reserved : 19;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Get CPU frequency information */
+            union CPUID0x16
             {
                 struct
                 {
@@ -1583,82 +1928,600 @@ namespace CPU
                 };
                 uint64_t raw;
             };
-
-            union FrequencyInfo0x16
+            /** @brief Extended CPU information */
+            union CPUID0x80000000
             {
-                /** @brief Contains Reserved and CoreBaseFrequency */
                 struct
                 {
-                    /** @brief Reserved */
-                    uint64_t Reserved : 16;
-                    /**
-                     * @brief Core base frequency in MHz
-                     *
-                     */
-                    uint64_t CoreBaseFrequency : 16;
-                } RAX;
+                    uint64_t HighestExtendedFunctionSupported : 32;
+                } EAX;
 
-                /** @brief Contains Reserved and CoreMaxFrequency */
                 struct
                 {
-                    /** @brief Reserved */
-                    uint64_t Reserved : 16;
-                    /**
-                     * @brief Core maximum frequency in MHz
-                     *
-                     */
-                    uint64_t CoreMaxFrequency : 16;
+                    uint64_t Reserved : 32;
                 } EBX;
 
-                /** @brief Contains Reserved and CoreBusFrequency */
                 struct
                 {
-                    /** @brief Reserved */
-                    uint64_t Reserved : 16;
-                    /**
-                     * @brief Core bus frequency in MHz
-                     *
-                     */
-                    uint64_t BusFrequency : 16;
+                    uint64_t Reserved : 32;
                 } ECX;
 
-                /** @brief Contains Reserved and CoreBusFrequency */
                 struct
                 {
-                    /** @brief Reserved */
                     uint64_t Reserved : 32;
                 } EDX;
                 uint64_t raw;
             };
-
-            static inline union FrequencyInfo0x15 FrequencyInfo0x15()
+            /** @brief Extended CPU information */
+            union CPUID0x80000001
             {
-                union FrequencyInfo0x15 Info = {.raw = 0};
-                uint32_t eax, ebx, ecx, edx;
-                CPU::x64::cpuid(0x15, &eax, &ebx, &ecx, &edx);
-                Info.Denominator = eax;
-                Info.Numerator = ebx;
-                Info.CoreCrystalClock = ecx;
-                Info.Reserved = edx;
-                return Info;
-            }
+                struct
+                {
+                    uint64_t Unknown : 32;
+                } EAX;
 
-            static inline union FrequencyInfo0x16 FrequencyInfo0x16()
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t LAHF_SAHF : 1;
+                    uint64_t Reserved : 31;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved0 : 11;
+                    uint64_t SYSCALL : 1;
+                    uint64_t Reserved1 : 8;
+                    uint64_t ExecuteDisable : 1;
+                    uint64_t Reserved2 : 8;
+                    uint64_t EMT64T : 1;
+                    uint64_t Reserved3 : 2;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000002
             {
-                union FrequencyInfo0x16 Info = {.raw = 0};
-                uint32_t eax, ebx, ecx, edx;
-                CPU::x64::cpuid(0x16, &eax, &ebx, &ecx, &edx);
-                memcpy(&Info.RAX, &eax, sizeof(Info.RAX));
-                memcpy(&Info.EBX, &ebx, sizeof(Info.EBX));
-                memcpy(&Info.ECX, &ecx, sizeof(Info.ECX));
-                memcpy(&Info.EDX, &edx, sizeof(Info.EDX));
-                return Info;
-            }
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000003
+            {
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000004
+            {
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU cache line information */
+            union CPUID0x80000006
+            {
+                struct
+                {
+                    uint64_t InstructionCount : 12;
+                    uint64_t InstructionAssociativity : 4;
+                    uint64_t DataCount : 12;
+                    uint64_t DataAssociativity : 4;
+                } EAX;
+
+                struct
+                {
+                    uint64_t InstructionCount : 12;
+                    uint64_t InstructionAssociativity : 4;
+                    uint64_t DataCount : 12;
+                    uint64_t DataAssociativity : 4;
+                } EBX;
+
+                struct
+                {
+                    uint64_t LineSize : 8;
+                    uint64_t LinePerTag : 4;
+                    uint64_t Associativity : 4;
+                    uint64_t CacheSize : 16;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Virtual and physical memory size */
+            union CPUID0x80000008
+            {
+                struct
+                {
+                    uint64_t PhysicalAddressBits : 8;
+                    uint64_t LinearAddressBits : 8;
+                    uint64_t Reserved : 16;
+                } EAX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Secure virtual machine parameters */
+            union CPUID0x8000000A
+            {
+                struct
+                {
+                    uint64_t SVMRevision : 8;
+                    uint64_t Reserved : 24;
+                } EAX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
         }
 
         /** @brief EXPERIMENTAL IMPLEMENTATION */
         namespace AMD
         {
+            /** @brief Basic CPU information */
+            union CPUID0x0
+            {
+                struct
+                {
+                    uint64_t MaxLeaf : 32;
+                    char rbx[4];
+                    char rcx[4];
+                    char rdx[4];
+                };
+                uint64_t raw;
+            };
+            /** @brief Additional CPU information */
+            union CPUID0x1
+            {
+                struct
+                {
+                    uint64_t SteppingID : 4;
+                    uint64_t ModelID : 4;
+                    uint64_t FamilyID : 4;
+                    uint64_t Reserved0 : 4;
+                    uint64_t ExtendedModel : 4;
+                    uint64_t ExtendedFamily : 8;
+                    uint64_t Reserved1 : 4;
+                } EAX;
+
+                struct
+                {
+                    uint64_t BrandIndex : 8;
+                    uint64_t CLFLUSHLineSize : 8;
+                    uint64_t LogicalProcessorsPerPackage : 8;
+                    uint64_t LocalAPICID : 8;
+                } EBX;
+
+                struct
+                {
+                    uint64_t SSE3 : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t MONITOR : 1;
+                    uint64_t Reserved1 : 1;
+                    uint64_t DS_CPL : 1;
+                    uint64_t Reserved2 : 1;
+                    uint64_t SMX : 1;
+                    uint64_t Reserved3 : 1;
+                    uint64_t TM2 : 1;
+                    uint64_t Reserved4 : 1;
+                    uint64_t CNXT_ID : 1;
+                    uint64_t Reserved5 : 1;
+                    uint64_t CMPXCHG16B : 1;
+                    uint64_t Reserved6 : 1;
+                    uint64_t xTPRUpdateControl : 1;
+                    uint64_t Reserved7 : 1;
+                    uint64_t Reserved8 : 1;
+                    uint64_t DCA : 1;
+                    uint64_t Reserved9 : 1;
+                    uint64_t SSE4_1 : 1;
+                    uint64_t SSE4_2 : 1;
+                    uint64_t Reserved10 : 1;
+                    uint64_t MOVBE : 1;
+                    uint64_t POPCNT : 1;
+                    uint64_t Reserved11 : 1;
+                    uint64_t AES : 1;
+                    uint64_t Reserved12 : 1;
+                    uint64_t XSAVE : 1;
+                    uint64_t OSXSAVE : 1;
+                    uint64_t AVX : 1;
+                    uint64_t Reserved13 : 1;
+                    uint64_t RDRAND : 1;
+                    uint64_t Reserved14 : 1;
+                    uint64_t Hypervisor : 1;
+                } ECX;
+
+                struct
+                {
+                    uint64_t FPU : 1;
+                    uint64_t VME : 1;
+                    uint64_t DE : 1;
+                    uint64_t PSE : 1;
+                    uint64_t TSC : 1;
+                    uint64_t MSR : 1;
+                    uint64_t PAE : 1;
+                    uint64_t MCE : 1;
+                    uint64_t CX8 : 1;
+                    uint64_t APIC : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t SEP : 1;
+                    uint64_t MTRR : 1;
+                    uint64_t PGE : 1;
+                    uint64_t MCA : 1;
+                    uint64_t CMOV : 1;
+                    uint64_t PAT : 1;
+                    uint64_t PSE36 : 1;
+                    uint64_t PSN : 1;
+                    uint64_t CLFSH : 1;
+                    uint64_t Reserved1 : 1;
+                    uint64_t DS : 1;
+                    uint64_t ACPI : 1;
+                    uint64_t MMX : 1;
+                    uint64_t FXSR : 1;
+                    uint64_t SSE : 1;
+                    uint64_t SSE2 : 1;
+                    uint64_t SS : 1;
+                    uint64_t HTT : 1;
+                    uint64_t TM : 1;
+                    uint64_t Reserved2 : 1;
+                    uint64_t PBE : 1;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU cache and TLB */
+            union CPUID0x2
+            {
+                struct
+                {
+                    uint64_t L1DataCacheSize : 8;
+                    uint64_t L1DataCacheAssociativity : 8;
+                    uint64_t L1DataCacheLineSize : 8;
+                    uint64_t L1DataCachePartitions : 8;
+                } EAX;
+
+                struct
+                {
+                    uint64_t L1InstructionCacheSize : 8;
+                    uint64_t L1InstructionCacheAssociativity : 8;
+                    uint64_t L1InstructionCacheLineSize : 8;
+                    uint64_t L1InstructionCachePartitions : 8;
+                } EBX;
+
+                struct
+                {
+                    uint64_t L2UnifiedCacheSize : 16;
+                    uint64_t L2UnifiedCacheAssociativity : 8;
+                    uint64_t L2UnifiedCacheLineSize : 8;
+                    uint64_t L2UnifiedCachePartitions : 8;
+                } ECX;
+
+                struct
+                {
+                    uint64_t L3UnifiedCacheSize : 18;
+                    uint64_t L3UnifiedCacheAssociativity : 8;
+                    uint64_t L3UnifiedCacheLineSize : 8;
+                    uint64_t L3UnifiedCachePartitions : 8;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Extended CPU information */
+            union CPUID0x80000001
+            {
+                struct
+                {
+                    uint64_t SteppingID : 4;
+                    uint64_t ModelID : 4;
+                    uint64_t FamilyID : 4;
+                    uint64_t Reserved0 : 4;
+                    uint64_t ExtendedModel : 4;
+                    uint64_t ExtendedFamily : 8;
+                    uint64_t Reserved1 : 4;
+                } EAX;
+
+                struct
+                {
+                    uint64_t BranchID : 16;
+                    uint64_t Reserved0 : 16;
+                } EBX;
+
+                struct
+                {
+                    uint64_t LAHF_SAHF : 1;
+                    uint64_t CmpLegacy : 1;
+                    uint64_t SVM : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t AltMovCr8 : 1;
+                    uint64_t Reserved1 : 26;
+                } ECX;
+
+                struct
+                {
+                    uint64_t FPU : 1;
+                    uint64_t VME : 1;
+                    uint64_t DE : 1;
+                    uint64_t PSE : 1;
+                    uint64_t TSC : 1;
+                    uint64_t MSR : 1;
+                    uint64_t PAE : 1;
+                    uint64_t MCE : 1;
+                    uint64_t CMPXCHG8B : 1;
+                    uint64_t APIC : 1;
+                    uint64_t Reserved0 : 1;
+                    uint64_t SYSCALL : 1;
+                    uint64_t MTRR : 1;
+                    uint64_t PGE : 1;
+                    uint64_t MCA : 1;
+                    uint64_t CMOV : 1;
+                    uint64_t PAT : 1;
+                    uint64_t PSE36 : 1;
+                    uint64_t Reserved1 : 1;
+                    uint64_t ExeDisable : 1;
+                    uint64_t Reserved2 : 1;
+                    uint64_t MMXExtended : 1;
+                    uint64_t MMX : 1;
+                    uint64_t FXSR : 1;
+                    uint64_t FFXSR : 1;
+                    uint64_t Reserved3 : 1;
+                    uint64_t RDTSCP : 1;
+                    uint64_t Reserved4 : 1;
+                    uint64_t LongMode : 1;
+                    uint64_t ThreeDNowExtended : 1;
+                    uint64_t ThreeDNow : 1;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000002
+            {
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000003
+            {
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU brand string */
+            union CPUID0x80000004
+            {
+                struct
+                {
+                    char Brand[4];
+                } EAX;
+
+                struct
+                {
+                    char Brand[4];
+                } EBX;
+
+                struct
+                {
+                    char Brand[4];
+                } ECX;
+
+                struct
+                {
+                    char Brand[4];
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief Cache and TLB information */
+            union CPUID0x80000005
+            {
+                struct
+                {
+                    uint64_t InstructionCount : 8;
+                    uint64_t InstructionAssociativity : 8;
+                    uint64_t DataCount : 8;
+                    uint64_t DataAssociativity : 8;
+                } EAX;
+
+                struct
+                {
+                    uint64_t InstructionCount : 8;
+                    uint64_t InstructionAssociativity : 8;
+                    uint64_t DataCount : 8;
+                    uint64_t DataAssociativity : 8;
+                } EBX;
+
+                struct
+                {
+                    uint64_t LineSize : 8;
+                    uint64_t LinePerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } ECX;
+
+                struct
+                {
+                    uint64_t LineSize : 8;
+                    uint64_t LinePerTag : 8;
+                    uint64_t Associativity : 8;
+                    uint64_t CacheSize : 8;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief CPU cache line information */
+            union CPUID0x80000006
+            {
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EAX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t LineSize : 8;
+                    uint64_t LinePerTag : 4;
+                    uint64_t Associativity : 4;
+                    uint64_t CacheSize : 16;
+                } ECX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EDX;
+                uint64_t raw;
+            };
+            /** @brief APM */
+            union CPUID0x80000007
+            {
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EAX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } EBX;
+
+                struct
+                {
+                    uint64_t Reserved : 32;
+                } ECX;
+
+                struct
+                {
+                    uint64_t TemperatureSensor : 1;
+                    uint64_t FrequencyID : 1;
+                    uint64_t VoltageID : 1;
+                    uint64_t ThermaTrip : 1;
+                    uint64_t HarwareThermalControl : 1;
+                    uint64_t SoftwareThermalControl : 1;
+                    uint64_t Reserved0 : 2;
+                    uint64_t TSCInvariant : 1;
+                    uint64_t Reserved1 : 23;
+                } EDX;
+                uint64_t raw;
+            };
         }
     }
 }
