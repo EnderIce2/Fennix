@@ -219,7 +219,7 @@ namespace APIC
     {
         SmartCriticalSection(APICLock);
         APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
-        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
+        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | (unsigned long)BaseStruct.ApicBaseHi << 32u;
         trace("APIC Address: %#lx", APICBaseAddress);
 
         uint32_t rcx;

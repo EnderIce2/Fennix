@@ -40,13 +40,13 @@ public:
         HashNode<K, V> *tmp = new HashNode<K, V>(Key, Value);
         int Index = HashCode(Key);
 
-        while (Nodes[Index] != nullptr && Nodes[Index]->Key != Key && Nodes[Index]->Key != -1)
+        while (Nodes[Index] != nullptr && Nodes[Index]->Key != Key && Nodes[Index]->Key != (K)-1)
         {
             Index++;
             Index %= HashMapCapacity;
         }
 
-        if (Nodes[Index] == nullptr || Nodes[Index]->Key == -1)
+        if (Nodes[Index] == nullptr || Nodes[Index]->Key == (K)-1)
             HashMapSize++;
         Nodes[Index] = tmp;
     }
@@ -80,7 +80,7 @@ public:
             if (Iterate++ > HashMapCapacity)
                 return 0xdeadbeef;
 
-            if (Nodes[Index]->Key == Key)
+            if (Nodes[Index]->Key == (K)Key)
                 return Nodes[Index]->Value;
             Index++;
             Index %= HashMapCapacity;
