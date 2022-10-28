@@ -10,7 +10,7 @@ namespace CPU
 {
 	char *Vendor()
 	{
-		static char Vendor[12];
+		static char Vendor[13];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
 		x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
@@ -32,7 +32,7 @@ namespace CPU
 
 	char *Name()
 	{
-		static char Name[48];
+		static char Name[49];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
 		x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
@@ -76,7 +76,7 @@ namespace CPU
 
 	char *Hypervisor()
 	{
-		static char Hypervisor[12];
+		static char Hypervisor[13];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
 		x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
