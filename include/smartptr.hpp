@@ -1,4 +1,7 @@
-#pragma once
+#ifndef __FENNIX_KERNEL_SMART_POINTER_H__
+#define __FENNIX_KERNEL_SMART_POINTER_H__
+
+#include <types.h>
 
 #include <debug.h>
 
@@ -147,3 +150,5 @@ template <class T>
 class weak_ptr
 {
 };
+
+#endif // !__FENNIX_KERNEL_SMART_POINTER_H__
