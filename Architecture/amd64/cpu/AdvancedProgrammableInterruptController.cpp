@@ -300,7 +300,7 @@ namespace APIC
         LVTTimer timer = {.raw = 0};
         timer.Vector = Vector;
         timer.TimerMode = 0;
-        this->lapic->Write(APIC_TDCR, DivideBy16);
+        this->lapic->Write(APIC_TDCR, DivideBy128);
         this->lapic->Write(APIC_TICR, Ticks * Miliseconds);
         this->lapic->Write(APIC_TIMER, timer.raw);
     }
