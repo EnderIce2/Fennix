@@ -4,7 +4,7 @@
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #define START_EXTERNC \
-    EXTERNC            \
+    EXTERNC           \
     {
 #define END_EXTERNC \
     }
@@ -35,6 +35,9 @@
 #define UNUSED(x) (void)(x)
 #define CONCAT(x, y) x##y
 
+#define toupper(c) ((c)-0x20 * (((c) >= 'a') && ((c) <= 'z')))
+#define tolower(c) ((c) + 0x20 * (((c) >= 'A') && ((c) <= 'Z')))
+
 #ifndef __va_list__
 typedef __builtin_va_list va_list;
 #endif
@@ -53,7 +56,6 @@ typedef __builtin_va_list va_list;
 
 #define VPOKE(type, address) (*((volatile type *)(address)))
 #define POKE(type, address) (*((type *)(address)))
-
 
 #ifndef __cplusplus
 

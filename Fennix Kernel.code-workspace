@@ -15,7 +15,9 @@
 			"cargs.h": "c",
 			"memory.hpp": "c",
 			"convert.h": "c",
-			"limits.h": "c"
+			"limits.h": "c",
+			"assert.h": "c",
+			"cwalk.h": "c"
 		}
 	}
 }
