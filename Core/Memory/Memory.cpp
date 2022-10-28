@@ -192,7 +192,11 @@ void *HeapMalloc(uint64_t Size)
     case MemoryAllocatorType::XallocV1:
         return XallocV1Allocator->Malloc(Size);
     case MemoryAllocatorType::liballoc11:
-        return PREFIX(malloc)(Size);
+    {
+        void *ret = PREFIX(malloc)(Size);
+        memset(ret, 0, Size);
+        return ret;
+    }
     default:
         throw;
     }
@@ -207,7 +211,11 @@ void *HeapCalloc(uint64_t n, uint64_t Size)
     case MemoryAllocatorType::XallocV1:
         return XallocV1Allocator->Calloc(n, Size);
     case MemoryAllocatorType::liballoc11:
-        return PREFIX(calloc)(n, Size);
+    {
+        void *ret = PREFIX(calloc)(n, Size);
+        memset(ret, 0, Size);
+        return ret;
+    }
     default:
         throw;
     }
@@ -222,7 +230,11 @@ void *HeapRealloc(void *Address, uint64_t Size)
     case MemoryAllocatorType::XallocV1:
         return XallocV1Allocator->Realloc(Address, Size);
     case MemoryAllocatorType::liballoc11:
-        return PREFIX(realloc)(Address, Size);
+    {
+        void *ret = PREFIX(realloc)(Address, Size);
+        memset(ret, 0, Size);
+        return ret;
+    }
     default:
         throw;
     }
