@@ -10,16 +10,16 @@ namespace CPU
 {
 	char *Vendor()
 	{
-		static char Vendor[13];
+		static char Vendor[12];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
 		memcpy(Vendor + 0, &rbx, 4);
 		memcpy(Vendor + 4, &rdx, 4);
 		memcpy(Vendor + 8, &rcx, 4);
 #elif defined(__i386__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
+		x32::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
 		memcpy(Vendor + 0, &rbx, 4);
 		memcpy(Vendor + 4, &rdx, 4);
 		memcpy(Vendor + 8, &rcx, 4);
@@ -35,34 +35,34 @@ namespace CPU
 		static char Name[48];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 0, &rax, 4);
 		memcpy(Name + 4, &rbx, 4);
 		memcpy(Name + 8, &rcx, 4);
 		memcpy(Name + 12, &rdx, 4);
-		CPU::x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 16, &rax, 4);
 		memcpy(Name + 20, &rbx, 4);
 		memcpy(Name + 24, &rcx, 4);
 		memcpy(Name + 28, &rdx, 4);
-		CPU::x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 32, &rax, 4);
 		memcpy(Name + 36, &rbx, 4);
 		memcpy(Name + 40, &rcx, 4);
 		memcpy(Name + 44, &rdx, 4);
 #elif defined(__i386__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
+		x32::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 0, &rax, 4);
 		memcpy(Name + 4, &rbx, 4);
 		memcpy(Name + 8, &rcx, 4);
 		memcpy(Name + 12, &rdx, 4);
-		CPU::x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
+		x32::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 16, &rax, 4);
 		memcpy(Name + 20, &rbx, 4);
 		memcpy(Name + 24, &rcx, 4);
 		memcpy(Name + 28, &rdx, 4);
-		CPU::x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
+		x32::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
 		memcpy(Name + 32, &rax, 4);
 		memcpy(Name + 36, &rbx, 4);
 		memcpy(Name + 40, &rcx, 4);
@@ -76,16 +76,16 @@ namespace CPU
 
 	char *Hypervisor()
 	{
-		static char Hypervisor[13];
+		static char Hypervisor[12];
 #if defined(__amd64__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
 		memcpy(Hypervisor + 0, &rbx, 4);
 		memcpy(Hypervisor + 4, &rcx, 4);
 		memcpy(Hypervisor + 8, &rdx, 4);
 #elif defined(__i386__)
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
+		x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
 		memcpy(Hypervisor + 0, &rbx, 4);
 		memcpy(Hypervisor + 4, &rcx, 4);
 		memcpy(Hypervisor + 8, &rdx, 4);
@@ -177,11 +177,11 @@ namespace CPU
 	{
 #if defined(__amd64__)
 		static int BSP = 0;
-		CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-		CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+		x64::CR0 cr0 = x64::readcr0();
+		x64::CR4 cr4 = x64::readcr4();
 		uint32_t rax, rbx, rcx, rdx;
-		CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-		if (rdx & CPU::x64::CPUID_FEAT_RDX_SSE)
+		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
+		if (rdx & x64::CPUID_FEAT_RDX_SSE)
 		{
 			debug("Enabling SSE support...");
 			if (!BSP)
@@ -194,48 +194,48 @@ namespace CPU
 
 		if (!BSP)
 			KPrint("Enabling CPU cache.");
-		// Enable cpu cache but... how to use it?
+
 		cr0.NW = 0;
 		cr0.CD = 0;
 
-		CPU::x64::writecr0(cr0);
+		x64::writecr0(cr0);
 
 		debug("Enabling UMIP, SMEP & SMAP support...");
-		CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-		if (rdx & CPU::x64::CPUID_FEAT_RDX_UMIP)
+		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
+		if (rdx & x64::CPUID_FEAT_RDX_UMIP)
 		{
 			if (!BSP)
 				KPrint("UMIP is supported.");
 			fixme("Not going to enable UMIP.");
 			// cr4.UMIP = 1;
 		}
-		if (rdx & CPU::x64::CPUID_FEAT_RDX_SMEP)
+		if (rdx & x64::CPUID_FEAT_RDX_SMEP)
 		{
 			if (!BSP)
 				KPrint("SMEP is supported.");
 			cr4.SMEP = 1;
 		}
-		if (rdx & CPU::x64::CPUID_FEAT_RDX_SMAP)
+		if (rdx & x64::CPUID_FEAT_RDX_SMAP)
 		{
 			if (!BSP)
 				KPrint("SMAP is supported.");
 			cr4.SMAP = 1;
 		}
-		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
-			strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
-			CPU::x64::writecr4(cr4);
+		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
+			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+			x64::writecr4(cr4);
 		else
 		{
 			if (!BSP)
 			{
-				if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
+				if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
 					KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
-				else if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+				else if (strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 					KPrint("QEMU (TCG) detected. Not using UMIP, SMEP & SMAP");
 			}
 		}
 		debug("Enabling PAT support...");
-		CPU::x64::wrmsr(CPU::x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
+		x64::wrmsr(x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)
 			trace("Features for BSP initialized.");
 #elif defined(__i386__)
