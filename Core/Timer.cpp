@@ -14,9 +14,12 @@ namespace Time
 {
     void time::Sleep(uint64_t Milliseconds)
     {
+#if defined(__amd64__) || defined(__i386__)
         uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000) / clk;
         while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
             ;
+#elif defined(__aarch64__)
+#endif
     }
 
     time::time(void *_acpi)
