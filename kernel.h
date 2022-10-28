@@ -5,6 +5,7 @@
 
 #include <boot/binfo.h>
 #ifdef __cplusplus
+#include <filesystem.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
 #include <kconfig.hpp>
@@ -23,6 +24,7 @@ extern PCI::PCI *PCIManager;
 extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
+extern FileSystem::Virtual *vfs;
 #endif
 
 EXTERNC void KPrint(const char *format, ...);

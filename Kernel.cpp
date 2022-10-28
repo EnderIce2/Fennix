@@ -20,6 +20,7 @@ Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 Time::time *TimeManager = nullptr;
+FileSystem::Virtual *vfs = nullptr;
 
 KernelConfig Config;
 Time::Clock BootClock;
