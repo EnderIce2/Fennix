@@ -70,7 +70,7 @@ namespace SMP
 
         CPUCores = Cores;
 
-        for (uint16_t i = 0; i < Cores; i++)
+        for (int i = 0; i < Cores; i++)
         {
             debug("Initializing CPU %d", i);
             if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
