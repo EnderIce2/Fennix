@@ -137,7 +137,7 @@ namespace Tasking
         {
             // Save current process and thread registries, gs, fs, fpu, etc...
             CurrentCPU->CurrentThread->Registers = *Frame;
-            // _fxsave(CurrentCPU->CurrentThread->FXRegion);
+            CPU::x64::fxsave(CurrentCPU->CurrentThread->FXRegion);
 
             // Set the process & thread as ready if it's running.
             if (CurrentCPU->CurrentProcess->Status == TaskStatus::Running)
@@ -264,7 +264,7 @@ namespace Tasking
 
         *Frame = CurrentCPU->CurrentThread->Registers;
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
-        // _fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
         goto End;
     }
 
@@ -295,7 +295,7 @@ namespace Tasking
             error("Unknown trust level %d.", CurrentCPU->CurrentProcess->Security.TrustLevel);
             break;
         }
-        // _fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
     }
     End:
     {

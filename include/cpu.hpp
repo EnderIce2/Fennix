@@ -1557,6 +1557,26 @@ namespace CPU
 #endif
         }
 
+        static inline void fxsave(char *FXSaveArea)
+        {
+#if defined(__amd64__)
+            // asmv("fxsaveq (%0)"
+            //      :
+            //      : "r"(FXSaveArea)
+            //      : "memory");
+#endif
+        }
+
+        static inline void fxrstor(char *FXRstorArea)
+        {
+#if defined(__amd64__)
+            // asmv("fxrstorq (%0)"
+            //      :
+            //      : "r"(FXRstorArea)
+            //      : "memory");
+#endif
+        }
+
         /** @brief EXPERIMENTAL IMPLEMENTATION */
         namespace Intel
         {
@@ -3090,6 +3110,10 @@ namespace CPU
                 } EDX;
             };
         }
+    }
+
+    namespace aarch64
+    {
     }
 }
 

@@ -91,6 +91,7 @@ namespace Tasking
 #endif
         TaskSecurity Security;
         TaskInfo Info;
+        char FXRegion[512] __attribute__((aligned(16)));
 
         void Rename(const char *name)
         {
@@ -119,8 +120,8 @@ namespace Tasking
         TaskInfo Info;
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
-        Memory::PageTable *PageTable;
         HashMap<InterProcessCommunication::IPCPort, uint64_t> *IPCHandles;
+        Memory::PageTable *PageTable;
     };
 
     enum TokenTrustLevel
