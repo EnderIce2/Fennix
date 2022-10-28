@@ -577,9 +577,13 @@ namespace Tasking
     Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x64::IRQ16)
     {
         SmartCriticalSection(TaskingLock);
+
+#if defined(__amd64__)
         for (int i = 0; i < SMP::CPUCores; i++)
             ((APIC::APIC *)Interrupts::apic[i])->RedirectIRQ(i, CPU::x64::IRQ16 - CPU::x64::IRQ0, 1);
-
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
         KPrint("Starting Tasking With Instruction Pointer: %p (\e666666%s\eCCCCCC)", EntryPoint, KernelSymbolTable->GetSymbolFromAddress(EntryPoint));
         TaskingLock.Unlock();
 
@@ -597,7 +601,7 @@ namespace Tasking
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(__amd64__)
         uint32_t rax, rbx, rcx, rdx;
         CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
         if (rcx & CPU::x64::CPUID_FEAT_RCX_MONITOR)

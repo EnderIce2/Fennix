@@ -20,7 +20,7 @@ namespace Tasking
     enum TaskArchitecture
     {
         UnknownArchitecture,
-        x86,
+        x32,
         x64,
         ARM,
         ARM64

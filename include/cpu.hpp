@@ -252,6 +252,23 @@ namespace CPU
 
     namespace x32
     {
+        /**
+         * @brief CPUID
+         *
+         * @param Function Leaf
+         * @param eax EAX
+         * @param ebx EBX
+         * @param ecx ECX
+         * @param edx EDX
+         */
+        static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+        {
+#if defined(__i386__)
+            asmv("cpuid"
+                 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+                 : "a"(Function));
+#endif
+        }
     }
 
     namespace x64
