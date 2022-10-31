@@ -286,13 +286,7 @@ namespace APIC
     {
     }
 
-    void Timer::OnInterruptReceived(TrapFrame *Frame)
-    {
-        // fixme("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", rdmsr(MSR_FS_BASE));
-        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
-        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('H');
-        // UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write('\n');
-    }
+    void Timer::OnInterruptReceived(TrapFrame *Frame) { debug("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", GetCurrentCPU()->ID); }
 
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
     {
@@ -335,7 +329,7 @@ namespace APIC
         LVTTimer timer = {.raw = 0};
         timer.Vector = IRQ0;
         timer.Mask = Unmasked;
-        timer.TimerMode = Periodic;
+        timer.TimerMode = LVTTimerMode::OneShot;
 
         // Initialize APIC timer
         this->lapic->Write(APIC_TDCR, Divider);
