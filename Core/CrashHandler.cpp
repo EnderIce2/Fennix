@@ -42,6 +42,52 @@ void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame);
 
 namespace CrashHandler
 {
+    struct StackFrame
+    {
+        struct StackFrame *rbp;
+        uint64_t rip;
+    };
+
+    __attribute__((no_stack_protector)) void TraceFrames(CPU::x64::TrapFrame *Frame, int Count)
+    {
+        struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
+        debug("Stack tracing...");
+        EHPrint("\e7981FC\nStack Trace:\n");
+        if (!frames || !frames->rip || !frames->rbp)
+        {
+            EHPrint("\e2565CC%p", (void *)Frame->rip);
+            EHPrint("\e7925CC-");
+            EHPrint("\eAA25C%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
+            EHPrint("\e7981FC <- Exception");
+            EHPrint("\eFF0000\n< No stack trace available. >\n");
+        }
+        else
+        {
+            EHPrint("\e2565CC%p", (void *)Frame->rip);
+            EHPrint("\e7925CC-");
+            if (Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end)
+                EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
+            else
+                EHPrint("Outside Kernel");
+            EHPrint("\e7981FC <- Exception");
+            for (int frame = 0; frame < Count; ++frame)
+            {
+                if (!frames->rip)
+                    break;
+                EHPrint("\n\e2565CC%p", (void *)frames->rip);
+                EHPrint("\e7925CC-");
+                if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
+                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress(frames->rip));
+                else
+                    EHPrint("\eFF4CA9Outside Kernel");
+
+                if (Frame->rip >= 0xFFFFFFFFFFFFFFF0 || Frame->rip <= 0xFF)
+                    return;
+                frames = frames->rbp;
+            }
+        }
+    }
+
     __attribute__((no_stack_protector)) void printfWrapper(char c, void *unused)
     {
         Display->Print(c, 255, true);
@@ -291,46 +337,7 @@ namespace CrashHandler
              :
              : "r"(dr7));
 
-        struct StackFrame
-        {
-            struct StackFrame *rbp;
-            uint64_t rip;
-        };
-
-        struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
-
-        debug("Stack tracing...");
-        EHPrint("\e7981FC\nStack Trace:\n");
-        if (!frames || !frames->rip || !frames->rbp)
-        {
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
-            EHPrint("\e7925CC-");
-            EHPrint("\eAA25C%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
-            EHPrint("\e7981FC <- Exception");
-            EHPrint("\eFF0000\n< No stack trace available. >\n");
-        }
-        else
-        {
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
-            EHPrint("\e7925CC-");
-            if (Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end)
-                EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
-            else
-                EHPrint("Outside Kernel");
-            EHPrint("\e7981FC <- Exception");
-            for (uint64_t frame = 0; frame < 20; ++frame)
-            {
-                if (!frames->rip)
-                    break;
-                EHPrint("\n\e2565CC%p", (void *)frames->rip);
-                EHPrint("\e7925CC-");
-                if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
-                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress(frames->rip));
-                else
-                    EHPrint("\eFF4CA9Outside Kernel");
-                frames = frames->rbp;
-            }
-        }
+        TraceFrames(Frame, 20);
         goto CrashEnd;
 
 #elif defined(__i386__)
