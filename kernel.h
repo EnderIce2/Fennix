@@ -9,6 +9,7 @@
 #include <display.hpp>
 #include <symbols.hpp>
 #include <kconfig.hpp>
+#include <driver.hpp>
 #include <power.hpp>
 #include <task.hpp>
 #include <time.hpp>
@@ -25,6 +26,11 @@ extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
 extern FileSystem::Virtual *vfs;
+extern Driver::Driver *DriverManager;
+
+#define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
+#define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code
+
 #endif
 
 EXTERNC void KPrint(const char *format, ...);
