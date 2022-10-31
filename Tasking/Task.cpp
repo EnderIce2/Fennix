@@ -1,7 +1,6 @@
 #include <task.hpp>
 
 #include <lock.hpp>
-#include <debug.h>
 #include <smp.hpp>
 
 #include "../kernel.h"
@@ -22,7 +21,7 @@
 #endif
 
 NewLock(TaskingLock);
-NewLock(TaskingGetCurrentLock);
+NewLock(SchedulerLock);
 
 namespace Tasking
 {
@@ -41,7 +40,6 @@ namespace Tasking
     {
 #if defined(__amd64__) || defined(__i386__)
         asmv("IdleLoop:\n"
-             "call OneShot\n"
              "hlt\n"
              "jmp IdleLoop\n");
 #elif defined(__aarch64__)
@@ -49,6 +47,87 @@ namespace Tasking
              "wfe\n"
              "b IdleLoop\n");
 #endif
+    }
+
+    __attribute__((no_stack_protector)) void Task::RemoveThread(TCB *Thread)
+    {
+        for (uint64_t i = 0; i < Thread->Parent->Threads.size(); i++)
+            if (Thread->Parent->Threads[i] == Thread)
+            {
+                trace("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
+                      Thread->Name, Thread->ID, Thread->Parent->Name, Thread->Parent->ID);
+                // Free memory
+                KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE));
+                SecurityManager.DestroyToken(Thread->Security.UniqueToken);
+                delete Thread->Parent->Threads[i];
+                // Remove from the list
+                Thread->Parent->Threads.remove(i);
+                break;
+            }
+    }
+
+    __attribute__((no_stack_protector)) void Task::RemoveProcess(PCB *Process)
+    {
+        if (Process == nullptr)
+            return;
+
+        if (Process->Status == Terminated)
+        {
+            foreach (TCB *thread in Process->Threads)
+                RemoveThread(thread);
+
+            foreach (PCB *process in Process->Children)
+                RemoveProcess(process);
+
+            for (uint64_t i = 0; i < ListProcess.size(); i++)
+            {
+                if (ListProcess[i] == Process)
+                {
+                    trace("Process \"%s\"(%d) removed from the list", Process->Name, Process->ID);
+                    // Free memory
+                    delete ListProcess[i]->IPCHandles;
+                    SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
+                    KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
+                    delete ListProcess[i];
+                    // Remove from the list
+                    ListProcess.remove(i);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            foreach (TCB *thread in Process->Threads)
+                if (thread->Status == Terminated)
+                    RemoveThread(thread);
+        }
+    }
+
+    __attribute__((no_stack_protector)) void Task::UpdateInfo(TaskInfo *Info, int Core)
+    {
+        if (Info->Affinity[Core] == true)
+        {
+            // TODO: Not working
+            uint64_t CounterNow = CPU::Counter();
+
+            Info->OldUserTime = Info->CurrentUserTime;
+            Info->OldKernelTime = Info->CurrentKernelTime;
+
+            Info->CurrentUserTime = Info->UserTime;
+            Info->CurrentKernelTime = Info->KernelTime;
+
+            Info->UserTime = 0;
+            Info->KernelTime = 0;
+
+            Info->Usage[Core] = (Info->CurrentUserTime - Info->OldUserTime) + (Info->CurrentKernelTime - Info->OldKernelTime);
+            Info->Usage[Core] = (Info->Usage[Core] * 100) / (CounterNow - Info->SpawnTime);
+
+            Info->OldUserTime = Info->CurrentUserTime;
+            Info->OldKernelTime = Info->CurrentKernelTime;
+
+            Info->CurrentUserTime = Info->UserTime;
+            Info->CurrentKernelTime = Info->KernelTime;
+        }
     }
 
 #if defined(__amd64__)
@@ -75,8 +154,8 @@ namespace Tasking
                 schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
                 break;
             default:
-                schedbg("Process %s(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
-                // RemoveProcess(pcb); // ignore for now
+                schedbg("Process \"%s\"(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+                RemoveProcess(pcb);
                 continue;
             }
 
@@ -103,9 +182,10 @@ namespace Tasking
 
     __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
-        SmartCriticalSection(TaskingLock);
+        SmartCriticalSection(SchedulerLock);
         CPUData *CurrentCPU = GetCurrentCPU();
         // debug("Scheduler called on CPU %d.", CurrentCPU->ID);
+        // debug("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 
         schedbg("================================================================");
         schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
@@ -163,7 +243,7 @@ namespace Tasking
                         goto RetryAnotherThread;
                     }
 
-                    schedbg("%s(%d) and next thread is %s(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
+                    schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
 
                     // Check if the thread is ready to be executed.
                     if (thread->Status != TaskStatus::Ready)
@@ -223,7 +303,7 @@ namespace Tasking
             {
                 if (InvalidPCB(pcb))
                     continue;
-                // RemoveProcess(pcb); // comment this until i will find a way to handle properly vectors, the memory need to be 0ed after removing.
+                RemoveProcess(pcb);
             }
 
             // If we didn't find anything, we check from the start of the list. This is the last chance to find something or we go to idle.
@@ -249,37 +329,27 @@ namespace Tasking
                 }
             }
         }
+        goto UnwantedReach; // This should never happen.
 
     Idle:
     {
-        // Should I remove processes that are no longer have any threads? Remove only from userspace?
-        if (IdleProcess == nullptr)
-        {
-            schedbg("Idle process created");
-            IdleProcess = CreateProcess(nullptr, (char *)"idle", TaskTrustLevel::Idle);
-            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), 0);
-        }
         CurrentCPU->CurrentProcess = IdleProcess;
         CurrentCPU->CurrentThread = IdleThread;
-
-        *Frame = CurrentCPU->CurrentThread->Registers;
-        CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
-        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
-        goto End;
+        goto Success;
     }
 
     Success:
     {
-        schedbg("Success Prc:%s(%d) Thd:%s(%d)->RIP:%#lx-RSP:%#lx(STACK: %#lx)",
+        schedbg("Process \"%s\"(%d) Thread \"%s\"(%d) is now running on CPU %d",
                 CurrentCPU->CurrentProcess->Name, CurrentCPU->CurrentProcess->ID,
-                CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
-                CurrentCPU->CurrentThread->Registers.rip, CurrentCPU->CurrentThread->Registers.rsp, CurrentCPU->CurrentThread->Stack);
+                CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID, CurrentCPU->ID);
 
         CurrentCPU->CurrentProcess->Status = TaskStatus::Running;
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
         *Frame = CurrentCPU->CurrentThread->Registers;
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
+        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
 
         switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
         {
@@ -295,16 +365,19 @@ namespace Tasking
             error("Unknown trust level %d.", CurrentCPU->CurrentProcess->Security.TrustLevel);
             break;
         }
-        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        goto End;
+    }
+    UnwantedReach:
+    {
+        warn("Unwanted reach!");
+        OneShot(100);
+        goto RealEnd;
     }
     End:
     {
-        // UpdateTimeUsed(&CurrentCPU->CurrentProcess->Info);
-        // UpdateTimeUsed(&CurrentCPU->CurrentThread->Info);
-        // UpdateCPUUsage(&CurrentCPU->CurrentProcess->Info);
-        // UpdateCPUUsage(&CurrentCPU->CurrentThread->Info);
+        UpdateInfo(&CurrentCPU->CurrentProcess->Info, CurrentCPU->ID);
+        UpdateInfo(&CurrentCPU->CurrentThread->Info, CurrentCPU->ID);
         OneShot(CurrentCPU->CurrentThread->Info.Priority);
-        schedbg("Scheduler end");
     }
         schedbg("================================================================");
         schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
@@ -322,6 +395,10 @@ namespace Tasking
         schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
                 Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
         schedbg("================================================================");
+    RealEnd:
+    {
+        schedbg("Scheduler end");
+    }
     }
 
 #elif defined(__i386__)
@@ -347,32 +424,45 @@ namespace Tasking
     }
 #endif
 
-    void ThreadDoExit(int Code)
+    void ThreadDoExit()
     {
-        SmartCriticalSection(TaskingLock);
+        // TODO: How I can lock the scheduler without causing a deadlock?
         CPUData *CPUData = GetCurrentCPU();
         CPUData->CurrentThread->Status = TaskStatus::Terminated;
-        CPUData->CurrentThread->ExitCode = Code;
-        debug("parent:%s tid:%d, code:%016p", CPUData->CurrentProcess->Name, CPUData->CurrentThread->ID, Code);
-        trace("Exiting thread %d(%s)...", CPUData->CurrentThread->ID, CPUData->CurrentThread->Name);
-        OneShot(CPUData->CurrentThread->Info.Priority);
+        debug("\"%s\"(%d) exited with code: %#lx", CPUData->CurrentThread->Name, CPUData->CurrentThread->ID, CPUData->CurrentThread->ExitCode);
         CPU::Halt(true);
     }
 
     PCB *Task::GetCurrentProcess()
     {
-        SmartCriticalSection(TaskingGetCurrentLock);
+        SmartCriticalSection(TaskingLock);
         return GetCurrentCPU()->CurrentProcess;
     }
 
     TCB *Task::GetCurrentThread()
     {
-        SmartCriticalSection(TaskingGetCurrentLock);
+        SmartCriticalSection(TaskingLock);
         return GetCurrentCPU()->CurrentThread;
+    }
+
+    void Task::WaitForProcess(PCB *pcb)
+    {
+        debug("Waiting for process \"%s\"(%d)", pcb->Name, pcb->ID);
+        while (pcb->Status != TaskStatus::Terminated)
+            CPU::Halt();
+    }
+
+    void Task::WaitForThread(TCB *tcb)
+    {
+        debug("Waiting for thread \"%s\"(%d)", tcb->Name, tcb->ID);
+        while (tcb->Status != TaskStatus::Terminated)
+            CPU::Halt();
     }
 
     TCB *Task::CreateThread(PCB *Parent,
                             IP EntryPoint,
+                            Arg Argument0,
+                            Arg Argument1,
                             IPOffset Offset,
                             TaskArchitecture Architecture,
                             TaskCompatibility Compatibility)
@@ -380,7 +470,11 @@ namespace Tasking
         SmartCriticalSection(TaskingLock);
         TCB *Thread = new TCB;
         if (Parent == nullptr)
+        {
+            TaskingLock.Unlock();
             Thread->Parent = this->GetCurrentProcess();
+            TaskingLock.Lock(__FUNCTION__);
+        }
         else
             Thread->Parent = Parent;
 
@@ -395,13 +489,17 @@ namespace Tasking
         strcpy(Thread->Name, Parent->Name);
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
-        Thread->ExitCode = 0xdeadbeef;
+        Thread->Argument0 = Argument0;
+        Thread->Argument1 = Argument1;
+        Thread->ExitCode = 0xdead;
         Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE);
         Thread->Status = TaskStatus::Ready;
 
 #if defined(__amd64__)
         memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
         Thread->Registers.rip = (EntryPoint + Offset);
+        Thread->Registers.rdi = Argument0;
+        Thread->Registers.rsi = Argument1;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -462,11 +560,8 @@ namespace Tasking
         Thread->Security.TrustLevel = Parent->Security.TrustLevel;
         // Thread->Security.UniqueToken = SecurityManager.CreateToken();
 
-        Thread->Info.SpawnTime = 0;
-        Thread->Info.UsedTime = 0;
-        Thread->Info.OldUsedTime = 0;
-        Thread->Info.OldSystemTime = 0;
-        Thread->Info.CurrentSystemTime = 0;
+        Thread->Info = {};
+        Thread->Info.SpawnTime = CPU::Counter();
         Thread->Info.Year = 0;
         Thread->Info.Month = 0;
         Thread->Info.Day = 0;
@@ -476,13 +571,15 @@ namespace Tasking
         for (int i = 0; i < MAX_CPU; i++)
         {
             Thread->Info.Usage[i] = 0;
-            Thread->Info.Affinity[i] = 0;
+            Thread->Info.Affinity[i] = true;
         }
-        Thread->Info.Priority = 0;
+        Thread->Info.Priority = 10;
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
 
-        debug("Created thread %d(%s) in process %d(%s)", Thread->ID, Thread->Name, Thread->Parent->ID, Thread->Parent->Name);
+        debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
+              Thread->Name, Thread->ID,
+              Thread->Parent->Name, Thread->Parent->ID);
 
         Parent->Threads.push_back(Thread);
         return Thread;
@@ -497,10 +594,14 @@ namespace Tasking
         Process->ID = this->NextPID++;
         strcpy(Process->Name, Name);
         if (Parent == nullptr)
+        {
+            TaskingLock.Unlock();
             Process->Parent = this->GetCurrentProcess();
+            TaskingLock.Lock(__FUNCTION__);
+        }
         else
             Process->Parent = Parent;
-        Process->ExitCode = 0xdeadbeef;
+        Process->ExitCode = 0xdead;
         Process->Status = TaskStatus::Ready;
 
         Process->Security.TrustLevel = TrustLevel;
@@ -548,11 +649,8 @@ namespace Tasking
         }
         }
 
-        Process->Info.SpawnTime = 0;
-        Process->Info.UsedTime = 0;
-        Process->Info.OldUsedTime = 0;
-        Process->Info.OldSystemTime = 0;
-        Process->Info.CurrentSystemTime = 0;
+        Process->Info = {};
+        Process->Info.SpawnTime = CPU::Counter();
         Process->Info.Year = 0;
         Process->Info.Month = 0;
         Process->Info.Day = 0;
@@ -562,11 +660,14 @@ namespace Tasking
         for (int i = 0; i < MAX_CPU; i++)
         {
             Process->Info.Usage[i] = 0;
-            Process->Info.Affinity[i] = 0;
+            Process->Info.Affinity[i] = true;
         }
-        Process->Info.Priority = 0;
+        Process->Info.Priority = 10;
 
-        debug("Created process %d(%s) in process %d(%s)", Process->ID, Process->Name, Parent ? Process->Parent->ID : 0, Parent ? Process->Parent->Name : "None");
+        debug("Created process \"%s\"(%d) in process \"%s\"(%d)",
+              Process->Name, Process->ID,
+              Parent ? Process->Parent->Name : "None",
+              Parent ? Process->Parent->ID : 0);
 
         if (Parent)
             Parent->Children.push_back(Process);
@@ -594,9 +695,8 @@ namespace Tasking
 #elif defined(__aarch64__)
         TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
-
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
-        TCB *kthrd = CreateThread(kproc, EntryPoint, 0, Arch);
+        TCB *kthrd = CreateThread(kproc, EntryPoint, 0, 0, 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
@@ -624,6 +724,10 @@ namespace Tasking
 #endif
         TaskingLock.Unlock();
         this->IPCManager = new InterProcessCommunication::IPC;
+        IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
+        IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop));
+        IdleThread->Rename("Idle Thread");
+        IdleThread->SetPriority(1);
         TaskingLock.Lock(__FUNCTION__);
         debug("Tasking Started");
     }

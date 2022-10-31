@@ -8,10 +8,12 @@
 #include <memory.hpp>
 #include <hashmap.hpp>
 #include <ipc.hpp>
+#include <debug.h>
 
 namespace Tasking
 {
     typedef unsigned long IP;
+    typedef unsigned long Arg;
     typedef unsigned long IPOffset;
     typedef unsigned long UPID;
     typedef unsigned long UTID;
@@ -62,8 +64,10 @@ namespace Tasking
 
     struct TaskInfo
     {
-        uint64_t SpawnTime = 0, UsedTime = 0, OldUsedTime = 0;
-        uint64_t OldSystemTime = 0, CurrentSystemTime = 0;
+        uint64_t SpawnTime = 0;
+        uint64_t OldUserTime = 0, CurrentUserTime = 0;
+        uint64_t OldKernelTime = 0, CurrentKernelTime = 0;
+        uint64_t KernelTime = 0, UserTime = 0;
         uint64_t Year, Month, Day, Hour, Minute, Second;
         uint64_t Usage[256]; // MAX_CPU
         bool Affinity[256];  // MAX_CPU
@@ -79,6 +83,8 @@ namespace Tasking
         struct PCB *Parent;
         IP EntryPoint;
         IPOffset Offset;
+        Arg Argument0;
+        Arg Argument1;
         int ExitCode;
         void *Stack;
         TaskStatus Status;
@@ -95,6 +101,7 @@ namespace Tasking
 
         void Rename(const char *name)
         {
+            trace("Renaming thread %s to %s", Name, name);
             for (int i = 0; i < 256; i++)
             {
                 Name[i] = name[i];
@@ -105,6 +112,7 @@ namespace Tasking
 
         void SetPriority(int priority)
         {
+            trace("Setting priority of thread %s to %d", Name, priority);
             Info.Priority = priority;
         }
     };
@@ -174,6 +182,11 @@ namespace Tasking
             return false;
         }
 
+        void RemoveThread(TCB *tcb);
+        void RemoveProcess(PCB *pcb);
+
+        void UpdateInfo(TaskInfo *Info, int Core);
+
         bool FindNewProcess(void *CPUDataPointer);
 
 #if defined(__amd64__)
@@ -185,6 +198,8 @@ namespace Tasking
 #endif
 
     public:
+        long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
+
         /**
          * @brief Get the Current Process object
          * @return PCB*
@@ -197,12 +212,20 @@ namespace Tasking
          */
         TCB *GetCurrentThread();
 
+        /** @brief Wait for process to terminate */
+        void WaitForProcess(PCB *pcb);
+
+        /** @brief Wait for thread to terminate */
+        void WaitForThread(TCB *tcb);
+
         PCB *CreateProcess(PCB *Parent,
                            const char *Name,
                            TaskTrustLevel TrustLevel);
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,
+                          Arg Argument0 = 0,
+                          Arg Argument1 = 0,
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,
                           TaskCompatibility Compatibility = TaskCompatibility::Native);
