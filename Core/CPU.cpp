@@ -242,4 +242,22 @@ namespace CPU
 #elif defined(__aarch64__)
 #endif
 	}
+
+	uint64_t Counter()
+	{
+		// TODO: Get the counter from the x2APIC or any other timer that is available. (TSC is not available on all CPUs)
+#if defined(__amd64__)
+		uint64_t counter;
+		asmv("rdtsc"
+			 : "=A"(counter));
+		return counter;
+#elif defined(__i386__)
+		return 0;
+#elif defined(__aarch64__)
+		uint64_t counter;
+		asmv("mrs %0, cntvct_el0"
+			 : "=r"(counter));
+		return counter;
+#endif
+	}
 }

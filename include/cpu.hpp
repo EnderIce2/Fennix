@@ -203,6 +203,9 @@ namespace CPU
     /** @brief To be used only once. */
     void InitializeFeatures();
 
+    /** @brief Get CPU counter value. */
+    uint64_t Counter();
+
     namespace MemBar
     {
         __attribute__((no_stack_protector)) static inline void Barrier()
