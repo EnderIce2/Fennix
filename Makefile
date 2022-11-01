@@ -1,6 +1,6 @@
 build:
 	mkdir -p out
-	touch out/dummy.fex
+	make --quiet -C Disk build
 	make --quiet -C Audio build
 	make --quiet -C FileSystem build
 	make --quiet -C Generic build
@@ -12,6 +12,7 @@ prepare:
 
 clean:
 	rm -rf out
+	make -C Disk clean
 	make -C Audio clean
 	make -C FileSystem clean
 	make -C Generic clean
