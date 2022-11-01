@@ -68,6 +68,16 @@ struct KernelAPI
             void (*SendPacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
             void (*ReceivePacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
         } Network;
+
+        /** @brief Connects to the disk manager */
+        struct
+        {
+            struct
+            {
+                void (*ReadSector)(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port);
+                void (*WriteSector)(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port);
+            } AHCI;
+        } Disk;
     } Commmand;
 
 } __attribute__((packed));
@@ -98,6 +108,14 @@ struct KernelCallback
         unsigned long Length;
     } NetworkCallback;
 
+    /** @brief When the kernel wants to write to disk. */
+    struct
+    {
+        unsigned long Sector;
+        unsigned long SectorCount;
+        unsigned char Port;
+        unsigned char *Data;
+    } DiskCallback;
 } __attribute__((packed));
 
 #endif // !__FENNIX_DRIVER_API_H__

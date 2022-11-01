@@ -79,8 +79,8 @@ struct FexExtended
 
             struct
             {
-                unsigned short VendorID;
-                unsigned short DeviceID;
+                unsigned short VendorID[16];
+                unsigned short DeviceID[16];
                 unsigned short Class;
                 unsigned short SubClass;
                 unsigned short ProgIF;
