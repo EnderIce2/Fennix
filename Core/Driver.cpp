@@ -84,6 +84,12 @@ namespace Driver
                 .SendPacket = nullptr,
                 .ReceivePacket = nullptr,
             },
+            .Disk = {
+                .AHCI = {
+                    .ReadSector = nullptr,
+                    .WriteSector = nullptr,
+                },
+            },
         },
     };
 
@@ -115,96 +121,108 @@ namespace Driver
             debug("Name: \"%s\"; Type: %d; Callback: %#lx", DrvExtHdr->Driver.Name, DrvExtHdr->Driver.Type, DrvExtHdr->Driver.Callback);
             if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
             {
-                Vector<PCI::PCIDeviceHeader *> devices = PCIManager->FindPCIDevice(DrvExtHdr->Driver.Bind.PCI.VendorID, DrvExtHdr->Driver.Bind.PCI.DeviceID);
-                foreach (auto PCIDevice in devices)
-                {
-                    Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
-                    memcpy(fex, (void *)DriverAddress, Size);
-                    FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
-                    if (CallDriverEntryPoint(fex) != DriverCode::OK)
+                for (long unsigned Vidx = 0; Vidx < sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) / sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID[0]); Vidx++)
+                    for (long unsigned Didx = 0; Didx < sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID) / sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID[0]); Didx++)
                     {
-                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
-                        return DriverCode::DRIVER_RETURNED_ERROR;
-                    }
-                    debug("Starting driver %s", fexExtended->Driver.Name);
+                        if (Vidx >= sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) && Didx >= sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID))
+                            break;
 
-                    KernelCallback *KCallback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
-
-                    switch (fexExtended->Driver.Type)
-                    {
-                    case FexDriverType::FexDriverType_Generic:
-                    {
-                        fixme("Generic driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    case FexDriverType::FexDriverType_Display:
-                    {
-                        fixme("Display driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    case FexDriverType::FexDriverType_Network:
-                    {
-                        DriverInterruptHook *InterruptHook = new DriverInterruptHook(((int)((PCI::PCIHeader0 *)devices[0])->InterruptLine) + 32, // x86
-                                                                                     (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
-                                                                                     KCallback);
-
-                        KCallback->RawPtr = PCIDevice;
-                        KCallback->Reason = CallbackReason::ConfigurationReason;
-                        int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
-                        if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
-                        {
-                            KernelAllocator.FreePages(fex, TO_PAGES(Size));
-                            KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
-                            error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                        if (DrvExtHdr->Driver.Bind.PCI.VendorID[Vidx] == 0 || DrvExtHdr->Driver.Bind.PCI.DeviceID[Didx] == 0)
                             continue;
-                        }
-                        else if (callbackret == DriverReturnCode::OK)
-                            trace("Device found for driver: %s", fexExtended->Driver.Name);
-                        else
+
+                        debug("VendorID: %#x; DeviceID: %#x", DrvExtHdr->Driver.Bind.PCI.VendorID[Vidx], DrvExtHdr->Driver.Bind.PCI.DeviceID[Didx]);
+
+                        Vector<PCI::PCIDeviceHeader *> devices = PCIManager->FindPCIDevice(DrvExtHdr->Driver.Bind.PCI.VendorID[Vidx], DrvExtHdr->Driver.Bind.PCI.DeviceID[Didx]);
+                        foreach (auto PCIDevice in devices)
                         {
-                            KernelAllocator.FreePages(fex, TO_PAGES(Size));
-                            KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
-                            error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
-                            continue;
+                            Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
+                            memcpy(fex, (void *)DriverAddress, Size);
+                            FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
+                            if (CallDriverEntryPoint(fex) != DriverCode::OK)
+                            {
+                                KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                                return DriverCode::DRIVER_RETURNED_ERROR;
+                            }
+                            debug("Starting driver %s", fexExtended->Driver.Name);
+
+                            KernelCallback *KCallback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+                            switch (fexExtended->Driver.Type)
+                            {
+                            case FexDriverType::FexDriverType_Generic:
+                            {
+                                fixme("Generic driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_Display:
+                            {
+                                fixme("Display driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_Network:
+                            {
+                                DriverInterruptHook *InterruptHook = new DriverInterruptHook(((int)((PCI::PCIHeader0 *)devices[0])->InterruptLine) + 32, // x86
+                                                                                             (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                                                                                             KCallback);
+
+                                KCallback->RawPtr = PCIDevice;
+                                KCallback->Reason = CallbackReason::ConfigurationReason;
+                                int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                                if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
+                                {
+                                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                                    KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                                    error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                                    continue;
+                                }
+                                else if (callbackret == DriverReturnCode::OK)
+                                    trace("Device found for driver: %s", fexExtended->Driver.Name);
+                                else
+                                {
+                                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                                    KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                                    error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
+                                    continue;
+                                }
+
+                                memset(KCallback, 0, sizeof(KernelCallback));
+                                KCallback->Reason = CallbackReason::InterruptReason;
+
+                                DriverFile *drvfile = new DriverFile;
+                                drvfile->DriverUID = KAPI.Info.DriverUID;
+                                drvfile->Address = (void *)fex;
+                                drvfile->InterruptHook = InterruptHook;
+                                Drivers.push_back(drvfile);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_Storage:
+                            {
+                                fixme("Storage driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_FileSystem:
+                            {
+                                fixme("Filesystem driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_Input:
+                            {
+                                fixme("Input driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            case FexDriverType::FexDriverType_Audio:
+                            {
+                                fixme("Audio driver: %s", fexExtended->Driver.Name);
+                                break;
+                            }
+                            default:
+                            {
+                                warn("Unknown driver type: %d", fexExtended->Driver.Type);
+                                break;
+                            }
+                            }
                         }
-
-                        memset(KCallback, 0, sizeof(KernelCallback));
-                        KCallback->Reason = CallbackReason::InterruptReason;
-
-                        DriverFile *drvfile = new DriverFile;
-                        drvfile->DriverUID = KAPI.Info.DriverUID;
-                        drvfile->Address = (void *)fex;
-                        drvfile->InterruptHook = InterruptHook;
-                        Drivers.push_back(drvfile);
-                        break;
                     }
-                    case FexDriverType::FexDriverType_Storage:
-                    {
-                        fixme("Storage driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    case FexDriverType::FexDriverType_FileSystem:
-                    {
-                        fixme("Filesystem driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    case FexDriverType::FexDriverType_Input:
-                    {
-                        fixme("Input driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    case FexDriverType::FexDriverType_Audio:
-                    {
-                        fixme("Audio driver: %s", fexExtended->Driver.Name);
-                        break;
-                    }
-                    default:
-                    {
-                        warn("Unknown driver type: %d", fexExtended->Driver.Type);
-                        break;
-                    }
-                    }
-                }
             }
             else
             {
