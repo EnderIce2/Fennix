@@ -282,7 +282,7 @@ namespace Driver
 
     Driver::Driver()
     {
-        FileSystem::FILE *DriverDirectory = vfs->Open("/system/drivers");
+        FileSystem::FILE *DriverDirectory = vfs->Open(Config.DriverDirectory);
         if (DriverDirectory->Status == FileSystem::FileStatus::OK)
             foreach (auto driver in DriverDirectory->Node->Children)
                 if (driver->Flags == FileSystem::NodeFlags::FS_FILE)

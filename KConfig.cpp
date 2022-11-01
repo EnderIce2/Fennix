@@ -37,6 +37,12 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "MODE",
      .description = "Tasking mode (multi, single)"},
 
+    {.identifier = 'd',
+     .access_letters = "dD",
+     .access_name = "drvdir",
+     .value_name = "VALUE",
+     .description = "Directory to load drivers from"},
+
     {.identifier = 'h',
      .access_letters = "h",
      .access_name = "help",
@@ -48,7 +54,10 @@ KernelConfig ParseConfig(char *Config)
     int argc = 0;
     char **argv = nullptr;
 
-    struct KernelConfig config = {Memory::MemoryAllocatorType::Pages, 0, 0};
+    struct KernelConfig config = {Memory::MemoryAllocatorType::Pages,
+                                  0,
+                                  {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
+                                  0};
 
     if (Config == NULL)
     {
@@ -56,7 +65,10 @@ KernelConfig ParseConfig(char *Config)
         return config;
     }
     else
+    {
+        KPrint("Kernel parameters: %s", Config);
         goto Parse;
+    }
 
 Parse:
 {
@@ -119,7 +131,7 @@ Parse:
                     {
                     case '\0':
                     {
-                        KPrint("\eFF2200Unterminated string constant in kernel parameters.");
+                        KPrint("\eFF2200Unterminated string constant in kernel parameters. (0)");
                         CPU::Stop();
                         break;
                     }
@@ -132,7 +144,7 @@ Parse:
                         {
                         case '\0':
                         {
-                            KPrint("\eFF2200Unterminated string constant in kernel parameters.");
+                            KPrint("\eFF2200Unterminated string constant in kernel parameters. (1)");
                             CPU::Stop();
                             break;
                         }
@@ -162,7 +174,7 @@ Parse:
                     {
                     case '\0':
                     {
-                        KPrint("\eFF2200Unterminated string constant in kernel parameters.");
+                        KPrint("\eFF2200Unterminated string constant in kernel parameters. (2)");
                         CPU::Stop();
                         break;
                     }
@@ -197,7 +209,7 @@ Parse:
                             break;
                         case '\0':
                         {
-                            KPrint("\eFF2200Unterminated string constant in kernel parameters.");
+                            KPrint("\eFF2200Unterminated string constant in kernel parameters. (3)");
                             CPU::Stop();
                         }
                         }
@@ -300,6 +312,13 @@ ParseSuccess:
                 KPrint("\eAAFFAAUnknown scheduler: %s", value);
                 config.SchedulerType = 0;
             }
+            break;
+        }
+        case 'd':
+        {
+            value = cag_option_get_value(&context);
+            strcpy(config.DriverDirectory, value);
+            KPrint("\eAAFFAAUsing %s as driver directory", value);
             break;
         }
         case 'h':
