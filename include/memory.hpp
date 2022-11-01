@@ -390,6 +390,15 @@ namespace Memory
 
     public:
         /**
+         * @brief Check if page is present
+         *
+         * @param VirtualAddress Virtual address of the page
+         * @return true if page is present
+         * @return false if page is not present
+         */
+        bool Check(void *VirtualAddress);
+
+        /**
          * @brief Map page.
          *
          * @param VirtualAddress Virtual address of the page.
@@ -397,6 +406,7 @@ namespace Memory
          * @param Flags Flags of the page. Check PTFlag enum.
          */
         void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags);
+
         /**
          * @brief Map multiple pages.
          *
@@ -406,12 +416,14 @@ namespace Memory
          * @param Flags Flags of the page. Check PTFlag enum.
          */
         void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t PageCount, uint64_t Flags);
+
         /**
          * @brief Unmap page.
          *
          * @param VirtualAddress Virtual address of the page.
          */
         void Unmap(void *VirtualAddress);
+
         /**
          * @brief Unmap multiple pages.
          *
@@ -419,12 +431,14 @@ namespace Memory
          * @param PageCount Number of pages.
          */
         void Unmap(void *VirtualAddress, uint64_t PageCount);
+
         /**
          * @brief Construct a new Virtual object
          *
          * @param Table Page table. If null, it will use the current page table.
          */
         Virtual(PageTable *Table = nullptr);
+
         /**
          * @brief Destroy the Virtual object
          *
