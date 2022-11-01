@@ -10,18 +10,9 @@ namespace Memory
         // 0x1000 aligned
         uint64_t Address = (uint64_t)VirtualAddress;
         Address &= 0xFFFFFFFFFFFFF000;
-        debug("%#lx=>%#lx", VirtualAddress, Address);
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)Address);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDP_i];
-        debug("%x %x %x %x %x %x %x %x %x %x %x %p-%#llx",
-              PDE.Value.Present, PDE.Value.ReadWrite,
-              PDE.Value.UserSupervisor, PDE.Value.WriteThrough,
-              PDE.Value.CacheDisable, PDE.Value.Accessed,
-              PDE.Value.Dirty, PDE.Value.PageSize,
-              PDE.Value.Global, PDE.Value.PageAttributeTable,
-              PDE.Value.ExecuteDisable, PDE.GetAddress(),
-              PDE.Value);
         if (!PDE.GetFlag(PTFlag::P))
             return false;
         return true;
