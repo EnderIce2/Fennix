@@ -117,7 +117,8 @@ struct KernelCallback
         unsigned long Sector;
         unsigned long SectorCount;
         unsigned char Port;
-        unsigned char *Data;
+        unsigned char *Buffer;
+        bool Write;
     } DiskCallback;
 } __attribute__((packed));
 
