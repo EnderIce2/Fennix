@@ -81,7 +81,7 @@ namespace CrashHandler
                 else
                     EHPrint("\eFF4CA9Outside Kernel");
 
-                if (Frame->rip >= 0xFFFFFFFFFFFFFFF0 || Frame->rip <= 0xFF)
+                if (!Memory::Virtual().Check(frames->rbp))
                     return;
                 frames = frames->rbp;
             }
