@@ -14,14 +14,14 @@ HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
 __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
     .Driver = {
-        .Name = "E1000 Network Controller Driver",
+        .Name = "E1000 Network Controller",
         .Type = FexDriverType_Network,
         .Callback = CallbackHandler,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
-                .VendorID = 0x8086,
-                .DeviceID = 0x100E,
+                .VendorID = {0x8086},
+                .DeviceID = {0x100E},
                 .Class = 0x2,
                 .SubClass = 0x0,
                 .ProgIF = 0x0,
