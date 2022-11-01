@@ -45,6 +45,8 @@ struct KernelAPI
         unsigned long PageSize;
         void *(*RequestPage)(unsigned long Size);
         void (*FreePage)(void *Page, unsigned long Size);
+        void (*Map)(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags);
+        void (*Unmap)(void *VirtualAddress);
     } Memory;
 
     struct KAPIPCI
@@ -58,6 +60,7 @@ struct KernelAPI
         void (*DebugPrint)(char *String, unsigned long DriverUID);
         void (*DisplayPrint)(char *Value);
         void *(*memcpy)(void *Destination, void *Source, unsigned long Size);
+        void *(*memset)(void *Destination, int Value, unsigned long Size);
     } Util;
 
     struct KAPIDriverTalk
