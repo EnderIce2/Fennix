@@ -9,6 +9,7 @@ struct KernelConfig
     Memory::MemoryAllocatorType AllocatorType;
     bool SchedulerType;
     char DriverDirectory[256];
+    char InitPath[256];
     int Cores;
 };
 

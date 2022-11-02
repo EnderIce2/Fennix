@@ -40,8 +40,14 @@ static struct cag_option ConfigOptions[] = {
     {.identifier = 'd',
      .access_letters = "dD",
      .access_name = "drvdir",
-     .value_name = "VALUE",
+     .value_name = "PATH",
      .description = "Directory to load drivers from"},
+
+    {.identifier = 'i',
+     .access_letters = "iI",
+     .access_name = "init",
+     .value_name = "PATH",
+     .description = "Path to init program"},
 
     {.identifier = 'h',
      .access_letters = "h",
@@ -57,6 +63,7 @@ KernelConfig ParseConfig(char *Config)
     struct KernelConfig config = {Memory::MemoryAllocatorType::Pages,
                                   0,
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
+                                  {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
                                   0};
 
     if (Config == NULL)
@@ -319,6 +326,13 @@ ParseSuccess:
             value = cag_option_get_value(&context);
             strcpy(config.DriverDirectory, value);
             KPrint("\eAAFFAAUsing %s as driver directory", value);
+            break;
+        }
+        case 'i':
+        {
+            value = cag_option_get_value(&context);
+            strcpy(config.InitPath, value);
+            KPrint("\eAAFFAAUsing %s as init program", value);
             break;
         }
         case 'h':
