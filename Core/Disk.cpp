@@ -88,7 +88,7 @@ namespace Disk
                             // why there is NUL (\0) between every char?????
                             char PartName[72];
                             memcpy(PartName, GPTPartition.Label, 72);
-                            for (char i = 0; i < 72; i++)
+                            for (int i = 0; i < 72; i++)
                                 if (PartName[i] == '\0')
                                     PartName[i] = ' ';
                             PartName[71] = '\0';
