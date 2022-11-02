@@ -159,4 +159,6 @@ public:
         VectorSize = 0;
         VectorBuffer = 0;
     }
+
+    T *data() { return VectorBuffer; }
 };
