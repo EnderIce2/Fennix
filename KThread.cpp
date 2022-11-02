@@ -1,9 +1,11 @@
 #include "kernel.h"
 
 #include <filesystem/ustar.hpp>
+#include <vector.hpp>
 #include <power.hpp>
 #include <lock.hpp>
 #include <printf.h>
+#include <exec.hpp>
 #include <cwalk.h>
 
 #include "DAPI.hpp"
@@ -65,7 +67,25 @@ void KernelMainThread()
     TaskManager->WaitForThread(CurrentWorker);
 
     KPrint("Waiting for userspace process to start...");
-    /* Load init file */
+
+    Vector<char *> argv;
+    int argc = 0;
+
+    /* ... */
+    argv.push_back((char *)"--start");
+    /* ... */
+
+    argv.push_back(nullptr);
+    argc = argv.size() - 1;
+
+    // TODO: Untested!
+    Execute::ExStatus ret = Execute::Spawn(Config.InitPath, argc, (uint64_t)argv.data());
+    if (ret != Execute::ExStatus::OK)
+    {
+        KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret);
+        CPU::Halt(true);
+    }
+    TaskManager->GetCurrentThread()->SetPriority(1);
     CPU::Halt(true);
 }
 
