@@ -421,12 +421,19 @@ int CallbackHandler(KernelCallback *Data)
             Ports[i]->Configure();
         break;
     }
-    case SendReason:
+    case FetchReason:
     {
-        Ports[Data->DiskCallback.Port]->ReadWrite(Data->DiskCallback.Sector,
-                                                  Data->DiskCallback.SectorCount,
-                                                  Data->DiskCallback.Buffer,
-                                                  Data->DiskCallback.Write);
+        Data->DiskCallback.Fetch.Ports = PortCount;
+        Data->DiskCallback.Fetch.BytesPerSector = 512;
+        break;
+    }
+    case SendReason:
+    case ReceiveReason:
+    {
+        Ports[Data->DiskCallback.RW.Port]->ReadWrite(Data->DiskCallback.RW.Sector,
+                                                     Data->DiskCallback.RW.SectorCount,
+                                                     Data->DiskCallback.RW.Buffer,
+                                                     Data->DiskCallback.RW.Write);
         break;
     }
     default:
