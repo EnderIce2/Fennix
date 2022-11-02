@@ -94,8 +94,8 @@ namespace Disk
         PartitionStyle Style = PartitionStyle::Unknown;
         size_t Index = 0;
 
-        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) {return 0;}
-        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) {return 0;}
+        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
+        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
         Partition() {}
         ~Partition() {}
     };
@@ -111,8 +111,8 @@ namespace Disk
         bool MechanicalDisk = false;
         uint64_t UniqueIdentifier = 0xdeadbeef;
 
-        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) {return 0;}
-        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) {return 0;}
+        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
+        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
         Drive()
         { // TODO: Allocate buffer
         }
