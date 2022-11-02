@@ -13,6 +13,7 @@
 #include <power.hpp>
 #include <task.hpp>
 #include <time.hpp>
+#include <disk.hpp>
 #include <pci.hpp>
 #endif
 
@@ -27,6 +28,7 @@ extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
 extern FileSystem::Virtual *vfs;
 extern Driver::Driver *DriverManager;
+extern Disk::Manager *DiskManager;
 
 #define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
 #define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code
