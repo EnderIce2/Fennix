@@ -114,6 +114,17 @@ namespace Driver
         },
     };
 
+    int Driver::IOCB(unsigned long DUID, void *KCB)
+    {
+        foreach (auto var in Drivers)
+            if (var->DriverUID == DUID)
+            {
+                FexExtended *DrvExtHdr = (FexExtended *)((uint64_t)var->Address + EXTENDED_SECTION_ADDRESS);
+                return ((int (*)(void *))((uint64_t)DrvExtHdr->Driver.Callback + (uint64_t)var->Address))(KCB);
+            }
+        return -1;
+    }
+
     DriverCode Driver::CallDriverEntryPoint(void *fex)
     {
         KernelAPI *API = (KernelAPI *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelAPI)));

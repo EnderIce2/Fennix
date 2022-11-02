@@ -57,6 +57,8 @@ namespace Driver
         DriverCode CallDriverEntryPoint(void *fex);
 
     public:
+        Vector<DriverFile *> GetDrivers() { return Drivers; }
+        int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);
         DriverCode LoadDriver(uint64_t DriverAddress, uint64_t Size);
         DriverCode StartDrivers();
         Driver();
