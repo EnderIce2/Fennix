@@ -92,6 +92,7 @@ enum CallbackReason
     SendReason,
     ReceiveReason,
     ConfigurationReason,
+    FetchReason,
     BindReason,
     UnbindReason,
     InterruptReason,
@@ -114,11 +115,20 @@ struct KernelCallback
     /** @brief When the kernel wants to write to disk. */
     struct
     {
-        unsigned long Sector;
-        unsigned long SectorCount;
-        unsigned char Port;
-        unsigned char *Buffer;
-        bool Write;
+        struct
+        {
+            unsigned long Sector;
+            unsigned long SectorCount;
+            unsigned char Port;
+            unsigned char *Buffer;
+            bool Write;
+        } RW;
+
+        struct
+        {
+            unsigned char Ports;
+            int BytesPerSector;
+        } Fetch;
     } DiskCallback;
 } __attribute__((packed));
 
