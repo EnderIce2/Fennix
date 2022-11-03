@@ -2,6 +2,9 @@
 
 #include <printf.h>
 #include <uart.hpp>
+#include <lock.hpp>
+
+NewLock(DumperLock);
 
 using namespace UniversalAsynchronousReceiverTransmitter;
 
@@ -23,6 +26,7 @@ void WriteRaw(const char *format, ...)
 
 void DumpData(const char *Description, void *Address, unsigned long Length)
 {
+    SmartLock(DumperLock);
     WriteRaw("-------------------------------------------------------------------------\n");
     unsigned char *AddressChar = (unsigned char *)Address;
     unsigned char Buffer[17];
