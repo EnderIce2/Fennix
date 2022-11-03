@@ -52,7 +52,6 @@ struct KernelAPI
     struct KAPIPCI
     {
         char *(*GetDeviceName)(unsigned int VendorID, unsigned int DeviceID);
-        void (*Write)(unsigned int Value);
     } PCI;
 
     struct KAPIUtilities
