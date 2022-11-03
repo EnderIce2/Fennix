@@ -2,6 +2,7 @@
 
 #include <interrupts.hpp>
 #include <memory.hpp>
+#include <dumper.hpp>
 #include <task.hpp>
 #include <lock.hpp>
 #include <printf.h>
@@ -74,6 +75,31 @@ namespace Driver
         return memset(Destination, Value, Size);
     }
 
+    void DriverNetSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
+    {
+        DumpData("DriverNetSend", Data, Size);
+    }
+
+    void DriverNetReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
+    {
+        DumpData("DriverNetReceive", Data, Size);
+    }
+
+    void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
+    {
+        DumpData("DriverDiskRead", Data, SectorCount * 512);
+    }
+
+    void DriverAHCIDiskWrite(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
+    {
+        DumpData("DriverDiskWrite", Data, SectorCount * 512);
+    }
+
+    char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
+    {
+        return (char *)"Unknown";
+    }
+
     KernelAPI KAPI = {
         .Version = {
             .Major = 0,
@@ -91,8 +117,7 @@ namespace Driver
             .Unmap = UnmapMemory,
         },
         .PCI = {
-            .GetDeviceName = nullptr,
-            .Write = nullptr,
+            .GetDeviceName = DriverPCIGetDeviceName,
         },
         .Util = {
             .DebugPrint = DriverDebugPrint,
@@ -102,13 +127,13 @@ namespace Driver
         },
         .Commmand = {
             .Network = {
-                .SendPacket = nullptr,
-                .ReceivePacket = nullptr,
+                .SendPacket = DriverNetSend,
+                .ReceivePacket = DriverNetReceive,
             },
             .Disk = {
                 .AHCI = {
-                    .ReadSector = nullptr,
-                    .WriteSector = nullptr,
+                    .ReadSector = DriverAHCIDiskRead,
+                    .WriteSector = DriverAHCIDiskWrite,
                 },
             },
         },
