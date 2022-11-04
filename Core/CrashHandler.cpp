@@ -367,30 +367,30 @@ static const char *PagefaultDescriptions[] = {
 #if defined(__amd64__)
 #define staticbuffer(name) char name[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
-void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     fixme("Divide by zero exception\n");
 }
-void DebugExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DebugExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel triggered debug exception.\n");
 }
-void NonMaskableInterruptExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("NMI exception"); }
-void BreakpointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Breakpoint exception"); }
-void OverflowExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Overflow exception"); }
-void BoundRangeExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Bound range exception"); }
-void InvalidOpcodeExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void NonMaskableInterruptExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("NMI exception"); }
+__attribute__((no_stack_protector)) void BreakpointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Breakpoint exception"); }
+__attribute__((no_stack_protector)) void OverflowExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Overflow exception"); }
+__attribute__((no_stack_protector)) void BoundRangeExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Bound range exception"); }
+__attribute__((no_stack_protector)) void InvalidOpcodeExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
 }
-void DeviceNotAvailableExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Device not available exception"); }
-void DoubleFaultExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Double fault exception"); }
-void CoprocessorSegmentOverrunExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
-void InvalidTSSExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Invalid TSS exception"); }
-void SegmentNotPresentExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Segment not present exception"); }
-void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DeviceNotAvailableExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Device not available exception"); }
+__attribute__((no_stack_protector)) void DoubleFaultExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Double fault exception"); }
+__attribute__((no_stack_protector)) void CoprocessorSegmentOverrunExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
+__attribute__((no_stack_protector)) void InvalidTSSExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Invalid TSS exception"); }
+__attribute__((no_stack_protector)) void SegmentNotPresentExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Segment not present exception"); }
+__attribute__((no_stack_protector)) void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     staticbuffer(descbuf);
     staticbuffer(desc_ext);
@@ -428,7 +428,7 @@ void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("More info about the exception:\n");
 }
-void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     // staticbuffer(descbuf);
     // staticbuffer(desc_ext);
@@ -468,7 +468,7 @@ void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
     // sprintf_(desc_idx, "%s Index: %#x", desc_tmp, SelCode.Idx);
     // SET_PRINT_MID((char *)desc_idx, FHeight(1));
 }
-void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 
@@ -507,17 +507,77 @@ void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
     else
         CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
 }
-void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("x87 floating point exception"); }
-void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Alignment check exception"); }
-void MachineCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Machine check exception"); }
-void SIMDFloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("SIMD floating point exception"); }
-void VirtualizationExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Virtualization exception"); }
-void SecurityExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Security exception"); }
-void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Unknown exception"); }
+__attribute__((no_stack_protector)) void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("x87 floating point exception"); }
+__attribute__((no_stack_protector)) void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Alignment check exception"); }
+__attribute__((no_stack_protector)) void MachineCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Machine check exception"); }
+__attribute__((no_stack_protector)) void SIMDFloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("SIMD floating point exception"); }
+__attribute__((no_stack_protector)) void VirtualizationExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Virtualization exception"); }
+__attribute__((no_stack_protector)) void SecurityExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Security exception"); }
+__attribute__((no_stack_protector)) void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Unknown exception"); }
 
-void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
+    CriticalSection cs;
+    debug("Interrupts? %s.", cs.IsInterruptsEnabled() ? "Yes" : "No");
     fixme("Handling user mode exception");
+    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+
+    {
+        CPU::x64::CR0 cr0 = CPU::x64::readcr0();
+        CPU::x64::CR2 cr2 = CPU::x64::readcr2();
+        CPU::x64::CR3 cr3 = CPU::x64::readcr3();
+        CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+        CPU::x64::CR8 cr8 = CPU::x64::readcr8();
+        CPU::x64::EFER efer;
+        efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
+
+        error("Technical Informations on CPU %lld:", GetCurrentCPU()->ID);
+        error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
+              CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+              Frame->ss, Frame->cs, Frame->ds);
+        error("R8=%#llx R9=%#llx R10=%#llx R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+        error("R12=%#llx R13=%#llx R14=%#llx R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+        error("RAX=%#llx RBX=%#llx RCX=%#llx RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+        error("RSI=%#llx RDI=%#llx RBP=%#llx RSP=%#llx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+        error("RIP=%#llx RFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+        error("CR0=%#llx CR2=%#llx CR3=%#llx CR4=%#llx CR8=%#llx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
+
+        error("CR0: PE:%s MP:%s EM:%s TS:%s ET:%s NE:%s WP:%s AM:%s NW:%s CD:%s PG:%s R0:%#x R1:%#x R2:%#x",
+              cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
+              cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
+              cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
+              cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
+
+        error("CR2: PFLA: %#llx",
+              cr2.PFLA);
+
+        error("CR3: PWT:%s PCD:%s PDBR:%#llx",
+              cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
+
+        error("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x R2:%#x",
+              cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
+              cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
+              cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
+              cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
+              cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
+              cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
+
+        error("CR8: TPL:%d", cr8.TPL);
+
+        error("RFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x R3:%#x",
+              Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
+              Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
+              Frame->rflags.OF ? "True " : "False", Frame->rflags.IOPL ? "True " : "False", Frame->rflags.NT ? "True " : "False", Frame->rflags.RF ? "True " : "False",
+              Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
+              Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
+              Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
+
+        error("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
+              efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
+              efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",
+              efer.Reserved0, efer.Reserved1, efer.Reserved2);
+    }
+
     switch (Frame->InterruptNumber)
     {
     case CPU::x64::DivideByZero:
@@ -578,6 +638,20 @@ void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame)
     }
     case CPU::x64::PageFault:
     {
+        CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
+        error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->rip);
+        error("Page: %s", params.P ? "Present" : "Not Present");
+        error("Write Operation: %s", params.W ? "Read-Only" : "Read-Write");
+        error("Processor Mode: %s", params.U ? "User-Mode" : "Kernel-Mode");
+        error("CPU Reserved Bits: %s", params.R ? "Reserved" : "Unreserved");
+        error("Caused By An Instruction Fetch: %s", params.I ? "Yes" : "No");
+        error("Caused By A Protection-Key Violation: %s", params.PK ? "Yes" : "No");
+        error("Caused By A Shadow Stack Access: %s", params.SS ? "Yes" : "No");
+        error("Caused By An SGX Violation: %s", params.SGX ? "Yes" : "No");
+        if (Frame->ErrorCode & 0x00000008)
+            error("One or more page directory entries contain reserved bits which are set to 1.");
+        else
+            error(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
         break;
     }
     case CPU::x64::x87FloatingPoint:
