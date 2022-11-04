@@ -5,7 +5,7 @@
 
 namespace Memory
 {
-    bool Virtual::Check(void *VirtualAddress)
+    bool Virtual::Check(void *VirtualAddress, PTFlag Flag)
     {
         // 0x1000 aligned
         uint64_t Address = (uint64_t)VirtualAddress;
@@ -13,9 +13,7 @@ namespace Memory
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)Address);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDP_i];
-        if (!PDE.GetFlag(PTFlag::P))
-            return false;
-        return true;
+        return PDE.GetFlag(Flag) ? true : false;
     }
 
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
@@ -74,11 +72,10 @@ namespace Memory
         PDE.SetFlag(PTFlag::P, true);
         PDE.AddFlag(Flags);
         PT->Entries[Index.P_i] = PDE;
-#if defined(__amd64__) || defined(__i386__)
-        asmv("invlpg (%0)"
-             :
-             : "r"(VirtualAddress)
-             : "memory");
+#if defined(__amd64__)
+        CPU::x64::invlpg(VirtualAddress);
+#elif defined(__i386__)
+        CPU::x86::invlpg(VirtualAddress);
 #elif defined(__aarch64__)
         asmv("dsb sy");
         asmv("tlbi vae1is, %0"
@@ -87,6 +84,23 @@ namespace Memory
              : "memory");
         asmv("dsb sy");
         asmv("isb");
+#endif
+
+#ifdef DEBUG
+/* https://stackoverflow.com/a/3208376/9352057 */
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)       \
+    (byte & 0x80 ? '1' : '0'),     \
+        (byte & 0x40 ? '1' : '0'), \
+        (byte & 0x20 ? '1' : '0'), \
+        (byte & 0x10 ? '1' : '0'), \
+        (byte & 0x08 ? '1' : '0'), \
+        (byte & 0x04 ? '1' : '0'), \
+        (byte & 0x02 ? '1' : '0'), \
+        (byte & 0x01 ? '1' : '0')
+
+        if (!this->Check(VirtualAddress, (PTFlag)Flags)) // quick workaround just to see where it fails
+            warn("Failed to map %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, BYTE_TO_BINARY(Flags));
 #endif
     }
 
