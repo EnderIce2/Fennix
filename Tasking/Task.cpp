@@ -180,12 +180,135 @@ namespace Tasking
         return false;
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
-        SmartCriticalSection(SchedulerLock);
+        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
+
+        for (uint64_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
+        {
+            // Loop until we find the current thread from the process thread list.
+            if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread)
+            {
+                // Check if the next thread is valid. If not, we search until we find, but if we reach the end of the list, we go to the next process.
+                uint64_t tmpidx = i;
+            RetryAnotherThread:
+                TCB *thread = CurrentCPU->CurrentProcess->Threads[tmpidx + 1];
+                if (InvalidTCB(thread))
+                {
+                    if (tmpidx > CurrentCPU->CurrentProcess->Threads.size())
+                        break;
+                    tmpidx++;
+                    goto RetryAnotherThread;
+                }
+
+                schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
+
+                // Check if the thread is ready to be executed.
+                if (thread->Status != TaskStatus::Ready)
+                {
+                    schedbg("Thread %d is not ready", thread->ID);
+                    goto RetryAnotherThread;
+                }
+
+                // Everything is fine, we can set the new thread as the current one.
+                CurrentCPU->CurrentThread = thread;
+                schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d", thread->ID, thread->Parent->Name, CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
+                // Yay! We found a new thread to execute.
+                return true;
+            }
+        }
+        return false;
+    }
+
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    {
+        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
+
+        for (uint64_t i = 0; i < ListProcess.size(); i++)
+        {
+            // Loop until we find the current process from the process list.
+            if (ListProcess[i] == CurrentCPU->CurrentProcess)
+            {
+                // Check if the next process is valid. If not, we search until we find.
+                uint64_t tmpidx = i;
+            RetryAnotherProcess:
+                PCB *pcb = ListProcess[tmpidx + 1];
+                if (InvalidPCB(pcb))
+                {
+                    if (tmpidx > ListProcess.size())
+                        break;
+                    tmpidx++;
+                    goto RetryAnotherProcess;
+                }
+
+                if (pcb->Status != TaskStatus::Ready)
+                    goto RetryAnotherProcess;
+
+                // Everything good, now search for a thread.
+                for (uint64_t j = 0; j < pcb->Threads.size(); j++)
+                {
+                    TCB *tcb = pcb->Threads[j];
+                    if (InvalidTCB(tcb))
+                        continue;
+                    if (tcb->Status != TaskStatus::Ready)
+                        continue;
+                    // Success! We set as the current one and restore the stuff.
+                    CurrentCPU->CurrentProcess = pcb;
+                    CurrentCPU->CurrentThread = tcb;
+                    schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)", tcb->ID, tcb->Name, pcb->Threads.size(), ListProcess.size());
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    {
+        foreach (PCB *pcb in ListProcess)
+        {
+            if (InvalidPCB(pcb))
+                continue;
+            RemoveProcess(pcb);
+        }
+    }
+
+    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    {
+        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
+
+        foreach (PCB *pcb in ListProcess)
+        {
+            if (InvalidPCB(pcb))
+                continue;
+            if (pcb->Status != TaskStatus::Ready)
+                continue;
+
+            // Now do the thread search!
+            foreach (TCB *tcb in pcb->Threads)
+            {
+                if (InvalidTCB(tcb))
+                    continue;
+                if (tcb->Status != TaskStatus::Ready)
+                    continue;
+                // \o/ We found a new thread to execute.
+                CurrentCPU->CurrentProcess = pcb;
+                CurrentCPU->CurrentThread = tcb;
+                schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)", tcb->ID, tcb->Parent->Name, pcb->Threads.size(), ListProcess.size());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    __attribute__((no_stack_protector)) void Task::Schedule(CPU::x64::TrapFrame *Frame)
+    {
+        CriticalSection cs; // Just to be sure
+        if (cs.IsInterruptsEnabled())
+            warn("Interrupts are enabled in the scheduler!");
         CPUData *CurrentCPU = GetCurrentCPU();
-        // debug("Scheduler called on CPU %d.", CurrentCPU->ID);
-        // debug("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
+        schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
+        schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 
         schedbg("================================================================");
         schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
@@ -226,108 +349,21 @@ namespace Tasking
                 CurrentCPU->CurrentThread->Status = TaskStatus::Ready;
 
             // Get next available thread from the list.
-            for (uint64_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
-            {
-                // Loop until we find the current thread from the process thread list.
-                if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread)
-                {
-                    // Check if the next thread is valid. If not, we search until we find, but if we reach the end of the list, we go to the next process.
-                    uint64_t tmpidx = i;
-                RetryAnotherThread:
-                    TCB *thread = CurrentCPU->CurrentProcess->Threads[tmpidx + 1];
-                    if (InvalidTCB(thread))
-                    {
-                        if (tmpidx > CurrentCPU->CurrentProcess->Threads.size())
-                            break;
-                        tmpidx++;
-                        goto RetryAnotherThread;
-                    }
-
-                    schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
-
-                    // Check if the thread is ready to be executed.
-                    if (thread->Status != TaskStatus::Ready)
-                    {
-                        schedbg("Thread %d is not ready", thread->ID);
-                        goto RetryAnotherThread;
-                    }
-
-                    // Everything is fine, we can set the new thread as the current one.
-                    CurrentCPU->CurrentThread = thread;
-                    schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d", thread->ID, thread->Parent->Name, CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
-                    // Yay! We found a new thread to execute.
-                    goto Success;
-                }
-            }
+            if (this->GetNextAvailableThread(CurrentCPU))
+                goto Success;
 
             // If the last process didn't find a thread to execute, we search for a new process.
-            for (uint64_t i = 0; i < ListProcess.size(); i++)
-            {
-                // Loop until we find the current process from the process list.
-                if (ListProcess[i] == CurrentCPU->CurrentProcess)
-                {
-                    // Check if the next process is valid. If not, we search until we find.
-                    uint64_t tmpidx = i;
-                RetryAnotherProcess:
-                    PCB *pcb = ListProcess[tmpidx + 1];
-                    if (InvalidPCB(pcb))
-                    {
-                        if (tmpidx > ListProcess.size())
-                            break;
-                        tmpidx++;
-                        goto RetryAnotherProcess;
-                    }
-
-                    if (pcb->Status != TaskStatus::Ready)
-                        goto RetryAnotherProcess;
-
-                    // Everything good, now search for a thread.
-                    for (uint64_t j = 0; j < pcb->Threads.size(); j++)
-                    {
-                        TCB *tcb = pcb->Threads[j];
-                        if (InvalidTCB(tcb))
-                            continue;
-                        if (tcb->Status != TaskStatus::Ready)
-                            continue;
-                        // Success! We set as the current one and restore the stuff.
-                        CurrentCPU->CurrentProcess = pcb;
-                        CurrentCPU->CurrentThread = tcb;
-                        schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)", tcb->ID, tcb->Name, pcb->Threads.size(), ListProcess.size());
-                        goto Success;
-                    }
-                }
-            }
+            if (this->GetNextAvailableProcess(CurrentCPU))
+                goto Success;
 
             // Before checking from the beginning, we remove everything that is terminated.
-            foreach (PCB *pcb in ListProcess)
-            {
-                if (InvalidPCB(pcb))
-                    continue;
-                RemoveProcess(pcb);
-            }
+            this->SchedulerCleanupProcesses();
 
             // If we didn't find anything, we check from the start of the list. This is the last chance to find something or we go to idle.
-            foreach (PCB *pcb in ListProcess)
-            {
-                if (InvalidPCB(pcb))
-                    continue;
-                if (pcb->Status != TaskStatus::Ready)
-                    continue;
-
-                // Now do the thread search!
-                foreach (TCB *tcb in pcb->Threads)
-                {
-                    if (InvalidTCB(tcb))
-                        continue;
-                    if (tcb->Status != TaskStatus::Ready)
-                        continue;
-                    // \o/ We found a new thread to execute.
-                    CurrentCPU->CurrentProcess = pcb;
-                    CurrentCPU->CurrentThread = tcb;
-                    schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)", tcb->ID, tcb->Parent->Name, pcb->Threads.size(), ListProcess.size());
-                    goto Success;
-                }
-            }
+            if (SchedulerSearchProcessThread(CurrentCPU))
+                goto Success;
+            else
+                goto Idle;
         }
         goto UnwantedReach; // This should never happen.
 
@@ -401,8 +437,38 @@ namespace Tasking
     }
     }
 
+    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    {
+        SmartCriticalSection(SchedulerLock);
+        this->Schedule(Frame);
+    }
 #elif defined(__i386__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
@@ -411,9 +477,33 @@ namespace Tasking
     {
         fixme("unimplemented");
     }
-
 #elif defined(__aarch64__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    {
+        fixme("unimplemented");
+    }
+
+    __attribute__((no_stack_protector)) void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
@@ -433,20 +523,15 @@ namespace Tasking
         CPU::Halt(true);
     }
 
-    PCB *Task::GetCurrentProcess()
-    {
-        SmartCriticalSection(TaskingLock);
-        return GetCurrentCPU()->CurrentProcess;
-    }
-
-    TCB *Task::GetCurrentThread()
-    {
-        SmartCriticalSection(TaskingLock);
-        return GetCurrentCPU()->CurrentThread;
-    }
+    PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess; }
+    TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread; }
 
     void Task::WaitForProcess(PCB *pcb)
     {
+        if (!pcb)
+            return;
+        if (pcb->Status == TaskStatus::UnknownStatus)
+            return;
         debug("Waiting for process \"%s\"(%d)", pcb->Name, pcb->ID);
         while (pcb->Status != TaskStatus::Terminated)
             CPU::Halt();
@@ -454,6 +539,10 @@ namespace Tasking
 
     void Task::WaitForThread(TCB *tcb)
     {
+        if (!tcb)
+            return;
+        if (tcb->Status == TaskStatus::UnknownStatus)
+            return;
         debug("Waiting for thread \"%s\"(%d)", tcb->Name, tcb->ID);
         while (tcb->Status != TaskStatus::Terminated)
             CPU::Halt();
@@ -470,11 +559,7 @@ namespace Tasking
         SmartCriticalSection(TaskingLock);
         TCB *Thread = new TCB;
         if (Parent == nullptr)
-        {
-            TaskingLock.Unlock();
             Thread->Parent = this->GetCurrentProcess();
-            TaskingLock.Lock(__FUNCTION__);
-        }
         else
             Thread->Parent = Parent;
 
@@ -492,7 +577,7 @@ namespace Tasking
         Thread->Argument0 = Argument0;
         Thread->Argument1 = Argument1;
         Thread->ExitCode = 0xdead;
-        Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE);
+        Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)));
         Thread->Status = TaskStatus::Ready;
 
 #if defined(__amd64__)
@@ -519,7 +604,7 @@ namespace Tasking
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = (uint64_t)Thread->Stack;
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
             POKE(uint64_t, Thread->Registers.rsp) = (uint64_t)ThreadDoExit;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
@@ -536,12 +621,16 @@ namespace Tasking
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = (uint64_t)Thread->Stack;
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
             for (uint64_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
-                Memory::Virtual().Map((void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)),
-                                      (void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)),
-                                      Memory::PTFlag::US);
+                Memory::Virtual(Parent->PageTable).Map((void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), (void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), Memory::PTFlag::US);
+
+            if (!Memory::Virtual(Parent->PageTable).Check((void *)Offset, Memory::PTFlag::US))
+            {
+                error("Offset is not user accessible");
+                Memory::Virtual(Parent->PageTable).Map((void *)Offset, (void *)Offset, Memory::PTFlag::RW | Memory::PTFlag::US);
+            }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -550,7 +639,7 @@ namespace Tasking
         default:
         {
             error("Unknown elevation.");
-            KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE));
+            KernelAllocator.FreePages(Thread->Stack, TO_PAGES(STACK_SIZE));
             this->NextTID--;
             delete Thread;
             return nullptr;
@@ -577,6 +666,8 @@ namespace Tasking
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
 
+        debug("Thread offset is %#lx (%#lx)", Thread->Offset, Thread->EntryPoint);
+        debug("Thread stack is %#lx-%#lx", Thread->Stack, (uint64_t)Thread->Stack + STACK_SIZE);
         debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
               Thread->Name, Thread->ID,
               Thread->Parent->Name, Thread->Parent->ID);
@@ -594,11 +685,7 @@ namespace Tasking
         Process->ID = this->NextPID++;
         strcpy(Process->Name, Name);
         if (Parent == nullptr)
-        {
-            TaskingLock.Unlock();
             Process->Parent = this->GetCurrentProcess();
-            TaskingLock.Lock(__FUNCTION__);
-        }
         else
             Process->Parent = Parent;
         Process->ExitCode = 0xdead;
@@ -621,8 +708,7 @@ namespace Tasking
 #if defined(__amd64__)
             Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
             memset(Process->PageTable, 0, PAGE_SIZE);
-            CPU::x64::CR3 cr3 = CPU::x64::readcr3();
-            memcpy(Process->PageTable, (void *)cr3.raw, PAGE_SIZE);
+            memcpy(Process->PageTable, (void *)CPU::x64::readcr3().raw, PAGE_SIZE);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -633,8 +719,10 @@ namespace Tasking
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::Untrusted);
 #if defined(__amd64__)
             Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-            // TODO: Do mapping for page table
-            fixme("User process page table mapping not implemented.");
+            memset(Process->PageTable, 0, PAGE_SIZE);
+            memcpy(Process->PageTable, (void *)CPU::x64::readcr3().raw, PAGE_SIZE);
+            fixme("User mode process page table is not implemented.");
+            // memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -664,6 +752,7 @@ namespace Tasking
         }
         Process->Info.Priority = 10;
 
+        debug("Process page table: %#lx", Process->PageTable);
         debug("Created process \"%s\"(%d) in process \"%s\"(%d)",
               Process->Name, Process->ID,
               Parent ? Process->Parent->Name : "None",

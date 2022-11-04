@@ -115,6 +115,8 @@ namespace Tasking
             trace("Setting priority of thread %s to %d", Name, priority);
             Info.Priority = priority;
         }
+
+        int GetExitCode() { return ExitCode; }
     };
 
     struct PCB
@@ -164,7 +166,7 @@ namespace Tasking
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
 
-        __attribute__((no_stack_protector)) static inline bool InvalidPCB(PCB *pcb)
+        __attribute__((no_stack_protector)) bool InvalidPCB(PCB *pcb)
         {
             if (pcb == (PCB *)0xffffffffffffffff)
                 return true;
@@ -173,7 +175,7 @@ namespace Tasking
             return false;
         }
 
-        __attribute__((no_stack_protector)) static inline bool InvalidTCB(TCB *tcb)
+        __attribute__((no_stack_protector)) bool InvalidTCB(TCB *tcb)
         {
             if (tcb == (TCB *)0xffffffffffffffff)
                 return true;
@@ -188,12 +190,19 @@ namespace Tasking
         void UpdateInfo(TaskInfo *Info, int Core);
 
         bool FindNewProcess(void *CPUDataPointer);
+        bool GetNextAvailableThread(void *CPUDataPointer);
+        bool GetNextAvailableProcess(void *CPUDataPointer);
+        void SchedulerCleanupProcesses();
+        bool SchedulerSearchProcessThread(void *CPUDataPointer);
 
 #if defined(__amd64__)
+        void Schedule(CPU::x64::TrapFrame *Frame);
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
 #elif defined(__i386__)
+        void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #elif defined(__aarch64__)
+        void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #endif
 
