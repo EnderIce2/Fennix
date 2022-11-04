@@ -10,6 +10,7 @@ using namespace Memory;
 
 Physical KernelAllocator;
 PageTable *KernelPageTable = nullptr;
+PageTable *UserspaceKernelOnlyPageTable = nullptr;
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;
@@ -35,6 +36,80 @@ void tracepagetable(PageTable *pt)
     }
 }
 #endif
+
+void MapFromZero(PageTable *PT, BootInfo *Info)
+{
+    Virtual va = Virtual(PT);
+    uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
+    for (uint64_t t = 0; t < Info->Memory.Size; t += PAGE_SIZE)
+    {
+        va.Map((void *)t, (void *)t, PTFlag::RW);
+        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
+        VirtualOffsetNormalVMA += PAGE_SIZE;
+    }
+}
+
+void MapFramebuffer(PageTable *PT, BootInfo *Info)
+{
+    Virtual va = Virtual(PT);
+    int itrfb = 0;
+    while (1)
+    {
+        if (!Info->Framebuffer[itrfb].BaseAddress)
+            break;
+
+        for (uint64_t fb_base = (uint64_t)Info->Framebuffer[itrfb].BaseAddress;
+             fb_base < ((uint64_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
+             fb_base += PAGE_SIZE)
+            va.Map((void *)(fb_base + NORMAL_VMA_OFFSET), (void *)fb_base, PTFlag::RW | PTFlag::US);
+        itrfb++;
+    }
+}
+
+void MapKernel(PageTable *PT, BootInfo *Info)
+{
+    /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
+    Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
+    */
+    Virtual va = Virtual(PT);
+    uint64_t KernelStart = (uint64_t)&_kernel_start;
+    uint64_t KernelTextEnd = (uint64_t)&_kernel_text_end;
+    uint64_t KernelDataEnd = (uint64_t)&_kernel_data_end;
+    uint64_t KernelRoDataEnd = (uint64_t)&_kernel_rodata_end;
+    uint64_t KernelEnd = (uint64_t)&_kernel_end;
+
+    uint64_t BaseKernelMapAddress = (uint64_t)Info->Kernel.PhysicalBase;
+    for (uint64_t k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
+    {
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        BaseKernelMapAddress += PAGE_SIZE;
+    }
+
+    for (uint64_t k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
+    {
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        BaseKernelMapAddress += PAGE_SIZE;
+    }
+
+    for (uint64_t k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
+    {
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P);
+        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        BaseKernelMapAddress += PAGE_SIZE;
+    }
+
+    for (uint64_t k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
+    {
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        BaseKernelMapAddress += PAGE_SIZE;
+    }
+
+    debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
+          KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
+}
 
 void InitializeMemoryManagement(BootInfo *Info)
 {
@@ -93,78 +168,33 @@ void InitializeMemoryManagement(BootInfo *Info)
     AllocatorType = MemoryAllocatorType::Pages;
 
     trace("Initializing Virtual Memory Manager");
-    KernelPageTable = (PageTable *)KernelAllocator.RequestPage();
+    KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(KernelPageTable, 0, PAGE_SIZE);
-    Virtual kva = Virtual(KernelPageTable);
 
-    uint64_t KernelStart = (uint64_t)&_kernel_start;
-    uint64_t KernelTextEnd = (uint64_t)&_kernel_text_end;
-    uint64_t KernelDataEnd = (uint64_t)&_kernel_data_end;
-    uint64_t KernelRoDataEnd = (uint64_t)&_kernel_rodata_end;
-    uint64_t KernelEnd = (uint64_t)&_kernel_end;
+    UserspaceKernelOnlyPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
+    memset(UserspaceKernelOnlyPageTable, 0, PAGE_SIZE);
 
-    uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
-    uint64_t BaseKernelMapAddress = (uint64_t)Info->Kernel.PhysicalBase;
-
-    for (uint64_t t = 0; t < Info->Memory.Size; t += PAGE_SIZE)
-    {
-        kva.Map((void *)t, (void *)t, PTFlag::RW);
-        kva.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
-        VirtualOffsetNormalVMA += PAGE_SIZE;
-    }
+    debug("Mapping from %#llx to %#llx", 0, Info->Memory.Size);
+    MapFromZero(KernelPageTable, Info);
 
     /* Mapping Framebuffer address */
-    int itrfb = 0;
-    while (1)
-    {
-        if (!Info->Framebuffer[itrfb].BaseAddress)
-            break;
-
-        for (uint64_t fb_base = (uint64_t)Info->Framebuffer[itrfb].BaseAddress;
-             fb_base < ((uint64_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
-             fb_base += PAGE_SIZE)
-            kva.Map((void *)(fb_base + NORMAL_VMA_OFFSET), (void *)fb_base, PTFlag::RW | PTFlag::US);
-        itrfb++;
-    }
+    debug("Mapping Framebuffer");
+    MapFramebuffer(KernelPageTable, Info);
+    debug("Mapping Framebuffer for Userspace Page Table");
+    MapFramebuffer(UserspaceKernelOnlyPageTable, Info);
 
     /* Kernel mapping */
-    for (uint64_t k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
-    {
-        kva.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
-        BaseKernelMapAddress += PAGE_SIZE;
-    }
+    debug("Mapping Kernel");
+    MapKernel(KernelPageTable, Info);
+    debug("Mapping Kernel for Userspace Page Table");
+    MapKernel(UserspaceKernelOnlyPageTable, Info);
 
-    for (uint64_t k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
-    {
-        kva.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
-        BaseKernelMapAddress += PAGE_SIZE;
-    }
-
-    for (uint64_t k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
-    {
-        kva.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
-        BaseKernelMapAddress += PAGE_SIZE;
-    }
-
-    for (uint64_t k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
-    {
-        kva.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
-        BaseKernelMapAddress += PAGE_SIZE;
-    }
-
-    debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
-          KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
-
-    /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
-    Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
-    */
     trace("Applying new page table from address %p", KernelPageTable);
 #ifdef DEBUG
+    debug("Kernel:");
     tracepagetable(KernelPageTable);
+    debug("Userspace:");
+    tracepagetable(UserspaceKernelOnlyPageTable);
 #endif
 #if defined(__amd64__) || defined(__i386__)
     asmv("mov %0, %%cr3" ::"r"(KernelPageTable));

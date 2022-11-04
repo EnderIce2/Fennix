@@ -393,10 +393,11 @@ namespace Memory
          * @brief Check if page is present
          *
          * @param VirtualAddress Virtual address of the page
+         * @param Flag Flag to check
          * @return true if page is present
          * @return false if page is not present
          */
-        bool Check(void *VirtualAddress);
+        bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
 
         /**
          * @brief Map page.
@@ -471,6 +472,7 @@ void operator delete[](void *Pointer, long unsigned int Size);
 
 extern Memory::Physical KernelAllocator;
 extern Memory::PageTable *KernelPageTable;
+extern Memory::PageTable *UserspaceKernelOnlyPageTable;
 
 #endif // __cplusplus
 
