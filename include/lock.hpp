@@ -72,14 +72,14 @@ public:
     ~SmartLockClass() { this->LockPointer->Unlock(); }
 };
 /** @brief Please use this macro to create a new smart critical section lock. */
-class SmartCriticalSectionClass
+class SmartLockCriticalSectionClass
 {
 private:
     LockClass *LockPointer = nullptr;
     bool InterruptsEnabled = false;
 
 public:
-    SmartCriticalSectionClass(LockClass &Lock, const char *FunctionName)
+    SmartLockCriticalSectionClass(LockClass &Lock, const char *FunctionName)
     {
         if (CPU::Interrupts(CPU::Check))
             InterruptsEnabled = true;
@@ -87,11 +87,32 @@ public:
         this->LockPointer = &Lock;
         this->LockPointer->Lock(FunctionName);
     }
-    ~SmartCriticalSectionClass()
+    ~SmartLockCriticalSectionClass()
     {
         if (InterruptsEnabled)
             CPU::Interrupts(CPU::Enable);
         this->LockPointer->Unlock();
+    }
+};
+/** @brief Please use this macro to create a new critical section. */
+class SmartCriticalSectionClass
+{
+private:
+    bool InterruptsEnabled = false;
+
+public:
+    bool IsInterruptsEnabled() { return InterruptsEnabled; }
+
+    SmartCriticalSectionClass()
+    {
+        if (CPU::Interrupts(CPU::Check))
+            InterruptsEnabled = true;
+        CPU::Interrupts(CPU::Disable);
+    }
+    ~SmartCriticalSectionClass()
+    {
+        if (InterruptsEnabled)
+            CPU::Interrupts(CPU::Enable);
     }
 };
 
@@ -100,7 +121,9 @@ public:
 /** @brief Simple lock that is automatically released when the scope ends. */
 #define SmartLock(LockClassName) SmartLockClass CONCAT(lock##_, __COUNTER__)(LockClassName, __FUNCTION__)
 /** @brief Simple critical section that is automatically released when the scope ends and interrupts are restored if they were enabled. */
-#define SmartCriticalSection(LockClassName) SmartCriticalSectionClass CONCAT(lock##_, __COUNTER__)(LockClassName, __FUNCTION__)
+#define SmartCriticalSection(LockClassName) SmartLockCriticalSectionClass CONCAT(lock##_, __COUNTER__)(LockClassName, __FUNCTION__)
+/** @brief Automatically disable interrupts and restore them when the scope ends. */
+#define CriticalSection SmartCriticalSectionClass
 
 #endif // __cplusplus
 #endif // !__FENNIX_KERNEL_LOCK_H__
