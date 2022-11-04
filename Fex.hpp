@@ -48,7 +48,7 @@ struct Fex
     char Magic[4];
     enum FexFormatType Type : 4;
     enum FexOSType OS : 4;
-    int (*Pointer)(struct KernelAPI *);
+    int (*Pointer)(void *);
 } __attribute__((packed));
 
 struct FexExtended
