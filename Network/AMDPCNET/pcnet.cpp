@@ -5,7 +5,7 @@
 #include "../../../Kernel/DAPI.hpp"
 #include "../../../Kernel/Fex.hpp"
 
-extern "C" int DriverEntry(KernelAPI *Data);
+extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
@@ -71,13 +71,13 @@ void WriteCSR16(uint16_t CSR, uint16_t Value)
     outportw(BAR.IOBase + 0x10, Value);
 }
 
-int DriverEntry(KernelAPI *Data)
+int DriverEntry(void *Data)
 {
     if (!Data)
         return INVALID_KERNEL_API;
-    if (Data->Version.Major < 0 || Data->Version.Minor < 0 || Data->Version.Patch < 0)
+    KAPI = (KernelAPI *)Data;
+    if (KAPI->Version.Major < 0 || KAPI->Version.Minor < 0 || KAPI->Version.Patch < 0)
         return KERNEL_API_VERSION_NOT_SUPPORTED;
-    KAPI = Data;
     return OK;
 }
 

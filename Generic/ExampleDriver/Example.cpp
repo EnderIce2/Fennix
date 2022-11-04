@@ -1,7 +1,7 @@
 #include "../../../Kernel/DAPI.hpp"
 #include "../../../Kernel/Fex.hpp"
 
-extern "C" int DriverEntry(KernelAPI *Data);
+extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
 
 /*                           The driver is
@@ -30,18 +30,18 @@ KernelAPI *KAPI;
 /* --------------------------------------------------------------------------------------------------------- */
 
 // Driver entry point. This is called at initialization. "Data" argument points to the kernel API structure.
-int DriverEntry(KernelAPI *Data)
+int DriverEntry(void *Data)
 {
     // Check if kernel API is valid
     if (!Data)
         return INVALID_KERNEL_API;
 
-    // // Check if kernel API version is valid. this is important because the kernel API may change in the future.
-    if (Data->Version.Major < 0 || Data->Version.Minor < 0 || Data->Version.Patch < 0)
-        return KERNEL_API_VERSION_NOT_SUPPORTED;
-
     // Set the global variable to the kernel API
-    KAPI = Data;
+    KAPI = (KernelAPI *)Data;
+
+    // Check if kernel API version is valid. this is important because the kernel API may change in the future.
+    if (KAPI->Version.Major < 0 || KAPI->Version.Minor < 0 || KAPI->Version.Patch < 0)
+        return KERNEL_API_VERSION_NOT_SUPPORTED;
 
     // We print "Hello World!" to UART.
     KAPI->Util.DebugPrint(((char *)"Hello World!" + KAPI->Info.Offset), KAPI->Info.DriverUID);
