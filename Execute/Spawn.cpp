@@ -38,6 +38,12 @@ namespace Execute
                             void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->Node->Length));
                             memcpy(BaseImage, (void *)ExFile->Node->Address, ExFile->Node->Length);
 
+                            /*
+                            For some reason I can't map BaseImage.
+                            Neither can I in the Tasking->CreateThread function.
+                            Very strange.
+                            */
+
                             for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
                                 Memory::Virtual(Process->PageTable).Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::US);
 
