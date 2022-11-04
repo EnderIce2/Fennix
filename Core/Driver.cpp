@@ -12,6 +12,7 @@
 #include "../DAPI.hpp"
 #include "../Fex.hpp"
 
+NewLock(DriverInitLock);
 NewLock(DriverDisplayPrintLock);
 
 namespace Driver
@@ -318,6 +319,7 @@ namespace Driver
 
     Driver::Driver()
     {
+        SmartCriticalSection(DriverInitLock);
         FileSystem::FILE *DriverDirectory = vfs->Open(Config.DriverDirectory);
         if (DriverDirectory->Status == FileSystem::FileStatus::OK)
             foreach (auto driver in DriverDirectory->Node->Children)
@@ -352,6 +354,7 @@ namespace Driver
     void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {
+        CriticalSection cs; // or SmartCriticalSection(DriverInitLock); ?
         ((int (*)(void *))(Handle))(Data);
     }
 
