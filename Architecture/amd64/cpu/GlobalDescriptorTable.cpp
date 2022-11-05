@@ -27,7 +27,7 @@ namespace GlobalDescriptorTable
                     .S = 1,
                     .DPL = 0,
                     .P = 1},
-         .Flags = {.L = 1},
+         .Flags = {.Unknown = 0x0, .L = 1},
          .BaseHigh = 0x0},
 
         // kernel data
@@ -41,7 +41,7 @@ namespace GlobalDescriptorTable
                     .S = 1,
                     .DPL = 0,
                     .P = 1},
-         .Flags = 0b00000000,
+         .Flags = {.Raw = 0x0},
          .BaseHigh = 0x0},
 
         // user code
@@ -55,7 +55,7 @@ namespace GlobalDescriptorTable
                     .S = 1,
                     .DPL = 3,
                     .P = 1},
-         .Flags = {.L = 1},
+         .Flags = {.Unknown = 0x0, .L = 1},
          .BaseHigh = 0x0},
 
         // user data
@@ -69,7 +69,7 @@ namespace GlobalDescriptorTable
                     .S = 1,
                     .DPL = 3,
                     .P = 1},
-         .Flags = 0b00000000,
+         .Flags = {.Raw = 0x0},
          .BaseHigh = 0x0},
 
         // tss
