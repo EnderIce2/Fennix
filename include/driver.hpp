@@ -45,7 +45,7 @@ namespace Driver
     {
         unsigned long DriverUID;
         void *Address;
-        DriverInterruptHook *InterruptHook;
+        DriverInterruptHook *InterruptHook[16];
     };
 
     class Driver
