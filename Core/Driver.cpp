@@ -231,6 +231,7 @@ namespace Driver
                                 {
                                     KernelAllocator.FreePages(fex, TO_PAGES(Size));
                                     KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                                    delete InterruptHook;
                                     error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
                                     continue;
                                 }
@@ -240,6 +241,7 @@ namespace Driver
                                 {
                                     KernelAllocator.FreePages(fex, TO_PAGES(Size));
                                     KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                                    delete InterruptHook;
                                     error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
                                     continue;
                                 }
