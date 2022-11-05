@@ -12,29 +12,35 @@ namespace GlobalDescriptorTable
         {.Length = 0x0,
          .BaseLow = 0x0,
          .BaseMiddle = 0x0,
-         .Access = 0b00000000,
-         .Flags = 0b00000000,
+         .Access = {.Raw = 0x0},
+         .Flags = {.Raw = 0x0},
          .BaseHigh = 0x0},
 
         // kernel code
         {.Length = 0x0,
          .BaseLow = 0x0,
          .BaseMiddle = 0x0,
-         .Access = RING0 |
-                   CODE_READABLE |
-                   CODE_SEGMENT |
-                   PRESENT,
-         .Flags = _64BITS,
+         .Access = {.A = 0,
+                    .RW = 1,
+                    .DC = 0,
+                    .E = 1,
+                    .S = 1,
+                    .DPL = 0,
+                    .P = 1},
+         .Flags = {.L = 1},
          .BaseHigh = 0x0},
 
         // kernel data
         {.Length = 0x0,
          .BaseLow = 0x0,
          .BaseMiddle = 0x0,
-         .Access = RING0 |
-                   DATA_WRITEABLE |
-                   DATA_SEGMENT |
-                   PRESENT,
+         .Access = {.A = 0,
+                    .RW = 1,
+                    .DC = 0,
+                    .E = 0,
+                    .S = 1,
+                    .DPL = 0,
+                    .P = 1},
          .Flags = 0b00000000,
          .BaseHigh = 0x0},
 
@@ -42,21 +48,27 @@ namespace GlobalDescriptorTable
         {.Length = 0x0,
          .BaseLow = 0x0,
          .BaseMiddle = 0x0,
-         .Access = CODE_READABLE |
-                   CODE_SEGMENT |
-                   RING3 |
-                   PRESENT,
-         .Flags = _64BITS,
+         .Access = {.A = 0,
+                    .RW = 1,
+                    .DC = 0,
+                    .E = 1,
+                    .S = 1,
+                    .DPL = 3,
+                    .P = 1},
+         .Flags = {.L = 1},
          .BaseHigh = 0x0},
 
         // user data
         {.Length = 0x0,
          .BaseLow = 0x0,
          .BaseMiddle = 0x0,
-         .Access = DATA_WRITEABLE |
-                   DATA_SEGMENT |
-                   RING3 |
-                   PRESENT,
+         .Access = {.A = 0,
+                    .RW = 1,
+                    .DC = 0,
+                    .E = 0,
+                    .S = 1,
+                    .DPL = 3,
+                    .P = 1},
          .Flags = 0b00000000,
          .BaseHigh = 0x0},
 
@@ -83,6 +95,10 @@ namespace GlobalDescriptorTable
 
     __attribute__((no_stack_protector)) void Init(int Core)
     {
+        debug("Kernel: Code Access: %ld; Data Access: %ld", GDTEntries.Code.Access.Raw, GDTEntries.Data.Access.Raw);
+        debug("Kernel: Code Flags: %ld; Data Flags: %ld", GDTEntries.Code.Flags.Raw, GDTEntries.Data.Flags.Raw);
+        debug("User: Code Access: %ld; Data Access: %ld", GDTEntries.UserCode.Access.Raw, GDTEntries.UserData.Access.Raw);
+        debug("User: Code Flags: %ld; Data Flags: %ld", GDTEntries.UserCode.Flags.Raw, GDTEntries.UserData.Flags.Raw);
         CPU::x64::lgdt(&gdt);
 
         asmv("movq %%rsp, %%rax\n"

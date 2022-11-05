@@ -5,39 +5,72 @@
 
 namespace GlobalDescriptorTable
 {
-    /* https://github.com/nanobyte-dev/nanobyte_os/blob/master/src/kernel/arch/i686/gdt.c */
-    /* https://wiki.osdev.org/Global_Descriptor_Table */
-    typedef enum
+    /** @brief The GDT Access Table
+     * @details For more information, see https://wiki.osdev.org/Global_Descriptor_Table
+     */
+    union GlobalDescriptorTableAccess
     {
-        CODE_READABLE = 0b00000010,
-        DATA_WRITEABLE = 0b00000010,
+        struct
+        {
+            /** @brief Access bit.
+             * @note The CPU sets this bit to 1 when the segment is accessed.
+             */
+            uint8_t A : 1;
 
-        CODE_CONFORMING = 0b00000100,
-        DATA_DIRECTION_NORMAL = 0b00000000,
-        DATA_DIRECTION_DOWN = 0b00000100,
+            /** @brief Readable bit for code segments, writable bit for data segments.
+             * @details For code segments, this bit must be 1 for the segment to be readable.
+             * @details For data segments, this bit must be 1 for the segment to be writable.
+             */
+            uint8_t RW : 1;
 
-        DATA_SEGMENT = 0b00010000,
-        CODE_SEGMENT = 0b00011000,
+            /** @brief Direction bit for data segments, conforming bit for code segments.
+             * @details For data segments, this bit must be 1 for the segment to grow up (higher addresses).
+             * @details For code segments, this bit must be 1 for code in the segment to be able to be executed from an equal or lower privilege level.
+             */
+            uint8_t DC : 1;
 
-        DESCRIPTOR_TSS = 0b00000000,
+            /** @brief Executable bit.
+             * @details This bit must be 1 for code-segment descriptors.
+             * @details This bit must be 0 for data-segment and system descriptors.
+             */
+            uint8_t E : 1;
 
-        RING0 = 0b00000000,
-        RING1 = 0b00100000,
-        RING2 = 0b01000000,
-        RING3 = 0b01100000,
+            /** @brief Descriptor type.
+             * @details This bit must be 0 for system descriptors.
+             * @details This bit must be 1 for code or data segment descriptor.
+             */
+            uint8_t S : 1;
 
-        PRESENT = 0b10000000
-    } AccessFlags;
+            /** @brief Descriptor privilege level.
+             * @details This field determines the privilege level of the segment.
+             * @details 0 = kernel mode, 3 = user mode.
+             */
+            uint8_t DPL : 2;
 
-    typedef enum
+            /** @brief Present bit.
+             * @details This bit must be 1 for all valid descriptors.
+             */
+            uint8_t P : 1;
+        } __attribute__((packed));
+        uint8_t Raw;
+    };
+
+    union GlobalDescriptorTableFlags
     {
-        _64BITS = 0b00100000,
-        _32BITS = 0b01000000,
-        _16BITS = 0b00000000,
+        // TODO: Add more flags.
+        struct
+        {
+            /** @brief Unknown. */
+            uint8_t Unknown : 5;
 
-        GRANULARITY_1B = 0b00000000,
-        GRANULARITY_4K = 0b10000000
-    } GDTFlags;
+            /** @brief Long mode.
+             * @details If the long mode bit is clear, the segment is in 32-bit protected mode.
+             * @details If the long mode bit is set, the segment is in 64-bit long mode.
+             */
+            uint8_t L : 1;
+        } __attribute__((packed));
+        uint8_t Raw;
+    };
 
     typedef struct _TaskStateSegmentEntry
     {
@@ -63,17 +96,17 @@ namespace GlobalDescriptorTable
 
     typedef struct _GlobalDescriptorTableEntry
     {
-        /** @brief Length [Bits 0-15] */
+        /** @brief Length */
         uint16_t Length;
-        /** @brief Low Base [Bits 0-15] */
+        /** @brief Low Base */
         uint16_t BaseLow;
-        /** @brief Middle Base [Bits 0-23] */
+        /** @brief Middle Base */
         uint8_t BaseMiddle;
         /** @brief Access */
-        uint8_t Access;
-        /** @brief Flags [Bits 16-19] */
-        uint8_t Flags;
-        /** @brief High Base [Bits 24-31] */
+        GlobalDescriptorTableAccess Access;
+        /** @brief Flags */
+        GlobalDescriptorTableFlags Flags;
+        /** @brief High Base */
         uint8_t BaseHigh;
     } __attribute__((packed)) GlobalDescriptorTableEntry;
 
