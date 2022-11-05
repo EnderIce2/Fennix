@@ -25,7 +25,7 @@ namespace Video
             else if (Char >= 'A' && Char <= 'F')
                 this->Buffers[Index]->Color = (this->Buffers[Index]->Color << 4) | (Char - 'A' + 10);
             else
-                this->Buffers[Index]->Color = 0;
+                this->Buffers[Index]->Color = 0xFFFFFF;
             if (WriteToUART)
                 UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
             this->ColorPickerIteration++;
