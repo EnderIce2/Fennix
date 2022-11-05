@@ -44,8 +44,10 @@ namespace Execute
                             Very strange.
                             */
 
+                            Memory::Virtual pva = Memory::Virtual(Process->PageTable);
+
                             for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
-                                Memory::Virtual(Process->PageTable).Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::US);
+                                pva.Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::US);
 
                             TCB *Thread = TaskManager->CreateThread(Process,
                                                                     (IP)FexHdr->Pointer,
