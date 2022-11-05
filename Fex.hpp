@@ -69,12 +69,12 @@ struct FexExtended
             int Type;
             struct
             {
-                unsigned char Vector;
+                unsigned char Vector[16];
             } Interrupt;
 
             struct
             {
-                unsigned int ProcessId;
+                unsigned int ProcessId[16];
             } Process;
 
             struct

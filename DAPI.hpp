@@ -129,6 +129,11 @@ struct KernelCallback
             int BytesPerSector;
         } Fetch;
     } DiskCallback;
+
+    struct
+    {
+        unsigned char Vector;
+    } InterruptInfo;
 } __attribute__((packed));
 
 #endif // !__FENNIX_DRIVER_API_H__
