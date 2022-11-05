@@ -179,8 +179,8 @@ namespace Driver
             debug("Name: \"%s\"; Type: %d; Callback: %#lx", DrvExtHdr->Driver.Name, DrvExtHdr->Driver.Type, DrvExtHdr->Driver.Callback);
             if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
             {
-                for (long unsigned Vidx = 0; Vidx < sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) / sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID[0]); Vidx++)
-                    for (long unsigned Didx = 0; Didx < sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID) / sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID[0]); Didx++)
+                for (unsigned long Vidx = 0; Vidx < sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) / sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID[0]); Vidx++)
+                    for (unsigned long Didx = 0; Didx < sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID) / sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID[0]); Didx++)
                     {
                         if (Vidx >= sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) && Didx >= sizeof(DrvExtHdr->Driver.Bind.PCI.DeviceID))
                             break;
@@ -250,7 +250,7 @@ namespace Driver
                                 DriverFile *drvfile = new DriverFile;
                                 drvfile->DriverUID = KAPI.Info.DriverUID;
                                 drvfile->Address = (void *)fex;
-                                drvfile->InterruptHook = InterruptHook;
+                                drvfile->InterruptHook[0] = InterruptHook;
                                 Drivers.push_back(drvfile);
                                 break;
                             }
@@ -279,7 +279,7 @@ namespace Driver
                                 DriverFile *drvfile = new DriverFile;
                                 drvfile->DriverUID = KAPI.Info.DriverUID;
                                 drvfile->Address = (void *)fex;
-                                drvfile->InterruptHook = nullptr;
+                                drvfile->InterruptHook[0] = nullptr;
                                 Drivers.push_back(drvfile);
                                 break;
                             }
@@ -307,9 +307,99 @@ namespace Driver
                         }
                     }
             }
+            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INTERRUPT)
+            {
+                Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
+                memcpy(fex, (void *)DriverAddress, Size);
+                FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
+                if (CallDriverEntryPoint(fex) != DriverCode::OK)
+                {
+                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                    return DriverCode::DRIVER_RETURNED_ERROR;
+                }
+                debug("Starting driver %s", fexExtended->Driver.Name);
+
+                KernelCallback *KCallback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+                switch (fexExtended->Driver.Type)
+                {
+                case FexDriverType::FexDriverType_Generic:
+                {
+                    fixme("Generic driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                case FexDriverType::FexDriverType_Display:
+                {
+                    fixme("Display driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                case FexDriverType::FexDriverType_Network:
+                {
+                    fixme("Network driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                case FexDriverType::FexDriverType_Storage:
+                {
+                    for (unsigned long i = 0; i < sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector) / sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector[0]); i++)
+                    {
+                        fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", DrvExtHdr->Driver.Bind.Interrupt.Vector[i]);
+                    }
+
+                    KCallback->Reason = CallbackReason::ConfigurationReason;
+                    int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                    if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                        break;
+                    }
+                    else if (callbackret == DriverReturnCode::OK)
+                        trace("Device found for driver: %s", fexExtended->Driver.Name);
+                    else
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
+                        break;
+                    }
+
+                    DriverFile *drvfile = new DriverFile;
+                    drvfile->DriverUID = KAPI.Info.DriverUID;
+                    drvfile->Address = (void *)fex;
+                    drvfile->InterruptHook[0] = nullptr;
+                    Drivers.push_back(drvfile);
+                    break;
+                }
+                case FexDriverType::FexDriverType_FileSystem:
+                {
+                    fixme("Filesystem driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                case FexDriverType::FexDriverType_Input:
+                {
+                    fixme("Input driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                case FexDriverType::FexDriverType_Audio:
+                {
+                    fixme("Audio driver: %s", fexExtended->Driver.Name);
+                    break;
+                }
+                default:
+                {
+                    warn("Unknown driver type: %d", fexExtended->Driver.Type);
+                    break;
+                }
+                }
+            }
+            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PROCESS)
+            {
+                fixme("Process driver: %s", DrvExtHdr->Driver.Name);
+            }
             else
             {
-                fixme("Driver bind type: %d", DrvExtHdr->Driver.Bind.Type);
+                error("Unknown driver bind type: %d", DrvExtHdr->Driver.Bind.Type);
             }
         }
         else
