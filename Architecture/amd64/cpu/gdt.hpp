@@ -5,6 +5,40 @@
 
 namespace GlobalDescriptorTable
 {
+    /* https://github.com/nanobyte-dev/nanobyte_os/blob/master/src/kernel/arch/i686/gdt.c */
+    /* https://wiki.osdev.org/Global_Descriptor_Table */
+    typedef enum
+    {
+        CODE_READABLE = 0b00000010,
+        DATA_WRITEABLE = 0b00000010,
+
+        CODE_CONFORMING = 0b00000100,
+        DATA_DIRECTION_NORMAL = 0b00000000,
+        DATA_DIRECTION_DOWN = 0b00000100,
+
+        DATA_SEGMENT = 0b00010000,
+        CODE_SEGMENT = 0b00011000,
+
+        DESCRIPTOR_TSS = 0b00000000,
+
+        RING0 = 0b00000000,
+        RING1 = 0b00100000,
+        RING2 = 0b01000000,
+        RING3 = 0b01100000,
+
+        PRESENT = 0b10000000
+    } AccessFlags;
+
+    typedef enum
+    {
+        _64BITS = 0b00100000,
+        _32BITS = 0b01000000,
+        _16BITS = 0b00000000,
+
+        GRANULARITY_1B = 0b00000000,
+        GRANULARITY_4K = 0b10000000
+    } GDTFlags;
+
     typedef struct _TaskStateSegmentEntry
     {
         uint16_t Length;

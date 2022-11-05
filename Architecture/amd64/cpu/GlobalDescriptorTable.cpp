@@ -8,12 +8,67 @@
 namespace GlobalDescriptorTable
 {
     static GlobalDescriptorTableEntries GDTEntries = {
-        {.Length = 0x0000, .BaseLow = 0x0000, .BaseMiddle = 0x00, .Access = 0b00000000, .Flags = 0b00000000, .BaseHigh = 0x00},    // null
-        {.Length = 0x0000, .BaseLow = 0x0000, .BaseMiddle = 0x00, .Access = 0b10011010, .Flags = 0b00100000, .BaseHigh = 0x00},    // kernel code
-        {.Length = 0x0000, .BaseLow = 0x0000, .BaseMiddle = 0x00, .Access = 0b10010010, .Flags = 0b00000000, .BaseHigh = 0x00},    // kernel data
-        {.Length = 0x0000, .BaseLow = 0x0000, .BaseMiddle = 0x00, .Access = 0b11111010, .Flags = 0b00100000, .BaseHigh = 0x00},    // user code
-        {.Length = 0x0000, .BaseLow = 0x0000, .BaseMiddle = 0x00, .Access = 0b11110010, .Flags = 0b00000000, .BaseHigh = 0x00},    // user data
-        {.Length = 0, .Low = 0, .Middle = 0, .Flags1 = 0b10001001, .Flags2 = 0b00000000, .High = 0, .Upper32 = 0, .Reserved = 0}}; // tss
+        // null
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = 0b00000000,
+         .Flags = 0b00000000,
+         .BaseHigh = 0x0},
+
+        // kernel code
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = RING0 |
+                   CODE_READABLE |
+                   CODE_SEGMENT |
+                   PRESENT,
+         .Flags = _64BITS,
+         .BaseHigh = 0x0},
+
+        // kernel data
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = RING0 |
+                   DATA_WRITEABLE |
+                   DATA_SEGMENT |
+                   PRESENT,
+         .Flags = 0b00000000,
+         .BaseHigh = 0x0},
+
+        // user code
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = CODE_READABLE |
+                   CODE_SEGMENT |
+                   RING3 |
+                   PRESENT,
+         .Flags = _64BITS,
+         .BaseHigh = 0x0},
+
+        // user data
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = DATA_WRITEABLE |
+                   DATA_SEGMENT |
+                   RING3 |
+                   PRESENT,
+         .Flags = 0b00000000,
+         .BaseHigh = 0x0},
+
+        // tss
+        {.Length = 0x0,
+         .Low = 0x0,
+         .Middle = 0x0,
+         .Flags1 = 0b10001001,
+         .Flags2 = 0b00000000,
+         .High = 0x0,
+         .Upper32 = 0x0,
+         .Reserved = 0x0}};
 
     GlobalDescriptorTableDescriptor gdt = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries};
 
