@@ -347,7 +347,9 @@ int CallbackHandler(KernelCallback *Data)
 
             // Get MAC address
             if (!GetMAC().Valid())
-                return false;
+                return NOT_AVAILABLE;
+            else
+                KAPI->Util.DebugPrint(((char *)"MAC adddress found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
             MAC = GetMAC();
 
             // Start link
