@@ -185,43 +185,14 @@ namespace Memory
     struct __attribute__((packed)) PageDirectoryEntry
     {
         PDEData Value;
-        void AddFlag(uint64_t Flag) { this->Value.raw |= Flag; }
-        void RemoveFlags(uint64_t Flag) { this->Value.raw &= ~Flag; }
-        void ClearFlags() { this->Value.raw = 0; }
-        void SetFlag(uint64_t Flag, bool Enabled)
-        {
-            this->Value.raw &= ~Flag;
-            if (Enabled)
-                this->Value.raw |= Flag;
-        }
-        bool GetFlag(uint64_t Flag) { return (this->Value.raw & Flag) > 0 ? true : false; }
-        uint64_t GetFlag() { return this->Value.raw; }
-        void SetAddress(uint64_t Address)
-        {
-#if defined(__amd64__)
-            Address &= 0x000000FFFFFFFFFF;
-            this->Value.raw &= 0xFFF0000000000FFF;
-            this->Value.raw |= (Address << 12);
-#elif defined(__i386__)
-            Address &= 0x000FFFFF;
-            this->Value.raw &= 0xFFC00003;
-            this->Value.raw |= (Address << 12);
-#elif defined(__aarch64__)
-            Address &= 0x000000FFFFFFFFFF;
-            this->Value.raw &= 0xFFF0000000000FFF;
-            this->Value.raw |= (Address << 12);
-#endif
-        }
-        uint64_t GetAddress()
-        {
-#if defined(__amd64__)
-            return (this->Value.raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(__i386__)
-            return (this->Value.raw & 0x003FFFFF000) >> 12;
-#elif defined(__aarch64__)
-            return (this->Value.raw & 0x000FFFFFFFFFF000) >> 12;
-#endif
-        }
+        void AddFlag(uint64_t Flag);
+        void RemoveFlags(uint64_t Flag);
+        void ClearFlags();
+        void SetFlag(uint64_t Flag, bool Enabled);
+        bool GetFlag(uint64_t Flag);
+        uint64_t GetFlag();
+        void SetAddress(uint64_t Address);
+        uint64_t GetAddress();
     };
 
     struct PageTable
@@ -364,28 +335,11 @@ namespace Memory
         class PageMapIndexer
         {
         public:
-            uint64_t PDP_i = 0;
-            uint64_t PD_i = 0;
-            uint64_t PT_i = 0;
-            uint64_t P_i = 0;
-
-            PageMapIndexer(uint64_t VirtualAddress)
-            {
-#if defined(__amd64__)
-                this->PDP_i = (VirtualAddress & ((uint64_t)0x1FF << 39)) >> 39;
-                this->PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-                this->PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-                this->P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
-#elif defined(__i386__)
-                this->PD_i = (VirtualAddress & ((uint64_t)0x3FF << 22)) >> 22;
-                this->PT_i = (VirtualAddress & ((uint64_t)0x3FF << 12)) >> 12;
-                this->P_i = (VirtualAddress & ((uint64_t)0xFFF)) >> 0;
-#elif defined(__aarch64__)
-                this->PD_i = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-                this->PT_i = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-                this->P_i = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
-#endif
-            }
+            uint64_t PDPIndex = 0;
+            uint64_t PDIndex = 0;
+            uint64_t PTIndex = 0;
+            uint64_t PIndex = 0;
+            PageMapIndexer(uint64_t VirtualAddress);
         };
 
     public:

@@ -12,8 +12,8 @@ namespace Memory
         Address &= 0xFFFFFFFFFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)Address);
-        PageDirectoryEntry PDE = this->Table->Entries[Index.PDP_i];
-        return PDE.GetFlag(Flag) ? true : false;
+        PageDirectoryEntry PDE = this->Table->Entries[Index.PDPIndex];
+        return PDE.GetFlag(Flag);
     }
 
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
@@ -25,8 +25,8 @@ namespace Memory
             return;
         }
         PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
-        PageDirectoryEntry PDE = this->Table->Entries[Index.PDP_i];
-        PageTable *PDP;
+        PageDirectoryEntry PDE = this->Table->Entries[Index.PDPIndex];
+        PageTable *PDP = nullptr;
         if (!PDE.GetFlag(PTFlag::P))
         {
             PDP = (PageTable *)KernelAllocator.RequestPage();
@@ -34,13 +34,13 @@ namespace Memory
             PDE.SetAddress((uint64_t)PDP >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
-            this->Table->Entries[Index.PDP_i] = PDE;
+            this->Table->Entries[Index.PDPIndex] = PDE;
         }
         else
             PDP = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
 
-        PDE = PDP->Entries[Index.PD_i];
-        PageTable *PD;
+        PDE = PDP->Entries[Index.PDIndex];
+        PageTable *PD = nullptr;
         if (!PDE.GetFlag(PTFlag::P))
         {
             PD = (PageTable *)KernelAllocator.RequestPage();
@@ -48,13 +48,13 @@ namespace Memory
             PDE.SetAddress((uint64_t)PD >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
-            PDP->Entries[Index.PD_i] = PDE;
+            PDP->Entries[Index.PDIndex] = PDE;
         }
         else
             PD = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
 
-        PDE = PD->Entries[Index.PT_i];
-        PageTable *PT;
+        PDE = PD->Entries[Index.PTIndex];
+        PageTable *PT = nullptr;
         if (!PDE.GetFlag(PTFlag::P))
         {
             PT = (PageTable *)KernelAllocator.RequestPage();
@@ -62,16 +62,16 @@ namespace Memory
             PDE.SetAddress((uint64_t)PT >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
-            PD->Entries[Index.PT_i] = PDE;
+            PD->Entries[Index.PTIndex] = PDE;
         }
         else
             PT = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
 
-        PDE = PT->Entries[Index.P_i];
+        PDE = PT->Entries[Index.PIndex];
         PDE.SetAddress((uint64_t)PhysicalAddress >> 12);
         PDE.SetFlag(PTFlag::P, true);
         PDE.AddFlag(Flags);
-        PT->Entries[Index.P_i] = PDE;
+        PT->Entries[Index.PIndex] = PDE;
 #if defined(__amd64__)
         CPU::x64::invlpg(VirtualAddress);
 #elif defined(__i386__)
@@ -120,7 +120,7 @@ namespace Memory
         }
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
-        PageDirectoryEntry PDE = this->Table->Entries[Index.PDP_i];
+        PageDirectoryEntry PDE = this->Table->Entries[Index.PDPIndex];
         PDE.ClearFlags();
 
 #if defined(__amd64__) || defined(__i386__)
