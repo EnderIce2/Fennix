@@ -49,7 +49,7 @@ void KernelMainThread()
 {
     Tasking::TCB *CurrentWorker = nullptr;
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
-    KPrint("C++ Language Version (__cplusplus) :%ld", __cplusplus);
+    KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
     TaskManager->GetCurrentThread()->SetPriority(1);
 
     CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem);
@@ -89,16 +89,16 @@ void KernelMainThread()
     }
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
+    error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());
     CPU::Halt(true);
 }
 
 void KernelShutdownThread(bool Reboot)
 {
-    debug("Shutting down...");
+    trace("Shutting Down/Rebooting...");
     if (Reboot)
         PowerManager->Reboot();
     else
         PowerManager->Shutdown();
-
     CPU::Stop();
 }

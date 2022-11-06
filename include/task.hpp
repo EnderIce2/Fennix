@@ -214,6 +214,7 @@ namespace Tasking
 #endif
 
     public:
+        void Schedule();
         long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
 
         /**

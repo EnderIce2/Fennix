@@ -36,6 +36,8 @@ namespace Tasking
 #endif
     }
 
+    void Task::Schedule() { OneShot(100); }
+
     __attribute__((naked, used, no_stack_protector)) void IdleProcessLoop()
     {
 #if defined(__amd64__) || defined(__i386__)

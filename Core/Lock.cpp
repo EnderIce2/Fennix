@@ -2,6 +2,8 @@
 
 #include <debug.h>
 
+#include "../kernel.h"
+
 static unsigned long DeadLocks = 0;
 
 extern "C" void DeadLockHandler(LockClass *Lock)
@@ -10,5 +12,9 @@ extern "C" void DeadLockHandler(LockClass *Lock)
          Lock->GetLockData()->AttemptingToGet,
          Lock->GetLockData()->CurrentHolder,
          DeadLocks++);
+
+    if (TaskManager)
+        TaskManager->Schedule();
+
     // TODO: Print on screen too.
 }
