@@ -1,9 +1,9 @@
-#include <boot/protocols/limine.h>
 #include <boot/binfo.h>
 #include <types.h>
 #include <debug.h>
 #include <convert.h>
 
+#include "../../../tools/limine/limine.h"
 #include "../../kernel.h"
 
 void init_limine();
