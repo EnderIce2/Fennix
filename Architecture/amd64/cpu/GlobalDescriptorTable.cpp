@@ -148,7 +148,7 @@ namespace GlobalDescriptorTable
         trace("Global Descriptor Table initialized");
     }
 
-    void SetKernelStack(void *Stack)
+    __attribute__((no_stack_protector)) void SetKernelStack(void *Stack)
     {
         tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;
     }
