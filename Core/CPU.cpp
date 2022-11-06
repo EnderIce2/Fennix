@@ -213,13 +213,15 @@ namespace CPU
 		{
 			if (!BSP)
 				KPrint("SMEP is supported.");
-			cr4.SMEP = 1;
+			fixme("Not going to enable SMEP.");
+			// cr4.SMEP = 1;
 		}
 		if (rdx & x64::CPUID_FEAT_RDX_SMAP)
 		{
 			if (!BSP)
 				KPrint("SMAP is supported.");
-			cr4.SMAP = 1;
+			fixme("Not going to enable SMAP.");
+			// cr4.SMAP = 1;
 		}
 		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
 			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
