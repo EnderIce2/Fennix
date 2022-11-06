@@ -1,5 +1,6 @@
 #include "dumper.hpp"
 
+#include <memory.hpp>
 #include <printf.h>
 #include <uart.hpp>
 #include <lock.hpp>
@@ -68,5 +69,6 @@ void DumpData(const char *Description, void *Address, unsigned long Length)
     WriteRaw("MD5: ");
     for (int i = 0; i < 16; i++)
         WriteRaw("%02x", result[i]);
+    kfree(result);
     WriteRaw("\n-------------------------------------------------------------------------\n");
 }

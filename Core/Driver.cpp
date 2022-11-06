@@ -204,6 +204,7 @@ namespace Driver
                             debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
                                   result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
                                   result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+                            kfree(result);
 #endif
                             if (CallDriverEntryPoint(fex) != DriverCode::OK)
                             {
@@ -323,10 +324,11 @@ namespace Driver
                 memcpy(fex, (void *)DriverAddress, Size);
                 FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
 #ifdef DEBUG
-                            uint8_t *result = md5File((uint8_t *)fex, Size);
-                            debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-                                  result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
-                                  result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+                uint8_t *result = md5File((uint8_t *)fex, Size);
+                debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                      result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+                      result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+                kfree(result);
 #endif
                 if (CallDriverEntryPoint(fex) != DriverCode::OK)
                 {
