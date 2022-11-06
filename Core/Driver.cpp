@@ -7,6 +7,7 @@
 #include <lock.hpp>
 #include <printf.h>
 #include <cwalk.h>
+#include <md5.h>
 
 #include "../kernel.h"
 #include "../DAPI.hpp"
@@ -177,6 +178,7 @@ namespace Driver
         {
             FexExtended *DrvExtHdr = (FexExtended *)((uint64_t)DrvHdr + EXTENDED_SECTION_ADDRESS);
             debug("Name: \"%s\"; Type: %d; Callback: %#lx", DrvExtHdr->Driver.Name, DrvExtHdr->Driver.Type, DrvExtHdr->Driver.Callback);
+
             if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
             {
                 for (unsigned long Vidx = 0; Vidx < sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID) / sizeof(DrvExtHdr->Driver.Bind.PCI.VendorID[0]); Vidx++)
@@ -197,6 +199,12 @@ namespace Driver
                             Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
                             memcpy(fex, (void *)DriverAddress, Size);
                             FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
+#ifdef DEBUG
+                            uint8_t *result = md5File((uint8_t *)fex, Size);
+                            debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                                  result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+                                  result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+#endif
                             if (CallDriverEntryPoint(fex) != DriverCode::OK)
                             {
                                 KernelAllocator.FreePages(fex, TO_PAGES(Size));
@@ -314,12 +322,18 @@ namespace Driver
                 Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
                 memcpy(fex, (void *)DriverAddress, Size);
                 FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
+#ifdef DEBUG
+                            uint8_t *result = md5File((uint8_t *)fex, Size);
+                            debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                                  result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+                                  result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+#endif
                 if (CallDriverEntryPoint(fex) != DriverCode::OK)
                 {
                     KernelAllocator.FreePages(fex, TO_PAGES(Size));
                     return DriverCode::DRIVER_RETURNED_ERROR;
                 }
-                debug("Starting driver %s", fexExtended->Driver.Name);
+                debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
 
                 KernelCallback *KCallback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
 
@@ -344,9 +358,18 @@ namespace Driver
                 {
                     for (unsigned long i = 0; i < sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector) / sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector[0]); i++)
                     {
+                        if (DrvExtHdr->Driver.Bind.Interrupt.Vector[i] == 0)
+                            break;
+
                         fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", DrvExtHdr->Driver.Bind.Interrupt.Vector[i]);
                     }
 
+                    fixme("Not implemented");
+                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                    KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                    break;
+
+                    KCallback->RawPtr = nullptr;
                     KCallback->Reason = CallbackReason::ConfigurationReason;
                     int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
                     if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
@@ -356,9 +379,7 @@ namespace Driver
                         error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
                         break;
                     }
-                    else if (callbackret == DriverReturnCode::OK)
-                        trace("Device found for driver: %s", fexExtended->Driver.Name);
-                    else
+                    else if (callbackret != DriverReturnCode::OK)
                     {
                         KernelAllocator.FreePages(fex, TO_PAGES(Size));
                         KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
@@ -366,11 +387,11 @@ namespace Driver
                         break;
                     }
 
-                    DriverFile *drvfile = new DriverFile;
-                    drvfile->DriverUID = KAPI.Info.DriverUID;
-                    drvfile->Address = (void *)fex;
-                    drvfile->InterruptHook[0] = nullptr;
-                    Drivers.push_back(drvfile);
+                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                    KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+
+                    // DriverFile *drvfile = new DriverFile;
+                    // Drivers.push_back(drvfile);
                     break;
                 }
                 case FexDriverType::FexDriverType_FileSystem:
@@ -456,6 +477,4 @@ namespace Driver
         Handle = Address;
         Data = ParamData;
     }
-
-    DriverInterruptHook::~DriverInterruptHook() {}
 }
