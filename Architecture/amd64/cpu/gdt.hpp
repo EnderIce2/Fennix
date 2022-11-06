@@ -74,13 +74,15 @@ namespace GlobalDescriptorTable
 
     typedef struct _TaskStateSegmentEntry
     {
+        /* LOW */
         uint16_t Length;
-        uint16_t Low;
-        uint8_t Middle;
-        uint8_t Flags1;
-        uint8_t Flags2;
-        uint8_t High;
-        uint32_t Upper32;
+        uint16_t BaseLow;
+        uint8_t BaseMiddle;
+        GlobalDescriptorTableAccess Flags;
+        uint8_t Granularity;
+        uint8_t BaseHigh;
+        /* HIGH */
+        uint32_t BaseUpper;
         uint32_t Reserved;
     } __attribute__((packed)) TaskStateSegmentEntry;
 

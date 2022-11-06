@@ -73,14 +73,7 @@ namespace GlobalDescriptorTable
          .BaseHigh = 0x0},
 
         // tss
-        {.Length = 0x0,
-         .Low = 0x0,
-         .Middle = 0x0,
-         .Flags1 = 0b10001001,
-         .Flags2 = 0b00000000,
-         .High = 0x0,
-         .Upper32 = 0x0,
-         .Reserved = 0x0}};
+        {}};
 
     static GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
     GlobalDescriptorTableDescriptor gdt[MAX_CPU];
@@ -123,13 +116,15 @@ namespace GlobalDescriptorTable
         CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
 
         uint64_t Base = (uint64_t)&tss[Core];
-        gdt[Core].Entries->TaskStateSegment.Length = Base + sizeof(tss[0]);
-        gdt[Core].Entries->TaskStateSegment.Low = (uint16_t)(Base & 0xFFFF);
-        gdt[Core].Entries->TaskStateSegment.Middle = (uint8_t)((Base >> 16) & 0xFF);
-        gdt[Core].Entries->TaskStateSegment.High = (uint8_t)((Base >> 24) & 0xFF);
-        gdt[Core].Entries->TaskStateSegment.Upper32 = (uint32_t)((Base >> 32) & 0xFFFFFFFF);
-        gdt[Core].Entries->TaskStateSegment.Flags1 = 0b10001001;
-        gdt[Core].Entries->TaskStateSegment.Flags2 = 0b00000000;
+        uint64_t Limit = Base + sizeof(TaskStateSegment);
+        gdt[Core].Entries->TaskStateSegment.Length = Limit & 0xFFFF;
+        gdt[Core].Entries->TaskStateSegment.BaseLow = Base & 0xFFFF;
+        gdt[Core].Entries->TaskStateSegment.BaseMiddle = (Base >> 16) & 0xFF;
+        gdt[Core].Entries->TaskStateSegment.BaseHigh = (Base >> 24) & 0xFF;
+        gdt[Core].Entries->TaskStateSegment.BaseUpper = (Base >> 32) & 0xFFFFFFFF;
+        gdt[Core].Entries->TaskStateSegment.Flags = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
+        gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);
+
         tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
         tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
         tss[Core].InterruptStackTable[0] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
