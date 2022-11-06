@@ -50,6 +50,7 @@ void KernelMainThread()
     Tasking::TCB *CurrentWorker = nullptr;
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
     KPrint("C++ Language Version (__cplusplus) :%ld", __cplusplus);
+    TaskManager->GetCurrentThread()->SetPriority(1);
 
     CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem);
     CurrentWorker->Rename("Disk");
@@ -85,7 +86,6 @@ void KernelMainThread()
         KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret);
         CPU::Halt(true);
     }
-    TaskManager->GetCurrentThread()->SetPriority(1);
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     CPU::Halt(true);
