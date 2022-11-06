@@ -5,6 +5,11 @@
 
 #include <cstring>
 
+extern "C" void _amd64_fxsave(char *Buffer);
+extern "C" void _amd64_fxrstor(char *Buffer);
+extern "C" void _i386_fxsave(char *Buffer);
+extern "C" void _i386_fxrstor(char *Buffer);
+
 #define x86_CPUID_VENDOR_OLDAMD "AMDisbetter!" /* Early engineering samples of AMD K5 processor */
 #define x86_CPUID_VENDOR_AMD "AuthenticAMD"
 #define x86_CPUID_VENDOR_INTEL "GenuineIntel"
@@ -1580,6 +1585,7 @@ namespace CPU
         __attribute__((no_stack_protector)) static inline void fxsave(char *FXSaveArea)
         {
 #if defined(__amd64__)
+            _amd64_fxsave(FXSaveArea);
             // asmv("fxsaveq (%0)"
             //      :
             //      : "r"(FXSaveArea)
@@ -1590,6 +1596,7 @@ namespace CPU
         __attribute__((no_stack_protector)) static inline void fxrstor(char *FXRstorArea)
         {
 #if defined(__amd64__)
+            _amd64_fxrstor(FXRstorArea);
             // asmv("fxrstorq (%0)"
             //      :
             //      : "r"(FXRstorArea)
