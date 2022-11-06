@@ -43,8 +43,8 @@ void MapFromZero(PageTable *PT, BootInfo *Info)
     uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
     for (uint64_t t = 0; t < Info->Memory.Size; t += PAGE_SIZE)
     {
-        va.Map((void *)t, (void *)t, PTFlag::RW);
-        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
+        va.Map((void *)t, (void *)t, PTFlag::RW | PTFlag::US);
+        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW | PTFlag::US);
         VirtualOffsetNormalVMA += PAGE_SIZE;
     }
 }
