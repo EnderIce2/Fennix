@@ -38,7 +38,7 @@ namespace Driver
 
     public:
         DriverInterruptHook(int Interrupt, void *Address, void *ParamData);
-        ~DriverInterruptHook();
+        virtual ~DriverInterruptHook() = default;
     };
 
     struct DriverFile
