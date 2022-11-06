@@ -60,6 +60,7 @@ namespace Tasking
     {
         TaskTrustLevel TrustLevel;
         Token UniqueToken;
+        bool IsCritical;
     };
 
     struct TaskInfo
@@ -117,6 +118,12 @@ namespace Tasking
         }
 
         int GetExitCode() { return ExitCode; }
+
+        void SetCritical(bool critical)
+        {
+            trace("Setting criticality of thread %s to %s", Name, critical ? "true" : "false");
+            Security.IsCritical = critical;
+        }
     };
 
     struct PCB

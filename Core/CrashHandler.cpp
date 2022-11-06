@@ -117,8 +117,13 @@ namespace CrashHandler
         else
         {
             debug("Exception in user mode");
-            UserModeExceptionHandler(Frame);
-            return;
+            if (!GetCurrentCPU()->CurrentThread->Security.IsCritical)
+            {
+                UserModeExceptionHandler(Frame);
+                return;
+            }
+            else
+                EHPrint("\eFF0000Init process crashed!");
         }
 
         debug("Reading control registers...");

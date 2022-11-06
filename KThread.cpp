@@ -81,6 +81,7 @@ void KernelMainThread()
 
     // TODO: Untested!
     Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argc, (uint64_t)argv.data());
+    ret.Thread->SetCritical(true);
     if (ret.Status != Execute::ExStatus::OK)
     {
         KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret);
