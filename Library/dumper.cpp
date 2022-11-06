@@ -3,6 +3,7 @@
 #include <printf.h>
 #include <uart.hpp>
 #include <lock.hpp>
+#include <md5.h>
 
 NewLock(DumperLock);
 
@@ -62,4 +63,10 @@ void DumpData(const char *Description, void *Address, unsigned long Length)
 
     WriteRaw("  %s\n", Buffer);
     WriteRaw("-------------------------------------------------------------------------\n");
+    WriteRaw("Length: %ld bytes", Length);
+    uint8_t *result = md5File(AddressChar, Length);
+    WriteRaw("MD5: ");
+    for (int i = 0; i < 16; i++)
+        WriteRaw("%02x", result[i]);
+    WriteRaw("\n-------------------------------------------------------------------------\n");
 }
