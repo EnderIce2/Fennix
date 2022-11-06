@@ -7,7 +7,7 @@
 
 namespace GlobalDescriptorTable
 {
-    static GlobalDescriptorTableEntries GDTEntries = {
+    static GlobalDescriptorTableEntries GDTEntriesTemplate = {
         // null
         {.Length = 0x0,
          .BaseLow = 0x0,
@@ -82,7 +82,8 @@ namespace GlobalDescriptorTable
          .Upper32 = 0x0,
          .Reserved = 0x0}};
 
-    GlobalDescriptorTableDescriptor gdt = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries};
+    static GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
+    GlobalDescriptorTableDescriptor gdt[MAX_CPU];
 
     TaskStateSegment tss[MAX_CPU] = {
         0,
@@ -93,13 +94,18 @@ namespace GlobalDescriptorTable
         0,
     };
 
+    void *CPUStackPointer[MAX_CPU];
+
     __attribute__((no_stack_protector)) void Init(int Core)
     {
-        debug("Kernel: Code Access: %ld; Data Access: %ld", GDTEntries.Code.Access.Raw, GDTEntries.Data.Access.Raw);
-        debug("Kernel: Code Flags: %ld; Data Flags: %ld", GDTEntries.Code.Flags.Raw, GDTEntries.Data.Flags.Raw);
-        debug("User: Code Access: %ld; Data Access: %ld", GDTEntries.UserCode.Access.Raw, GDTEntries.UserData.Access.Raw);
-        debug("User: Code Flags: %ld; Data Flags: %ld", GDTEntries.UserCode.Flags.Raw, GDTEntries.UserData.Flags.Raw);
-        CPU::x64::lgdt(&gdt);
+        memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
+        gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
+
+        debug("Kernel: Code Access: %ld; Data Access: %ld", GDTEntries[Core].Code.Access.Raw, GDTEntries[Core].Data.Access.Raw);
+        debug("Kernel: Code Flags: %ld; Data Flags: %ld", GDTEntries[Core].Code.Flags.Raw, GDTEntries[Core].Data.Flags.Raw);
+        debug("User: Code Access: %ld; Data Access: %ld", GDTEntries[Core].UserCode.Access.Raw, GDTEntries[Core].UserData.Access.Raw);
+        debug("User: Code Flags: %ld; Data Flags: %ld", GDTEntries[Core].UserCode.Flags.Raw, GDTEntries[Core].UserData.Flags.Raw);
+        CPU::x64::lgdt(&gdt[Core]);
 
         asmv("movq %%rsp, %%rax\n"
              "pushq $16\n"
@@ -114,19 +120,21 @@ namespace GlobalDescriptorTable
              "movw %%ax, %%es\n" ::
                  : "memory", "rax");
 
+        CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+
         uint64_t Base = (uint64_t)&tss[Core];
-        gdt.Entries->TaskStateSegment.Length = Base + sizeof(tss[0]);
-        gdt.Entries->TaskStateSegment.Low = (uint16_t)(Base & 0xFFFF);
-        gdt.Entries->TaskStateSegment.Middle = (uint8_t)((Base >> 16) & 0xFF);
-        gdt.Entries->TaskStateSegment.High = (uint8_t)((Base >> 24) & 0xFF);
-        gdt.Entries->TaskStateSegment.Upper32 = (uint32_t)((Base >> 32) & 0xFFFFFFFF);
-        gdt.Entries->TaskStateSegment.Flags1 = 0b10001001;
-        gdt.Entries->TaskStateSegment.Flags2 = 0b00000000;
+        gdt[Core].Entries->TaskStateSegment.Length = Base + sizeof(tss[0]);
+        gdt[Core].Entries->TaskStateSegment.Low = (uint16_t)(Base & 0xFFFF);
+        gdt[Core].Entries->TaskStateSegment.Middle = (uint8_t)((Base >> 16) & 0xFF);
+        gdt[Core].Entries->TaskStateSegment.High = (uint8_t)((Base >> 24) & 0xFF);
+        gdt[Core].Entries->TaskStateSegment.Upper32 = (uint32_t)((Base >> 32) & 0xFFFFFFFF);
+        gdt[Core].Entries->TaskStateSegment.Flags1 = 0b10001001;
+        gdt[Core].Entries->TaskStateSegment.Flags2 = 0b00000000;
         tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
-        tss[Core].StackPointer[0] = (uint64_t)KernelAllocator.RequestPage();
-        tss[Core].InterruptStackTable[0] = (uint64_t)KernelAllocator.RequestPage();
-        tss[Core].InterruptStackTable[1] = (uint64_t)KernelAllocator.RequestPage();
-        tss[Core].InterruptStackTable[2] = (uint64_t)KernelAllocator.RequestPage();
+        tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
+        tss[Core].InterruptStackTable[0] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+        tss[Core].InterruptStackTable[1] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+        tss[Core].InterruptStackTable[2] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
 
         CPU::x64::ltr(GDT_TSS);
         asmv("mov %%rsp, %0"
@@ -138,5 +146,10 @@ namespace GlobalDescriptorTable
         trace("GDT_USER_DATA: %#lx", GDT_USER_DATA);
         trace("GDT_TSS: %#lx", GDT_TSS);
         trace("Global Descriptor Table initialized");
+    }
+
+    void SetKernelStack(void *Stack)
+    {
+        tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;
     }
 }

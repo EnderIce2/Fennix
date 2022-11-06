@@ -2,6 +2,7 @@
 
 #include <cpu.hpp>
 #include <debug.h>
+#include <io.h>
 
 #include "gdt.hpp"
 
@@ -428,6 +429,36 @@ namespace InterruptDescriptorTable
 
     void Init(int Core)
     {
+        static int once = 0;
+        if (!once++)
+        {
+            // PIC
+            outb(0x20, 0x10 | 0x1);
+            outb(0x80, 0);
+            outb(0xA0, 0x10 | 0x10);
+            outb(0x80, 0);
+
+            outb(0x21, 0x20);
+            outb(0x80, 0);
+            outb(0xA1, 0x28);
+            outb(0x80, 0);
+
+            outb(0x21, 0x04);
+            outb(0x80, 0);
+            outb(0xA1, 0x02);
+            outb(0x80, 0);
+
+            outb(0x21, 1);
+            outb(0x80, 0);
+            outb(0xA1, 1);
+            outb(0x80, 0);
+
+            // Masking and disabling PIC
+            outb(0x21, 0xff);
+            outb(0x80, 0);
+            outb(0xA1, 0xff);
+        }
+
         /* ISR */
 
         SetEntry(0x0, InterruptHandler_0x0, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);

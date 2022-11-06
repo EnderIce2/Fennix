@@ -384,6 +384,7 @@ namespace Tasking
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
         *Frame = CurrentCPU->CurrentThread->Registers;
+        GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack + STACK_SIZE));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
 

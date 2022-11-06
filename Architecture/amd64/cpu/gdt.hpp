@@ -86,7 +86,7 @@ namespace GlobalDescriptorTable
 
     typedef struct _TaskStateSegment
     {
-        uint32_t Reserved0;
+        uint32_t Reserved0 __attribute__((aligned(16)));
         uint64_t StackPointer[3];
         uint64_t Reserved1;
         uint64_t InterruptStackTable[7];
@@ -128,7 +128,9 @@ namespace GlobalDescriptorTable
         GlobalDescriptorTableEntries *Entries;
     } __attribute__((packed)) GlobalDescriptorTableDescriptor;
 
+    extern void *CPUStackPointer[];
     void Init(int Core);
+    void SetKernelStack(void *Stack);
 }
 
 #define GDT_KERNEL_CODE offsetof(GlobalDescriptorTable::GlobalDescriptorTableEntries, Code)
