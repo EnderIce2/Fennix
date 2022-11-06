@@ -626,13 +626,15 @@ namespace Tasking
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
-            for (uint64_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
-                Memory::Virtual(Parent->PageTable).Map((void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), (void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
-            if (!Memory::Virtual(Parent->PageTable).Check((void *)Offset, Memory::PTFlag::US))
+            Memory::Virtual uva = Memory::Virtual(Parent->PageTable);
+            for (uint64_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
+                uva.Map((void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), (void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+
+            if (!uva.Check((void *)Offset, Memory::PTFlag::US))
             {
                 error("Offset is not user accessible");
-                Memory::Virtual(Parent->PageTable).Map((void *)Offset, (void *)Offset, Memory::PTFlag::RW | Memory::PTFlag::US); // We try one more time.
+                uva.Map((void *)Offset, (void *)Offset, Memory::PTFlag::RW | Memory::PTFlag::US); // We try one more time.
             }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
