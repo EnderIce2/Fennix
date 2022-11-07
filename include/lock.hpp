@@ -2,7 +2,6 @@
 #define __FENNIX_KERNEL_LOCK_H__
 
 #include <types.h>
-
 #include <cpu.hpp>
 
 #pragma GCC diagnostic ignored "-Wvolatile"
@@ -22,6 +21,7 @@ class LockClass
         const char *CurrentHolder;
         const char *AttemptingToGet;
         uint64_t Count;
+        long Core;
     };
 
 private:
@@ -30,32 +30,8 @@ private:
 
 public:
     SpinLockData *GetLockData() { return &LockData; }
-
-    int Lock(const char *FunctionName)
-    {
-        LockData.AttemptingToGet = FunctionName;
-        SpinLock_Lock(&LockData.LockData);
-        LockData.CurrentHolder = FunctionName;
-        LockData.Count++;
-        CPU::MemBar::Barrier();
-
-        // while (!__sync_bool_compare_and_swap(&IsLocked, false, true))
-        // CPU::Pause();
-        // __sync_synchronize();
-        return 0;
-    }
-
-    int Unlock()
-    {
-        SpinLock_Unlock(&LockData.LockData);
-        LockData.Count--;
-        CPU::MemBar::Barrier();
-
-        // __sync_synchronize();
-        // __atomic_store_n(&IsLocked, false, __ATOMIC_SEQ_CST);
-        // IsLocked = false;
-        return 0;
-    }
+    int Lock(const char *FunctionName);
+    int Unlock();
 };
 /** @brief Please use this macro to create a new smart lock. */
 class SmartLockClass
