@@ -807,6 +807,7 @@ namespace Tasking
             sprintf_(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);
             IdleThread->SetPriority(1);
+            break;
         }
         debug("Tasking Started");
         ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);

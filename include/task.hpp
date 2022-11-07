@@ -175,7 +175,7 @@ namespace Tasking
 
         __attribute__((no_stack_protector)) bool InvalidPCB(PCB *pcb)
         {
-            if (pcb == (PCB *)0xffffffffffffffff)
+            if (pcb >= (PCB *)0xfffffffffffff000)
                 return true;
             if (!pcb)
                 return true;
@@ -184,7 +184,7 @@ namespace Tasking
 
         __attribute__((no_stack_protector)) bool InvalidTCB(TCB *tcb)
         {
-            if (tcb == (TCB *)0xffffffffffffffff)
+            if (tcb >= (TCB *)0xfffffffffffff000)
                 return true;
             if (!tcb)
                 return true;

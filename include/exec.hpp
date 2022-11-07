@@ -4,6 +4,7 @@
 #include <types.h>
 
 #include <task.hpp>
+#include <elf.h>
 
 namespace Execute
 {
@@ -11,8 +12,10 @@ namespace Execute
     {
         BinTypeInvalid,
         BinTypeFex,
-        BinTypeElf,
+        BinTypeELF,
         BinTypePE,
+        BinTypeNE,
+        BinTypeMZ,
         BinTypeUnknown
     };
 
@@ -38,6 +41,8 @@ namespace Execute
 
     BinaryType GetBinaryType(char *Path);
     SpawnData Spawn(char *Path, uint64_t Arg0, uint64_t Arg1);
+
+    void *ELFLoadRel(Elf64_Ehdr *Header);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__
