@@ -18,7 +18,8 @@
 			"limits.h": "c",
 			"assert.h": "c",
 			"cwalk.h": "c",
-			"md5.h": "c"
+			"md5.h": "c",
+			"stdint.h": "c"
 		}
 	}
 }

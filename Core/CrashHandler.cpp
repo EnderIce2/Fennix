@@ -57,7 +57,7 @@ namespace CrashHandler
         {
             EHPrint("\e2565CC%p", (void *)Frame->rip);
             EHPrint("\e7925CC-");
-            EHPrint("\eAA25C%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
+            EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
             EHPrint("\e7981FC <- Exception");
             EHPrint("\eFF0000\n< No stack trace available. >\n");
         }
@@ -440,7 +440,7 @@ __attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CPU::
     // staticbuffer(desc_table);
     // staticbuffer(desc_idx);
     // staticbuffer(desc_tmp);
-    // SelectorErrorCode SelCode = {.raw = ERROR_CODE};
+    CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
     // switch (SelCode.Table)
     // {
     // case CPU::x64::0b00:
@@ -459,54 +459,26 @@ __attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CPU::
     //     memcpy(desc_tmp, "Unknown", 7);
     //     break;
     // }
-    // debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
-    // CurrentDisplay->SetPrintColor(0xDD2920);
-    // SET_PRINT_MID((char *)"System crashed!", FHeight(6));
-    // CurrentDisplay->ResetPrintColor();
-    // SET_PRINT_MID((char *)"More info about the exception:", FHeight(4));
-    // sprintf_(descbuf, "Kernel performed an illegal operation at address %#llx", RIP);
-    // SET_PRINT_MID((char *)descbuf, FHeight(5));
-    // sprintf_(desc_ext, "External: %d", SelCode.External);
-    // SET_PRINT_MID((char *)desc_ext, FHeight(3));
-    // sprintf_(desc_table, "Table: %d (%s)", SelCode.Table, desc_tmp);
-    // SET_PRINT_MID((char *)desc_table, FHeight(2));
-    // sprintf_(desc_idx, "%s Index: %#x", desc_tmp, SelCode.Idx);
-    // SET_PRINT_MID((char *)desc_idx, FHeight(1));
+    CrashHandler::EHPrint("\eDD2920System crashed!\n");
+    CrashHandler::EHPrint("Kernel performed an illegal operation.\n");
+    CrashHandler::EHPrint("More info about the exception:\n");
+    CrashHandler::EHPrint("External: %d\n", SelCode.External);
+    CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
+    CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
 }
 __attribute__((no_stack_protector)) void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
-
-    // We can't use an allocator in exceptions (because that can cause another exception!) so, we'll just use a static buffer.
-    staticbuffer(ret_err);
-    staticbuffer(page_present);
-    staticbuffer(page_write);
-    staticbuffer(page_user);
-    staticbuffer(pageReserved);
-    staticbuffer(page_fetch);
-    staticbuffer(page_protection);
-    staticbuffer(page_shadow);
-    staticbuffer(page_sgx);
-
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
-    sprintf_(ret_err, "An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
-    CrashHandler::EHPrint(ret_err);
-    sprintf_(page_present, "Page: %s\n", params.P ? "Present" : "Not Present");
-    CrashHandler::EHPrint(page_present);
-    sprintf_(page_write, "Write Operation: %s\n", params.W ? "Read-Only" : "Read-Write");
-    CrashHandler::EHPrint(page_write);
-    sprintf_(page_user, "Processor Mode: %s\n", params.U ? "User-Mode" : "Kernel-Mode");
-    CrashHandler::EHPrint(page_user);
-    sprintf_(pageReserved, "CPU Reserved Bits: %s\n", params.R ? "Reserved" : "Unreserved");
-    CrashHandler::EHPrint(pageReserved);
-    sprintf_(page_fetch, "Caused By An Instruction Fetch: %s\n", params.I ? "Yes" : "No");
-    CrashHandler::EHPrint(page_fetch);
-    sprintf_(page_protection, "Caused By A Protection-Key Violation: %s\n", params.PK ? "Yes" : "No");
-    CrashHandler::EHPrint(page_protection);
-    sprintf_(page_shadow, "Caused By A Shadow Stack Access: %s\n", params.SS ? "Yes" : "No");
-    CrashHandler::EHPrint(page_shadow);
-    sprintf_(page_sgx, "Caused By An SGX Violation: %s\n", params.SGX ? "Yes" : "No");
-    CrashHandler::EHPrint(page_sgx);
+    CrashHandler::EHPrint("An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+    CrashHandler::EHPrint("Page: %s\n", params.P ? "Present" : "Not Present");
+    CrashHandler::EHPrint("Write Operation: %s\n", params.W ? "Read-Only" : "Read-Write");
+    CrashHandler::EHPrint("Processor Mode: %s\n", params.U ? "User-Mode" : "Kernel-Mode");
+    CrashHandler::EHPrint("CPU Reserved Bits: %s\n", params.R ? "Reserved" : "Unreserved");
+    CrashHandler::EHPrint("Caused By An Instruction Fetch: %s\n", params.I ? "Yes" : "No");
+    CrashHandler::EHPrint("Caused By A Protection-Key Violation: %s\n", params.PK ? "Yes" : "No");
+    CrashHandler::EHPrint("Caused By A Shadow Stack Access: %s\n", params.SS ? "Yes" : "No");
+    CrashHandler::EHPrint("Caused By An SGX Violation: %s\n", params.SGX ? "Yes" : "No");
     if (Frame->ErrorCode & 0x00000008)
         CrashHandler::EHPrint("One or more page directory entries contain reserved bits which are set to 1.\n");
     else
