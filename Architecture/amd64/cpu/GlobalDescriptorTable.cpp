@@ -145,6 +145,9 @@ namespace GlobalDescriptorTable
 
     __attribute__((no_stack_protector)) void SetKernelStack(void *Stack)
     {
-        tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;
+        if (Stack)
+            tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;
+        else
+            tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)CPUStackPointer[GetCurrentCPU()->ID] + STACK_SIZE;
     }
 }
