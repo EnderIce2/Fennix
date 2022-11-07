@@ -30,7 +30,8 @@ namespace APIC
 
     uint32_t APIC::Read(uint32_t Register)
     {
-        debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
+        if (Register != APIC_ICRLO && Register != APIC_ICRHI)
+            debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -52,7 +53,9 @@ namespace APIC
         if (Register != APIC_EOI &&
             Register != APIC_TDCR &&
             Register != APIC_TIMER &&
-            Register != APIC_TICR)
+            Register != APIC_TICR &&
+            Register != APIC_ICRLO &&
+            Register != APIC_ICRHI)
             debug("APIC::Write(%#lx, %#lx) [x2=%d]", Register, Value, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {
