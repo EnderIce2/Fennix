@@ -44,6 +44,7 @@ namespace Power
          */
         void Shutdown();
 
+        void InitDSDT();
         Power();
         ~Power();
     };

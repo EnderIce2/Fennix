@@ -15,6 +15,9 @@ public:
 
     Vector()
     {
+#ifdef DEBUG_MEM_ALLOCATION
+        debug("VECTOR INIT: Vector( )");
+#endif
         VectorCapacity = 0;
         VectorSize = 0;
         VectorBuffer = 0;
@@ -25,7 +28,7 @@ public:
         VectorCapacity = Size;
         VectorSize = Size;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( %lld )", Size);
+        debug("VECTOR INIT: Vector( %lld )", Size);
 #endif
         VectorBuffer = new T[Size];
     }
@@ -35,7 +38,7 @@ public:
         VectorSize = Size;
         VectorCapacity = Size;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( %lld %llx )", Size, Initial);
+        debug("VECTOR INIT: Vector( %lld %llx )", Size, Initial);
 #endif
         VectorBuffer = new T[Size];
         for (uint64_t i = 0; i < Size; i++)
@@ -47,7 +50,7 @@ public:
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: Vector( <vector> )->Size: %lld", VectorSize);
+        debug("VECTOR INIT: Vector( <vector> )->Size: %lld", VectorSize);
 #endif
         VectorBuffer = new T[VectorSize];
         for (uint64_t i = 0; i < VectorSize; i++)
@@ -57,7 +60,7 @@ public:
     ~Vector()
     {
 #ifdef DEBUG_MEM_ALLOCATION
-        debug("VECTOR ALLOCATION: ~Vector( ~%lx )", VectorBuffer);
+        debug("VECTOR INIT: ~Vector( ~%lx )", VectorBuffer);
 #endif
         delete[] VectorBuffer;
     }
@@ -144,7 +147,7 @@ public:
         delete[] VectorBuffer;
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
-        #ifdef DEBUG_MEM_ALLOCATION
+#ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR ALLOCATION: operator=( <vector> )->Size:%lld", VectorSize);
 #endif
         VectorBuffer = new T[VectorSize];

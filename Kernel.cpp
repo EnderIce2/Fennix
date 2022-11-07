@@ -79,6 +79,7 @@ EXTERNC void Entry(BootInfo *Info)
     }
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
+    PowerManager->InitDSDT();
     KPrint("Initializing Timers");
 #if defined(__amd64__)
     TimeManager = new Time::time(PowerManager->GetACPI());

@@ -52,11 +52,15 @@ namespace Power
         CPU::Stop();
     }
 
+    void Power::InitDSDT()
+    {
+        if (((ACPI::ACPI *)this->acpi)->FADT)
+            this->dsdt = new ACPI::DSDT((ACPI::ACPI *)acpi);
+    }
+
     Power::Power()
     {
         this->acpi = new ACPI::ACPI(bInfo);
-        if (((ACPI::ACPI *)this->acpi)->FADT)
-            this->dsdt = new ACPI::DSDT((ACPI::ACPI *)acpi);
         this->madt = new ACPI::MADT(((ACPI::ACPI *)acpi)->MADT);
         trace("Power manager initialized");
     }

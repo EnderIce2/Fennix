@@ -17,11 +17,11 @@ class LockClass
 {
     struct SpinLockData
     {
-        uint64_t LockData;
-        const char *CurrentHolder;
-        const char *AttemptingToGet;
-        uint64_t Count;
-        long Core;
+        uint64_t LockData = 0x0;
+        const char *CurrentHolder = "(nul)";
+        const char *AttemptingToGet = "(nul)";
+        uint64_t Count = 0;
+        long Core = 0;
     };
 
 private:
