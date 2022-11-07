@@ -51,6 +51,8 @@ struct Fex
     int (*Pointer)(void *);
 } __attribute__((packed));
 
+struct KernelCallback;
+
 struct FexExtended
 {
     struct
@@ -99,7 +101,7 @@ struct FexExtended
  * @note Must include ".header : { *(.header .header.*) }" in linker script
  */
 #define HEAD(FormatType, OperatingSystem, Address)        \
-    __attribute__((section(".header"))) Fex FexHeader = { \
+    __attribute__((section(".header"))) struct Fex FexHeader = { \
         .Magic = {'F', 'E', 'X', '\0'},                   \
         .Type = FormatType,                               \
         .OS = OperatingSystem,                            \
