@@ -81,12 +81,12 @@ void KernelMainThread()
 
     // TODO: Untested!
     Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argc, (uint64_t)argv.data());
-    ret.Thread->SetCritical(true);
     if (ret.Status != Execute::ExStatus::OK)
     {
-        KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret);
+        KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret.Status);
         CPU::Halt(true);
     }
+    ret.Thread->SetCritical(true);
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());
