@@ -12,7 +12,8 @@ SystemCallHandlerStub:
     push r11            ; saved rflags
     push qword 0x1b     ; user code segment
     push rcx            ; Current RIP
- 
+
+    cld
     push rax
     push rbx
     push rcx
