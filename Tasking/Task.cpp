@@ -1,6 +1,7 @@
 #include <task.hpp>
 
 #include <lock.hpp>
+#include <printf.h>
 #include <smp.hpp>
 
 #include "../kernel.h"
@@ -305,9 +306,7 @@ namespace Tasking
 
     __attribute__((no_stack_protector)) void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
-        CriticalSection cs; // Just to be sure
-        if (cs.IsInterruptsEnabled())
-            warn("Interrupts are enabled in the scheduler!");
+        SmartCriticalSection(SchedulerLock);
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
@@ -440,11 +439,7 @@ namespace Tasking
     }
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-    {
-        SmartCriticalSection(SchedulerLock);
-        this->Schedule(Frame);
-    }
+    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
 #elif defined(__i386__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
     {
@@ -476,10 +471,7 @@ namespace Tasking
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
-    {
-        fixme("unimplemented");
-    }
+    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #elif defined(__aarch64__)
     __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
     {
@@ -511,10 +503,7 @@ namespace Tasking
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame)
-    {
-        fixme("unimplemented");
-    }
+    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #endif
 
     void ThreadDoExit()
@@ -772,7 +761,6 @@ namespace Tasking
     Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x64::IRQ16)
     {
         SmartCriticalSection(TaskingLock);
-
 #if defined(__amd64__)
         for (int i = 0; i < SMP::CPUCores; i++)
             ((APIC::APIC *)Interrupts::apic[i])->RedirectIRQ(i, CPU::x64::IRQ16 - CPU::x64::IRQ0, 1);
@@ -808,22 +796,29 @@ namespace Tasking
             error("Interrupts are not enabled.");
             CPU::Interrupts(CPU::Enable);
         }
-
-        for (int i = 0; i < SMP::CPUCores; i++)
-        {
-            /* do stuff i guess */
-            ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 200);
-        }
-        // ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
 #endif
         TaskingLock.Unlock();
         this->IPCManager = new InterProcessCommunication::IPC;
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
-        IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop));
-        IdleThread->Rename("Idle Thread");
-        IdleThread->SetPriority(1);
-        TaskingLock.Lock(__FUNCTION__);
+        for (int i = 0; i < SMP::CPUCores; i++)
+        {
+            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop));
+            char IdleName[16];
+            sprintf_(IdleName, "Idle Thread %d", i);
+            IdleThread->Rename(IdleName);
+            IdleThread->SetPriority(1);
+        }
         debug("Tasking Started");
+        ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
+
+        for (int i = 1; i < SMP::CPUCores; i++)
+        {
+            // TODO: Start other cores will end up in a deadlock. HOW?
+            // APIC::InterruptCommandRegisterLow icr;
+            // icr.Vector = CPU::x64::IRQ16;
+            // icr.Level = APIC::APICLevel::Assert;
+            // ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
+        }
     }
 
     Task::~Task()
