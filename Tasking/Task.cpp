@@ -342,6 +342,8 @@ namespace Tasking
             // Save current process and thread registries, gs, fs, fpu, etc...
             CurrentCPU->CurrentThread->Registers = *Frame;
             CPU::x64::fxsave(CurrentCPU->CurrentThread->FXRegion);
+            CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
+            CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
             // Set the process & thread as ready if it's running.
             if (CurrentCPU->CurrentProcess->Status == TaskStatus::Running)
@@ -388,6 +390,8 @@ namespace Tasking
         GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack + STACK_SIZE));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
+        CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 
         switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
         {
@@ -590,6 +594,8 @@ namespace Tasking
         {
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
+            Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
+            Thread->FSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
             Thread->Registers.cs = GDT_KERNEL_CODE;
             Thread->Registers.ds = GDT_KERNEL_DATA;
             Thread->Registers.ss = GDT_KERNEL_DATA;
@@ -607,6 +613,8 @@ namespace Tasking
         {
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
+            Thread->GSBase = 0;
+            Thread->FSBase = 0;
             Thread->Registers.cs = GDT_USER_CODE;
             Thread->Registers.ds = GDT_USER_DATA;
             Thread->Registers.ss = GDT_USER_DATA;

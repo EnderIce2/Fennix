@@ -91,6 +91,7 @@ namespace Tasking
         TaskStatus Status;
 #if defined(__amd64__)
         CPU::x64::TrapFrame Registers;
+        uint64_t GSBase, FSBase;
 #elif defined(__i386__)
         uint32_t Registers; // TODO
 #elif defined(__aarch64__)
