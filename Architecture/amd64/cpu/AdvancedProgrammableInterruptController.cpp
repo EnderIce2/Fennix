@@ -30,7 +30,9 @@ namespace APIC
 
     uint32_t APIC::Read(uint32_t Register)
     {
-        if (Register != APIC_ICRLO && Register != APIC_ICRHI)
+        if (Register != APIC_ICRLO &&
+            Register != APIC_ICRHI &&
+            Register != APIC_ID)
             debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
         if (x2APICSupported)
         {

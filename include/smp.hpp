@@ -38,7 +38,7 @@ struct CPUData
     /** @brief Current running thread */
     Tasking::TCB *CurrentThread;
 
-    /** @brief Architecture-specific CPU data. */
+    /** @brief Architecture-specific data. */
     CPUArchData *Data;
     /** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
     int Checksum;

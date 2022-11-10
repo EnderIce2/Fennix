@@ -1585,6 +1585,9 @@ namespace CPU
         __attribute__((no_stack_protector)) static inline void fxsave(char *FXSaveArea)
         {
 #if defined(__amd64__)
+            if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
+                return;
+
             _amd64_fxsave(FXSaveArea);
             // asmv("fxsaveq (%0)"
             //      :
@@ -1596,6 +1599,9 @@ namespace CPU
         __attribute__((no_stack_protector)) static inline void fxrstor(char *FXRstorArea)
         {
 #if defined(__amd64__)
+            if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
+                return;
+
             _amd64_fxrstor(FXRstorArea);
             // asmv("fxrstorq (%0)"
             //      :

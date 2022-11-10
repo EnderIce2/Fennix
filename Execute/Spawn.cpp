@@ -5,6 +5,7 @@
 #include <msexec.h>
 #include <cwalk.h>
 #include <elf.h>
+#include <abi.h>
 
 #include "../kernel.h"
 #include "../Fex.hpp"
@@ -13,7 +14,7 @@ using namespace Tasking;
 
 namespace Execute
 {
-    SpawnData Spawn(char *Path, uint64_t Arg0, uint64_t Arg1)
+    SpawnData Spawn(char *Path, Vector<const char *> &argv, Vector<const char *> &envp)
     {
         SpawnData ret = {.Status = ExStatus::Unknown,
                          .Process = nullptr,
@@ -42,9 +43,11 @@ namespace Execute
                         for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
                             pva.Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
+                        Vector<AuxiliaryVector> auxv; // TODO!
+
                         TCB *Thread = TaskManager->CreateThread(Process,
                                                                 (IP)FexHdr->Pointer,
-                                                                Arg0, Arg1,
+                                                                argv, envp, auxv,
                                                                 (IPOffset)BaseImage,
                                                                 TaskArchitecture::x64,
                                                                 TaskCompatibility::Native);
@@ -130,9 +133,20 @@ namespace Execute
                             memcpy(dst, ((char *)BaseImage) + pheader->p_offset, pheader->p_filesz);
                         }
 
+                        Vector<AuxiliaryVector> auxv;
+
+                        auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
+                        auxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader->e_phentsize}}});
+                        auxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader->e_phnum}}});
+                        auxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
+                        auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)Offset}}});
+                        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)Offset}}});
+                        auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t) "x86_64"}}});
+                        auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)Path}}});
+
                         TCB *Thread = TaskManager->CreateThread(Process,
                                                                 (IP)ELFHeader->e_entry,
-                                                                Arg0, Arg1,
+                                                                argv, envp, auxv,
                                                                 (IPOffset)Offset,
                                                                 Arch,
                                                                 Comp);
@@ -154,9 +168,13 @@ namespace Execute
                             ret.Status = ExStatus::InvalidFileEntryPoint;
                             goto Exit;
                         }
+
+                        Vector<AuxiliaryVector> auxv;
+                        fixme("auxv");
+
                         TCB *Thread = TaskManager->CreateThread(Process,
                                                                 (IP)EP,
-                                                                Arg0, Arg1,
+                                                                argv, envp, auxv,
                                                                 (IPOffset)BaseImage,
                                                                 Arch,
                                                                 Comp);

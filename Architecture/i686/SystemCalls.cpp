@@ -6,7 +6,7 @@
 
 using namespace CPU::x32;
 
-extern "C" uint32_t SystemCallsHandler(SyscallsRegs *regs);
+extern "C" uint32_t SystemCallsHandler(SyscallsFrame *regs);
 
 void InitializeSystemCalls()
 {

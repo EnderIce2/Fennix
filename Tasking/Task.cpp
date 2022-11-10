@@ -2,6 +2,7 @@
 
 #include <lock.hpp>
 #include <printf.h>
+#include <dumper.hpp>
 #include <smp.hpp>
 
 #include "../kernel.h"
@@ -379,6 +380,50 @@ namespace Tasking
 
     Success:
     {
+#ifdef DEBUG_SCHEDULER
+        static int sanity;
+        const char *Statuses[] = {
+            "FF0000", // Unknown
+            "AAFF00", // Ready
+            "00AA00", // Running
+            "FFAA00", // Sleeping
+            "FFAA00", // Waiting
+            "FF0088", // Stopped
+            "FF0000", // Terminated
+        };
+        const char *StatusesSign[] = {
+            "U", // Unknown
+            "R", // Ready
+            "r", // Running
+            "S", // Sleeping
+            "W", // Waiting
+            "s", // Stopped
+            "T", // Terminated
+        };
+        for (int i = 0; i < 200; i++)
+            for (int j = 0; j < 200; j++)
+                Display->SetPixel(i, j, 0x222222, 0);
+        uint32_t tmpX, tmpY;
+        Display->GetBufferCursor(0, &tmpX, &tmpY);
+        Display->SetBufferCursor(0, 0, 0);
+        foreach (auto var in ListProcess)
+        {
+            int statuu = var->Status;
+            printf_("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
+                    Statuses[statuu], var->Name, statuu, StatusesSign[statuu]);
+            foreach (auto var2 in var->Threads)
+            {
+                int statui = var2->Status;
+                printf_("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
+                        Statuses[statui], var2->Name, statui, StatusesSign[statui]);
+            }
+        }
+        printf_("%d", sanity++);
+        if (sanity > 1000)
+            sanity = 0;
+        Display->SetBufferCursor(0, tmpX, tmpY);
+        Display->SetBuffer(0);
+#endif
         schedbg("Process \"%s\"(%d) Thread \"%s\"(%d) is now running on CPU %d",
                 CurrentCPU->CurrentProcess->Name, CurrentCPU->CurrentProcess->ID,
                 CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID, CurrentCPU->ID);
@@ -546,8 +591,9 @@ namespace Tasking
 
     TCB *Task::CreateThread(PCB *Parent,
                             IP EntryPoint,
-                            Arg Argument0,
-                            Arg Argument1,
+                            Vector<const char *> &argv,
+                            Vector<const char *> &envp,
+                            Vector<AuxiliaryVector> &auxv,
                             IPOffset Offset,
                             TaskArchitecture Architecture,
                             TaskCompatibility Compatibility)
@@ -570,8 +616,6 @@ namespace Tasking
         strcpy(Thread->Name, Parent->Name);
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
-        Thread->Argument0 = Argument0;
-        Thread->Argument1 = Argument1;
         Thread->ExitCode = 0xdead;
         Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)));
         Thread->Status = TaskStatus::Ready;
@@ -579,8 +623,6 @@ namespace Tasking
 #if defined(__amd64__)
         memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
         Thread->Registers.rip = (EntryPoint + Offset);
-        Thread->Registers.rdi = Argument0;
-        Thread->Registers.rsi = Argument1;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -622,6 +664,80 @@ namespace Tasking
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
+
+            // https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9
+            // What is a "eightbyte"? unsigned long? 1 eightbyte = 8 bytes? 2 eightbyte each = 16 bytes?
+            uint64_t TmpStack = Thread->Registers.rsp;
+            uint64_t TmpStack2 = TmpStack;
+            uint64_t *TmpStackPtr = (uint64_t *)TmpStack;
+
+            // TODO: argc, argv, envp, auxv not tested and probably not working
+            foreach (auto var in envp)
+            {
+                TmpStack -= strlen(var) + 1;
+                strcpy((char *)TmpStack, var);
+            }
+
+            foreach (auto var in argv)
+            {
+                TmpStack -= strlen(var) + 1;
+                strcpy((char *)TmpStack, var);
+            }
+
+            /* align by 16 */
+            TmpStack = (uint64_t)((uint64_t)TmpStack - ((uint64_t)TmpStack & 0x0F));
+
+            /* TODO: more aligment here? */
+
+            /* auxv null */
+            TmpStack -= sizeof(uint64_t);
+            POKE(uint64_t, TmpStack) = (uint64_t)0;
+            /* This should be included too? */
+            TmpStack -= sizeof(uint64_t);
+            POKE(uint64_t, TmpStack) = (uint64_t)0;
+
+            /* auxv */
+            foreach (auto var in auxv)
+            {
+                if (var.archaux.a_type == AT_ENTRY)
+                    Thread->Registers.rdi = var.archaux.a_un.a_val;
+
+                TmpStack -= sizeof(uint64_t) * 2;
+                POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_type;
+                TmpStack -= sizeof(uint64_t) * 2;
+                POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_un.a_val;
+            }
+
+            /* empty */
+            TmpStack -= sizeof(uint64_t);
+            POKE(uint64_t, TmpStack) = 0;
+
+            /* envp pointers */
+            for (uint64_t i = 0; i < envp.size(); i++)
+            {
+                /* Not sure if this works */
+                TmpStack2 -= strlen(envp[i]) + 1;
+                TmpStackPtr[i] = TmpStack2;
+            }
+
+            /* empty */
+            TmpStack -= sizeof(uint64_t);
+            POKE(uint64_t, TmpStack) = 0;
+
+            /* argv pointers */
+            for (uint64_t i = 0; i < argv.size(); i++)
+            {
+                /* Not sure if this works */
+                TmpStack2 -= strlen(argv[i]) + 1;
+                TmpStackPtr[i] = TmpStack2;
+            }
+
+            /* argc */
+            TmpStack -= sizeof(uint64_t);
+            POKE(uint64_t, TmpStack) = argv.size() - 1;
+
+            Thread->Registers.rsp -= (uint64_t)Thread->Stack + STACK_SIZE - TmpStack;
+
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 
             Memory::Virtual uva = Memory::Virtual(Parent->PageTable);
@@ -635,6 +751,9 @@ namespace Tasking
             }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
+#endif
+#ifdef DEBUG_SCHEDULER
+            DumpData(Thread->Name, Thread->Stack, STACK_SIZE);
 #endif
             break;
         }
@@ -786,7 +905,10 @@ namespace Tasking
         TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
-        TCB *kthrd = CreateThread(kproc, EntryPoint, 0, 0, 0, Arch);
+        Vector<const char *> argv;
+        Vector<const char *> envp;
+        Vector<AuxiliaryVector> auxv;
+        TCB *kthrd = CreateThread(kproc, EntryPoint, argv, envp, auxv, 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
@@ -810,7 +932,10 @@ namespace Tasking
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
         for (int i = 0; i < SMP::CPUCores; i++)
         {
-            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop));
+            Vector<const char *> argv;
+            Vector<const char *> envp;
+            Vector<AuxiliaryVector> auxv;
+            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), argv, envp, auxv);
             char IdleName[16];
             sprintf_(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);

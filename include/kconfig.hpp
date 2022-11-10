@@ -10,6 +10,7 @@ struct KernelConfig
     bool SchedulerType;
     char DriverDirectory[256];
     char InitPath[256];
+    bool InterruptsOnCrash;
     int Cores;
 };
 

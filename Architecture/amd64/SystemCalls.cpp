@@ -8,7 +8,7 @@
 using namespace CPU::x64;
 
 // "Core/SystemCalls.cpp"
-extern "C" uint64_t SystemCallsHandler(SyscallsRegs *regs);
+extern "C" uint64_t SystemCallsHandler(SyscallsFrame *regs);
 
 extern "C" void SystemCallHandlerStub();
 

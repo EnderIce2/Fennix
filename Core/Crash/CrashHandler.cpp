@@ -1,4 +1,5 @@
-#include "crashhandler.hpp"
+#include "../crashhandler.hpp"
+#include "chfcts.hpp"
 
 #include <display.hpp>
 #include <printf.h>
@@ -7,87 +8,15 @@
 #include <cpu.hpp>
 
 #if defined(__amd64__)
-#include "../Architecture/amd64/cpu/gdt.hpp"
+#include "../../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
 
-#include "../kernel.h"
-
-#if defined(__amd64__)
-void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame);
-void DebugExceptionHandler(CPU::x64::TrapFrame *Frame);
-void NonMaskableInterruptExceptionHandler(CPU::x64::TrapFrame *Frame);
-void BreakpointExceptionHandler(CPU::x64::TrapFrame *Frame);
-void OverflowExceptionHandler(CPU::x64::TrapFrame *Frame);
-void BoundRangeExceptionHandler(CPU::x64::TrapFrame *Frame);
-void InvalidOpcodeExceptionHandler(CPU::x64::TrapFrame *Frame);
-void DeviceNotAvailableExceptionHandler(CPU::x64::TrapFrame *Frame);
-void DoubleFaultExceptionHandler(CPU::x64::TrapFrame *Frame);
-void CoprocessorSegmentOverrunExceptionHandler(CPU::x64::TrapFrame *Frame);
-void InvalidTSSExceptionHandler(CPU::x64::TrapFrame *Frame);
-void SegmentNotPresentExceptionHandler(CPU::x64::TrapFrame *Frame);
-void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame);
-void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame);
-void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame);
-void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame);
-void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame);
-void MachineCheckExceptionHandler(CPU::x64::TrapFrame *Frame);
-void SIMDFloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame);
-void VirtualizationExceptionHandler(CPU::x64::TrapFrame *Frame);
-void SecurityExceptionHandler(CPU::x64::TrapFrame *Frame);
-void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame);
-void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame);
-#endif
+#include "../../kernel.h"
 
 namespace CrashHandler
 {
-    struct StackFrame
-    {
-        struct StackFrame *rbp;
-        uint64_t rip;
-    };
-
-    __attribute__((no_stack_protector)) void TraceFrames(CPU::x64::TrapFrame *Frame, int Count)
-    {
-        struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
-        debug("Stack tracing...");
-        EHPrint("\e7981FC\nStack Trace:\n");
-        if (!frames || !frames->rip || !frames->rbp)
-        {
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
-            EHPrint("\e7925CC-");
-            EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
-            EHPrint("\e7981FC <- Exception");
-            EHPrint("\eFF0000\n< No stack trace available. >\n");
-        }
-        else
-        {
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
-            EHPrint("\e7925CC-");
-            if (Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end)
-                EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
-            else
-                EHPrint("Outside Kernel");
-            EHPrint("\e7981FC <- Exception");
-            for (int frame = 0; frame < Count; ++frame)
-            {
-                if (!frames->rip)
-                    break;
-                EHPrint("\n\e2565CC%p", (void *)frames->rip);
-                EHPrint("\e7925CC-");
-                if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
-                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress(frames->rip));
-                else
-                    EHPrint("\eFF4CA9Outside Kernel");
-
-                if (!Memory::Virtual().Check(frames->rbp))
-                    return;
-                frames = frames->rbp;
-            }
-        }
-    }
-
     __attribute__((no_stack_protector)) void printfWrapper(char c, void *unused)
     {
         Display->Print(c, 255, true);
@@ -104,26 +33,44 @@ namespace CrashHandler
 
     __attribute__((no_stack_protector)) void Handle(void *Data)
     {
+        CPU::Interrupts(CPU::Disable);
 #if defined(__amd64__)
-        CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
+        CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
         error("Exception: %#llx", Frame->InterruptNumber);
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             debug("Exception in kernel mode");
-            CPU::Interrupts(CPU::Disable);
             Display->CreateBuffer(0, 0, 255);
         }
         else
         {
             debug("Exception in user mode");
-            if (!GetCurrentCPU()->CurrentThread->Security.IsCritical)
+            CPUData *data = GetCurrentCPU();
+            if (!data)
             {
-                UserModeExceptionHandler(Frame);
-                return;
+                EHPrint("\eFF0000Cannot get CPU data! This results in a kernel crash!");
+                error("Cannot get CPU data! This results in a kernel crash!");
+                error("This should never happen!");
             }
             else
-                EHPrint("\eFF0000Init process crashed!");
+            {
+                debug("CPU %ld data is valid", data->ID);
+                if (data->CurrentThread)
+                {
+                    debug("Current thread is valid %#lx", data->CurrentThread);
+                    if (!data->CurrentThread->Security.IsCritical)
+                    {
+                        debug("Current thread is not critical");
+                        UserModeExceptionHandler(Frame);
+                        return;
+                    }
+                    else
+                    {
+                        EHPrint("\eFF0000Init process crashed!");
+                    }
+                }
+            }
         }
 
         debug("Reading control registers...");
@@ -267,8 +214,39 @@ namespace CrashHandler
         }
         }
 
-        EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", GetCurrentCPU()->ID);
-        EHPrint("FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
+        CPUData *cpudata = GetCurrentCPU();
+
+        if (cpudata == nullptr)
+        {
+            EHPrint("\eFFA500Invalid CPU data!\n");
+            for (long i = 0; i < MAX_CPU; i++)
+            {
+                cpudata = GetCPU(i);
+                if (cpudata != nullptr)
+                    break;
+                if (i == MAX_CPU - 1)
+                {
+                    EHPrint("\eFF0000No CPU data found!\n");
+                    cpudata = nullptr;
+                }
+            }
+            debug("CPU ptr %#lx", cpudata);
+        }
+
+        if (cpudata != nullptr)
+            EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", cpudata->ID);
+
+        if (TaskManager && cpudata != nullptr)
+        {
+            EHPrint("\e7981FCCurrent Process: %s(%ld)\n",
+                    cpudata->CurrentProcess->Name,
+                    cpudata->CurrentProcess->ID);
+            EHPrint("\e7981FCCurrent Thread: %s(%ld)\n",
+                    cpudata->CurrentThread->Name,
+                    cpudata->CurrentThread->ID);
+        }
+
+        EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                 Frame->ss, Frame->cs, Frame->ds);
         EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
@@ -358,7 +336,7 @@ namespace CrashHandler
 }
 
 #if defined(__amd64__) || defined(__i386__)
-static const char *PagefaultDescriptions[] = {
+static const char *PagefaultDescriptions[8] = {
     "Supervisory process tried to read a non-present page entry\n",
     "Supervisory process tried to read a page and caused a protection fault\n",
     "Supervisory process tried to write to a non-present page entry\n",
@@ -370,70 +348,41 @@ static const char *PagefaultDescriptions[] = {
 #endif
 
 #if defined(__amd64__)
-#define staticbuffer(name) char name[] = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
-
-__attribute__((no_stack_protector)) void DivideByZeroExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Divide by zero exception\n");
 }
-__attribute__((no_stack_protector)) void DebugExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DebugExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel triggered debug exception.\n");
 }
-__attribute__((no_stack_protector)) void NonMaskableInterruptExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("NMI exception"); }
-__attribute__((no_stack_protector)) void BreakpointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Breakpoint exception"); }
-__attribute__((no_stack_protector)) void OverflowExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Overflow exception"); }
-__attribute__((no_stack_protector)) void BoundRangeExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Bound range exception"); }
-__attribute__((no_stack_protector)) void InvalidOpcodeExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame) { fixme("NMI exception"); }
+__attribute__((no_stack_protector)) void BreakpointExceptionHandler(CHArchTrapFrame *Frame) { fixme("Breakpoint exception"); }
+__attribute__((no_stack_protector)) void OverflowExceptionHandler(CHArchTrapFrame *Frame) { fixme("Overflow exception"); }
+__attribute__((no_stack_protector)) void BoundRangeExceptionHandler(CHArchTrapFrame *Frame) { fixme("Bound range exception"); }
+__attribute__((no_stack_protector)) void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
 }
-__attribute__((no_stack_protector)) void DeviceNotAvailableExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Device not available exception"); }
-__attribute__((no_stack_protector)) void DoubleFaultExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Double fault exception"); }
-__attribute__((no_stack_protector)) void CoprocessorSegmentOverrunExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
-__attribute__((no_stack_protector)) void InvalidTSSExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Invalid TSS exception"); }
-__attribute__((no_stack_protector)) void SegmentNotPresentExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Segment not present exception"); }
-__attribute__((no_stack_protector)) void StackFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame) { fixme("Device not available exception"); }
+__attribute__((no_stack_protector)) void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame) { fixme("Double fault exception"); }
+__attribute__((no_stack_protector)) void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
+__attribute__((no_stack_protector)) void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame) { fixme("Invalid TSS exception"); }
+__attribute__((no_stack_protector)) void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame) { fixme("Segment not present exception"); }
+__attribute__((no_stack_protector)) void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
-    staticbuffer(descbuf);
-    staticbuffer(desc_ext);
-    staticbuffer(desc_table);
-    staticbuffer(desc_idx);
-    staticbuffer(desc_tmp);
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
-    switch (SelCode.Table)
-    {
-    case 0b00:
-        memcpy(desc_tmp, "GDT", 3);
-        break;
-    case 0b01:
-        memcpy(desc_tmp, "IDT", 3);
-        break;
-    case 0b10:
-        memcpy(desc_tmp, "LDT", 3);
-        break;
-    case 0b11:
-        memcpy(desc_tmp, "IDT", 3);
-        break;
-    default:
-        memcpy(desc_tmp, "Unknown", 7);
-        break;
-    }
-    debug("external:%d table:%d idx:%#x", SelCode.External, SelCode.Table, SelCode.Idx);
-    sprintf_(descbuf, "Stack segment fault at address %#lx", Frame->rip);
-    CrashHandler::EHPrint(descbuf);
-    sprintf_(desc_ext, "External: %d", SelCode.External);
-    CrashHandler::EHPrint(desc_ext);
-    sprintf_(desc_table, "Table: %d (%s)", SelCode.Table, desc_tmp);
-    CrashHandler::EHPrint(desc_table);
-    sprintf_(desc_idx, "%s Index: %#x", desc_tmp, SelCode.Idx);
-    CrashHandler::EHPrint(desc_idx);
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("More info about the exception:\n");
+    CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->rip);
+    CrashHandler::EHPrint("External: %d\n", SelCode.External);
+    CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
+    CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
+    CrashHandler::EHPrint("Error code: %#lx\n", Frame->ErrorCode);
 }
-__attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
 {
     // staticbuffer(descbuf);
     // staticbuffer(desc_ext);
@@ -466,7 +415,7 @@ __attribute__((no_stack_protector)) void GeneralProtectionExceptionHandler(CPU::
     CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
 }
-__attribute__((no_stack_protector)) void PageFaultExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
@@ -484,15 +433,15 @@ __attribute__((no_stack_protector)) void PageFaultExceptionHandler(CPU::x64::Tra
     else
         CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
 }
-__attribute__((no_stack_protector)) void x87FloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("x87 floating point exception"); }
-__attribute__((no_stack_protector)) void AlignmentCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Alignment check exception"); }
-__attribute__((no_stack_protector)) void MachineCheckExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Machine check exception"); }
-__attribute__((no_stack_protector)) void SIMDFloatingPointExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("SIMD floating point exception"); }
-__attribute__((no_stack_protector)) void VirtualizationExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Virtualization exception"); }
-__attribute__((no_stack_protector)) void SecurityExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Security exception"); }
-__attribute__((no_stack_protector)) void UnknownExceptionHandler(CPU::x64::TrapFrame *Frame) { fixme("Unknown exception"); }
+__attribute__((no_stack_protector)) void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("x87 floating point exception"); }
+__attribute__((no_stack_protector)) void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Alignment check exception"); }
+__attribute__((no_stack_protector)) void MachineCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Machine check exception"); }
+__attribute__((no_stack_protector)) void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("SIMD floating point exception"); }
+__attribute__((no_stack_protector)) void VirtualizationExceptionHandler(CHArchTrapFrame *Frame) { fixme("Virtualization exception"); }
+__attribute__((no_stack_protector)) void SecurityExceptionHandler(CHArchTrapFrame *Frame) { fixme("Security exception"); }
+__attribute__((no_stack_protector)) void UnknownExceptionHandler(CHArchTrapFrame *Frame) { fixme("Unknown exception"); }
 
-__attribute__((no_stack_protector)) void UserModeExceptionHandler(CPU::x64::TrapFrame *Frame)
+__attribute__((no_stack_protector)) void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 {
     CriticalSection cs;
     debug("Interrupts? %s.", cs.IsInterruptsEnabled() ? "Yes" : "No");
@@ -660,5 +609,9 @@ __attribute__((no_stack_protector)) void UserModeExceptionHandler(CPU::x64::Trap
         break;
     }
     }
+    error("End of report.");
+    CPU::Interrupts(CPU::Enable);
+    debug("Interrupts enabled back.");
+    return;
 }
 #endif

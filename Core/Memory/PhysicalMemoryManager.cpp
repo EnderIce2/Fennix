@@ -265,9 +265,11 @@ namespace Memory
 
         trace("Reserving pages...");
         this->ReservePages(0, MemorySize / PAGE_SIZE + 1);
+        trace("Unreserving usable pages...");
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
             if (Info->Memory.Entry[i].Type == Usable)
                 this->UnreservePages((void *)Info->Memory.Entry[i].BaseAddress, Info->Memory.Entry[i].Length / PAGE_SIZE + 1);
+        trace("Locking bitmap pages...");
         this->ReservePages(0, 0x100); // Reserve between 0 and 0x100000.
         this->LockPages(PageBitmap.Buffer, PageBitmap.Size / PAGE_SIZE + 1);
     }

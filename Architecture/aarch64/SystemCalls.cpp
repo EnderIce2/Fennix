@@ -7,7 +7,7 @@ extern "C" __attribute__((naked, used, no_stack_protector)) void SystemCallHandl
 
 }
 
-extern "C" uint64_t SystemCallsHandler(SyscallsRegs *regs);
+extern "C" uint64_t SystemCallsHandler(SyscallsFrame *regs);
 
 void InitializeSystemCalls()
 {

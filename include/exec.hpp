@@ -40,7 +40,7 @@ namespace Execute
     };
 
     BinaryType GetBinaryType(char *Path);
-    SpawnData Spawn(char *Path, uint64_t Arg0, uint64_t Arg1);
+    SpawnData Spawn(char *Path, Vector<const char *> &argv, Vector<const char *> &envp);
 
     void *ELFLoadRel(Elf64_Ehdr *Header);
 }

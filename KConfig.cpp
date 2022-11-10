@@ -49,6 +49,12 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "PATH",
      .description = "Path to init program"},
 
+    {.identifier = 'o',
+     .access_letters = NULL,
+     .access_name = "ioc",
+     .value_name = "BOOL",
+     .description = "Enable Interrupts On Crash. If enabled, the navigation keys will be enabled on crash."},
+
     {.identifier = 'h',
      .access_letters = "h",
      .access_name = "help",
@@ -333,6 +339,13 @@ ParseSuccess:
             value = cag_option_get_value(&context);
             strcpy(config.InitPath, value);
             KPrint("\eAAFFAAUsing %s as init program", value);
+            break;
+        }
+        case 'o':
+        {
+            value = cag_option_get_value(&context);
+            strcmp(value, "true") ? config.InterruptsOnCrash = false : config.InterruptsOnCrash = true;
+            KPrint("\eAAFFAAInterrupts on crash: %s", value);
             break;
         }
         case 'h':

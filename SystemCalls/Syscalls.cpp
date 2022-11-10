@@ -2,14 +2,33 @@
 
 #include <debug.h>
 
-extern "C" uint64_t SystemCallsHandler(SyscallsRegs *regs)
+#include "../kernel.h"
+
+extern "C" uint64_t SystemCallsHandler(SyscallsFrame *Frame)
 {
 #if defined(__amd64__)
-    fixme("System call %ld", regs->rax);
+    switch (TaskManager->GetCurrentThread()->Info.Compatibility)
+    {
+    case Tasking::TaskCompatibility::Native:
+        return HandleNativeSyscalls(Frame);
+    case Tasking::TaskCompatibility::Linux:
+        return HandleLinuxSyscalls(Frame);
+    case Tasking::TaskCompatibility::Windows:
+    {
+        error("Windows compatibility not implemented yet.");
+        break;
+    }
+    default:
+    {
+        error("Unknown compatibility mode! Killing thread...");
+        TaskManager->KillThread(TaskManager->GetCurrentThread(), -0xCA11);
+        break;
+    }
+    }
 #elif defined(__i386__)
     fixme("System call %lld", regs->eax);
 #elif defined(__aarch64__)
     fixme("System call");
 #endif
-    return 0;
+    return -1;
 }

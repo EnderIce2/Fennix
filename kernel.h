@@ -35,6 +35,7 @@ extern Disk::Manager *DiskManager;
 
 #endif
 
+EXTERNC void putchar(char c);
 EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
 

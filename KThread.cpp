@@ -47,49 +47,66 @@ void FetchDisks()
 
 void KernelMainThread()
 {
+    Vector<const char *> argv;
+    Vector<const char *> envp;
+    Vector<AuxiliaryVector> auxv;
+
     Tasking::TCB *CurrentWorker = nullptr;
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
     KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
     TaskManager->GetCurrentThread()->SetPriority(1);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem, argv, envp, auxv);
     CurrentWorker->Rename("Disk");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)LoadDrivers);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)LoadDrivers, argv, envp, auxv);
     CurrentWorker->Rename("Drivers");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks, argv, envp, auxv);
     CurrentWorker->Rename("Fetch Disks");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
-    KPrint("Waiting for userspace process to start...");
+    KPrint("Setting up userspace...");
 
-    Vector<char *> argv;
-    int argc = 0;
+    envp.clear();
+    envp.push_back("PATH=/system:/system/bin");
+    envp.push_back("TERM=tty");
+    envp.push_back("HOME=/");
+    envp.push_back("USER=root");
+    envp.push_back("SHELL=/system/bin/sh");
+    envp.push_back("PWD=/");
+    envp.push_back("LANG=en_US.UTF-8");
+    envp.push_back("TZ=UTC");
 
-    /* ... */
-    argv.push_back((char *)"--start");
-    /* ... */
-
-    argv.push_back(nullptr);
-    argc = argv.size() - 1;
+    argv.clear();
+    argv.push_back("--init");
+    argv.push_back("--critical");
 
     // TODO: Untested!
-    Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argc, (uint64_t)argv.data());
+    bool ien = CPU::Interrupts(CPU::Check);
+    CPU::Interrupts(CPU::Disable);
+    Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argv, envp);
     if (ret.Status != Execute::ExStatus::OK)
     {
         KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret.Status);
-        CPU::Halt(true);
+        if (ien)
+            CPU::Interrupts(CPU::Enable);
+        goto Exit;
     }
     ret.Thread->SetCritical(true);
+    if (ien)
+        CPU::Interrupts(CPU::Enable);
+    KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());
+Exit:
+    KPrint("Well, that's it. I'm going to sleep now.");
     CPU::Halt(true);
 }
 

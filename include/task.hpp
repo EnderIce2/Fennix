@@ -9,11 +9,11 @@
 #include <hashmap.hpp>
 #include <ipc.hpp>
 #include <debug.h>
+#include <abi.h>
 
 namespace Tasking
 {
     typedef unsigned long IP;
-    typedef unsigned long Arg;
     typedef unsigned long IPOffset;
     typedef unsigned long UPID;
     typedef unsigned long UTID;
@@ -84,8 +84,6 @@ namespace Tasking
         struct PCB *Parent;
         IP EntryPoint;
         IPOffset Offset;
-        Arg Argument0;
-        Arg Argument1;
         int ExitCode;
         void *Stack;
         TaskStatus Status;
@@ -217,6 +215,17 @@ namespace Tasking
     public:
         void Schedule();
         long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
+        void KillThread(TCB *tcb, int Code)
+        {
+            tcb->Status = TaskStatus::Terminated;
+            tcb->ExitCode = Code;
+        }
+
+        void KillProcess(PCB *pcb, int Code)
+        {
+            pcb->Status = TaskStatus::Terminated;
+            pcb->ExitCode = Code;
+        }
 
         /**
          * @brief Get the Current Process object
@@ -242,8 +251,9 @@ namespace Tasking
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,
-                          Arg Argument0 = 0,
-                          Arg Argument1 = 0,
+                          Vector<const char *> &argv,
+                          Vector<const char *> &envp,
+                          Vector<AuxiliaryVector> &auxv,
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,
                           TaskCompatibility Compatibility = TaskCompatibility::Native);

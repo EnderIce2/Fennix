@@ -26,7 +26,7 @@ KernelConfig Config;
 Time::Clock BootClock;
 
 // For the Display class. Printing on first buffer as default.
-extern "C" void putchar(char c) { Display->Print(c, 0); }
+EXTERNC void putchar(char c) { Display->Print(c, 0); }
 
 EXTERNC void KPrint(const char *Format, ...)
 {

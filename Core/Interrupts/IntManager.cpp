@@ -52,7 +52,7 @@ namespace Interrupts
         CoreData->Stack = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
         if (CoreData->Checksum != CPU_DATA_CHECKSUM)
         {
-            KPrint("CPU %d data it's corrupted!", Core);
+            KPrint("CPU %d checksum mismatch! %x != %x", Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
             CPU::Stop();
         }
         debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);

@@ -2,15 +2,12 @@
 
 #include <interrupts.hpp>
 #include <memory.hpp>
+#include <assert.h>
 #include <cpu.hpp>
 
 #include "../../../kernel.h"
-#if defined(__amd64__)
-#include "../Architecture/amd64/acpi.hpp"
-#include "../Architecture/amd64/cpu/apic.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
+#include "../acpi.hpp"
+#include "apic.hpp"
 
 extern "C" uint64_t _trampoline_start, _trampoline_end;
 
@@ -31,7 +28,24 @@ volatile bool CPUEnabled = false;
 static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
 
 CPUData *GetCPU(long id) { return &CPUs[id]; }
-CPUData *GetCurrentCPU() { return (CPUData *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE); }
+CPUData *GetCurrentCPU()
+{
+    CPUData *data = (CPUData *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
+
+    if (data == nullptr && Interrupts::apic[0])
+            data = &CPUs[((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24];
+
+    if (data == nullptr)
+        return nullptr; // The caller should handle this.
+
+    if (!data->IsActive)
+    {
+        error("CPU %d is not active!", data->ID);
+        return &CPUs[0];
+    }
+    assert(data->Checksum == CPU_DATA_CHECKSUM); // This should never happen.
+    return data;
+}
 
 extern "C" void StartCPU()
 {

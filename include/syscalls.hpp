@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-typedef struct SyscallsRegs
+typedef struct SyscallsFrame
 {
 #if defined(__amd64__)
     uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
@@ -15,7 +15,10 @@ typedef struct SyscallsRegs
     uint64_t InterruptNumber, ErrorCode, eip, cs, eflags, esp, ss;
 #elif defined(__aarch64__)
 #endif
-} SyscallsRegs;
+} SyscallsFrame;
+
+uint64_t HandleNativeSyscalls(SyscallsFrame *Frame);
+uint64_t HandleLinuxSyscalls(SyscallsFrame *Frame);
 
 /**
  * @brief Initialize syscalls for the current CPU. (Function is available on x32, x64 & aarch64)

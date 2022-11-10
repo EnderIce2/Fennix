@@ -11,7 +11,7 @@ extern "C" void DeadLockHandler(LockClass *Lock)
 {
     CPUData *CoreData = GetCurrentCPU();
     long CCore = 0xdead;
-    if (CoreData)
+    if (CoreData != nullptr)
         CCore = CoreData->ID;
     warn("Potential deadlock in lock '%s' held by '%s' (%ld) [%#lx-%ld] [%ld->%ld]",
          Lock->GetLockData()->AttemptingToGet,
@@ -35,7 +35,7 @@ int LockClass::Lock(const char *FunctionName)
     LockData.CurrentHolder = FunctionName;
     LockData.Count++;
     CPUData *CoreData = GetCurrentCPU();
-    if (CoreData)
+    if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
     CPU::MemBar::Barrier();
 

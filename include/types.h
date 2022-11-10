@@ -200,4 +200,45 @@ typedef __SIZE_TYPE__ size_t;
 #define WINT_MAX __WINT_MAX__
 #define WINT_MIN __WINT_MIN__
 
+#define b4(x) ((x & 0x0F) << 4 | (x & 0xF0) >> 4)
+#define b8(x) ((x)&0xFF)
+#define b16(x) __builtin_bswap16(x)
+#define b32(x) __builtin_bswap32(x)
+#define b48(x) (((((x)&0x0000000000ff) << 40) | (((x)&0x00000000ff00) << 24) | (((x)&0x000000ff0000) << 8) | (((x)&0x0000ff000000) >> 8) | (((x)&0x00ff00000000) >> 24) | (((x)&0xff0000000000) >> 40)))
+#define b64(x) __builtin_bswap64(x)
+
+
+#define O0 __attribute__((optimize("O0")))
+#define O1 __attribute__((optimize("O1")))
+#define O2 __attribute__((optimize("O2")))
+#define O3 __attribute__((optimize("O3")))
+#define Os __attribute__((optimize("Os")))
+#define Ofast __attribute__((optimize("Ofast")))
+
+/** @brief dbg */
+#define OPTMZ O0
+
+#define __unused __attribute__((unused))
+#define __packed __attribute__((packed))
+#define __aligned(x) __attribute__((aligned(x)))
+#define __section(x) __attribute__((section(x)))
+#define __noreturn __attribute__((noreturn))
+#define __weak __attribute__((weak))
+#define __alias(x) __attribute__((alias(x)))
+#define __always_inline __attribute__((always_inline))
+#define __noinline __attribute__((noinline))
+#define __pure __attribute__((pure))
+#define __const __attribute__((const))
+#define __malloc __attribute__((malloc))
+#define __returns_twice __attribute__((returns_twice))
+#define __used __attribute__((used))
+#define __deprecated __attribute__((deprecated))
+#define __deprecated_msg(x) __attribute__((deprecated(x)))
+#define __weakref(x) __attribute__((weakref(x)))
+#define __weakrefalias(x) __attribute__((weakref(#x)))
+#define __visibility(x) __attribute__((visibility(x)))
+#define __constructor __attribute__((constructor))
+#define __destructor __attribute__((destructor))
+#define __cleanup(x) __attribute__((cleanup(x)))
+
 #endif // !__FENNIX_KERNEL_TYPES_H__

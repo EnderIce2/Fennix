@@ -19,7 +19,8 @@
 			"assert.h": "c",
 			"cwalk.h": "c",
 			"md5.h": "c",
-			"stdint.h": "c"
+			"stdint.h": "c",
+			"debug.h": "c"
 		}
 	}
 }

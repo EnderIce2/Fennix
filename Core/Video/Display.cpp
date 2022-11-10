@@ -13,7 +13,7 @@ namespace Video
 {
     char Display::Print(char Char, int Index, bool WriteToUART)
     {
-        SmartLock(PrintLock);
+        // SmartLock(PrintLock);
 
         if (this->ColorIteration)
         {
