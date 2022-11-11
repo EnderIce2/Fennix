@@ -70,6 +70,7 @@ KernelConfig ParseConfig(char *Config)
                                   0,
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
+                                  false,
                                   0};
 
     if (Config == NULL)
