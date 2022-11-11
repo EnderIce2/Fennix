@@ -63,7 +63,6 @@ Loop:
 	hlt
     jmp Loop
 
-
 section .bss
 align 16
 KernelStack : 
