@@ -44,36 +44,44 @@ namespace Driver
     void *RequestPage(unsigned long Size)
     {
         SmartLock(DriverDisplayPrintLock);
-        return KernelAllocator.RequestPages(Size);
+        debug("Requesting %ld pages from the kernel...", Size);
+        void *ret = KernelAllocator.RequestPages(Size);
+        debug("Got %p", ret);
+        return ret;
     }
 
     void FreePage(void *Page, unsigned long Size)
     {
         SmartLock(DriverDisplayPrintLock);
+        debug("Freeing %ld pages from the address %#lx...", Size, (unsigned long)Page);
         KernelAllocator.FreePages(Page, Size);
     }
 
     void MapMemory(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags)
     {
         SmartLock(DriverDisplayPrintLock);
+        debug("Mapping %#lx to %#lx with flags %#lx...", (unsigned long)VirtualAddress, (unsigned long)PhysicalAddress, Flags);
         Memory::Virtual().Map(VirtualAddress, PhysicalAddress, Flags);
     }
 
     void UnmapMemory(void *VirtualAddress)
     {
         SmartLock(DriverDisplayPrintLock);
+        debug("Unmapping %#lx...", (unsigned long)VirtualAddress);
         Memory::Virtual().Unmap(VirtualAddress);
     }
 
     void *Drivermemcpy(void *Destination, void *Source, unsigned long Size)
     {
         SmartLock(DriverDisplayPrintLock);
+        debug("Copying %ld bytes from %#lx to %#lx...", Size, (unsigned long)Source, (unsigned long)Destination);
         return memcpy(Destination, Source, Size);
     }
 
     void *Drivermemset(void *Destination, int Value, unsigned long Size)
     {
         SmartLock(DriverDisplayPrintLock);
+        debug("Setting %ld bytes from %#lx to %#x...", Size, (unsigned long)Destination, Value);
         return memset(Destination, Value, Size);
     }
 
