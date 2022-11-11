@@ -52,7 +52,7 @@ typedef struct
 
 namespace SymbolResolver
 {
-    Symbols::SymbolTable *SymTable = nullptr;
+    Symbols::SymbolTable SymTable[0x10000];
     uint64_t TotalEntries = 0;
 
     Symbols::Symbols(uint64_t Address)
@@ -113,11 +113,6 @@ namespace SymbolResolver
             }
 
             trace("Symbol table loaded, %d entries (%ldKB)", TotalEntries, TO_KB(TotalEntries * sizeof(SymbolTable)));
-            // TODO: broken?
-            // SymTable = new SymbolTable[TotalEntries];
-            SymTable = (SymbolTable *)KernelAllocator.RequestPages((TotalEntries * sizeof(SymbolTable)) / PAGE_SIZE + 1);
-            // do_mem_test();
-
             for (size_t i = 0, g = TotalEntries; i < g; i++)
             {
                 SymTable[i].Address = ElfSymbols[i].st_value;
@@ -126,11 +121,7 @@ namespace SymbolResolver
         }
     }
 
-    Symbols::~Symbols()
-    {
-        // delete SymTable;
-        KernelAllocator.FreePages(SymTable, (TotalEntries * sizeof(SymbolTable)) / PAGE_SIZE + 1);
-    }
+    Symbols::~Symbols() {}
 
     const char *Symbols::GetSymbolFromAddress(uint64_t Address)
     {
