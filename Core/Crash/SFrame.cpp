@@ -23,7 +23,7 @@ namespace CrashHandler
         uint64_t rip;
     };
 
-    __attribute__((no_stack_protector)) void TraceFrames(CHArchTrapFrame *Frame, int Count)
+    __no_stack_protector void TraceFrames(CHArchTrapFrame *Frame, int Count)
     {
         struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
         debug("Stack tracing...");

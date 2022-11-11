@@ -143,7 +143,7 @@ namespace CPU
     /**
      * @brief Pause the CPU
      */
-    __attribute__((no_stack_protector)) static inline void Pause(bool Loop = false)
+    __no_stack_protector static inline void Pause(bool Loop = false)
     {
         do
         {
@@ -158,7 +158,7 @@ namespace CPU
     /**
      * @brief Stop the CPU (infinite loop)
      */
-    __attribute__((no_stack_protector)) static inline void Stop()
+    __no_stack_protector static inline void Stop()
     {
         while (1)
         {
@@ -177,7 +177,7 @@ namespace CPU
     /**
      * @brief Halt the CPU
      */
-    __attribute__((no_stack_protector)) static inline void Halt(bool Loop = false)
+    __no_stack_protector static inline void Halt(bool Loop = false)
     {
         do
         {
@@ -213,7 +213,7 @@ namespace CPU
 
     namespace MemBar
     {
-        __attribute__((no_stack_protector)) static inline void Barrier()
+        __no_stack_protector static inline void Barrier()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("" ::
@@ -224,7 +224,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void Fence()
+        __no_stack_protector static inline void Fence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("mfence" ::
@@ -235,7 +235,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void StoreFence()
+        __no_stack_protector static inline void StoreFence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("sfence" ::
@@ -246,7 +246,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void LoadFence()
+        __no_stack_protector static inline void LoadFence()
         {
 #if defined(__amd64__) || defined(__i386__)
             asmv("lfence" ::
@@ -1390,7 +1390,7 @@ namespace CPU
             uint64_t raw;
         } SelectorErrorCode;
 
-        __attribute__((no_stack_protector)) static inline void lgdt(void *gdt)
+        __no_stack_protector static inline void lgdt(void *gdt)
         {
 #if defined(__amd64__)
             asmv("lgdt (%0)"
@@ -1399,7 +1399,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void lidt(void *idt)
+        __no_stack_protector static inline void lidt(void *idt)
         {
 #if defined(__amd64__)
             asmv("lidt (%0)"
@@ -1408,7 +1408,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void ltr(uint16_t Segment)
+        __no_stack_protector static inline void ltr(uint16_t Segment)
         {
 #if defined(__amd64__)
             asmv("ltr %0"
@@ -1417,7 +1417,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void invlpg(void *Address)
+        __no_stack_protector static inline void invlpg(void *Address)
         {
 #if defined(__amd64__)
             asmv("invlpg (%0)"
@@ -1436,7 +1436,7 @@ namespace CPU
          * @param ecx ECX
          * @param edx EDX
          */
-        __attribute__((no_stack_protector)) static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+        __no_stack_protector static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
 #if defined(__amd64__)
             asmv("cpuid"
@@ -1452,14 +1452,14 @@ namespace CPU
          *
          * @return uint32_t
          */
-        __attribute__((no_stack_protector)) static inline uint32_t GetHighestLeaf()
+        __no_stack_protector static inline uint32_t GetHighestLeaf()
         {
             uint32_t eax, ebx, ecx, edx;
             cpuid(0x0, &eax, &ebx, &ecx, &edx);
             return eax;
         }
 
-        __attribute__((no_stack_protector)) static inline uint64_t rdmsr(uint32_t msr)
+        __no_stack_protector static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;
 #if defined(__amd64__)
@@ -1471,7 +1471,7 @@ namespace CPU
             return ((uint64_t)Low) | (((uint64_t)High) << 32);
         }
 
-        __attribute__((no_stack_protector)) static inline void wrmsr(uint32_t msr, uint64_t Value)
+        __no_stack_protector static inline void wrmsr(uint32_t msr, uint64_t Value)
         {
             uint32_t Low = Value, High = Value >> 32;
 #if defined(__amd64__)
@@ -1482,7 +1482,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline CR0 readcr0()
+        __no_stack_protector static inline CR0 readcr0()
         {
             uint64_t Result;
 #if defined(__amd64__)
@@ -1492,7 +1492,7 @@ namespace CPU
             return (CR0){.raw = Result};
         }
 
-        __attribute__((no_stack_protector)) static inline CR2 readcr2()
+        __no_stack_protector static inline CR2 readcr2()
         {
             uint64_t Result;
 #if defined(__amd64__)
@@ -1502,7 +1502,7 @@ namespace CPU
             return (CR2){.raw = Result};
         }
 
-        __attribute__((no_stack_protector)) static inline CR3 readcr3()
+        __no_stack_protector static inline CR3 readcr3()
         {
             uint64_t Result;
 #if defined(__amd64__)
@@ -1512,7 +1512,7 @@ namespace CPU
             return (CR3){.raw = Result};
         }
 
-        __attribute__((no_stack_protector)) static inline CR4 readcr4()
+        __no_stack_protector static inline CR4 readcr4()
         {
             uint64_t Result;
 #if defined(__amd64__)
@@ -1522,7 +1522,7 @@ namespace CPU
             return (CR4){.raw = Result};
         }
 
-        __attribute__((no_stack_protector)) static inline CR8 readcr8()
+        __no_stack_protector static inline CR8 readcr8()
         {
             uint64_t Result;
 #if defined(__amd64__)
@@ -1532,7 +1532,7 @@ namespace CPU
             return (CR8){.raw = Result};
         }
 
-        __attribute__((no_stack_protector)) static inline void writecr0(CR0 ControlRegister)
+        __no_stack_protector static inline void writecr0(CR0 ControlRegister)
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr0"
@@ -1542,7 +1542,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void writecr2(CR2 ControlRegister)
+        __no_stack_protector static inline void writecr2(CR2 ControlRegister)
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr2"
@@ -1552,7 +1552,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void writecr3(CR3 ControlRegister)
+        __no_stack_protector static inline void writecr3(CR3 ControlRegister)
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr3"
@@ -1562,7 +1562,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void writecr4(CR4 ControlRegister)
+        __no_stack_protector static inline void writecr4(CR4 ControlRegister)
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr4"
@@ -1572,7 +1572,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void writecr8(CR8 ControlRegister)
+        __no_stack_protector static inline void writecr8(CR8 ControlRegister)
         {
 #if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr8"
@@ -1582,7 +1582,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void fxsave(char *FXSaveArea)
+        __no_stack_protector static inline void fxsave(char *FXSaveArea)
         {
 #if defined(__amd64__)
             if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
@@ -1596,7 +1596,7 @@ namespace CPU
 #endif
         }
 
-        __attribute__((no_stack_protector)) static inline void fxrstor(char *FXRstorArea)
+        __no_stack_protector static inline void fxrstor(char *FXRstorArea)
         {
 #if defined(__amd64__)
             if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)

@@ -240,5 +240,17 @@ typedef __SIZE_TYPE__ size_t;
 #define __constructor __attribute__((constructor))
 #define __destructor __attribute__((destructor))
 #define __cleanup(x) __attribute__((cleanup(x)))
+#define __fallthrough __attribute__((fallthrough))
+#define __nonnull(x) __attribute__((nonnull x))
+#define __nonnull_all __attribute__((nonnull))
+#define __returns_nonnull __attribute__((returns_nonnull))
+#define __sentinel __attribute__((sentinel))
+#define __sentinel_all __attribute__((sentinel(0)))
+#define __format(x, y, z) __attribute__((format(x, y, z)))
+#define __format_arg(x) __attribute__((format_arg(x)))
+#define __nonnull_params(x) __attribute__((nonnull x))
+#define __nonnull_all __attribute__((nonnull))
+#define __warn_unused_result __attribute__((warn_unused_result))
+#define __no_stack_protector __attribute__((no_stack_protector))
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

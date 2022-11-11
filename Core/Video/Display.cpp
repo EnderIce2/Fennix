@@ -53,8 +53,32 @@ namespace Video
         }
         case '\b':
         {
+            switch (this->CurrentFont->GetInfo().Type)
+            {
+            case FontType::PCScreenFont1:
+            {
+                fixme("PCScreenFont1");
+                break;
+            }
+            case FontType::PCScreenFont2:
+            {
+                uint32_t fonthdrWidth = this->CurrentFont->GetInfo().PSF2Font->Header->width;
+                uint32_t fonthdrHeight = this->CurrentFont->GetInfo().PSF2Font->Header->height;
+
+                for (unsigned long Y = this->Buffers[Index]->CursorY; Y < this->Buffers[Index]->CursorY + fonthdrHeight; Y++)
+                    for (unsigned long X = this->Buffers[Index]->CursorX - fonthdrWidth; X < this->Buffers[Index]->CursorX; X++)
+                        *(uint32_t *)((uint64_t)this->Buffers[Index]->Buffer +
+                                      (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = 0;
+                break;
+            }
+            default:
+                warn("Unsupported font type");
+                break;
+            }
+
             if (this->Buffers[Index]->CursorX > 0)
                 this->Buffers[Index]->CursorX -= this->GetCurrentFont()->GetInfo().Width;
+
             return Char;
         }
         case '\t':

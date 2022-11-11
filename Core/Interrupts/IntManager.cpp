@@ -19,7 +19,7 @@
 #include "../crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" __attribute__((no_stack_protector)) void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
+extern "C" __no_stack_protector void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
 
 namespace Interrupts
 {
@@ -118,7 +118,7 @@ namespace Interrupts
         if (apic[Core])
         {
             ((APIC::APIC *)Interrupts::apic[Core])->EOI();
-            // apic->IPI(CurrentCPU->ID, SchedulerInterrupt); ??????
+            // TODO: Handle PIC too
             return;
         }
         // TODO: PIC
@@ -127,6 +127,7 @@ namespace Interrupts
 #elif defined(__aarch64__)
         void *Frame = Data;
 #endif
+        error("HALT HALT HALT HALT HALT HALT HALT HALT HALT");
         CPU::Stop();
     }
 

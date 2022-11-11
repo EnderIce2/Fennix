@@ -172,7 +172,7 @@ namespace Tasking
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
 
-        __attribute__((no_stack_protector)) bool InvalidPCB(PCB *pcb)
+        __no_stack_protector bool InvalidPCB(PCB *pcb)
         {
             if (pcb >= (PCB *)0xfffffffffffff000)
                 return true;
@@ -181,7 +181,7 @@ namespace Tasking
             return false;
         }
 
-        __attribute__((no_stack_protector)) bool InvalidTCB(TCB *tcb)
+        __no_stack_protector bool InvalidTCB(TCB *tcb)
         {
             if (tcb >= (TCB *)0xfffffffffffff000)
                 return true;
@@ -211,8 +211,11 @@ namespace Tasking
         void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #endif
+        bool StopSheduler = false;
 
     public:
+        Vector<PCB *> GetProcessList() { return ListProcess; }
+        void Panic() { StopSheduler = true; }
         void Schedule();
         long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
         void KillThread(TCB *tcb, int Code)

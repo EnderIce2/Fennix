@@ -27,7 +27,7 @@ NewLock(SchedulerLock);
 
 namespace Tasking
 {
-    extern "C" __attribute__((no_stack_protector)) void OneShot(int TimeSlice)
+    extern "C" __no_stack_protector void OneShot(int TimeSlice)
     {
         if (TimeSlice == 0)
             TimeSlice = 10;
@@ -53,7 +53,7 @@ namespace Tasking
 #endif
     }
 
-    __attribute__((no_stack_protector)) void Task::RemoveThread(TCB *Thread)
+    __no_stack_protector void Task::RemoveThread(TCB *Thread)
     {
         for (uint64_t i = 0; i < Thread->Parent->Threads.size(); i++)
             if (Thread->Parent->Threads[i] == Thread)
@@ -70,7 +70,7 @@ namespace Tasking
             }
     }
 
-    __attribute__((no_stack_protector)) void Task::RemoveProcess(PCB *Process)
+    __no_stack_protector void Task::RemoveProcess(PCB *Process)
     {
         if (Process == nullptr)
             return;
@@ -107,7 +107,7 @@ namespace Tasking
         }
     }
 
-    __attribute__((no_stack_protector)) void Task::UpdateInfo(TaskInfo *Info, int Core)
+    __no_stack_protector void Task::UpdateInfo(TaskInfo *Info, int Core)
     {
         if (Info->Affinity[Core] == true)
         {
@@ -135,7 +135,7 @@ namespace Tasking
     }
 
 #if defined(__amd64__)
-    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
         schedbg("%d processes", ListProcess.size());
@@ -184,7 +184,7 @@ namespace Tasking
         return false;
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -224,7 +224,7 @@ namespace Tasking
         return false;
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -267,7 +267,7 @@ namespace Tasking
         return false;
     }
 
-    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    __no_stack_protector void Task::SchedulerCleanupProcesses()
     {
         foreach (PCB *pcb in ListProcess)
         {
@@ -277,7 +277,7 @@ namespace Tasking
         }
     }
 
-    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -305,9 +305,14 @@ namespace Tasking
         return false;
     }
 
-    __attribute__((no_stack_protector)) void Task::Schedule(CPU::x64::TrapFrame *Frame)
+    __no_stack_protector void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
+        if (StopSheduler)
+        {
+            warn("Scheduler stopped.");
+            return;
+        }
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
@@ -488,71 +493,71 @@ namespace Tasking
     }
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
+    __no_stack_protector void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
 #elif defined(__i386__)
-    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    __no_stack_protector void Task::SchedulerCleanupProcesses()
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::Schedule(void *Frame)
+    __no_stack_protector void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
+    __no_stack_protector void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #elif defined(__aarch64__)
-    __attribute__((no_stack_protector)) bool Task::FindNewProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::SchedulerCleanupProcesses()
+    __no_stack_protector void Task::SchedulerCleanupProcesses()
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::Schedule(void *Frame)
+    __no_stack_protector void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
 
-    __attribute__((no_stack_protector)) void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
+    __no_stack_protector void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #endif
 
     void ThreadDoExit()
