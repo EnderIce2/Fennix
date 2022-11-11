@@ -2,11 +2,13 @@
 #include "chfcts.hpp"
 
 #include <display.hpp>
+#include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cpu.hpp>
+#include <io.h>
 
 #if defined(__amd64__)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
@@ -34,6 +36,20 @@ namespace CrashHandler
         va_start(args, Format);
         vfctprintf(printfWrapper, NULL, Format, args);
         va_end(args);
+    }
+
+    __no_stack_protector char *trimwhitespace(char *str)
+    {
+        char *end;
+        while (*str == ' ')
+            str++;
+        if (*str == 0)
+            return str;
+        end = str + strlen(str) - 1;
+        while (end > str && *end == ' ')
+            end--;
+        *(end + 1) = 0;
+        return str;
     }
 
     CRData crashdata = {};
@@ -186,7 +202,18 @@ namespace CrashHandler
 
         if (strcmp(Input, "help") == 0)
         {
-            EHPrint("Available commands are: exit, main, details, frames, tasks, console\n");
+            EHPrint("Available commands are:\n");
+            EHPrint("exit - Shutdown the OS.\n");
+            EHPrint("reboot - Reboot the OS.\n");
+            EHPrint("help - Display this help message.\n");
+            EHPrint("showbuf <INDEX> - Display the contents of a screen buffer.\n");
+            EHPrint("       - A sleep timer will be enabled. This will cause the OS to sleep for an unknown amount of time.\n");
+            EHPrint("       - \eFF4400WARNING: This can crash the system if a wrong buffer is selected.\eFAFAFA\n");
+            EHPrint("main - Show the main screen.\n");
+            EHPrint("details - Show the details screen.\n");
+            EHPrint("frames - Show the stack frame screen.\n");
+            EHPrint("tasks - Show the tasks screen.\n");
+            EHPrint("console - Show the console screen.\n");
             EHPrint("Also, you can use the arrow keys to navigate the menu.\n");
             EHPrint("=========================================================================\n");
             EHPrint("Kernel Compiled at: %s %s with C++ Standard: %d\n", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
@@ -197,6 +224,23 @@ namespace CrashHandler
             PowerManager->Shutdown();
             EHPrint("\eFFFFFFNow it's safe to turn off your computer.");
             CPU::Stop();
+        }
+        else if (strcmp(Input, "reboot") == 0)
+        {
+            PowerManager->Reboot();
+            EHPrint("\eFFFFFFNow it's safe to reboot your computer.");
+            CPU::Stop();
+        }
+        else if (strncmp(Input, "showbuf", 7) == 0)
+        {
+            char *arg = trimwhitespace(Input + 7);
+            int tmpidx = SBIdx;
+            SBIdx = atoi(arg);
+            Display->SetBuffer(SBIdx);
+            for (int i = 0; i < 1000000; i++)
+                inb(0x80);
+            SBIdx = tmpidx;
+            Display->SetBuffer(SBIdx);
         }
         else if (strcmp(Input, "main") == 0)
         {
