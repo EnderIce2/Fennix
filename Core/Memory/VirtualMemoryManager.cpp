@@ -13,7 +13,33 @@ namespace Memory
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)Address);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDPIndex];
-        return PDE.GetFlag(Flag);
+        PageTable *PDP = nullptr;
+        PageTable *PD = nullptr;
+        PageTable *PT = nullptr;
+        if (PDE.GetFlag(Flag))
+            PDP = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+        else
+            return false;
+
+        PDE = PDP->Entries[Index.PDIndex];
+        if (PDE.GetFlag(Flag))
+            PD = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+        else
+            return false;
+
+        PDE = PD->Entries[Index.PTIndex];
+        if (PDE.GetFlag(Flag))
+            PT = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+        else
+            return false;
+
+        PDE = PT->Entries[Index.PIndex];
+        if (PDE.GetFlag(Flag))
+            return true;
+        else
+            return false;
+
+        return false;
     }
 
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
