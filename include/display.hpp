@@ -126,6 +126,7 @@ namespace Video
                 warn("Buffer %d already exists, skipping creation", Index);
         }
         void SetBuffer(int Index) { memcpy(this->framebuffer.BaseAddress, this->Buffers[Index]->Buffer, this->Buffers[Index]->Size); }
+        ScreenBuffer *GetBuffer(int Index) { return this->Buffers[Index]; }
         void ClearBuffer(int Index) { memset(this->Buffers[Index]->Buffer, 0, this->Buffers[Index]->Size); }
         void DeleteBuffer(int Index)
         {
