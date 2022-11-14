@@ -2391,6 +2391,7 @@ static void *LinuxSyscallsTable[] = {
 
 uint64_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
+#if defined(__amd64__)
     if (Frame->rax > sizeof(LinuxSyscallsTable))
     {
         fixme("Syscall %lld not implemented", Frame->rax);
@@ -2406,4 +2407,7 @@ uint64_t HandleLinuxSyscalls(SyscallsFrame *Frame)
     uint64_t ret = call(Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
     Frame->rax = ret;
     return ret;
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
 }

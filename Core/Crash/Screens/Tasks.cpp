@@ -44,7 +44,12 @@ namespace CrashHandler
         if (TaskManager)
         {
             if (data.Thread)
+#if defined(__amd64__)
                 EHPrint("\eFAFAFACrash occured in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);
+#elif defined(__i386__)
+                EHPrint("\eFAFAFACrash occured in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->eip);
+#elif defined(__aarch64__)
+#endif
 
             EHPrint("\eFAFAFAProcess list (%ld):\n", Plist.size());
             foreach (auto Process in Plist)
@@ -56,7 +61,7 @@ namespace CrashHandler
                 foreach (auto Thread in Process->Threads)
                     EHPrint("\e%s  -> \eFAFAFA%s\eCCCCCC(%ld) \e00AAAA%s\eFAFAFA Stack:\e00AAAA%#lx\n",
                             StatusColor[Thread->Status], Thread->Name, Thread->ID, StatusString[Thread->Status],
-                             Thread->Stack);
+                            Thread->Stack);
             }
         }
         else

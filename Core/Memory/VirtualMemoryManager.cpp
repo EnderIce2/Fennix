@@ -101,7 +101,7 @@ namespace Memory
 #if defined(__amd64__)
         CPU::x64::invlpg(VirtualAddress);
 #elif defined(__i386__)
-        CPU::x86::invlpg(VirtualAddress);
+        CPU::x32::invlpg(VirtualAddress);
 #elif defined(__aarch64__)
         asmv("dsb sy");
         asmv("tlbi vae1is, %0"

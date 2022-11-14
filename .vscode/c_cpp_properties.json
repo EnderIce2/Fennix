@@ -16,9 +16,11 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "gcc-x64",
+            "intelliSenseMode": "gcc-x86",
             "configurationProvider": "ms-vscode.makefile-tools",
             "compilerArgs": [
+                "-m32",
+                //"-mcmodel=kernel", /* 64-bit only */
                 "-fno-rtti",
                 "-fexceptions",
                 "-fno-pic",
@@ -31,11 +33,13 @@
                 "-mno-sse2",
                 "-march=nehalem",
                 "-pipe",
-                "-mcmodel=kernel",
                 "-msoft-float",
                 "-fno-builtin",
                 "-ffreestanding",
                 "-nostdinc",
+                "-Wl,-static,--no-dynamic-linker,-ztext",
+                "-shared",
+                "-zmax-page-size=0x1000",
                 "-nostdinc++"
             ]
         }

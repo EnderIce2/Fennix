@@ -511,9 +511,7 @@ namespace CrashHandler
         goto CrashEnd;
 
 #elif defined(__i386__)
-        void *Frame = Data;
 #elif defined(__aarch64__)
-        void *Frame = Data;
 #endif
 
     CrashEnd:

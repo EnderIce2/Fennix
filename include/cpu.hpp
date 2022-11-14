@@ -260,6 +260,282 @@ namespace CPU
 
     namespace x32
     {
+        typedef union
+        {
+            struct
+            {
+                /** @brief Carry Flag */
+                uint32_t CF : 1;
+                /** @brief Reserved */
+                uint32_t AlwaysOne : 1;
+                /** @brief Parity Flag */
+                uint32_t PF : 1;
+                /** @brief Reserved */
+                uint32_t Reserved0 : 1;
+                /** @brief Auxiliary Carry Flag */
+                uint32_t AF : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 1;
+                /** @brief Zero Flag */
+                uint32_t ZF : 1;
+                /** @brief Sign Flag */
+                uint32_t SF : 1;
+                /** @brief Trap Flag */
+                uint32_t TF : 1;
+                /** @brief Interrupt Enable Flag */
+                uint32_t IF : 1;
+                /** @brief Direction Flag */
+                uint32_t DF : 1;
+                /** @brief Overflow Flag */
+                uint32_t OF : 1;
+                /** @brief I/O Privilege Level */
+                uint32_t IOPL : 2;
+                /** @brief Nested Task */
+                uint32_t NT : 1;
+                /** @brief Reserved */
+                uint32_t Reserved2 : 1;
+                /** @brief Resume Flag */
+                uint32_t RF : 1;
+                /** @brief Virtual 8086 Mode */
+                uint32_t VM : 1;
+                /** @brief Alignment Check */
+                uint32_t AC : 1;
+                /** @brief Virtual Interrupt Flag */
+                uint32_t VIF : 1;
+                /** @brief Virtual Interrupt Pending */
+                uint32_t VIP : 1;
+                /** @brief ID Flag */
+                uint32_t ID : 1;
+            };
+            uint32_t raw;
+        } EFLAGS;
+
+        typedef struct TrapFrame
+        {
+            // uint32_t gs;  // General-purpose Segment
+            // uint32_t fs;  // General-purpose Segment
+            // uint32_t es;  // Extra Segment (used for string operations)
+            uint32_t ds; // Data Segment
+
+            uint32_t ebp; // Base Pointer (meant for stack frames)
+            uint32_t edi; // Destination index for string operations
+            uint32_t esi; // Source index for string operations
+            uint32_t edx; // Data (commonly extends the A register)
+            uint32_t ecx; // Counter
+            uint32_t ebx; // Base
+            uint32_t eax; // Accumulator
+
+            uint32_t InterruptNumber; // Interrupt Number
+            uint32_t ErrorCode;       // Error code
+            uint32_t eip;             // Instruction Pointer
+            uint32_t cs;              // Code Segment
+            EFLAGS eflags;            // Register Flags
+            uint32_t esp;             // Stack Pointer
+            uint32_t ss;              // Stack Segment
+        } TrapFrame;
+
+        typedef union CR0
+        {
+            struct
+            {
+                /** @brief Protection Enable */
+                uint32_t PE : 1;
+                /** @brief Monitor Coprocessor */
+                uint32_t MP : 1;
+                /** @brief Emulation */
+                uint32_t EM : 1;
+                /** @brief Task Switched */
+                uint32_t TS : 1;
+                /** @brief Extension Type */
+                uint32_t ET : 1;
+                /** @brief Numeric Error */
+                uint32_t NE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved0 : 10;
+                /** @brief Write Protect */
+                uint32_t WP : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 1;
+                /** @brief Alignment Mask */
+                uint32_t AM : 1;
+                /** @brief Reserved */
+                uint32_t Reserved2 : 10;
+                /** @brief Not Write-through */
+                uint32_t NW : 1;
+                /** @brief Cache Disable */
+                uint32_t CD : 1;
+                /** @brief Paging */
+                uint32_t PG : 1;
+            };
+            uint32_t raw;
+        } CR0;
+
+        typedef union CR2
+        {
+            struct
+            {
+                /** @brief Page Fault Linear Address */
+                uint32_t PFLA;
+            };
+            uint32_t raw;
+        } CR2;
+
+        typedef union CR3
+        {
+            struct
+            {
+                /** @brief Not used if bit 17 of CR4 is 1 */
+                uint32_t PWT : 1;
+                /** @brief Not used if bit 17 of CR4 is 1 */
+                uint32_t PCD : 1;
+                /** @brief Base of PML4T/PML5T */
+                uint32_t PDBR;
+            };
+            uint32_t raw;
+        } CR3;
+
+        typedef union CR4
+        {
+            struct
+            {
+                /** @brief Virtual-8086 Mode Extensions */
+                uint32_t VME : 1;
+                /** @brief Protected-Mode Virtual Interrupts */
+                uint32_t PVI : 1;
+                /** @brief Time Stamp Disable */
+                uint32_t TSD : 1;
+                /** @brief Debugging Extensions */
+                uint32_t DE : 1;
+                /** @brief Page Size Extensions */
+                uint32_t PSE : 1;
+                /** @brief Physical Address Extension */
+                uint32_t PAE : 1;
+                /** @brief Machine Check Enable */
+                uint32_t MCE : 1;
+                /** @brief Page Global Enable */
+                uint32_t PGE : 1;
+                /** @brief Performance Monitoring Counter */
+                uint32_t PCE : 1;
+                /** @brief Operating System Support */
+                uint32_t OSFXSR : 1;
+                /** @brief Operating System Support */
+                uint32_t OSXMMEXCPT : 1;
+                /** @brief User-Mode Instruction Prevention */
+                uint32_t UMIP : 1;
+                /** @brief Linear Address 57bit */
+                uint32_t LA57 : 1;
+                /** @brief VMX Enable */
+                uint32_t VMXE : 1;
+                /** @brief SMX Enable */
+                uint32_t SMXE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved0 : 1;
+                /** @brief FSGSBASE Enable */
+                uint32_t FSGSBASE : 1;
+                /** @brief PCID Enable */
+                uint32_t PCIDE : 1;
+                /** @brief XSAVE and Processor Extended States Enable */
+                uint32_t OSXSAVE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 1;
+                /** @brief SMEP Enable */
+                uint32_t SMEP : 1;
+                /** @brief SMAP Enable */
+                uint32_t SMAP : 1;
+                /** @brief Protection-Key Enable */
+                uint32_t PKE : 1;
+                /** @brief Control-flow Enforcement Technology*/
+                uint32_t CET : 1;
+                /* @brief Enable Protection Keys for Supervisor Mode Pages */
+                uint32_t PKS : 1;
+            };
+            uint32_t raw;
+        } CR4;
+
+        typedef union CR8
+        {
+            struct
+            {
+                /** @brief Task Priority Level */
+                uint32_t TPL : 1;
+            };
+            uint32_t raw;
+        } CR8;
+
+        /* TODO: Does EFER exists in x32? */
+        typedef union EFER
+        {
+            struct
+            {
+                /** @brief Enable syscall & sysret instructions in 64-bit mode. */
+                uint32_t SCE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved0 : 7;
+                /** @brief Enable long mode. */
+                uint32_t LME : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 1;
+                /** @brief Indicates long. */
+                uint32_t LMA : 1;
+                /** @brief Enable No-Execute Bit */
+                uint32_t NXE : 1;
+                /** @brief Enable Secure Virtual Machine */
+                uint32_t SVME : 1;
+                /** @brief Enable Long Mode Segment Limit */
+                uint32_t LMSLE : 1;
+                /** @brief Enable Fast FXSAVE/FXRSTOR */
+                uint32_t FFXSR : 1;
+                /** @brief Enable Translation Cache Extension */
+                uint32_t TCE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved2 : 32;
+            };
+            uint32_t raw;
+        } __attribute__((packed)) EFER;
+
+        // ! TODO: UNTESTED!
+        typedef union DR7
+        {
+            struct
+            {
+                /** @brief Local DR0 Breakpoint (0) */
+                uint32_t LocalDR0 : 1;
+                /** @brief Global DR0 Breakpoint (1) */
+                uint32_t GlobalDR0 : 1;
+                /** @brief Local DR1 Breakpoint (2) */
+                uint32_t LocalDR1 : 1;
+                /** @brief Global DR1 Breakpoint (3) */
+                uint32_t GlobalDR1 : 1;
+                /** @brief Local DR2 Breakpoint (4) */
+                uint32_t LocalDR2 : 1;
+                /** @brief Global DR2 Breakpoint (5) */
+                uint32_t GlobalDR2 : 1;
+                /** @brief Local DR3 Breakpoint (6) */
+                uint32_t LocalDR3 : 1;
+                /** @brief Global DR3 Breakpoint (7) */
+                uint32_t GlobalDR3 : 1;
+                /** @brief Reserved [7 - (16-17)] */
+                uint32_t Reserved : 9;
+                /** @brief Conditions for DR0 (16-17) */
+                uint32_t ConditionsDR0 : 1;
+                /** @brief Size of DR0 Breakpoint (18-19) */
+                uint32_t SizeDR0 : 1;
+                /** @brief Conditions for DR1 (20-21) */
+                uint32_t ConditionsDR1 : 1;
+                /** @brief Size of DR1 Breakpoint (22-23) */
+                uint32_t SizeDR1 : 1;
+                /** @brief Conditions for DR2 (24-25) */
+                uint32_t ConditionsDR2 : 1;
+                /** @brief Size of DR2 Breakpoint (26-27) */
+                uint32_t SizeDR2 : 1;
+                /** @brief Conditions for DR3 (28-29) */
+                uint32_t ConditionsDR3 : 1;
+                /** @brief Size of DR3 Breakpoint (30-31) */
+                uint32_t SizeDR3 : 1;
+            };
+            uint32_t raw;
+        } DR7;
+
         /**
          * @brief CPUID
          *
@@ -275,6 +551,16 @@ namespace CPU
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
+#endif
+        }
+
+        __no_stack_protector static inline void invlpg(void *Address)
+        {
+#if defined(__i386__)
+            asmv("invlpg (%0)"
+                 :
+                 : "r"(Address)
+                 : "memory");
 #endif
         }
     }
@@ -1167,7 +1453,7 @@ namespace CPU
                 uint64_t AM : 1;
                 /** @brief Reserved */
                 uint64_t Reserved2 : 10;
-                /** @brief Mot Write-through */
+                /** @brief Not Write-through */
                 uint64_t NW : 1;
                 /** @brief Cache Disable */
                 uint64_t CD : 1;
@@ -1251,8 +1537,12 @@ namespace CPU
                 uint64_t SMAP : 1;
                 /** @brief Protection-Key Enable */
                 uint64_t PKE : 1;
+                /** @brief Control-flow Enforcement Technology*/
+                uint32_t CET : 1;
+                /* @brief Enable Protection Keys for Supervisor Mode Pages */
+                uint32_t PKS : 1;
                 /** @brief Reserved */
-                uint64_t Reserved2 : 9;
+                uint64_t Reserved2 : 7; // TODO: This could be wrong 
             };
             uint64_t raw;
         } CR4;

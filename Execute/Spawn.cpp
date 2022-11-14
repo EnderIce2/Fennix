@@ -29,6 +29,8 @@ namespace Execute
                 {
                 case BinaryType::BinTypeFex:
                 {
+#if defined(__amd64__)
+
                     Fex *FexHdr = (Fex *)ExFile->Node->Address;
                     if (FexHdr->Type == FexFormatType::FexFormatType_Executable)
                     {
@@ -54,6 +56,13 @@ namespace Execute
                         ret.Process = Process;
                         ret.Thread = Thread;
                         ret.Status = ExStatus::OK;
+#elif defined(__i386__)
+                    if (1)
+                    {
+#elif defined(__aarch64__)
+                    if (1)
+                    {
+#endif
                         goto Exit;
                     }
                     ret.Status = ExStatus::InvalidFileHeader;
@@ -61,6 +70,8 @@ namespace Execute
                 }
                 case BinaryType::BinTypeELF:
                 {
+#if defined(__amd64__)
+
                     const char *BaseName;
                     cwk_path_get_basename(Path, &BaseName, nullptr);
                     PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
@@ -191,8 +202,10 @@ namespace Execute
                     {
                         fixme("Unknown");
                     }
-
                     ret.Status = ExStatus::InvalidFileHeader;
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
                     goto Exit;
                 }
                 default:

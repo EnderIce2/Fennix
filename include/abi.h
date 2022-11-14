@@ -65,6 +65,7 @@ typedef struct
 #if defined(__amd64__)
     Elf64_auxv_t archaux;
 #elif defined(__i386__)
+    Elf32_auxv_t archaux;
 #elif defined(__aarch64__)
 #endif
 } AuxiliaryVector;

@@ -79,7 +79,12 @@ EXTERNC void Entry(BootInfo *Info)
     }
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
+    #if defined(__amd64__)
     PowerManager->InitDSDT();
+#elif defined(__i386__)
+    // FIXME: Add ACPI support for i386
+#elif defined(__aarch64__)
+#endif
     KPrint("Initializing Timers");
 #if defined(__amd64__)
     TimeManager = new Time::time(PowerManager->GetACPI());

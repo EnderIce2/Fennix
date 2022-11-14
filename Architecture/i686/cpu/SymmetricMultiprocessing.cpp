@@ -28,6 +28,8 @@ CPUData *GetCurrentCPU()
 
 namespace SMP
 {
+    int CPUCores = 0;
+
     void Initialize(void *madt)
     {
         fixme("SMP::Initialize() is not implemented!");

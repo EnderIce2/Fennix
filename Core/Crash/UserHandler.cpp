@@ -45,11 +45,18 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
               CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
               Frame->ss, Frame->cs, Frame->ds);
+              #if defined(__amd64__)
         error("R8=%#llx R9=%#llx R10=%#llx R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
         error("R12=%#llx R13=%#llx R14=%#llx R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
         error("RAX=%#llx RBX=%#llx RCX=%#llx RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
         error("RSI=%#llx RDI=%#llx RBP=%#llx RSP=%#llx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
         error("RIP=%#llx RFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+#elif defined(__i386__)
+        error("EAX=%#llx EBX=%#llx ECX=%#llx EDX=%#llx", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
+        error("ESI=%#llx EDI=%#llx EBP=%#llx ESP=%#llx", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
+        error("EIP=%#llx EFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+#elif defined(__aarch64__)
+#endif
         error("CR0=%#llx CR2=%#llx CR3=%#llx CR4=%#llx CR8=%#llx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
 
         error("CR0: PE:%s MP:%s EM:%s TS:%s ET:%s NE:%s WP:%s AM:%s NW:%s CD:%s PG:%s R0:%#x R1:%#x R2:%#x",
@@ -74,6 +81,7 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
         error("CR8: TPL:%d", cr8.TPL);
 
+#if defined(__amd64__)
         error("RFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x R3:%#x",
               Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
               Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
@@ -81,6 +89,16 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
               Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
               Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
+#elif defined(__i386__)
+        error("EFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x",
+              Frame->eflags.CF ? "True " : "False", Frame->eflags.PF ? "True " : "False", Frame->eflags.AF ? "True " : "False", Frame->eflags.ZF ? "True " : "False",
+              Frame->eflags.SF ? "True " : "False", Frame->eflags.TF ? "True " : "False", Frame->eflags.IF ? "True " : "False", Frame->eflags.DF ? "True " : "False",
+              Frame->eflags.OF ? "True " : "False", Frame->eflags.IOPL ? "True " : "False", Frame->eflags.NT ? "True " : "False", Frame->eflags.RF ? "True " : "False",
+              Frame->eflags.VM ? "True " : "False", Frame->eflags.AC ? "True " : "False", Frame->eflags.VIF ? "True " : "False", Frame->eflags.VIP ? "True " : "False",
+              Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
+              Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
+#elif defined(__aarch64__)
+#endif
 
         error("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
               efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
@@ -149,7 +167,12 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     case CPU::x64::PageFault:
     {
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
+#if defined(__amd64__)
         error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->rip);
+#elif defined(__i386__)
+        error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->eip);
+#elif defined(__aarch64__)
+#endif
         error("Page: %s", params.P ? "Present" : "Not Present");
         error("Write Operation: %s", params.W ? "Read-Only" : "Read-Write");
         error("Processor Mode: %s", params.U ? "User-Mode" : "Kernel-Mode");

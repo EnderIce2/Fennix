@@ -11,6 +11,7 @@
 #include "../Architecture/amd64/cpu/apic.hpp"
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
+#include "../Architecture/i686/cpu/apic.hpp"
 #elif defined(__aarch64__)
 #endif
 
@@ -972,7 +973,11 @@ namespace Tasking
             break;
         }
         debug("Tasking Started");
+#if defined(__amd64__)
         ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
 
         for (int i = 1; i < SMP::CPUCores; i++)
         {

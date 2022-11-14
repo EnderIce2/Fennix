@@ -404,7 +404,7 @@ static int cag_option_find_next(cag_option_context *context)
     // Grab a pointer to the string and verify that it is not the end. If it is
     // the end, we have to return false to indicate that we finished.
     c = context->argv[next_option_index];
-    if (context->forced_end || c == NULL || (uint64_t)c == (uint64_t)0xffffffffffffffff /* TODO: workaround */)
+    if (context->forced_end || c == NULL || (uint64_t)c == (uint64_t)0xfffffffffffff000 /* TODO: workaround */)
     {
         return -1;
     }

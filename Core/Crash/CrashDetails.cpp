@@ -53,7 +53,12 @@ __no_stack_protector void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("More info about the exception:\n");
+#if defined(__amd64__)
     CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->rip);
+#elif defined(__i386__)
+    CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->eip);
+#elif defined(__aarch64__)
+#endif
     CrashHandler::EHPrint("External: %d\n", SelCode.External);
     CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
@@ -96,7 +101,12 @@ __no_stack_protector void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
+#if defined(__amd64__)
     CrashHandler::EHPrint("An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+#elif defined(__i386__)
+    CrashHandler::EHPrint("An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->eip);
+#elif defined(__aarch64__)
+#endif
     CrashHandler::EHPrint("Page: %s\n", params.P ? "Present" : "Not Present");
     CrashHandler::EHPrint("Write Operation: %s\n", params.W ? "Read-Only" : "Read-Write");
     CrashHandler::EHPrint("Processor Mode: %s\n", params.U ? "User-Mode" : "Kernel-Mode");

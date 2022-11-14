@@ -26,7 +26,7 @@ extern "C" uint64_t SystemCallsHandler(SyscallsFrame *Frame)
     }
     }
 #elif defined(__i386__)
-    fixme("System call %lld", regs->eax);
+    fixme("System call %lld", Frame->eax);
 #elif defined(__aarch64__)
     fixme("System call");
 #endif
