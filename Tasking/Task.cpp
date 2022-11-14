@@ -318,7 +318,7 @@ namespace Tasking
     __no_stack_protector void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
-        if (StopSheduler)
+        if (StopScheduler)
         {
             warn("Scheduler stopped.");
             return;

@@ -213,11 +213,11 @@ namespace Tasking
         void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #endif
-        bool StopSheduler = false;
+        bool StopScheduler = false;
 
     public:
         Vector<PCB *> GetProcessList() { return ListProcess; }
-        void Panic() { StopSheduler = true; }
+        void Panic() { StopScheduler = true; }
         void Schedule();
         long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
         void KillThread(TCB *tcb, int Code)
