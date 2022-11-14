@@ -3,7 +3,7 @@
     "C_Cpp.autocompleteAddParentheses": true,
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "C_Cpp.clang_format_style": "Visual Studio",
-    "C_Cpp.default.intelliSenseMode": "gcc-x86",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
     "C_Cpp.default.cStandard": "c17",
     "C_Cpp.default.cppStandard": "c++20",
     "C_Cpp.intelliSenseMemoryLimit": 16384,

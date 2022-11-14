@@ -16,11 +16,11 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "gcc-x86",
+            "intelliSenseMode": "gcc-x64",
             "configurationProvider": "ms-vscode.makefile-tools",
             "compilerArgs": [
-                "-m32",
-                //"-mcmodel=kernel", /* 64-bit only */
+                // "-m32",
+                "-mcmodel=kernel", /* 64-bit only */
                 "-fno-rtti",
                 "-fexceptions",
                 "-fno-pic",
