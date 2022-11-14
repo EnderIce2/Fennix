@@ -39,7 +39,14 @@ namespace Tasking
 #endif
     }
 
-    void Task::Schedule() { OneShot(100); }
+    void Task::Schedule()
+    {
+        OneShot(100);
+        // APIC::InterruptCommandRegisterLow icr;
+        // icr.Vector = CPU::x64::IRQ16;
+        // icr.Level = APIC::APICLevel::Assert;
+        // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
+    }
 
     __attribute__((naked, used, no_stack_protector)) void IdleProcessLoop()
     {
@@ -52,6 +59,28 @@ namespace Tasking
              "wfe\n"
              "b IdleLoop\n");
 #endif
+    }
+
+    __no_stack_protector bool Task::InvalidPCB(PCB *pcb)
+    {
+        if (!pcb)
+            return true;
+        if (pcb >= (PCB *)0xfffffffffffff000)
+            return true;
+        if (!Memory::Virtual().Check((void *)pcb))
+            return true;
+        return false;
+    }
+
+    __no_stack_protector bool Task::InvalidTCB(TCB *tcb)
+    {
+        if (!tcb)
+            return true;
+        if (tcb >= (TCB *)0xfffffffffffff000)
+            return true;
+        if (!Memory::Virtual().Check((void *)tcb))
+            return true;
+        return false;
     }
 
     __no_stack_protector void Task::RemoveThread(TCB *Thread)
@@ -324,6 +353,8 @@ namespace Tasking
             return;
         }
         CPUData *CurrentCPU = GetCurrentCPU();
+        // if (CurrentCPU->ID != 0)
+        // debug("Scheduler called from CPU %d", CurrentCPU->ID);
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 
@@ -448,6 +479,31 @@ namespace Tasking
         CurrentCPU->CurrentProcess->Status = TaskStatus::Running;
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
+        // This should never happen, but if it does, we can fix it.
+        if (CurrentCPU->CurrentThread->Security.TrustLevel == TaskTrustLevel::User)
+        {
+            if (CurrentCPU->CurrentThread->Registers.cs != GDT_USER_CODE ||
+                CurrentCPU->CurrentThread->Registers.ss != GDT_USER_DATA)
+            {
+                warn("Wrong CS or SS for user process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx)",
+                        CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
+                        GDT_USER_CODE, GDT_USER_DATA);
+                CurrentCPU->CurrentThread->Registers.cs = GDT_USER_CODE;
+                CurrentCPU->CurrentThread->Registers.ss = GDT_USER_DATA;
+            }
+        }
+        else
+        {
+            if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE ||
+                CurrentCPU->CurrentThread->Registers.ss != GDT_KERNEL_DATA)
+            {
+                warn("Wrong CS or SS for kernel process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx",
+                        CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
+                        GDT_KERNEL_CODE, GDT_KERNEL_DATA);
+                CurrentCPU->CurrentThread->Registers.cs = GDT_KERNEL_CODE;
+                CurrentCPU->CurrentThread->Registers.ss = GDT_KERNEL_DATA;
+            }
+        }
         *Frame = CurrentCPU->CurrentThread->Registers;
         GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack + STACK_SIZE));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
@@ -514,7 +570,7 @@ namespace Tasking
         }
     RealEnd:
     {
-        schedbg("Scheduler end");
+        __sync_synchronize(); // TODO: Is this really needed?
     }
     }
 
@@ -691,6 +747,9 @@ namespace Tasking
             Thread->Registers.ds = GDT_USER_DATA;
             Thread->Registers.ss = GDT_USER_DATA;
             Thread->Registers.rflags.AlwaysOne = 1;
+            // Thread->Registers.rflags.PF = 1;
+            // Thread->Registers.rflags.SF = 1;
+            // Thread->Registers.rflags.IOPL = 3;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
@@ -975,18 +1034,19 @@ namespace Tasking
         debug("Tasking Started");
 #if defined(__amd64__)
         ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
 
         for (int i = 1; i < SMP::CPUCores; i++)
         {
-            // TODO: Start other cores will end up in a deadlock. HOW?
+            // ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 100);
+            // TODO: Lock was the fault here. Now crash handler should support SMP.
             // APIC::InterruptCommandRegisterLow icr;
             // icr.Vector = CPU::x64::IRQ16;
             // icr.Level = APIC::APICLevel::Assert;
             // ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
         }
+#elif defined(__i386__)
+#elif defined(__aarch64__)
+#endif
     }
 
     Task::~Task()

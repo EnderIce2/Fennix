@@ -278,13 +278,23 @@ namespace APIC
                 this->Write(APIC_LINT1, nmi);
         }
 
-        // Disable PIT
-        outb(0x43, 0x28);
-        outb(0x40, 0x0);
+        // Setup the spurrious interrupt vector
+        Spurious Spurious = {.raw = this->Read(APIC_SVR)};
+        Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
+        Spurious.Software = 1;
+        this->Write(APIC_SVR, Spurious.raw);
 
-        // Disable PIC
-        outb(0x21, 0xFF);
-        outb(0xA1, 0xFF);
+        static int once = 0;
+        if (!once++)
+        {
+            // Disable PIT
+            outb(0x43, 0x28);
+            outb(0x40, 0x0);
+
+            // Disable PIC
+            outb(0x21, 0xFF);
+            outb(0xA1, 0xFF);
+        }
     }
 
     APIC::~APIC()
@@ -314,12 +324,6 @@ namespace APIC
         LVTTimerDivide Divider = DivideBy16;
 
         trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
-
-        // Setup the spurrious interrupt vector
-        Spurious Spurious = {.raw = this->lapic->Read(APIC_SVR)};
-        Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
-        Spurious.Software = 1;
-        this->lapic->Write(APIC_SVR, Spurious.raw);
 
         this->lapic->Write(APIC_TDCR, Divider);
         this->lapic->Write(APIC_TICR, 0xFFFFFFFF);

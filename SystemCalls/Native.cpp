@@ -40,7 +40,7 @@ uint64_t HandleNativeSyscalls(SyscallsFrame *Frame)
         error("Syscall %#llx failed.", Frame->rax);
         return -1;
     }
-    debug("%#lx %#lx %#lx %#lx %#lx %#lx", Frame->rdi, Frame->rsi, Frame->rdx, Frame->rcx, Frame->r8, Frame->r9);
+    debug("[%#lx]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )", Frame->rax, Frame->rdi, Frame->rsi, Frame->rdx, Frame->rcx, Frame->r8, Frame->r9);
     uint64_t ret = call((uint64_t)Frame, Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
     Frame->rax = ret;
     return ret;

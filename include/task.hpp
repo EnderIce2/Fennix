@@ -172,23 +172,8 @@ namespace Tasking
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
 
-        __no_stack_protector bool InvalidPCB(PCB *pcb)
-        {
-            if (pcb >= (PCB *)0xfffffffffffff000)
-                return true;
-            if (!pcb)
-                return true;
-            return false;
-        }
-
-        __no_stack_protector bool InvalidTCB(TCB *tcb)
-        {
-            if (tcb >= (TCB *)0xfffffffffffff000)
-                return true;
-            if (!tcb)
-                return true;
-            return false;
-        }
+        bool InvalidPCB(PCB *pcb);
+        bool InvalidTCB(TCB *tcb);
 
         void RemoveThread(TCB *tcb);
         void RemoveProcess(PCB *pcb);

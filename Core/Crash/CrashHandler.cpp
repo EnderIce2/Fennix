@@ -288,6 +288,7 @@ namespace CrashHandler
 
     __no_stack_protector void Handle(void *Data)
     {
+        // TODO: SUPPORT SMP
         CPU::Interrupts(CPU::Disable);
         error("An exception occurred!");
         if (TaskManager)
