@@ -46,7 +46,7 @@ namespace Driver
         SmartLock(DriverDisplayPrintLock);
         debug("Requesting %ld pages from the kernel...", Size);
         void *ret = KernelAllocator.RequestPages(Size);
-        debug("Got %p", ret);
+        debug("Got %#lx", ret);
         return ret;
     }
 

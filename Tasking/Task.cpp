@@ -107,11 +107,23 @@ namespace Tasking
         }
     }
 
-    __no_stack_protector void Task::UpdateInfo(TaskInfo *Info, int Core)
+    __no_stack_protector void Task::UpdateUserTime(TaskInfo *Info)
+    {
+        // TODO
+        Info->UserTime++;
+    }
+
+    __no_stack_protector void Task::UpdateKernelTime(TaskInfo *Info)
+    {
+        // TODO
+        Info->KernelTime++;
+    }
+
+    __no_stack_protector void Task::UpdateUsage(TaskInfo *Info, int Core)
     {
         if (Info->Affinity[Core] == true)
         {
-            // TODO: Not working
+            // TODO: Not working(?)
             uint64_t CounterNow = CPU::Counter();
 
             Info->OldUserTime = Info->CurrentUserTime;
@@ -119,9 +131,6 @@ namespace Tasking
 
             Info->CurrentUserTime = Info->UserTime;
             Info->CurrentKernelTime = Info->KernelTime;
-
-            Info->UserTime = 0;
-            Info->KernelTime = 0;
 
             Info->Usage[Core] = (Info->CurrentUserTime - Info->OldUserTime) + (Info->CurrentKernelTime - Info->OldKernelTime);
             Info->Usage[Core] = (Info->Usage[Core] * 100) / (CounterNow - Info->SpawnTime);
@@ -317,23 +326,25 @@ namespace Tasking
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 
-        schedbg("================================================================");
-        schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
-        schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
-        schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
-                CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                Frame->ss, Frame->cs, Frame->ds);
-        schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
-                Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-        schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
-                Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-        schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
-                Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-        schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
-                Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-        schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
-                Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
-        schedbg("================================================================");
+        {
+            schedbg("================================================================");
+            schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
+            schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
+            schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
+                    CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+                    Frame->ss, Frame->cs, Frame->ds);
+            schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                    Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+            schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                    Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+            schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                    Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+            schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                    Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+            schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                    Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+            schedbg("================================================================");
+        }
 
         // Null or invalid process/thread? Let's find a new one to execute.
         if (InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread))
@@ -467,26 +478,39 @@ namespace Tasking
     }
     End:
     {
-        UpdateInfo(&CurrentCPU->CurrentProcess->Info, CurrentCPU->ID);
-        UpdateInfo(&CurrentCPU->CurrentThread->Info, CurrentCPU->ID);
+        // TODO: This is not accurate.
+        if (CurrentCPU->CurrentProcess->Security.TrustLevel == TaskTrustLevel::User)
+            UpdateUserTime(&CurrentCPU->CurrentProcess->Info);
+        else
+            UpdateKernelTime(&CurrentCPU->CurrentProcess->Info);
+
+        if (CurrentCPU->CurrentThread->Security.TrustLevel == TaskTrustLevel::User)
+            UpdateUserTime(&CurrentCPU->CurrentThread->Info);
+        else
+            UpdateKernelTime(&CurrentCPU->CurrentThread->Info);
+
+        UpdateUsage(&CurrentCPU->CurrentProcess->Info, CurrentCPU->ID);
+        UpdateUsage(&CurrentCPU->CurrentThread->Info, CurrentCPU->ID);
         OneShot(CurrentCPU->CurrentThread->Info.Priority);
     }
-        schedbg("================================================================");
-        schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-        schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
-                CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                Frame->ss, Frame->cs, Frame->ds);
-        schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
-                Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-        schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
-                Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-        schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
-                Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-        schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
-                Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-        schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
-                Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
-        schedbg("================================================================");
+        {
+            schedbg("================================================================");
+            schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+            schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
+                    CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+                    Frame->ss, Frame->cs, Frame->ds);
+            schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                    Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+            schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                    Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+            schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                    Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+            schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                    Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+            schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                    Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+            schedbg("================================================================");
+        }
     RealEnd:
     {
         schedbg("Scheduler end");

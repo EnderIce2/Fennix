@@ -193,7 +193,9 @@ namespace Tasking
         void RemoveThread(TCB *tcb);
         void RemoveProcess(PCB *pcb);
 
-        void UpdateInfo(TaskInfo *Info, int Core);
+        void UpdateUserTime(TaskInfo *Info);
+        void UpdateKernelTime(TaskInfo *Info);
+        void UpdateUsage(TaskInfo *Info, int Core);
 
         bool FindNewProcess(void *CPUDataPointer);
         bool GetNextAvailableThread(void *CPUDataPointer);

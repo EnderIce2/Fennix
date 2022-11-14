@@ -139,13 +139,13 @@ namespace CrashHandler
                 return;
             break;
         case KEY_D_RIGHT:
-            if (SBIdx > 250)
+            if (SBIdx > 251)
                 SBIdx--;
             else
                 return;
             break;
         case KEY_D_DOWN:
-            if (SBIdx > 250)
+            if (SBIdx > 251)
                 SBIdx--;
             else
                 return;
@@ -446,10 +446,10 @@ namespace CrashHandler
             crashdata.Process = cpudata->CurrentProcess;
             crashdata.Thread = cpudata->CurrentThread;
 
-            error("Current Process: %s(%ld)\n",
+            error("Current Process: %s(%ld)",
                   cpudata->CurrentProcess->Name,
                   cpudata->CurrentProcess->ID);
-            error("Current Thread: %s(%ld)\n",
+            error("Current Thread: %s(%ld)",
                   cpudata->CurrentThread->Name,
                   cpudata->CurrentThread->ID);
         }
