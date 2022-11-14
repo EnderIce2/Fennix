@@ -41,7 +41,7 @@ INCLUDE_DIR = ./include
 LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
 
 # Disable all warnings by adding "-w" in WARNCFLAG and if you want to treat the warnings as errors, add "-Werror"
-WARNCFLAG = -w #-Wall -Wextra
+WARNCFLAG = -Wall -Wextra
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
