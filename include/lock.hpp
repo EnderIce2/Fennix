@@ -23,10 +23,12 @@ class LockClass
         uint64_t Count = 0;
         long Core = 0;
     };
+    void DeadLock(SpinLockData Lock);
 
 private:
     SpinLockData LockData;
-    // bool IsLocked = false;
+    bool IsLocked = false;
+    unsigned long DeadLocks = 0;
 
 public:
     SpinLockData *GetLockData() { return &LockData; }
