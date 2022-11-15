@@ -42,10 +42,20 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
 
         error("Technical Informations on CPU %lld:", GetCurrentCPU()->ID);
+#if defined(__amd64__)
+        uint64_t ds;
+        asmv("mov %%ds, %0"
+             : "=r"(ds));
+#elif defined(__i386__)
+        uint32_t ds;
+        asmv("mov %%ds, %0"
+             : "=r"(ds));
+#elif defined(__aarch64__)
+#endif
         error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
               CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-              Frame->ss, Frame->cs, Frame->ds);
-              #if defined(__amd64__)
+              Frame->ss, Frame->cs, ds);
+#if defined(__amd64__)
         error("R8=%#llx R9=%#llx R10=%#llx R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
         error("R12=%#llx R13=%#llx R14=%#llx R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
         error("RAX=%#llx RBX=%#llx RCX=%#llx RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);

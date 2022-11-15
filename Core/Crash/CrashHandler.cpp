@@ -348,10 +348,13 @@ namespace CrashHandler
             CPU::x64::CR8 cr8 = CPU::x64::readcr8();
             CPU::x64::EFER efer;
             efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
+            uint64_t ds;
+            asmv("mov %%ds, %0"
+                 : "=r"(ds));
 
             EHPrint("\eFF0000FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                     CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                    Frame->ss, Frame->cs, Frame->ds);
+                    Frame->ss, Frame->cs, ds);
             EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
             EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
             EHPrint("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx\n", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
@@ -402,6 +405,9 @@ namespace CrashHandler
         crashdata.cr4 = CPU::x64::readcr4();
         crashdata.cr8 = CPU::x64::readcr8();
         crashdata.efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
+        uint64_t ds;
+        asmv("mov %%ds, %0"
+             : "=r"(ds));
 
         // Get debug registers
         asmv("movq %%dr0, %0"
@@ -458,7 +464,7 @@ namespace CrashHandler
         {
             error("FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx",
                   CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                  Frame->ss, Frame->cs, Frame->ds);
+                  Frame->ss, Frame->cs, ds);
             error("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
             error("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
             error("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);

@@ -79,7 +79,6 @@ extern "C" __attribute__((naked, used, no_stack_protector)) void SystemCallHandl
 void InitializeSystemCalls()
 {
     wrmsr(MSR_EFER, rdmsr(MSR_EFER) | 1);
-    // TODO: THIS IS NOT WORKING! USER CODE AND USER DATA SHOULD BE CS:0x23 AND SS:0x1B
     wrmsr(MSR_STAR, ((uint64_t)(GDT_KERNEL_CODE) << 32) | ((uint64_t)(GDT_KERNEL_DATA | 3) << 48));
     wrmsr(MSR_LSTAR, (uint64_t)SystemCallHandlerStub);
     wrmsr(MSR_SYSCALL_MASK, (uint64_t)(1 << 9));

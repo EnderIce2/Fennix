@@ -28,9 +28,20 @@ namespace CrashHandler
                     data.Thread->Name,
                     data.Thread->ID);
         EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", data.ID);
+#if defined(__amd64__)
+        uint64_t ds;
+        asmv("mov %%ds, %0"
+             : "=r"(ds));
+#elif defined(__i386__)
+        uint32_t ds;
+        asmv("mov %%ds, %0"
+             : "=r"(ds));
+#elif defined(__aarch64__)
+#endif
+
         EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                data.Frame->ss, data.Frame->cs, data.Frame->ds);
+                data.Frame->ss, data.Frame->cs, ds);
 #if defined(__amd64__)
         EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", data.Frame->r8, data.Frame->r9, data.Frame->r10, data.Frame->r11);
         EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", data.Frame->r12, data.Frame->r13, data.Frame->r14, data.Frame->r15);

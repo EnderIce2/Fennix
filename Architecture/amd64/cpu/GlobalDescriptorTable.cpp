@@ -44,20 +44,6 @@ namespace GlobalDescriptorTable
          .Flags = {.Raw = 0x0},
          .BaseHigh = 0x0},
 
-        // user code
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.A = 0,
-                    .RW = 1,
-                    .DC = 0,
-                    .E = 1,
-                    .S = 1,
-                    .DPL = 3,
-                    .P = 1},
-         .Flags = {.Unknown = 0x0, .L = 1},
-         .BaseHigh = 0x0},
-
         // user data
         {.Length = 0x0,
          .BaseLow = 0x0,
@@ -70,6 +56,20 @@ namespace GlobalDescriptorTable
                     .DPL = 3,
                     .P = 1},
          .Flags = {.Raw = 0x0},
+         .BaseHigh = 0x0},
+
+        // user code
+        {.Length = 0x0,
+         .BaseLow = 0x0,
+         .BaseMiddle = 0x0,
+         .Access = {.A = 0,
+                    .RW = 1,
+                    .DC = 0,
+                    .E = 1,
+                    .S = 1,
+                    .DPL = 3,
+                    .P = 1},
+         .Flags = {.Unknown = 0x0, .L = 1},
          .BaseHigh = 0x0},
 
         // tss

@@ -362,9 +362,12 @@ namespace Tasking
             schedbg("================================================================");
             schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
             schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
+            uint64_t ds;
+            asmv("mov %%ds, %0"
+                 : "=r"(ds));
             schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
                     CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                    Frame->ss, Frame->cs, Frame->ds);
+                    Frame->ss, Frame->cs, ds);
             schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
                     Frame->r8, Frame->r9, Frame->r10, Frame->r11);
             schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
@@ -486,8 +489,8 @@ namespace Tasking
                 CurrentCPU->CurrentThread->Registers.ss != GDT_USER_DATA)
             {
                 warn("Wrong CS or SS for user process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx)",
-                        CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                        GDT_USER_CODE, GDT_USER_DATA);
+                     CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
+                     GDT_USER_CODE, GDT_USER_DATA);
                 CurrentCPU->CurrentThread->Registers.cs = GDT_USER_CODE;
                 CurrentCPU->CurrentThread->Registers.ss = GDT_USER_DATA;
             }
@@ -498,8 +501,8 @@ namespace Tasking
                 CurrentCPU->CurrentThread->Registers.ss != GDT_KERNEL_DATA)
             {
                 warn("Wrong CS or SS for kernel process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx",
-                        CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                        GDT_KERNEL_CODE, GDT_KERNEL_DATA);
+                     CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
+                     GDT_KERNEL_CODE, GDT_KERNEL_DATA);
                 CurrentCPU->CurrentThread->Registers.cs = GDT_KERNEL_CODE;
                 CurrentCPU->CurrentThread->Registers.ss = GDT_KERNEL_DATA;
             }
@@ -553,9 +556,12 @@ namespace Tasking
         {
             schedbg("================================================================");
             schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+            uint64_t ds;
+            asmv("mov %%ds, %0"
+                 : "=r"(ds));
             schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
                     CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-                    Frame->ss, Frame->cs, Frame->ds);
+                    Frame->ss, Frame->cs, ds);
             schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
                     Frame->r8, Frame->r9, Frame->r10, Frame->r11);
             schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
@@ -725,7 +731,6 @@ namespace Tasking
             Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
             Thread->FSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
             Thread->Registers.cs = GDT_KERNEL_CODE;
-            Thread->Registers.ds = GDT_KERNEL_DATA;
             Thread->Registers.ss = GDT_KERNEL_DATA;
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
@@ -744,7 +749,6 @@ namespace Tasking
             Thread->GSBase = 0;
             Thread->FSBase = 0;
             Thread->Registers.cs = GDT_USER_CODE;
-            Thread->Registers.ds = GDT_USER_DATA;
             Thread->Registers.ss = GDT_USER_DATA;
             Thread->Registers.rflags.AlwaysOne = 1;
             // Thread->Registers.rflags.PF = 1;

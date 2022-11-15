@@ -55,15 +55,9 @@ namespace InterruptDescriptorTable
             "pushq %r13\n"
             "pushq %r14\n"
             "pushq %r15\n"
-            // push ds segment
-            "movq %ds, %rax\n"
-            "pushq %rax\n"
 
             "movq %rsp, %rdi\n"
             "call ExceptionHandler\n"
-
-            // pop ds segment
-            "popq %rax\n"
 
             // pop all registers
             "popq %r15\n"
@@ -104,15 +98,9 @@ namespace InterruptDescriptorTable
             "pushq %r13\n"
             "pushq %r14\n"
             "pushq %r15\n"
-            // push ds segment
-            "movq %ds, %rax\n"
-            "pushq %rax\n"
 
             "movq %rsp, %rdi\n"
             "call MainInterruptHandler\n"
-
-            // pop ds segment
-            "popq %rax\n"
 
             "popq %r15\n"
             "popq %r14\n"

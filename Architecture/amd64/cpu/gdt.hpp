@@ -117,8 +117,8 @@ namespace GlobalDescriptorTable
         GlobalDescriptorTableEntry Null;
         GlobalDescriptorTableEntry Code;
         GlobalDescriptorTableEntry Data;
-        GlobalDescriptorTableEntry UserCode;
         GlobalDescriptorTableEntry UserData;
+        GlobalDescriptorTableEntry UserCode;
         TaskStateSegmentEntry TaskStateSegment;
     } __attribute__((packed)) GlobalDescriptorTableEntries;
 

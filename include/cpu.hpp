@@ -312,11 +312,6 @@ namespace CPU
 
         typedef struct TrapFrame
         {
-            // uint32_t gs;  // General-purpose Segment
-            // uint32_t fs;  // General-purpose Segment
-            // uint32_t es;  // Extra Segment (used for string operations)
-            uint32_t ds; // Data Segment
-
             uint32_t ebp; // Base Pointer (meant for stack frames)
             uint32_t edi; // Destination index for string operations
             uint32_t esi; // Source index for string operations
@@ -1396,11 +1391,6 @@ namespace CPU
 
         typedef struct TrapFrame
         {
-            // uint64_t gs;  // General-purpose Segment
-            // uint64_t fs;  // General-purpose Segment
-            // uint64_t es;  // Extra Segment (used for string operations)
-            uint64_t ds; // Data Segment
-
             uint64_t r15; // General purpose
             uint64_t r14; // General purpose
             uint64_t r13; // General purpose

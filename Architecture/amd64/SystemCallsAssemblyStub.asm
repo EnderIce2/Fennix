@@ -7,10 +7,10 @@ SystemCallHandlerStub:
     mov [gs:0x8], rsp   ; CPUData->TempStack
     mov rsp, [gs:0x0]   ; CPUData->SystemCallStack
 
-    push qword 0x23     ; user data segment
+    push qword 0x1b     ; user data segment
     push qword [gs:0x8] ; saved stack
     push r11            ; saved rflags
-    push qword 0x1b     ; user code segment
+    push qword 0x23     ; user code segment
     push rcx            ; Current RIP
 
     cld
