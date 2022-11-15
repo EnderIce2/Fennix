@@ -291,8 +291,6 @@ namespace CrashHandler
         // TODO: SUPPORT SMP
         CPU::Interrupts(CPU::Disable);
         error("An exception occurred!");
-        if (TaskManager)
-            TaskManager->Panic();
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
@@ -301,6 +299,8 @@ namespace CrashHandler
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             debug("Exception in kernel mode");
+            if (TaskManager)
+                TaskManager->Panic();
             Display->CreateBuffer(0, 0, SBIdx);
         }
         else
@@ -320,17 +320,8 @@ namespace CrashHandler
                 if (data->CurrentThread)
                 {
                     debug("Current thread is valid %#lx", data->CurrentThread);
-                    if (!data->CurrentThread->Security.IsCritical)
-                    {
-                        debug("Current thread is not critical");
-                        UserModeExceptionHandler(Frame);
-                        return;
-                    }
-                    else
-                    {
-                        Display->CreateBuffer(0, 0, SBIdx);
-                        EHPrint("\eFF0000Init process crashed!");
-                    }
+                    UserModeExceptionHandler(Frame);
+                    return;
                 }
             }
         }

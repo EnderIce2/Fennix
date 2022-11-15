@@ -106,7 +106,7 @@ void KernelMainThread()
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());
 Exit:
-    KPrint("Well, that's it. I'm going to sleep now.");
+    KPrint("Well, this is awkward. I guess you'll have to reboot.");
     CPU::Halt(true);
 }
 
