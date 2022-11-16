@@ -47,8 +47,6 @@ void FetchDisks()
 
 void KernelMainThread()
 {
-    Vector<const char *> argv;
-    Vector<const char *> envp;
     Vector<AuxiliaryVector> auxv;
 
     Tasking::TCB *CurrentWorker = nullptr;
@@ -56,36 +54,38 @@ void KernelMainThread()
     KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
     TaskManager->GetCurrentThread()->SetPriority(1);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem, argv, envp, auxv);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem, nullptr, nullptr, auxv);
     CurrentWorker->Rename("Disk");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)LoadDrivers, argv, envp, auxv);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)LoadDrivers, nullptr, nullptr, auxv);
     CurrentWorker->Rename("Drivers");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks, argv, envp, auxv);
+    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks, nullptr, nullptr, auxv);
     CurrentWorker->Rename("Fetch Disks");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
     KPrint("Setting up userspace...");
 
-    envp.clear();
-    envp.push_back("PATH=/system:/system/bin");
-    envp.push_back("TERM=tty");
-    envp.push_back("HOME=/");
-    envp.push_back("USER=root");
-    envp.push_back("SHELL=/system/bin/sh");
-    envp.push_back("PWD=/");
-    envp.push_back("LANG=en_US.UTF-8");
-    envp.push_back("TZ=UTC");
+    const char *envp[] = {
+        "PATH=/system:/system/bin",
+        "TERM=tty",
+        "HOME=/",
+        "USER=root",
+        "SHELL=/system/bin/sh",
+        "PWD=/",
+        "LANG=en_US.UTF-8",
+        "TZ=UTC",
+        nullptr};
 
-    argv.clear();
-    argv.push_back("--init");
-    argv.push_back("--critical");
+    const char *argv[] = {
+        "--init",
+        "--critical",
+        nullptr};
 
     // TODO: Untested!
     bool ien = CPU::Interrupts(CPU::Check);

@@ -54,10 +54,8 @@ namespace InterProcessCommunication
     IPC::IPC()
     {
         trace("Starting IPC Service...");
-        Vector<const char *> argv;
-        Vector<const char *> envp;
         Vector<AuxiliaryVector> auxv;
-        TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)IPCServiceStub, argv, envp, auxv);
+        TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)IPCServiceStub, nullptr, nullptr, auxv);
         TaskManager->GetCurrentThread()->Rename("IPC Service");
     }
 

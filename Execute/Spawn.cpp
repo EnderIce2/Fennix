@@ -14,7 +14,7 @@ using namespace Tasking;
 
 namespace Execute
 {
-    SpawnData Spawn(char *Path, Vector<const char *> &argv, Vector<const char *> &envp)
+    SpawnData Spawn(char *Path, const char **argv, const char **envp)
     {
         SpawnData ret = {.Status = ExStatus::Unknown,
                          .Process = nullptr,

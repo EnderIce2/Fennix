@@ -85,7 +85,7 @@ namespace Tasking
         IP EntryPoint;
         IPOffset Offset;
         int ExitCode;
-        void *Stack;
+        void *Stack __attribute__((aligned(16)));
         TaskStatus Status;
 #if defined(__amd64__)
         CPU::x64::TrapFrame Registers;
@@ -241,8 +241,8 @@ namespace Tasking
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,
-                          Vector<const char *> &argv,
-                          Vector<const char *> &envp,
+                          const char **argv,
+                          const char **envp,
                           Vector<AuxiliaryVector> &auxv,
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,

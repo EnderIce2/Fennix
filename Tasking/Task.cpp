@@ -1,8 +1,9 @@
 #include <task.hpp>
 
+#include <dumper.hpp>
+#include <convert.h>
 #include <lock.hpp>
 #include <printf.h>
-#include <dumper.hpp>
 #include <smp.hpp>
 
 #include "../kernel.h"
@@ -91,7 +92,10 @@ namespace Tasking
                 trace("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
                       Thread->Name, Thread->ID, Thread->Parent->Name, Thread->Parent->ID);
                 // Free memory
-                KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE));
+                if (Thread->Security.TrustLevel == TaskTrustLevel::User)
+                    KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - USER_STACK_SIZE), TO_PAGES(USER_STACK_SIZE) /* + 1*/);
+                else
+                    KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE) /* + 1*/);
                 SecurityManager.DestroyToken(Thread->Security.UniqueToken);
                 delete Thread->Parent->Threads[i];
                 // Remove from the list
@@ -683,8 +687,8 @@ namespace Tasking
 
     TCB *Task::CreateThread(PCB *Parent,
                             IP EntryPoint,
-                            Vector<const char *> &argv,
-                            Vector<const char *> &envp,
+                            const char **argv,
+                            const char **envp,
                             Vector<AuxiliaryVector> &auxv,
                             IPOffset Offset,
                             TaskArchitecture Architecture,
@@ -709,7 +713,6 @@ namespace Tasking
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
         Thread->ExitCode = 0xdead;
-        Thread->Stack = (void *)((uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)));
         Thread->Status = TaskStatus::Ready;
 
 #if defined(__amd64__)
@@ -726,6 +729,8 @@ namespace Tasking
         case TaskTrustLevel::Idle:
         case TaskTrustLevel::Kernel:
         {
+            Thread->Stack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE) + 1);
+            memset(Thread->Stack, 0, STACK_SIZE);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
             Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
@@ -744,6 +749,8 @@ namespace Tasking
         }
         case TaskTrustLevel::User:
         {
+            Thread->Stack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE) + 1);
+            memset(Thread->Stack, 0, USER_STACK_SIZE);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
             Thread->GSBase = 0;
@@ -756,86 +763,143 @@ namespace Tasking
             // Thread->Registers.rflags.IOPL = 3;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack + USER_STACK_SIZE);
 
-            // https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9
-            // What is a "eightbyte"? unsigned long? 1 eightbyte = 8 bytes? 2 eightbyte each = 16 bytes?
-            uint64_t TmpStack = Thread->Registers.rsp;
-            uint64_t TmpStack2 = TmpStack;
-            uint64_t *TmpStackPtr = (uint64_t *)TmpStack;
-
-            // TODO: argc, argv, envp, auxv not tested and probably not working
-            foreach (auto var in envp)
+            if (Compatibility == TaskCompatibility::Linux)
             {
-                TmpStack -= strlen(var) + 1;
-                strcpy((char *)TmpStack, var);
-            }
+                // https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9
+                // What is a "eightbyte"? unsigned long? 1 eightbyte = 8 bytes? 2 eightbyte each = 16 bytes?
+                uint64_t TmpStack = Thread->Registers.rsp;
+                uint64_t TmpStack2 = TmpStack;
+                uint64_t *TmpStackPtr = (uint64_t *)TmpStack;
 
-            foreach (auto var in argv)
+                // TODO: argc, argv, envp, auxv not tested and probably not working
+                // foreach (auto var in envp)
+                // {
+                //     TmpStack -= strlen(var) + 1;
+                //     strcpy((char *)TmpStack, var);
+                // }
+
+                // foreach (auto var in argv)
+                // {
+                //     TmpStack -= strlen(var) + 1;
+                //     strcpy((char *)TmpStack, var);
+                // }
+
+                /* align by 16 */
+                TmpStack = (uint64_t)((uint64_t)TmpStack - ((uint64_t)TmpStack & 0x0F));
+
+                /* TODO: more alignment here? */
+
+                /* auxv null */
+                TmpStack -= sizeof(uint64_t);
+                POKE(uint64_t, TmpStack) = (uint64_t)0;
+                /* This should be included too? */
+                TmpStack -= sizeof(uint64_t);
+                POKE(uint64_t, TmpStack) = (uint64_t)0;
+
+                /* auxv */
+                foreach (auto var in auxv)
+                {
+                    if (var.archaux.a_type == AT_ENTRY)
+                        Thread->Registers.rdi = var.archaux.a_un.a_val;
+
+                    TmpStack -= sizeof(uint64_t) * 2;
+                    POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_type;
+                    TmpStack -= sizeof(uint64_t) * 2;
+                    POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_un.a_val;
+                }
+
+                /* empty */
+                TmpStack -= sizeof(uint64_t);
+                POKE(uint64_t, TmpStack) = 0;
+
+                /* envp pointers */
+                // for (uint64_t i = 0; i < envp.size(); i++)
+                // {
+                //     /* Not sure if this works */
+                //     TmpStack2 -= strlen(envp[i]) + 1;
+                //     TmpStackPtr[i] = TmpStack2;
+                // }
+
+                /* empty */
+                TmpStack -= sizeof(uint64_t);
+                POKE(uint64_t, TmpStack) = 0;
+
+                /* argv pointers */
+                // for (uint64_t i = 0; i < argv.size(); i++)
+                // {
+                //     /* Not sure if this works */
+                //     TmpStack2 -= strlen(argv[i]) + 1;
+                //     TmpStackPtr[i] = TmpStack2;
+                // }
+
+                /* argc */
+                TmpStack -= sizeof(uint64_t);
+                // POKE(uint64_t, TmpStack) = argv.size() - 1;
+
+                Thread->Registers.rsp -= (uint64_t)Thread->Stack + STACK_SIZE - TmpStack;
+            }
+            else // Native
             {
-                TmpStack -= strlen(var) + 1;
-                strcpy((char *)TmpStack, var);
+                uint64_t ArgvSize = 0;
+                uint64_t ArgvStrSize = 0;
+                if (argv)
+                {
+                    while (argv[ArgvSize] != nullptr)
+                    {
+                        ArgvSize++;
+                        ArgvStrSize += strlen(argv[ArgvSize]) + 1;
+                    }
+                }
+
+                uint64_t EnvpSize = 0;
+                uint64_t EnvpStrSize = 0;
+                if (envp)
+                {
+                    while (envp[EnvpSize] != nullptr)
+                    {
+                        EnvpSize++;
+                        EnvpStrSize += strlen(envp[EnvpSize]) + 1;
+                    }
+                }
+
+                uint8_t *_argv = 0;
+                uint8_t *_envp = 0;
+
+                for (uint64_t i = 0; i < ArgvSize; i++)
+                {
+                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
+                    Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
+                    _argv = (uint8_t *)Tmp;
+                    strcpy((char *)_argv, argv[i]);
+                    argv[i] = (char *)_argv;
+                }
+
+                for (uint64_t i = 0; i < EnvpSize; i++)
+                {
+                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
+                    Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
+                    _envp = (uint8_t *)Tmp;
+                    strcpy((char *)_envp, envp[i]);
+                    envp[i] = (char *)_envp;
+                }
+
+                Thread->Registers.rdi = ArgvSize;
+                Thread->Registers.rsi = (uint64_t)_argv;
+                Thread->Registers.rdx = (uint64_t)_envp;
+
+                for (uint64_t i = 0; i < ArgvSize; i++)
+                    debug("argv[%d]: %s", i, _argv[i]);
+                for (uint64_t i = 0; i < EnvpSize; i++)
+                    debug("envp[%d]: %s", i, _envp[i]);
             }
-
-            /* align by 16 */
-            TmpStack = (uint64_t)((uint64_t)TmpStack - ((uint64_t)TmpStack & 0x0F));
-
-            /* TODO: more aligment here? */
-
-            /* auxv null */
-            TmpStack -= sizeof(uint64_t);
-            POKE(uint64_t, TmpStack) = (uint64_t)0;
-            /* This should be included too? */
-            TmpStack -= sizeof(uint64_t);
-            POKE(uint64_t, TmpStack) = (uint64_t)0;
-
-            /* auxv */
-            foreach (auto var in auxv)
-            {
-                if (var.archaux.a_type == AT_ENTRY)
-                    Thread->Registers.rdi = var.archaux.a_un.a_val;
-
-                TmpStack -= sizeof(uint64_t) * 2;
-                POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_type;
-                TmpStack -= sizeof(uint64_t) * 2;
-                POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_un.a_val;
-            }
-
-            /* empty */
-            TmpStack -= sizeof(uint64_t);
-            POKE(uint64_t, TmpStack) = 0;
-
-            /* envp pointers */
-            for (uint64_t i = 0; i < envp.size(); i++)
-            {
-                /* Not sure if this works */
-                TmpStack2 -= strlen(envp[i]) + 1;
-                TmpStackPtr[i] = TmpStack2;
-            }
-
-            /* empty */
-            TmpStack -= sizeof(uint64_t);
-            POKE(uint64_t, TmpStack) = 0;
-
-            /* argv pointers */
-            for (uint64_t i = 0; i < argv.size(); i++)
-            {
-                /* Not sure if this works */
-                TmpStack2 -= strlen(argv[i]) + 1;
-                TmpStackPtr[i] = TmpStack2;
-            }
-
-            /* argc */
-            TmpStack -= sizeof(uint64_t);
-            POKE(uint64_t, TmpStack) = argv.size() - 1;
-
-            Thread->Registers.rsp -= (uint64_t)Thread->Stack + STACK_SIZE - TmpStack;
 
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 
             Memory::Virtual uva = Memory::Virtual(Parent->PageTable);
-            for (uint64_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
-                uva.Map((void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), (void *)((uint64_t)Thread->Stack + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+            for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
+                uva.Map((void *)((uint64_t)Thread->Stack + (i * USER_STACK_SIZE)), (void *)((uint64_t)Thread->Stack + (i * USER_STACK_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
             if (!uva.Check((void *)Offset, Memory::PTFlag::US))
             {
@@ -880,8 +944,11 @@ namespace Tasking
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
 
-        debug("Thread offset is %#lx (%#lx)", Thread->Offset, Thread->EntryPoint);
-        debug("Thread stack is %#lx-%#lx", Thread->Stack, (uint64_t)Thread->Stack + STACK_SIZE);
+        debug("Thread offset is %#lx (EntryPoint:%#lx)", Thread->Offset, Thread->EntryPoint);
+        if (Parent->Security.TrustLevel == TaskTrustLevel::User)
+            debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack, (uint64_t)Thread->Stack + USER_STACK_SIZE, Thread->Registers.rsp);
+        else
+            debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack, (uint64_t)Thread->Stack + STACK_SIZE, Thread->Registers.rsp);
         debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
               Thread->Name, Thread->ID,
               Thread->Parent->Name, Thread->Parent->ID);
@@ -998,10 +1065,8 @@ namespace Tasking
         TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
-        Vector<const char *> argv;
-        Vector<const char *> envp;
         Vector<AuxiliaryVector> auxv;
-        TCB *kthrd = CreateThread(kproc, EntryPoint, argv, envp, auxv, 0, Arch);
+        TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, auxv, 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
@@ -1025,10 +1090,8 @@ namespace Tasking
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
         for (int i = 0; i < SMP::CPUCores; i++)
         {
-            Vector<const char *> argv;
-            Vector<const char *> envp;
             Vector<AuxiliaryVector> auxv;
-            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), argv, envp, auxv);
+            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), nullptr, nullptr, auxv);
             char IdleName[16];
             sprintf_(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);
