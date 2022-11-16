@@ -327,6 +327,19 @@ int memcmp(const void *vl, const void *vr, size_t n)
     return n ? *l - *r : 0;
 }
 
+void backspace(char s[])
+{
+    int len = strlen(s);
+    s[len - 1] = '\0';
+}
+
+void append(char s[], char n)
+{
+    int len = strlen(s);
+    s[len] = n;
+    s[len + 1] = '\0';
+}
+
 int strncmp(const char *s1, const char *s2, size_t n)
 {
     for (size_t i = 0; i < n; i++)

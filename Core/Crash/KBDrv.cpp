@@ -2,6 +2,7 @@
 #include "chfcts.hpp"
 
 #include <display.hpp>
+#include <convert.h>
 #include <printf.h>
 #include <debug.h>
 #include <smp.hpp>
@@ -72,19 +73,6 @@ static inline int GetLetterFromScanCode(uint8_t ScanCode)
         }
     }
     return KEY_INVALID;
-}
-
-static inline void backspace(char s[])
-{
-    int len = strlen(s);
-    s[len - 1] = '\0';
-}
-
-static inline void append(char s[], char n)
-{
-    int len = strlen(s);
-    s[len] = n;
-    s[len + 1] = '\0';
 }
 
 namespace CrashHandler

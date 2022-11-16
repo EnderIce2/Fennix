@@ -13,6 +13,9 @@ extern "C"
     void swap(char *x, char *y);
     char *reverse(char *Buffer, int i, int j);
 
+    void backspace(char s[]);
+    void append(char s[], char n);
+
     int atoi(const char *String);
     double atof(const char *String);
     char *itoa(int Value, char *Buffer, int Base);
