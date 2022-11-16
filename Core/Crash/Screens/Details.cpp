@@ -29,6 +29,23 @@ namespace CrashHandler
                     data.Thread->ID);
         EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", data.ID);
 #if defined(__amd64__)
+
+        CPUData *cpu = (CPUData *)data.CPUData;
+        if (cpu)
+        {
+            EHPrint("\eE46CEBCPU Data Address: %#lx\n", cpu);
+            EHPrint("Syscalls Stack: %#lx\n", cpu->SystemCallStack);
+            EHPrint("TempStack: %#lx\n", cpu->TempStack);
+            EHPrint("Core Stack: %#lx\n", cpu->Stack);
+            EHPrint("Core ID: %ld\n", cpu->ID);
+            EHPrint("Error Code: %ld\n", cpu->ErrorCode);
+            EHPrint("Is Active: %s\n", cpu->IsActive ? "true" : "false");
+            EHPrint("Current Process: %#lx\n", cpu->CurrentProcess);
+            EHPrint("Current Thread: %#lx\n", cpu->CurrentThread);
+            EHPrint("Arch Specific Data: %#lx\n", cpu->Data);
+            EHPrint("Checksum: 0x%X\n", cpu->Checksum);
+        }
+
         uint64_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
