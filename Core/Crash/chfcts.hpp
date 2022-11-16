@@ -24,6 +24,7 @@ struct CRData
     CPU::x64::DR7 dr7;
 
     long ID;
+    void *CPUData;
     Tasking::PCB *Process;
     Tasking::TCB *Thread;
 };

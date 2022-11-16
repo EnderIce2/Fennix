@@ -436,6 +436,7 @@ namespace CrashHandler
         if (cpudata != nullptr)
         {
             crashdata.ID = cpudata->ID;
+            crashdata.CPUData = cpudata;
             error("Technical Informations on CPU %lld:", cpudata->ID);
         }
 
