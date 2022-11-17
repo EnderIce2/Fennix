@@ -33,7 +33,7 @@ CPUData *GetCurrentCPU()
     CPUData *data = (CPUData *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
 
     if (data == nullptr && Interrupts::apic[0])
-            data = &CPUs[((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24];
+        data = &CPUs[((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24];
 
     if (data == nullptr)
         return nullptr; // The caller should handle this.
@@ -41,7 +41,10 @@ CPUData *GetCurrentCPU()
     if (!data->IsActive)
     {
         error("CPU %d is not active!", data->ID);
-        return &CPUs[0];
+        if ((&CPUs[0])->IsActive)
+            return &CPUs[0];
+        else
+            return nullptr; // We are in trouble.
     }
     assert(data->Checksum == CPU_DATA_CHECKSUM); // This should never happen.
     return data;
