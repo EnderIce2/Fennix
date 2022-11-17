@@ -22,6 +22,8 @@ namespace UniversalAsynchronousReceiverTransmitter
 
         this->Port = Port;
 
+        if (Port > 7)
+            return;
         if (serialports[Port])
             return;
 

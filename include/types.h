@@ -252,5 +252,12 @@ typedef __SIZE_TYPE__ size_t;
 #define __nonnull_all __attribute__((nonnull))
 #define __warn_unused_result __attribute__((warn_unused_result))
 #define __no_stack_protector __attribute__((no_stack_protector))
+// sanitizer
+#define __no_sanitize_address __attribute__((no_sanitize_address))
+#define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
+#define __no_address_safety_analysis __attribute__((no_address_safety_analysis))
+#define __no_sanitize_thread __attribute__((no_sanitize_thread))
+#define __no_sanitize_memory __attribute__((no_sanitize_memory))
+#define __no_sanitize_hwaddress __attribute__((no_sanitize_hwaddress))
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

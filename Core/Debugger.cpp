@@ -37,6 +37,12 @@ static inline void WritePrefix(DebugLevel Level, const char *File, int Line, con
     case DebugLevelFixme:
         DbgLvlString = "FIXME";
         break;
+    case DebugLevelUbsan:
+    {
+        DbgLvlString = "UBSAN";
+        fctprintf(uart_wrapper, nullptr, "%s|%s: ", DbgLvlString, Function);
+        return;
+    }
     default:
         DbgLvlString = "UNKNW";
         break;

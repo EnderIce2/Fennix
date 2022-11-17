@@ -232,8 +232,10 @@ namespace APIC
     {
         SmartCriticalSection(APICLock);
         APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
-        APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
-        trace("APIC Address: %#lx", APICBaseAddress);
+        uint64_t BaseLow = BaseStruct.ApicBaseLo;
+        uint64_t BaseHigh = BaseStruct.ApicBaseHi;
+        this->APICBaseAddress = BaseLow << 12u | BaseHigh << 32u;
+        trace("APIC Address: %#lx", this->APICBaseAddress);
 
         uint32_t rcx;
         cpuid(1, 0, 0, &rcx, 0);

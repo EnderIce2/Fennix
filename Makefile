@@ -93,7 +93,7 @@ NASMFLAGS :=
 endif
 
 ifeq ($(DEBUG), 1)
-	CFLAGS += -DDEBUG -ggdb -O0 -fdiagnostics-color=always
+	CFLAGS += -DDEBUG -ggdb -O0 -fdiagnostics-color=always -fsanitize=undefined
 	LDFLAGS += -ggdb -O0 -g
 	NASMFLAGS += -F dwarf -g
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable

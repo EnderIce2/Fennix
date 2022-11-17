@@ -356,8 +356,9 @@ int strncmp(const char *s1, const char *s2, size_t n)
 long unsigned strlen(const char s[])
 {
     long unsigned i = 0;
-    while (s[i] != '\0')
-        ++i;
+    if (s)
+        while (s[i] != '\0')
+            ++i;
     return i;
 }
 

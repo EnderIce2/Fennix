@@ -47,6 +47,7 @@ void FetchDisks()
 
 void KernelMainThread()
 {
+    TaskManager->InitIPC();
     Vector<AuxiliaryVector> auxv;
 
     Tasking::TCB *CurrentWorker = nullptr;

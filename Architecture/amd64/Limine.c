@@ -117,7 +117,7 @@ void init_limine()
     for (uint64_t i = 0; i < FrameBufferResponse->framebuffer_count; i++)
     {
         struct limine_framebuffer *framebuffer = FrameBufferResponse->framebuffers[i];
-        binfo.Framebuffer[i].BaseAddress = framebuffer->address - 0xffff800000000000;
+        binfo.Framebuffer[i].BaseAddress = (void *)((uint64_t)framebuffer->address - 0xffff800000000000);
         binfo.Framebuffer[i].Width = framebuffer->width;
         binfo.Framebuffer[i].Height = framebuffer->height;
         binfo.Framebuffer[i].Pitch = framebuffer->pitch;
@@ -133,7 +133,7 @@ void init_limine()
         binfo.Framebuffer[i].EDIDSize = framebuffer->edid_size;
         debug("Framebuffer %d: %dx%d %d bpp", i, framebuffer->width, framebuffer->height, framebuffer->bpp);
         debug("More info:\nAddress: %p\nPitch: %ld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d\nEDID: %p\nEDIDSize: %d",
-              framebuffer->address - 0xffff800000000000, framebuffer->pitch, framebuffer->memory_model, framebuffer->red_mask_size, framebuffer->red_mask_shift, framebuffer->green_mask_size, framebuffer->green_mask_shift, framebuffer->blue_mask_size, framebuffer->blue_mask_shift, framebuffer->edid, framebuffer->edid_size);
+              (uint64_t)framebuffer->address - 0xffff800000000000, framebuffer->pitch, framebuffer->memory_model, framebuffer->red_mask_size, framebuffer->red_mask_shift, framebuffer->green_mask_size, framebuffer->green_mask_shift, framebuffer->blue_mask_size, framebuffer->blue_mask_shift, framebuffer->edid, framebuffer->edid_size);
     }
 
     binfo.Memory.Entries = MemmapResponse->entry_count;
@@ -205,16 +205,16 @@ void init_limine()
             break;
         }
 
-        binfo.Modules[i].Address = ModuleResponse->modules[i]->address - 0xffff800000000000;
+        binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000);
         strcpy(binfo.Modules[i].Path, ModuleResponse->modules[i]->path);
         strcpy(binfo.Modules[i].CommandLine, ModuleResponse->modules[i]->cmdline);
         binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
         debug("Module %d:\nAddress: %p\nPath: %s\nCommand Line: %s\nSize: %ld", i,
-              ModuleResponse->modules[i]->address - 0xffff800000000000, ModuleResponse->modules[i]->path,
+              (uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000, ModuleResponse->modules[i]->path,
               ModuleResponse->modules[i]->cmdline, ModuleResponse->modules[i]->size);
     }
 
-    binfo.RSDP = (struct RSDPInfo *)(RsdpResponse->address - 0xffff800000000000);
+    binfo.RSDP = (struct RSDPInfo *)((uint64_t)RsdpResponse->address - 0xffff800000000000);
     trace("RSDP: %p(%p) [Signature: %.8s] [OEM: %.6s]",
           RsdpResponse->address, binfo.RSDP, binfo.RSDP->Signature, binfo.RSDP->OEMID);
 

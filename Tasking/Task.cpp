@@ -697,7 +697,15 @@ namespace Tasking
         SmartCriticalSection(TaskingLock);
         TCB *Thread = new TCB;
         if (Parent == nullptr)
+        {
             Thread->Parent = this->GetCurrentProcess();
+            if (Thread->Parent == nullptr)
+            {
+                error("Failed to get current process. Thread cannot be created.");
+                delete Thread;
+                return nullptr;
+            }
+        }
         else
             Thread->Parent = Parent;
 
@@ -1086,7 +1094,6 @@ namespace Tasking
         }
 #endif
         TaskingLock.Unlock();
-        this->IPCManager = new InterProcessCommunication::IPC;
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
         for (int i = 0; i < SMP::CPUCores; i++)
         {

@@ -101,6 +101,11 @@ namespace Tasking
 
         void Rename(const char *name)
         {
+            if (!Name[0])
+            {
+                warn("Tried to rename thread %d to NULL", ID);
+                return;
+            }
             trace("Renaming thread %s to %s", Name, name);
             for (int i = 0; i < 256; i++)
             {
@@ -201,6 +206,12 @@ namespace Tasking
         bool StopScheduler = false;
 
     public:
+        void InitIPC()
+        {
+            static int once = 0;
+            if (!once++)
+                this->IPCManager = new InterProcessCommunication::IPC();
+        }
         Vector<PCB *> GetProcessList() { return ListProcess; }
         void Panic() { StopScheduler = true; }
         void Schedule();

@@ -108,19 +108,24 @@ namespace Video
             }
 
             uint64_t Size = this->framebuffer.Pitch * Height;
-            if (this->Buffers[Index]->Checksum != 0xDEAD5C9EE7)
+            if (!this->Buffers[Index])
             {
-                ScreenBuffer *buffer = new ScreenBuffer;
-                buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
-                buffer->Width = Width;
-                buffer->Height = Height;
-                buffer->Size = Size;
-                buffer->Color = 0xFFFFFF;
-                buffer->CursorX = 0;
-                buffer->CursorY = 0;
-                this->Buffers[Index] = buffer;
-                memset(this->Buffers[Index]->Buffer, 0, Size);
-                this->Buffers[Index]->Checksum = 0xDEAD5C9EE7;
+                if (this->Buffers[Index]->Checksum != 0xDEAD5C9EE7)
+                {
+                    ScreenBuffer *buffer = new ScreenBuffer;
+                    buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
+                    buffer->Width = Width;
+                    buffer->Height = Height;
+                    buffer->Size = Size;
+                    buffer->Color = 0xFFFFFF;
+                    buffer->CursorX = 0;
+                    buffer->CursorY = 0;
+                    this->Buffers[Index] = buffer;
+                    memset(this->Buffers[Index]->Buffer, 0, Size);
+                    this->Buffers[Index]->Checksum = 0xDEAD5C9EE7;
+                }
+                else
+                    warn("Buffer %d already exists, skipping creation", Index);
             }
             else
                 warn("Buffer %d already exists, skipping creation", Index);
