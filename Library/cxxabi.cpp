@@ -1,4 +1,6 @@
 #include <types.h>
+
+#include <memory.hpp>
 #include <debug.h>
 
 // TODO: complete implementation for everything
@@ -33,10 +35,26 @@ typedef enum
 } _Unwind_Reason_Code;
 
 struct _Unwind_Context;
+typedef unsigned _Unwind_Ptr __attribute__((__mode__(__pointer__)));
 typedef unsigned _Unwind_Exception_Class __attribute__((__mode__(__DI__)));
 typedef unsigned _Unwind_Word __attribute__((__mode__(__unwind_word__)));
 typedef void (*_Unwind_Exception_Cleanup_Fn)(_Unwind_Reason_Code, struct _Unwind_Exception *);
 typedef int _Unwind_Action;
+
+struct type_info
+{
+    const char *name;
+};
+
+struct unexpected_handler
+{
+    void (*unexpected)();
+};
+
+struct terminate_handler
+{
+    void (*handler)();
+};
 
 struct _Unwind_Exception
 {
@@ -49,6 +67,34 @@ struct _Unwind_Exception
     _Unwind_Word private_2;
 #endif
 } __attribute__((__aligned__));
+
+struct __cxa_exception
+{
+#if __LP64__
+    size_t referenceCount;
+#endif
+    type_info *exceptionType;
+    void (*exceptionDestructor)(void *);
+    unexpected_handler unexpectedHandler;
+    terminate_handler terminateHandler;
+    __cxa_exception *nextException;
+    int handlerCount;
+
+#ifdef __ARM_EABI_UNWINDER__
+    __cxa_exception *nextPropagatingException;
+    int propagationCount;
+#else
+    int handlerSwitchValue;
+    const unsigned char *actionRecord;
+    const unsigned char *languageSpecificData;
+    _Unwind_Ptr catchTemp;
+    void *adjustedPtr;
+#endif
+#if !__LP64__
+    size_t referenceCount;
+#endif
+    _Unwind_Exception unwindHeader;
+};
 
 extern void *__dso_handle = 0;
 atexit_func_entry_t __atexit_funcs[ATEXIT_MAX_FUNCS];
@@ -95,13 +141,69 @@ extern "C" _Unwind_Reason_Code __gxx_personality_v0(int version, _Unwind_Action 
 
 extern "C" void _Unwind_Resume(struct _Unwind_Exception *exc) { fixme("_Unwind_Resume( %p ) triggered.", exc); }
 
-extern "C" void *__cxa_allocate_exception(uint64_t thrown_size) throw()
+static inline size_t align_exception_allocation_size(size_t s, size_t a) { return (s + a - 1) & ~(a - 1); }
+
+void unexpected_header_stub() { fixme("unexpected() called."); }
+void terminate_header_stub() { fixme("terminate() called."); }
+
+extern "C" void *__cxa_allocate_exception(size_t thrown_size) throw()
 {
-    fixme("__cxa_allocate_exception( %#llu ) triggered.", thrown_size);
-    return (void *)0;
+    fixme("__cxa_allocate_exception( %d ) triggered.", thrown_size);
+
+    size_t real_size = align_exception_allocation_size(thrown_size + sizeof(__cxa_exception), alignof(__cxa_exception));
+
+    __cxa_exception *header = (__cxa_exception *)kmalloc(real_size);
+    if (!header)
+    {
+        error("Failed to allocate exception.");
+        return nullptr;
+    }
+
+    header->referenceCount = 1;
+    header->exceptionType = nullptr;
+    header->exceptionDestructor = nullptr;
+    header->unexpectedHandler = {.unexpected = unexpected_header_stub};
+    header->terminateHandler = {.handler = terminate_header_stub};
+    header->nextException = nullptr;
+    header->handlerCount = -1;
+    header->handlerSwitchValue = 0;
+    header->actionRecord = nullptr;
+    header->languageSpecificData = nullptr;
+    header->catchTemp = 0;
+    header->adjustedPtr = nullptr;
+
+    return header + 1;
 }
 
-extern "C" void __cxa_throw(void *thrown_object, void *tinfo, void (*dest)(void *)) { fixme("__cxa_throw( %p %p %p ) triggered.", thrown_object, tinfo, dest); }
+extern "C" void _Unwind_RaiseException(_Unwind_Exception *exc)
+{
+    fixme("_Unwind_RaiseException( %p ) triggered.", exc);
+
+    __cxa_exception *header = ((__cxa_exception *)exc) - 1;
+    if (header->terminateHandler.handler)
+    {
+        debug("Calling terminate handler.");
+        header->terminateHandler.handler();
+    }
+    else
+    {
+        error("Unhandled exception.");
+        CPU::Stop();
+    }
+
+    CPU::Halt(true);
+}
+
+extern "C" void __cxa_throw(void *thrown_object, void *tinfo, void (*dest)(void *))
+{
+    fixme("__cxa_throw( %p %p %p ) triggered.", thrown_object, tinfo, dest);
+
+    __cxa_exception *header = ((__cxa_exception *)thrown_object) - 1;
+    header->exceptionType = (type_info *)tinfo;
+    header->exceptionDestructor = dest;
+
+    _Unwind_RaiseException(&header->unwindHeader);
+}
 
 extern "C" void __cxa_rethrow() { fixme("__cxa_rethrow() triggered."); }
 
