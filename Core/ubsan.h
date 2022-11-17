@@ -85,4 +85,10 @@ struct shift_out_of_bounds_data
     struct type_descriptor *right_type;
 };
 
+struct dynamic_type_cache_miss_data
+{
+    struct source_location location;
+    struct type_descriptor *type;
+};
+
 #endif // !__FENNIX_KERNEL_UBSAN_H__

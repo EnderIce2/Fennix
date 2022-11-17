@@ -92,7 +92,13 @@ extern void __asan_unregister_globals(void) { ubsan("unregister_globals"); }
 extern void __asan_init(void) { ubsan("init"); }
 extern void __asan_version_mismatch_check_v8(void) { ubsan("version_mismatch_check_v8"); }
 extern void __asan_option_detect_stack_use_after_return(void) { ubsan("stack use after return"); }
-extern __noreturn void __asan_handle_no_return(void) { ubsan("no_return"); }
+
+extern __noreturn void __asan_handle_no_return(void)
+{
+    ubsan("no_return");
+    while (1)
+        ;
+}
 
 #define is_aligned(value, alignment) !(value & (alignment - 1))
 
@@ -248,4 +254,16 @@ void __ubsan_handle_missing_return(struct unreachable_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
         ubsan("Missing return.");
+}
+
+void __ubsan_vptr_type_cache(uintptr_t *cache, uintptr_t ptr)
+{
+    ubsan("Vptr type cache.");
+    *cache = ptr;
+}
+
+void __ubsan_handle_dynamic_type_cache_miss(struct dynamic_type_cache_miss_data *data, uintptr_t ptr)
+{
+    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+        ubsan("Dynamic type cache miss.");
 }
