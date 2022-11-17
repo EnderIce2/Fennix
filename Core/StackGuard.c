@@ -34,6 +34,7 @@ static void __attribute__((constructor, no_stack_protector)) __construct_stk_chk
 
 __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
 {
+    TaskingPanic();
     error("Stack smashing detected!");
     KPrint("\eFF0000Stack smashing detected!");
 #if defined(__amd64__) || defined(__i386__)
@@ -49,6 +50,7 @@ __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
 // https://github.com/gcc-mirror/gcc/blob/master/libssp/ssp.c
 __attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void)
 {
+    TaskingPanic();
     error("Buffer overflow detected!");
     KPrint("\eFF0000Buffer overflow detected!");
     for (;;)

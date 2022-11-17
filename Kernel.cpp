@@ -79,7 +79,7 @@ EXTERNC void Entry(BootInfo *Info)
     }
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
-    #if defined(__amd64__)
+#if defined(__amd64__)
     PowerManager->InitDSDT();
 #elif defined(__i386__)
     // FIXME: Add ACPI support for i386
@@ -100,4 +100,10 @@ EXTERNC void Entry(BootInfo *Info)
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     KPrint("\e058C19################################");
     CPU::Halt(true);
+}
+
+EXTERNC void TaskingPanic()
+{
+    if (TaskManager)
+        TaskManager->Panic();
 }
