@@ -37,7 +37,15 @@ namespace InterruptDescriptorTable
 
     extern "C" __attribute__((naked, used, no_stack_protector)) void ExceptionHandlerStub()
     {
-        asm("cld\n" // clear direction flag
+        asm(
+            // "cmp $0x1000, %rsp\n"    // Just in case the stack is corrupted
+            // "jng .skip_swap_check_1\n" /* if is not greater than */
+            // "cmpw $0x8, 0x8(%rsp)\n"
+            // "je .skip_swap_check_1\n"
+            // "swapgs\n"
+            // ".skip_swap_check_1:\n"
+
+            "cld\n" // clear direction flag
 
             // push all registers
             "pushq %rax\n"
@@ -77,12 +85,31 @@ namespace InterruptDescriptorTable
             "popq %rax\n"
 
             "addq $16, %rsp\n"
+
+            // "cmp $0x1000, %rsp\n"
+            // "jng .skip_swap_check_2\n"
+            // "cmpw $0x8, 0x8(%rsp)\n"
+            // "je .skip_swap_check_2\n"
+            // "swapgs\n"
+            // ".skip_swap_check_2:\n"
+
             "iretq"); // pop CS RIP RFLAGS SS ESP
     }
 
+    extern "C" void WarnSwapgs() { warn("swapgs"); }
+
     extern "C" __attribute__((naked, used, no_stack_protector)) void InterruptHandlerStub()
     {
-        asm("cld\n"
+        asm(
+            // "cmp $0x1000, %rsp\n"
+            // "jng .skip_swap_check__1\n"
+            // "cmpw $0x8, 0x8(%rsp)\n"
+            // "je .skip_swap_check__1\n"
+            // "swapgs\n"
+            // "call WarnSwapgs\n"
+            // ".skip_swap_check__1:\n"
+
+            "cld\n"
             "pushq %rax\n"
             "pushq %rbx\n"
             "pushq %rcx\n"
@@ -119,6 +146,15 @@ namespace InterruptDescriptorTable
             "popq %rax\n"
 
             "addq $16, %rsp\n"
+
+            // "cmp $0x1000, %rsp\n"
+            // "jng .skip_swap_check__2\n"
+            // "cmpw $0x8, 0x8(%rsp)\n"
+            // "je .skip_swap_check__2\n"
+            // "call WarnSwapgs\n"
+            // "swapgs\n"
+            // ".skip_swap_check__2:\n"
+
             "iretq");
     }
 

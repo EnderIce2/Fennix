@@ -111,7 +111,15 @@ prepare:
 	gzip -d Files/ter-powerline-v12n.psf.gz
 
 build: $(KERNEL_FILENAME)
+
+dump:
+ifeq (,$(wildcard $(KERNEL_FILENAME)))
+	$(error $(KERNEL_FILENAME) does not exist)
+endif
+	$(info Dumping $(KERNEL_FILENAME) in AT T syntax...)
 	$(OBJDUMP) -D -d $(KERNEL_FILENAME) > kernel_dump.map
+	$(info Dumping $(KERNEL_FILENAME) in Intel syntax...)
+	$(OBJDUMP) -M intel -D -d $(KERNEL_FILENAME) > kernel_dump_intel.map
 
 $(KERNEL_FILENAME): $(OBJ)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
@@ -160,4 +168,4 @@ endif
 	$(NM) $@
 
 clean:
-	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map initrd.tar.gz $(OBJ) $(KERNEL_FILENAME)
+	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map kernel_dump_intel.map initrd.tar.gz $(OBJ) $(KERNEL_FILENAME)
