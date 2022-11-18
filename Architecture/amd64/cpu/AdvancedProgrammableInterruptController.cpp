@@ -299,11 +299,9 @@ namespace APIC
         }
     }
 
-    APIC::~APIC()
-    {
-    }
+    APIC::~APIC() {}
 
-    void Timer::OnInterruptReceived(TrapFrame *Frame) { debug("APIC IRQ0 INTERRUPT RECEIVED ON CPU %d", GetCurrentCPU()->ID); }
+    void Timer::OnInterruptReceived(TrapFrame *Frame) {}
 
     void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
     {
