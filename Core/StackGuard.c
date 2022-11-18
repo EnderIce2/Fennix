@@ -38,10 +38,8 @@ __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
     error("Stack smashing detected!");
     KPrint("\eFF0000Stack smashing detected!");
 #if defined(__amd64__) || defined(__i386__)
-    asmv("loop__stack_chk_fail:\n"
-         "cli\n"
-         "hlt\n"
-         "jmp loop__stack_chk_fail\n");
+    while (1)
+        asmv("cli; hlt");
 #elif defined(__aarch64__)
     asmv("wfe");
 #endif
@@ -53,15 +51,10 @@ __attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void)
     TaskingPanic();
     error("Buffer overflow detected!");
     KPrint("\eFF0000Buffer overflow detected!");
-    for (;;)
-    {
 #if defined(__amd64__) || defined(__i386__)
-        asmv("loop__chk_fail:\n"
-             "cli\n"
-             "hlt\n"
-             "jmp loop__chk_fail\n");
+    while (1)
+        asmv("cli; hlt");
 #elif defined(__aarch64__)
-        asmv("wfe");
+    asmv("wfe");
 #endif
-    }
 }
