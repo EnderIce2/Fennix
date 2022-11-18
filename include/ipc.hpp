@@ -7,7 +7,7 @@
 
 namespace InterProcessCommunication
 {
-    typedef unsigned int IPCPort;
+    typedef int IPCPort;
 
     enum IPCOperationType
     {
@@ -24,16 +24,17 @@ namespace InterProcessCommunication
         IPCTimeout,
         IPCInvalidPort,
         IPCPortInUse,
-        IPCPortNotRegistered
+        IPCPortNotRegistered,
+        IPCIDNotFound
     };
 
     typedef struct
     {
         int ID;
-        int Length;
-        void *Buffer;
+        long Length;
+        uint8_t *Buffer;
         bool Listening;
-        IPCOperationType Type;
+        IPCOperationType Operation;
         IPCErrorCode Error;
         LockClass Lock;
     } IPCHandle;
@@ -41,10 +42,10 @@ namespace InterProcessCommunication
     typedef struct
     {
         int ID;
-        int Length;
-        IPCOperationType Type;
+        long Length;
+        IPCOperationType Operation;
         IPCErrorCode Error;
-        void *Buffer;
+        uint8_t *Buffer;
 
         // Reserved
         IPCHandle *HandleBuffer;
@@ -58,15 +59,15 @@ namespace InterProcessCommunication
     class IPC
     {
     private:
-
     public:
         IPC();
         ~IPC();
 
         IPCHandle *RegisterHandle(IPCPort Port);
-        IPCHandle *Wait(IPCPort port);
-        IPCError Read(int pid, IPCPort port, void *buf, int size);
-        IPCError Write(int pid, IPCPort port, void *buf, int size);
+        IPCError Listen(IPCPort Port);
+        IPCHandle *Wait(IPCPort Port);
+        IPCError Read(unsigned long /* Tasking::UPID */ ID, IPCPort Port, uint8_t *&Buffer, long &Size);
+        IPCError Write(unsigned long /* Tasking::UPID */ ID, IPCPort Port, uint8_t *Buffer, long Size);
     };
 }
 
