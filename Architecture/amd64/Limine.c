@@ -38,6 +38,10 @@ static volatile struct limine_module_request ModuleRequest = {
     .id = LIMINE_MODULE_REQUEST,
     .revision = 0};
 
+static volatile struct limine_smbios_request SmbiosRequest = {
+    .id = LIMINE_SMBIOS_REQUEST,
+    .revision = 0};
+
 void init_limine()
 {
     struct BootInfo binfo;
@@ -60,6 +64,7 @@ void init_limine()
     struct limine_rsdp_response *RsdpResponse = RsdpRequest.response;
     struct limine_kernel_file_response *KernelFileResponse = KernelFileRequest.response;
     struct limine_module_response *ModuleResponse = ModuleRequest.response;
+    struct limine_smbios_response *SmbiosResponse = SmbiosRequest.response;
 
     if (FrameBufferResponse == NULL || FrameBufferResponse->framebuffer_count < 1)
     {
@@ -217,6 +222,14 @@ void init_limine()
     binfo.RSDP = (struct RSDPInfo *)((uint64_t)RsdpResponse->address - 0xffff800000000000);
     trace("RSDP: %p(%p) [Signature: %.8s] [OEM: %.6s]",
           RsdpResponse->address, binfo.RSDP, binfo.RSDP->Signature, binfo.RSDP->OEMID);
+
+    debug("SMBIOS: %p %p", SmbiosResponse->entry_32, SmbiosResponse->entry_64);
+    if (SmbiosResponse->entry_32 != NULL)
+        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_32 - 0xffff800000000000);
+    else if (SmbiosResponse->entry_64 != NULL)
+        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_64 - 0xffff800000000000);
+    else
+        binfo.SMBIOSPtr = NULL;
 
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;

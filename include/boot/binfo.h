@@ -114,6 +114,8 @@ struct BootInfo
         char Name[256];
         char Version[64];
     } Bootloader;
+
+    void *SMBIOSPtr;
 };
 
 #endif // !__FENNIX_KERNEL_BOOT_INFO_H__
