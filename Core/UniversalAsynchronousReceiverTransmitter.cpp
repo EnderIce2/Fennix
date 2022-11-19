@@ -21,10 +21,39 @@ namespace UniversalAsynchronousReceiverTransmitter
             return;
 
         this->Port = Port;
+        int PortNumber = 0;
 
-        if (Port > 7)
+        switch (Port)
+        {
+        case COM1:
+            PortNumber = 0;
+            break;
+        case COM2:
+            PortNumber = 1;
+            break;
+        case COM3:
+            PortNumber = 2;
+            break;
+        case COM4:
+            PortNumber = 3;
+            break;
+        case COM5:
+            PortNumber = 4;
+            break;
+        case COM6:
+            PortNumber = 5;
+            break;
+        case COM7:
+            PortNumber = 6;
+            break;
+        case COM8:
+            PortNumber = 7;
+            break;
+        default:
             return;
-        if (serialports[Port])
+        }
+
+        if (serialports[PortNumber])
             return;
 
         // Initialize the serial port
@@ -48,7 +77,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
         // Set to normal operation mode.
         outb(Port + 4, 0x0F);
-        serialports[Port] = true;
+        serialports[PortNumber] = true;
 #endif
     }
 
