@@ -56,7 +56,7 @@ void KernelMainThread()
     TaskManager->GetCurrentThread()->SetPriority(1);
 
     CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem, nullptr, nullptr, auxv);
-    CurrentWorker->Rename("Disk");
+    CurrentWorker->Rename("Filesystems");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
@@ -66,7 +66,7 @@ void KernelMainThread()
     TaskManager->WaitForThread(CurrentWorker);
 
     CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks, nullptr, nullptr, auxv);
-    CurrentWorker->Rename("Fetch Disks");
+    CurrentWorker->Rename("Disks");
     CurrentWorker->SetPriority(100);
     TaskManager->WaitForThread(CurrentWorker);
 
