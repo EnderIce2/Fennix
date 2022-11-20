@@ -172,8 +172,6 @@ EXTERNC void Entry(BootInfo *Info)
     else
         KPrint("SMBIOS: \eFF0000Not Found");
 
-    CPU::Halt(true);
-
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     KPrint("\e058C19################################");
     CPU::Halt(true);
