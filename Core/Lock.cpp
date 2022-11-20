@@ -5,33 +5,6 @@
 
 #include "../kernel.h"
 
-static unsigned long DeadLocks = 0;
-
-extern "C" void DeadLockHandler(LockClass *Lock)
-{
-    CPUData *CoreData = GetCurrentCPU();
-    long CCore = 0xdead;
-    if (CoreData != nullptr)
-        CCore = CoreData->ID;
-    warn("Potential deadlock in lock '%s' held by '%s' (%ld) [%#lx-%ld] [%ld->%ld]",
-         Lock->GetLockData()->AttemptingToGet,
-         Lock->GetLockData()->CurrentHolder,
-         DeadLocks,
-         Lock->GetLockData()->LockData,
-         Lock->GetLockData()->Count,
-         CCore,
-         Lock->GetLockData()->Core);
-
-    // warn("Potential deadlock in lock ' ' held by ' ' (%ld) %ld", DeadLocks, CCore);
-
-    // TODO: Print on screen too.
-
-    DeadLocks++;
-
-    if (TaskManager)
-        TaskManager->Schedule();
-}
-
 void LockClass::DeadLock(SpinLockData Lock)
 {
     CPUData *CoreData = GetCurrentCPU();

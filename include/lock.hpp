@@ -4,13 +4,6 @@
 #include <types.h>
 #include <cpu.hpp>
 
-#pragma GCC diagnostic ignored "-Wvolatile"
-
-EXTERNC void SpinLock_Lock(volatile uint64_t *LockData);
-EXTERNC void SpinLock_Unlock(volatile uint64_t *LockData);
-EXTERNC uint64_t SpinLock_CheckAndLock(volatile uint64_t *LockData);
-EXTERNC uint64_t SpinLock_WithTimeout(volatile uint64_t *LockData, volatile uint64_t Iterations);
-
 #ifdef __cplusplus
 /** @brief Please use this macro to create a new lock. */
 class LockClass
