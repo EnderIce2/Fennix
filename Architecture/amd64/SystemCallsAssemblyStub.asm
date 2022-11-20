@@ -1,19 +1,6 @@
 [BITS 64]
-ALIGN	4096
-extern SystemCallsHandler
-global SystemCallHandlerStub
-SystemCallHandlerStub:
-    swapgs
-    mov [gs:0x8], rsp   ; CPUData->TempStack
-    mov rsp, [gs:0x0]   ; CPUData->SystemCallStack
 
-    push qword 0x1b     ; user data segment
-    push qword [gs:0x8] ; saved stack
-    push r11            ; saved rflags
-    push qword 0x23     ; user code segment
-    push rcx            ; Current RIP
-
-    cld
+%macro PushAllSC 0
     push rax
     push rbx
     push rcx
@@ -29,11 +16,9 @@ SystemCallHandlerStub:
     push r13
     push r14
     push r15
+%endmacro
 
-    mov rdi, rsp
-    mov rbp, 0
-    call SystemCallsHandler
-
+%macro PopAllSC 0
     pop r15
     pop r14
     pop r13
@@ -48,8 +33,27 @@ SystemCallHandlerStub:
     pop rdx
     pop rcx
     pop rbx
+%endmacro
 
-    mov rsp, [gs:0x8]
-    swapgs
-    sti
-    o64 sysret
+ALIGN 4096
+extern SystemCallsHandler
+global SystemCallHandlerStub
+SystemCallHandlerStub:
+    swapgs                  ; Swap gs and kernelgs
+    mov [gs:0x8], rsp       ; CPUData->TempStack
+    mov rsp, [gs:0x0]       ; CPUData->SystemCallStack
+    push qword 0x1b         ; User data segment
+    push qword [gs:0x8]     ; Saved stack
+    push r11                ; Saved rflags
+    push qword 0x23         ; User code segment
+    push rcx                ; Current instruction pointer
+    cld                     ; Clear direction flag
+    PushAllSC               ; Push all registers
+    mov rdi, rsp            ; Pass pointer to registers
+    mov rbp, 0              ; Pass 0 as return address
+    call SystemCallsHandler ; Call system call handler
+    PopAllSC                ; Pop all registers except rax
+    mov rsp, [gs:0x8]       ; Restore stack
+    swapgs                  ; Swap back gs and kernelgs
+    sti                     ; Enable interrupts
+    o64 sysret              ; Return to user mode

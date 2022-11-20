@@ -131,7 +131,10 @@ namespace InterProcessCommunication
         trace("IPC Service Started.");
         TaskManager->GetCurrentThread()->SetPriority(1);
         // TODO: do something useful here, like, IPC event viewer or smth...
-        CPU::Pause(true);
+        while (1)
+        {
+            // The scheduler doesn't like CPU::Pause for some reason. :/
+        }
     }
 
     IPC::IPC()
