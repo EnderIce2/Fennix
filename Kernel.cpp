@@ -10,7 +10,6 @@
 #include <smp.hpp>
 #include <cargs.h>
 #include <io.h>
-#include <dumper.hpp>
 
 #include "Core/smbios.hpp"
 
@@ -112,15 +111,6 @@ EXTERNC void Entry(BootInfo *Info)
         debug("BIOS: %p", bios);
         debug("System: %p", system);
         debug("Baseboard: %p", baseboard);
-        DumpData("SMBIOS ALL DUMP", (void *)(uint64_t)smbios->TableAddress, smbios->TableLength);
-        if (smbios)
-            DumpData("SMBIOS", smbios, sizeof(SMBIOS::SMBIOSEntryPoint));
-        if (bios)
-            DumpData("BIOS", bios, sizeof(SMBIOS::SMBIOSBIOSInformation));
-        if (system)
-            DumpData("System", system, sizeof(SMBIOS::SMBIOSSystemInformation));
-        if (baseboard)
-            DumpData("Baseboard", baseboard, sizeof(SMBIOS::SMBIOSBaseBoardInformation));
 
         if (smbios)
             KPrint("SMBIOS: \eCCCCCCString:\e8888FF%.4s \eCCCCCCVersion (Major Minor):\e8888FF%d %d \eCCCCCCTable:\e8888FF%#x \eCCCCCCLength:\e8888FF%d",
