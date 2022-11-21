@@ -43,8 +43,8 @@ void MapFromZero(PageTable *PT, BootInfo *Info)
     uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
     for (uint64_t t = 0; t < Info->Memory.Size; t += PAGE_SIZE)
     {
-        va.Map((void *)t, (void *)t, PTFlag::RW | PTFlag::US);
-        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW | PTFlag::US);
+        va.Map((void *)t, (void *)t, PTFlag::RW);
+        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
         VirtualOffsetNormalVMA += PAGE_SIZE;
     }
 }
@@ -174,8 +174,10 @@ void InitializeMemoryManagement(BootInfo *Info)
     UserspaceKernelOnlyPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(UserspaceKernelOnlyPageTable, 0, PAGE_SIZE);
 
-    debug("Mapping from %#llx to %#llx", 0, Info->Memory.Size);
+    debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
     MapFromZero(KernelPageTable, Info);
+    debug("Mapping from 0x0 %#llx for Userspace Page Table", Info->Memory.Size);
+    MapFromZero(UserspaceKernelOnlyPageTable, Info);
 
     /* Mapping Framebuffer address */
     debug("Mapping Framebuffer");
@@ -289,14 +291,20 @@ void HeapFree(void *Address)
     }
 }
 
-void *operator new(size_t Size) { return HeapMalloc(Size); }
-void *operator new[](size_t Size) { return HeapMalloc(Size); }
+void *operator new(size_t Size) {
+    return HeapMalloc(Size); }
+void *operator new[](size_t Size) {
+    return HeapMalloc(Size); }
 void *operator new(unsigned long Size, std::align_val_t Alignment)
 {
     fixme("operator new with alignment(%#lx) is not implemented", Alignment);
     return HeapMalloc(Size);
 }
-void operator delete(void *Pointer) { HeapFree(Pointer); }
-void operator delete[](void *Pointer) { HeapFree(Pointer); }
-void operator delete(void *Pointer, long unsigned int Size) { HeapFree(Pointer); }
-void operator delete[](void *Pointer, long unsigned int Size) { HeapFree(Pointer); }
+void operator delete(void *Pointer) {
+    HeapFree(Pointer); }
+void operator delete[](void *Pointer) {
+    HeapFree(Pointer); }
+void operator delete(void *Pointer, long unsigned int Size) {
+    HeapFree(Pointer); }
+void operator delete[](void *Pointer, long unsigned int Size) {
+    HeapFree(Pointer); }

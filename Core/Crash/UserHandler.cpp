@@ -30,7 +30,8 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     CriticalSection cs;
     debug("Interrupts? %s.", cs.IsInterruptsEnabled() ? "Yes" : "No");
     fixme("Handling user mode exception");
-    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Stopped;
+    CPUData *CurCPU = GetCurrentCPU();
 
     {
         CPU::x64::CR0 cr0 = CPU::x64::readcr0();
@@ -41,7 +42,7 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         CPU::x64::EFER efer;
         efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
 
-        error("Technical Informations on CPU %lld:", GetCurrentCPU()->ID);
+        error("Technical Informations on CPU %lld:", CurCPU->ID);
 #if defined(__amd64__)
         uint64_t ds;
         asmv("mov %%ds, %0"
@@ -176,6 +177,13 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     }
     case CPU::x64::PageFault:
     {
+        if (CurCPU)
+            if (CurCPU->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
+            {
+                debug("Stack expanded");
+                return;
+            }
+
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(__amd64__)
         error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->rip);
@@ -226,6 +234,9 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         break;
     }
     }
+
+    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+    __sync_synchronize();
     error("End of report.");
     CPU::Interrupts(CPU::Enable);
     debug("Interrupts enabled back.");

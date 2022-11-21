@@ -92,10 +92,7 @@ namespace Tasking
                 trace("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
                       Thread->Name, Thread->ID, Thread->Parent->Name, Thread->Parent->ID);
                 // Free memory
-                if (Thread->Security.TrustLevel == TaskTrustLevel::User)
-                    KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - USER_STACK_SIZE), TO_PAGES(USER_STACK_SIZE) /* + 1*/);
-                else
-                    KernelAllocator.FreePages((void *)((uint64_t)Thread->Stack - STACK_SIZE), TO_PAGES(STACK_SIZE) /* + 1*/);
+                delete Thread->Stack;
                 SecurityManager.DestroyToken(Thread->Security.UniqueToken);
                 delete Thread->Parent->Threads[i];
                 // Remove from the list
@@ -125,7 +122,8 @@ namespace Tasking
                     // Free memory
                     delete ListProcess[i]->IPCHandles;
                     SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
-                    KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
+                    if (ListProcess[i]->Security.TrustLevel == TaskTrustLevel::User)
+                        KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
                     delete ListProcess[i];
                     // Remove from the list
                     ListProcess.remove(i);
@@ -356,6 +354,7 @@ namespace Tasking
             warn("Scheduler stopped.");
             return;
         }
+        CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); // Restore kernel page table for safety reasons.
         CPUData *CurrentCPU = GetCurrentCPU();
         // if (CurrentCPU->ID != 0)
         // debug("Scheduler called from CPU %d", CurrentCPU->ID);
@@ -512,7 +511,7 @@ namespace Tasking
             }
         }
         *Frame = CurrentCPU->CurrentThread->Registers;
-        GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack + STACK_SIZE));
+        GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
         CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
@@ -737,8 +736,7 @@ namespace Tasking
         case TaskTrustLevel::Idle:
         case TaskTrustLevel::Kernel:
         {
-            Thread->Stack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE) + 1);
-            memset(Thread->Stack, 0, STACK_SIZE);
+            Thread->Stack = new Memory::StackGuard(false, Parent->PageTable);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
             Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
@@ -748,7 +746,7 @@ namespace Tasking
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack + STACK_SIZE);
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
             POKE(uint64_t, Thread->Registers.rsp) = (uint64_t)ThreadDoExit;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
@@ -757,8 +755,7 @@ namespace Tasking
         }
         case TaskTrustLevel::User:
         {
-            Thread->Stack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE) + 1);
-            memset(Thread->Stack, 0, USER_STACK_SIZE);
+            Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
             Thread->GSBase = 0;
@@ -771,7 +768,7 @@ namespace Tasking
             // Thread->Registers.rflags.IOPL = 3;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack + USER_STACK_SIZE);
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
 
             if (Compatibility == TaskCompatibility::Linux)
             {
@@ -846,7 +843,7 @@ namespace Tasking
                 TmpStack -= sizeof(uint64_t);
                 // POKE(uint64_t, TmpStack) = argv.size() - 1;
 
-                Thread->Registers.rsp -= (uint64_t)Thread->Stack + STACK_SIZE - TmpStack;
+                Thread->Registers.rsp -= (uint64_t)Thread->Stack->GetStackTop() - TmpStack;
             }
             else // Native
             {
@@ -906,9 +903,6 @@ namespace Tasking
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 
             Memory::Virtual uva = Memory::Virtual(Parent->PageTable);
-            for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
-                uva.Map((void *)((uint64_t)Thread->Stack + (i * USER_STACK_SIZE)), (void *)((uint64_t)Thread->Stack + (i * USER_STACK_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
-
             if (!uva.Check((void *)Offset, Memory::PTFlag::US))
             {
                 error("Offset is not user accessible");
@@ -925,7 +919,7 @@ namespace Tasking
         default:
         {
             error("Unknown elevation.");
-            KernelAllocator.FreePages(Thread->Stack, TO_PAGES(STACK_SIZE));
+            delete Thread->Stack;
             this->NextTID--;
             delete Thread;
             return nullptr;
@@ -954,9 +948,9 @@ namespace Tasking
 
         debug("Thread offset is %#lx (EntryPoint:%#lx)", Thread->Offset, Thread->EntryPoint);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
-            debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack, (uint64_t)Thread->Stack + USER_STACK_SIZE, Thread->Registers.rsp);
+            debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         else
-            debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack, (uint64_t)Thread->Stack + STACK_SIZE, Thread->Registers.rsp);
+            debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
               Thread->Name, Thread->ID,
               Thread->Parent->Name, Thread->Parent->ID);
@@ -995,9 +989,7 @@ namespace Tasking
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
 #if defined(__amd64__)
-            Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-            memset(Process->PageTable, 0, PAGE_SIZE);
-            memcpy(Process->PageTable, (void *)CPU::x64::readcr3().raw, PAGE_SIZE);
+            Process->PageTable = (Memory::PageTable *)CPU::x64::readcr3().raw;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -1008,10 +1000,9 @@ namespace Tasking
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::Untrusted);
 #if defined(__amd64__)
             Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-            memset(Process->PageTable, 0, PAGE_SIZE);
-            memcpy(Process->PageTable, (void *)CPU::x64::readcr3().raw, PAGE_SIZE);
-            fixme("User mode process page table is not implemented.");
-            // memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
+            memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
+            for (uint64_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
+                Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif

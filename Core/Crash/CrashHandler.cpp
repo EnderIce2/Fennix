@@ -299,6 +299,24 @@ namespace CrashHandler
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             debug("Exception in kernel mode");
+            if (Frame->InterruptNumber == CPU::x64::PageFault)
+            {
+                CPUData *data = GetCurrentCPU();
+                if (data)
+                {
+                    if (data->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
+                    {
+                        debug("Stack expanded");
+                        CPU::Interrupts(CPU::Enable);
+                        return;
+                    }
+                    else
+                    {
+                        error("Stack expansion failed");
+                    }
+                }
+            }
+
             if (TaskManager)
                 TaskManager->Panic();
             Display->CreateBuffer(0, 0, SBIdx);

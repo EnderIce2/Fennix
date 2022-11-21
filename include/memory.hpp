@@ -34,9 +34,9 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 // geopbyte
 #define TO_GPB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 
-#define PAGE_SIZE 0x1000
-#define STACK_SIZE 0x1000000
-#define USER_STACK_SIZE 0x1000000
+#define PAGE_SIZE 0x1000       // 4KB
+#define STACK_SIZE 0x4000      // 16kb
+#define USER_STACK_SIZE 0x2000 // 8kb
 
 // to pages
 #define TO_PAGES(d) (d / PAGE_SIZE + 1)
@@ -49,11 +49,16 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 /**
  * @brief KERNEL_HEAP_BASE is the base address of the kernel heap
  */
-#define KERNEL_HEAP_BASE 0xFFFFC00000000000
+#define KERNEL_HEAP_BASE 0xFFFFA00000000000
 /**
  * @brief USER_HEAP_BASE is the base address of the user heap allocated by the kernel
  */
-#define USER_HEAP_BASE 0xFFFFD00000000000
+#define USER_HEAP_BASE 0xFFFFB00000000000
+
+/**
+ * @brief USER_STACK_BASE is the base address of the user stack
+ */
+#define USER_STACK_BASE 0xFFFFEFFFFFFF0000
 
 namespace Memory
 {
@@ -400,6 +405,35 @@ namespace Memory
          *
          */
         ~Virtual();
+    };
+
+    class StackGuard
+    {
+    private:
+        void *StackBottom = nullptr;
+        void *StackTop = nullptr;
+        void *SGB = nullptr;
+        void *SGT = nullptr;
+        uint64_t Size = 0;
+        bool UserMode = false;
+        PageTable *Table = nullptr;
+
+    public:
+        /** @brief For general info */
+        void *GetStackBottom() { return StackBottom; }
+        /** @brief For RSP */
+        void *GetStackTop() { return StackTop; }
+        /** @brief Called by exception handler */
+        bool Expand(uint64_t FaultAddress);
+        /**
+         * @brief Construct a new Stack Guard object
+         * @param User Stack for user mode?
+         */
+        StackGuard(bool User, PageTable *Table);
+        /**
+         * @brief Destroy the Stack Guard object
+         */
+        ~StackGuard();
     };
 }
 

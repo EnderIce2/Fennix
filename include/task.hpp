@@ -85,7 +85,7 @@ namespace Tasking
         IP EntryPoint;
         IPOffset Offset;
         int ExitCode;
-        void *Stack __attribute__((aligned(16)));
+        Memory::StackGuard *Stack;
         TaskStatus Status;
 #if defined(__amd64__)
         CPU::x64::TrapFrame Registers;
