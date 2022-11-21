@@ -181,6 +181,7 @@ __no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
             if (CurCPU->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
             {
                 debug("Stack expanded");
+                TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Ready;
                 return;
             }
 
