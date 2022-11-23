@@ -173,7 +173,7 @@ int CallbackHandler(KernelCallback *Data)
         uint16_t *Data = (uint16_t *)(RXBuffer + CurrentPacket);
         uint16_t DataLength = *(Data + 1);
         Data = Data + 2;
-        KAPI->Commmand.Network.ReceivePacket(KAPI->Info.DriverUID, (uint8_t *)Data, DataLength);
+        KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, (uint8_t *)Data, DataLength);
         CurrentPacket = (CurrentPacket + DataLength + 4 + 3) & (~3);
         if (CurrentPacket > 8192)
             CurrentPacket -= 8192;

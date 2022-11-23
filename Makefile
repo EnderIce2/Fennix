@@ -1,5 +1,6 @@
 build:
 	mkdir -p out
+	make --quiet -C Input build
 	make --quiet -C Disk build
 	make --quiet -C Audio build
 	make --quiet -C FileSystem build
@@ -12,6 +13,7 @@ prepare:
 
 clean:
 	rm -rf out
+	make -C Input clean
 	make -C Disk clean
 	make -C Audio clean
 	make -C FileSystem clean

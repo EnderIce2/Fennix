@@ -390,7 +390,7 @@ int CallbackHandler(KernelCallback *Data)
         {
             uint8_t *Data = (uint8_t *)RX[RXCurrent]->Address;
             uint16_t DataLength = RX[RXCurrent]->Length;
-            KAPI->Commmand.Network.ReceivePacket(KAPI->Info.DriverUID, Data, DataLength);
+            KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, Data, DataLength);
             RX[RXCurrent]->Status = 0;
             uint16_t OldRXCurrent = RXCurrent;
             RXCurrent = (RXCurrent + 1) % E1000_NUM_RX_DESC;
