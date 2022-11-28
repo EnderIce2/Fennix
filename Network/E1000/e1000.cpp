@@ -251,13 +251,13 @@ MediaAccessControl GetMAC()
 
 void InitializeRX()
 {
-    uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage((sizeof(RXDescriptor) * E1000_NUM_RX_DESC + 16) / KAPI->Memory.PageSize + 1);
+    uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage((((sizeof(RXDescriptor) * E1000_NUM_RX_DESC + 16)) / KAPI->Memory.PageSize) + 1);
     RXDescriptor *Descriptor = (RXDescriptor *)Ptr;
 
     for (int i = 0; i < E1000_NUM_RX_DESC; i++)
     {
         RX[i] = (RXDescriptor *)((uint8_t *)Descriptor + i * 16);
-        RX[i]->Address = (uint64_t)(uint8_t *)KAPI->Memory.RequestPage((8192 + 16) / KAPI->Memory.PageSize + 1);
+        RX[i]->Address = (uint64_t)(uint8_t *)KAPI->Memory.RequestPage(((8192 + 16) / KAPI->Memory.PageSize) + 1);
         RX[i]->Status = 0;
     }
 
@@ -277,7 +277,7 @@ void InitializeRX()
 
 void InitializeTX()
 {
-    uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage((sizeof(TXDescriptor) * E1000_NUM_RX_DESC + 16) / KAPI->Memory.PageSize + 1);
+    uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage(((sizeof(TXDescriptor) * E1000_NUM_RX_DESC + 16) / KAPI->Memory.PageSize) + 1);
     TXDescriptor *Descriptor = (TXDescriptor *)Ptr;
 
     for (int i = 0; i < E1000_NUM_TX_DESC; i++)
@@ -349,7 +349,7 @@ int CallbackHandler(KernelCallback *Data)
             if (!GetMAC().Valid())
                 return NOT_AVAILABLE;
             else
-                KAPI->Util.DebugPrint(((char *)"MAC adddress found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                KAPI->Util.DebugPrint(((char *)"MAC address found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
             MAC = GetMAC();
 
             // Start link

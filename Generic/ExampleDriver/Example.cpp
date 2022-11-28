@@ -21,7 +21,7 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Bind = {
             .Type = BIND_INTERRUPT,
             .Interrupt = {
-                .Vector = {0xFE},
+                .Vector = {0xFF},
             }}}};
 
 // Global variable that holds the kernel API

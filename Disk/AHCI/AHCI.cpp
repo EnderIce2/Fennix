@@ -116,7 +116,7 @@ struct HBACommandHeader
     uint8_t CommandFISLength : 5;
     uint8_t ATAPI : 1;
     uint8_t Write : 1;
-    uint8_t Prefetchable : 1;
+    uint8_t Preferable : 1;
     uint8_t Reset : 1;
     uint8_t BIST : 1;
     uint8_t ClearBusy : 1;
