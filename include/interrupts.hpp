@@ -6,17 +6,26 @@
 
 namespace Interrupts
 {
+#ifdef DEBUG // For performance reasons
+#define INT_FRAMES_MAX 512
+#else
+#define INT_FRAMES_MAX 8
+#endif
+
 #if defined(__amd64__)
-    /* APIC::APIC */ extern void *apic[256]; // MAX_CPU
+    /* APIC::APIC */ extern void *apic[256];       // MAX_CPU
     /* APIC::Timer */ extern void *apicTimer[256]; // MAX_CPU
 #elif defined(__i386__)
-    /* APIC::APIC */ extern void *apic[256]; // MAX_CPU
+    /* APIC::APIC */ extern void *apic[256];       // MAX_CPU
     /* APIC::Timer */ extern void *apicTimer[256]; // MAX_CPU
 #elif defined(__aarch64__)
 #endif
+    extern void *InterruptFrames[INT_FRAMES_MAX];
+
     void Initialize(int Core);
     void Enable(int Core);
     void InitializeTimer(int Core);
+    void RemoveAll();
 
     class Handler
     {

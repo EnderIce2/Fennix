@@ -156,8 +156,10 @@ namespace Video
 
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
         {
-            if (X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height)
-                return;
+            if (X >= this->Buffers[Index]->Width)
+                X = this->Buffers[Index]->Width - 1;
+            if (Y >= this->Buffers[Index]->Height)
+                Y = this->Buffers[Index]->Height - 1;
             uint32_t *Pixel = (uint32_t *)((uint64_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             *Pixel = Color;
         }

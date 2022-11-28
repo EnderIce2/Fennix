@@ -2,6 +2,72 @@
 
 namespace Xalloc
 {
+    class XLockClass
+    {
+        struct SpinLockData
+        {
+            uint64_t LockData = 0x0;
+            const char *CurrentHolder = "(nul)";
+            const char *AttemptingToGet = "(nul)";
+            uint64_t Count = 0;
+        };
+
+        void DeadLock(SpinLockData Lock)
+        {
+            Xalloc_warn("Potential deadlock in lock '%s' held by '%s'! %ld locks in queue.", Lock.AttemptingToGet, Lock.CurrentHolder, Lock.Count);
+        }
+
+    private:
+        SpinLockData LockData;
+        bool IsLocked = false;
+
+    public:
+        int Lock(const char *FunctionName)
+        {
+            LockData.AttemptingToGet = FunctionName;
+        Retry:
+            unsigned int i = 0;
+            while (__atomic_exchange_n(&IsLocked, true, __ATOMIC_ACQUIRE) && ++i < 0x10000000)
+                ;
+            if (i >= 0x10000000)
+            {
+                DeadLock(LockData);
+                goto Retry;
+            }
+            LockData.Count++;
+            LockData.CurrentHolder = FunctionName;
+            __sync_synchronize();
+            return 0;
+        }
+
+        int Unlock()
+        {
+            __sync_synchronize();
+            __atomic_store_n(&IsLocked, false, __ATOMIC_RELEASE);
+            LockData.Count--;
+            IsLocked = false;
+            return 0;
+        }
+    };
+
+    class XSmartLock
+    {
+    private:
+        XLockClass *LockPointer = nullptr;
+
+    public:
+        XSmartLock(XLockClass &Lock, const char *FunctionName)
+        {
+            this->LockPointer = &Lock;
+            this->LockPointer->Lock(FunctionName);
+        }
+        ~XSmartLock() { this->LockPointer->Unlock(); }
+    };
+
+    XLockClass XLock;
+
+#define XSL XSmartLock CONCAT(lock##_, __COUNTER__)(XLock, __FUNCTION__)
+
     class SmartSMAPClass
     {
     private:
@@ -20,6 +86,7 @@ namespace Xalloc
     AllocatorV1::AllocatorV1(void *Address, bool UserMode, bool SMAPEnabled)
     {
         SmartSMAP;
+        XSL;
         void *Position = Address;
         UserMapping = UserMode;
         SMAPUsed = SMAPEnabled;
@@ -47,6 +114,7 @@ namespace Xalloc
     AllocatorV1::~AllocatorV1()
     {
         SmartSMAP;
+        XSL;
         Xalloc_trace("Destructor not implemented yet.");
     }
 
@@ -81,6 +149,7 @@ namespace Xalloc
     void *AllocatorV1::Malloc(Xuint64_t Size)
     {
         SmartSMAP;
+        XSL;
         if (this->HeapStart == nullptr)
         {
             Xalloc_err("Memory allocation not initialized yet!");
@@ -136,12 +205,14 @@ namespace Xalloc
             CurrentSegment = CurrentSegment->Next;
         }
         ExpandHeap(Size);
+        XLock.Unlock();
         return this->Malloc(Size);
     }
 
     void AllocatorV1::Free(void *Address)
     {
         SmartSMAP;
+        XSL;
         if (this->HeapStart == nullptr)
         {
             Xalloc_err("Memory allocation not initialized yet!");
@@ -156,6 +227,7 @@ namespace Xalloc
     void *AllocatorV1::Calloc(Xuint64_t NumberOfBlocks, Xuint64_t Size)
     {
         SmartSMAP;
+        XSL;
         if (this->HeapStart == nullptr)
         {
             Xalloc_err("Memory allocation not initialized yet!");
@@ -168,7 +240,10 @@ namespace Xalloc
             Size = 0x10;
         }
 
+        XLock.Unlock();
         void *Block = this->Malloc(NumberOfBlocks * Size);
+        XLock.Lock(__FUNCTION__);
+
         if (Block)
             Xmemset(Block, 0, NumberOfBlocks * Size);
         return Block;
@@ -177,6 +252,7 @@ namespace Xalloc
     void *AllocatorV1::Realloc(void *Address, Xuint64_t Size)
     {
         SmartSMAP;
+        XSL;
         if (this->HeapStart == nullptr)
         {
             Xalloc_err("Memory allocation not initialized yet!");
@@ -184,11 +260,13 @@ namespace Xalloc
         }
         if (!Address && Size == 0)
         {
+            XLock.Unlock();
             this->Free(Address);
             return nullptr;
         }
         else if (!Address)
         {
+            XLock.Unlock();
             return this->Calloc(Size, sizeof(char));
         }
 
@@ -198,7 +276,9 @@ namespace Xalloc
             Size = 0x10;
         }
 
+        XLock.Unlock();
         void *newAddress = this->Calloc(Size, sizeof(char));
+        XLock.Lock(__FUNCTION__);
         Xmemcpy(newAddress, Address, Size);
         return newAddress;
     }

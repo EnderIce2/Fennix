@@ -42,7 +42,7 @@ static volatile struct limine_smbios_request SmbiosRequest = {
     .id = LIMINE_SMBIOS_REQUEST,
     .revision = 0};
 
-void init_limine()
+SafeFunction __no_instrument_function void init_limine()
 {
     struct BootInfo binfo;
     struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;
@@ -211,8 +211,12 @@ void init_limine()
         }
 
         binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000);
-        strcpy(binfo.Modules[i].Path, ModuleResponse->modules[i]->path);
-        strcpy(binfo.Modules[i].CommandLine, ModuleResponse->modules[i]->cmdline);
+        strncpy(binfo.Modules[i].Path,
+                ModuleResponse->modules[i]->path,
+                strlen(ModuleResponse->modules[i]->path) + 1);
+        strncpy(binfo.Modules[i].CommandLine,
+                ModuleResponse->modules[i]->cmdline,
+                strlen(ModuleResponse->modules[i]->cmdline) + 1);
         binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
         debug("Module %d:\nAddress: %p\nPath: %s\nCommand Line: %s\nSize: %ld", i,
               (uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000, ModuleResponse->modules[i]->path,
@@ -234,13 +238,19 @@ void init_limine()
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
     binfo.Kernel.FileBase = KernelFileResponse->kernel_file->address;
-    strcpy(binfo.Kernel.CommandLine, KernelFileResponse->kernel_file->cmdline);
+    strncpy(binfo.Kernel.CommandLine,
+            KernelFileResponse->kernel_file->cmdline,
+            strlen(KernelFileResponse->kernel_file->cmdline) + 1);
     binfo.Kernel.Size = KernelFileResponse->kernel_file->size;
     trace("Kernel physical address: %p", KernelAddressResponse->physical_base);
     trace("Kernel virtual address: %p", KernelAddressResponse->virtual_base);
 
-    strcpy(binfo.Bootloader.Name, BootloaderInfoResponse->name);
-    strcpy(binfo.Bootloader.Version, BootloaderInfoResponse->version);
+    strncpy(binfo.Bootloader.Name,
+            BootloaderInfoResponse->name,
+            strlen(BootloaderInfoResponse->name) + 1);
+    strncpy(binfo.Bootloader.Version,
+            BootloaderInfoResponse->version,
+            strlen(BootloaderInfoResponse->version) + 1);
 
     // Call kernel entry point
     Entry(&binfo);

@@ -123,7 +123,7 @@ namespace SymbolResolver
 
     Symbols::~Symbols() {}
 
-    const char *Symbols::GetSymbolFromAddress(uint64_t Address)
+    const __no_instrument_function char *Symbols::GetSymbolFromAddress(uint64_t Address)
     {
         Symbols::SymbolTable Result{0, (char *)"<unknown>"};
         for (size_t i = 0; i < TotalEntries; i++)

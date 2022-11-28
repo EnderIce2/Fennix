@@ -8,13 +8,13 @@ NewLock(DebuggerLock);
 
 using namespace UniversalAsynchronousReceiverTransmitter;
 
-static inline void uart_wrapper(char c, void *unused)
+static inline __no_instrument_function void uart_wrapper(char c, void *unused)
 {
     UART(COM1).Write(c);
     (void)unused;
 }
 
-static inline void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)
+static inline __no_instrument_function void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)
 {
     const char *DbgLvlString;
     switch (Level)
@@ -52,7 +52,7 @@ static inline void WritePrefix(DebugLevel Level, const char *File, int Line, con
 
 namespace SysDbg
 {
-    void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    __no_instrument_function void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         WritePrefix(Level, File, Line, Function);
         va_list args;
@@ -61,7 +61,7 @@ namespace SysDbg
         va_end(args);
     }
 
-    void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    __no_instrument_function void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         // SmartLock(DebuggerLock);
         WritePrefix(Level, File, Line, Function);
@@ -74,7 +74,7 @@ namespace SysDbg
 }
 
 // C compatibility
-extern "C" void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" __no_instrument_function void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     WritePrefix(Level, File, Line, Function);
     va_list args;
@@ -84,7 +84,7 @@ extern "C" void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, c
 }
 
 // C compatibility
-extern "C" void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" __no_instrument_function void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     WritePrefix(Level, File, Line, Function);
     va_list args;

@@ -89,7 +89,7 @@ namespace FileSystem
         FS_MOUNTPOINT = 0x08
     };
 
-    struct FileSystemOpeations
+    struct FileSystemOperations
     {
         char Name[FILENAME_LENGTH];
         OperationMount Mount = nullptr;
@@ -113,7 +113,7 @@ namespace FileSystem
         uint64_t Address = 0;
         uint64_t Length = 0;
         FileSystemNode *Parent = nullptr;
-        FileSystemOpeations *Operator = nullptr;
+        FileSystemOperations *Operator = nullptr;
         /* For root node:
         0 - root "/"
         1 - etc
@@ -150,13 +150,13 @@ namespace FileSystem
         char *NormalizePath(FileSystemNode *Parent, const char *Path);
 
         FileStatus FileExists(FileSystemNode *Parent, const char *Path);
-        FILE *Mount(FileSystemOpeations *Operator, const char *Path);
+        FILE *Mount(FileSystemOperations *Operator, const char *Path);
         FileStatus Unmount(FILE *File);
         FILE *Open(const char *Path, FileSystemNode *Parent = nullptr);
         uint64_t Read(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size);
         uint64_t Write(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size);
         FileStatus Close(FILE *File);
-        FileSystemNode *CreateRoot(FileSystemOpeations *Operator, const char *RootName);
+        FileSystemNode *CreateRoot(FileSystemOperations *Operator, const char *RootName);
         FileSystemNode *Create(FileSystemNode *Parent, const char *Path);
 
         Virtual();

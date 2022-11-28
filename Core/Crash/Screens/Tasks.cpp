@@ -17,7 +17,7 @@
 
 namespace CrashHandler
 {
-    __no_stack_protector void DisplayTasksScreen(CRData data)
+    SafeFunction void DisplayTasksScreen(CRData data)
     {
         const char *StatusColor[7] = {
             "FF0000", // Unknown

@@ -13,7 +13,7 @@ private:
 public:
     typedef T *iterator;
 
-    Vector()
+    __no_instrument_function Vector()
     {
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: Vector( )");
@@ -23,7 +23,7 @@ public:
         VectorBuffer = 0;
     }
 
-    Vector(uint64_t Size)
+    __no_instrument_function Vector(uint64_t Size)
     {
         VectorCapacity = Size;
         VectorSize = Size;
@@ -33,7 +33,7 @@ public:
         VectorBuffer = new T[Size];
     }
 
-    Vector(uint64_t Size, const T &Initial)
+    __no_instrument_function Vector(uint64_t Size, const T &Initial)
     {
         VectorSize = Size;
         VectorCapacity = Size;
@@ -45,7 +45,7 @@ public:
             VectorBuffer[i] = Initial;
     }
 
-    Vector(const Vector<T> &Vector)
+    __no_instrument_function Vector(const Vector<T> &Vector)
     {
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
@@ -57,7 +57,7 @@ public:
             VectorBuffer[i] = Vector.VectorBuffer[i];
     }
 
-    ~Vector()
+    __no_instrument_function ~Vector()
     {
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: ~Vector( ~%lx )", VectorBuffer);
@@ -65,7 +65,7 @@ public:
         delete[] VectorBuffer;
     }
 
-    void remove(uint64_t Position)
+    __no_instrument_function void remove(uint64_t Position)
     {
         if (Position >= VectorSize)
             return;
@@ -77,30 +77,30 @@ public:
         VectorSize--;
     }
 
-    uint64_t capacity() const { return VectorCapacity; }
+    __no_instrument_function uint64_t capacity() const { return VectorCapacity; }
 
-    uint64_t size() const { return VectorSize; }
+    __no_instrument_function uint64_t size() const { return VectorSize; }
 
-    bool empty() const;
+    __no_instrument_function bool empty() const;
 
-    iterator begin() { return VectorBuffer; }
+    __no_instrument_function iterator begin() { return VectorBuffer; }
 
-    iterator end() { return VectorBuffer + size(); }
+    __no_instrument_function iterator end() { return VectorBuffer + size(); }
 
-    T &front() { return VectorBuffer[0]; }
+    __no_instrument_function T &front() { return VectorBuffer[0]; }
 
-    T &back() { return VectorBuffer[VectorSize - 1]; }
+    __no_instrument_function T &back() { return VectorBuffer[VectorSize - 1]; }
 
-    void push_back(const T &Value)
+    __no_instrument_function void push_back(const T &Value)
     {
         if (VectorSize >= VectorCapacity)
             reserve(VectorCapacity + 5);
         VectorBuffer[VectorSize++] = Value;
     }
 
-    void pop_back() { VectorSize--; }
+    __no_instrument_function void pop_back() { VectorSize--; }
 
-    void reverse()
+    __no_instrument_function void reverse()
     {
         if (VectorSize <= 1)
             return;
@@ -112,7 +112,7 @@ public:
         }
     }
 
-    void reserve(uint64_t Capacity)
+    __no_instrument_function void reserve(uint64_t Capacity)
     {
         if (VectorBuffer == 0)
         {
@@ -134,15 +134,15 @@ public:
         VectorBuffer = Newbuffer;
     }
 
-    void resize(uint64_t Size)
+    __no_instrument_function void resize(uint64_t Size)
     {
         reserve(Size);
         VectorSize = Size;
     }
 
-    T &operator[](uint64_t Index) { return VectorBuffer[Index]; }
+    __no_instrument_function T &operator[](uint64_t Index) { return VectorBuffer[Index]; }
 
-    Vector<T> &operator=(const Vector<T> &Vector)
+    __no_instrument_function Vector<T> &operator=(const Vector<T> &Vector)
     {
         delete[] VectorBuffer;
         VectorSize = Vector.VectorSize;
@@ -156,12 +156,12 @@ public:
         return *this;
     }
 
-    void clear()
+    __no_instrument_function void clear()
     {
         VectorCapacity = 0;
         VectorSize = 0;
         VectorBuffer = 0;
     }
 
-    T *data() { return VectorBuffer; }
+    __no_instrument_function T *data() { return VectorBuffer; }
 };

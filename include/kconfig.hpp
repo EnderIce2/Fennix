@@ -12,6 +12,7 @@ struct KernelConfig
     char InitPath[256];
     bool InterruptsOnCrash;
     int Cores;
+    bool UnlockDeadLock;
 };
 
 KernelConfig ParseConfig(char *Config);

@@ -115,27 +115,41 @@ const char *Type_Check_Kinds[] = {
     "Cast to virtual base of",
 };
 
-// Prevent huge spam from ubsan
 bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
 {
     // blacklist
-    if (strstr(file, "liballoc") || strstr(file, "cwalk"))
+    // if (strstr(file, "liballoc") ||
+    //     strstr(file, "cwalk") ||
+    //     strstr(file, "AdvancedConfigurationandPowerInterface") ||
+    //     strstr(file, "SystemManagementBIOS"))
+    //     return false;
+
+    if (strstr(file, "AdvancedConfigurationandPowerInterface.cpp") &&
+        (line == 17 && column == 47))
         return false;
 
-    static char *onceFile[512] = {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};
-    static uint32_t onceLine[512] = {0};
-    static uint32_t onceColumn[512] = {0};
-    static uint32_t onceCount = 0;
+    if (strstr(file, "SystemManagementBIOS.cpp") &&
+        ((line == 30 && column == 21) ||
+         (line == 27 && column == 49) ||
+         (line == 45 && column == 26)))
+        return false;
 
-    for (uint32_t i = 0; i < onceCount; i++)
-        if ((!strcmp(onceFile[i], file)) && onceLine[i] == line && onceColumn[i] == column)
-            return false;
+    if (strstr(file, "cwalk.c") &&
+        ((line == 1047 && column == 15)))
+        return false;
 
-    onceFile[onceCount] = (char *)file;
-    onceLine[onceCount] = line;
-    onceColumn[onceCount] = column;
+    if (strstr(file, "liballoc_1_1.c"))
+        return false;
+
+    if (strstr(file, "display.hpp") &&
+        ((line == 113 && column == 43)))
+        return false;
+
+    if (strstr(file, "Xalloc.hpp") &&
+        (line == 48 && column == 28))
+        return false;
+
     ubsan("\t\tIn File: %s:%i:%i", file, line, column);
-    onceCount++;
     return true;
 }
 

@@ -38,6 +38,7 @@ extern Disk::Manager *DiskManager;
 EXTERNC void putchar(char c);
 EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
+EXTERNC void BeforeShutdown();
 EXTERNC void TaskingPanic();
 
 EXTERNC void KernelMainThread();

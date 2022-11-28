@@ -40,7 +40,8 @@
                 "-Wl,-static,--no-dynamic-linker,-ztext",
                 "-shared",
                 "-zmax-page-size=0x1000",
-                "-nostdinc++"
+                "-nostdinc++",
+                "-fsanitize=undefined"
             ]
         }
     ],

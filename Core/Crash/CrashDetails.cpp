@@ -25,30 +25,30 @@ static const char *PagefaultDescriptions[8] = {
     "User process tried to write to a non-present page entry\n",
     "User process tried to write a page and caused a protection fault\n"};
 
-__no_stack_protector void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Divide by zero exception\n");
 }
-__no_stack_protector void DebugExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void DebugExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel triggered debug exception.\n");
 }
-__no_stack_protector void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame) { fixme("NMI exception"); }
-__no_stack_protector void BreakpointExceptionHandler(CHArchTrapFrame *Frame) { fixme("Breakpoint exception"); }
-__no_stack_protector void OverflowExceptionHandler(CHArchTrapFrame *Frame) { fixme("Overflow exception"); }
-__no_stack_protector void BoundRangeExceptionHandler(CHArchTrapFrame *Frame) { fixme("Bound range exception"); }
-__no_stack_protector void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame) { fixme("NMI exception"); }
+SafeFunction void BreakpointExceptionHandler(CHArchTrapFrame *Frame) { fixme("Breakpoint exception"); }
+SafeFunction void OverflowExceptionHandler(CHArchTrapFrame *Frame) { fixme("Overflow exception"); }
+SafeFunction void BoundRangeExceptionHandler(CHArchTrapFrame *Frame) { fixme("Bound range exception"); }
+SafeFunction void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
 }
-__no_stack_protector void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame) { fixme("Device not available exception"); }
-__no_stack_protector void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame) { fixme("Double fault exception"); }
-__no_stack_protector void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
-__no_stack_protector void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame) { fixme("Invalid TSS exception"); }
-__no_stack_protector void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame) { fixme("Segment not present exception"); }
-__no_stack_protector void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame) { fixme("Device not available exception"); }
+SafeFunction void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame) { fixme("Double fault exception"); }
+SafeFunction void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
+SafeFunction void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame) { fixme("Invalid TSS exception"); }
+SafeFunction void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame) { fixme("Segment not present exception"); }
+SafeFunction void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
@@ -64,7 +64,7 @@ __no_stack_protector void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
     CrashHandler::EHPrint("Error code: %#lx\n", Frame->ErrorCode);
 }
-__no_stack_protector void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
 {
     // staticbuffer(descbuf);
     // staticbuffer(desc_ext);
@@ -97,7 +97,7 @@ __no_stack_protector void GeneralProtectionExceptionHandler(CHArchTrapFrame *Fra
     CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
 }
-__no_stack_protector void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
     CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
@@ -120,10 +120,10 @@ __no_stack_protector void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     else
         CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
 }
-__no_stack_protector void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("x87 floating point exception"); }
-__no_stack_protector void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Alignment check exception"); }
-__no_stack_protector void MachineCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Machine check exception"); }
-__no_stack_protector void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("SIMD floating point exception"); }
-__no_stack_protector void VirtualizationExceptionHandler(CHArchTrapFrame *Frame) { fixme("Virtualization exception"); }
-__no_stack_protector void SecurityExceptionHandler(CHArchTrapFrame *Frame) { fixme("Security exception"); }
-__no_stack_protector void UnknownExceptionHandler(CHArchTrapFrame *Frame) { fixme("Unknown exception"); }
+SafeFunction void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("x87 floating point exception"); }
+SafeFunction void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Alignment check exception"); }
+SafeFunction void MachineCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Machine check exception"); }
+SafeFunction void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("SIMD floating point exception"); }
+SafeFunction void VirtualizationExceptionHandler(CHArchTrapFrame *Frame) { fixme("Virtualization exception"); }
+SafeFunction void SecurityExceptionHandler(CHArchTrapFrame *Frame) { fixme("Security exception"); }
+SafeFunction void UnknownExceptionHandler(CHArchTrapFrame *Frame) { fixme("Unknown exception"); }

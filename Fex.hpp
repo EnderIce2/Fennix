@@ -87,6 +87,12 @@ struct FexExtended
                 unsigned short SubClass;
                 unsigned short ProgIF;
             } PCI;
+
+            struct
+            {
+                bool AttachToMouse;
+                bool AttachToKeyboard;
+            } Input;
         } Bind;
     } Driver;
 } __attribute__((packed));

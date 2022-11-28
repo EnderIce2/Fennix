@@ -103,11 +103,11 @@ namespace CrashHandler
     static char UserInputBuffer[1024];
 
 #if defined(__amd64__)
-    __no_stack_protector void CrashKeyboardDriver::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
 #elif defined(__i386__)
-    __no_stack_protector void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
+    SafeFunction void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
 #elif defined(__aarch64__)
-    __no_stack_protector void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
+    SafeFunction void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
 #endif
     {
         uint8_t scanCode = inb(0x60);
@@ -155,10 +155,10 @@ namespace CrashHandler
         }
     }
 
-    __no_stack_protector void HookKeyboard()
+    SafeFunction void HookKeyboard()
     {
         CrashKeyboardDriver kbd; // We don't want to allocate memory.
-        asmv("Loop: nop; jmp Loop;");
+        asmv("KeyboardHookLoop: nop; jmp KeyboardHookLoop;");
         // CPU::Halt(true); // This is an infinite loop.
     }
 }

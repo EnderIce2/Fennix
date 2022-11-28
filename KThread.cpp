@@ -14,65 +14,33 @@
 Driver::Driver *DriverManager = nullptr;
 Disk::Manager *DiskManager = nullptr;
 
-void StartFilesystem()
-{
-    KPrint("Initializing Filesystem...");
-    vfs = new FileSystem::Virtual;
-    new FileSystem::USTAR((uint64_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
-    KPrint("Initializing Disk Manager...");
-    DiskManager = new Disk::Manager;
-    /* ... */
-    TEXIT(0);
-}
-
-void LoadDrivers()
-{
-    KPrint("Loading Drivers...");
-    DriverManager = new Driver::Driver;
-    TEXIT(0);
-}
-
-void FetchDisks()
-{
-    KPrint("Fetching Disks...");
-    foreach (auto Driver in DriverManager->GetDrivers())
-    {
-        FexExtended *DrvExtHdr = (FexExtended *)((uint64_t)Driver->Address + EXTENDED_SECTION_ADDRESS);
-
-        if (DrvExtHdr->Driver.Type == FexDriverType::FexDriverType_Storage)
-            DiskManager->FetchDisks(Driver->DriverUID);
-    }
-    TEXIT(0);
-}
-
 void KernelMainThread()
 {
     TaskManager->InitIPC();
+    TaskManager->GetCurrentThread()->SetPriority(100);
     Vector<AuxiliaryVector> auxv;
 
     Tasking::TCB *CurrentWorker = nullptr;
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
     KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
-    TaskManager->GetCurrentThread()->SetPriority(1);
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)StartFilesystem, nullptr, nullptr, auxv);
-    CurrentWorker->Rename("Filesystems");
-    CurrentWorker->SetPriority(100);
-    TaskManager->WaitForThread(CurrentWorker);
+    KPrint("Initializing Filesystem...");
+    vfs = new FileSystem::Virtual;
+    new FileSystem::USTAR((uint64_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
+    KPrint("Initializing Disk Manager...");
+    DiskManager = new Disk::Manager;
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)LoadDrivers, nullptr, nullptr, auxv);
-    CurrentWorker->Rename("Drivers");
-    CurrentWorker->SetPriority(100);
-    TaskManager->WaitForThread(CurrentWorker);
+    KPrint("Loading Drivers...");
+    DriverManager = new Driver::Driver;
 
-    CurrentWorker = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)FetchDisks, nullptr, nullptr, auxv);
-    CurrentWorker->Rename("Disks");
-    CurrentWorker->SetPriority(100);
-    TaskManager->WaitForThread(CurrentWorker);
+    KPrint("Fetching Disks...");
+    foreach (auto Driver in DriverManager->GetDrivers())
+        if (((FexExtended *)((uint64_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
+            DiskManager->FetchDisks(Driver->DriverUID);
 
     KPrint("Setting up userspace...");
 
-    const char *envp[] = {
+    const char *envp[9] = {
         "PATH=/system:/system/bin",
         "TERM=tty",
         "HOME=/",
@@ -83,12 +51,11 @@ void KernelMainThread()
         "TZ=UTC",
         nullptr};
 
-    const char *argv[] = {
+    const char *argv[3] = {
         "--init",
         "--critical",
         nullptr};
 
-    // TODO: Untested!
     bool ien = CPU::Interrupts(CPU::Check);
     CPU::Interrupts(CPU::Disable);
     Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argv, envp);
@@ -100,9 +67,12 @@ void KernelMainThread()
         goto Exit;
     }
     ret.Thread->SetCritical(true);
+    debug("%s interrupts", ien ? "Enabling" : "Disabling");
     if (ien)
         CPU::Interrupts(CPU::Enable);
+    debug("After interrupts boolean");
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
+    TaskManager->GetCurrentThread()->SetPriority(1);
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());

@@ -27,6 +27,8 @@ FileSystem::Virtual *vfs = nullptr;
 KernelConfig Config;
 Time::Clock BootClock;
 
+extern bool EnableProfiler;
+
 // For the Display class. Printing on first buffer as default.
 EXTERNC void putchar(char c) { Display->Print(c, 0); }
 
@@ -43,10 +45,8 @@ EXTERNC void KPrint(const char *Format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC void Entry(BootInfo *Info)
+EXTERNC __no_instrument_function void PostEntry(BootInfo *Info)
 {
-    trace("Hello, World!");
-    InitializeMemoryManagement(Info);
     BootClock = Time::ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
     memcpy(bInfo, Info, sizeof(BootInfo));
@@ -165,6 +165,34 @@ EXTERNC void Entry(BootInfo *Info)
     TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     KPrint("\e058C19################################");
     CPU::Halt(true);
+}
+
+EXTERNC void __guard_setup(void);
+
+typedef void (*CallPtr)(void);
+extern CallPtr __init_array_start[0], __init_array_end[0];
+extern CallPtr __fini_array_start[0], __fini_array_end[0];
+
+EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
+{
+    trace("Hello, World!");
+
+    // https://wiki.osdev.org/Calling_Global_Constructors
+    for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
+        (*func)();
+
+    InitializeMemoryManagement(Info);
+    EnableProfiler = true;
+    PostEntry(Info);
+}
+
+EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
+{
+    // https://wiki.osdev.org/Calling_Global_Constructors
+    debug("Calling destructors...");
+    for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
+        (*func)();
+    debug("Done.");
 }
 
 EXTERNC void TaskingPanic()

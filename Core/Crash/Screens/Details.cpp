@@ -17,7 +17,7 @@
 
 namespace CrashHandler
 {
-    __no_stack_protector void DisplayDetailsScreen(CRData data)
+    SafeFunction void DisplayDetailsScreen(CRData data)
     {
         if (data.Process)
             EHPrint("\e7981FCCurrent Process: %s(%ld)\n",

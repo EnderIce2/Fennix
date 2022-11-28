@@ -17,7 +17,7 @@
 
 namespace CrashHandler
 {
-    __no_stack_protector void DisplayConsoleScreen(CRData data)
+    SafeFunction void DisplayConsoleScreen(CRData data)
     {
         EHPrint("TODO");
     }

@@ -207,7 +207,6 @@ typedef __SIZE_TYPE__ size_t;
 #define b48(x) (((((x)&0x0000000000ff) << 40) | (((x)&0x00000000ff00) << 24) | (((x)&0x000000ff0000) << 8) | (((x)&0x0000ff000000) >> 8) | (((x)&0x00ff00000000) >> 24) | (((x)&0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
-
 #define O0 __attribute__((optimize("O0")))
 #define O1 __attribute__((optimize("O1")))
 #define O2 __attribute__((optimize("O2")))
@@ -220,6 +219,7 @@ typedef __SIZE_TYPE__ size_t;
 
 #define __unused __attribute__((unused))
 #define __packed __attribute__((packed))
+#define __naked __attribute__((naked))
 #define __aligned(x) __attribute__((aligned(x)))
 #define __section(x) __attribute__((section(x)))
 #define __noreturn __attribute__((noreturn))
@@ -252,12 +252,17 @@ typedef __SIZE_TYPE__ size_t;
 #define __nonnull_all __attribute__((nonnull))
 #define __warn_unused_result __attribute__((warn_unused_result))
 #define __no_stack_protector __attribute__((no_stack_protector))
+#define __no_instrument_function __attribute__((no_instrument_function))
+
 // sanitizer
 #define __no_sanitize_address __attribute__((no_sanitize_address))
 #define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
 #define __no_address_safety_analysis __attribute__((no_address_safety_analysis))
 #define __no_sanitize_thread __attribute__((no_sanitize_thread))
-#define __no_sanitize_memory __attribute__((no_sanitize_memory))
-#define __no_sanitize_hwaddress __attribute__((no_sanitize_hwaddress))
+
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+#define SafeFunction __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

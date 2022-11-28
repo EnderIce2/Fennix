@@ -36,6 +36,8 @@ CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/a
 endif
 HEADERS = $(sort $(dir $(wildcard ./include/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
+STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
+GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
 INCLUDE_DIR = ./include
 
 LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
@@ -79,7 +81,7 @@ LDFLAGS += -TArchitecture/i686/linker.ld 	\
 else ifeq ($(OSARCH), aarch64)
 
 CFLAGS += -pipe -fno-builtin -fPIC
-CFLAG_STACK_PROTECTOR := -fstack-protector-all
+CFLAG_STACK_PROTECTOR := -fstack-protector-all -fstack-clash-protection
 LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC
 
 endif
@@ -92,8 +94,12 @@ else ifeq ($(OSARCH), aarch64)
 NASMFLAGS :=
 endif
 
+# -finstrument-functions for __cyg_profile_func_enter & __cyg_profile_func_exit. Used for profiling and debugging.
 ifeq ($(DEBUG), 1)
-	CFLAGS += -DDEBUG -ggdb -O0 -fdiagnostics-color=always -fsanitize=undefined
+#	CFLAGS += --coverage
+#	CFLAGS += -pg
+#	CFLAGS += -finstrument-functions
+	CFLAGS += -DDEBUG -ggdb -g -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fstack-check -fsanitize=undefined
 	LDFLAGS += -ggdb -O0 -g
 	NASMFLAGS += -F dwarf -g
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
@@ -117,9 +123,9 @@ ifeq (,$(wildcard $(KERNEL_FILENAME)))
 	$(error $(KERNEL_FILENAME) does not exist)
 endif
 	$(info Dumping $(KERNEL_FILENAME) in AT T syntax...)
-	$(OBJDUMP) -D -d $(KERNEL_FILENAME) > kernel_dump.map
+	$(OBJDUMP) -D -g -s -d $(KERNEL_FILENAME) > kernel_dump.map
 	$(info Dumping $(KERNEL_FILENAME) in Intel syntax...)
-	$(OBJDUMP) -M intel -D -d $(KERNEL_FILENAME) > kernel_dump_intel.map
+	$(OBJDUMP) -M intel -D -g -s -d $(KERNEL_FILENAME) > kernel_dump_intel.map
 
 $(KERNEL_FILENAME): $(OBJ)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
@@ -168,4 +174,4 @@ endif
 	$(NM) $@
 
 clean:
-	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map kernel_dump_intel.map initrd.tar.gz $(OBJ) $(KERNEL_FILENAME)
+	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map kernel_dump_intel.map initrd.tar.gz $(OBJ) $(STACK_USAGE_OBJ) $(GCNO_OBJ) $(KERNEL_FILENAME)

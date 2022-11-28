@@ -49,11 +49,17 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "PATH",
      .description = "Path to init program"},
 
+    {.identifier = 'l',
+     .access_letters = NULL,
+     .access_name = "udl",
+     .value_name = "BOOL",
+     .description = "Unlock the deadlock after 10 retries"},
+
     {.identifier = 'o',
      .access_letters = NULL,
      .access_name = "ioc",
      .value_name = "BOOL",
-     .description = "Enable Interrupts On Crash. If enabled, the navigation keys will be enabled on crash."},
+     .description = "Enable Interrupts On Crash. If enabled, the navigation keys will be enabled on crash"},
 
     {.identifier = 'h',
      .access_letters = "h",
@@ -71,7 +77,8 @@ KernelConfig ParseConfig(char *Config)
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
                                   false,
-                                  0};
+                                  0,
+                                  false};
 
     if (Config == NULL)
     {
@@ -331,14 +338,14 @@ ParseSuccess:
         case 'd':
         {
             value = cag_option_get_value(&context);
-            strcpy(config.DriverDirectory, value);
+            strncpy(config.DriverDirectory, value, strlen(value));
             KPrint("\eAAFFAAUsing %s as driver directory", value);
             break;
         }
         case 'i':
         {
             value = cag_option_get_value(&context);
-            strcpy(config.InitPath, value);
+            strncpy(config.InitPath, value, strlen(value));
             KPrint("\eAAFFAAUsing %s as init program", value);
             break;
         }
@@ -347,6 +354,13 @@ ParseSuccess:
             value = cag_option_get_value(&context);
             strcmp(value, "true") ? config.InterruptsOnCrash = false : config.InterruptsOnCrash = true;
             KPrint("\eAAFFAAInterrupts on crash: %s", value);
+            break;
+        }
+        case 'l':
+        {
+            value = cag_option_get_value(&context);
+            strcmp(value, "true") ? config.UnlockDeadLock = false : config.UnlockDeadLock = true;
+            KPrint("\eAAFFAAUnlocking the deadlock after 10 retires");
             break;
         }
         case 'h':

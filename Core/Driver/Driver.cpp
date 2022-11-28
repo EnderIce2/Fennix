@@ -2,19 +2,19 @@
 
 #include <interrupts.hpp>
 #include <memory.hpp>
-#include <dumper.hpp>
 #include <task.hpp>
 #include <lock.hpp>
 #include <printf.h>
 #include <cwalk.h>
 #include <md5.h>
 
-#include "../kernel.h"
-#include "../DAPI.hpp"
-#include "../Fex.hpp"
+#include "../../kernel.h"
+#include "../../DAPI.hpp"
+#include "../../Fex.hpp"
+#include "api.hpp"
 
 NewLock(DriverInitLock);
-NewLock(DriverDisplayPrintLock);
+NewLock(DriverInterruptLock);
 
 namespace Driver
 {
@@ -27,127 +27,6 @@ namespace Driver
         "FileSystem",
         "Input",
         "Audio"};
-
-    void DriverDebugPrint(char *String, unsigned long DriverUID)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        trace("[%ld] %s", DriverUID, String);
-    }
-
-    void DriverDisplayPrint(char *String)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        for (unsigned long i = 0; i < strlen(String); i++)
-            Display->Print(String[i], 0, true);
-    }
-
-    void *RequestPage(unsigned long Size)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Requesting %ld pages from the kernel...", Size);
-        void *ret = KernelAllocator.RequestPages(Size);
-        debug("Got %#lx", ret);
-        return ret;
-    }
-
-    void FreePage(void *Page, unsigned long Size)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Freeing %ld pages from the address %#lx...", Size, (unsigned long)Page);
-        KernelAllocator.FreePages(Page, Size);
-    }
-
-    void MapMemory(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Mapping %#lx to %#lx with flags %#lx...", (unsigned long)VirtualAddress, (unsigned long)PhysicalAddress, Flags);
-        Memory::Virtual().Map(VirtualAddress, PhysicalAddress, Flags);
-    }
-
-    void UnmapMemory(void *VirtualAddress)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Unmapping %#lx...", (unsigned long)VirtualAddress);
-        Memory::Virtual().Unmap(VirtualAddress);
-    }
-
-    void *Drivermemcpy(void *Destination, void *Source, unsigned long Size)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Copying %ld bytes from %#lx to %#lx...", Size, (unsigned long)Source, (unsigned long)Destination);
-        return memcpy(Destination, Source, Size);
-    }
-
-    void *Drivermemset(void *Destination, int Value, unsigned long Size)
-    {
-        SmartLock(DriverDisplayPrintLock);
-        debug("Setting %ld bytes from %#lx to %#x...", Size, (unsigned long)Destination, Value);
-        return memset(Destination, Value, Size);
-    }
-
-    void DriverNetSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
-    {
-        DumpData("DriverNetSend", Data, Size);
-    }
-
-    void DriverNetReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
-    {
-        DumpData("DriverNetReceive", Data, Size);
-    }
-
-    void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
-    {
-        DumpData("DriverDiskRead", Data, SectorCount * 512);
-    }
-
-    void DriverAHCIDiskWrite(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
-    {
-        DumpData("DriverDiskWrite", Data, SectorCount * 512);
-    }
-
-    char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
-    {
-        return (char *)"Unknown";
-    }
-
-    KernelAPI KAPI = {
-        .Version = {
-            .Major = 0,
-            .Minor = 0,
-            .Patch = 1},
-        .Info = {
-            .Offset = 0,
-            .DriverUID = 0,
-        },
-        .Memory = {
-            .PageSize = PAGE_SIZE,
-            .RequestPage = RequestPage,
-            .FreePage = FreePage,
-            .Map = MapMemory,
-            .Unmap = UnmapMemory,
-        },
-        .PCI = {
-            .GetDeviceName = DriverPCIGetDeviceName,
-        },
-        .Util = {
-            .DebugPrint = DriverDebugPrint,
-            .DisplayPrint = DriverDisplayPrint,
-            .memcpy = Drivermemcpy,
-            .memset = Drivermemset,
-        },
-        .Commmand = {
-            .Network = {
-                .SendPacket = DriverNetSend,
-                .ReceivePacket = DriverNetReceive,
-            },
-            .Disk = {
-                .AHCI = {
-                    .ReadSector = DriverAHCIDiskRead,
-                    .WriteSector = DriverAHCIDiskWrite,
-                },
-            },
-        },
-    };
 
     int Driver::IOCB(unsigned long DUID, void *KCB)
     {
@@ -411,7 +290,48 @@ namespace Driver
                 }
                 case FexDriverType::FexDriverType_Input:
                 {
-                    fixme("Input driver: %s", fexExtended->Driver.Name);
+                    DriverInterruptHook *InterruptHook = nullptr;
+                    if (DrvExtHdr->Driver.Bind.Interrupt.Vector[0] != 0)
+                        InterruptHook = new DriverInterruptHook(DrvExtHdr->Driver.Bind.Interrupt.Vector[0] + 32, // x86
+                                                                (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                                                                KCallback);
+
+                    for (unsigned long i = 0; i < sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector) / sizeof(DrvExtHdr->Driver.Bind.Interrupt.Vector[0]); i++)
+                    {
+                        if (DrvExtHdr->Driver.Bind.Interrupt.Vector[i] == 0)
+                            break;
+                        // InterruptHook = new DriverInterruptHook(DrvExtHdr->Driver.Bind.Interrupt.Vector[i] + 32, // x86
+                        //                                         (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                        //                                         KCallback);
+                        fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", DrvExtHdr->Driver.Bind.Interrupt.Vector[i]);
+                    }
+
+                    KCallback->RawPtr = nullptr;
+                    KCallback->Reason = CallbackReason::ConfigurationReason;
+                    int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                    if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                        break;
+                    }
+                    else if (callbackret != DriverReturnCode::OK)
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
+                        break;
+                    }
+
+                    memset(KCallback, 0, sizeof(KernelCallback));
+                    KCallback->Reason = CallbackReason::InterruptReason;
+
+                    DriverFile *drvfile = new DriverFile;
+                    drvfile->DriverUID = KAPI.Info.DriverUID;
+                    drvfile->Address = (void *)fex;
+                    drvfile->InterruptHook[0] = InterruptHook;
+                    Drivers.push_back(drvfile);
                     break;
                 }
                 case FexDriverType::FexDriverType_Audio:
@@ -429,6 +349,68 @@ namespace Driver
             else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PROCESS)
             {
                 fixme("Process driver: %s", DrvExtHdr->Driver.Name);
+            }
+            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INPUT)
+            {
+                Fex *fex = (Fex *)KernelAllocator.RequestPages(TO_PAGES(Size));
+                memcpy(fex, (void *)DriverAddress, Size);
+                FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
+#ifdef DEBUG
+                uint8_t *result = md5File((uint8_t *)fex, Size);
+                debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+                      result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
+                      result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
+                kfree(result);
+#endif
+                if (CallDriverEntryPoint(fex) != DriverCode::OK)
+                {
+                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                    return DriverCode::DRIVER_RETURNED_ERROR;
+                }
+                debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
+
+                KernelCallback *KCallback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+                switch (fexExtended->Driver.Type)
+                {
+                case FexDriverType::FexDriverType_Input:
+                {
+                    fixme("Input driver: %s", fexExtended->Driver.Name);
+                    KCallback->RawPtr = nullptr;
+                    break;
+                    KCallback->Reason = CallbackReason::ConfigurationReason;
+                    int callbackret = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                    if (callbackret == DriverReturnCode::NOT_IMPLEMENTED)
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                        break;
+                    }
+                    else if (callbackret != DriverReturnCode::OK)
+                    {
+                        KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                        KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+                        error("Driver %s returned error %d", fexExtended->Driver.Name, callbackret);
+                        break;
+                    }
+
+                    KernelAllocator.FreePages(fex, TO_PAGES(Size));
+                    KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
+
+                    DriverFile *drvfile = new DriverFile;
+                    drvfile->DriverUID = KAPI.Info.DriverUID;
+                    drvfile->Address = (void *)fex;
+                    drvfile->InterruptHook[0] = nullptr;
+                    Drivers.push_back(drvfile);
+                    break;
+                }
+                default:
+                {
+                    warn("Unknown driver type: %d", fexExtended->Driver.Type);
+                    break;
+                }
+                }
             }
             else
             {
@@ -454,9 +436,9 @@ namespace Driver
                         if (!strcmp(extension, ".fex"))
                         {
                             uint64_t ret = this->LoadDriver(driver->Address, driver->Length);
-                            char retstring[64];
+                            char retstring[128];
                             if (ret == DriverCode::OK)
-                                strcpy(retstring, "\e058C19OK");
+                                strncpy(retstring, "\e058C19OK", 64);
                             else
                                 sprintf_(retstring, "\eE85230FAILED (%#lx)", ret);
                             KPrint("%s %s", driver->Name, retstring);
@@ -477,7 +459,7 @@ namespace Driver
     void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {
-        CriticalSection cs; // or SmartCriticalSection(DriverInitLock); ?
+        SmartCriticalSection(DriverInterruptLock);
         ((int (*)(void *))(Handle))(Data);
     }
 

@@ -29,7 +29,7 @@ NewLock(SchedulerLock);
 
 namespace Tasking
 {
-    extern "C" __no_stack_protector void OneShot(int TimeSlice)
+    extern "C" SafeFunction __no_instrument_function void OneShot(int TimeSlice)
     {
         if (TimeSlice == 0)
             TimeSlice = 10;
@@ -42,14 +42,15 @@ namespace Tasking
 
     void Task::Schedule()
     {
-        OneShot(100);
+        if (!StopScheduler)
+            OneShot(100);
         // APIC::InterruptCommandRegisterLow icr;
         // icr.Vector = CPU::x64::IRQ16;
         // icr.Level = APIC::APICLevel::Assert;
         // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
     }
 
-    __attribute__((naked, used, no_stack_protector)) void IdleProcessLoop()
+    __naked __used __no_stack_protector __no_instrument_function void IdleProcessLoop()
     {
 #if defined(__amd64__) || defined(__i386__)
         asmv("IdleLoop:\n"
@@ -62,7 +63,7 @@ namespace Tasking
 #endif
     }
 
-    __no_stack_protector bool Task::InvalidPCB(PCB *pcb)
+    SafeFunction __no_instrument_function bool Task::InvalidPCB(PCB *pcb)
     {
         if (!pcb)
             return true;
@@ -73,7 +74,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector bool Task::InvalidTCB(TCB *tcb)
+    SafeFunction __no_instrument_function bool Task::InvalidTCB(TCB *tcb)
     {
         if (!tcb)
             return true;
@@ -84,7 +85,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector void Task::RemoveThread(TCB *Thread)
+    SafeFunction __no_instrument_function void Task::RemoveThread(TCB *Thread)
     {
         for (uint64_t i = 0; i < Thread->Parent->Threads.size(); i++)
             if (Thread->Parent->Threads[i] == Thread)
@@ -101,7 +102,7 @@ namespace Tasking
             }
     }
 
-    __no_stack_protector void Task::RemoveProcess(PCB *Process)
+    SafeFunction __no_instrument_function void Task::RemoveProcess(PCB *Process)
     {
         if (Process == nullptr)
             return;
@@ -139,19 +140,19 @@ namespace Tasking
         }
     }
 
-    __no_stack_protector void Task::UpdateUserTime(TaskInfo *Info)
+    SafeFunction __no_instrument_function void Task::UpdateUserTime(TaskInfo *Info)
     {
         // TODO
         Info->UserTime++;
     }
 
-    __no_stack_protector void Task::UpdateKernelTime(TaskInfo *Info)
+    SafeFunction __no_instrument_function void Task::UpdateKernelTime(TaskInfo *Info)
     {
         // TODO
         Info->KernelTime++;
     }
 
-    __no_stack_protector void Task::UpdateUsage(TaskInfo *Info, int Core)
+    SafeFunction __no_instrument_function void Task::UpdateUsage(TaskInfo *Info, int Core)
     {
         if (Info->Affinity[Core] == true)
         {
@@ -176,7 +177,7 @@ namespace Tasking
     }
 
 #if defined(__amd64__)
-    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
+    SafeFunction __no_instrument_function bool Task::FindNewProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
         schedbg("%d processes", ListProcess.size());
@@ -225,7 +226,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    SafeFunction __no_instrument_function bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -265,7 +266,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    SafeFunction __no_instrument_function bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -308,7 +309,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector void Task::SchedulerCleanupProcesses()
+    SafeFunction __no_instrument_function void Task::SchedulerCleanupProcesses()
     {
         foreach (PCB *pcb in ListProcess)
         {
@@ -318,7 +319,7 @@ namespace Tasking
         }
     }
 
-    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    SafeFunction __no_instrument_function bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -346,7 +347,7 @@ namespace Tasking
         return false;
     }
 
-    __no_stack_protector void Task::Schedule(CPU::x64::TrapFrame *Frame)
+    SafeFunction __no_instrument_function void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
         if (StopScheduler)
@@ -491,9 +492,10 @@ namespace Tasking
             if (CurrentCPU->CurrentThread->Registers.cs != GDT_USER_CODE ||
                 CurrentCPU->CurrentThread->Registers.ss != GDT_USER_DATA)
             {
-                warn("Wrong CS or SS for user process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx)",
+                warn("Wrong CS or SS for user thread %s(%ld)! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx)",
                      CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                     GDT_USER_CODE, GDT_USER_DATA);
+                     GDT_USER_CODE, GDT_USER_DATA,
+                     CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
                 CurrentCPU->CurrentThread->Registers.cs = GDT_USER_CODE;
                 CurrentCPU->CurrentThread->Registers.ss = GDT_USER_DATA;
             }
@@ -503,9 +505,10 @@ namespace Tasking
             if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE ||
                 CurrentCPU->CurrentThread->Registers.ss != GDT_KERNEL_DATA)
             {
-                warn("Wrong CS or SS for kernel process! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx",
+                warn("Wrong CS or SS for kernel thread %s(%ld)! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx",
                      CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                     GDT_KERNEL_CODE, GDT_KERNEL_DATA);
+                     GDT_KERNEL_CODE, GDT_KERNEL_DATA,
+                     CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
                 CurrentCPU->CurrentThread->Registers.cs = GDT_KERNEL_CODE;
                 CurrentCPU->CurrentThread->Registers.ss = GDT_KERNEL_DATA;
             }
@@ -583,71 +586,71 @@ namespace Tasking
     }
     }
 
-    __no_stack_protector void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
+    SafeFunction __no_instrument_function void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
 #elif defined(__i386__)
-    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
+    SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    SafeFunction bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::SchedulerCleanupProcesses()
+    SafeFunction void Task::SchedulerCleanupProcesses()
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::Schedule(void *Frame)
+    SafeFunction void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
+    SafeFunction void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #elif defined(__aarch64__)
-    __no_stack_protector bool Task::FindNewProcess(void *CPUDataPointer)
+    SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    SafeFunction bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::SchedulerCleanupProcesses()
+    SafeFunction void Task::SchedulerCleanupProcesses()
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::Schedule(void *Frame)
+    SafeFunction void Task::Schedule(void *Frame)
     {
         fixme("unimplemented");
     }
 
-    __no_stack_protector void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
+    SafeFunction void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
 #endif
 
     void ThreadDoExit()
@@ -853,8 +856,10 @@ namespace Tasking
                 {
                     while (argv[ArgvSize] != nullptr)
                     {
+                        debug("> ArgvSize: %d, ArgvStrSize: %d", ArgvSize, ArgvStrSize);
                         ArgvSize++;
                         ArgvStrSize += strlen(argv[ArgvSize]) + 1;
+                        debug("< ArgvSize: %d, ArgvStrSize: %d", ArgvSize, ArgvStrSize);
                     }
                 }
 
@@ -864,8 +869,10 @@ namespace Tasking
                 {
                     while (envp[EnvpSize] != nullptr)
                     {
+                        debug("> EnvpSize: %d, EnvpStrSize: %d", EnvpSize, EnvpStrSize);
                         EnvpSize++;
                         EnvpStrSize += strlen(envp[EnvpSize]) + 1;
+                        debug("< EnvpSize: %d, EnvpStrSize: %d", EnvpSize, EnvpStrSize);
                     }
                 }
 
@@ -881,14 +888,18 @@ namespace Tasking
                     argv[i] = (char *)_argv;
                 }
 
+                debug("argv done");
+
                 for (uint64_t i = 0; i < EnvpSize; i++)
                 {
-                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
+                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
                     Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
                     _envp = (uint8_t *)Tmp;
                     strcpy((char *)_envp, envp[i]);
                     envp[i] = (char *)_envp;
                 }
+
+                debug("envp done");
 
                 Thread->Registers.rdi = ArgvSize;
                 Thread->Registers.rsi = (uint64_t)_argv;

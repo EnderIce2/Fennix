@@ -20,6 +20,15 @@ void LockClass::DeadLock(SpinLockData Lock)
 
     this->DeadLocks++;
 
+    if (Config.UnlockDeadLock && this->DeadLocks > 10)
+    {
+        warn("Unlocking lock '%s' held by '%s'! %ld locks in queue. Core %ld is being held by %ld.",
+             Lock.AttemptingToGet, Lock.CurrentHolder,
+             Lock.Count, CCore, Lock.Core);
+        this->DeadLocks = 0;
+        this->Unlock();
+    }
+
     if (TaskManager)
         TaskManager->Schedule();
 }

@@ -25,7 +25,7 @@ static const char *PagefaultDescriptions[8] = {
     "User process tried to write to a non-present page entry\n",
     "User process tried to write a page and caused a protection fault\n"};
 
-__no_stack_protector void UserModeExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 {
     CriticalSection cs;
     debug("Interrupts? %s.", cs.IsInterruptsEnabled() ? "Yes" : "No");

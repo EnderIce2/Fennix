@@ -126,24 +126,10 @@ namespace InterProcessCommunication
         return IPCError{IPCIDNotFound};
     }
 
-    void IPCServiceStub()
-    {
-        trace("IPC Service Started.");
-        TaskManager->GetCurrentThread()->SetPriority(1);
-        // TODO: do something useful here, like, IPC event viewer or smth...
-        while (1)
-        {
-            // The scheduler doesn't like CPU::Pause for some reason. :/
-        }
-    }
-
     IPC::IPC()
     {
         SmartLock(IPCLock);
         trace("Starting IPC Service...");
-        Vector<AuxiliaryVector> auxv;
-        Tasking::TCB *thd = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)IPCServiceStub, nullptr, nullptr, auxv);
-        thd->Rename("IPC Service");
     }
 
     IPC::~IPC()

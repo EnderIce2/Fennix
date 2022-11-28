@@ -19,7 +19,7 @@ namespace FileSystem
         return Size;
     }
 
-    FileSystemOpeations ustar = {
+    FileSystemOperations ustar = {
         .Name = "ustar",
         .Read = USTAR_Read,
     };

@@ -19,7 +19,7 @@
 #include "../crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" __no_stack_protector void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
+extern "C" SafeFunction void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
 
 namespace Interrupts
 {
@@ -32,6 +32,7 @@ namespace Interrupts
     /* APIC::APIC */ void *apic[MAX_CPU];
 #elif defined(__aarch64__)
 #endif
+    void *InterruptFrames[INT_FRAMES_MAX];
 
     void Initialize(int Core)
     {
@@ -103,25 +104,42 @@ namespace Interrupts
 #endif
     }
 
-    extern "C" void MainInterruptHandler(void *Data)
+    void RemoveAll()
+    {
+        for (int i = 0; i < CPU::x64::IRQ223; i++)
+                RegisteredEvents->DeleteNode(i);
+    }
+
+    extern "C" SafeFunction void MainInterruptHandler(void *Data)
     {
 #if defined(__amd64__)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-        int Core = GetCurrentCPU()->ID;
 
-        Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
-        if (handler != (Handler *)0xdeadbeef)
-            handler->OnInterruptReceived(Frame);
-        else
-            error("Unhandled IRQ%d on CPU %d.", Frame->InterruptNumber - 32, Core);
+        memmove(InterruptFrames + 1, InterruptFrames, sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
+        InterruptFrames[0] = (void *)Frame->rip;
+        
+        CPUData *CoreData = GetCurrentCPU();
+        int Core = 0;
+        if (likely(CoreData != nullptr))
+            Core = CoreData->ID;
 
-        if (apic[Core])
+        // If this is false, we have a big problem.
+        if (likely(Frame->InterruptNumber < CPU::x64::IRQ223 && Frame->InterruptNumber > CPU::x64::ISR0))
         {
-            ((APIC::APIC *)Interrupts::apic[Core])->EOI();
-            // TODO: Handle PIC too
-            return;
+            Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
+            if (likely(handler != (Handler *)0xdeadbeef))
+                handler->OnInterruptReceived(Frame);
+            else
+                error("Unhandled IRQ%ld on CPU %d.", Frame->InterruptNumber - 32, Core);
+
+            if (likely(apic[Core]))
+            {
+                ((APIC::APIC *)Interrupts::apic[Core])->EOI();
+                // TODO: Handle PIC too
+                return;
+            }
+            // TODO: PIC
         }
-        // TODO: PIC
 #elif defined(__i386__)
         void *Frame = Data;
 #elif defined(__aarch64__)

@@ -208,6 +208,8 @@ uint8_t *md5String(char *input)
     md5Finalize(&ctx);
 
     uint8_t *result = kmalloc(16);
+    if (result == NULL)
+        return (uint8_t *)"error";
     memcpy(result, ctx.digest, 16);
     return result;
 }
@@ -236,6 +238,8 @@ uint8_t *md5File(uint8_t *buffer, size_t input_len)
     md5Finalize(&ctx);
 
     uint8_t *result = kmalloc(16);
+    if (result == NULL)
+        return (uint8_t *)"error";
     memcpy(result, ctx.digest, 16);
     return result;
 }

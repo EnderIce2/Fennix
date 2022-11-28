@@ -265,7 +265,7 @@ namespace Memory
 
         trace("Reserving pages...");
         this->ReservePages(0, MemorySize / PAGE_SIZE + 1);
-        trace("Unreserving usable pages...");
+        trace("Unreserve usable pages...");
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
             if (Info->Memory.Entry[i].Type == Usable)
                 this->UnreservePages((void *)Info->Memory.Entry[i].BaseAddress, Info->Memory.Entry[i].Length / PAGE_SIZE + 1);

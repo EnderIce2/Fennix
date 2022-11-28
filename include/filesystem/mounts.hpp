@@ -11,7 +11,7 @@ namespace FileSystem
     class Device
     {
     public:
-        FileSystemNode *AddFileSystem(FileSystemOpeations *Operator, uint64_t Mode, const char *Name, int Flags);
+        FileSystemNode *AddFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Device();
         ~Device();
     };
@@ -20,7 +20,7 @@ namespace FileSystem
     class Mount
     {
     public:
-        FileSystemNode *MountFileSystem(FileSystemOpeations *Operator, uint64_t Mode, const char *Name);
+        FileSystemNode *MountFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name);
         void DetectAndMountFS(void *drive);
         Mount();
         ~Mount();
@@ -38,7 +38,7 @@ namespace FileSystem
     class Driver
     {
     public:
-        FileSystemNode *AddDriver(struct FileSystemOpeations *Operator, uint64_t Mode, const char *Name, int Flags);
+        FileSystemNode *AddDriver(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Driver();
         ~Driver();
     };
@@ -47,7 +47,7 @@ namespace FileSystem
     class Network
     {
     public:
-        FileSystemNode *AddNetworkCard(struct FileSystemOpeations *Operator, uint64_t Mode, const char *Name, int Flags);
+        FileSystemNode *AddNetworkCard(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Network();
         ~Network();
     };

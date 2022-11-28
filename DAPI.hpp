@@ -14,6 +14,7 @@ enum DriverReturnCode
     NOT_ACCEPTED,
     INVALID_KERNEL_API,
     DEVICE_NOT_SUPPORTED,
+    SYSTEM_NOT_SUPPORTED,
     KERNEL_API_VERSION_NOT_SUPPORTED
 };
 
@@ -22,7 +23,8 @@ enum DriverBindType
     BIND_NULL,
     BIND_INTERRUPT,
     BIND_PROCESS,
-    BIND_PCI
+    BIND_PCI,
+    BIND_INPUT
 };
 
 struct KernelAPI
@@ -80,7 +82,7 @@ struct KernelAPI
                 void (*WriteSector)(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port);
             } AHCI;
         } Disk;
-    } Commmand;
+    } Command;
 
 } __attribute__((packed));
 
@@ -95,7 +97,8 @@ enum CallbackReason
     BindReason,
     UnbindReason,
     InterruptReason,
-    ProcessReason
+    ProcessReason,
+    InputReason,
 };
 
 struct KernelCallback
@@ -129,6 +132,22 @@ struct KernelCallback
             int BytesPerSector;
         } Fetch;
     } DiskCallback;
+
+    struct
+    {
+        struct
+        {
+            unsigned long X;
+            unsigned long Y;
+            unsigned long Z;
+            struct
+            {
+                bool Left;
+                bool Right;
+                bool Middle;
+            } Buttons;
+        } Mouse;
+    } InputCallback;
 
     struct
     {

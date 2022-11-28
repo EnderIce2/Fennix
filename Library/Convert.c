@@ -1,6 +1,7 @@
 #include <convert.h>
-#include <types.h>
+
 #include <memory.hpp>
+#include <debug.h>
 
 // TODO: Replace mem* with assembly code
 
@@ -29,7 +30,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-void *memcpy(void *dest, const void *src, size_t n)
+void *memcpy_unsafe(void *dest, const void *src, size_t n)
 {
     unsigned char *d = dest;
     const unsigned char *s = src;
@@ -193,7 +194,7 @@ void *memcpy(void *dest, const void *src, size_t n)
     return dest;
 }
 
-void *memset(void *dest, int c, size_t n)
+void *memset_unsafe(void *dest, int c, size_t n)
 {
     unsigned char *s = dest;
     size_t k;
@@ -264,7 +265,7 @@ void *memset(void *dest, int c, size_t n)
     return dest;
 }
 
-void *memmove(void *dest, const void *src, size_t n)
+void *memmove_unsafe(void *dest, const void *src, size_t n)
 {
 #ifdef __GNUC__
     typedef __attribute__((__may_alias__)) size_t WT;
@@ -362,9 +363,9 @@ long unsigned strlen(const char s[])
     return i;
 }
 
-char *strcat(char *destination, const char *source)
+char *strcat_unsafe(char *destination, const char *source)
 {
-    if ((destination == NULL) && (source == NULL))
+    if ((destination == NULL) || (source == NULL))
         return NULL;
     char *start = destination;
     while (*start != '\0')
@@ -379,7 +380,7 @@ char *strcat(char *destination, const char *source)
     return destination;
 }
 
-char *strcpy(char *destination, const char *source)
+char *strcpy_unsafe(char *destination, const char *source)
 {
     if (destination == NULL)
         return NULL;
@@ -446,7 +447,7 @@ char *strchr(const char *String, int Char)
 char *strdup(const char *String)
 {
     char *OutBuffer = kmalloc(strlen((char *)String) + 1);
-    strcpy(OutBuffer, String);
+    strncpy(OutBuffer, String, strlen(String) + 1);
     return OutBuffer;
 }
 
@@ -610,4 +611,233 @@ char *itoa(int Value, char *Buffer, int Base)
 
     Buffer[i] = '\0';
     return reverse(Buffer, 0, i - 1);
+}
+
+char *ltoa(long Value, char *Buffer, int Base)
+{
+    if (Base < 2 || Base > 32)
+        return Buffer;
+
+    long n = abs(Value);
+    int i = 0;
+
+    while (n)
+    {
+        int r = n % Base;
+        if (r >= 10)
+            Buffer[i++] = 65 + (r - 10);
+        else
+            Buffer[i++] = 48 + r;
+        n = n / Base;
+    }
+
+    if (i == 0)
+        Buffer[i++] = '0';
+
+    if (Value < 0 && Base == 10)
+        Buffer[i++] = '-';
+
+    Buffer[i] = '\0';
+    return reverse(Buffer, 0, i - 1);
+}
+
+char *ultoa(unsigned long Value, char *Buffer, int Base)
+{
+    if (Base < 2 || Base > 32)
+        return Buffer;
+
+    unsigned long n = Value;
+    int i = 0;
+
+    while (n)
+    {
+        int r = n % Base;
+        if (r >= 10)
+            Buffer[i++] = 65 + (r - 10);
+        else
+            Buffer[i++] = 48 + r;
+        n = n / Base;
+    }
+
+    if (i == 0)
+        Buffer[i++] = '0';
+
+    Buffer[i] = '\0';
+    return reverse(Buffer, 0, i - 1);
+}
+
+extern void __chk_fail(void) __attribute__((__noreturn__));
+
+// #define DBG_CHK 1
+
+__no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen)
+{
+#ifdef DBG_CHK
+    debug("( dest:%#lx src:%#lx len:%llu slen:%llu )", dest, src, len, slen);
+#endif
+    if (unlikely(dest == NULL))
+    {
+        error("dest is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(src == NULL))
+    {
+        error("src is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len == 0))
+    {
+        error("len is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(slen == 0))
+    {
+        error("slen is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len > slen))
+        __chk_fail();
+    return memcpy_unsafe(dest, src, len);
+}
+
+__no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
+{
+#ifdef DBG_CHK
+    debug("( dest:%#lx val:%#x len:%llu slen:%llu )", dest, val, len, slen);
+#endif
+    if (unlikely(dest == NULL))
+    {
+        error("dest is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len == 0))
+    {
+        error("len is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(slen == 0))
+    {
+        error("slen is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len > slen))
+        __chk_fail();
+    return memset_unsafe(dest, val, len);
+}
+
+__no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
+{
+#ifdef DBG_CHK
+    debug("( dest:%#lx src:%#lx len:%llu slen:%llu )", dest, src, len, slen);
+#endif
+    if (unlikely(dest == NULL))
+    {
+        error("dest is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(src == NULL))
+    {
+        error("src is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len == 0))
+    {
+        error("len is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(slen == 0))
+    {
+        error("slen is 0");
+        while (1)
+            ;
+    }
+
+    if (unlikely(len > slen))
+        __chk_fail();
+    return memmove_unsafe(dest, src, len);
+}
+
+__no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)
+{
+#ifdef DBG_CHK
+    debug("( dest:%#lx src:%#lx slen:%llu )", dest, src, slen);
+#endif
+    if (unlikely(dest == NULL))
+    {
+        error("dest is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(src == NULL))
+    {
+        error("src is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(slen == 0))
+    {
+        error("slen is 0");
+        while (1)
+            ;
+    }
+
+    size_t dest_len = strlen(dest);
+    if (unlikely(dest_len + strlen(src) + 1 > slen))
+        __chk_fail();
+    return strcat_unsafe(dest, src);
+}
+
+__no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen)
+{
+#ifdef DBG_CHK
+    debug("( dest:%#lx src:%#lx slen:%llu )", dest, src, slen);
+#endif
+    if (unlikely(dest == NULL))
+    {
+        error("dest is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(src == NULL))
+    {
+        error("src is NULL");
+        while (1)
+            ;
+    }
+
+    if (unlikely(slen == 0))
+    {
+        error("slen is 0");
+        while (1)
+            ;
+    }
+
+    size_t len = strlen(src);
+
+    if (unlikely(len >= slen))
+        __chk_fail();
+    return strcpy_unsafe(dest, src);
 }

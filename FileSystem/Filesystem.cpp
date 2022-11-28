@@ -60,7 +60,7 @@ namespace FileSystem
         if (strcmp(Parent->Name, Path))
         {
             cwk_segment segment;
-            if (!cwk_path_get_first_segment(Path, &segment))
+            if (unlikely(!cwk_path_get_first_segment(Path, &segment)))
             {
                 error("Path doesn't have any segments.");
                 return nullptr;
@@ -104,13 +104,13 @@ namespace FileSystem
         vfsdbg("AddNewChild( Parent: \"%s\" Name: \"%s\" )", Parent->Name, Name);
         FileSystemNode *newNode = new FileSystemNode;
         newNode->Parent = Parent;
-        strcpy(newNode->Name, Name);
-        if (Parent)
+        strncpy(newNode->Name, Name, FILENAME_LENGTH);
+        if (likely(Parent))
             newNode->Operator = Parent->Operator;
         else
             newNode->Operator = nullptr;
 
-        if (Parent)
+        if (likely(Parent))
             Parent->Children.push_back(newNode);
         vfsdbg("AddNewChild()->\"%s\"", newNode->Name);
         return newNode;
@@ -119,7 +119,7 @@ namespace FileSystem
     FileSystemNode *GetChild(FileSystemNode *Parent, const char *Name)
     {
         vfsdbg("GetChild( Parent: \"%s\" Name: \"%s\" )", Parent->Name, Name);
-        if (Parent)
+        if (likely(Parent))
             foreach (auto var in Parent->Children)
                 if (strcmp(var->Name, Name) == 0)
                 {
@@ -181,7 +181,7 @@ namespace FileSystem
         char *NormalizedPath = NormalizePath(Parent, Path);
         FileSystemNode *Node = GetNodeFromPath(Parent, NormalizedPath);
 
-        if (Node == nullptr)
+        if (!Node)
         {
             vfsdbg("FileExists()->NOT_FOUND");
             return FileStatus::NOT_FOUND;
@@ -204,7 +204,7 @@ namespace FileSystem
 
         FileSystemNode *CurrentParent = nullptr;
 
-        if (Parent == nullptr)
+        if (!Parent)
         {
             if (FileSystemRoot->Children.size() >= 1)
             {
@@ -270,27 +270,27 @@ namespace FileSystem
         return nullptr;
     }
 
-    FileSystemNode *Virtual::CreateRoot(FileSystemOpeations *Operator, const char *RootName)
+    FileSystemNode *Virtual::CreateRoot(FileSystemOperations *Operator, const char *RootName)
     {
         if (Operator == nullptr)
             return nullptr;
         vfsdbg("Setting root to %s", RootName);
         FileSystemNode *newNode = new FileSystemNode;
-        strcpy(newNode->Name, RootName);
+        strncpy(newNode->Name, RootName, FILENAME_LENGTH);
         newNode->Flags = NodeFlags::FS_DIRECTORY;
         newNode->Operator = Operator;
         FileSystemRoot->Children.push_back(newNode);
         return newNode;
     }
 
-    FILE *Virtual::Mount(FileSystemOpeations *Operator, const char *Path)
+    FILE *Virtual::Mount(FileSystemOperations *Operator, const char *Path)
     {
         SmartLock(VFSLock);
 
-        if (Operator == nullptr)
+        if (unlikely(!Operator))
             return nullptr;
 
-        if (isempty((char *)Path))
+        if (unlikely(isempty((char *)Path)))
             return nullptr;
 
         vfsdbg("Mounting %s", Path);
@@ -306,7 +306,7 @@ namespace FileSystem
     FileStatus Virtual::Unmount(FILE *File)
     {
         SmartLock(VFSLock);
-        if (File == nullptr)
+        if (unlikely(File))
             return FileStatus::INVALID_PARAMETER;
         vfsdbg("Unmounting %s", File->Name);
         return FileStatus::OK;
@@ -322,7 +322,7 @@ namespace FileSystem
             FILE *file = new FILE;
             FileStatus filestatus = FileStatus::OK;
             file->Node = Parent;
-            if (file->Node == nullptr)
+            if (unlikely(!file->Node))
                 file->Status = FileStatus::NOT_FOUND;
             const char *basename;
             cwk_path_get_basename(GetPathFromNode(Parent), &basename, nullptr);
@@ -338,7 +338,7 @@ namespace FileSystem
             FILE *file = new FILE;
             FileStatus filestatus = FileStatus::OK;
             file->Node = Parent;
-            if (file->Node == nullptr)
+            if (!file->Node)
                 file->Status = FileStatus::NOT_FOUND;
             const char *basename;
             cwk_path_get_basename(GetPathFromNode(Parent), &basename, nullptr);
@@ -388,7 +388,7 @@ namespace FileSystem
                 }
 
             file->Node = GetNodeFromPath(FileSystemRoot->Children[0], CleanPath);
-            if (file->Node != nullptr)
+            if (file->Node)
             {
                 const char *basename;
                 cwk_path_get_basename(GetPathFromNode(file->Node), &basename, nullptr);
@@ -403,7 +403,7 @@ namespace FileSystem
         else
         {
             file->Node = GetNodeFromPath(Parent, CleanPath);
-            if (file->Node == nullptr)
+            if (unlikely(!file->Node))
                 file->Status = FileStatus::NOT_FOUND;
             const char *basename;
             cwk_path_get_basename(CleanPath, &basename, nullptr);
@@ -417,18 +417,18 @@ namespace FileSystem
     uint64_t Virtual::Read(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
     {
         SmartLock(VFSLock);
-        if (File == nullptr)
+        if (unlikely(!File))
             return 0;
 
         File->Status = FileStatus::OK;
 
-        if (File->Node == nullptr)
+        if (unlikely(!File->Node))
         {
             File->Status = FileStatus::INVALID_PARAMETER;
             return 0;
         }
 
-        if (File->Node->Operator == nullptr)
+        if (unlikely(!File->Node->Operator))
         {
             File->Status = FileStatus::INVALID_PARAMETER;
             return 0;
@@ -440,18 +440,18 @@ namespace FileSystem
     uint64_t Virtual::Write(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
     {
         SmartLock(VFSLock);
-        if (File == nullptr)
+        if (unlikely(!File))
             return 0;
 
         File->Status = FileStatus::OK;
 
-        if (File->Node == nullptr)
+        if (unlikely(!File->Node))
         {
             File->Status = FileStatus::INVALID_PARAMETER;
             return 0;
         }
 
-        if (File->Node->Operator == nullptr)
+        if (unlikely(!File->Node->Operator))
         {
             File->Status = FileStatus::INVALID_PARAMETER;
             return 0;
@@ -463,7 +463,7 @@ namespace FileSystem
     FileStatus Virtual::Close(FILE *File)
     {
         SmartLock(VFSLock);
-        if (File == nullptr)
+        if (unlikely(!File))
             return FileStatus::INVALID_HANDLE;
         vfsdbg("Closing %s", File->Name);
         delete File;
@@ -477,12 +477,12 @@ namespace FileSystem
         FileSystemRoot->Flags = NodeFlags::FS_MOUNTPOINT;
         FileSystemRoot->Operator = nullptr;
         FileSystemRoot->Parent = nullptr;
-        strcpy(FileSystemRoot->Name, "root");
+        strncpy(FileSystemRoot->Name, "root", 4);
         cwk_path_set_style(CWK_STYLE_UNIX);
     }
 
     Virtual::~Virtual()
     {
-        warn("Tried to uninitialize Virtual File System!");
+        warn("Tried to deinitialize Virtual File System!");
     }
 }

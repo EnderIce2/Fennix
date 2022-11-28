@@ -89,7 +89,7 @@ namespace GlobalDescriptorTable
 
     void *CPUStackPointer[MAX_CPU];
 
-    __no_stack_protector void Init(int Core)
+    SafeFunction void Init(int Core)
     {
         memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
         gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
@@ -143,7 +143,7 @@ namespace GlobalDescriptorTable
         trace("Global Descriptor Table initialized");
     }
 
-    __no_stack_protector void SetKernelStack(void *Stack)
+    SafeFunction void SetKernelStack(void *Stack)
     {
         if (Stack)
             tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;

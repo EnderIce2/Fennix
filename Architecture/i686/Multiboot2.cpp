@@ -92,12 +92,16 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
         {
         case MULTIBOOT_TAG_TYPE_CMDLINE:
         {
-            strcpy(binfo.Kernel.CommandLine, ((multiboot_tag_string *)Tag)->string);
+            strncpy(binfo.Kernel.CommandLine,
+                    ((multiboot_tag_string *)Tag)->string,
+                    strlen(((multiboot_tag_string *)Tag)->string));
             break;
         }
         case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
         {
-            strcpy(binfo.Bootloader.Name, ((multiboot_tag_string *)Tag)->string);
+            strncpy(binfo.Bootloader.Name,
+                    ((multiboot_tag_string *)Tag)->string,
+                    strlen(((multiboot_tag_string *)Tag)->string));
             break;
         }
         case MULTIBOOT_TAG_TYPE_MODULE:
@@ -106,8 +110,9 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
             static int module_count = 0;
             binfo.Modules[module_count++].Address = (void *)module->mod_start;
             binfo.Modules[module_count++].Size = module->size;
-            strcpy(binfo.Modules[module_count++].Path, "(null)");
-            strcpy(binfo.Modules[module_count++].CommandLine, module->cmdline);
+            strncpy(binfo.Modules[module_count++].Path, "(null)", 6);
+            strncpy(binfo.Modules[module_count++].CommandLine, module->cmdline,
+                    strlen(module->cmdline));
             break;
         }
         case MULTIBOOT_TAG_TYPE_BASIC_MEMINFO:
@@ -332,7 +337,7 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
     vm[12] = 0x0579;
     vm[13] = 0x0565;
     vm[14] = 0x0574;
-    
+
     CPU::Stop();
     // Entry(&binfo);
 }

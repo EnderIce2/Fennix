@@ -101,6 +101,7 @@ namespace Tasking
 
         void Rename(const char *name)
         {
+            CriticalSection cs;
             if (!Name[0])
             {
                 warn("Tried to rename thread %d to NULL", ID);
@@ -117,6 +118,7 @@ namespace Tasking
 
         void SetPriority(int priority)
         {
+            CriticalSection cs;
             trace("Setting priority of thread %s to %d", Name, priority);
             Info.Priority = priority;
         }
@@ -125,6 +127,7 @@ namespace Tasking
 
         void SetCritical(bool critical)
         {
+            CriticalSection cs;
             trace("Setting criticality of thread %s to %s", Name, critical ? "true" : "false");
             Security.IsCritical = critical;
         }
@@ -215,7 +218,13 @@ namespace Tasking
         Vector<PCB *> GetProcessList() { return ListProcess; }
         void Panic() { StopScheduler = true; }
         void Schedule();
-        long GetUsage(int Core) { return 100 - IdleProcess->Info.Usage[Core]; }
+        long GetUsage(int Core)
+        {
+            if (IdleProcess)
+                return 100 - IdleProcess->Info.Usage[Core];
+            else
+                return 0;
+        }
         void KillThread(TCB *tcb, int Code)
         {
             tcb->Status = TaskStatus::Terminated;

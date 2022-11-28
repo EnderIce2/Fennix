@@ -23,7 +23,7 @@ namespace CrashHandler
         uint64_t rip;
     };
 
-    __no_stack_protector void TraceFrames(CHArchTrapFrame *Frame, int Count)
+    SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count)
     {
 
 #if defined(__amd64__)

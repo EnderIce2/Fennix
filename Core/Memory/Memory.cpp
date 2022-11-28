@@ -16,7 +16,7 @@ static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
-void tracepagetable(PageTable *pt)
+__no_instrument_function void tracepagetable(PageTable *pt)
 {
     for (int i = 0; i < 512; i++)
     {
@@ -37,11 +37,12 @@ void tracepagetable(PageTable *pt)
 }
 #endif
 
-void MapFromZero(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapFromZero(PageTable *PT, BootInfo *Info)
 {
     Virtual va = Virtual(PT);
     uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
-    for (uint64_t t = 0; t < Info->Memory.Size; t += PAGE_SIZE)
+    uint64_t MemSize = Info->Memory.Size;
+    for (uint64_t t = 0; t < MemSize; t += PAGE_SIZE)
     {
         va.Map((void *)t, (void *)t, PTFlag::RW);
         va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
@@ -49,7 +50,7 @@ void MapFromZero(PageTable *PT, BootInfo *Info)
     }
 }
 
-void MapFramebuffer(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapFramebuffer(PageTable *PT, BootInfo *Info)
 {
     Virtual va = Virtual(PT);
     int itrfb = 0;
@@ -66,7 +67,7 @@ void MapFramebuffer(PageTable *PT, BootInfo *Info)
     }
 }
 
-void MapKernel(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapKernel(PageTable *PT, BootInfo *Info)
 {
     /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
     Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
@@ -79,28 +80,30 @@ void MapKernel(PageTable *PT, BootInfo *Info)
     uint64_t KernelEnd = (uint64_t)&_kernel_end;
 
     uint64_t BaseKernelMapAddress = (uint64_t)Info->Kernel.PhysicalBase;
-    for (uint64_t k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
+    uint64_t k;
+
+    for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
-    for (uint64_t k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
+    for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
-    for (uint64_t k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
+    for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
-    for (uint64_t k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
+    for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
@@ -111,8 +114,9 @@ void MapKernel(PageTable *PT, BootInfo *Info)
           KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
 }
 
-void InitializeMemoryManagement(BootInfo *Info)
+__no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
 {
+#ifdef DEBUG
     for (uint64_t i = 0; i < Info->Memory.Entries; i++)
     {
         uint64_t Base = reinterpret_cast<uint64_t>(Info->Memory.Entry[i].BaseAddress);
@@ -122,7 +126,7 @@ void InitializeMemoryManagement(BootInfo *Info)
 
         switch (Info->Memory.Entry[i].Type)
         {
-        case Usable:
+        case likely(Usable):
             Type = "Usable";
             break;
         case Reserved:
@@ -150,12 +154,13 @@ void InitializeMemoryManagement(BootInfo *Info)
             break;
         }
 
-        trace("%lld: %#016llx-%#016llx %s",
+        debug("%lld: %#016llx-%#016llx %s",
               i,
               Base,
               End,
               Type);
     }
+#endif
 
     trace("Initializing Physical Memory Manager");
     KernelAllocator = Physical();
@@ -177,7 +182,8 @@ void InitializeMemoryManagement(BootInfo *Info)
     debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
     MapFromZero(KernelPageTable, Info);
     debug("Mapping from 0x0 %#llx for Userspace Page Table", Info->Memory.Size);
-    MapFromZero(UserspaceKernelOnlyPageTable, Info);
+    UserspaceKernelOnlyPageTable[0] = KernelPageTable[0]; // TODO: This is a hack to speed up the boot process
+    // MapFromZero(UserspaceKernelOnlyPageTable, Info);
 
     /* Mapping Framebuffer address */
     debug("Mapping Framebuffer");
@@ -219,10 +225,14 @@ void *HeapMalloc(uint64_t Size)
 {
     switch (AllocatorType)
     {
-    case MemoryAllocatorType::Pages:
+    case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(Size));
     case MemoryAllocatorType::XallocV1:
-        return XallocV1Allocator->Malloc(Size);
+    {
+        void *ret = XallocV1Allocator->Malloc(Size);
+        memset(ret, 0, Size);
+        return ret;
+    }
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(malloc)(Size);
@@ -238,10 +248,14 @@ void *HeapCalloc(uint64_t n, uint64_t Size)
 {
     switch (AllocatorType)
     {
-    case MemoryAllocatorType::Pages:
+    case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(n * Size));
     case MemoryAllocatorType::XallocV1:
-        return XallocV1Allocator->Calloc(n, Size);
+    {
+        void *ret = XallocV1Allocator->Calloc(n, Size);
+        memset(ret, 0, n * Size);
+        return ret;
+    }
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(calloc)(n, Size);
@@ -257,10 +271,14 @@ void *HeapRealloc(void *Address, uint64_t Size)
 {
     switch (AllocatorType)
     {
-    case MemoryAllocatorType::Pages:
+    case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(Size)); // WARNING: Potential memory leak
     case MemoryAllocatorType::XallocV1:
-        return XallocV1Allocator->Realloc(Address, Size);
+    {
+        void *ret = XallocV1Allocator->Realloc(Address, Size);
+        memset(ret, 0, Size);
+        return ret;
+    }
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(realloc)(Address, Size);
@@ -276,11 +294,12 @@ void HeapFree(void *Address)
 {
     switch (AllocatorType)
     {
-    case MemoryAllocatorType::Pages:
+    case unlikely(MemoryAllocatorType::Pages):
         KernelAllocator.FreePage(Address); // WARNING: Potential memory leak
         break;
     case MemoryAllocatorType::XallocV1:
-        XallocV1Allocator->Free(Address);
+        if (XallocV1Allocator)
+            XallocV1Allocator->Free(Address);
         break;
     case MemoryAllocatorType::liballoc11:
         PREFIX(free)
@@ -291,20 +310,32 @@ void HeapFree(void *Address)
     }
 }
 
-void *operator new(size_t Size) {
-    return HeapMalloc(Size); }
-void *operator new[](size_t Size) {
-    return HeapMalloc(Size); }
+void *operator new(size_t Size)
+{
+    return HeapMalloc(Size);
+}
+void *operator new[](size_t Size)
+{
+    return HeapMalloc(Size);
+}
 void *operator new(unsigned long Size, std::align_val_t Alignment)
 {
     fixme("operator new with alignment(%#lx) is not implemented", Alignment);
     return HeapMalloc(Size);
 }
-void operator delete(void *Pointer) {
-    HeapFree(Pointer); }
-void operator delete[](void *Pointer) {
-    HeapFree(Pointer); }
-void operator delete(void *Pointer, long unsigned int Size) {
-    HeapFree(Pointer); }
-void operator delete[](void *Pointer, long unsigned int Size) {
-    HeapFree(Pointer); }
+void operator delete(void *Pointer)
+{
+    HeapFree(Pointer);
+}
+void operator delete[](void *Pointer)
+{
+    HeapFree(Pointer);
+}
+void operator delete(void *Pointer, long unsigned int Size)
+{
+    HeapFree(Pointer);
+}
+void operator delete[](void *Pointer, long unsigned int Size)
+{
+    HeapFree(Pointer);
+}

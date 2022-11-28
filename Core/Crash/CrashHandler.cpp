@@ -22,15 +22,16 @@ NewLock(UserInputLock);
 
 namespace CrashHandler
 {
+    void *EHIntFrames[INT_FRAMES_MAX];
     static bool ExceptionOccurred = false;
     int SBIdx = 255;
-    __no_stack_protector void printfWrapper(char c, void *unused)
+    SafeFunction void printfWrapper(char c, void *unused)
     {
         Display->Print(c, SBIdx, true);
         UNUSED(unused);
     }
 
-    __no_stack_protector void EHPrint(const char *Format, ...)
+    SafeFunction void EHPrint(const char *Format, ...)
     {
         va_list args;
         va_start(args, Format);
@@ -38,7 +39,7 @@ namespace CrashHandler
         va_end(args);
     }
 
-    __no_stack_protector char *trimwhitespace(char *str)
+    SafeFunction char *TrimWhiteSpace(char *str)
     {
         char *end;
         while (*str == ' ')
@@ -54,7 +55,7 @@ namespace CrashHandler
 
     CRData crashdata = {};
 
-    __no_stack_protector void DisplayTopOverlay()
+    SafeFunction void DisplayTopOverlay()
     {
         Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
         Video::Font *f = Display->GetCurrentFont();
@@ -108,7 +109,7 @@ namespace CrashHandler
         Display->SetBufferCursor(SBIdx, 0, fi.Height + 10);
     }
 
-    __no_stack_protector void DisplayBottomOverlay()
+    SafeFunction void DisplayBottomOverlay()
     {
         Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
         Video::Font *f = Display->GetCurrentFont();
@@ -122,7 +123,7 @@ namespace CrashHandler
         EHPrint("\eAAAAAA> \eFAFAFA");
     }
 
-    __no_stack_protector void ArrowInput(uint8_t key)
+    SafeFunction void ArrowInput(uint8_t key)
     {
         switch (key)
         {
@@ -193,7 +194,7 @@ namespace CrashHandler
         Display->SetBuffer(SBIdx);
     }
 
-    __no_stack_protector void UserInput(char *Input)
+    SafeFunction void UserInput(char *Input)
     {
         SmartCriticalSection(UserInputLock);
         Display->ClearBuffer(SBIdx);
@@ -209,6 +210,7 @@ namespace CrashHandler
             EHPrint("showbuf <INDEX> - Display the contents of a screen buffer.\n");
             EHPrint("       - A sleep timer will be enabled. This will cause the OS to sleep for an unknown amount of time.\n");
             EHPrint("       - \eFF4400WARNING: This can crash the system if a wrong buffer is selected.\eFAFAFA\n");
+            EHPrint("ifr <COUNT> - Show interrupt frames.\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
@@ -223,24 +225,65 @@ namespace CrashHandler
         {
             PowerManager->Shutdown();
             EHPrint("\eFFFFFFNow it's safe to turn off your computer.");
+            Display->SetBuffer(SBIdx);
             CPU::Stop();
         }
         else if (strcmp(Input, "reboot") == 0)
         {
             PowerManager->Reboot();
             EHPrint("\eFFFFFFNow it's safe to reboot your computer.");
+            Display->SetBuffer(SBIdx);
             CPU::Stop();
         }
         else if (strncmp(Input, "showbuf", 7) == 0)
         {
-            char *arg = trimwhitespace(Input + 7);
+            char *arg = TrimWhiteSpace(Input + 7);
             int tmpidx = SBIdx;
             SBIdx = atoi(arg);
             Display->SetBuffer(SBIdx);
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 5000000; i++)
                 inb(0x80);
             SBIdx = tmpidx;
             Display->SetBuffer(SBIdx);
+        }
+        else if (strncmp(Input, "ifr", 3) == 0)
+        {
+            char *arg = TrimWhiteSpace(Input + 3);
+            uint64_t CountI = atoi(arg);
+            uint64_t TotalCount = sizeof(EHIntFrames) / sizeof(EHIntFrames[0]);
+
+            debug("Printing %ld interrupt frames.", CountI);
+
+            if (CountI > TotalCount)
+            {
+                EHPrint("eFF4400Count too big! Maximum allowed is %ld\eFAFAFA\n", TotalCount);
+                Display->SetBuffer(SBIdx);
+            }
+            else
+            {
+                for (uint64_t i = 0; i < CountI; i++)
+                {
+                    if (EHIntFrames[i])
+                    {
+                        if (!Memory::Virtual().Check(EHIntFrames[i]))
+                            continue;
+                        EHPrint("\n\e2565CC%p", EHIntFrames[i]);
+                        EHPrint("\e7925CC-");
+#if defined(__amd64__)
+                        if ((uint64_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+#elif defined(__i386__)
+                        if ((uint64_t)EHIntFrames[i] >= 0xC0000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+#elif defined(__aarch64__)
+#endif
+                            EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uint64_t)EHIntFrames[i]));
+                        else
+                            EHPrint("\eFF4CA9Outside Kernel");
+                        for (int i = 0; i < 20000; i++)
+                            inb(0x80);
+                        Display->SetBuffer(SBIdx);
+                    }
+                }
+            }
         }
         else if (strcmp(Input, "main") == 0)
         {
@@ -286,11 +329,14 @@ namespace CrashHandler
         Display->SetBuffer(SBIdx);
     }
 
-    __no_stack_protector void Handle(void *Data)
+    SafeFunction void Handle(void *Data)
     {
         // TODO: SUPPORT SMP
         CPU::Interrupts(CPU::Disable);
         error("An exception occurred!");
+        for (size_t i = 0; i < INT_FRAMES_MAX; i++)
+            EHIntFrames[i] = Interrupts::InterruptFrames[i];
+
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
@@ -299,27 +345,11 @@ namespace CrashHandler
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             debug("Exception in kernel mode");
-            if (Frame->InterruptNumber == CPU::x64::PageFault)
-            {
-                CPUData *data = GetCurrentCPU();
-                if (data)
-                {
-                    if (data->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
-                    {
-                        debug("Stack expanded");
-                        CPU::Interrupts(CPU::Enable);
-                        return;
-                    }
-                    else
-                    {
-                        error("Stack expansion failed");
-                    }
-                }
-            }
-
             if (TaskManager)
                 TaskManager->Panic();
+            debug("ePanicSchedStop");
             Display->CreateBuffer(0, 0, SBIdx);
+            debug("e0");
         }
         else
         {
@@ -348,7 +378,9 @@ namespace CrashHandler
         {
             SBIdx = 255;
             Display->ClearBuffer(SBIdx);
+            debug("e0-1");
             Display->SetBufferCursor(SBIdx, 0, 0);
+            debug("e0-2");
 
             CPU::x64::CR0 cr0 = CPU::x64::readcr0();
             CPU::x64::CR2 cr2 = CPU::x64::readcr2();
@@ -405,6 +437,7 @@ namespace CrashHandler
         }
 
         ExceptionOccurred = true;
+        Interrupts::RemoveAll();
 
         debug("Reading control registers...");
         crashdata.Frame = Frame;

@@ -27,7 +27,7 @@ static const char *PagefaultDescriptions[8] = {
 
 namespace CrashHandler
 {
-    __no_stack_protector void DisplayMainScreen(CRData data)
+    SafeFunction void DisplayMainScreen(CRData data)
     {
         CHArchTrapFrame *Frame = data.Frame;
 
