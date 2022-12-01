@@ -167,8 +167,6 @@ EXTERNC __no_instrument_function void PostEntry(BootInfo *Info)
     CPU::Halt(true);
 }
 
-EXTERNC void __guard_setup(void);
-
 typedef void (*CallPtr)(void);
 extern CallPtr __init_array_start[0], __init_array_end[0];
 extern CallPtr __fini_array_start[0], __fini_array_end[0];
