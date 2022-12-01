@@ -17,6 +17,7 @@ namespace Disk
         DriverManager->IOCB(DriverUID, (void *)callback);
         this->AvailablePorts = callback->DiskCallback.Fetch.Ports;
         this->BytesPerSector = callback->DiskCallback.Fetch.BytesPerSector;
+        debug("AvailablePorts:%ld BytesPerSector:%ld", this->AvailablePorts, this->BytesPerSector);
 
         if (this->AvailablePorts <= 0)
         {
@@ -30,6 +31,7 @@ namespace Disk
         {
             Drive *drive = new Drive;
             sprintf_(drive->Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
+            debug("Drive Name: %s", drive->Name);
             // TODO: Implement disk type detection. Very useful in the future.
             drive->MechanicalDisk = true;
 

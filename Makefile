@@ -11,7 +11,10 @@ NM = ../$(COMPILER_PATH)/$(COMPILER_ARCH)nm
 OBJCOPY = ../$(COMPILER_PATH)/$(COMPILER_ARCH)objcopy
 OBJDUMP = ../$(COMPILER_PATH)/$(COMPILER_ARCH)objdump
 GDB = ../$(COMPILER_PATH)/$(COMPILER_ARCH)gdb
+RUSTC = /usr/bin/rustc
 NASM = /usr/bin/nasm
+
+RUST_TARGET_PATH = Architecture/$(OSARCH)/rust-target.json
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
@@ -23,19 +26,22 @@ ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/i
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
+RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), i686)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
+RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
+RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
 endif
 HEADERS = $(sort $(dir $(wildcard ./include/*)))
-OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
+OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
 INCLUDE_DIR = ./include
@@ -138,6 +144,10 @@ $(KERNEL_FILENAME): $(OBJ)
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
 	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@ -fno-rtti
+
+%.o: %.rs $(HEADERS) $(RUST_TARGET_PATH)
+	$(info Compiling $<)
+	$(RUSTC) $< -C panic=abort -C soft-float --emit=obj -o $@
 
 %.o: %.asm
 	$(info Compiling $<)
