@@ -15,7 +15,7 @@
 
 #include "../../kernel.h"
 
-static const char *PagefaultDescriptions[8] = {
+static const char *PageFaultDescriptions[8] = {
     "Supervisory process tried to read a non-present page entry\n",
     "Supervisory process tried to read a page and caused a protection fault\n",
     "Supervisory process tried to write to a non-present page entry\n",
@@ -177,14 +177,6 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     }
     case CPU::x64::PageFault:
     {
-        if (CurCPU)
-            if (CurCPU->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
-            {
-                debug("Stack expanded");
-                TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Ready;
-                return;
-            }
-
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(__amd64__)
         error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->rip);
@@ -203,7 +195,48 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         if (Frame->ErrorCode & 0x00000008)
             error("One or more page directory entries contain reserved bits which are set to 1.");
         else
-            error(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
+            error(PageFaultDescriptions[Frame->ErrorCode & 0b111]);
+
+#ifdef DEBUG
+        if (CurCPU)
+        {
+            Memory::Virtual vma = Memory::Virtual(CurCPU->CurrentProcess->PageTable);
+            bool PageAvailable = vma.Check((void *)CPU::x64::readcr2().PFLA);
+            debug("Page available (Check(...)): %s. %s",
+                  PageAvailable ? "Yes" : "No",
+                  (params.P && !PageAvailable) ? "CR2 == Present; Check() != Present??????" : "CR2 confirms Check() result.");
+
+            if (PageAvailable)
+            {
+                bool Present = vma.Check((void *)CPU::x64::readcr2().PFLA);
+                bool ReadWrite = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::RW);
+                bool User = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::US);
+                bool WriteThrough = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::PWT);
+                bool CacheDisabled = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::PCD);
+                bool Accessed = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::A);
+                bool Dirty = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::D);
+                bool Global = vma.Check((void *)CPU::x64::readcr2().PFLA, Memory::PTFlag::G);
+                /* ... */
+
+                debug("Page available: %s", Present ? "Yes" : "No");
+                debug("Page read/write: %s", ReadWrite ? "Yes" : "No");
+                debug("Page user/kernel: %s", User ? "User" : "Kernel");
+                debug("Page write-through: %s", WriteThrough ? "Yes" : "No");
+                debug("Page cache disabled: %s", CacheDisabled ? "Yes" : "No");
+                debug("Page accessed: %s", Accessed ? "Yes" : "No");
+                debug("Page dirty: %s", Dirty ? "Yes" : "No");
+                debug("Page global: %s", Global ? "Yes" : "No");
+            }
+        }
+#endif
+
+        if (CurCPU)
+            if (CurCPU->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
+            {
+                debug("Stack expanded");
+                TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Ready;
+                return;
+            }
         break;
     }
     case CPU::x64::x87FloatingPoint:

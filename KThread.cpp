@@ -18,9 +18,8 @@ void KernelMainThread()
 {
     TaskManager->InitIPC();
     TaskManager->GetCurrentThread()->SetPriority(100);
-    Vector<AuxiliaryVector> auxv;
+    CPU::Interrupts(CPU::Disable);
 
-    Tasking::TCB *CurrentWorker = nullptr;
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
     KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
 
@@ -56,22 +55,16 @@ void KernelMainThread()
         "--critical",
         nullptr};
 
-    bool ien = CPU::Interrupts(CPU::Check);
-    CPU::Interrupts(CPU::Disable);
     Execute::SpawnData ret = Execute::Spawn(Config.InitPath, argv, envp);
     if (ret.Status != Execute::ExStatus::OK)
     {
         KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret.Status);
-        if (ien)
-            CPU::Interrupts(CPU::Enable);
+        CPU::Interrupts(CPU::Enable);
         goto Exit;
     }
     ret.Thread->SetCritical(true);
-    debug("%s interrupts", ien ? "Enabling" : "Disabling");
-    if (ien)
-        CPU::Interrupts(CPU::Enable);
-    debug("After interrupts boolean");
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
+    CPU::Interrupts(CPU::Enable);
     TaskManager->GetCurrentThread()->SetPriority(1);
     TaskManager->WaitForThread(ret.Thread);
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());

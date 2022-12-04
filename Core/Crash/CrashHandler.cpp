@@ -2,6 +2,7 @@
 #include "chfcts.hpp"
 
 #include <display.hpp>
+#include <bitmap.hpp>
 #include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
@@ -19,6 +20,22 @@
 #include "../../kernel.h"
 
 NewLock(UserInputLock);
+
+#define TRACE_PAGE_TABLE(x, itr, depth)                                                                                    \
+    EHPrint("\e888888#%s\eAABBCC%03d\e4500F5: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s D:%s PS:%s G:%s Address:\e888888%#lx\n", \
+            depth,                                                                                                         \
+            itr,                                                                                                           \
+            x.Value.Present ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                               \
+            x.Value.ReadWrite ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                             \
+            x.Value.UserSupervisor ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                        \
+            x.Value.WriteThrough ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                          \
+            x.Value.CacheDisable ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                          \
+            x.Value.Accessed ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                              \
+            x.Value.Dirty ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                 \
+            x.Value.PageSize ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                              \
+            x.Value.Global ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                \
+            x.GetAddress() << 12);                                                                                         \
+    Display->SetBuffer(SBIdx);
 
 namespace CrashHandler
 {
@@ -211,6 +228,8 @@ namespace CrashHandler
             EHPrint("       - A sleep timer will be enabled. This will cause the OS to sleep for an unknown amount of time.\n");
             EHPrint("       - \eFF4400WARNING: This can crash the system if a wrong buffer is selected.\eFAFAFA\n");
             EHPrint("ifr <COUNT> - Show interrupt frames.\n");
+            EHPrint("tlb <ADDRESS> - Print the page table entries\n");
+            EHPrint("bitmap - Print the memory bitmap\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
@@ -284,6 +303,83 @@ namespace CrashHandler
                     }
                 }
             }
+        }
+        else if (strncmp(Input, "tlb", 3) == 0)
+        {
+            char *arg = TrimWhiteSpace(Input + 3);
+            uint64_t Address = NULL;
+            Address = strtol(arg, NULL, 16);
+            debug("Converted %s to %#lx", arg, Address);
+            Memory::PageTable *BasePageTable = (Memory::PageTable *)Address;
+            if (Memory::Virtual().Check(BasePageTable))
+                for (int Index = 0; Index < 512; Index++)
+                {
+                    if (BasePageTable->Entries[Index].Value.raw == 0)
+                        continue;
+
+                    TRACE_PAGE_TABLE(BasePageTable->Entries[Index], Index, "");
+                    for (int i = 0; i < 10000; i++)
+                        inb(0x80);
+
+                    if (BasePageTable->Entries[Index].GetFlag(Memory::PTFlag::P))
+                    {
+                        Memory::PageTable *PDP = (Memory::PageTable *)((uint64_t)BasePageTable->Entries[Index].GetAddress() << 12);
+                        for (int PDPIndex = 0; PDPIndex < 512; PDPIndex++)
+                        {
+                            if (PDP->Entries[PDPIndex].Value.raw == 0)
+                                continue;
+                            TRACE_PAGE_TABLE(PDP->Entries[PDPIndex], PDPIndex, " ");
+                            for (int i = 0; i < 10000; i++)
+                                inb(0x80);
+
+                            if (PDP->Entries[PDPIndex].GetFlag(Memory::PTFlag::P))
+                            {
+                                Memory::PageTable *PD = (Memory::PageTable *)((uint64_t)PDP->Entries[PDPIndex].GetAddress() << 12);
+                                for (int PDIndex = 0; PDIndex < 512; PDIndex++)
+                                {
+                                    if (PD->Entries[PDIndex].Value.raw == 0)
+                                        continue;
+                                    TRACE_PAGE_TABLE(PD->Entries[PDIndex], PDIndex, "  ");
+                                    for (int i = 0; i < 10000; i++)
+                                        inb(0x80);
+
+                                    if (PD->Entries[PDIndex].GetFlag(Memory::PTFlag::P))
+                                    {
+                                        Memory::PageTable *PT = (Memory::PageTable *)((uint64_t)PD->Entries[PDIndex].GetAddress() << 12);
+                                        for (int PIndex = 0; PIndex < 512; PIndex++)
+                                        {
+                                            if (PT->Entries[PIndex].Value.raw == 0)
+                                                continue;
+                                            TRACE_PAGE_TABLE(PT->Entries[PIndex], PIndex, "   ");
+                                            for (int i = 0; i < 10000; i++)
+                                                inb(0x80);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+        else if (strncmp(Input, "bitmap", 6) == 0)
+        {
+            Bitmap bm = KernelAllocator.GetPageBitmap();
+
+            EHPrint("\n\eFAFAFA%08ld: ", 0);
+            for (uint64_t i = 0; i < bm.Size; i++)
+            {
+                if (bm.Get(i))
+                    EHPrint("\eFF00001");
+                else
+                    EHPrint("\e00FF000");
+                if (i % 128 == 127)
+                {
+                    EHPrint("\n\eFAFAFA%08ld: ", i);
+                    Display->SetBuffer(SBIdx);
+                }
+            }
+            EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n", bm.Size);
+            Display->SetBuffer(SBIdx);
         }
         else if (strcmp(Input, "main") == 0)
         {
