@@ -181,6 +181,14 @@ namespace CPU
 		x64::CR4 cr4 = x64::readcr4();
 		uint32_t rax, rbx, rcx, rdx;
 		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
+		if (rdx & x64::CPUID_FEAT_RDX_PGE)
+		{
+			debug("Enabling global pages support...");
+			if (!BSP)
+				KPrint("Global Pages is supported.");
+			cr4.PGE = 1;
+		}
+
 		if (rdx & x64::CPUID_FEAT_RDX_SSE)
 		{
 			debug("Enabling SSE support...");
@@ -197,6 +205,7 @@ namespace CPU
 
 		cr0.NW = 0;
 		cr0.CD = 0;
+		cr0.WP = 1;
 
 		x64::writecr0(cr0);
 
