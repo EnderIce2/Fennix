@@ -516,6 +516,9 @@ namespace Tasking
         *Frame = CurrentCPU->CurrentThread->Registers;
         GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
+        // Not sure if this is needed, but it's better to be safe than sorry.
+        asmv("movq %cr3, %rax");
+        asmv("movq %rax, %cr3");
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
         CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
         CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
@@ -882,6 +885,7 @@ namespace Tasking
                 for (uint64_t i = 0; i < ArgvSize; i++)
                 {
                     void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
+                    debug("argv[%d] ptr %#lx", i, (uint64_t)Tmp);
                     Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
                     _argv = (uint8_t *)Tmp;
                     strcpy((char *)_argv, argv[i]);
@@ -893,6 +897,7 @@ namespace Tasking
                 for (uint64_t i = 0; i < EnvpSize; i++)
                 {
                     void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
+                    debug("envp[%d] ptr %#lx", i, (uint64_t)Tmp);
                     Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
                     _envp = (uint8_t *)Tmp;
                     strcpy((char *)_envp, envp[i]);
@@ -957,7 +962,7 @@ namespace Tasking
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
 
-        debug("Thread offset is %#lx (EntryPoint:%#lx)", Thread->Offset, Thread->EntryPoint);
+        debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.rip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         else

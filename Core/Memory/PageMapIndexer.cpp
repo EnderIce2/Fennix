@@ -2,21 +2,27 @@
 
 namespace Memory
 {
-    Virtual::PageMapIndexer::PageMapIndexer(uint64_t VirtualAddress)
-    {
+        Virtual::PageMapIndexer::PageMapIndexer(uint64_t VirtualAddress)
+        {
 #if defined(__amd64__)
-        this->PDPIndex = (VirtualAddress & ((uint64_t)0x1FF << 39)) >> 39;
-        this->PDIndex = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-        this->PTIndex = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-        this->PIndex = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
+                uint64_t Address = VirtualAddress;
+                Address >>= 12;
+                this->PIndex = Address & 0x1FF;
+                Address >>= 9;
+                this->PTIndex = Address & 0x1FF;
+                Address >>= 9;
+                this->PDIndex = Address & 0x1FF;
+                Address >>= 9;
+                this->PDPIndex = Address & 0x1FF;
 #elif defined(__i386__)
-        this->PDIndex = (VirtualAddress & ((uint64_t)0x3FF << 22)) >> 22;
-        this->PTIndex = (VirtualAddress & ((uint64_t)0x3FF << 12)) >> 12;
-        this->PIndex = (VirtualAddress & ((uint64_t)0xFFF)) >> 0;
+                uint64_t Address = VirtualAddress;
+                Address >>= 12;
+                this->PIndex = Address & 0x3FF;
+                Address >>= 10;
+                this->PTIndex = Address & 0x3FF;
+                Address >>= 10;
+                this->PDIndex = Address & 0x3FF;
 #elif defined(__aarch64__)
-        this->PDIndex = (VirtualAddress & ((uint64_t)0x1FF << 30)) >> 30;
-        this->PTIndex = (VirtualAddress & ((uint64_t)0x1FF << 21)) >> 21;
-        this->PIndex = (VirtualAddress & ((uint64_t)0x1FF << 12)) >> 12;
 #endif
-    }
+        }
 }

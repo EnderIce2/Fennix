@@ -224,6 +224,7 @@ namespace Memory
         void UnreservePages(void *Address, uint64_t PageCount);
 
     public:
+        Bitmap GetPageBitmap() { return PageBitmap; }
         /**
          * @brief Get Total Memory
          *
@@ -338,6 +339,7 @@ namespace Memory
         NewLock(MemoryLock);
         PageTable *Table = nullptr;
 
+    public:
         class PageMapIndexer
         {
         public:
@@ -348,7 +350,6 @@ namespace Memory
             PageMapIndexer(uint64_t VirtualAddress);
         };
 
-    public:
         /**
          * @brief Check if page is present
          *
@@ -392,6 +393,15 @@ namespace Memory
          * @param PageCount Number of pages.
          */
         void Unmap(void *VirtualAddress, uint64_t PageCount);
+
+        /**
+         * @brief Remap page.
+         *
+         * @param VirtualAddress Virtual address of the page.
+         * @param PhysicalAddress Physical address of the page.
+         * @param Flags Flags of the page. Check PTFlag enum.
+         */
+        void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags);
 
         /**
          * @brief Construct a new Virtual object

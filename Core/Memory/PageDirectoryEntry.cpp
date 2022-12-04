@@ -7,7 +7,7 @@ namespace Memory
     void PageDirectoryEntry::ClearFlags() { this->Value.raw = 0; }
     void PageDirectoryEntry::SetFlag(uint64_t Flag, bool Enabled)
     {
-        this->Value.raw &= ~Flag;
+        this->Value.raw = 0;
         if (Enabled)
             this->Value.raw |= Flag;
     }

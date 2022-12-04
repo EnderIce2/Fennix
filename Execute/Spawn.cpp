@@ -71,17 +71,17 @@ namespace Execute
                 case BinaryType::BinTypeELF:
                 {
 #if defined(__amd64__)
-
                     const char *BaseName;
                     cwk_path_get_basename(Path, &BaseName, nullptr);
                     PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
 
                     void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->Node->Length));
                     memcpy(BaseImage, (void *)ExFile->Node->Address, ExFile->Node->Length);
+                    debug("Image Size: %#lx - %#lx (length: %ld)", BaseImage, (uint64_t)BaseImage + ExFile->Node->Length, ExFile->Node->Length);
 
                     Memory::Virtual pva = Memory::Virtual(Process->PageTable);
                     for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
-                        pva.Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                        pva.Remap((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
                     Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)BaseImage;
 
@@ -122,6 +122,8 @@ namespace Execute
                     {
                         trace("Executable");
                         Elf64_Phdr *pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
+                        debug("p_paddr: %#lx | p_vaddr: %#lx | p_filesz: %#lx | p_memsz: %#lx | p_offset: %#lx", pheader->p_paddr, pheader->p_vaddr, pheader->p_filesz, pheader->p_memsz, pheader->p_offset);
+
                         void *Address = nullptr;
                         for (int i = 0; i < ELFHeader->e_phnum; i++, pheader++)
                         {
@@ -131,8 +133,12 @@ namespace Execute
                         }
                         void *Offset = KernelAllocator.RequestPages(TO_PAGES((uint64_t)Address));
 
+                        pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
                         for (uint64_t i = 0; i < TO_PAGES((uint64_t)Address); i++)
-                            pva.Map((void *)((uint64_t)Offset + (i * PAGE_SIZE)), (void *)((uint64_t)Offset + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                        {
+                            pva.Remap((void *)((uint64_t)pheader->p_vaddr + (i * PAGE_SIZE)), (void *)((uint64_t)Offset + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                            // debug("Mapping: %#lx -> %#lx", (uint64_t)pheader->p_vaddr + (i * PAGE_SIZE), (uint64_t)Offset + (i * PAGE_SIZE));
+                        }
 
                         pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
                         for (int i = 0; i < ELFHeader->e_phnum; i++, pheader++)
@@ -144,21 +150,24 @@ namespace Execute
                             memcpy(dst, ((char *)BaseImage) + pheader->p_offset, pheader->p_filesz);
                         }
 
+                        debug("Entry Point: %#lx", ELFHeader->e_entry);
+
                         Vector<AuxiliaryVector> auxv;
 
+                        pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
                         auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
                         auxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader->e_phentsize}}});
                         auxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader->e_phnum}}});
                         auxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
                         auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)Offset}}});
-                        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)Offset}}});
+                        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)pheader->p_offset}}});
                         auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t) "x86_64"}}});
                         auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)Path}}});
 
                         TCB *Thread = TaskManager->CreateThread(Process,
                                                                 (IP)ELFHeader->e_entry,
                                                                 argv, envp, auxv,
-                                                                (IPOffset)Offset,
+                                                                (IPOffset)pheader->p_offset,
                                                                 Arch,
                                                                 Comp);
                         ret.Process = Process;

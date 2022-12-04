@@ -44,8 +44,8 @@ __no_instrument_function void MapFromZero(PageTable *PT, BootInfo *Info)
     uint64_t MemSize = Info->Memory.Size;
     for (uint64_t t = 0; t < MemSize; t += PAGE_SIZE)
     {
-        va.Map((void *)t, (void *)t, PTFlag::RW);
-        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW);
+        va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
+        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
         VirtualOffsetNormalVMA += PAGE_SIZE;
     }
 }
@@ -62,7 +62,7 @@ __no_instrument_function void MapFramebuffer(PageTable *PT, BootInfo *Info)
         for (uint64_t fb_base = (uint64_t)Info->Framebuffer[itrfb].BaseAddress;
              fb_base < ((uint64_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
              fb_base += PAGE_SIZE)
-            va.Map((void *)(fb_base + NORMAL_VMA_OFFSET), (void *)fb_base, PTFlag::RW | PTFlag::US);
+            va.Map((void *)(fb_base + NORMAL_VMA_OFFSET), (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
     }
 }
@@ -91,21 +91,21 @@ __no_instrument_function void MapKernel(PageTable *PT, BootInfo *Info)
 
     for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
     for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P);
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P | PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
     for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
@@ -209,6 +209,7 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
 #elif defined(__aarch64__)
     asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
 #endif
+    debug("Page table updated.");
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))
     {
         XallocV1Allocator = new Xalloc::AllocatorV1((void *)KERNEL_HEAP_BASE, false, false);

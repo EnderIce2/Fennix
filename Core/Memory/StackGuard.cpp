@@ -11,6 +11,7 @@ namespace Memory
         if (this->UserMode)
         {
             void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
+            debug("AllocatedStack: %p", AllocatedStack);
             memset(AllocatedStack, 0, USER_STACK_SIZE);
             for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
             {
@@ -25,6 +26,7 @@ namespace Memory
         else
         {
             this->StackBottom = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+            debug("StackBottom: %p", this->StackBottom);
             memset(this->StackBottom, 0, STACK_SIZE);
             this->StackTop = (void *)((uint64_t)this->StackBottom + STACK_SIZE);
             this->Size = STACK_SIZE;
@@ -32,7 +34,12 @@ namespace Memory
         trace("Allocated stack at %p", this->StackBottom);
     }
 
-    StackGuard::~StackGuard() { KernelAllocator.FreePages(this->StackBottom, TO_PAGES(this->Size)); }
+    StackGuard::~StackGuard()
+    {
+        fixme("Temporarily disabled stack guard deallocation");
+        // KernelAllocator.FreePages(this->StackBottom, TO_PAGES(this->Size));
+        // debug("Freed stack at %p", this->StackBottom);
+    }
 
     bool StackGuard::Expand(uint64_t FaultAddress)
     {
@@ -46,6 +53,7 @@ namespace Memory
             else
             {
                 void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
+                debug("AllocatedStack: %p", AllocatedStack);
                 memset(AllocatedStack, 0, USER_STACK_SIZE);
                 for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
                     Virtual(this->Table).Map((void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)), (void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);

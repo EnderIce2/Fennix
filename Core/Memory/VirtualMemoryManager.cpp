@@ -45,7 +45,7 @@ namespace Memory
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
     {
         SmartLock(this->MemoryLock);
-        if (!this->Table)
+        if (unlikely(!this->Table))
         {
             error("No page table");
             return;
@@ -57,9 +57,9 @@ namespace Memory
         {
             PDP = (PageTable *)KernelAllocator.RequestPage();
             memset(PDP, 0, PAGE_SIZE);
-            PDE.SetAddress((uint64_t)PDP >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
+            PDE.SetAddress((uint64_t)PDP >> 12);
             this->Table->Entries[Index.PDPIndex] = PDE;
         }
         else
@@ -71,9 +71,9 @@ namespace Memory
         {
             PD = (PageTable *)KernelAllocator.RequestPage();
             memset(PD, 0, PAGE_SIZE);
-            PDE.SetAddress((uint64_t)PD >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
+            PDE.SetAddress((uint64_t)PD >> 12);
             PDP->Entries[Index.PDIndex] = PDE;
         }
         else
@@ -85,19 +85,20 @@ namespace Memory
         {
             PT = (PageTable *)KernelAllocator.RequestPage();
             memset(PT, 0, PAGE_SIZE);
-            PDE.SetAddress((uint64_t)PT >> 12);
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
+            PDE.SetAddress((uint64_t)PT >> 12);
             PD->Entries[Index.PTIndex] = PDE;
         }
         else
             PT = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
 
         PDE = PT->Entries[Index.PIndex];
-        PDE.SetAddress((uint64_t)PhysicalAddress >> 12);
         PDE.SetFlag(PTFlag::P, true);
         PDE.AddFlag(Flags);
+        PDE.SetAddress((uint64_t)PhysicalAddress >> 12);
         PT->Entries[Index.PIndex] = PDE;
+
 #if defined(__amd64__)
         CPU::x64::invlpg(VirtualAddress);
 #elif defined(__i386__)
@@ -147,13 +148,35 @@ namespace Memory
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDPIndex];
-        PDE.ClearFlags();
 
-#if defined(__amd64__) || defined(__i386__)
-        asmv("invlpg (%0)"
-             :
-             : "r"(VirtualAddress)
-             : "memory");
+        if (PDE.GetFlag(PTFlag::P))
+        {
+            PageTable *PDP = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+
+            PDE = PDP->Entries[Index.PDIndex];
+            if (PDE.GetFlag(PTFlag::P))
+            {
+                PageTable *PD = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+
+                PDE = PD->Entries[Index.PTIndex];
+                if (PDE.GetFlag(PTFlag::P))
+                {
+                    PageTable *PT = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
+
+                    PDE = PT->Entries[Index.PIndex];
+                    if (PDE.GetFlag(PTFlag::P))
+                    {
+                        PDE.ClearFlags();
+                        // debug("Unmapped %#lx", VirtualAddress);
+                    }
+                }
+            }
+        }
+
+#if defined(__amd64__)
+        CPU::x64::invlpg(VirtualAddress);
+#elif defined(__i386__)
+        CPU::x32::invlpg(VirtualAddress);
 #elif defined(__aarch64__)
         asmv("dsb sy");
         asmv("tlbi vae1is, %0"
@@ -169,6 +192,12 @@ namespace Memory
     {
         for (uint64_t i = 0; i < PageCount; i++)
             this->Unmap((void *)((uint64_t)VirtualAddress + (i * PAGE_SIZE)));
+    }
+
+    void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
+    {
+        this->Unmap(VirtualAddress);
+        this->Map(VirtualAddress, PhysicalAddress, Flags);
     }
 
     Virtual::Virtual(PageTable *Table)
