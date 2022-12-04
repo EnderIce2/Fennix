@@ -8,6 +8,8 @@ extern "C"
     int isdigit(int c);
     int isspace(int c);
     int isempty(char *str);
+    int isalpha(int c);
+    int isupper(int c);
     unsigned int isdelim(char c, char *delim);
     int abs(int i);
     void swap(char *x, char *y);
@@ -40,6 +42,7 @@ extern "C"
     int strncasecmp(const char *lhs, const char *rhs, long unsigned int Count);
     int strcasecmp(const char *lhs, const char *rhs);
     char *strtok(char *src, const char *delim);
+    long int strtol(const char *str, char **endptr, int base);
 
     void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
     void *__memset_chk(void *dest, int val, size_t len, size_t slen);
