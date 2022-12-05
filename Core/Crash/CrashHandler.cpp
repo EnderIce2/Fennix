@@ -309,7 +309,7 @@ namespace CrashHandler
                             PML4.CacheDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                             PML4.Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                             PML4.ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
-                            PML4.GetAddress());
+                            PML4.GetAddress() << 12);
                     Display->SetBuffer(SBIdx);
                     if (PML4.Present)
                     {
@@ -327,7 +327,7 @@ namespace CrashHandler
                                         PDPTE->Entries[PDPTEIndex].CacheDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                                         PDPTE->Entries[PDPTEIndex].Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                                         PDPTE->Entries[PDPTEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
-                                        PDPTE->Entries[PDPTEIndex].GetAddress());
+                                        PDPTE->Entries[PDPTEIndex].GetAddress() << 12);
                                 Display->SetBuffer(SBIdx);
                                 if ((PDPTE->Entries[PDPTEIndex].Present))
                                 {
@@ -345,7 +345,7 @@ namespace CrashHandler
                                                     PDE->Entries[PDEIndex].CacheDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                                                     PDE->Entries[PDEIndex].Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                                                     PDE->Entries[PDEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
-                                                    PDE->Entries[PDEIndex].GetAddress());
+                                                    PDE->Entries[PDEIndex].GetAddress() << 12);
                                             Display->SetBuffer(SBIdx);
                                             if ((PDE->Entries[PDEIndex].Present))
                                             {
@@ -367,11 +367,8 @@ namespace CrashHandler
                                                                 PTE->Entries[PTEIndex].Global ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
                                                                 PTE->Entries[PTEIndex].ProtectionKey,
                                                                 PTE->Entries[PTEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
-                                                                PTE->Entries[PTEIndex].GetAddress());
+                                                                PTE->Entries[PTEIndex].GetAddress() << 12);
                                                         Display->SetBuffer(SBIdx);
-                                                        if ((PTE->Entries[PTEIndex].Present))
-                                                        {
-                                                        }
                                                     }
                                                 }
                                             }
