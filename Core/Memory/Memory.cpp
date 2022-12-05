@@ -37,14 +37,26 @@ __no_instrument_function void tracepagetable(PageTable4 *pt)
 
 __no_instrument_function void MapFromZero(PageTable4 *PT, BootInfo *Info)
 {
-    Virtual va = Virtual(PT);
-    uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
-    uint64_t MemSize = Info->Memory.Size;
-    for (uint64_t t = 0; t < MemSize; t += PAGE_SIZE)
+    static int once = 0;
+    if (!once++)
     {
-        va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
-        va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
-        VirtualOffsetNormalVMA += PAGE_SIZE;
+        Virtual va = Virtual(PT);
+        void *NullAddress = KernelAllocator.RequestPage();
+        memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
+        va.Map((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
+        uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
+        uint64_t MemSize = Info->Memory.Size;
+        for (uint64_t t = 0; t < MemSize; t += PAGE_SIZE)
+        {
+            va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
+            va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
+            VirtualOffsetNormalVMA += PAGE_SIZE;
+        }
+    }
+    else
+    {
+        error("MapFromZero() called more than once!");
+        CPU::Stop();
     }
 }
 
@@ -180,8 +192,7 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
     MapFromZero(KernelPageTable, Info);
     debug("Mapping from 0x0 %#llx for Userspace Page Table", Info->Memory.Size);
-    UserspaceKernelOnlyPageTable[0] = KernelPageTable[0]; // TODO: This is a hack to speed up the boot process
-    // MapFromZero(UserspaceKernelOnlyPageTable, Info);
+    UserspaceKernelOnlyPageTable[0] = KernelPageTable[0];
 
     /* Mapping Framebuffer address */
     debug("Mapping Framebuffer");
