@@ -198,9 +198,9 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     trace("Applying new page table from address %p", KernelPageTable);
 #ifdef DEBUG
     debug("Kernel:");
-    tracepagetable(KernelPageTable);
+    // tracepagetable(KernelPageTable);
     debug("Userspace:");
-    tracepagetable(UserspaceKernelOnlyPageTable);
+    // tracepagetable(UserspaceKernelOnlyPageTable);
 #endif
 #if defined(__amd64__) || defined(__i386__)
     asmv("mov %0, %%cr3" ::"r"(KernelPageTable));

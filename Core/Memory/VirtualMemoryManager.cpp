@@ -50,9 +50,9 @@ namespace Memory
         }
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
+
         PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = nullptr;
-
         if (!PML4.Present)
         {
             PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPage();
@@ -128,8 +128,8 @@ namespace Memory
 
         if (!this->Check(VirtualAddress, (PTFlag)Flags)) // quick workaround just to see where it fails
         {
-            this->Check(VirtualAddress, (PTFlag)Flags);
-            warn("Failed to map %#lx - %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
+            // this->Check(VirtualAddress, (PTFlag)Flags);
+            // warn("Failed to map %#lx - %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
         }
 #endif
     }

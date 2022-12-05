@@ -169,7 +169,7 @@ namespace Memory
             bool Global : 1;             // 8
             uint8_t Available0 : 3;      // 9-11
             uint64_t Address : 40;       // 12-51
-            uint32_t Available1 : 11;    // 52-58
+            uint32_t Available1 : 7;     // 52-58
             bool ProtectionKey : 4;      // 59-62
             bool ExecuteDisable : 1;     // 63
         };
@@ -215,15 +215,15 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool PageSize : 1;       // 7
-            uint8_t Available1 : 4;  // 8-11
+            bool Present : 1;         // 0
+            bool ReadWrite : 1;       // 1
+            bool UserSupervisor : 1;  // 2
+            bool WriteThrough : 1;    // 3
+            bool CacheDisable : 1;    // 4
+            bool Accessed : 1;        // 5
+            bool Available0 : 1;      // 6
+            bool PageSize : 1;        // 7
+            uint8_t Available1 : 4;   // 8-11
             uint64_t Address : 40;    // 12-51
             uint32_t Available2 : 11; // 52-62
             bool ExecuteDisable : 1;  // 63
@@ -270,15 +270,15 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool PageSize : 1;       // 7
-            uint8_t Available1 : 4;  // 8-11
+            bool Present : 1;         // 0
+            bool ReadWrite : 1;       // 1
+            bool UserSupervisor : 1;  // 2
+            bool WriteThrough : 1;    // 3
+            bool CacheDisable : 1;    // 4
+            bool Accessed : 1;        // 5
+            bool Available0 : 1;      // 6
+            bool PageSize : 1;        // 7
+            uint8_t Available1 : 4;   // 8-11
             uint64_t Address : 40;    // 12-51
             uint32_t Available2 : 11; // 52-62
             bool ExecuteDisable : 1;  // 63
@@ -325,15 +325,15 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool Reserved0 : 1;      // 7
-            uint8_t Available1 : 4;  // 8-11
+            bool Present : 1;         // 0
+            bool ReadWrite : 1;       // 1
+            bool UserSupervisor : 1;  // 2
+            bool WriteThrough : 1;    // 3
+            bool CacheDisable : 1;    // 4
+            bool Accessed : 1;        // 5
+            bool Available0 : 1;      // 6
+            bool Reserved0 : 1;       // 7
+            uint8_t Available1 : 4;   // 8-11
             uint64_t Address : 40;    // 12-51
             uint32_t Available2 : 11; // 52-62
             bool ExecuteDisable : 1;  // 63
