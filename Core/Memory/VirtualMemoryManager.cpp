@@ -127,10 +127,7 @@ namespace Memory
         (byte & 0x01 ? '1' : '0')
 
         if (!this->Check(VirtualAddress, (PTFlag)Flags)) // quick workaround just to see where it fails
-        {
-            // this->Check(VirtualAddress, (PTFlag)Flags);
-            // warn("Failed to map %#lx - %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
-        }
+            warn("Failed to map %#lx - %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
 #endif
     }
 
