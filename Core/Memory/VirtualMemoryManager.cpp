@@ -50,20 +50,22 @@ namespace Memory
         }
 
         PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
+        // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
+        uint64_t DirectoryFlags = Flags & 0x3F;
+
         PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = nullptr;
-
         if (!PML4.Present)
         {
             PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPage();
             memset(PDPTEPtr, 0, PAGE_SIZE);
             PML4.Present = true;
-            PML4.raw |= Flags;
             PML4.SetAddress((uint64_t)PDPTEPtr >> 12);
-            this->Table->Entries[Index.PMLIndex] = PML4;
         }
         else
             PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
+        PML4.raw |= DirectoryFlags;
+        this->Table->Entries[Index.PMLIndex] = PML4;
 
         PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
         PageDirectoryEntryPtr *PDEPtr = nullptr;
@@ -72,12 +74,12 @@ namespace Memory
             PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPage();
             memset(PDEPtr, 0, PAGE_SIZE);
             PDPTE.Present = true;
-            PDPTE.raw |= Flags;
             PDPTE.SetAddress((uint64_t)PDEPtr >> 12);
-            PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
         }
         else
             PDEPtr = (PageDirectoryEntryPtr *)((uint64_t)PDPTE.GetAddress() << 12);
+        PDPTE.raw |= DirectoryFlags;
+        PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
 
         PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
         PageTableEntryPtr *PTEPtr = nullptr;
@@ -86,12 +88,12 @@ namespace Memory
             PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPage();
             memset(PTEPtr, 0, PAGE_SIZE);
             PDE.Present = true;
-            PDE.raw |= Flags;
             PDE.SetAddress((uint64_t)PTEPtr >> 12);
-            PDEPtr->Entries[Index.PDEIndex] = PDE;
         }
         else
             PTEPtr = (PageTableEntryPtr *)((uint64_t)PDE.GetAddress() << 12);
+        PDE.raw |= DirectoryFlags;
+        PDEPtr->Entries[Index.PDEIndex] = PDE;
 
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         PTE.Present = true;
