@@ -9,27 +9,25 @@
 using namespace Memory;
 
 Physical KernelAllocator;
-PageTable *KernelPageTable = nullptr;
-PageTable *UserspaceKernelOnlyPageTable = nullptr;
+PageTable4 *KernelPageTable = nullptr;
+PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
-__no_instrument_function void tracepagetable(PageTable *pt)
+__no_instrument_function void tracepagetable(PageTable4 *pt)
 {
     for (int i = 0; i < 512; i++)
     {
 #if defined(__amd64__)
-        if (pt->Entries[i].Value.Present)
-            debug("Entry %03d: %x %x %x %x %x %x %x %x %x %x %x %p-%#llx", i,
-                  pt->Entries[i].Value.Present, pt->Entries[i].Value.ReadWrite,
-                  pt->Entries[i].Value.UserSupervisor, pt->Entries[i].Value.WriteThrough,
-                  pt->Entries[i].Value.CacheDisable, pt->Entries[i].Value.Accessed,
-                  pt->Entries[i].Value.Dirty, pt->Entries[i].Value.PageSize,
-                  pt->Entries[i].Value.Global, pt->Entries[i].Value.PageAttributeTable,
-                  pt->Entries[i].Value.ExecuteDisable, pt->Entries[i].GetAddress(),
-                  pt->Entries[i].Value);
+        if (pt->Entries[i].Present)
+            debug("Entry %03d: %x %x %x %x %x %x %x %p-%#llx", i,
+                  pt->Entries[i].Present, pt->Entries[i].ReadWrite,
+                  pt->Entries[i].UserSupervisor, pt->Entries[i].WriteThrough,
+                  pt->Entries[i].CacheDisable, pt->Entries[i].Accessed,
+                  pt->Entries[i].ExecuteDisable, pt->Entries[i].Address << 12,
+                  pt->Entries[i]);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -37,7 +35,7 @@ __no_instrument_function void tracepagetable(PageTable *pt)
 }
 #endif
 
-__no_instrument_function void MapFromZero(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapFromZero(PageTable4 *PT, BootInfo *Info)
 {
     Virtual va = Virtual(PT);
     uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
@@ -50,7 +48,7 @@ __no_instrument_function void MapFromZero(PageTable *PT, BootInfo *Info)
     }
 }
 
-__no_instrument_function void MapFramebuffer(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
 {
     Virtual va = Virtual(PT);
     int itrfb = 0;
@@ -67,7 +65,7 @@ __no_instrument_function void MapFramebuffer(PageTable *PT, BootInfo *Info)
     }
 }
 
-__no_instrument_function void MapKernel(PageTable *PT, BootInfo *Info)
+__no_instrument_function void MapKernel(PageTable4 *PT, BootInfo *Info)
 {
     /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
     Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
@@ -173,10 +171,10 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     AllocatorType = MemoryAllocatorType::Pages;
 
     trace("Initializing Virtual Memory Manager");
-    KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
+    KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(KernelPageTable, 0, PAGE_SIZE);
 
-    UserspaceKernelOnlyPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
+    UserspaceKernelOnlyPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(UserspaceKernelOnlyPageTable, 0, PAGE_SIZE);
 
     debug("Mapping from 0x0 to %#llx", Info->Memory.Size);

@@ -4,7 +4,7 @@
 
 namespace Memory
 {
-    StackGuard::StackGuard(bool User, PageTable *Table)
+    StackGuard::StackGuard(bool User, PageTable4 *Table)
     {
         this->UserMode = User;
         this->Table = Table;

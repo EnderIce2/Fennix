@@ -152,58 +152,238 @@ namespace Memory
         XD = (uint64_t)1 << 63
     };
 
-    typedef union __attribute__((packed))
+    /* 2.2 Paging in IA-32e Mode - https://composter.com.ua/documents/TLBs_Paging-Structure_Caches_and_Their_Invalidation.pdf */
+
+    union __attribute__((packed)) PageTableEntry
     {
         struct
         {
-#if defined(__amd64__)
-            bool Present : 1;
-            bool ReadWrite : 1;
-            bool UserSupervisor : 1;
-            bool WriteThrough : 1;
-            bool CacheDisable : 1;
-            bool Accessed : 1;
-            bool Dirty : 1;
-            bool PageSize : 1;
-            bool Global : 1;
-            uint8_t Available1 : 3;
-            bool PageAttributeTable : 1;
-            uint64_t Reserved : 39;
-            uint32_t Available2 : 7;
-            uint16_t ProtectionKey : 4;
-            bool ExecuteDisable : 1;
-#elif defined(__i386__)
-            bool Present : 1;
-            bool ReadWrite : 1;
-            bool UserSupervisor : 1;
-            bool Accessed : 1;
-            bool Dirty : 1;
-            uint8_t Available : 7;
-            uint32_t Frame : 20;
-// TODO: i386 PDEData is not tested
-#elif defined(__aarch64__)
-// TODO: aarch64 PDEData not implemented
-#endif
+            bool Present : 1;            // 0
+            bool ReadWrite : 1;          // 1
+            bool UserSupervisor : 1;     // 2
+            bool WriteThrough : 1;       // 3
+            bool CacheDisable : 1;       // 4
+            bool Accessed : 1;           // 5
+            bool Dirty : 1;              // 6
+            bool PageAttributeTable : 1; // 7
+            bool Global : 1;             // 8
+            uint8_t Available0 : 3;      // 9-11
+            uint64_t Address : 40;       // 12-51
+            uint32_t Available1 : 11;    // 52-58
+            bool ProtectionKey : 4;      // 59-62
+            bool ExecuteDisable : 1;     // 63
         };
         uint64_t raw;
-    } PDEData;
 
-    struct __attribute__((packed)) PageDirectoryEntry
-    {
-        PDEData Value;
-        void AddFlag(uint64_t Flag);
-        void RemoveFlags(uint64_t Flag);
-        void ClearFlags();
-        void SetFlag(uint64_t Flag, bool Enabled);
-        bool GetFlag(uint64_t Flag);
-        uint64_t GetFlag();
-        void SetAddress(uint64_t Address);
-        uint64_t GetAddress();
+        /** @brief Set Address */
+        void SetAddress(uint64_t _Address)
+        {
+#if defined(__amd64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#elif defined(__i386__)
+            _Address &= 0x000FFFFF;
+            this->raw &= 0xFFC00003;
+            this->raw |= (_Address << 12);
+#elif defined(__aarch64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#endif
+        }
+
+        /** @brief Get Address */
+        uint64_t GetAddress()
+        {
+#if defined(__amd64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#elif defined(__i386__)
+            return (this->raw & 0x003FFFFF000) >> 12;
+#elif defined(__aarch64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#endif
+        }
     };
 
-    struct PageTable
+    struct __attribute__((packed)) PageTableEntryPtr
     {
-        PageDirectoryEntry Entries[512];
+        PageTableEntry Entries[511];
+    };
+
+    union __attribute__((packed)) PageDirectoryEntry
+    {
+        struct
+        {
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool PageSize : 1;       // 7
+            uint8_t Available1 : 4;  // 8-11
+            uint64_t Address : 40;    // 12-51
+            uint32_t Available2 : 11; // 52-62
+            bool ExecuteDisable : 1;  // 63
+        };
+        uint64_t raw;
+
+        /** @brief Set PageTableEntryPtr address */
+        void SetAddress(uint64_t _Address)
+        {
+#if defined(__amd64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#elif defined(__i386__)
+            _Address &= 0x000FFFFF;
+            this->raw &= 0xFFC00003;
+            this->raw |= (_Address << 12);
+#elif defined(__aarch64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#endif
+        }
+
+        /** @brief Get PageTableEntryPtr address */
+        uint64_t GetAddress()
+        {
+#if defined(__amd64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#elif defined(__i386__)
+            return (this->raw & 0x003FFFFF000) >> 12;
+#elif defined(__aarch64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#endif
+        }
+    };
+
+    struct __attribute__((packed)) PageDirectoryEntryPtr
+    {
+        PageDirectoryEntry Entries[511];
+    };
+
+    union __attribute__((packed)) PageDirectoryPointerTableEntry
+    {
+        struct
+        {
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool PageSize : 1;       // 7
+            uint8_t Available1 : 4;  // 8-11
+            uint64_t Address : 40;    // 12-51
+            uint32_t Available2 : 11; // 52-62
+            bool ExecuteDisable : 1;  // 63
+        };
+        uint64_t raw;
+
+        /** @brief Set PageDirectoryEntryPtr address */
+        void SetAddress(uint64_t _Address)
+        {
+#if defined(__amd64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#elif defined(__i386__)
+            _Address &= 0x000FFFFF;
+            this->raw &= 0xFFC00003;
+            this->raw |= (_Address << 12);
+#elif defined(__aarch64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#endif
+        }
+
+        /** @brief Get PageDirectoryEntryPtr address */
+        uint64_t GetAddress()
+        {
+#if defined(__amd64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#elif defined(__i386__)
+            return (this->raw & 0x003FFFFF000) >> 12;
+#elif defined(__aarch64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#endif
+        }
+    };
+
+    struct __attribute__((packed)) PageDirectoryPointerTableEntryPtr
+    {
+        PageDirectoryPointerTableEntry Entries[511];
+    };
+
+    union __attribute__((packed)) PageMapLevel4
+    {
+        struct
+        {
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool Reserved0 : 1;      // 7
+            uint8_t Available1 : 4;  // 8-11
+            uint64_t Address : 40;    // 12-51
+            uint32_t Available2 : 11; // 52-62
+            bool ExecuteDisable : 1;  // 63
+        };
+        uint64_t raw;
+
+        /** @brief Set PageDirectoryPointerTableEntryPtr address */
+        void SetAddress(uint64_t _Address)
+        {
+#if defined(__amd64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#elif defined(__i386__)
+            _Address &= 0x000FFFFF;
+            this->raw &= 0xFFC00003;
+            this->raw |= (_Address << 12);
+#elif defined(__aarch64__)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#endif
+        }
+
+        /** @brief Get PageDirectoryPointerTableEntryPtr address */
+        uint64_t GetAddress()
+        {
+#if defined(__amd64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#elif defined(__i386__)
+            return (this->raw & 0x003FFFFF000) >> 12;
+#elif defined(__aarch64__)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#endif
+        }
+    };
+
+    struct PageTable4
+    {
+        PageMapLevel4 Entries[511];
+    } __attribute__((aligned(0x1000)));
+
+    struct __attribute__((packed)) PageMapLevel5
+    {
+        /* FIXME: NOT IMPLEMENTED! */
+    };
+
+    struct PageTable5
+    {
+        PageMapLevel5 Entries[511];
     } __attribute__((aligned(0x1000)));
 
     class Physical
@@ -337,16 +517,16 @@ namespace Memory
     {
     private:
         NewLock(MemoryLock);
-        PageTable *Table = nullptr;
+        PageTable4 *Table = nullptr;
 
     public:
         class PageMapIndexer
         {
         public:
-            uint64_t PDPIndex = 0;
-            uint64_t PDIndex = 0;
-            uint64_t PTIndex = 0;
-            uint64_t PIndex = 0;
+            uint64_t PMLIndex = 0;
+            uint64_t PDPTEIndex = 0;
+            uint64_t PDEIndex = 0;
+            uint64_t PTEIndex = 0;
             PageMapIndexer(uint64_t VirtualAddress);
         };
 
@@ -408,7 +588,7 @@ namespace Memory
          *
          * @param Table Page table. If null, it will use the current page table.
          */
-        Virtual(PageTable *Table = nullptr);
+        Virtual(PageTable4 *Table = nullptr);
 
         /**
          * @brief Destroy the Virtual object
@@ -426,7 +606,7 @@ namespace Memory
         void *SGT = nullptr;
         uint64_t Size = 0;
         bool UserMode = false;
-        PageTable *Table = nullptr;
+        PageTable4 *Table = nullptr;
 
     public:
         /** @brief For general info */
@@ -439,7 +619,7 @@ namespace Memory
          * @brief Construct a new Stack Guard object
          * @param User Stack for user mode?
          */
-        StackGuard(bool User, PageTable *Table);
+        StackGuard(bool User, PageTable4 *Table);
         /**
          * @brief Destroy the Stack Guard object
          */
@@ -470,8 +650,8 @@ void operator delete(void *Pointer, long unsigned int Size);
 void operator delete[](void *Pointer, long unsigned int Size);
 
 extern Memory::Physical KernelAllocator;
-extern Memory::PageTable *KernelPageTable;
-extern Memory::PageTable *UserspaceKernelOnlyPageTable;
+extern Memory::PageTable4 *KernelPageTable;
+extern Memory::PageTable4 *UserspaceKernelOnlyPageTable;
 
 #endif // __cplusplus
 

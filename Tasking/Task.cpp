@@ -1005,7 +1005,7 @@ namespace Tasking
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
 #if defined(__amd64__)
-            Process->PageTable = (Memory::PageTable *)CPU::x64::readcr3().raw;
+            Process->PageTable = (Memory::PageTable4 *)CPU::x64::readcr3().raw;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -1015,7 +1015,7 @@ namespace Tasking
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::Untrusted);
 #if defined(__amd64__)
-            Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
+            Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
             memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
             for (uint64_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
                 Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
