@@ -145,7 +145,7 @@ namespace Tasking
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
         HashMap<InterProcessCommunication::IPCPort, uint64_t> *IPCHandles;
-        Memory::PageTable *PageTable;
+        Memory::PageTable4 *PageTable;
     };
 
     enum TokenTrustLevel

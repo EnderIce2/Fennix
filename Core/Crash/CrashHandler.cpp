@@ -25,15 +25,15 @@ NewLock(UserInputLock);
     EHPrint("\e888888#%s\eAABBCC%03d\e4500F5: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s D:%s PS:%s G:%s Address:\e888888%#lx\n", \
             depth,                                                                                                         \
             itr,                                                                                                           \
-            x.Value.Present ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                               \
-            x.Value.ReadWrite ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                             \
-            x.Value.UserSupervisor ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                        \
-            x.Value.WriteThrough ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                          \
-            x.Value.CacheDisable ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                          \
-            x.Value.Accessed ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                              \
-            x.Value.Dirty ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                 \
-            x.Value.PageSize ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                              \
-            x.Value.Global ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                \
+            x.Present ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                     \
+            x.ReadWrite ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                   \
+            x.UserSupervisor ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                              \
+            x.WriteThrough ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                \
+            x.CacheDisable ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                \
+            x.Accessed ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                    \
+            x.Dirty ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                       \
+            x.PageSize ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                    \
+            x.Global ? "\e00AA00Yes\e4500F5" : "\eAA0000No \e4500F5",                                                      \
             x.GetAddress() << 12);                                                                                         \
     Display->SetBuffer(SBIdx);
 
@@ -310,55 +310,55 @@ namespace CrashHandler
             uint64_t Address = NULL;
             Address = strtol(arg, NULL, 16);
             debug("Converted %s to %#lx", arg, Address);
-            Memory::PageTable *BasePageTable = (Memory::PageTable *)Address;
+            Memory::PageTable4 *BasePageTable = (Memory::PageTable4 *)Address;
             if (Memory::Virtual().Check(BasePageTable))
                 for (int Index = 0; Index < 512; Index++)
                 {
-                    if (BasePageTable->Entries[Index].Value.raw == 0)
+                    if (BasePageTable->Entries[Index].raw == 0)
                         continue;
 
-                    TRACE_PAGE_TABLE(BasePageTable->Entries[Index], Index, "");
-                    for (int i = 0; i < 10000; i++)
-                        inb(0x80);
+                    // TRACE_PAGE_TABLE(BasePageTable->Entries[Index], Index, "");
+                    // for (int i = 0; i < 10000; i++)
+                    //     inb(0x80);
 
-                    if (BasePageTable->Entries[Index].GetFlag(Memory::PTFlag::P))
-                    {
-                        Memory::PageTable *PDP = (Memory::PageTable *)((uint64_t)BasePageTable->Entries[Index].GetAddress() << 12);
-                        for (int PDPIndex = 0; PDPIndex < 512; PDPIndex++)
-                        {
-                            if (PDP->Entries[PDPIndex].Value.raw == 0)
-                                continue;
-                            TRACE_PAGE_TABLE(PDP->Entries[PDPIndex], PDPIndex, " ");
-                            for (int i = 0; i < 10000; i++)
-                                inb(0x80);
+                    // if (BasePageTable->Entries[Index].GetFlag(Memory::PTFlag::P))
+                    // {
+                    //     Memory::PageTable4 *PDP = (Memory::PageTable4 *)((uint64_t)BasePageTable->Entries[Index].GetAddress() << 12);
+                    //     for (int PMLIndex = 0; PMLIndex < 512; PMLIndex++)
+                    //     {
+                    //         if (PDP->Entries[PMLIndex].raw == 0)
+                    //             continue;
+                    //         TRACE_PAGE_TABLE(PDP->Entries[PMLIndex], PMLIndex, " ");
+                    //         for (int i = 0; i < 10000; i++)
+                    //             inb(0x80);
 
-                            if (PDP->Entries[PDPIndex].GetFlag(Memory::PTFlag::P))
-                            {
-                                Memory::PageTable *PD = (Memory::PageTable *)((uint64_t)PDP->Entries[PDPIndex].GetAddress() << 12);
-                                for (int PDIndex = 0; PDIndex < 512; PDIndex++)
-                                {
-                                    if (PD->Entries[PDIndex].Value.raw == 0)
-                                        continue;
-                                    TRACE_PAGE_TABLE(PD->Entries[PDIndex], PDIndex, "  ");
-                                    for (int i = 0; i < 10000; i++)
-                                        inb(0x80);
+                    //         if (PDP->Entries[PMLIndex].GetFlag(Memory::PTFlag::P))
+                    //         {
+                    //             Memory::PageTable4 *PD = (Memory::PageTable4 *)((uint64_t)PDP->Entries[PMLIndex].GetAddress() << 12);
+                    //             for (int PDPTEIndex = 0; PDPTEIndex < 512; PDPTEIndex++)
+                    //             {
+                    //                 if (PD->Entries[PDPTEIndex].raw == 0)
+                    //                     continue;
+                    //                 TRACE_PAGE_TABLE(PD->Entries[PDPTEIndex], PDPTEIndex, "  ");
+                    //                 for (int i = 0; i < 10000; i++)
+                    //                     inb(0x80);
 
-                                    if (PD->Entries[PDIndex].GetFlag(Memory::PTFlag::P))
-                                    {
-                                        Memory::PageTable *PT = (Memory::PageTable *)((uint64_t)PD->Entries[PDIndex].GetAddress() << 12);
-                                        for (int PIndex = 0; PIndex < 512; PIndex++)
-                                        {
-                                            if (PT->Entries[PIndex].Value.raw == 0)
-                                                continue;
-                                            TRACE_PAGE_TABLE(PT->Entries[PIndex], PIndex, "   ");
-                                            for (int i = 0; i < 10000; i++)
-                                                inb(0x80);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    //                 if (PD->Entries[PDPTEIndex].GetFlag(Memory::PTFlag::P))
+                    //                 {
+                    //                     Memory::PageTable4 *PT = (Memory::PageTable4 *)((uint64_t)PD->Entries[PDPTEIndex].GetAddress() << 12);
+                    //                     for (int PTEIndex = 0; PTEIndex < 512; PTEIndex++)
+                    //                     {
+                    //                         if (PT->Entries[PTEIndex].raw == 0)
+                    //                             continue;
+                    //                         TRACE_PAGE_TABLE(PT->Entries[PTEIndex], PTEIndex, "   ");
+                    //                         for (int i = 0; i < 10000; i++)
+                    //                             inb(0x80);
+                    //                     }
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
                 }
         }
         else if (strncmp(Input, "bitmap", 6) == 0)
