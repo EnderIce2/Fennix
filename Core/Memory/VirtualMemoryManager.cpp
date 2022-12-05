@@ -57,6 +57,7 @@ namespace Memory
         {
             PDP = (PageTable *)KernelAllocator.RequestPage();
             memset(PDP, 0, PAGE_SIZE);
+            PDE.ClearFlags();
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
             PDE.SetAddress((uint64_t)PDP >> 12);
@@ -71,6 +72,7 @@ namespace Memory
         {
             PD = (PageTable *)KernelAllocator.RequestPage();
             memset(PD, 0, PAGE_SIZE);
+            PDE.ClearFlags();
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
             PDE.SetAddress((uint64_t)PD >> 12);
@@ -85,6 +87,7 @@ namespace Memory
         {
             PT = (PageTable *)KernelAllocator.RequestPage();
             memset(PT, 0, PAGE_SIZE);
+            PDE.ClearFlags();
             PDE.SetFlag(PTFlag::P, true);
             PDE.AddFlag(Flags);
             PDE.SetAddress((uint64_t)PT >> 12);
@@ -94,6 +97,7 @@ namespace Memory
             PT = (PageTable *)((uint64_t)PDE.GetAddress() << 12);
 
         PDE = PT->Entries[Index.PIndex];
+        PDE.ClearFlags();
         PDE.SetFlag(PTFlag::P, true);
         PDE.AddFlag(Flags);
         PDE.SetAddress((uint64_t)PhysicalAddress >> 12);
