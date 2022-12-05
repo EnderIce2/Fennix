@@ -15,9 +15,11 @@ namespace Memory
             memset(AllocatedStack, 0, USER_STACK_SIZE);
             for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
             {
-                Virtual(Table).Map((void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)),
-                                   (void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
+                Virtual(Table).Map((void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
+                                   (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)),
                                    PTFlag::RW | PTFlag::US);
+                debug("Mapped %p to %p", (void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
+                      (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)));
             }
             this->StackBottom = (void *)USER_STACK_BASE;
             this->StackTop = (void *)(USER_STACK_BASE + USER_STACK_SIZE);
@@ -56,7 +58,10 @@ namespace Memory
                 debug("AllocatedStack: %p", AllocatedStack);
                 memset(AllocatedStack, 0, USER_STACK_SIZE);
                 for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
-                    Virtual(this->Table).Map((void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)), (void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
+                {
+                    Virtual(this->Table).Map((void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
+                    debug("Mapped %p to %p", (void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)));
+                }
                 this->StackBottom = (void *)((uint64_t)this->StackBottom - USER_STACK_SIZE);
                 this->Size += USER_STACK_SIZE;
                 info("Stack expanded to %p", this->StackBottom);
