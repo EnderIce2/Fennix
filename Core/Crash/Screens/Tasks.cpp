@@ -45,9 +45,9 @@ namespace CrashHandler
         {
             if (data.Thread)
 #if defined(__amd64__)
-                EHPrint("\eFAFAFACrash occured in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);
+                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);
 #elif defined(__i386__)
-                EHPrint("\eFAFAFACrash occured in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->eip);
+                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->eip);
 #elif defined(__aarch64__)
 #endif
 
