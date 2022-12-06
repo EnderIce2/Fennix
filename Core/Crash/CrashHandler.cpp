@@ -214,6 +214,7 @@ namespace CrashHandler
             EHPrint("ifr <COUNT> - Show interrupt frames.\n");
             EHPrint("tlb <ADDRESS> - Print the page table entries\n");
             EHPrint("bitmap - Print the memory bitmap\n");
+            EHPrint("cr<INDEX> - Print the CPU control register\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
@@ -400,6 +401,31 @@ namespace CrashHandler
             }
             EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n", bm.Size);
             Display->SetBuffer(SBIdx);
+        }
+        else if (strncmp(Input, "cr", 2) == 0)
+        {
+            char *cr = TrimWhiteSpace(Input + 2);
+            switch (cr[0])
+            {
+            case '0':
+                EHPrint("\e44AA000: %#lx\n", CPU::x64::readcr0());
+                break;
+            case '2':
+                EHPrint("\e44AA002: %#lx\n", CPU::x64::readcr2());
+                break;
+            case '3':
+                EHPrint("\e44AA003: %#lx\n", CPU::x64::readcr3());
+                break;
+            case '4':
+                EHPrint("\e44AA004: %#lx\n", CPU::x64::readcr4());
+                break;
+            case '8':
+                EHPrint("\e44AA008: %#lx\n", CPU::x64::readcr8());
+                break;
+            default:
+                EHPrint("\eFF0000Invalid CR\n");
+                break;
+            }
         }
         else if (strcmp(Input, "main") == 0)
         {
