@@ -11,6 +11,7 @@ using namespace Memory;
 Physical KernelAllocator;
 PageTable4 *KernelPageTable = nullptr;
 PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
+void *KPT = nullptr;
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;
@@ -212,11 +213,12 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     tracepagetable(KernelPageTable);
     debug("Userspace:");
     tracepagetable(UserspaceKernelOnlyPageTable);
+    KPT = KernelPageTable;
 #endif
 #if defined(__amd64__) || defined(__i386__)
-    asmv("mov %0, %%cr3" ::"r"(KernelPageTable));
+    asmv("mov %0, %%cr3" ::"r"(KPT));
 #elif defined(__aarch64__)
-    asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
+    asmv("msr ttbr0_el1, %0" ::"r"(KPT));
 #endif
     debug("Page table updated.");
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))

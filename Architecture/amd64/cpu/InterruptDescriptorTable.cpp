@@ -1,5 +1,6 @@
 #include "idt.hpp"
 
+#include <memory.hpp>
 #include <cpu.hpp>
 #include <debug.h>
 #include <io.h>
@@ -98,8 +99,20 @@ namespace InterruptDescriptorTable
 
     extern "C" void WarnSwapgs() { warn("swapgs"); }
 
+    // void *OriginalCR3;
     extern "C" __attribute__((naked, used, no_stack_protector)) void InterruptHandlerStub()
     {
+        // // Store cr3 to OriginalCR3
+        // asmv("mov %%cr3, %0"
+        //      : "=q"(OriginalCR3)
+        //      :
+        //      : "memory");
+        // // Set cr3 to KPT (Kernel Page Table)
+        // asmv("mov %0, %%cr3"
+        //      :
+        //      : "q"(KPT)
+        //      : "memory");
+
         asm(
             // "cmp $0x1000, %rsp\n"
             // "jng .skip_swap_check__1\n"
@@ -127,9 +140,28 @@ namespace InterruptDescriptorTable
             "pushq %r15\n"
 
             "movq %rsp, %rdi\n"
-            "call MainInterruptHandler\n"
+            "call MainInterruptHandler\n");
 
-            "popq %r15\n"
+        // // Check if the current cr3 is the same as the KPT
+        // // If not, then we need to restore the cr3
+        // asmv("pushq %rax\n"        // push rax
+        //      "pushq %rbx\n"        // push rbx
+        //      "movq %cr3, %rbx\n"); // mov cr3 to rbx
+        // asmv("movq %0, %%rax\n"    // mov KPT to rax
+        //      :
+        //      : "q"(KPT)
+        //      : "memory");
+        // asmv("cmpq %rax, %rbx\n"         // compare cr3 to rax
+        //      "jne .skip_restore_cr3\n"); // if not equal, skip restore cr3
+        // asmv("movq %0, %%cr3\n" // restore cr3
+        //      :
+        //      : "q"(OriginalCR3)
+        //      : "memory");
+        // asm(".skip_restore_cr3:\n" // skip restore cr3 label
+        //     "popq %rax\n"          // KPT
+        //     "popq %rbx\n");        // cr3
+
+        asm("popq %r15\n"
             "popq %r14\n"
             "popq %r13\n"
             "popq %r12\n"

@@ -15,7 +15,7 @@
 
 #include "../../kernel.h"
 
-static const char *PagefaultDescriptions[8] = {
+static const char *PageFaultDescriptions[8] = {
     "Supervisory process tried to read a non-present page entry\n",
     "Supervisory process tried to read a page and caused a protection fault\n",
     "Supervisory process tried to write to a non-present page entry\n",
@@ -118,7 +118,110 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     if (Frame->ErrorCode & 0x00000008)
         CrashHandler::EHPrint("One or more page directory entries contain reserved bits which are set to 1.\n");
     else
-        CrashHandler::EHPrint(PagefaultDescriptions[Frame->ErrorCode & 0b111]);
+        CrashHandler::EHPrint(PageFaultDescriptions[Frame->ErrorCode & 0b111]);
+
+#ifdef DEBUG
+    uint64_t CheckPageFaultAddress = 0;
+    CheckPageFaultAddress = CPU::x64::readcr2().PFLA;
+    if (CheckPageFaultAddress == 0)
+        CheckPageFaultAddress = Frame->rip;
+
+    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x64::readcr3().raw));
+    bool PageAvailable = vma.Check((void *)CheckPageFaultAddress);
+    debug("Page available (Check(...)): %s. %s",
+          PageAvailable ? "Yes" : "No",
+          (params.P && !PageAvailable) ? "CR2 == Present; Check() != Present??????" : "CR2 confirms Check() result.");
+
+    if (PageAvailable)
+    {
+        bool Present = vma.Check((void *)CheckPageFaultAddress);
+        bool ReadWrite = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::RW);
+        bool User = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::US);
+        bool WriteThrough = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PWT);
+        bool CacheDisabled = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PCD);
+        bool Accessed = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::A);
+        bool Dirty = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::D);
+        bool Global = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::G);
+        /* ... */
+
+        debug("Page available: %s", Present ? "Yes" : "No");
+        debug("Page read/write: %s", ReadWrite ? "Yes" : "No");
+        debug("Page user/kernel: %s", User ? "User" : "Kernel");
+        debug("Page write-through: %s", WriteThrough ? "Yes" : "No");
+        debug("Page cache disabled: %s", CacheDisabled ? "Yes" : "No");
+        debug("Page accessed: %s", Accessed ? "Yes" : "No");
+        debug("Page dirty: %s", Dirty ? "Yes" : "No");
+        debug("Page global: %s", Global ? "Yes" : "No");
+
+        if (Present)
+        {
+            uint64_t CheckPageFaultLinearAddress = (uint64_t)CheckPageFaultAddress;
+            CheckPageFaultLinearAddress &= 0xFFFFFFFFFFFFF000;
+            debug("%#lx -> %#lx", CheckPageFaultAddress, CheckPageFaultLinearAddress);
+
+            Memory::Virtual::PageMapIndexer Index = Memory::Virtual::PageMapIndexer((uint64_t)CheckPageFaultLinearAddress);
+            debug("Index for %#lx is PML:%d PDPTE:%d PDE:%d PTE:%d",
+                  CheckPageFaultLinearAddress,
+                  Index.PMLIndex,
+                  Index.PDPTEIndex,
+                  Index.PDEIndex,
+                  Index.PTEIndex);
+            Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x64::readcr3().raw)->Entries[Index.PMLIndex];
+
+            Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
+            Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uint64_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+            Memory::PageTableEntryPtr *PTE = (Memory::PageTableEntryPtr *)((uint64_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+
+            debug("# %03d-%03d-%03d-%03d: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s NX:%s Address:%#lx",
+                  Index.PMLIndex, 0, 0, 0,
+                  PML4.Present ? "1" : "0",
+                  PML4.ReadWrite ? "1" : "0",
+                  PML4.UserSupervisor ? "1" : "0",
+                  PML4.WriteThrough ? "1" : "0",
+                  PML4.CacheDisable ? "1" : "0",
+                  PML4.Accessed ? "1" : "0",
+                  PML4.ExecuteDisable ? "1" : "0",
+                  PML4.GetAddress() << 12);
+
+            debug("# %03d-%03d-%03d-%03d: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s NX:%s Address:%#lx",
+                  Index.PMLIndex, Index.PDPTEIndex, 0, 0,
+                  PDPTE->Entries[Index.PDPTEIndex].Present ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].ReadWrite ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].UserSupervisor ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].WriteThrough ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].CacheDisable ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].Accessed ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].ExecuteDisable ? "1" : "0",
+                  PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+
+            debug("# %03d-%03d-%03d-%03d: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s NX:%s Address:%#lx",
+                  Index.PMLIndex, Index.PDPTEIndex, Index.PDEIndex, 0,
+                  PDE->Entries[Index.PDEIndex].Present ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].ReadWrite ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].UserSupervisor ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].WriteThrough ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].CacheDisable ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].Accessed ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].ExecuteDisable ? "1" : "0",
+                  PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+
+            debug("# %03d-%03d-%03d-%03d: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s D:%s PAT:%s G:%s PK:%d NX:%s Address:%#lx",
+                  Index.PMLIndex, Index.PDPTEIndex, Index.PDEIndex, Index.PTEIndex,
+                  PTE->Entries[Index.PTEIndex].Present ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].ReadWrite ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].UserSupervisor ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].WriteThrough ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].CacheDisable ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].Accessed ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].Dirty ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].PageAttributeTable ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].Global ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].ProtectionKey,
+                  PTE->Entries[Index.PTEIndex].ExecuteDisable ? "1" : "0",
+                  PTE->Entries[Index.PTEIndex].GetAddress() << 12);
+        }
+    }
+#endif
 }
 SafeFunction void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("x87 floating point exception"); }
 SafeFunction void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Alignment check exception"); }

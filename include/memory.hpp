@@ -655,6 +655,8 @@ extern Memory::PageTable4 *UserspaceKernelOnlyPageTable;
 
 #endif // __cplusplus
 
+extern void *KPT;
+
 EXTERNC void *HeapMalloc(uint64_t Size);
 EXTERNC void *HeapCalloc(uint64_t n, uint64_t Size);
 EXTERNC void *HeapRealloc(void *Address, uint64_t Size);
