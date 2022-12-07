@@ -75,7 +75,7 @@ namespace GlobalDescriptorTable
         // tss
         {}};
 
-    static GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
+    GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
     GlobalDescriptorTableDescriptor gdt[MAX_CPU];
 
     TaskStateSegment tss[MAX_CPU] = {
@@ -145,9 +145,14 @@ namespace GlobalDescriptorTable
 
     SafeFunction void SetKernelStack(void *Stack)
     {
-        if (Stack)
-            tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)Stack;
+        long CPUID = GetCurrentCPU()->ID;
+        if (Stack != nullptr)
+            tss[CPUID].StackPointer[0] = (uint64_t)Stack;
         else
-            tss[GetCurrentCPU()->ID].StackPointer[0] = (uint64_t)CPUStackPointer[GetCurrentCPU()->ID] + STACK_SIZE;
+            tss[CPUID].StackPointer[0] = (uint64_t)CPUStackPointer[CPUID] + STACK_SIZE;
+
+        // TODO: This may cause problems in the future I guess? This should be checked later
+        asmv("mov %%rsp, %0"
+             : "=r"(tss[CPUID].StackPointer[0]));
     }
 }

@@ -215,6 +215,7 @@ namespace CrashHandler
             EHPrint("tlb <ADDRESS> - Print the page table entries\n");
             EHPrint("bitmap - Print the memory bitmap\n");
             EHPrint("cr<INDEX> - Print the CPU control register\n");
+            EHPrint("tss <CORE> - Print the CPU task state segment\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
@@ -425,6 +426,36 @@ namespace CrashHandler
             default:
                 EHPrint("\eFF0000Invalid CR\n");
                 break;
+            }
+        }
+        else if (strncmp(Input, "tss", 3) == 0)
+        {
+            char *arg = TrimWhiteSpace(Input + 3);
+            int TSSIndex = atoi(arg);
+            if (TSSIndex > SMP::CPUCores)
+            {
+                EHPrint("\eFF0000Invalid TSS index\n");
+            }
+            else
+            {
+                GlobalDescriptorTable::TaskStateSegment tss = GlobalDescriptorTable::tss[TSSIndex];
+                EHPrint("\eFAFAFAStack Pointer 0: \eAABB22%#lx\n", tss.StackPointer[0]);
+                EHPrint("\eFAFAFAStack Pointer 1: \eAABB22%#lx\n", tss.StackPointer[1]);
+                EHPrint("\eFAFAFAStack Pointer 2: \eAABB22%#lx\n", tss.StackPointer[2]);
+                
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[0]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[1]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[2]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[3]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[4]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[5]);
+                EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[6]);
+
+                EHPrint("\eFAFAFAI/O Map Base Address Offset: \eAABB22%#lx\n", tss.IOMapBaseAddressOffset);
+
+                EHPrint("\eFAFAFAReserved 0: \eAABB22%#lx\n", tss.Reserved0);
+                EHPrint("\eFAFAFAReserved 1: \eAABB22%#lx\n", tss.Reserved1);
+                EHPrint("\eFAFAFAReserved 2: \eAABB22%#lx\n", tss.Reserved2);
             }
         }
         else if (strcmp(Input, "main") == 0)

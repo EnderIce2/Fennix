@@ -131,6 +131,7 @@ namespace GlobalDescriptorTable
     } __attribute__((packed)) GlobalDescriptorTableDescriptor;
 
     extern void *CPUStackPointer[];
+    extern TaskStateSegment tss[];
     void Init(int Core);
     void SetKernelStack(void *Stack);
 }

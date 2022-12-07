@@ -113,6 +113,8 @@ namespace InterruptDescriptorTable
         //      : "q"(KPT)
         //      : "memory");
 
+        // GlobalDescriptorTable::SetKernelStack(nullptr);
+
         asm(
             // "cmp $0x1000, %rsp\n"
             // "jng .skip_swap_check__1\n"

@@ -130,7 +130,7 @@ namespace Interrupts
             if (likely(handler != (Handler *)0xdeadbeef))
                 handler->OnInterruptReceived(Frame);
             else
-                error("Unhandled IRQ%ld on CPU %d.", Frame->InterruptNumber - 32, Core);
+                error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
 
             if (likely(apic[Core]))
             {

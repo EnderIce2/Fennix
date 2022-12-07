@@ -486,33 +486,6 @@ namespace Tasking
         CurrentCPU->CurrentProcess->Status = TaskStatus::Running;
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
-        // This should never happen, but if it does, we can fix it.
-        if (CurrentCPU->CurrentThread->Security.TrustLevel == TaskTrustLevel::User)
-        {
-            if (CurrentCPU->CurrentThread->Registers.cs != GDT_USER_CODE ||
-                CurrentCPU->CurrentThread->Registers.ss != GDT_USER_DATA)
-            {
-                warn("Wrong CS or SS for user thread %s(%ld)! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx)",
-                     CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                     GDT_USER_CODE, GDT_USER_DATA,
-                     CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-                CurrentCPU->CurrentThread->Registers.cs = GDT_USER_CODE;
-                CurrentCPU->CurrentThread->Registers.ss = GDT_USER_DATA;
-            }
-        }
-        else
-        {
-            if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE ||
-                CurrentCPU->CurrentThread->Registers.ss != GDT_KERNEL_DATA)
-            {
-                warn("Wrong CS or SS for kernel thread %s(%ld)! (Code:%#lx, Data:%#lx != Code:%#lx, Data:%#lx",
-                     CurrentCPU->CurrentThread->Registers.cs, CurrentCPU->CurrentThread->Registers.ss,
-                     GDT_KERNEL_CODE, GDT_KERNEL_DATA,
-                     CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-                CurrentCPU->CurrentThread->Registers.cs = GDT_KERNEL_CODE;
-                CurrentCPU->CurrentThread->Registers.ss = GDT_KERNEL_DATA;
-            }
-        }
         *Frame = CurrentCPU->CurrentThread->Registers;
         GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
