@@ -61,6 +61,8 @@ namespace Tasking
         TaskTrustLevel TrustLevel;
         Token UniqueToken;
         bool IsCritical;
+        bool IsDebugEnabled;
+        bool IsKernelDebugEnabled;
     };
 
     struct TaskInfo
@@ -125,11 +127,25 @@ namespace Tasking
 
         int GetExitCode() { return ExitCode; }
 
-        void SetCritical(bool critical)
+        void SetCritical(bool Critical)
         {
             CriticalSection cs;
-            trace("Setting criticality of thread %s to %s", Name, critical ? "true" : "false");
-            Security.IsCritical = critical;
+            trace("Setting criticality of thread %s to %s", Name, Critical ? "true" : "false");
+            Security.IsCritical = Critical;
+        }
+
+        void SetDebugMode(bool Enable)
+        {
+            CriticalSection cs;
+            trace("Setting debug mode of thread %s to %s", Name, Enable ? "true" : "false");
+            Security.IsDebugEnabled = Enable;
+        }
+
+        void SetKernelDebugMode(bool Enable)   
+        {
+            CriticalSection cs;
+            trace("Setting kernel debug mode of thread %s to %s", Name, Enable ? "true" : "false");
+            Security.IsKernelDebugEnabled = Enable;
         }
     };
 

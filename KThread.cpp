@@ -62,6 +62,8 @@ void KernelMainThread()
         CPU::Interrupts(CPU::Enable);
         goto Exit;
     }
+    ret.Thread->SetDebugMode(true);
+    ret.Thread->SetKernelDebugMode(true);
     ret.Thread->SetCritical(true);
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
     CPU::Interrupts(CPU::Enable);

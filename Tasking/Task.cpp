@@ -536,6 +536,23 @@ namespace Tasking
         OneShot(CurrentCPU->CurrentThread->Info.Priority);
     }
         {
+            if (CurrentCPU->CurrentThread->Security.IsDebugEnabled && CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
+            {
+                schedbg("================================================================");
+                schedbg("%s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+                schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                        Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+                schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                        Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+                schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                        Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+                schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                        Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+                schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                        Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+            }
+        }
+        {
             schedbg("================================================================");
             schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
             uint64_t ds;
@@ -749,7 +766,7 @@ namespace Tasking
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
 
-            if (Compatibility == TaskCompatibility::Linux)
+            if (Compatibility == TaskCompatibility::Linux) // Not tested and probably not working
             {
                 // https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9
                 // What is a "eightbyte"? unsigned long? 1 eightbyte = 8 bytes? 2 eightbyte each = 16 bytes?
@@ -827,61 +844,49 @@ namespace Tasking
             else // Native
             {
                 uint64_t ArgvSize = 0;
-                uint64_t ArgvStrSize = 0;
                 if (argv)
-                {
                     while (argv[ArgvSize] != nullptr)
-                    {
-                        debug("> ArgvSize: %d, ArgvStrSize: %d", ArgvSize, ArgvStrSize);
                         ArgvSize++;
-                        ArgvStrSize += strlen(argv[ArgvSize]) + 1;
-                        debug("< ArgvSize: %d, ArgvStrSize: %d", ArgvSize, ArgvStrSize);
-                    }
-                }
 
                 uint64_t EnvpSize = 0;
-                uint64_t EnvpStrSize = 0;
                 if (envp)
-                {
                     while (envp[EnvpSize] != nullptr)
-                    {
-                        debug("> EnvpSize: %d, EnvpStrSize: %d", EnvpSize, EnvpStrSize);
                         EnvpSize++;
-                        EnvpStrSize += strlen(envp[EnvpSize]) + 1;
-                        debug("< EnvpSize: %d, EnvpStrSize: %d", EnvpSize, EnvpStrSize);
-                    }
-                }
 
-                uint8_t *_argv = 0;
-                uint8_t *_envp = 0;
+                Memory::Virtual ArgMap = Memory::Virtual(Parent->PageTable);
+
+                char **_argv = (char **)KernelAllocator.RequestPages(TO_PAGES(ArgvSize * sizeof(char *)));
+                char **_envp = (char **)KernelAllocator.RequestPages(TO_PAGES(EnvpSize * sizeof(char *)));
+
+                for (uint64_t i = 0; i < TO_PAGES(ArgvSize * sizeof(char *)); i++)
+                    ArgMap.Map((void *)_argv[i], (void *)_argv[i], Memory::PTFlag::RW | Memory::PTFlag::US);
+
+                for (uint64_t i = 0; i < TO_PAGES(EnvpSize * sizeof(char *)); i++)
+                    ArgMap.Map((void *)_envp[i], (void *)_envp[i], Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 for (uint64_t i = 0; i < ArgvSize; i++)
                 {
-                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
-                    debug("argv[%d] ptr %#lx", i, (uint64_t)Tmp);
-                    Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
-                    _argv = (uint8_t *)Tmp;
-                    strcpy((char *)_argv, argv[i]);
-                    argv[i] = (char *)_argv;
+                    _argv[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
+                    strcpy(_argv[i], argv[i]);
+                    for (uint64_t j = 0; j < TO_PAGES(strlen(argv[i]) + 1); j++)
+                        ArgMap.Map((void *)_argv[i], (void *)_argv[i], Memory::PTFlag::RW | Memory::PTFlag::US);
                 }
-
-                debug("argv done");
 
                 for (uint64_t i = 0; i < EnvpSize; i++)
                 {
-                    void *Tmp = KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
-                    debug("envp[%d] ptr %#lx", i, (uint64_t)Tmp);
-                    Memory::Virtual().Map(Tmp, Tmp, Memory::PTFlag::RW | Memory::PTFlag::US);
-                    _envp = (uint8_t *)Tmp;
-                    strcpy((char *)_envp, envp[i]);
-                    envp[i] = (char *)_envp;
+                    _envp[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
+                    strcpy(_envp[i], envp[i]);
+                    for (uint64_t j = 0; j < TO_PAGES(strlen(envp[i]) + 1); j++)
+                        ArgMap.Map((void *)_envp[i], (void *)_envp[i], Memory::PTFlag::RW | Memory::PTFlag::US);
                 }
 
-                debug("envp done");
+                _argv[ArgvSize] = nullptr;
+                _envp[EnvpSize] = nullptr;
 
-                Thread->Registers.rdi = ArgvSize;
+                Thread->Registers.rdi = (uint64_t)ArgvSize;
                 Thread->Registers.rsi = (uint64_t)_argv;
-                Thread->Registers.rdx = (uint64_t)_envp;
+                Thread->Registers.rdx = (uint64_t)EnvpSize;
+                Thread->Registers.rcx = (uint64_t)_envp;
 
                 for (uint64_t i = 0; i < ArgvSize; i++)
                     debug("argv[%d]: %s", i, _argv[i]);
