@@ -525,21 +525,71 @@ long int strtol(const char *str, char **endptr, int base)
     if (endptr != 0)
         *endptr = (char *)(any ? s - 1 : str);
     return (acc);
+}
 
-    // long int result = 0;
-    // int sign = 1;
-    // if (*str == '-')
-    // {
-    //     sign = -1;
-    //     str++;
-    // }
-    // while (*str)
-    // {
-    //     result *= base;
-    //     result += *str - '0';
-    //     str++;
-    // }
-    // return result * sign;
+unsigned long int strtoul(const char *str, char **endptr, int base)
+{
+    const char *s;
+    unsigned long acc, cutoff;
+    int c;
+    int neg, any, cutlim;
+
+    s = str;
+    do
+    {
+        c = *s++;
+    } while (isspace(c));
+    if (c == '-')
+    {
+        neg = 1;
+        c = *s++;
+    }
+    else
+    {
+        neg = 0;
+        if (c == '+')
+            c = *s++;
+    }
+    if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X'))
+    {
+        c = s[1];
+        s += 2;
+        base = 16;
+    }
+    if (base == 0)
+        base = c == '0' ? 8 : 10;
+
+    cutoff = neg ? LONG_MIN : LONG_MAX;
+    cutlim = cutoff % base;
+    cutoff /= base;
+    for (acc = 0, any = 0;; c = *s++)
+    {
+        if (isdigit(c))
+            c -= '0';
+        else if (isalpha(c))
+            c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+        else
+            break;
+        if (c >= base)
+            break;
+        if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+            any = -1;
+        else
+        {
+            any = 1;
+            acc *= base;
+            acc += c;
+        }
+    }
+    if (any < 0)
+    {
+        acc = neg ? LONG_MIN : LONG_MAX;
+    }
+    else if (neg)
+        acc = -acc;
+    if (endptr != 0)
+        *endptr = (char *)(any ? s - 1 : str);
+    return (acc);
 }
 
 int isdigit(int c)
@@ -565,6 +615,17 @@ int isempty(char *str)
     return 1;
 }
 
+unsigned int isdelim(char c, char *delim)
+{
+    while (*delim != '\0')
+    {
+        if (c == *delim)
+            return 1;
+        delim++;
+    }
+    return 0;
+}
+
 int abs(int i) { return i < 0 ? -i : i; }
 
 void swap(char *x, char *y)
@@ -579,6 +640,46 @@ char *reverse(char *Buffer, int i, int j)
     while (i < j)
         swap(&Buffer[i++], &Buffer[j--]);
     return Buffer;
+}
+
+char *strtok(char *src, const char *delim)
+{
+    static char *src1;
+    if (!src)
+        src = src1;
+
+    if (!src)
+        return NULL;
+
+    while (1)
+    {
+        if (isdelim(*src, (char *)delim))
+        {
+            src++;
+            continue;
+        }
+        if (*src == '\0')
+            return NULL;
+
+        break;
+    }
+    char *ret = src;
+    while (1)
+    {
+        if (*src == '\0')
+        {
+            src1 = src;
+            return ret;
+        }
+        if (isdelim(*src, (char *)delim))
+        {
+            *src = '\0';
+            src1 = src + 1;
+            return ret;
+        }
+        src++;
+    }
+    return NULL;
 }
 
 int atoi(const char *String)
