@@ -23,6 +23,7 @@ extern "C"
     char *itoa(int Value, char *Buffer, int Base);
     char *ltoa(long Value, char *Buffer, int Base);
     char *ultoa(unsigned long Value, char *Buffer, int Base);
+    unsigned long int strtoul(const char *str, char **endptr, int base);
 
     void *memcpy_unsafe(void *dest, const void *src, size_t n);
     void *memset_unsafe(void *dest, int c, size_t n);
