@@ -40,6 +40,42 @@ namespace CrashHandler
         va_end(args);
     }
 
+    SafeFunction void EHDumpData(void *Address, unsigned long Length)
+    {
+        EHPrint("-------------------------------------------------------------------------\n");
+        Display->SetBuffer(SBIdx);
+        unsigned char *AddressChar = (unsigned char *)Address;
+        unsigned char Buffer[17];
+        unsigned long Iterate;
+        for (Iterate = 0; Iterate < Length; Iterate++)
+        {
+            if ((Iterate % 16) == 0)
+            {
+                if (Iterate != 0)
+                    EHPrint("  \e8A78FF%s\eAABBCC\n", Buffer);
+                EHPrint("  \e9E9E9E%04x\eAABBCC ", Iterate);
+                Display->SetBuffer(SBIdx);
+            }
+            EHPrint(" \e4287f5%02x\eAABBCC", AddressChar[Iterate]);
+            if ((AddressChar[Iterate] < 0x20) || (AddressChar[Iterate] > 0x7e))
+                Buffer[Iterate % 16] = '.';
+            else
+                Buffer[Iterate % 16] = AddressChar[Iterate];
+            Buffer[(Iterate % 16) + 1] = '\0';
+        }
+
+        while ((Iterate % 16) != 0)
+        {
+            EHPrint("   ");
+            Display->SetBuffer(SBIdx);
+            Iterate++;
+        }
+
+        EHPrint("  \e8A78FF%s\eAABBCC\n", Buffer);
+        EHPrint("-------------------------------------------------------------------------\n\n.");
+        Display->SetBuffer(SBIdx);
+    }
+
     SafeFunction char *TrimWhiteSpace(char *str)
     {
         char *end;
@@ -216,12 +252,14 @@ namespace CrashHandler
             EHPrint("bitmap - Print the memory bitmap\n");
             EHPrint("cr<INDEX> - Print the CPU control register\n");
             EHPrint("tss <CORE> - Print the CPU task state segment\n");
+            EHPrint("dump <ADDRESS HEX> <LENGTH DEC> - Dump memory\n");
+            EHPrint("       - \eFF4400WARNING: This can crash the system if you try to read from an unmapped page.\eFAFAFA\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
             EHPrint("tasks - Show the tasks screen.\n");
             EHPrint("console - Show the console screen.\n");
-            EHPrint("Also, you can use the arrow keys to navigate the menu.\n");
+            EHPrint("Also, you can use the arrow keys to navigate between the screens.\n");
             EHPrint("=========================================================================\n");
             EHPrint("Kernel Compiled at: %s %s with C++ Standard: %d\n", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
             EHPrint("C++ Language Version (__cplusplus): %ld\n", __cplusplus);
@@ -442,7 +480,7 @@ namespace CrashHandler
                 EHPrint("\eFAFAFAStack Pointer 0: \eAABB22%#lx\n", tss.StackPointer[0]);
                 EHPrint("\eFAFAFAStack Pointer 1: \eAABB22%#lx\n", tss.StackPointer[1]);
                 EHPrint("\eFAFAFAStack Pointer 2: \eAABB22%#lx\n", tss.StackPointer[2]);
-                
+
                 EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[0]);
                 EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[1]);
                 EHPrint("\eFAFAFAInterrupt Stack Table: \eAABB22%#lx\n", tss.InterruptStackTable[2]);
@@ -456,6 +494,23 @@ namespace CrashHandler
                 EHPrint("\eFAFAFAReserved 0: \eAABB22%#lx\n", tss.Reserved0);
                 EHPrint("\eFAFAFAReserved 1: \eAABB22%#lx\n", tss.Reserved1);
                 EHPrint("\eFAFAFAReserved 2: \eAABB22%#lx\n", tss.Reserved2);
+            }
+        }
+        else if (strncmp(Input, "dump", 4) == 0)
+        {
+            char *arg = TrimWhiteSpace(Input + 4);
+            char *addr = strtok(arg, " ");
+            char *len = strtok(NULL, " ");
+            if (addr == NULL || len == NULL)
+            {
+                EHPrint("\eFF0000Invalid arguments\n");
+            }
+            else
+            {
+                uint64_t Address = strtoul(addr, NULL, 16);
+                uint64_t Length = strtoul(len, NULL, 10);
+                debug("Dumping %ld bytes from %#lx\n", Length, Address);
+                EHDumpData((void *)Address, Length);
             }
         }
         else if (strcmp(Input, "main") == 0)
@@ -493,11 +548,9 @@ namespace CrashHandler
             DisplayConsoleScreen(crashdata);
             Display->SetBuffer(SBIdx);
         }
-        else
-        {
-            if (strlen(Input) > 0)
-                EHPrint("Unknown command: %s", Input);
-        }
+        else if (strlen(Input) > 0)
+            EHPrint("Unknown command: %s", Input);
+
         DisplayBottomOverlay();
         Display->SetBuffer(SBIdx);
     }
@@ -520,9 +573,7 @@ namespace CrashHandler
             debug("Exception in kernel mode");
             if (TaskManager)
                 TaskManager->Panic();
-            debug("ePanicSchedStop");
             Display->CreateBuffer(0, 0, SBIdx);
-            debug("e0");
         }
         else
         {
@@ -538,7 +589,14 @@ namespace CrashHandler
             else
             {
                 debug("CPU %ld data is valid", data->ID);
-                if (data->CurrentThread)
+                if (data->CurrentThread->Security.IsCritical)
+                {
+                    debug("Critical thread died");
+                    if (TaskManager)
+                        TaskManager->Panic();
+                    Display->CreateBuffer(0, 0, SBIdx);
+                }
+                else
                 {
                     debug("Current thread is valid %#lx", data->CurrentThread);
                     UserModeExceptionHandler(Frame);
