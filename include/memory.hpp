@@ -38,10 +38,10 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 #define STACK_SIZE 0x4000      // 16kb
 #define USER_STACK_SIZE 0x2000 // 8kb
 
-// to pages
-#define TO_PAGES(d) (d / PAGE_SIZE + 1)
-// from pages
-#define FROM_PAGES(d) (d * PAGE_SIZE - 1)
+// To pages
+#define TO_PAGES(d) ((d) / PAGE_SIZE + 1)
+// From pages
+#define FROM_PAGES(d) ((d) * PAGE_SIZE - 1)
 
 #define NORMAL_VMA_OFFSET 0xFFFF800000000000
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
