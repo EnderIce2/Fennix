@@ -73,7 +73,7 @@ __no_instrument_function void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
         for (uint64_t fb_base = (uint64_t)Info->Framebuffer[itrfb].BaseAddress;
              fb_base < ((uint64_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
              fb_base += PAGE_SIZE)
-            va.Map((void *)(fb_base + NORMAL_VMA_OFFSET), (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
+            va.Map((void *)fb_base, (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
     }
 }
