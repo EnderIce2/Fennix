@@ -122,6 +122,7 @@ namespace Tasking
                     trace("Process \"%s\"(%d) removed from the list", Process->Name, Process->ID);
                     // Free memory
                     delete ListProcess[i]->IPCHandles;
+                    delete ListProcess[i]->ELFSymbolTable;
                     SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
                     if (ListProcess[i]->Security.TrustLevel == TaskTrustLevel::User)
                         KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
@@ -853,23 +854,35 @@ namespace Tasking
                     while (envp[EnvpSize] != nullptr)
                         EnvpSize++;
 
+                debug("ArgvSize: %d", ArgvSize);
+                debug("EnvpSize: %d", EnvpSize);
+
                 Memory::Virtual ArgMap = Memory::Virtual(Parent->PageTable);
 
                 char **_argv = (char **)KernelAllocator.RequestPages(TO_PAGES(ArgvSize * sizeof(char *)));
                 char **_envp = (char **)KernelAllocator.RequestPages(TO_PAGES(EnvpSize * sizeof(char *)));
 
+                debug("Argv: %#lx", _argv);
+                debug("Envp: %#lx", _envp);
+
                 for (uint64_t i = 0; i < TO_PAGES(ArgvSize * sizeof(char *)); i++)
-                    ArgMap.Map((void *)_argv[i], (void *)_argv[i], Memory::PTFlag::RW | Memory::PTFlag::US);
+                    ArgMap.Map((void *)((uint64_t)_argv + (i * PAGE_SIZE)),
+                               (void *)((uint64_t)_argv + (i * PAGE_SIZE)),
+                               Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 for (uint64_t i = 0; i < TO_PAGES(EnvpSize * sizeof(char *)); i++)
-                    ArgMap.Map((void *)_envp[i], (void *)_envp[i], Memory::PTFlag::RW | Memory::PTFlag::US);
+                    ArgMap.Map((void *)((uint64_t)_envp + (i * PAGE_SIZE)),
+                               (void *)((uint64_t)_envp + (i * PAGE_SIZE)),
+                               Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 for (uint64_t i = 0; i < ArgvSize; i++)
                 {
                     _argv[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
                     strcpy(_argv[i], argv[i]);
                     for (uint64_t j = 0; j < TO_PAGES(strlen(argv[i]) + 1); j++)
-                        ArgMap.Map((void *)_argv[i], (void *)_argv[i], Memory::PTFlag::RW | Memory::PTFlag::US);
+                        ArgMap.Map((void *)((uint64_t)_argv[i] + (j * PAGE_SIZE)),
+                                   (void *)((uint64_t)_argv[i] + (j * PAGE_SIZE)),
+                                   Memory::PTFlag::RW | Memory::PTFlag::US);
                 }
 
                 for (uint64_t i = 0; i < EnvpSize; i++)
@@ -877,7 +890,9 @@ namespace Tasking
                     _envp[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
                     strcpy(_envp[i], envp[i]);
                     for (uint64_t j = 0; j < TO_PAGES(strlen(envp[i]) + 1); j++)
-                        ArgMap.Map((void *)_envp[i], (void *)_envp[i], Memory::PTFlag::RW | Memory::PTFlag::US);
+                        ArgMap.Map((void *)((uint64_t)_envp[i] + (j * PAGE_SIZE)),
+                                   (void *)((uint64_t)_envp[i] + (j * PAGE_SIZE)),
+                                   Memory::PTFlag::RW | Memory::PTFlag::US);
                 }
 
                 _argv[ArgvSize] = nullptr;
@@ -955,7 +970,7 @@ namespace Tasking
 
     PCB *Task::CreateProcess(PCB *Parent,
                              const char *Name,
-                             TaskTrustLevel TrustLevel)
+                             TaskTrustLevel TrustLevel, void *Image)
     {
         SmartCriticalSection(TaskingLock);
         PCB *Process = new PCB;
@@ -1031,6 +1046,14 @@ namespace Tasking
               Process->Name, Process->ID,
               Parent ? Process->Parent->Name : "None",
               Parent ? Process->Parent->ID : 0);
+
+        if (Image)
+        {
+            // TODO: Check if it's ELF
+            Process->ELFSymbolTable = new SymbolResolver::Symbols((uint64_t)Image);
+        }
+        else
+            debug("No image provided for process \"%s\"(%d)", Process->Name, Process->ID);
 
         if (Parent)
             Parent->Children.push_back(Process);
