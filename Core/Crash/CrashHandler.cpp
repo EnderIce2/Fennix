@@ -668,6 +668,7 @@ namespace CrashHandler
         }
 
         ExceptionOccurred = true;
+        /* TODO: Remove all useless interrupts, and only leave the ones that are needed (dsdt, acpi, etc.) */
         Interrupts::RemoveAll();
 
         debug("Reading control registers...");
