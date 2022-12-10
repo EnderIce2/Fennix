@@ -239,6 +239,7 @@ enum SegmentTypes
     PT_NOTE = 4,
     PT_SHLIB = 5,
     PT_PHDR = 6,
+    PT_TLS = 7,
     PT_LOSUNW = 0x6ffffffa,
     PT_SUNWBSS = 0x6ffffffb,
     PT_SUNWSTACK = 0x6ffffffa,

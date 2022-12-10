@@ -183,18 +183,21 @@ namespace Execute
                             uintptr_t MAddr;
 
                             if (ItrProgramHeader.p_type == PT_LOAD)
+                            {
                                 debug("PT_LOAD");
+                                MAddr = (ItrProgramHeader.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
+
+                                memset(MemoryImage, 0, ItrProgramHeader.p_memsz);
+                                memcpy(MemoryImage, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
+                                debug("MemoryImage: %#lx", MemoryImage);
+                                debug("MAddr: %#lx", MAddr);
+                                debug("memset operation: 0 to %#lx for length %ld", MemoryImage + MAddr, ItrProgramHeader.p_memsz);
+                                debug("memcpy operation: %#lx to %#lx for length %ld", (uint8_t *)BaseImage + ItrProgramHeader.p_offset, MemoryImage + MAddr, ItrProgramHeader.p_filesz);
+                            }
                             else
-                                debug("Not PT_LOAD");
-
-                            MAddr = (ItrProgramHeader.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
-
-                            memset(MemoryImage, 0, ItrProgramHeader.p_memsz);
-                            memcpy(MemoryImage, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
-                            debug("MemoryImage: %#lx", MemoryImage);
-                            debug("MAddr: %#lx", MAddr);
-                            debug("memset operation: 0 to %#lx for length %ld", MemoryImage + MAddr, ItrProgramHeader.p_memsz);
-                            debug("memcpy operation: %#lx to %#lx for length %ld", (uint8_t *)BaseImage + ItrProgramHeader.p_offset, MemoryImage + MAddr, ItrProgramHeader.p_filesz);
+                            {
+                                fixme("Not PT_LOAD (%ld)", ItrProgramHeader.p_type);
+                            }
                         }
 
                         debug("Entry Point: %#lx", ELFHeader->e_entry);
