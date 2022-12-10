@@ -4,9 +4,10 @@
 #include <types.h>
 
 #include <interrupts.hpp>
+#include <hashmap.hpp>
+#include <symbols.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
-#include <hashmap.hpp>
 #include <ipc.hpp>
 #include <debug.h>
 #include <abi.h>
@@ -141,7 +142,7 @@ namespace Tasking
             Security.IsDebugEnabled = Enable;
         }
 
-        void SetKernelDebugMode(bool Enable)   
+        void SetKernelDebugMode(bool Enable)
         {
             CriticalSection cs;
             trace("Setting kernel debug mode of thread %s to %s", Name, Enable ? "true" : "false");
@@ -162,6 +163,7 @@ namespace Tasking
         Vector<PCB *> Children;
         HashMap<InterProcessCommunication::IPCPort, uint64_t> *IPCHandles;
         Memory::PageTable4 *PageTable;
+        SymbolResolver::Symbols *ELFSymbolTable;
     };
 
     enum TokenTrustLevel
@@ -273,7 +275,7 @@ namespace Tasking
 
         PCB *CreateProcess(PCB *Parent,
                            const char *Name,
-                           TaskTrustLevel TrustLevel);
+                           TaskTrustLevel TrustLevel, void *Image = nullptr);
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,

@@ -20,9 +20,20 @@ namespace CrashHandler
 {
     SafeFunction void DisplayStackFrameScreen(CRData data)
     {
-        EHPrint("\eFAFAFATracing 40 frames...\n");
-        TraceFrames(data.Frame, 40);
-        EHPrint("\n\n\eFAFAFATracing interrupt frames...\n");
+        EHPrint("\eFAFAFATracing 40 frames...");
+        TraceFrames(data.Frame, 40, KernelSymbolTable, true);
+        if (data.Process)
+        {
+            EHPrint("\n\eFAFAFATracing 40 process frames...");
+            SymbolResolver::Symbols *sh = data.Process->ELFSymbolTable;
+            if (!sh)
+            {
+                EHPrint("\eFF0000< No symbol table available. >\n");
+                return;
+            }
+            TraceFrames(data.Frame, 40, sh, false);
+        }
+        EHPrint("\n\eFAFAFATracing interrupt frames...");
         for (uint64_t i = 0; i < 8; i++)
         {
             if (EHIntFrames[i])

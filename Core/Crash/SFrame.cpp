@@ -23,7 +23,7 @@ namespace CrashHandler
         uint64_t rip;
     };
 
-    SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count)
+    SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel)
     {
 
 #if defined(__amd64__)
@@ -44,9 +44,9 @@ namespace CrashHandler
 #endif
             EHPrint("\e7925CC-");
 #if defined(__amd64__)
-            EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
+            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
 #elif defined(__i386__)
-            EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->eip));
+            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
 #elif defined(__aarch64__)
 #endif
             EHPrint("\e7981FC <- Exception");
@@ -57,15 +57,15 @@ namespace CrashHandler
 #if defined(__amd64__)
             EHPrint("\e2565CC%p", (void *)Frame->rip);
             EHPrint("\e7925CC-");
-            if (Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end)
-                EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->rip));
+            if ((Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end) || !Kernel)
+                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
             else
                 EHPrint("Outside Kernel");
 #elif defined(__i386__)
             EHPrint("\e2565CC%p", (void *)Frame->eip);
             EHPrint("\e7925CC-");
-            if (Frame->eip >= 0xC0000000 && Frame->eip <= (uint64_t)&_kernel_end)
-                EHPrint("\eAA25CC%s", KernelSymbolTable->GetSymbolFromAddress(Frame->eip));
+            if ((Frame->eip >= 0xC0000000 && Frame->eip <= (uint64_t)&_kernel_end) || !Kernel)
+                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
             else
                 EHPrint("Outside Kernel");
 #elif defined(__aarch64__)
@@ -78,12 +78,12 @@ namespace CrashHandler
                 EHPrint("\n\e2565CC%p", (void *)frames->rip);
                 EHPrint("\e7925CC-");
 #if defined(__amd64__)
-                if (frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end)
+                if ((frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end) || !Kernel)
 #elif defined(__i386__)
-                if (frames->rip >= 0xC0000000 && frames->rip <= (uint64_t)&_kernel_end)
+                if ((frames->rip >= 0xC0000000 && frames->rip <= (uint64_t)&_kernel_end) || !Kernel)
 #elif defined(__aarch64__)
 #endif
-                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress(frames->rip));
+                    EHPrint("\e25CCC9%s", SymHandle->GetSymbolFromAddress(frames->rip));
                 else
                     EHPrint("\eFF4CA9Outside Kernel");
 
@@ -92,5 +92,6 @@ namespace CrashHandler
                 frames = frames->rbp;
             }
         }
+        EHPrint("\n");
     }
 }

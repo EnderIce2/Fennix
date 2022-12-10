@@ -5,14 +5,18 @@ namespace SymbolResolver
 {
     class Symbols
     {
-    public:
+    private:
         struct SymbolTable
         {
             uint64_t Address;
             char *FunctionName;
         };
 
-        Symbols(uint64_t Address);
+        SymbolTable SymTable[0x10000];
+        uint64_t TotalEntries = 0;
+
+    public:
+        Symbols(uint64_t ImageAddress);
         ~Symbols();
         const char *GetSymbolFromAddress(uint64_t Address);
     };
