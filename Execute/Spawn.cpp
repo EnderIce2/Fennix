@@ -73,11 +73,12 @@ namespace Execute
 #if defined(__amd64__)
                     const char *BaseName;
                     cwk_path_get_basename(Path, &BaseName, nullptr);
-                    PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
 
                     void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->Node->Length));
                     memcpy(BaseImage, (void *)ExFile->Node->Address, ExFile->Node->Length);
                     debug("Image Size: %#lx - %#lx (length: %ld)", BaseImage, (uint64_t)BaseImage + ExFile->Node->Length, ExFile->Node->Length);
+
+                    PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User, BaseImage);
 
                     Memory::Virtual pva = Memory::Virtual(Process->PageTable);
                     for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
@@ -121,53 +122,98 @@ namespace Execute
                     if (ELFHeader->e_type == ET_EXEC)
                     {
                         trace("Executable");
-                        Elf64_Phdr *pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
-                        debug("p_paddr: %#lx | p_vaddr: %#lx | p_filesz: %#lx | p_memsz: %#lx | p_offset: %#lx", pheader->p_paddr, pheader->p_vaddr, pheader->p_filesz, pheader->p_memsz, pheader->p_offset);
+                        Elf64_Phdr *ProgramHeader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
+                        debug("p_paddr: %#lx | p_vaddr: %#lx | p_filesz: %#lx | p_memsz: %#lx | p_offset: %#lx", ProgramHeader->p_paddr, ProgramHeader->p_vaddr, ProgramHeader->p_filesz, ProgramHeader->p_memsz, ProgramHeader->p_offset);
 
-                        void *Address = nullptr;
-                        for (int i = 0; i < ELFHeader->e_phnum; i++, pheader++)
+                        uintptr_t BaseAddress = UINTPTR_MAX;
+                        uint64_t ElfAppSize = 0;
+
+                        Elf64_Phdr ItrProgramHeader;
+                        for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
                         {
-                            if (pheader->p_type != PT_LOAD)
-                                continue;
-                            Address = (void *)((uint64_t)pheader->p_vaddr + pheader->p_memsz);
+                            memcpy(&ItrProgramHeader, (uint8_t *)BaseImage + ELFHeader->e_phoff + ELFHeader->e_phentsize * i, sizeof(Elf64_Phdr));
+                            BaseAddress = MIN(BaseAddress, ItrProgramHeader.p_vaddr);
                         }
-                        void *Offset = KernelAllocator.RequestPages(TO_PAGES((uint64_t)Address));
+                        debug("BaseAddress %#lx", BaseAddress);
 
-                        pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
-                        for (uint64_t i = 0; i < TO_PAGES((uint64_t)Address); i++)
+                        for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
                         {
-                            pva.Remap((void *)((uint64_t)pheader->p_vaddr + (i * PAGE_SIZE)), (void *)((uint64_t)Offset + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
-                            // debug("Mapping: %#lx -> %#lx", (uint64_t)pheader->p_vaddr + (i * PAGE_SIZE), (uint64_t)Offset + (i * PAGE_SIZE));
+                            memcpy(&ItrProgramHeader, (uint8_t *)BaseImage + ELFHeader->e_phoff + ELFHeader->e_phentsize * i, sizeof(Elf64_Phdr));
+                            uintptr_t SegmentEnd;
+                            SegmentEnd = ItrProgramHeader.p_vaddr - BaseAddress + ItrProgramHeader.p_memsz;
+                            ElfAppSize = MAX(ElfAppSize, SegmentEnd);
+                        }
+                        debug("ElfAppSize %ld", ElfAppSize);
+
+                        uint8_t *MemoryImage = nullptr;
+
+                        // check for TEXTREL
+                        for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
+                        {
+                            memcpy(&ItrProgramHeader, (uint8_t *)BaseImage + ELFHeader->e_phoff + ELFHeader->e_phentsize * i, sizeof(Elf64_Phdr));
+                            if (ItrProgramHeader.p_type == DT_TEXTREL)
+                            {
+                                warn("TEXTREL ELF is not fully tested yet!");
+                                MemoryImage = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(ElfAppSize));
+                                for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
+                                {
+                                    pva.Remap((void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                                    debug("Mapping: %#lx -> %#lx", (uint64_t)MemoryImage + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
+                                }
+                                break;
+                            }
                         }
 
-                        pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
-                        for (int i = 0; i < ELFHeader->e_phnum; i++, pheader++)
+                        if (!MemoryImage)
                         {
-                            if (pheader->p_type != PT_LOAD)
-                                continue;
-                            void *dst = (void *)((uint64_t)pheader->p_vaddr + (uint64_t)Offset);
-                            memset(dst, 0, pheader->p_memsz);
-                            memcpy(dst, ((char *)BaseImage) + pheader->p_offset, pheader->p_filesz);
+                            debug("Allocating %ld pages for image", TO_PAGES(ElfAppSize));
+                            MemoryImage = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(ElfAppSize));
+                            for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
+                            {
+                                pva.Remap((void *)((uint64_t)ProgramHeader->p_vaddr + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                                debug("Mapping: %#lx -> %#lx", (uint64_t)ProgramHeader->p_vaddr + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
+                            }
+                        }
+
+                        debug("BaseAddress: %#lx | ElfAppSize: %#lx (%ld, %ld KB)", BaseAddress, ElfAppSize, ElfAppSize, TO_KB(ElfAppSize));
+
+                        for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
+                        {
+                            memcpy(&ItrProgramHeader, (uint8_t *)BaseImage + ELFHeader->e_phoff + ELFHeader->e_phentsize * i, sizeof(Elf64_Phdr));
+                            uintptr_t MAddr;
+
+                            if (ItrProgramHeader.p_type == PT_LOAD)
+                                debug("PT_LOAD");
+                            else
+                                debug("Not PT_LOAD");
+
+                            MAddr = (ItrProgramHeader.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
+
+                            memset(MemoryImage, 0, ItrProgramHeader.p_memsz);
+                            memcpy(MemoryImage, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
+                            debug("MemoryImage: %#lx", MemoryImage);
+                            debug("MAddr: %#lx", MAddr);
+                            debug("memset operation: 0 to %#lx for length %ld", MemoryImage + MAddr, ItrProgramHeader.p_memsz);
+                            debug("memcpy operation: %#lx to %#lx for length %ld", (uint8_t *)BaseImage + ItrProgramHeader.p_offset, MemoryImage + MAddr, ItrProgramHeader.p_filesz);
                         }
 
                         debug("Entry Point: %#lx", ELFHeader->e_entry);
 
                         Vector<AuxiliaryVector> auxv;
 
-                        pheader = (Elf64_Phdr *)(((char *)BaseImage) + ELFHeader->e_phoff);
                         auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
                         auxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader->e_phentsize}}});
                         auxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader->e_phnum}}});
                         auxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
-                        auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)Offset}}});
-                        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)pheader->p_offset}}});
+                        auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage}}});
+                        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)ProgramHeader->p_offset}}});
                         auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t) "x86_64"}}});
                         auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)Path}}});
 
                         TCB *Thread = TaskManager->CreateThread(Process,
                                                                 (IP)ELFHeader->e_entry,
                                                                 argv, envp, auxv,
-                                                                (IPOffset)pheader->p_offset,
+                                                                (IPOffset)ProgramHeader->p_offset,
                                                                 Arch,
                                                                 Comp);
                         ret.Process = Process;
