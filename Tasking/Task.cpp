@@ -540,18 +540,18 @@ namespace Tasking
         {
             if (CurrentCPU->CurrentThread->Security.IsDebugEnabled && CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
             {
-                schedbg("================================================================");
-                schedbg("%s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-                schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
-                        Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-                schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
-                        Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-                schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
-                        Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-                schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
-                        Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-                schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
-                        Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
+                trace("================================================================");
+                trace("%s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+                trace("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
+                      Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+                trace("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
+                      Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+                trace("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
+                      Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+                trace("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
+                      Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+                trace("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
+                      Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
             }
         }
         {
