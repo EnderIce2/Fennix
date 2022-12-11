@@ -1,4 +1,5 @@
 #include <syscalls.hpp>
+#include <memory.hpp>
 
 #include <debug.h>
 
@@ -22,9 +23,23 @@ static int sys_print(SyscallsFrame *Frame, char Char, int Index)
     return ret;
 }
 
+static uint64_t sys_request_pages(SyscallsFrame *Frame, uint64_t Count)
+{
+    return (uint64_t)TaskManager->GetCurrentThread()->Memory->RequestPages(Count);
+}
+
+static uint64_t sys_free_pages(SyscallsFrame *Frame, uint64_t Address, uint64_t Count)
+{
+    TaskManager->GetCurrentThread()->Memory->FreePages((void *)Address, Count);
+    return 0;
+}
+
 static void *NativeSyscallsTable[] = {
-    [_exit] = (void *)sys_exit,
-    [_print] = (void *)sys_print,
+    [_Exit] = (void *)sys_exit,
+    [_Print] = (void *)sys_print,
+
+    [_RequestPages] = (void *)sys_request_pages,
+    [_FreePages] = (void *)sys_free_pages,
 };
 
 uint64_t HandleNativeSyscalls(SyscallsFrame *Frame)
