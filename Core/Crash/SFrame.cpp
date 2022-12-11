@@ -25,14 +25,13 @@ namespace CrashHandler
 
     SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel)
     {
-
 #if defined(__amd64__)
         struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
 #elif defined(__i386__)
         struct StackFrame *frames = (struct StackFrame *)Frame->ebp; // (struct StackFrame *)__builtin_frame_address(0);
 #elif defined(__aarch64__)
 #endif
-        debug("Stack tracing...");
+        debug("\nStack tracing... %p %d %p %d", Frame, Count, frames, Kernel);
         EHPrint("\e7981FC\nStack Trace:\n");
         if (!frames || !frames->rip || !frames->rbp)
         {

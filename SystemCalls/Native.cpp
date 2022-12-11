@@ -15,8 +15,11 @@ static uint64_t sys_exit(SyscallsFrame *Frame, uint64_t code)
 
 static int sys_print(SyscallsFrame *Frame, char Char, int Index)
 {
-    debug("%c", Char);
-    return Display->Print(Char, Index, true);
+    int ret = Display->Print(Char, Index, true);
+#ifdef DEBUG
+    Display->SetBuffer(Index);
+#endif
+    return ret;
 }
 
 static void *NativeSyscallsTable[] = {

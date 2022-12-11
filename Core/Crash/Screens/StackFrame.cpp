@@ -28,7 +28,7 @@ namespace CrashHandler
             SymbolResolver::Symbols *sh = data.Process->ELFSymbolTable;
             if (!sh)
             {
-                EHPrint("\eFF0000< No symbol table available. >\n");
+                EHPrint("\n\eFF0000< No symbol table available. >\n");
                 return;
             }
             TraceFrames(data.Frame, 40, sh, false);
