@@ -7,8 +7,8 @@ namespace Xalloc
         struct SpinLockData
         {
             uint64_t LockData = 0x0;
-            const char *CurrentHolder = "(nul)";
-            const char *AttemptingToGet = "(nul)";
+            const char *CurrentHolder = "(null)";
+            const char *AttemptingToGet = "(null)";
             uint64_t Count = 0;
         };
 

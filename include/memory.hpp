@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 #include <boot/binfo.h>
 #include <bitmap.hpp>
+#include <vector.hpp>
 #include <lock.hpp>
 #endif // __cplusplus
 #include <types.h>
@@ -41,7 +42,7 @@ extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 // To pages
 #define TO_PAGES(d) ((d) / PAGE_SIZE + 1)
 // From pages
-#define FROM_PAGES(d) ((d) * PAGE_SIZE - 1)
+#define FROM_PAGES(d) ((d)*PAGE_SIZE - 1)
 
 #define NORMAL_VMA_OFFSET 0xFFFF800000000000
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
@@ -624,6 +625,30 @@ namespace Memory
          * @brief Destroy the Stack Guard object
          */
         ~StackGuard();
+    };
+
+    class Tracker
+    {
+    private:
+        Bitmap PageBitmap;
+        PageTable4 *PageTable;
+
+        struct AllocatedPages
+        {
+            void *Address;
+            uint64_t PageCount;
+        };
+
+        Vector<AllocatedPages> AllocatedPagesList;
+
+    public:
+        uint64_t GetAllocatedMemorySize();
+
+        void *RequestPages(uint64_t Count);
+        void FreePages(void *Address, uint64_t Count);
+
+        Tracker(PageTable4 *PageTable);
+        ~Tracker();
     };
 }
 

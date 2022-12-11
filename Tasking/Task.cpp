@@ -94,6 +94,7 @@ namespace Tasking
                       Thread->Name, Thread->ID, Thread->Parent->Name, Thread->Parent->ID);
                 // Free memory
                 delete Thread->Stack;
+                delete Thread->Memory;
                 SecurityManager.DestroyToken(Thread->Security.UniqueToken);
                 delete Thread->Parent->Threads[i];
                 // Remove from the list
@@ -753,6 +754,7 @@ namespace Tasking
         case TaskTrustLevel::User:
         {
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
+            Thread->Memory = new Memory::Tracker(Parent->PageTable);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
             Thread->GSBase = 0;
