@@ -155,6 +155,7 @@ namespace Execute
                             {
                                 warn("TEXTREL ELF is not fully tested yet!");
                                 MemoryImage = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(ElfAppSize));
+                                memset(MemoryImage, 0, ElfAppSize);
                                 for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
                                 {
                                     pva.Remap((void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
@@ -168,6 +169,7 @@ namespace Execute
                         {
                             debug("Allocating %ld pages for image", TO_PAGES(ElfAppSize));
                             MemoryImage = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(ElfAppSize));
+                            memset(MemoryImage, 0, ElfAppSize);
                             for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
                             {
                                 pva.Remap((void *)((uint64_t)ProgramHeader->p_vaddr + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
@@ -187,7 +189,6 @@ namespace Execute
                                 debug("PT_LOAD");
                                 MAddr = (ItrProgramHeader.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
 
-                                memset(MemoryImage, 0, ItrProgramHeader.p_memsz);
                                 memcpy(MemoryImage, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
                                 debug("MemoryImage: %#lx", MemoryImage);
                                 debug("MAddr: %#lx", MAddr);
