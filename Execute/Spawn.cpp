@@ -184,20 +184,28 @@ namespace Execute
                             memcpy(&ItrProgramHeader, (uint8_t *)BaseImage + ELFHeader->e_phoff + ELFHeader->e_phentsize * i, sizeof(Elf64_Phdr));
                             uintptr_t MAddr;
 
-                            if (ItrProgramHeader.p_type == PT_LOAD)
+                            switch (ItrProgramHeader.p_type)
                             {
-                                debug("PT_LOAD");
+                            case PT_NULL:
+                                fixme("PT_NULL");
+                                break;
+                            case PT_LOAD:
+                            {
+                                debug("PT_LOAD - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
+                                      ItrProgramHeader.p_offset, ItrProgramHeader.p_vaddr,
+                                      ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
                                 MAddr = (ItrProgramHeader.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
-
-                                memcpy(MemoryImage, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
-                                debug("MemoryImage: %#lx", MemoryImage);
                                 debug("MAddr: %#lx", MAddr);
-                                debug("memset operation: 0 to %#lx for length %ld", MemoryImage + MAddr, ItrProgramHeader.p_memsz);
+
+                                memcpy((void *)MAddr, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
                                 debug("memcpy operation: %#lx to %#lx for length %ld", (uint8_t *)BaseImage + ItrProgramHeader.p_offset, MemoryImage + MAddr, ItrProgramHeader.p_filesz);
+                                break;
                             }
-                            else
+                            default:
                             {
-                                fixme("Not PT_LOAD (%ld)", ItrProgramHeader.p_type);
+                                warn("Unknown or unsupported program header type: %d", ItrProgramHeader.p_type);
+                                break;
+                            }
                             }
                         }
 
