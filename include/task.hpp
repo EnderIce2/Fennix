@@ -94,8 +94,11 @@ namespace Tasking
 #if defined(__amd64__)
         CPU::x64::TrapFrame Registers;
         uint64_t GSBase, FSBase;
+        uint64_t RIPHistory[128];
 #elif defined(__i386__)
         uint32_t Registers; // TODO
+        uint64_t GSBase, FSBase;
+        uint32_t EIPHistory[128];
 #elif defined(__aarch64__)
         uint64_t Registers; // TODO
 #endif

@@ -489,6 +489,23 @@ namespace Tasking
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
 
         *Frame = CurrentCPU->CurrentThread->Registers;
+
+        // FIXME: Untested
+        for (int i = 0; i < 128; i++)
+        {
+            if (CurrentCPU->CurrentThread->RIPHistory[i] == 0)
+            {
+                CurrentCPU->CurrentThread->RIPHistory[i] = Frame->rip;
+                break;
+            }
+
+            if (i == 127)
+            {
+                for (int j = 0; j < 127; j++)
+                    CurrentCPU->CurrentThread->RIPHistory[j] = CurrentCPU->CurrentThread->RIPHistory[j + 1];
+                CurrentCPU->CurrentThread->RIPHistory[127] = Frame->rip;
+            }
+        }
         GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         // Not sure if this is needed, but it's better to be safe than sorry.
