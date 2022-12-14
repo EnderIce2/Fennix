@@ -10,6 +10,8 @@ enum NativeSyscalls
 
     _RequestPages,
     _FreePages,
+
+    _KernelCTL,
 };
 
 static inline long syscall0(long syscall)

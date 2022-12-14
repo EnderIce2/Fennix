@@ -34,12 +34,20 @@ static uint64_t sys_free_pages(SyscallsFrame *Frame, uint64_t Address, uint64_t 
     return 0;
 }
 
+static uint64_t sys_kernelctl(SyscallsFrame *Frame, uint64_t Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
+{
+    fixme("KernelCTL: %lld", Command);
+    return 0;
+}
+
 static void *NativeSyscallsTable[] = {
     [_Exit] = (void *)sys_exit,
     [_Print] = (void *)sys_print,
 
     [_RequestPages] = (void *)sys_request_pages,
     [_FreePages] = (void *)sys_free_pages,
+
+    [_KernelCTL] = (void *)sys_kernelctl,
 };
 
 uint64_t HandleNativeSyscalls(SyscallsFrame *Frame)
