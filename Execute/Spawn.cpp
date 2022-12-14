@@ -172,8 +172,10 @@ namespace Execute
                             memset(MemoryImage, 0, ElfAppSize);
                             for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
                             {
-                                pva.Remap((void *)((uint64_t)ProgramHeader->p_vaddr + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
-                                debug("Mapping: %#lx -> %#lx", (uint64_t)ProgramHeader->p_vaddr + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
+                                uint64_t Address = (uint64_t)ProgramHeader->p_vaddr;
+                                Address &= 0xFFFFFFFFFFFFF000;
+                                pva.Remap((void *)((uint64_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                                debug("Mapping: %#lx -> %#lx", (uint64_t)Address + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
                             }
                         }
 
@@ -199,6 +201,210 @@ namespace Execute
 
                                 memcpy((void *)MAddr, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
                                 debug("memcpy operation: %#lx to %#lx for length %ld", (uint8_t *)BaseImage + ItrProgramHeader.p_offset, MemoryImage + MAddr, ItrProgramHeader.p_filesz);
+                                break;
+                            }
+                            case PT_DYNAMIC:
+                            {
+                                debug("PT_DYNAMIC - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
+                                      ItrProgramHeader.p_offset, ItrProgramHeader.p_vaddr,
+                                      ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
+
+                                Elf64_Dyn *Dynamic = (Elf64_Dyn *)((uint8_t *)BaseImage + ItrProgramHeader.p_offset);
+                                for (uint64_t i = 0; i < ItrProgramHeader.p_filesz / sizeof(Elf64_Dyn); i++)
+                                {
+                                    switch (Dynamic[i].d_tag)
+                                    {
+                                    case DT_NULL:
+                                        debug("DT_NULL");
+                                        break;
+                                    case DT_NEEDED:
+                                    {
+                                        fixme("DT_NEEDED - Name: %s", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_PLTRELSZ:
+                                    {
+                                        fixme("DT_PLTRELSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                    }
+                                    case DT_PLTGOT:
+                                    {
+                                        fixme("DT_PLTGOT - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_HASH:
+                                    {
+                                        fixme("DT_HASH - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_STRTAB:
+                                    {
+                                        fixme("DT_STRTAB - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_SYMTAB:
+                                    {
+                                        fixme("DT_SYMTAB - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_RELA:
+                                    {
+                                        fixme("DT_RELA - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_RELASZ:
+                                    {
+                                        fixme("DT_RELASZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_RELAENT:
+                                    {
+                                        fixme("DT_RELAENT - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_STRSZ:
+                                    {
+                                        fixme("DT_STRSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_SYMENT:
+                                    {
+                                        fixme("DT_SYMENT - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_INIT:
+                                    {
+                                        fixme("DT_INIT - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_FINI:
+                                    {
+                                        fixme("DT_FINI - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_SONAME:
+                                    {
+                                        fixme("DT_SONAME - Name: %s", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_RPATH:
+                                    {
+                                        fixme("DT_RPATH - Name: %s", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_SYMBOLIC:
+                                    {
+                                        fixme("DT_SYMBOLIC - Name: %s", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_REL:
+                                    {
+                                        fixme("DT_REL - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_RELSZ:
+                                    {
+                                        fixme("DT_RELSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_RELENT:
+                                    {
+                                        fixme("DT_RELENT - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_PLTREL:
+                                    {
+                                        fixme("DT_PLTREL - Type: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_DEBUG:
+                                    {
+                                        fixme("DT_DEBUG - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_TEXTREL:
+                                    {
+                                        fixme("DT_TEXTREL - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_JMPREL:
+                                    {
+                                        fixme("DT_JMPREL - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_BIND_NOW:
+                                    {
+                                        fixme("DT_BIND_NOW - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_INIT_ARRAY:
+                                    {
+                                        fixme("DT_INIT_ARRAY - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_FINI_ARRAY:
+                                    {
+                                        fixme("DT_FINI_ARRAY - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_INIT_ARRAYSZ:
+                                    {
+                                        fixme("DT_INIT_ARRAYSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_FINI_ARRAYSZ:
+                                    {
+                                        fixme("DT_FINI_ARRAYSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_RUNPATH:
+                                    {
+                                        fixme("DT_RUNPATH - Name: %s", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_FLAGS:
+                                    {
+                                        fixme("DT_FLAGS - Flags: %#lx", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    case DT_PREINIT_ARRAY:
+                                    {
+                                        fixme("DT_PREINIT_ARRAY - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                                        break;
+                                    }
+                                    case DT_PREINIT_ARRAYSZ:
+                                    {
+                                        fixme("DT_PREINIT_ARRAYSZ - Size: %ld", Dynamic[i].d_un.d_val);
+                                        break;
+                                    }
+                                    /* ... */
+                                    default:
+                                        fixme("DT: %ld", Dynamic[i].d_tag);
+                                        break;
+                                    }
+
+                                    if (Dynamic[i].d_tag == DT_NULL)
+                                        break;
+                                }
+                                break;
+                            }
+                            case PT_INTERP: // Do I have to do anything here?
+                            {
+                                debug("PT_INTERP - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
+                                      ItrProgramHeader.p_offset, ItrProgramHeader.p_vaddr,
+                                      ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
+
+                                char *Interpreter = (char *)KernelAllocator.RequestPages(TO_PAGES(ItrProgramHeader.p_filesz));
+                                memcpy(Interpreter, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
+                                fixme("Interpreter: %s", Interpreter);
+                                KernelAllocator.FreePages(Interpreter, TO_PAGES(ItrProgramHeader.p_filesz));
+                                break;
+                            }
+                            /* ... */
+                            case PT_PHDR:
+                            {
+                                debug("PT_PHDR - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
+                                      ItrProgramHeader.p_offset, ItrProgramHeader.p_vaddr,
+                                      ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
                                 break;
                             }
                             default:

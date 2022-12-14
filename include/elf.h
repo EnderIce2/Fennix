@@ -133,6 +133,26 @@ typedef struct elf64_sym
     Elf64_Xword st_size;    /* Associated symbol size */
 } Elf64_Sym;
 
+struct Elf32_Dyn
+{
+    Elf32_Sword d_tag; /* Type of dynamic table entry. */
+    union
+    {
+        Elf32_Word d_val; /* Integer value of entry. */
+        Elf32_Addr d_ptr; /* Pointer value of entry. */
+    } d_un;
+};
+
+struct Elf64_Dyn
+{
+    Elf64_Sxword d_tag; /* Type of dynamic table entry. */
+    union
+    {
+        Elf64_Xword d_val; /* Integer value of entry. */
+        Elf64_Addr d_ptr;  /* Pointer value of entry. */
+    } d_un;
+};
+
 enum Elf_Ident
 {
     EI_MAG0 = 0,       // 0x7F
@@ -248,50 +268,78 @@ enum SegmentTypes
     PT_HIPROC = 0x7fffffff
 };
 
-#define DT_NULL 0              /* Marks end of dynamic section */
-#define DT_NEEDED 1            /* Name of needed library */
-#define DT_PLTRELSZ 2          /* Size in bytes of PLT relocs */
-#define DT_PLTGOT 3            /* Processor defined value */
-#define DT_HASH 4              /* Address of symbol hash table */
-#define DT_STRTAB 5            /* Address of string table */
-#define DT_SYMTAB 6            /* Address of symbol table */
-#define DT_RELA 7              /* Address of Rela relocs */
-#define DT_RELASZ 8            /* Total size of Rela relocs */
-#define DT_RELAENT 9           /* Size of one Rela reloc */
-#define DT_STRSZ 10            /* Size of string table */
-#define DT_SYMENT 11           /* Size of one symbol table entry */
-#define DT_INIT 12             /* Address of init function */
-#define DT_FINI 13             /* Address of termination function */
-#define DT_SONAME 14           /* Name of shared object */
-#define DT_RPATH 15            /* Library search path (deprecated) */
-#define DT_SYMBOLIC 16         /* Start symbol search here */
-#define DT_REL 17              /* Address of Rel relocs */
-#define DT_RELSZ 18            /* Total size of Rel relocs */
-#define DT_RELENT 19           /* Size of one Rel reloc */
-#define DT_PLTREL 20           /* Type of reloc in PLT */
-#define DT_DEBUG 21            /* For debugging; unspecified */
-#define DT_TEXTREL 22          /* Reloc might modify .text */
-#define DT_JMPREL 23           /* Address of PLT relocs */
-#define DT_BIND_NOW 24         /* Process relocations of object */
-#define DT_INIT_ARRAY 25       /* Array with addresses of init fct */
-#define DT_FINI_ARRAY 26       /* Array with addresses of fini fct */
-#define DT_INIT_ARRAYSZ 27     /* Size in bytes of DT_INIT_ARRAY */
-#define DT_FINI_ARRAYSZ 28     /* Size in bytes of DT_FINI_ARRAY */
-#define DT_RUNPATH 29          /* Library search path */
-#define DT_FLAGS 30            /* Flags for the object being loaded */
-#define DT_ENCODING 32         /* Start of encoded range */
-#define DT_PREINIT_ARRAY 32    /* Array with addresses of preinit fct*/
-#define DT_PREINIT_ARRAYSZ 33  /* size in bytes of DT_PREINIT_ARRAY */
-#define DT_SYMTAB_SHNDX 34     /* Address of SYMTAB_SHNDX section */
-#define DT_RELRSZ 35           /* Total size of RELR relative relocations */
-#define DT_RELR 36             /* Address of RELR relative relocations */
-#define DT_RELRENT 37          /* Size of one RELR relative relocaction */
-#define DT_NUM 38              /* Number used */
-#define DT_LOOS 0x6000000d     /* Start of OS-specific */
-#define DT_HIOS 0x6ffff000     /* End of OS-specific */
-#define DT_LOPROC 0x70000000   /* Start of processor-specific */
-#define DT_HIPROC 0x7fffffff   /* End of processor-specific */
-#define DT_PROCNUM DT_MIPS_NUM /* Most used by any processor */
+/* https://docs.oracle.com/cd/E19683-01/817-3677/chapter6-42444/index.html */
+enum DynamicArrayTags
+{
+    DT_NULL = 0,
+    DT_NEEDED = 1,
+    DT_PLTRELSZ = 2,
+    DT_PLTGOT = 3,
+    DT_HASH = 4,
+    DT_STRTAB = 5,
+    DT_SYMTAB = 6,
+    DT_RELA = 7,
+    DT_RELASZ = 8,
+    DT_RELAENT = 9,
+    DT_STRSZ = 10,
+    DT_SYMENT = 11,
+    DT_INIT = 12,
+    DT_FINI = 13,
+    DT_SONAME = 14,
+    DT_RPATH = 15,
+    DT_SYMBOLIC = 16,
+    DT_REL = 17,
+    DT_RELSZ = 18,
+    DT_RELENT = 19,
+    DT_PLTREL = 20,
+    DT_DEBUG = 21,
+    DT_TEXTREL = 22,
+    DT_JMPREL = 23,
+    DT_BIND_NOW = 24,
+    DT_INIT_ARRAY = 25,
+    DT_FINI_ARRAY = 26,
+    DT_INIT_ARRAYSZ = 27,
+    DT_FINI_ARRAYSZ = 28,
+    DT_RUNPATH = 29,
+    DT_FLAGS = 30,
+    DT_ENCODING = 32,
+    DT_PREINIT_ARRAY = 32,
+    DT_PREINIT_ARRAYSZ = 33,
+    DT_LOOS = 0x6000000d,
+    DT_SUNW_RTLDINF = 0x6000000e,
+    DT_HIOS = 0x6ffff000,
+    DT_VALRNGLO = 0x6ffffd00,
+    DT_CHECKSUM = 0x6ffffdf8,
+    DT_PLTPADSZ = 0x6ffffdf9,
+    DT_MOVEENT = 0x6ffffdfa,
+    DT_MOVESZ = 0x6ffffdfb,
+    DT_FEATURE_1 = 0x6ffffdfc,
+    DT_POSFLAG_1 = 0x6ffffdfd,
+    DT_SYMINSZ = 0x6ffffdfe,
+    DT_SYMINENT = 0x6ffffdff,
+    DT_VALRNGHI = 0x6ffffdff,
+    DT_ADDRRNGLO = 0x6ffffe00,
+    DT_CONFIG = 0x6ffffefa,
+    DT_DEPAUDIT = 0x6ffffefb,
+    DT_AUDIT = 0x6ffffefc,
+    DT_PLTPAD = 0x6ffffefd,
+    DT_MOVETAB = 0x6ffffefe,
+    DT_SYMINFO = 0x6ffffeff,
+    DT_ADDRRNGHI = 0x6ffffeff,
+    DT_RELACOUNT = 0x6ffffff9,
+    DT_RELCOUNT = 0x6ffffffa,
+    DT_FLAGS_1 = 0x6ffffffb,
+    DT_VERDEF = 0x6ffffffc,
+    DT_VERDEFNUM = 0x6ffffffd,
+    DT_VERNEED = 0x6ffffffe,
+    DT_VERNEEDNUM = 0x6fffffff,
+    DT_LOPROC = 0x70000000,
+    DT_SPARC_REGISTER = 0x70000001,
+    DT_AUXILIARY = 0x7ffffffd,
+    DT_USED = 0x7ffffffe,
+    DT_FILTER = 0x7fffffff,
+    DT_HIPROC = 0x7fffffff
+};
 
 // used for Elf64_Sym st_info
 #define ELF32_ST_BIND(info) ((info) >> 4)
