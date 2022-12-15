@@ -777,147 +777,124 @@ namespace Tasking
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
 
-            if (Compatibility == TaskCompatibility::Linux) // Not tested and probably not working
+            uint64_t ArgvSize = 0;
+            if (argv)
+                while (argv[ArgvSize] != nullptr)
+                    ArgvSize++;
+
+            uint64_t EnvpSize = 0;
+            if (envp)
+                while (envp[EnvpSize] != nullptr)
+                    EnvpSize++;
+
+            debug("ArgvSize: %d", ArgvSize);
+            debug("EnvpSize: %d", EnvpSize);
+
+            /* https://articles.manugarg.com/aboutelfauxiliaryvectors.html */
+            /* https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9 */
+            // rsp is the top of the stack
+            char *Stack = (char *)Thread->Stack->GetStackPhysicalTop();
+            // Temporary stack pointer for strings
+            char *StackStrings = (char *)Stack;
+            char *StackStringsVirtual = (char *)Thread->Stack->GetStackTop();
+
+            // Store string pointers for later
+            uint64_t ArgvStrings[ArgvSize];
+            uint64_t EnvpStrings[EnvpSize];
+
+            for (uint64_t i = 0; i < ArgvSize; i++)
             {
-                // https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9
-                // What is a "eightbyte"? unsigned long? 1 eightbyte = 8 bytes? 2 eightbyte each = 16 bytes?
-                uint64_t TmpStack = Thread->Registers.rsp;
-                uint64_t TmpStack2 = TmpStack;
-                uint64_t *TmpStackPtr = (uint64_t *)TmpStack;
-
-                // TODO: argc, argv, envp, auxv not tested and probably not working
-                // foreach (auto var in envp)
-                // {
-                //     TmpStack -= strlen(var) + 1;
-                //     strcpy((char *)TmpStack, var);
-                // }
-
-                // foreach (auto var in argv)
-                // {
-                //     TmpStack -= strlen(var) + 1;
-                //     strcpy((char *)TmpStack, var);
-                // }
-
-                /* align by 16 */
-                TmpStack = (uint64_t)((uint64_t)TmpStack - ((uint64_t)TmpStack & 0x0F));
-
-                /* TODO: more alignment here? */
-
-                /* auxv null */
-                TmpStack -= sizeof(uint64_t);
-                POKE(uint64_t, TmpStack) = (uint64_t)0;
-                /* This should be included too? */
-                TmpStack -= sizeof(uint64_t);
-                POKE(uint64_t, TmpStack) = (uint64_t)0;
-
-                /* auxv */
-                foreach (auto var in auxv)
-                {
-                    if (var.archaux.a_type == AT_ENTRY)
-                        Thread->Registers.rdi = var.archaux.a_un.a_val;
-
-                    TmpStack -= sizeof(uint64_t) * 2;
-                    POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_type;
-                    TmpStack -= sizeof(uint64_t) * 2;
-                    POKE(uint64_t, TmpStack) = (uint64_t)var.archaux.a_un.a_val;
-                }
-
-                /* empty */
-                TmpStack -= sizeof(uint64_t);
-                POKE(uint64_t, TmpStack) = 0;
-
-                /* envp pointers */
-                // for (uint64_t i = 0; i < envp.size(); i++)
-                // {
-                //     /* Not sure if this works */
-                //     TmpStack2 -= strlen(envp[i]) + 1;
-                //     TmpStackPtr[i] = TmpStack2;
-                // }
-
-                /* empty */
-                TmpStack -= sizeof(uint64_t);
-                POKE(uint64_t, TmpStack) = 0;
-
-                /* argv pointers */
-                // for (uint64_t i = 0; i < argv.size(); i++)
-                // {
-                //     /* Not sure if this works */
-                //     TmpStack2 -= strlen(argv[i]) + 1;
-                //     TmpStackPtr[i] = TmpStack2;
-                // }
-
-                /* argc */
-                TmpStack -= sizeof(uint64_t);
-                // POKE(uint64_t, TmpStack) = argv.size() - 1;
-
-                Thread->Registers.rsp -= (uint64_t)Thread->Stack->GetStackTop() - TmpStack;
+                // Subtract the length of the string and the null terminator
+                StackStrings -= strlen(argv[i]) + 1;
+                StackStringsVirtual -= strlen(argv[i]) + 1;
+                // Store the pointer to the string
+                ArgvStrings[i] = (uint64_t)StackStringsVirtual;
+                // Copy the string to the stack
+                strcpy(StackStrings, argv[i]);
             }
-            else // Native
+
+            for (uint64_t i = 0; i < EnvpSize; i++)
             {
-                uint64_t ArgvSize = 0;
-                if (argv)
-                    while (argv[ArgvSize] != nullptr)
-                        ArgvSize++;
-
-                uint64_t EnvpSize = 0;
-                if (envp)
-                    while (envp[EnvpSize] != nullptr)
-                        EnvpSize++;
-
-                debug("ArgvSize: %d", ArgvSize);
-                debug("EnvpSize: %d", EnvpSize);
-
-                Memory::Virtual ArgMap = Memory::Virtual(Parent->PageTable);
-
-                char **_argv = (char **)KernelAllocator.RequestPages(TO_PAGES(ArgvSize * sizeof(char *)));
-                char **_envp = (char **)KernelAllocator.RequestPages(TO_PAGES(EnvpSize * sizeof(char *)));
-
-                debug("Argv: %#lx", _argv);
-                debug("Envp: %#lx", _envp);
-
-                for (uint64_t i = 0; i < TO_PAGES(ArgvSize * sizeof(char *)); i++)
-                    ArgMap.Map((void *)((uint64_t)_argv + (i * PAGE_SIZE)),
-                               (void *)((uint64_t)_argv + (i * PAGE_SIZE)),
-                               Memory::PTFlag::RW | Memory::PTFlag::US);
-
-                for (uint64_t i = 0; i < TO_PAGES(EnvpSize * sizeof(char *)); i++)
-                    ArgMap.Map((void *)((uint64_t)_envp + (i * PAGE_SIZE)),
-                               (void *)((uint64_t)_envp + (i * PAGE_SIZE)),
-                               Memory::PTFlag::RW | Memory::PTFlag::US);
-
-                for (uint64_t i = 0; i < ArgvSize; i++)
-                {
-                    _argv[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(argv[i]) + 1));
-                    strcpy(_argv[i], argv[i]);
-                    for (uint64_t j = 0; j < TO_PAGES(strlen(argv[i]) + 1); j++)
-                        ArgMap.Map((void *)((uint64_t)_argv[i] + (j * PAGE_SIZE)),
-                                   (void *)((uint64_t)_argv[i] + (j * PAGE_SIZE)),
-                                   Memory::PTFlag::RW | Memory::PTFlag::US);
-                }
-
-                for (uint64_t i = 0; i < EnvpSize; i++)
-                {
-                    _envp[i] = (char *)KernelAllocator.RequestPages(TO_PAGES(strlen(envp[i]) + 1));
-                    strcpy(_envp[i], envp[i]);
-                    for (uint64_t j = 0; j < TO_PAGES(strlen(envp[i]) + 1); j++)
-                        ArgMap.Map((void *)((uint64_t)_envp[i] + (j * PAGE_SIZE)),
-                                   (void *)((uint64_t)_envp[i] + (j * PAGE_SIZE)),
-                                   Memory::PTFlag::RW | Memory::PTFlag::US);
-                }
-
-                _argv[ArgvSize] = nullptr;
-                _envp[EnvpSize] = nullptr;
-
-                Thread->Registers.rdi = (uint64_t)ArgvSize;
-                Thread->Registers.rsi = (uint64_t)_argv;
-                Thread->Registers.rdx = (uint64_t)EnvpSize;
-                Thread->Registers.rcx = (uint64_t)_envp;
-
-                for (uint64_t i = 0; i < ArgvSize; i++)
-                    debug("argv[%d]: %s", i, _argv[i]);
-                for (uint64_t i = 0; i < EnvpSize; i++)
-                    debug("envp[%d]: %s", i, _envp[i]);
+                // Subtract the length of the string and the null terminator
+                StackStrings -= strlen(envp[i]) + 1;
+                StackStringsVirtual -= strlen(envp[i]) + 1;
+                // Store the pointer to the string
+                EnvpStrings[i] = (uint64_t)StackStringsVirtual;
+                // Copy the string to the stack
+                strcpy(StackStrings, envp[i]);
             }
+
+            // Align the stack to 16 bytes
+            StackStrings -= (uint64_t)StackStrings & 0xF;
+            // Set "Stack" to the new stack pointer
+            Stack = (char *)StackStrings;
+            // If argv and envp sizes are odd then we need to align the stack
+            Stack -= (ArgvSize + EnvpSize) % 2;
+
+            // We need 8 bit pointers for the stack from here
+            uint64_t *Stack64 = (uint64_t *)Stack;
+
+            // Store the null terminator
+            Stack64--;
+            *Stack64 = AT_NULL;
+
+            // Store auxillary vector
+            foreach (AuxiliaryVector var in auxv)
+            {
+                // Subtract the size of the auxillary vector
+                Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uint64_t);
+                // Store the auxillary vector
+                POKE(Elf64_auxv_t, Stack64) = var.archaux;
+                // TODO: Store strings to the stack
+            }
+
+            // Store the null terminator
+            Stack64--;
+            *Stack64 = AT_NULL;
+
+            // Store EnvpStrings[] to the stack
+            Stack64 -= EnvpSize; // (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize)
+            for (uint64_t i = 0; i < EnvpSize; i++)
+            {
+                *(Stack64 + i) = (uint64_t)EnvpStrings[i];
+                debug("EnvpStrings[%d]: %#lx", i, EnvpStrings[i]);
+            }
+
+            // Store the null terminator
+            Stack64--;
+            *Stack64 = AT_NULL;
+
+            // Store ArgvStrings[] to the stack
+            Stack64 -= ArgvSize; // (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize)
+            for (uint64_t i = 0; i < ArgvSize; i++)
+            {
+                *(Stack64 + i) = (uint64_t)ArgvStrings[i];
+                debug("ArgvStrings[%d]: %#lx", i, ArgvStrings[i]);
+            }
+
+            // Store the argc
+            Stack64--;
+            *Stack64 = ArgvSize;
+
+            // Set "Stack" to the new stack pointer
+            Stack = (char *)Stack64;
+
+            /* We need the virtual address but because we are in the kernel we can't use the process page table.
+                So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
+            uint64_t SubtractStack = (uint64_t)Thread->Stack->GetStackPhysicalTop() - (uint64_t)Stack;
+            debug("SubtractStack: %#lx", SubtractStack);
+
+            // Set the stack pointer to the new stack
+            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop() - SubtractStack);
+
+#ifdef DEBUG
+            DumpData("Stack Data", (void *)((uint64_t)Thread->Stack->GetStackPhysicalTop() - (uint64_t)SubtractStack), SubtractStack);
+#endif
+
+            Thread->Registers.rdi = (uint64_t)ArgvSize;                                         // argc
+            Thread->Registers.rsi = (uint64_t)(Thread->Registers.rsp + 8);                      // argv
+            Thread->Registers.rcx = (uint64_t)EnvpSize;                                         // envc
+            Thread->Registers.rdx = (uint64_t)(Thread->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
 
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 

@@ -50,7 +50,8 @@ void KernelMainThread()
         "TZ=UTC",
         nullptr};
 
-    const char *argv[3] = {
+    const char *argv[4] = {
+        Config.InitPath,
         "--init",
         "--critical",
         nullptr};
