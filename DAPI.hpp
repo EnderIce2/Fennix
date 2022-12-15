@@ -94,6 +94,7 @@ enum CallbackReason
     ReceiveReason,
     ConfigurationReason,
     FetchReason,
+    StopReason,
     BindReason,
     UnbindReason,
     InterruptReason,
