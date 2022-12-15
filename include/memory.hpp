@@ -603,8 +603,8 @@ namespace Memory
     private:
         void *StackBottom = nullptr;
         void *StackTop = nullptr;
-        void *SGB = nullptr;
-        void *SGT = nullptr;
+        void *StackPhyiscalBottom = nullptr;
+        void *StackPhyiscalTop = nullptr;
         uint64_t Size = 0;
         bool UserMode = false;
         PageTable4 *Table = nullptr;
@@ -614,6 +614,10 @@ namespace Memory
         void *GetStackBottom() { return StackBottom; }
         /** @brief For RSP */
         void *GetStackTop() { return StackTop; }
+        /** @brief For general info */
+        void *GetStackPhysicalBottom() { return StackPhyiscalBottom; }
+        /** @brief For general info */
+        void *GetStackPhysicalTop() { return StackPhyiscalTop; }
         /** @brief Called by exception handler */
         bool Expand(uint64_t FaultAddress);
         /**

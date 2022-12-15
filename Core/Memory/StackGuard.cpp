@@ -23,14 +23,18 @@ namespace Memory
             }
             this->StackBottom = (void *)USER_STACK_BASE;
             this->StackTop = (void *)(USER_STACK_BASE + USER_STACK_SIZE);
+            this->StackPhyiscalBottom = AllocatedStack;
+            this->StackPhyiscalTop = (void *)((uint64_t)AllocatedStack + USER_STACK_SIZE);
             this->Size = USER_STACK_SIZE;
         }
         else
         {
             this->StackBottom = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+            this->StackPhyiscalBottom = this->StackBottom;
             debug("StackBottom: %p", this->StackBottom);
             memset(this->StackBottom, 0, STACK_SIZE);
             this->StackTop = (void *)((uint64_t)this->StackBottom + STACK_SIZE);
+            this->StackPhyiscalTop = this->StackTop;
             this->Size = STACK_SIZE;
         }
         trace("Allocated stack at %p", this->StackBottom);
