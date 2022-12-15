@@ -360,7 +360,7 @@ ParseSuccess:
         {
             value = cag_option_get_value(&context);
             strcmp(value, "true") ? config.UnlockDeadLock = false : config.UnlockDeadLock = true;
-            KPrint("\eAAFFAAUnlocking the deadlock after 10 retires");
+            KPrint("\eAAFFAAUnlocking the deadlock after 10 retries");
             break;
         }
         case 'h':
