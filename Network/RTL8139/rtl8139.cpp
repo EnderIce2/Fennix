@@ -29,6 +29,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 
 KernelAPI *KAPI;
 
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 struct BARData
@@ -129,16 +131,16 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case ConfigurationReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel received configuration data." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
         if (PCIBaseAddress->VendorID == 0x10EC && PCIBaseAddress->DeviceID == 0x8139)
         {
-            KAPI->Util.DebugPrint(((char *)"Found RTL-8139." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("Found RTL-8139.");
 
             PCIBaseAddress->Command |= PCI_COMMAND_MASTER | PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
             uint32_t PCIBAR0 = ((PCIHeader0 *)PCIBaseAddress)->BAR0;
@@ -190,9 +192,15 @@ int CallbackHandler(KernelCallback *Data)
             TXCurrent = 0;
         break;
     }
+    case StopReason:
+    {
+        // TODO: Stop the driver.
+        print("Driver stopped.");
+        break;
+    }
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }

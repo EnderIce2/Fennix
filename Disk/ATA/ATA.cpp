@@ -25,6 +25,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 
 KernelAPI *KAPI;
 
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 int DriverEntry(void *Data)
@@ -43,12 +45,12 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case ConfigurationReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel received configuration data." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel received configuration data.");
         break;
     }
     case FetchReason:
@@ -59,11 +61,11 @@ int CallbackHandler(KernelCallback *Data)
     {
         if (Data->InterruptInfo.Vector == 0xE)
         {
-            KAPI->Util.DebugPrint(((char *)"IRQ14" + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("IRQ14");
         }
         else if (Data->InterruptInfo.Vector == 0xF)
         {
-            KAPI->Util.DebugPrint(((char *)"IRQ15" + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("IRQ15");
         }
         break;
     }
@@ -72,9 +74,15 @@ int CallbackHandler(KernelCallback *Data)
     {
         break;
     }
+    case StopReason:
+    {
+        // TODO: Stop the driver.
+        print("Driver stopped.");
+        break;
+    }
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }

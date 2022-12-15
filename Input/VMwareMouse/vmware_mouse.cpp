@@ -24,6 +24,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 
 KernelAPI *KAPI;
 
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 /* https://wiki.osdev.org/VMware_tools */
@@ -189,7 +191,7 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case ConfigurationReason:
@@ -207,7 +209,33 @@ int CallbackHandler(KernelCallback *Data)
         Write(DATA, 0xF4);
         Read();
         Absolute();
-        KAPI->Util.DebugPrint(((char *)"VMware mouse configured." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("VMware mouse configured.");
+        break;
+    }
+    case FetchReason:
+    {
+        Data->InputCallback.Mouse.X = MouseX;
+        Data->InputCallback.Mouse.Y = MouseY;
+        Data->InputCallback.Mouse.Z = MouseZ;
+        Data->InputCallback.Mouse.Buttons.Left = MouseButton & 0x20;
+        Data->InputCallback.Mouse.Buttons.Right = MouseButton & 0x10;
+        Data->InputCallback.Mouse.Buttons.Middle = MouseButton & 0x08;
+        break;
+    }
+    case StopReason:
+    {
+        Relative();
+        // TODO: UNTESTED!!!
+        outb(COMMAND, 0xA8);
+        Write(COMMAND, READ_CONFIG);
+        uint8_t Status = Read();
+        Status &= ~0b10;
+        Write(COMMAND, WRITE_CONFIG);
+        Write(DATA, Status);
+        Write(COMMAND, 0xD4);
+        Write(DATA, 0xF5);
+        Read();
+        print("Driver stopped.");
         break;
     }
     case InterruptReason:
@@ -221,7 +249,7 @@ int CallbackHandler(KernelCallback *Data)
 
         if (cmd.ax == 0xFFFF0000)
         {
-            KAPI->Util.DebugPrint(((char *)"VMware mouse is not connected?" + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("VMware mouse is not connected?");
             Relative();
             Absolute();
             return ERROR;
@@ -235,25 +263,16 @@ int CallbackHandler(KernelCallback *Data)
 
         int flags = (cmd.ax & 0xFFFF0000) >> 16; /* Not important */
         (void)flags;
-        MouseButton = (cmd.ax & 0xFFFF);         /* 0x10 = Right, 0x20 = Left, 0x08 = Middle */
-        MouseX = cmd.bx;                         /* Both X and Y are scaled from 0 to 0xFFFF */
-        MouseY = cmd.cx;                         /* You should map these somewhere to the actual resolution. */
-        MouseZ = (int8_t)cmd.dx;                 /* Z is a single signed byte indicating scroll direction. */
+        MouseButton = (cmd.ax & 0xFFFF); /* 0x10 = Right, 0x20 = Left, 0x08 = Middle */
+        MouseX = cmd.bx;                 /* Both X and Y are scaled from 0 to 0xFFFF */
+        MouseY = cmd.cx;                 /* You should map these somewhere to the actual resolution. */
+        MouseZ = (int8_t)cmd.dx;         /* Z is a single signed byte indicating scroll direction. */
         break;
     }
-    case FetchReason:
-    {
-        Data->InputCallback.Mouse.X = MouseX;
-        Data->InputCallback.Mouse.Y = MouseY;
-        Data->InputCallback.Mouse.Z = MouseZ;
-        Data->InputCallback.Mouse.Buttons.Left = MouseButton & 0x20;
-        Data->InputCallback.Mouse.Buttons.Right = MouseButton & 0x10;
-        Data->InputCallback.Mouse.Buttons.Middle = MouseButton & 0x08;
-        break;
-    }
+
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }

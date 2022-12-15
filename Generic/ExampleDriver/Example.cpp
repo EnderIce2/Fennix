@@ -27,6 +27,9 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 // Global variable that holds the kernel API
 KernelAPI *KAPI;
 
+// Macro that prints a message to UART
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 // Driver entry point. This is called at initialization. "Data" argument points to the kernel API structure.
@@ -44,7 +47,7 @@ int DriverEntry(void *Data)
         return KERNEL_API_VERSION_NOT_SUPPORTED;
 
     // We print "Hello World!" to UART.
-    KAPI->Util.DebugPrint(((char *)"Hello World!" + KAPI->Info.Offset), KAPI->Info.DriverUID);
+    print("Hello World!");
     return OK;
 }
 
@@ -55,17 +58,22 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case InterruptReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Interrupt received." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Interrupt received.");
+        break;
+    }
+    case StopReason:
+    {
+        print("Driver stopped.");
         break;
     }
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }

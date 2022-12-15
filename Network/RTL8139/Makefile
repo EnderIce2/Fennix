@@ -1,7 +1,7 @@
 # Config file
 include ../../../Makefile.conf
 
-FILENAME = rtl8139.fex
+FILENAME = Realtek-8139.fex
 
 CC = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
@@ -29,12 +29,12 @@ HEADERS = $(sort $(dir $(wildcard ../../include/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 INCLUDE_DIR = ../../include
 
-LDFLAGS := 									\
-	-fPIC -fno-pie 							\
-	-Wl,-static,--no-dynamic-linker,-ztext 	\
-	-nostdlib -nodefaultlibs -nolibc  		\
-	-zmax-page-size=0x1000					\
-	-Wl,-Map file.map -shared
+LDFLAGS := 															\
+	-fPIC -fPIE -pie -Wl,-eDriverEntry								\
+	-Wl,-static,--no-dynamic-linker,-ztext,--no-warn-rwx-segment 	\
+	-nostdlib -nodefaultlibs -nolibc  								\
+	-zmax-page-size=0x1000											\
+ 	-Wl,-Map file.map -static -Tlinker.ld
 
 WARNCFLAG = -Wall -Wextra
 
@@ -45,23 +45,20 @@ CFLAGS :=										\
 
 ifeq ($(OSARCH), amd64)
 
-CFLAGS += -fPIC -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
-		  -mno-red-zone -mno-sse -mno-sse2				\
-		  -march=x86-64 -pipe -ffunction-sections		\
-		  -mcmodel=kernel -msoft-float -fno-builtin
-LDFLAGS += -Tarch/amd64/linker.ld
+CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
+		  -mno-red-zone -mno-sse -mno-sse2					\
+		  -march=x86-64 -pipe -ffunction-sections			\
+		  -msoft-float -fno-builtin
 
 else ifeq ($(OSARCH), i686)
 
-CFLAGS += -fPIC -fno-pie -mno-80387 -mno-mmx -mno-3dnow			\
+CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow		\
 		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections	\
 		  -march=i686 -pipe -msoft-float -fno-builtin
-LDFLAGS += -Tarch/i686/linker.ld
 
 else ifeq ($(OSARCH), aarch64)
 
 CFLAGS += -pipe -fno-builtin -fPIC
-LDFLAGS += -Tarch/aarch64/linker.ld
 
 endif
 

@@ -29,6 +29,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 
 KernelAPI *KAPI;
 
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 #define ATA_DEV_BUSY 0x80
@@ -190,9 +192,11 @@ typedef enum
     _URC_CONTINUE_UNWIND = 8
 } _Unwind_Reason_Code;
 
+struct _Unwind_Context;
 typedef unsigned _Unwind_Exception_Class __attribute__((__mode__(__DI__)));
 typedef unsigned _Unwind_Word __attribute__((__mode__(__unwind_word__)));
 typedef void (*_Unwind_Exception_Cleanup_Fn)(_Unwind_Reason_Code, struct _Unwind_Exception *);
+typedef int _Unwind_Action;
 
 struct _Unwind_Exception
 {
@@ -206,7 +210,13 @@ struct _Unwind_Exception
 #endif
 } __attribute__((__aligned__));
 
-extern "C" void _Unwind_Resume(_Unwind_Exception *) { KAPI->Util.DebugPrint(((char *)"_Unwind_Resume" + KAPI->Info.Offset), KAPI->Info.DriverUID); }
+extern "C" _Unwind_Reason_Code __gxx_personality_v0(int, _Unwind_Action, _Unwind_Exception_Class, _Unwind_Exception *, _Unwind_Context *)
+{
+    print("__gxx_personality_v0");
+    return _URC_NO_REASON;
+}
+
+extern "C" void _Unwind_Resume(_Unwind_Exception *) { print("_Unwind_Resume"); }
 
 void *operator new(size_t Size) { return KAPI->Memory.RequestPage(Size / KAPI->Memory.PageSize + 1); }
 void operator delete(void *Ptr) { KAPI->Memory.FreePage(Ptr, 1); } // Potential memory leak
@@ -284,7 +294,7 @@ public:
         if (this->PortNumber == PortType::SATAPI && Write)
         {
             // err("SATAPI port does not support write.");
-            KAPI->Util.DebugPrint(((char *)"SATAPI port does not support write." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("SATAPI port does not support write.");
             return false;
         }
 
@@ -336,7 +346,7 @@ public:
         if (Spin == 1000000)
         {
             // err("Port not responding.");
-            KAPI->Util.DebugPrint(((char *)"Port not responding." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("Port not responding.");
             return false;
         }
 
@@ -350,7 +360,7 @@ public:
             if (Spin > 100000000)
             {
                 // err("Port %d not responding. (%d)", this->PortNumber, TryCount);
-                KAPI->Util.DebugPrint(((char *)"Port not responding." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                print("Port not responding.");
                 Spin = 0;
                 TryCount++;
                 if (TryCount > 10)
@@ -362,7 +372,7 @@ public:
             if (HBAPortPtr->InterruptStatus & HBA_PxIS_TFES)
             {
                 // err("Error reading/writing (%d).", Write);
-                KAPI->Util.DebugPrint(((char *)"Error reading/writing." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                print("Error reading/writing.");
                 return false;
             }
         }
@@ -425,12 +435,12 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case ConfigurationReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel received configuration data." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
         ABAR = reinterpret_cast<HBAMemory *>(((PCIHeader0 *)PCIBaseAddress)->BAR5);
         KAPI->Memory.Map((void *)ABAR, (void *)ABAR, (1 << 1));
@@ -444,14 +454,14 @@ int CallbackHandler(KernelCallback *Data)
                 if (portType == PortType::SATA || portType == PortType::SATAPI)
                 {
                     // trace("%s drive found at port %d", PortTypeName[portType], i);
-                    KAPI->Util.DebugPrint(((char *)"SATA drive found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                    print("SATA drive found.");
                     Ports[PortCount] = new Port(portType, &ABAR->Ports[i], PortCount);
                     PortCount++;
                 }
                 else
                 {
                     if (portType != PortType::None)
-                        KAPI->Util.DebugPrint(((char *)"Unsupported port type found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                        print("Unsupported port type found.");
                     // warn("Unsupported drive type %s found at port %d", PortTypeName[portType], i);
                 }
             }
@@ -467,6 +477,12 @@ int CallbackHandler(KernelCallback *Data)
         Data->DiskCallback.Fetch.BytesPerSector = 512;
         break;
     }
+    case StopReason:
+    {
+        // TODO: Stop the driver.
+        print("Driver stopped.");
+        break;
+    }
     case SendReason:
     case ReceiveReason:
     {
@@ -478,7 +494,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }

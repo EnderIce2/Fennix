@@ -29,6 +29,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 
 KernelAPI *KAPI;
 
+#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+
 /* --------------------------------------------------------------------------------------------------------- */
 
 enum REG
@@ -242,7 +244,7 @@ MediaAccessControl GetMAC()
                 mac.Address[i] = BaseMac8[i];
         else
         {
-            KAPI->Util.DebugPrint(((char *)"No MAC address found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("No MAC address found.");
             return MediaAccessControl();
         }
     }
@@ -251,6 +253,7 @@ MediaAccessControl GetMAC()
 
 void InitializeRX()
 {
+    print("Initializing RX...");
     uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage((((sizeof(RXDescriptor) * E1000_NUM_RX_DESC + 16)) / KAPI->Memory.PageSize) + 1);
     RXDescriptor *Descriptor = (RXDescriptor *)Ptr;
 
@@ -277,6 +280,7 @@ void InitializeRX()
 
 void InitializeTX()
 {
+    print("Initializing TX...");
     uint8_t *Ptr = (uint8_t *)KAPI->Memory.RequestPage(((sizeof(TXDescriptor) * E1000_NUM_RX_DESC + 16) / KAPI->Memory.PageSize) + 1);
     TXDescriptor *Descriptor = (TXDescriptor *)Ptr;
 
@@ -318,16 +322,16 @@ int CallbackHandler(KernelCallback *Data)
     {
     case AcknowledgeReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel acknowledged the driver." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel acknowledged the driver.");
         break;
     }
     case ConfigurationReason:
     {
-        KAPI->Util.DebugPrint(((char *)"Kernel received configuration data." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Kernel received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
         if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x100E)
         {
-            KAPI->Util.DebugPrint(((char *)"Found Intel 82540EM Gigabit Ethernet Controller." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("Found Intel 82540EM Gigabit Ethernet Controller.");
 
             PCIBaseAddress->Command |= PCI_COMMAND_MASTER | PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
             uint32_t PCIBAR0 = ((PCIHeader0 *)PCIBaseAddress)->BAR0;
@@ -349,7 +353,7 @@ int CallbackHandler(KernelCallback *Data)
             if (!GetMAC().Valid())
                 return NOT_AVAILABLE;
             else
-                KAPI->Util.DebugPrint(((char *)"MAC address found." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+                print("MAC address found.");
             MAC = GetMAC();
 
             // Start link
@@ -368,12 +372,12 @@ int CallbackHandler(KernelCallback *Data)
         }
         else if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x153A)
         {
-            KAPI->Util.DebugPrint(((char *)"Found Intel I217 Gigabit Ethernet Controller." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("Found Intel I217 Gigabit Ethernet Controller.");
             return NOT_IMPLEMENTED;
         }
         else if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x10EA)
         {
-            KAPI->Util.DebugPrint(((char *)"Found Intel 82577LM Gigabit Ethernet Controller." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+            print("Found Intel 82577LM Gigabit Ethernet Controller.");
             return NOT_IMPLEMENTED;
         }
         else
@@ -411,9 +415,17 @@ int CallbackHandler(KernelCallback *Data)
             ;
         break;
     }
+    case StopReason:
+    {
+        // TODO: UNTESTED!!!
+        uint64_t cmdret = InCMD(REG::CTRL);
+        OutCMD(REG::CTRL, cmdret & ~ECTRL::SLU);
+        print("Driver stopped.");
+        break;
+    }
     default:
     {
-        KAPI->Util.DebugPrint(((char *)"Unknown reason." + KAPI->Info.Offset), KAPI->Info.DriverUID);
+        print("Unknown reason.");
         break;
     }
     }
