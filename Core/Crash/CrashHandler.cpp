@@ -18,6 +18,7 @@
 #endif
 
 #include "../../kernel.h"
+#include "../../DAPI.hpp"
 
 NewLock(UserInputLock);
 
@@ -609,9 +610,7 @@ namespace CrashHandler
         {
             SBIdx = 255;
             Display->ClearBuffer(SBIdx);
-            debug("e0-1");
             Display->SetBufferCursor(SBIdx, 0, 0);
-            debug("e0-2");
 
             CPU::x64::CR0 cr0 = CPU::x64::readcr0();
             CPU::x64::CR2 cr2 = CPU::x64::readcr2();
@@ -664,12 +663,29 @@ namespace CrashHandler
 
             EHPrint("\nException occurred while handling exception! HALTED!");
             Display->SetBuffer(SBIdx);
+            Interrupts::RemoveAll();
             CPU::Stop();
         }
 
         ExceptionOccurred = true;
-        /* TODO: Remove all useless interrupts, and only leave the ones that are needed (dsdt, acpi, etc.) */
-        Interrupts::RemoveAll();
+
+        if (DriverManager)
+            foreach (Driver::DriverFile *drv in DriverManager->GetDrivers())
+            {
+                if (!drv)
+                    continue;
+                KernelCallback callback;
+                memset(&callback, 0, sizeof(KernelCallback));
+                callback.Reason = StopReason;
+                DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+
+                for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+                {
+                    if (!drv->InterruptHook[i])
+                        continue;
+                    delete drv->InterruptHook[i];
+                }
+            }
 
         debug("Reading control registers...");
         crashdata.Frame = Frame;

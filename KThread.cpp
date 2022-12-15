@@ -77,6 +77,23 @@ Exit:
 
 void KernelShutdownThread(bool Reboot)
 {
+    if (DriverManager)
+        foreach (Driver::DriverFile *drv in DriverManager->GetDrivers())
+        {
+            if (!drv)
+                continue;
+            KernelCallback callback;
+            memset(&callback, 0, sizeof(KernelCallback));
+            callback.Reason = StopReason;
+            DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+
+            for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+            {
+                if (!drv->InterruptHook[i])
+                    continue;
+                delete drv->InterruptHook[i];
+            }
+        }
     trace("Shutting Down/Rebooting...");
     if (Reboot)
         PowerManager->Reboot();
