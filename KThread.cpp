@@ -33,9 +33,14 @@ void KernelMainThread()
     DriverManager = new Driver::Driver;
 
     KPrint("Fetching Disks...");
-    foreach (auto Driver in DriverManager->GetDrivers())
-        if (((FexExtended *)((uint64_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
-            DiskManager->FetchDisks(Driver->DriverUID);
+    if (DriverManager->GetDrivers().size() > 0)
+    {
+        foreach (auto Driver in DriverManager->GetDrivers())
+            if (((FexExtended *)((uint64_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
+                DiskManager->FetchDisks(Driver->DriverUID);
+    }
+    else
+        KPrint("\eE85230No disk drivers found! Cannot fetch disks!");
 
     KPrint("Setting up userspace...");
 
@@ -78,13 +83,13 @@ Exit:
 void KernelShutdownThread(bool Reboot)
 {
     if (DriverManager)
+    {
+        KernelCallback callback;
         foreach (Driver::DriverFile *drv in DriverManager->GetDrivers())
         {
-            if (!drv)
-                continue;
-            KernelCallback callback;
             memset(&callback, 0, sizeof(KernelCallback));
             callback.Reason = StopReason;
+            debug("Stopping driver %ld...", drv->DriverUID);
             DriverManager->IOCB(drv->DriverUID, (void *)&callback);
 
             for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
@@ -94,6 +99,7 @@ void KernelShutdownThread(bool Reboot)
                 delete drv->InterruptHook[i];
             }
         }
+    }
     trace("Shutting Down/Rebooting...");
     if (Reboot)
         PowerManager->Reboot();
