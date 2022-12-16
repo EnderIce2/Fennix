@@ -48,7 +48,7 @@ struct Fex
     char Magic[4];
     enum FexFormatType Type : 4;
     enum FexOSType OS : 4;
-    int (*Pointer)(void *);
+    int (*EntryPoint)(void *);
 } __attribute__((packed));
 
 struct KernelCallback;
@@ -90,8 +90,8 @@ struct FexExtended
 
             struct
             {
-                bool AttachToMouse;
-                bool AttachToKeyboard;
+                char AttachToMouse;
+                char AttachToKeyboard;
             } Input;
         } Bind;
     } Driver;
@@ -102,15 +102,15 @@ struct FexExtended
  *
  * @param FormatType FexFormatType
  * @param OperatingSystem FexOSType
- * @param Address Pointer to the start function
+ * @param Address EntryPoint to the start function
  *
  * @note Must include ".header : { *(.header .header.*) }" in linker script
  */
-#define HEAD(FormatType, OperatingSystem, Address)        \
+#define HEAD(FormatType, OperatingSystem, Address)               \
     __attribute__((section(".header"))) struct Fex FexHeader = { \
-        .Magic = {'F', 'E', 'X', '\0'},                   \
-        .Type = FormatType,                               \
-        .OS = OperatingSystem,                            \
-        .Pointer = Address}
+        .Magic = {'F', 'E', 'X', '\0'},                          \
+        .Type = FormatType,                                      \
+        .OS = OperatingSystem,                                   \
+        .EntryPoint = Address}
 
 #endif // !__FENNIX_FILE_FEX_H__
