@@ -48,7 +48,7 @@ namespace Execute
                         Vector<AuxiliaryVector> auxv; // TODO!
 
                         TCB *Thread = TaskManager->CreateThread(Process,
-                                                                (IP)FexHdr->Pointer,
+                                                                (IP)FexHdr->EntryPoint,
                                                                 argv, envp, auxv,
                                                                 (IPOffset)BaseImage,
                                                                 TaskArchitecture::x64,

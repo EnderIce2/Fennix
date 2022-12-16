@@ -17,6 +17,7 @@ namespace Driver
         INVALID_FEX_HEADER,
         INVALID_DRIVER_DATA,
         NOT_DRIVER,
+        NOT_IMPLEMENTED,
         DRIVER_RETURNED_ERROR,
         UNKNOWN_DRIVER_TYPE,
         PCI_DEVICE_NOT_FOUND
@@ -55,6 +56,10 @@ namespace Driver
         unsigned long DriverUIDs = 0;
 
         DriverCode CallDriverEntryPoint(void *fex);
+        DriverCode DriverLoadBindPCI(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindInterrupt(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindInput(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindProcess(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
 
     public:
         Vector<DriverFile *> GetDrivers() { return Drivers; }
