@@ -48,6 +48,28 @@ namespace Driver
         }
     }
 
+    bool Driver::UnloadDriver(unsigned long DUID)
+    {
+        foreach (DriverFile *drv in DriverManager->GetDrivers())
+            if (drv->DriverUID == DUID)
+            {
+                KernelCallback callback;
+                memset(&callback, 0, sizeof(KernelCallback));
+                callback.Reason = StopReason;
+                debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
+                DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+
+                for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+                {
+                    if (!drv->InterruptHook[i])
+                        continue;
+                    delete drv->InterruptHook[i];
+                }
+                return true;
+            }
+        return false;
+    }
+
     int Driver::IOCB(unsigned long DUID, void *KCB)
     {
         foreach (auto var in Drivers)
