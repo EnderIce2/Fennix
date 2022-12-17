@@ -121,7 +121,7 @@ namespace Driver
                         KCallback->Reason = CallbackReason::InterruptReason;
 
                         DriverFile *DrvFile = new DriverFile;
-                        DrvFile->DriverUID = KAPI.Info.DriverUID;
+                        DrvFile->DriverUID = this->DriverUIDs - 1;
                         DrvFile->Address = (void *)fex;
                         DrvFile->InterruptHook[0] = InterruptHook;
                         Drivers.push_back(DrvFile);
@@ -150,7 +150,7 @@ namespace Driver
                         }
 
                         DriverFile *DrvFile = new DriverFile;
-                        DrvFile->DriverUID = KAPI.Info.DriverUID;
+                        DrvFile->DriverUID = this->DriverUIDs - 1;
                         DrvFile->Address = (void *)fex;
                         DrvFile->InterruptHook[0] = nullptr;
                         Drivers.push_back(DrvFile);

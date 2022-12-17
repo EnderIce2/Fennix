@@ -670,23 +670,7 @@ namespace CrashHandler
         ExceptionOccurred = true;
 
         if (DriverManager)
-        {
-            KernelCallback callback;
-            foreach (Driver::DriverFile *drv in DriverManager->GetDrivers())
-            {
-                memset(&callback, 0, sizeof(KernelCallback));
-                callback.Reason = StopReason;
-                debug("Stopping driver %ld...", drv->DriverUID);
-                DriverManager->IOCB(drv->DriverUID, (void *)&callback);
-
-                for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
-                {
-                    if (!drv->InterruptHook[i])
-                        continue;
-                    delete drv->InterruptHook[i];
-                }
-            }
-        }
+            DriverManager->UnloadAllDrivers();
 
         debug("Reading control registers...");
         crashdata.Frame = Frame;

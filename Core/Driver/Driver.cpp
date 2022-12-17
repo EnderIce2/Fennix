@@ -28,6 +28,26 @@ namespace Driver
         "Input",
         "Audio"};
 
+    void Driver::UnloadAllDrivers()
+    {
+        KernelCallback callback;
+        debug("%ld drivers loaded, [DUIDs: %ld]", DriverManager->GetDrivers().size(), DriverUIDs);
+        foreach (DriverFile *drv in DriverManager->GetDrivers())
+        {
+            memset(&callback, 0, sizeof(KernelCallback));
+            callback.Reason = StopReason;
+            debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
+            DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+
+            for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+            {
+                if (!drv->InterruptHook[i])
+                    continue;
+                delete drv->InterruptHook[i];
+            }
+        }
+    }
+
     int Driver::IOCB(unsigned long DUID, void *KCB)
     {
         foreach (auto var in Drivers)

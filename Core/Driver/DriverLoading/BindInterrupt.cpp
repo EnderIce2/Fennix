@@ -42,7 +42,7 @@ namespace Driver
         {
             fixme("Generic driver: %s", fexExtended->Driver.Name);
             DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = KAPI.Info.DriverUID;
+            DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
             Drivers.push_back(DrvFile);
             break;
@@ -142,7 +142,7 @@ namespace Driver
             KCallback->Reason = CallbackReason::InterruptReason;
 
             DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = KAPI.Info.DriverUID;
+            DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
             DrvFile->InterruptHook[0] = InterruptHook;
             Drivers.push_back(DrvFile);

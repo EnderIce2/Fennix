@@ -64,7 +64,7 @@ namespace Driver
             KernelAllocator.FreePages(KCallback, TO_PAGES(sizeof(KernelCallback)));
 
             DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = KAPI.Info.DriverUID;
+            DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
             DrvFile->InterruptHook[0] = nullptr;
             Drivers.push_back(DrvFile);

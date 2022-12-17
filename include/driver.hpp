@@ -63,6 +63,7 @@ namespace Driver
 
     public:
         Vector<DriverFile *> GetDrivers() { return Drivers; }
+        void UnloadAllDrivers();
         int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);
         DriverCode LoadDriver(uint64_t DriverAddress, uint64_t Size);
         DriverCode StartDrivers();
