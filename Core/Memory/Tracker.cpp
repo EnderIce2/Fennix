@@ -36,7 +36,10 @@ namespace Memory
 
     Tracker::Tracker(PageTable4 *PageTable)
     {
-        this->PageTable = PageTable;
+        if (PageTable)
+            this->PageTable = PageTable;
+        else
+            this->PageTable = (PageTable4 *)CPU::x64::readcr3().raw;
         debug("Tracker initialized.");
     }
 

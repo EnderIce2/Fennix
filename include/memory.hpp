@@ -651,7 +651,7 @@ namespace Memory
         void *RequestPages(uint64_t Count);
         void FreePages(void *Address, uint64_t Count);
 
-        Tracker(PageTable4 *PageTable);
+        Tracker(PageTable4 *PageTable = nullptr);
         ~Tracker();
     };
 }
