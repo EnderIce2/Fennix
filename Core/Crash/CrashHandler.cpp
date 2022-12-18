@@ -251,6 +251,7 @@ namespace CrashHandler
             EHPrint("ifr <COUNT> - Show interrupt frames.\n");
             EHPrint("tlb <ADDRESS> - Print the page table entries\n");
             EHPrint("bitmap - Print the memory bitmap\n");
+            EHPrint("mem - Print the memory allocation\n");
             EHPrint("cr<INDEX> - Print the CPU control register\n");
             EHPrint("tss <CORE> - Print the CPU task state segment\n");
             EHPrint("dump <ADDRESS HEX> <LENGTH DEC> - Dump memory\n");
@@ -440,6 +441,27 @@ namespace CrashHandler
                 }
             }
             EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n", bm.Size);
+            Display->SetBuffer(SBIdx);
+        }
+        else if (strcmp(Input, "mem") == 0)
+        {
+            uint64_t Total = KernelAllocator.GetTotalMemory();
+            uint64_t Used = KernelAllocator.GetUsedMemory();
+            uint64_t Free = KernelAllocator.GetFreeMemory();
+            uint64_t Reserved = KernelAllocator.GetReservedMemory();
+
+            EHPrint("\e22AA44Total: %ld bytes\n\eFF0000Used: %ld bytes\n\e00FF00Free: %ld bytes\n\eFF00FFReserved: %ld bytes\n", Total, Used, Free, Reserved);
+            int Progress = (Used * 100) / Total;
+            int ReservedProgress = (Reserved * 100) / Total;
+            EHPrint("\e22AA44%3d%% \eCCCCCC[", Progress);
+            for (int i = 0; i < Progress; i++)
+                EHPrint("\eFF0000|");
+            for (int i = 0; i < 100 - Progress; i++)
+                EHPrint("\e00FF00|");
+            for (int i = 0; i < ReservedProgress; i++)
+                EHPrint("\eFF00FF|");
+            EHPrint("\eCCCCCC]\n");
+
             Display->SetBuffer(SBIdx);
         }
         else if (strncmp(Input, "cr", 2) == 0)
