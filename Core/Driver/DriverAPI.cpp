@@ -91,7 +91,7 @@ char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
     return (char *)"Unknown";
 }
 
-KernelAPI KAPI = {
+KernelAPI KernelAPITemplate = {
     .Version = {
         .Major = 0,
         .Minor = 0,

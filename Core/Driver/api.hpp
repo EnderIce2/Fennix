@@ -5,6 +5,6 @@
 
 #include "../../DAPI.hpp"
 
-extern KernelAPI KAPI;
+extern KernelAPI KernelAPITemplate;
 
 #endif // !__FENNIX_KERNEL_DRIVER_API_H__

@@ -39,6 +39,7 @@ namespace Driver
             debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
             DriverManager->IOCB(drv->DriverUID, (void *)&callback);
 
+            delete drv->MemTrk;
             for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
             {
                 if (!drv->InterruptHook[i])
@@ -59,6 +60,7 @@ namespace Driver
                 debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
                 DriverManager->IOCB(drv->DriverUID, (void *)&callback);
 
+                delete drv->MemTrk;
                 for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
                 {
                     if (!drv->InterruptHook[i])
@@ -81,16 +83,15 @@ namespace Driver
         return -1;
     }
 
-    DriverCode Driver::CallDriverEntryPoint(void *fex)
+    DriverCode Driver::CallDriverEntryPoint(void *fex, void *KAPIAddress)
     {
-        KernelAPI *API = (KernelAPI *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelAPI)));
-        memcpy(API, &KAPI, sizeof(KernelAPI));
+        memcpy(KAPIAddress, &KernelAPITemplate, sizeof(KernelAPI));
 
-        API->Info.Offset = (unsigned long)fex;
-        API->Info.DriverUID = DriverUIDs++;
+        ((KernelAPI *)KAPIAddress)->Info.Offset = (unsigned long)fex;
+        ((KernelAPI *)KAPIAddress)->Info.DriverUID = DriverUIDs++;
 
-        debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, API->Info.DriverUID);
-        int ret = ((int (*)(KernelAPI *))((uint64_t)((Fex *)fex)->EntryPoint + (uint64_t)fex))(API);
+        debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
+        int ret = ((int (*)(KernelAPI *))((uint64_t)((Fex *)fex)->EntryPoint + (uint64_t)fex))(((KernelAPI *)KAPIAddress));
 
         if (DriverReturnCode::OK != ret)
             return DriverCode::DRIVER_RETURNED_ERROR;

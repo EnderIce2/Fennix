@@ -5,6 +5,7 @@
 
 #include <interrupts.hpp>
 #include <vector.hpp>
+#include <memory.hpp>
 #include <debug.h>
 #include <cpu.hpp>
 
@@ -46,6 +47,7 @@ namespace Driver
     {
         unsigned long DriverUID;
         void *Address;
+        Memory::Tracker *MemTrk;
         DriverInterruptHook *InterruptHook[16];
     };
 
@@ -55,7 +57,7 @@ namespace Driver
         Vector<DriverFile *> Drivers;
         unsigned long DriverUIDs = 0;
 
-        DriverCode CallDriverEntryPoint(void *fex);
+        DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
         DriverCode DriverLoadBindPCI(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
         DriverCode DriverLoadBindInterrupt(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
         DriverCode DriverLoadBindInput(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
