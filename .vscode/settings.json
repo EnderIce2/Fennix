@@ -13,6 +13,7 @@
         "clang-analyzer-security.insecureAPI.strcpy",
         "clang-diagnostic-unknown-warning-option",
         "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling",
-        "clang-diagnostic-implicit-exception-spec-mismatch"
+        "clang-diagnostic-implicit-exception-spec-mismatch",
+        "clang-diagnostic-unknown-attributes"
     ]
 }
