@@ -200,6 +200,23 @@ typedef __SIZE_TYPE__ size_t;
 #define WINT_MAX __WINT_MAX__
 #define WINT_MIN __WINT_MIN__
 
+#if defined(__amd64__)
+#define BREAK __asm__ __volatile__("int $0x3" \
+                                   :          \
+                                   :          \
+                                   : "memory");
+#elif defined(__i386__)
+#define BREAK __asm__ __volatile__("int $0x3" \
+                                   :          \
+                                   :          \
+                                   : "memory");
+#elif defined(__aarch64__)
+#define BREAK __asm__ __volatile__("brk #0" \
+                                   :        \
+                                   :        \
+                                   : "memory");
+#endif
+
 #define b4(x) ((x & 0x0F) << 4 | (x & 0xF0) >> 4)
 #define b8(x) ((x)&0xFF)
 #define b16(x) __builtin_bswap16(x)
