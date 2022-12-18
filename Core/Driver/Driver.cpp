@@ -188,11 +188,11 @@ namespace Driver
     }
 
 #if defined(__amd64__)
-    void DriverInterruptHook::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
 #elif defined(__i386__)
-    void DriverInterruptHook::OnInterruptReceived(void *Frame)
+    SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #elif defined(__aarch64__)
-    void DriverInterruptHook::OnInterruptReceived(void *Frame)
+    SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {
         SmartCriticalSection(DriverInterruptLock);
