@@ -56,28 +56,28 @@ namespace CrashHandler
             EHPrint("\n\n\eFAFAFATracing thread RIP history...");
             SymbolResolver::Symbols *sh = data.Process->ELFSymbolTable;
             if (!sh)
-                EHPrint("\n\eFF0000< No symbol table available. >\n");
-            else
+                EHPrint("\n\eFFA500Warning: No symbol table available.");
+            int SameItr = 0;
+            uint64_t LastRIP = 0;
+            for (int i = 0; i < 128; i++)
             {
-                int SameItr = 0;
-                uint64_t LastRIP = 0;
-                for (int i = 0; i < 128; i++)
+                if (data.Thread->RIPHistory[i] == 0)
+                    break;
+                if (data.Thread->RIPHistory[i] == LastRIP)
                 {
-                    if (data.Thread->RIPHistory[i] == 0)
-                        break;
-                    if (data.Thread->RIPHistory[i] == LastRIP)
-                    {
-                        SameItr++;
-                        if (SameItr > 3)
-                            continue;
-                    }
-                    else
-                        SameItr = 0;
-                    LastRIP = data.Thread->RIPHistory[i];
-                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->RIPHistory[i], sh->GetSymbolFromAddress((uint64_t)data.Thread->RIPHistory[i]));
+                    SameItr++;
+                    if (SameItr > 3)
+                        continue;
                 }
-                EHPrint("\n\e7925CCNote: \e2565CCSame RIPs are not shown more than 3 times.\n");
+                else
+                    SameItr = 0;
+                LastRIP = data.Thread->RIPHistory[i];
+                if (!sh)
+                    EHPrint("\n\e2565CC%p", data.Thread->RIPHistory[i]);
+                else
+                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->RIPHistory[i], sh->GetSymbolFromAddress((uint64_t)data.Thread->RIPHistory[i]));
             }
+            EHPrint("\n\e7925CCNote: \e2565CCSame RIPs are not shown more than 3 times.\n");
         }
     }
 }
