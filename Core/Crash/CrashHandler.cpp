@@ -427,7 +427,7 @@ namespace CrashHandler
         {
             Bitmap bm = KernelAllocator.GetPageBitmap();
 
-            EHPrint("\n\eFAFAFA%08ld: ", 0);
+            EHPrint("\n\eFAFAFA[0%%] %08ld: ", 0);
             for (uint64_t i = 0; i < bm.Size; i++)
             {
                 if (bm.Get(i))
@@ -436,11 +436,12 @@ namespace CrashHandler
                     EHPrint("\e00FF000");
                 if (i % 128 == 127)
                 {
-                    EHPrint("\n\eFAFAFA%08ld: ", i);
+                    uint64_t Percentage = (i * 100) / bm.Size;
+                    EHPrint("\n\eFAFAFA[%03ld%%] %08ld: ", Percentage, i);
                     Display->SetBuffer(SBIdx);
                 }
             }
-            EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n", bm.Size);
+            EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n\n.", bm.Size);
             Display->SetBuffer(SBIdx);
         }
         else if (strcmp(Input, "mem") == 0)

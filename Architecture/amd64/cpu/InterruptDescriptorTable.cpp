@@ -94,7 +94,7 @@ namespace InterruptDescriptorTable
             // "swapgs\n"
             // ".skip_swap_check_2:\n"
 
-            "iretq"); // pop CS RIP RFLAGS SS ESP
+            "iretq"); // pop CS RIP RFLAGS SS RSP
     }
 
     extern "C" void WarnSwapgs() { warn("swapgs"); }
