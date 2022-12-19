@@ -120,11 +120,11 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
     // blacklist
     // if (strstr(file, "liballoc") ||
     //     strstr(file, "cwalk") ||
-    //     strstr(file, "AdvancedConfigurationandPowerInterface") ||
+    //     strstr(file, "AdvancedConfigurationAndPowerInterface") ||
     //     strstr(file, "SystemManagementBIOS"))
     //     return false;
 
-    if (strstr(file, "AdvancedConfigurationandPowerInterface.cpp") &&
+    if (strstr(file, "AdvancedConfigurationAndPowerInterface.cpp") &&
         (line == 17 && column == 47))
         return false;
 
@@ -147,6 +147,17 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
 
     if (strstr(file, "Xalloc.hpp") &&
         (line == 48 && column == 28))
+        return false;
+
+    if (strstr(file, "Task.cpp") &&
+        ((line == 839 && column == 22) ||
+         (line == 847 && column == 45) ||
+         (line == 853 && column == 22) ||
+         (line == 859 && column == 32) ||
+         (line == 865 && column == 22) ||
+         (line == 871 && column == 32) ||
+         (line == 877 && column == 22) ||
+         (line == 45 && column == 26)))
         return false;
 
     ubsan("\t\tIn File: %s:%i:%i", file, line, column);
