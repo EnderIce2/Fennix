@@ -870,29 +870,25 @@ __no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len,
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -908,22 +904,19 @@ __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t 
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -939,29 +932,25 @@ __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -977,22 +966,19 @@ __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     size_t dest_len = strlen(dest);
@@ -1009,22 +995,19 @@ __no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        while (1)
-            ;
+        __chk_fail();
     }
 
     size_t len = strlen(src);

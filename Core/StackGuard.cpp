@@ -1,36 +1,34 @@
 #include <types.h>
 #include <debug.h>
+#include <rand.hpp>
 
 #include "../kernel.h"
 
-#ifndef STACK_CHK_GUARD_VALUE
-#if UINTPTR_MAX == UINT32_MAX
-#define STACK_CHK_GUARD_VALUE 0xDEAD57AC
-#else
-#define STACK_CHK_GUARD_VALUE 0xDEAD57AC00000000
-#endif
-#endif
+EXTERNC __attribute__((weak)) uintptr_t __stack_chk_guard = 0;
 
-__attribute__((weak)) uintptr_t __stack_chk_guard = 0;
-
-__attribute__((weak, no_stack_protector)) uintptr_t __stack_chk_guard_init(void)
+EXTERNC __attribute__((weak, no_stack_protector)) uintptr_t __stack_chk_guard_init(void)
 {
-    return STACK_CHK_GUARD_VALUE;
+#if UINTPTR_MAX == UINT32_MAX
+    return Random::rand32();
+#else
+    return Random::rand64();
+#endif
 }
 
-extern __attribute__((constructor, no_stack_protector)) void __guard_setup(void)
+EXTERNC __attribute__((constructor, no_stack_protector)) void __guard_setup(void)
 {
     debug("StackGuard: __guard_setup");
     if (__stack_chk_guard == 0)
         __stack_chk_guard = __stack_chk_guard_init();
+    debug("Stack guard value: %ld", __stack_chk_guard);
 }
 
-__attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
+EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
 {
     TaskingPanic();
     for (short i = 0; i < 10; i++)
         error("Stack smashing detected!");
-    debug("%#lx", __stack_chk_guard);
+    debug("Current stack check guard value: %#lx", __stack_chk_guard);
     KPrint("\eFF0000Stack smashing detected!");
 #if defined(__amd64__) || defined(__i386__)
     while (1)
@@ -41,7 +39,7 @@ __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
 }
 
 // https://github.com/gcc-mirror/gcc/blob/master/libssp/ssp.c
-__attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void)
+EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void)
 {
     TaskingPanic();
     for (short i = 0; i < 10; i++)
