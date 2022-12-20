@@ -15,10 +15,10 @@
 namespace Tasking
 {
     typedef unsigned long IP;
-    typedef unsigned long IPOffset;
+    typedef __UINTPTR_TYPE__ IPOffset;
     typedef unsigned long UPID;
     typedef unsigned long UTID;
-    typedef unsigned long Token;
+    typedef __UINTPTR_TYPE__ Token;
 
     enum TaskArchitecture
     {
@@ -165,7 +165,7 @@ namespace Tasking
         TaskInfo Info;
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
-        HashMap<InterProcessCommunication::IPCPort, uint64_t> *IPCHandles;
+        HashMap<InterProcessCommunication::IPCPort, uintptr_t> *IPCHandles;
         Memory::PageTable4 *PageTable;
         SymbolResolver::Symbols *ELFSymbolTable;
     };

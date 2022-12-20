@@ -25,7 +25,7 @@ void KernelMainThread()
 
     KPrint("Initializing Filesystem...");
     vfs = new FileSystem::Virtual;
-    new FileSystem::USTAR((uint64_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
+    new FileSystem::USTAR((uintptr_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
     KPrint("Initializing Disk Manager...");
     DiskManager = new Disk::Manager;
 
@@ -36,7 +36,7 @@ void KernelMainThread()
     if (DriverManager->GetDrivers().size() > 0)
     {
         foreach (auto Driver in DriverManager->GetDrivers())
-            if (((FexExtended *)((uint64_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
+            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
                 DiskManager->FetchDisks(Driver->DriverUID);
     }
     else
@@ -49,7 +49,7 @@ void KernelMainThread()
         "TERM=tty",
         "HOME=/",
         "USER=root",
-        "SHELL=/system/bin/sh",
+        "SHELL=/system/sh",
         "PWD=/",
         "LANG=en_US.UTF-8",
         "TZ=UTC",

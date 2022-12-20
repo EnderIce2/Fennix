@@ -24,11 +24,11 @@ namespace FileSystem
         .Read = USTAR_Read,
     };
 
-    USTAR::USTAR(uint64_t Address, Virtual *vfs)
+    USTAR::USTAR(uintptr_t Address, Virtual *vfs)
     {
         trace("Initializing USTAR with address %#llx", Address);
 
-        if (memcmp(((FileHeader *)Address)->signature, "ustar", 5) != 0)
+        if (memcmp(((FileHeader *)(uintptr_t)Address)->signature, "ustar", 5) != 0)
         {
             error("ustar signature invalid!");
             return;
@@ -41,9 +41,9 @@ namespace FileSystem
 
         vfs->CreateRoot(&ustar, "/");
 
-        uint64_t errorsallowed = 20;
+        int ErrorsAllowed = 20;
 
-        for (uint64_t i = 0;; i++)
+        for (size_t i = 0;; i++)
         {
             FileHeader *header = (FileHeader *)Address;
             if (memcmp(((FileHeader *)Address)->signature, "ustar", 5) != 0)
@@ -51,7 +51,7 @@ namespace FileSystem
             memmove(header->name, header->name + 1, strlen(header->name));
             if (header->name[strlen(header->name) - 1] == '/')
                 header->name[strlen(header->name) - 1] = 0;
-            uint64_t size = getsize(header->size);
+            size_t size = getsize(header->size);
             FileSystemNode *node = nullptr;
 
             if (!isempty((char *)header->name))
@@ -63,9 +63,9 @@ namespace FileSystem
             debug("Added node: %s", node->Name);
             if (node == nullptr)
             {
-                if (errorsallowed > 0)
+                if (ErrorsAllowed > 0)
                 {
-                    errorsallowed--;
+                    ErrorsAllowed--;
                     goto NextFileAddress;
                 }
                 else

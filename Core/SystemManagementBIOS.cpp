@@ -38,16 +38,16 @@ namespace SMBIOS
         SMBIOSEntryPoint *Header = (SMBIOSEntryPoint *)bInfo->SMBIOSPtr;
         debug("Getting SMBIOS header for type %d", Type);
 
-        struct SMBIOSHeader *hdr = (SMBIOSHeader *)(uint64_t)Header->TableAddress;
+        struct SMBIOSHeader *hdr = (SMBIOSHeader *)(uintptr_t)Header->TableAddress;
         for (int i = 0; i <= 11; i++)
         {
-            if (hdr < (void *)(uint64_t)(Header->TableAddress + Header->TableLength))
+            if (hdr < (void *)(uintptr_t)(Header->TableAddress + Header->TableLength))
                 if (hdr->Type == Type)
                 {
                     debug("Found SMBIOS header for type %d at %#lx", Type, hdr);
                     return hdr;
                 }
-            hdr = (struct SMBIOSHeader *)((uint64_t)hdr + SMBIOSTableLength(hdr));
+            hdr = (struct SMBIOSHeader *)((uintptr_t)hdr + SMBIOSTableLength(hdr));
         }
         return nullptr;
     }

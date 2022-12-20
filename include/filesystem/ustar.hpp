@@ -44,7 +44,7 @@ namespace FileSystem
     private:
         uint32_t getsize(const char *s)
         {
-            uint64_t ret = 0;
+            uint32_t ret = 0;
             while (*s)
             {
                 ret *= 8;
@@ -63,7 +63,7 @@ namespace FileSystem
         }
 
     public:
-        USTAR(uint64_t Address, Virtual *vfs);
+        USTAR(uintptr_t Address, Virtual *vfs);
         ~USTAR();
     };
 }

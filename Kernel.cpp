@@ -13,6 +13,24 @@
 
 #include "Core/smbios.hpp"
 
+#ifdef __amd64__
+#if UINTPTR_MAX != UINT64_MAX
+#error "uintptr_t is not 64-bit!"
+#endif // UINTPTR_MAX != UINT64_MAX
+#endif // __amd64__
+
+#ifdef __i386__
+#if UINTPTR_MAX != UINT32_MAX
+#error "uintptr_t is not 32-bit!"
+#endif // UINTPTR_MAX != UINT32_MAX
+#endif // __i386__
+
+#ifdef __aarch64__
+#if UINTPTR_MAX != UINT64_MAX
+#error "uintptr_t is not 64-bit!"
+#endif // UINTPTR_MAX != UINT64_MAX
+#endif // __aarch64__
+
 NewLock(KernelLock);
 
 BootInfo *bInfo = nullptr;
@@ -45,7 +63,7 @@ EXTERNC void KPrint(const char *Format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC __no_instrument_function void PostEntry(BootInfo *Info)
+EXTERNC __no_instrument_function void AfterEntry(BootInfo *Info)
 {
     BootClock = Time::ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
@@ -63,7 +81,7 @@ EXTERNC __no_instrument_function void PostEntry(BootInfo *Info)
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures();
     KPrint("Loading Kernel Symbols");
-    KernelSymbolTable = new SymbolResolver::Symbols((uint64_t)Info->Kernel.FileBase);
+    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
     KPrint("Reading Kernel Parameters");
     Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
     KPrint("Initializing Power Manager");
@@ -181,7 +199,7 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
 
     InitializeMemoryManagement(Info);
     EnableProfiler = true;
-    PostEntry(Info);
+    AfterEntry(Info);
 }
 
 EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()

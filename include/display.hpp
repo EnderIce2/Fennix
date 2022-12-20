@@ -57,8 +57,8 @@ namespace Video
 
     struct FontInfo
     {
-        uint64_t *StartAddress;
-        uint64_t *EndAddress;
+        uintptr_t *StartAddress;
+        uintptr_t *EndAddress;
         PSF1_FONT *PSF1Font;
         PSF2_FONT *PSF2Font;
         uint32_t Width, Height;
@@ -72,7 +72,7 @@ namespace Video
 
     public:
         FontInfo GetInfo() { return Info; }
-        Font(uint64_t *Start, uint64_t *End, FontType Type);
+        Font(uintptr_t *Start, uintptr_t *End, FontType Type);
         ~Font();
     };
 
@@ -80,7 +80,7 @@ namespace Video
     {
         void *Buffer = nullptr;
         uint32_t Width, Height;
-        uint64_t Size;
+        size_t Size;
         uint32_t Color;
         uint32_t CursorX, CursorY;
         long Checksum;
@@ -107,7 +107,7 @@ namespace Video
                 debug("No width and height specified, using %ldx%lld", Width, Height);
             }
 
-            uint64_t Size = this->framebuffer.Pitch * Height;
+            size_t Size = this->framebuffer.Pitch * Height;
             if (!this->Buffers[Index])
             {
                 if (this->Buffers[Index]->Checksum != 0xDEAD5C9EE7)
@@ -160,7 +160,7 @@ namespace Video
                 X = this->Buffers[Index]->Width - 1;
             if (Y >= this->Buffers[Index]->Height)
                 Y = this->Buffers[Index]->Height - 1;
-            uint32_t *Pixel = (uint32_t *)((uint64_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
+            uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             *Pixel = Color;
         }
 
@@ -168,7 +168,7 @@ namespace Video
         {
             if (X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height)
                 return 0;
-            uint32_t *Pixel = (uint32_t *)((uint64_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
+            uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             return *Pixel;
         }
 

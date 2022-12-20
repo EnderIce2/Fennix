@@ -48,8 +48,8 @@ EXTERNC SafeFunction __no_instrument_function void __cyg_profile_func_enter(void
                   Level - 1,
                   Level,
                   ' ',
-                  KernelSymbolTable->GetSymbolFromAddress((uint64_t)Function),
-                  KernelSymbolTable->GetSymbolFromAddress((uint64_t)CallSite));
+                  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)Function),
+                  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)CallSite));
     Wait = false;
 }
 
@@ -81,7 +81,7 @@ EXTERNC SafeFunction __no_instrument_function void __cyg_profile_func_exit(void 
                   Level - 1,
                   Level,
                   ' ',
-                  KernelSymbolTable->GetSymbolFromAddress((uint64_t)Function),
-                  KernelSymbolTable->GetSymbolFromAddress((uint64_t)CallSite));
+                  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)Function),
+                  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)CallSite));
     Wait = false;
 }

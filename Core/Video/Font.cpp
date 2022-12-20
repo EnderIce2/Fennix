@@ -4,7 +4,7 @@
 
 namespace Video
 {
-    Font::Font(uint64_t *Start, uint64_t *End, FontType Type)
+    Font::Font(uintptr_t *Start, uintptr_t *End, FontType Type)
     {
         trace("Initializing font with start %#llx and end %#llx Type: %d", Start, End, Type);
         this->Info.StartAddress = Start;
@@ -14,9 +14,9 @@ namespace Video
         {
             this->Info.PSF2Font = new PSF2_FONT;
 
-            uint64_t FontDataLength = End - Start;
+            uintptr_t FontDataLength = End - Start;
             PSF2_HEADER *font2 = (PSF2_HEADER *)KernelAllocator.RequestPages(FontDataLength / PAGE_SIZE + 1);
-            for (uint64_t i = 0; i < FontDataLength / PAGE_SIZE + 1; i++)
+            for (uintptr_t i = 0; i < FontDataLength / PAGE_SIZE + 1; i++)
                 Memory::Virtual().Map((void *)(font2 + (i * PAGE_SIZE)), (void *)(font2 + (i * PAGE_SIZE)), Memory::PTFlag::RW);
             memcpy((void *)font2, Start, FontDataLength);
 
@@ -26,7 +26,7 @@ namespace Video
                 error("Font2 magic mismatch.");
 
             this->Info.PSF2Font->Header = font2;
-            this->Info.PSF2Font->GlyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uint64_t>(Start) + sizeof(PSF2_HEADER));
+            this->Info.PSF2Font->GlyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF2_HEADER));
         }
         else if (Type == FontType::PCScreenFont1)
         {
@@ -37,7 +37,7 @@ namespace Video
             uint32_t glyphBufferSize = font1->charsize * 256;
             if (font1->mode == 1) // 512 glyph mode
                 glyphBufferSize = font1->charsize * 512;
-            void *glyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uint64_t>(Start) + sizeof(PSF1_HEADER));
+            void *glyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF1_HEADER));
             this->Info.PSF1Font->Header = font1;
             this->Info.PSF1Font->GlyphBuffer = glyphBuffer;
             UNUSED(glyphBufferSize); // TODO: Use this in the future?

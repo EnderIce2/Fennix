@@ -20,7 +20,7 @@ namespace CrashHandler
     struct StackFrame
     {
         struct StackFrame *rbp;
-        uint64_t rip;
+        uintptr_t rip;
     };
 
     SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel)
@@ -75,14 +75,14 @@ namespace CrashHandler
 #if defined(__amd64__)
             EHPrint("\e2565CC%p", (void *)Frame->rip);
             EHPrint("\e7925CC-");
-            if ((Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uint64_t)&_kernel_end) || !Kernel)
+            if ((Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uintptr_t)&_kernel_end) || !Kernel)
                 EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
             else
                 EHPrint("Outside Kernel");
 #elif defined(__i386__)
             EHPrint("\e2565CC%p", (void *)Frame->eip);
             EHPrint("\e7925CC-");
-            if ((Frame->eip >= 0xC0000000 && Frame->eip <= (uint64_t)&_kernel_end) || !Kernel)
+            if ((Frame->eip >= 0xC0000000 && Frame->eip <= (uintptr_t)&_kernel_end) || !Kernel)
                 EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
             else
                 EHPrint("Outside Kernel");
@@ -96,9 +96,9 @@ namespace CrashHandler
                 EHPrint("\n\e2565CC%p", (void *)frames->rip);
                 EHPrint("\e7925CC-");
 #if defined(__amd64__)
-                if ((frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uint64_t)&_kernel_end) || !Kernel)
+                if ((frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
 #elif defined(__i386__)
-                if ((frames->rip >= 0xC0000000 && frames->rip <= (uint64_t)&_kernel_end) || !Kernel)
+                if ((frames->rip >= 0xC0000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
 #elif defined(__aarch64__)
 #endif
                     EHPrint("\e25CCC9%s", SymHandle->GetSymbolFromAddress(frames->rip));

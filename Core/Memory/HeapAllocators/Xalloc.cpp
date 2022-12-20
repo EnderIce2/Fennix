@@ -6,10 +6,10 @@ namespace Xalloc
     {
         struct SpinLockData
         {
-            uint64_t LockData = 0x0;
+            uintptr_t LockData = 0x0;
             const char *CurrentHolder = "(null)";
             const char *AttemptingToGet = "(null)";
-            uint64_t Count = 0;
+            size_t Count = 0;
         };
 
         void DeadLock(SpinLockData Lock)

@@ -14,13 +14,13 @@
 
 namespace Driver
 {
-    DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf)
+    DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         Memory::Tracker *Tracker = new Memory::Tracker;
         Fex *fex = (Fex *)Tracker->RequestPages(TO_PAGES(Size));
         memcpy(fex, (void *)DriverAddress, Size);
-        FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
-        debug("Driver allocated at %#lx-%#lx", fex, (uint64_t)fex + Size);
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+        debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
 #ifdef DEBUG
         uint8_t *result = md5File((uint8_t *)fex, Size);
         debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
@@ -79,7 +79,7 @@ namespace Driver
 
             KCallback->RawPtr = nullptr;
             KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
                 error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
@@ -111,7 +111,7 @@ namespace Driver
             DriverInterruptHook *InterruptHook = nullptr;
             if (((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0] != 0)
                 InterruptHook = new DriverInterruptHook(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0] + 32, // x86
-                                                        (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                                                        (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
                                                         KCallback);
 
             for (unsigned long i = 0; i < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0]); i++)
@@ -119,14 +119,14 @@ namespace Driver
                 if (((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i] == 0)
                     break;
                 // InterruptHook = new DriverInterruptHook(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i] + 32, // x86
-                //                                         (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                //                                         (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
                 //                                         KCallback);
                 fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", ((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i]);
             }
 
             KCallback->RawPtr = nullptr;
             KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
                 error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);

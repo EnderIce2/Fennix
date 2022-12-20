@@ -45,9 +45,9 @@ __no_instrument_function void MapFromZero(PageTable4 *PT, BootInfo *Info)
         void *NullAddress = KernelAllocator.RequestPage();
         memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
         va.Map((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
-        uint64_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
-        uint64_t MemSize = Info->Memory.Size;
-        for (uint64_t t = 0; t < MemSize; t += PAGE_SIZE)
+        uintptr_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
+        size_t MemSize = Info->Memory.Size;
+        for (size_t t = 0; t < MemSize; t += PAGE_SIZE)
         {
             va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
             va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
@@ -70,8 +70,8 @@ __no_instrument_function void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
         if (!Info->Framebuffer[itrfb].BaseAddress)
             break;
 
-        for (uint64_t fb_base = (uint64_t)Info->Framebuffer[itrfb].BaseAddress;
-             fb_base < ((uint64_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
+        for (uintptr_t fb_base = (uintptr_t)Info->Framebuffer[itrfb].BaseAddress;
+             fb_base < ((uintptr_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
              fb_base += PAGE_SIZE)
             va.Map((void *)fb_base, (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
@@ -84,14 +84,14 @@ __no_instrument_function void MapKernel(PageTable4 *PT, BootInfo *Info)
     Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
     */
     Virtual va = Virtual(PT);
-    uint64_t KernelStart = (uint64_t)&_kernel_start;
-    uint64_t KernelTextEnd = (uint64_t)&_kernel_text_end;
-    uint64_t KernelDataEnd = (uint64_t)&_kernel_data_end;
-    uint64_t KernelRoDataEnd = (uint64_t)&_kernel_rodata_end;
-    uint64_t KernelEnd = (uint64_t)&_kernel_end;
+    uintptr_t KernelStart = (uintptr_t)&_kernel_start;
+    uintptr_t KernelTextEnd = (uintptr_t)&_kernel_text_end;
+    uintptr_t KernelDataEnd = (uintptr_t)&_kernel_data_end;
+    uintptr_t KernelRoDataEnd = (uintptr_t)&_kernel_rodata_end;
+    uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
 
-    uint64_t BaseKernelMapAddress = (uint64_t)Info->Kernel.PhysicalBase;
-    uint64_t k;
+    uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
+    uintptr_t k;
 
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
@@ -130,9 +130,9 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
 #ifdef DEBUG
     for (uint64_t i = 0; i < Info->Memory.Entries; i++)
     {
-        uint64_t Base = reinterpret_cast<uint64_t>(Info->Memory.Entry[i].BaseAddress);
-        uint64_t Length = Info->Memory.Entry[i].Length;
-        uint64_t End = Base + Length;
+        uintptr_t Base = reinterpret_cast<uintptr_t>(Info->Memory.Entry[i].BaseAddress);
+        uintptr_t Length = Info->Memory.Entry[i].Length;
+        uintptr_t End = Base + Length;
         const char *Type = "Unknown";
 
         switch (Info->Memory.Entry[i].Type)
@@ -233,7 +233,7 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     }
 }
 
-void *HeapMalloc(uint64_t Size)
+void *HeapMalloc(size_t Size)
 {
     switch (AllocatorType)
     {
@@ -256,7 +256,7 @@ void *HeapMalloc(uint64_t Size)
     }
 }
 
-void *HeapCalloc(uint64_t n, uint64_t Size)
+void *HeapCalloc(size_t n, size_t Size)
 {
     switch (AllocatorType)
     {
@@ -279,7 +279,7 @@ void *HeapCalloc(uint64_t n, uint64_t Size)
     }
 }
 
-void *HeapRealloc(void *Address, uint64_t Size)
+void *HeapRealloc(void *Address, size_t Size)
 {
     switch (AllocatorType)
     {

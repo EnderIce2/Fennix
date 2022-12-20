@@ -14,13 +14,13 @@
 
 namespace Driver
 {
-    DriverCode Driver::DriverLoadBindInput(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf)
+    DriverCode Driver::DriverLoadBindInput(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         Memory::Tracker *Tracker = new Memory::Tracker;
         Fex *fex = (Fex *)Tracker->RequestPages(TO_PAGES(Size));
         memcpy(fex, (void *)DriverAddress, Size);
-        FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
-        debug("Driver allocated at %#lx-%#lx", fex, (uint64_t)fex + Size);
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+        debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
 #ifdef DEBUG
         uint8_t *result = md5File((uint8_t *)fex, Size);
         debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
@@ -47,7 +47,7 @@ namespace Driver
             KCallback->RawPtr = nullptr;
             break;
             KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
                 delete Tracker;

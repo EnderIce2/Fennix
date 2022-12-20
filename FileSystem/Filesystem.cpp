@@ -133,7 +133,7 @@ namespace FileSystem
     FileStatus RemoveChild(FileSystemNode *Parent, const char *Name)
     {
         vfsdbg("RemoveChild( Parent: \"%s\" Name: \"%s\" )", Parent->Name, Name);
-        for (uint64_t i = 0; i < Parent->Children.size(); i++)
+        for (uintptr_t i = 0; i < Parent->Children.size(); i++)
             if (strcmp(Parent->Children[i]->Name, Name) == 0)
             {
                 Parent->Children.remove(i);
@@ -414,7 +414,7 @@ namespace FileSystem
         return file;
     }
 
-    uint64_t Virtual::Read(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
+    size_t Virtual::Read(FILE *File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File))
@@ -437,7 +437,7 @@ namespace FileSystem
         return File->Node->Operator->Read(File->Node, Offset, Size, Buffer);
     }
 
-    uint64_t Virtual::Write(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
+    size_t Virtual::Write(FILE *File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File))

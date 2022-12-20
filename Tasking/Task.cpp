@@ -87,7 +87,7 @@ namespace Tasking
 
     SafeFunction __no_instrument_function void Task::RemoveThread(TCB *Thread)
     {
-        for (uint64_t i = 0; i < Thread->Parent->Threads.size(); i++)
+        for (size_t i = 0; i < Thread->Parent->Threads.size(); i++)
             if (Thread->Parent->Threads[i] == Thread)
             {
                 trace("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
@@ -116,7 +116,7 @@ namespace Tasking
             foreach (PCB *process in Process->Children)
                 RemoveProcess(process);
 
-            for (uint64_t i = 0; i < ListProcess.size(); i++)
+            for (size_t i = 0; i < ListProcess.size(); i++)
             {
                 if (ListProcess[i] == Process)
                 {
@@ -232,20 +232,20 @@ namespace Tasking
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
-        for (uint64_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
+        for (size_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
         {
             // Loop until we find the current thread from the process thread list.
             if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread)
             {
                 // Check if the next thread is valid. If not, we search until we find, but if we reach the end of the list, we go to the next process.
-                uint64_t tmpidx = i;
+                size_t TempIndex = i;
             RetryAnotherThread:
-                TCB *thread = CurrentCPU->CurrentProcess->Threads[tmpidx + 1];
+                TCB *thread = CurrentCPU->CurrentProcess->Threads[TempIndex + 1];
                 if (InvalidTCB(thread))
                 {
-                    if (tmpidx > CurrentCPU->CurrentProcess->Threads.size())
+                    if (TempIndex > CurrentCPU->CurrentProcess->Threads.size())
                         break;
-                    tmpidx++;
+                    TempIndex++;
                     goto RetryAnotherThread;
                 }
 
@@ -272,20 +272,20 @@ namespace Tasking
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
-        for (uint64_t i = 0; i < ListProcess.size(); i++)
+        for (size_t i = 0; i < ListProcess.size(); i++)
         {
             // Loop until we find the current process from the process list.
             if (ListProcess[i] == CurrentCPU->CurrentProcess)
             {
                 // Check if the next process is valid. If not, we search until we find.
-                uint64_t tmpidx = i;
+                size_t TempIndex = i;
             RetryAnotherProcess:
-                PCB *pcb = ListProcess[tmpidx + 1];
+                PCB *pcb = ListProcess[TempIndex + 1];
                 if (InvalidPCB(pcb))
                 {
-                    if (tmpidx > ListProcess.size())
+                    if (TempIndex > ListProcess.size())
                         break;
-                    tmpidx++;
+                    TempIndex++;
                     goto RetryAnotherProcess;
                 }
 
@@ -293,7 +293,7 @@ namespace Tasking
                     goto RetryAnotherProcess;
 
                 // Everything good, now search for a thread.
-                for (uint64_t j = 0; j < pcb->Threads.size(); j++)
+                for (size_t j = 0; j < pcb->Threads.size(); j++)
                 {
                     TCB *tcb = pcb->Threads[j];
                     if (InvalidTCB(tcb))
@@ -368,7 +368,7 @@ namespace Tasking
             schedbg("================================================================");
             schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
             schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
-            uint64_t ds;
+            size_t ds;
             asmv("mov %%ds, %0"
                  : "=r"(ds));
             schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
@@ -506,7 +506,7 @@ namespace Tasking
                 CurrentCPU->CurrentThread->RIPHistory[127] = Frame->rip;
             }
         }
-        GlobalDescriptorTable::SetKernelStack((void *)((uint64_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
+        GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
         CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
         // Not sure if this is needed, but it's better to be safe than sorry.
         asmv("movq %cr3, %rax");
@@ -752,8 +752,8 @@ namespace Tasking
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
-            POKE(uint64_t, Thread->Registers.rsp) = (uint64_t)ThreadDoExit;
+            Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
+            POKE(uintptr_t, Thread->Registers.rsp) = (uintptr_t)ThreadDoExit;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -775,14 +775,14 @@ namespace Tasking
             // Thread->Registers.rflags.IOPL = 3;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop());
+            Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
 
-            uint64_t ArgvSize = 0;
+            size_t ArgvSize = 0;
             if (argv)
                 while (argv[ArgvSize] != nullptr)
                     ArgvSize++;
 
-            uint64_t EnvpSize = 0;
+            size_t EnvpSize = 0;
             if (envp)
                 while (envp[EnvpSize] != nullptr)
                     EnvpSize++;
@@ -799,40 +799,40 @@ namespace Tasking
             char *StackStringsVirtual = (char *)Thread->Stack->GetStackTop();
 
             // Store string pointers for later
-            uint64_t ArgvStrings[ArgvSize];
-            uint64_t EnvpStrings[EnvpSize];
+            uintptr_t ArgvStrings[ArgvSize];
+            uintptr_t EnvpStrings[EnvpSize];
 
-            for (uint64_t i = 0; i < ArgvSize; i++)
+            for (size_t i = 0; i < ArgvSize; i++)
             {
                 // Subtract the length of the string and the null terminator
                 StackStrings -= strlen(argv[i]) + 1;
                 StackStringsVirtual -= strlen(argv[i]) + 1;
                 // Store the pointer to the string
-                ArgvStrings[i] = (uint64_t)StackStringsVirtual;
+                ArgvStrings[i] = (uintptr_t)StackStringsVirtual;
                 // Copy the string to the stack
                 strcpy(StackStrings, argv[i]);
             }
 
-            for (uint64_t i = 0; i < EnvpSize; i++)
+            for (size_t i = 0; i < EnvpSize; i++)
             {
                 // Subtract the length of the string and the null terminator
                 StackStrings -= strlen(envp[i]) + 1;
                 StackStringsVirtual -= strlen(envp[i]) + 1;
                 // Store the pointer to the string
-                EnvpStrings[i] = (uint64_t)StackStringsVirtual;
+                EnvpStrings[i] = (uintptr_t)StackStringsVirtual;
                 // Copy the string to the stack
                 strcpy(StackStrings, envp[i]);
             }
 
             // Align the stack to 16 bytes
-            StackStrings -= (uint64_t)StackStrings & 0xF;
+            StackStrings -= (uintptr_t)StackStrings & 0xF;
             // Set "Stack" to the new stack pointer
             Stack = (char *)StackStrings;
             // If argv and envp sizes are odd then we need to align the stack
             Stack -= (ArgvSize + EnvpSize) % 2;
 
             // We need 8 bit pointers for the stack from here
-            uint64_t *Stack64 = (uint64_t *)Stack;
+            uintptr_t *Stack64 = (uintptr_t *)Stack;
 
             // Store the null terminator
             Stack64--;
@@ -842,7 +842,7 @@ namespace Tasking
             foreach (AuxiliaryVector var in auxv)
             {
                 // Subtract the size of the auxillary vector
-                Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uint64_t);
+                Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uintptr_t);
                 // Store the auxillary vector
                 POKE(Elf64_auxv_t, Stack64) = var.archaux;
                 // TODO: Store strings to the stack
@@ -854,9 +854,9 @@ namespace Tasking
 
             // Store EnvpStrings[] to the stack
             Stack64 -= EnvpSize; // (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize)
-            for (uint64_t i = 0; i < EnvpSize; i++)
+            for (size_t i = 0; i < EnvpSize; i++)
             {
-                *(Stack64 + i) = (uint64_t)EnvpStrings[i];
+                *(Stack64 + i) = (uintptr_t)EnvpStrings[i];
                 debug("EnvpStrings[%d]: %#lx", i, EnvpStrings[i]);
             }
 
@@ -866,9 +866,9 @@ namespace Tasking
 
             // Store ArgvStrings[] to the stack
             Stack64 -= ArgvSize; // (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize)
-            for (uint64_t i = 0; i < ArgvSize; i++)
+            for (size_t i = 0; i < ArgvSize; i++)
             {
-                *(Stack64 + i) = (uint64_t)ArgvStrings[i];
+                *(Stack64 + i) = (uintptr_t)ArgvStrings[i];
                 debug("ArgvStrings[%d]: %#lx", i, ArgvStrings[i]);
             }
 
@@ -881,20 +881,20 @@ namespace Tasking
 
             /* We need the virtual address but because we are in the kernel we can't use the process page table.
                 So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
-            uint64_t SubtractStack = (uint64_t)Thread->Stack->GetStackPhysicalTop() - (uint64_t)Stack;
+            uintptr_t SubtractStack = (uintptr_t)Thread->Stack->GetStackPhysicalTop() - (uintptr_t)Stack;
             debug("SubtractStack: %#lx", SubtractStack);
 
             // Set the stack pointer to the new stack
-            Thread->Registers.rsp = ((uint64_t)Thread->Stack->GetStackTop() - SubtractStack);
+            Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop() - SubtractStack);
 
 #ifdef DEBUG
-            DumpData("Stack Data", (void *)((uint64_t)Thread->Stack->GetStackPhysicalTop() - (uint64_t)SubtractStack), SubtractStack);
+            DumpData("Stack Data", (void *)((uintptr_t)Thread->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
 #endif
 
-            Thread->Registers.rdi = (uint64_t)ArgvSize;                                         // argc
-            Thread->Registers.rsi = (uint64_t)(Thread->Registers.rsp + 8);                      // argv
-            Thread->Registers.rcx = (uint64_t)EnvpSize;                                         // envc
-            Thread->Registers.rdx = (uint64_t)(Thread->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
+            Thread->Registers.rdi = (uintptr_t)ArgvSize;                                         // argc
+            Thread->Registers.rsi = (uintptr_t)(Thread->Registers.rsp + 8);                      // argv
+            Thread->Registers.rcx = (uintptr_t)EnvpSize;                                         // envc
+            Thread->Registers.rdx = (uintptr_t)(Thread->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
 
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 
@@ -973,7 +973,7 @@ namespace Tasking
         Process->Security.TrustLevel = TrustLevel;
         // Process->Security.UniqueToken = SecurityManager.CreateToken();
 
-        Process->IPCHandles = new HashMap<InterProcessCommunication::IPCPort, uint64_t>;
+        Process->IPCHandles = new HashMap<InterProcessCommunication::IPCPort, uintptr_t>;
 
         switch (TrustLevel)
         {
@@ -997,7 +997,7 @@ namespace Tasking
 #if defined(__amd64__)
             Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
             memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
-            for (uint64_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
+            for (size_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
                 Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
 #elif defined(__i386__)
 #elif defined(__aarch64__)
@@ -1037,7 +1037,7 @@ namespace Tasking
         if (Image)
         {
             // TODO: Check if it's ELF
-            Process->ELFSymbolTable = new SymbolResolver::Symbols((uint64_t)Image);
+            Process->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)Image);
         }
         else
             debug("No image provided for process \"%s\"(%d)", Process->Name, Process->ID);
@@ -1093,7 +1093,7 @@ namespace Tasking
         for (int i = 0; i < SMP::CPUCores; i++)
         {
             Vector<AuxiliaryVector> auxv;
-            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uint64_t>(IdleProcessLoop), nullptr, nullptr, auxv);
+            IdleThread = CreateThread(IdleProcess, reinterpret_cast<uintptr_t>(IdleProcessLoop), nullptr, nullptr, auxv);
             char IdleName[16];
             sprintf_(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);

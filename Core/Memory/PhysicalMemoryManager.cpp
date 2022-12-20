@@ -34,10 +34,10 @@ namespace Memory
         return false;
     }
 
-    bool Physical::SwapPages(void *Address, uint64_t PageCount)
+    bool Physical::SwapPages(void *Address, size_t PageCount)
     {
-        for (uint64_t i = 0; i < PageCount; i++)
-            if (!this->SwapPage((void *)((uint64_t)Address + (i * PAGE_SIZE))))
+        for (size_t i = 0; i < PageCount; i++)
+            if (!this->SwapPage((void *)((uintptr_t)Address + (i * PAGE_SIZE))))
                 return false;
         return false;
     }
@@ -48,10 +48,10 @@ namespace Memory
         return false;
     }
 
-    bool Physical::UnswapPages(void *Address, uint64_t PageCount)
+    bool Physical::UnswapPages(void *Address, size_t PageCount)
     {
-        for (uint64_t i = 0; i < PageCount; i++)
-            if (!this->UnswapPage((void *)((uint64_t)Address + (i * PAGE_SIZE))))
+        for (size_t i = 0; i < PageCount; i++)
+            if (!this->UnswapPage((void *)((uintptr_t)Address + (i * PAGE_SIZE))))
                 return false;
         return false;
     }
@@ -78,7 +78,7 @@ namespace Memory
         return nullptr;
     }
 
-    void *Physical::RequestPages(uint64_t Count)
+    void *Physical::RequestPages(size_t Count)
     {
         SmartLock(this->MemoryLock);
         for (; PageBitmapIndex < PageBitmap.Size * 8; PageBitmapIndex++)
@@ -91,7 +91,7 @@ namespace Memory
                 if (PageBitmap[Index] == true)
                     continue;
 
-                for (uint64_t i = 0; i < Count; i++)
+                for (size_t i = 0; i < Count; i++)
                     if (PageBitmap[Index + i] == true)
                         goto NextPage;
 
@@ -123,7 +123,7 @@ namespace Memory
             warn("Null pointer passed to FreePage.");
             return;
         }
-        uint64_t Index = (uint64_t)Address / PAGE_SIZE;
+        size_t Index = (size_t)Address / PAGE_SIZE;
         if (unlikely(PageBitmap[Index] == false))
             return;
 
@@ -136,7 +136,7 @@ namespace Memory
         }
     }
 
-    void Physical::FreePages(void *Address, uint64_t Count)
+    void Physical::FreePages(void *Address, size_t Count)
     {
         if (unlikely(Address == nullptr || Count == 0))
         {
@@ -144,8 +144,8 @@ namespace Memory
             return;
         }
 
-        for (uint64_t t = 0; t < Count; t++)
-            this->FreePage((void *)((uint64_t)Address + (t * PAGE_SIZE)));
+        for (size_t t = 0; t < Count; t++)
+            this->FreePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
     }
 
     void Physical::LockPage(void *Address)
@@ -153,7 +153,7 @@ namespace Memory
         if (unlikely(Address == nullptr))
             warn("Trying to lock null address.");
 
-        uint64_t Index = (uint64_t)Address / PAGE_SIZE;
+        uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
         if (unlikely(PageBitmap[Index] == true))
             return;
         if (PageBitmap.Set(Index, true))
@@ -163,13 +163,13 @@ namespace Memory
         }
     }
 
-    void Physical::LockPages(void *Address, uint64_t PageCount)
+    void Physical::LockPages(void *Address, size_t PageCount)
     {
         if (unlikely(Address == nullptr || PageCount == 0))
             warn("Trying to lock %s%s.", Address ? "null address" : "", PageCount ? "0 pages" : "");
 
-        for (uint64_t i = 0; i < PageCount; i++)
-            this->LockPage((void *)((uint64_t)Address + (i * PAGE_SIZE)));
+        for (size_t i = 0; i < PageCount; i++)
+            this->LockPage((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
     }
 
     void Physical::ReservePage(void *Address)
@@ -177,7 +177,7 @@ namespace Memory
         if (unlikely(Address == nullptr))
             warn("Trying to reserve null address.");
 
-        uint64_t Index = (uint64_t)Address / PAGE_SIZE;
+        uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
         if (unlikely(PageBitmap[Index] == true))
             return;
 
@@ -188,13 +188,13 @@ namespace Memory
         }
     }
 
-    void Physical::ReservePages(void *Address, uint64_t PageCount)
+    void Physical::ReservePages(void *Address, size_t PageCount)
     {
         if (unlikely(Address == nullptr || PageCount == 0))
             warn("Trying to reserve %s%s.", Address ? "null address" : "", PageCount ? "0 pages" : "");
 
-        for (uint64_t t = 0; t < PageCount; t++)
-            this->ReservePage((void *)((uint64_t)Address + (t * PAGE_SIZE)));
+        for (size_t t = 0; t < PageCount; t++)
+            this->ReservePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
     }
 
     void Physical::UnreservePage(void *Address)
@@ -202,7 +202,7 @@ namespace Memory
         if (unlikely(Address == nullptr))
             warn("Trying to unreserve null address.");
 
-        uint64_t Index = (uint64_t)Address / PAGE_SIZE;
+        uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
         if (unlikely(PageBitmap[Index] == false))
             return;
 
@@ -215,13 +215,13 @@ namespace Memory
         }
     }
 
-    void Physical::UnreservePages(void *Address, uint64_t PageCount)
+    void Physical::UnreservePages(void *Address, size_t PageCount)
     {
         if (unlikely(Address == nullptr || PageCount == 0))
             warn("Trying to unreserve %s%s.", Address ? "null address" : "", PageCount ? "0 pages" : "");
 
-        for (uint64_t t = 0; t < PageCount; t++)
-            this->UnreservePage((void *)((uint64_t)Address + (t * PAGE_SIZE)));
+        for (size_t t = 0; t < PageCount; t++)
+            this->UnreservePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
     }
 
     void Physical::Init(BootInfo *Info)
@@ -253,14 +253,14 @@ namespace Memory
             CPU::Stop();
         }
 
-        uint64_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
+        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
         trace("Initializing Bitmap at %llp-%llp (%lld Bytes)",
               LargestFreeMemorySegment,
-              (void *)((uint64_t)LargestFreeMemorySegment + BitmapSize),
+              (void *)((uintptr_t)LargestFreeMemorySegment + BitmapSize),
               BitmapSize);
         PageBitmap.Size = BitmapSize;
         PageBitmap.Buffer = (uint8_t *)LargestFreeMemorySegment;
-        for (uint64_t i = 0; i < BitmapSize; i++)
+        for (size_t i = 0; i < BitmapSize; i++)
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
         trace("Reserving pages...");

@@ -13,18 +13,18 @@ namespace Memory
             void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
             debug("AllocatedStack: %p", AllocatedStack);
             memset(AllocatedStack, 0, USER_STACK_SIZE);
-            for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
+            for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
             {
                 Virtual(Table).Map((void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
-                                   (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)),
+                                   (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)),
                                    PTFlag::RW | PTFlag::US);
                 debug("Mapped %p to %p", (void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
-                      (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)));
+                      (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)));
             }
             this->StackBottom = (void *)USER_STACK_BASE;
             this->StackTop = (void *)(USER_STACK_BASE + USER_STACK_SIZE);
             this->StackPhyiscalBottom = AllocatedStack;
-            this->StackPhyiscalTop = (void *)((uint64_t)AllocatedStack + USER_STACK_SIZE);
+            this->StackPhyiscalTop = (void *)((uintptr_t)AllocatedStack + USER_STACK_SIZE);
             this->Size = USER_STACK_SIZE;
         }
         else
@@ -33,7 +33,7 @@ namespace Memory
             this->StackPhyiscalBottom = this->StackBottom;
             debug("StackBottom: %p", this->StackBottom);
             memset(this->StackBottom, 0, STACK_SIZE);
-            this->StackTop = (void *)((uint64_t)this->StackBottom + STACK_SIZE);
+            this->StackTop = (void *)((uintptr_t)this->StackBottom + STACK_SIZE);
             this->StackPhyiscalTop = this->StackTop;
             this->Size = STACK_SIZE;
         }
@@ -47,12 +47,12 @@ namespace Memory
         // debug("Freed stack at %p", this->StackBottom);
     }
 
-    bool StackGuard::Expand(uint64_t FaultAddress)
+    bool StackGuard::Expand(uintptr_t FaultAddress)
     {
         if (this->UserMode)
         {
-            if (FaultAddress < (uint64_t)this->StackBottom - USER_STACK_SIZE ||
-                FaultAddress > (uint64_t)this->StackTop)
+            if (FaultAddress < (uintptr_t)this->StackBottom - USER_STACK_SIZE ||
+                FaultAddress > (uintptr_t)this->StackTop)
             {
                 return false; // It's not about the stack.
             }
@@ -61,12 +61,12 @@ namespace Memory
                 void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
                 debug("AllocatedStack: %p", AllocatedStack);
                 memset(AllocatedStack, 0, USER_STACK_SIZE);
-                for (uint64_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
+                for (uintptr_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
                 {
-                    Virtual(this->Table).Map((void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
-                    debug("Mapped %p to %p", (void *)((uint64_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uint64_t)AllocatedStack + (i * PAGE_SIZE)));
+                    Virtual(this->Table).Map((void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
+                    debug("Mapped %p to %p", (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)));
                 }
-                this->StackBottom = (void *)((uint64_t)this->StackBottom - USER_STACK_SIZE);
+                this->StackBottom = (void *)((uintptr_t)this->StackBottom - USER_STACK_SIZE);
                 this->Size += USER_STACK_SIZE;
                 info("Stack expanded to %p", this->StackBottom);
                 return true;

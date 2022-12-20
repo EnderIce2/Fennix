@@ -11,22 +11,22 @@ namespace Memory
         return FROM_PAGES(Size);
     }
 
-    void *Tracker::RequestPages(uint64_t Count)
+    void *Tracker::RequestPages(size_t Count)
     {
         void *Address = KernelAllocator.RequestPages(Count);
-        for (uint64_t i = 0; i < Count; i++)
-            Memory::Virtual(this->PageTable).Remap((void *)((uint64_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+        for (size_t i = 0; i < Count; i++)
+            Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
         AllocatedPagesList.push_back({Address, Count});
         return Address;
     }
 
-    void Tracker::FreePages(void *Address, uint64_t Count)
+    void Tracker::FreePages(void *Address, size_t Count)
     {
         KernelAllocator.FreePages(Address, Count);
-        for (uint64_t i = 0; i < Count; i++)
-            Memory::Virtual(this->PageTable).Remap((void *)((uint64_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+        for (size_t i = 0; i < Count; i++)
+            Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
 
-        for (uint64_t i = 0; i < AllocatedPagesList.size(); i++)
+        for (uintptr_t i = 0; i < AllocatedPagesList.size(); i++)
             if (AllocatedPagesList[i].Address == Address)
             {
                 AllocatedPagesList.remove(i);
@@ -48,8 +48,8 @@ namespace Memory
         foreach (auto var in AllocatedPagesList)
         {
             KernelAllocator.FreePages(var.Address, var.PageCount);
-            for (uint64_t i = 0; i < var.PageCount; i++)
-                Memory::Virtual(this->PageTable).Remap((void *)((uint64_t)var.Address + (i * PAGE_SIZE)), (void *)((uint64_t)var.Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+            for (size_t i = 0; i < var.PageCount; i++)
+                Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)var.Address + (i * PAGE_SIZE)), (void *)((uintptr_t)var.Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
         }
         debug("Tracker destroyed.");
     }

@@ -86,16 +86,16 @@ namespace Disk
     {
     public:
         char Label[72] = "Unidentified Partition";
-        uint64_t StartLBA = 0xdeadbeef;
-        uint64_t EndLBA = 0xdeadbeef;
-        uint64_t Sectors = 0xdeadbeef;
-        uint64_t Flags = 0xdeadbeef;
+        size_t StartLBA = 0xdeadbeef;
+        size_t EndLBA = 0xdeadbeef;
+        size_t Sectors = 0xdeadbeef;
+        size_t Flags = 0xdeadbeef;
         unsigned char Port = 0;
         PartitionStyle Style = PartitionStyle::Unknown;
         size_t Index = 0;
 
-        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
-        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
+        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
+        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
         Partition() {}
         ~Partition() {}
     };
@@ -109,10 +109,10 @@ namespace Disk
         PartitionStyle Style = PartitionStyle::Unknown;
         Vector<Partition *> Partitions;
         bool MechanicalDisk = false;
-        uint64_t UniqueIdentifier = 0xdeadbeef;
+        size_t UniqueIdentifier = 0xdeadbeef;
 
-        uint64_t Read(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
-        uint64_t Write(uint64_t Offset, uint64_t Count, uint8_t *Buffer) { return 0; }
+        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
+        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
         Drive()
         { // TODO: Allocate buffer
         }

@@ -28,6 +28,7 @@ namespace CrashHandler
                     data.Thread->Name,
                     data.Thread->ID);
         EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", data.ID);
+        uintptr_t ds;
 #if defined(__amd64__)
 
         CPUData *cpu = (CPUData *)data.CPUData;
@@ -46,11 +47,9 @@ namespace CrashHandler
             EHPrint("Checksum: 0x%X\n", cpu->Checksum);
         }
 
-        uint64_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
 #elif defined(__i386__)
-        uint32_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
 #elif defined(__aarch64__)

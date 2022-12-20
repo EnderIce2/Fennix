@@ -14,7 +14,7 @@
 
 namespace Driver
 {
-    DriverCode Driver::DriverLoadBindProcess(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf)
+    DriverCode Driver::DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         fixme("Process driver: %s", ((FexExtended *)DrvExtHdr)->Driver.Name);
         return DriverCode::NOT_IMPLEMENTED;

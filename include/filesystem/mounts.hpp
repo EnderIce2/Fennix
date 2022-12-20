@@ -88,7 +88,7 @@ namespace FileSystem
     class FB
     {
     public:
-        void SetFrameBufferData(uint64_t Address, uint64_t Size, uint32_t Width, uint32_t Height, uint32_t PixelsPerScanLine);
+        void SetFrameBufferData(uintptr_t Address, size_t Size, uint32_t Width, uint32_t Height, uint32_t PixelsPerScanLine);
         FB();
         ~FB();
     };

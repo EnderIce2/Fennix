@@ -11,8 +11,8 @@
 
 #ifdef __cplusplus
 
-extern uint64_t _kernel_start, _kernel_end;
-extern uint64_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
+extern uintptr_t _kernel_start, _kernel_end;
+extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 
 // kilobyte
 #define TO_KB(d) (d / 1024)
@@ -177,7 +177,7 @@ namespace Memory
         uint64_t raw;
 
         /** @brief Set Address */
-        void SetAddress(uint64_t _Address)
+        void SetAddress(uintptr_t _Address)
         {
 #if defined(__amd64__)
             _Address &= 0x000000FFFFFFFFFF;
@@ -195,7 +195,7 @@ namespace Memory
         }
 
         /** @brief Get Address */
-        uint64_t GetAddress()
+        uintptr_t GetAddress()
         {
 #if defined(__amd64__)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
@@ -232,7 +232,7 @@ namespace Memory
         uint64_t raw;
 
         /** @brief Set PageTableEntryPtr address */
-        void SetAddress(uint64_t _Address)
+        void SetAddress(uintptr_t _Address)
         {
 #if defined(__amd64__)
             _Address &= 0x000000FFFFFFFFFF;
@@ -250,7 +250,7 @@ namespace Memory
         }
 
         /** @brief Get PageTableEntryPtr address */
-        uint64_t GetAddress()
+        uintptr_t GetAddress()
         {
 #if defined(__amd64__)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
@@ -287,7 +287,7 @@ namespace Memory
         uint64_t raw;
 
         /** @brief Set PageDirectoryEntryPtr address */
-        void SetAddress(uint64_t _Address)
+        void SetAddress(uintptr_t _Address)
         {
 #if defined(__amd64__)
             _Address &= 0x000000FFFFFFFFFF;
@@ -305,7 +305,7 @@ namespace Memory
         }
 
         /** @brief Get PageDirectoryEntryPtr address */
-        uint64_t GetAddress()
+        uintptr_t GetAddress()
         {
 #if defined(__amd64__)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
@@ -342,7 +342,7 @@ namespace Memory
         uint64_t raw;
 
         /** @brief Set PageDirectoryPointerTableEntryPtr address */
-        void SetAddress(uint64_t _Address)
+        void SetAddress(uintptr_t _Address)
         {
 #if defined(__amd64__)
             _Address &= 0x000000FFFFFFFFFF;
@@ -360,7 +360,7 @@ namespace Memory
         }
 
         /** @brief Get PageDirectoryPointerTableEntryPtr address */
-        uint64_t GetAddress()
+        uintptr_t GetAddress()
         {
 #if defined(__amd64__)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
@@ -400,9 +400,9 @@ namespace Memory
         Bitmap PageBitmap;
 
         void ReservePage(void *Address);
-        void ReservePages(void *Address, uint64_t PageCount);
+        void ReservePages(void *Address, size_t PageCount);
         void UnreservePage(void *Address);
-        void UnreservePages(void *Address, uint64_t PageCount);
+        void UnreservePages(void *Address, size_t PageCount);
 
     public:
         Bitmap GetPageBitmap() { return PageBitmap; }
@@ -447,7 +447,7 @@ namespace Memory
          * @return true if swap was successful
          * @return false if swap was unsuccessful
          */
-        bool SwapPages(void *Address, uint64_t PageCount);
+        bool SwapPages(void *Address, size_t PageCount);
         /**
          * @brief Unswap page
          *
@@ -464,7 +464,7 @@ namespace Memory
          * @return true if unswap was successful
          * @return false if unswap was unsuccessful
          */
-        bool UnswapPages(void *Address, uint64_t PageCount);
+        bool UnswapPages(void *Address, size_t PageCount);
 
         /**
          * @brief Lock page
@@ -478,7 +478,7 @@ namespace Memory
          * @param Address Address of the pages
          * @param PageCount Number of pages
          */
-        void LockPages(void *Address, uint64_t PageCount);
+        void LockPages(void *Address, size_t PageCount);
 
         /**
          * @brief Request page
@@ -492,7 +492,7 @@ namespace Memory
          * @param PageCount Number of pages
          * @return void* Allocated pages address
          */
-        void *RequestPages(uint64_t Count);
+        void *RequestPages(size_t Count);
         /**
          * @brief Free page
          *
@@ -505,7 +505,7 @@ namespace Memory
          * @param Address Address of the pages
          * @param PageCount Number of pages
          */
-        void FreePages(void *Address, uint64_t Count);
+        void FreePages(void *Address, size_t Count);
         /** @brief Do not use. */
         void Init(BootInfo *Info);
         /** @brief Do not use. */
@@ -524,11 +524,11 @@ namespace Memory
         class PageMapIndexer
         {
         public:
-            uint64_t PMLIndex = 0;
-            uint64_t PDPTEIndex = 0;
-            uint64_t PDEIndex = 0;
-            uint64_t PTEIndex = 0;
-            PageMapIndexer(uint64_t VirtualAddress);
+            uintptr_t PMLIndex = 0;
+            uintptr_t PDPTEIndex = 0;
+            uintptr_t PDEIndex = 0;
+            uintptr_t PTEIndex = 0;
+            PageMapIndexer(uintptr_t VirtualAddress);
         };
 
         /**
@@ -558,7 +558,7 @@ namespace Memory
          * @param PageCount Number of pages.
          * @param Flags Flags of the page. Check PTFlag enum.
          */
-        void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t PageCount, uint64_t Flags);
+        void Map(void *VirtualAddress, void *PhysicalAddress, size_t PageCount, uint64_t Flags);
 
         /**
          * @brief Unmap page.
@@ -573,7 +573,7 @@ namespace Memory
          * @param VirtualAddress First virtual address of the page.
          * @param PageCount Number of pages.
          */
-        void Unmap(void *VirtualAddress, uint64_t PageCount);
+        void Unmap(void *VirtualAddress, size_t PageCount);
 
         /**
          * @brief Remap page.
@@ -619,7 +619,7 @@ namespace Memory
         /** @brief For general info */
         void *GetStackPhysicalTop() { return StackPhyiscalTop; }
         /** @brief Called by exception handler */
-        bool Expand(uint64_t FaultAddress);
+        bool Expand(uintptr_t FaultAddress);
         /**
          * @brief Construct a new Stack Guard object
          * @param User Stack for user mode?
@@ -640,7 +640,7 @@ namespace Memory
         struct AllocatedPages
         {
             void *Address;
-            uint64_t PageCount;
+            size_t PageCount;
         };
 
         Vector<AllocatedPages> AllocatedPagesList;
@@ -648,8 +648,8 @@ namespace Memory
     public:
         uint64_t GetAllocatedMemorySize();
 
-        void *RequestPages(uint64_t Count);
-        void FreePages(void *Address, uint64_t Count);
+        void *RequestPages(size_t Count);
+        void FreePages(void *Address, size_t Count);
 
         Tracker(PageTable4 *PageTable = nullptr);
         ~Tracker();
@@ -686,9 +686,9 @@ extern Memory::PageTable4 *UserspaceKernelOnlyPageTable;
 
 extern void *KPT;
 
-EXTERNC void *HeapMalloc(uint64_t Size);
-EXTERNC void *HeapCalloc(uint64_t n, uint64_t Size);
-EXTERNC void *HeapRealloc(void *Address, uint64_t Size);
+EXTERNC void *HeapMalloc(size_t Size);
+EXTERNC void *HeapCalloc(size_t n, size_t Size);
+EXTERNC void *HeapRealloc(void *Address, size_t Size);
 EXTERNC void HeapFree(void *Address);
 
 #define kmalloc(Size) HeapMalloc(Size)

@@ -23,9 +23,9 @@ struct CPUData
     /** @brief Used by syscall handler */
     uint8_t *SystemCallStack; /* gs+0x0 */
     /** @brief Used by syscall handler */
-    uint64_t TempStack; /* gs+0x8 */
+    uintptr_t TempStack; /* gs+0x8 */
     /** @brief Used by CPU */
-    uint64_t Stack;
+    uintptr_t Stack;
     /** @brief CPU ID. */
     long ID;
     /** @brief Local CPU error code. */

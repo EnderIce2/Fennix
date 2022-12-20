@@ -52,7 +52,7 @@ typedef struct
 
 namespace SymbolResolver
 {
-    Symbols::Symbols(uint64_t ImageAddress)
+    Symbols::Symbols(uintptr_t ImageAddress)
     {
         debug("Solving symbols for address: %#llx", ImageAddress);
         Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
@@ -68,7 +68,7 @@ namespace SymbolResolver
         Elf64_Sym *ElfSymbols = nullptr;
         char *strtab = nullptr;
 
-        for (uint64_t i = 0; i < Header->e_shnum; i++)
+        for (uint16_t i = 0; i < Header->e_shnum; i++)
             switch (ElfSections[i].sh_type)
             {
             case SHT_SYMTAB:
@@ -83,7 +83,7 @@ namespace SymbolResolver
                 }
                 else
                 {
-                    strtab = (char *)(uint64_t)ImageAddress + ElfSections[i].sh_offset;
+                    strtab = (char *)(ImageAddress + ElfSections[i].sh_offset);
                     debug("String table found, %d entries", ElfSections[i].sh_size);
                 }
                 break;
@@ -91,8 +91,8 @@ namespace SymbolResolver
 
         if (ElfSymbols != nullptr && strtab != nullptr)
         {
-            size_t Index, MinimumIndex;
-            for (size_t i = 0; i < this->TotalEntries - 1; i++)
+            uintptr_t Index, MinimumIndex;
+            for (uintptr_t i = 0; i < this->TotalEntries - 1; i++)
             {
                 MinimumIndex = i;
                 for (Index = i + 1; Index < this->TotalEntries; Index++)
@@ -114,7 +114,7 @@ namespace SymbolResolver
 #endif
 
             trace("Symbol table loaded, %d entries (%ldKB)", this->TotalEntries, TO_KB(this->TotalEntries * sizeof(SymbolTable)));
-            for (size_t i = 0, g = this->TotalEntries; i < g; i++)
+            for (uintptr_t i = 0, g = this->TotalEntries; i < g; i++)
             {
                 this->SymTable[i].Address = ElfSymbols[i].st_value;
                 this->SymTable[i].FunctionName = &strtab[ElfSymbols[i].st_name];
@@ -133,10 +133,10 @@ namespace SymbolResolver
 
     Symbols::~Symbols() {}
 
-    const __no_instrument_function char *Symbols::GetSymbolFromAddress(uint64_t Address)
+    const __no_instrument_function char *Symbols::GetSymbolFromAddress(uintptr_t Address)
     {
         Symbols::SymbolTable Result{0, (char *)"<unknown>"};
-        for (size_t i = 0; i < this->TotalEntries; i++)
+        for (uintptr_t i = 0; i < this->TotalEntries; i++)
             if (this->SymTable[i].Address <= Address && this->SymTable[i].Address > Result.Address)
                 Result = this->SymTable[i];
         return Result.FunctionName;

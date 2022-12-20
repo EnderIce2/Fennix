@@ -62,7 +62,7 @@ namespace Tasking
     Security::~Security()
     {
         trace("Destroying Tasking Security");
-        for (uint64_t i = 0; i < Tokens.size(); i++)
+        for (size_t i = 0; i < Tokens.size(); i++)
             Tokens.remove(i);
     }
 }

@@ -138,7 +138,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     SafeFunction __no_instrument_function Events::~Events()
     {
-        for (uint64_t i = 0; i < RegisteredEvents.size(); i++)
+        for (uintptr_t i = 0; i < RegisteredEvents.size(); i++)
             if (RegisteredEvents[i] == this)
             {
                 RegisteredEvents.remove(i);

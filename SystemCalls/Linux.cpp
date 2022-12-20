@@ -5,6 +5,8 @@
 
 #include "../kernel.h"
 
+typedef __INT32_TYPE__ mode_t;
+
 #define internal_unimpl(a, b, c, d, e, f, g)                                                     \
     {                                                                                            \
         fixme("Unimplemented Syscall: %lld %lld %lld %lld %lld %lld %lld", a, b, c, d, e, f, g); \
@@ -15,31 +17,31 @@
         fixme("( %lld %lld %lld %lld %lld %lld %lld ) stub", a, b, c, d, e, f, g); \
     }
 
-static uint64_t sys_read(unsigned int fd, char *buf, size_t count)
+static ssize_t sys_read(int fd, void *buf, size_t count)
 {
     fixme("read( %p %p %ld )", fd, buf, count);
     return -1;
 }
 
-static uint64_t sys_write(unsigned int fd, const char *buf, size_t count)
+static ssize_t sys_write(int fd, const char *buf, size_t count)
 {
     fixme("write( %p %p %ld )", fd, buf, count);
     return -1;
 }
 
-static uint64_t sys_open(const char *filename, int flags, unsigned short mode)
+static ssize_t sys_open(const char *filename, int flags, mode_t mode)
 {
     fixme("open( %s %d %d )", filename, flags, mode);
     return -1;
 }
 
-static uint64_t sys_close(unsigned int fd)
+static ssize_t sys_close(int fd)
 {
     fixme("close( %d )", fd);
     return -1;
 }
 
-static uint64_t sys_stat(const char *filename, void *statbuf)
+static ssize_t sys_stat(const char *filename, void *statbuf)
 {
     fixme("stat( %s %p )", filename, statbuf);
     return -1;

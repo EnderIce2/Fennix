@@ -43,7 +43,7 @@ namespace Execute
 
                         Memory::Virtual pva = Memory::Virtual(Process->PageTable);
                         for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
-                            pva.Map((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                            pva.Map((void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), (void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
                         Vector<AuxiliaryVector> auxv; // TODO!
 
@@ -76,13 +76,13 @@ namespace Execute
 
                     void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->Node->Length));
                     memcpy(BaseImage, (void *)ExFile->Node->Address, ExFile->Node->Length);
-                    debug("Image Size: %#lx - %#lx (length: %ld)", BaseImage, (uint64_t)BaseImage + ExFile->Node->Length, ExFile->Node->Length);
+                    debug("Image Size: %#lx - %#lx (length: %ld)", BaseImage, (uintptr_t)BaseImage + ExFile->Node->Length, ExFile->Node->Length);
 
                     PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User, BaseImage);
 
                     Memory::Virtual pva = Memory::Virtual(Process->PageTable);
                     for (uint64_t i = 0; i < TO_PAGES(ExFile->Node->Length); i++)
-                        pva.Remap((void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), (void *)((uint64_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                        pva.Remap((void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), (void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
                     Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)BaseImage;
 
@@ -158,8 +158,8 @@ namespace Execute
                                 memset(MemoryImage, 0, ElfAppSize);
                                 for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
                                 {
-                                    pva.Remap((void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
-                                    debug("Mapping: %#lx -> %#lx", (uint64_t)MemoryImage + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
+                                    pva.Remap((void *)((uintptr_t)MemoryImage + (i * PAGE_SIZE)), (void *)((uintptr_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                                    debug("Mapping: %#lx -> %#lx", (uintptr_t)MemoryImage + (i * PAGE_SIZE), (uintptr_t)MemoryImage + (i * PAGE_SIZE));
                                 }
                                 break;
                             }
@@ -172,10 +172,10 @@ namespace Execute
                             memset(MemoryImage, 0, ElfAppSize);
                             for (uint64_t i = 0; i < TO_PAGES(ElfAppSize); i++)
                             {
-                                uint64_t Address = (uint64_t)ProgramHeader->p_vaddr;
+                                uintptr_t Address = (uintptr_t)ProgramHeader->p_vaddr;
                                 Address &= 0xFFFFFFFFFFFFF000;
-                                pva.Remap((void *)((uint64_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
-                                debug("Mapping: %#lx -> %#lx", (uint64_t)Address + (i * PAGE_SIZE), (uint64_t)MemoryImage + (i * PAGE_SIZE));
+                                pva.Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uintptr_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                                debug("Mapping: %#lx -> %#lx", (uintptr_t)Address + (i * PAGE_SIZE), (uintptr_t)MemoryImage + (i * PAGE_SIZE));
                             }
                         }
 

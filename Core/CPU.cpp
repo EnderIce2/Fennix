@@ -102,23 +102,21 @@ namespace CPU
 		{
 		case Check:
 		{
+			uintptr_t Flags;
 #if defined(__amd64__)
-			uint64_t rflags;
 			asmv("pushfq");
 			asmv("popq %0"
-				 : "=r"(rflags));
-			return rflags & (1 << 9);
+				 : "=r"(Flags));
+			return Flags & (1 << 9);
 #elif defined(__i386__)
-			uint32_t rflags;
 			asmv("pushfl");
 			asmv("popl %0"
-				 : "=r"(rflags));
-			return rflags & (1 << 9);
+				 : "=r"(Flags));
+			return Flags & (1 << 9);
 #elif defined(__aarch64__)
-			uint64_t daif;
 			asmv("mrs %0, daif"
-				 : "=r"(daif));
-			return !(daif & (1 << 2));
+				 : "=r"(Flags));
+			return !(Flags & (1 << 2));
 #endif
 		}
 		case Enable:
@@ -254,21 +252,20 @@ namespace CPU
 #endif
 	}
 
-	uint64_t Counter()
+	uintptr_t Counter()
 	{
 		// TODO: Get the counter from the x2APIC or any other timer that is available. (TSC is not available on all CPUs)
+		uintptr_t Counter;
 #if defined(__amd64__)
-		uint64_t counter;
 		asmv("rdtsc"
-			 : "=A"(counter));
-		return counter;
+			 : "=A"(Counter));
 #elif defined(__i386__)
-		return 0;
+		asmv("rdtsc"
+			 : "=A"(Counter));
 #elif defined(__aarch64__)
-		uint64_t counter;
 		asmv("mrs %0, cntvct_el0"
-			 : "=r"(counter));
-		return counter;
+			 : "=r"(Counter));
 #endif
+		return Counter;
 	}
 }

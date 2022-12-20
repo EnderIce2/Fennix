@@ -3,9 +3,9 @@
 #include <uart.hpp>
 #include <debug.h>
 
-extern uint64_t _binary_Files_ter_powerline_v12n_psf_start;
-extern uint64_t _binary_Files_ter_powerline_v12n_psf_end;
-extern uint64_t _binary_Files_ter_powerline_v12n_psf_size;
+extern uintptr_t _binary_Files_ter_powerline_v12n_psf_start;
+extern uintptr_t _binary_Files_ter_powerline_v12n_psf_end;
+extern uintptr_t _binary_Files_ter_powerline_v12n_psf_size;
 
 NewLock(PrintLock);
 
@@ -67,7 +67,7 @@ namespace Video
 
                 for (unsigned long Y = this->Buffers[Index]->CursorY; Y < this->Buffers[Index]->CursorY + fonthdrHeight; Y++)
                     for (unsigned long X = this->Buffers[Index]->CursorX - fonthdrWidth; X < this->Buffers[Index]->CursorX; X++)
-                        *(uint32_t *)((uint64_t)this->Buffers[Index]->Buffer +
+                        *(uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer +
                                       (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = 0;
                 break;
             }
@@ -145,7 +145,7 @@ namespace Video
             {
                 for (uint64_t X = this->Buffers[Index]->CursorX; X < this->Buffers[Index]->CursorX + fonthdrWidth; X++)
                     if ((*FontPtr & (0b10000000 >> (X - this->Buffers[Index]->CursorX))) > 0)
-                        *(uint32_t *)((uint64_t)this->Buffers[Index]->Buffer +
+                        *(uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer +
                                       (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = this->Buffers[Index]->Color;
 
                 FontPtr += BytesPerLine;

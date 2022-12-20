@@ -53,7 +53,7 @@ __constructor void TestRandom()
     uint16_t Seeds16[16];
     uint32_t Seeds32[16];
     uint64_t Seeds64[16];
-    for (uint64_t i = 0; i < 16; i++)
+    for (short i = 0; i < 16; i++)
     {
         Seeds16[i] = Random::rand16();
         Seeds32[i] = Random::rand32();

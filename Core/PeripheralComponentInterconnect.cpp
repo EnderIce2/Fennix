@@ -772,10 +772,10 @@ namespace PCI
     }
 #endif
 
-    void PCI::EnumerateFunction(uint64_t DeviceAddress, uint64_t Function)
+    void PCI::EnumerateFunction(uintptr_t DeviceAddress, uintptr_t Function)
     {
-        uint64_t Offset = Function << 12;
-        uint64_t FunctionAddress = DeviceAddress + Offset;
+        uintptr_t Offset = Function << 12;
+        uintptr_t FunctionAddress = DeviceAddress + Offset;
         Memory::Virtual().Map((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)FunctionAddress;
         if (PCIDeviceHdr->DeviceID == 0)
@@ -788,24 +788,24 @@ namespace PCI
 #endif
     }
 
-    void PCI::EnumerateDevice(uint64_t BusAddress, uint64_t Device)
+    void PCI::EnumerateDevice(uintptr_t BusAddress, uintptr_t Device)
     {
-        uint64_t Offset = Device << 15;
-        uint64_t DeviceAddress = BusAddress + Offset;
+        uintptr_t Offset = Device << 15;
+        uintptr_t DeviceAddress = BusAddress + Offset;
         Memory::Virtual().Map((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)DeviceAddress;
         if (PCIDeviceHdr->DeviceID == 0)
             return;
         if (PCIDeviceHdr->DeviceID == 0xFFFF)
             return;
-        for (uint64_t Function = 0; Function < 8; Function++)
+        for (uintptr_t Function = 0; Function < 8; Function++)
             EnumerateFunction(DeviceAddress, Function);
     }
 
-    void PCI::EnumerateBus(uint64_t BaseAddress, uint64_t Bus)
+    void PCI::EnumerateBus(uintptr_t BaseAddress, uintptr_t Bus)
     {
-        uint64_t Offset = Bus << 20;
-        uint64_t BusAddress = BaseAddress + Offset;
+        uintptr_t Offset = Bus << 20;
+        uintptr_t BusAddress = BaseAddress + Offset;
         Memory::Virtual().Map((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)BusAddress;
         if (Bus != 0) // TODO: VirtualBox workaround (UNTESTED ON REAL HARDWARE!)
@@ -820,7 +820,7 @@ namespace PCI
               PCIDeviceHdr->CacheLineSize, PCIDeviceHdr->Class, PCIDeviceHdr->Command,
               PCIDeviceHdr->HeaderType, PCIDeviceHdr->LatencyTimer, PCIDeviceHdr->ProgIF,
               PCIDeviceHdr->RevisionID, PCIDeviceHdr->Status, PCIDeviceHdr->Subclass);
-        for (uint64_t Device = 0; Device < 32; Device++)
+        for (uintptr_t Device = 0; Device < 32; Device++)
             EnumerateDevice(BusAddress, Device);
     }
 
@@ -848,11 +848,11 @@ namespace PCI
         int Entries = ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
         for (int t = 0; t < Entries; t++)
         {
-            DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uint64_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
+            DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
             Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
             trace("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
                   NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
-            for (uint64_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
+            for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
                 EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
         }
 #elif defined(__i386__)

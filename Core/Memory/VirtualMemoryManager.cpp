@@ -8,10 +8,10 @@ namespace Memory
     bool Virtual::Check(void *VirtualAddress, PTFlag Flag)
     {
         // 0x1000 aligned
-        uint64_t Address = (uint64_t)VirtualAddress;
+        uintptr_t Address = (uintptr_t)VirtualAddress;
         Address &= 0xFFFFFFFFFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer((uint64_t)Address);
+        PageMapIndexer Index = PageMapIndexer(Address);
         PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
 
         PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
@@ -20,15 +20,15 @@ namespace Memory
 
         if ((PML4.raw & Flag) > 0)
         {
-            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
+            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
             if (PDPTE)
                 if ((PDPTE->Entries[Index.PDPTEIndex].Present))
                 {
-                    PDE = (PageDirectoryEntryPtr *)((uint64_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+                    PDE = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
                     if (PDE)
                         if ((PDE->Entries[Index.PDEIndex].Present))
                         {
-                            PTE = (PageTableEntryPtr *)((uint64_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+                            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
                             if (PTE)
                                 if ((PTE->Entries[Index.PTEIndex].Present))
                                 {
@@ -49,7 +49,7 @@ namespace Memory
             return;
         }
 
-        PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
+        PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
         // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
         uint64_t DirectoryFlags = Flags & 0x3F;
 
@@ -60,10 +60,10 @@ namespace Memory
             PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPage();
             memset(PDPTEPtr, 0, PAGE_SIZE);
             PML4.Present = true;
-            PML4.SetAddress((uint64_t)PDPTEPtr >> 12);
+            PML4.SetAddress((uintptr_t)PDPTEPtr >> 12);
         }
         else
-            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
+            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
         PML4.raw |= DirectoryFlags;
         this->Table->Entries[Index.PMLIndex] = PML4;
 
@@ -74,10 +74,10 @@ namespace Memory
             PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPage();
             memset(PDEPtr, 0, PAGE_SIZE);
             PDPTE.Present = true;
-            PDPTE.SetAddress((uint64_t)PDEPtr >> 12);
+            PDPTE.SetAddress((uintptr_t)PDEPtr >> 12);
         }
         else
-            PDEPtr = (PageDirectoryEntryPtr *)((uint64_t)PDPTE.GetAddress() << 12);
+            PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.GetAddress() << 12);
         PDPTE.raw |= DirectoryFlags;
         PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
 
@@ -88,17 +88,17 @@ namespace Memory
             PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPage();
             memset(PTEPtr, 0, PAGE_SIZE);
             PDE.Present = true;
-            PDE.SetAddress((uint64_t)PTEPtr >> 12);
+            PDE.SetAddress((uintptr_t)PTEPtr >> 12);
         }
         else
-            PTEPtr = (PageTableEntryPtr *)((uint64_t)PDE.GetAddress() << 12);
+            PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.GetAddress() << 12);
         PDE.raw |= DirectoryFlags;
         PDEPtr->Entries[Index.PDEIndex] = PDE;
 
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         PTE.Present = true;
         PTE.raw |= Flags;
-        PTE.SetAddress((uint64_t)PhysicalAddress >> 12);
+        PTE.SetAddress((uintptr_t)PhysicalAddress >> 12);
         PTEPtr->Entries[Index.PTEIndex] = PTE;
 
 #if defined(__amd64__)
@@ -133,10 +133,10 @@ namespace Memory
 #endif
     }
 
-    void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t PageCount, uint64_t Flags)
+    void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, size_t PageCount, uint64_t Flags)
     {
-        for (uint64_t i = 0; i < PageCount; i++)
-            this->Map((void *)((uint64_t)VirtualAddress + (i * PAGE_SIZE)), (void *)((uint64_t)PhysicalAddress + (i * PAGE_SIZE)), Flags);
+        for (size_t i = 0; i < PageCount; i++)
+            this->Map((void *)((uintptr_t)VirtualAddress + (i * PAGE_SIZE)), (void *)((uintptr_t)PhysicalAddress + (i * PAGE_SIZE)), Flags);
     }
 
     void Virtual::Unmap(void *VirtualAddress)
@@ -148,28 +148,28 @@ namespace Memory
             return;
         }
 
-        PageMapIndexer Index = PageMapIndexer((uint64_t)VirtualAddress);
+        PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
         PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
         if (!PML4.Present)
         {
             error("Page not present");
             return;
         }
-        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.Address << 12);
+        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.Address << 12);
         PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
         if (!PDPTE.Present)
         {
             error("Page not present");
             return;
         }
-        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uint64_t)PDPTE.Address << 12);
+        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.Address << 12);
         PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
         if (!PDE.Present)
         {
             error("Page not present");
             return;
         }
-        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uint64_t)PDE.Address << 12);
+        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.Address << 12);
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)
         {
@@ -195,10 +195,10 @@ namespace Memory
 #endif
     }
 
-    void Virtual::Unmap(void *VirtualAddress, uint64_t PageCount)
+    void Virtual::Unmap(void *VirtualAddress, size_t PageCount)
     {
-        for (uint64_t i = 0; i < PageCount; i++)
-            this->Unmap((void *)((uint64_t)VirtualAddress + (i * PAGE_SIZE)));
+        for (size_t i = 0; i < PageCount; i++)
+            this->Unmap((void *)((uintptr_t)VirtualAddress + (i * PAGE_SIZE)));
     }
 
     void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)

@@ -4,7 +4,7 @@
 
 #include "../kernel.h"
 
-extern "C" uint64_t SystemCallsHandler(SyscallsFrame *Frame)
+extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
 #if defined(__amd64__)
     switch (TaskManager->GetCurrentThread()->Info.Compatibility)

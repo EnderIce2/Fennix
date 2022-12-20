@@ -71,7 +71,7 @@ namespace Execute
 
     /* Originally from https://wiki.osdev.org/ELF_Tutorial */
 
-    static inline Elf64_Shdr *GetElfSheader(Elf64_Ehdr *Header) { return (Elf64_Shdr *)((uint64_t)Header + Header->e_shoff); }
+    static inline Elf64_Shdr *GetElfSheader(Elf64_Ehdr *Header) { return (Elf64_Shdr *)((uintptr_t)Header + Header->e_shoff); }
     static inline Elf64_Shdr *GetElfSection(Elf64_Ehdr *Header, uint64_t Index) { return &GetElfSheader(Header)[Index]; }
 
     static inline char *GetElfStringTable(Elf64_Ehdr *Header)
@@ -81,7 +81,7 @@ namespace Execute
         return (char *)Header + GetElfSection(Header, Header->e_shstrndx)->sh_offset;
     }
 
-    static inline char *elf_lookup_string(Elf64_Ehdr *Header, uint64_t Offset)
+    static inline char *elf_lookup_string(Elf64_Ehdr *Header, uintptr_t Offset)
     {
         char *StringTable = GetElfStringTable(Header);
         if (StringTable == nullptr)
@@ -111,17 +111,17 @@ namespace Execute
         if (SymbolTable == nullptr || StringTable == nullptr)
             return nullptr;
 
-        for (uint64_t i = 0; i < (SymbolTable->sh_size / sizeof(Elf64_Sym)); i++)
+        for (size_t i = 0; i < (SymbolTable->sh_size / sizeof(Elf64_Sym)); i++)
         {
-            Symbol = (Elf64_Sym *)((uint64_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
-            String = (char *)((uint64_t)Header + StringTable->sh_offset + Symbol->st_name);
+            Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
+            String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
             if (strcmp(String, Name) == 0)
                 return (void *)Symbol->st_value;
         }
         return nullptr;
     }
 
-    static uint64_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint32_t Index)
+    static uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint32_t Index)
     {
         if (Table == SHN_UNDEF || Index == SHN_UNDEF)
             return 0;
@@ -154,14 +154,14 @@ namespace Execute
                 }
             }
             else
-                return (uint64_t)Target;
+                return (uintptr_t)Target;
         }
         else if (Symbol->st_shndx == SHN_ABS)
             return Symbol->st_value;
         else
         {
             Elf64_Shdr *Target = GetElfSection(Header, Symbol->st_shndx);
-            return (uint64_t)Header + Symbol->st_value + Target->sh_offset;
+            return (uintptr_t)Header + Symbol->st_value + Target->sh_offset;
         }
     }
 
@@ -181,8 +181,8 @@ namespace Execute
                     memset(Buffer, 0, Section->sh_size);
 
                     Memory::Virtual pva = Memory::Virtual(/* TODO TODO TODO TODO TODO TODO */);
-                    for (uint64_t i = 0; i < TO_PAGES(Section->sh_size); i++)
-                        pva.Map((void *)((uint64_t)Buffer + (i * PAGE_SIZE)), (void *)((uint64_t)Buffer + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                    for (size_t i = 0; i < TO_PAGES(Section->sh_size); i++)
+                        pva.Map((void *)((uintptr_t)Buffer + (i * PAGE_SIZE)), (void *)((uintptr_t)Buffer + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
                     Section->sh_offset = (uint64_t)Buffer - (uint64_t)Header;
                     debug("Section %ld", Section->sh_size);
@@ -190,17 +190,17 @@ namespace Execute
             }
         }
 
-        for (uint64_t i = 0; i < Header->e_shnum; i++)
+        for (size_t i = 0; i < Header->e_shnum; i++)
         {
             Elf64_Shdr *Section = &shdr[i];
             if (Section->sh_type == SHT_REL)
             {
-                for (uint64_t Index = 0; Index < Section->sh_size / Section->sh_entsize; Index++)
+                for (size_t Index = 0; Index < Section->sh_size / Section->sh_entsize; Index++)
                 {
-                    Elf64_Rel *RelTable = &((Elf64_Rel *)((uint64_t)Header + Section->sh_offset))[Index];
+                    Elf64_Rel *RelTable = &((Elf64_Rel *)((uintptr_t)Header + Section->sh_offset))[Index];
                     Elf64_Shdr *Target = GetElfSection(Header, Section->sh_info);
 
-                    uint64_t *RelAddress = (uint64_t *)(((uint64_t)Header + Target->sh_offset) + RelTable->r_offset);
+                    uintptr_t *RelAddress = (uintptr_t *)(((uintptr_t)Header + Target->sh_offset) + RelTable->r_offset);
                     uint64_t SymbolValue = 0;
 
                     if (ELF64_R_SYM(RelTable->r_info) != SHN_UNDEF)
@@ -218,7 +218,7 @@ namespace Execute
                         *RelAddress = DO_64_64(SymbolValue, *RelAddress);
                         break;
                     case R_386_PC32:
-                        *RelAddress = DO_64_PC32(SymbolValue, *RelAddress, (uint64_t)RelAddress);
+                        *RelAddress = DO_64_PC32(SymbolValue, *RelAddress, (uintptr_t)RelAddress);
                         break;
                     default:
                         error("Unsupported relocation type: %d", ELF64_R_TYPE(RelTable->r_info));

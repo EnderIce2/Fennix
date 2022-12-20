@@ -77,8 +77,8 @@ namespace Driver
         foreach (auto var in Drivers)
             if (var->DriverUID == DUID)
             {
-                FexExtended *DrvExtHdr = (FexExtended *)((uint64_t)var->Address + EXTENDED_SECTION_ADDRESS);
-                return ((int (*)(void *))((uint64_t)DrvExtHdr->Driver.Callback + (uint64_t)var->Address))(KCB);
+                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)var->Address + EXTENDED_SECTION_ADDRESS);
+                return ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)var->Address))(KCB);
             }
         return -1;
     }
@@ -91,14 +91,14 @@ namespace Driver
         ((KernelAPI *)KAPIAddress)->Info.DriverUID = DriverUIDs++;
 
         debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
-        int ret = ((int (*)(KernelAPI *))((uint64_t)((Fex *)fex)->EntryPoint + (uint64_t)fex))(((KernelAPI *)KAPIAddress));
+        int ret = ((int (*)(KernelAPI *))((uintptr_t)((Fex *)fex)->EntryPoint + (uintptr_t)fex))(((KernelAPI *)KAPIAddress));
 
         if (DriverReturnCode::OK != ret)
             return DriverCode::DRIVER_RETURNED_ERROR;
         return DriverCode::OK;
     }
 
-    DriverCode Driver::LoadDriver(uint64_t DriverAddress, uint64_t Size)
+    DriverCode Driver::LoadDriver(uintptr_t DriverAddress, uintptr_t Size)
     {
         Fex *DrvHdr = (Fex *)DriverAddress;
         if (DrvHdr->Magic[0] != 'F' || DrvHdr->Magic[1] != 'E' || DrvHdr->Magic[2] != 'X' || DrvHdr->Magic[3] != '\0')
@@ -114,7 +114,7 @@ namespace Driver
 
                     if (ElfDrvHdr->Type == FexFormatType::FexFormatType_Driver)
                     {
-                        FexExtended *ElfDrvExtHdr = (FexExtended *)((uint64_t)ElfDrvHdr + EXTENDED_SECTION_ADDRESS);
+                        FexExtended *ElfDrvExtHdr = (FexExtended *)((uintptr_t)ElfDrvHdr + EXTENDED_SECTION_ADDRESS);
                         debug("Name: \"%s\"; Type: %d; Callback: %#lx", ElfDrvExtHdr->Driver.Name, ElfDrvExtHdr->Driver.Type, ElfDrvExtHdr->Driver.Callback);
 
                         if (ElfDrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
@@ -139,7 +139,7 @@ namespace Driver
 
         if (DrvHdr->Type == FexFormatType::FexFormatType_Driver)
         {
-            FexExtended *DrvExtHdr = (FexExtended *)((uint64_t)DrvHdr + EXTENDED_SECTION_ADDRESS);
+            FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)DrvHdr + EXTENDED_SECTION_ADDRESS);
             debug("Name: \"%s\"; Type: %d; Callback: %#lx", DrvExtHdr->Driver.Name, DrvExtHdr->Driver.Type, DrvExtHdr->Driver.Callback);
 
             if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
@@ -171,7 +171,7 @@ namespace Driver
                         cwk_path_get_extension(driver->Name, &extension, nullptr);
                         if (!strcmp(extension, ".fex") || !strcmp(extension, ".elf"))
                         {
-                            uint64_t ret = this->LoadDriver(driver->Address, driver->Length);
+                            uintptr_t ret = this->LoadDriver(driver->Address, driver->Length);
                             char RetString[128];
                             if (ret == DriverCode::OK)
                                 strncpy(RetString, "\e058C19OK", 64);

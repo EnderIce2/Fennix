@@ -23,7 +23,7 @@ namespace FileSystem
             uint32_t length;
         };
 
-        Initrd(uint64_t Address);
+        Initrd(uintptr_t Address);
         ~Initrd();
     };
 }

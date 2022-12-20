@@ -61,7 +61,7 @@ extern "C"
     {
         asmv("" ::
                  : "memory");
-        uint8_t Result = *(volatile uint8_t *)Address;
+        uint8_t Result = *(volatile uint8_t *)(uintptr_t)Address;
         asmv("" ::
                  : "memory");
         return Result;
@@ -71,7 +71,7 @@ extern "C"
     {
         asmv("" ::
                  : "memory");
-        uint16_t Result = *(volatile uint16_t *)Address;
+        uint16_t Result = *(volatile uint16_t *)(uintptr_t)Address;
         asmv("" ::
                  : "memory");
         return Result;
@@ -81,7 +81,7 @@ extern "C"
     {
         asmv("" ::
                  : "memory");
-        uint32_t Result = *(volatile uint32_t *)Address;
+        uint32_t Result = *(volatile uint32_t *)(uintptr_t)Address;
         asmv("" ::
                  : "memory");
         return Result;
@@ -91,7 +91,7 @@ extern "C"
     {
         asmv("" ::
                  : "memory");
-        uint64_t Result = *(volatile uint64_t *)Address;
+        uint64_t Result = *(volatile uint64_t *)(uintptr_t)Address;
         asmv("" ::
                  : "memory");
         return Result;

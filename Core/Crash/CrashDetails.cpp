@@ -121,7 +121,7 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
         CrashHandler::EHPrint(PageFaultDescriptions[Frame->ErrorCode & 0b111]);
 
 #ifdef DEBUG
-    uint64_t CheckPageFaultAddress = 0;
+    uintptr_t CheckPageFaultAddress = 0;
     CheckPageFaultAddress = CPU::x64::readcr2().PFLA;
     if (CheckPageFaultAddress == 0)
         CheckPageFaultAddress = Frame->rip;
@@ -155,11 +155,11 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 
         if (Present)
         {
-            uint64_t CheckPageFaultLinearAddress = (uint64_t)CheckPageFaultAddress;
+            uintptr_t CheckPageFaultLinearAddress = (uintptr_t)CheckPageFaultAddress;
             CheckPageFaultLinearAddress &= 0xFFFFFFFFFFFFF000;
             debug("%#lx -> %#lx", CheckPageFaultAddress, CheckPageFaultLinearAddress);
 
-            Memory::Virtual::PageMapIndexer Index = Memory::Virtual::PageMapIndexer((uint64_t)CheckPageFaultLinearAddress);
+            Memory::Virtual::PageMapIndexer Index = Memory::Virtual::PageMapIndexer((uintptr_t)CheckPageFaultLinearAddress);
             debug("Index for %#lx is PML:%d PDPTE:%d PDE:%d PTE:%d",
                   CheckPageFaultLinearAddress,
                   Index.PMLIndex,
@@ -168,9 +168,9 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
                   Index.PTEIndex);
             Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x64::readcr3().raw)->Entries[Index.PMLIndex];
 
-            Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
-            Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uint64_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
-            Memory::PageTableEntryPtr *PTE = (Memory::PageTableEntryPtr *)((uint64_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+            Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
+            Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+            Memory::PageTableEntryPtr *PTE = (Memory::PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
 
             debug("# %03d-%03d-%03d-%03d: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s NX:%s Address:%#lx",
                   Index.PMLIndex, 0, 0, 0,

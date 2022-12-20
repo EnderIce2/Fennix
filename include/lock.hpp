@@ -13,7 +13,7 @@ class LockClass
         uint64_t LockData = 0x0;
         const char *CurrentHolder = "(nul)";
         const char *AttemptingToGet = "(nul)";
-        uint64_t Count = 0;
+        size_t Count = 0;
         long Core = 0;
     };
     void DeadLock(SpinLockData Lock);

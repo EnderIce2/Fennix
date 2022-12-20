@@ -58,17 +58,17 @@ namespace Driver
         unsigned long DriverUIDs = 0;
 
         DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
-        DriverCode DriverLoadBindPCI(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
-        DriverCode DriverLoadBindInterrupt(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
-        DriverCode DriverLoadBindInput(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
-        DriverCode DriverLoadBindProcess(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindPCI(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindInput(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+        DriverCode DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
 
     public:
         Vector<DriverFile *> GetDrivers() { return Drivers; }
         void UnloadAllDrivers();
         bool UnloadDriver(unsigned long DUID);
         int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);
-        DriverCode LoadDriver(uint64_t DriverAddress, uint64_t Size);
+        DriverCode LoadDriver(uintptr_t DriverAddress, size_t Size);
         DriverCode StartDrivers();
         Driver();
         ~Driver();

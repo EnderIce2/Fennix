@@ -32,7 +32,7 @@ namespace CrashHandler
                 TraceFrames(data.Frame, 40, sh, false);
         }
         EHPrint("\n\eFAFAFATracing interrupt frames...");
-        for (uint64_t i = 0; i < 8; i++)
+        for (short i = 0; i < 8; i++)
         {
             if (EHIntFrames[i])
             {
@@ -41,12 +41,12 @@ namespace CrashHandler
                 EHPrint("\n\e2565CC%p", EHIntFrames[i]);
                 EHPrint("\e7925CC-");
 #if defined(__amd64__)
-                if ((uint64_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+                if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #elif defined(__i386__)
-                if ((uint64_t)EHIntFrames[i] >= 0xC0000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+                if ((uintptr_t)EHIntFrames[i] >= 0xC0000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #elif defined(__aarch64__)
 #endif
-                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uint64_t)EHIntFrames[i]));
+                    EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                 else
                     EHPrint("\eFF4CA9Outside Kernel");
             }
@@ -58,7 +58,7 @@ namespace CrashHandler
             if (!sh)
                 EHPrint("\n\eFFA500Warning: No symbol table available.");
             int SameItr = 0;
-            uint64_t LastRIP = 0;
+            uintptr_t LastRIP = 0;
             for (int i = 0; i < 128; i++)
             {
                 if (data.Thread->RIPHistory[i] == 0)
@@ -75,7 +75,7 @@ namespace CrashHandler
                 if (!sh)
                     EHPrint("\n\e2565CC%p", data.Thread->RIPHistory[i]);
                 else
-                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->RIPHistory[i], sh->GetSymbolFromAddress((uint64_t)data.Thread->RIPHistory[i]));
+                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->RIPHistory[i], sh->GetSymbolFromAddress(data.Thread->RIPHistory[i]));
             }
             EHPrint("\n\e7925CCNote: \e2565CCSame RIPs are not shown more than 3 times.\n");
         }

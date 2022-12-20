@@ -20,24 +20,24 @@ namespace FileSystem
 
     struct FileSystemNode;
 
-    typedef uint64_t (*OperationMount)(const char *, unsigned long, const void *);
-    typedef uint64_t (*OperationUmount)(int);
-    typedef uint64_t (*OperationRead)(FileSystemNode *Node, uint64_t Offset, uint64_t Size, uint8_t *Buffer);
-    typedef uint64_t (*OperationWrite)(FileSystemNode *Node, uint64_t Offset, uint64_t Size, uint8_t *Buffer);
+    typedef size_t (*OperationMount)(const char *, unsigned long, const void *);
+    typedef size_t (*OperationUmount)(int);
+    typedef size_t (*OperationRead)(FileSystemNode *Node, size_t Offset, size_t Size, uint8_t *Buffer);
+    typedef size_t (*OperationWrite)(FileSystemNode *Node, size_t Offset, size_t Size, uint8_t *Buffer);
     typedef void (*OperationOpen)(FileSystemNode *Node, uint8_t Mode, uint8_t Flags);
     typedef void (*OperationClose)(FileSystemNode *Node);
-    typedef uint64_t (*OperationSync)(void);
+    typedef size_t (*OperationSync)(void);
     typedef void (*OperationCreate)(FileSystemNode *Node, char *Name, uint16_t NameLength);
     typedef void (*OperationMkdir)(FileSystemNode *Node, char *Name, uint16_t NameLength);
 
-#define MountFSFunction(name) uint64_t name(const char *unknown0, unsigned long unknown1, const uint8_t *unknown2)
-#define UMountFSFunction(name) uint64_t name(int unknown0)
+#define MountFSFunction(name) size_t name(const char *unknown0, unsigned long unknown1, const uint8_t *unknown2)
+#define UMountFSFunction(name) size_t name(int unknown0)
 
-#define ReadFSFunction(name) uint64_t name(FileSystem::FileSystemNode *Node, uint64_t Offset, uint64_t Size, uint8_t *Buffer)
-#define WriteFSFunction(name) uint64_t name(FileSystem::FileSystemNode *Node, uint64_t Offset, uint64_t Size, uint8_t *Buffer)
+#define ReadFSFunction(name) size_t name(FileSystem::FileSystemNode *Node, size_t Offset, size_t Size, uint8_t *Buffer)
+#define WriteFSFunction(name) size_t name(FileSystem::FileSystemNode *Node, size_t Offset, size_t Size, uint8_t *Buffer)
 #define OpenFSFunction(name) void name(FileSystem::FileSystemNode *Node, uint8_t Mode, uint8_t Flags)
 #define CloseFSFunction(name) void name(FileSystem::FileSystemNode *Node)
-#define SyncFSFunction(name) uint64_t name(void)
+#define SyncFSFunction(name) size_t name(void)
 #define CreateFSFunction(name) void name(FileSystem::FileSystemNode *Node, char *Name, uint16_t NameLength)
 #define MkdirFSFunction(name) void name(FileSystem::FileSystemNode *Node, char *Name, uint16_t NameLength)
 
@@ -108,10 +108,10 @@ namespace FileSystem
         uint64_t IndexNode = 0;
         uint64_t Mask = 0;
         uint64_t Mode = 0;
-        uint64_t Flags = NodeFlags::FS_ERROR;
+        int Flags = NodeFlags::FS_ERROR;
         uint64_t UserIdentifier = 0, GroupIdentifier = 0;
-        uint64_t Address = 0;
-        uint64_t Length = 0;
+        uintptr_t Address = 0;
+        size_t Length = 0;
         FileSystemNode *Parent = nullptr;
         FileSystemOperations *Operator = nullptr;
         /* For root node:
@@ -153,8 +153,8 @@ namespace FileSystem
         FILE *Mount(FileSystemOperations *Operator, const char *Path);
         FileStatus Unmount(FILE *File);
         FILE *Open(const char *Path, FileSystemNode *Parent = nullptr);
-        uint64_t Read(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size);
-        uint64_t Write(FILE *File, uint64_t Offset, uint8_t *Buffer, uint64_t Size);
+        size_t Read(FILE *File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Write(FILE *File, size_t Offset, uint8_t *Buffer, size_t Size);
         FileStatus Close(FILE *File);
         FileSystemNode *CreateRoot(FileSystemOperations *Operator, const char *RootName);
         FileSystemNode *Create(FileSystemNode *Parent, const char *Path);

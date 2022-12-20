@@ -14,7 +14,7 @@
 
 namespace Driver
 {
-    DriverCode Driver::DriverLoadBindPCI(void *DrvExtHdr, uint64_t DriverAddress, uint64_t Size, bool IsElf)
+    DriverCode Driver::DriverLoadBindPCI(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         for (unsigned long Vidx = 0; Vidx < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[0]); Vidx++)
             for (unsigned long Didx = 0; Didx < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[0]); Didx++)
@@ -34,8 +34,8 @@ namespace Driver
                     Memory::Tracker *Tracker = new Memory::Tracker();
                     Fex *fex = (Fex *)Tracker->RequestPages(TO_PAGES(Size));
                     memcpy(fex, (void *)DriverAddress, Size);
-                    FexExtended *fexExtended = (FexExtended *)((uint64_t)fex + EXTENDED_SECTION_ADDRESS);
-                    debug("Driver allocated at %#lx-%#lx", fex, (uint64_t)fex + Size);
+                    FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+                    debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
 #ifdef DEBUG
                     uint8_t *result = md5File((uint8_t *)fex, Size);
                     debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
@@ -60,21 +60,21 @@ namespace Driver
                           ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15));
 
                     if ((((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1) != 0)
-                        if (!Memory::Virtual().Check((void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3))))
+                        if (!Memory::Virtual().Check((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3))))
                         {
                             debug("IO base (BAR1 & ~3) is not mapped");
-                            Memory::Virtual().Map((void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), (void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), Memory::PTFlag::RW);
+                            Memory::Virtual().Map((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), (void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), Memory::PTFlag::RW);
                         }
 
                     if ((((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1) == 0)
-                        if (!Memory::Virtual().Check((void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15))))
+                        if (!Memory::Virtual().Check((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15))))
                         {
                             debug("Memory base (BAR0 & ~15) is not mapped");
-                            Memory::Virtual().Map((void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), (void *)(uint64_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), Memory::PTFlag::RW);
+                            Memory::Virtual().Map((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), (void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), Memory::PTFlag::RW);
 
-                            uint64_t original = ((PCI::PCIHeader0 *)PCIDevice)->BAR0;
+                            uintptr_t original = ((PCI::PCIHeader0 *)PCIDevice)->BAR0;
                             ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = 0xFFFFFFFF;
-                            uint64_t size = ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 0xFFFFFFF0;
+                            uintptr_t size = ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 0xFFFFFFF0;
                             ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = original;
                             debug("Size: %#lx (%ld pages)", size, TO_PAGES(size));
                             fixme("TODO: [BUG] Mapping is broken!!!!!!");
@@ -97,12 +97,12 @@ namespace Driver
                     case FexDriverType::FexDriverType_Network:
                     {
                         DriverInterruptHook *InterruptHook = new DriverInterruptHook(((int)((PCI::PCIHeader0 *)devices[0])->InterruptLine) + 32, // x86
-                                                                                     (void *)((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex),
+                                                                                     (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
                                                                                      KCallback);
 
                         KCallback->RawPtr = PCIDevice;
                         KCallback->Reason = CallbackReason::ConfigurationReason;
-                        int CallbackRet = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
                             error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
@@ -134,7 +134,7 @@ namespace Driver
                     {
                         KCallback->RawPtr = PCIDevice;
                         KCallback->Reason = CallbackReason::ConfigurationReason;
-                        int CallbackRet = ((int (*)(KernelCallback *))((uint64_t)fexExtended->Driver.Callback + (uint64_t)fex))(KCallback);
+                        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
                             error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);

@@ -294,8 +294,8 @@ namespace CrashHandler
         else if (strncmp(Input, "ifr", 3) == 0)
         {
             char *arg = TrimWhiteSpace(Input + 3);
-            uint64_t CountI = atoi(arg);
-            uint64_t TotalCount = sizeof(EHIntFrames) / sizeof(EHIntFrames[0]);
+            int CountI = atoi(arg);
+            int TotalCount = sizeof(EHIntFrames) / sizeof(EHIntFrames[0]);
 
             debug("Printing %ld interrupt frames.", CountI);
 
@@ -306,7 +306,7 @@ namespace CrashHandler
             }
             else
             {
-                for (uint64_t i = 0; i < CountI; i++)
+                for (int i = 0; i < CountI; i++)
                 {
                     if (EHIntFrames[i])
                     {
@@ -315,12 +315,12 @@ namespace CrashHandler
                         EHPrint("\n\e2565CC%p", EHIntFrames[i]);
                         EHPrint("\e7925CC-");
 #if defined(__amd64__)
-                        if ((uint64_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+                        if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #elif defined(__i386__)
-                        if ((uint64_t)EHIntFrames[i] >= 0xC0000000 && (uint64_t)EHIntFrames[i] <= (uint64_t)&_kernel_end)
+                        if ((uintptr_t)EHIntFrames[i] >= 0xC0000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #elif defined(__aarch64__)
 #endif
-                            EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uint64_t)EHIntFrames[i]));
+                            EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                         else
                             EHPrint("\eFF4CA9Outside Kernel");
                         for (int i = 0; i < 20000; i++)
@@ -333,7 +333,7 @@ namespace CrashHandler
         else if (strncmp(Input, "tlb", 3) == 0)
         {
             char *arg = TrimWhiteSpace(Input + 3);
-            uint64_t Address = NULL;
+            uintptr_t Address = NULL;
             Address = strtol(arg, NULL, 16);
             debug("Converted %s to %#lx", arg, Address);
             Memory::PageTable4 *BasePageTable = (Memory::PageTable4 *)Address;
@@ -355,7 +355,7 @@ namespace CrashHandler
                     Display->SetBuffer(SBIdx);
                     if (PML4.Present)
                     {
-                        Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uint64_t)PML4.GetAddress() << 12);
+                        Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
                         if (PDPTE)
                         {
                             for (int PDPTEIndex = 0; PDPTEIndex < 512; PDPTEIndex++)
@@ -373,7 +373,7 @@ namespace CrashHandler
                                 Display->SetBuffer(SBIdx);
                                 if ((PDPTE->Entries[PDPTEIndex].Present))
                                 {
-                                    Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uint64_t)PDPTE->Entries[PDPTEIndex].GetAddress() << 12);
+                                    Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[PDPTEIndex].GetAddress() << 12);
                                     if (PDE)
                                     {
                                         for (int PDEIndex = 0; PDEIndex < 512; PDEIndex++)
@@ -391,7 +391,7 @@ namespace CrashHandler
                                             Display->SetBuffer(SBIdx);
                                             if ((PDE->Entries[PDEIndex].Present))
                                             {
-                                                Memory::PageTableEntryPtr *PTE = (Memory::PageTableEntryPtr *)((uint64_t)PDE->Entries[PDEIndex].GetAddress() << 12);
+                                                Memory::PageTableEntryPtr *PTE = (Memory::PageTableEntryPtr *)((uintptr_t)PDE->Entries[PDEIndex].GetAddress() << 12);
                                                 if (PTE)
                                                 {
                                                     for (int PTEIndex = 0; PTEIndex < 512; PTEIndex++)
@@ -428,7 +428,7 @@ namespace CrashHandler
             Bitmap bm = KernelAllocator.GetPageBitmap();
 
             EHPrint("\n\eFAFAFA[0%%] %08ld: ", 0);
-            for (uint64_t i = 0; i < bm.Size; i++)
+            for (size_t i = 0; i < bm.Size; i++)
             {
                 if (bm.Get(i))
                     EHPrint("\eFF00001");
@@ -436,7 +436,7 @@ namespace CrashHandler
                     EHPrint("\e00FF000");
                 if (i % 128 == 127)
                 {
-                    uint64_t Percentage = (i * 100) / bm.Size;
+                    short Percentage = (i * 100) / bm.Size;
                     EHPrint("\n\eFAFAFA[%03ld%%] %08ld: ", Percentage, i);
                     Display->SetBuffer(SBIdx);
                 }
@@ -642,7 +642,7 @@ namespace CrashHandler
             CPU::x64::CR8 cr8 = CPU::x64::readcr8();
             CPU::x64::EFER efer;
             efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
-            uint64_t ds;
+            uintptr_t ds;
             asmv("mov %%ds, %0"
                  : "=r"(ds));
 
@@ -703,7 +703,7 @@ namespace CrashHandler
         crashdata.cr4 = CPU::x64::readcr4();
         crashdata.cr8 = CPU::x64::readcr8();
         crashdata.efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
-        uint64_t ds;
+        uintptr_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
 

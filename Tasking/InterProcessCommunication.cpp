@@ -29,7 +29,7 @@ namespace InterProcessCommunication
         handle->Operation = IPCOperationNone;
         handle->Listening = 0;
         handle->Error = IPCUnknown;
-        pcb->IPCHandles->AddNode(Port, (uint64_t)handle);
+        pcb->IPCHandles->AddNode(Port, (uintptr_t)handle);
         return handle;
     }
 
@@ -101,7 +101,7 @@ namespace InterProcessCommunication
 
         Vector<Tasking::PCB *> Processes = TaskManager->GetProcessList();
 
-        for (uint64_t i = 0; i < Processes.size(); i++)
+        for (size_t i = 0; i < Processes.size(); i++)
         {
             Tasking::PCB *pcb = Processes[i];
 
