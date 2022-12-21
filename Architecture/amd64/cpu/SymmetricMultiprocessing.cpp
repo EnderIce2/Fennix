@@ -72,12 +72,6 @@ namespace SMP
 
     void Initialize(void *madt)
     {
-        if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0)
-        {
-            KPrint("VirtualBox detected, disabling SMP");
-            return;
-        }
-
         int Cores = ((ACPI::MADT *)madt)->CPUCores + 1;
 
         if (Config.Cores > ((ACPI::MADT *)madt)->CPUCores + 1)
