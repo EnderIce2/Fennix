@@ -58,12 +58,12 @@ namespace UniversalAsynchronousReceiverTransmitter
          * @param Char the sent character.
          */
 
-        virtual void OnSent(uint8_t Char) {}
+        virtual void OnSent(uint8_t Char) { UNUSED(Char); }
         /**
          * @brief Called when a character is received.
          * @param Char the received character.
          */
-        virtual void OnReceived(uint8_t Char) {}
+        virtual void OnReceived(uint8_t Char) { UNUSED(Char); }
     };
 
 }

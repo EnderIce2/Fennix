@@ -15,7 +15,7 @@ static inline SafeFunction __no_instrument_function void profiler_uart_wrapper(c
     bool renable = EnableProfiler;
     EnableProfiler = false;
     UART(COM2).Write(c);
-    (void)unused;
+    UNUSED(unused);
     if (renable)
         EnableProfiler = true;
 }

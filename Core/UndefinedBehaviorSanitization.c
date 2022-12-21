@@ -30,63 +30,313 @@ __ubsan_handle_pointer_overflow_abort
 __ubsan_handle_cfi_check_fail
 */
 
-extern void __asan_report_load1(void *unknown) { ubsan("load1"); }
-extern void __asan_report_load2(void *unknown) { ubsan("load2"); }
-extern void __asan_report_load4(void *unknown) { ubsan("load4"); }
-extern void __asan_report_load8(void *unknown) { ubsan("load8"); }
-extern void __asan_report_load16(void *unknown) { ubsan("load16"); }
-extern void __asan_report_load_n(void *unknown, uintptr_t size) { ubsan("loadn"); }
+extern void __asan_report_load1(void *unknown)
+{
+    ubsan("load1");
+    UNUSED(unknown);
+}
 
-extern void __asan_report_store1(void *unknown) { ubsan("store1"); }
-extern void __asan_report_store2(void *unknown) { ubsan("store2"); }
-extern void __asan_report_store4(void *unknown) { ubsan("store4"); }
-extern void __asan_report_store8(void *unknown) { ubsan("store8"); }
-extern void __asan_report_store16(void *unknown) { ubsan("store16"); }
-extern void __asan_report_store_n(void *unknown, uintptr_t size) { ubsan("storen"); }
+extern void __asan_report_load2(void *unknown)
+{
+    ubsan("load2");
+    UNUSED(unknown);
+}
 
-extern void __asan_report_load1_noabort(void *unknown) { ubsan("load1"); }
-extern void __asan_report_load2_noabort(void *unknown) { ubsan("load2"); }
-extern void __asan_report_load4_noabort(void *unknown) { ubsan("load4"); }
-extern void __asan_report_load8_noabort(void *unknown) { ubsan("load8"); }
-extern void __asan_report_load16_noabort(void *unknown) { ubsan("load16"); }
-extern void __asan_report_load_n_noabort(void *unknown, uintptr_t size) { ubsan("loadn"); }
+extern void __asan_report_load4(void *unknown)
+{
+    ubsan("load4");
+    UNUSED(unknown);
+}
 
-extern void __asan_report_store1_noabort(void *unknown) { ubsan("store1"); }
-extern void __asan_report_store2_noabort(void *unknown) { ubsan("store2"); }
-extern void __asan_report_store4_noabort(void *unknown) { ubsan("store4"); }
-extern void __asan_report_store8_noabort(void *unknown) { ubsan("store8"); }
-extern void __asan_report_store16_noabort(void *unknown) { ubsan("store16"); }
-extern void __asan_report_store_n_noabort(void *unknown, uintptr_t size) { ubsan("storen"); }
+extern void __asan_report_load8(void *unknown)
+{
+    ubsan("load8");
+    UNUSED(unknown);
+}
 
-extern void __asan_stack_malloc_0(uintptr_t size) { ubsan("stack malloc 0"); }
-extern void __asan_stack_malloc_1(uintptr_t size) { ubsan("stack malloc 1"); }
-extern void __asan_stack_malloc_2(uintptr_t size) { ubsan("stack malloc 2"); }
-extern void __asan_stack_malloc_3(uintptr_t size) { ubsan("stack malloc 3"); }
-extern void __asan_stack_malloc_4(uintptr_t size) { ubsan("stack malloc 4"); }
-extern void __asan_stack_malloc_5(uintptr_t size) { ubsan("stack malloc 5"); }
-extern void __asan_stack_malloc_6(uintptr_t size) { ubsan("stack malloc 6"); }
-extern void __asan_stack_malloc_7(uintptr_t size) { ubsan("stack malloc 7"); }
-extern void __asan_stack_malloc_8(uintptr_t size) { ubsan("stack malloc 8"); }
-extern void __asan_stack_malloc_9(uintptr_t size) { ubsan("stack malloc 9"); }
+extern void __asan_report_load16(void *unknown)
+{
+    ubsan("load16");
+    UNUSED(unknown);
+}
 
-extern void __asan_stack_free_0(void *ptr, uintptr_t size) { ubsan("stack free 0"); }
-extern void __asan_stack_free_1(void *ptr, uintptr_t size) { ubsan("stack free 1"); }
-extern void __asan_stack_free_2(void *ptr, uintptr_t size) { ubsan("stack free 2"); }
-extern void __asan_stack_free_3(void *ptr, uintptr_t size) { ubsan("stack free 3"); }
-extern void __asan_stack_free_4(void *ptr, uintptr_t size) { ubsan("stack free 4"); }
-extern void __asan_stack_free_5(void *ptr, uintptr_t size) { ubsan("stack free 5"); }
-extern void __asan_stack_free_6(void *ptr, uintptr_t size) { ubsan("stack free 6"); }
-extern void __asan_stack_free_7(void *ptr, uintptr_t size) { ubsan("stack free 7"); }
-extern void __asan_stack_free_8(void *ptr, uintptr_t size) { ubsan("stack free 8"); }
-extern void __asan_stack_free_9(void *ptr, uintptr_t size) { ubsan("stack free 9"); }
+extern void __asan_report_load_n(void *unknown, uintptr_t size)
+{
+    ubsan("loadn");
+    UNUSED(unknown);
+    UNUSED(size);
+}
 
-extern void __asan_poison_stack_memory(void *addr, uintptr_t size) { ubsan("poison stack memory"); }
-extern void __asan_unpoison_stack_memory(void *addr, uintptr_t size) { ubsan("unpoison stack memory"); }
+extern void __asan_report_store1(void *unknown)
+{
+    ubsan("store1");
+    UNUSED(unknown);
+}
 
-extern void __asan_before_dynamic_init(const char *module_name) { ubsan("before dynamic init"); }
+extern void __asan_report_store2(void *unknown)
+{
+    ubsan("store2");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store4(void *unknown)
+{
+    ubsan("store4");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store8(void *unknown)
+{
+    ubsan("store8");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store16(void *unknown)
+{
+    ubsan("store16");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store_n(void *unknown, uintptr_t size)
+{
+    ubsan("storen");
+    UNUSED(unknown);
+    UNUSED(size);
+}
+
+extern void __asan_report_load1_noabort(void *unknown)
+{
+    ubsan("load1");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_load2_noabort(void *unknown)
+{
+    ubsan("load2");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_load4_noabort(void *unknown)
+{
+    ubsan("load4");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_load8_noabort(void *unknown)
+{
+    ubsan("load8");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_load16_noabort(void *unknown)
+{
+    ubsan("load16");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_load_n_noabort(void *unknown, uintptr_t size)
+{
+    ubsan("loadn");
+    UNUSED(unknown);
+    UNUSED(size);
+}
+
+extern void __asan_report_store1_noabort(void *unknown)
+{
+    ubsan("store1");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store2_noabort(void *unknown)
+{
+    ubsan("store2");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store4_noabort(void *unknown)
+{
+    ubsan("store4");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store8_noabort(void *unknown)
+{
+    ubsan("store8");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store16_noabort(void *unknown)
+{
+    ubsan("store16");
+    UNUSED(unknown);
+}
+
+extern void __asan_report_store_n_noabort(void *unknown, uintptr_t size)
+{
+    ubsan("storen");
+    UNUSED(unknown);
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_0(uintptr_t size)
+{
+    ubsan("stack malloc 0");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_1(uintptr_t size)
+{
+    ubsan("stack malloc 1");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_2(uintptr_t size)
+{
+    ubsan("stack malloc 2");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_3(uintptr_t size)
+{
+    ubsan("stack malloc 3");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_4(uintptr_t size)
+{
+    ubsan("stack malloc 4");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_5(uintptr_t size)
+{
+    ubsan("stack malloc 5");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_6(uintptr_t size)
+{
+    ubsan("stack malloc 6");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_7(uintptr_t size)
+{
+    ubsan("stack malloc 7");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_8(uintptr_t size)
+{
+    ubsan("stack malloc 8");
+    UNUSED(size);
+}
+
+extern void __asan_stack_malloc_9(uintptr_t size)
+{
+    ubsan("stack malloc 9");
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_0(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 0");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_1(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 1");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_2(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 2");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_3(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 3");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_4(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 4");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_5(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 5");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_6(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 6");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_7(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 7");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_8(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 8");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_stack_free_9(void *ptr, uintptr_t size)
+{
+    ubsan("stack free 9");
+    UNUSED(ptr);
+    UNUSED(size);
+}
+
+extern void __asan_poison_stack_memory(void *addr, uintptr_t size)
+{
+    ubsan("poison stack memory");
+    UNUSED(addr);
+    UNUSED(size);
+}
+
+extern void __asan_unpoison_stack_memory(void *addr, uintptr_t size)
+{
+    ubsan("unpoison stack memory");
+    UNUSED(addr);
+    UNUSED(size);
+}
+
+extern void __asan_before_dynamic_init(const char *module_name)
+{
+    ubsan("before dynamic init");
+    UNUSED(module_name);
+}
+
 extern void __asan_after_dynamic_init(void) { ubsan("after dynamic init"); }
 
-extern void __asan_register_globals(void *unknown, size_t size) { ubsan("register_globals"); }
+extern void __asan_register_globals(void *unknown, size_t size)
+{
+    ubsan("register_globals");
+    UNUSED(unknown);
+    UNUSED(size);
+}
+
 extern void __asan_unregister_globals(void) { ubsan("unregister_globals"); }
 
 extern void __asan_init(void) { ubsan("init"); }
@@ -291,4 +541,5 @@ void __ubsan_handle_dynamic_type_cache_miss(struct dynamic_type_cache_miss_data 
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
         ubsan("Dynamic type cache miss.");
+    UNUSED(ptr);
 }

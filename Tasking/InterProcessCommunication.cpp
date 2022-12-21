@@ -90,6 +90,9 @@ namespace InterProcessCommunication
         handle->Listening = 1;
         handle->Error = IPCSuccess;
 
+        // FIXME: ID is not used.
+        UNUSED(ID);
+
         return IPCError{IPCSuccess};
     }
 

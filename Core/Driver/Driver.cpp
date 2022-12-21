@@ -197,6 +197,7 @@ namespace Driver
     {
         SmartCriticalSection(DriverInterruptLock);
         ((int (*)(void *))(Handle))(Data);
+        UNUSED(Frame);
     }
 
     DriverInterruptHook::DriverInterruptHook(int Interrupt, void *Address, void *ParamData) : Interrupts::Handler(Interrupt)

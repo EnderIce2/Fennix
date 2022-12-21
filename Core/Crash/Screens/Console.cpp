@@ -20,5 +20,6 @@ namespace CrashHandler
     SafeFunction void DisplayConsoleScreen(CRData data)
     {
         EHPrint("TODO");
+        UNUSED(data);
     }
 }

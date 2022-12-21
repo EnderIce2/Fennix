@@ -13,10 +13,15 @@ EXTERNC void fprintf(FILE *stream, const char *Format, ...)
     va_start(args, Format);
     vprintf_(Format, args);
     va_end(args);
+    UNUSED(stream);
 }
 
 // TODO: Implement proper fputs
-EXTERNC void fputs(const char *s, FILE *stream) { printf_("%s", s); }
+EXTERNC void fputs(const char *s, FILE *stream)
+{
+    printf_("%s", s);
+    UNUSED(stream);
+}
 
 static struct cag_option ConfigOptions[] = {
     {.identifier = 'a',

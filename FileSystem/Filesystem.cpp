@@ -320,7 +320,6 @@ namespace FileSystem
         if (strcmp(Path, ".") == 0)
         {
             FILE *file = new FILE;
-            FileStatus filestatus = FileStatus::OK;
             file->Node = Parent;
             if (unlikely(!file->Node))
                 file->Status = FileStatus::NOT_FOUND;
@@ -336,7 +335,6 @@ namespace FileSystem
                 Parent = Parent->Parent;
 
             FILE *file = new FILE;
-            FileStatus filestatus = FileStatus::OK;
             file->Node = Parent;
             if (!file->Node)
                 file->Status = FileStatus::NOT_FOUND;

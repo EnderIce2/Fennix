@@ -11,6 +11,7 @@ static int sys_exit(SyscallsFrame *Frame, int code)
     trace("Userspace thread %s(%lld) exited with code %#llx", TaskManager->GetCurrentThread()->Name, TaskManager->GetCurrentThread()->ID, code);
     TaskManager->GetCurrentThread()->ExitCode = code;
     TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+    UNUSED(Frame);
     return 0;
 }
 
@@ -20,23 +21,31 @@ static int sys_print(SyscallsFrame *Frame, char Char, int Index)
 #ifdef DEBUG
     Display->SetBuffer(Index);
 #endif
+    UNUSED(Frame);
     return ret;
 }
 
 static uintptr_t sys_request_pages(SyscallsFrame *Frame, size_t Count)
 {
+    UNUSED(Frame);
     return (uintptr_t)TaskManager->GetCurrentThread()->Memory->RequestPages(Count);
 }
 
 static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
 {
     TaskManager->GetCurrentThread()->Memory->FreePages((void *)Address, Count);
+    UNUSED(Frame);
     return 0;
 }
 
 static int sys_kernelctl(SyscallsFrame *Frame, int Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
 {
     fixme("KernelCTL: %lld", Command);
+    UNUSED(Arg1);
+    UNUSED(Arg2);
+    UNUSED(Arg3);
+    UNUSED(Arg4);
+    UNUSED(Frame);
     return 0;
 }
 

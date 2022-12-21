@@ -45,12 +45,14 @@ namespace Tasking
     bool Security::UntrustToken(Token token)
     {
         fixme("UntrustToken->false");
+        UNUSED(token);
         return false;
     }
 
     bool Security::DestroyToken(Token token)
     {
         fixme("DestroyToken->false");
+        UNUSED(token);
         return false;
     }
 

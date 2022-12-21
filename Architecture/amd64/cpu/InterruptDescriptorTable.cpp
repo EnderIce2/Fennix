@@ -487,6 +487,7 @@ namespace InterruptDescriptorTable
 
     void Init(int Core)
     {
+        UNUSED(Core);
         static int once = 0;
         if (!once++)
         {

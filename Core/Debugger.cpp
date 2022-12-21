@@ -11,7 +11,7 @@ using namespace UniversalAsynchronousReceiverTransmitter;
 static inline __no_instrument_function void uart_wrapper(char c, void *unused)
 {
     UART(COM1).Write(c);
-    (void)unused;
+    UNUSED(unused);
 }
 
 static inline __no_instrument_function void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)

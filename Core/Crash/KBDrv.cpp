@@ -110,6 +110,7 @@ namespace CrashHandler
     SafeFunction void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
 #endif
     {
+        UNUSED(Frame);
         uint8_t scanCode = inb(0x60);
         if (scanCode == KEY_D_TAB ||
             scanCode == KEY_D_LCTRL ||

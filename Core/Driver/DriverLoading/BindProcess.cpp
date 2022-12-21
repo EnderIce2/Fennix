@@ -17,6 +17,9 @@ namespace Driver
     DriverCode Driver::DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         fixme("Process driver: %s", ((FexExtended *)DrvExtHdr)->Driver.Name);
+        UNUSED(Size);
+        UNUSED(DriverAddress);
+        UNUSED(IsElf);
         return DriverCode::NOT_IMPLEMENTED;
     }
 }

@@ -28,26 +28,65 @@ static const char *PageFaultDescriptions[8] = {
 SafeFunction void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Divide by zero exception\n");
+    UNUSED(Frame);
 }
 SafeFunction void DebugExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel triggered debug exception.\n");
+    UNUSED(Frame);
 }
-SafeFunction void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame) { fixme("NMI exception"); }
-SafeFunction void BreakpointExceptionHandler(CHArchTrapFrame *Frame) { fixme("Breakpoint exception"); }
-SafeFunction void OverflowExceptionHandler(CHArchTrapFrame *Frame) { fixme("Overflow exception"); }
-SafeFunction void BoundRangeExceptionHandler(CHArchTrapFrame *Frame) { fixme("Bound range exception"); }
+SafeFunction void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("NMI exception");
+    UNUSED(Frame);
+}
+SafeFunction void BreakpointExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Breakpoint exception");
+    UNUSED(Frame);
+}
+SafeFunction void OverflowExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Overflow exception");
+    UNUSED(Frame);
+}
+SafeFunction void BoundRangeExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Bound range exception");
+    UNUSED(Frame);
+}
 SafeFunction void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame)
 {
     CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
+    UNUSED(Frame);
 }
-SafeFunction void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame) { fixme("Device not available exception"); }
-SafeFunction void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame) { fixme("Double fault exception"); }
-SafeFunction void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame) { fixme("Coprocessor segment overrun exception"); }
-SafeFunction void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame) { fixme("Invalid TSS exception"); }
-SafeFunction void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame) { fixme("Segment not present exception"); }
+SafeFunction void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Device not available exception");
+    UNUSED(Frame);
+}
+SafeFunction void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Double fault exception");
+    UNUSED(Frame);
+}
+SafeFunction void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Coprocessor segment overrun exception");
+    UNUSED(Frame);
+}
+SafeFunction void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Invalid TSS exception");
+    UNUSED(Frame);
+}
+SafeFunction void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Segment not present exception");
+    UNUSED(Frame);
+}
 SafeFunction void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
@@ -229,10 +268,38 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     }
 #endif
 }
-SafeFunction void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("x87 floating point exception"); }
-SafeFunction void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Alignment check exception"); }
-SafeFunction void MachineCheckExceptionHandler(CHArchTrapFrame *Frame) { fixme("Machine check exception"); }
-SafeFunction void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame) { fixme("SIMD floating point exception"); }
-SafeFunction void VirtualizationExceptionHandler(CHArchTrapFrame *Frame) { fixme("Virtualization exception"); }
-SafeFunction void SecurityExceptionHandler(CHArchTrapFrame *Frame) { fixme("Security exception"); }
-SafeFunction void UnknownExceptionHandler(CHArchTrapFrame *Frame) { fixme("Unknown exception"); }
+SafeFunction void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("x87 floating point exception");
+    UNUSED(Frame);
+}
+SafeFunction void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Alignment check exception");
+    UNUSED(Frame);
+}
+SafeFunction void MachineCheckExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Machine check exception");
+    UNUSED(Frame);
+}
+SafeFunction void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("SIMD floating point exception");
+    UNUSED(Frame);
+}
+SafeFunction void VirtualizationExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Virtualization exception");
+    UNUSED(Frame);
+}
+SafeFunction void SecurityExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Security exception");
+    UNUSED(Frame);
+}
+SafeFunction void UnknownExceptionHandler(CHArchTrapFrame *Frame)
+{
+    fixme("Unknown exception");
+    UNUSED(Frame);
+}

@@ -346,8 +346,10 @@ void operator delete[](void *Pointer)
 void operator delete(void *Pointer, long unsigned int Size)
 {
     HeapFree(Pointer);
+    UNUSED(Size);
 }
 void operator delete[](void *Pointer, long unsigned int Size)
 {
     HeapFree(Pointer);
+    UNUSED(Size);
 }

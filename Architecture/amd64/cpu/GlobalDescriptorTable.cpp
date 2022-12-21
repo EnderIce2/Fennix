@@ -85,6 +85,7 @@ namespace GlobalDescriptorTable
         {0, 0, 0, 0, 0, 0, 0},
         0,
         0,
+        0,
     };
 
     void *CPUStackPointer[MAX_CPU];

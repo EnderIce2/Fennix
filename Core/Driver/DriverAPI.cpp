@@ -69,25 +69,35 @@ void *Drivermemset(void *Destination, int Value, unsigned long Size)
 void DriverNetSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 {
     DumpData("DriverNetSend", Data, Size);
+    UNUSED(DriverID);
 }
 
 void DriverNetReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 {
     DumpData("DriverNetReceive", Data, Size);
+    UNUSED(DriverID);
 }
 
 void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
 {
     DumpData("DriverDiskRead", Data, SectorCount * 512);
+    UNUSED(DriverID);
+    UNUSED(Sector);
+    UNUSED(Port);
 }
 
 void DriverAHCIDiskWrite(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
 {
     DumpData("DriverDiskWrite", Data, SectorCount * 512);
+    UNUSED(DriverID);
+    UNUSED(Sector);
+    UNUSED(Port);
 }
 
 char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
 {
+    UNUSED(VendorID);
+    UNUSED(DeviceID);
     return (char *)"Unknown";
 }
 

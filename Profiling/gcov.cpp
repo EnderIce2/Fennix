@@ -41,7 +41,7 @@ struct gcov_info
 static inline SafeFunction __no_instrument_function void gcov_uart_wrapper(char c, void *unused)
 {
     UART(COM2).Write(c);
-    (void)unused;
+    UNUSED(unused);
 }
 
 // TODO: Implement
@@ -60,8 +60,12 @@ EXTERNC SafeFunction __no_instrument_function void __gcov_flush(void)
 
 EXTERNC SafeFunction __no_instrument_function void __gcov_merge_add(gcov_type *counters, unsigned int n_counters)
 {
+    UNUSED(counters);
+    UNUSED(n_counters);
 }
 
 EXTERNC SafeFunction __no_instrument_function void __gcov_merge_single(gcov_type *counters, unsigned int n_counters)
 {
+    UNUSED(counters);
+    UNUSED(n_counters);
 }

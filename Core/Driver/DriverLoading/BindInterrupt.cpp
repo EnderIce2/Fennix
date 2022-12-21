@@ -16,6 +16,7 @@ namespace Driver
 {
     DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
+        UNUSED(IsElf);
         Memory::Tracker *Tracker = new Memory::Tracker;
         Fex *fex = (Fex *)Tracker->RequestPages(TO_PAGES(Size));
         memcpy(fex, (void *)DriverAddress, Size);

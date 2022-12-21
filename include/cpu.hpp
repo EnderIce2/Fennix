@@ -546,6 +546,12 @@ namespace CPU
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
+#else
+            UNUSED(Function);
+            UNUSED(eax);
+            UNUSED(ebx);
+            UNUSED(ecx);
+            UNUSED(edx);
 #endif
         }
 
@@ -556,9 +562,11 @@ namespace CPU
                  :
                  : "r"(Address)
                  : "memory");
+#else
+            UNUSED(Address);
 #endif
         }
-    
+
         /** @brief EXPERIMENTAL IMPLEMENTATION */
         namespace Intel
         {
@@ -3066,7 +3074,7 @@ namespace CPU
                 /* @brief Enable Protection Keys for Supervisor Mode Pages */
                 uint32_t PKS : 1;
                 /** @brief Reserved */
-                uint64_t Reserved2 : 7; // TODO: This could be wrong 
+                uint64_t Reserved2 : 7; // TODO: This could be wrong
             };
             uint64_t raw;
         } CR4;

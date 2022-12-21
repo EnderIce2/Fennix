@@ -94,8 +94,22 @@ namespace Disk
         PartitionStyle Style = PartitionStyle::Unknown;
         size_t Index = 0;
 
-        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
-        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
+        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer)
+        {
+            return 0;
+            UNUSED(Offset);
+            UNUSED(Count);
+            UNUSED(Buffer);
+        }
+
+        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer)
+        {
+            return 0;
+            UNUSED(Offset);
+            UNUSED(Count);
+            UNUSED(Buffer);
+        }
+
         Partition() {}
         ~Partition() {}
     };
@@ -111,8 +125,22 @@ namespace Disk
         bool MechanicalDisk = false;
         size_t UniqueIdentifier = 0xdeadbeef;
 
-        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
-        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer) { return 0; }
+        size_t Read(size_t Offset, size_t Count, uint8_t *Buffer)
+        {
+            return 0;
+            UNUSED(Offset);
+            UNUSED(Count);
+            UNUSED(Buffer);
+        }
+
+        size_t Write(size_t Offset, size_t Count, uint8_t *Buffer)
+        {
+            return 0;
+            UNUSED(Offset);
+            UNUSED(Count);
+            UNUSED(Buffer);
+        }
+
         Drive()
         { // TODO: Allocate buffer
         }

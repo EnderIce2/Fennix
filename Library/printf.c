@@ -358,8 +358,8 @@ static inline __no_instrument_function void append_termination_with_gadget(outpu
 // only takes pointers to functions with an extra argument
 static inline __no_instrument_function void putchar_wrapper(char c, void *unused)
 {
-    (void)unused;
     putchar(c);
+    UNUSED(unused);
 }
 
 static inline __no_instrument_function output_gadget_t discarding_gadget(void)
