@@ -13,6 +13,14 @@
 
 #include "Core/smbios.hpp"
 
+/** 
+ * Fennix Kernel
+ * -------------
+ * 
+ * Bugs:
+ * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
+ */
+
 #ifdef __amd64__
 #if UINTPTR_MAX != UINT64_MAX
 #error "uintptr_t is not 64-bit!"
