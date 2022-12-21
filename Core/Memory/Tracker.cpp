@@ -22,15 +22,22 @@ namespace Memory
 
     void Tracker::FreePages(void *Address, size_t Count)
     {
-        KernelAllocator.FreePages(Address, Count);
-        for (size_t i = 0; i < Count; i++)
-            Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
-
-        for (uintptr_t i = 0; i < AllocatedPagesList.size(); i++)
+        for (size_t i = 0; i < AllocatedPagesList.size(); i++)
             if (AllocatedPagesList[i].Address == Address)
             {
+                // TODO: Advanced checks. Allow if the page count is less than the requested one.
+                if (AllocatedPagesList[i].PageCount != Count)
+                {
+                    error("FreePages: Page count mismatch! (Allocated: %lld, Requested: %lld)", AllocatedPagesList[i].PageCount, Count);
+                    return;
+                }
+
+                KernelAllocator.FreePages(Address, Count);
+                for (size_t i = 0; i < Count; i++)
+                    Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+
                 AllocatedPagesList.remove(i);
-                break;
+                return;
             }
     }
 
