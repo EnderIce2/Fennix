@@ -105,8 +105,8 @@ ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
 #	CFLAGS += -pg
 #	CFLAGS += -finstrument-functions
-	CFLAGS += -DDEBUG -ggdb -g -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fstack-check -fsanitize=undefined
-	LDFLAGS += -ggdb -O0 -g
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fstack-check -fsanitize=undefined
+	LDFLAGS += -ggdb3 -O0
 	NASMFLAGS += -F dwarf -g
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
 ifeq ($(TESTING), 1)
