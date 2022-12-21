@@ -213,8 +213,8 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     tracepagetable(KernelPageTable);
     debug("Userspace:");
     tracepagetable(UserspaceKernelOnlyPageTable);
-    KPT = KernelPageTable;
 #endif
+    KPT = KernelPageTable;
 #if defined(__amd64__) || defined(__i386__)
     asmv("mov %0, %%cr3" ::"r"(KPT));
 #elif defined(__aarch64__)
