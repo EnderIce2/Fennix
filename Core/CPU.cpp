@@ -214,32 +214,32 @@ namespace CPU
 			if (!BSP)
 				KPrint("UMIP is supported.");
 			fixme("Not going to enable UMIP.");
-			// cr4.UMIP = 1;
+			cr4.UMIP = 1;
 		}
 		if (rdx & x64::CPUID_FEAT_RDX_SMEP)
 		{
 			if (!BSP)
 				KPrint("SMEP is supported.");
 			fixme("Not going to enable SMEP.");
-			// cr4.SMEP = 1;
+			cr4.SMEP = 1;
 		}
 		if (rdx & x64::CPUID_FEAT_RDX_SMAP)
 		{
 			if (!BSP)
 				KPrint("SMAP is supported.");
 			fixme("Not going to enable SMAP.");
-			// cr4.SMAP = 1;
+			cr4.SMAP = 1;
 		}
-		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
-			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0 &&
+			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 			x64::writecr4(cr4);
 		else
 		{
 			if (!BSP)
 			{
-				if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0)
+				if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0)
 					KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
-				else if (strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+				else if (strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 					KPrint("QEMU (TCG) detected. Not using UMIP, SMEP & SMAP");
 			}
 		}
