@@ -60,9 +60,9 @@ public:
     }
     ~SmartLockCriticalSectionClass()
     {
+        this->LockPointer->Unlock();
         if (InterruptsEnabled)
             CPU::Interrupts(CPU::Enable);
-        this->LockPointer->Unlock();
     }
 };
 /** @brief Please use this macro to create a new critical section. */
