@@ -40,7 +40,12 @@ namespace CrashHandler
 #elif defined(__aarch64__)
 #endif
         {
+            #if defined(__amd64__)
             EHPrint("Invalid rbp pointer: %p\n", Frame->rbp);
+            #elif defined(__i386__)
+            EHPrint("Invalid ebp pointer: %p\n", Frame->ebp);
+            #elif defined(__aarch64__)
+#endif
             return;
         }
 

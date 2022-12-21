@@ -61,9 +61,9 @@ namespace CrashHandler
             uintptr_t LastRIP = 0;
             for (int i = 0; i < 128; i++)
             {
-                if (data.Thread->RIPHistory[i] == 0)
+                if (data.Thread->IPHistory[i] == 0)
                     break;
-                if (data.Thread->RIPHistory[i] == LastRIP)
+                if (data.Thread->IPHistory[i] == LastRIP)
                 {
                     SameItr++;
                     if (SameItr > 3)
@@ -71,11 +71,11 @@ namespace CrashHandler
                 }
                 else
                     SameItr = 0;
-                LastRIP = data.Thread->RIPHistory[i];
+                LastRIP = data.Thread->IPHistory[i];
                 if (!sh)
-                    EHPrint("\n\e2565CC%p", data.Thread->RIPHistory[i]);
+                    EHPrint("\n\e2565CC%p", data.Thread->IPHistory[i]);
                 else
-                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->RIPHistory[i], sh->GetSymbolFromAddress(data.Thread->RIPHistory[i]));
+                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->IPHistory[i], sh->GetSymbolFromAddress(data.Thread->IPHistory[i]));
             }
             EHPrint("\n\e7925CCNote: \e2565CCSame RIPs are not shown more than 3 times.\n");
         }

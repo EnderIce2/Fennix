@@ -12,7 +12,7 @@
 
 namespace Time
 {
-    void time::Sleep(uintptr_t Milliseconds)
+    void time::Sleep(uint64_t Milliseconds)
     {
 #if defined(__amd64__) || defined(__i386__)
         uintptr_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000) / clk;

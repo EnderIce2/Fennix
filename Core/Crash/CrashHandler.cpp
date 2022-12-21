@@ -14,6 +14,7 @@
 #if defined(__amd64__)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
+#include "../../Architecture/i686/cpu/gdt.hpp"
 #elif defined(__aarch64__)
 #endif
 

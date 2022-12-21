@@ -124,7 +124,13 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     uintptr_t CheckPageFaultAddress = 0;
     CheckPageFaultAddress = CPU::x64::readcr2().PFLA;
     if (CheckPageFaultAddress == 0)
+#ifdef __amd64__
         CheckPageFaultAddress = Frame->rip;
+#elif defined(__i386__)
+        CheckPageFaultAddress = Frame->eip;
+#elif defined(__aarch64__)
+        CheckPageFaultAddress = 0;
+#endif
 
     Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x64::readcr3().raw));
     bool PageAvailable = vma.Check((void *)CheckPageFaultAddress);

@@ -2391,7 +2391,7 @@ static void *LinuxSyscallsTable[] = {
     [335] = (void *)pkey_mprotect_,
 };
 
-uint64_t HandleLinuxSyscalls(SyscallsFrame *Frame)
+uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
 #if defined(__amd64__)
     if (Frame->rax > sizeof(LinuxSyscallsTable))

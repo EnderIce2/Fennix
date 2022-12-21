@@ -493,17 +493,17 @@ namespace Tasking
         // FIXME: Untested
         for (int i = 0; i < 128; i++)
         {
-            if (CurrentCPU->CurrentThread->RIPHistory[i] == 0)
+            if (CurrentCPU->CurrentThread->IPHistory[i] == 0)
             {
-                CurrentCPU->CurrentThread->RIPHistory[i] = Frame->rip;
+                CurrentCPU->CurrentThread->IPHistory[i] = Frame->rip;
                 break;
             }
 
             if (i == 127)
             {
                 for (int j = 0; j < 127; j++)
-                    CurrentCPU->CurrentThread->RIPHistory[j] = CurrentCPU->CurrentThread->RIPHistory[j + 1];
-                CurrentCPU->CurrentThread->RIPHistory[127] = Frame->rip;
+                    CurrentCPU->CurrentThread->IPHistory[j] = CurrentCPU->CurrentThread->IPHistory[j + 1];
+                CurrentCPU->CurrentThread->IPHistory[127] = Frame->rip;
             }
         }
         GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
@@ -942,14 +942,25 @@ namespace Tasking
         Thread->Info.Architecture = Architecture;
         Thread->Info.Compatibility = Compatibility;
 
+#ifdef DEBUG
+#ifdef __amd64__
         debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.rip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         else
             debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
+#elif defined(__i386__)
+        debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.eip);
+        if (Parent->Security.TrustLevel == TaskTrustLevel::User)
+            debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.esp);
+        else
+            debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.esp);
+#elif defined(__aarch64__)
+#endif
         debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
               Thread->Name, Thread->ID,
               Thread->Parent->Name, Thread->Parent->ID);
+#endif
 
         Parent->Threads.push_back(Thread);
         return Thread;

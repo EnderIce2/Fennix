@@ -46,7 +46,6 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
 
-
     .bss :
     {
         *(COMMON)

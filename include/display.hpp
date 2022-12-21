@@ -110,7 +110,7 @@ namespace Video
             size_t Size = this->framebuffer.Pitch * Height;
             if (!this->Buffers[Index])
             {
-                if (this->Buffers[Index]->Checksum != 0xDEAD5C9EE7)
+                if (this->Buffers[Index]->Checksum != 0xDEAD)
                 {
                     ScreenBuffer *buffer = new ScreenBuffer;
                     buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
@@ -122,7 +122,7 @@ namespace Video
                     buffer->CursorY = 0;
                     this->Buffers[Index] = buffer;
                     memset(this->Buffers[Index]->Buffer, 0, Size);
-                    this->Buffers[Index]->Checksum = 0xDEAD5C9EE7;
+                    this->Buffers[Index]->Checksum = 0xDEAD;
                 }
                 else
                     warn("Buffer %d already exists, skipping creation", Index);

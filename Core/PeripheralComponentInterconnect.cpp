@@ -772,7 +772,7 @@ namespace PCI
     }
 #endif
 
-    void PCI::EnumerateFunction(uintptr_t DeviceAddress, uintptr_t Function)
+    void PCI::EnumerateFunction(uintptr_t DeviceAddress, uint64_t Function)
     {
         uintptr_t Offset = Function << 12;
         uintptr_t FunctionAddress = DeviceAddress + Offset;
@@ -788,7 +788,7 @@ namespace PCI
 #endif
     }
 
-    void PCI::EnumerateDevice(uintptr_t BusAddress, uintptr_t Device)
+    void PCI::EnumerateDevice(uintptr_t BusAddress, uint64_t Device)
     {
         uintptr_t Offset = Device << 15;
         uintptr_t DeviceAddress = BusAddress + Offset;
@@ -802,7 +802,7 @@ namespace PCI
             EnumerateFunction(DeviceAddress, Function);
     }
 
-    void PCI::EnumerateBus(uintptr_t BaseAddress, uintptr_t Bus)
+    void PCI::EnumerateBus(uintptr_t BaseAddress, uint64_t Bus)
     {
         uintptr_t Offset = Bus << 20;
         uintptr_t BusAddress = BaseAddress + Offset;
