@@ -302,7 +302,7 @@ namespace CrashHandler
 
             if (CountI > TotalCount)
             {
-                EHPrint("eFF4400Count too big! Maximum allowed is %ld\eFAFAFA\n", TotalCount);
+                EHPrint("\eFF4400Count too big! Maximum allowed is %ld\eFAFAFA\n", TotalCount);
                 Display->SetBuffer(SBIdx);
             }
             else
