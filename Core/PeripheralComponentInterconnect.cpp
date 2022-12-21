@@ -394,13 +394,13 @@ namespace PCI
                 case 0x000B:
                     return "QEMU PCIe Expander bridge";
                 case 0x000C:
-                    return "QEMU PCIe Root port";
+                    return "QEMU PCIe Root Port";
                 case 0x000D:
                     return "QEMU XHCI Host Controller";
                 case 0x0010:
                     return "QEMU NVM Express Controller";
                 case 0x0100:
-                    return "QXL paravirtual graphic card";
+                    return "QXL Paravirtual Graphic Card";
                 case 0x1AF41100:
                     return "QEMU Virtual Machine";
                 default:
