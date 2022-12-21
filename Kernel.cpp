@@ -13,10 +13,21 @@
 
 #include "Core/smbios.hpp"
 
-/** 
+/**
  * Fennix Kernel
  * -------------
- * 
+ * This is the main kernel file. It contains the main function and the kernel entry point.
+ *
+ * Loading procedure:
+ * [BOOT] -> [Bootloader] -> [Boot Info Parser] -> Entry() -> Main() -> KernelMainThread()
+ * - Bootloader
+ * - Entry() is the first function to be called by the boot info parser function after getting the boot info from the bootloader.
+ * - Main() is the first function to be called by Entry().
+ * - KernelMainThread() is the first function to be called by the task manager.
+ *
+ * TODO:
+ * - [ ] Optimize SMP.
+ *
  * Bugs:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
  */
@@ -71,7 +82,7 @@ EXTERNC void KPrint(const char *Format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC __no_instrument_function void AfterEntry(BootInfo *Info)
+EXTERNC __no_instrument_function void Main(BootInfo *Info)
 {
     BootClock = Time::ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
@@ -207,7 +218,7 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
 
     InitializeMemoryManagement(Info);
     EnableProfiler = true;
-    AfterEntry(Info);
+    Main(Info);
 }
 
 EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
