@@ -26,10 +26,15 @@ namespace SysDbg
 #define error(Format, ...) SysDbg::WriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define warn(Format, ...) SysDbg::WriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define info(Format, ...) SysDbg::WriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#ifdef DEBUG
 #define debug(Format, ...) SysDbg::WriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define ubsan(Format, ...) SysDbg::WriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#else
+#define debug(Format, ...)
+#define ubsan(Format, ...)
+#endif
 #define trace(Format, ...) SysDbg::WriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define fixme(Format, ...) SysDbg::WriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define ubsan(Format, ...) SysDbg::WriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 
 #else
 
@@ -39,10 +44,15 @@ void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const ch
 #define error(Format, ...) SysDbgWriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define warn(Format, ...) SysDbgWriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define info(Format, ...) SysDbgWriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#ifdef DEBUG
 #define debug(Format, ...) SysDbgWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define ubsan(Format, ...) SysDbgWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#else
+#define debug(Format, ...)
+#define ubsan(Format, ...)
+#endif
 #define trace(Format, ...) SysDbgWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define fixme(Format, ...) SysDbgWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define ubsan(Format, ...) SysDbgWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 
 #endif // __cplusplus
 
