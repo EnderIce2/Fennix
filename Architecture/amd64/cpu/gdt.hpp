@@ -92,7 +92,8 @@ namespace GlobalDescriptorTable
         uint64_t StackPointer[3];
         uint64_t Reserved1;
         uint64_t InterruptStackTable[7];
-        uint16_t Reserved2;
+        uint64_t Reserved2;
+        uint16_t Reserved3;
         uint16_t IOMapBaseAddressOffset;
     } __attribute__((packed)) TaskStateSegment;
 
