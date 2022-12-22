@@ -43,6 +43,17 @@ namespace Execute
     SpawnData Spawn(char *Path, const char **argv, const char **envp);
 
     void *ELFLoadRel(Elf64_Ehdr *Header);
+
+    void ELFLoadExec(void *BaseImage,
+                     Elf64_Ehdr *ELFHeader,
+                     Memory::Virtual &pva,
+                     SpawnData *ret,
+                     char *Path,
+                     Tasking::PCB *Process,
+                     const char **argv,
+                     const char **envp,
+                     Tasking::TaskArchitecture Arch,
+                     Tasking::TaskCompatibility Comp);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__
