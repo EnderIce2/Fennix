@@ -12,6 +12,27 @@ enum NativeSyscalls
     _FreePages,
 
     _KernelCTL,
+
+    _FileOpen,
+    _FileClose,
+    _FileRead,
+    _FileWrite,
+    _FileSeek,
+    _FileStatus,
+
+    _Wait,
+    _Kill,
+    _Spawn,
+    _SpawnThread,
+    _GetThreadListOfProcess,
+    _GetCurrentProcess,
+    _GetCurrentThread,
+    _GetProcessByPID,
+    _GetThreadByTID,
+    _KillProcess,
+    _KillThread,
+    _SysReservedCreateProcess,
+    _SysReservedCreateThread,
 };
 
 static inline long syscall0(long syscall)
