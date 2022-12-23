@@ -762,7 +762,7 @@ namespace Tasking
         case TaskTrustLevel::User:
         {
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
-            Thread->Memory = new Memory::Tracker(Parent->PageTable);
+            Thread->Memory = new Memory::MemMgr(Parent->PageTable);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
             Thread->GSBase = 0;

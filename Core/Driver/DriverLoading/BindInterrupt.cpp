@@ -17,8 +17,8 @@ namespace Driver
     DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         UNUSED(IsElf);
-        Memory::Tracker *Tracker = new Memory::Tracker;
-        Fex *fex = (Fex *)Tracker->RequestPages(TO_PAGES(Size));
+        Memory::MemMgr *MemMgr = new Memory::MemMgr;
+        Fex *fex = (Fex *)MemMgr->RequestPages(TO_PAGES(Size));
         memcpy(fex, (void *)DriverAddress, Size);
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
         debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
@@ -29,16 +29,16 @@ namespace Driver
               result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
         kfree(result);
 #endif
-        KernelAPI *KAPI = (KernelAPI *)Tracker->RequestPages(TO_PAGES(sizeof(KernelAPI)));
+        KernelAPI *KAPI = (KernelAPI *)MemMgr->RequestPages(TO_PAGES(sizeof(KernelAPI)));
 
         if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
         {
-            delete Tracker;
+            delete MemMgr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
         debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
 
-        KernelCallback *KCallback = (KernelCallback *)Tracker->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+        KernelCallback *KCallback = (KernelCallback *)MemMgr->RequestPages(TO_PAGES(sizeof(KernelCallback)));
 
         switch (fexExtended->Driver.Type)
         {
@@ -48,20 +48,20 @@ namespace Driver
             DriverFile *DrvFile = new DriverFile;
             DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = Tracker;
+            DrvFile->MemTrk = MemMgr;
             Drivers.push_back(DrvFile);
             break;
         }
         case FexDriverType::FexDriverType_Display:
         {
             fixme("Display driver: %s", fexExtended->Driver.Name);
-            delete Tracker;
+            delete MemMgr;
             break;
         }
         case FexDriverType::FexDriverType_Network:
         {
             fixme("Network driver: %s", fexExtended->Driver.Name);
-            delete Tracker;
+            delete MemMgr;
             break;
         }
         case FexDriverType::FexDriverType_Storage:
@@ -75,7 +75,7 @@ namespace Driver
             }
 
             fixme("Not implemented");
-            delete Tracker;
+            delete MemMgr;
             break;
 
             KCallback->RawPtr = nullptr;
@@ -84,27 +84,27 @@ namespace Driver
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
                 error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
-                delete Tracker;
+                delete MemMgr;
                 break;
             }
             else if (CallbackRet != DriverReturnCode::OK)
             {
                 error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                delete Tracker;
+                delete MemMgr;
                 break;
             }
 
             DriverFile *DrvFile = new DriverFile;
             DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = Tracker;
+            DrvFile->MemTrk = MemMgr;
             Drivers.push_back(DrvFile);
             break;
         }
         case FexDriverType::FexDriverType_FileSystem:
         {
             fixme("Filesystem driver: %s", fexExtended->Driver.Name);
-            delete Tracker;
+            delete MemMgr;
             break;
         }
         case FexDriverType::FexDriverType_Input:
@@ -132,14 +132,14 @@ namespace Driver
             {
                 error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
                 delete InterruptHook;
-                delete Tracker;
+                delete MemMgr;
                 break;
             }
             else if (CallbackRet != DriverReturnCode::OK)
             {
                 error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
                 delete InterruptHook;
-                delete Tracker;
+                delete MemMgr;
                 break;
             }
 
@@ -149,7 +149,7 @@ namespace Driver
             DriverFile *DrvFile = new DriverFile;
             DrvFile->DriverUID = this->DriverUIDs - 1;
             DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = Tracker;
+            DrvFile->MemTrk = MemMgr;
             DrvFile->InterruptHook[0] = InterruptHook;
             Drivers.push_back(DrvFile);
             break;
@@ -157,13 +157,13 @@ namespace Driver
         case FexDriverType::FexDriverType_Audio:
         {
             fixme("Audio driver: %s", fexExtended->Driver.Name);
-            delete Tracker;
+            delete MemMgr;
             break;
         }
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
-            delete Tracker;
+            delete MemMgr;
             break;
         }
         }

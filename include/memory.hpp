@@ -631,7 +631,7 @@ namespace Memory
         ~StackGuard();
     };
 
-    class Tracker
+    class MemMgr
     {
     private:
         Bitmap PageBitmap;
@@ -651,8 +651,8 @@ namespace Memory
         void *RequestPages(size_t Count);
         void FreePages(void *Address, size_t Count);
 
-        Tracker(PageTable4 *PageTable = nullptr);
-        ~Tracker();
+        MemMgr(PageTable4 *PageTable = nullptr);
+        ~MemMgr();
     };
 }
 

@@ -89,7 +89,7 @@ namespace Tasking
         IPOffset Offset;
         int ExitCode;
         Memory::StackGuard *Stack;
-        Memory::Tracker *Memory;
+        Memory::MemMgr *Memory;
         TaskStatus Status;
 #if defined(__amd64__)
         CPU::x64::TrapFrame Registers;

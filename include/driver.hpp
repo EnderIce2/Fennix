@@ -47,7 +47,7 @@ namespace Driver
     {
         unsigned long DriverUID;
         void *Address;
-        Memory::Tracker *MemTrk;
+        Memory::MemMgr *MemTrk;
         DriverInterruptHook *InterruptHook[16];
     };
 
