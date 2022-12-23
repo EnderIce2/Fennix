@@ -171,6 +171,11 @@ namespace Execute
                       ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
 
                 Elf64_Dyn *Dynamic = (Elf64_Dyn *)((uint8_t *)BaseImage + ItrProgramHeader.p_offset);
+
+                char *NeededLibraries[256];
+                uint64_t InitAddress = 0;
+                uint64_t FiniAddress = 0;
+
                 for (uint64_t i = 0; i < ItrProgramHeader.p_filesz / sizeof(Elf64_Dyn); i++)
                 {
                     switch (Dynamic[i].d_tag)
@@ -180,7 +185,14 @@ namespace Execute
                         break;
                     case DT_NEEDED:
                     {
-                        fixme("DT_NEEDED - Name: %s", (uintptr_t)BaseImage + DynamicString->sh_offset + Dynamic[i].d_un.d_ptr);
+                        if (!DynamicString)
+                        {
+                            error("DynamicString is null");
+                            break;
+                        }
+
+                        debug("DT_NEEDED - Name[%ld]: %s", i, (uintptr_t)BaseImage + DynamicString->sh_offset + Dynamic[i].d_un.d_ptr);
+                        NeededLibraries[i] = (char *)((uintptr_t)BaseImage + DynamicString->sh_offset + Dynamic[i].d_un.d_ptr);
                         break;
                     }
                     case DT_PLTRELSZ:
@@ -235,12 +247,14 @@ namespace Execute
                     }
                     case DT_INIT:
                     {
-                        fixme("DT_INIT - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                        debug("DT_INIT - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                        InitAddress = Dynamic[i].d_un.d_ptr;
                         break;
                     }
                     case DT_FINI:
                     {
-                        fixme("DT_FINI - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                        debug("DT_FINI - Address: %#lx", Dynamic[i].d_un.d_ptr);
+                        FiniAddress = Dynamic[i].d_un.d_ptr;
                         break;
                     }
                     case DT_SONAME:
@@ -347,6 +361,7 @@ namespace Execute
                     if (Dynamic[i].d_tag == DT_NULL)
                         break;
                 }
+
                 break;
             }
             case PT_INTERP: // Do I have to do anything here?
@@ -355,10 +370,17 @@ namespace Execute
                       ItrProgramHeader.p_offset, ItrProgramHeader.p_vaddr,
                       ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
 
-                char *Interpreter = (char *)KernelAllocator.RequestPages(TO_PAGES(ItrProgramHeader.p_filesz));
-                memcpy(Interpreter, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
-                fixme("Interpreter: %s", Interpreter);
-                KernelAllocator.FreePages(Interpreter, TO_PAGES(ItrProgramHeader.p_filesz));
+                char InterpreterPath[256];
+                memcpy((void *)InterpreterPath, (uint8_t *)BaseImage + ItrProgramHeader.p_offset, 256);
+                fixme("Interpreter: %s", InterpreterPath);
+                FileSystem::FILE *InterpreterFile = vfs->Open(InterpreterPath);
+                if (InterpreterFile->Status != FileSystem::FileStatus::OK)
+                {
+                    error("Failed to open interpreter file: %s", InterpreterPath);
+                }
+                else
+                {
+                }
                 break;
             }
             /* ... */
@@ -384,7 +406,7 @@ namespace Execute
         auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
         auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)Path}}});
         auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t) "x86_64"}}});
-        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry + (uint64_t)ProgramHeader->p_offset}}});
+        auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)ELFHeader->e_entry}}});
         auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage}}});
         auxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
         auxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader->e_phnum}}});
@@ -394,7 +416,7 @@ namespace Execute
         TCB *Thread = TaskManager->CreateThread(Process,
                                                 (IP)ELFHeader->e_entry,
                                                 argv, envp, auxv,
-                                                (IPOffset)ProgramHeader->p_offset,
+                                                (IPOffset)0 /* ProgramHeader->p_offset */, // I guess I don't need this
                                                 Arch,
                                                 Comp);
         ret->Process = Process;
