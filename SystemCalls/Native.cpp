@@ -145,13 +145,13 @@ static int sys_get_current_thread(SyscallsFrame *Frame)
 
 static int sys_get_process_by_pid(SyscallsFrame *Frame)
 {
-    fixme("sys_get_process_by_pid: %#lx, %#lx, %d", Frame, Buffer, Count);
+    fixme("sys_get_process_by_pid: %#lx", Frame);
     return -1;
 }
 
 static int sys_get_thread_by_tid(SyscallsFrame *Frame)
 {
-    fixme("sys_get_thread_by_tid: %#lx, %#lx, %d", Frame, Buffer, Count);
+    fixme("sys_get_thread_by_tid: %#lx", Frame);
     return -1;
 }
 
