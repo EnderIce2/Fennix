@@ -860,6 +860,16 @@ char *ultoa(unsigned long Value, char *Buffer, int Base)
 
 extern void __chk_fail(void) __attribute__((__noreturn__));
 
+__noreturn static inline void __convert_chk_fail(void)
+{
+#if defined(__amd64__) || defined(__i386__)
+    asmv("int3");
+#else
+#error "Not implemented!"
+#endif
+    __builtin_unreachable();
+}
+
 // #define DBG_CHK 1
 
 __no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen)
@@ -870,25 +880,25 @@ __no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len,
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -904,19 +914,19 @@ __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t 
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -932,25 +942,25 @@ __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
         error("len is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(len > slen))
@@ -966,19 +976,19 @@ __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     size_t dest_len = strlen(dest);
@@ -995,19 +1005,19 @@ __no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen
     if (unlikely(dest == NULL))
     {
         error("dest is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
         error("src is NULL");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
         error("slen is 0");
-        __chk_fail();
+        __convert_chk_fail();
     }
 
     size_t len = strlen(src);
