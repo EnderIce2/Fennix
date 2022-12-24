@@ -68,14 +68,13 @@ void *Drivermemset(void *Destination, int Value, unsigned long Size)
 
 void DriverNetSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 {
-    DumpData("DriverNetSend", Data, Size);
-    UNUSED(DriverID);
+    // This is useless I guess...
+    NIManager->DrvSend(DriverID, Data, Size);
 }
 
 void DriverNetReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 {
-    DumpData("DriverNetReceive", Data, Size);
-    UNUSED(DriverID);
+    NIManager->DrvReceive(DriverID, Data, Size);
 }
 
 void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
