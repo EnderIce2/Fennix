@@ -349,6 +349,47 @@ namespace Tasking
         return false;
     }
 
+    SafeFunction __no_instrument_function void Task::WakeUpThreads(void *CPUDataPointer)
+    {
+        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
+        // Loop through all the processes.
+        foreach (PCB *pcb in ListProcess)
+        {
+            if (InvalidPCB(pcb))
+                continue;
+
+            // Check process status.
+            switch (pcb->Status)
+            {
+            case TaskStatus::Ready:
+                schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
+                break;
+            default:
+                schedbg("Process \"%s\"(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+                continue;
+            }
+
+            // Loop through all the threads.
+            foreach (TCB *tcb in pcb->Threads)
+            {
+                if (InvalidTCB(tcb))
+                    continue;
+
+                // Check if the thread is sleeping.
+                if (tcb->Status != TaskStatus::Sleeping)
+                    continue;
+
+                // Check if the thread is ready to wake up.
+                if (tcb->Info.SleepUntil < TimeManager->GetCounter())
+                {
+                    tcb->Status = TaskStatus::Ready;
+                    tcb->Info.SleepUntil = 0;
+                    schedbg("Thread \"%s\"(%d) woke up.", tcb->Name, tcb->ID);
+                }
+            }
+        }
+    }
+
     SafeFunction __no_instrument_function void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
@@ -408,6 +449,9 @@ namespace Tasking
                 CurrentCPU->CurrentProcess->Status = TaskStatus::Ready;
             if (CurrentCPU->CurrentThread->Status == TaskStatus::Running)
                 CurrentCPU->CurrentThread->Status = TaskStatus::Ready;
+
+            // Loop through all threads and find which one is ready.
+            WakeUpThreads(CurrentCPU);
 
             // Get next available thread from the list.
             if (this->GetNextAvailableThread(CurrentCPU))
@@ -688,6 +732,15 @@ namespace Tasking
         debug("Waiting for thread \"%s\"(%d)", tcb->Name, tcb->ID);
         while (tcb->Status != TaskStatus::Terminated)
             CPU::Halt();
+    }
+
+    void Task::Sleep(uint64_t Milliseconds)
+    {
+        SmartCriticalSection(SchedulerLock);
+        TCB *thread = this->GetCurrentThread();
+        thread->Status = TaskStatus::Sleeping;
+        thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds);
+        OneShot(1);
     }
 
     TCB *Task::CreateThread(PCB *Parent,

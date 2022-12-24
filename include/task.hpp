@@ -68,6 +68,7 @@ namespace Tasking
 
     struct TaskInfo
     {
+        uint64_t SleepUntil = 0;
         uint64_t SpawnTime = 0;
         uint64_t OldUserTime = 0, CurrentUserTime = 0;
         uint64_t OldKernelTime = 0, CurrentKernelTime = 0;
@@ -216,6 +217,7 @@ namespace Tasking
         bool GetNextAvailableProcess(void *CPUDataPointer);
         void SchedulerCleanupProcesses();
         bool SchedulerSearchProcessThread(void *CPUDataPointer);
+        void WakeUpThreads(void *CPUDataPointer);
 
 #if defined(__amd64__)
         void Schedule(CPU::x64::TrapFrame *Frame);
@@ -275,6 +277,13 @@ namespace Tasking
 
         /** @brief Wait for thread to terminate */
         void WaitForThread(TCB *tcb);
+
+        /**
+         * @brief Sleep for a given amount of milliseconds
+         *
+         * @param Milliseconds Amount of milliseconds to sleep
+         */
+        void Sleep(uint64_t Milliseconds);
 
         PCB *CreateProcess(PCB *Parent,
                            const char *Name,

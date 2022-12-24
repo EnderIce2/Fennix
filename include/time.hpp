@@ -35,6 +35,8 @@ namespace Time
 
     public:
         void Sleep(uint64_t Milliseconds);
+        uint64_t GetCounter();
+        uint64_t CalculateTarget(uint64_t Milliseconds);
         time(void *acpi);
         ~time();
     };
