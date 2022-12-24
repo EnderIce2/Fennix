@@ -18,7 +18,7 @@
  * -------------
  * This is the main kernel file. It contains the main function and the kernel entry point.
  *
- * Loading procedure:
+ * LOADING PROCEDURE:
  * [BOOT] -> [Bootloader] -> [Boot Info Parser] -> Entry() -> Main() -> KernelMainThread()
  * - Bootloader
  * - Entry() is the first function to be called by the boot info parser function after getting the boot info from the bootloader.
@@ -28,8 +28,33 @@
  * TODO:
  * - [ ] Optimize SMP.
  *
- * Bugs:
+ * BUGS:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
+ * 
+ * CREDITS AND REFERENCES:
+ * - General:
+ *    https://wiki.osdev.org/Main_Page
+ * 
+ * - Network:
+ *    https://web.archive.org/web/20051210132103/http://users.pcnet.ro/dmoroian/beej/Beej.html
+ *    https://web.archive.org/web/20060229214053/http://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+ *    https://en.wikipedia.org/wiki/EtherType
+ *    https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-network-packet-reception
+ *    https://linux-kernel-labs.github.io/refs/heads/master/labs/networking.html
+ *    https://github.com/smoltcp-rs/smoltcp
+ *    https://www.ciscopress.com/articles/article.asp?p=3089352&seqNum=5
+ *    https://www.cs.unh.edu/cnrg/people/gherrin/linux-net.html
+ *    https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+ *    https://github.com/TheUltimateFoxOS/horizon
+ *    https://en.wikipedia.org/wiki/Address_Resolution_Protocol
+ *    https://en.cppreference.com/w/cpp/language/operators
+ *    https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol
+ *    https://www.cs.usfca.edu/~cruse/cs326f04/RTL8139D_DataSheet.pdf
+ *    https://www.javatpoint.com/arp-packet-format
+ *    https://www.cs.usfca.edu/~cruse/cs326f04/RTL8139_ProgrammersGuide.pdf
+ *    http://realtek.info/pdf/rtl8139cp.pdf
+ *    https://en.wikipedia.org/wiki/IPv4
+ *    https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
  */
 
 #ifdef __amd64__
