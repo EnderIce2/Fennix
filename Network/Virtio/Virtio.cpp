@@ -78,6 +78,12 @@ int CallbackHandler(KernelCallback *Data)
             return DEVICE_NOT_SUPPORTED;
         break;
     }
+    case FetchReason:
+    {
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Virtio Network", 15);
+        Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
+        break;
+    }
     case InterruptReason:
     {
         break;

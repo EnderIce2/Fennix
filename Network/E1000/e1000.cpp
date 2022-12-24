@@ -384,6 +384,12 @@ int CallbackHandler(KernelCallback *Data)
             return DEVICE_NOT_SUPPORTED;
         break;
     }
+    case FetchReason:
+    {
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void*)"Intel 82540EM Gigabit Ethernet Controller", 42);
+        Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
+        break;
+    }
     case InterruptReason:
     {
         OutCMD(REG::IMASK, 0x1);
@@ -404,8 +410,8 @@ int CallbackHandler(KernelCallback *Data)
     }
     case SendReason:
     {
-        TX[TXCurrent]->Address = (uint64_t)Data->NetworkCallback.Data;
-        TX[TXCurrent]->Length = Data->NetworkCallback.Length;
+        TX[TXCurrent]->Address = (uint64_t)Data->NetworkCallback.Send.Data;
+        TX[TXCurrent]->Length = Data->NetworkCallback.Send.Length;
         TX[TXCurrent]->Command = CMD::EOP | CMD::IFCS | CMD::RS;
         TX[TXCurrent]->Status = 0;
         uint8_t OldTXCurrent = TXCurrent;

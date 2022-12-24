@@ -167,6 +167,12 @@ int CallbackHandler(KernelCallback *Data)
             return DEVICE_NOT_SUPPORTED;
         break;
     }
+    case FetchReason:
+    {
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"RTL-8139", 9);
+        Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
+        break;
+    }
     case InterruptReason:
     {
         uint16_t Status = RTLIW(0x3E);
@@ -186,8 +192,8 @@ int CallbackHandler(KernelCallback *Data)
     }
     case SendReason:
     {
-        RTLOL(TSAD[TXCurrent], static_cast<uint32_t>(reinterpret_cast<uint64_t>(Data->NetworkCallback.Data)));
-        RTLOL(TSD[TXCurrent++], Data->NetworkCallback.Length);
+        RTLOL(TSAD[TXCurrent], static_cast<uint32_t>(reinterpret_cast<uint64_t>(Data->NetworkCallback.Send.Data)));
+        RTLOL(TSD[TXCurrent++], Data->NetworkCallback.Send.Length);
         if (TXCurrent > 3)
             TXCurrent = 0;
         break;
