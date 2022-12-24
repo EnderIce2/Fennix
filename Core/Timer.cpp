@@ -15,9 +15,18 @@ namespace Time
     void time::Sleep(uint64_t Milliseconds)
     {
 #if defined(__amd64__) || defined(__i386__)
-        uintptr_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000) / clk;
+        uintptr_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000000) / clk;
+#ifdef DEBUG
+        uint64_t Counter = mminq(&((HPET *)hpet)->MainCounterValue);
+        while (Counter < Target)
+        {
+            Counter = mminq(&((HPET *)hpet)->MainCounterValue);
+            CPU::Pause();
+        }
+#else
         while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
             CPU::Pause();
+#endif
 #elif defined(__aarch64__)
 #endif
     }
