@@ -5,6 +5,7 @@
 
 #include <boot/binfo.h>
 #ifdef __cplusplus
+#include <net/nc.hpp>
 #include <filesystem.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
@@ -29,6 +30,7 @@ extern Time::time *TimeManager;
 extern FileSystem::Virtual *vfs;
 extern Driver::Driver *DriverManager;
 extern Disk::Manager *DiskManager;
+extern NetworkInterfaceManager::NetworkInterface *NIManager;
 
 #define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
 #define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code

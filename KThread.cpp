@@ -13,6 +13,7 @@
 
 Driver::Driver *DriverManager = nullptr;
 Disk::Manager *DiskManager = nullptr;
+NetworkInterfaceManager::NetworkInterface *NIManager = nullptr;
 
 void KernelMainThread()
 {
@@ -41,6 +42,11 @@ void KernelMainThread()
     }
     else
         KPrint("\eE85230No disk drivers found! Cannot fetch disks!");
+
+    KPrint("Initializing Network Interface Manager...");
+    NIManager = new NetworkInterfaceManager::NetworkInterface;
+    KPrint("Starting Network Interface Manager...");
+    NIManager->StartService();
 
     KPrint("Setting up userspace...");
 
@@ -82,6 +88,8 @@ Exit:
 
 void KernelShutdownThread(bool Reboot)
 {
+    delete NIManager;
+
     if (DriverManager)
         DriverManager->UnloadAllDrivers();
 
