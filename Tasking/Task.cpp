@@ -359,15 +359,8 @@ namespace Tasking
                 continue;
 
             // Check process status.
-            switch (pcb->Status)
-            {
-            case TaskStatus::Ready:
-                schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
-                break;
-            default:
-                schedbg("Process \"%s\"(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+            if (pcb->Status == TaskStatus::Terminated)
                 continue;
-            }
 
             // Loop through all the threads.
             foreach (TCB *tcb in pcb->Threads)
@@ -376,7 +369,7 @@ namespace Tasking
                     continue;
 
                 // Check if the thread is sleeping.
-                if (tcb->Status != TaskStatus::Sleeping)
+                if (tcb->Status != TaskStatus::Sleeping || pcb->Status == TaskStatus::Terminated)
                     continue;
 
                 // Check if the thread is ready to wake up.
@@ -451,7 +444,7 @@ namespace Tasking
                 CurrentCPU->CurrentThread->Status = TaskStatus::Ready;
 
             // Loop through all threads and find which one is ready.
-            WakeUpThreads(CurrentCPU);
+            this->WakeUpThreads(CurrentCPU);
 
             // Get next available thread from the list.
             if (this->GetNextAvailableThread(CurrentCPU))
