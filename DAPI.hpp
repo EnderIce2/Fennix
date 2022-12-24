@@ -3,13 +3,13 @@
 
 /**
  * @brief The driver API is a set of functions that the kernel provides to the drivers.
- * 
+ *
  * - The driver is responsible for the memory management.
  * - The kernel will NOT free any memory allocated by the driver. On @see StopReason the driver must free all the memory it allocated and disable the hardware it uses.
  * - The driver image will be freed after the driver is unloaded.
  * - The kernel will unbind the interrupt handlers and the process handlers.
  * - Kernel API will be freed after the driver is unloaded.
- * 
+ *
  */
 
 enum DriverReturnCode
@@ -122,8 +122,17 @@ struct KernelCallback
     /** @brief When the kernel wants to send a packet. */
     struct
     {
-        void *Data;
-        unsigned long Length;
+        struct
+        {
+            unsigned char *Data;
+            unsigned long Length;
+        } Send;
+
+        struct
+        {
+            char Name[128];
+            unsigned long MAC;
+        } Fetch;
     } NetworkCallback;
 
     /** @brief When the kernel wants to write to disk. */
