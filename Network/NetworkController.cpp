@@ -124,7 +124,7 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::StartService()
     {
-        this->NetSvcProcess = TaskManager->CreateProcess(nullptr, "Network Service", Tasking::TaskTrustLevel::System);
+        this->NetSvcProcess = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Network Service", Tasking::TaskTrustLevel::System);
         Vector<AuxiliaryVector> auxv;
         auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
         this->NetSvcThread = TaskManager->CreateThread(this->NetSvcProcess, (Tasking::IP)CallStartNetworkStackWrapper, nullptr, nullptr, auxv);
