@@ -14,6 +14,7 @@
 Driver::Driver *DriverManager = nullptr;
 Disk::Manager *DiskManager = nullptr;
 NetworkInterfaceManager::NetworkInterface *NIManager = nullptr;
+Recovery::KernelRecovery *RecoveryScreen = nullptr;
 
 void KernelMainThread()
 {
@@ -46,7 +47,7 @@ void KernelMainThread()
     KPrint("Initializing Network Interface Manager...");
     NIManager = new NetworkInterfaceManager::NetworkInterface;
     KPrint("Starting Network Interface Manager...");
-    NIManager->StartService();
+    // NIManager->StartService();
 
     KPrint("Setting up userspace...");
 
@@ -82,7 +83,9 @@ void KernelMainThread()
     KPrint("\eE85230Userspace process exited with code %d", ret.Thread->GetExitCode());
     error("Userspace process exited with code %d (%#x)", ret.Thread->GetExitCode(), ret.Thread->GetExitCode());
 Exit:
-    KPrint("Well, this is awkward. I guess you'll have to reboot.");
+    KPrint("%s exited with code %d! Dropping to recovery screen...", Config.InitPath, ret.Thread->GetExitCode());
+    TaskManager->Sleep(1000);
+    RecoveryScreen = new Recovery::KernelRecovery;
     CPU::Halt(true);
 }
 
