@@ -11,6 +11,38 @@ namespace Memory
         return FROM_PAGES(Size);
     }
 
+    bool MemMgr::Add(void *Address, size_t Count)
+    {
+        for (size_t i = 0; i < AllocatedPagesList.size(); i++)
+        {
+            if (AllocatedPagesList[i].Address == Address)
+            {
+                error("Address already exists!");
+                return false;
+            }
+
+            if ((uintptr_t)Address < (uintptr_t)AllocatedPagesList[i].Address)
+            {
+                if ((uintptr_t)Address + (Count * PAGE_SIZE) > (uintptr_t)AllocatedPagesList[i].Address)
+                {
+                    error("Address intersects with an allocated page!");
+                    return false;
+                }
+            }
+            else
+            {
+                if ((uintptr_t)AllocatedPagesList[i].Address + (AllocatedPagesList[i].PageCount * PAGE_SIZE) > (uintptr_t)Address)
+                {
+                    error("Address intersects with an allocated page!");
+                    return false;
+                }
+            }
+        }
+
+        AllocatedPagesList.push_back({Address, Count});
+        return true;
+    }
+
     void *MemMgr::RequestPages(size_t Count)
     {
         void *Address = KernelAllocator.RequestPages(Count);

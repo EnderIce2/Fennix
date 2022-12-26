@@ -648,6 +648,8 @@ namespace Memory
     public:
         uint64_t GetAllocatedMemorySize();
 
+        bool Add(void *Address, size_t Count);
+
         void *RequestPages(size_t Count);
         void FreePages(void *Address, size_t Count);
 
