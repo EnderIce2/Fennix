@@ -160,6 +160,15 @@ namespace Video
         return Char;
     }
 
+    void Display::DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART)
+    {
+        this->Buffers[Index]->CursorX = X;
+        this->Buffers[Index]->CursorY = Y;
+
+        for (int i = 0; String[i] != '\0'; i++)
+            this->Print(String[i], Index, WriteToUART);
+    }
+
     Display::Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont)
     {
         this->framebuffer = Info;

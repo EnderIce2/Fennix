@@ -154,19 +154,19 @@ namespace Video
             *Y = this->Buffers[Index]->CursorY;
         }
 
-        void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
+        inline void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
         {
-            if (X >= this->Buffers[Index]->Width)
+            if (unlikely(X >= this->Buffers[Index]->Width))
                 X = this->Buffers[Index]->Width - 1;
-            if (Y >= this->Buffers[Index]->Height)
+            if (unlikely(Y >= this->Buffers[Index]->Height))
                 Y = this->Buffers[Index]->Height - 1;
             uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             *Pixel = Color;
         }
 
-        uint32_t GetPixel(uint32_t X, uint32_t Y, int Index)
+        inline uint32_t GetPixel(uint32_t X, uint32_t Y, int Index)
         {
-            if (X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height)
+            if (unlikely(X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height))
                 return 0;
             uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
             return *Pixel;
@@ -193,6 +193,7 @@ namespace Video
         }
 
         char Print(char Char, int Index, bool WriteToUART = false);
+        void DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART = false);
         Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont = true);
         ~Display();
     };
