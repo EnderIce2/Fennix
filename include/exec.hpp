@@ -43,8 +43,8 @@ namespace Execute
     SpawnData Spawn(char *Path, const char **argv, const char **envp);
 
     void *ELFLoadRel(Elf64_Ehdr *Header);
-
     void ELFLoadExec(void *BaseImage,
+                     size_t Length,
                      Elf64_Ehdr *ELFHeader,
                      Memory::Virtual &pva,
                      SpawnData *ret,

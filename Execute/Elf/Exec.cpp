@@ -15,6 +15,7 @@ using namespace Tasking;
 namespace Execute
 {
     void ELFLoadExec(void *BaseImage,
+                     size_t Length,
                      Elf64_Ehdr *ELFHeader,
                      Memory::Virtual &pva,
                      SpawnData *ret,
@@ -139,6 +140,14 @@ namespace Execute
         UNUSED(SymbolTable);
         UNUSED(RelaPlt);
 
+        char *NeededLibraries[256];
+        uint64_t InitAddress = 0;
+        uint64_t FiniAddress = 0;
+
+        UNUSED(NeededLibraries);
+        UNUSED(InitAddress);
+        UNUSED(FiniAddress);
+
         if (!DynamicString)
             DynamicString = StringTable;
 
@@ -171,10 +180,6 @@ namespace Execute
                       ItrProgramHeader.p_filesz, ItrProgramHeader.p_memsz, ItrProgramHeader.p_align);
 
                 Elf64_Dyn *Dynamic = (Elf64_Dyn *)((uint8_t *)BaseImage + ItrProgramHeader.p_offset);
-
-                char *NeededLibraries[256];
-                uint64_t InitAddress = 0;
-                uint64_t FiniAddress = 0;
 
                 for (uint64_t i = 0; i < ItrProgramHeader.p_filesz / sizeof(Elf64_Dyn); i++)
                 {
@@ -376,11 +381,15 @@ namespace Execute
                 FileSystem::FILE *InterpreterFile = vfs->Open(InterpreterPath);
                 if (InterpreterFile->Status != FileSystem::FileStatus::OK)
                 {
-                    error("Failed to open interpreter file: %s", InterpreterPath);
+                    warn("Failed to open interpreter file: %s", InterpreterPath);
                 }
                 else
                 {
+                    // TODO: Load interpreter file
+                    fixme("Interpreter file loaded: %s", InterpreterPath);
                 }
+                vfs->Close(InterpreterFile);
+
                 break;
             }
             /* ... */

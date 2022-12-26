@@ -19,6 +19,7 @@ namespace Execute
         SpawnData ret = {.Status = ExStatus::Unknown,
                          .Process = nullptr,
                          .Thread = nullptr};
+
         FileSystem::FILE *ExFile = vfs->Open(Path);
         if (ExFile->Status == FileSystem::FileStatus::OK)
         {
@@ -121,7 +122,7 @@ namespace Execute
 
                     if (ELFHeader->e_type == ET_EXEC)
                     {
-                        ELFLoadExec(BaseImage, ELFHeader, pva, &ret, Path, Process, argv, envp, Arch, Comp);
+                        ELFLoadExec(BaseImage, ExFile->Node->Length, ELFHeader, pva, &ret, Path, Process, argv, envp, Arch, Comp);
                         goto Exit;
                     }
                     else if (ELFHeader->e_type == ET_DYN)
