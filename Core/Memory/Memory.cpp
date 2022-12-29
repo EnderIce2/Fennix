@@ -281,6 +281,12 @@ void *HeapCalloc(size_t n, size_t Size)
 
 void *HeapRealloc(void *Address, size_t Size)
 {
+    if (unlikely(!Address))
+    {
+        error("Attempt to realloc a null pointer");
+        return nullptr;
+    }
+
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
@@ -304,6 +310,12 @@ void *HeapRealloc(void *Address, size_t Size)
 
 void HeapFree(void *Address)
 {
+    if (unlikely(!Address))
+    {
+        warn("Attempt to free a null pointer");
+        return;
+    }
+
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
