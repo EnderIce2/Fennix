@@ -52,10 +52,10 @@ __constructor void TestTypeSize()
     debug("sizeof(__SIG_ATOMIC_TYPE__) = %lld", sizeof(__SIG_ATOMIC_TYPE__));
 
     debug("--- INTX MAX TYPES ---");
-    debug("sizeof(__INT8_MAX__) = %#llx", sizeof(__INT8_MAX__));
-    debug("sizeof(__INT16_MAX__) = %#llx", sizeof(__INT16_MAX__));
-    debug("sizeof(__INT32_MAX__) = %#llx", sizeof(__INT32_MAX__));
-    debug("sizeof(__INT64_MAX__) = %#llx", sizeof(__INT64_MAX__));
+    debug("__INT8_MAX__ = %#llx", __INT8_MAX__);
+    debug("__INT16_MAX__ = %#llx", __INT16_MAX__);
+    debug("__INT32_MAX__ = %#llx", __INT32_MAX__);
+    debug("__INT64_MAX__ = %#llx", __INT64_MAX__);
 
     debug("--- UINTX MAX TYPES ---");
     debug("__UINT8_MAX__ = %#llx", __UINT8_MAX__);
