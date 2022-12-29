@@ -192,7 +192,7 @@ namespace Tasking
         // Find a new process to execute.
         foreach (PCB *pcb in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (unlikely(InvalidPCB(pcb)))
                 continue;
 
             // Check process status.
@@ -241,7 +241,7 @@ namespace Tasking
                 size_t TempIndex = i;
             RetryAnotherThread:
                 TCB *thread = CurrentCPU->CurrentProcess->Threads[TempIndex + 1];
-                if (InvalidTCB(thread))
+                if (unlikely(InvalidTCB(thread)))
                 {
                     if (TempIndex > CurrentCPU->CurrentProcess->Threads.size())
                         break;
@@ -281,7 +281,7 @@ namespace Tasking
                 size_t TempIndex = i;
             RetryAnotherProcess:
                 PCB *pcb = ListProcess[TempIndex + 1];
-                if (InvalidPCB(pcb))
+                if (unlikely(InvalidPCB(pcb)))
                 {
                     if (TempIndex > ListProcess.size())
                         break;
@@ -315,7 +315,7 @@ namespace Tasking
     {
         foreach (PCB *pcb in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (unlikely(InvalidPCB(pcb)))
                 continue;
             RemoveProcess(pcb);
         }
@@ -327,7 +327,7 @@ namespace Tasking
 
         foreach (PCB *pcb in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (unlikely(InvalidPCB(pcb)))
                 continue;
             if (pcb->Status != TaskStatus::Ready)
                 continue;
@@ -355,7 +355,7 @@ namespace Tasking
         // Loop through all the processes.
         foreach (PCB *pcb in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (unlikely(InvalidPCB(pcb)))
                 continue;
 
             // Check process status.
@@ -402,6 +402,7 @@ namespace Tasking
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 
+#ifdef DEBUG_SCHEDULER
         {
             schedbg("================================================================");
             schedbg("Status: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
@@ -424,9 +425,10 @@ namespace Tasking
                     Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
             schedbg("================================================================");
         }
+#endif
 
         // Null or invalid process/thread? Let's find a new one to execute.
-        if (InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread))
+        if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread)))
         {
             if (this->FindNewProcess(CurrentCPU))
                 goto Success;
