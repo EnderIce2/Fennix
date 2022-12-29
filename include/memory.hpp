@@ -6,6 +6,7 @@
 #include <bitmap.hpp>
 #include <vector.hpp>
 #include <lock.hpp>
+#include <std.hpp>
 #endif // __cplusplus
 #include <types.h>
 
@@ -655,18 +656,6 @@ namespace Memory
 
         MemMgr(PageTable4 *PageTable = nullptr);
         ~MemMgr();
-    };
-}
-
-/**
- * @brief // stub namespace for std::align_val_t and new operator
- * @note // Found on https://gcc.gnu.org/legacy-ml/gcc-patches/2016-09/msg00628.html for "_ZnwmSt11align_val_t" compiler error
- */
-namespace std
-{
-    typedef __SIZE_TYPE__ size_t;
-    enum class align_val_t : std::size_t
-    {
     };
 }
 
