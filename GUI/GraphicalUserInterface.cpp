@@ -394,10 +394,24 @@ namespace GraphicalUserInterface
                         {
                             wnd->GetPositionPtr()->Width += Mouse.X - MouseArray[0].X;
                             wnd->GetPositionPtr()->Height += Mouse.Y - MouseArray[0].Y;
+
+                            if (wnd->GetPositionPtr()->Width < 200)
+                            {
+                                wnd->GetPositionPtr()->Width = 200;
+                                Mouse.X = MouseArray[0].X;
+                            }
+
+                            if (wnd->GetPositionPtr()->Height < 100)
+                            {
+                                wnd->GetPositionPtr()->Height = 100;
+                                Mouse.Y = MouseArray[0].Y;
+                            }
+
                             OverlayBufferRepaint = true;
                             OverlayFullRepaint = true;
                             eTemplate.Resize.Width = wnd->GetPosition().Width;
                             eTemplate.Resize.Height = wnd->GetPosition().Height;
+
                             wnd->OnResize(&eTemplate);
                         }
                     }
