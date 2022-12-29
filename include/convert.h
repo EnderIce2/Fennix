@@ -5,6 +5,8 @@
 extern "C"
 {
 #endif
+#define NAN (__builtin_nanf(""))
+
     int isdigit(int c);
     int isspace(int c);
     int isempty(char *str);
@@ -14,6 +16,8 @@ extern "C"
     int abs(int i);
     void swap(char *x, char *y);
     char *reverse(char *Buffer, int i, int j);
+
+    float sqrtf(float x);
 
     void backspace(char s[]);
     void append(char s[], char n);

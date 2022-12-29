@@ -642,6 +642,24 @@ char *reverse(char *Buffer, int i, int j)
     return Buffer;
 }
 
+float sqrtf(float x)
+{
+    if (x < 0.0f)
+        return NAN;
+
+    if (x < 1e-7f)
+        return 0.0f;
+
+    float guess = x / 2.0f;
+    for (short i = 0; i < 10; i++)
+    {
+        if (guess == 0.0f)
+            return 0.0f;
+        guess = (guess + x / guess) / 2.0f;
+    }
+    return guess;
+}
+
 char *strtok(char *src, const char *delim)
 {
     static char *src1;
