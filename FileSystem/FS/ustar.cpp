@@ -54,9 +54,12 @@ namespace FileSystem
             size_t size = getsize(header->size);
             FileSystemNode *node = nullptr;
 
-            if (!isempty((char *)header->name))
-                KPrint("Adding file \e88AACC%s\eCCCCCC (\e88AACC%lu \eCCCCCCbytes)", header->name, size);
-            else
+            // if (!isempty((char *)header->name))
+            //     KPrint("Adding file \e88AACC%s\eCCCCCC (\e88AACC%lu \eCCCCCCbytes)", header->name, size);
+            // else
+            //     goto NextFileAddress;
+
+            if (isempty((char *)header->name))
                 goto NextFileAddress;
 
             node = vfs->Create(nullptr, header->name);
