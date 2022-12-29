@@ -18,6 +18,11 @@ extern "C"
     char *reverse(char *Buffer, int i, int j);
 
     float sqrtf(float x);
+    double clamp(double x, double low, double high);
+
+    float lerp(float a, float b, float t);
+    float smoothstep(float a, float b, float t);
+    float cubicInterpolate(float a, float b, float t);
 
     void backspace(char s[]);
     void append(char s[], char n);

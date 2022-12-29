@@ -660,6 +660,34 @@ float sqrtf(float x)
     return guess;
 }
 
+double clamp(double x, double low, double high)
+{
+    if (x < low)
+        return low;
+    else if (x > high)
+        return high;
+    else
+        return x;
+}
+
+float lerp(float a, float b, float t)
+{
+    return (1 - t) * a + t * b;
+}
+
+float smoothstep(float a, float b, float t)
+{
+    t = clamp(t, 0.0, 1.0);
+    return lerp(a, b, t * t * (3 - 2 * t));
+}
+
+float cubicInterpolate(float a, float b, float t)
+{
+    float t2 = t * t;
+    float t3 = t2 * t;
+    return a + (-2 * t3 + 3 * t2) * b;
+}
+
 char *strtok(char *src, const char *delim)
 {
     static char *src1;
