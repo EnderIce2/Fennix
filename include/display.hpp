@@ -172,6 +172,9 @@ namespace Video
             return *Pixel;
         }
 
+        inline uint16_t GetBitsPerPixel() { return this->framebuffer.BitsPerPixel; }
+        inline uint64_t GetPitch() { return this->framebuffer.Pitch; }
+
         void Scroll(int Index, int Lines)
         {
             if (Lines == 0)
