@@ -4,6 +4,7 @@
 #include <types.h>
 #include <memory.hpp>
 #include <vector.hpp>
+#include <debug.h>
 
 namespace GraphicalUserInterface
 {
@@ -11,12 +12,40 @@ namespace GraphicalUserInterface
 
     struct MouseData
     {
-        uint32_t X;
-        uint32_t Y;
-        uint32_t Z;
+        int64_t X;
+        int64_t Y;
+        int64_t Z;
         bool Left;
         bool Right;
         bool Middle;
+    };
+
+    struct ScreenBitmap
+    {
+        int64_t Width;
+        int64_t Height;
+        uint64_t Size;
+        uint64_t Pitch;
+        uint64_t BitsPerPixel;
+        uint8_t *Data;
+    };
+
+    struct Rect
+    {
+        int64_t Left;
+        int64_t Top;
+        int64_t Width;
+        int64_t Height;
+
+        bool Contains(int64_t X, int64_t Y)
+        {
+            return (X >= Left && X <= Left + Width && Y >= Top && Y <= Top + Height);
+        }
+
+        bool Contains(Rect rect)
+        {
+            return (rect.Left >= Left && rect.Left + rect.Width <= Left + Width && rect.Top >= Top && rect.Top + rect.Height <= Top + Height);
+        }
     };
 
     enum CursorType
@@ -38,101 +67,119 @@ namespace GraphicalUserInterface
         AppStarting,
     };
 
-    enum EventType
-    {
-        MouseEvent,
-        KeyboardEvent,
-        FocusEvent,
-        WidgetEvent
-    };
-
     struct Event
     {
-        EventType Type;
-        Handle Source;
-        Handle Target;
-        MouseData Mouse;
-        MouseData LastMouse;
+        struct
+        {
+            int64_t Width;
+            int64_t Height;
+        } Resize;
 
         struct
         {
-            bool MouseMove;
-            bool MouseClick;
-            bool MouseDoubleClick;
-            bool MouseDown;
-            bool MouseUp;
-            bool MouseWheel;
-            bool MouseEnter;
-            bool MouseLeave;
-            bool MouseHover;
-            bool MouseDrag;
-            bool MouseDragStart;
-            bool MouseDragEnd;
-            bool MouseDragEnter;
-            bool MouseDragLeave;
-            bool MouseDragHover;
-            bool MouseDragDrop;
-            bool MouseDragDropEnter;
-            bool MouseDragDropLeave;
-            bool MouseDragDropHover;
-            bool MouseDragDropEnd;
-            bool MouseDragDropStart;
-            bool MouseDragDropCancel;
-            bool MouseDragDropComplete;
-            bool MouseDragDropAbort;
-        } MouseEventData;
+            int64_t X;
+            int64_t Y;
+            bool Left;
+            bool Right;
+            bool Middle;
+        } MouseDown;
 
         struct
         {
-            bool KeyDown;
-            bool KeyUp;
-            bool KeyPress;
-        } KeyboardEventData;
+            int64_t X;
+            int64_t Y;
+            bool Left;
+            bool Right;
+            bool Middle;
+        } MouseUp;
 
         struct
         {
-            bool FocusEnter;
-            bool FocusLeave;
-            bool FocusHover;
-        } FocusEventData;
-
-        struct
-        {
-            bool Resize;
-            bool Move;
-            bool Show;
-            bool Hide;
-            bool Close;
-            bool Destroy;
-            bool Paint;
-            bool PaintBackground;
-            bool PaintForeground;
-            bool PaintBorder;
-            bool PaintShadow;
-            bool PaintOverlay;
-            bool PaintAll;
-            bool PaintChildren;
-            bool PaintChildrenBackground;
-            bool PaintChildrenForeground;
-            bool PaintChildrenBorder;
-            bool PaintChildrenShadow;
-            bool PaintChildrenOverlay;
-            bool PaintChildrenAll;
-        } WidgetEventData;
+            int64_t X;
+            int64_t Y;
+            bool Left;
+            bool Right;
+            bool Middle;
+        } MouseMove;
     };
 
-    void PutRect(uint32_t X, uint32_t Y, uint32_t Width, uint32_t Height, uint32_t Color);
-    void PutBorder(uint32_t X, uint32_t Y, uint32_t Width, uint32_t Height, uint32_t Color);
-    void PutBorderWithShadow(uint32_t X, uint32_t Y, uint32_t Width, uint32_t Height, uint32_t Color);
+    /*
+        virtual void OnMouseMove(Event *e) {}
+        virtual void OnMouseClick(Event *e) {}
+        virtual void OnMouseDoubleClick(Event *e) {}
+        virtual void OnMouseDown(Event *e) {}
+        virtual void OnMouseUp(Event *e) {}
+        virtual void OnMouseWheel(Event *e) {}
+        virtual void OnMouseEnter(Event *e) {}
+        virtual void OnMouseLeave(Event *e) {}
+        virtual void OnMouseHover(Event *e) {}
+        virtual void OnMouseDrag(Event *e) {}
+        virtual void OnMouseDragStart(Event *e) {}
+        virtual void OnMouseDragEnd(Event *e) {}
+        virtual void OnMouseDragEnter(Event *e) {}
+        virtual void OnMouseDragLeave(Event *e) {}
+        virtual void OnMouseDragHover(Event *e) {}
+        virtual void OnMouseDragDrop(Event *e) {}
+        virtual void OnMouseDragDropEnter(Event *e) {}
+        virtual void OnMouseDragDropLeave(Event *e) {}
+        virtual void OnMouseDragDropHover(Event *e) {}
+        virtual void OnMouseDragDropEnd(Event *e) {}
+        virtual void OnMouseDragDropStart(Event *e) {}
+        virtual void OnMouseDragDropCancel(Event *e) {}
+        virtual void OnMouseDragDropComplete(Event *e) {}
+        virtual void OnMouseDragDropAbort(Event *e) {}
 
-    class Widget
+        virtual void OnKeyDown(Event *e) {}
+        virtual void OnKeyUp(Event *e) {}
+        virtual void OnKeyPress(Event *e) {}
+
+        virtual void OnFocusEnter(Event *e) {}
+        virtual void OnFocusLeave(Event *e) {}
+        virtual void OnFocusHover(Event *e) {}
+
+        virtual void OnResize(Event *e) {}
+        virtual void OnMinimize(Event *e) {}
+        virtual void OnMaximize(Event *e) {}
+        virtual void OnMove(Event *e) {}
+        virtual void OnShow(Event *e) {}
+        virtual void OnHide(Event *e) {}
+        virtual void OnClose(Event *e) {}
+        virtual void OnDestroy(Event *e) {}
+
+        virtual void OnPaint(Event *e) {}
+        virtual void OnPaintBackground(Event *e) {}
+        virtual void OnPaintForeground(Event *e) {}
+        virtual void OnPaintOverlay(Event *e) {}
+        virtual void OnPaintAll(Event *e) {}
+        virtual void OnPaintChildren(Event *e) {}
+        virtual void OnPaintChildrenBackground(Event *e) {}
+        virtual void OnPaintChildrenForeground(Event *e) {}
+        virtual void OnPaintChildrenBorder(Event *e) {}
+        virtual void OnPaintChildrenShadow(Event *e) {}
+        virtual void OnPaintChildrenOverlay(Event *e) {}
+        virtual void OnPaintChildrenAll(Event *e) {}
+    */
+
+    void SetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color);
+    void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
+                        ScreenBitmap *SourceBitmap,
+                        long Top,
+                        long Left,
+                        bool IgnoreZero = true);
+    void PutRect(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
+    void PutBorder(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
+    uint32_t BlendColors(uint32_t c1, uint32_t c2, float t);
+    void PutBorderWithShadow(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
+    void DrawShadow(ScreenBitmap *Bitmap, Rect rect);
+    void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color);
+
+    class WidgetCollection
     {
     private:
         Memory::MemMgr *mem;
 
     public:
-        void Paint();
-        Handle CreatePanel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
+        Handle CreatePanel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height);
         Handle CreateButton(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
         Handle CreateLabel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
         Handle CreateTextBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
@@ -142,51 +189,128 @@ namespace GraphicalUserInterface
         Handle CreateListBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
         Handle CreateProgressBar(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
         Handle CreateContextMenu(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        void HandleEvent(Event *e);
-        Widget(void /* Window */ *ParentWindow);
-        ~Widget();
+
+        WidgetCollection(void /* Window */ *ParentWindow);
+        ~WidgetCollection();
+
+        void OnMouseMove(Event *e);
+        void OnMouseClick(Event *e);
+        void OnMouseDoubleClick(Event *e);
+        void OnMouseDown(Event *e);
+        void OnMouseUp(Event *e);
+        void OnMouseWheel(Event *e);
+        void OnMouseEnter(Event *e);
+        void OnMouseLeave(Event *e);
+        void OnMouseHover(Event *e);
+        void OnMouseDrag(Event *e);
+        void OnMouseDragStart(Event *e);
+        void OnMouseDragEnd(Event *e);
+
+        void OnKeyDown(Event *e);
+        void OnKeyUp(Event *e);
+        void OnKeyPress(Event *e);
+
+        void OnShow(Event *e);
+        void OnHide(Event *e);
+        void OnDestroy(Event *e);
+
+        void OnPaint(Event *e);
     };
 
     class Window
     {
     private:
         Memory::MemMgr *mem;
-        void *ParentGUI;
-        long Left, Top, Width, Height;
-        long Last_Left, Last_Top, Last_Width, Last_Height;
+        ScreenBitmap *Buffer;
+        Rect Position;
+        Rect LastPosition;
         char Title[256];
-        Vector<Widget *> Widgets;
+        Vector<WidgetCollection *> Widgets;
+        void *ParentGUI;
+
         bool Maximized;
         bool Minimized;
 
-        bool CloseButtonFocused;
-        bool MaximizeButtonFocused;
-        bool MinimizeButtonFocused;
-        bool WindowDragging;
-
     public:
-        void Close();
-        void Maximize();
-        void Minimize();
-        void HandleEvent(Event *e);
-        void Paint();
-        void AddWidget(Widget *widget);
-        Window(void *ParentGUI, uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Title);
+        bool IsMaximized() { return Maximized; }
+        bool IsMinimized() { return Minimized; }
+        ScreenBitmap *GetBuffer() { return Buffer; }
+        Rect GetPosition() { return Position; }
+        Rect *GetPositionPtr() { return &Position; }
+        const char *GetTitle() { return (const char *)Title; }
+        void AddWidget(WidgetCollection *widget);
+
+        Window(void *ParentGUI, Rect rect, const char *Title);
         ~Window();
+
+        void OnMouseMove(Event *e);
+        void OnMouseClick(Event *e);
+        void OnMouseDoubleClick(Event *e);
+        void OnMouseDown(Event *e);
+        void OnMouseUp(Event *e);
+        void OnMouseWheel(Event *e);
+        void OnMouseEnter(Event *e);
+        void OnMouseLeave(Event *e);
+        void OnMouseHover(Event *e);
+        void OnMouseDrag(Event *e);
+        void OnMouseDragStart(Event *e);
+        void OnMouseDragEnd(Event *e);
+
+        void OnKeyDown(Event *e);
+        void OnKeyUp(Event *e);
+        void OnKeyPress(Event *e);
+
+        void OnFocusEnter(Event *e);
+        void OnFocusLeave(Event *e);
+        void OnFocusHover(Event *e);
+
+        void OnResize(Event *e);
+        void OnMinimize(Event *e);
+        void OnMaximize(Event *e);
+        void OnMove(Event *e);
+        void OnShow(Event *e);
+        void OnHide(Event *e);
+        void OnClose(Event *e);
+        void OnDestroy(Event *e);
+
+        void OnPaint(Event *e);
+        void OnPaintBackground(Event *e);
+        void OnPaintForeground(Event *e);
+        void OnPaintOverlay(Event *e);
+        void OnPaintAll(Event *e);
+        void OnPaintChildren(Event *e);
+        void OnPaintChildrenBackground(Event *e);
+        void OnPaintChildrenForeground(Event *e);
+        void OnPaintChildrenBorder(Event *e);
+        void OnPaintChildrenShadow(Event *e);
+        void OnPaintChildrenOverlay(Event *e);
+        void OnPaintChildrenAll(Event *e);
     };
 
     class GUI
     {
     private:
-        MouseData Mouse;
-        MouseData LastMouse;
+        MouseData MouseArray[256];
         Memory::MemMgr *mem;
+        Rect Desktop;
+        ScreenBitmap *BackBuffer;
+        ScreenBitmap *DesktopBuffer;
+        ScreenBitmap *OverlayBuffer;
+        ScreenBitmap *CursorBuffer;
+        Vector<WidgetCollection *> Widgets;
         Vector<Window *> Windows;
-        bool IsRunning;
         CursorType Cursor = CursorType::Arrow;
+        CursorType LastCursor = CursorType::Arrow;
         bool CursorVisible = true;
+        bool IsRunning = false;
 
+        bool DesktopBufferRepaint = true;
+        bool OverlayBufferRepaint = true; bool OverlayFullRepaint = true;
+        bool CursorBufferRepaint = true;
+
+        void FetchInputs();
         void PaintDesktop();
+        void PaintWidgets();
         void PaintWindows();
         void PaintCursor();
 
@@ -194,6 +318,7 @@ namespace GraphicalUserInterface
         void SetCursorType(CursorType Type = CursorType::Visible) { this->Cursor = Type; }
         void Loop();
         void AddWindow(Window *window);
+        void AddWidget(WidgetCollection *widget);
         GUI();
         ~GUI();
     };

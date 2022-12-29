@@ -11,20 +11,17 @@
 
 namespace GraphicalUserInterface
 {
-    void Widget::Paint()
+    Handle WidgetCollection::CreatePanel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height)
     {
+        return 0;
     }
 
-    void Widget::HandleEvent(Event *e)
-    {
-    }
-
-    Widget::Widget(void *ParentWindow)
+    WidgetCollection::WidgetCollection(void *ParentWindow)
     {
         this->mem = new Memory::MemMgr;
     }
 
-    Widget::~Widget()
+    WidgetCollection::~WidgetCollection()
     {
         delete this->mem;
     }
