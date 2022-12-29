@@ -6,6 +6,7 @@
 #include <io.h>
 
 #include "cpu/apic.hpp"
+#include "../../kernel.h"
 
 #define ACPI_TIMER 0x0001
 #define ACPI_BUSMASTER 0x0010
@@ -60,6 +61,7 @@ namespace ACPI
         }
         else if (Event & ACPI_POWER_BUTTON)
         {
+            BeforeShutdown();
             this->Shutdown();
             Time::Clock tm = Time::ReadClock();
             while (tm.Second == Time::ReadClock().Second)
