@@ -13,7 +13,19 @@ namespace GraphicalUserInterface
 {
     void Window::OnResize(Event *e)
     {
-        fixme("Window::OnResize() not implemented");
+        // TODO: Optimize this
+        this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size));
+        delete this->Buffer;
+
+        this->Buffer = new ScreenBitmap;
+        this->Buffer->Width = e->Resize.Width;
+        this->Buffer->Height = e->Resize.Height;
+        this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
+        this->Buffer->Pitch = Display->GetPitch();
+        this->Buffer->Size = this->Buffer->Pitch * e->Resize.Height;
+        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
+        memset(this->Buffer->Data, 0, this->Buffer->Size);
+        this->OnPaint(e);
     }
 
     void Window::OnMinimize(Event *e)
@@ -33,7 +45,10 @@ namespace GraphicalUserInterface
 
     void Window::OnPaintBackground(Event *e)
     {
-        PutRect(this->Buffer, this->Position, /*0x121212*/ 0xFF00FF);
+        Rect PaintPosition = this->Position;
+        PaintPosition.Left = 0;
+        PaintPosition.Top = 0;
+        PutRect(this->Buffer, PaintPosition, /*0x121212*/ 0xFF00FF);
     }
 
     void Window::OnPaintForeground(Event *e)

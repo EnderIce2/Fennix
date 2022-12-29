@@ -282,6 +282,7 @@ namespace GraphicalUserInterface
     {
         KernelCallback callback;
         MouseData Mouse;
+        bool FoundMouseDriver = false;
         if (DriverManager->GetDrivers().size() > 0)
         {
             foreach (auto Driver in DriverManager->GetDrivers())
@@ -307,9 +308,20 @@ namespace GraphicalUserInterface
                     Mouse.Left = callback.InputCallback.Mouse.Buttons.Left;
                     Mouse.Right = callback.InputCallback.Mouse.Buttons.Right;
                     Mouse.Middle = callback.InputCallback.Mouse.Buttons.Middle;
+                    FoundMouseDriver = true;
                     break;
                 }
             }
+        }
+
+        if (!FoundMouseDriver)
+        {
+            Mouse.X = 0;
+            Mouse.Y = 0;
+            Mouse.Z = 0;
+            Mouse.Left = false;
+            Mouse.Right = false;
+            Mouse.Middle = false;
         }
 
         Event eTemplate;
@@ -453,7 +465,7 @@ namespace GraphicalUserInterface
 
             Rect WndPos = wnd->GetPosition();
 
-            // Draw window
+            // Draw window content
             DrawOverBitmap(this->BackBuffer,
                            wndBuffer,
                            WndPos.Top,
