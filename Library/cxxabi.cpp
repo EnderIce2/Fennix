@@ -241,32 +241,37 @@ extern "C" void __cxa_guard_release(__guard *g)
 
 extern "C" void __cxa_guard_abort(__guard *g) { fixme("__cxa_guard_abort( %p ) triggered.", g); }
 
+// vtable for __cxxabiv1::__class_type_info
 extern "C" void *_ZTVN10__cxxabiv117__class_type_infoE(void)
 {
     fixme("_ZTVN10__cxxabiv117__class_type_infoE() triggered.");
     return (void *)0;
 }
 
+// vtable for __cxxabiv1::__si_class_type_info
 extern "C" void *_ZTVN10__cxxabiv120__si_class_type_infoE(void)
 {
     fixme("_ZTVN10__cxxabiv120__si_class_type_infoE() triggered.");
     return (void *)0;
 }
 
+// typeinfo for int
+extern "C" void *_ZTIi(void)
+{
+    fixme("_ZTIi() triggered.");
+    return (void *)0;
+}
+
+// typeinfo for unsigned char*
 extern "C" void *_ZTIPh(void)
 {
     fixme("_ZTIPh() triggered.");
     return (void *)0;
 }
 
+// typeinfo for char const*
 extern "C" void *_ZTIPKc(void)
 {
     fixme("_ZTIPKc() triggered.");
-    return (void *)0;
-}
-
-extern "C" void *_ZTIi(void)
-{
-    fixme("_ZTIi() triggered.");
     return (void *)0;
 }
