@@ -5,11 +5,6 @@
 
 #include <cstring>
 
-extern "C" void _amd64_fxsave(char *Buffer);
-extern "C" void _amd64_fxrstor(char *Buffer);
-extern "C" void _i386_fxsave(char *Buffer);
-extern "C" void _i386_fxrstor(char *Buffer);
-
 #define x86_CPUID_VENDOR_OLDAMD "AMDisbetter!" /* Early engineering samples of AMD K5 processor */
 #define x86_CPUID_VENDOR_AMD "AuthenticAMD"
 #define x86_CPUID_VENDOR_INTEL "GenuineIntel"
@@ -3404,31 +3399,29 @@ namespace CPU
 #endif
         }
 
-        SafeFunction static inline void fxsave(char *FXSaveArea)
+        SafeFunction static inline void fxsave(void *FXSaveArea)
         {
 #if defined(__amd64__)
             if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
                 return;
 
-            _amd64_fxsave(FXSaveArea);
-            // asmv("fxsaveq (%0)"
-            //      :
-            //      : "r"(FXSaveArea)
-            //      : "memory");
+            asmv("fxsaveq (%0)"
+                 :
+                 : "r"(FXSaveArea)
+                 : "memory");
 #endif
         }
 
-        SafeFunction static inline void fxrstor(char *FXRstorArea)
+        SafeFunction static inline void fxrstor(void *FXRstorArea)
         {
 #if defined(__amd64__)
             if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
                 return;
 
-            _amd64_fxrstor(FXRstorArea);
-            // asmv("fxrstorq (%0)"
-            //      :
-            //      : "r"(FXRstorArea)
-            //      : "memory");
+            asmv("fxrstorq (%0)"
+                 :
+                 : "r"(FXRstorArea)
+                 : "memory");
 #endif
         }
 

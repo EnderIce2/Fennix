@@ -379,6 +379,10 @@ namespace Tasking
                     tcb->Info.SleepUntil = 0;
                     schedbg("Thread \"%s\"(%d) woke up.", tcb->Name, tcb->ID);
                 }
+                else
+                {
+                    schedbg("Thread \"%s\"(%d) is not ready to wake up. (SleepUntil: %d, Counter: %d)", tcb->Name, tcb->ID, tcb->Info.SleepUntil, TimeManager->GetCounter());
+                }
             }
         }
     }
@@ -433,7 +437,7 @@ namespace Tasking
         {
             // Save current process and thread registries, gs, fs, fpu, etc...
             CurrentCPU->CurrentThread->Registers = *Frame;
-            CPU::x64::fxsave(CurrentCPU->CurrentThread->FXRegion);
+            CPU::x64::fxsave(CurrentCPU->CurrentThread->FPU);
             CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
             CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
@@ -548,7 +552,7 @@ namespace Tasking
         // Not sure if this is needed, but it's better to be safe than sorry.
         asmv("movq %cr3, %rax");
         asmv("movq %rax, %cr3");
-        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FXRegion);
+        CPU::x64::fxrstor(CurrentCPU->CurrentThread->FPU);
         CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
         CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 
@@ -729,10 +733,11 @@ namespace Tasking
 
     void Task::Sleep(uint64_t Milliseconds)
     {
-        SmartCriticalSection(SchedulerLock);
+        SmartCriticalSection(TaskingLock);
         TCB *thread = this->GetCurrentThread();
         thread->Status = TaskStatus::Sleeping;
         thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds);
+        schedbg("Thread \"%s\"(%d) is going to sleep until %llu", thread->Name, thread->ID, thread->Info.SleepUntil);
         OneShot(1);
     }
 
@@ -773,6 +778,27 @@ namespace Tasking
         Thread->Offset = Offset;
         Thread->ExitCode = 0xdead;
         Thread->Status = TaskStatus::Ready;
+        Thread->Memory = new Memory::MemMgr(Parent->PageTable);
+        Thread->FPU = (FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(FXState)));
+        memset(Thread->FPU, 0, FROM_PAGES(TO_PAGES(sizeof(FXState))));
+
+        // TODO: Is really a good idea to use the FPU in kernel mode?
+        Thread->FPU->mxcsr = 0b0001111110000000;
+        Thread->FPU->mxcsrmask = 0b1111111110111111;
+        Thread->FPU->fcw = 0b0000001100111111;
+
+        CPU::x64::fxrstor(Thread->FPU);
+        // uint16_t FCW = 0b1100111111;
+        // asmv("fldcw %0"
+        //      :
+        //      : "m"(FCW)
+        //      : "memory");
+        // uint32_t MXCSR = 0b1111110000000;
+        // asmv("ldmxcsr %0"
+        //      :
+        //      : "m"(MXCSR)
+        //      : "memory");
+        // CPU::x64::fxsave(Thread->FPU);
 
 #if defined(__amd64__)
         memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
@@ -808,7 +834,6 @@ namespace Tasking
         case TaskTrustLevel::User:
         {
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
-            Thread->Memory = new Memory::MemMgr(Parent->PageTable);
 #if defined(__amd64__)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TokenTrustLevel::Untrusted);
             Thread->GSBase = 0;
@@ -822,6 +847,8 @@ namespace Tasking
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
+
+#pragma region
 
             size_t ArgvSize = 0;
             if (argv)
@@ -941,6 +968,8 @@ namespace Tasking
             Thread->Registers.rsi = (uintptr_t)(Thread->Registers.rsp + 8);                      // argv
             Thread->Registers.rcx = (uintptr_t)EnvpSize;                                         // envc
             Thread->Registers.rdx = (uintptr_t)(Thread->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
+
+#pragma endregion
 
             /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
 

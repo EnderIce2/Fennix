@@ -209,30 +209,35 @@ namespace CPU
 
 		debug("Enabling UMIP, SMEP & SMAP support...");
 		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-		if (rdx & x64::CPUID_FEAT_RDX_UMIP)
+		if (rdx & x64::CPUID_FEAT_RDX_UMIP) // https://en.wikipedia.org/wiki/Control_register
 		{
 			if (!BSP)
 				KPrint("UMIP is supported.");
-			fixme("Not going to enable UMIP.");
-			cr4.UMIP = 1;
+			debug("UMIP is supported.");
+			// cr4.UMIP = 1;
 		}
-		if (rdx & x64::CPUID_FEAT_RDX_SMEP)
+		if (rdx & x64::CPUID_FEAT_RDX_SMEP) // https://en.wikipedia.org/wiki/Control_register#SMEP
+											// https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
 		{
 			if (!BSP)
 				KPrint("SMEP is supported.");
-			fixme("Not going to enable SMEP.");
-			cr4.SMEP = 1;
+			debug("SMEP is supported.");
+			// cr4.SMEP = 1;
 		}
-		if (rdx & x64::CPUID_FEAT_RDX_SMAP)
+		if (rdx & x64::CPUID_FEAT_RDX_SMAP) // https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
 		{
 			if (!BSP)
 				KPrint("SMAP is supported.");
-			fixme("Not going to enable SMAP.");
-			cr4.SMAP = 1;
+			debug("SMAP is supported.");
+			// cr4.SMAP = 1;
 		}
-		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0 &&
-			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
+			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+		{
+			debug("Writing CR4...");
 			x64::writecr4(cr4);
+			debug("Wrote CR4.");
+		}
 		else
 		{
 			if (!BSP)

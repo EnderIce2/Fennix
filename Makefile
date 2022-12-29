@@ -61,8 +61,8 @@ CFLAGS :=										\
 
 ifeq ($(OSARCH), amd64)
 
-CFLAGS += -fno-pic -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
-		  -mno-red-zone -march=x86-64 -pipe					\
+CFLAGS += -fno-pic -fno-pie							\
+		  -mno-red-zone -march=x86-64 -pipe			\
 		  -mcmodel=kernel -msoft-float -fno-builtin
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/amd64/linker.ld 	\
