@@ -4,7 +4,7 @@
 
 #include "../kernel.h"
 
-EXTERNC __attribute__((weak)) uintptr_t __stack_chk_guard = 0;
+/* EXTERNC */ __attribute__((weak)) uintptr_t __stack_chk_guard = 0;
 
 EXTERNC __attribute__((weak, no_stack_protector)) uintptr_t __stack_chk_guard_init(void)
 {

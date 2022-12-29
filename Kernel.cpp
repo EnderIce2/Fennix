@@ -246,6 +246,8 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
     Main(Info);
 }
 
+#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
+
 EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
 {
     /* TODO: Announce shutdown */
