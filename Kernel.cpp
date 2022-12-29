@@ -30,11 +30,11 @@
  *
  * BUGS:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
- * 
+ *
  * CREDITS AND REFERENCES:
  * - General:
  *    https://wiki.osdev.org/Main_Page
- * 
+ *
  * - Network:
  *    https://web.archive.org/web/20051210132103/http://users.pcnet.ro/dmoroian/beej/Beej.html
  *    https://web.archive.org/web/20060229214053/http://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
@@ -248,6 +248,26 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
 
 EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
 {
+    /* TODO: Announce shutdown */
+
+    trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
+    delete NIManager;
+
+    delete DiskManager;
+    if (DriverManager)
+        DriverManager->UnloadAllDrivers();
+    delete DriverManager;
+
+    TaskManager->SignalShutdown();
+    delete TaskManager;
+
+    delete RecoveryScreen;
+    delete vfs;
+    delete TimeManager;
+    delete KernelSymbolTable;
+    delete Display;
+    // PowerManager should not be called
+
     // https://wiki.osdev.org/Calling_Global_Constructors
     debug("Calling destructors...");
     for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)

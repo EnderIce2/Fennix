@@ -267,6 +267,7 @@ namespace Tasking
         Vector<PCB *> GetProcessList() { return ListProcess; }
         void Panic() { StopScheduler = true; }
         void Schedule();
+        void SignalShutdown();
         long GetUsage(int Core)
         {
             if (IdleProcess)

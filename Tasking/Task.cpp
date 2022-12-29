@@ -743,6 +743,13 @@ namespace Tasking
         OneShot(1);
     }
 
+    void Task::SignalShutdown()
+    {
+        fixme("SignalShutdown()");
+        // TODO: Implement this
+        // This should hang until all processes are terminated
+    }
+
     TCB *Task::CreateThread(PCB *Parent,
                             IP EntryPoint,
                             const char **argv,
@@ -1210,5 +1217,34 @@ namespace Tasking
     {
         SmartCriticalSection(TaskingLock);
         trace("Stopping tasking");
+        foreach (auto Process in ListProcess)
+        {
+            for (auto &Thread : Process->Threads)
+            {
+                Thread->Status = TaskStatus::Terminated;
+            }
+            Process->Status = TaskStatus::Terminated;
+        }
+
+        TaskingLock.Unlock();
+        SchedulerLock.Unlock();
+
+        while (ListProcess.size() > 0)
+        {
+            trace("Waiting for %d processes to terminate", ListProcess.size());
+            int NotTerminated = 0;
+            foreach (auto Process in ListProcess)
+            {
+                debug("Process %s(%d) is still running (or waiting to be removed status %#lx)", Process->Name, Process->ID, Process->Status);
+                if (Process->Status == TaskStatus::Terminated)
+                    continue;
+                NotTerminated++;
+            }
+            if (NotTerminated == 0)
+                break;
+            OneShot(100);
+        }
+
+        trace("Tasking stopped");
     }
 }

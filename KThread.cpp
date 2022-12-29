@@ -47,7 +47,7 @@ void KernelMainThread()
     KPrint("Initializing Network Interface Manager...");
     NIManager = new NetworkInterfaceManager::NetworkInterface;
     KPrint("Starting Network Interface Manager...");
-    // NIManager->StartService();
+    NIManager->StartService();
 
     KPrint("Setting up userspace...");
 
@@ -91,10 +91,7 @@ Exit:
 
 void KernelShutdownThread(bool Reboot)
 {
-    delete NIManager;
-
-    if (DriverManager)
-        DriverManager->UnloadAllDrivers();
+    BeforeShutdown();
 
     trace("Shutting Down/Rebooting...");
     if (Reboot)
