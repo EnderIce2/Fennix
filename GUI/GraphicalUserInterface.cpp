@@ -278,12 +278,12 @@ namespace GraphicalUserInterface
         0x5F5F5F,
     };
 
-    void GUI::FetchInputs()
+    O1 void GUI::FetchInputs()
     {
         KernelCallback callback;
         MouseData Mouse;
         bool FoundMouseDriver = false;
-        if (DriverManager->GetDrivers().size() > 0)
+        if (likely(DriverManager->GetDrivers().size() > 0))
         {
             foreach (auto Driver in DriverManager->GetDrivers())
             {
@@ -314,7 +314,7 @@ namespace GraphicalUserInterface
             }
         }
 
-        if (!FoundMouseDriver)
+        if (unlikely(!FoundMouseDriver))
         {
             Mouse.X = 0;
             Mouse.Y = 0;
@@ -328,8 +328,9 @@ namespace GraphicalUserInterface
         memset(&eTemplate, 0, sizeof(Event));
         foreach (auto wnd in this->Windows)
         {
-            if ((!MouseArray[1].Left || !MouseArray[1].Right || !MouseArray[1].Middle) &&
-                (Mouse.Left || Mouse.Right || Mouse.Middle))
+            /* On mouse down event */
+            if (unlikely((!MouseArray[1].Left || !MouseArray[1].Right || !MouseArray[1].Middle) &&
+                         (Mouse.Left || Mouse.Right || Mouse.Middle)))
             {
                 eTemplate.MouseDown.X = Mouse.X;
                 eTemplate.MouseDown.Y = Mouse.Y;
@@ -339,8 +340,9 @@ namespace GraphicalUserInterface
                 wnd->OnMouseDown(&eTemplate);
             }
 
-            if ((MouseArray[1].Left || MouseArray[1].Right || MouseArray[1].Middle) &&
-                (!Mouse.Left || !Mouse.Right || !Mouse.Middle))
+            /* On mouse up event */
+            if (unlikely((MouseArray[1].Left || MouseArray[1].Right || MouseArray[1].Middle) &&
+                         (!Mouse.Left || !Mouse.Right || !Mouse.Middle)))
             {
                 eTemplate.MouseUp.X = Mouse.X;
                 eTemplate.MouseUp.Y = Mouse.Y;
@@ -350,13 +352,13 @@ namespace GraphicalUserInterface
                 wnd->OnMouseUp(&eTemplate);
             }
 
-            if (Mouse.X != MouseArray[1].X || Mouse.Y != MouseArray[1].Y)
+            if (likely(Mouse.X != MouseArray[1].X || Mouse.Y != MouseArray[1].Y))
             {
                 Rect TopBarPos = wnd->GetPosition();
                 TopBarPos.Top -= 20;
                 TopBarPos.Height = 20;
                 TopBarPos.Width -= 60; /* buttons */
-                if (TopBarPos.Top < 0)
+                if (unlikely(TopBarPos.Top < 0))
                 {
                     TopBarPos.Top = 0;
                     wnd->GetPositionPtr()->Top = 20;
@@ -368,13 +370,13 @@ namespace GraphicalUserInterface
                 ResizeHintPos.Width = 20;
                 ResizeHintPos.Height = 20;
 
-                if (TopBarPos.Contains(Mouse.X, Mouse.Y) ||
-                    TopBarPos.Contains(MouseArray[0].X, MouseArray[0].Y) ||
-                    TopBarPos.Contains(MouseArray[1].X, MouseArray[1].Y))
+                if (unlikely(TopBarPos.Contains(Mouse.X, Mouse.Y) ||
+                             TopBarPos.Contains(MouseArray[0].X, MouseArray[0].Y) ||
+                             TopBarPos.Contains(MouseArray[1].X, MouseArray[1].Y)))
                 {
-                    if (Mouse.Left)
+                    if (likely(Mouse.Left))
                     {
-                        if (MouseArray[1].Left)
+                        if (likely(MouseArray[1].Left))
                         {
                             wnd->GetPositionPtr()->Left += Mouse.X - MouseArray[0].X;
                             wnd->GetPositionPtr()->Top += Mouse.Y - MouseArray[0].Y;
@@ -416,7 +418,7 @@ namespace GraphicalUserInterface
                         }
                     }
 
-                    if (Cursor != CursorType::ResizeAll)
+                    if (unlikely(Cursor != CursorType::ResizeAll))
                     {
                         Cursor = CursorType::ResizeAll;
                         CursorBufferRepaint = true;
@@ -424,7 +426,7 @@ namespace GraphicalUserInterface
                 }
                 else
                 {
-                    if (Cursor != CursorType::Arrow)
+                    if (unlikely(Cursor != CursorType::Arrow))
                     {
                         Cursor = CursorType::Arrow;
                         CursorBufferRepaint = true;
@@ -450,7 +452,7 @@ namespace GraphicalUserInterface
         LastCursor = Cursor;
     }
 
-    void GUI::PaintDesktop()
+    Ofast void GUI::PaintDesktop()
     {
         if (DesktopBufferRepaint)
         {
@@ -461,7 +463,7 @@ namespace GraphicalUserInterface
         memcpy(this->BackBuffer->Data, this->DesktopBuffer->Data, this->DesktopBuffer->Size);
     }
 
-    void GUI::PaintWidgets()
+    Ofast void GUI::PaintWidgets()
     {
         Event eTemplate;
         memset(&eTemplate, 0, sizeof(Event));
@@ -469,7 +471,7 @@ namespace GraphicalUserInterface
             wdg->OnPaint(nullptr);
     }
 
-    void GUI::PaintWindows()
+    O0 void GUI::PaintWindows()
     {
         foreach (auto wnd in this->Windows)
         {
@@ -647,7 +649,7 @@ namespace GraphicalUserInterface
 */
 #define ICON_SIZE
 
-    void GUI::PaintCursor()
+    Ofast void GUI::PaintCursor()
     {
         uint32_t CursorColorInner = 0xFFFFFFFF;
         uint32_t CursorColorOuter = 0xFF000000;
@@ -777,8 +779,12 @@ namespace GraphicalUserInterface
         DrawOverBitmap(this->BackBuffer, this->CursorBuffer, MouseArray[0].Y, MouseArray[0].X);
     }
 
-    void GUI::Loop()
+    Ofast void GUI::Loop()
     {
+        /*
+        Because we do not use a gpu to do the rendering, we need to do it manually.
+        This is why the mouse is slow when we have to draw a bunch of things.
+        */
         while (IsRunning)
         {
             FetchInputs();
