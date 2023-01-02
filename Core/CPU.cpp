@@ -273,4 +273,108 @@ namespace CPU
 #endif
 		return Counter;
 	}
+
+	x86SIMDType CheckSIMD()
+	{
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+#elif defined(__i386__)
+			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (cpuid1amd.ECX.SSE4_2)
+				return SIMD_SSE42;
+			else if (cpuid1amd.ECX.SSE4_1)
+				return SIMD_SSE41;
+			else if (cpuid1amd.ECX.SSE3)
+				return SIMD_SSE3;
+			else if (cpuid1amd.EDX.SSE2)
+				return SIMD_SSE2;
+			else if (cpuid1amd.EDX.SSE)
+				return SIMD_SSE;
+		}
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+#elif defined(__i386__)
+			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (cpuid1intel.ECX.SSE4_2)
+				return SIMD_SSE42;
+			else if (cpuid1intel.ECX.SSE4_1)
+				return SIMD_SSE41;
+			else if (cpuid1intel.ECX.SSE3)
+				return SIMD_SSE3;
+			else if (cpuid1intel.EDX.SSE2)
+				return SIMD_SSE2;
+			else if (cpuid1intel.EDX.SSE)
+				return SIMD_SSE;
+		}
+
+		return SIMD_NONE;
+	}
+
+	bool CheckSIMD(x86SIMDType Type)
+	{
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+#elif defined(__i386__)
+			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (Type == SIMD_SSE42)
+				return cpuid1amd.ECX.SSE4_2;
+			else if (Type == SIMD_SSE41)
+				return cpuid1amd.ECX.SSE4_1;
+			else if (Type == SIMD_SSE3)
+				return cpuid1amd.ECX.SSE3;
+			else if (Type == SIMD_SSE2)
+				return cpuid1amd.EDX.SSE2;
+			else if (Type == SIMD_SSE)
+				return cpuid1amd.EDX.SSE;
+		}
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+#elif defined(__i386__)
+			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (Type == SIMD_SSE42)
+				return cpuid1intel.ECX.SSE4_2;
+			else if (Type == SIMD_SSE41)
+				return cpuid1intel.ECX.SSE4_1;
+			else if (Type == SIMD_SSE3)
+				return cpuid1intel.ECX.SSE3;
+			else if (Type == SIMD_SSE2)
+				return cpuid1intel.EDX.SSE2;
+			else if (Type == SIMD_SSE)
+				return cpuid1intel.EDX.SSE;
+		}
+
+		return false;
+	}
 }

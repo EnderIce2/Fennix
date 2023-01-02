@@ -114,6 +114,17 @@ namespace CPU
         Disable
     };
 
+    enum x86SIMDType
+    {
+        SIMD_NONE,
+        SIMD_SSE,
+        SIMD_SSE2,
+        SIMD_SSE3,
+        SIMD_SSSE3,
+        SIMD_SSE41,
+        SIMD_SSE42,
+    };
+
     /**
      * @brief Get CPU vendor identifier.
      *
@@ -134,6 +145,21 @@ namespace CPU
      * @return char* Hypervisor vendor.
      */
     char *Hypervisor();
+
+    /**
+     * @brief Check SIMD support.
+     *
+     * @return x86SIMDType
+     */
+    x86SIMDType CheckSIMD();
+    /**
+     * @brief Check SIMD support.
+     *
+     * @param Type SIMD type.
+     * @return true if supported.
+     * @return false if not supported.
+     */
+    bool CheckSIMD(x86SIMDType Type);
 
     /**
      * @brief Pause the CPU
