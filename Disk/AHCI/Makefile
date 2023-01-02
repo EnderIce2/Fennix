@@ -1,7 +1,7 @@
 # Config file
 include ../../../Makefile.conf
 
-FILENAME = ahci.fex
+FILENAME = AHCI.fex
 
 CC = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
@@ -73,6 +73,7 @@ endif
 	mv $(FILENAME) ../../out/$(FILENAME)
 
 $(FILENAME): $(OBJ)
+	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
 
 %.o: %.c $(HEADERS)

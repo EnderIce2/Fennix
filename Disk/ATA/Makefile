@@ -1,7 +1,7 @@
 # Config file
 include ../../../Makefile.conf
 
-FILENAME = ata.fex
+FILENAME = ATA.fex
 
 CC = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
@@ -52,8 +52,8 @@ CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
 
 else ifeq ($(OSARCH), i686)
 
-CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow			\
-		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections		\
+CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow		\
+		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections	\
 		  -march=i686 -pipe -msoft-float -fno-builtin
 
 else ifeq ($(OSARCH), aarch64)
@@ -73,6 +73,7 @@ endif
 	mv $(FILENAME) ../../out/$(FILENAME)
 
 $(FILENAME): $(OBJ)
+	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
 
 %.o: %.c $(HEADERS)

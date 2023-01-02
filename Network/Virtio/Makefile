@@ -73,6 +73,7 @@ endif
 	mv $(FILENAME) ../../out/$(FILENAME)
 
 $(FILENAME): $(OBJ)
+	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
 
 %.o: %.c $(HEADERS)
