@@ -232,15 +232,20 @@ typedef intptr_t ssize_t;
 #define b48(x) (((((x)&0x0000000000ff) << 40) | (((x)&0x00000000ff00) << 24) | (((x)&0x000000ff0000) << 8) | (((x)&0x0000ff000000) >> 8) | (((x)&0x00ff00000000) >> 24) | (((x)&0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
-#define O0 __attribute__((optimize("O0")))
-#define O1 __attribute__((optimize("O1")))
-#define O2 __attribute__((optimize("O2")))
-#define O3 __attribute__((optimize("O3")))
-#define Os __attribute__((optimize("Os")))
-#define Ofast __attribute__((optimize("Ofast")))
+/* https://gcc.gnu.org/onlinedocs/gcc-9.5.0/gnat_ugn/Optimization-Levels.html */
 
-/** @brief dbg */
-#define OPTMZ O0
+/** @brief No optimization (the default); generates unoptimized code but has the fastest compilation time. */
+#define O0 __attribute__((optimize("O0")))
+/** @brief Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly. */
+#define O1 __attribute__((optimize("O1")))
+/** @brief Full optimization; generates highly optimized code and has the slowest compilation time. */
+#define O2 __attribute__((optimize("O2")))
+/** @brief Full optimization as in -O2; also uses more aggressive automatic inlining of subprograms within a unit (Inlining of Subprograms) and attempts to vectorize loops. */
+#define O3 __attribute__((optimize("O3")))
+/** @brief Optimize space usage (code and data) of resulting program. */
+#define Os __attribute__((optimize("Os")))
+/** @brief Disregard strict standards compliance. -Ofast enables all -O3 optimizations. It also enables optimizations that are not valid for all standard-compliant programs. */
+#define Ofast __attribute__((optimize("Ofast")))
 
 #define __unused __attribute__((unused))
 #define __packed __attribute__((packed))
