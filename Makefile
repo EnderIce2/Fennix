@@ -134,6 +134,7 @@ endif
 	$(OBJDUMP) -M intel -D -g -s -d $(KERNEL_FILENAME) > kernel_dump_intel.map
 
 $(KERNEL_FILENAME): $(OBJ)
+	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
 
 %.o: %.c $(HEADERS)
