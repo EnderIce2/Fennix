@@ -3,9 +3,9 @@
 #include <uart.hpp>
 #include <debug.h>
 
-extern uintptr_t _binary_Files_ter_powerline_v12n_psf_start;
-extern uintptr_t _binary_Files_ter_powerline_v12n_psf_end;
-extern uintptr_t _binary_Files_ter_powerline_v12n_psf_size;
+extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start;
+extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end;
+extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_size;
 
 NewLock(PrintLock);
 
@@ -174,7 +174,7 @@ namespace Video
         this->framebuffer = Info;
         if (LoadDefaultFont)
         {
-            this->CurrentFont = new Font(&_binary_Files_ter_powerline_v12n_psf_start, &_binary_Files_ter_powerline_v12n_psf_end, FontType::PCScreenFont2);
+            this->CurrentFont = new Font(&_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, FontType::PCScreenFont2);
             FontInfo Info = this->CurrentFont->GetInfo();
             debug("Font loaded: %dx%d %s",
                   Info.Width, Info.Height, Info.Type == FontType::PCScreenFont1 ? "PSF1" : "PSF2");

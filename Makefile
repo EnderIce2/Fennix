@@ -118,9 +118,7 @@ default:
 	$(error Please specify a target)
 
 prepare:
-	rm -f ./Files/ter-powerline-v12n.psf
-	wget https://raw.githubusercontent.com/powerline/fonts/master/Terminus/PSF/ter-powerline-v12n.psf.gz -P Files
-	gzip -d Files/ter-powerline-v12n.psf.gz
+	$(info Nothing to prepare)
 
 build: $(KERNEL_FILENAME)
 

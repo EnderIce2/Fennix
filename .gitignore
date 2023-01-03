@@ -4,5 +4,4 @@
 *.map
 *.fsys
 *.log
-Files/*.psf
 .dccache

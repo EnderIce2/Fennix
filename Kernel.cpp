@@ -35,6 +35,9 @@
  * - General:
  *    https://wiki.osdev.org/Main_Page
  * 
+ * - Font:
+ *    http://www.fial.com/~scott/tamsyn-font/
+ * 
  * - CPU XCR0 structure:
  *    https://wiki.osdev.org/CPU_Registers_x86#XCR0
  * 
