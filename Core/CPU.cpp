@@ -3,26 +3,29 @@
 #include <memory.hpp>
 #include <convert.h>
 #include <debug.h>
+#include <smp.hpp>
 
 #include "../kernel.h"
 
 namespace CPU
 {
+	static bool SSEEnabled = false;
+
 	char *Vendor()
 	{
 		static char Vendor[13];
 #if defined(__amd64__)
-		uint32_t rax, rbx, rcx, rdx;
-		x64::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
-		memcpy(Vendor + 0, &rbx, 4);
-		memcpy(Vendor + 4, &rdx, 4);
-		memcpy(Vendor + 8, &rcx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x64::cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Vendor + 0, &ebx, 4);
+		memcpy_unsafe(Vendor + 4, &edx, 4);
+		memcpy_unsafe(Vendor + 8, &ecx, 4);
 #elif defined(__i386__)
-		uint32_t rax, rbx, rcx, rdx;
-		x32::cpuid(0x0, &rax, &rbx, &rcx, &rdx);
-		memcpy(Vendor + 0, &rbx, 4);
-		memcpy(Vendor + 4, &rdx, 4);
-		memcpy(Vendor + 8, &rcx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x32::cpuid(0x0, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Vendor + 0, &ebx, 4);
+		memcpy_unsafe(Vendor + 4, &edx, 4);
+		memcpy_unsafe(Vendor + 8, &ecx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Vendor[0]));
@@ -34,39 +37,39 @@ namespace CPU
 	{
 		static char Name[49];
 #if defined(__amd64__)
-		uint32_t rax, rbx, rcx, rdx;
-		x64::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 0, &rax, 4);
-		memcpy(Name + 4, &rbx, 4);
-		memcpy(Name + 8, &rcx, 4);
-		memcpy(Name + 12, &rdx, 4);
-		x64::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 16, &rax, 4);
-		memcpy(Name + 20, &rbx, 4);
-		memcpy(Name + 24, &rcx, 4);
-		memcpy(Name + 28, &rdx, 4);
-		x64::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 32, &rax, 4);
-		memcpy(Name + 36, &rbx, 4);
-		memcpy(Name + 40, &rcx, 4);
-		memcpy(Name + 44, &rdx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x64::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 0, &eax, 4);
+		memcpy_unsafe(Name + 4, &ebx, 4);
+		memcpy_unsafe(Name + 8, &ecx, 4);
+		memcpy_unsafe(Name + 12, &edx, 4);
+		x64::cpuid(0x80000003, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 16, &eax, 4);
+		memcpy_unsafe(Name + 20, &ebx, 4);
+		memcpy_unsafe(Name + 24, &ecx, 4);
+		memcpy_unsafe(Name + 28, &edx, 4);
+		x64::cpuid(0x80000004, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 32, &eax, 4);
+		memcpy_unsafe(Name + 36, &ebx, 4);
+		memcpy_unsafe(Name + 40, &ecx, 4);
+		memcpy_unsafe(Name + 44, &edx, 4);
 #elif defined(__i386__)
-		uint32_t rax, rbx, rcx, rdx;
-		x32::cpuid(0x80000002, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 0, &rax, 4);
-		memcpy(Name + 4, &rbx, 4);
-		memcpy(Name + 8, &rcx, 4);
-		memcpy(Name + 12, &rdx, 4);
-		x32::cpuid(0x80000003, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 16, &rax, 4);
-		memcpy(Name + 20, &rbx, 4);
-		memcpy(Name + 24, &rcx, 4);
-		memcpy(Name + 28, &rdx, 4);
-		x32::cpuid(0x80000004, &rax, &rbx, &rcx, &rdx);
-		memcpy(Name + 32, &rax, 4);
-		memcpy(Name + 36, &rbx, 4);
-		memcpy(Name + 40, &rcx, 4);
-		memcpy(Name + 44, &rdx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x32::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 0, &eax, 4);
+		memcpy_unsafe(Name + 4, &ebx, 4);
+		memcpy_unsafe(Name + 8, &ecx, 4);
+		memcpy_unsafe(Name + 12, &edx, 4);
+		x32::cpuid(0x80000003, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 16, &eax, 4);
+		memcpy_unsafe(Name + 20, &ebx, 4);
+		memcpy_unsafe(Name + 24, &ecx, 4);
+		memcpy_unsafe(Name + 28, &edx, 4);
+		x32::cpuid(0x80000004, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Name + 32, &eax, 4);
+		memcpy_unsafe(Name + 36, &ebx, 4);
+		memcpy_unsafe(Name + 40, &ecx, 4);
+		memcpy_unsafe(Name + 44, &edx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Name[0]));
@@ -78,17 +81,17 @@ namespace CPU
 	{
 		static char Hypervisor[13];
 #if defined(__amd64__)
-		uint32_t rax, rbx, rcx, rdx;
-		x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
-		memcpy(Hypervisor + 0, &rbx, 4);
-		memcpy(Hypervisor + 4, &rcx, 4);
-		memcpy(Hypervisor + 8, &rdx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
+		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
+		memcpy_unsafe(Hypervisor + 8, &edx, 4);
 #elif defined(__i386__)
-		uint32_t rax, rbx, rcx, rdx;
-		x64::cpuid(0x40000000, &rax, &rbx, &rcx, &rdx);
-		memcpy(Hypervisor + 0, &rbx, 4);
-		memcpy(Hypervisor + 4, &rcx, 4);
-		memcpy(Hypervisor + 8, &rdx, 4);
+		uint32_t eax, ebx, ecx, edx;
+		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
+		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
+		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
+		memcpy_unsafe(Hypervisor + 8, &edx, 4);
 #elif defined(__aarch64__)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Hypervisor[0]));
@@ -171,15 +174,51 @@ namespace CPU
 		return PT;
 	}
 
-	void InitializeFeatures()
+	void InitializeFeatures(long Core)
 	{
+		bool PGESupport = false;
+		bool SSESupport = false;
 #if defined(__amd64__)
 		static int BSP = 0;
 		x64::CR0 cr0 = x64::readcr0();
 		x64::CR4 cr4 = x64::readcr4();
-		uint32_t rax, rbx, rcx, rdx;
-		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-		if (rdx & x64::CPUID_FEAT_RDX_PGE)
+
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+#elif defined(__i386__)
+			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (cpuid1amd.EDX.PGE)
+				PGESupport = true;
+			if (cpuid1amd.EDX.SSE)
+				SSESupport = true;
+		}
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+#elif defined(__i386__)
+			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "a"(0x1));
+#endif
+			if (cpuid1intel.EDX.PGE)
+				PGESupport = true;
+			if (cpuid1intel.EDX.SSE)
+				SSESupport = true;
+		}
+
+		if (PGESupport)
 		{
 			debug("Enabling global pages support...");
 			if (!BSP)
@@ -187,16 +226,29 @@ namespace CPU
 			cr4.PGE = 1;
 		}
 
-		if (rdx & x64::CPUID_FEAT_RDX_SSE)
-		{
-			debug("Enabling SSE support...");
-			if (!BSP)
-				KPrint("SSE is supported.");
-			cr0.EM = 0;
-			cr0.MP = 1;
-			cr4.OSFXSR = 1;
-			cr4.OSXMMEXCPT = 1;
-		}
+		bool SSEEnableAfter = false;
+
+		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0) /* Not sure if my code is not working properly or something else is the issue. */
+			if (SSESupport)
+			{
+				debug("Enabling SSE support...");
+				if (!BSP)
+					KPrint("SSE is supported.");
+				cr0.EM = 0;
+				cr0.MP = 1;
+				cr4.OSFXSR = 1;
+				cr4.OSXMMEXCPT = 1;
+
+				CPUData *CoreData = GetCPU(Core);
+				CoreData->Data.FPU = (CPU::x64::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
+				memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
+				CoreData->Data.FPU->mxcsr = 0b0001111110000000;
+				CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
+				CoreData->Data.FPU->fcw = 0b0000001100111111;
+				CPU::x64::fxrstor(CoreData->Data.FPU);
+
+				SSEEnableAfter = true;
+			}
 
 		if (!BSP)
 			KPrint("Enabling CPU cache.");
@@ -207,24 +259,26 @@ namespace CPU
 
 		x64::writecr0(cr0);
 
+		// FIXME: I don't think this is reporting correctly. This has to be fixed asap.
 		debug("Enabling UMIP, SMEP & SMAP support...");
-		x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-		if (rdx & x64::CPUID_FEAT_RDX_UMIP) // https://en.wikipedia.org/wiki/Control_register
+		uint32_t eax, ebx, ecx, edx;
+		x64::cpuid(0x1, &eax, &ebx, &ecx, &edx);
+		if (edx & (1 << 2)) // https://en.wikipedia.org/wiki/Control_register
 		{
 			if (!BSP)
 				KPrint("UMIP is supported.");
 			debug("UMIP is supported.");
 			// cr4.UMIP = 1;
 		}
-		if (rdx & x64::CPUID_FEAT_RDX_SMEP) // https://en.wikipedia.org/wiki/Control_register#SMEP
-											// https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
+		if (edx & (1 << 7)) // https://en.wikipedia.org/wiki/Control_register#SMEP
+							// https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
 		{
 			if (!BSP)
 				KPrint("SMEP is supported.");
 			debug("SMEP is supported.");
 			// cr4.SMEP = 1;
 		}
-		if (rdx & x64::CPUID_FEAT_RDX_SMAP) // https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
+		if (edx & (1 << 20)) // https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
 		{
 			if (!BSP)
 				KPrint("SMAP is supported.");
@@ -252,6 +306,8 @@ namespace CPU
 		x64::wrmsr(x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)
 			trace("Features for BSP initialized.");
+		if (SSEEnableAfter)
+			SSEEnabled = true;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -276,6 +332,14 @@ namespace CPU
 
 	x86SIMDType CheckSIMD()
 	{
+		if (unlikely(!SSEEnabled))
+			return SIMD_NONE;
+
+		static x86SIMDType SIMDType = SIMD_NONE;
+
+		if (likely(SIMDType != SIMD_NONE))
+			return SIMDType;
+
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(__amd64__)
@@ -289,17 +353,32 @@ namespace CPU
 				 : "a"(0x1));
 #endif
 			if (cpuid1amd.ECX.SSE4_2)
-				return SIMD_SSE42;
+				SIMDType = SIMD_SSE42;
 			else if (cpuid1amd.ECX.SSE4_1)
-				return SIMD_SSE41;
+				SIMDType = SIMD_SSE41;
 			else if (cpuid1amd.ECX.SSE3)
-				return SIMD_SSE3;
+				SIMDType = SIMD_SSE3;
 			else if (cpuid1amd.EDX.SSE2)
-				return SIMD_SSE2;
+				SIMDType = SIMD_SSE2;
 			else if (cpuid1amd.EDX.SSE)
-				return SIMD_SSE;
+				SIMDType = SIMD_SSE;
+
+#ifdef DEBUG
+			if (cpuid1amd.ECX.SSE4_2)
+				debug("SSE4.2 is supported.");
+			if (cpuid1amd.ECX.SSE4_1)
+				debug("SSE4.1 is supported.");
+			if (cpuid1amd.ECX.SSE3)
+				debug("SSE3 is supported.");
+			if (cpuid1amd.EDX.SSE2)
+				debug("SSE2 is supported.");
+			if (cpuid1amd.EDX.SSE)
+				debug("SSE is supported.");
+#endif
+
+			return SIMDType;
 		}
-		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 #if defined(__amd64__)
 			CPU::x64::Intel::CPUID0x1 cpuid1intel;
@@ -312,15 +391,30 @@ namespace CPU
 				 : "a"(0x1));
 #endif
 			if (cpuid1intel.ECX.SSE4_2)
-				return SIMD_SSE42;
+				SIMDType = SIMD_SSE42;
 			else if (cpuid1intel.ECX.SSE4_1)
-				return SIMD_SSE41;
+				SIMDType = SIMD_SSE41;
 			else if (cpuid1intel.ECX.SSE3)
-				return SIMD_SSE3;
+				SIMDType = SIMD_SSE3;
 			else if (cpuid1intel.EDX.SSE2)
-				return SIMD_SSE2;
+				SIMDType = SIMD_SSE2;
 			else if (cpuid1intel.EDX.SSE)
-				return SIMD_SSE;
+				SIMDType = SIMD_SSE;
+
+#ifdef DEBUG
+			if (cpuid1intel.ECX.SSE4_2)
+				debug("SSE4.2 is supported.");
+			if (cpuid1intel.ECX.SSE4_1)
+				debug("SSE4.1 is supported.");
+			if (cpuid1intel.ECX.SSE3)
+				debug("SSE3 is supported.");
+			if (cpuid1intel.EDX.SSE2)
+				debug("SSE2 is supported.");
+			if (cpuid1intel.EDX.SSE)
+				debug("SSE is supported.");
+#endif
+
+			return SIMDType;
 		}
 
 		return SIMD_NONE;
@@ -328,6 +422,9 @@ namespace CPU
 
 	bool CheckSIMD(x86SIMDType Type)
 	{
+		if (unlikely(!SSEEnabled))
+			return false;
+
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(__amd64__)
@@ -351,7 +448,7 @@ namespace CPU
 			else if (Type == SIMD_SSE)
 				return cpuid1amd.EDX.SSE;
 		}
-		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 #if defined(__amd64__)
 			CPU::x64::Intel::CPUID0x1 cpuid1intel;

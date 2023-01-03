@@ -3,346 +3,191 @@
 #include <memory.hpp>
 #include <limits.h>
 #include <debug.h>
+#include <cpu.hpp>
 
-// TODO: Replace mem* with assembly code
-
-/* Some of the functions are from musl library */
-/* https://www.musl-libc.org/ */
-/*
-Copyright © 2005-2020 Rich Felker, et al.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-void *memcpy_unsafe(void *dest, const void *src, size_t n)
+EXTERNC void *memcpy_sse(void *dest, const void *src, size_t n)
 {
-    unsigned char *d = dest;
-    const unsigned char *s = src;
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
 
-#ifdef __GNUC__
-
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#define LS >>
-#define RS <<
-#else
-#define LS <<
-#define RS >>
-#endif
-
-    typedef uint32_t __attribute__((__may_alias__)) u32;
-    uint32_t w, x;
-
-    for (; (uintptr_t)s % 4 && n; n--)
-        *d++ = *s++;
-
-    if ((uintptr_t)d % 4 == 0)
+    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
     {
-        for (; n >= 16; s += 16, d += 16, n -= 16)
+        size_t num_vectors = n / 16;
+        for (size_t i = 0; i < num_vectors; i++)
         {
-            *(u32 *)(d + 0) = *(u32 *)(s + 0);
-            *(u32 *)(d + 4) = *(u32 *)(s + 4);
-            *(u32 *)(d + 8) = *(u32 *)(s + 8);
-            *(u32 *)(d + 12) = *(u32 *)(s + 12);
+            asmv("movaps (%0), %%xmm0\n"
+                 "movaps %%xmm0, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0");
+            d += 16;
+            s += 16;
         }
-        if (n & 8)
+
+        n -= num_vectors * 16;
+    }
+
+    memcpy_unsafe(d, s, n);
+    return dest;
+}
+
+EXTERNC void *memcpy_sse2(void *dest, const void *src, size_t n)
+{
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
+
+    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
+    {
+        size_t num_vectors = n / 16;
+        for (size_t i = 0; i < num_vectors; i++)
         {
-            *(u32 *)(d + 0) = *(u32 *)(s + 0);
-            *(u32 *)(d + 4) = *(u32 *)(s + 4);
+            asmv("movdqa (%0), %%xmm0\n"
+                 "movdqa %%xmm0, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0");
+            d += 16;
+            s += 16;
+        }
+
+        n -= num_vectors * 16;
+    }
+
+    memcpy_unsafe(d, s, n);
+    return dest;
+}
+
+EXTERNC void *memcpy_sse3(void *dest, const void *src, size_t n)
+{
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
+
+    if ((((uintptr_t)d | (uintptr_t)s) & 0x7) == 0)
+    {
+        size_t num_vectors = n / 8;
+        for (size_t i = 0; i < num_vectors; i++)
+        {
+            asmv("movq (%0), %%xmm0\n"
+                 "movddup %%xmm0, %%xmm1\n"
+                 "movq %%xmm1, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0", "xmm1");
             d += 8;
             s += 8;
         }
-        if (n & 4)
-        {
-            *(u32 *)(d + 0) = *(u32 *)(s + 0);
-            d += 4;
-            s += 4;
-        }
-        if (n & 2)
-        {
-            *d++ = *s++;
-            *d++ = *s++;
-        }
-        if (n & 1)
-        {
-            *d = *s;
-        }
-        return dest;
+
+        n -= num_vectors * 8;
     }
 
-    if (n >= 32)
-        switch ((uintptr_t)d % 4)
-        {
-        case 1:
-            w = *(u32 *)s;
-            *d++ = *s++;
-            *d++ = *s++;
-            *d++ = *s++;
-            n -= 3;
-            for (; n >= 17; s += 16, d += 16, n -= 16)
-            {
-                x = *(u32 *)(s + 1);
-                *(u32 *)(d + 0) = (w LS 24) | (x RS 8);
-                w = *(u32 *)(s + 5);
-                *(u32 *)(d + 4) = (x LS 24) | (w RS 8);
-                x = *(u32 *)(s + 9);
-                *(u32 *)(d + 8) = (w LS 24) | (x RS 8);
-                w = *(u32 *)(s + 13);
-                *(u32 *)(d + 12) = (x LS 24) | (w RS 8);
-            }
-            break;
-        case 2:
-            w = *(u32 *)s;
-            *d++ = *s++;
-            *d++ = *s++;
-            n -= 2;
-            for (; n >= 18; s += 16, d += 16, n -= 16)
-            {
-                x = *(u32 *)(s + 2);
-                *(u32 *)(d + 0) = (w LS 16) | (x RS 16);
-                w = *(u32 *)(s + 6);
-                *(u32 *)(d + 4) = (x LS 16) | (w RS 16);
-                x = *(u32 *)(s + 10);
-                *(u32 *)(d + 8) = (w LS 16) | (x RS 16);
-                w = *(u32 *)(s + 14);
-                *(u32 *)(d + 12) = (x LS 16) | (w RS 16);
-            }
-            break;
-        case 3:
-            w = *(u32 *)s;
-            *d++ = *s++;
-            n -= 1;
-            for (; n >= 19; s += 16, d += 16, n -= 16)
-            {
-                x = *(u32 *)(s + 3);
-                *(u32 *)(d + 0) = (w LS 8) | (x RS 24);
-                w = *(u32 *)(s + 7);
-                *(u32 *)(d + 4) = (x LS 8) | (w RS 24);
-                x = *(u32 *)(s + 11);
-                *(u32 *)(d + 8) = (w LS 8) | (x RS 24);
-                w = *(u32 *)(s + 15);
-                *(u32 *)(d + 12) = (x LS 8) | (w RS 24);
-            }
-            break;
-        }
-    if (n & 16)
-    {
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-    }
-    if (n & 8)
-    {
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-    }
-    if (n & 4)
-    {
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-        *d++ = *s++;
-    }
-    if (n & 2)
-    {
-        *d++ = *s++;
-        *d++ = *s++;
-    }
-    if (n & 1)
-    {
-        *d = *s;
-    }
-    return dest;
-#endif
-
-    for (; n; n--)
-        *d++ = *s++;
+    memcpy_unsafe(d, s, n);
     return dest;
 }
 
-void *memset_unsafe(void *dest, int c, size_t n)
+EXTERNC void *memcpy_ssse3(void *dest, const void *src, size_t n)
 {
-    unsigned char *s = dest;
-    size_t k;
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
 
-    if (!n)
-        return dest;
-    s[0] = c;
-    s[n - 1] = c;
-    if (n <= 2)
-        return dest;
-    s[1] = c;
-    s[2] = c;
-    s[n - 2] = c;
-    s[n - 3] = c;
-    if (n <= 6)
-        return dest;
-    s[3] = c;
-    s[n - 4] = c;
-    if (n <= 8)
-        return dest;
-
-    k = -(uintptr_t)s & 3;
-    s += k;
-    n -= k;
-    n &= -4;
-
-#ifdef __GNUC__
-    typedef uint32_t __attribute__((__may_alias__)) u32;
-    typedef uint64_t __attribute__((__may_alias__)) u64;
-
-    u32 c32 = ((u32)-1) / 255 * (unsigned char)c;
-    *(u32 *)(s + 0) = c32;
-    *(u32 *)(s + n - 4) = c32;
-    if (n <= 8)
-        return dest;
-    *(u32 *)(s + 4) = c32;
-    *(u32 *)(s + 8) = c32;
-    *(u32 *)(s + n - 12) = c32;
-    *(u32 *)(s + n - 8) = c32;
-    if (n <= 24)
-        return dest;
-    *(u32 *)(s + 12) = c32;
-    *(u32 *)(s + 16) = c32;
-    *(u32 *)(s + 20) = c32;
-    *(u32 *)(s + 24) = c32;
-    *(u32 *)(s + n - 28) = c32;
-    *(u32 *)(s + n - 24) = c32;
-    *(u32 *)(s + n - 20) = c32;
-    *(u32 *)(s + n - 16) = c32;
-
-    k = 24 + ((uintptr_t)s & 4);
-    s += k;
-    n -= k;
-
-    u64 c64 = c32 | ((u64)c32 << 32);
-    for (; n >= 32; n -= 32, s += 32)
+    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
     {
-        *(u64 *)(s + 0) = c64;
-        *(u64 *)(s + 8) = c64;
-        *(u64 *)(s + 16) = c64;
-        *(u64 *)(s + 24) = c64;
-    }
-#else
-    for (; n; n--, s++)
-        *s = c;
-#endif
+        size_t num_vectors = n / 16;
+        for (size_t i = 0; i < num_vectors; i++)
+        {
+            asmv("movdqa (%0), %%xmm0\n"
+                 "movdqa 16(%0), %%xmm1\n"
+                 "palignr $8, %%xmm0, %%xmm1\n"
+                 "movdqa %%xmm1, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0", "xmm1");
+            d += 16;
+            s += 16;
+        }
 
+        n -= num_vectors * 16;
+    }
+
+    memcpy_unsafe(d, s, n);
     return dest;
 }
 
-void *memmove_unsafe(void *dest, const void *src, size_t n)
+EXTERNC void *memcpy_sse4_1(void *dest, const void *src, size_t n)
 {
-#ifdef __GNUC__
-    typedef __attribute__((__may_alias__)) size_t WT;
-#define WS (sizeof(WT))
-#endif
+    CPU::__m128i *d = (CPU::__m128i *)dest;
+    const CPU::__m128i *s = (const CPU::__m128i *)src;
 
-    char *d = dest;
-    const char *s = src;
-
-    if (d == s)
-        return d;
-    if ((uintptr_t)s - (uintptr_t)d - n <= -2 * n)
-        return memcpy(d, s, n);
-
-    if (d < s)
+    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
     {
-#ifdef __GNUC__
-        if ((uintptr_t)s % WS == (uintptr_t)d % WS)
+        size_t num_vectors = n / 16;
+        for (size_t i = 0; i < num_vectors; i++)
         {
-            while ((uintptr_t)d % WS)
-            {
-                if (!n--)
-                    return dest;
-                *d++ = *s++;
-            }
-            for (; n >= WS; n -= WS, d += WS, s += WS)
-                *(WT *)d = *(WT *)s;
+            // movntdqa
+            asmv("movdqa (%0), %%xmm0\n"
+                 "movdqa %%xmm0, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0");
+            d += 16;
+            s += 16;
         }
-#endif
-        for (; n; n--)
-            *d++ = *s++;
-    }
-    else
-    {
-#ifdef __GNUC__
-        if ((uintptr_t)s % WS == (uintptr_t)d % WS)
-        {
-            while ((uintptr_t)(d + n) % WS)
-            {
-                if (!n--)
-                    return dest;
-                d[n] = s[n];
-            }
-            while (n >= WS)
-                n -= WS, *(WT *)(d + n) = *(WT *)(s + n);
-        }
-#endif
-        while (n)
-            n--, d[n] = s[n];
+
+        n -= num_vectors * 16;
     }
 
+    memcpy_unsafe(d, s, n);
     return dest;
 }
 
-int memcmp(const void *vl, const void *vr, size_t n)
+EXTERNC void *memcpy_sse4_2(void *dest, const void *src, size_t n)
 {
-    const unsigned char *l = vl, *r = vr;
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
+
+    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
+    {
+        size_t num_vectors = n / 16;
+        for (size_t i = 0; i < num_vectors; i++)
+        {
+            asmv("movdqa (%0), %%xmm0\n"
+                 "pcmpistri $0, (%0), %%xmm0\n"
+                 "movdqa %%xmm0, (%1)\n"
+                 :
+                 : "r"(s), "r"(d)
+                 : "xmm0");
+            d += 16;
+            s += 16;
+        }
+
+        n -= num_vectors * 16;
+    }
+
+    memcpy_unsafe(d, s, n);
+    return dest;
+}
+
+EXTERNC int memcmp(const void *vl, const void *vr, size_t n)
+{
+    const unsigned char *l = (unsigned char *)vl, *r = (unsigned char *)vr;
     for (; n && *l == *r; n--, l++, r++)
         ;
     return n ? *l - *r : 0;
 }
 
-void backspace(char s[])
+EXTERNC void backspace(char s[])
 {
     int len = strlen(s);
     s[len - 1] = '\0';
 }
 
-void append(char s[], char n)
+EXTERNC void append(char s[], char n)
 {
     int len = strlen(s);
     s[len] = n;
     s[len + 1] = '\0';
 }
 
-int strncmp(const char *s1, const char *s2, size_t n)
+EXTERNC int strncmp(const char *s1, const char *s2, size_t n)
 {
     for (size_t i = 0; i < n; i++)
     {
@@ -355,7 +200,7 @@ int strncmp(const char *s1, const char *s2, size_t n)
     return 0;
 }
 
-long unsigned strlen(const char s[])
+EXTERNC long unsigned strlen(const char s[])
 {
     long unsigned i = 0;
     if (s)
@@ -364,7 +209,7 @@ long unsigned strlen(const char s[])
     return i;
 }
 
-char *strcat_unsafe(char *destination, const char *source)
+EXTERNC char *strcat_unsafe(char *destination, const char *source)
 {
     if ((destination == NULL) || (source == NULL))
         return NULL;
@@ -381,7 +226,7 @@ char *strcat_unsafe(char *destination, const char *source)
     return destination;
 }
 
-char *strcpy_unsafe(char *destination, const char *source)
+EXTERNC char *strcpy_unsafe(char *destination, const char *source)
 {
     if (destination == NULL)
         return NULL;
@@ -396,7 +241,7 @@ char *strcpy_unsafe(char *destination, const char *source)
     return ptr;
 }
 
-char *strncpy(char *destination, const char *source, unsigned long num)
+EXTERNC char *strncpy(char *destination, const char *source, unsigned long num)
 {
     if (destination == NULL)
         return NULL;
@@ -411,14 +256,14 @@ char *strncpy(char *destination, const char *source, unsigned long num)
     return ptr;
 }
 
-int strcmp(const char *l, const char *r)
+EXTERNC int strcmp(const char *l, const char *r)
 {
     for (; *l == *r && *l; l++, r++)
         ;
     return *(unsigned char *)l - *(unsigned char *)r;
 }
 
-char *strstr(const char *haystack, const char *needle)
+EXTERNC char *strstr(const char *haystack, const char *needle)
 {
     const char *a = haystack, *b = needle;
     while (1)
@@ -435,7 +280,7 @@ char *strstr(const char *haystack, const char *needle)
     }
 }
 
-char *strchr(const char *String, int Char)
+EXTERNC char *strchr(const char *String, int Char)
 {
     while (*String != (char)Char)
     {
@@ -445,24 +290,24 @@ char *strchr(const char *String, int Char)
     return (char *)String;
 }
 
-char *strdup(const char *String)
+EXTERNC char *strdup(const char *String)
 {
-    char *OutBuffer = kmalloc(strlen((char *)String) + 1);
+    char *OutBuffer = (char *)kmalloc(strlen((char *)String) + 1);
     strncpy(OutBuffer, String, strlen(String) + 1);
     return OutBuffer;
 }
 
-int isalpha(int c)
+EXTERNC int isalpha(int c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-int isupper(int c)
+EXTERNC int isupper(int c)
 {
     return (c >= 'A' && c <= 'Z');
 }
 
-long int strtol(const char *str, char **endptr, int base)
+EXTERNC long int strtol(const char *str, char **endptr, int base)
 {
     const char *s;
     long acc, cutoff;
@@ -527,7 +372,7 @@ long int strtol(const char *str, char **endptr, int base)
     return (acc);
 }
 
-unsigned long int strtoul(const char *str, char **endptr, int base)
+EXTERNC unsigned long int strtoul(const char *str, char **endptr, int base)
 {
     const char *s;
     unsigned long acc, cutoff;
@@ -592,17 +437,17 @@ unsigned long int strtoul(const char *str, char **endptr, int base)
     return (acc);
 }
 
-int isdigit(int c)
+EXTERNC int isdigit(int c)
 {
     return c >= '0' && c <= '9';
 }
 
-int isspace(int c)
+EXTERNC int isspace(int c)
 {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f' || c == '\v';
 }
 
-int isempty(char *str)
+EXTERNC int isempty(char *str)
 {
     if (strlen(str) == 0)
         return 1;
@@ -615,7 +460,7 @@ int isempty(char *str)
     return 1;
 }
 
-unsigned int isdelim(char c, char *delim)
+EXTERNC unsigned int isdelim(char c, char *delim)
 {
     while (*delim != '\0')
     {
@@ -626,23 +471,23 @@ unsigned int isdelim(char c, char *delim)
     return 0;
 }
 
-int abs(int i) { return i < 0 ? -i : i; }
+EXTERNC int abs(int i) { return i < 0 ? -i : i; }
 
-void swap(char *x, char *y)
+EXTERNC void swap(char *x, char *y)
 {
     char t = *x;
     *x = *y;
     *y = t;
 }
 
-char *reverse(char *Buffer, int i, int j)
+EXTERNC char *reverse(char *Buffer, int i, int j)
 {
     while (i < j)
         swap(&Buffer[i++], &Buffer[j--]);
     return Buffer;
 }
 
-float sqrtf(float x)
+EXTERNC float sqrtf(float x)
 {
     if (x < 0.0f)
         return NAN;
@@ -660,7 +505,7 @@ float sqrtf(float x)
     return guess;
 }
 
-double clamp(double x, double low, double high)
+EXTERNC double clamp(double x, double low, double high)
 {
     if (x < low)
         return low;
@@ -670,25 +515,25 @@ double clamp(double x, double low, double high)
         return x;
 }
 
-float lerp(float a, float b, float t)
+EXTERNC float lerp(float a, float b, float t)
 {
     return (1 - t) * a + t * b;
 }
 
-float smoothstep(float a, float b, float t)
+EXTERNC float smoothstep(float a, float b, float t)
 {
     t = clamp(t, 0.0, 1.0);
     return lerp(a, b, t * t * (3 - 2 * t));
 }
 
-float cubicInterpolate(float a, float b, float t)
+EXTERNC float cubicInterpolate(float a, float b, float t)
 {
     float t2 = t * t;
     float t3 = t2 * t;
     return a + (-2 * t3 + 3 * t2) * b;
 }
 
-char *strtok(char *src, const char *delim)
+EXTERNC char *strtok(char *src, const char *delim)
 {
     static char *src1;
     if (!src)
@@ -728,7 +573,7 @@ char *strtok(char *src, const char *delim)
     return NULL;
 }
 
-int atoi(const char *String)
+EXTERNC int atoi(const char *String)
 {
     uint64_t Length = strlen((char *)String);
     uint64_t OutBuffer = 0;
@@ -741,7 +586,7 @@ int atoi(const char *String)
     return OutBuffer;
 }
 
-double atof(const char *String)
+EXTERNC double atof(const char *String)
 {
     // Originally from https://github.com/GaloisInc/minlibc/blob/master/atof.c
     /*
@@ -823,7 +668,7 @@ double atof(const char *String)
     return a;
 }
 
-char *itoa(int Value, char *Buffer, int Base)
+EXTERNC char *itoa(int Value, char *Buffer, int Base)
 {
     if (Base < 2 || Base > 32)
         return Buffer;
@@ -851,7 +696,7 @@ char *itoa(int Value, char *Buffer, int Base)
     return reverse(Buffer, 0, i - 1);
 }
 
-char *ltoa(long Value, char *Buffer, int Base)
+EXTERNC char *ltoa(long Value, char *Buffer, int Base)
 {
     if (Base < 2 || Base > 32)
         return Buffer;
@@ -879,7 +724,7 @@ char *ltoa(long Value, char *Buffer, int Base)
     return reverse(Buffer, 0, i - 1);
 }
 
-char *ultoa(unsigned long Value, char *Buffer, int Base)
+EXTERNC char *ultoa(unsigned long Value, char *Buffer, int Base)
 {
     if (Base < 2 || Base > 32)
         return Buffer;
@@ -904,7 +749,7 @@ char *ultoa(unsigned long Value, char *Buffer, int Base)
     return reverse(Buffer, 0, i - 1);
 }
 
-extern void __chk_fail(void) __attribute__((__noreturn__));
+EXTERNC void __chk_fail(void) __attribute__((__noreturn__));
 
 __noreturn static inline void __convert_chk_fail(void)
 {
@@ -918,7 +763,7 @@ __noreturn static inline void __convert_chk_fail(void)
 
 // #define DBG_CHK 1
 
-__no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen)
+EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen)
 {
 #ifdef DBG_CHK
     debug("( dest:%#lx src:%#lx len:%llu slen:%llu )", dest, src, len, slen);
@@ -949,10 +794,36 @@ __no_stack_protector void *__memcpy_chk(void *dest, const void *src, size_t len,
 
     if (unlikely(len > slen))
         __chk_fail();
-    return memcpy_unsafe(dest, src, len);
+
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        return memcpy_sse(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        return memcpy_sse2(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        return memcpy_sse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        return memcpy_ssse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        return memcpy_sse4_1(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        return memcpy_sse4_2(dest, src, len);
+        break;
+    default:
+        return memcpy_unsafe(dest, src, len);
+        break;
+    }
+    error("Should not be here!");
+    CPU::Stop();
 }
 
-__no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
+EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
 {
 #ifdef DBG_CHK
     debug("( dest:%#lx val:%#x len:%llu slen:%llu )", dest, val, len, slen);
@@ -980,7 +851,7 @@ __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t 
     return memset_unsafe(dest, val, len);
 }
 
-__no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
+EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
 {
 #ifdef DBG_CHK
     debug("( dest:%#lx src:%#lx len:%llu slen:%llu )", dest, src, len, slen);
@@ -1014,7 +885,7 @@ __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len
     return memmove_unsafe(dest, src, len);
 }
 
-__no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)
+EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)
 {
 #ifdef DBG_CHK
     debug("( dest:%#lx src:%#lx slen:%llu )", dest, src, slen);
@@ -1043,7 +914,7 @@ __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen
     return strcat_unsafe(dest, src);
 }
 
-__no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen)
+EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen)
 {
 #ifdef DBG_CHK
     debug("( dest:%#lx src:%#lx slen:%llu )", dest, src, slen);
@@ -1070,5 +941,6 @@ __no_stack_protector char *__strcpy_chk(char *dest, const char *src, size_t slen
 
     if (unlikely(len >= slen))
         __chk_fail();
+
     return strcpy_unsafe(dest, src);
 }

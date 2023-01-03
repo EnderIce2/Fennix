@@ -237,13 +237,42 @@ namespace APIC
         this->APICBaseAddress = BaseLow << 12u | BaseHigh << 32u;
         trace("APIC Address: %#lx", this->APICBaseAddress);
 
-        uint32_t rcx;
-        cpuid(1, 0, 0, &rcx, 0);
-        if (rcx & CPUID_FEAT_RCX_x2APIC)
+        bool x2APICSupported = false;
+        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
         {
-            // this->x2APICSupported = true;
-            warn("x2APIC not supported yet.");
-            // wrmsr(MSR_APIC_BASE, (rdmsr(MSR_APIC_BASE) | (1 << 11)) & ~(1 << 10));
+#if defined(__amd64__)
+            CPU::x64::AMD::CPUID0x1 cpuid1amd;
+#elif defined(__i386__)
+            CPU::x32::AMD::CPUID0x1 cpuid1amd;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+            asmv("cpuid"
+                 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+                 : "a"(0x1));
+#endif
+            // FIXME: Not sure if I configured this correctly or something else is wrong
+            // x2APICSupported = cpuid1amd.ECX.x2APIC;
+            fixme("AMD does even support x2APIC? ECX->Reserved10: %#lx", cpuid1amd.ECX.Reserved10);
+        }
+        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+        {
+#if defined(__amd64__)
+            CPU::x64::Intel::CPUID0x1 cpuid1intel;
+#elif defined(__i386__)
+            CPU::x32::Intel::CPUID0x1 cpuid1intel;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+            asmv("cpuid"
+                 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+                 : "a"(0x1));
+#endif
+            x2APICSupported = cpuid1intel.ECX.x2APIC;
+        }
+
+        if (x2APICSupported)
+        {
+            this->x2APICSupported = true;
+            wrmsr(MSR_APIC_BASE, (rdmsr(MSR_APIC_BASE) | (1 << 11)) & ~(1 << 10));
             BaseStruct.EN = 1;
             wrmsr(MSR_APIC_BASE, BaseStruct.raw);
         }

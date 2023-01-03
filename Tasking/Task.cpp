@@ -788,8 +788,8 @@ namespace Tasking
         Thread->ExitCode = 0xdead;
         Thread->Status = TaskStatus::Ready;
         Thread->Memory = new Memory::MemMgr(Parent->PageTable);
-        Thread->FPU = (FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(FXState)));
-        memset(Thread->FPU, 0, FROM_PAGES(TO_PAGES(sizeof(FXState))));
+        Thread->FPU = (CPU::x64::FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
+        memset(Thread->FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
 
         // TODO: Is really a good idea to use the FPU in kernel mode?
         Thread->FPU->mxcsr = 0b0001111110000000;
@@ -1169,10 +1169,37 @@ namespace Tasking
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
 
+        bool MONITORSupported = false;
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
 #if defined(__amd64__)
-        uint32_t rax, rbx, rcx, rdx;
-        CPU::x64::cpuid(0x1, &rax, &rbx, &rcx, &rdx);
-        if (rcx & CPU::x64::CPUID_FEAT_RCX_MONITOR)
+			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+#elif defined(__i386__)
+			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "a"(0x1));
+#endif
+            MONITORSupported = cpuid1amd.ECX.MONITOR;
+		}
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+#if defined(__amd64__)
+			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+#elif defined(__i386__)
+			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+#endif
+#if defined(__amd64__) || defined(__i386__)
+			asmv("cpuid"
+				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "a"(0x1));
+#endif
+            MONITORSupported = cpuid1intel.ECX.MONITOR;
+		}
+
+        if (MONITORSupported)
         {
             trace("CPU has MONITOR/MWAIT support.");
         }
@@ -1182,7 +1209,7 @@ namespace Tasking
             error("Interrupts are not enabled.");
             CPU::Interrupts(CPU::Enable);
         }
-#endif
+
         TaskingLock.Unlock();
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Idle);
         for (int i = 0; i < SMP::CPUCores; i++)

@@ -53,8 +53,8 @@ CPUData *GetCurrentCPU()
 extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
-    CPU::InitializeFeatures();
     uint64_t CoreID = (int)*reinterpret_cast<int *>(CORE);
+    CPU::InitializeFeatures(CoreID);
     // Initialize GDT and IDT
     Interrupts::Initialize(CoreID);
     Interrupts::Enable(CoreID);

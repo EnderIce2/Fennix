@@ -11,7 +11,7 @@
 struct CPUArchData
 {
 #if defined(__amd64__)
-    int stub;
+    CPU::x64::FXState *FPU;
     /* TODO */
 #elif defined(__i386__)
 #elif defined(__aarch64__)
@@ -39,7 +39,7 @@ struct CPUData
     Tasking::TCB *CurrentThread;
 
     /** @brief Architecture-specific data. */
-    CPUArchData *Data;
+    CPUArchData Data;
     /** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
     int Checksum;
 } __attribute__((packed));

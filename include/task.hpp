@@ -57,32 +57,6 @@ namespace Tasking
         Terminated
     };
 
-    struct FXState
-    {
-        /** @brief FPU control word */
-        uint16_t fcw;
-        /** @brief FPU status word */
-        uint16_t fsw;
-        /** @brief FPU tag words */
-        uint8_t ftw;
-        /** @brief Reserved (zero) */
-        uint8_t Reserved;
-        /** @brief FPU opcode */
-        uint16_t fop;
-        /** @brief PFU instruction pointer */
-        uint64_t rip;
-        /** @brief FPU data pointer */
-        uint64_t rdp;
-        /** @brief SSE control register */
-        uint32_t mxcsr;
-        /** @brief SSE control register mask */
-        uint32_t mxcsrmask;
-        /** @brief FPU registers (last 6 bytes reserved) */
-        uint8_t st[8][16];
-        /** @brief XMM registers */
-        uint8_t xmm[16][16];
-    } __attribute__((packed));
-
     struct TaskSecurity
     {
         TaskTrustLevel TrustLevel;
@@ -130,7 +104,7 @@ namespace Tasking
         uintptr_t IPHistory[128];
         TaskSecurity Security;
         TaskInfo Info;
-        FXState *FPU;
+        CPU::x64::FXState *FPU;
 
         void Rename(const char *name)
         {

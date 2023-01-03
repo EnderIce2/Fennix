@@ -123,6 +123,29 @@ namespace CPU
         SIMD_SSSE3,
         SIMD_SSE41,
         SIMD_SSE42,
+        SIMD_AVX,
+        SIMD_AVX2,
+        SIMD_AVX512F,
+        SIMD_AVX512BW,
+        SIMD_AVX512CD,
+        SIMD_AVX512DQ,
+        SIMD_AVX512ER,
+        SIMD_AVX512IFMA,
+        SIMD_AVX512PF,
+        SIMD_AVX512VBMI,
+        SIMD_AVX512VL,
+        SIMD_AVX512VNNI,
+        SIMD_AVX512BITALG,
+        SIMD_AVX512VPOPCNTDQ,
+        SIMD_AVX512_4VNNIW,
+        SIMD_AVX512_4FMAPS,
+        SIMD_AVX512_VP2INTERSECT,
+        SIMD_AVX512_BF16,
+        SIMD_AVX512_VBMI2,
+        SIMD_AVX512_GFNI,
+        SIMD_AVX512_VAES,
+        SIMD_AVX512_VPCLMULQDQ,
+        SIMD_AVX512_VNNI,
     };
 
     /**
@@ -147,7 +170,7 @@ namespace CPU
     char *Hypervisor();
 
     /**
-     * @brief Check SIMD support.
+     * @brief Check SIMD support. It will return the highest supported SIMD type.
      *
      * @return x86SIMDType
      */
@@ -227,10 +250,24 @@ namespace CPU
     void *PageTable(void *PT = nullptr);
 
     /** @brief To be used only once. */
-    void InitializeFeatures();
+    void InitializeFeatures(long Core);
 
     /** @brief Get CPU counter value. */
     uintptr_t Counter();
+
+    typedef int __v4si __attribute__((__vector_size__(16)));
+
+    typedef union
+    {
+        __v4si vector;
+        long long int i64[2];
+        int i32[4];
+        short i16[8];
+        char i8[16];
+        int __attribute__((__vector_size__(16))) m128i_i32;
+        short __attribute__((__vector_size__(16))) m128i_i16;
+        char __attribute__((__vector_size__(16))) m128i_i8;
+    } __m128i;
 
     namespace MemBar
     {
@@ -551,6 +588,32 @@ namespace CPU
             };
             uint32_t raw;
         } DR7;
+
+        struct FXState
+        {
+            /** @brief FPU control word */
+            uint16_t fcw;
+            /** @brief FPU status word */
+            uint16_t fsw;
+            /** @brief FPU tag words */
+            uint8_t ftw;
+            /** @brief Reserved (zero) */
+            uint8_t Reserved;
+            /** @brief FPU opcode */
+            uint16_t fop;
+            /** @brief PFU instruction pointer */
+            uint64_t rip;
+            /** @brief FPU data pointer */
+            uint64_t rdp;
+            /** @brief SSE control register */
+            uint32_t mxcsr;
+            /** @brief SSE control register mask */
+            uint32_t mxcsrmask;
+            /** @brief FPU registers (last 6 bytes reserved) */
+            uint8_t st[8][16];
+            /** @brief XMM registers */
+            uint8_t xmm[16][16];
+        } __attribute__((packed));
 
         /**
          * @brief CPUID
@@ -2125,79 +2188,6 @@ namespace CPU
 
     namespace x64
     {
-        enum CPUIDFeatures
-        {
-            CPUID_FEAT_RCX_SSE3 = 1 << 0,
-            CPUID_FEAT_RCX_PCLMULQDQ = 1 << 1,
-            CPUID_FEAT_RCX_DTES64 = 1 << 2,
-            CPUID_FEAT_RCX_MONITOR = 1 << 3,
-            CPUID_FEAT_RCX_DS_CPL = 1 << 4,
-            CPUID_FEAT_RCX_VMX = 1 << 5,
-            CPUID_FEAT_RCX_SMX = 1 << 6,
-            CPUID_FEAT_RCX_EST = 1 << 7,
-            CPUID_FEAT_RCX_TM2 = 1 << 8,
-            CPUID_FEAT_RCX_SSSE3 = 1 << 9,
-            CPUID_FEAT_RCX_CID = 1 << 10,
-            CPUID_FEAT_RCX_FMA = 1 << 12,
-            CPUID_FEAT_RCX_CX16 = 1 << 13,
-            CPUID_FEAT_RCX_ETPRD = 1 << 14,
-            CPUID_FEAT_RCX_PDCM = 1 << 15,
-            CPUID_FEAT_RCX_PCIDE = 1 << 17,
-            CPUID_FEAT_RCX_DCA = 1 << 18,
-            CPUID_FEAT_RCX_SSE4_1 = 1 << 19,
-            CPUID_FEAT_RCX_SSE4_2 = 1 << 20,
-            CPUID_FEAT_RCX_x2APIC = 1 << 21,
-            CPUID_FEAT_RCX_MOVBE = 1 << 22,
-            CPUID_FEAT_RCX_POPCNT = 1 << 23,
-            CPUID_FEAT_RCX_AES = 1 << 25,
-            CPUID_FEAT_RCX_XSAVE = 1 << 26,
-            CPUID_FEAT_RCX_OSXSAVE = 1 << 27,
-            CPUID_FEAT_RCX_AVX = 1 << 28,
-            CPUID_FEAT_RCX_F16C = 1 << 29,
-            CPUID_FEAT_RCX_RDRAND = 1 << 30,
-
-            CPUID_FEAT_RDX_FPU = 1 << 0,
-            CPUID_FEAT_RDX_VME = 1 << 1,
-            CPUID_FEAT_RDX_DE = 1 << 2,
-            CPUID_FEAT_RDX_PSE = 1 << 3,
-            CPUID_FEAT_RDX_TSC = 1 << 4,
-            CPUID_FEAT_RDX_MSR = 1 << 5,
-            CPUID_FEAT_RDX_PAE = 1 << 6,
-            CPUID_FEAT_RDX_MCE = 1 << 7,
-            CPUID_FEAT_RDX_CX8 = 1 << 8,
-            CPUID_FEAT_RDX_APIC = 1 << 9,
-            CPUID_FEAT_RDX_SEP = 1 << 11,
-            CPUID_FEAT_RDX_MTRR = 1 << 12,
-            CPUID_FEAT_RDX_PGE = 1 << 13,
-            CPUID_FEAT_RDX_MCA = 1 << 14,
-            CPUID_FEAT_RDX_CMOV = 1 << 15,
-            CPUID_FEAT_RDX_PAT = 1 << 16,
-            CPUID_FEAT_RDX_PSE36 = 1 << 17,
-            CPUID_FEAT_RDX_PSN = 1 << 18,
-            CPUID_FEAT_RDX_CLF = 1 << 19,
-            CPUID_FEAT_RDX_DTES = 1 << 21,
-            CPUID_FEAT_RDX_ACPI = 1 << 22,
-            CPUID_FEAT_RDX_MMX = 1 << 23,
-            CPUID_FEAT_RDX_FXSR = 1 << 24,
-            CPUID_FEAT_RDX_SSE = 1 << 25,
-            CPUID_FEAT_RDX_SSE2 = 1 << 26,
-            CPUID_FEAT_RDX_SS = 1 << 27,
-            CPUID_FEAT_RDX_HTT = 1 << 28,
-            CPUID_FEAT_RDX_TM1 = 1 << 29,
-            CPUID_FEAT_RDX_IA64 = 1 << 30,
-            CPUID_FEAT_RDX_PBE = 1 << 31,
-
-            // ? Not sure how to get it.
-            CPUID_FEAT_RDX_SMEP = 1 << 7,
-            CPUID_FEAT_RDX_UMIP = 1 << 2,
-            CPUID_FEAT_RDX_SYSCALL = 1 << 11,
-            CPUID_FEAT_XD = 1 << 20,
-            CPUID_FEAT_1GB_PAGE = 1 << 26,
-            CPUID_FEAT_RDTSCP = 1 << 27,
-            CPUID_FEAT_LONG_MODE = 1 << 29,
-            CPUID_FEAT_RDX_SMAP = (1 << 20)
-        };
-
         enum MSRID
         {
             MSR_MONITOR_FILTER_SIZE = 0x6,
@@ -3110,6 +3100,41 @@ namespace CPU
             uint64_t raw;
         } CR8;
 
+        typedef union XCR0
+        {
+            /*
+            On https://wiki.osdev.org/CPU_Registers_x86#XCR0 says that the PKRU bit is 9?
+            */
+            struct
+            {
+                /** @brief X87 FPU/MMX/SSE Support (must be 1) */
+                uint64_t X87 : 1;
+                /** @brief XSAVE support for MXCSR and XMM registers */
+                uint64_t SSE : 1;
+                /** @brief AVX support for YMM registers */
+                uint64_t AVX : 1;
+                /** @brief MPX support for BND registers */
+                uint64_t BNDREG : 1;
+                /** @brief MPX support for BNDCFGU and BNDSTATUS registers */
+                uint64_t BNDCSR : 1;
+                /** @brief AVX-512 support for opmask registers */
+                uint64_t OpMask : 1;
+                /** @brief AVX-512 enabled and XSAVE support for upper halves of lower ZMM registers */
+                uint64_t ZMM_HI256 : 1;
+                /** @brief AVX-512 enabled and XSAVE support for upper ZMM registers */
+                uint64_t HI16_ZMM : 1;
+                /** @brief XSAVE support for PKRU register */
+                uint64_t PKRU : 1;
+                /** @brief Reserved */
+                uint64_t Reserved0 : 53;
+                /** @brief AMD lightweight profiling */
+                uint64_t LWP : 1;
+                /** @brief Reserved */
+                uint64_t Reserved1 : 1;
+            };
+            uint64_t raw;
+        } XCR0;
+
         typedef union EFER
         {
             struct
@@ -3232,6 +3257,32 @@ namespace CPU
             };
             uint64_t raw;
         } SelectorErrorCode;
+
+        struct FXState
+        {
+            /** @brief FPU control word */
+            uint16_t fcw;
+            /** @brief FPU status word */
+            uint16_t fsw;
+            /** @brief FPU tag words */
+            uint8_t ftw;
+            /** @brief Reserved (zero) */
+            uint8_t Reserved;
+            /** @brief FPU opcode */
+            uint16_t fop;
+            /** @brief PFU instruction pointer */
+            uint64_t rip;
+            /** @brief FPU data pointer */
+            uint64_t rdp;
+            /** @brief SSE control register */
+            uint32_t mxcsr;
+            /** @brief SSE control register mask */
+            uint32_t mxcsrmask;
+            /** @brief FPU registers (last 6 bytes reserved) */
+            uint8_t st[8][16];
+            /** @brief XMM registers */
+            uint8_t xmm[16][16];
+        } __attribute__((packed));
 
         SafeFunction static inline void lgdt(void *gdt)
         {
@@ -3375,6 +3426,18 @@ namespace CPU
             return (CR8){.raw = Result};
         }
 
+        SafeFunction static inline XCR0 readxcr0()
+        {
+            uint64_t Result = 0;
+#if defined(__amd64__)
+            asmv("xgetbv"
+                 : "=a"(Result)
+                 : "c"(0)
+                 : "edx");
+#endif
+            return (XCR0){.raw = Result};
+        }
+
         SafeFunction static inline void writecr0(CR0 ControlRegister)
         {
 #if defined(__amd64__)
@@ -3422,6 +3485,16 @@ namespace CPU
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
+#endif
+        }
+
+        SafeFunction static inline void writexcr0(XCR0 ControlRegister)
+        {
+#if defined(__amd64__)
+            asmv("xsetbv"
+                 :
+                 : "a"(ControlRegister.raw), "c"(0)
+                 : "edx");
 #endif
         }
 
@@ -3831,6 +3904,320 @@ namespace CPU
                     struct
                     {
                         uint64_t Reserved : 32;
+                    };
+                    uint64_t raw;
+                } EDX;
+            };
+
+            /** @brief Extended feature flags enumeration */
+            struct CPUID0x7_0
+            {
+                union
+                {
+                    struct
+                    {
+                        uint64_t Reserved : 32;
+                    };
+                    uint64_t raw;
+                } EAX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief Access to base of fs and gs */
+                        uint64_t FSGSBase : 1;
+                        /** @brief IA32_TSC_ADJUST MSR */
+                        uint64_t IA32TSCAdjust : 1;
+                        /** @brief Software Guard Extensions */
+                        uint64_t SGX : 1;
+                        /** @brief Bit Manipulation Instruction Set 1 */
+                        uint64_t BMI1 : 1;
+                        /** @brief TSX Hardware Lock Elision */
+                        uint64_t HLE : 1;
+                        /** @brief Advanced Vector Extensions 2 */
+                        uint64_t AVX2 : 1;
+                        /** @brief FDP_EXCPTN_ONLY */
+                        uint64_t FDPExcptonOnly : 1;
+                        /** @brief Supervisor Mode Execution Protection */
+                        uint64_t SMEP : 1;
+                        /** @brief Bit Manipulation Instruction Set 2 */
+                        uint64_t BMI2 : 1;
+                        /** @brief Enhanced REP MOVSB/STOSB */
+                        uint64_t ERMS : 1;
+                        /** @brief INVPCID */
+                        uint64_t INVPCID : 1;
+                        /** @brief RTM */
+                        uint64_t RTM : 1;
+                        /** @brief Intel Resource Director Monitoring */
+                        uint64_t RDT_M : 1;
+                        /** @brief Deprecates FPU CS and DS values */
+                        uint64_t DeprecatesFPU : 1;
+                        /** @brief Intel Memory Protection Extensions */
+                        uint64_t MPX : 1;
+                        /** @brief Intel Resource Director Allocation */
+                        uint64_t RDT_A : 1;
+                        /** @brief AVX-512 Foundation */
+                        uint64_t AVX512F : 1;
+                        /** @brief AVX-512 Doubleword and Quadword Instructions */
+                        uint64_t AVX512DQ : 1;
+                        /** @brief RDSEED */
+                        uint64_t RDSEED : 1;
+                        /** @brief Intel Multi-Precision Add-Carry Instruction Extensions */
+                        uint64_t ADX : 1;
+                        /** @brief Supervisor Mode Access Prevention */
+                        uint64_t SMAP : 1;
+                        /** @brief AVX-512 Integer Fused Multiply-Add Instructions */
+                        uint64_t AVX512IFMA : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved : 1;
+                        /** @brief CLFLUSHOPT */
+                        uint64_t CLFLUSHOPT : 1;
+                        /** @brief CLWB */
+                        uint64_t CLWB : 1;
+                        /** @brief Intel Processor Trace */
+                        uint64_t IntelProcessorTrace : 1;
+                        /** @brief AVX-512 Prefetch Instructions */
+                        uint64_t AVX512PF : 1;
+                        /** @brief AVX-512 Exponential and Reciprocal Instructions */
+                        uint64_t AVX512ER : 1;
+                        /** @brief AVX-512 Conflict Detection Instructions */
+                        uint64_t AVX512CD : 1;
+                        /** @brief SHA Extensions */
+                        uint64_t SHA : 1;
+                        /** @brief AVX-512 Byte and Word Instructions */
+                        uint64_t AVX512BW : 1;
+                        /** @brief AVX-512 Vector Length Extensions */
+                        uint64_t AVX512VL : 1;
+                    };
+                    uint64_t raw;
+                } EBX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief PREFETCHWT1 */
+                        uint64_t PREFETCHWT1 : 1;
+                        /** @brief AVX-512 Vector Bit Manipulation Instructions */
+                        uint64_t AVX512VBMI : 1;
+                        /** @brief User Mode Instruction Prevention */
+                        uint64_t UMIP : 1;
+                        /** @brief Memory Protection Keys for User-mode pages */
+                        uint64_t PKU : 1;
+                        /** @brief PKU enabled by OS */
+                        uint64_t OSPKE : 1;
+                        /** @brief Timed pause and user-level monitor/wait */
+                        uint64_t WaitPKG : 1;
+                        /** @brief AVX-512 Vector Bit Manipulation Instructions 2 */
+                        uint64_t AVX512VBMI2 : 1;
+                        /** @brief Control flow enforcement (CET) shadow stack */
+                        uint64_t CET_SS : 1;
+                        /** @brief Galois Field instructions */
+                        uint64_t GFNI : 1;
+                        /** @brief Vector AES instruction set (VEX-256/EVEX) */
+                        uint64_t VAES : 1;
+                        /** @brief CLMUL instruction set (VEX-256/EVEX) */
+                        uint64_t VPCLMULQDQ : 1;
+                        /** @brief AVX-512 Vector Neural Network Instructions */
+                        uint64_t AVX512VNNI : 1;
+                        /** @brief AVX-512 Bit Algorithms Instructions */
+                        uint64_t AVX512BITALG : 1;
+                        /** @brief IA32_TME related MSRs  */
+                        uint64_t TME : 1;
+                        /** @brief AVX-512 Vector Population Count Double and Quad-word */
+                        uint64_t AVX512VPOPCNTDQ : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved0 : 1;
+                        /** @brief 5-level paging (57 address bits) */
+                        uint64_t LA57 : 1;
+                        /** @brief The value of userspace MPX Address-Width Adjust used by the BNDLDX and BNDSTX Intel MPX instructions in 64-bit mode */
+                        uint64_t MAWAU : 5;
+                        /** @brief Read Processor ID and IA32_TSC_AUX  */
+                        uint64_t RDPID : 1;
+                        /** @brief Key Locker */
+                        uint64_t KL : 1;
+                        /** @brief BUS_LOCK_DETECT */
+                        uint64_t BusLockDetect : 1;
+                        /** @brief Cache line demote */
+                        uint64_t CLDEMOTE : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved1 : 1;
+                        /** @brief MOVDIRI */
+                        uint64_t MOVDIRI : 1;
+                        /** @brief MOVDIR64B */
+                        uint64_t MOVDIR64B : 1;
+                        /** @brief SGX Launch Configuration */
+                        uint64_t SGX_LC : 1;
+                        /** @brief Protection Keys for Supervisor-mode pages */
+                        uint64_t PKS : 1;
+                    };
+                    uint64_t raw;
+                } ECX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief Reserved */
+                        uint64_t Reserved0 : 2;
+                        /** @brief AVX-512 4-register Neural Network Instructions */
+                        uint64_t AVX512_4VNNIW : 1;
+                        /** @brief AVX-512 4-register Multiply Accumulation Single Precision */
+                        uint64_t AVX512_4FMAPS : 1;
+                        /** @brief Fast Short REP MOVSB/STOSB */
+                        uint64_t FSRM : 1;
+                        /** @brief User Inter-Processor Interrupts */
+                        uint64_t UINTR : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved1 : 2;
+                        /** @brief AVX-512 VP2INTERSECT Doubleword and Quadword Instructions */
+                        uint64_t AVX512_VP2INTERSECT : 1;
+                        /** @brief Special Register Buffer Data Sampling Mitigations */
+                        uint64_t SRBDS_CTRL : 1;
+                        /** @brief VERW instruction clears CPU buffers */
+                        uint64_t MC_CLEAR : 1;
+                        /** @brief All TSX transactions are aborted */
+                        uint64_t TSX_FORCE_ABORT : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved2 : 1;
+                        /** @brief TSX_FORCE_ABORT MSR is available */
+                        uint64_t TsxForceAbortMsr : 1;
+                        /** @brief SERIALIZE */
+                        uint64_t SERIALIZE : 1;
+                        /** @brief Mixture of CPU types in processor topology */
+                        uint64_t HYBRID : 1;
+                        /** @brief TSXLDTRK */
+                        uint64_t TSXLDTRK : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved3 : 1;
+                        /** @brief Platform configuration for Memory Encryption Technologies Instrctuions */
+                        uint64_t PCONFIG : 1;
+                        /** @brief Architectural Last Branch Records */
+                        uint64_t LBR : 1;
+                        /** @brief Control flow enforcement (CET) indirect branch tracking */
+                        uint64_t CET_IBT : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved4 : 1;
+                        /** @brief Tile computation on bfloat16 numbers */
+                        uint64_t AMX_BF16 : 1;
+                        /** @brief AVX512-FP16 half-precision floating-point instructions */
+                        uint64_t AVX512_FP16 : 1;
+                        /** @brief Tile architecture */
+                        uint64_t AMX_TILE : 1;
+                        /** @brief Tile computation on 8-bit integers */
+                        uint64_t AMX_INT8 : 1;
+                        /** @brief Speculation Control, part of Indirect Branch Control (IBC):
+                                   Indirect Branch Restricted Speculation (IBRS) and
+                                   Indirect Branch Prediction Barrier (IBPB) */
+                        uint64_t SPEC_CTRL : 1;
+                        /** @brief Single Thread Indirect Branch Predictor, part of IBC */
+                        uint64_t STIBP : 1;
+                        /** @brief IA32_FLUSH_CMD MSR */
+                        uint64_t L1D_FLUSH : 1;
+                        /** @brief IA32_ARCH_CAPABILITIES (lists speculative side channel mitigations */
+                        uint64_t ArchCapabilities : 1;
+                        /** @brief IA32_CORE_CAPABILITIES MSR (lists model-specific core capabilities) */
+                        uint64_t CoreCapabilities : 1;
+                        /** @brief Speculative Store Bypass Disable, as mitigation for Speculative Store Bypass (IA32_SPEC_CTRL) */
+                        uint64_t SSBD : 1;
+                    };
+                    uint64_t raw;
+                } EDX;
+            };
+
+            /** @brief Extended feature flags enumeration */
+            struct CPUID0x7_1
+            {
+                union
+                {
+                    struct
+                    {
+                        uint64_t Reserved0 : 3;
+                        /** @brief RAO-INT */
+                        uint64_t RAO_INT : 1;
+                        /** @brief AVX Vector Neural Network Instructions (XNNI) (VEX encoded) */
+                        uint64_t AVX_VNNI : 1;
+                        /** @brief AVX-512 instructions for bfloat16 numbers */
+                        uint64_t AVX512_BF16 : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved1 : 1;
+                        /** @brief CMPccXADD */
+                        uint64_t CMPCCXADD : 1;
+                        /** @brief Architectural Performance Monitoring Extended Leaf (EAX=23h) */
+                        uint64_t ARCHPERFMONEXT : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved2 : 1;
+                        /** @brief Fast zero-length MOVSB */
+                        uint64_t FAST_ZERO_REP_MOVSB : 1;
+                        /** @brief Fast zero-length STOSB */
+                        uint64_t FAST_SHORT_REP_STOSB : 1;
+                        /** @brief Fast zero-length CMPSB and SCASB */
+                        uint64_t FAST_SHORT_REP_CMPSB_SCASB : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved3 : 4;
+                        /** @brief Flexible Return and Event Delivery */
+                        uint64_t FRED : 1;
+                        /** @brief LKGS Instruction */
+                        uint64_t LKGS : 1;
+                        /** @brief WRMSRNS instruction */
+                        uint64_t WRMSRNS : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved4 : 1;
+                        /** @brief AMX instructions for FP16 numbers */
+                        uint64_t AMX_FP16 : 1;
+                        /** @brief HRESET instruction, IA32_HRESET_ENABLE MSR, and Processor History Reset Leaf (EAX=20h) */
+                        uint64_t HRESET : 1;
+                        /** @brief AVX IFMA instructions */
+                        uint64_t AVX_IFMA : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved5 : 2;
+                        /** @brief Linear Address Masking */
+                        uint64_t LAM : 1;
+                        /** @brief RDMSRLIST and WRMSRLIST instructions, and the IA32_BARRIER MSR */
+                        uint64_t MSRLIST : 1;
+                    };
+                    uint64_t raw;
+                } EAX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief IA32_PPIN and IA32_PPIN_CTL MSRs */
+                        uint64_t PPIN : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved : 31;
+                    };
+                    uint64_t raw;
+                } EBX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief Reserved */
+                        uint64_t Reserved : 32;
+                    };
+                    uint64_t raw;
+                } ECX;
+
+                union
+                {
+                    struct
+                    {
+                        /** @brief Reserved */
+                        uint64_t Reserved0 : 4;
+                        /** @brief AVX VNNI INT8 instructions */
+                        uint64_t AVX_VNNI_INT8 : 1;
+                        /** @brief AVX NE CONVERT instructions */
+                        uint64_t AVX_NE_CONVERT : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved1 : 8;
+                        /** @brief PREFETCHIT0 and PREFETCHIT1 instructions */
+                        uint64_t PREFETCHIT : 1;
+                        /** @brief Reserved */
+                        uint64_t Reserved2 : 17;
                     };
                     uint64_t raw;
                 } EDX;
@@ -4661,8 +5048,9 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t BranchID : 16;
-                        uint64_t Reserved0 : 16;
+                        uint64_t BrandId : 16;
+                        uint64_t Reserved0 : 12;
+                        uint64_t PkgType : 4;
                     };
                     uint64_t raw;
                 } EBX;
@@ -4674,9 +5062,28 @@ namespace CPU
                         uint64_t LAHF_SAHF : 1;
                         uint64_t CmpLegacy : 1;
                         uint64_t SVM : 1;
-                        uint64_t Reserved0 : 1;
+                        uint64_t ExtApicSpace : 1;
                         uint64_t AltMovCr8 : 1;
-                        uint64_t Reserved1 : 26;
+                        uint64_t ABM : 1;
+                        uint64_t SSE4A : 1;
+                        uint64_t MisalignedSSE : 1;
+                        uint64_t ThreeDNowPrefetch : 1;
+                        uint64_t OSVW : 1;
+                        uint64_t IBS : 1;
+                        uint64_t XOP : 1;
+                        uint64_t SKINIT : 1;
+                        uint64_t WDT : 1;
+                        uint64_t Reserved0 : 1;
+                        uint64_t LWP : 1;
+                        uint64_t FMA4 : 1;
+                        uint64_t Reserved1 : 1;
+                        uint64_t Reserved2 : 1;
+                        uint64_t NodeID : 1;
+                        uint64_t Reserved3 : 1;
+                        uint64_t TBM : 1;
+                        uint64_t TopologyExtensions : 1;
+                        uint64_t Reserved4 : 9;
+
                     };
                     uint64_t raw;
                 } ECX;

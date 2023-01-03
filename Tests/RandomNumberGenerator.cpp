@@ -21,7 +21,7 @@ __constructor void TestRandom()
 #endif
         RDRANDFlag = cpuid1amd.ECX.RDRAND;
     }
-    if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+    else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
     {
 #if defined(__amd64__)
         CPU::x64::Intel::CPUID0x1 cpuid1intel;

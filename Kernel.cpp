@@ -34,6 +34,12 @@
  * CREDITS AND REFERENCES:
  * - General:
  *    https://wiki.osdev.org/Main_Page
+ * 
+ * - CPU XCR0 structure:
+ *    https://wiki.osdev.org/CPU_Registers_x86#XCR0
+ * 
+ * - CPUID 0x7:
+ *    https://en.wikipedia.org/wiki/CPUID
  *
  * - Network:
  *    https://web.archive.org/web/20051210132103/http://users.pcnet.ro/dmoroian/beej/Beej.html
@@ -123,7 +129,7 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
     KPrint("Initializing CPU Features");
-    CPU::InitializeFeatures();
+    CPU::InitializeFeatures(0);
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
     KPrint("Reading Kernel Parameters");
