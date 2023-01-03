@@ -5,167 +5,6 @@
 #include <debug.h>
 #include <cpu.hpp>
 
-EXTERNC void *memcpy_sse(void *dest, const void *src, size_t n)
-{
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
-    {
-        size_t num_vectors = n / 16;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            asmv("movaps (%0), %%xmm0\n"
-                 "movaps %%xmm0, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0");
-            d += 16;
-            s += 16;
-        }
-
-        n -= num_vectors * 16;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
-EXTERNC void *memcpy_sse2(void *dest, const void *src, size_t n)
-{
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
-    {
-        size_t num_vectors = n / 16;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            asmv("movdqa (%0), %%xmm0\n"
-                 "movdqa %%xmm0, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0");
-            d += 16;
-            s += 16;
-        }
-
-        n -= num_vectors * 16;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
-EXTERNC void *memcpy_sse3(void *dest, const void *src, size_t n)
-{
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0x7) == 0)
-    {
-        size_t num_vectors = n / 8;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            asmv("movq (%0), %%xmm0\n"
-                 "movddup %%xmm0, %%xmm1\n"
-                 "movq %%xmm1, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0", "xmm1");
-            d += 8;
-            s += 8;
-        }
-
-        n -= num_vectors * 8;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
-EXTERNC void *memcpy_ssse3(void *dest, const void *src, size_t n)
-{
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
-    {
-        size_t num_vectors = n / 16;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            asmv("movdqa (%0), %%xmm0\n"
-                 "movdqa 16(%0), %%xmm1\n"
-                 "palignr $8, %%xmm0, %%xmm1\n"
-                 "movdqa %%xmm1, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0", "xmm1");
-            d += 16;
-            s += 16;
-        }
-
-        n -= num_vectors * 16;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
-EXTERNC void *memcpy_sse4_1(void *dest, const void *src, size_t n)
-{
-    CPU::__m128i *d = (CPU::__m128i *)dest;
-    const CPU::__m128i *s = (const CPU::__m128i *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
-    {
-        size_t num_vectors = n / 16;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            // movntdqa
-            asmv("movdqa (%0), %%xmm0\n"
-                 "movdqa %%xmm0, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0");
-            d += 16;
-            s += 16;
-        }
-
-        n -= num_vectors * 16;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
-EXTERNC void *memcpy_sse4_2(void *dest, const void *src, size_t n)
-{
-    char *d = (char *)dest;
-    const char *s = (const char *)src;
-
-    if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
-    {
-        size_t num_vectors = n / 16;
-        for (size_t i = 0; i < num_vectors; i++)
-        {
-            asmv("movdqa (%0), %%xmm0\n"
-                 "pcmpistri $0, (%0), %%xmm0\n"
-                 "movdqa %%xmm0, (%1)\n"
-                 :
-                 : "r"(s), "r"(d)
-                 : "xmm0");
-            d += 16;
-            s += 16;
-        }
-
-        n -= num_vectors * 16;
-    }
-
-    memcpy_unsafe(d, s, n);
-    return dest;
-}
-
 EXTERNC int memcmp(const void *vl, const void *vr, size_t n)
 {
     const unsigned char *l = (unsigned char *)vl, *r = (unsigned char *)vr;
@@ -848,7 +687,33 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 
     if (unlikely(len > slen))
         __chk_fail();
-    return memset_unsafe(dest, val, len);
+
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        return memset_sse(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        return memset_sse2(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        return memset_sse3(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        return memset_ssse3(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        return memset_sse4_1(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        return memset_sse4_2(dest, val, len);
+        break;
+    default:
+        return memset_unsafe(dest, val, len);
+        break;
+    }
+    error("Should not be here!");
+    CPU::Stop();
 }
 
 EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
@@ -882,7 +747,33 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 
     if (unlikely(len > slen))
         __chk_fail();
-    return memmove_unsafe(dest, src, len);
+
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        return memmove_sse(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        return memmove_sse2(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        return memmove_sse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        return memmove_ssse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        return memmove_sse4_1(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        return memmove_sse4_2(dest, src, len);
+        break;
+    default:
+        return memmove_unsafe(dest, src, len);
+        break;
+    }
+    error("Should not be here!");
+    CPU::Stop();
 }
 
 EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)

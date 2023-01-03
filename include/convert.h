@@ -39,6 +39,27 @@ extern "C"
     void *memmove_unsafe(void *dest, const void *src, size_t n);
     int memcmp(const void *vl, const void *vr, size_t n);
 
+    void *memcpy_sse(void *dest, const void *src, size_t n);
+    void *memcpy_sse2(void *dest, const void *src, size_t n);
+    void *memcpy_sse3(void *dest, const void *src, size_t n);
+    void *memcpy_ssse3(void *dest, const void *src, size_t n);
+    void *memcpy_sse4_1(void *dest, const void *src, size_t n);
+    void *memcpy_sse4_2(void *dest, const void *src, size_t n);
+
+    void *memset_sse(void *dest, int c, size_t n);
+    void *memset_sse2(void *dest, int c, size_t n);
+    void *memset_sse3(void *dest, int c, size_t n);
+    void *memset_ssse3(void *dest, int c, size_t n);
+    void *memset_sse4_1(void *dest, int c, size_t n);
+    void *memset_sse4_2(void *dest, int c, size_t n);
+
+    void *memmove_sse(void *dest, const void *src, size_t n);
+    void *memmove_sse2(void *dest, const void *src, size_t n);
+    void *memmove_sse3(void *dest, const void *src, size_t n);
+    void *memmove_ssse3(void *dest, const void *src, size_t n);
+    void *memmove_sse4_1(void *dest, const void *src, size_t n);
+    void *memmove_sse4_2(void *dest, const void *src, size_t n);
+
     long unsigned strlen(const char s[]);
     int strncmp(const char *s1, const char *s2, unsigned long n);
     char *strcat_unsafe(char *destination, const char *source);
