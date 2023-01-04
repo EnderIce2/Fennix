@@ -110,8 +110,8 @@ EXTERNC void *memcpy_ssse3(void *dest, const void *src, size_t n)
 
 EXTERNC void *memcpy_sse4_1(void *dest, const void *src, size_t n)
 {
-    CPU::__m128i *d = (CPU::__m128i *)dest;
-    const CPU::__m128i *s = (const CPU::__m128i *)src;
+    char *d = (char *)dest;
+    const char *s = (const char *)src;
 
     if ((((uintptr_t)d | (uintptr_t)s) & 0xF) == 0)
     {

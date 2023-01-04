@@ -144,7 +144,7 @@ EXTERNC void *memset_sse4_2(void *dest, int c, size_t n)
                  "pcmpistri $0, (%0), %%xmm0\n"
                  "movdqa %%xmm0, (%1)\n"
                  :
-                 : "r"(c), "r"(d)
+                 : "r"(d), "r"(c)
                  : "xmm0");
             d += 16;
         }
