@@ -48,7 +48,7 @@ namespace GraphicalUserInterface
         Rect PaintPosition = this->Position;
         PaintPosition.Left = 0;
         PaintPosition.Top = 0;
-        PutRect(this->Buffer, PaintPosition, /*0x121212*/ 0xFF00FF);
+        PutRect(this->Buffer, PaintPosition, 0x121212);
     }
 
     void Window::OnPaintForeground(Event *e)
@@ -69,19 +69,47 @@ namespace GraphicalUserInterface
 
     void Window::OnPaint(Event *e)
     {
+        memset(this->Buffer->Data, 0, this->Buffer->Size);
         this->OnPaintBackground(e);
         this->OnPaintForeground(e);
     }
 
     void Window::OnMouseDown(Event *e)
     {
+        Event WindowPos = *e;
+
+        WindowPos.MouseDown.X -= this->Position.Left;
+        WindowPos.MouseDown.Y -= this->Position.Top;
+
+        foreach (auto var in this->Widgets)
+        {
+            var->OnMouseDown(&WindowPos);
+        }
     }
 
     void Window::OnMouseUp(Event *e)
     {
+        Event WindowPos = *e;
+
+        WindowPos.MouseUp.X -= this->Position.Left;
+        WindowPos.MouseUp.Y -= this->Position.Top;
+
+        foreach (auto var in this->Widgets)
+        {
+            var->OnMouseUp(&WindowPos);
+        }
     }
 
     void Window::OnMouseMove(Event *e)
     {
+        Event WindowPos = *e;
+
+        WindowPos.MouseMove.X -= this->Position.Left;
+        WindowPos.MouseMove.Y -= this->Position.Top;
+
+        foreach (auto var in this->Widgets)
+        {
+            var->OnMouseMove(&WindowPos);
+        }
     }
 }

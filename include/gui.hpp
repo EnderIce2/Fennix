@@ -2,6 +2,7 @@
 #define __FENNIX_KERNEL_GUI_H__
 
 #include <types.h>
+#include <display.hpp>
 #include <memory.hpp>
 #include <vector.hpp>
 #include <debug.h>
@@ -171,24 +172,74 @@ namespace GraphicalUserInterface
     uint32_t BlendColors(uint32_t c1, uint32_t c2, float t);
     void PutBorderWithShadow(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
     void DrawShadow(ScreenBitmap *Bitmap, Rect rect);
+    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, long *CharCursorX, long *CharCursorY);
     void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color);
 
     class WidgetCollection
     {
     private:
         Memory::MemMgr *mem;
+        ScreenBitmap *Buffer;
+        Video::Font *CurrentFont;
+        void *ParentWindow;
+        bool NeedRedraw;
+
+        struct HandleMeta
+        {
+            char Type[4];
+        };
+
+        struct LabelObject
+        {
+            HandleMeta Handle;
+            Rect rect;
+            char Text[512];
+            uint32_t Color;
+            long CharCursorX, CharCursorY;
+        };
+
+        struct PanelObject
+        {
+            HandleMeta Handle;
+            Rect rect;
+            uint32_t Color;
+            uint32_t BorderColor;
+            uint32_t ShadowColor;
+            bool Shadow;
+        };
+
+        struct ButtonObject
+        {
+            HandleMeta Handle;
+            Rect rect;
+            char Text[512];
+            uint32_t Color;
+            uint32_t HoverColor;
+            uint32_t PressedColor;
+            uint32_t BorderColor;
+            uint32_t ShadowColor;
+            long CharCursorX, CharCursorY;
+            bool Shadow;
+            bool Hover;
+            bool Pressed;
+            uintptr_t OnClick;
+        };
+
+        Vector<LabelObject *> Labels;
+        Vector<PanelObject *> Panels;
+        Vector<ButtonObject *> Buttons;
 
     public:
-        Handle CreatePanel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height);
-        Handle CreateButton(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateLabel(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateTextBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateCheckBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateRadioButton(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateComboBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateListBox(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateProgressBar(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
-        Handle CreateContextMenu(uint32_t Left, uint32_t Top, uint32_t Width, uint32_t Height, const char *Text);
+        Handle CreatePanel(Rect rect, uint32_t Color);
+        Handle CreateButton(Rect rect, const char *Text, uintptr_t OnClick = (uintptr_t) nullptr);
+        Handle CreateLabel(Rect rect, const char *Text);
+        Handle CreateTextBox(Rect rect, const char *Text);
+        Handle CreateCheckBox(Rect rect, const char *Text);
+        Handle CreateRadioButton(Rect rect, const char *Text);
+        Handle CreateComboBox(Rect rect, const char *Text);
+        Handle CreateListBox(Rect rect, const char *Text);
+        Handle CreateProgressBar(Rect rect, const char *Text);
+        Handle CreateContextMenu(Rect rect, const char *Text);
 
         WidgetCollection(void /* Window */ *ParentWindow);
         ~WidgetCollection();
@@ -215,6 +266,8 @@ namespace GraphicalUserInterface
         void OnDestroy(Event *e);
 
         void OnPaint(Event *e);
+        void OnPaintBackground(Event *e);
+        void OnPaintForeground(Event *e);
     };
 
     class Window
@@ -292,6 +345,7 @@ namespace GraphicalUserInterface
     private:
         MouseData MouseArray[256];
         Memory::MemMgr *mem;
+        Video::Font *CurrentFont;
         Rect Desktop;
         ScreenBitmap *BackBuffer;
         ScreenBitmap *DesktopBuffer;
@@ -305,7 +359,8 @@ namespace GraphicalUserInterface
         bool IsRunning = false;
 
         bool DesktopBufferRepaint = true;
-        bool OverlayBufferRepaint = true; bool OverlayFullRepaint = true;
+        bool OverlayBufferRepaint = true;
+        bool OverlayFullRepaint = true;
         bool CursorBufferRepaint = true;
 
         void FetchInputs();

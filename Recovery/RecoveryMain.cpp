@@ -21,6 +21,8 @@ namespace Recovery
     }
 
     void RecoveryThreadWrapper() { RecoveryScreen->RecoveryThread(); }
+    void RebootCommandWrapper() { PowerManager->Reboot(); }
+    void ShutdownCommandWrapper() { PowerManager->Shutdown(); }
 
     GraphicalUserInterface::GUI *gui = nullptr;
     void GUIWrapper() { gui->Loop(); }
@@ -37,10 +39,21 @@ namespace Recovery
         TCB *guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper, nullptr, nullptr, auxv);
         guiThread->Rename("GUI Thread");
         guiThread->SetPriority(100);
-        Window *win = new Window(gui, {50, 50, 400, 250}, "Recovery");
-        WidgetCollection *wdg = new WidgetCollection(nullptr);
-        wdg->CreatePanel(0, Display->GetBuffer(0)->Height - 25, Display->GetBuffer(0)->Width, 25);
+
+        Rect RecoveryModeWindow;
+        RecoveryModeWindow.Width = 460;
+        RecoveryModeWindow.Height = 100;
+        RecoveryModeWindow.Left = Display->GetBuffer(200)->Width / 2 - RecoveryModeWindow.Width / 2;
+        RecoveryModeWindow.Top = Display->GetBuffer(200)->Height / 2 - RecoveryModeWindow.Height / 2;
+        Window *win = new Window(gui, RecoveryModeWindow, "Recovery Mode");
         gui->AddWindow(win);
+
+        WidgetCollection *wdg = new WidgetCollection(win);
+        wdg->CreateLabel({10, 10, 0, 0}, "This is not fully implemented.");
+        wdg->CreateLabel({10, 25, 0, 0}, "All you can do is shutdown/reboot the system.");
+        wdg->CreateButton({10, 50, 90, 20}, "Reboot", (uintptr_t)RebootCommandWrapper);
+        wdg->CreateButton({110, 50, 90, 20}, "Shutdown", (uintptr_t)ShutdownCommandWrapper);
+
         win->AddWidget(wdg);
     }
 

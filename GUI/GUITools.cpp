@@ -101,6 +101,53 @@ namespace GraphicalUserInterface
     {
     }
 
+    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, long *CharCursorX, long *CharCursorY)
+    {
+        switch (font->GetInfo().Type)
+        {
+        case Video::FontType::PCScreenFont1:
+        {
+            uint32_t *PixelPtr = (uint32_t *)Bitmap->Data;
+            char *FontPtr = (char *)font->GetInfo().PSF1Font->GlyphBuffer + (c * font->GetInfo().PSF1Font->Header->charsize);
+            for (int64_t Y = *CharCursorY; Y < *CharCursorY + 16; Y++)
+            {
+                for (int64_t X = *CharCursorX; X < *CharCursorX + 8; X++)
+                    if ((*FontPtr & (0b10000000 >> (X - *CharCursorX))) > 0)
+                        InlineSetPixel(Bitmap, X, Y, Color);
+                FontPtr++;
+            }
+            *CharCursorX += 8;
+            break;
+        }
+        case Video::FontType::PCScreenFont2:
+        {
+            // if (font->PSF2Font->GlyphBuffer == (uint16_t *)0x01) // HAS UNICODE TABLE
+            //     Char = font->PSF2Font->GlyphBuffer[Char];
+            int BytesPerLine = (font->GetInfo().PSF2Font->Header->width + 7) / 8;
+            char *FontPtr = (char *)font->GetInfo().StartAddress +
+                            font->GetInfo().PSF2Font->Header->headersize +
+                            (c > 0 && (unsigned char)c < font->GetInfo().PSF2Font->Header->length ? c : 0) *
+                                font->GetInfo().PSF2Font->Header->charsize;
+
+            uint32_t fonthdrWidth = font->GetInfo().PSF2Font->Header->width;
+            uint32_t fonthdrHeight = font->GetInfo().PSF2Font->Header->height;
+
+            for (int64_t Y = *CharCursorY; Y < *CharCursorY + fonthdrHeight; Y++)
+            {
+                for (int64_t X = *CharCursorX; X < *CharCursorX + fonthdrWidth; X++)
+                    if ((*FontPtr & (0b10000000 >> (X - *CharCursorX))) > 0)
+                        InlineSetPixel(Bitmap, X, Y, Color);
+                FontPtr += BytesPerLine;
+            }
+            *CharCursorX += fonthdrWidth;
+            break;
+        }
+        default:
+            warn("Unsupported font type");
+            break;
+        }
+    }
+
     void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color)
     {
     }
