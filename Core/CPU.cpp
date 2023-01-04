@@ -228,27 +228,29 @@ namespace CPU
 
 		bool SSEEnableAfter = false;
 
-		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0) /* Not sure if my code is not working properly or something else is the issue. */
-			if (SSESupport)
-			{
-				debug("Enabling SSE support...");
-				if (!BSP)
-					KPrint("SSE is supported.");
-				cr0.EM = 0;
-				cr0.MP = 1;
-				cr4.OSFXSR = 1;
-				cr4.OSXMMEXCPT = 1;
+		/* Not sure if my code is not working properly or something else is the issue. */
+		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0 &&
+			 strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
+			SSESupport)
+		{
+			debug("Enabling SSE support...");
+			if (!BSP)
+				KPrint("SSE is supported.");
+			cr0.EM = 0;
+			cr0.MP = 1;
+			cr4.OSFXSR = 1;
+			cr4.OSXMMEXCPT = 1;
 
-				CPUData *CoreData = GetCPU(Core);
-				CoreData->Data.FPU = (CPU::x64::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
-				memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
-				CoreData->Data.FPU->mxcsr = 0b0001111110000000;
-				CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
-				CoreData->Data.FPU->fcw = 0b0000001100111111;
-				CPU::x64::fxrstor(CoreData->Data.FPU);
+			CPUData *CoreData = GetCPU(Core);
+			CoreData->Data.FPU = (CPU::x64::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
+			memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
+			CoreData->Data.FPU->mxcsr = 0b0001111110000000;
+			CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
+			CoreData->Data.FPU->fcw = 0b0000001100111111;
+			CPU::x64::fxrstor(CoreData->Data.FPU);
 
-				SSEEnableAfter = true;
-			}
+			SSEEnableAfter = true;
+		}
 
 		if (!BSP)
 			KPrint("Enabling CPU cache.");
