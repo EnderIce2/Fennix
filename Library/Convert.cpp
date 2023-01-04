@@ -835,3 +835,15 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 
     return strcpy_unsafe(dest, src);
 }
+
+#undef memcpy
+EXTERNC __no_stack_protector void *memcpy(void *dest, const void *src, size_t len)
+{
+    return __memcpy_chk(dest, src, len, __builtin_object_size(dest, 0));
+}
+
+#undef memset
+EXTERNC __no_stack_protector void *memset(void *dest, int val, size_t len)
+{
+    return __memset_chk(dest, val, len, __builtin_object_size(dest, 0));
+}
