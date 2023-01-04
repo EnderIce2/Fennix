@@ -5,6 +5,11 @@
 #include <debug.h>
 #include <cpu.hpp>
 
+/*
+TODO: Replace these functions with even more optimized versions.
+      The current versions are fast but not as fast as they could be and also we need implementation for avx, not only sse.
+*/
+
 EXTERNC void *memcpy_sse(void *dest, const void *src, size_t n)
 {
     char *d = (char *)dest;
