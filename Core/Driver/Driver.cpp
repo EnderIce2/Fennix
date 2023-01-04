@@ -31,9 +31,11 @@ namespace Driver
     void Driver::UnloadAllDrivers()
     {
         KernelCallback callback;
-        debug("%ld drivers loaded, [DUIDs: %ld]", DriverManager->GetDrivers().size(), DriverUIDs);
-        foreach (DriverFile *drv in DriverManager->GetDrivers())
+        debug("%ld drivers loaded, [DUIDs: %ld]", Drivers.size(), DriverUIDs);
+        debug("driver size %ld", Drivers.size());
+        for (size_t i = 0; i < Drivers.size(); i++)
         {
+            DriverFile *drv = Drivers[i];
             memset(&callback, 0, sizeof(KernelCallback));
             callback.Reason = StopReason;
             debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
@@ -46,12 +48,15 @@ namespace Driver
                     continue;
                 delete drv->InterruptHook[i];
             }
+            Drivers.remove(i);
         }
     }
 
     bool Driver::UnloadDriver(unsigned long DUID)
     {
-        foreach (DriverFile *drv in DriverManager->GetDrivers())
+        for (size_t i = 0; i < Drivers.size(); i++)
+        {
+            DriverFile *drv = Drivers[i];
             if (drv->DriverUID == DUID)
             {
                 KernelCallback callback;
@@ -67,8 +72,10 @@ namespace Driver
                         continue;
                     delete drv->InterruptHook[i];
                 }
+                Drivers.remove(i);
                 return true;
             }
+        }
         return false;
     }
 
