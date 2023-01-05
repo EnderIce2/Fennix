@@ -37,9 +37,12 @@ enum REG
 {
     CTRL = 0x0000,
     STATUS = 0x0008,
+    ICR = 0x000C,
     EEPROM = 0x0014,
     CTRL_EXT = 0x0018,
+    ITR = 0x00C4,
     IMASK = 0x00D0,
+    IAM = 0x00D8,
     RCTRL = 0x0100,
     RXDESCLO = 0x2800,
     RXDESCHI = 0x2804,
@@ -57,6 +60,18 @@ enum REG
     RADV = 0x282C,
     RSRPD = 0x2C00,
     TIPG = 0x0410
+};
+
+enum PCTRL
+{
+    RESERVED = 0b000000,                 // bits 5:0
+    SPEED_SELECTION_MSB = 0b010000,      // bit 6
+    UPDATE_COLLISION_TEST = 0b001000,    // bit 7
+    DUPLEX_MODE = 0b000100,              // bit 8
+    RESTART_AUTO_NEGOTIATION = 0b000010, // bit 9
+    ISOLATE = 0b000001,                  // bit 10
+    POWER_DOWN = 0b100000,               // bit 11
+    SPEED_SELECTION_LSB = 0b100000,      // bit 13
 };
 
 enum ECTRL
@@ -386,7 +401,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case FetchReason:
     {
-        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void*)"Intel 82540EM Gigabit Ethernet Controller", 42);
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel 82540EM Gigabit Ethernet Controller", 42);
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }
@@ -423,9 +438,25 @@ int CallbackHandler(KernelCallback *Data)
     }
     case StopReason:
     {
+        // Clearing Enable bit in Receive Control Register
+        uint64_t cmdret = InCMD(REG::RCTRL);
+        OutCMD(REG::RCTRL, cmdret & ~RCTL::EN);
+
+        // Masking Interrupt Mask, Interrupt Throttling Rate & Interrupt Auto-Mask
         OutCMD(REG::IMASK, 0x00000000);
-        uint64_t cmdret = InCMD(REG::CTRL);
+        OutCMD(REG::ITR, 0x00000000);
+        OutCMD(REG::IAM, 0x00000000);
+
+        // Clearing SLU bit in Device Control Register
+        cmdret = InCMD(REG::CTRL);
         OutCMD(REG::CTRL, cmdret & ~ECTRL::SLU);
+
+        // Clear the Interrupt Cause Read register by reading it
+        InCMD(REG::ICR);
+
+        // Powering down the device (?)
+        OutCMD(REG::CTRL, PCTRL::POWER_DOWN);
+        /* TODO: Stop link; further testing required */
         print("Driver stopped.");
         break;
     }
