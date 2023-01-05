@@ -5,6 +5,7 @@
 #include <lock.hpp>
 #include <printf.h>
 #include <smp.hpp>
+#include <io.h>
 
 #include "../kernel.h"
 
@@ -17,9 +18,12 @@
 #endif
 
 // #define DEBUG_SCHEDULER 1
+// #define ON_SCREEN_SCHEDULER_TASK_MANAGER 1
 
 #ifdef DEBUG_SCHEDULER
-#define schedbg(m, ...) debug(m, ##__VA_ARGS__)
+#define schedbg(m, ...)      \
+    debug(m, ##__VA_ARGS__); \
+    __sync_synchronize()
 #else
 #define schedbg(m, ...)
 #endif
@@ -67,7 +71,7 @@ namespace Tasking
     {
         if (!pcb)
             return true;
-        if (pcb >= (PCB *)0xfffffffffffff000)
+        if (pcb >= (PCB *)(UINTPTR_MAX - 0x1000))
             return true;
         if (!Memory::Virtual().Check((void *)pcb))
             return true;
@@ -78,7 +82,7 @@ namespace Tasking
     {
         if (!tcb)
             return true;
-        if (tcb >= (TCB *)0xfffffffffffff000)
+        if (tcb >= (TCB *)(UINTPTR_MAX - 0x1000))
             return true;
         if (!Memory::Virtual().Check((void *)tcb))
             return true;
@@ -210,7 +214,7 @@ namespace Tasking
             // Get first available thread from the list.
             foreach (TCB *tcb in pcb->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (unlikely(InvalidTCB(tcb)))
                     continue;
 
                 if (tcb->Status != TaskStatus::Ready)
@@ -284,22 +288,40 @@ namespace Tasking
                 if (unlikely(InvalidPCB(pcb)))
                 {
                     if (TempIndex > ListProcess.size())
+                    {
+                        schedbg("Exceeded the process list.");
                         break;
+                    }
                     TempIndex++;
+                    schedbg("Invalid process %#lx", pcb);
                     goto RetryAnotherProcess;
+                }
+                else
+                {
+                    schedbg("Found process %d", pcb->ID);
                 }
 
                 if (pcb->Status != TaskStatus::Ready)
+                {
+                    schedbg("Process %d is not ready", pcb->ID);
+                    TempIndex++;
                     goto RetryAnotherProcess;
+                }
 
                 // Everything good, now search for a thread.
                 for (size_t j = 0; j < pcb->Threads.size(); j++)
                 {
                     TCB *tcb = pcb->Threads[j];
-                    if (InvalidTCB(tcb))
+                    if (unlikely(InvalidTCB(tcb)))
+                    {
+                        schedbg("Invalid thread %#lx", tcb);
                         continue;
+                    }
                     if (tcb->Status != TaskStatus::Ready)
+                    {
+                        schedbg("Thread %d is not ready", tcb->ID);
                         continue;
+                    }
                     // Success! We set as the current one and restore the stuff.
                     CurrentCPU->CurrentProcess = pcb;
                     CurrentCPU->CurrentThread = tcb;
@@ -308,6 +330,7 @@ namespace Tasking
                 }
             }
         }
+        schedbg("No process to run.");
         return false;
     }
 
@@ -335,7 +358,7 @@ namespace Tasking
             // Now do the thread search!
             foreach (TCB *tcb in pcb->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (unlikely(InvalidTCB(tcb)))
                     continue;
                 if (tcb->Status != TaskStatus::Ready)
                     continue;
@@ -365,7 +388,7 @@ namespace Tasking
             // Loop through all the threads.
             foreach (TCB *tcb in pcb->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (unlikely(InvalidTCB(tcb)))
                     continue;
 
                 // Check if the thread is sleeping.
@@ -376,6 +399,8 @@ namespace Tasking
                 if (tcb->Info.SleepUntil < TimeManager->GetCounter())
                 {
                     tcb->Status = TaskStatus::Ready;
+                    if (tcb->Parent->Threads.size() == 1 && tcb->Parent->Status == TaskStatus::Sleeping)
+                        tcb->Parent->Status = TaskStatus::Ready;
                     tcb->Info.SleepUntil = 0;
                     schedbg("Thread \"%s\"(%d) woke up.", tcb->Name, tcb->ID);
                 }
@@ -397,10 +422,12 @@ namespace Tasking
         }
         CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); // Restore kernel page table for safety reasons.
         CPUData *CurrentCPU = GetCurrentCPU();
-        // if (CurrentCPU->ID != 0)
-        // debug("Scheduler called from CPU %d", CurrentCPU->ID);
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
+
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+        int SuccessSource = 0;
+#endif
 
 #ifdef DEBUG_SCHEDULER
         {
@@ -430,6 +457,7 @@ namespace Tasking
         // Null or invalid process/thread? Let's find a new one to execute.
         if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread)))
         {
+            schedbg("Invalid process or thread. Finding a new one.");
             if (this->FindNewProcess(CurrentCPU))
                 goto Success;
             else
@@ -443,7 +471,7 @@ namespace Tasking
             CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
             CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
-            // Set the process & thread as ready if it's running.
+            // Set the process & thread as ready if they are running.
             if (CurrentCPU->CurrentProcess->Status == TaskStatus::Running)
                 CurrentCPU->CurrentProcess->Status = TaskStatus::Ready;
             if (CurrentCPU->CurrentThread->Status == TaskStatus::Running)
@@ -451,23 +479,42 @@ namespace Tasking
 
             // Loop through all threads and find which one is ready.
             this->WakeUpThreads(CurrentCPU);
-
+            schedbg("Passed WakeUpThreads");
             // Get next available thread from the list.
             if (this->GetNextAvailableThread(CurrentCPU))
+            {
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+                SuccessSource = 1;
+#endif
                 goto Success;
-
-            // If the last process didn't find a thread to execute, we search for a new process.
+            }
+            schedbg("Passed GetNextAvailableThread");
+            // If we didn't find a thread to execute, we search for a new process.
             if (this->GetNextAvailableProcess(CurrentCPU))
+            {
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+                SuccessSource = 2;
+#endif
                 goto Success;
-
+            }
+            schedbg("Passed GetNextAvailableProcess");
             // Before checking from the beginning, we remove everything that is terminated.
             this->SchedulerCleanupProcesses();
-
-            // If we didn't find anything, we check from the start of the list. This is the last chance to find something or we go to idle.
+            schedbg("Passed SchedulerCleanupProcesses");
+            // If we didn't find anything, we check from the start of the list. This is the last chance to find something or we go idle.
             if (SchedulerSearchProcessThread(CurrentCPU))
+            {
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+                SuccessSource = 3;
+#endif
+                schedbg("Passed SchedulerSearchProcessThread");
                 goto Success;
+            }
             else
+            {
+                schedbg("SchedulerSearchProcessThread failed. Going idle.");
                 goto Idle;
+            }
         }
         goto UnwantedReach; // This should never happen.
 
@@ -480,50 +527,6 @@ namespace Tasking
 
     Success:
     {
-#ifdef DEBUG_SCHEDULER
-        static int sanity;
-        const char *Statuses[] = {
-            "FF0000", // Unknown
-            "AAFF00", // Ready
-            "00AA00", // Running
-            "FFAA00", // Sleeping
-            "FFAA00", // Waiting
-            "FF0088", // Stopped
-            "FF0000", // Terminated
-        };
-        const char *StatusesSign[] = {
-            "U", // Unknown
-            "R", // Ready
-            "r", // Running
-            "S", // Sleeping
-            "W", // Waiting
-            "s", // Stopped
-            "T", // Terminated
-        };
-        for (int i = 0; i < 200; i++)
-            for (int j = 0; j < 200; j++)
-                Display->SetPixel(i, j, 0x222222, 0);
-        uint32_t tmpX, tmpY;
-        Display->GetBufferCursor(0, &tmpX, &tmpY);
-        Display->SetBufferCursor(0, 0, 0);
-        foreach (auto var in ListProcess)
-        {
-            int statuu = var->Status;
-            printf_("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
-                    Statuses[statuu], var->Name, statuu, StatusesSign[statuu]);
-            foreach (auto var2 in var->Threads)
-            {
-                int statui = var2->Status;
-                printf_("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
-                        Statuses[statui], var2->Name, statui, StatusesSign[statui]);
-            }
-        }
-        printf_("%d", sanity++);
-        if (sanity > 1000)
-            sanity = 0;
-        Display->SetBufferCursor(0, tmpX, tmpY);
-        Display->SetBuffer(0);
-#endif
         schedbg("Process \"%s\"(%d) Thread \"%s\"(%d) is now running on CPU %d",
                 CurrentCPU->CurrentProcess->Name, CurrentCPU->CurrentProcess->ID,
                 CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID, CurrentCPU->ID);
@@ -557,6 +560,59 @@ namespace Tasking
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FPU);
         CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
         CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
+
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+        static int sanity;
+        const char *Statuses[] = {
+            "FF0000", // Unknown
+            "AAFF00", // Ready
+            "00AA00", // Running
+            "FFAA00", // Sleeping
+            "FFAA00", // Waiting
+            "FF0088", // Stopped
+            "FF0000", // Terminated
+        };
+        const char *StatusesSign[] = {
+            "U", // Unknown
+            "R", // Ready
+            "r", // Running
+            "S", // Sleeping
+            "W", // Waiting
+            "s", // Stopped
+            "T", // Terminated
+        };
+        const char *SuccessSourceStrings[] = {
+            "Unknown",
+            "GetNextAvailableThread",
+            "GetNextAvailableProcess",
+            "SchedulerSearchProcessThread",
+        };
+        for (int i = 0; i < 340; i++)
+            for (int j = 0; j < 200; j++)
+                Display->SetPixel(i, j, 0x222222, 0);
+        uint32_t tmpX, tmpY;
+        Display->GetBufferCursor(0, &tmpX, &tmpY);
+        Display->SetBufferCursor(0, 0, 0);
+        foreach (auto var in ListProcess)
+        {
+            int Status = var->Status;
+            printf_("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
+                    Statuses[Status], var->Name, Status, StatusesSign[Status]);
+            foreach (auto var2 in var->Threads)
+            {
+                Status = var2->Status;
+                printf_("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
+                        Statuses[Status], var2->Name, Status, StatusesSign[Status]);
+            }
+        }
+        printf_("%d - SOURCE: %s", sanity++, SuccessSourceStrings[SuccessSource]);
+        if (sanity > 1000)
+            sanity = 0;
+        Display->SetBufferCursor(0, tmpX, tmpY);
+        Display->SetBuffer(0);
+        for (int i = 0; i < 50000; i++)
+            inb(0x80);
+#endif
 
         switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
         {
@@ -738,9 +794,14 @@ namespace Tasking
         SmartCriticalSection(TaskingLock);
         TCB *thread = this->GetCurrentThread();
         thread->Status = TaskStatus::Sleeping;
+        if (thread->Parent->Threads.size() == 1)
+            thread->Parent->Status = TaskStatus::Sleeping;
         thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds);
         schedbg("Thread \"%s\"(%d) is going to sleep until %llu", thread->Name, thread->ID, thread->Info.SleepUntil);
-        OneShot(1);
+        // OneShot(1);
+        // IRQ16
+        TaskingLock.Unlock();
+        asmv("int $0x30");
     }
 
     void Task::SignalShutdown()
@@ -1170,34 +1231,34 @@ namespace Tasking
         TaskingLock.Lock(__FUNCTION__);
 
         bool MONITORSupported = false;
-		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-		{
+        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+        {
 #if defined(__amd64__)
-			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+            CPU::x64::AMD::CPUID0x1 cpuid1amd;
 #elif defined(__i386__)
-			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+            CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
 #if defined(__amd64__) || defined(__i386__)
-			asmv("cpuid"
-				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
-				 : "a"(0x1));
+            asmv("cpuid"
+                 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+                 : "a"(0x1));
 #endif
             MONITORSupported = cpuid1amd.ECX.MONITOR;
-		}
-		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-		{
+        }
+        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+        {
 #if defined(__amd64__)
-			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+            CPU::x64::Intel::CPUID0x1 cpuid1intel;
 #elif defined(__i386__)
-			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+            CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
 #if defined(__amd64__) || defined(__i386__)
-			asmv("cpuid"
-				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
-				 : "a"(0x1));
+            asmv("cpuid"
+                 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+                 : "a"(0x1));
 #endif
             MONITORSupported = cpuid1intel.ECX.MONITOR;
-		}
+        }
 
         if (MONITORSupported)
         {
