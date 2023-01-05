@@ -423,7 +423,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case StopReason:
     {
-        // TODO: UNTESTED!!!
+        OutCMD(REG::IMASK, 0x00000000);
         uint64_t cmdret = InCMD(REG::CTRL);
         OutCMD(REG::CTRL, cmdret & ~ECTRL::SLU);
         print("Driver stopped.");
