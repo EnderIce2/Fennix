@@ -14,42 +14,34 @@ namespace PCI
 {
     namespace Descriptors
     {
-        char HexToStringOutput8[128];
         const char *u8ToHexString(uint8_t Value)
         {
-            uint8_t *ValuePtr = &Value;
-            uint8_t *Ptr;
-            uint8_t Temp;
-            uint8_t Size = 1 * 2 - 1;
-            for (uint8_t i = 0; i < Size; i++)
+            static char Buffer[3];
+            memset(Buffer, 0, 3);
+            for (size_t i = 0; i < 2; i++)
             {
-                Ptr = ((uint8_t *)ValuePtr + i);
-                Temp = ((*Ptr & 0xF0) >> 4);
-                HexToStringOutput8[Size - (i * 2 + 1)] = Temp + (Temp > 9 ? 55 : '0');
-                Temp = ((*Ptr & 0x0F));
-                HexToStringOutput8[Size - (i * 2)] = Temp + (Temp > 9 ? 55 : '0');
+                uint8_t Digit = (Value >> (4 - (i * 4))) & 0xF;
+                if (Digit < 10)
+                    Buffer[i] = '0' + Digit;
+                else
+                    Buffer[i] = 'A' + (Digit - 10);
             }
-            HexToStringOutput8[Size + 1] = 0;
-            return HexToStringOutput8;
+            return Buffer;
         }
 
-        char HexToStringOutput32[128];
         const char *u32ToHexString(uint32_t Value)
         {
-            uint32_t *ValuePtr = &Value;
-            uint8_t *Ptr;
-            uint8_t Temp;
-            uint8_t Size = 4 * 2 - 1;
-            for (uint8_t i = 0; i < Size; i++)
+            static char Buffer[9];
+            memset(Buffer, 0, 9);
+            for (size_t i = 0; i < 8; i++)
             {
-                Ptr = ((uint8_t *)ValuePtr + i);
-                Temp = ((*Ptr & 0xF0) >> 4);
-                HexToStringOutput32[Size - (i * 2 + 1)] = Temp + (Temp > 9 ? 55 : '0');
-                Temp = ((*Ptr & 0x0F));
-                HexToStringOutput32[Size - (i * 2)] = Temp + (Temp > 9 ? 55 : '0');
+                uint8_t Digit = (Value >> (28 - (i * 4))) & 0xF;
+                if (Digit < 10)
+                    Buffer[i] = '0' + Digit;
+                else
+                    Buffer[i] = 'A' + (Digit - 10);
             }
-            HexToStringOutput32[Size + 1] = 0;
-            return HexToStringOutput32;
+            return Buffer;
         }
 
         const char *MassStorageControllerSubclassName(uint8_t SubclassCode)
