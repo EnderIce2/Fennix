@@ -755,7 +755,8 @@ namespace PCI
 #ifdef DEBUG
     void e(PCIDeviceHeader *hdr)
     {
-        debug("%s / %s / %s / %s / %s",
+        debug("%#x:%#x\t\t%s / %s / %s / %s / %s",
+              hdr->VendorID, hdr->DeviceID,
               Descriptors::GetVendorName(hdr->VendorID),
               Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
               Descriptors::DeviceClasses[hdr->Class],
@@ -807,7 +808,7 @@ namespace PCI
             if (PCIDeviceHdr->DeviceID == 0xFFFF)
                 return;
         }
-        trace("PCI Bus DeviceID:%#llx VendorID:%#llx BIST:%#llx Cache:%#llx Class:%#llx Cmd:%#llx HdrType:%#llx LatencyTimer:%#llx ProgIF:%#llx RevID:%#llx Status:%#llx SubClass:%#llx ",
+        debug("PCI Bus DeviceID:%#llx VendorID:%#llx BIST:%#llx Cache:%#llx Class:%#llx Cmd:%#llx HdrType:%#llx LatencyTimer:%#llx ProgIF:%#llx RevID:%#llx Status:%#llx SubClass:%#llx ",
               PCIDeviceHdr->DeviceID, PCIDeviceHdr->VendorID, PCIDeviceHdr->BIST,
               PCIDeviceHdr->CacheLineSize, PCIDeviceHdr->Class, PCIDeviceHdr->Command,
               PCIDeviceHdr->HeaderType, PCIDeviceHdr->LatencyTimer, PCIDeviceHdr->ProgIF,
@@ -842,7 +843,7 @@ namespace PCI
         {
             DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
             Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
-            trace("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
+            debug("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
                   NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
             for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
                 EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
