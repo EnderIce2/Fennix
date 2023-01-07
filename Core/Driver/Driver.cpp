@@ -181,9 +181,11 @@ namespace Driver
                             uintptr_t ret = this->LoadDriver(driver->Address, driver->Length);
                             char RetString[128];
                             if (ret == DriverCode::OK)
-                                strncpy(RetString, "\e058C19OK", 64);
+                                strncpy(RetString, "\e058C19OK", 10);
+                                else if (ret == DriverCode::NOT_AVAILABLE)
+                                strncpy(RetString, "\eFF7900NOT AVAILABLE", 21);
                             else
-                                sprintf_(RetString, "\eE85230FAILED (%#lx)", ret);
+                                sprintf(RetString, "\eE85230FAILED (%#lx)", ret);
                             KPrint("%s %s", driver->Name, RetString);
                         }
                     }

@@ -15,6 +15,7 @@ namespace Driver
     {
         ERROR,
         OK,
+        NOT_AVAILABLE,
         INVALID_FEX_HEADER,
         INVALID_DRIVER_DATA,
         NOT_DRIVER,

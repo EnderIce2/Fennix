@@ -83,7 +83,7 @@ namespace Driver
             int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
-                error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                error("Driver %s is not implemented", fexExtended->Driver.Name);
                 delete MemMgr;
                 break;
             }
@@ -130,7 +130,7 @@ namespace Driver
             int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
-                error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                error("Driver %s is not implemented", fexExtended->Driver.Name);
                 delete InterruptHook;
                 delete MemMgr;
                 break;

@@ -53,7 +53,7 @@ namespace Driver
             if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
             {
                 delete MemMgr;
-                error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                error("Driver %s is not implemented", fexExtended->Driver.Name);
                 break;
             }
             else if (CallbackRet != DriverReturnCode::OK)

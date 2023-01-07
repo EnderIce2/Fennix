@@ -17,6 +17,7 @@ namespace Driver
     DriverCode Driver::DriverLoadBindPCI(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         UNUSED(IsElf);
+        bool IsDriverLoaded = false;
         for (unsigned long Vidx = 0; Vidx < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[0]); Vidx++)
             for (unsigned long Didx = 0; Didx < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[0]); Didx++)
             {
@@ -29,6 +30,7 @@ namespace Driver
                 Vector<PCI::PCIDeviceHeader *> devices = PCIManager->FindPCIDevice(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[Vidx], ((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[Didx]);
                 if (devices.size() == 0)
                     continue;
+
                 foreach (auto PCIDevice in devices)
                 {
                     debug("[%ld] VendorID: %#x; DeviceID: %#x", devices.size(), PCIDevice->VendorID, PCIDevice->DeviceID);
@@ -106,7 +108,7 @@ namespace Driver
                         int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
-                            error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                            error("Driver %s is not implemented", fexExtended->Driver.Name);
                             delete MemMgr;
                             delete InterruptHook;
                             continue;
@@ -138,7 +140,7 @@ namespace Driver
                         int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
-                            error("Driver %s does not implement the configuration callback", fexExtended->Driver.Name);
+                            error("Driver %s is not implemented", fexExtended->Driver.Name);
                             delete MemMgr;
                             continue;
                         }
@@ -183,9 +185,13 @@ namespace Driver
                         break;
                     }
                     }
+                    IsDriverLoaded = true;
                 }
             }
 
-        return DriverCode::OK;
+        if (IsDriverLoaded)
+            return DriverCode::OK;
+        else
+            return DriverCode::NOT_AVAILABLE;
     }
 }
