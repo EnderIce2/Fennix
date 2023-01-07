@@ -108,10 +108,10 @@ EXTERNC void KPrint(const char *Format, ...)
 {
     SmartLock(KernelLock);
     Time::Clock tm = Time::ReadClock();
-    printf_("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
+    printf("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     va_list args;
     va_start(args, Format);
-    vprintf_(Format, args);
+    vprintf(Format, args);
     va_end(args);
     putchar('\n');
     Display->SetBuffer(0);
@@ -124,7 +124,7 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
     memcpy(bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
     Display = new Video::Display(bInfo->Framebuffer[0]);
-    printf_("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
+    printf("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     /**************************************************************************************/
     KPrint("Time: \e8888FF%02d:%02d:%02d %02d/%02d/%02d UTC",
            BootClock.Hour, BootClock.Minute, BootClock.Second,

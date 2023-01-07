@@ -60,12 +60,12 @@ extern "C"
 #endif
 
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-#define printf_ printf
-#define sprintf_ sprintf
-#define vsprintf_ vsprintf
+#define printf printf
+#define sprintf sprintf
+#define vsprintf vsprintf
 #define snprintf_ snprintf
-#define vsnprintf_ vsnprintf
-#define vprintf_ vprintf
+#define vsnprintf vsnprintf
+#define vprintf vprintf
 #endif
 
 // If you want to include this implementation file directly rather than
@@ -112,9 +112,9 @@ extern "C"
      */
     ///@{
     PRINTF_VISIBILITY
-    int printf_(const char *format, ...) ATTR_PRINTF(1, 2);
+    int printf(const char *format, ...) ATTR_PRINTF(1, 2);
     PRINTF_VISIBILITY
-    int vprintf_(const char *format, va_list arg) ATTR_VPRINTF(1);
+    int vprintf(const char *format, va_list arg) ATTR_VPRINTF(1);
     ///@}
 
     /**
@@ -132,9 +132,9 @@ extern "C"
      */
     ///@{
     PRINTF_VISIBILITY
-    int sprintf_(char *s, const char *format, ...) ATTR_PRINTF(2, 3);
+    int sprintf(char *s, const char *format, ...) ATTR_PRINTF(2, 3);
     PRINTF_VISIBILITY
-    int vsprintf_(char *s, const char *format, va_list arg) ATTR_VPRINTF(2);
+    int vsprintf(char *s, const char *format, va_list arg) ATTR_VPRINTF(2);
     ///@}
 
     /**
@@ -156,13 +156,13 @@ extern "C"
     PRINTF_VISIBILITY
     int snprintf_(char *s, size_t count, const char *format, ...) ATTR_PRINTF(3, 4);
     PRINTF_VISIBILITY
-    int vsnprintf_(char *s, size_t count, const char *format, va_list arg) ATTR_VPRINTF(3);
+    int vsnprintf(char *s, size_t count, const char *format, va_list arg) ATTR_VPRINTF(3);
     ///@}
 
     /**
      * printf/vprintf with user-specified output function
      *
-     * An alternative to @ref printf_, in which the output function is specified dynamically
+     * An alternative to @ref printf, in which the output function is specified dynamically
      * (rather than @ref putchar_ being used)
      *
      * @param out An output function which takes one character and a type-erased additional parameters
@@ -179,12 +179,12 @@ extern "C"
     int vfctprintf(void (*out)(char c, void *extra_arg), void *extra_arg, const char *format, va_list arg) ATTR_VPRINTF(3);
 
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-#undef printf_
-#undef sprintf_
-#undef vsprintf_
+#undef printf
+#undef sprintf
+#undef vsprintf
 #undef snprintf_
-#undef vsnprintf_
-#undef vprintf_
+#undef vsnprintf
+#undef vprintf
 #endif
 
 #ifdef __cplusplus

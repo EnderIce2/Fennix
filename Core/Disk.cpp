@@ -30,7 +30,7 @@ namespace Disk
         for (unsigned char ItrPort = 0; ItrPort < this->AvailablePorts; ItrPort++)
         {
             Drive *drive = new Drive;
-            sprintf_(drive->Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
+            sprintf(drive->Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
             debug("Drive Name: %s", drive->Name);
             // TODO: Implement disk type detection. Very useful in the future.
             drive->MechanicalDisk = true;
@@ -98,7 +98,7 @@ namespace Disk
                             drive->Partitions.push_back(partition);
 
                             char *PartitionName = new char[64];
-                            sprintf_(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
+                            sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
 
                             /*
                             ----> Add to devfs the disk
@@ -128,7 +128,7 @@ namespace Disk
                         drive->Partitions.push_back(partition);
 
                         char *PartitionName = new char[64];
-                        sprintf_(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
+                        sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
 
                         /*
                         ----> Add to devfs the disk

@@ -11,7 +11,7 @@ EXTERNC void fprintf(FILE *stream, const char *Format, ...)
 {
     va_list args;
     va_start(args, Format);
-    vprintf_(Format, args);
+    vprintf(Format, args);
     va_end(args);
     UNUSED(stream);
 }
@@ -19,7 +19,7 @@ EXTERNC void fprintf(FILE *stream, const char *Format, ...)
 // TODO: Implement proper fputs
 EXTERNC void fputs(const char *s, FILE *stream)
 {
-    printf_("%s", s);
+    printf("%s", s);
     UNUSED(stream);
 }
 

@@ -596,16 +596,16 @@ namespace Tasking
         foreach (auto var in ListProcess)
         {
             int Status = var->Status;
-            printf_("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
+            printf("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
                     Statuses[Status], var->Name, Status, StatusesSign[Status]);
             foreach (auto var2 in var->Threads)
             {
                 Status = var2->Status;
-                printf_("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
+                printf("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
                         Statuses[Status], var2->Name, Status, StatusesSign[Status]);
             }
         }
-        printf_("%d - SOURCE: %s", sanity++, SuccessSourceStrings[SuccessSource]);
+        printf("%d - SOURCE: %s", sanity++, SuccessSourceStrings[SuccessSource]);
         if (sanity > 1000)
             sanity = 0;
         Display->SetBufferCursor(0, tmpX, tmpY);
@@ -1278,7 +1278,7 @@ namespace Tasking
             Vector<AuxiliaryVector> auxv;
             IdleThread = CreateThread(IdleProcess, reinterpret_cast<uintptr_t>(IdleProcessLoop), nullptr, nullptr, auxv);
             char IdleName[16];
-            sprintf_(IdleName, "Idle Thread %d", i);
+            sprintf(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);
             IdleThread->SetPriority(1);
             break;

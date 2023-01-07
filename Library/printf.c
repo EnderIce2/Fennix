@@ -54,12 +54,12 @@
 #endif // __cplusplus
 
 #if PRINTF_ALIAS_STANDARD_FUNCTION_NAMES
-#define printf_ printf
-#define sprintf_ sprintf
-#define vsprintf_ vsprintf
+#define printf printf
+#define sprintf sprintf
+#define vsprintf vsprintf
 #define snprintf_ snprintf
-#define vsnprintf_ vsnprintf
-#define vprintf_ vprintf
+#define vsnprintf vsnprintf
+#define vprintf vprintf
 #endif
 
 // 'ntoa' conversion buffer size, this must be big enough to hold one converted
@@ -1528,21 +1528,21 @@ static __no_instrument_function int vsnprintf_impl(output_gadget_t *output, cons
 
 ///////////////////////////////////////////////////////////////////////////////
 
-__no_instrument_function int vprintf_(const char *format, va_list arg)
+__no_instrument_function int vprintf(const char *format, va_list arg)
 {
     output_gadget_t gadget = extern_putchar_gadget();
     return vsnprintf_impl(&gadget, format, arg);
 }
 
-__no_instrument_function int vsnprintf_(char *s, size_t n, const char *format, va_list arg)
+__no_instrument_function int vsnprintf(char *s, size_t n, const char *format, va_list arg)
 {
     output_gadget_t gadget = buffer_gadget(s, n);
     return vsnprintf_impl(&gadget, format, arg);
 }
 
-__no_instrument_function int vsprintf_(char *s, const char *format, va_list arg)
+__no_instrument_function int vsprintf(char *s, const char *format, va_list arg)
 {
-    return vsnprintf_(s, PRINTF_MAX_POSSIBLE_BUFFER_SIZE, format, arg);
+    return vsnprintf(s, PRINTF_MAX_POSSIBLE_BUFFER_SIZE, format, arg);
 }
 
 __no_instrument_function int vfctprintf(void (*out)(char c, void *extra_arg), void *extra_arg, const char *format, va_list arg)
@@ -1551,20 +1551,20 @@ __no_instrument_function int vfctprintf(void (*out)(char c, void *extra_arg), vo
     return vsnprintf_impl(&gadget, format, arg);
 }
 
-__no_instrument_function int printf_(const char *format, ...)
+__no_instrument_function int printf(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    const int ret = vprintf_(format, args);
+    const int ret = vprintf(format, args);
     va_end(args);
     return ret;
 }
 
-__no_instrument_function int sprintf_(char *s, const char *format, ...)
+__no_instrument_function int sprintf(char *s, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    const int ret = vsprintf_(s, format, args);
+    const int ret = vsprintf(s, format, args);
     va_end(args);
     return ret;
 }
@@ -1573,7 +1573,7 @@ __no_instrument_function int snprintf_(char *s, size_t n, const char *format, ..
 {
     va_list args;
     va_start(args, format);
-    const int ret = vsnprintf_(s, n, format, args);
+    const int ret = vsnprintf(s, n, format, args);
     va_end(args);
     return ret;
 }

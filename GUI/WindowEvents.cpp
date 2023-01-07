@@ -57,7 +57,7 @@ namespace GraphicalUserInterface
         if (!this->Maximized)
         {
             char buf[256];
-            sprintf_(buf, "Left:\eAA11FF%ld\eFFFFFF Top:\eAA11FF%ld\eFFFFFF W:\eAA11FF%ld\eFFFFFF H:\eAA11FF%ld\eFFFFFF", this->Position.Left, this->Position.Top, this->Position.Width, this->Position.Height);
+            sprintf(buf, "Left:\eAA11FF%ld\eFFFFFF Top:\eAA11FF%ld\eFFFFFF W:\eAA11FF%ld\eFFFFFF H:\eAA11FF%ld\eFFFFFF", this->Position.Left, this->Position.Top, this->Position.Width, this->Position.Height);
             // Display->DrawString(buf, this->Position.Left + 20, this->Position.Top + 25, 200);
         }
 

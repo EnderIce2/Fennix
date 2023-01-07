@@ -16,13 +16,13 @@ static inline void print_wrapper(char c, void *unused)
     UNUSED(unused);
 }
 
-int vprintf(const char *format, va_list list) { return vfctprintf(print_wrapper, NULL, format, list); }
+int vprintf_dumper(const char *format, va_list list) { return vfctprintf(print_wrapper, NULL, format, list); }
 
 void WriteRaw(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    vprintf(format, args);
+    vprintf_dumper(format, args);
     va_end(args);
 }
 
