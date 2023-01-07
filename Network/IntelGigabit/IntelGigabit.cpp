@@ -14,14 +14,14 @@ HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
 __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
     .Driver = {
-        .Name = "E1000 Network Controller",
+        .Name = "Intel Gigabit Ethernet Controller",
         .Type = FexDriverType_Network,
         .Callback = CallbackHandler,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
                 .VendorID = {0x8086},
-                .DeviceID = {0x100E},
+                .DeviceID = {0x100E, 0x100F, 0x10D3, 0x10EA, 0x153A},
                 .Class = 0x2,
                 .SubClass = 0x0,
                 .ProgIF = 0x0,
@@ -344,7 +344,9 @@ int CallbackHandler(KernelCallback *Data)
     {
         print("Kernel received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
-        if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x100E)
+        switch (PCIBaseAddress->DeviceID)
+        {
+        case 0x100E:
         {
             print("Found Intel 82540EM Gigabit Ethernet Controller.");
 
@@ -384,24 +386,86 @@ int CallbackHandler(KernelCallback *Data)
 
             InitializeRX();
             InitializeTX();
+            return OK;
         }
-        else if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x153A)
+        case 0x100F:
         {
-            print("Found Intel I217 Gigabit Ethernet Controller.");
+            print("Found Intel 82545EM Gigabit Ethernet Controller.");
+            PCIBaseAddress->Command |= PCI_COMMAND_MASTER | PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
+            uint32_t PCIBAR0 = ((PCIHeader0 *)PCIBaseAddress)->BAR0;
+            uint32_t PCIBAR1 = ((PCIHeader0 *)PCIBaseAddress)->BAR1;
+
+            BAR.Type = PCIBAR0 & 1;
+            BAR.IOBase = PCIBAR1 & (~3);
+            BAR.MemoryBase = PCIBAR0 & (~15);
+
+            // Detect EEPROM
+            OutCMD(REG::EEPROM, 0x1);
+            for (int i = 0; i < 1000 && !EEPROMAvailable; i++)
+                if (InCMD(REG::EEPROM) & 0x10)
+                    EEPROMAvailable = true;
+                else
+                    EEPROMAvailable = false;
+
+            // Get MAC address
+            if (!GetMAC().Valid())
+                return NOT_AVAILABLE;
+            else
+                print("MAC address found.");
+            MAC = GetMAC();
+
             return NOT_IMPLEMENTED;
         }
-        else if (PCIBaseAddress->VendorID == 0x8086 && PCIBaseAddress->DeviceID == 0x10EA)
+        case 0x10D3:
+        {
+            print("Found Intel 82574L Gigabit Ethernet Controller.");
+
+            PCIBaseAddress->Command |= PCI_COMMAND_MASTER | PCI_COMMAND_IO | PCI_COMMAND_MEMORY;
+            uint32_t PCIBAR0 = ((PCIHeader0 *)PCIBaseAddress)->BAR0;
+            uint32_t PCIBAR1 = ((PCIHeader0 *)PCIBaseAddress)->BAR1;
+
+            BAR.Type = PCIBAR0 & 1;
+            BAR.IOBase = PCIBAR1 & (~3);
+            BAR.MemoryBase = PCIBAR0 & (~15);
+
+            // Detect EEPROM
+            OutCMD(REG::EEPROM, 0x1);
+            for (int i = 0; i < 1000 && !EEPROMAvailable; i++)
+                if (InCMD(REG::EEPROM) & 0x10)
+                    EEPROMAvailable = true;
+                else
+                    EEPROMAvailable = false;
+
+            // Get MAC address
+            if (!GetMAC().Valid())
+                return NOT_AVAILABLE;
+            else
+                print("MAC address found.");
+            MAC = GetMAC();
+
+            return NOT_IMPLEMENTED;
+        }
+        case 0x10EA:
+        {
+            print("Found Intel I217-LM Gigabit Ethernet Controller.");
+            return NOT_IMPLEMENTED;
+        }
+        case 0x153A:
         {
             print("Found Intel 82577LM Gigabit Ethernet Controller.");
             return NOT_IMPLEMENTED;
         }
-        else
+        default:
+        {
+            print("Unsupported Intel Ethernet Controller.");
             return DEVICE_NOT_SUPPORTED;
-        break;
+        }
+        }
+        return ERROR;
     }
     case FetchReason:
     {
-        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel 82540EM Gigabit Ethernet Controller", 42);
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel Gigabit Ethernet Controller", 42);
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }

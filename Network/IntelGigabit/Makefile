@@ -1,7 +1,7 @@
 # Config file
 include ../../../Makefile.conf
 
-FILENAME = E1000.fex
+FILENAME = Intel-Gigabit.fex
 
 CC = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
