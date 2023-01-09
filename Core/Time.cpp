@@ -1,4 +1,5 @@
 #include <time.hpp>
+#include <debug.h>
 #include <io.h>
 
 namespace Time
@@ -37,5 +38,37 @@ namespace Time
         tm.Counter = 0;
 #endif
         return tm;
+    }
+
+    Clock ConvertFromUnix(int Timestamp)
+    {
+
+        Clock result;
+        if (Timestamp == 0)
+            return result;
+
+        int SecondsSinceYearStart = Timestamp % (60 * 60 * 24 * 365);
+
+        result.Year = Timestamp / (60 * 60 * 24 * 365);
+        result.Month = SecondsSinceYearStart / (60 * 60 * 24 * 30);
+        result.Day = SecondsSinceYearStart / (60 * 60 * 24);
+        result.Hour = SecondsSinceYearStart / (60 * 60);
+        result.Minute = SecondsSinceYearStart / 60;
+        result.Second = SecondsSinceYearStart;
+
+#ifdef DEBUG
+        int DaysInYear;
+        if (result.Year % 4 != 0)
+            DaysInYear = 365;
+        else if (result.Year % 100 != 0)
+            DaysInYear = 366;
+        else if (result.Year % 400 == 0)
+            DaysInYear = 366;
+        else
+            DaysInYear = 365;
+        debug("Days in year: %d", DaysInYear);
+#endif
+
+        return result;
     }
 }

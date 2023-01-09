@@ -7,11 +7,12 @@ namespace Time
 {
     struct Clock
     {
-        uint64_t Year, Month, Day, Hour, Minute, Second;
+        int Year, Month, Day, Hour, Minute, Second;
         uint64_t Counter;
     };
 
     Clock ReadClock();
+    Clock ConvertFromUnix(int Timestamp);
 
     class time
     {
