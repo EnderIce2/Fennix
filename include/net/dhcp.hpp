@@ -143,23 +143,22 @@ namespace NetworkDHCP
 
         void CreatePacket(DHCPHeader *Packet, uint8_t MessageType, uint32_t RequestIP);
         void *GetOption(DHCPHeader *Packet, uint8_t Type);
+        void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length);
 
     public:
         /** @brief IP address (Little-endian) */
-        InternetProtocol4 IP = {.Address = {0x0, 0x0, 0x0, 0x0}};
+        InternetProtocol IP = {};
         /** @brief Gateway address (Little-endian) */
-        InternetProtocol4 Gateway = {.Address = {0x0, 0x0, 0x0, 0x0}};
+        InternetProtocol Gateway = {};
         /** @brief Subnet mask (Little-endian) */
-        InternetProtocol4 SubNetworkMask = {.Address = {0x0, 0x0, 0x0, 0x0}};
+        InternetProtocol SubNetworkMask = {};
         /** @brief DNS server address (Little-endian) */
-        InternetProtocol4 DomainNameSystem = {.Address = {0x0, 0x0, 0x0, 0x0}};
+        InternetProtocol DomainNameSystem = {};
 
         DHCP(NetworkUDP::Socket *Socket, NetworkInterfaceManager::DeviceInterface *Interface);
         ~DHCP();
         void Request();
-        void Request(InternetProtocol4 IP);
-
-        virtual void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length);
+        void Request(InternetProtocol IP);
     };
 }
 

@@ -7,10 +7,24 @@ namespace NetworkDHCP
 {
     DHCP::DHCP(NetworkUDP::Socket *Socket, NetworkInterfaceManager::DeviceInterface *Interface)
     {
-        netdbg("Initializing.");
         this->UDPSocket = Socket;
         this->Interface = Interface;
         Socket->LocalPort = b16(68);
+
+        InternetProtocol::Version4 DefaultIPv4 = {.Address = {0x0, 0x0, 0x0, 0x0}};
+        InternetProtocol::Version6 DefaultIPv6 = {.Address = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}};
+
+        this->IP.v4 = DefaultIPv4;
+        this->IP.v6 = DefaultIPv6;
+
+        this->Gateway.v4 = DefaultIPv4;
+        this->Gateway.v6 = DefaultIPv6;
+
+        this->SubNetworkMask.v4 = DefaultIPv4;
+        this->SubNetworkMask.v6 = DefaultIPv6;
+
+        this->DomainNameSystem.v4 = DefaultIPv4;
+        this->DomainNameSystem.v6 = DefaultIPv6;
     }
 
     DHCP::~DHCP()
@@ -29,7 +43,7 @@ namespace NetworkDHCP
         memcpy(Packet->ClientHardwareAddress, &InterfaceMAC, sizeof(InterfaceMAC));
 
         uint8_t *Ptr = Packet->Options;
-        *((uint32_t *)(Ptr)) = b32(0x63825363); // magic cookie
+        *((uint32_t *)(Ptr)) = b32(0x63825363); // Magic Cookie
         Ptr += 4;
 
         *(Ptr++) = DHCP_OPTION_MESSAGE_TYPE;
@@ -80,7 +94,7 @@ namespace NetworkDHCP
         this->UDPSocket->SocketUDP->Send(this->UDPSocket, (uint8_t *)&packet, sizeof(DHCPHeader));
 
         debug("Waiting for response...");
-        int RequestTimeout = 10;
+        int RequestTimeout = 20;
         while (!Received)
         {
             if (--RequestTimeout == 0)
@@ -88,17 +102,19 @@ namespace NetworkDHCP
                 warn("Request timeout.");
                 break;
             }
-            TaskManager->Sleep(5000);
+            netdbg("Still waiting...");
+            TaskManager->Sleep(1000);
         }
     }
 
-    void DHCP::Request(InternetProtocol4 IP)
+    void DHCP::Request(InternetProtocol IP)
     {
-        netdbg("Requesting IP address %d.%d.%d.%d", IP.Address[0], IP.Address[1], IP.Address[2], IP.Address[3]);
+        netdbg("Requesting IP address %s", IP.v4.ToStringLittleEndian());
         DHCPHeader packet;
         memset(&packet, 0, sizeof(DHCPHeader));
 
-        CreatePacket(&packet, DHCP_MESSAGE_TYPE_REQUEST, IP.ToHex());
+        /* CreatePacket() accepts IP as MSB */
+        CreatePacket(&packet, DHCP_MESSAGE_TYPE_REQUEST, b32(IP.v4.ToHex()));
         UDPSocket->SocketUDP->Send(UDPSocket, (uint8_t *)&packet, sizeof(DHCPHeader));
     }
 
@@ -106,7 +122,7 @@ namespace NetworkDHCP
     {
         uint8_t *Option = Packet->Options + 4;
         uint8_t Current = *Option;
-        while (Current != 0xff)
+        while (Current != 0xFF)
         {
             uint8_t OptionLength = *(Option + 1);
             if (Current == Type)
@@ -126,17 +142,23 @@ namespace NetworkDHCP
         switch (*MessageType)
         {
         case DHCP_OPTION_TIME_OFFSET:
-            this->Request(InternetProtocol4().FromHex(Packet->YourIP));
+        {
+            InternetProtocol ReqIP;
+            ReqIP.v4.FromHex(b32(Packet->YourIP));
+            netdbg("Received DHCP offer for IP %s", ReqIP.v4.ToStringLittleEndian());
+            this->Request(ReqIP);
             break;
+        }
         case DHCP_OPTION_NAME_SERVER:
-            this->IP.FromHex(Packet->YourIP);
-            this->Gateway.FromHex(*(uint32_t *)GetOption(Packet, DHCP_OPTION_ROUTER));
-            this->DomainNameSystem.FromHex(*(uint32_t *)GetOption(Packet, DHCP_OPTION_DOMAIN_NAME_SERVER));
-            this->SubNetworkMask.FromHex((*(uint32_t *)GetOption(Packet, DHCP_OPTION_SUBNETMASK)));
+            this->IP.v4.FromHex(b32(Packet->YourIP));
+            this->Gateway.v4.FromHex(b32((uint32_t)(*(uintptr_t *)GetOption(Packet, DHCP_OPTION_ROUTER))));
+            this->DomainNameSystem.v4.FromHex(b32((uint32_t)(*(uintptr_t *)GetOption(Packet, DHCP_OPTION_DOMAIN_NAME_SERVER))));
+            this->SubNetworkMask.v4.FromHex(b32((uint32_t)(*(uintptr_t *)GetOption(Packet, DHCP_OPTION_SUBNETMASK))));
             this->Received = true;
+            netdbg("Received DHCP ACK for IP %s", this->IP.v4.ToStringLittleEndian());
             break;
         default:
-            netdbg("Received unknown message type %#x", *MessageType);
+            warn("Received unknown message type %#x", *MessageType);
             break;
         }
     }

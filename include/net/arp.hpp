@@ -43,7 +43,7 @@ namespace NetworkARP
     struct DiscoveredAddress
     {
         MediaAccessControl MAC;
-        InternetProtocol4 IP;
+        InternetProtocol IP;
     };
 
     class ARP : public NetworkEthernet::EthernetEvents
@@ -60,9 +60,9 @@ namespace NetworkARP
         };
 
         Vector<NetworkARP::DiscoveredAddress *> DiscoveredAddresses;
-        DiscoveredAddress *ManageDA(DAType Type, InternetProtocol4 IP, MediaAccessControl MAC);
-        DiscoveredAddress *Search(InternetProtocol4 TargetIP);
-        DiscoveredAddress *Update(InternetProtocol4 TargetIP, MediaAccessControl TargetMAC);
+        DiscoveredAddress *ManageDiscoveredAddresses(DAType Type, InternetProtocol IP, MediaAccessControl MAC);
+        DiscoveredAddress *Search(InternetProtocol TargetIP);
+        DiscoveredAddress *Update(InternetProtocol TargetIP, MediaAccessControl TargetMAC);
         bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length);
 
     public:
@@ -75,14 +75,14 @@ namespace NetworkARP
          * @param IP The IP address to resolve. (Little-endian)
          * @return uint48_t The MAC address of the IP address.
          */
-        uint48_t Resolve(InternetProtocol4 IP);
+        uint48_t Resolve(InternetProtocol IP);
 
         /**
          * @brief Broadcast an ARP packet.
          *
          * @param IP The IP address to broadcast.
          */
-        void Broadcast(InternetProtocol4 IP);
+        void Broadcast(InternetProtocol IP);
     };
 }
 

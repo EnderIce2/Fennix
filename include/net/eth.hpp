@@ -57,7 +57,14 @@ namespace NetworkEthernet
         /** @brief Get driver interface
          * @return Driver interface
          */
-        NetworkInterfaceManager::DeviceInterface *GetInterface() { return this->Interface; }
+        NetworkInterfaceManager::DeviceInterface *GetInterface()
+        {
+            netdbg("Interface: %#lx (MAC: %s; IPv4: %s; IPv6: %s)", this->Interface,
+                   this->Interface->MAC.ToString(),
+                   this->Interface->IP.v4.ToStringLittleEndian(),
+                   this->Interface->IP.v6.ToStringLittleEndian());
+            return this->Interface;
+        }
 
         Ethernet(NetworkInterfaceManager::DeviceInterface *Interface);
         ~Ethernet();

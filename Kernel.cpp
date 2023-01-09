@@ -27,6 +27,8 @@
  *
  * TODO:
  * - [ ] Optimize SMP.
+ * - [ ] Support IPv6.
+ * - [ ] Endianess of the network stack (currently: [HOST](LSB)<=>[NETWORK](MSB)). Not sure if this is a standard or not.
  *
  * BUGS:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.

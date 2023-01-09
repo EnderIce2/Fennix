@@ -5,26 +5,6 @@
 
 namespace NetworkEthernet
 {
-    Ethernet::Ethernet(NetworkInterfaceManager::DeviceInterface *Interface) : NetworkInterfaceManager::Events(Interface) { this->Interface = Interface; }
-    Ethernet::~Ethernet() {}
-
-    void Ethernet::Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, uint64_t Length)
-    {
-        netdbg("ETH: Sending frame type %#x to %02x:%02x:%02x:%02x:%02x:%02x", Type,
-               MAC.Address[0], MAC.Address[1], MAC.Address[2],
-               MAC.Address[3], MAC.Address[4], MAC.Address[5]);
-        uint64_t PacketLength = sizeof(EthernetHeader) + Length;
-        EthernetPacket *Packet = (EthernetPacket *)kmalloc(PacketLength);
-
-        Packet->Header.DestinationMAC = b48(MAC.ToHex());
-        Packet->Header.SourceMAC = b48(this->Interface->MAC.ToHex());
-        Packet->Header.Type = b16(Type);
-
-        memcpy(Packet->Data, Data, Length);
-        NIManager->Send(Interface, (uint8_t *)Packet, PacketLength);
-        kfree(Packet);
-    }
-
     struct EthernetEventHelperStruct
     {
         EthernetEvents *Ptr;
@@ -33,62 +13,87 @@ namespace NetworkEthernet
 
     Vector<EthernetEventHelperStruct> RegisteredEvents;
 
+    Ethernet::Ethernet(NetworkInterfaceManager::DeviceInterface *Interface) : NetworkInterfaceManager::Events(Interface) { this->Interface = Interface; }
+    Ethernet::~Ethernet() {}
+
+    void Ethernet::Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, uint64_t Length)
+    {
+        netdbg("Sending frame type %#x to %s", Type, MAC.ToString());
+        size_t PacketLength = sizeof(EthernetHeader) + Length;
+        EthernetPacket *Packet = (EthernetPacket *)kmalloc(PacketLength);
+
+        Packet->Header.DestinationMAC = b48(MAC.ToHex());
+        Packet->Header.SourceMAC = b48(this->Interface->MAC.ToHex());
+        Packet->Header.Type = b16(Type);
+
+        memcpy(Packet->Data, Data, Length);
+        /* Network Interface Manager takes care of physical allocation.
+           So basically, we allocate here and then it allocates again but 1:1 mapped. */
+        NIManager->Send(Interface, (uint8_t *)Packet, PacketLength);
+        kfree(Packet);
+    }
+
     void Ethernet::Receive(uint8_t *Data, uint64_t Length)
     {
         EthernetPacket *Packet = (EthernetPacket *)Data;
+        size_t PacketLength = Length - sizeof(EthernetHeader);
+        /* TODO: I have to do checks here to be sure that PacketLength is right */
+        UNUSED(PacketLength);
+
         MediaAccessControl SourceMAC;
         SourceMAC.FromHex(b48(Packet->Header.SourceMAC));
         MediaAccessControl DestinationMAC;
         DestinationMAC.FromHex(b48(Packet->Header.DestinationMAC));
 
-        if (b48(Packet->Header.DestinationMAC) == 0xFFFFFFFFFFFF ||
-            b48(Packet->Header.DestinationMAC) == this->Interface->MAC.ToHex())
-        {
-            netdbg("ETH: Received data from %02x:%02x:%02x:%02x:%02x:%02x [Type %#x]",
-                   SourceMAC.Address[0], SourceMAC.Address[1], SourceMAC.Address[2],
-                   SourceMAC.Address[3], SourceMAC.Address[4], SourceMAC.Address[5], b16(Packet->Header.Type));
+        netdbg("Received frame type %#x from %s to %s", b16(Packet->Header.Type), SourceMAC.ToString(), DestinationMAC.ToString());
 
+        /*                 Byte-swapped               little-endian                   */
+        if (b48(Packet->Header.DestinationMAC) == 0xFFFFFFFFFFFF ||
+            /*                 Byte-swapped           Driver interface has little-endian order */
+            b48(Packet->Header.DestinationMAC) == this->Interface->MAC.ToHex())
+        /* This is true only if the packet is for us (Interface MAC or broadcast) */
+        {
+            netdbg("Received data from %s [Type %#x]", SourceMAC.ToString(), b16(Packet->Header.Type));
             bool Reply = false;
 
             switch (b16(Packet->Header.Type))
             {
             case TYPE_IPV4:
-                foreach (auto var in RegisteredEvents)
-                    if (var.Type == TYPE_IPV4)
-                        Reply = var.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
+                foreach (auto e in RegisteredEvents)
+                    if (e.Type == TYPE_IPV4)
+                        Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
                 break;
             case TYPE_ARP:
-                foreach (auto var in RegisteredEvents)
-                    if (var.Type == TYPE_ARP)
-                        Reply = var.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
+                foreach (auto e in RegisteredEvents)
+                    if (e.Type == TYPE_ARP)
+                        Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
                 break;
             case TYPE_RARP:
-                foreach (auto var in RegisteredEvents)
-                    if (var.Type == TYPE_RARP)
-                        Reply = var.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
+                foreach (auto e in RegisteredEvents)
+                    if (e.Type == TYPE_RARP)
+                        Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
                 break;
             case TYPE_IPV6:
-                foreach (auto var in RegisteredEvents)
-                    if (var.Type == TYPE_IPV6)
-                        Reply = var.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
+                foreach (auto e in RegisteredEvents)
+                    if (e.Type == TYPE_IPV6)
+                        Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
                 break;
             default:
-                warn("ETH: Unknown packet type %#lx", Packet->Header.Type);
+                warn("Unknown packet type %#lx", Packet->Header.Type);
                 break;
             }
             if (Reply)
             {
-                Packet->Header.DestinationMAC = Packet->Header.SourceMAC;
-                Packet->Header.SourceMAC = b48(this->Interface->MAC.ToHex());
+                /* FIXME: I should reply, right? I have to do more research here... */
+                // Packet->Header.DestinationMAC = Packet->Header.SourceMAC;
+                // Packet->Header.SourceMAC = b48(this->Interface->MAC.ToHex());
+                fixme("Replying to %s [%s]=>[%s]", SourceMAC.ToString(),
+                      this->Interface->MAC.ToString(), DestinationMAC.ToString());
             }
         }
         else
         {
-            netdbg("ETH: Type: [%#x] [%02x:%02x:%02x:%02x:%02x:%02x]=>[%02x:%02x:%02x:%02x:%02x:%02x]", b16(Packet->Header.Type),
-                   SourceMAC.Address[0], SourceMAC.Address[1], SourceMAC.Address[2],
-                   SourceMAC.Address[3], SourceMAC.Address[4], SourceMAC.Address[5],
-                   DestinationMAC.Address[0], DestinationMAC.Address[1], DestinationMAC.Address[2],
-                   DestinationMAC.Address[3], DestinationMAC.Address[4], DestinationMAC.Address[5]);
+            netdbg("Packet not for us [%s]=>[%s]", this->Interface->MAC.ToString(), DestinationMAC.ToString());
         }
     }
 
@@ -100,13 +105,13 @@ namespace NetworkEthernet
 
     EthernetEvents::EthernetEvents(FrameType Type)
     {
-        FType = Type;
+        this->FType = Type;
         RegisteredEvents.push_back({.Ptr = this, .Type = (uint16_t)Type});
     }
 
     EthernetEvents::~EthernetEvents()
     {
-        for (uint64_t i = 0; i < RegisteredEvents.size(); i++)
+        for (size_t i = 0; i < RegisteredEvents.size(); i++)
             if (RegisteredEvents[i].Ptr == this)
             {
                 RegisteredEvents.remove(i);

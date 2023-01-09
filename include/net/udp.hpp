@@ -49,21 +49,21 @@ namespace NetworkUDP
         UDP(NetworkIPv4::IPv4 *ipv4, NetworkInterfaceManager::DeviceInterface *Interface);
         ~UDP();
 
-        virtual Socket *Connect(InternetProtocol4 IP, uint16_t Port);
+        virtual Socket *Connect(InternetProtocol IP, uint16_t Port);
         virtual Socket *Listen(uint16_t Port);
         virtual void Disconnect(Socket *Socket);
         virtual void Send(Socket *Socket, uint8_t *Data, uint64_t Length);
         virtual void Bind(Socket *Socket, UDPEvents *EventHandler);
 
-        virtual bool OnIPv4PacketReceived(InternetProtocol4 SourceIP, InternetProtocol4 DestinationIP, uint8_t *Data, uint64_t Length);
+        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length);
     };
 
     class Socket
     {
     public:
-        InternetProtocol4 LocalIP = {.Address = {0xFF, 0xFF, 0xFF, 0xFF}};
+        InternetProtocol LocalIP;
         uint16_t LocalPort = 0;
-        InternetProtocol4 RemoteIP = {.Address = {0xFF, 0xFF, 0xFF, 0xFF}};
+        InternetProtocol RemoteIP;
         uint16_t RemotePort = 0;
         bool Listening = false;
         UDPEvents *EventHandler = nullptr;

@@ -15,7 +15,8 @@ namespace NetworkIPv4
         uint8_t TypeOfService;
         uint16_t TotalLength;
         uint16_t Identification;
-        uint16_t FlagsAndFragmentOffset;
+        uint8_t Flags;
+        uint8_t FragmentOffset;
         uint8_t TimeToLive;
         uint8_t Protocol;
         uint16_t HeaderChecksum;
@@ -76,8 +77,8 @@ namespace NetworkIPv4
         virtual bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length);
 
     public:
-        InternetProtocol4 GatewayIP = {.Address = {0xFF, 0xFF, 0xFF, 0xFF}};
-        InternetProtocol4 SubNetworkMaskIP = {.Address = {0xFF, 0xFF, 0xFF, 0xFF}};
+        InternetProtocol GatewayIP;
+        InternetProtocol SubNetworkMaskIP;
         IPv4(NetworkARP::ARP *ARP, NetworkEthernet::Ethernet *Ethernet);
         ~IPv4();
 
@@ -89,7 +90,7 @@ namespace NetworkIPv4
          * @param Protocol The protocol of the packet.
          * @param DestinationIP The IP address of the destination. (Big-endian)
          */
-        void Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol4 DestinationIP);
+        void Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol DestinationIP);
     };
 
     class IPv4Events
@@ -104,7 +105,7 @@ namespace NetworkIPv4
     public:
         uint8_t GetProtocol() { return Protocol; }
 
-        virtual bool OnIPv4PacketReceived(InternetProtocol4 SourceIP, InternetProtocol4 DestinationIP, uint8_t *Data, uint64_t Length)
+        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length)
         {
             warn("Not implemented.");
             return false;

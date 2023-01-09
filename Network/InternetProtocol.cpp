@@ -7,7 +7,6 @@ namespace NetworkIPv4
 {
     IPv4::IPv4(NetworkARP::ARP *ARP, NetworkEthernet::Ethernet *Ethernet) : NetworkEthernet::EthernetEvents(NetworkEthernet::TYPE_IPV4)
     {
-        netdbg("IPv4: Initializing.");
         this->ARP = ARP;
         this->Ethernet = Ethernet;
     }
@@ -16,30 +15,32 @@ namespace NetworkIPv4
     {
     }
 
-    void IPv4::Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol4 DestinationIP)
+    void IPv4::Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol DestinationIP)
     {
-        netdbg("IPv4: Sending %ld bytes to %d.%d.%d.%d", Length, DestinationIP.Address[0], DestinationIP.Address[1], DestinationIP.Address[2], DestinationIP.Address[3]);
+        netdbg("Sending %ld bytes to %s", Length, DestinationIP.v4.ToStringLittleEndian());
         IPv4Packet *Packet = (IPv4Packet *)kmalloc(Length + sizeof(IPv4Header));
 
-        Packet->Header.Version = 4;
-        Packet->Header.IHL = sizeof(IPv4Header) / 4;
-        Packet->Header.TypeOfService = 0;
+        /* This part is the most confusing one for me. */
+        Packet->Header.Version = b8(4);
+        Packet->Header.IHL = b8(sizeof(IPv4Header) / 4);
+        Packet->Header.TypeOfService = b8(0);
+        /* We don't byteswap. */
         Packet->Header.TotalLength = Length + sizeof(IPv4Header);
         Packet->Header.TotalLength = ((Packet->Header.TotalLength & 0xFF00) >> 8) | ((Packet->Header.TotalLength & 0x00FF) << 8);
-        Packet->Header.Identification = 0;
-        // Packet->Header.Flags = 0x0;
-        // Packet->Header.FragmentOffset = 0x0;
-        Packet->Header.FlagsAndFragmentOffset = 0x0;
-        Packet->Header.TimeToLive = 64;
-        Packet->Header.Protocol = Protocol;
-        Packet->Header.DestinationIP = b32(DestinationIP.ToHex());
-        Packet->Header.SourceIP = b32(Ethernet->GetInterface()->IP.ToHex());
-        Packet->Header.HeaderChecksum = 0x0;
+
+        Packet->Header.Identification = b16(0x0000);
+        Packet->Header.Flags = b8(0x0);
+        Packet->Header.FragmentOffset = b8(0x0);
+        Packet->Header.TimeToLive = b8(64);
+        Packet->Header.Protocol = b8(Protocol);
+        Packet->Header.DestinationIP = b32(DestinationIP.v4.ToHex());
+        Packet->Header.SourceIP = b32(Ethernet->GetInterface()->IP.v4.ToHex());
+        Packet->Header.HeaderChecksum = b16(0x0);
         Packet->Header.HeaderChecksum = CalculateChecksum((uint16_t *)Packet, sizeof(IPv4Header));
 
         memcpy(Packet->Data, Data, Length);
-        InternetProtocol4 DestinationRoute = DestinationIP;
-        if ((b32(DestinationIP.ToHex()) & SubNetworkMaskIP.ToHex()) != (Packet->Header.SourceIP & SubNetworkMaskIP.ToHex()))
+        InternetProtocol DestinationRoute = DestinationIP;
+        if ((DestinationIP.v4.ToHex() & SubNetworkMaskIP.v4.ToHex()) != (b32(Packet->Header.SourceIP) & SubNetworkMaskIP.v4.ToHex()))
             DestinationRoute = SubNetworkMaskIP;
 
         Ethernet->Send(MediaAccessControl().FromHex(ARP->Resolve(DestinationRoute)), this->GetFrameType(), (uint8_t *)Packet, Length + sizeof(IPv4Header));
@@ -51,16 +52,16 @@ namespace NetworkIPv4
     bool IPv4::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
     {
         IPv4Packet *Packet = (IPv4Packet *)Data;
-        netdbg("IPv4: Received %d bytes [Protocol %ld]", Length, Packet->Header.Protocol);
+        netdbg("Received %d bytes [Protocol %ld]", Length, Packet->Header.Protocol);
         if (Length < sizeof(IPv4Header))
         {
-            warn("IPv4: Packet too short");
+            warn("Packet too short");
             return false;
         }
 
         bool Reply = false;
 
-        if (Packet->Header.DestinationIP == Ethernet->GetInterface()->IP.ToHex() || Packet->Header.DestinationIP == 0xFFFFFFFF || Ethernet->GetInterface()->IP.ToHex() == 0)
+        if (b32(Packet->Header.DestinationIP) == Ethernet->GetInterface()->IP.v4.ToHex() || b32(Packet->Header.DestinationIP) == 0xFFFFFFFF || Ethernet->GetInterface()->IP.v4.ToHex() == 0)
         {
             uint64_t TotalLength = Packet->Header.TotalLength;
             if (TotalLength > Length)
@@ -68,8 +69,22 @@ namespace NetworkIPv4
 
             foreach (auto Event in RegisteredEvents)
                 if (Packet->Header.Protocol == Event->GetProtocol())
-                    if (Event->OnIPv4PacketReceived(InternetProtocol4().FromHex(b32(Packet->Header.SourceIP)), InternetProtocol4().FromHex(b32(Packet->Header.DestinationIP)), (uint8_t *)((uint64_t)Data + 4 * Packet->Header.IHL), TotalLength - 4 * Packet->Header.IHL))
+                {
+                    InternetProtocol SourceIP;
+                    InternetProtocol DestinationIP;
+
+                    SourceIP.v4 = SourceIP.v4.FromHex(b32(Packet->Header.SourceIP));
+                    DestinationIP.v4 = DestinationIP.v4.FromHex(b32(Packet->Header.DestinationIP));
+
+                    if (Event->OnIPv4PacketReceived(SourceIP, DestinationIP, (uint8_t *)((uint64_t)Data + 4 * Packet->Header.IHL), TotalLength - 4 * Packet->Header.IHL))
                         Reply = true;
+                }
+        }
+        else
+        {
+            netdbg("Not for us. We are %s but this is for %s",
+                   Ethernet->GetInterface()->IP.v4.ToHex(),
+                   Packet->Header.DestinationIP);
         }
 
         if (Reply)

@@ -6,16 +6,20 @@ TODO: This code is a mess. It needs to be cleaned up.
 
 #ifdef DEBUG_NETWORK
 
-#include <stdarg.h>
+#include <uart.hpp>
 #include <printf.h>
-#include "../drivers/serial.h"
+#include <lock.hpp>
+
+using namespace UniversalAsynchronousReceiverTransmitter;
+
+NewLock(netdbg_lock);
 
 namespace NetDbg
 {
     class NETWORK_DEBUG : public NetworkInterfaceManager::Events
     {
     public:
-        static inline void print_wrapper(char c, void *unused) { write_serial(COM1, c); }
+        static inline void print_wrapper(char c, void *unused) { UART(COM1).Write(c); }
         int vprintf(const char *format, va_list list) { return vfctprintf(print_wrapper, NULL, format, list); }
         void WriteRaw(const char *format, ...)
         {
@@ -27,6 +31,7 @@ namespace NetDbg
 
         void DumpData(const char *Description, void *Address, unsigned long Length)
         {
+            SmartLock(netdbg_lock);
             WriteRaw("-------------------------------------------------------------------------\n");
             unsigned char *AddressChar = (unsigned char *)Address;
             unsigned char Buffer[17];

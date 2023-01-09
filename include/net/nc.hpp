@@ -22,7 +22,7 @@ namespace NetworkInterfaceManager
         MediaAccessControl MAC;
 
         /** @brief Device interface IP address (Big-endian) */
-        InternetProtocol4 IP;
+        InternetProtocol IP;
 
         /** @brief Reserved */
         void *DriverCallBackAddress;

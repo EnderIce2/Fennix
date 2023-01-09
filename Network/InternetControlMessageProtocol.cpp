@@ -19,7 +19,7 @@ namespace NetworkICMPv4
         if (Packet->Header.Type == ICMPv4Type::TYPE_ECHO)
         {
             // TODO: This probably doesn't work
-            netdbg("ICMPv4: Echo Request");
+            netdbg("Echo Request");
             Packet->Header.Type = ICMPv4Type::TYPE_ECHO_REPLY;
             Packet->Header.Code = 0x0;
             Packet->Header.Checksum = CalculateChecksum((uint16_t *)Packet, sizeof(ICMPHeader));
@@ -27,7 +27,7 @@ namespace NetworkICMPv4
         }
         else
         {
-            netdbg("ICMPv4: Unknown type %d", Packet->Header.Type);
+            netdbg("Unknown type %d", Packet->Header.Type);
         }
     }
 }
