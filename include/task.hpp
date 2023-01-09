@@ -288,7 +288,9 @@ namespace Tasking
 
         PCB *CreateProcess(PCB *Parent,
                            const char *Name,
-                           TaskTrustLevel TrustLevel, void *Image = nullptr);
+                           TaskTrustLevel TrustLevel,
+                           void *Image = nullptr,
+                           bool DoNotCreatePageTable = false);
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,

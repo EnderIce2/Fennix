@@ -597,12 +597,12 @@ namespace Tasking
         {
             int Status = var->Status;
             printf("\e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n",
-                    Statuses[Status], var->Name, Status, StatusesSign[Status]);
+                   Statuses[Status], var->Name, Status, StatusesSign[Status]);
             foreach (auto var2 in var->Threads)
             {
                 Status = var2->Status;
                 printf("  \e%s-> \eAABBCC%s\eCCCCCC[%d] \e00AAAA%s\n\eAABBCC",
-                        Statuses[Status], var2->Name, Status, StatusesSign[Status]);
+                       Statuses[Status], var2->Name, Status, StatusesSign[Status]);
             }
         }
         printf("%d - SOURCE: %s", sanity++, SuccessSourceStrings[SuccessSource]);
@@ -1113,7 +1113,8 @@ namespace Tasking
 
     PCB *Task::CreateProcess(PCB *Parent,
                              const char *Name,
-                             TaskTrustLevel TrustLevel, void *Image)
+                             TaskTrustLevel TrustLevel, void *Image,
+                             bool DoNotCreatePageTable)
     {
         SmartCriticalSection(TaskingLock);
         PCB *Process = new PCB;
@@ -1141,7 +1142,8 @@ namespace Tasking
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::TrustedByKernel);
 #if defined(__amd64__)
-            Process->PageTable = (Memory::PageTable4 *)CPU::x64::readcr3().raw;
+            if (!DoNotCreatePageTable)
+                Process->PageTable = (Memory::PageTable4 *)CPU::x64::readcr3().raw;
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -1151,10 +1153,13 @@ namespace Tasking
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TokenTrustLevel::Untrusted);
 #if defined(__amd64__)
-            Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-            memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
-            for (size_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
-                Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
+            if (!DoNotCreatePageTable)
+            {
+                Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
+                memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
+                for (size_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
+                    Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
+            }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
