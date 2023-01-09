@@ -4,7 +4,7 @@
 #include <types.h>
 #include <printf.h>
 
-#define DEBUG_NETWORK 1
+// #define DEBUG_NETWORK 1
 
 #ifdef DEBUG_NETWORK
 #define netdbg(m, ...) debug(m, ##__VA_ARGS__)
