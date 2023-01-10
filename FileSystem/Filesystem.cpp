@@ -17,35 +17,74 @@ namespace FileSystem
     {
         vfsdbg("GetPathFromNode( Node: \"%s\" )", Node->Name);
         FileSystemNode *Parent = Node;
-        Vector<char *> Path;
+        char **Path = nullptr;
         size_t Size = 1;
+        size_t PathSize = 0;
 
+        // Traverse the filesystem tree and build the path by adding each parent's Name field to the Path array
         while (Parent != FileSystemRoot && Parent != nullptr)
         {
-            foreach (auto var in FileSystemRoot->Children)
-                if (var == Parent)
-                    goto PathFromNodeContinue;
-            Path.push_back(Parent->Name);
-            Path.push_back((char *)"/");
+            bool Found = false;
+            for (const auto &Children : FileSystemRoot->Children)
+                if (Children == Parent)
+                {
+                    Found = true;
+                    break;
+                }
+
+            if (Found)
+                break;
+
+            if (strlen(Parent->Name) == 0)
+                break;
+
+            char **new_path = new char *[PathSize + 1];
+            if (Path != nullptr)
+            {
+                memcpy(new_path, Path, sizeof(char *) * PathSize);
+                delete[] Path;
+            }
+
+            Path = new_path;
+            Path[PathSize] = Parent->Name;
+            PathSize++;
+            new_path = new char *[PathSize + 1];
+            memcpy(new_path, Path, sizeof(char *) * PathSize);
+            delete[] Path;
+            Path = new_path;
+            Path[PathSize] = (char *)"/";
+            PathSize++;
             Parent = Parent->Parent;
         }
 
-    PathFromNodeContinue:
-        Path.reverse();
+        // Calculate the total size of the final path string
+        for (size_t i = 0; i < PathSize; i++)
+        {
+            Size += strlen(Path[i]);
+        }
 
-        foreach (auto var in Path)
-            Size += strlen(var);
-
+        // Allocate a new string for the final path
         char *FinalPath = new char[Size];
+        size_t Offset = 0;
 
-        foreach (auto var in Path)
-            strcat(FinalPath, var);
+        // Concatenate the elements of the Path array into the FinalPath string
+        for (size_t i = PathSize - 1; i < PathSize; i--)
+        {
+            if (Path[i] == nullptr)
+            {
+                continue;
+            }
+            size_t ElementSize = strlen(Path[i]);
+            memcpy(FinalPath + Offset, Path[i], ElementSize);
+            Offset += ElementSize;
+        }
 
-        // for (size_t i = 0; i < Path.size(); i++)
-        //     strcat(FinalPath, Path[i]);
+        // Add a null terminator to the final path string
+        FinalPath[Size - 1] = '\0';
 
-        // for (size_t i = 0; i < Path.size(); i++)
-        //     Size += strlen(Path[i]);
+        // Deallocate the Path array
+        delete[] Path;
+
         vfsdbg("GetPathFromNode()->\"%s\"", FinalPath);
         return FinalPath;
     }
