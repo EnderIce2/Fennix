@@ -6,6 +6,7 @@
 #include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
+#include <rand.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cpu.hpp>
@@ -25,9 +26,11 @@ NewLock(UserInputLock);
 
 namespace CrashHandler
 {
+    uintptr_t PageFaultAddress = 0;
     void *EHIntFrames[INT_FRAMES_MAX];
     static bool ExceptionOccurred = false;
     int SBIdx = 255;
+
     SafeFunction void printfWrapper(char c, void *unused)
     {
         Display->Print(c, SBIdx, true);
@@ -146,6 +149,70 @@ namespace CrashHandler
         EHPrint(" \eAAF00F%s", CPU::Vendor());
         EHPrint(" \eAA00FF%s", CPU::Name());
         Display->SetBufferCursor(SBIdx, 0, fi.Height + 10);
+
+        /* https://imgflip.com/i/77slbl */
+        if ((Random::rand32() % 100) >= 98)
+        {
+            debug("Easter egg activated!");
+            int BaseXOffset = sb->Width - 14;
+            int BaseYOffset = 8;
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 0, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 0, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 0, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 7, BaseYOffset + 0, 0x21852E, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 7, BaseYOffset + 1, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 8, BaseYOffset + 1, 0x21852E, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 1, BaseYOffset + 2, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 2, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 2, 0xFFFFFF, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 2, 0x000000, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 2, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 2, 0xFFFFFF, SBIdx);
+            Display->SetPixel(BaseXOffset + 7, BaseYOffset + 2, 0x000000, SBIdx);
+            Display->SetPixel(BaseXOffset + 8, BaseYOffset + 2, 0x21852E, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 1, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 3, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 7, BaseYOffset + 3, 0x21852E, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 0, BaseYOffset + 4, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 1, BaseYOffset + 4, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 4, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 4, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 4, 0xA84832, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 4, 0xA84832, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 4, 0xA84832, SBIdx);
+            Display->SetPixel(BaseXOffset + 7, BaseYOffset + 4, 0xA84832, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 0, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 1, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 5, 0x21852E, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 5, 0x21852E, SBIdx);
+
+            Display->SetPixel(BaseXOffset + 0, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 1, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 2, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 3, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 4, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 5, BaseYOffset + 6, 0x1216FF, SBIdx);
+            Display->SetPixel(BaseXOffset + 6, BaseYOffset + 6, 0x1216FF, SBIdx);
+
+            Display->SetBuffer(SBIdx);
+        }
     }
 
     SafeFunction void DisplayBottomOverlay()
@@ -246,7 +313,7 @@ namespace CrashHandler
             EHPrint("exit - Shutdown the OS.\n");
             EHPrint("reboot - Reboot the OS.\n");
             EHPrint("help - Display this help message.\n");
-            EHPrint("showbuf <INDEX> - Display the contents of a screen buffer.\n");
+            EHPrint("showbuf,sb <INDEX> - Display the contents of a screen buffer.\n");
             EHPrint("       - A sleep timer will be enabled. This will cause the OS to sleep for an unknown amount of time.\n");
             EHPrint("       - \eFF4400WARNING: This can crash the system if a wrong buffer is selected.\eFAFAFA\n");
             EHPrint("ifr <COUNT> - Show interrupt frames.\n");
@@ -281,7 +348,7 @@ namespace CrashHandler
             Display->SetBuffer(SBIdx);
             CPU::Stop();
         }
-        else if (strncmp(Input, "showbuf", 7) == 0)
+        else if (strncmp(Input, "showbuf", 7) == 0 || strncmp(Input, "sb", 2) == 0)
         {
             char *arg = TrimWhiteSpace(Input + 7);
             int tmpidx = SBIdx;
@@ -475,7 +542,7 @@ namespace CrashHandler
                 EHPrint("\e44AA000: %#lx\n", CPU::x64::readcr0());
                 break;
             case '2':
-                EHPrint("\e44AA002: %#lx\n", CPU::x64::readcr2());
+                EHPrint("\e44AA002: %#lx\n", PageFaultAddress);
                 break;
             case '3':
                 EHPrint("\e44AA003: %#lx\n", CPU::x64::readcr3());
@@ -592,6 +659,7 @@ namespace CrashHandler
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
         error("Exception: %#llx", Frame->InterruptNumber);
+        PageFaultAddress = CPU::x64::readcr2().PFLA;
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
@@ -616,7 +684,7 @@ namespace CrashHandler
                 debug("CPU %ld data is valid", data->ID);
                 if (data->CurrentThread->Security.IsCritical)
                 {
-                    debug("Critical thread died");
+                    debug("Critical thread \"%s\"(%d) died", data->CurrentThread->Name, data->CurrentThread->ID);
                     if (TaskManager)
                         TaskManager->Panic();
                     Display->CreateBuffer(0, 0, SBIdx);
@@ -637,7 +705,7 @@ namespace CrashHandler
             Display->SetBufferCursor(SBIdx, 0, 0);
 
             CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-            CPU::x64::CR2 cr2 = CPU::x64::readcr2();
+            CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = PageFaultAddress};
             CPU::x64::CR3 cr3 = CPU::x64::readcr3();
             CPU::x64::CR4 cr4 = CPU::x64::readcr4();
             CPU::x64::CR8 cr8 = CPU::x64::readcr8();
@@ -699,7 +767,7 @@ namespace CrashHandler
         debug("Reading control registers...");
         crashdata.Frame = Frame;
         crashdata.cr0 = CPU::x64::readcr0();
-        crashdata.cr2 = CPU::x64::readcr2();
+        crashdata.cr2 = CPU::x64::CR2{.PFLA = PageFaultAddress};
         crashdata.cr3 = CPU::x64::readcr3();
         crashdata.cr4 = CPU::x64::readcr4();
         crashdata.cr8 = CPU::x64::readcr8();

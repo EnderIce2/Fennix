@@ -35,7 +35,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
     {
         CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-        CPU::x64::CR2 cr2 = CPU::x64::readcr2();
+        CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = CrashHandler::PageFaultAddress};
         CPU::x64::CR3 cr3 = CPU::x64::readcr3();
         CPU::x64::CR4 cr4 = CPU::x64::readcr4();
         CPU::x64::CR8 cr8 = CPU::x64::readcr8();
@@ -179,13 +179,13 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         uintptr_t CheckPageFaultAddress = 0;
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(__amd64__)
-        CheckPageFaultAddress = CPU::x64::readcr2().PFLA;
+        CheckPageFaultAddress = CrashHandler::PageFaultAddress;
         if (CheckPageFaultAddress == 0)
             CheckPageFaultAddress = Frame->rip;
 
-        error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->rip);
+        error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->rip);
 #elif defined(__i386__)
-        error("An exception occurred at %#lx by %#lx", CPU::x64::readcr2().PFLA, Frame->eip);
+        error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->eip);
 #elif defined(__aarch64__)
 #endif
         error("Page: %s", params.P ? "Present" : "Not Present");
@@ -303,7 +303,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #endif
 
         if (CurCPU)
-            if (CurCPU->CurrentThread->Stack->Expand(CPU::x64::readcr2().raw))
+            if (CurCPU->CurrentThread->Stack->Expand(CrashHandler::PageFaultAddress))
             {
                 debug("Stack expanded");
                 TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Ready;

@@ -53,31 +53,29 @@ namespace CrashHandler
         }
         if (data.Process && data.Thread)
         {
-            EHPrint("\n\n\eFAFAFATracing thread RIP history...");
+            EHPrint("\n\n\eFAFAFATracing thread instruction pointer history...");
             SymbolResolver::Symbols *sh = data.Process->ELFSymbolTable;
             if (!sh)
                 EHPrint("\n\eFFA500Warning: No symbol table available.");
             int SameItr = 0;
             uintptr_t LastRIP = 0;
-            for (int i = 0; i < 128; i++)
+            for (size_t i = 0; i < sizeof(data.Thread->IPHistory) / sizeof(data.Thread->IPHistory[0]); i++)
             {
-                if (data.Thread->IPHistory[i] == 0)
-                    break;
                 if (data.Thread->IPHistory[i] == LastRIP)
                 {
                     SameItr++;
-                    if (SameItr > 3)
+                    if (SameItr > 2)
                         continue;
                 }
                 else
                     SameItr = 0;
                 LastRIP = data.Thread->IPHistory[i];
                 if (!sh)
-                    EHPrint("\n\e2565CC%p", data.Thread->IPHistory[i]);
+                    EHPrint("\n\eCCCCCC%d: \e2565CC%p", i, data.Thread->IPHistory[i]);
                 else
-                    EHPrint("\n\e2565CC%p\e7925CC-\e25CCC9%s", data.Thread->IPHistory[i], sh->GetSymbolFromAddress(data.Thread->IPHistory[i]));
+                    EHPrint("\n\eCCCCCC%d: \e2565CC%p\e7925CC-\e25CCC9%s", i, data.Thread->IPHistory[i], sh->GetSymbolFromAddress(data.Thread->IPHistory[i]));
             }
-            EHPrint("\n\e7925CCNote: \e2565CCSame RIPs are not shown more than 3 times.\n");
+            EHPrint("\n\e7925CCNote: \e2565CCSame instruction pointers are not shown more than 3 times.\n");
         }
     }
 }

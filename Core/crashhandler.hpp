@@ -8,6 +8,7 @@
 
 namespace CrashHandler
 {
+    extern uintptr_t PageFaultAddress;
     extern void *EHIntFrames[INT_FRAMES_MAX];
 
     void EHPrint(const char *Format, ...);

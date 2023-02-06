@@ -270,9 +270,9 @@ namespace CrashHandler
 
             CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(__amd64__)
-            EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", CPU::x64::readcr2().PFLA, Frame->rip);
+            EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", PageFaultAddress, Frame->rip);
 #elif defined(__i386__)
-            EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", CPU::x64::readcr2().PFLA, Frame->eip);
+            EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", PageFaultAddress, Frame->eip);
 #elif defined(__aarch64__)
 #endif
             EHPrint("Page: %s\eFAFAFA\n", params.P ? "\e058C19Present" : "\eE85230Not Present");

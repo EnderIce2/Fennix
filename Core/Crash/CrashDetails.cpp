@@ -30,68 +30,76 @@ SafeFunction void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame)
     fixme("Divide by zero exception\n");
     UNUSED(Frame);
 }
+
 SafeFunction void DebugExceptionHandler(CHArchTrapFrame *Frame)
 {
-    CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel triggered debug exception.\n");
     UNUSED(Frame);
 }
+
 SafeFunction void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("NMI exception");
     UNUSED(Frame);
 }
+
 SafeFunction void BreakpointExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Breakpoint exception");
     UNUSED(Frame);
 }
+
 SafeFunction void OverflowExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Overflow exception");
     UNUSED(Frame);
 }
+
 SafeFunction void BoundRangeExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Bound range exception");
     UNUSED(Frame);
 }
+
 SafeFunction void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame)
 {
-    CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
     UNUSED(Frame);
 }
+
 SafeFunction void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Device not available exception");
     UNUSED(Frame);
 }
+
 SafeFunction void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Double fault exception");
     UNUSED(Frame);
 }
+
 SafeFunction void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Coprocessor segment overrun exception");
     UNUSED(Frame);
 }
+
 SafeFunction void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Invalid TSS exception");
     UNUSED(Frame);
 }
+
 SafeFunction void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Segment not present exception");
     UNUSED(Frame);
 }
+
 SafeFunction void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
-    CrashHandler::EHPrint("\eDD2920System crashed!\n");
-    CrashHandler::EHPrint("More info about the exception:\n");
 #if defined(__amd64__)
     CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->rip);
 #elif defined(__i386__)
@@ -103,13 +111,9 @@ SafeFunction void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
     CrashHandler::EHPrint("Error code: %#lx\n", Frame->ErrorCode);
 }
+
 SafeFunction void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
 {
-    // staticbuffer(descbuf);
-    // staticbuffer(desc_ext);
-    // staticbuffer(desc_table);
-    // staticbuffer(desc_idx);
-    // staticbuffer(desc_tmp);
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
     // switch (SelCode.Table)
     // {
@@ -129,21 +133,19 @@ SafeFunction void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
     //     memcpy(desc_tmp, "Unknown", 7);
     //     break;
     // }
-    CrashHandler::EHPrint("\eDD2920System crashed!\n");
     CrashHandler::EHPrint("Kernel performed an illegal operation.\n");
-    CrashHandler::EHPrint("More info about the exception:\n");
     CrashHandler::EHPrint("External: %d\n", SelCode.External);
     CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
     CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
 }
+
 SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
-    CrashHandler::EHPrint("\eDD2920System crashed!\n\eFFFFFF");
 #if defined(__amd64__)
-    CrashHandler::EHPrint("An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->rip);
+    CrashHandler::EHPrint("\eAFAFAFAn exception occurred at %#lx by %#lx\n", CrashHandler::PageFaultAddress, Frame->rip);
 #elif defined(__i386__)
-    CrashHandler::EHPrint("An exception occurred at %#lx by %#lx\n", CPU::x64::readcr2().PFLA, Frame->eip);
+    CrashHandler::EHPrint("\eAFAFAFAn exception occurred at %#lx by %#lx\n", CrashHandler::PageFaultAddress, Frame->eip);
 #elif defined(__aarch64__)
 #endif
     CrashHandler::EHPrint("Page: %s\n", params.P ? "Present" : "Not Present");
@@ -161,7 +163,7 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 
 #ifdef DEBUG
     uintptr_t CheckPageFaultAddress = 0;
-    CheckPageFaultAddress = CPU::x64::readcr2().PFLA;
+    CheckPageFaultAddress = CrashHandler::PageFaultAddress;
     if (CheckPageFaultAddress == 0)
 #ifdef __amd64__
         CheckPageFaultAddress = Frame->rip;
@@ -268,36 +270,43 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     }
 #endif
 }
+
 SafeFunction void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("x87 floating point exception");
     UNUSED(Frame);
 }
+
 SafeFunction void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Alignment check exception");
     UNUSED(Frame);
 }
+
 SafeFunction void MachineCheckExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Machine check exception");
     UNUSED(Frame);
 }
+
 SafeFunction void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("SIMD floating point exception");
     UNUSED(Frame);
 }
+
 SafeFunction void VirtualizationExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Virtualization exception");
     UNUSED(Frame);
 }
+
 SafeFunction void SecurityExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Security exception");
     UNUSED(Frame);
 }
+
 SafeFunction void UnknownExceptionHandler(CHArchTrapFrame *Frame)
 {
     fixme("Unknown exception");
