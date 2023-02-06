@@ -103,4 +103,4 @@ __constructor void TestTypeSize()
     debug("__UINTMAX_MAX__ = %#llx", __UINTMAX_MAX__);
 }
 
-#endif
+#endif // DEBUG
