@@ -82,7 +82,7 @@ $(FILENAME): $(OBJ)
 
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(CPP) $(CFLAGS) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@ -fno-rtti
+	$(CPP) $(CFLAGS) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@
 
 %.o: %.S
 	$(info Compiling $<)
