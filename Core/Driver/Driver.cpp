@@ -168,27 +168,35 @@ namespace Driver
     Driver::Driver()
     {
         SmartCriticalSection(DriverInitLock);
-        FileSystem::FILE *DriverDirectory = vfs->Open(Config.DriverDirectory);
-        if (DriverDirectory->Status == FileSystem::FileStatus::OK)
-            foreach (auto driver in DriverDirectory->Node->Children)
-                if (driver->Flags == FileSystem::NodeFlags::FS_FILE)
+        shared_ptr<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
+        if (DriverDirectory->Status == VirtualFileSystem::FileStatus::OK)
+        {
+            foreach (auto driver in DriverDirectory->node->Children)
+                if (driver->Flags == VirtualFileSystem::NodeFlags::FILE)
                     if (cwk_path_has_extension(driver->Name))
                     {
                         const char *extension;
                         cwk_path_get_extension(driver->Name, &extension, nullptr);
-                        if (!strcmp(extension, ".fex") || !strcmp(extension, ".elf"))
+                        debug("Driver: %s; Extension: %s", driver->Name, extension);
+                        if (strcmp(extension, ".fex") == 0 || strcmp(extension, ".elf") == 0)
                         {
                             uintptr_t ret = this->LoadDriver(driver->Address, driver->Length);
                             char RetString[128];
                             if (ret == DriverCode::OK)
                                 strncpy(RetString, "\e058C19OK", 10);
-                                else if (ret == DriverCode::NOT_AVAILABLE)
+                            else if (ret == DriverCode::NOT_AVAILABLE)
                                 strncpy(RetString, "\eFF7900NOT AVAILABLE", 21);
                             else
                                 sprintf(RetString, "\eE85230FAILED (%#lx)", ret);
                             KPrint("%s %s", driver->Name, RetString);
                         }
                     }
+        }
+        else
+        {
+            KPrint("\eE85230Failed to open driver directory: %s", Config.DriverDirectory);
+            CPU::Stop();
+        }
         vfs->Close(DriverDirectory);
     }
 

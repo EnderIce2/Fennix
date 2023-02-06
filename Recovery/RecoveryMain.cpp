@@ -33,12 +33,10 @@ namespace Recovery
 
         gui = new GraphicalUserInterface::GUI;
 
-        Vector<AuxiliaryVector> auxv;
-        auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
         // TaskManager->CreateThread(proc, (IP)RecoveryThreadWrapper, nullptr, nullptr, auxv);
-        TCB *guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper, nullptr, nullptr, auxv);
+        TCB *guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper);
         guiThread->Rename("GUI Thread");
-        guiThread->SetPriority(100);
+        guiThread->SetPriority(Tasking::TaskPriority::Critical);
 
         Rect RecoveryModeWindow;
         RecoveryModeWindow.Width = 460;

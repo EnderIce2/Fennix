@@ -5,7 +5,7 @@
 
 #include <filesystem.hpp>
 
-namespace FileSystem
+namespace VirtualFileSystem
 {
     class FAT
     {

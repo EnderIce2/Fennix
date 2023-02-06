@@ -1,6 +1,7 @@
 #include "kernel.h"
 
 #include <boot/protocols/multiboot2.h>
+#include <filesystem/ustar.hpp>
 #include <interrupts.hpp>
 #include <memory.hpp>
 #include <convert.h>
@@ -12,6 +13,7 @@
 #include <io.h>
 
 #include "Core/smbios.hpp"
+#include "Tests/t.h"
 
 /**
  * Fennix Kernel
@@ -29,6 +31,12 @@
  * - [ ] Optimize SMP.
  * - [ ] Support IPv6.
  * - [ ] Endianess of the network stack (currently: [HOST](LSB)<=>[NETWORK](MSB)). Not sure if this is a standard or not.
+ * - [ ] Support 32-bit applications (ELF, PE, etc).
+ * - [ ] Do not map the entire memory. Map only the needed memory address at allocation time.
+ * - [ ] Implementation of logging (beside serial) with log rotation.
+ * - [ ] Implement a better task manager. (replace struct P/TCB with classes)
+ * - [?] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
+ * - [ ] Colors in crash screen are not following the kernel color scheme.
  *
  * BUGS:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
@@ -37,13 +45,13 @@
  * CREDITS AND REFERENCES:
  * - General:
  *    https://wiki.osdev.org/Main_Page
- * 
+ *
  * - Font:
  *    http://www.fial.com/~scott/tamsyn-font/
- * 
+ *
  * - CPU XCR0 structure:
  *    https://wiki.osdev.org/CPU_Registers_x86#XCR0
- * 
+ *
  * - CPUID 0x7:
  *    https://en.wikipedia.org/wiki/CPUID
  *
@@ -67,6 +75,22 @@
  *    http://realtek.info/pdf/rtl8139cp.pdf
  *    https://en.wikipedia.org/wiki/IPv4
  *    https://www.iana.org/assignments/icmp-parameters/icmp-parameters.xhtml
+ *
+ * - Loading ELF shared libraries and dynamic linking:
+ *    https://www.akkadia.org/drepper/dsohowto.pdf
+ *    https://wiki.osdev.org/Dynamic_Linker
+ *    https://github.com/tyler569/nightingale
+ *    https://www.technovelty.org/linux/plt-and-got-the-key-to-code-sharing-and-dynamic-libraries.html
+ *    https://www.youtube.com/watch?v=kUk5pw4w0h4
+ *    https://docs.oracle.com/cd/E19683-01/817-3677/chapter6-42444/index.html
+ *    https://ir0nstone.gitbook.io/notes/types/stack/aslr/plt_and_got
+ *
+ * - IPC:
+ *    https://docs.oracle.com/cd/E19048-01/chorus5/806-6897/architecture-103/index.html
+ *    https://www.scaler.com/topics/operating-system/inter-process-communication-in-os/
+ *    https://en.wikipedia.org/wiki/Inter-process_communication
+ *    https://www.geeksforgeeks.org/inter-process-communication-ipc/
+ *
  */
 
 #ifdef __amd64__
@@ -89,6 +113,11 @@
 
 NewLock(KernelLock);
 
+using VirtualFileSystem::File;
+using VirtualFileSystem::FileStatus;
+using VirtualFileSystem::Node;
+using VirtualFileSystem::NodeFlags;
+
 BootInfo *bInfo = nullptr;
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
@@ -96,7 +125,7 @@ Power::Power *PowerManager = nullptr;
 PCI::PCI *PCIManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 Time::time *TimeManager = nullptr;
-FileSystem::Virtual *vfs = nullptr;
+VirtualFileSystem::Virtual *vfs = nullptr;
 
 KernelConfig Config;
 Time::Clock BootClock;
@@ -110,7 +139,7 @@ EXTERNC void KPrint(const char *Format, ...)
 {
     SmartLock(KernelLock);
     Time::Clock tm = Time::ReadClock();
-    printf("\eCCCCCC[\e00AEFF%02ld:%02ld:%02ld\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
+    printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     va_list args;
     va_start(args, Format);
     vprintf(Format, args);
@@ -236,8 +265,57 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
     else
         KPrint("SMBIOS: \eFF0000Not Found");
 
-    TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
+    KPrint("Initializing Filesystem...");
+    vfs = new VirtualFileSystem::Virtual;
+    new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
+
+    if (!vfs->PathExists("/system"))
+        vfs->Create("/system", NodeFlags::DIRECTORY);
+
+    if (!vfs->PathExists("/system/dev"))
+        DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
+    else
+    {
+        shared_ptr<File> dev = vfs->Open("/system/dev");
+        if (dev->node->Flags != NodeFlags::DIRECTORY)
+        {
+            KPrint("\eE85230/system/dev is not a directory! Halting...");
+            CPU::Halt(true);
+        }
+        vfs->Close(dev);
+        DevFS = dev->node;
+    }
+
+    if (!vfs->PathExists("/system/mnt"))
+        MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
+    else
+    {
+        shared_ptr<File> mnt = vfs->Open("/system/mnt");
+        if (mnt->node->Flags != NodeFlags::DIRECTORY)
+        {
+            KPrint("\eE85230/system/mnt is not a directory! Halting...");
+            CPU::Halt(true);
+        }
+        vfs->Close(mnt);
+        MntFS = mnt->node;
+    }
+
+    if (!vfs->PathExists("/system/proc"))
+        ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
+    else
+    {
+        shared_ptr<File> proc = vfs->Open("/system/proc", nullptr);
+        if (proc->node->Flags != NodeFlags::DIRECTORY)
+        {
+            KPrint("\eE85230/system/proc is not a directory! Halting...");
+            CPU::Halt(true);
+        }
+        vfs->Close(proc);
+        ProcFS = proc->node;
+    }
+
     KPrint("\e058C19################################");
+    TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
     CPU::Halt(true);
 }
 
@@ -254,6 +332,16 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
         (*func)();
 
     InitializeMemoryManagement(Info);
+
+    /* I had to do this because KernelAllocator
+     * is a global constructor but we need
+     * memory management to be initialized first.
+     */
+#ifdef DEBUG
+    // Running tests
+    TestString();
+#endif
+
     EnableProfiler = true;
     Main(Info);
 }

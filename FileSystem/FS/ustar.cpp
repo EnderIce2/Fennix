@@ -5,21 +5,21 @@
 
 #include "../../kernel.h"
 
-namespace FileSystem
+namespace VirtualFileSystem
 {
     ReadFSFunction(USTAR_Read)
     {
         if (!Size)
-            Size = Node->Length;
-        if (Offset > Node->Length)
+            Size = node->Length;
+        if (Offset > node->Length)
             return 0;
-        if (Offset + Size > Node->Length)
-            Size = Node->Length - Offset;
-        memcpy(Buffer, (uint8_t *)(Node->Address + Offset), Size);
+        if (Offset + Size > node->Length)
+            Size = node->Length - Offset;
+        memcpy(Buffer, (uint8_t *)(node->Address + Offset), Size);
         return Size;
     }
 
-    FileSystemOperations ustar = {
+    FileSystemOperations ustar_op = {
         .Name = "ustar",
         .Read = USTAR_Read,
     };
@@ -39,9 +39,7 @@ namespace FileSystem
               string2int(((FileHeader *)Address)->mode),
               ((FileHeader *)Address)->size);
 
-        vfs->CreateRoot(&ustar, "/");
-
-        int ErrorsAllowed = 20;
+        vfs->CreateRoot("/", &ustar_op);
 
         for (size_t i = 0;; i++)
         {
@@ -52,7 +50,7 @@ namespace FileSystem
             if (header->name[strlen(header->name) - 1] == '/')
                 header->name[strlen(header->name) - 1] = 0;
             size_t size = getsize(header->size);
-            FileSystemNode *node = nullptr;
+            Node *node = nullptr;
 
             // if (!isempty((char *)header->name))
             //     KPrint("Adding file \e88AACC%s\eCCCCCC (\e88AACC%lu \eCCCCCCbytes)", header->name, size);
@@ -62,10 +60,12 @@ namespace FileSystem
             if (isempty((char *)header->name))
                 goto NextFileAddress;
 
-            node = vfs->Create(nullptr, header->name);
+            node = vfs->Create(header->name, NodeFlags::NODE_FLAG_ERROR);
             debug("Added node: %s", node->Name);
             if (node == nullptr)
             {
+                static int ErrorsAllowed = 20;
+
                 if (ErrorsAllowed > 0)
                 {
                     ErrorsAllowed--;
@@ -73,7 +73,7 @@ namespace FileSystem
                 }
                 else
                 {
-                    error("Adding USTAR files failed because too many files were corrputed or invalid.");
+                    error("Adding USTAR files failed because too many files were corrupted or invalid.");
                     break;
                 }
             }
@@ -90,19 +90,19 @@ namespace FileSystem
                 switch (header->typeflag[0])
                 {
                 case REGULAR_FILE:
-                    node->Flags = NodeFlags::FS_FILE;
+                    node->Flags = NodeFlags::FILE;
                     break;
                 case SYMLINK:
-                    node->Flags = NodeFlags::FS_SYMLINK;
+                    node->Flags = NodeFlags::SYMLINK;
                     break;
                 case DIRECTORY:
-                    node->Flags = NodeFlags::FS_DIRECTORY;
+                    node->Flags = NodeFlags::DIRECTORY;
                     break;
                 case CHARDEV:
-                    node->Flags = NodeFlags::FS_CHARDEVICE;
+                    node->Flags = NodeFlags::CHARDEVICE;
                     break;
                 case BLOCKDEV:
-                    node->Flags = NodeFlags::FS_BLOCKDEVICE;
+                    node->Flags = NodeFlags::BLOCKDEVICE;
                     break;
                 default:
                     warn("Unknown type: %d", header->typeflag[0]);

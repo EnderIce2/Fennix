@@ -310,7 +310,7 @@ EXTERNC unsigned int isdelim(char c, char *delim)
     return 0;
 }
 
-EXTERNC int abs(int i) { return i < 0 ? -i : i; }
+EXTERNC long abs(long i) { return i < 0 ? -i : i; }
 
 EXTERNC void swap(char *x, char *y)
 {

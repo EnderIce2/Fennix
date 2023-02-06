@@ -2,75 +2,72 @@
 #define __FENNIX_KERNEL_IPC_H__
 
 #include <types.h>
-
+#include <filesystem.hpp>
+#include <vector.hpp>
+#include <memory.hpp>
 #include <lock.hpp>
 
 namespace InterProcessCommunication
 {
-    typedef int IPCPort;
+    typedef int IPCID;
 
-    enum IPCOperationType
+    enum IPCType
     {
-        IPCOperationNone,
-        IPCOperationWrite,
-        IPCOperationRead
+        IPCNone,
+        IPCMessagePassing,
+        IPCPort,
+        IPCSharedMemory,
+        IPCPipe,
+        IPCSocket
     };
 
     enum IPCErrorCode
     {
-        IPCUnknown,
+        IPCError = -1,
         IPCSuccess,
         IPCNotListening,
         IPCTimeout,
         IPCInvalidPort,
-        IPCPortInUse,
-        IPCPortNotRegistered,
+        IPCAlreadyAllocated,
+        IPCNotAllocated,
+        IPCIDInUse,
+        IPCIDNotRegistered,
         IPCIDNotFound
     };
 
-    typedef struct
+    struct IPCHandle
     {
-        int ID;
+        IPCID ID;
         long Length;
         uint8_t *Buffer;
         bool Listening;
-        IPCOperationType Operation;
+        VirtualFileSystem::Node *Node;
         IPCErrorCode Error;
-        LockClass Lock;
-    } IPCHandle;
-
-    typedef struct
-    {
-        int ID;
-        long Length;
-        IPCOperationType Operation;
-        IPCErrorCode Error;
-        uint8_t *Buffer;
-
-        // Reserved
-        IPCHandle *HandleBuffer;
-    } __attribute__((packed)) IPCSyscallHandle;
-
-    struct IPCError
-    {
-        uint64_t ErrorCode;
     };
 
     class IPC
     {
     private:
+        NewLock(IPCLock);
+        IPCID NextID = 0;
+        Vector<IPCHandle *> Handles;
+        Memory::MemMgr *mem;
+        VirtualFileSystem::Node *IPCNode;
+        void *Process;
+
     public:
-        IPC();
+        IPC(void *Process);
         ~IPC();
 
-        IPCHandle *RegisterHandle(IPCPort Port);
-        IPCError Listen(IPCPort Port);
-        IPCHandle *Wait(IPCPort Port);
-        IPCError Read(unsigned long /* Tasking::UPID */ ID, IPCPort Port, uint8_t *&Buffer, long &Size);
-        IPCError Write(unsigned long /* Tasking::UPID */ ID, IPCPort Port, uint8_t *Buffer, long Size);
+        IPCHandle *Create(IPCType Type, char UniqueToken[16]);
+        IPCErrorCode Destroy(IPCID ID);
+        IPCErrorCode Read(IPCID ID, uint8_t *Buffer, long Size);
+        IPCErrorCode Write(IPCID ID, uint8_t *Buffer, long Size);
+        IPCErrorCode Listen(IPCID ID);
+        IPCHandle *Wait(IPCID ID);
+        IPCErrorCode Allocate(IPCID ID, long Size);
+        IPCErrorCode Deallocate(IPCID ID);
     };
 }
-
-extern InterProcessCommunication::IPC *ipc;
 
 #endif // !__FENNIX_KERNEL_IPC_H__

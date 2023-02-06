@@ -2,6 +2,7 @@
 #define __FENNIX_KERNEL_INTERNAL_MEMORY_H__
 
 #ifdef __cplusplus
+#include <filesystem.hpp>
 #include <boot/binfo.h>
 #include <bitmap.hpp>
 #include <vector.hpp>
@@ -634,28 +635,32 @@ namespace Memory
 
     class MemMgr
     {
-    private:
-        Bitmap PageBitmap;
-        PageTable4 *PageTable;
-
+    public:
         struct AllocatedPages
         {
             void *Address;
             size_t PageCount;
         };
 
-        Vector<AllocatedPages> AllocatedPagesList;
-
-    public:
+        Vector<AllocatedPages> GetAllocatedPagesList() { return AllocatedPagesList; }
         uint64_t GetAllocatedMemorySize();
 
         bool Add(void *Address, size_t Count);
 
-        void *RequestPages(size_t Count);
+        void *RequestPages(size_t Count, bool User = false);
         void FreePages(void *Address, size_t Count);
 
-        MemMgr(PageTable4 *PageTable = nullptr);
+        void DetachAddress(void *Address);
+
+        MemMgr(PageTable4 *PageTable = nullptr, VirtualFileSystem::Node *Directory = nullptr);
         ~MemMgr();
+
+    private:
+        Bitmap PageBitmap;
+        PageTable4 *PageTable;
+        VirtualFileSystem::Node *Directory;
+
+        Vector<AllocatedPages> AllocatedPagesList;
     };
 }
 

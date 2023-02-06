@@ -19,7 +19,7 @@ namespace NetworkInterfaceManager
 
     NetworkInterface::NetworkInterface()
     {
-        mem = new Memory::MemMgr;
+        mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
         if (DriverManager->GetDrivers().size() > 0)
         {
             foreach (auto Driver in DriverManager->GetDrivers())
@@ -74,7 +74,7 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::StartNetworkStack()
     {
-        TaskManager->GetCurrentThread()->SetPriority(100);
+        TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Critical);
         DeviceInterface *DefaultDevice = nullptr;
         foreach (auto var in Interfaces)
             if (var && var->DriverCallBackAddress)
@@ -131,7 +131,7 @@ namespace NetworkInterfaceManager
             /* TODO: Store everything in an vector and initialize all network cards */
         }
 
-        TaskManager->GetCurrentThread()->SetPriority(1);
+        TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Idle);
         CPU::Pause(true);
     }
 
@@ -157,9 +157,7 @@ namespace NetworkInterfaceManager
     void NetworkInterface::StartService()
     {
         this->NetSvcProcess = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Network Service", Tasking::TaskTrustLevel::System);
-        Vector<AuxiliaryVector> auxv;
-        auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-        this->NetSvcThread = TaskManager->CreateThread(this->NetSvcProcess, (Tasking::IP)CallStartNetworkStackWrapper, nullptr, nullptr, auxv);
+        this->NetSvcThread = TaskManager->CreateThread(this->NetSvcProcess, (Tasking::IP)CallStartNetworkStackWrapper);
     }
 
     void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)

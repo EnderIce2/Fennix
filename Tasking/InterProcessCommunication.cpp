@@ -1,141 +1,161 @@
 #include <ipc.hpp>
 
-#include <lock.hpp>
 #include <task.hpp>
 
 #include "../kernel.h"
 
-NewLock(IPCLock);
-
-InterProcessCommunication::IPC *ipc = nullptr;
-
 namespace InterProcessCommunication
 {
-    IPCHandle *IPC::RegisterHandle(IPCPort Port)
+    IPCHandle *IPC::Create(IPCType Type, char UniqueToken[16])
     {
         SmartLock(IPCLock);
-        if (Port == 0)
-            return nullptr;
 
-        Tasking::PCB *pcb = TaskManager->GetCurrentProcess();
-
-        if (pcb->IPCHandles->Get((int)Port) != 0)
-            return nullptr;
-
-        IPCHandle *handle = new IPCHandle;
-        handle->ID = -1;
-        handle->Buffer = nullptr;
-        handle->Length = 0;
-        handle->Operation = IPCOperationNone;
-        handle->Listening = 0;
-        handle->Error = IPCUnknown;
-        pcb->IPCHandles->AddNode(Port, (uintptr_t)handle);
-        return handle;
+        IPCHandle *Handle = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle)));
+        Handle->ID = NextID++;
+        Handle->Node = vfs->Create(UniqueToken, VirtualFileSystem::NodeFlags::FILE, IPCNode);
+        Handle->Node->Address = (uintptr_t)mem->RequestPages(TO_PAGES(sizeof(4096)));
+        Handle->Node->Length = 4096;
+        Handles.push_back(Handle);
+        return Handle;
     }
 
-    IPCError IPC::Listen(IPCPort Port)
+    IPCErrorCode IPC::Destroy(IPCID ID)
     {
         SmartLock(IPCLock);
-        if (Port == 0)
-            return IPCError{IPCInvalidPort};
-
-        Tasking::PCB *pcb = TaskManager->GetCurrentProcess();
-
-        if (pcb->IPCHandles->Get((int)Port) == 0)
-            return IPCError{IPCPortNotRegistered};
-
-        IPCHandle *handle = (IPCHandle *)pcb->IPCHandles->Get((int)Port);
-        handle->Listening = 1;
-        return IPCError{IPCSuccess};
-    }
-
-    IPCHandle *IPC::Wait(IPCPort Port)
-    {
-        SmartLock(IPCLock);
-        if (Port == 0)
-            return nullptr;
-
-        Tasking::PCB *pcb = TaskManager->GetCurrentProcess();
-
-        if (pcb->IPCHandles->Get((int)Port) == 0)
-            return nullptr;
-
-        IPCHandle *handle = (IPCHandle *)pcb->IPCHandles->Get((int)Port);
-
-        while (handle->Listening == 1)
-            CPU::Pause();
-
-        return handle;
-    }
-
-    IPCError IPC::Read(Tasking::UPID ID, IPCPort Port, uint8_t *&Buffer, long &Size)
-    {
-        SmartLock(IPCLock);
-        if (Port == 0)
-            return IPCError{IPCInvalidPort};
-
-        Tasking::PCB *pcb = TaskManager->GetCurrentProcess();
-
-        if (pcb->IPCHandles->Get((int)Port) == 0)
-            return IPCError{IPCInvalidPort};
-
-        IPCHandle *handle = (IPCHandle *)pcb->IPCHandles->Get((int)Port);
-
-        if (handle->Listening == 0)
-            return IPCError{IPCPortInUse};
-
-        Buffer = handle->Buffer;
-        Size = handle->Length;
-        handle->Operation = IPCOperationRead;
-        handle->Listening = 1;
-        handle->Error = IPCSuccess;
-
-        // FIXME: ID is not used.
-        UNUSED(ID);
-
-        return IPCError{IPCSuccess};
-    }
-
-    IPCError IPC::Write(Tasking::UPID ID, IPCPort Port, uint8_t *Buffer, long Size)
-    {
-        SmartLock(IPCLock);
-        if (Port == 0)
-            return IPCError{IPCInvalidPort};
-
-        Vector<Tasking::PCB *> Processes = TaskManager->GetProcessList();
-
-        for (size_t i = 0; i < Processes.size(); i++)
+        for (size_t i = 0; i < Handles.size(); i++)
         {
-            Tasking::PCB *pcb = Processes[i];
-
-            if (pcb->ID == ID)
+            if (Handles[i]->ID == ID)
             {
-                if (pcb->IPCHandles->Get((int)Port) == 0)
-                    return IPCError{IPCInvalidPort};
-
-                IPCHandle *handle = (IPCHandle *)pcb->IPCHandles->Get((int)Port);
-
-                if (handle->Listening == 0)
-                    return IPCError{IPCNotListening};
-
-                handle->Buffer = Buffer;
-                handle->Length = Size;
-                handle->Operation = IPCOperationWrite;
-                handle->Listening = 0;
-                handle->Error = IPCSuccess;
+                mem->FreePages(Handles[i], TO_PAGES(sizeof(IPCHandle)));
+                Handles.remove(i);
+                return IPCSuccess;
             }
         }
-
-        return IPCError{IPCIDNotFound};
+        return IPCIDNotFound;
     }
 
-    IPC::IPC()
+    IPCErrorCode IPC::Read(IPCID ID, uint8_t *Buffer, long Size)
     {
         SmartLock(IPCLock);
-        trace("Starting IPC Service...");
+        if (Size < 0)
+            return IPCError;
+
+        foreach (auto Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                if (Handle->Listening)
+                    return IPCNotListening;
+                if (Handle->Length < Size)
+                    return IPCError;
+                memcpy(Buffer, Handle->Buffer, Size);
+                return IPCSuccess;
+            }
+        }
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Write(IPCID ID, uint8_t *Buffer, long Size)
+    {
+        SmartLock(IPCLock);
+        if (Size < 0)
+            return IPCError;
+
+        foreach (auto Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                if (!Handle->Listening)
+                    return IPCNotListening;
+                if (Handle->Length < Size)
+                    return IPCError;
+                memcpy(Handle->Buffer, Buffer, Size);
+                Handle->Listening = false;
+                return IPCSuccess;
+            }
+        }
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Listen(IPCID ID)
+    {
+        SmartLock(IPCLock);
+        foreach (auto Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                Handle->Listening = true;
+                return IPCSuccess;
+            }
+        }
+        return IPCIDNotFound;
+    }
+
+    IPCHandle *IPC::Wait(IPCID ID)
+    {
+        SmartLock(IPCLock);
+        foreach (auto &Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                while (Handle->Listening)
+                    CPU::Pause();
+                return Handle;
+            }
+        }
+        return nullptr;
+    }
+
+    IPCErrorCode IPC::Allocate(IPCID ID, long Size)
+    {
+        SmartLock(IPCLock);
+        if (Size < 0)
+            return IPCError;
+
+        foreach (auto Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                if (Handle->Buffer != nullptr || Handle->Length != 0)
+                    return IPCAlreadyAllocated;
+
+                Handle->Buffer = (uint8_t *)mem->RequestPages(TO_PAGES(Size));
+                Handle->Length = Size;
+                return IPCSuccess;
+            }
+        }
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Deallocate(IPCID ID)
+    {
+        SmartLock(IPCLock);
+        foreach (auto Handle in Handles)
+        {
+            if (Handle->ID == ID)
+            {
+                if (Handle->Buffer == nullptr || Handle->Length == 0)
+                    return IPCNotAllocated;
+
+                mem->FreePages(Handle->Buffer, TO_PAGES(Handle->Length));
+                Handle->Buffer = nullptr;
+                Handle->Length = 0;
+                return IPCSuccess;
+            }
+        }
+        return IPCIDNotFound;
+    }
+
+    IPC::IPC(void *Process)
+    {
+        this->Process = Process;
+        mem = new Memory::MemMgr(nullptr, ((Tasking::PCB *)Process)->memDirectory);
+        IPCNode = vfs->Create("ipc", VirtualFileSystem::NodeFlags::DIRECTORY, ((Tasking::PCB *)this->Process)->ProcessDirectory);
     }
 
     IPC::~IPC()
     {
+        delete mem;
+        vfs->Delete(IPCNode, true);
     }
 }

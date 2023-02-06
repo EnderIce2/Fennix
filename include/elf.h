@@ -8,7 +8,7 @@
 
 /* 32-bit ELF base types. */
 typedef uint32_t Elf32_Addr;
-typedef uint64_t Elf32_Half;
+typedef uint16_t Elf32_Half;
 typedef uint32_t Elf32_Off;
 typedef int32_t Elf32_Sword;
 typedef uint32_t Elf32_Word;
@@ -153,6 +153,13 @@ struct Elf64_Dyn
     } d_un;
 };
 
+typedef struct
+{
+    Elf64_Addr r_offset;
+    Elf64_Xword r_info;
+    Elf64_Sxword r_addend;
+} Elf64_Rela;
+
 enum Elf_Ident
 {
     EI_MAG0 = 0,       // 0x7F
@@ -184,7 +191,7 @@ enum Elf_OSABI
     ELFOSABI_OPENVMS = 13,
     ELFOSABI_NSK = 14,
     ELFOSABI_AROS = 15,
-    ELFOSABI_FENIXOS = 16, /* Wait... what? */
+    ELFOSABI_FENIXOS = 16,
     ELFOSABI_CLOUDABI = 17,
     ELFOSABI_OPENVOS = 18,
     ELFOSABI_C6000_ELFABI = 64,
@@ -208,7 +215,28 @@ enum RtT_Types
 {
     R_386_NONE = 0, // No relocation
     R_386_32 = 1,   // Symbol + Offset
-    R_386_PC32 = 2  // Symbol + Offset - Section Offset
+    R_386_PC32 = 2, // Symbol + Offset - Section Offset
+
+    R_X86_64_NONE = 0,
+    R_X86_64_64 = 1,
+    R_X86_64_PC32 = 2,
+    R_X86_64_GOT32 = 3,
+    R_X86_64_PLT32 = 4,
+    R_X86_64_COPY = 5,
+    R_X86_64_GLOB_DAT = 6,
+    R_X86_64_JUMP_SLOT = 7,
+    R_X86_64_RELATIVE = 8,
+    R_X86_64_GOTPCREL = 9,
+    R_X86_64_32 = 10,
+    R_X86_64_32S = 11,
+    R_X86_64_16 = 12,
+};
+
+enum ProgFlags_Types
+{
+    PF_X = 1,
+    PF_W = 2,
+    PF_R = 4
 };
 
 enum StT_Bindings
@@ -359,11 +387,13 @@ enum DynamicArrayTags
 #define DO_64_64(S, A) ((S) + (A))
 #define DO_64_PC32(S, A, P) ((S) + (A) - (P))
 
-#define ELF32_R_SYM(INFO) ((INFO) >> 8)
-#define ELF32_R_TYPE(INFO) ((uint8_t)(INFO))
+#define ELF32_R_SYM(i) ((i) >> 8)
+#define ELF32_R_TYPE(i) ((unsigned char)(i))
+#define ELF32_R_INFO(s, t) (((s) << 8) + (unsigned char)(t))
 
-#define ELF64_R_SYM(INFO) ((INFO) >> 8)
-#define ELF64_R_TYPE(INFO) ((uint8_t)(INFO))
+#define ELF64_R_SYM(i) ((i) >> 32)
+#define ELF64_R_TYPE(i) ((i)&0xffffffffL)
+#define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
 
 #define SHN_UNDEF 0
 #define SHN_ABS 0xfff1
@@ -374,10 +404,12 @@ enum DynamicArrayTags
 #define SHF_WRITE 0x1
 #define SHF_ALLOC 0x2
 
-#define EM_386 (3)        // x86 Machine Type
-#define EM_AMD64 (0x3E)   // 64bit
-#define EM_AARCH64 (0xb7) // ARM64
-#define EV_CURRENT (1)    // ELF Current Version
+#define EM_386 0x3      // x86 Machine Type
+#define EM_X86_64 0x3E  // 64bit
+#define EM_ARM 0x28     // ARM
+#define EM_AARCH64 0xb7 // ARM64
+
+#define EV_CURRENT 0x1 // ELF Current Version
 
 #define ELFMAG0 0x7F // e_ident[EI_MAG0]
 #define ELFMAG1 'E'  // e_ident[EI_MAG1]

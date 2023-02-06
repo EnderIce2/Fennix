@@ -19,6 +19,7 @@ namespace SymbolResolver
         Symbols(uintptr_t ImageAddress);
         ~Symbols();
         const char *GetSymbolFromAddress(uintptr_t Address);
+        void AddSymbol(uintptr_t Address, const char *Name);
     };
 }
 

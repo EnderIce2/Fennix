@@ -64,4 +64,4 @@ __constructor void TestRandom()
     debug("Random 64: %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld", Seeds64[0], Seeds64[1], Seeds64[2], Seeds64[3], Seeds64[4], Seeds64[5], Seeds64[6], Seeds64[7], Seeds64[8], Seeds64[9], Seeds64[10], Seeds64[11], Seeds64[12], Seeds64[13], Seeds64[14], Seeds64[15]);
 }
 
-#endif
+#endif // DEBUG

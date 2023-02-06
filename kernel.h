@@ -28,16 +28,19 @@ extern PCI::PCI *PCIManager;
 extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
-extern FileSystem::Virtual *vfs;
+extern VirtualFileSystem::Virtual *vfs;
 extern Driver::Driver *DriverManager;
 extern Disk::Manager *DiskManager;
 extern NetworkInterfaceManager::NetworkInterface *NIManager;
 extern Recovery::KernelRecovery *RecoveryScreen;
+extern VirtualFileSystem::Node *DevFS;
+extern VirtualFileSystem::Node *MntFS;
+extern VirtualFileSystem::Node *ProcFS;
 
 #define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
 #define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code
 
-#endif
+#endif // __cplusplus
 
 EXTERNC void putchar(char c);
 EXTERNC void KPrint(const char *format, ...);

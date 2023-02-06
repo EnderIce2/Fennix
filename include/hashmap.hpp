@@ -1,5 +1,7 @@
 #pragma once
 
+#define HASHMAP_ERROR -0x8A50
+
 template <typename K, typename V>
 class HashNode
 {
@@ -31,6 +33,15 @@ public:
         for (int i = 0; i < HashMapCapacity; i++)
             Nodes[i] = nullptr;
         DummyNode = new HashNode<K, V>(-1, -1);
+    }
+
+    ~HashMap()
+    {
+        for (int i = 0; i < HashMapCapacity; i++)
+            if (Nodes[i] != nullptr)
+                delete Nodes[i];
+        delete[] Nodes;
+        delete DummyNode;
     }
 
     int HashCode(K Key) { return Key % HashMapCapacity; }
@@ -67,7 +78,7 @@ public:
             Index++;
             Index %= HashMapCapacity;
         }
-        return 0xdeadbeef;
+        return HASHMAP_ERROR;
     }
 
     V Get(int Key)
@@ -78,14 +89,14 @@ public:
         while (Nodes[Index] != nullptr)
         {
             if (Iterate++ > HashMapCapacity)
-                return 0xdeadbeef;
+                return HASHMAP_ERROR;
 
             if (Nodes[Index]->Key == (K)Key)
                 return Nodes[Index]->Value;
             Index++;
             Index %= HashMapCapacity;
         }
-        return 0xdeadbeef;
+        return HASHMAP_ERROR;
     }
 
     int Size() { return HashMapSize; }

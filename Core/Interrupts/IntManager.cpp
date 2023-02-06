@@ -127,7 +127,7 @@ namespace Interrupts
         if (likely(Frame->InterruptNumber < CPU::x64::IRQ223 && Frame->InterruptNumber > CPU::x64::ISR0))
         {
             Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
-            if (likely(handler != (Handler *)0xdeadbeef))
+            if (likely(handler != (Handler *)HASHMAP_ERROR))
                 handler->OnInterruptReceived(Frame);
             else
                 error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
@@ -151,7 +151,7 @@ namespace Interrupts
 
     Handler::Handler(int InterruptNumber)
     {
-        if (RegisteredEvents->Get(InterruptNumber) != (uint64_t)0xdeadbeef)
+        if (RegisteredEvents->Get(InterruptNumber) != (uint64_t)HASHMAP_ERROR)
         {
             warn("IRQ%d is already registered.", InterruptNumber - 32);
             return;
@@ -165,7 +165,7 @@ namespace Interrupts
     Handler::~Handler()
     {
         debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber - 32);
-        if (RegisteredEvents->DeleteNode(InterruptNumber) == 0xdeadbeef)
+        if (RegisteredEvents->DeleteNode(InterruptNumber) == (uint64_t)HASHMAP_ERROR)
             warn("Node %d not found.", InterruptNumber);
     }
 

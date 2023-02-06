@@ -3,8 +3,8 @@
 
 #include <types.h>
 
+#include <filesystem.hpp>
 #include <interrupts.hpp>
-#include <hashmap.hpp>
 #include <symbols.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
@@ -25,7 +25,7 @@ namespace Tasking
         UnknownArchitecture,
         x32,
         x64,
-        ARM,
+        ARM32,
         ARM64
     };
 
@@ -42,7 +42,6 @@ namespace Tasking
         UnknownElevation,
         Kernel,
         System,
-        Idle,
         User
     };
 
@@ -55,6 +54,16 @@ namespace Tasking
         Waiting,
         Stopped,
         Terminated
+    };
+
+    enum TaskPriority
+    {
+        UnknownPriority = 0,
+        Idle = 1,
+        Low = 25,
+        Normal = 50,
+        High = 75,
+        Critical = 100
     };
 
     struct TaskSecurity
@@ -76,7 +85,7 @@ namespace Tasking
         uint64_t Year, Month, Day, Hour, Minute, Second;
         uint64_t Usage[256]; // MAX_CPU
         bool Affinity[256];  // MAX_CPU
-        int Priority;
+        TaskPriority Priority;
         TaskArchitecture Architecture;
         TaskCompatibility Compatibility;
     };
@@ -123,7 +132,7 @@ namespace Tasking
             }
         }
 
-        void SetPriority(int priority)
+        void SetPriority(TaskPriority priority)
         {
             CriticalSection cs;
             trace("Setting priority of thread %s to %d", Name, priority);
@@ -165,27 +174,46 @@ namespace Tasking
         TaskInfo Info;
         Vector<TCB *> Threads;
         Vector<PCB *> Children;
-        HashMap<InterProcessCommunication::IPCPort, uintptr_t> *IPCHandles;
+        InterProcessCommunication::IPC *IPC;
         Memory::PageTable4 *PageTable;
         SymbolResolver::Symbols *ELFSymbolTable;
+        VirtualFileSystem::Node *ProcessDirectory;
+        VirtualFileSystem::Node *memDirectory;
     };
 
-    enum TokenTrustLevel
+    /** @brief Token Trust Level */
+    enum TTL
     {
-        UnknownTrustLevel,
-        Untrusted,
-        Trusted,
-        TrustedByKernel
+        UnknownTrustLevel = 0b0001,
+        Untrusted = 0b0010,
+        Trusted = 0b0100,
+        TrustedByKernel = 0b1000,
+        FullTrust = Trusted | TrustedByKernel
     };
 
     class Security
     {
+    private:
+        struct TokenData
+        {
+            Token token;
+            int TrustLevel;
+            uint64_t OwnerID;
+            bool Process;
+        };
+
+        Vector<TokenData> Tokens;
+
     public:
         Token CreateToken();
-        bool TrustToken(Token token,
-                        TokenTrustLevel TrustLevel);
+        bool TrustToken(Token token, TTL TrustLevel);
+        bool AddTrustLevel(Token token, TTL TrustLevel);
+        bool RemoveTrustLevel(Token token, TTL TrustLevel);
         bool UntrustToken(Token token);
         bool DestroyToken(Token token);
+        bool IsTokenTrusted(Token token, TTL TrustLevel);
+        bool IsTokenTrusted(Token token, int TrustLevel);
+        int GetTokenTrustLevel(Token token);
         Security();
         ~Security();
     };
@@ -194,7 +222,6 @@ namespace Tasking
     {
     private:
         Security SecurityManager;
-        InterProcessCommunication::IPC *IPCManager = nullptr;
         UPID NextPID = 0;
         UTID NextTID = 0;
 
@@ -217,6 +244,7 @@ namespace Tasking
         bool GetNextAvailableProcess(void *CPUDataPointer);
         void SchedulerCleanupProcesses();
         bool SchedulerSearchProcessThread(void *CPUDataPointer);
+        void UpdateProcessStatus();
         void WakeUpThreads(void *CPUDataPointer);
 
 #if defined(__amd64__)
@@ -232,16 +260,13 @@ namespace Tasking
         bool StopScheduler = false;
 
     public:
-        void InitIPC()
-        {
-            static int once = 0;
-            if (!once++)
-                this->IPCManager = new InterProcessCommunication::IPC();
-        }
         Vector<PCB *> GetProcessList() { return ListProcess; }
+        Security *GetSecurityManager() { return &SecurityManager; }
         void Panic() { StopScheduler = true; }
         void Schedule();
         void SignalShutdown();
+        void RevertProcessCreation(PCB *Process);
+        void RevertThreadCreation(TCB *Thread);
         long GetUsage(int Core)
         {
             if (IdleProcess)
@@ -279,6 +304,9 @@ namespace Tasking
         /** @brief Wait for thread to terminate */
         void WaitForThread(TCB *tcb);
 
+        void WaitForProcessStatus(PCB *pcb, TaskStatus Status);
+        void WaitForThreadStatus(TCB *tcb, TaskStatus Status);
+
         /**
          * @brief Sleep for a given amount of milliseconds
          *
@@ -294,9 +322,9 @@ namespace Tasking
 
         TCB *CreateThread(PCB *Parent,
                           IP EntryPoint,
-                          const char **argv,
-                          const char **envp,
-                          Vector<AuxiliaryVector> &auxv,
+                          const char **argv = nullptr,
+                          const char **envp = nullptr,
+                          const Vector<AuxiliaryVector> &auxv = Vector<AuxiliaryVector>(),
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,
                           TaskCompatibility Compatibility = TaskCompatibility::Native);
@@ -305,5 +333,7 @@ namespace Tasking
         ~Task();
     };
 }
+
+extern "C" void TaskingScheduler_OneShot(int TimeSlice);
 
 #endif // !__FENNIX_KERNEL_TASKING_H__

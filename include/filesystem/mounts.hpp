@@ -5,13 +5,13 @@
 
 #include <filesystem.hpp>
 
-namespace FileSystem
+namespace VirtualFileSystem
 {
     /* Manage /system/dev */
     class Device
     {
     public:
-        FileSystemNode *AddFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
+        Node *AddFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Device();
         ~Device();
     };
@@ -20,7 +20,7 @@ namespace FileSystem
     class Mount
     {
     public:
-        FileSystemNode *MountFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name);
+        Node *MountFileSystem(FileSystemOperations *Operator, uint64_t Mode, const char *Name);
         void DetectAndMountFS(void *drive);
         Mount();
         ~Mount();
@@ -38,7 +38,7 @@ namespace FileSystem
     class Driver
     {
     public:
-        FileSystemNode *AddDriver(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
+        Node *AddDriver(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Driver();
         ~Driver();
     };
@@ -47,7 +47,7 @@ namespace FileSystem
     class Network
     {
     public:
-        FileSystemNode *AddNetworkCard(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
+        Node *AddNetworkCard(struct FileSystemOperations *Operator, uint64_t Mode, const char *Name, int Flags);
         Network();
         ~Network();
     };

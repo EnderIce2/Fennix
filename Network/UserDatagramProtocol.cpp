@@ -86,7 +86,7 @@ namespace NetworkUDP
 
         Socket *GoodSocket = nullptr;
 
-        foreach (auto var in RegisteredEvents)
+        foreach (auto &var in RegisteredEvents)
         {
             netdbg("UDP->SKT[]: LP:%d | LIP:%s | RP:%d | RIP:%s | LST:%d",
                    b16(var.UDPSocket->LocalPort),
