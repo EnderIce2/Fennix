@@ -76,10 +76,10 @@ namespace NetworkInterfaceManager
     {
         TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Critical);
         DeviceInterface *DefaultDevice = nullptr;
-        foreach (auto var in Interfaces)
-            if (var && var->DriverCallBackAddress)
+        foreach (auto inf in Interfaces)
+            if (inf && inf->DriverCallBackAddress)
             {
-                DefaultDevice = var;
+                DefaultDevice = inf;
                 break;
             }
 
@@ -156,8 +156,8 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::StartService()
     {
-        this->NetSvcProcess = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Network Service", Tasking::TaskTrustLevel::System);
-        this->NetSvcThread = TaskManager->CreateThread(this->NetSvcProcess, (Tasking::IP)CallStartNetworkStackWrapper);
+        this->NetSvcThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CallStartNetworkStackWrapper);
+        this->NetSvcThread->Rename("Network Service");
     }
 
     void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)

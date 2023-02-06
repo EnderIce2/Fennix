@@ -52,7 +52,6 @@ namespace NetworkInterfaceManager
         int CardIDs = 0;
         Vector<DeviceInterface *> Interfaces;
 
-        Tasking::PCB *NetSvcProcess;
         Tasking::TCB *NetSvcThread;
         void StopNetworkStack();
         void FetchNetworkCards(unsigned long DriverUID);
