@@ -34,8 +34,8 @@ namespace Driver
                 foreach (auto PCIDevice in devices)
                 {
                     debug("[%ld] VendorID: %#x; DeviceID: %#x", devices.size(), PCIDevice->VendorID, PCIDevice->DeviceID);
-                    Memory::MemMgr *MemMgr = new Memory::MemMgr();
-                    Fex *fex = (Fex *)MemMgr->RequestPages(TO_PAGES(Size));
+                    Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
+                    Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size));
                     memcpy(fex, (void *)DriverAddress, Size);
                     FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
                     debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
@@ -46,16 +46,16 @@ namespace Driver
                           result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
                     kfree(result);
 #endif
-                    KernelAPI *KAPI = (KernelAPI *)MemMgr->RequestPages(TO_PAGES(sizeof(KernelAPI)));
+                    KernelAPI *KAPI = (KernelAPI *)mem->RequestPages(TO_PAGES(sizeof(KernelAPI)));
 
                     if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
                     {
-                        delete MemMgr;
+                        delete mem;
                         return DriverCode::DRIVER_RETURNED_ERROR;
                     }
                     debug("Starting driver %s", fexExtended->Driver.Name);
 
-                    KernelCallback *KCallback = (KernelCallback *)MemMgr->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+                    KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
 
                     debug("Type: %d; IOBase: %#x; MemoryBase: %#x",
                           ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1,
@@ -88,13 +88,13 @@ namespace Driver
                     case FexDriverType::FexDriverType_Generic:
                     {
                         fixme("Generic driver: %s", fexExtended->Driver.Name);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     case FexDriverType::FexDriverType_Display:
                     {
                         fixme("Display driver: %s", fexExtended->Driver.Name);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     case FexDriverType::FexDriverType_Network:
@@ -109,7 +109,7 @@ namespace Driver
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
                             error("Driver %s is not implemented", fexExtended->Driver.Name);
-                            delete MemMgr;
+                            delete mem;
                             delete InterruptHook;
                             continue;
                         }
@@ -118,7 +118,7 @@ namespace Driver
                         else
                         {
                             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                            delete MemMgr;
+                            delete mem;
                             delete InterruptHook;
                             continue;
                         }
@@ -141,7 +141,7 @@ namespace Driver
                         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
                         {
                             error("Driver %s is not implemented", fexExtended->Driver.Name);
-                            delete MemMgr;
+                            delete mem;
                             continue;
                         }
                         else if (CallbackRet == DriverReturnCode::OK)
@@ -149,7 +149,7 @@ namespace Driver
                         else
                         {
                             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                            delete MemMgr;
+                            delete mem;
                             continue;
                         }
 
@@ -163,25 +163,25 @@ namespace Driver
                     case FexDriverType::FexDriverType_FileSystem:
                     {
                         fixme("Filesystem driver: %s", fexExtended->Driver.Name);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     case FexDriverType::FexDriverType_Input:
                     {
                         fixme("Input driver: %s", fexExtended->Driver.Name);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     case FexDriverType::FexDriverType_Audio:
                     {
                         fixme("Audio driver: %s", fexExtended->Driver.Name);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     default:
                     {
                         warn("Unknown driver type: %d", fexExtended->Driver.Type);
-                        delete MemMgr;
+                        delete mem;
                         break;
                     }
                     }
