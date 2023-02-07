@@ -267,6 +267,7 @@ namespace Tasking
         void SignalShutdown();
         void RevertProcessCreation(PCB *Process);
         void RevertThreadCreation(TCB *Thread);
+
         long GetUsage(int Core)
         {
             if (IdleProcess)
@@ -274,6 +275,7 @@ namespace Tasking
             else
                 return 0;
         }
+
         void KillThread(TCB *tcb, int Code)
         {
             tcb->Status = TaskStatus::Terminated;
@@ -297,6 +299,10 @@ namespace Tasking
          * @return TCB*
          */
         TCB *GetCurrentThread();
+
+        PCB *GetProcessByID(UPID ID);
+
+        TCB *GetThreadByID(UTID ID);
 
         /** @brief Wait for process to terminate */
         void WaitForProcess(PCB *pcb);

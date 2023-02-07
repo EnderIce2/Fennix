@@ -202,6 +202,23 @@ namespace Tasking
     PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess; }
     TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread; }
 
+    PCB *Task::GetProcessByID(UPID ID)
+    {
+        for (size_t i = 0; i < ListProcess.size(); i++)
+            if (ListProcess[i]->ID == ID)
+                return ListProcess[i];
+        return nullptr;
+    }
+
+    TCB *Task::GetThreadByID(UTID ID)
+    {
+        for (size_t i = 0; i < ListProcess.size(); i++)
+            for (size_t j = 0; j < ListProcess[i]->Threads.size(); j++)
+                if (ListProcess[i]->Threads[j]->ID == ID)
+                    return ListProcess[i]->Threads[j];
+        return nullptr;
+    }
+
     void Task::WaitForProcess(PCB *pcb)
     {
         if (!pcb)
