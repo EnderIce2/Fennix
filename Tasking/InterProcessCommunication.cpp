@@ -146,6 +146,11 @@ namespace InterProcessCommunication
         return IPCIDNotFound;
     }
 
+    int IPC::HandleSyscall(long Command, long Type, int ID, int Flags, void *Buffer, size_t Size)
+    {
+        return 0;
+    }
+
     IPC::IPC(void *Process)
     {
         this->Process = Process;

@@ -124,17 +124,14 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
     UNUSED(Frame);
 }
 
-static int sys_ipc(SyscallsFrame *Frame, int Command, int Type, int ID, int Flags, void *Buffer, size_t Size)
+static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
 {
     SmartTimeoutLock(SyscallsLock, 10000);
     /* Allow everyone to use IPC */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
-
-    IPC *ipc = TaskManager->GetCurrentProcess()->IPC;
-
     UNUSED(Frame);
-    return 0;
+    return TaskManager->GetCurrentProcess()->IPC->HandleSyscall(Command, Type, ID, Flags, Buffer, Size);
 }
 
 static int sys_file_open(SyscallsFrame *Frame)

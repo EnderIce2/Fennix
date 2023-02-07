@@ -14,6 +14,7 @@ enum NativeSyscalls
      * This syscall is used to exit the current process with the provided exit code.
      */
     _Exit = 0,
+
     /** @brief Print a message to the kernel console
      * @fn int Print(char Char, int Index)
      * This syscall is used to print a message to the kernel console.
@@ -25,11 +26,13 @@ enum NativeSyscalls
      * This syscall is used to request a specific number of pages of memory from the kernel.
      */
     _RequestPages,
+
     /** @brief Free pages of memory
      * @fn int FreePages(uintptr_t Address, size_t Count)
      * This syscall is used to free a specific number of pages of memory that were previously requested.
      */
     _FreePages,
+
     /** @brief Detach memory address
      * @fn int DetachAddress(uintptr_t Address)
      * This syscall is used to detach a specific memory address from the current process.
@@ -54,26 +57,31 @@ enum NativeSyscalls
      * This syscall is used to open a file with the provided path and flags.
      */
     _FileOpen,
+
     /** @brief Close a file
      * @fn
      * This syscall is used to close a file that was previously opened.
      */
     _FileClose,
+
     /** @brief Read from a file
      * @fn
      * This syscall is used to read a specific number of bytes from a file at a specific offset.
      */
     _FileRead,
+
     /** @brief Write to a file
      * @fn
      * This syscall is used to write a specific number of bytes to a file at a specific offset.
      */
     _FileWrite,
+
     /** @brief Seek in a file
      * @fn
      * This syscall is used to change the current offset in a file.
      */
     _FileSeek,
+
     /** @brief Get file status
      * @fn
      * This syscall is used to retrieve information about a file such as its size, permissions, etc.
@@ -85,58 +93,70 @@ enum NativeSyscalls
      * This syscall is used to wait for a specific process or thread to terminate. It returns the exit code of the process or thread.
      */
     _Wait,
+
     /** @brief Kill a process or a thread
      * @fn
      * This syscall is used to send a termination signal to a specific process or thread
      */
     _Kill,
+
     /** @brief Spawn a new process
      * @fn
      * This syscall is used to create a new process with the provided path and arguments.
      */
     _Spawn,
+
     /** @brief Spawn a new thread
      * @fn
      * This syscall is used to create a new thread within the current process with the provided function and arguments.
      */
     _SpawnThread,
+
     /** @brief Get thread list of a process
      * @fn
      * This syscall is used to retrieve a list of all the threads within a specific process.
      */
     _GetThreadListOfProcess,
+
     /** @brief Get current process
      * @fn
      * This syscall is used to retrieve information about the current process.
      */
     _GetCurrentProcess,
+
     /** @brief Get current thread
      * @fn
      * This syscall is used to retrieve information about the current thread.
      */
     _GetCurrentThread,
+
     /** @brief Get process by PID
      * @fn
      * This syscall is used to retrieve information about a specific process by its PID.
      */
     _GetProcessByPID,
+
     /** @brief Get thread by TID
      * @fn
      * This syscall is used to retrieve information about a specific thread by its TID.
      */
     _GetThreadByTID,
+
     /** @brief Kill a process
      * @fn
      * This syscall is used to send a termination signal to a specific process.
      */
     _KillProcess,
+
     /** @brief Kill a thread
      * @fn
      * This syscall is used to send a termination signal to a specific thread.
      */
     _KillThread,
+
     /** @brief Reserved syscall */
     _SysReservedCreateProcess,
+
     /** @brief Reserved syscall */
     _SysReservedCreateThread,
 };

@@ -59,6 +59,7 @@ namespace InterProcessCommunication
         IPC(void *Process);
         ~IPC();
 
+        int HandleSyscall(long Command, long Type, int ID, int Flags, void *Buffer, size_t Size);
         IPCHandle *Create(IPCType Type, char UniqueToken[16]);
         IPCErrorCode Destroy(IPCID ID);
         IPCErrorCode Read(IPCID ID, uint8_t *Buffer, long Size);
