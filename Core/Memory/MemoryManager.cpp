@@ -124,6 +124,11 @@ namespace Memory
         }
 
         AllocatedPagesList.push_back({Address, Count});
+
+        /* For security reasons, we clear the memory
+           if the page is user accessible. */
+        if (User)
+            memset(Address, 0, Count * PAGE_SIZE);
         return Address;
     }
 
