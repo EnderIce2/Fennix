@@ -17,6 +17,51 @@ using VirtualFileSystem::NodeFlags;
 
 namespace Execute
 {
+    /* Passing arguments as a sanity check and debugging. */
+    void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, Vector<String> NeededLibraries)
+    {
+        debug("Interpreter thread started for %s", Path);
+        // Interpreter will create an IPC with token "LOAD".
+        char UniqueToken[16] = {'L', 'O', 'A', 'D', '\0'};
+        InterProcessCommunication::IPCHandle *Handle = nullptr;
+        while (Handle == nullptr)
+        {
+            debug("Searching for IPC with token %s", UniqueToken);
+            Handle = Process->IPC->SearchByToken(UniqueToken);
+            if (Handle == nullptr)
+                debug("Failed");
+            TaskManager->Sleep(100);
+            if (Handle == nullptr)
+                debug("Retrying...");
+        }
+        debug("IPC found, sending data...");
+    RetryIPCWrite:
+        uintptr_t *TmpBuffer = new uintptr_t[0x1000];
+        *(int *)TmpBuffer = 2545;
+        InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, 0x1000);
+        delete[] TmpBuffer;
+        debug("Write returned %d", ret);
+        if (ret == InterProcessCommunication::IPCErrorCode::IPCNotListening)
+        {
+            debug("IPC not listening, retrying...");
+            TaskManager->Sleep(100);
+            goto RetryIPCWrite;
+        }
+        while (1)
+            ;
+    }
+
+    PCB *InterpreterTargetProcess;
+    String *InterpreterTargetPath; /* We can't have String as a constructor :( */
+    void *InterpreterMemoryImage;
+    Vector<String> InterpreterNeededLibraries;
+    void ELFInterpreterThreadWrapper()
+    {
+        ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterNeededLibraries);
+        delete InterpreterTargetPath;
+        return;
+    }
+
     ELFBaseLoad ELFLoad(char *Path, const char **argv, const char **envp, Tasking::TaskCompatibility Compatibility)
     {
         /* We get the base name ("app.elf") */
@@ -108,7 +153,6 @@ namespace Execute
         // for (size_t i = 0; i < TO_PAGES(ElfLazyResolverSize); i++)
         // pV.Remap((void *)((uintptr_t)ElfLazyResolver + (i * PAGE_SIZE)), (void *)((uintptr_t)ElfLazyResolver + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
-        /* We prepare the ELF for execution (allocate memory, etc...) */
         ELFBaseLoad bl;
 
         switch (ELFHeader->e_type)
@@ -137,6 +181,18 @@ namespace Execute
             TaskManager->RevertProcessCreation(Process);
             return {};
         }
+        }
+
+        if (bl.Interpreter)
+        {
+            InterpreterTargetProcess = Process;
+            InterpreterTargetPath = new String(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
+            InterpreterMemoryImage = bl.MemoryImage;
+            InterpreterNeededLibraries = bl.NeededLibraries;
+            __sync_synchronize();
+            TCB *InterpreterIPCThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ELFInterpreterThreadWrapper);
+            InterpreterIPCThread->Rename("ELF Interpreter IPC Thread");
+            InterpreterIPCThread->SetPriority(TaskPriority::Low);
         }
 
         TCB *Thread = TaskManager->CreateThread(Process,

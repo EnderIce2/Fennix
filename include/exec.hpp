@@ -4,6 +4,7 @@
 #include <types.h>
 
 #include <filesystem.hpp>
+#include <string.hpp>
 #include <task.hpp>
 #include <elf.h>
 
@@ -55,8 +56,12 @@ namespace Execute
     struct ELFBaseLoad
     {
         bool Success;
+        bool Interpreter;
         SpawnData sd;
         Tasking::IP InstructionPointer;
+
+        Vector<String> NeededLibraries;
+        void *MemoryImage;
 
         /* This should be deleted after copying the allocated pages to the thread
            Intended to be used only inside BaseLoad.cpp */

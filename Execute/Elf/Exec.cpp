@@ -81,8 +81,6 @@ namespace Execute
             }
         }
 
-        Vector<char *> NeededLibraries;
-
         if (!DynamicString)
             DynamicString = StringTable;
 
@@ -137,10 +135,9 @@ namespace Execute
                             break;
                         }
 
-                        char *ReqLib = (char *)kmalloc(256);
-                        strcpy(ReqLib, (char *)((uintptr_t)ElfFile + DynamicString->sh_offset + Dynamic[i].d_un.d_ptr));
-                        debug("DT_NEEDED - Name[%ld]: %s", i, ReqLib);
-                        NeededLibraries.push_back(ReqLib);
+                        String ReqLib = (char *)((uintptr_t)ElfFile + DynamicString->sh_offset + Dynamic[i].d_un.d_val);
+                        debug("DT_NEEDED - Name[%ld]: %s", i, ReqLib.c_str());
+                        ELFBase.NeededLibraries.push_back(ReqLib);
                     }
                     else if (Dynamic[i].d_tag == DT_NULL)
                         break;
@@ -179,7 +176,11 @@ namespace Execute
             }
         }
 
-        EntryPoint = LoadELFInterpreter(ELFBase.TmpMem, pV, InterpreterPath);
+        if (strlen(InterpreterPath) > 1)
+        {
+            EntryPoint = LoadELFInterpreter(ELFBase.TmpMem, pV, InterpreterPath);
+            ELFBase.Interpreter = true;
+        }
 
         debug("Entry Point: %#lx", EntryPoint);
 
@@ -197,9 +198,7 @@ namespace Execute
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
 
         ELFBase.InstructionPointer = EntryPoint;
-
-        foreach (auto var in NeededLibraries)
-            kfree(var);
+        ELFBase.MemoryImage = MemoryImage;
 
         ELFBase.Success = true;
         return ELFBase;
