@@ -1569,7 +1569,7 @@ __no_instrument_function int sprintf(char *s, const char *format, ...)
     return ret;
 }
 
-__no_instrument_function int snprintf_(char *s, size_t n, const char *format, ...)
+__no_instrument_function int snprintf(char *s, size_t n, const char *format, ...)
 {
     va_list args;
     va_start(args, format);

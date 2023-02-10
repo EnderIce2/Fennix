@@ -154,7 +154,7 @@ extern "C"
      */
     ///@{
     PRINTF_VISIBILITY
-    int snprintf_(char *s, size_t count, const char *format, ...) ATTR_PRINTF(3, 4);
+    int snprintf(char *s, size_t count, const char *format, ...) ATTR_PRINTF(3, 4);
     PRINTF_VISIBILITY
     int vsnprintf(char *s, size_t count, const char *format, va_list arg) ATTR_VPRINTF(3);
     ///@}
