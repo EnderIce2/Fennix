@@ -4,8 +4,13 @@
 
 #include "../kernel.h"
 
+NewLock(SyscallsLock);
+
 extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
+    CPU::Interrupts(CPU::Enable);
+    SmartLock(SyscallsLock); /* TODO: This should be replaced or moved somewhere else. */
+
 #if defined(__amd64__)
     switch (TaskManager->GetCurrentThread()->Info.Compatibility)
     {

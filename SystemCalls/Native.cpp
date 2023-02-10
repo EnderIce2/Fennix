@@ -10,8 +10,6 @@
 #include "../../Userspace/libs/include/sysbase.h"
 #include "../ipc.h"
 
-NewLock(SyscallsLock);
-
 using InterProcessCommunication::IPC;
 using InterProcessCommunication::IPCID;
 using Tasking::Token;
@@ -36,7 +34,6 @@ static inline bool CheckTrust(int TrustLevel)
 
 static int sys_exit(SyscallsFrame *Frame, int code)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Allow everyone to exit */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted | UnknownTrustLevel))
         return SYSCALL_ACCESS_DENIED;
@@ -50,7 +47,6 @@ static int sys_exit(SyscallsFrame *Frame, int code)
 
 static int sys_print(SyscallsFrame *Frame, char Char, int Index)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Only trusted threads can write to the kernel console */
     if (!CheckTrust(TrustedByKernel | Trusted))
         return SYSCALL_ACCESS_DENIED;
@@ -65,7 +61,6 @@ static int sys_print(SyscallsFrame *Frame, char Char, int Index)
 
 static uintptr_t sys_request_pages(SyscallsFrame *Frame, size_t Count)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Allow everyone to request pages */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
@@ -75,7 +70,6 @@ static uintptr_t sys_request_pages(SyscallsFrame *Frame, size_t Count)
 
 static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Allow everyone to free pages */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
@@ -86,7 +80,6 @@ static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
 
 static int sys_detach_address(SyscallsFrame *Frame, uintptr_t Address)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Only trusted threads can detach allocated addresses */
     if (!CheckTrust(TrustedByKernel | Trusted))
         return SYSCALL_ACCESS_DENIED;
@@ -97,7 +90,6 @@ static int sys_detach_address(SyscallsFrame *Frame, uintptr_t Address)
 
 static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Only trusted threads can use kernelctl */
     if (!CheckTrust(TrustedByKernel | Trusted))
         return SYSCALL_ACCESS_DENIED;
@@ -126,7 +118,6 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 
 static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     /* Allow everyone to use IPC */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
@@ -136,133 +127,114 @@ static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType T
 
 static int sys_file_open(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_open: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_file_close(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_close: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_file_read(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_read: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_file_write(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_write: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_file_seek(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_seek: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_file_status(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_file_status: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_wait(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_wait: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_kill(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_kill: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_spawn(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_spawn: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_spawn_thread(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_spawn_thread: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_get_thread_list_of_process(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_get_thread_list_of_process: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_get_current_process(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_get_current_process: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_get_current_thread(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_get_current_thread: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_get_process_by_pid(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_get_process_by_pid: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_get_thread_by_tid(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_get_thread_by_tid: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_kill_process(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_kill_process: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_kill_thread(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_kill_thread: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_sys_reserved_create_process(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_sys_reserved_create_process: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
 static int sys_sys_reserved_create_thread(SyscallsFrame *Frame)
 {
-    SmartTimeoutLock(SyscallsLock, 10000);
     fixme("sys_sys_reserved_create_thread: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
 }
