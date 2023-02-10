@@ -190,6 +190,7 @@ public:
     }
 
     operator bool() { return this->Load() != 0; }
+    T operator->() { return this->Load(); }
     T operator++() { return this->FetchAdd(1) + 1; }
     T operator--() { return this->FetchSub(1) - 1; }
     T operator++(int) { return this->FetchAdd(1); }
