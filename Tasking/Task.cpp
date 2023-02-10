@@ -35,7 +35,7 @@ namespace Tasking
     void Task::Schedule()
     {
         if (!StopScheduler)
-            TaskingScheduler_OneShot(100);
+            TaskingScheduler_OneShot(1);
         // APIC::InterruptCommandRegisterLow icr;
         // icr.Vector = CPU::x64::IRQ16;
         // icr.Level = APIC::APICLevel::Assert;
