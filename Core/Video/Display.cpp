@@ -51,6 +51,7 @@ namespace Video
         this->Buffers[Index] = buffer;
         memset(this->Buffers[Index]->Buffer, 0, Size);
         this->Buffers[Index]->Checksum = 0xDEAD;
+        debug("Created buffer %d, address %#lx", Index, buffer);
     }
 
     void Display::SetBuffer(int Index)
