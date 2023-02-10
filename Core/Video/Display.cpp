@@ -11,6 +11,132 @@ NewLock(PrintLock);
 
 namespace Video
 {
+    Font *Display::GetCurrentFont()
+    {
+        return CurrentFont;
+    }
+
+    void Display::SetCurrentFont(Font *Font)
+    {
+        CurrentFont = Font;
+    }
+
+    void Display::CreateBuffer(uint32_t Width, uint32_t Height, int Index)
+    {
+        if (Width == 0 && Height == 0)
+        {
+            Width = this->framebuffer.Width;
+            Height = this->framebuffer.Height;
+            debug("No width and height specified, using %ldx%lld", Width, Height);
+        }
+
+        size_t Size = this->framebuffer.Pitch * Height;
+        if (this->Buffers[Index])
+        {
+            if (this->Buffers[Index]->Checksum == 0xDEAD)
+            {
+                warn("Buffer %d already exists, skipping creation", Index);
+                return;
+            }
+        }
+
+        ScreenBuffer *buffer = new ScreenBuffer;
+        buffer->Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
+        buffer->Width = Width;
+        buffer->Height = Height;
+        buffer->Size = Size;
+        buffer->Color = 0xFFFFFF;
+        buffer->CursorX = 0;
+        buffer->CursorY = 0;
+        this->Buffers[Index] = buffer;
+        memset(this->Buffers[Index]->Buffer, 0, Size);
+        this->Buffers[Index]->Checksum = 0xDEAD;
+    }
+
+    void Display::SetBuffer(int Index)
+    {
+        memcpy(this->framebuffer.BaseAddress, this->Buffers[Index]->Buffer, this->Buffers[Index]->Size);
+    }
+
+    ScreenBuffer *Display::GetBuffer(int Index)
+    {
+        return this->Buffers[Index];
+    }
+
+    void Display::ClearBuffer(int Index)
+    {
+        memset(this->Buffers[Index]->Buffer, 0, this->Buffers[Index]->Size);
+    }
+
+    void Display::DeleteBuffer(int Index)
+    {
+        if (this->Buffers[Index] == nullptr)
+            return;
+        KernelAllocator.FreePages(this->Buffers[Index]->Buffer, TO_PAGES(this->Buffers[Index]->Size));
+        this->Buffers[Index]->Checksum = 0; // Making sure that the buffer is not used anymore
+        delete this->Buffers[Index];
+    }
+
+    void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)
+    {
+        this->Buffers[Index]->CursorX = X;
+        this->Buffers[Index]->CursorY = Y;
+    }
+
+    void Display::GetBufferCursor(int Index, uint32_t *X, uint32_t *Y)
+    {
+        *X = this->Buffers[Index]->CursorX;
+        *Y = this->Buffers[Index]->CursorY;
+    }
+
+    void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
+    {
+        if (unlikely(X >= this->Buffers[Index]->Width))
+            X = this->Buffers[Index]->Width - 1;
+        if (unlikely(Y >= this->Buffers[Index]->Height))
+            Y = this->Buffers[Index]->Height - 1;
+        uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
+        *Pixel = Color;
+    }
+
+    uint32_t Display::GetPixel(uint32_t X, uint32_t Y, int Index)
+    {
+        if (unlikely(X >= this->Buffers[Index]->Width || Y >= this->Buffers[Index]->Height))
+            return 0;
+        uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer + (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8));
+        return *Pixel;
+    }
+
+    uint16_t Display::GetBitsPerPixel()
+    {
+        return this->framebuffer.BitsPerPixel;
+    }
+
+    uint64_t Display::GetPitch()
+    {
+        return this->framebuffer.Pitch;
+    }
+
+    void Display::Scroll(int Index, int Lines)
+    {
+        if (Lines == 0)
+            return;
+
+        if (Lines > 0)
+        {
+            for (uint32_t i = 0; i < this->CurrentFont->GetInfo().Height; i++) // TODO: Make this more efficient.
+            {
+                memmove(this->Buffers[Index]->Buffer,
+                        (uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines),
+                        this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines));
+
+                memset((uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines)),
+                       0,
+                       this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines);
+            }
+        }
+    }
+
     char Display::Print(char Char, int Index, bool WriteToUART)
     {
         // SmartLock(PrintLock);
