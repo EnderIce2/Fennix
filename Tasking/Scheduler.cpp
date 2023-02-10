@@ -19,6 +19,7 @@
 
 NewLock(SchedulerLock);
 
+/* FIXME: On screen task manager is corrupting the stack... */
 // #define ON_SCREEN_SCHEDULER_TASK_MANAGER 1
 
 // #define DEBUG_SCHEDULER 1
@@ -364,6 +365,77 @@ namespace Tasking
         }
     }
 
+#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
+    int SuccessSource = 0;
+    int sanity;
+
+    const char *Statuses[] = {
+        "FF0000", /* Unknown */
+        "AAFF00", /* Ready */
+        "00AA00", /* Running */
+        "FFAA00", /* Sleeping */
+        "FFAA00", /* Waiting */
+        "FF0088", /* Stopped */
+        "FF0000", /* Terminated */
+    };
+
+    const char *StatusesSign[] = {
+        "Unknown",
+        "Ready",
+        "Run",
+        "Sleep",
+        "Wait",
+        "Stop",
+        "Terminated",
+    };
+
+    const char *SuccessSourceStrings[] = {
+        "Unknown",
+        "GetNextAvailableThread",
+        "GetNextAvailableProcess",
+        "SchedulerSearchProcessThread",
+    };
+
+    SafeFunction __no_instrument_function void OnScreenTaskManagerUpdate()
+    {
+        TimeManager->Sleep(100);
+        Video::ScreenBuffer *sb = Display->GetBuffer(0);
+        for (short i = 0; i < 340; i++)
+        {
+            for (short j = 0; j < 200; j++)
+            {
+                uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo->Framebuffer[0].BitsPerPixel / 8));
+                *Pixel = 0x222222;
+            }
+        }
+
+        uint32_t tmpX, tmpY;
+        Display->GetBufferCursor(0, &tmpX, &tmpY);
+        Display->SetBufferCursor(0, 0, 0);
+        printf("\eF02C21Task Manager\n");
+        foreach (auto Proc in TaskManager->GetProcessList())
+        {
+            int Status = Proc->Status;
+            printf("\e%s-> \eAABBCC%s \e00AAAA%s\n",
+                   Statuses[Status], Proc->Name, StatusesSign[Status]);
+
+            foreach (auto Thd in Proc->Threads)
+            {
+                Status = Thd->Status;
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s\n\eAABBCC",
+                       Statuses[Status], Thd->Name, StatusesSign[Status]);
+            }
+        }
+        register uintptr_t CurrentStackAddress asm("rsp");
+        printf("Sanity: %d, Stack: %#lx\nSched. Source: %s", sanity++, CurrentStackAddress, SuccessSourceStrings[SuccessSource]);
+        if (sanity > 1000)
+            sanity = 0;
+        Display->SetBufferCursor(0, tmpX, tmpY);
+        Display->SetBuffer(0);
+        TimeManager->Sleep(100);
+    }
+#endif
+
     SafeFunction __no_instrument_function void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
@@ -376,36 +448,6 @@ namespace Tasking
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
-
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-        int SuccessSource = 0;
-        static int sanity;
-        const char *Statuses[] = {
-            "FF0000", /* Unknown */
-            "AAFF00", /* Ready */
-            "00AA00", /* Running */
-            "FFAA00", /* Sleeping */
-            "FFAA00", /* Waiting */
-            "FF0088", /* Stopped */
-            "FF0000", /* Terminated */
-        };
-        const char *StatusesSign[] = {
-            "Unknown",
-            "Ready",
-            "Run",
-            "Sleep",
-            "Wait",
-            "Stop",
-            "Terminated",
-        };
-        const char *SuccessSourceStrings[] = {
-            "Unknown",
-            "GetNextAvailableThread",
-            "GetNextAvailableProcess",
-            "SchedulerSearchProcessThread",
-        };
-        uint32_t tmpX, tmpY;
-#endif
 
 #ifdef DEBUG_SCHEDULER
         {
@@ -530,30 +572,7 @@ namespace Tasking
         CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-        for (int i = 0; i < 340; i++)
-            for (int j = 0; j < 200; j++)
-                Display->SetPixel(i, j, 0x222222, 0);
-        Display->GetBufferCursor(0, &tmpX, &tmpY);
-        Display->SetBufferCursor(0, 0, 0);
-        foreach (auto var in ListProcess)
-        {
-            int Status = var->Status;
-            printf("\e%s-> \eAABBCC%s \e00AAAA%s\n",
-                   Statuses[Status], var->Name, StatusesSign[Status]);
-            foreach (auto var2 in var->Threads)
-            {
-                Status = var2->Status;
-                printf("  \e%s-> \eAABBCC%s \e00AAAA%s\n\eAABBCC",
-                       Statuses[Status], var2->Name, StatusesSign[Status]);
-            }
-        }
-        printf("Sanity: %d\nSched. Source: %s", sanity++, SuccessSourceStrings[SuccessSource]);
-        if (sanity > 1000)
-            sanity = 0;
-        Display->SetBufferCursor(0, tmpX, tmpY);
-        Display->SetBuffer(0);
-        for (int i = 0; i < 50000; i++)
-            inb(0x80);
+        OnScreenTaskManagerUpdate();
 #endif
 
         switch (CurrentCPU->CurrentProcess->Security.TrustLevel)
