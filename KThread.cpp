@@ -35,6 +35,76 @@ void TreeFS(Node *node, int Depth)
         TreeFS(Chld, Depth + 1);
     }
 }
+
+const char *Statuses[] = {
+    "FF0000", /* Unknown */
+    "AAFF00", /* Ready */
+    "00AA00", /* Running */
+    "FFAA00", /* Sleeping */
+    "FFAA00", /* Waiting */
+    "FF0088", /* Stopped */
+    "FF0000", /* Terminated */
+};
+
+const char *StatusesSign[] = {
+    "Unknown",
+    "Ready",
+    "Run",
+    "Sleep",
+    "Wait",
+    "Stop",
+    "Terminated",
+};
+
+const char *SuccessSourceStrings[] = {
+    "Unknown",
+    "GetNextAvailableThread",
+    "GetNextAvailableProcess",
+    "SchedulerSearchProcessThread",
+};
+
+void TaskMgr()
+{
+    while (1)
+    {
+        CPU::Interrupts(CPU::Disable);
+        static int sanity = 0;
+        Video::ScreenBuffer *sb = Display->GetBuffer(0);
+        for (short i = 0; i < 340; i++)
+        {
+            for (short j = 0; j < 200; j++)
+            {
+                uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo->Framebuffer[0].BitsPerPixel / 8));
+                *Pixel = 0x222222;
+            }
+        }
+
+        uint32_t tmpX, tmpY;
+        Display->GetBufferCursor(0, &tmpX, &tmpY);
+        Display->SetBufferCursor(0, 0, 0);
+        printf("\eF02C21Task Manager\n");
+        foreach (auto Proc in TaskManager->GetProcessList())
+        {
+            int Status = Proc->Status;
+            printf("\e%s-> \eAABBCC%s \e00AAAA%s\n",
+                   Statuses[Status], Proc->Name, StatusesSign[Status]);
+
+            foreach (auto Thd in Proc->Threads)
+            {
+                Status = Thd->Status;
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s\n\eAABBCC",
+                       Statuses[Status], Thd->Name, StatusesSign[Status]);
+            }
+        }
+        register uintptr_t CurrentStackAddress asm("rsp");
+        printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
+        if (sanity > 1000)
+            sanity = 0;
+        Display->SetBufferCursor(0, tmpX, tmpY);
+        Display->SetBuffer(0);
+        CPU::Interrupts(CPU::Enable);
+    }
+}
 #endif
 
 Execute::SpawnData SpawnInit()
@@ -62,6 +132,11 @@ Execute::SpawnData SpawnInit()
 void KernelMainThread()
 {
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Critical);
+
+#ifdef DEBUG
+    Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
+    TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority((Tasking::TaskPriority)200);
+#endif
 
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
     KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
@@ -106,6 +181,7 @@ void KernelMainThread()
     Display->Print('.', 0);
     Display->SetBuffer(0);
 
+    CPU::Interrupts(CPU::Disable);
     ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::StartExecuteService);
     ExecuteThread->Rename("Library Manager");
     ExecuteThread->SetCritical(true);
@@ -114,7 +190,6 @@ void KernelMainThread()
     Display->Print('.', 0);
     Display->SetBuffer(0);
 
-    CPU::Interrupts(CPU::Disable);
     ret = SpawnInit();
 
     Display->Print('.', 0);
