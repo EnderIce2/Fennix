@@ -2,7 +2,6 @@
 
 #include <debug.h>
 #include <smp.hpp>
-#include <atomic.hpp>
 
 #include "../kernel.h"
 
@@ -21,7 +20,7 @@ void LockClass::DeadLock(SpinLockData Lock)
 
     this->DeadLocks++;
 
-    if (Config.UnlockDeadLock && this->DeadLocks > 10)
+    if (Config.UnlockDeadLock && this->DeadLocks.Load() > 10)
     {
         warn("Unlocking lock '%s' to prevent deadlock. (this is enabled in the kernel config)", Lock.AttemptingToGet);
         this->DeadLocks = 0;
@@ -50,7 +49,7 @@ int LockClass::Lock(const char *FunctionName)
     LockData.AttemptingToGet = FunctionName;
 Retry:
     unsigned int i = 0;
-    while (__atomic_exchange_n(&IsLocked, true, __ATOMIC_ACQUIRE) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryBorder::Acquire) && ++i < 0x10000000)
         CPU::Pause();
     if (i >= 0x10000000)
     {
@@ -78,7 +77,7 @@ int LockClass::Unlock()
     // IsLocked = false;
 
     __sync_synchronize();
-    __atomic_store_n(&IsLocked, false, __ATOMIC_RELEASE);
+    IsLocked.Store(false, MemoryBorder::Release);
     LockData.Count--;
     IsLocked = false;
 
@@ -115,13 +114,13 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
     Atomic<uint64_t> Target = 0;
 Retry:
     unsigned int i = 0;
-    while (__atomic_exchange_n(&IsLocked, true, __ATOMIC_ACQUIRE) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryBorder::Acquire) && ++i < 0x10000000)
         CPU::Pause();
     if (i >= 0x10000000)
     {
-        if (Target.Load() == 0)
+        if (Target == 0)
             Target = TimeManager->CalculateTarget(Timeout);
-        TimeoutDeadLock(LockData, Target.Load());
+        TimeoutDeadLock(LockData, Target);
         goto Retry;
     }
     LockData.Count++;

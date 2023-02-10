@@ -2,6 +2,8 @@
 #define __FENNIX_KERNEL_LOCK_H__
 
 #include <types.h>
+
+#include <atomic.hpp>
 #include <cpu.hpp>
 
 #ifdef __cplusplus
@@ -11,17 +13,17 @@ class LockClass
 {
     struct SpinLockData
     {
-        uint64_t LockData = 0x0;
-        const char *CurrentHolder = "(nul)";
-        const char *AttemptingToGet = "(nul)";
-        size_t Count = 0;
-        long Core = 0;
+        Atomic<uint64_t> LockData = 0x0;
+        Atomic<const char *> CurrentHolder = "(nul)";
+        Atomic<const char *> AttemptingToGet = "(nul)";
+        Atomic<size_t> Count = 0;
+        Atomic<long> Core = 0;
     };
 
 private:
     SpinLockData LockData;
-    bool IsLocked = false;
-    unsigned long DeadLocks = 0;
+    Atomic<bool> IsLocked = false;
+    Atomic<unsigned long> DeadLocks = 0;
 
     void DeadLock(SpinLockData Lock);
     void TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout);
