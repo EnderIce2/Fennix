@@ -5,6 +5,18 @@
 
 #include "HeapAllocators/Xalloc.hpp"
 #include "../Library/liballoc_1_1.h"
+#include "../../kernel.h"
+
+// #define DEBUG_ALLOCATIONS 1
+
+#ifdef DEBUG_ALLOCATIONS
+#define memdbg(m, ...) \
+    debug(m, ##__VA_ARGS__); \
+    __sync_synchronize()
+#else
+#define memdbg(m, ...)
+#endif
+
 
 using namespace Memory;
 
@@ -235,6 +247,7 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
 
 void *HeapMalloc(size_t Size)
 {
+    memdbg("malloc(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
@@ -258,6 +271,7 @@ void *HeapMalloc(size_t Size)
 
 void *HeapCalloc(size_t n, size_t Size)
 {
+    memdbg("calloc(%d, %d)->[%s]", n, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
@@ -281,6 +295,7 @@ void *HeapCalloc(size_t n, size_t Size)
 
 void *HeapRealloc(void *Address, size_t Size)
 {
+    memdbg("realloc(%#lx, %d)->[%s]", Address, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     if (unlikely(!Address))
     {
         error("Attempt to realloc a null pointer");
@@ -310,6 +325,7 @@ void *HeapRealloc(void *Address, size_t Size)
 
 void HeapFree(void *Address)
 {
+    memdbg("free(%#lx)->[%s]", Address, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     if (unlikely(!Address))
     {
         warn("Attempt to free a null pointer");
@@ -336,38 +352,45 @@ void HeapFree(void *Address)
 
 void *operator new(size_t Size)
 {
+    memdbg("new(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     return HeapMalloc(Size);
 }
 
 void *operator new[](size_t Size)
 {
+    memdbg("new[](%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     return HeapMalloc(Size);
 }
 
 void *operator new(unsigned long Size, std::align_val_t Alignment)
 {
+    memdbg("new(%d, %d)->[%s]", Size, Alignment, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     fixme("operator new with alignment(%#lx) is not implemented", Alignment);
     return HeapMalloc(Size);
 }
 
 void operator delete(void *Pointer)
 {
+    memdbg("delete(%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
 }
 
 void operator delete[](void *Pointer)
 {
+    memdbg("delete[](%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
 }
 
 void operator delete(void *Pointer, long unsigned int Size)
 {
+    memdbg("delete(%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
     UNUSED(Size);
 }
 
 void operator delete[](void *Pointer, long unsigned int Size)
 {
+    memdbg("delete[](%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
     UNUSED(Size);
 }
