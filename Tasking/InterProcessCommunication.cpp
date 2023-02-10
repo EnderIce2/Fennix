@@ -3,124 +3,59 @@
 #include <task.hpp>
 
 #include "../kernel.h"
+#include "../ipc.h"
 
 namespace InterProcessCommunication
 {
     IPCHandle *IPC::Create(IPCType Type, char UniqueToken[16])
     {
-        SmartLock(IPCLock);
+        SmartLock(this->IPCLock);
+        IPCHandle *Hnd = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle)));
 
-        IPCHandle *Handle = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle)));
-        Handle->ID = NextID++;
-        Handle->Node = vfs->Create(UniqueToken, VirtualFileSystem::NodeFlags::FILE, IPCNode);
-        Handle->Node->Address = (uintptr_t)mem->RequestPages(TO_PAGES(sizeof(4096)));
-        Handle->Node->Length = 4096;
-        Handles.push_back(Handle);
-        return Handle;
+        Hnd->ID = NextID++;
+        Hnd->Node = vfs->Create(UniqueToken, VirtualFileSystem::NodeFlags::FILE, IPCNode);
+        Hnd->Buffer = nullptr;
+        Hnd->Length = 0;
+        Hnd->Listening = false;
+
+        Handles.push_back(Hnd);
+        debug("Created IPC with ID %d", Hnd->ID);
+        return Hnd;
     }
 
     IPCErrorCode IPC::Destroy(IPCID ID)
     {
-        SmartLock(IPCLock);
+        SmartLock(this->IPCLock);
         for (size_t i = 0; i < Handles.size(); i++)
         {
             if (Handles[i]->ID == ID)
             {
+                vfs->Delete(Handles[i]->Node);
                 mem->FreePages(Handles[i], TO_PAGES(sizeof(IPCHandle)));
                 Handles.remove(i);
+                debug("Destroyed IPC with ID %d", ID);
                 return IPCSuccess;
             }
         }
+        debug("Failed to destroy IPC with ID %d", ID);
         return IPCIDNotFound;
-    }
-
-    IPCErrorCode IPC::Read(IPCID ID, uint8_t *Buffer, long Size)
-    {
-        SmartLock(IPCLock);
-        if (Size < 0)
-            return IPCError;
-
-        foreach (auto Handle in Handles)
-        {
-            if (Handle->ID == ID)
-            {
-                if (Handle->Listening)
-                    return IPCNotListening;
-                if (Handle->Length < Size)
-                    return IPCError;
-                memcpy(Buffer, Handle->Buffer, Size);
-                return IPCSuccess;
-            }
-        }
-        return IPCIDNotFound;
-    }
-
-    IPCErrorCode IPC::Write(IPCID ID, uint8_t *Buffer, long Size)
-    {
-        SmartLock(IPCLock);
-        if (Size < 0)
-            return IPCError;
-
-        foreach (auto Handle in Handles)
-        {
-            if (Handle->ID == ID)
-            {
-                if (!Handle->Listening)
-                    return IPCNotListening;
-                if (Handle->Length < Size)
-                    return IPCError;
-                memcpy(Handle->Buffer, Buffer, Size);
-                Handle->Listening = false;
-                return IPCSuccess;
-            }
-        }
-        return IPCIDNotFound;
-    }
-
-    IPCErrorCode IPC::Listen(IPCID ID)
-    {
-        SmartLock(IPCLock);
-        foreach (auto Handle in Handles)
-        {
-            if (Handle->ID == ID)
-            {
-                Handle->Listening = true;
-                return IPCSuccess;
-            }
-        }
-        return IPCIDNotFound;
-    }
-
-    IPCHandle *IPC::Wait(IPCID ID)
-    {
-        SmartLock(IPCLock);
-        foreach (auto &Handle in Handles)
-        {
-            if (Handle->ID == ID)
-            {
-                while (Handle->Listening)
-                    CPU::Pause();
-                return Handle;
-            }
-        }
-        return nullptr;
     }
 
     IPCErrorCode IPC::Allocate(IPCID ID, long Size)
     {
-        SmartLock(IPCLock);
+        SmartLock(this->IPCLock);
         if (Size < 0)
             return IPCError;
 
-        foreach (auto Handle in Handles)
+        foreach (auto Hnd in Handles)
         {
-            if (Handle->ID == ID)
+            if (Hnd->ID == ID)
             {
-                if (Handle->Buffer != nullptr || Handle->Length != 0)
+                if (Hnd->Buffer != nullptr || Hnd->Length != 0)
                     return IPCAlreadyAllocated;
 
-                Handle->Buffer = (uint8_t *)mem->RequestPages(TO_PAGES(Size));
-                Handle->Length = Size;
+                Hnd->Buffer = (uint8_t *)mem->RequestPages(TO_PAGES(Size));
+                Hnd->Length = Size;
                 return IPCSuccess;
             }
         }
@@ -129,26 +64,167 @@ namespace InterProcessCommunication
 
     IPCErrorCode IPC::Deallocate(IPCID ID)
     {
-        SmartLock(IPCLock);
-        foreach (auto Handle in Handles)
+        SmartLock(this->IPCLock);
+        foreach (auto Hnd in Handles)
         {
-            if (Handle->ID == ID)
+            if (Hnd->ID == ID)
             {
-                if (Handle->Buffer == nullptr || Handle->Length == 0)
+                if (Hnd->Buffer == nullptr || Hnd->Length == 0)
                     return IPCNotAllocated;
 
-                mem->FreePages(Handle->Buffer, TO_PAGES(Handle->Length));
-                Handle->Buffer = nullptr;
-                Handle->Length = 0;
+                mem->FreePages(Hnd->Buffer, TO_PAGES(Hnd->Length));
+                Hnd->Buffer = nullptr;
+                Hnd->Length = 0;
                 return IPCSuccess;
             }
         }
         return IPCIDNotFound;
     }
 
+    IPCErrorCode IPC::Read(IPCID ID, void *Buffer, long Size)
+    {
+        SmartLock(this->IPCLock);
+        if (Size < 0)
+            return IPCError;
+
+        foreach (auto Hnd in Handles)
+        {
+            if (Hnd->ID == ID)
+            {
+                if (Hnd->Listening)
+                {
+                    debug("IPC %d is listening", ID);
+                    return IPCNotListening;
+                }
+                if (Hnd->Length < Size)
+                {
+                    debug("IPC %d is too small", ID);
+                    return IPCError;
+                }
+                debug("IPC %d reading %d bytes", ID, Size);
+                memcpy(Buffer, Hnd->Buffer, Size);
+                debug("IPC read %d bytes", Size);
+                return IPCSuccess;
+            }
+        }
+        debug("IPC %d not found", ID);
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Write(IPCID ID, void *Buffer, long Size)
+    {
+        SmartLock(this->IPCLock);
+        if (Size < 0)
+        {
+            debug("IPC %d is too small", ID);
+            return IPCError;
+        }
+
+        foreach (auto Hnd in Handles)
+        {
+            if (Hnd->ID == ID)
+            {
+                if (!Hnd->Listening)
+                {
+                    debug("IPC %d is NOT listening", ID);
+                    return IPCNotListening;
+                }
+                if (Hnd->Length < Size)
+                {
+                    debug("IPC %d is too small", ID);
+                    return IPCError;
+                }
+                debug("IPC %d writing %d bytes", ID, Size);
+                memcpy(Hnd->Buffer, Buffer, Size);
+                Hnd->Listening = false;
+                debug("IPC %d wrote %d bytes and now is %s", ID, Size, Hnd->Listening ? "listening" : "ready");
+                return IPCSuccess;
+            }
+        }
+        debug("IPC %d not found", ID);
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Listen(IPCID ID, bool Listen)
+    {
+        foreach (auto Hnd in Handles)
+        {
+            if (Hnd->ID == ID)
+            {
+                Hnd->Listening = Listen;
+                debug("IPC %d is now set to %s", ID, Listen ? "listening" : "ready");
+                return IPCSuccess;
+            }
+        }
+        debug("IPC %d not found", ID);
+        return IPCIDNotFound;
+    }
+
+    IPCErrorCode IPC::Wait(IPCID ID)
+    {
+        foreach (auto Hnd in Handles)
+        {
+            if (Hnd->ID == ID)
+            {
+                if (!CPU::Interrupts())
+                    warn("Interrupts are disabled. This may cause a kernel hang.");
+                debug("Waiting for IPC %d (now %s)", ID, Hnd->Listening ? "listening" : "ready");
+                while (Hnd->Listening)
+                    TaskManager->Schedule();
+                debug("IPC %d is ready", ID);
+                return IPCSuccess;
+            }
+        }
+        debug("IPC %d not found", ID);
+        return IPCIDNotFound;
+    }
+
+    IPCHandle *IPC::SearchByToken(char UniqueToken[16])
+    {
+        foreach (auto Hnd in Handles)
+        {
+            if (strcmp(Hnd->Node->Name, UniqueToken) == 0)
+            {
+                debug("Found IPC with token %s", UniqueToken);
+                return Hnd;
+            }
+        }
+        debug("Failed to find IPC with token %s", UniqueToken);
+        return nullptr;
+    }
+
     int IPC::HandleSyscall(long Command, long Type, int ID, int Flags, void *Buffer, size_t Size)
     {
-        return 0;
+        switch (Command)
+        {
+        case IPC_CREATE:
+        {
+            char UniqueToken[16];
+            if (Buffer != nullptr)
+                strcpy(UniqueToken, (char *)Buffer);
+            else
+                snprintf(UniqueToken, 16, "IPC_%d", ID);
+            IPCHandle *Hnd = this->Create((IPCType)Type, UniqueToken);
+            this->Allocate(Hnd->ID, Size ? Size : PAGE_SIZE);
+            return Hnd->ID;
+        }
+        case IPC_READ:
+            return this->Read(ID, Buffer, Size);
+        case IPC_WRITE:
+            return TaskManager->GetProcessByID(Flags)->IPC->Write(ID, Buffer, Size);
+        case IPC_DELETE:
+        {
+            this->Deallocate(ID);
+            return this->Destroy(ID);
+        }
+        case IPC_WAIT:
+            return this->Wait(ID);
+        case IPC_LISTEN:
+            return this->Listen(ID, Flags);
+        default:
+            return IPCInvalidCommand;
+        }
+        return IPCError;
     }
 
     IPC::IPC(void *Process)
