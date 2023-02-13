@@ -663,14 +663,14 @@ namespace CrashHandler
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
-            debug("Exception in kernel mode");
+            debug("Exception in kernel mode (ip: %#lx, cr2: %#lx)", Frame->rip, PageFaultAddress);
             if (TaskManager)
                 TaskManager->Panic();
             Display->CreateBuffer(0, 0, SBIdx);
         }
         else
         {
-            debug("Exception in user mode");
+            debug("Exception in user mode (ip: %#lx, cr2: %#lx)", Frame->rip, PageFaultAddress);
             CPUData *data = GetCurrentCPU();
             if (!data)
             {

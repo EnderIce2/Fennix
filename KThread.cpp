@@ -134,8 +134,9 @@ void KernelMainThread()
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Critical);
 
 #ifdef DEBUG
-    Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
-    TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority((Tasking::TaskPriority)200);
+    /* TODO: This should not be enabled because it may cause a deadlock. Not sure where or how. */
+    // Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
+    // TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority(Tasking::High);
 #endif
 
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
