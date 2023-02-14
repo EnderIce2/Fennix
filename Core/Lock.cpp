@@ -49,7 +49,7 @@ int LockClass::Lock(const char *FunctionName)
     LockData.AttemptingToGet = FunctionName;
 Retry:
     unsigned int i = 0;
-    while (IsLocked.Exchange(true, MemoryBorder::Acquire) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < 0x10000000)
         CPU::Pause();
     if (i >= 0x10000000)
     {
@@ -77,7 +77,7 @@ int LockClass::Unlock()
     // IsLocked = false;
 
     __sync_synchronize();
-    IsLocked.Store(false, MemoryBorder::Release);
+    IsLocked.Store(false, MemoryOrder::Release);
     LockData.Count--;
     IsLocked = false;
 
@@ -114,7 +114,7 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
     Atomic<uint64_t> Target = 0;
 Retry:
     unsigned int i = 0;
-    while (IsLocked.Exchange(true, MemoryBorder::Acquire) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < 0x10000000)
         CPU::Pause();
     if (i >= 0x10000000)
     {
