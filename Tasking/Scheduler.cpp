@@ -445,6 +445,7 @@ namespace Tasking
             return;
         }
         CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); /* Restore kernel page table for safety reasons. */
+        uint64_t SchedTmpTicks = CPU::Counter();
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
@@ -635,6 +636,7 @@ namespace Tasking
 
     /* RealEnd->[Function Exit] */
     RealEnd:
+        this->SchedulerTicks.Store(CPU::Counter() - SchedTmpTicks);
         __sync_synchronize(); /* TODO: Is this really needed? */
     }
 

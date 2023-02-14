@@ -221,7 +221,7 @@ namespace Tasking
 
     void Task::WaitForProcess(PCB *pcb)
     {
-        if (!pcb)
+        if (InvalidPCB(pcb))
             return;
         if (pcb->Status == TaskStatus::UnknownStatus)
             return;
@@ -232,7 +232,7 @@ namespace Tasking
 
     void Task::WaitForThread(TCB *tcb)
     {
-        if (!tcb)
+        if (InvalidTCB(tcb))
             return;
         if (tcb->Status == TaskStatus::UnknownStatus)
             return;
@@ -243,7 +243,7 @@ namespace Tasking
 
     void Task::WaitForProcessStatus(PCB *pcb, TaskStatus status)
     {
-        if (!pcb)
+        if (InvalidPCB(pcb))
             return;
         if (pcb->Status == TaskStatus::UnknownStatus)
             return;
@@ -254,7 +254,7 @@ namespace Tasking
 
     void Task::WaitForThreadStatus(TCB *tcb, TaskStatus status)
     {
-        if (!tcb)
+        if (InvalidTCB(tcb))
             return;
         if (tcb->Status == TaskStatus::UnknownStatus)
             return;
@@ -835,6 +835,7 @@ namespace Tasking
 
     Task::~Task()
     {
+        debug("Destructor called");
         SmartCriticalSection(TaskingLock);
         trace("Stopping tasking");
         foreach (PCB *Process in ListProcess)

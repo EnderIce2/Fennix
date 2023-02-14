@@ -8,6 +8,7 @@
 #include <symbols.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
+#include <atomic.hpp>
 #include <ipc.hpp>
 #include <debug.h>
 #include <abi.h>
@@ -228,6 +229,7 @@ namespace Tasking
         Vector<PCB *> ListProcess;
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
+        Atomic<uint64_t> SchedulerTicks = 0;
 
         bool InvalidPCB(PCB *pcb);
         bool InvalidTCB(TCB *tcb);
@@ -260,6 +262,7 @@ namespace Tasking
         bool StopScheduler = false;
 
     public:
+        uint64_t GetSchedulerTicks() { return SchedulerTicks.Load(); }
         Vector<PCB *> GetProcessList() { return ListProcess; }
         Security *GetSecurityManager() { return &SecurityManager; }
         void Panic() { StopScheduler = true; }
