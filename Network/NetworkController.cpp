@@ -134,7 +134,7 @@ namespace NetworkInterfaceManager
         }
 
         TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Idle);
-        CPU::Pause(true);
+        CPU::Halt(true);
     }
 
     void NetworkInterface::StopNetworkStack()
