@@ -241,6 +241,8 @@ namespace GraphicalUserInterface
         Handle CreateProgressBar(Rect rect, const char *Text);
         Handle CreateContextMenu(Rect rect, const char *Text);
 
+        void SetText(Handle handle, const char *Text);
+
         WidgetCollection(void /* Window */ *ParentWindow);
         ~WidgetCollection();
 

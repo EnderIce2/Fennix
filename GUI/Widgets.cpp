@@ -81,6 +81,17 @@ namespace GraphicalUserInterface
         return (Handle)button;
     }
 
+    void WidgetCollection::SetText(Handle handle, const char *Text)
+    {
+        HandleMeta *meta = (HandleMeta *)handle;
+        if (meta->Type[0] == 'L' && meta->Type[1] == 'B' && meta->Type[2] == 'L')
+        {
+            LabelObject *label = (LabelObject *)handle;
+            strcpy(label->Text, Text);
+            NeedRedraw = true;
+        }
+    }
+
     WidgetCollection::WidgetCollection(void *ParentWindow)
     {
         if (!ParentWindow)
