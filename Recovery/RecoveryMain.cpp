@@ -33,7 +33,7 @@ namespace Recovery
 
         gui = new GraphicalUserInterface::GUI;
 
-        // TaskManager->CreateThread(proc, (IP)RecoveryThreadWrapper, nullptr, nullptr, auxv);
+        // TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RecoveryThreadWrapper);
         TCB *guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper);
         guiThread->Rename("GUI Thread");
         guiThread->SetPriority(Tasking::TaskPriority::Critical);
@@ -57,6 +57,7 @@ namespace Recovery
 
     KernelRecovery::~KernelRecovery()
     {
+        debug("Destructor called");
         delete gui;
     }
 }

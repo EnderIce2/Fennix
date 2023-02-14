@@ -79,5 +79,6 @@ namespace Time
 
     time::~time()
     {
+        debug("Destructor called");
     }
 }

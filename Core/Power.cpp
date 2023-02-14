@@ -71,6 +71,7 @@ namespace Power
 
     Power::~Power()
     {
+        debug("Destructor called");
     }
 }
 

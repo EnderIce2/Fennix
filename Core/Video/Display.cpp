@@ -311,7 +311,11 @@ namespace Video
 
     Display::~Display()
     {
-        for (int i = 0; i < 16; i++)
-            DeleteBuffer(i);
+        debug("Destructor called");
+        this->ClearBuffer(0);
+        this->SetBuffer(0);
+
+        for (size_t i = 0; i < sizeof(this->Buffers) / sizeof(this->Buffers[0]); i++)
+            this->DeleteBuffer(i);
     }
 }

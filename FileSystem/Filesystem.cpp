@@ -621,6 +621,6 @@ namespace VirtualFileSystem
 
     Virtual::~Virtual()
     {
-        trace("Destroying virtual file system...");
+        debug("Destructor called");
     }
 }

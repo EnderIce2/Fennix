@@ -153,5 +153,6 @@ namespace Disk
 
     Manager::~Manager()
     {
+        debug("Destructor called");
     }
 }

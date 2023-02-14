@@ -663,14 +663,14 @@ namespace CrashHandler
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
-            debug("Exception in kernel mode (ip: %#lx, cr2: %#lx)", Frame->rip, PageFaultAddress);
+            debug("Exception in kernel mode (ip: %#lx (%s), cr2: %#lx)", Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol", PageFaultAddress);
             if (TaskManager)
                 TaskManager->Panic();
             Display->CreateBuffer(0, 0, SBIdx);
         }
         else
         {
-            debug("Exception in user mode (ip: %#lx, cr2: %#lx)", Frame->rip, PageFaultAddress);
+            debug("Exception in user mode (ip: %#lx (%s), cr2: %#lx)", Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol", PageFaultAddress);
             CPUData *data = GetCurrentCPU();
             if (!data)
             {
@@ -715,7 +715,7 @@ namespace CrashHandler
             asmv("mov %%ds, %0"
                  : "=r"(ds));
 
-            EHPrint("\eFF0000FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
+            EHPrint("\eFF2525FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                     CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                     Frame->ss, Frame->cs, ds);
             EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);

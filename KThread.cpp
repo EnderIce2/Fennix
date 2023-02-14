@@ -217,7 +217,7 @@ Exit:
     if (ExitCode != 0)
     {
         KPrint("Dropping to recovery screen...", ExitCode);
-        TaskManager->Sleep(5000);
+        TaskManager->Sleep(2500);
         RecoveryScreen = new Recovery::KernelRecovery;
     }
     else

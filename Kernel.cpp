@@ -356,17 +356,13 @@ EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
     delete NIManager;
 
     delete DiskManager;
-    if (DriverManager)
-        DriverManager->UnloadAllDrivers();
     delete DriverManager;
-
     TaskManager->SignalShutdown();
     delete TaskManager;
-
-    delete RecoveryScreen;
+    if (RecoveryScreen)
+        delete RecoveryScreen;
     delete vfs;
     delete TimeManager;
-    delete KernelSymbolTable;
     delete Display;
     // PowerManager should not be called
 

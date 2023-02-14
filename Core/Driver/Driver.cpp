@@ -202,6 +202,8 @@ namespace Driver
 
     Driver::~Driver()
     {
+        debug("Destructor called");
+        this->UnloadAllDrivers();
     }
 
 #if defined(__amd64__)

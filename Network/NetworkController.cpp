@@ -34,6 +34,8 @@ namespace NetworkInterfaceManager
 
     NetworkInterface::~NetworkInterface()
     {
+        debug("Destructor called");
+
         // Stop the network stack
         this->StopNetworkStack();
 
