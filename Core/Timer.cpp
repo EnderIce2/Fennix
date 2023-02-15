@@ -69,7 +69,9 @@ namespace Time
             }
             else
             {
-                trace("HPET not found");
+                // For now, we need HPET.
+                error("HPET not found");
+                CPU::Stop();
             }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
