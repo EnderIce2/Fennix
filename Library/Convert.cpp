@@ -5,6 +5,8 @@
 #include <debug.h>
 #include <cpu.hpp>
 
+#include "../kernel.h"
+
 EXTERNC int memcmp(const void *vl, const void *vr, size_t n)
 {
     const unsigned char *l = (unsigned char *)vl, *r = (unsigned char *)vr;
@@ -609,25 +611,25 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 #endif
     if (unlikely(dest == NULL))
     {
-        error("dest is NULL");
+        error("dest is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
-        error("src is NULL");
+        error("src is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
-        error("len is 0");
+        error("len is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
-        error("slen is 0");
+        error("slen is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
@@ -658,8 +660,6 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
         return memcpy_unsafe(dest, src, len);
         break;
     }
-    error("Should not be here!");
-    CPU::Stop();
 }
 
 EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
@@ -669,19 +669,19 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 #endif
     if (unlikely(dest == NULL))
     {
-        error("dest is NULL");
+        error("dest is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
-        error("len is 0");
+        error("len is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
-        error("slen is 0");
+        error("slen is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
@@ -712,8 +712,6 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
         return memset_unsafe(dest, val, len);
         break;
     }
-    error("Should not be here!");
-    CPU::Stop();
 }
 
 EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
@@ -723,25 +721,25 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 #endif
     if (unlikely(dest == NULL))
     {
-        error("dest is NULL");
+        error("dest is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
-        error("src is NULL");
+        error("src is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(len == 0))
     {
-        error("len is 0");
+        error("len is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
-        error("slen is 0");
+        error("slen is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
@@ -772,8 +770,6 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
         return memmove_unsafe(dest, src, len);
         break;
     }
-    error("Should not be here!");
-    CPU::Stop();
 }
 
 EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)
@@ -783,19 +779,19 @@ EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, siz
 #endif
     if (unlikely(dest == NULL))
     {
-        error("dest is NULL");
+        error("dest is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
-        error("src is NULL");
+        error("src is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
-        error("slen is 0");
+        error("slen is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
@@ -812,19 +808,19 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 #endif
     if (unlikely(dest == NULL))
     {
-        error("dest is NULL");
+        error("dest is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(src == NULL))
     {
-        error("src is NULL");
+        error("src is NULL (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 
     if (unlikely(slen == 0))
     {
-        error("slen is 0");
+        error("slen is 0 (for %#lx %s)", __builtin_return_address(0), KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
         __convert_chk_fail();
     }
 

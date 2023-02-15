@@ -31,7 +31,6 @@ NewLock(TaskingLock);
 
 namespace Tasking
 {
-
     void Task::Schedule()
     {
         if (!StopScheduler)
