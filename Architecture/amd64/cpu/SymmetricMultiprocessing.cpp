@@ -28,27 +28,22 @@ volatile bool CPUEnabled = false;
 static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
 
 CPUData *GetCPU(long id) { return &CPUs[id]; }
+
 SafeFunction CPUData *GetCurrentCPU()
 {
-    CPUData *data = (CPUData *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
+    if (unlikely(!Interrupts::apic[0]))
+        return &CPUs[0]; /* No APIC means we are on the BSP. */
+    int CoreID = ((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24;
 
-    if (unlikely(data == nullptr && Interrupts::apic[0]))
-        data = &CPUs[((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24];
-
-    if (unlikely(data == nullptr))
-        return nullptr; // The caller should handle this.
-
-    if (unlikely(data->IsActive != true))
+    if (unlikely((&CPUs[CoreID])->IsActive != true))
     {
-        error("CPU %d is not active!", data->ID);
-        if ((&CPUs[0])->IsActive)
-            return &CPUs[0];
-        else
-            return nullptr; // We are in trouble.
+        error("CPU %d is not active!", CoreID);
+        assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
+        return &CPUs[0];
     }
 
-    assert(data->Checksum == CPU_DATA_CHECKSUM); // This should never happen.
-    return data;
+    assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
+    return &CPUs[CoreID];
 }
 
 extern "C" void StartCPU()
