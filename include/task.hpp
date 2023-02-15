@@ -61,10 +61,10 @@ namespace Tasking
     {
         UnknownPriority = 0,
         Idle = 1,
-        Low = 25,
-        Normal = 50,
-        High = 75,
-        Critical = 100
+        Low = 2,
+        Normal = 5,
+        High = 8,
+        Critical = 10
     };
 
     struct TaskSecurity
