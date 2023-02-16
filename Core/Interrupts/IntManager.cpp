@@ -104,7 +104,7 @@ namespace Interrupts
 #endif
     }
 
-    void RemoveAll()
+    SafeFunction void RemoveAll()
     {
         for (int i = 0; i < CPU::x64::IRQ223; i++)
                 RegisteredEvents->DeleteNode(i);
