@@ -221,16 +221,18 @@ namespace Video
         }
         }
 
-        if (this->Buffers[Index]->CursorY + this->GetCurrentFont()->GetInfo().Height >= this->Buffers[Index]->Height)
-        {
-            this->Buffers[Index]->CursorY -= this->GetCurrentFont()->GetInfo().Height;
-            this->Scroll(Index, 1);
-        }
+        uint32_t FontHeight = this->GetCurrentFont()->GetInfo().Height;
 
         if (this->Buffers[Index]->CursorX + this->GetCurrentFont()->GetInfo().Width >= this->Buffers[Index]->Width)
         {
             this->Buffers[Index]->CursorX = 0;
-            this->Buffers[Index]->CursorY += this->GetCurrentFont()->GetInfo().Height;
+            this->Buffers[Index]->CursorY += FontHeight;
+        }
+
+        if (this->Buffers[Index]->CursorY + FontHeight >= this->Buffers[Index]->Height)
+        {
+            this->Buffers[Index]->CursorY -= FontHeight;
+            this->Scroll(Index, 1);
         }
 
         switch (this->CurrentFont->GetInfo().Type)
@@ -255,24 +257,30 @@ namespace Video
             // if (this->CurrentFont->PSF2Font->GlyphBuffer == (uint16_t *)0x01) // HAS UNICODE TABLE
             //     Char = this->CurrentFont->PSF2Font->GlyphBuffer[Char];
             int BytesPerLine = (this->CurrentFont->GetInfo().PSF2Font->Header->width + 7) / 8;
-            char *FontPtr = (char *)this->CurrentFont->GetInfo().StartAddress +
-                            this->CurrentFont->GetInfo().PSF2Font->Header->headersize +
-                            (Char > 0 && (unsigned char)Char < this->CurrentFont->GetInfo().PSF2Font->Header->length ? Char : 0) *
-                                this->CurrentFont->GetInfo().PSF2Font->Header->charsize;
+            char *FontAddress = (char *)this->CurrentFont->GetInfo().StartAddress;
+            uint32_t FontHeaderSize = this->CurrentFont->GetInfo().PSF2Font->Header->headersize;
+            uint32_t FontCharSize = this->CurrentFont->GetInfo().PSF2Font->Header->charsize;
+            uint32_t FontLength = this->CurrentFont->GetInfo().PSF2Font->Header->length;
+            char *FontPtr = FontAddress + FontHeaderSize + (Char > 0 && Char < FontLength ? Char : 0) * FontCharSize;
 
-            uint32_t fonthdrWidth = this->CurrentFont->GetInfo().PSF2Font->Header->width;
-            uint32_t fonthdrHeight = this->CurrentFont->GetInfo().PSF2Font->Header->height;
+            uint32_t FontHdrWidth = this->CurrentFont->GetInfo().PSF2Font->Header->width;
+            uint32_t FontHdrHeight = this->CurrentFont->GetInfo().PSF2Font->Header->height;
 
-            for (uint64_t Y = this->Buffers[Index]->CursorY; Y < this->Buffers[Index]->CursorY + fonthdrHeight; Y++)
+            for (size_t Y = this->Buffers[Index]->CursorY; Y < this->Buffers[Index]->CursorY + FontHdrHeight; Y++)
             {
-                for (uint64_t X = this->Buffers[Index]->CursorX; X < this->Buffers[Index]->CursorX + fonthdrWidth; X++)
+                for (size_t X = this->Buffers[Index]->CursorX; X < this->Buffers[Index]->CursorX + FontHdrWidth; X++)
+                {
                     if ((*FontPtr & (0b10000000 >> (X - this->Buffers[Index]->CursorX))) > 0)
-                        *(uint32_t *)((uintptr_t)this->Buffers[Index]->Buffer +
-                                      (Y * this->Buffers[Index]->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = this->Buffers[Index]->Color;
-
+                    {
+                        void *FramebufferAddress = (void *)((uintptr_t)this->Buffers[Index]->Buffer +
+                                                            (Y * this->Buffers[Index]->Width + X) *
+                                                                (this->framebuffer.BitsPerPixel / 8));
+                        *(uint32_t *)FramebufferAddress = this->Buffers[Index]->Color;
+                    }
+                }
                 FontPtr += BytesPerLine;
             }
-            this->Buffers[Index]->CursorX += fonthdrWidth;
+            this->Buffers[Index]->CursorX += FontHdrWidth;
             break;
         }
         default:
