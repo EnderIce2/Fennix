@@ -261,7 +261,7 @@ namespace Video
             uint32_t FontHeaderSize = this->CurrentFont->GetInfo().PSF2Font->Header->headersize;
             uint32_t FontCharSize = this->CurrentFont->GetInfo().PSF2Font->Header->charsize;
             uint32_t FontLength = this->CurrentFont->GetInfo().PSF2Font->Header->length;
-            char *FontPtr = FontAddress + FontHeaderSize + (Char > 0 && Char < FontLength ? Char : 0) * FontCharSize;
+            char *FontPtr = FontAddress + FontHeaderSize + (Char > 0 && (uint32_t)Char < FontLength ? Char : 0) * FontCharSize;
 
             uint32_t FontHdrWidth = this->CurrentFont->GetInfo().PSF2Font->Header->width;
             uint32_t FontHdrHeight = this->CurrentFont->GetInfo().PSF2Font->Header->height;
