@@ -125,16 +125,11 @@ namespace Video
 
         if (Lines > 0)
         {
-            for (uint32_t i = 0; i < this->CurrentFont->GetInfo().Height; i++) // TODO: Make this more efficient.
-            {
-                memmove(this->Buffers[Index]->Buffer,
-                        (uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines),
-                        this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines));
-
-                memset((uint8_t *)this->Buffers[Index]->Buffer + (this->Buffers[Index]->Size - (this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines)),
-                       0,
-                       this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8) * Lines);
-            }
+            uint32_t LineSize = this->Buffers[Index]->Width * (this->framebuffer.BitsPerPixel / 8);
+            uint32_t BytesToMove = LineSize * Lines * this->CurrentFont->GetInfo().Height;
+            uint32_t BytesToClear = this->Buffers[Index]->Size - BytesToMove;
+            memmove(this->Buffers[Index]->Buffer, (uint8_t *)this->Buffers[Index]->Buffer + BytesToMove, BytesToClear);
+            memset((uint8_t *)this->Buffers[Index]->Buffer + BytesToClear, 0, BytesToMove);
         }
     }
 
