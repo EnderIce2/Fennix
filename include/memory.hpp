@@ -534,12 +534,12 @@ namespace Memory
         };
 
         /**
-         * @brief Check if page is present
+         * @brief Check if page has the specified flag.
          *
          * @param VirtualAddress Virtual address of the page
          * @param Flag Flag to check
-         * @return true if page is present
-         * @return false if page is not present
+         * @return true if page has the specified flag.
+         * @return false if page is has the specified flag.
          */
         bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
 
