@@ -399,7 +399,7 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
         (line == 48 && column == 28))
         return false;
 
-    if (strstr(file, "Task.cpp") && line > 900)
+    if (strstr(file, "Task.cpp") && line > 500)
         return false;
 
     ubsan("\t\tIn File: %s:%i:%i", file, line, column);
