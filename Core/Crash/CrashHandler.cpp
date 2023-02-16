@@ -7,6 +7,7 @@
 #include <printf.h>
 #include <lock.hpp>
 #include <rand.hpp>
+#include <uart.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cpu.hpp>
@@ -324,6 +325,7 @@ namespace CrashHandler
             EHPrint("tss <CORE> - Print the CPU task state segment\n");
             EHPrint("dump <ADDRESS HEX> <LENGTH DEC> - Dump memory\n");
             EHPrint("       - \eFF4400WARNING: This can crash the system if you try to read from an unmapped page.\eFAFAFA\n");
+            EHPrint("uartmemdmp <INDEX> <SKIP INACCESSIBLE (bool 0,1)> - Dump the memory of a UART.\n");
             EHPrint("main - Show the main screen.\n");
             EHPrint("details - Show the details screen.\n");
             EHPrint("frames - Show the stack frame screen.\n");
@@ -604,6 +606,76 @@ namespace CrashHandler
                 debug("Dumping %ld bytes from %#lx\n", Length, Address);
                 EHDumpData((void *)Address, Length);
             }
+        }
+        else if (strncmp(Input, "uartmemdmp", 10) == 0)
+        {
+            char *arg = TrimWhiteSpace(Input + 10);
+            char *cPort = strtok(arg, " ");
+            char *cBoolSkip = strtok(NULL, " ");
+            UniversalAsynchronousReceiverTransmitter::SerialPorts port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM1;
+            switch (cPort[0])
+            {
+            case '1':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM1;
+                break;
+            case '2':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM2;
+                break;
+            case '3':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM3;
+                break;
+            case '4':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM4;
+                break;
+            case '5':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM5;
+                break;
+            case '6':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM6;
+                break;
+            case '7':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM7;
+                break;
+            case '8':
+                port = UniversalAsynchronousReceiverTransmitter::SerialPorts::COM8;
+                break;
+            default:
+                EHPrint("\eFF0000Invalid port! Defaulting to 1.\n");
+                break;
+            }
+            EHPrint("\eF8F8F8Dumping memory to UART port %c (%#lx) and %s inaccessible pages.\n", cPort[0], port, cBoolSkip[0] == '1' ? "skipping" : "zeroing");
+            Display->SetBuffer(SBIdx);
+            uint64_t Length = KernelAllocator.GetTotalMemory();
+            uint64_t ProgressLength = Length;
+            UniversalAsynchronousReceiverTransmitter::UART uart(port);
+            Memory::Virtual vma;
+            uint8_t *Address = reinterpret_cast<uint8_t *>(0x0);
+            int Progress = 0;
+            for (size_t i = 0; i < Length; i++)
+            {
+                if (vma.Check(Address))
+                    uart.Write(*Address);
+                else if (cBoolSkip[0] == '0')
+                    uart.Write((uint8_t)0);
+                else
+                    ProgressLength--;
+                Address++;
+
+                if (unlikely(i % 0x1000 == 0))
+                {
+                    int NewProgress = (i * 100) / ProgressLength;
+                    if (unlikely(NewProgress != Progress))
+                    {
+                        Progress = NewProgress;
+                        EHPrint("\n%d%%\n", Progress);
+                        Display->SetBuffer(SBIdx);
+                    }
+                    Display->Print('.', SBIdx);
+                    if (unlikely(i % 0x500 == 0))
+                        Display->SetBuffer(SBIdx);
+                }
+            }
+            EHPrint("\nDone.\n");
         }
         else if (strcmp(Input, "main") == 0)
         {
