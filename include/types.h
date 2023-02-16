@@ -290,6 +290,9 @@ typedef intptr_t ssize_t;
 #define __no_address_safety_analysis __attribute__((no_address_safety_analysis))
 #define __no_sanitize_thread __attribute__((no_sanitize_thread))
 
+#define __synchronize __sync_synchronize()
+#define __sync __synchronize
+
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
