@@ -178,10 +178,6 @@ void KernelMainThread()
     Execute::SpawnData ret = {Execute::ExStatus::Unknown, nullptr, nullptr};
     Tasking::TCB *ExecuteThread = nullptr;
     int ExitCode = -1;
-
-    Display->Print('.', 0);
-    Display->SetBuffer(0);
-
     ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::StartExecuteService);
     ExecuteThread->Rename("Library Manager");
     ExecuteThread->SetCritical(true);
@@ -190,10 +186,12 @@ void KernelMainThread()
     Display->Print('.', 0);
     Display->SetBuffer(0);
 
+    /* Prevent race conditions */
+    CPU::Interrupts(CPU::Disable);
+
     ret = SpawnInit();
 
     Display->Print('.', 0);
-    Display->Print('\n', 0);
     Display->SetBuffer(0);
 
     if (ret.Status != Execute::ExStatus::OK)
@@ -204,6 +202,14 @@ void KernelMainThread()
     TaskManager->GetSecurityManager()->TrustToken(ret.Process->Security.UniqueToken, Tasking::TTL::FullTrust);
     TaskManager->GetSecurityManager()->TrustToken(ret.Thread->Security.UniqueToken, Tasking::TTL::FullTrust);
     ret.Thread->SetCritical(true);
+
+    Display->Print('.', 0);
+    Display->Print('\n', 0);
+    Display->SetBuffer(0);
+
+    /* Prevent the init process to execute syscalls without being trusted by the kernel */
+    CPU::Interrupts(CPU::Enable);
+
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Idle);
     TaskManager->WaitForThread(ret.Thread);
