@@ -298,4 +298,16 @@ typedef intptr_t ssize_t;
 
 #define SafeFunction __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
 
+#define int1                        \
+    __asm__ __volatile__("int $0x1" \
+                         :          \
+                         :          \
+                         : "memory")
+
+#define int3                        \
+    __asm__ __volatile__("int $0x3" \
+                         :          \
+                         :          \
+                         : "memory")
+
 #endif // !__FENNIX_KERNEL_TYPES_H__
