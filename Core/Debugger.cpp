@@ -63,7 +63,27 @@ namespace SysDbg
 
     __no_instrument_function void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
-        // SmartLock(DebuggerLock);
+        WritePrefix(Level, File, Line, Function);
+        va_list args;
+        va_start(args, Format);
+        vfctprintf(uart_wrapper, nullptr, Format, args);
+        va_end(args);
+        uart_wrapper('\n', nullptr);
+    }
+
+    __no_instrument_function void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    {
+        SmartTimeoutLock(DebuggerLock, 1000);
+        WritePrefix(Level, File, Line, Function);
+        va_list args;
+        va_start(args, Format);
+        vfctprintf(uart_wrapper, nullptr, Format, args);
+        va_end(args);
+    }
+
+    __no_instrument_function void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    {
+        SmartTimeoutLock(DebuggerLock, 1000);
         WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);
@@ -86,6 +106,29 @@ extern "C" __no_instrument_function void SysDbgWrite(enum DebugLevel Level, cons
 // C compatibility
 extern "C" __no_instrument_function void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
+    WritePrefix(Level, File, Line, Function);
+    va_list args;
+    va_start(args, Format);
+    vfctprintf(uart_wrapper, nullptr, Format, args);
+    va_end(args);
+    uart_wrapper('\n', nullptr);
+}
+
+// C compatibility
+extern "C" __no_instrument_function void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+{
+    SmartTimeoutLock(DebuggerLock, 1000);
+    WritePrefix(Level, File, Line, Function);
+    va_list args;
+    va_start(args, Format);
+    vfctprintf(uart_wrapper, nullptr, Format, args);
+    va_end(args);
+}
+
+// C compatibility
+extern "C" __no_instrument_function void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+{
+    SmartTimeoutLock(DebuggerLock, 1000);
     WritePrefix(Level, File, Line, Function);
     va_list args;
     va_start(args, Format);
