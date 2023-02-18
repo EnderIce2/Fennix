@@ -15,8 +15,10 @@
 
 #if defined(__amd64__)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
+#include "../Architecture/amd64/cpu/apic.hpp"
 #elif defined(__i386__)
 #include "../../Architecture/i686/cpu/gdt.hpp"
+#include "../Architecture/i686/cpu/apic.hpp"
 #elif defined(__aarch64__)
 #endif
 
@@ -719,18 +721,43 @@ namespace CrashHandler
         Display->SetBuffer(SBIdx);
     }
 
+    SafeFunction void StopAllCores()
+    {
+#if defined(__amd64__) || defined(__i386__)
+        if (SMP::CPUCores > 1)
+        {
+            CPU::Interrupts(CPU::Enable);
+            for (int i = 1; i < SMP::CPUCores; i++)
+            {
+                locked_debug("Sending IPI to CPU %d", i);
+                APIC::InterruptCommandRegisterLow icr;
+                icr.Vector = CPU::x64::IRQ29;
+                icr.Level = APIC::APICLevel::Assert;
+                ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
+                __sync;
+            }
+            CPU::Interrupts(CPU::Disable);
+        }
+#elif defined(__aarch64__)
+#endif
+    }
+
     SafeFunction void Handle(void *Data)
     {
         // TODO: SUPPORT SMP
         CPU::Interrupts(CPU::Disable);
-        error("An exception occurred!");
-        for (size_t i = 0; i < INT_FRAMES_MAX; i++)
-            EHIntFrames[i] = Interrupts::InterruptFrames[i];
-
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
+        if (Frame->InterruptNumber == CPU::x64::IRQ29)
+        {
+            locked_error("CPU %d halted.", GetCurrentCPU()->ID);
+            CPU::Stop();
+        }
+        error("An exception occurred!");
         error("Exception: %#llx", Frame->InterruptNumber);
+        for (size_t i = 0; i < INT_FRAMES_MAX; i++)
+            EHIntFrames[i] = Interrupts::InterruptFrames[i];
         PageFaultAddress = CPU::x64::readcr2().PFLA;
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
@@ -740,6 +767,7 @@ namespace CrashHandler
                 TaskManager->Panic();
             ForceUnlock = true;
             Display->CreateBuffer(0, 0, SBIdx);
+            StopAllCores();
         }
         else
         {
@@ -749,6 +777,7 @@ namespace CrashHandler
             {
                 ForceUnlock = true;
                 Display->CreateBuffer(0, 0, SBIdx);
+                StopAllCores();
                 EHPrint("\eFF0000Cannot get CPU data! This results in a kernel crash!");
                 error("Cannot get CPU data! This results in a kernel crash!");
                 error("This should never happen!");
@@ -763,6 +792,7 @@ namespace CrashHandler
                         TaskManager->Panic();
                     ForceUnlock = true;
                     Display->CreateBuffer(0, 0, SBIdx);
+                    StopAllCores();
                 }
                 else
                 {

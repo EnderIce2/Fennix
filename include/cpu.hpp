@@ -2661,7 +2661,7 @@ namespace CPU
             IRQ26 = 0x3a,
             IRQ27 = 0x3b,
             IRQ28 = 0x3c,
-            IRQ29 = 0x3d,
+            IRQ29 = 0x3d, // Reserved for icr stop core
 
             /* Free */
 
