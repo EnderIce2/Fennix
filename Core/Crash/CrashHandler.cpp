@@ -729,7 +729,6 @@ namespace CrashHandler
             CPU::Interrupts(CPU::Enable);
             for (int i = 1; i < SMP::CPUCores; i++)
             {
-                locked_debug("Sending IPI to CPU %d", i);
                 APIC::InterruptCommandRegisterLow icr;
                 icr.Vector = CPU::x64::IRQ29;
                 icr.Level = APIC::APICLevel::Assert;
@@ -750,10 +749,8 @@ namespace CrashHandler
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
         if (Frame->InterruptNumber == CPU::x64::IRQ29)
-        {
-            locked_error("CPU %d halted.", GetCurrentCPU()->ID);
             CPU::Stop();
-        }
+
         error("An exception occurred!");
         error("Exception: %#llx", Frame->InterruptNumber);
         for (size_t i = 0; i < INT_FRAMES_MAX; i++)
