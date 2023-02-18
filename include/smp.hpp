@@ -2,6 +2,7 @@
 #define __FENNIX_KERNEL_SMP_H__
 
 #include <types.h>
+#include <atomic.hpp>
 #include <task.hpp>
 
 /** @brief Maximum supported number of CPU cores by the kernel */
@@ -34,15 +35,15 @@ struct CPUData
     bool IsActive;
 
     /** @brief Current running process */
-    Tasking::PCB *CurrentProcess;
+    Atomic<Tasking::PCB *> CurrentProcess;
     /** @brief Current running thread */
-    Tasking::TCB *CurrentThread;
+    Atomic<Tasking::TCB *> CurrentThread;
 
     /** @brief Architecture-specific data. */
     CPUArchData Data;
     /** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
     int Checksum;
-} __attribute__((packed));
+};
 
 CPUData *GetCurrentCPU();
 CPUData *GetCPU(long ID);

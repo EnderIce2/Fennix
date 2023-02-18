@@ -198,8 +198,8 @@ namespace Tasking
         CPU::Halt(true);
     }
 
-    PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess; }
-    TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread; }
+    PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess.Load(); }
+    TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread.Load(); }
 
     PCB *Task::GetProcessByID(UPID ID)
     {
@@ -226,7 +226,7 @@ namespace Tasking
             return;
         debug("Waiting for process \"%s\"(%d)", pcb->Name, pcb->ID);
         while (pcb->Status != TaskStatus::Terminated)
-            CPU::Halt();
+            CPU::Pause();
     }
 
     void Task::WaitForThread(TCB *tcb)
@@ -237,7 +237,7 @@ namespace Tasking
             return;
         debug("Waiting for thread \"%s\"(%d)", tcb->Name, tcb->ID);
         while (tcb->Status != TaskStatus::Terminated)
-            CPU::Halt();
+            CPU::Pause();
     }
 
     void Task::WaitForProcessStatus(PCB *pcb, TaskStatus status)
@@ -248,7 +248,7 @@ namespace Tasking
             return;
         debug("Waiting for process \"%s\"(%d) to reach status: %d", pcb->Name, pcb->ID, status);
         while (pcb->Status != status)
-            CPU::Halt();
+            CPU::Pause();
     }
 
     void Task::WaitForThreadStatus(TCB *tcb, TaskStatus status)
@@ -259,7 +259,7 @@ namespace Tasking
             return;
         debug("Waiting for thread \"%s\"(%d) to reach status: %d", tcb->Name, tcb->ID, status);
         while (tcb->Status != status)
-            CPU::Halt();
+            CPU::Pause();
     }
 
     void Task::Sleep(uint64_t Milliseconds)
@@ -818,15 +818,15 @@ namespace Tasking
 #if defined(__amd64__)
         ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
 
-        for (int i = 1; i < SMP::CPUCores; i++)
-        {
-            // ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 100);
-            // TODO: Lock was the fault here. Now crash handler should support SMP.
-            // APIC::InterruptCommandRegisterLow icr;
-            // icr.Vector = CPU::x64::IRQ16;
-            // icr.Level = APIC::APICLevel::Assert;
-            // ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
-        }
+        /* FIXME: The kernel is not ready for multi-core tasking. */
+        // for (int i = 1; i < SMP::CPUCores; i++)
+        // {
+        //     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 100);
+        //     APIC::InterruptCommandRegisterLow icr;
+        //     icr.Vector = CPU::x64::IRQ16;
+        //     icr.Level = APIC::APICLevel::Assert;
+        //     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
+        // }
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif

@@ -155,7 +155,7 @@ namespace Tasking
 
         for (size_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
         {
-            if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread)
+            if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread.Load())
             {
                 size_t TempIndex = i;
             RetryAnotherThread:
@@ -199,7 +199,7 @@ namespace Tasking
         bool Skip = true;
         foreach (auto pcb in ListProcess)
         {
-            if (pcb == CurrentCPU->CurrentProcess)
+            if (pcb == CurrentCPU->CurrentProcess.Load())
             {
                 Skip = false;
                 gnap_schedbg("Found current process %#lx", pcb);
@@ -475,7 +475,7 @@ namespace Tasking
         }
 #endif
 
-        if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess) || InvalidTCB(CurrentCPU->CurrentThread)))
+        if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.Load()) || InvalidTCB(CurrentCPU->CurrentThread.Load())))
         {
             schedbg("Invalid process or thread. Finding a new one.");
             if (this->FindNewProcess(CurrentCPU))

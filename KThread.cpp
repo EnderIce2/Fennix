@@ -182,7 +182,6 @@ void KernelMainThread()
     Display->Print('.', 0);
     Display->SetBuffer(0);
 
-    CPU::Interrupts(CPU::Disable);
     ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::StartExecuteService);
     ExecuteThread->Rename("Library Manager");
     ExecuteThread->SetCritical(true);
@@ -206,7 +205,6 @@ void KernelMainThread()
     TaskManager->GetSecurityManager()->TrustToken(ret.Thread->Security.UniqueToken, Tasking::TTL::FullTrust);
     ret.Thread->SetCritical(true);
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
-    CPU::Interrupts(CPU::Enable);
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Idle);
     TaskManager->WaitForThread(ret.Thread);
     ExitCode = ret.Thread->GetExitCode();
