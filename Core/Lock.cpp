@@ -21,10 +21,12 @@ void LockClass::DeadLock(SpinLockData Lock)
     long CCore = 0xdead;
     if (CoreData != nullptr)
         CCore = CoreData->ID;
-    warn("Potential deadlock in lock '%s' held by '%s'! %ld locks in queue. Core %ld is being held by %ld. (%ld times happened)",
+
+    warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld is being held by %ld. (%ld times happened)",
          Lock.AttemptingToGet, Lock.CurrentHolder,
-         Lock.Count, CCore, Lock.Core,
-         this->DeadLocks);
+         Lock.Count, Lock.Count > 1 ? "locks" : "lock",
+         CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
+         CCore, Lock.Core, this->DeadLocks);
 
     // TODO: Print on screen too.
 
@@ -44,6 +46,7 @@ void LockClass::DeadLock(SpinLockData Lock)
 int LockClass::Lock(const char *FunctionName)
 {
     LockData.AttemptingToGet = FunctionName;
+    LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
 Retry:
     unsigned int i = 0;
     while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < 0x10000000)
@@ -55,6 +58,7 @@ Retry:
     }
     LockData.Count++;
     LockData.CurrentHolder = FunctionName;
+    LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
@@ -79,10 +83,12 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
     long CCore = 0xdead;
     if (CoreData != nullptr)
         CCore = CoreData->ID;
-    warn("Potential deadlock in lock '%s' held by '%s'! %ld locks in queue. Core %ld is being held by %ld. Timeout in %ld",
+
+    warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld is being held by %ld. Timeout in %ld",
          Lock.AttemptingToGet, Lock.CurrentHolder,
-         Lock.Count, CCore, Lock.Core,
-         Timeout);
+         Lock.Count, Lock.Count > 1 ? "locks" : "lock",
+         CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
+         CCore, Lock.Core, this->DeadLocks, Timeout);
 
     // TODO: Print on screen too.
 
@@ -100,6 +106,7 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
 int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 {
     LockData.AttemptingToGet = FunctionName;
+    LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
     Atomic<uint64_t> Target = 0;
 Retry:
     unsigned int i = 0;
@@ -114,6 +121,7 @@ Retry:
     }
     LockData.Count++;
     LockData.CurrentHolder = FunctionName;
+    LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;

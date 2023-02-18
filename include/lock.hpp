@@ -19,6 +19,8 @@ class LockClass
         Atomic<uint64_t> LockData = 0x0;
         Atomic<const char *> CurrentHolder = "(nul)";
         Atomic<const char *> AttemptingToGet = "(nul)";
+        Atomic<uintptr_t> StackPointerHolder = 0;
+        Atomic<uintptr_t> StackPointerAttempt = 0;
         Atomic<size_t> Count = 0;
         Atomic<long> Core = 0;
     };
