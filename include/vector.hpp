@@ -1,5 +1,8 @@
-#pragma once
+#ifndef __FENNIX_KERNEL_VECTOR_H__
+#define __FENNIX_KERNEL_VECTOR_H__
+
 #include <types.h>
+#include <assert.h>
 #include <cstring>
 
 template <class T>
@@ -40,6 +43,7 @@ public:
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: Vector( %lld %llx )", Size, Initial);
 #endif
+        assert(Size > 0);
         VectorBuffer = new T[Size];
         for (size_t i = 0; i < Size; i++)
             VectorBuffer[i] = Initial;
@@ -52,6 +56,7 @@ public:
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: Vector( <vector> )->Size: %lld", VectorSize);
 #endif
+        assert(VectorSize > 0);
         VectorBuffer = new T[VectorSize];
         for (size_t i = 0; i < VectorSize; i++)
             VectorBuffer[i] = Vector.VectorBuffer[i];
@@ -62,7 +67,11 @@ public:
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: ~Vector( ~%lx )", VectorBuffer);
 #endif
-        delete[] VectorBuffer;
+        if (VectorBuffer != nullptr)
+        {
+            delete[] VectorBuffer;
+            VectorBuffer = nullptr;
+        }
     }
 
     __no_instrument_function void remove(size_t Position)
@@ -160,8 +169,14 @@ public:
     {
         VectorCapacity = 0;
         VectorSize = 0;
-        VectorBuffer = 0;
+        if (VectorBuffer != nullptr)
+        {
+            delete[] VectorBuffer;
+            VectorBuffer = nullptr;
+        }
     }
 
     __no_instrument_function T *data() { return VectorBuffer; }
 };
+
+#endif // !__FENNIX_KERNEL_VECTOR_H__
