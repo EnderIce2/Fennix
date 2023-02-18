@@ -13,6 +13,8 @@
 #include "../DAPI.hpp"
 #include "../Fex.hpp"
 
+/* FIXME: The functions MUST have little endian parameters and return values. */
+
 namespace NetworkInterfaceManager
 {
     Vector<Events *> RegisteredEvents;
@@ -96,6 +98,7 @@ namespace NetworkInterfaceManager
             NetworkUDP::UDP *udp = new NetworkUDP::UDP(ipv4, DefaultDevice);
             NetworkUDP::Socket *DHCP_Socket = udp->Connect(InternetProtocol() /* Default value is 255.255.255.255 */, 67);
             NetworkDHCP::DHCP *dhcp = new NetworkDHCP::DHCP(DHCP_Socket, DefaultDevice);
+            debug("eth: %p; arp: %p; ipv4: %p; udp: %p; dhcp: %p", eth, arp, ipv4, udp, dhcp);
             udp->Bind(DHCP_Socket, dhcp);
             dhcp->Request();
 
@@ -109,13 +112,6 @@ namespace NetworkInterfaceManager
             DbgWriteScreen("Gateway: %s", dhcp->Gateway.v4.ToStringLittleEndian());
             DbgWriteScreen("DNS: %s", dhcp->DomainNameSystem.v4.ToStringLittleEndian());
             TaskManager->Sleep(200);
-
-            /*
-            I HAVE TO REWRITE THE ENTIRE NETWORK STACK BECAUSE IT'S A MESS. I HATE BYTE SWAPPING!!!!!
-
-            Rules to follow:
-            - The functions MUST have little endian parameters and return values.
-            */
 
             /* TODO: This is a quick workaround we need DNS resolver asap. IP is time-a-g.nist.gov; https://tf.nist.gov/tf-cgi/servers.cgi */
             InternetProtocol ip = {.v4 = {.Address = {129, 6, 15, 28}},
@@ -158,8 +154,10 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::StartService()
     {
+        CPU::Interrupts(CPU::Disable);
         this->NetSvcThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CallStartNetworkStackWrapper);
         this->NetSvcThread->Rename("Network Service");
+        CPU::Interrupts(CPU::Enable);
     }
 
     void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)

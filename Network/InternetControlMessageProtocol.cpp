@@ -6,8 +6,16 @@
 
 namespace NetworkICMPv4
 {
-    ICMPv4::ICMPv4(NetworkInterfaceManager::DeviceInterface *Interface) { this->Interface = Interface; }
-    ICMPv4::~ICMPv4() {}
+    ICMPv4::ICMPv4(NetworkInterfaceManager::DeviceInterface *Interface)
+    {
+        debug("ICMPv4 interface %#lx created.", this);
+        this->Interface = Interface;
+    }
+
+    ICMPv4::~ICMPv4()
+    {
+        debug("ICMPv4 interface %#lx destroyed.", this);
+    }
 
     void ICMPv4::Send(/* ???? */)
     {

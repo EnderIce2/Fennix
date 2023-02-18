@@ -7,12 +7,14 @@ namespace NetworkIPv4
 {
     IPv4::IPv4(NetworkARP::ARP *ARP, NetworkEthernet::Ethernet *Ethernet) : NetworkEthernet::EthernetEvents(NetworkEthernet::TYPE_IPV4)
     {
+        debug("IPv4 interface %#lx created.", this);
         this->ARP = ARP;
         this->Ethernet = Ethernet;
     }
 
     IPv4::~IPv4()
     {
+        debug("IPv4 interface %#lx destroyed.", this);
     }
 
     void IPv4::Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol DestinationIP)

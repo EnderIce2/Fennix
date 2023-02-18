@@ -13,8 +13,15 @@ namespace NetworkEthernet
 
     Vector<EthernetEventHelperStruct> RegisteredEvents;
 
-    Ethernet::Ethernet(NetworkInterfaceManager::DeviceInterface *Interface) : NetworkInterfaceManager::Events(Interface) { this->Interface = Interface; }
-    Ethernet::~Ethernet() {}
+    Ethernet::Ethernet(NetworkInterfaceManager::DeviceInterface *Interface) : NetworkInterfaceManager::Events(Interface)
+    {
+        debug("Ethernet interface %#lx created.", this);
+        this->Interface = Interface;
+    }
+    Ethernet::~Ethernet()
+    {
+        debug("Ethernet interface %#lx destroyed.", this);
+    }
 
     void Ethernet::Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, uint64_t Length)
     {

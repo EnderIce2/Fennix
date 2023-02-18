@@ -7,6 +7,7 @@ namespace NetworkDHCP
 {
     DHCP::DHCP(NetworkUDP::Socket *Socket, NetworkInterfaceManager::DeviceInterface *Interface)
     {
+        debug("DHCP interface %#lx created.", this);
         this->UDPSocket = Socket;
         this->Interface = Interface;
         Socket->LocalPort = b16(68);
@@ -29,6 +30,7 @@ namespace NetworkDHCP
 
     DHCP::~DHCP()
     {
+        debug("DHCP interface %#lx destroyed.", this);
     }
 
     void DHCP::CreatePacket(DHCPHeader *Packet, uint8_t MessageType, uint32_t RequestIP)

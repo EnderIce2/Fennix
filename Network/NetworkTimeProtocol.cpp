@@ -12,8 +12,16 @@ namespace NetworkNTP
         netdbg("Received UDP packet for NTP.");
     }
 
-    NTP::NTP(NetworkUDP::Socket *Socket) : NetworkUDP::UDPEvents() { this->UDPSocket = Socket; }
-    NTP::~NTP() {}
+    NTP::NTP(NetworkUDP::Socket *Socket) : NetworkUDP::UDPEvents()
+    {
+        debug("NTP interface %#lx created.", this);
+        this->UDPSocket = Socket;
+    }
+
+    NTP::~NTP()
+    {
+        debug("NTP interface %#lx destroyed.", this);
+    }
 
     int NTP::ReadTime()
     {

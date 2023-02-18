@@ -64,11 +64,13 @@ namespace NetworkARP
 
     ARP::ARP(NetworkEthernet::Ethernet *Ethernet) : NetworkEthernet::EthernetEvents(NetworkEthernet::TYPE_ARP)
     {
+        debug("ARP interface %#lx created.", this);
         this->Ethernet = Ethernet;
     }
 
     ARP::~ARP()
     {
+        debug("ARP interface %#lx destroyed.", this);
     }
 
     MediaAccessControl InvalidMAC;

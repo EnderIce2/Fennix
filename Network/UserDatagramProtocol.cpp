@@ -20,11 +20,15 @@ namespace NetworkUDP
 
     UDP::UDP(NetworkIPv4::IPv4 *ipv4, NetworkInterfaceManager::DeviceInterface *Interface) : NetworkIPv4::IPv4Events(NetworkIPv4::PROTOCOL_UDP)
     {
+        debug("UDP interface %#lx created.", this);
         this->ipv4 = ipv4;
         this->Interface = Interface;
     }
 
-    UDP::~UDP() {}
+    UDP::~UDP()
+    {
+        debug("UDP interface %#lx destroyed.", this);
+    }
 
     uint16_t UsablePort = 0x200;
 
