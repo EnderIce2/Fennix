@@ -163,16 +163,15 @@ void KernelMainThread()
     KPrint("Starting Network Interface Manager...");
     NIManager->StartService();
 
-    KPrint("Setting up userspace");
-
 #ifdef DEBUG
     TreeFS(vfs->GetRootNode(), 0);
 #endif
 
+    Time::Clock tm = Time::ReadClock();
+    printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
     const char *USpace_msg = "Setting up userspace";
     for (size_t i = 0; i < strlen(USpace_msg); i++)
         Display->Print(USpace_msg[i], 0);
-
     Display->SetBuffer(0);
 
     Execute::SpawnData ret = {Execute::ExStatus::Unknown, nullptr, nullptr};
@@ -185,9 +184,6 @@ void KernelMainThread()
 
     Display->Print('.', 0);
     Display->SetBuffer(0);
-
-    /* Prevent race conditions */
-    CPU::Interrupts(CPU::Disable);
 
     ret = SpawnInit();
 
@@ -207,11 +203,9 @@ void KernelMainThread()
     Display->Print('\n', 0);
     Display->SetBuffer(0);
 
-    /* Prevent the init process to execute syscalls without being trusted by the kernel */
-    CPU::Interrupts(CPU::Enable);
-
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Idle);
+
     TaskManager->WaitForThread(ret.Thread);
     ExitCode = ret.Thread->GetExitCode();
     if (ExitCode != 0)

@@ -154,10 +154,8 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::StartService()
     {
-        CPU::Interrupts(CPU::Disable);
         this->NetSvcThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CallStartNetworkStackWrapper);
         this->NetSvcThread->Rename("Network Service");
-        CPU::Interrupts(CPU::Enable);
     }
 
     void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
