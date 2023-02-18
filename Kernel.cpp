@@ -280,7 +280,7 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
         if (dev->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/dev is not a directory! Halting...");
-            CPU::Halt(true);
+            CPU::Stop();
         }
         vfs->Close(dev);
         DevFS = dev->node;
@@ -294,7 +294,7 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
         if (mnt->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/mnt is not a directory! Halting...");
-            CPU::Halt(true);
+            CPU::Stop();
         }
         vfs->Close(mnt);
         MntFS = mnt->node;
@@ -308,7 +308,7 @@ EXTERNC __no_instrument_function void Main(BootInfo *Info)
         if (proc->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/proc is not a directory! Halting...");
-            CPU::Halt(true);
+            CPU::Stop();
         }
         vfs->Close(proc);
         ProcFS = proc->node;

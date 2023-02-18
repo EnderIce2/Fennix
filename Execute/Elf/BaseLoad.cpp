@@ -47,8 +47,7 @@ namespace Execute
             TaskManager->Sleep(100);
             goto RetryIPCWrite;
         }
-        while (1)
-            ;
+        CPU::Halt(true);
     }
 
     PCB *InterpreterTargetProcess;

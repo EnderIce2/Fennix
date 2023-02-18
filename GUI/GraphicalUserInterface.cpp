@@ -182,7 +182,7 @@ namespace GraphicalUserInterface
             else
             {
                 if (unlikely(Idle > 1000))
-                    CPU::Halt();
+                    CPU::Pause();
                 else
                     Idle++;
             }

@@ -74,8 +74,8 @@ namespace Memory
         }
 
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));
-        CPU::Halt(true);
-        return nullptr;
+        CPU::Stop();
+        __builtin_unreachable();
     }
 
     void *Physical::RequestPages(size_t Count)

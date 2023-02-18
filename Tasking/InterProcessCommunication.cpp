@@ -170,7 +170,7 @@ namespace InterProcessCommunication
                     warn("Interrupts are disabled. This may cause a kernel hang.");
                 debug("Waiting for IPC %d (now %s)", ID, Hnd->Listening ? "listening" : "ready");
                 while (Hnd->Listening)
-                    CPU::Halt();
+                    CPU::Pause();
                 debug("IPC %d is ready", ID);
                 return IPCSuccess;
             }
