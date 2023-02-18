@@ -102,6 +102,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         return TaskManager->GetCurrentThread()->ID;
     case KCTL_GET_PAGE_SIZE:
         return PAGE_SIZE;
+    case KCTL_IS_CRITICAL:
+        return TaskManager->GetCurrentThread()->Security.IsCritical;
     default:
     {
         warn("KernelCTL: Unknown command: %lld", Command);
