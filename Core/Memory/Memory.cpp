@@ -1,24 +1,30 @@
 #include <memory.hpp>
 
 #include <convert.h>
+#include <lock.hpp>
 #include <debug.h>
 
 #include "HeapAllocators/Xalloc.hpp"
 #include "../Library/liballoc_1_1.h"
 #include "../../kernel.h"
 
+// #define DEBUG_ALLOCATIONS_SL 1
 // #define DEBUG_ALLOCATIONS 1
 
 #ifdef DEBUG_ALLOCATIONS
-#define memdbg(m, ...) \
+#define memdbg(m, ...)       \
     debug(m, ##__VA_ARGS__); \
     __sync_synchronize()
 #else
 #define memdbg(m, ...)
 #endif
 
-
 using namespace Memory;
+
+#ifdef DEBUG_ALLOCATIONS_SL
+NewLock(AllocatorLock);
+NewLock(OperatorAllocatorLock);
+#endif
 
 Physical KernelAllocator;
 PageTable4 *KernelPageTable = nullptr;
@@ -247,6 +253,9 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
 
 void *HeapMalloc(size_t Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("malloc(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     switch (AllocatorType)
     {
@@ -271,6 +280,9 @@ void *HeapMalloc(size_t Size)
 
 void *HeapCalloc(size_t n, size_t Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("calloc(%d, %d)->[%s]", n, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     switch (AllocatorType)
     {
@@ -295,6 +307,9 @@ void *HeapCalloc(size_t n, size_t Size)
 
 void *HeapRealloc(void *Address, size_t Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("realloc(%#lx, %d)->[%s]", Address, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     if (unlikely(!Address))
     {
@@ -325,6 +340,9 @@ void *HeapRealloc(void *Address, size_t Size)
 
 void HeapFree(void *Address)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("free(%#lx)->[%s]", Address, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     if (unlikely(!Address))
     {
@@ -352,18 +370,27 @@ void HeapFree(void *Address)
 
 void *operator new(size_t Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("new(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     return HeapMalloc(Size);
 }
 
 void *operator new[](size_t Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("new[](%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     return HeapMalloc(Size);
 }
 
 void *operator new(unsigned long Size, std::align_val_t Alignment)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("new(%d, %d)->[%s]", Size, Alignment, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     fixme("operator new with alignment(%#lx) is not implemented", Alignment);
     return HeapMalloc(Size);
@@ -371,18 +398,27 @@ void *operator new(unsigned long Size, std::align_val_t Alignment)
 
 void operator delete(void *Pointer)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("delete(%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
 }
 
 void operator delete[](void *Pointer)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("delete[](%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
 }
 
 void operator delete(void *Pointer, long unsigned int Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("delete(%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
     UNUSED(Size);
@@ -390,6 +426,9 @@ void operator delete(void *Pointer, long unsigned int Size)
 
 void operator delete[](void *Pointer, long unsigned int Size)
 {
+#ifdef DEBUG_ALLOCATIONS_SL
+    SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
+#endif
     memdbg("delete[](%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     HeapFree(Pointer);
     UNUSED(Size);
