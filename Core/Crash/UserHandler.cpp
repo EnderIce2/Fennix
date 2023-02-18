@@ -342,7 +342,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     }
 
     TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
-    __sync_synchronize();
+    __sync;
     error("End of report.");
     CPU::Interrupts(CPU::Enable);
     debug("Interrupts enabled back.");

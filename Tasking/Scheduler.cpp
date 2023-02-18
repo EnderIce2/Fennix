@@ -40,7 +40,7 @@ NewLock(SchedulerLock);
 
 #define schedbg(m, ...)      \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define schedbg(m, ...)
 #endif
@@ -49,7 +49,7 @@ NewLock(SchedulerLock);
 #ifdef DEBUG_GET_NEXT_AVAILABLE_PROCESS
 #define gnap_schedbg(m, ...) \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define gnap_schedbg(m, ...)
 #endif
@@ -58,7 +58,7 @@ NewLock(SchedulerLock);
 #ifdef DEBUG_GET_NEXT_AVAILABLE_THREAD
 #define gnat_schedbg(m, ...) \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define gnat_schedbg(m, ...)
 #endif
@@ -67,7 +67,7 @@ NewLock(SchedulerLock);
 #ifdef DEBUG_FIND_NEW_PROCESS
 #define fnp_schedbg(m, ...)  \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define fnp_schedbg(m, ...)
 #endif
@@ -76,7 +76,7 @@ NewLock(SchedulerLock);
 #ifdef DEBUG_SCHEDULER_SEARCH_PROCESS_THREAD
 #define sspt_schedbg(m, ...) \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define sspt_schedbg(m, ...)
 #endif
@@ -85,7 +85,7 @@ NewLock(SchedulerLock);
 #ifdef DEBUG_WAKE_UP_THREADS
 #define wut_schedbg(m, ...)  \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define wut_schedbg(m, ...)
 #endif
@@ -637,7 +637,7 @@ namespace Tasking
     /* RealEnd->[Function Exit] */
     RealEnd:
         this->SchedulerTicks.Store(CPU::Counter() - SchedTmpTicks);
-        __sync_synchronize(); /* TODO: Is this really needed? */
+        __sync; /* TODO: Is this really needed? */
     }
 
     SafeFunction __no_instrument_function void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }

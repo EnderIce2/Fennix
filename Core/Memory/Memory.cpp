@@ -14,7 +14,7 @@
 #ifdef DEBUG_ALLOCATIONS
 #define memdbg(m, ...)       \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define memdbg(m, ...)
 #endif

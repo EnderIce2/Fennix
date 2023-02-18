@@ -22,7 +22,7 @@
 #ifdef DEBUG_TASKING
 #define tskdbg(m, ...)       \
     debug(m, ##__VA_ARGS__); \
-    __sync_synchronize()
+    __sync
 #else
 #define tskdbg(m, ...)
 #endif

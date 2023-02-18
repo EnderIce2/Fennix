@@ -188,7 +188,7 @@ namespace Execute
             InterpreterTargetPath = new String(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
             InterpreterMemoryImage = bl.MemoryImage;
             InterpreterNeededLibraries = bl.NeededLibraries;
-            __sync_synchronize();
+            __sync;
             TCB *InterpreterIPCThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ELFInterpreterThreadWrapper);
             InterpreterIPCThread->Rename("ELF Interpreter IPC Thread");
             InterpreterIPCThread->SetPriority(TaskPriority::Low);

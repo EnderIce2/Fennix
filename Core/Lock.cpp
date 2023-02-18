@@ -58,14 +58,14 @@ Retry:
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
-    __sync_synchronize();
+    __sync;
 
     return 0;
 }
 
 int LockClass::Unlock()
 {
-    __sync_synchronize();
+    __sync;
     IsLocked.Store(false, MemoryOrder::Release);
     LockData.Count--;
     IsLocked = false;
@@ -117,7 +117,7 @@ Retry:
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
-    __sync_synchronize();
+    __sync;
 
     return 0;
 }
