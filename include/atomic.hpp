@@ -67,6 +67,7 @@ class Atomic
     _Atomic(T) m_Value;
 
 public:
+    Atomic() : m_Value(0) {}
     Atomic(T Init) : m_Value(Init) {}
 
     /**
