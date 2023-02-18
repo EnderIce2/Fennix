@@ -738,6 +738,7 @@ namespace CrashHandler
             debug("Exception in kernel mode (ip: %#lx (%s), cr2: %#lx)", Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol", PageFaultAddress);
             if (TaskManager)
                 TaskManager->Panic();
+            ForceUnlock = true;
             Display->CreateBuffer(0, 0, SBIdx);
         }
         else
@@ -746,6 +747,7 @@ namespace CrashHandler
             CPUData *data = GetCurrentCPU();
             if (!data)
             {
+                ForceUnlock = true;
                 Display->CreateBuffer(0, 0, SBIdx);
                 EHPrint("\eFF0000Cannot get CPU data! This results in a kernel crash!");
                 error("Cannot get CPU data! This results in a kernel crash!");
@@ -759,6 +761,7 @@ namespace CrashHandler
                     debug("Critical thread \"%s\"(%d) died", data->CurrentThread->Name, data->CurrentThread->ID);
                     if (TaskManager)
                         TaskManager->Panic();
+                    ForceUnlock = true;
                     Display->CreateBuffer(0, 0, SBIdx);
                 }
                 else
@@ -890,8 +893,8 @@ namespace CrashHandler
 
         if (TaskManager && cpudata != nullptr)
         {
-            crashdata.Process = cpudata->CurrentProcess;
-            crashdata.Thread = cpudata->CurrentThread;
+            crashdata.Process = cpudata->CurrentProcess.Load();
+            crashdata.Thread = cpudata->CurrentThread.Load();
 
             error("Current Process: %s(%ld)",
                   cpudata->CurrentProcess->Name,

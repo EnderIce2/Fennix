@@ -5,8 +5,18 @@
 
 #include "../kernel.h"
 
+bool ForceUnlock = false;
+
 void LockClass::DeadLock(SpinLockData Lock)
 {
+    if (ForceUnlock)
+    {
+        warn("Unlocking lock '%s' which it was held by '%s'...", Lock.AttemptingToGet, Lock.CurrentHolder);
+        this->DeadLocks = 0;
+        this->Unlock();
+        return;
+    }
+
     CPUData *CoreData = GetCurrentCPU();
     long CCore = 0xdead;
     if (CoreData != nullptr)
@@ -33,19 +43,6 @@ void LockClass::DeadLock(SpinLockData Lock)
 
 int LockClass::Lock(const char *FunctionName)
 {
-    // LockData.AttemptingToGet = FunctionName;
-    // SpinLock_Lock(&LockData.LockData);
-    // LockData.Count++;
-    // LockData.CurrentHolder = FunctionName;
-    // CPUData *CoreData = GetCurrentCPU();
-    // if (CoreData != nullptr)
-    // LockData.Core = CoreData->ID;
-    // __sync_synchronize();
-
-    // while (!__sync_bool_compare_and_swap(&IsLocked, false, true))
-    //     CPU::Pause();
-    // __sync_synchronize();
-
     LockData.AttemptingToGet = FunctionName;
 Retry:
     unsigned int i = 0;
@@ -68,14 +65,6 @@ Retry:
 
 int LockClass::Unlock()
 {
-    // SpinLock_Unlock(&LockData.LockData);
-    // LockData.Count--;
-    // __sync_synchronize();
-
-    // __sync_synchronize();
-    // __atomic_store_n(&IsLocked, false, __ATOMIC_SEQ_CST);
-    // IsLocked = false;
-
     __sync_synchronize();
     IsLocked.Store(false, MemoryOrder::Release);
     LockData.Count--;

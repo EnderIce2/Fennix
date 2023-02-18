@@ -8,6 +8,9 @@
 
 #ifdef __cplusplus
 
+/* Enabled ONLY on crash. */
+extern bool ForceUnlock;
+
 /** @brief Please use this macro to create a new lock. */
 class LockClass
 {
