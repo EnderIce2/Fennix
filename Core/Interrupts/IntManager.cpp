@@ -130,7 +130,14 @@ namespace Interrupts
             if (likely(handler != (Handler *)HASHMAP_ERROR))
                 handler->OnInterruptReceived(Frame);
             else
+            {
                 error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
+                if (Frame->InterruptNumber == CPU::x64::IRQ1)
+                {
+                    uint8_t scancode = inb(0x60);
+                    warn("IRQ1 is the keyboard interrupt. Scancode: %#x", scancode);
+                }
+            }
 
             if (likely(apic[Core]))
             {
