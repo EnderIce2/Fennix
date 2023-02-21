@@ -208,13 +208,11 @@ void KernelMainThread()
 
     TaskManager->WaitForThread(ret.Thread);
     ExitCode = ret.Thread->GetExitCode();
-    if (ExitCode != 0)
-        KPrint("\eE85230Userspace process exited with code %d", ExitCode);
-    error("Userspace process exited with code %d (%#x)", ExitCode, ExitCode);
 Exit:
     if (ExitCode != 0)
     {
-        KPrint("Dropping to recovery screen...", ExitCode);
+        KPrint("\eE85230Userspace process exited with code %d", ExitCode);
+        KPrint("Dropping to recovery screen...");
         TaskManager->Sleep(2500);
         RecoveryScreen = new Recovery::KernelRecovery;
     }
