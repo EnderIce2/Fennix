@@ -106,7 +106,7 @@ namespace Interrupts
 
     SafeFunction void RemoveAll()
     {
-        for (int i = 0; i < CPU::x64::IRQ223; i++)
+        for (int i = 0; i < CPU::x86::IRQ223; i++)
                 RegisteredEvents->DeleteNode(i);
     }
 
@@ -124,7 +124,7 @@ namespace Interrupts
             Core = CoreData->ID;
 
         // If this is false, we have a big problem.
-        if (likely(Frame->InterruptNumber < CPU::x64::IRQ223 && Frame->InterruptNumber > CPU::x64::ISR0))
+        if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 && Frame->InterruptNumber > CPU::x86::ISR0))
         {
             Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
             if (likely(handler != (Handler *)HASHMAP_ERROR))
@@ -132,7 +132,7 @@ namespace Interrupts
             else
             {
                 error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
-                if (Frame->InterruptNumber == CPU::x64::IRQ1)
+                if (Frame->InterruptNumber == CPU::x86::IRQ1)
                 {
                     uint8_t scancode = inb(0x60);
                     warn("IRQ1 is the keyboard interrupt. Scancode: %#x", scancode);

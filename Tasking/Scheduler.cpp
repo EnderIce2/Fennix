@@ -95,7 +95,7 @@ extern "C" SafeFunction __no_instrument_function void TaskingScheduler_OneShot(i
     if (TimeSlice == 0)
         TimeSlice = 10;
 #if defined(__amd64__)
-    ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x64::IRQ16, TimeSlice);
+    ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif

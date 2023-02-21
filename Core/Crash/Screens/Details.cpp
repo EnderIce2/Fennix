@@ -129,107 +129,107 @@ namespace CrashHandler
 
         switch (data.Frame->InterruptNumber)
         {
-        case CPU::x64::DivideByZero:
+        case CPU::x86::DivideByZero:
         {
             DivideByZeroExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::Debug:
+        case CPU::x86::Debug:
         {
             DebugExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::NonMaskableInterrupt:
+        case CPU::x86::NonMaskableInterrupt:
         {
             NonMaskableInterruptExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::Breakpoint:
+        case CPU::x86::Breakpoint:
         {
             BreakpointExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::Overflow:
+        case CPU::x86::Overflow:
         {
             OverflowExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::BoundRange:
+        case CPU::x86::BoundRange:
         {
             BoundRangeExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::InvalidOpcode:
+        case CPU::x86::InvalidOpcode:
         {
             InvalidOpcodeExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::DeviceNotAvailable:
+        case CPU::x86::DeviceNotAvailable:
         {
             DeviceNotAvailableExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::DoubleFault:
+        case CPU::x86::DoubleFault:
         {
             DoubleFaultExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::CoprocessorSegmentOverrun:
+        case CPU::x86::CoprocessorSegmentOverrun:
         {
             CoprocessorSegmentOverrunExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::InvalidTSS:
+        case CPU::x86::InvalidTSS:
         {
             InvalidTSSExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::SegmentNotPresent:
+        case CPU::x86::SegmentNotPresent:
         {
             SegmentNotPresentExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::StackSegmentFault:
+        case CPU::x86::StackSegmentFault:
         {
             StackFaultExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::GeneralProtectionFault:
+        case CPU::x86::GeneralProtectionFault:
         {
             GeneralProtectionExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::PageFault:
+        case CPU::x86::PageFault:
         {
             PageFaultExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::x87FloatingPoint:
+        case CPU::x86::x87FloatingPoint:
         {
             x87FloatingPointExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::AlignmentCheck:
+        case CPU::x86::AlignmentCheck:
         {
             AlignmentCheckExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::MachineCheck:
+        case CPU::x86::MachineCheck:
         {
             MachineCheckExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::SIMDFloatingPoint:
+        case CPU::x86::SIMDFloatingPoint:
         {
             SIMDFloatingPointExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::Virtualization:
+        case CPU::x86::Virtualization:
         {
             VirtualizationExceptionHandler(data.Frame);
             break;
         }
-        case CPU::x64::Security:
+        case CPU::x86::Security:
         {
             SecurityExceptionHandler(data.Frame);
             break;

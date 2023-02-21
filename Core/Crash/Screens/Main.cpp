@@ -44,67 +44,67 @@ namespace CrashHandler
 
         switch (Frame->InterruptNumber)
         {
-        case CPU::x64::DivideByZero:
+        case CPU::x86::DivideByZero:
         {
             EHPrint("Exception: Divide By Zero\n");
             EHPrint("The processor attempted to divide a number by zero.\n");
             break;
         }
-        case CPU::x64::Debug:
+        case CPU::x86::Debug:
         {
             EHPrint("Exception: Debug\n");
             EHPrint("A debug exception has occurred.\n");
             break;
         }
-        case CPU::x64::NonMaskableInterrupt:
+        case CPU::x86::NonMaskableInterrupt:
         {
             EHPrint("Exception: Non-Maskable Interrupt\n");
             EHPrint("A non-maskable interrupt was received.\n");
             break;
         }
-        case CPU::x64::Breakpoint:
+        case CPU::x86::Breakpoint:
         {
             EHPrint("Exception: Breakpoint\n");
             EHPrint("The processor encountered a breakpoint.\n");
             break;
         }
-        case CPU::x64::Overflow:
+        case CPU::x86::Overflow:
         {
             EHPrint("Exception: Overflow\n");
             EHPrint("The processor attempted to add a number to a number that was too large.\n");
             break;
         }
-        case CPU::x64::BoundRange:
+        case CPU::x86::BoundRange:
         {
             EHPrint("Exception: Bound Range\n");
             EHPrint("The processor attempted to access an array element that is out of bounds.\n");
             break;
         }
-        case CPU::x64::InvalidOpcode:
+        case CPU::x86::InvalidOpcode:
         {
             EHPrint("Exception: Invalid Opcode\n");
             EHPrint("The processor attempted to execute an invalid opcode.\n");
             break;
         }
-        case CPU::x64::DeviceNotAvailable:
+        case CPU::x86::DeviceNotAvailable:
         {
             EHPrint("Exception: Device Not Available\n");
             EHPrint("The processor attempted to use a device that is not available.\n");
             break;
         }
-        case CPU::x64::DoubleFault:
+        case CPU::x86::DoubleFault:
         {
             EHPrint("Exception: Double Fault\n");
             EHPrint("The processor encountered a double fault.\n");
             break;
         }
-        case CPU::x64::CoprocessorSegmentOverrun:
+        case CPU::x86::CoprocessorSegmentOverrun:
         {
             EHPrint("Exception: Coprocessor Segment Overrun\n");
             EHPrint("The processor attempted to access a segment that is not available.\n");
             break;
         }
-        case CPU::x64::InvalidTSS:
+        case CPU::x86::InvalidTSS:
         {
             EHPrint("Exception: Invalid TSS\n");
             EHPrint("The processor attempted to access a task state segment that is not available or valid.\n");
@@ -144,7 +144,7 @@ namespace CrashHandler
             }
             break;
         }
-        case CPU::x64::SegmentNotPresent:
+        case CPU::x86::SegmentNotPresent:
         {
             EHPrint("Exception: Segment Not Present\n");
             EHPrint("The processor attempted to access a segment that is not present.\n");
@@ -184,7 +184,7 @@ namespace CrashHandler
             }
             break;
         }
-        case CPU::x64::StackSegmentFault:
+        case CPU::x86::StackSegmentFault:
         {
             EHPrint("Exception: Stack Segment Fault\n");
             CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
@@ -223,7 +223,7 @@ namespace CrashHandler
             }
             break;
         }
-        case CPU::x64::GeneralProtectionFault:
+        case CPU::x86::GeneralProtectionFault:
         {
             EHPrint("Exception: General Protection Fault\n");
             EHPrint("Kernel performed an illegal operation.\n");
@@ -263,7 +263,7 @@ namespace CrashHandler
             }
             break;
         }
-        case CPU::x64::PageFault:
+        case CPU::x86::PageFault:
         {
             EHPrint("Exception: Page Fault\n");
             EHPrint("The processor attempted to access a page that is not present.\n");
@@ -291,37 +291,37 @@ namespace CrashHandler
             EHPrint("\eFAFAFA");
             break;
         }
-        case CPU::x64::x87FloatingPoint:
+        case CPU::x86::x87FloatingPoint:
         {
             EHPrint("Exception: x87 Floating Point\n");
             EHPrint("The x87 FPU generated an error.\n");
             break;
         }
-        case CPU::x64::AlignmentCheck:
+        case CPU::x86::AlignmentCheck:
         {
             EHPrint("Exception: Alignment Check\n");
             EHPrint("The CPU detected an unaligned memory access.\n");
             break;
         }
-        case CPU::x64::MachineCheck:
+        case CPU::x86::MachineCheck:
         {
             EHPrint("Exception: Machine Check\n");
             EHPrint("The CPU detected a hardware error.\n");
             break;
         }
-        case CPU::x64::SIMDFloatingPoint:
+        case CPU::x86::SIMDFloatingPoint:
         {
             EHPrint("Exception: SIMD Floating Point\n");
             EHPrint("The CPU detected an error in the SIMD unit.\n");
             break;
         }
-        case CPU::x64::Virtualization:
+        case CPU::x86::Virtualization:
         {
             EHPrint("Exception: Virtualization\n");
             EHPrint("The CPU detected a virtualization error.\n");
             break;
         }
-        case CPU::x64::Security:
+        case CPU::x86::Security:
         {
             EHPrint("Exception: Security\n");
             EHPrint("The CPU detected a security violation.\n");

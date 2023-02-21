@@ -138,7 +138,7 @@ namespace ACPI
         }
     }
 
-    DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt + CPU::x64::IRQ0)
+    DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt + CPU::x86::IRQ0)
     {
         this->acpi = acpi;
         uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);

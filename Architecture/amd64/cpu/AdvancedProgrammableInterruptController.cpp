@@ -13,6 +13,7 @@
 NewLock(APICLock);
 
 using namespace CPU::x64;
+using namespace CPU::x86;
 
 /*
 In constructor ‘APIC::APIC::APIC(int)’:

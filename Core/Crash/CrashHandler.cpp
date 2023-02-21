@@ -730,7 +730,7 @@ namespace CrashHandler
             for (int i = 1; i < SMP::CPUCores; i++)
             {
                 APIC::InterruptCommandRegisterLow icr;
-                icr.Vector = CPU::x64::IRQ29;
+                icr.Vector = CPU::x86::IRQ29;
                 icr.Level = APIC::APICLevel::Assert;
                 ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
                 __sync;
@@ -748,7 +748,7 @@ namespace CrashHandler
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
-        if (Frame->InterruptNumber == CPU::x64::IRQ29)
+        if (Frame->InterruptNumber == CPU::x86::IRQ29)
             CPU::Stop();
 
         error("An exception occurred!");

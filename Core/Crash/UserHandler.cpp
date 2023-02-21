@@ -118,63 +118,63 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
     switch (Frame->InterruptNumber)
     {
-    case CPU::x64::DivideByZero:
+    case CPU::x86::DivideByZero:
     {
         break;
     }
-    case CPU::x64::Debug:
+    case CPU::x86::Debug:
     {
         break;
     }
-    case CPU::x64::NonMaskableInterrupt:
+    case CPU::x86::NonMaskableInterrupt:
     {
         break;
     }
-    case CPU::x64::Breakpoint:
+    case CPU::x86::Breakpoint:
     {
         break;
     }
-    case CPU::x64::Overflow:
+    case CPU::x86::Overflow:
     {
         break;
     }
-    case CPU::x64::BoundRange:
+    case CPU::x86::BoundRange:
     {
         break;
     }
-    case CPU::x64::InvalidOpcode:
+    case CPU::x86::InvalidOpcode:
     {
         break;
     }
-    case CPU::x64::DeviceNotAvailable:
+    case CPU::x86::DeviceNotAvailable:
     {
         break;
     }
-    case CPU::x64::DoubleFault:
+    case CPU::x86::DoubleFault:
     {
         break;
     }
-    case CPU::x64::CoprocessorSegmentOverrun:
+    case CPU::x86::CoprocessorSegmentOverrun:
     {
         break;
     }
-    case CPU::x64::InvalidTSS:
+    case CPU::x86::InvalidTSS:
     {
         break;
     }
-    case CPU::x64::SegmentNotPresent:
+    case CPU::x86::SegmentNotPresent:
     {
         break;
     }
-    case CPU::x64::StackSegmentFault:
+    case CPU::x86::StackSegmentFault:
     {
         break;
     }
-    case CPU::x64::GeneralProtectionFault:
+    case CPU::x86::GeneralProtectionFault:
     {
         break;
     }
-    case CPU::x64::PageFault:
+    case CPU::x86::PageFault:
     {
         uintptr_t CheckPageFaultAddress = 0;
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
@@ -311,27 +311,27 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
             }
         break;
     }
-    case CPU::x64::x87FloatingPoint:
+    case CPU::x86::x87FloatingPoint:
     {
         break;
     }
-    case CPU::x64::AlignmentCheck:
+    case CPU::x86::AlignmentCheck:
     {
         break;
     }
-    case CPU::x64::MachineCheck:
+    case CPU::x86::MachineCheck:
     {
         break;
     }
-    case CPU::x64::SIMDFloatingPoint:
+    case CPU::x86::SIMDFloatingPoint:
     {
         break;
     }
-    case CPU::x64::Virtualization:
+    case CPU::x86::Virtualization:
     {
         break;
     }
-    case CPU::x64::Security:
+    case CPU::x86::Security:
     {
         break;
     }

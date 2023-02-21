@@ -36,7 +36,7 @@ namespace Tasking
         if (!StopScheduler)
             TaskingScheduler_OneShot(1);
         // APIC::InterruptCommandRegisterLow icr;
-        // icr.Vector = CPU::x64::IRQ16;
+        // icr.Vector = CPU::x86::IRQ16;
         // icr.Level = APIC::APICLevel::Assert;
         // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
     }
@@ -737,12 +737,12 @@ namespace Tasking
         return Process;
     }
 
-    Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x64::IRQ16)
+    Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x86::IRQ16)
     {
         SmartCriticalSection(TaskingLock);
 #if defined(__amd64__)
         for (int i = 0; i < SMP::CPUCores; i++)
-            ((APIC::APIC *)Interrupts::apic[i])->RedirectIRQ(i, CPU::x64::IRQ16 - CPU::x64::IRQ0, 1);
+            ((APIC::APIC *)Interrupts::apic[i])->RedirectIRQ(i, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -816,14 +816,14 @@ namespace Tasking
         }
         debug("Tasking Started");
 #if defined(__amd64__)
-        ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x64::IRQ16, 100);
+        ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
 
         /* FIXME: The kernel is not ready for multi-core tasking. */
         // for (int i = 1; i < SMP::CPUCores; i++)
         // {
-        //     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x64::IRQ16, 100);
+        //     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x86::IRQ16, 100);
         //     APIC::InterruptCommandRegisterLow icr;
-        //     icr.Vector = CPU::x64::IRQ16;
+        //     icr.Vector = CPU::x86::IRQ16;
         //     icr.Level = APIC::APICLevel::Assert;
         //     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
         // }
