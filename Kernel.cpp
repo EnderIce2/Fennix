@@ -340,6 +340,7 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
 #ifdef DEBUG
     // Running tests
     TestString();
+    TestMemoryAllocation();
 #endif
 
     EnableProfiler = true;

@@ -32,6 +32,7 @@ void TreeFS(Node *node, int Depth)
     {
         printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
         Display->SetBuffer(0);
+        TaskManager->Sleep(100);
         TreeFS(Chld, Depth + 1);
     }
 }
@@ -137,6 +138,8 @@ void KernelMainThread()
     /* TODO: This should not be enabled because it may cause a deadlock. Not sure where or how. */
     // Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
     // TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority(Tasking::High);
+
+    TreeFS(vfs->GetRootNode(), 0);
 #endif
 
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
@@ -162,10 +165,6 @@ void KernelMainThread()
     NIManager = new NetworkInterfaceManager::NetworkInterface;
     KPrint("Starting Network Interface Manager...");
     NIManager->StartService();
-
-#ifdef DEBUG
-    TreeFS(vfs->GetRootNode(), 0);
-#endif
 
     Time::Clock tm = Time::ReadClock();
     printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);

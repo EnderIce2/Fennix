@@ -4,7 +4,7 @@
 #include <lock.hpp>
 #include <debug.h>
 
-#include "HeapAllocators/Xalloc.hpp"
+#include "HeapAllocators/Xalloc/Xalloc.hpp"
 #include "../Library/liballoc_1_1.h"
 #include "../../kernel.h"
 
@@ -32,7 +32,7 @@ PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
 void *KPT = nullptr;
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
-Xalloc::AllocatorV1 *XallocV1Allocator = nullptr;
+Xalloc::V1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
 __no_instrument_function void tracepagetable(PageTable4 *pt)
@@ -241,7 +241,7 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
     debug("Page table updated.");
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))
     {
-        XallocV1Allocator = new Xalloc::AllocatorV1((void *)KERNEL_HEAP_BASE, false, false);
+        XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
         AllocatorType = MemoryAllocatorType::XallocV1;
         trace("XallocV1 Allocator initialized (%p)", XallocV1Allocator);
     }
@@ -262,11 +262,7 @@ void *HeapMalloc(size_t Size)
     case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(Size));
     case MemoryAllocatorType::XallocV1:
-    {
-        void *ret = XallocV1Allocator->Malloc(Size);
-        memset(ret, 0, Size);
-        return ret;
-    }
+        return XallocV1Allocator->malloc(Size);
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(malloc)(Size);
@@ -289,11 +285,7 @@ void *HeapCalloc(size_t n, size_t Size)
     case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(n * Size));
     case MemoryAllocatorType::XallocV1:
-    {
-        void *ret = XallocV1Allocator->Calloc(n, Size);
-        memset(ret, 0, n * Size);
-        return ret;
-    }
+        return XallocV1Allocator->calloc(n, Size);
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(calloc)(n, Size);
@@ -311,22 +303,12 @@ void *HeapRealloc(void *Address, size_t Size)
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
 #endif
     memdbg("realloc(%#lx, %d)->[%s]", Address, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
-    if (unlikely(!Address))
-    {
-        error("Attempt to realloc a null pointer");
-        return nullptr;
-    }
-
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
         return KernelAllocator.RequestPages(TO_PAGES(Size)); // WARNING: Potential memory leak
     case MemoryAllocatorType::XallocV1:
-    {
-        void *ret = XallocV1Allocator->Realloc(Address, Size);
-        memset(ret, 0, Size);
-        return ret;
-    }
+        return XallocV1Allocator->realloc(Address, Size);
     case MemoryAllocatorType::liballoc11:
     {
         void *ret = PREFIX(realloc)(Address, Size);
@@ -344,20 +326,13 @@ void HeapFree(void *Address)
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
 #endif
     memdbg("free(%#lx)->[%s]", Address, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
-    if (unlikely(!Address))
-    {
-        warn("Attempt to free a null pointer");
-        return;
-    }
-
     switch (AllocatorType)
     {
     case unlikely(MemoryAllocatorType::Pages):
         KernelAllocator.FreePage(Address); // WARNING: Potential memory leak
         break;
     case MemoryAllocatorType::XallocV1:
-        if (XallocV1Allocator)
-            XallocV1Allocator->Free(Address);
+        XallocV1Allocator->free(Address);
         break;
     case MemoryAllocatorType::liballoc11:
         PREFIX(free)
