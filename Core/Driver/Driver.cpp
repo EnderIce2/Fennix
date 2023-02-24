@@ -194,7 +194,7 @@ namespace Driver
         }
         else
         {
-            KPrint("\eE85230Failed to open driver directory: %s", Config.DriverDirectory);
+            KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory->Status);
             CPU::Stop();
         }
         vfs->Close(DriverDirectory);
