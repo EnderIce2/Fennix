@@ -724,19 +724,33 @@ namespace CrashHandler
     SafeFunction void StopAllCores()
     {
 #if defined(__amd64__) || defined(__i386__)
-        if (SMP::CPUCores > 1)
-        {
-            CPU::Interrupts(CPU::Enable);
-            for (int i = 1; i < SMP::CPUCores; i++)
-            {
-                APIC::InterruptCommandRegisterLow icr;
-                icr.Vector = CPU::x86::IRQ29;
-                icr.Level = APIC::APICLevel::Assert;
-                ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
-                __sync;
-            }
-            CPU::Interrupts(CPU::Disable);
-        }
+        /* FIXME: Can't send IPIs to other cores
+         * because it causes another exception on
+         * the other cores.
+         *
+         * Also it makes every core to stay at 100% usage for some reason.
+         */
+
+        // if (SMP::CPUCores > 1)
+        // {
+        //     for (int i = 1; i < SMP::CPUCores; i++)
+        //     {
+        //         APIC::InterruptCommandRegisterLow icr;
+        //         icr.Vector = CPU::x86::IRQ29;
+        //         icr.Level = APIC::APICLevel::Assert;
+        //         ((APIC::APIC *)Interrupts::apic[i])->IPI(i, icr);
+        //         __sync;
+        //     }
+        // }
+        // APIC::InterruptCommandRegisterLow icr;
+        // icr.Vector = CPU::x86::IRQ29;
+        // icr.Level = APIC::APICLevel::Assert;
+        // icr.DestinationShorthand = APIC::APICDestinationShorthand::AllExcludingSelf;
+        // ((APIC::APIC *)Interrupts::apic[0])->IPI(0, icr);
+        // CPU::Interrupts(CPU::Enable);
+        __sync;
+        CPU::Interrupts(CPU::Disable);
+        // }
 #elif defined(__aarch64__)
 #endif
     }
@@ -748,9 +762,6 @@ namespace CrashHandler
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(__amd64__)
-        if (Frame->InterruptNumber == CPU::x86::IRQ29)
-            CPU::Stop();
-
         error("An exception occurred!");
         error("Exception: %#llx", Frame->InterruptNumber);
         for (size_t i = 0; i < INT_FRAMES_MAX; i++)

@@ -107,7 +107,7 @@ namespace Interrupts
     SafeFunction void RemoveAll()
     {
         for (int i = 0; i < CPU::x86::IRQ223; i++)
-                RegisteredEvents->DeleteNode(i);
+            RegisteredEvents->DeleteNode(i);
     }
 
     extern "C" SafeFunction void MainInterruptHandler(void *Data)
@@ -117,7 +117,7 @@ namespace Interrupts
 
         memmove(InterruptFrames + 1, InterruptFrames, sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
         InterruptFrames[0] = (void *)Frame->rip;
-        
+
         CPUData *CoreData = GetCurrentCPU();
         int Core = 0;
         if (likely(CoreData != nullptr))
@@ -126,6 +126,9 @@ namespace Interrupts
         // If this is false, we have a big problem.
         if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 && Frame->InterruptNumber > CPU::x86::ISR0))
         {
+            if (Frame->InterruptNumber == CPU::x86::IRQ29) // Halt core interrupt
+                CPU::Stop();
+
             Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
             if (likely(handler != (Handler *)HASHMAP_ERROR))
                 handler->OnInterruptReceived(Frame);

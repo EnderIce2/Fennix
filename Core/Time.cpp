@@ -42,7 +42,6 @@ namespace Time
 
     Clock ConvertFromUnix(int Timestamp)
     {
-
         Clock result;
         if (Timestamp == 0)
             return result;

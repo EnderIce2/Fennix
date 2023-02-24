@@ -284,7 +284,7 @@ namespace InterruptDescriptorTable
     INTERRUPT_HANDLER(0x3a)
     INTERRUPT_HANDLER(0x3b)
     INTERRUPT_HANDLER(0x3c)
-    EXCEPTION_HANDLER(0x3d)
+    INTERRUPT_HANDLER(0x3d)
 
     /* Free */
 
