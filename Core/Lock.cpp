@@ -6,6 +6,9 @@
 #include "../kernel.h"
 
 bool ForceUnlock = false;
+Atomic<size_t> LocksCount = 0;
+
+size_t GetLocksCount() { return LocksCount; }
 
 void LockClass::DeadLock(SpinLockData Lock)
 {
@@ -62,6 +65,7 @@ Retry:
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
+    LocksCount++;
     __sync;
 
     return 0;
@@ -73,6 +77,7 @@ int LockClass::Unlock()
     IsLocked.Store(false, MemoryOrder::Release);
     LockData.Count--;
     IsLocked = false;
+    LocksCount--;
 
     return 0;
 }
@@ -125,6 +130,7 @@ Retry:
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
+    LocksCount++;
     __sync;
 
     return 0;

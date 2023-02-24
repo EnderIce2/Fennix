@@ -11,6 +11,13 @@
 /* Enabled ONLY on crash. */
 extern bool ForceUnlock;
 
+/**
+ * @brief Get how many locks are currently in use.
+ *
+ * @return size_t
+ */
+size_t GetLocksCount();
+
 /** @brief Please use this macro to create a new lock. */
 class LockClass
 {
