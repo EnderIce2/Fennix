@@ -40,6 +40,7 @@
  *
  * BUGS:
  * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
+ *       - This bug is available only when the VMware mouse driver is loaded and receives an interrupt.
  * - [ ] After setting the new stack pointer, the kernel crashes with an invalid opcode.
  *
  * CREDITS AND REFERENCES:
