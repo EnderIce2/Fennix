@@ -89,6 +89,9 @@ bool IsVMwareBackdoorAvailable(void)
 
 int DriverEntry(void *Data)
 {
+    /* There's a bug somewhere in driver or kernel and it's just crashing. */
+    return NOT_IMPLEMENTED;
+
     if (!Data)
         return INVALID_KERNEL_API;
     KAPI = (KernelAPI *)Data;
