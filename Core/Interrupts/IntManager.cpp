@@ -73,7 +73,8 @@ namespace Interrupts
         {
             // TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
             apic[Core] = new APIC::APIC(Core);
-            ((APIC::APIC *)apic[Core])->RedirectIRQs(Core);
+            if (Core == 0) // Redirect IRQs to the BSP
+                ((APIC::APIC *)apic[Core])->RedirectIRQs(Core);
         }
         else
         {
