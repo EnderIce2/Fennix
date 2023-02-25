@@ -410,7 +410,9 @@ namespace VirtualFileSystem
             {
                 foreach (auto Child in NodeToDelete->Children)
                 {
+                    VFSLock.Unlock();
                     FileStatus Status = Delete(GetPathFromNode(Child).Get(), true);
+                    VFSLock.Lock(__FUNCTION__);
                     if (Status != FileStatus::OK)
                     {
                         vfsdbg("Failed to delete child %s with status %d. (%s)", Child->Name, Status, Path);
