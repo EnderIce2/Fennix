@@ -741,8 +741,8 @@ namespace Tasking
     {
         SmartCriticalSection(TaskingLock);
 #if defined(__amd64__)
-        for (int i = 0; i < SMP::CPUCores; i++)
-            ((APIC::APIC *)Interrupts::apic[i])->RedirectIRQ(i, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
+        // Map the IRQ16 to the first CPU.
+        ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
 #elif defined(__i386__)
 #elif defined(__aarch64__)
 #endif
@@ -812,7 +812,9 @@ namespace Tasking
             sprintf(IdleName, "Idle Thread %d", i);
             IdleThread->Rename(IdleName);
             IdleThread->SetPriority(Idle);
-            break;
+            for (int j = 0; j < MAX_CPU; j++)
+                IdleThread->Info.Affinity[j] = false;
+            IdleThread->Info.Affinity[i] = true;
         }
         debug("Tasking Started");
 #if defined(__amd64__)

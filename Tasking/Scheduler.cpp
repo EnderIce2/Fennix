@@ -140,6 +140,9 @@ namespace Tasking
                 if (tcb->Status != TaskStatus::Ready)
                     continue;
 
+                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                    continue;
+
                 CurrentCPU->CurrentProcess = pcb;
                 CurrentCPU->CurrentThread = tcb;
                 return true;
@@ -177,6 +180,9 @@ namespace Tasking
                     TempIndex++;
                     goto RetryAnotherThread;
                 }
+
+                if (thread->Info.Affinity[CurrentCPU->ID] == false)
+                    continue;
 
                 CurrentCPU->CurrentThread = thread;
                 gnat_schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d", thread->ID, thread->Parent->Name, CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
@@ -238,6 +244,9 @@ namespace Tasking
                     continue;
                 }
 
+                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                    continue;
+
                 CurrentCPU->CurrentProcess = pcb;
                 CurrentCPU->CurrentThread = tcb;
                 gnap_schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)", tcb->ID, tcb->Name, pcb->Threads.size(), ListProcess.size());
@@ -289,6 +298,9 @@ namespace Tasking
                     sspt_schedbg("Thread %d is not ready", tcb->ID);
                     continue;
                 }
+
+                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                    continue;
 
                 CurrentCPU->CurrentProcess = pcb;
                 CurrentCPU->CurrentThread = tcb;
