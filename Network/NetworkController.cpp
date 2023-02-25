@@ -121,7 +121,7 @@ namespace NetworkInterfaceManager
             udp->Bind(NTP_Socket, ntp);
             int UnixTimestamp = ntp->ReadTime();
             Time::Clock time = Time::ConvertFromUnix(UnixTimestamp);
-            DbgWriteScreen("NTP: %d - %d.%d.%d %d:%d:%d", UnixTimestamp,
+            DbgWriteScreen("NTP: %d - %d.%d.%d %d:%d:%d", time.Counter,
                            time.Day, time.Month, time.Year,
                            time.Hour, time.Minute, time.Second);
             TaskManager->Sleep(200);

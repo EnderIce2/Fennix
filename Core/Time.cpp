@@ -43,31 +43,46 @@ namespace Time
     Clock ConvertFromUnix(int Timestamp)
     {
         Clock result;
-        if (Timestamp == 0)
-            return result;
 
-        int SecondsSinceYearStart = Timestamp % (60 * 60 * 24 * 365);
+        uint64_t Seconds = Timestamp;
+        uint64_t Minutes = Seconds / 60;
+        uint64_t Hours = Minutes / 60;
+        uint64_t Days = Hours / 24;
 
-        result.Year = Timestamp / (60 * 60 * 24 * 365);
-        result.Month = SecondsSinceYearStart / (60 * 60 * 24 * 30);
-        result.Day = SecondsSinceYearStart / (60 * 60 * 24);
-        result.Hour = SecondsSinceYearStart / (60 * 60);
-        result.Minute = SecondsSinceYearStart / 60;
-        result.Second = SecondsSinceYearStart;
+        result.Year = 1970;
+        while (Days >= 365)
+        {
+            if (result.Year % 4 == 0 && (result.Year % 100 != 0 || result.Year % 400 == 0))
+            {
+                if (Days >= 366)
+                {
+                    Days -= 366;
+                    result.Year++;
+                }
+                else
+                    break;
+            }
+            else
+            {
+                Days -= 365;
+                result.Year++;
+            }
+        }
 
-#ifdef DEBUG
-        int DaysInYear;
-        if (result.Year % 4 != 0)
-            DaysInYear = 365;
-        else if (result.Year % 100 != 0)
-            DaysInYear = 366;
-        else if (result.Year % 400 == 0)
-            DaysInYear = 366;
-        else
-            DaysInYear = 365;
-        debug("Days in year: %d", DaysInYear);
-#endif
+        int DaysInMonth[] = {31, result.Year % 4 == 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        for (result.Month = 0; result.Month < 12; result.Month++)
+        {
+            if (Days < DaysInMonth[result.Month])
+                break;
+            Days -= DaysInMonth[result.Month];
+        }
+        result.Month++;
 
+        result.Day = static_cast<int>(Days) + 1;
+        result.Hour = static_cast<int>(Hours % 24);
+        result.Minute = static_cast<int>(Minutes % 60);
+        result.Second = static_cast<int>(Seconds % 60);
+        result.Counter = static_cast<uint64_t>(Timestamp);
         return result;
     }
 }
