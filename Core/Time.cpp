@@ -72,7 +72,7 @@ namespace Time
         int DaysInMonth[] = {31, result.Year % 4 == 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
         for (result.Month = 0; result.Month < 12; result.Month++)
         {
-            if (Days < DaysInMonth[result.Month])
+            if (Days < static_cast<uint64_t>(DaysInMonth[result.Month]))
                 break;
             Days -= DaysInMonth[result.Month];
         }
