@@ -149,7 +149,16 @@ public:
         VectorSize = Size;
     }
 
-    __no_instrument_function T &operator[](size_t Index) { return VectorBuffer[Index]; }
+    __no_instrument_function T &operator[](size_t Index)
+    {
+        if (!reinterpret_cast<uintptr_t>(&VectorBuffer[Index]))
+        {
+            warn("operator[]( %lld ) is null (requested by %#lx)", Index, __builtin_return_address(0));
+            static T null_elem;
+            return null_elem;
+        }
+        return VectorBuffer[Index];
+    }
 
     __no_instrument_function Vector<T> &operator=(const Vector<T> &Vector)
     {

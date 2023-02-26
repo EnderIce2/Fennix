@@ -113,7 +113,14 @@ namespace NetworkInterfaceManager
             DbgWriteScreen("DNS: %s", dhcp->DomainNameSystem.v4.ToStringLittleEndian());
             TaskManager->Sleep(200);
 
-            /* TODO: This is a quick workaround we need DNS resolver asap. IP is time-a-g.nist.gov; https://tf.nist.gov/tf-cgi/servers.cgi */
+            /* TODO: This is a quick workaround we need DNS resolver asap.
+
+            https://tf.nist.gov/tf-cgi/servers.cgi
+            https://www.ntppool.org
+
+            - 0.ro.pool.ntp.org ( {86, 127, 71, 168} )
+            - time-a-g.nist.gov ( {129, 6, 15, 28} )
+            */
             InternetProtocol ip = {.v4 = {.Address = {129, 6, 15, 28}},
                                    .v6 = {.Address = {}}};
             NetworkUDP::Socket *NTP_Socket = udp->Connect(ip, 123);
