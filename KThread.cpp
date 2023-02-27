@@ -194,9 +194,9 @@ void KernelMainThread()
         KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret.Status);
         goto Exit;
     }
+    ret.Thread->SetCritical(true);
     TaskManager->GetSecurityManager()->TrustToken(ret.Process->Security.UniqueToken, Tasking::TTL::FullTrust);
     TaskManager->GetSecurityManager()->TrustToken(ret.Thread->Security.UniqueToken, Tasking::TTL::FullTrust);
-    ret.Thread->SetCritical(true);
 
     Display->Print('.', 0);
     Display->Print('\n', 0);
