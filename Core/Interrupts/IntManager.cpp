@@ -1,7 +1,7 @@
 #include <interrupts.hpp>
 
 #include <syscalls.hpp>
-#include <hashmap.hpp>
+#include <vector.hpp>
 #include <smp.hpp>
 #include <io.h>
 
@@ -23,7 +23,12 @@ extern "C" SafeFunction void ExceptionHandler(void *Data) { CrashHandler::Handle
 
 namespace Interrupts
 {
-    HashMap<int, uint64_t> *RegisteredEvents;
+    struct Event
+    {
+        int ID;
+        void *Data;
+    };
+    Vector<Event> RegisteredEvents;
 
 #if defined(__amd64__)
     /* APIC::APIC */ void *apic[MAX_CPU];
@@ -36,10 +41,6 @@ namespace Interrupts
 
     void Initialize(int Core)
     {
-        static int once = 0;
-        if (!once++)
-            RegisteredEvents = new HashMap<int, uint64_t>;
-
 #if defined(__amd64__)
         GlobalDescriptorTable::Init(Core);
         InterruptDescriptorTable::Init(Core);
@@ -107,8 +108,7 @@ namespace Interrupts
 
     SafeFunction void RemoveAll()
     {
-        for (int i = 0; i < CPU::x86::IRQ223; i++)
-            RegisteredEvents->DeleteNode(i);
+        RegisteredEvents.clear();
     }
 
     extern "C" SafeFunction void MainInterruptHandler(void *Data)
@@ -130,8 +130,18 @@ namespace Interrupts
             if (Frame->InterruptNumber == CPU::x86::IRQ29) // Halt core interrupt
                 CPU::Stop();
 
-            Handler *handler = (Handler *)RegisteredEvents->Get(Frame->InterruptNumber);
-            if (likely(handler != (Handler *)HASHMAP_ERROR))
+            Handler *handler = nullptr;
+
+            foreach (auto var in RegisteredEvents)
+            {
+                if (var.ID == static_cast<int>(Frame->InterruptNumber))
+                {
+                    handler = (Handler *)var.Data;
+                    break;
+                }
+            }
+
+            if (handler != nullptr)
                 handler->OnInterruptReceived(Frame);
             else
             {
@@ -162,22 +172,31 @@ namespace Interrupts
 
     Handler::Handler(int InterruptNumber)
     {
-        if (RegisteredEvents->Get(InterruptNumber) != (uint64_t)HASHMAP_ERROR)
+        foreach (auto var in RegisteredEvents)
         {
-            warn("IRQ%d is already registered.", InterruptNumber - 32);
-            return;
+            if (var.ID == InterruptNumber)
+            {
+                warn("IRQ%d is already registered.", InterruptNumber - 32);
+            }
         }
 
         debug("Registering interrupt handler for IRQ%d.", InterruptNumber - 32);
         this->InterruptNumber = InterruptNumber;
-        RegisteredEvents->AddNode(InterruptNumber, (uint64_t)this);
+        RegisteredEvents.push_back({InterruptNumber, this});
     }
 
     Handler::~Handler()
     {
         debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber - 32);
-        if (RegisteredEvents->DeleteNode(InterruptNumber) == (uint64_t)HASHMAP_ERROR)
-            warn("Node %d not found.", InterruptNumber);
+        for (size_t i = 0; i < RegisteredEvents.size(); i++)
+        {
+            if (RegisteredEvents[i].ID == InterruptNumber)
+            {
+                RegisteredEvents.remove(i);
+                return;
+            }
+        }
+        warn("Event %d not found.", InterruptNumber);
     }
 
 #if defined(__amd64__)
