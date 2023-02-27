@@ -458,6 +458,7 @@ namespace Tasking
         }
         CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); /* Restore kernel page table for safety reasons. */
         uint64_t SchedTmpTicks = CPU::Counter();
+        this->LastTaskTicks = SchedTmpTicks - this->LastTaskTicks;
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));

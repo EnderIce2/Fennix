@@ -86,6 +86,18 @@ public:
         VectorSize--;
     }
 
+    __no_instrument_function void remove(const T &Value)
+    {
+        for (size_t i = 0; i < VectorSize; i++)
+        {
+            if (VectorBuffer[i] == Value)
+            {
+                remove(i);
+                return;
+            }
+        }
+    }
+
     __no_instrument_function size_t capacity() const { return VectorCapacity; }
 
     __no_instrument_function size_t size() const { return VectorSize; }

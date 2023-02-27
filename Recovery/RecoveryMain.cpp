@@ -57,7 +57,7 @@ namespace Recovery
         char TicksText[128];
         while (true)
         {
-            sprintf(TicksText, "Scheduler Ticks: %ld", TaskManager->GetSchedulerTicks());
+            sprintf(TicksText, "%016ld / %016ld - Sched. / Last Task Ticks", TaskManager->GetSchedulerTicks(), TaskManager->GetLastTaskTicks());
             wdgRecWin->SetText(SchedLblHnd, TicksText);
         }
     }

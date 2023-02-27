@@ -230,6 +230,7 @@ namespace Tasking
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
         Atomic<uint64_t> SchedulerTicks = 0;
+        Atomic<uint64_t> LastTaskTicks = 0;
 
         bool InvalidPCB(PCB *pcb);
         bool InvalidTCB(TCB *tcb);
@@ -263,6 +264,7 @@ namespace Tasking
 
     public:
         uint64_t GetSchedulerTicks() { return SchedulerTicks.Load(); }
+        uint64_t GetLastTaskTicks() { return LastTaskTicks.Load(); }
         Vector<PCB *> GetProcessList() { return ListProcess; }
         Security *GetSecurityManager() { return &SecurityManager; }
         void Panic() { StopScheduler = true; }
