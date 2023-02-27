@@ -27,7 +27,7 @@ volatile bool CPUEnabled = false;
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
 
-CPUData *GetCPU(long id) { return &CPUs[id]; }
+SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
 
 SafeFunction CPUData *GetCurrentCPU()
 {

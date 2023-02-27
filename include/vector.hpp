@@ -16,7 +16,7 @@ private:
 public:
     typedef T *iterator;
 
-    __no_instrument_function Vector()
+    NIF Vector()
     {
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: Vector( )");
@@ -26,7 +26,7 @@ public:
         VectorBuffer = 0;
     }
 
-    __no_instrument_function Vector(size_t Size)
+    NIF Vector(size_t Size)
     {
         VectorCapacity = Size;
         VectorSize = Size;
@@ -36,7 +36,7 @@ public:
         VectorBuffer = new T[Size];
     }
 
-    __no_instrument_function Vector(size_t Size, const T &Initial)
+    NIF Vector(size_t Size, const T &Initial)
     {
         VectorSize = Size;
         VectorCapacity = Size;
@@ -49,7 +49,7 @@ public:
             VectorBuffer[i] = Initial;
     }
 
-    __no_instrument_function Vector(const Vector<T> &Vector)
+    NIF Vector(const Vector<T> &Vector)
     {
         VectorSize = Vector.VectorSize;
         VectorCapacity = Vector.VectorCapacity;
@@ -62,11 +62,13 @@ public:
             VectorBuffer[i] = Vector.VectorBuffer[i];
     }
 
-    __no_instrument_function ~Vector()
+    NIF ~Vector()
     {
 #ifdef DEBUG_MEM_ALLOCATION
         debug("VECTOR INIT: ~Vector( ~%lx )", VectorBuffer);
 #endif
+        VectorSize = 0;
+        VectorCapacity = 0;
         if (VectorBuffer != nullptr)
         {
             delete[] VectorBuffer;
@@ -74,7 +76,7 @@ public:
         }
     }
 
-    __no_instrument_function void remove(size_t Position)
+    NIF void remove(size_t Position)
     {
         if (Position >= VectorSize)
             return;
@@ -86,7 +88,7 @@ public:
         VectorSize--;
     }
 
-    __no_instrument_function void remove(const T &Value)
+    NIF void remove(const T &Value)
     {
         for (size_t i = 0; i < VectorSize; i++)
         {
@@ -98,30 +100,91 @@ public:
         }
     }
 
-    __no_instrument_function size_t capacity() const { return VectorCapacity; }
+    NIF T &null_elem()
+    {
+        static T null_elem;
+        return null_elem;
+    }
 
-    __no_instrument_function size_t size() const { return VectorSize; }
+    NIF bool null_elem(size_t Index)
+    {
+        if (!reinterpret_cast<uintptr_t>(&VectorBuffer[Index]))
+            return false;
+        return true;
+    }
 
-    __no_instrument_function bool empty() const;
+    NIF T &next(size_t Position)
+    {
+        if (Position + 1 < VectorSize && reinterpret_cast<uintptr_t>(&VectorBuffer[Position + 1]))
+            return VectorBuffer[Position + 1];
+        warn("next( %lld ) is null (requested by %#lx)", Position, __builtin_return_address(0));
+        return this->null_elem();
+    }
 
-    __no_instrument_function iterator begin() { return VectorBuffer; }
+    NIF T &prev(size_t Position)
+    {
+        if (Position > 0 && reinterpret_cast<uintptr_t>(&VectorBuffer[Position - 1]))
+            return VectorBuffer[Position - 1];
+        warn("prev( %lld ) is null (requested by %#lx)", Position, __builtin_return_address(0));
+        return this->null_elem();
+    }
 
-    __no_instrument_function iterator end() { return VectorBuffer + size(); }
+    NIF T &next(const T &Value)
+    {
+        for (size_t i = 0; i < VectorSize; i++)
+        {
+            if (VectorBuffer[i] == Value)
+            {
+                if (i + 1 < VectorSize && reinterpret_cast<uintptr_t>(&VectorBuffer[i + 1]))
+                    return VectorBuffer[i + 1];
+                else
+                    break;
+            }
+        }
+        warn("next( %#lx ) is null (requested by %#lx)", Value, __builtin_return_address(0));
+        return this->null_elem();
+    }
 
-    __no_instrument_function T &front() { return VectorBuffer[0]; }
+    NIF T &prev(const T &Value)
+    {
+        for (size_t i = 0; i < VectorSize; i++)
+        {
+            if (VectorBuffer[i] == Value)
+            {
+                if (i > 0 && reinterpret_cast<uintptr_t>(&VectorBuffer[i - 1]))
+                    return VectorBuffer[i - 1];
+                else
+                    break;
+            }
+        }
+        warn("prev( %#lx ) is null (requested by %#lx)", Value, __builtin_return_address(0));
+        return this->null_elem();
+    }
 
-    __no_instrument_function T &back() { return VectorBuffer[VectorSize - 1]; }
+    NIF size_t capacity() const { return VectorCapacity; }
 
-    __no_instrument_function void push_back(const T &Value)
+    NIF size_t size() const { return VectorSize; }
+
+    NIF bool empty() const;
+
+    NIF iterator begin() { return VectorBuffer; }
+
+    NIF iterator end() { return VectorBuffer + size(); }
+
+    NIF T &front() { return VectorBuffer[0]; }
+
+    NIF T &back() { return VectorBuffer[VectorSize - 1]; }
+
+    NIF void push_back(const T &Value)
     {
         if (VectorSize >= VectorCapacity)
             reserve(VectorCapacity + 5);
         VectorBuffer[VectorSize++] = Value;
     }
 
-    __no_instrument_function void pop_back() { VectorSize--; }
+    NIF void pop_back() { VectorSize--; }
 
-    __no_instrument_function void reverse()
+    NIF void reverse()
     {
         if (VectorSize <= 1)
             return;
@@ -133,7 +196,7 @@ public:
         }
     }
 
-    __no_instrument_function void reserve(size_t Capacity)
+    NIF void reserve(size_t Capacity)
     {
         if (VectorBuffer == 0)
         {
@@ -155,24 +218,36 @@ public:
         VectorBuffer = NewBuffer;
     }
 
-    __no_instrument_function void resize(size_t Size)
+    NIF void resize(size_t Size)
     {
         reserve(Size);
         VectorSize = Size;
     }
 
-    __no_instrument_function T &operator[](size_t Index)
+    NIF void clear()
+    {
+        VectorCapacity = 0;
+        VectorSize = 0;
+        if (VectorBuffer != nullptr)
+        {
+            delete[] VectorBuffer;
+            VectorBuffer = nullptr;
+        }
+    }
+
+    NIF T *data() { return VectorBuffer; }
+
+    NIF T &operator[](size_t Index)
     {
         if (!reinterpret_cast<uintptr_t>(&VectorBuffer[Index]))
         {
             warn("operator[]( %lld ) is null (requested by %#lx)", Index, __builtin_return_address(0));
-            static T null_elem;
-            return null_elem;
+            return this->null_elem();
         }
         return VectorBuffer[Index];
     }
 
-    __no_instrument_function Vector<T> &operator=(const Vector<T> &Vector)
+    NIF Vector<T> &operator=(const Vector<T> &Vector)
     {
         delete[] VectorBuffer;
         VectorSize = Vector.VectorSize;
@@ -185,19 +260,6 @@ public:
             VectorBuffer[i] = Vector.VectorBuffer[i];
         return *this;
     }
-
-    __no_instrument_function void clear()
-    {
-        VectorCapacity = 0;
-        VectorSize = 0;
-        if (VectorBuffer != nullptr)
-        {
-            delete[] VectorBuffer;
-            VectorBuffer = nullptr;
-        }
-    }
-
-    __no_instrument_function T *data() { return VectorBuffer; }
 };
 
 #endif // !__FENNIX_KERNEL_VECTOR_H__

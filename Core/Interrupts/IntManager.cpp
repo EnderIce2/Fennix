@@ -124,14 +124,14 @@ namespace Interrupts
         if (likely(CoreData != nullptr))
             Core = CoreData->ID;
 
-        // If this is false, we have a big problem.
+        /* If this is false, we have a big problem. */
         if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 && Frame->InterruptNumber > CPU::x86::ISR0))
         {
-            if (Frame->InterruptNumber == CPU::x86::IRQ29) // Halt core interrupt
+            /* Halt core interrupt */
+            if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ29))
                 CPU::Stop();
 
             Handler *handler = nullptr;
-
             foreach (auto var in RegisteredEvents)
             {
                 if (var.ID == static_cast<int>(Frame->InterruptNumber))

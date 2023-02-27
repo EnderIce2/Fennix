@@ -130,20 +130,17 @@ namespace CPU
     /**
      * @brief Stop the CPU (infinite loop)
      */
-    SafeFunction static inline void Stop()
+    SafeFunction __noreturn __naked __used inline void Stop()
     {
-        while (1)
-        {
 #if defined(__amd64__) || defined(__i386__)
-            asmv("CPUStopLoop:\n"
-                 "cli\n"
-                 "hlt\n"
-                 "jmp CPUStopLoop");
+        asmv("CPUStopLoop:\n"
+             "cli\n"
+             "hlt\n"
+             "jmp CPUStopLoop");
 #elif defined(__aarch64__)
-            asmv("msr daifset, #2");
-            asmv("wfe");
+        asmv("msr daifset, #2");
+        asmv("wfe");
 #endif
-        }
     }
 
     /**

@@ -90,10 +90,10 @@ NewLock(SchedulerLock);
 #define wut_schedbg(m, ...)
 #endif
 
-extern "C" SafeFunction __no_instrument_function void TaskingScheduler_OneShot(int TimeSlice)
+extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
 {
     if (TimeSlice == 0)
-        TimeSlice = 10;
+        TimeSlice = Tasking::TaskPriority::Normal;
 #if defined(__amd64__)
     ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
 #elif defined(__i386__)
@@ -104,47 +104,51 @@ extern "C" SafeFunction __no_instrument_function void TaskingScheduler_OneShot(i
 namespace Tasking
 {
 #if defined(__amd64__)
-    SafeFunction __no_instrument_function bool Task::FindNewProcess(void *CPUDataPointer)
+    SafeFunction NIF bool Task::FindNewProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
         fnp_schedbg("%d processes", ListProcess.size());
 #ifdef DEBUG_FIND_NEW_PROCESS
-        foreach (auto pcb in ListProcess)
-            fnp_schedbg("Process %d %s", pcb->ID, pcb->Name);
+        foreach (auto process in ListProcess)
+            fnp_schedbg("Process %d %s", process->ID, process->Name);
 #endif
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
                 continue;
 
-            switch (pcb->Status)
+            switch (process->Status)
             {
             case TaskStatus::Ready:
-                fnp_schedbg("Ready process (%s)%d", pcb->Name, pcb->ID);
+                fnp_schedbg("Ready process (%s)%d",
+                            process->Name, process->ID);
                 break;
             default:
-                fnp_schedbg("Process \"%s\"(%d) status %d", pcb->Name, pcb->ID, pcb->Status);
+                fnp_schedbg("Process \"%s\"(%d) status %d",
+                            process->Name, process->ID,
+                            process->Status);
+
                 /* We don't actually remove the process. RemoveProcess
                    firstly checks if it's terminated, if not, it will
                    loop through Threads and call RemoveThread on
                    terminated threads. */
-                RemoveProcess(pcb);
+                RemoveProcess(process);
                 continue;
             }
 
-            foreach (auto tcb in pcb->Threads)
+            foreach (auto thread in process->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (InvalidTCB(thread))
                     continue;
 
-                if (tcb->Status != TaskStatus::Ready)
+                if (thread->Status != TaskStatus::Ready)
                     continue;
 
-                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                if (thread->Info.Affinity[CurrentCPU->ID] == false)
                     continue;
 
-                CurrentCPU->CurrentProcess = pcb;
-                CurrentCPU->CurrentThread = tcb;
+                CurrentCPU->CurrentProcess = process;
+                CurrentCPU->CurrentThread = thread;
                 return true;
             }
         }
@@ -152,7 +156,7 @@ namespace Tasking
         return false;
     }
 
-    SafeFunction __no_instrument_function bool Task::GetNextAvailableThread(void *CPUDataPointer)
+    SafeFunction NIF bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -162,94 +166,103 @@ namespace Tasking
             {
                 size_t TempIndex = i;
             RetryAnotherThread:
-                TCB *thread = CurrentCPU->CurrentProcess->Threads[TempIndex + 1];
-                if (unlikely(InvalidTCB(thread)))
+                TCB *nextThread = CurrentCPU->CurrentProcess->Threads[TempIndex + 1];
+
+                if (unlikely(InvalidTCB(nextThread)))
                 {
                     if (TempIndex > CurrentCPU->CurrentProcess->Threads.size())
                         break;
                     TempIndex++;
-                    gnat_schedbg("Thread %#lx is invalid", thread);
+
+                    gnat_schedbg("Thread %#lx is invalid", nextThread);
                     goto RetryAnotherThread;
                 }
 
-                gnat_schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)", CurrentCPU->CurrentProcess->Threads[i]->Name, CurrentCPU->CurrentProcess->Threads[i]->ID, thread->Name, thread->ID);
+                gnat_schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)",
+                             CurrentCPU->CurrentProcess->Threads[i]->Name,
+                             CurrentCPU->CurrentProcess->Threads[i]->ID,
+                             thread->Name, thread->ID);
 
-                if (thread->Status != TaskStatus::Ready)
+                if (nextThread->Status != TaskStatus::Ready)
                 {
-                    gnat_schedbg("Thread %d is not ready", thread->ID);
+                    gnat_schedbg("Thread %d is not ready", nextThread->ID);
                     TempIndex++;
                     goto RetryAnotherThread;
                 }
 
-                if (thread->Info.Affinity[CurrentCPU->ID] == false)
+                if (nextThread->Info.Affinity[CurrentCPU->ID] == false)
                     continue;
 
-                CurrentCPU->CurrentThread = thread;
-                gnat_schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d", thread->ID, thread->Parent->Name, CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
+                CurrentCPU->CurrentThread = nextThread;
+                gnat_schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d",
+                             thread->ID, thread->Parent->Name,
+                             CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
                 return true;
             }
 #ifdef DEBUG
             else
             {
-                gnat_schedbg("Thread %d is not the current one", CurrentCPU->CurrentProcess->Threads[i]->ID);
+                gnat_schedbg("Thread %d is not the current one",
+                             CurrentCPU->CurrentProcess->Threads[i]->ID);
             }
 #endif
         }
         return false;
     }
 
-    SafeFunction __no_instrument_function bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+    SafeFunction NIF bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
         bool Skip = true;
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (pcb == CurrentCPU->CurrentProcess.Load())
+            if (process == CurrentCPU->CurrentProcess.Load())
             {
                 Skip = false;
-                gnap_schedbg("Found current process %#lx", pcb);
+                gnap_schedbg("Found current process %#lx", process);
                 continue;
             }
 
             if (Skip)
             {
-                gnap_schedbg("Skipping process %#lx", pcb);
+                gnap_schedbg("Skipping process %#lx", process);
                 continue;
             }
 
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
             {
-                gnap_schedbg("Invalid process %#lx", pcb);
+                gnap_schedbg("Invalid process %#lx", process);
                 continue;
             }
 
-            if (pcb->Status != TaskStatus::Ready)
+            if (process->Status != TaskStatus::Ready)
             {
-                gnap_schedbg("Process %d is not ready", pcb->ID);
+                gnap_schedbg("Process %d is not ready", process->ID);
                 continue;
             }
 
-            foreach (auto tcb in pcb->Threads)
+            foreach (auto thread in process->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (InvalidTCB(thread))
                 {
-                    gnap_schedbg("Invalid thread %#lx", tcb);
+                    gnap_schedbg("Invalid thread %#lx", thread);
                     continue;
                 }
 
-                if (tcb->Status != TaskStatus::Ready)
+                if (thread->Status != TaskStatus::Ready)
                 {
-                    gnap_schedbg("Thread %d is not ready", tcb->ID);
+                    gnap_schedbg("Thread %d is not ready", thread->ID);
                     continue;
                 }
 
-                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                if (thread->Info.Affinity[CurrentCPU->ID] == false)
                     continue;
 
-                CurrentCPU->CurrentProcess = pcb;
-                CurrentCPU->CurrentThread = tcb;
-                gnap_schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)", tcb->ID, tcb->Name, pcb->Threads.size(), ListProcess.size());
+                CurrentCPU->CurrentProcess = process;
+                CurrentCPU->CurrentThread = thread;
+                gnap_schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)",
+                             thread->ID, thread->Name, process->Threads.size(), ListProcess.size());
                 return true;
             }
         }
@@ -257,75 +270,76 @@ namespace Tasking
         return false;
     }
 
-    SafeFunction __no_instrument_function void Task::SchedulerCleanupProcesses()
+    SafeFunction NIF void Task::SchedulerCleanupProcesses()
     {
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
                 continue;
-            RemoveProcess(pcb);
+            RemoveProcess(process);
         }
     }
 
-    SafeFunction __no_instrument_function bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+    SafeFunction NIF bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
             {
-                sspt_schedbg("Invalid process %#lx", pcb);
+                sspt_schedbg("Invalid process %#lx", process);
                 continue;
             }
 
-            if (pcb->Status != TaskStatus::Ready)
+            if (process->Status != TaskStatus::Ready)
             {
-                sspt_schedbg("Process %d is not ready", pcb->ID);
+                sspt_schedbg("Process %d is not ready", process->ID);
                 continue;
             }
 
-            foreach (auto tcb in pcb->Threads)
+            foreach (auto thread in process->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (InvalidTCB(thread))
                 {
-                    sspt_schedbg("Invalid thread %#lx", tcb);
+                    sspt_schedbg("Invalid thread %#lx", thread);
                     continue;
                 }
 
-                if (tcb->Status != TaskStatus::Ready)
+                if (thread->Status != TaskStatus::Ready)
                 {
-                    sspt_schedbg("Thread %d is not ready", tcb->ID);
+                    sspt_schedbg("Thread %d is not ready", thread->ID);
                     continue;
                 }
 
-                if (tcb->Info.Affinity[CurrentCPU->ID] == false)
+                if (thread->Info.Affinity[CurrentCPU->ID] == false)
                     continue;
 
-                CurrentCPU->CurrentProcess = pcb;
-                CurrentCPU->CurrentThread = tcb;
-                sspt_schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)", tcb->ID, tcb->Parent->Name, pcb->Threads.size(), ListProcess.size());
+                CurrentCPU->CurrentProcess = process;
+                CurrentCPU->CurrentThread = thread;
+                sspt_schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)",
+                             thread->ID, thread->Parent->Name, process->Threads.size(), ListProcess.size());
                 return true;
             }
         }
         return false;
     }
 
-    SafeFunction __no_instrument_function void Task::UpdateProcessStatus()
+    SafeFunction NIF void Task::UpdateProcessStatus()
     {
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
                 continue;
 
-            if (pcb->Status == TaskStatus::Terminated ||
-                pcb->Status == TaskStatus::Stopped)
+            if (process->Status == TaskStatus::Terminated ||
+                process->Status == TaskStatus::Stopped)
                 continue;
 
             bool AllThreadsSleeping = true;
-            foreach (auto tcb in pcb->Threads)
+            foreach (auto thread in process->Threads)
             {
-                if (tcb->Status != TaskStatus::Sleeping)
+                if (thread->Status != TaskStatus::Sleeping)
                 {
                     AllThreadsSleeping = false;
                     break;
@@ -333,45 +347,46 @@ namespace Tasking
             }
 
             if (AllThreadsSleeping)
-                pcb->Status = TaskStatus::Sleeping;
-            else if (pcb->Status == TaskStatus::Sleeping)
-                pcb->Status = TaskStatus::Ready;
+                process->Status = TaskStatus::Sleeping;
+            else if (process->Status == TaskStatus::Sleeping)
+                process->Status = TaskStatus::Ready;
         }
     }
 
-    SafeFunction __no_instrument_function void Task::WakeUpThreads(void *CPUDataPointer)
+    SafeFunction NIF void Task::WakeUpThreads(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
-        foreach (auto pcb in ListProcess)
+        foreach (auto process in ListProcess)
         {
-            if (InvalidPCB(pcb))
+            if (InvalidPCB(process))
                 continue;
 
-            if (pcb->Status == TaskStatus::Terminated ||
-                pcb->Status == TaskStatus::Stopped)
+            if (process->Status == TaskStatus::Terminated ||
+                process->Status == TaskStatus::Stopped)
                 continue;
 
-            foreach (auto tcb in pcb->Threads)
+            foreach (auto thread in process->Threads)
             {
-                if (InvalidTCB(tcb))
+                if (InvalidTCB(thread))
                     continue;
 
-                if (tcb->Status != TaskStatus::Sleeping)
+                if (thread->Status != TaskStatus::Sleeping)
                     continue;
 
                 /* Check if the thread is ready to wake up. */
-                if (tcb->Info.SleepUntil < TimeManager->GetCounter())
+                if (thread->Info.SleepUntil < TimeManager->GetCounter())
                 {
-                    if (pcb->Status == TaskStatus::Sleeping)
-                        pcb->Status = TaskStatus::Ready;
-                    tcb->Status = TaskStatus::Ready;
+                    if (process->Status == TaskStatus::Sleeping)
+                        process->Status = TaskStatus::Ready;
+                    thread->Status = TaskStatus::Ready;
 
-                    tcb->Info.SleepUntil = 0;
-                    wut_schedbg("Thread \"%s\"(%d) woke up.", tcb->Name, tcb->ID);
+                    thread->Info.SleepUntil = 0;
+                    wut_schedbg("Thread \"%s\"(%d) woke up.", thread->Name, thread->ID);
                 }
                 else
                 {
-                    wut_schedbg("Thread \"%s\"(%d) is not ready to wake up. (SleepUntil: %d, Counter: %d)", tcb->Name, tcb->ID, tcb->Info.SleepUntil, TimeManager->GetCounter());
+                    wut_schedbg("Thread \"%s\"(%d) is not ready to wake up. (SleepUntil: %d, Counter: %d)",
+                                thread->Name, thread->ID, thread->Info.SleepUntil, TimeManager->GetCounter());
                 }
             }
         }
@@ -408,7 +423,7 @@ namespace Tasking
         "SchedulerSearchProcessThread",
     };
 
-    SafeFunction __no_instrument_function void OnScreenTaskManagerUpdate()
+    SafeFunction NIF void OnScreenTaskManagerUpdate()
     {
         TimeManager->Sleep(100);
         Video::ScreenBuffer *sb = Display->GetBuffer(0);
@@ -448,7 +463,7 @@ namespace Tasking
     }
 #endif
 
-    SafeFunction __no_instrument_function void Task::Schedule(CPU::x64::TrapFrame *Frame)
+    SafeFunction NIF void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
         SmartCriticalSection(SchedulerLock);
         if (StopScheduler)
@@ -599,7 +614,8 @@ namespace Tasking
             // wrmsr(MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->gs);
             break;
         default:
-            error("Unknown trust level %d.", CurrentCPU->CurrentProcess->Security.TrustLevel);
+            error("Unknown trust level %d.",
+                  CurrentCPU->CurrentProcess->Security.TrustLevel);
             break;
         }
 
@@ -628,7 +644,8 @@ namespace Tasking
                   CurrentCPU->CurrentThread->Registers.rsp);
 
         schedbg("================================================================");
-        schedbg("Technical Informations on Thread %s[%ld]:", CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
+        schedbg("Technical Informations on Thread %s[%ld]:",
+                CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
         uint64_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
@@ -653,7 +670,7 @@ namespace Tasking
         __sync; /* TODO: Is this really needed? */
     }
 
-    SafeFunction __no_instrument_function void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
+    SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
 #elif defined(__i386__)
     SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
