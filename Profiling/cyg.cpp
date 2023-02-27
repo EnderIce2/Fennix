@@ -10,7 +10,7 @@ unsigned long long LogDepth = 0;
 unsigned int Level = 0;
 using namespace UniversalAsynchronousReceiverTransmitter;
 
-static inline SafeFunction __no_instrument_function void profiler_uart_wrapper(char c, void *unused)
+static inline SafeFunction NIF void profiler_uart_wrapper(char c, void *unused)
 {
     bool renable = EnableProfiler;
     EnableProfiler = false;
@@ -20,7 +20,7 @@ static inline SafeFunction __no_instrument_function void profiler_uart_wrapper(c
         EnableProfiler = true;
 }
 
-EXTERNC SafeFunction __no_instrument_function void __cyg_profile_func_enter(void *Function, void *CallSite)
+EXTERNC SafeFunction NIF void __cyg_profile_func_enter(void *Function, void *CallSite)
 {
     if (!EnableProfiler)
         return;
@@ -53,7 +53,7 @@ EXTERNC SafeFunction __no_instrument_function void __cyg_profile_func_enter(void
     Wait = false;
 }
 
-EXTERNC SafeFunction __no_instrument_function void __cyg_profile_func_exit(void *Function, void *CallSite)
+EXTERNC SafeFunction NIF void __cyg_profile_func_exit(void *Function, void *CallSite)
 {
     if (!EnableProfiler)
         return;

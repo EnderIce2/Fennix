@@ -51,7 +51,7 @@ namespace UniversalAsynchronousReceiverTransmitter
          * @brief Get the Registered Port object
          * @return SerialPorts
          */
-        SafeFunction __no_instrument_function SerialPorts GetRegisteredPort() { return this->Port; }
+        SafeFunction NIF SerialPorts GetRegisteredPort() { return this->Port; }
 
         /**
          * @brief Called when a character is sent.

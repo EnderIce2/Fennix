@@ -149,7 +149,7 @@ EXTERNC void KPrint(const char *Format, ...)
     Display->SetBuffer(0);
 }
 
-EXTERNC __no_instrument_function void Main(BootInfo *Info)
+EXTERNC NIF void Main(BootInfo *Info)
 {
     BootClock = Time::ReadClock();
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
@@ -324,7 +324,7 @@ typedef void (*CallPtr)(void);
 extern CallPtr __init_array_start[0], __init_array_end[0];
 extern CallPtr __fini_array_start[0], __fini_array_end[0];
 
-EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
+EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 {
     trace("Hello, World!");
 
@@ -350,7 +350,7 @@ EXTERNC __no_stack_protector __no_instrument_function void Entry(BootInfo *Info)
 
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 
-EXTERNC __no_stack_protector __no_instrument_function void BeforeShutdown()
+EXTERNC __no_stack_protector NIF void BeforeShutdown()
 {
     /* TODO: Announce shutdown */
 

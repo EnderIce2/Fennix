@@ -8,13 +8,13 @@ NewLock(DebuggerLock);
 
 using namespace UniversalAsynchronousReceiverTransmitter;
 
-static inline __no_instrument_function void uart_wrapper(char c, void *unused)
+static inline NIF void uart_wrapper(char c, void *unused)
 {
     UART(COM1).Write(c);
     UNUSED(unused);
 }
 
-static inline __no_instrument_function void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)
+static inline NIF void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)
 {
     const char *DbgLvlString;
     switch (Level)
@@ -52,7 +52,7 @@ static inline __no_instrument_function void WritePrefix(DebugLevel Level, const 
 
 namespace SysDbg
 {
-    __no_instrument_function void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    NIF void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         WritePrefix(Level, File, Line, Function);
         va_list args;
@@ -61,7 +61,7 @@ namespace SysDbg
         va_end(args);
     }
 
-    __no_instrument_function void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    NIF void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         WritePrefix(Level, File, Line, Function);
         va_list args;
@@ -71,7 +71,7 @@ namespace SysDbg
         uart_wrapper('\n', nullptr);
     }
 
-    __no_instrument_function void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    NIF void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         SmartTimeoutLock(DebuggerLock, 1000);
         WritePrefix(Level, File, Line, Function);
@@ -81,7 +81,7 @@ namespace SysDbg
         va_end(args);
     }
 
-    __no_instrument_function void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+    NIF void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         SmartTimeoutLock(DebuggerLock, 1000);
         WritePrefix(Level, File, Line, Function);
@@ -94,7 +94,7 @@ namespace SysDbg
 }
 
 // C compatibility
-extern "C" __no_instrument_function void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" NIF void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     WritePrefix(Level, File, Line, Function);
     va_list args;
@@ -104,7 +104,7 @@ extern "C" __no_instrument_function void SysDbgWrite(enum DebugLevel Level, cons
 }
 
 // C compatibility
-extern "C" __no_instrument_function void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" NIF void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     WritePrefix(Level, File, Line, Function);
     va_list args;
@@ -115,7 +115,7 @@ extern "C" __no_instrument_function void SysDbgWriteLine(enum DebugLevel Level, 
 }
 
 // C compatibility
-extern "C" __no_instrument_function void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" NIF void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     SmartTimeoutLock(DebuggerLock, 1000);
     WritePrefix(Level, File, Line, Function);
@@ -126,7 +126,7 @@ extern "C" __no_instrument_function void SysDbgLockedWrite(enum DebugLevel Level
 }
 
 // C compatibility
-extern "C" __no_instrument_function void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" NIF void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     SmartTimeoutLock(DebuggerLock, 1000);
     WritePrefix(Level, File, Line, Function);

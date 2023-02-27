@@ -298,6 +298,8 @@ typedef intptr_t ssize_t;
 
 #define SafeFunction __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
 
+#define NIF __no_instrument_function
+
 #define int1                        \
     __asm__ __volatile__("int $0x1" \
                          :          \

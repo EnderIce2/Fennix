@@ -35,7 +35,7 @@ static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
 Xalloc::V1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
-__no_instrument_function void tracepagetable(PageTable4 *pt)
+NIF void tracepagetable(PageTable4 *pt)
 {
     for (int i = 0; i < 512; i++)
     {
@@ -54,7 +54,7 @@ __no_instrument_function void tracepagetable(PageTable4 *pt)
 }
 #endif
 
-__no_instrument_function void MapFromZero(PageTable4 *PT, BootInfo *Info)
+NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
 {
     static int once = 0;
     if (!once++)
@@ -79,7 +79,7 @@ __no_instrument_function void MapFromZero(PageTable4 *PT, BootInfo *Info)
     }
 }
 
-__no_instrument_function void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
+NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
 {
     Virtual va = Virtual(PT);
     int itrfb = 0;
@@ -96,7 +96,7 @@ __no_instrument_function void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
     }
 }
 
-__no_instrument_function void MapKernel(PageTable4 *PT, BootInfo *Info)
+NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
 {
     /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
     Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
@@ -143,7 +143,7 @@ __no_instrument_function void MapKernel(PageTable4 *PT, BootInfo *Info)
           KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
 }
 
-__no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
+NIF void InitializeMemoryManagement(BootInfo *Info)
 {
 #ifdef DEBUG
     for (uint64_t i = 0; i < Info->Memory.Entries; i++)
@@ -190,7 +190,6 @@ __no_instrument_function void InitializeMemoryManagement(BootInfo *Info)
               Type);
     }
 #endif
-
     trace("Initializing Physical Memory Manager");
     // KernelAllocator = Physical(); <- Already called in the constructor
     KernelAllocator.Init(Info);

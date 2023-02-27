@@ -7,7 +7,7 @@ volatile bool serialports[8] = {false, false, false, false, false, false, false,
 Vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
 
 #if defined(__amd64__) || defined(__i386__)
-__no_instrument_function uint8_t NoProfiler_inportb(uint16_t Port)
+NIF uint8_t NoProfiler_inportb(uint16_t Port)
 {
     uint8_t Result;
     asm("in %%dx, %%al"
@@ -16,7 +16,7 @@ __no_instrument_function uint8_t NoProfiler_inportb(uint16_t Port)
     return Result;
 }
 
-__no_instrument_function void NoProfiler_outportb(uint16_t Port, uint8_t Data)
+NIF void NoProfiler_outportb(uint16_t Port, uint8_t Data)
 {
     asmv("out %%al, %%dx"
          :
@@ -37,7 +37,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     /* TODO: Serial Port implementation needs reword. https://wiki.osdev.org/Serial_Ports */
 
-    SafeFunction __no_instrument_function UART::UART(SerialPorts Port)
+    SafeFunction NIF UART::UART(SerialPorts Port)
     {
 #if defined(__amd64__) || defined(__i386__)
         if (Port == COMNULL)
@@ -104,9 +104,9 @@ namespace UniversalAsynchronousReceiverTransmitter
 #endif
     }
 
-    SafeFunction __no_instrument_function UART::~UART() {}
+    SafeFunction NIF UART::~UART() {}
 
-    SafeFunction __no_instrument_function void UART::Write(uint8_t Char)
+    SafeFunction NIF void UART::Write(uint8_t Char)
     {
 #if defined(__amd64__) || defined(__i386__)
         while ((NoProfiler_inportb(Port + 5) & SERIAL_BUFFER_EMPTY) == 0)
@@ -118,7 +118,7 @@ namespace UniversalAsynchronousReceiverTransmitter
                 e->OnSent(Char);
     }
 
-    SafeFunction __no_instrument_function uint8_t UART::Read()
+    SafeFunction NIF uint8_t UART::Read()
     {
 #if defined(__amd64__) || defined(__i386__)
         while ((NoProfiler_inportb(Port + 5) & 1) == 0)
@@ -136,13 +136,13 @@ namespace UniversalAsynchronousReceiverTransmitter
         }
     }
 
-    SafeFunction __no_instrument_function Events::Events(SerialPorts Port)
+    SafeFunction NIF Events::Events(SerialPorts Port)
     {
         this->Port = Port;
         RegisteredEvents.push_back(this);
     }
 
-    SafeFunction __no_instrument_function Events::~Events()
+    SafeFunction NIF Events::~Events()
     {
         for (uintptr_t i = 0; i < RegisteredEvents.size(); i++)
             if (RegisteredEvents[i] == this)

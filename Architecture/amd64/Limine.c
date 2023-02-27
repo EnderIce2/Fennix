@@ -42,7 +42,7 @@ static volatile struct limine_smbios_request SmbiosRequest = {
     .id = LIMINE_SMBIOS_REQUEST,
     .revision = 0};
 
-SafeFunction __no_instrument_function void init_limine()
+SafeFunction NIF void init_limine()
 {
     struct BootInfo binfo;
     struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;

@@ -41,7 +41,7 @@ namespace Tasking
         // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
     }
 
-    __naked __used __no_stack_protector __no_instrument_function void IdleProcessLoop()
+    __naked __used __no_stack_protector NIF void IdleProcessLoop()
     {
 #if defined(__amd64__) || defined(__i386__)
         asmv("IdleLoop:\n"
@@ -54,11 +54,11 @@ namespace Tasking
 #endif
     }
 
-    SafeFunction __no_instrument_function bool Task::InvalidPCB(PCB *pcb)
+    SafeFunction NIF bool Task::InvalidPCB(PCB *pcb)
     {
         if (!pcb)
             return true;
-        if (pcb >= (PCB *)(UINTPTR_MAX - 0x1000)) /* Uninitialized pointers may have uintptr_t max value instead of nullptr. */
+        if (pcb >= (PCB *)(UINTPTR_MAX - 0x1ffe)) /* Uninitialized pointers may have uintptr_t max value instead of nullptr. */
             return true;
         if (pcb < (PCB *)(0x1000)) /* In this section of the memory is reserved by the kernel. */
             return true;
@@ -67,11 +67,11 @@ namespace Tasking
         return false;
     }
 
-    SafeFunction __no_instrument_function bool Task::InvalidTCB(TCB *tcb)
+    SafeFunction NIF bool Task::InvalidTCB(TCB *tcb)
     {
         if (!tcb)
             return true;
-        if (tcb >= (TCB *)(UINTPTR_MAX - 0x1000)) /* Uninitialized pointers may have uintptr_t max value instead of nullptr. */
+        if (tcb >= (TCB *)(UINTPTR_MAX - 0x1ffe)) /* Uninitialized pointers may have uintptr_t max value instead of nullptr. */
             return true;
         if (tcb < (TCB *)(0x1000)) /* In this section of the memory is reserved by the kernel. */
             return true;
@@ -80,7 +80,7 @@ namespace Tasking
         return false;
     }
 
-    SafeFunction __no_instrument_function void Task::RemoveThread(TCB *Thread)
+    SafeFunction NIF void Task::RemoveThread(TCB *Thread)
     {
         for (size_t i = 0; i < Thread->Parent->Threads.size(); i++)
             if (Thread->Parent->Threads[i] == Thread)
@@ -98,7 +98,7 @@ namespace Tasking
             }
     }
 
-    SafeFunction __no_instrument_function void Task::RemoveProcess(PCB *Process)
+    SafeFunction NIF void Task::RemoveProcess(PCB *Process)
     {
         if (Process == nullptr)
             return;
@@ -153,19 +153,19 @@ namespace Tasking
         }
     }
 
-    SafeFunction __no_instrument_function void Task::UpdateUserTime(TaskInfo *Info)
+    SafeFunction NIF void Task::UpdateUserTime(TaskInfo *Info)
     {
         // TODO
         Info->UserTime++;
     }
 
-    SafeFunction __no_instrument_function void Task::UpdateKernelTime(TaskInfo *Info)
+    SafeFunction NIF void Task::UpdateKernelTime(TaskInfo *Info)
     {
         // TODO
         Info->KernelTime++;
     }
 
-    SafeFunction __no_instrument_function void Task::UpdateUsage(TaskInfo *Info, int Core)
+    SafeFunction NIF void Task::UpdateUsage(TaskInfo *Info, int Core)
     {
         if (Info->Affinity[Core] == true)
         {

@@ -92,7 +92,7 @@ namespace SymbolResolver
 
     Symbols::~Symbols() {}
 
-    const __no_instrument_function char *Symbols::GetSymbolFromAddress(uintptr_t Address)
+    const NIF char *Symbols::GetSymbolFromAddress(uintptr_t Address)
     {
         Symbols::SymbolTable Result{0, (char *)"<unknown>"};
         for (uintptr_t i = 0; i < this->TotalEntries; i++)
@@ -101,7 +101,7 @@ namespace SymbolResolver
         return Result.FunctionName;
     }
 
-    __no_instrument_function void Symbols::AddSymbol(uintptr_t Address, const char *Name)
+    NIF void Symbols::AddSymbol(uintptr_t Address, const char *Name)
     {
         if (this->TotalEntries >= 0x10000)
         {
