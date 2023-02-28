@@ -4,7 +4,7 @@
 #include <types.h>
 
 #include <filesystem.hpp>
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <symbols.hpp>
 #include <vector.hpp>
 #include <memory.hpp>

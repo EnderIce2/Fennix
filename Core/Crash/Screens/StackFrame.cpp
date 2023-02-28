@@ -1,7 +1,7 @@
 #include "../../crashhandler.hpp"
 #include "../chfcts.hpp"
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <display.hpp>
 #include <printf.h>
 #include <debug.h>

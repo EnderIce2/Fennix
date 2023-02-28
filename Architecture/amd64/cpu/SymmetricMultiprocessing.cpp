@@ -1,6 +1,6 @@
 #include <smp.hpp>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <memory.hpp>
 #include <assert.h>
 #include <cpu.hpp>

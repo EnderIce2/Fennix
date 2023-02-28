@@ -1,9 +1,9 @@
-#ifndef __FENNIX_KERNEL_CRASH_HANDELR_H__
-#define __FENNIX_KERNEL_CRASH_HANDELR_H__
+#ifndef __FENNIX_KERNEL_CRASH_HANDLER_H__
+#define __FENNIX_KERNEL_CRASH_HANDLER_H__
 
 #include <types.h>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <cpu.hpp>
 
 namespace CrashHandler
@@ -15,4 +15,4 @@ namespace CrashHandler
     void Handle(void *Data);
 }
 
-#endif // !__FENNIX_KERNEL_CRASH_HANDELR_H__
+#endif // !__FENNIX_KERNEL_CRASH_HANDLER_H__

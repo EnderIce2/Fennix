@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <cpu.hpp>
 
 namespace APIC

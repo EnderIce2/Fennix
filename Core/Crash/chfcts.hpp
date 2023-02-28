@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <task.hpp>
 #include <cpu.hpp>
 

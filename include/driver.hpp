@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
 #include <debug.h>

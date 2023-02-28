@@ -4,7 +4,7 @@
 #include <types.h>
 
 #include <boot/binfo.h>
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <vector.hpp>
 #include <cpu.hpp>
 

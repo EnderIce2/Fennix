@@ -1,6 +1,6 @@
 #include <driver.hpp>
 
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <memory.hpp>
 #include <task.hpp>
 #include <lock.hpp>

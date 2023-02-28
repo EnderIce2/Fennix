@@ -2,7 +2,7 @@
 
 #include <boot/protocols/multiboot2.h>
 #include <filesystem/ustar.hpp>
-#include <interrupts.hpp>
+#include <ints.hpp>
 #include <memory.hpp>
 #include <convert.h>
 #include <printf.h>

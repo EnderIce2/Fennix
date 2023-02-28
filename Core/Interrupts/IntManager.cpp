@@ -1,4 +1,4 @@
-#include <interrupts.hpp>
+#include <ints.hpp>
 
 #include <syscalls.hpp>
 #include <vector.hpp>
