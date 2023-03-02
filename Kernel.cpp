@@ -38,9 +38,8 @@
  * - [?] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
  * - [ ] Colors in crash screen are not following the kernel color scheme.
  *
- * BUGS:
- * - [ ] Kernel crashes when receiving interrupts for drivers only if the system has one core and the tasking is running.
- *       - This bug is available only when the VMware mouse driver is loaded and receives an interrupt.
+ * ISSUES:
+ * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when PS/2 mouse driver is loaded, not sure what is the cause)
  * - [ ] After setting the new stack pointer, the kernel crashes with an invalid opcode.
  *
  * CREDITS AND REFERENCES:
