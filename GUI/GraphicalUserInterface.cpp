@@ -16,31 +16,26 @@ namespace GraphicalUserInterface
 {
     void GUI::FetchInputs()
     {
-        KernelCallback callback;
         MouseData Mouse;
         bool FoundMouseDriver = false;
         if (likely(DriverManager->GetDrivers().size() > 0))
         {
             foreach (auto Driver in DriverManager->GetDrivers())
             {
-                if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Input)
+                if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Input &&
+                    ((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.TypeFlags & FexDriverInputTypes::FexDriverInputTypes_Mouse)
                 {
-                    static uint32_t DisplayWidth = 0;
-                    static uint32_t DisplayHeight = 0;
-
-                    if (DisplayWidth == 0)
-                        DisplayWidth = Display->GetBuffer(200)->Width;
-
-                    if (DisplayHeight == 0)
-                        DisplayHeight = Display->GetBuffer(200)->Height;
-
-                    memset(&callback, 0, sizeof(KernelCallback));
+#ifdef DEBUG
+                    static int once = 0;
+                    if (!once++)
+                        debug("Found mouse driver %ld", Driver->DriverUID);
+#endif
+                    KernelCallback callback;
                     callback.Reason = FetchReason;
                     DriverManager->IOCB(Driver->DriverUID, (void *)&callback);
-                    // TODO: I think I should check somehow what driver is the one that is mouse and not keyboard
-                    Mouse.X = (callback.InputCallback.Mouse.X * DisplayWidth) / 0xFFFF;  // VMWARE mouse
-                    Mouse.Y = (callback.InputCallback.Mouse.Y * DisplayHeight) / 0xFFFF; // VMWARE mouse
-                    Mouse.Z = (callback.InputCallback.Mouse.Z);
+                    Mouse.X = callback.InputCallback.Mouse.X;
+                    Mouse.Y = callback.InputCallback.Mouse.Y;
+                    Mouse.Z = callback.InputCallback.Mouse.Z;
                     Mouse.Left = callback.InputCallback.Mouse.Buttons.Left;
                     Mouse.Right = callback.InputCallback.Mouse.Buttons.Right;
                     Mouse.Middle = callback.InputCallback.Mouse.Buttons.Middle;
@@ -52,8 +47,9 @@ namespace GraphicalUserInterface
 
         if (unlikely(!FoundMouseDriver))
         {
-            Mouse.X = 0;
-            Mouse.Y = 0;
+            debug("No mouse driver found.");
+            Mouse.X = Display->GetBuffer(200)->Width / 2;
+            Mouse.Y = Display->GetBuffer(200)->Height / 2;
             Mouse.Z = 0;
             Mouse.Left = false;
             Mouse.Right = false;
