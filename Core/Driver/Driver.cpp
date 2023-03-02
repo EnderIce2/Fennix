@@ -30,13 +30,12 @@ namespace Driver
 
     void Driver::UnloadAllDrivers()
     {
-        KernelCallback callback;
         debug("%ld drivers loaded, [DUIDs: %ld]", Drivers.size(), DriverUIDs);
         debug("driver size %ld", Drivers.size());
         for (size_t i = 0; i < Drivers.size(); i++)
         {
             DriverFile *drv = Drivers[i];
-            memset(&callback, 0, sizeof(KernelCallback));
+            KernelCallback callback;
             callback.Reason = StopReason;
             debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
             DriverManager->IOCB(drv->DriverUID, (void *)&callback);
@@ -54,16 +53,16 @@ namespace Driver
 
     bool Driver::UnloadDriver(unsigned long DUID)
     {
+        debug("Searching for driver %ld", DUID);
         for (size_t i = 0; i < Drivers.size(); i++)
         {
             DriverFile *drv = Drivers[i];
             if (drv->DriverUID == DUID)
             {
                 KernelCallback callback;
-                memset(&callback, 0, sizeof(KernelCallback));
                 callback.Reason = StopReason;
-                debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
-                DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+                debug("Stopping and unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
+                this->IOCB(drv->DriverUID, (void *)&callback);
 
                 delete drv->MemTrk;
                 for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
@@ -81,12 +80,16 @@ namespace Driver
 
     int Driver::IOCB(unsigned long DUID, void *KCB)
     {
-        foreach (auto var in Drivers)
-            if (var->DriverUID == DUID)
+        foreach (auto Drv in Drivers)
+        {
+            if (Drv->DriverUID == DUID)
             {
-                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)var->Address + EXTENDED_SECTION_ADDRESS);
-                return ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)var->Address))(KCB);
+                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS);
+                int ret = ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)Drv->Address))(KCB);
+                __sync;
+                return ret;
             }
+        }
         return -1;
     }
 

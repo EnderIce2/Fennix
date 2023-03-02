@@ -3,11 +3,12 @@
 
 #include <types.h>
 
-#include <ints.hpp>
 #include <vector.hpp>
 #include <memory.hpp>
+#include <ints.hpp>
 #include <debug.h>
 #include <cpu.hpp>
+#include <pci.hpp>
 
 namespace Driver
 {
@@ -22,7 +23,8 @@ namespace Driver
         NOT_IMPLEMENTED,
         DRIVER_RETURNED_ERROR,
         UNKNOWN_DRIVER_TYPE,
-        PCI_DEVICE_NOT_FOUND
+        PCI_DEVICE_NOT_FOUND,
+        DRIVER_CONFLICT
     };
 
     class DriverInterruptHook : public Interrupts::Handler
@@ -46,6 +48,7 @@ namespace Driver
 
     struct DriverFile
     {
+        bool Enabled;
         unsigned long DriverUID;
         void *Address;
         Memory::MemMgr *MemTrk;
@@ -57,11 +60,42 @@ namespace Driver
     private:
         Vector<DriverFile *> Drivers;
         unsigned long DriverUIDs = 0;
-
         DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
+
+        DriverCode BindPCIGeneric(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCIDisplay(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCINetwork(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCIStorage(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCIFileSystem(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCIInput(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
+        DriverCode BindPCIAudio(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
         DriverCode DriverLoadBindPCI(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+
+        DriverCode BindInterruptGeneric(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptDisplay(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptNetwork(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptStorage(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptFileSystem(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptInput(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInterruptAudio(Memory::MemMgr *mem, void *fex);
         DriverCode DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+
+        DriverCode BindInputGeneric(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputDisplay(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputNetwork(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputStorage(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputFileSystem(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputInput(Memory::MemMgr *mem, void *fex);
+        DriverCode BindInputAudio(Memory::MemMgr *mem, void *fex);
         DriverCode DriverLoadBindInput(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
+
+        DriverCode BindProcessGeneric(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessDisplay(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessNetwork(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessStorage(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessFileSystem(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessInput(Memory::MemMgr *mem, void *fex);
+        DriverCode BindProcessAudio(Memory::MemMgr *mem, void *fex);
         DriverCode DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
 
     public:

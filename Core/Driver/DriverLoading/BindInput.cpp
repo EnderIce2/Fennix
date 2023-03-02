@@ -14,6 +14,70 @@
 
 namespace Driver
 {
+    DriverCode Driver::BindInputGeneric(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInputDisplay(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInputNetwork(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInputStorage(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInputFileSystem(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInputInput(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+        fixme("Input driver: %s", fexExtended->Driver.Name);
+        KCallback->RawPtr = nullptr;
+        KCallback->Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
+        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
+        {
+            delete mem;
+            error("Driver %s is not implemented", fexExtended->Driver.Name);
+            return DriverCode::NOT_IMPLEMENTED;
+        }
+        else if (CallbackRet != DriverReturnCode::OK)
+        {
+            delete mem;
+            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
+            return DriverCode::DRIVER_RETURNED_ERROR;
+        }
+
+        fixme("Input driver: %s", fexExtended->Driver.Name);
+
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->MemTrk = mem;
+        DrvFile->InterruptHook[0] = nullptr;
+        Drivers.push_back(DrvFile);
+        return DriverCode::OK;
+    }
+
+    DriverCode Driver::BindInputAudio(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
     DriverCode Driver::DriverLoadBindInput(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         UNUSED(DrvExtHdr);
@@ -39,45 +103,15 @@ namespace Driver
         }
         debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
 
-        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
-
         switch (fexExtended->Driver.Type)
         {
         case FexDriverType::FexDriverType_Input:
-        {
-            fixme("Input driver: %s", fexExtended->Driver.Name);
-            KCallback->RawPtr = nullptr;
-            break;
-            KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
-            if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
-            {
-                delete mem;
-                error("Driver %s is not implemented", fexExtended->Driver.Name);
-                break;
-            }
-            else if (CallbackRet != DriverReturnCode::OK)
-            {
-                delete mem;
-                error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                break;
-            }
-
-            fixme("Input driver: %s", fexExtended->Driver.Name);
-
-            DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = this->DriverUIDs - 1;
-            DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = mem;
-            DrvFile->InterruptHook[0] = nullptr;
-            Drivers.push_back(DrvFile);
-            break;
-        }
+            return BindInputInput(mem, fex);
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
             delete mem;
-            break;
+            return DriverCode::UNKNOWN_DRIVER_TYPE;
         }
         }
 

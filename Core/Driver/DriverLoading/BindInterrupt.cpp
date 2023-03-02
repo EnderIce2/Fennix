@@ -14,6 +14,300 @@
 
 namespace Driver
 {
+    DriverCode Driver::BindInterruptGeneric(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        fixme("Generic driver: %s", fexExtended->Driver.Name);
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->MemTrk = mem;
+        Drivers.push_back(DrvFile);
+        return DriverCode::OK;
+    }
+
+    DriverCode Driver::BindInterruptDisplay(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        fixme("Display driver: %s", fexExtended->Driver.Name);
+        delete mem;
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInterruptNetwork(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        fixme("Network driver: %s", fexExtended->Driver.Name);
+        delete mem;
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInterruptStorage(Memory::MemMgr *mem, void *fex)
+    {
+        return DriverCode::NOT_IMPLEMENTED; // FIXME
+
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+        UNUSED(KCallback); // Shut up clang
+        for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
+        {
+            if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
+                break;
+
+            fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", fexExtended->Driver.Bind.Interrupt.Vector[i]);
+        }
+
+        KCallback->RawPtr = nullptr;
+        KCallback->Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
+        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
+        {
+            error("Driver %s is not implemented", fexExtended->Driver.Name);
+            delete mem;
+            return DriverCode::NOT_IMPLEMENTED;
+        }
+        else if (CallbackRet != DriverReturnCode::OK)
+        {
+            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
+            delete mem;
+            return DriverCode::DRIVER_RETURNED_ERROR;
+        }
+
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->MemTrk = mem;
+        Drivers.push_back(DrvFile);
+        return DriverCode::OK;
+    }
+
+    DriverCode Driver::BindInterruptFileSystem(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        fixme("Filesystem driver: %s", fexExtended->Driver.Name);
+        delete mem;
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
+    DriverCode Driver::BindInterruptInput(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            debug("Searching for conflicting drivers...");
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+
+                if ((fe->Driver.TypeFlags & FexDriverInputTypes_Mouse &&
+                     fexExtended->Driver.TypeFlags & FexDriverInputTypes_Mouse) ||
+                    (fe->Driver.TypeFlags & FexDriverInputTypes_Keyboard &&
+                     fexExtended->Driver.TypeFlags & FexDriverInputTypes_Keyboard))
+                {
+                    DriversToRemove.push_back(Drv->DriverUID);
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                }
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+        DriverInterruptHook *InterruptHook = nullptr;
+        if (fexExtended->Driver.Bind.Interrupt.Vector[0] != 0)
+            InterruptHook = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[0] + 32, // x86
+                                                    (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
+                                                    KCallback);
+
+        for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
+        {
+            if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
+                break;
+            // InterruptHook = new DriverInterruptHook((fexExtended->Driver.Bind.Interrupt.Vector[i] + 32, // x86
+            //                                         (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
+            //                                         KCallback);
+            fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", fexExtended->Driver.Bind.Interrupt.Vector[i]);
+        }
+
+        KCallback->RawPtr = nullptr;
+        KCallback->Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
+        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
+        {
+            error("Driver %s is not implemented", fexExtended->Driver.Name);
+            delete InterruptHook;
+            delete mem;
+            return DriverCode::NOT_IMPLEMENTED;
+        }
+        else if (CallbackRet != DriverReturnCode::OK)
+        {
+            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
+            delete InterruptHook;
+            delete mem;
+            return DriverCode::DRIVER_RETURNED_ERROR;
+        }
+
+        memset(KCallback, 0, sizeof(KernelCallback));
+        KCallback->Reason = CallbackReason::InterruptReason;
+
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->MemTrk = mem;
+        DrvFile->InterruptHook[0] = InterruptHook;
+        Drivers.push_back(DrvFile);
+        return DriverCode::OK;
+    }
+
+    DriverCode Driver::BindInterruptAudio(Memory::MemMgr *mem, void *fex)
+    {
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+        if (fexExtended->Driver.OverrideOnConflict)
+        {
+            Vector<int> DriversToRemove = Vector<int>();
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+
+            foreach (auto DrvID in DriversToRemove)
+            {
+                if (!this->UnloadDriver(DrvID))
+                {
+                    error("Failed to unload conflicting driver %d", DrvID);
+                    return DriverCode::DRIVER_CONFLICT;
+                }
+            }
+        }
+
+        fixme("Audio driver: %s", fexExtended->Driver.Name);
+        delete mem;
+        return DriverCode::NOT_IMPLEMENTED;
+    }
+
     DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
         UNUSED(IsElf);
@@ -38,133 +332,27 @@ namespace Driver
         }
         debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
 
-        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
-
         switch (fexExtended->Driver.Type)
         {
         case FexDriverType::FexDriverType_Generic:
-        {
-            fixme("Generic driver: %s", fexExtended->Driver.Name);
-            DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = this->DriverUIDs - 1;
-            DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = mem;
-            Drivers.push_back(DrvFile);
-            break;
-        }
+            return BindInterruptGeneric(mem, fex);
         case FexDriverType::FexDriverType_Display:
-        {
-            fixme("Display driver: %s", fexExtended->Driver.Name);
-            delete mem;
-            break;
-        }
+            return BindInterruptDisplay(mem, fex);
         case FexDriverType::FexDriverType_Network:
-        {
-            fixme("Network driver: %s", fexExtended->Driver.Name);
-            delete mem;
-            break;
-        }
+            return BindInterruptNetwork(mem, fex);
         case FexDriverType::FexDriverType_Storage:
-        {
-            for (unsigned long i = 0; i < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0]); i++)
-            {
-                if (((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i] == 0)
-                    break;
-
-                fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", ((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i]);
-            }
-
-            fixme("Not implemented");
-            delete mem;
-            break;
-
-            KCallback->RawPtr = nullptr;
-            KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
-            if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
-            {
-                error("Driver %s is not implemented", fexExtended->Driver.Name);
-                delete mem;
-                break;
-            }
-            else if (CallbackRet != DriverReturnCode::OK)
-            {
-                error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                delete mem;
-                break;
-            }
-
-            DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = this->DriverUIDs - 1;
-            DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = mem;
-            Drivers.push_back(DrvFile);
-            break;
-        }
+            return BindInterruptStorage(mem, fex);
         case FexDriverType::FexDriverType_FileSystem:
-        {
-            fixme("Filesystem driver: %s", fexExtended->Driver.Name);
-            delete mem;
-            break;
-        }
+            return BindInterruptFileSystem(mem, fex);
         case FexDriverType::FexDriverType_Input:
-        {
-            DriverInterruptHook *InterruptHook = nullptr;
-            if (((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0] != 0)
-                InterruptHook = new DriverInterruptHook(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0] + 32, // x86
-                                                        (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
-                                                        KCallback);
-
-            for (unsigned long i = 0; i < sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector) / sizeof(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[0]); i++)
-            {
-                if (((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i] == 0)
-                    break;
-                // InterruptHook = new DriverInterruptHook(((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i] + 32, // x86
-                //                                         (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
-                //                                         KCallback);
-                fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", ((FexExtended *)DrvExtHdr)->Driver.Bind.Interrupt.Vector[i]);
-            }
-
-            KCallback->RawPtr = nullptr;
-            KCallback->Reason = CallbackReason::ConfigurationReason;
-            int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
-            if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
-            {
-                error("Driver %s is not implemented", fexExtended->Driver.Name);
-                delete InterruptHook;
-                delete mem;
-                break;
-            }
-            else if (CallbackRet != DriverReturnCode::OK)
-            {
-                error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-                delete InterruptHook;
-                delete mem;
-                break;
-            }
-
-            memset(KCallback, 0, sizeof(KernelCallback));
-            KCallback->Reason = CallbackReason::InterruptReason;
-
-            DriverFile *DrvFile = new DriverFile;
-            DrvFile->DriverUID = this->DriverUIDs - 1;
-            DrvFile->Address = (void *)fex;
-            DrvFile->MemTrk = mem;
-            DrvFile->InterruptHook[0] = InterruptHook;
-            Drivers.push_back(DrvFile);
-            break;
-        }
+            return BindInterruptInput(mem, fex);
         case FexDriverType::FexDriverType_Audio:
-        {
-            fixme("Audio driver: %s", fexExtended->Driver.Name);
-            delete mem;
-            break;
-        }
+            return BindInterruptAudio(mem, fex);
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
             delete mem;
-            break;
+            return DriverCode::UNKNOWN_DRIVER_TYPE;
         }
         }
 
