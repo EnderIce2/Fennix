@@ -100,6 +100,18 @@ char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
     return (char *)"Unknown";
 }
 
+unsigned int DriverGetWidth()
+{
+    /* TODO: We won't rely only on display buffers, what about graphics drivers and changing resolutions? */
+    return Display->GetBuffer(0)->Width;
+}
+
+unsigned int DriverGetHeight()
+{
+    /* TODO: We won't rely only on display buffers, what about graphics drivers and changing resolutions? */
+    return Display->GetBuffer(0)->Height;
+}
+
 KernelAPI KernelAPITemplate = {
     .Version = {
         .Major = 0,
@@ -136,5 +148,9 @@ KernelAPI KernelAPITemplate = {
                 .WriteSector = DriverAHCIDiskWrite,
             },
         },
+    },
+    .Display = {
+        .GetWidth = DriverGetWidth,
+        .GetHeight = DriverGetHeight,
     },
 };

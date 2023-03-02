@@ -95,6 +95,12 @@ struct KernelAPI
         } Disk;
     } Command;
 
+    struct KAPIDisplay
+    {
+        unsigned int (*GetWidth)(void);
+        unsigned int (*GetHeight)(void);
+        /* TODO: Add more */
+    } Display;
 } __attribute__((packed));
 
 enum CallbackReason
