@@ -131,19 +131,17 @@ namespace Interrupts
             if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ29))
                 CPU::Stop();
 
-            Handler *handler = nullptr;
-            foreach (auto var in RegisteredEvents)
+            bool InterruptHandled = false;
+            foreach (auto ev in RegisteredEvents)
             {
-                if (var.ID == static_cast<int>(Frame->InterruptNumber))
+                if (ev.ID == static_cast<int>(Frame->InterruptNumber))
                 {
-                    handler = (Handler *)var.Data;
-                    break;
+                    ((Handler *)ev.Data)->OnInterruptReceived(Frame);
+                    InterruptHandled = true;
                 }
             }
 
-            if (handler != nullptr)
-                handler->OnInterruptReceived(Frame);
-            else
+            if (!InterruptHandled)
             {
                 error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
                 if (Frame->InterruptNumber == CPU::x86::IRQ1)
@@ -172,9 +170,9 @@ namespace Interrupts
 
     Handler::Handler(int InterruptNumber)
     {
-        foreach (auto var in RegisteredEvents)
+        foreach (auto ev in RegisteredEvents)
         {
-            if (var.ID == InterruptNumber)
+            if (ev.ID == InterruptNumber)
             {
                 warn("IRQ%d is already registered.", InterruptNumber - 32);
             }
