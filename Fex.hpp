@@ -43,6 +43,13 @@ enum FexDriverType
     /* ... */
 };
 
+enum FexDriverInputTypes
+{
+    FexDriverInputTypes_Mouse = 0b00000001,
+    FexDriverInputTypes_Keyboard = 0b00000010,
+    /* ... */
+};
+
 struct Fex
 {
     char Magic[4];
@@ -64,6 +71,8 @@ struct FexExtended
     {
         char Name[64];
         enum FexDriverType Type : 4;
+        enum FexDriverInputTypes TypeFlags : 4;
+        bool OverrideOnConflict : 1;
         int (*Callback)(struct KernelCallback *);
 
         struct DriverBind
