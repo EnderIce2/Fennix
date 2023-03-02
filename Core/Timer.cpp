@@ -10,6 +10,8 @@
 #elif defined(__aarch64__)
 #endif
 
+#include "../kernel.h"
+
 namespace Time
 {
     void time::Sleep(uint64_t Milliseconds)
@@ -71,6 +73,7 @@ namespace Time
             {
                 // For now, we need HPET.
                 error("HPET not found");
+                KPrint("\eFF2200HPET not found");
                 CPU::Stop();
             }
 #elif defined(__i386__)
