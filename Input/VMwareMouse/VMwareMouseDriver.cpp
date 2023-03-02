@@ -15,6 +15,8 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
     .Driver = {
         .Name = "VMware Virtual Mouse Driver",
         .Type = FexDriverType_Input,
+        .TypeFlags = FexDriverInputTypes_Mouse,
+        .OverrideOnConflict = true,
         .Callback = CallbackHandler,
         .Bind = {
             .Type = BIND_INTERRUPT,
@@ -89,9 +91,6 @@ bool IsVMwareBackdoorAvailable(void)
 
 int DriverEntry(void *Data)
 {
-    /* There's a bug somewhere in driver or kernel and it's just crashing. */
-    return NOT_IMPLEMENTED;
-
     if (!Data)
         return INVALID_KERNEL_API;
     KAPI = (KernelAPI *)Data;
@@ -217,8 +216,8 @@ int CallbackHandler(KernelCallback *Data)
     }
     case FetchReason:
     {
-        Data->InputCallback.Mouse.X = MouseX;
-        Data->InputCallback.Mouse.Y = MouseY;
+        Data->InputCallback.Mouse.X = (MouseX * KAPI->Display.GetWidth()) / 0xFFFF;
+        Data->InputCallback.Mouse.Y = (MouseY * KAPI->Display.GetHeight()) / 0xFFFF;
         Data->InputCallback.Mouse.Z = MouseZ;
         Data->InputCallback.Mouse.Buttons.Left = MouseButton & 0x20;
         Data->InputCallback.Mouse.Buttons.Right = MouseButton & 0x10;
