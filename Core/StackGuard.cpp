@@ -8,10 +8,22 @@
 
 EXTERNC __attribute__((weak, no_stack_protector)) uintptr_t __stack_chk_guard_init(void)
 {
+    int MaxRetries = 0;
 #if UINTPTR_MAX == UINT32_MAX
-    return Random::rand32();
+    uint32_t num;
+Retry:
+    num = Random::rand32();
+    if (num < 0x1000 && MaxRetries++ < 10)
+        goto Retry;
+    return num;
+
 #else
-    return Random::rand64();
+    uint64_t num;
+Retry:
+    num = Random::rand64();
+    if (num < 0x100000 && MaxRetries++ < 10)
+        goto Retry;
+    return num;
 #endif
 }
 
