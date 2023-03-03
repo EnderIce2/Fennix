@@ -63,7 +63,7 @@ ifeq ($(OSARCH), amd64)
 
 CFLAGS += -fno-pic -fno-pie							\
 		  -mno-red-zone -march=core2 -pipe			\
-		  -mcmodel=kernel -fno-builtin
+		  -mcmodel=kernel -fno-builtin -Da64
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 	-fno-pic -fno-pie 						\
@@ -75,7 +75,8 @@ LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 else ifeq ($(OSARCH), i686)
 
 CFLAGS += -fno-pic -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
-		  -mno-red-zone -march=pentium -pipe -msoft-float -fno-builtin
+		  -mno-red-zone -march=pentium -pipe -msoft-float	\
+		  -fno-builtin -Da32
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/i686/linker.ld 	\
 	-fno-pic -fno-pie 						\
@@ -86,7 +87,7 @@ LDFLAGS += -TArchitecture/i686/linker.ld 	\
 
 else ifeq ($(OSARCH), aarch64)
 
-CFLAGS += -pipe -fno-builtin -fPIC -Wstack-protector
+CFLAGS += -pipe -fno-builtin -fPIC -Wstack-protector -Daa64
 CFLAG_STACK_PROTECTOR := -fstack-protector-all -fstack-clash-protection
 LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC
 
