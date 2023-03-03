@@ -21,8 +21,21 @@ namespace Recovery
     }
 
     void RecoveryThreadWrapper() { RecoveryScreen->RecoveryThread(); }
-    void RebootCommandWrapper() { PowerManager->Reboot(); }
-    void ShutdownCommandWrapper() { PowerManager->Shutdown(); }
+
+    void RebootCommandThread()
+    {
+        TaskManager->Sleep(1000);
+        PowerManager->Reboot();
+    }
+
+    void ShutdownCommandThread()
+    {
+        TaskManager->Sleep(1000);
+        PowerManager->Shutdown();
+    }
+
+    void RebootCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RebootCommandThread); }
+    void ShutdownCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ShutdownCommandThread); }
 
     GraphicalUserInterface::GUI *gui = nullptr;
     void GUIWrapper() { gui->Loop(); }
