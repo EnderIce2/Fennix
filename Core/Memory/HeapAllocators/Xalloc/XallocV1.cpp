@@ -53,8 +53,9 @@ namespace Xalloc
 
         Block(Xsize_t Size)
         {
-            this->Size = Size;
             this->Address = Xalloc_REQUEST_PAGES(XStoP(Size));
+            this->Size = Size;
+            Xmemset(this->Address, 0, Size);
         }
 
         ~Block()
@@ -140,8 +141,6 @@ namespace Xalloc
         {
             this->FirstBlock = new Block(Size);
             ((Block *)this->FirstBlock)->IsFree = false;
-            ((Block *)this->FirstBlock)->Checksum = Xalloc_BlockChecksum;
-            Xmemset(((Block *)this->FirstBlock)->Address, 0, Size);
             Xalloc_unlock;
             return ((Block *)this->FirstBlock)->Address;
         }
@@ -149,10 +148,13 @@ namespace Xalloc
         Block *CurrentBlock = ((Block *)this->FirstBlock);
         while (CurrentBlock != nullptr)
         {
-            if (CurrentBlock->IsFree && CurrentBlock->Size >= Size)
+            if (!CurrentBlock->Check())
+            {
+                Xalloc_err("Block %#lx checksum failed!", (Xuint64_t)CurrentBlock);
+            }
+            else if (CurrentBlock->IsFree && CurrentBlock->Size >= Size)
             {
                 CurrentBlock->IsFree = false;
-                CurrentBlock->Checksum = Xalloc_BlockChecksum;
                 Xmemset(CurrentBlock->Address, 0, Size);
                 Xalloc_unlock;
                 return CurrentBlock->Address;
@@ -167,8 +169,6 @@ namespace Xalloc
         CurrentBlock->Next = new Block(Size);
         ((Block *)CurrentBlock->Next)->Last = CurrentBlock;
         ((Block *)CurrentBlock->Next)->IsFree = false;
-        ((Block *)CurrentBlock->Next)->Checksum = Xalloc_BlockChecksum;
-        Xmemset(((Block *)CurrentBlock->Next)->Address, 0, Size);
         Xalloc_unlock;
         return ((Block *)CurrentBlock->Next)->Address;
     }
@@ -187,7 +187,11 @@ namespace Xalloc
         Block *CurrentBlock = ((Block *)this->FirstBlock);
         while (CurrentBlock != nullptr)
         {
-            if (CurrentBlock->Address == Address)
+            if (!CurrentBlock->Check())
+            {
+                Xalloc_err("Block %#lx checksum failed!", (Xuint64_t)CurrentBlock);
+            }
+            else if (CurrentBlock->Address == Address)
             {
                 if (CurrentBlock->IsFree)
                 {
@@ -197,7 +201,6 @@ namespace Xalloc
                 }
 
                 CurrentBlock->IsFree = true;
-                CurrentBlock->Checksum = Xalloc_BlockChecksum;
                 Xalloc_unlock;
                 return;
             }
