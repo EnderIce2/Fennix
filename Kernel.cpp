@@ -39,7 +39,7 @@
  * - [ ] Colors in crash screen are not following the kernel color scheme.
  *
  * ISSUES:
- * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when PS/2 mouse driver is loaded, not sure what is the cause)
+ * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
  * - [ ] After setting the new stack pointer, the kernel crashes with an invalid opcode.
  *
  * CREDITS AND REFERENCES:
