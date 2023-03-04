@@ -7,7 +7,7 @@
 #include <task.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 typedef struct CPU::x64::TrapFrame CHArchTrapFrame;
 
 struct CRData
@@ -29,7 +29,7 @@ struct CRData
     Tasking::TCB *Thread;
 };
 
-#elif defined(__i386__)
+#elif defined(a32)
 typedef struct CPU::x32::TrapFrame CHArchTrapFrame;
 
 struct CRData
@@ -49,7 +49,7 @@ struct CRData
     Tasking::PCB *Process;
     Tasking::TCB *Thread;
 };
-#elif defined(__aarch64__)
+#elif defined(aa64)
 typedef struct CPU::aarch64::TrapFrame CHArchTrapFrame;
 #endif
 
@@ -244,11 +244,11 @@ namespace CrashHandler
     class CrashKeyboardDriver : public Interrupts::Handler
     {
     private:
-#if defined(__amd64__)
+#if defined(a64)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
-#elif defined(__i386__)
-        void OnInterruptReceived(void *Frame);
-#elif defined(__aarch64__)
+#elif defined(a32)
+        void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
+#elif defined(aa64)
         void OnInterruptReceived(void *Frame);
 #endif
     public:

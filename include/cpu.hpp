@@ -119,9 +119,9 @@ namespace CPU
     {
         do
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("pause");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("yield");
 #endif
         } while (Loop);
@@ -132,12 +132,12 @@ namespace CPU
      */
     SafeFunction __noreturn __naked __used inline void Stop()
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         asmv("CPUStopLoop:\n"
              "cli\n"
              "hlt\n"
              "jmp CPUStopLoop");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         asmv("msr daifset, #2");
         asmv("wfe");
 #endif
@@ -150,9 +150,9 @@ namespace CPU
     {
         do
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("hlt");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("wfe");
 #endif
         } while (Loop);
@@ -362,7 +362,7 @@ namespace CPU
          */
         static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
-#if defined(__i386__)
+#if defined(a32)
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
@@ -377,7 +377,7 @@ namespace CPU
 
         SafeFunction static inline void invlpg(void *Address)
         {
-#if defined(__i386__)
+#if defined(a32)
             asmv("invlpg (%0)"
                  :
                  : "r"(Address)
@@ -650,7 +650,7 @@ namespace CPU
 
         SafeFunction static inline void lgdt(void *gdt)
         {
-#if defined(__amd64__)
+#if defined(a64)
             asmv("lgdt (%0)"
                  :
                  : "r"(gdt));
@@ -659,7 +659,7 @@ namespace CPU
 
         SafeFunction static inline void lidt(void *idt)
         {
-#if defined(__amd64__)
+#if defined(a64)
             asmv("lidt (%0)"
                  :
                  : "r"(idt));
@@ -668,7 +668,7 @@ namespace CPU
 
         SafeFunction static inline void ltr(uint16_t Segment)
         {
-#if defined(__amd64__)
+#if defined(a64)
             asmv("ltr %0"
                  :
                  : "r"(Segment));
@@ -677,7 +677,7 @@ namespace CPU
 
         SafeFunction static inline void invlpg(void *Address)
         {
-#if defined(__amd64__)
+#if defined(a64)
             asmv("invlpg (%0)"
                  :
                  : "r"(Address)
@@ -696,7 +696,7 @@ namespace CPU
          */
         SafeFunction static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
-#if defined(__amd64__)
+#if defined(a64)
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
@@ -719,7 +719,7 @@ namespace CPU
 
         SafeFunction static inline void fxsave(void *FXSaveArea)
         {
-#if defined(__amd64__)
+#if defined(a64)
             if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
                 return;
 
@@ -732,7 +732,7 @@ namespace CPU
 
         SafeFunction static inline void fxrstor(void *FXRstorArea)
         {
-#if defined(__amd64__)
+#if defined(a64)
             if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
                 return;
 

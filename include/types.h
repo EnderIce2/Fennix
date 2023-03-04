@@ -208,17 +208,17 @@ typedef intptr_t ssize_t;
 #define WINT_MAX __WINT_MAX__
 #define WINT_MIN __WINT_MIN__
 
-#if defined(__amd64__)
+#if defined(a64)
 #define BREAK __asm__ __volatile__("int $0x3" \
                                    :          \
                                    :          \
                                    : "memory");
-#elif defined(__i386__)
+#elif defined(a32)
 #define BREAK __asm__ __volatile__("int $0x3" \
                                    :          \
                                    :          \
                                    : "memory");
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #define BREAK __asm__ __volatile__("brk #0" \
                                    :        \
                                    :        \

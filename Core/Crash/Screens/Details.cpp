@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../../kernel.h"
@@ -29,7 +29,7 @@ namespace CrashHandler
                     data.Thread->ID);
         EHPrint("\e7981FCTechnical Informations on CPU %lld:\n", data.ID);
         uintptr_t ds;
-#if defined(__amd64__)
+#if defined(a64)
 
         CPUData *cpu = (CPUData *)data.CPUData;
         if (cpu)
@@ -45,26 +45,29 @@ namespace CrashHandler
 
         asmv("mov %%ds, %0"
              : "=r"(ds));
-#elif defined(__i386__)
+#elif defined(a32)
         asmv("mov %%ds, %0"
              : "=r"(ds));
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
+#if defined(a64)
         EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                 data.Frame->ss, data.Frame->cs, ds);
-#if defined(__amd64__)
         EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", data.Frame->r8, data.Frame->r9, data.Frame->r10, data.Frame->r11);
         EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", data.Frame->r12, data.Frame->r13, data.Frame->r14, data.Frame->r15);
         EHPrint("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx\n", data.Frame->rax, data.Frame->rbx, data.Frame->rcx, data.Frame->rdx);
         EHPrint("RSI=%#llx  RDI=%#llx  RBP=%#llx  RSP=%#llx\n", data.Frame->rsi, data.Frame->rdi, data.Frame->rbp, data.Frame->rsp);
         EHPrint("RIP=%#llx  RFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", data.Frame->rip, data.Frame->rflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
-#elif defined(__i386__)
+#elif defined(a32)
+        EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
+                CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
+                data.Frame->ss, data.Frame->cs, ds);
         EHPrint("EAX=%#llx  EBX=%#llx  ECX=%#llx  EDX=%#llx\n", data.Frame->eax, data.Frame->ebx, data.Frame->ecx, data.Frame->edx);
         EHPrint("ESI=%#llx  EDI=%#llx  EBP=%#llx  ESP=%#llx\n", data.Frame->esi, data.Frame->edi, data.Frame->ebp, data.Frame->esp);
         EHPrint("EIP=%#llx  EFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
         EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", data.cr0.raw, data.cr2.raw, data.cr3.raw, data.cr4.raw, data.cr8.raw);
         EHPrint("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx\n", data.dr0, data.dr1, data.dr2, data.dr3, data.dr6, data.dr7.raw);
@@ -87,16 +90,16 @@ namespace CrashHandler
                 data.cr4.PCE ? "True " : "False", data.cr4.UMIP ? "True " : "False", data.cr4.OSFXSR ? "True " : "False", data.cr4.OSXMMEXCPT ? "True " : "False",
                 data.cr4.LA57 ? "True " : "False", data.cr4.VMXE ? "True " : "False", data.cr4.SMXE ? "True " : "False", data.cr4.PCIDE ? "True " : "False",
                 data.cr4.OSXSAVE ? "True " : "False", data.cr4.SMEP ? "True " : "False", data.cr4.SMAP ? "True " : "False", data.cr4.PKE ? "True " : "False",
-#if defined(__amd64__)
+#if defined(a64)
                 data.cr4.Reserved0, data.cr4.Reserved1, data.cr4.Reserved2);
-#elif defined(__i386__)
+#elif defined(a32)
                 data.cr4.Reserved0, data.cr4.Reserved1, 0);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
         EHPrint("\e79FCF5CR8: TPL:%d\n", data.cr8.TPL);
 
-#if defined(__amd64__)
+#if defined(a64)
         EHPrint("\eFCFC02RFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x R3:%#x\n",
                 data.Frame->rflags.CF ? "True " : "False", data.Frame->rflags.PF ? "True " : "False", data.Frame->rflags.AF ? "True " : "False", data.Frame->rflags.ZF ? "True " : "False",
                 data.Frame->rflags.SF ? "True " : "False", data.Frame->rflags.TF ? "True " : "False", data.Frame->rflags.IF ? "True " : "False", data.Frame->rflags.DF ? "True " : "False",
@@ -104,7 +107,7 @@ namespace CrashHandler
                 data.Frame->rflags.VM ? "True " : "False", data.Frame->rflags.AC ? "True " : "False", data.Frame->rflags.VIF ? "True " : "False", data.Frame->rflags.VIP ? "True " : "False",
                 data.Frame->rflags.ID ? "True " : "False", data.Frame->rflags.AlwaysOne,
                 data.Frame->rflags.Reserved0, data.Frame->rflags.Reserved1, data.Frame->rflags.Reserved2, data.Frame->rflags.Reserved3);
-#elif defined(__i386__)
+#elif defined(a32)
         EHPrint("\eFCFC02EFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x\n",
                 data.Frame->eflags.CF ? "True " : "False", data.Frame->eflags.PF ? "True " : "False", data.Frame->eflags.AF ? "True " : "False", data.Frame->eflags.ZF ? "True " : "False",
                 data.Frame->eflags.SF ? "True " : "False", data.Frame->eflags.TF ? "True " : "False", data.Frame->eflags.IF ? "True " : "False", data.Frame->eflags.DF ? "True " : "False",
@@ -112,7 +115,7 @@ namespace CrashHandler
                 data.Frame->eflags.VM ? "True " : "False", data.Frame->eflags.AC ? "True " : "False", data.Frame->eflags.VIF ? "True " : "False", data.Frame->eflags.VIP ? "True " : "False",
                 data.Frame->eflags.ID ? "True " : "False", data.Frame->eflags.AlwaysOne,
                 data.Frame->eflags.Reserved0, data.Frame->eflags.Reserved1, data.Frame->eflags.Reserved2);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
         EHPrint("\eA0F0F0DR7: LDR0:%s     GDR0:%s     LDR1:%s     GDR1:%s\n     LDR2:%s     GDR2:%s     LDR3:%s     GDR3:%s\n     CDR0:%s     SDR0:%s     CDR1:%s     SDR1:%s\n     CDR2:%s     SDR2:%s     CDR3:%s     SDR3:%s\n     R:%#x\n",

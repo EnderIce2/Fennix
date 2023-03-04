@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"
@@ -31,20 +31,20 @@ namespace CrashHandler
             return;
         }
 
-#if defined(__amd64__)
+#if defined(a64)
         struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
         if (!Memory::Virtual().Check((void *)Frame->rbp))
-#elif defined(__i386__)
+#elif defined(a32)
         struct StackFrame *frames = (struct StackFrame *)Frame->ebp; // (struct StackFrame *)__builtin_frame_address(0);
         if (!Memory::Virtual().Check((void *)Frame->ebp))
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
         {
-            #if defined(__amd64__)
+            #if defined(a64)
             EHPrint("Invalid rbp pointer: %p\n", Frame->rbp);
-            #elif defined(__i386__)
+            #elif defined(a32)
             EHPrint("Invalid ebp pointer: %p\n", Frame->ebp);
-            #elif defined(__aarch64__)
+            #elif defined(aa64)
 #endif
             return;
         }
@@ -59,39 +59,39 @@ namespace CrashHandler
         EHPrint("\e7981FC\nStack Trace:\n");
         if (!frames || !frames->rip || !frames->rbp)
         {
-#if defined(__amd64__)
+#if defined(a64)
             EHPrint("\e2565CC%p", (void *)Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
             EHPrint("\e2565CC%p", (void *)Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
             EHPrint("\e7925CC-");
-#if defined(__amd64__)
+#if defined(a64)
             EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
-#elif defined(__i386__)
+#elif defined(a32)
             EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
             EHPrint("\e7981FC <- Exception");
             EHPrint("\eFF0000\n< No stack trace available. >\n");
         }
         else
         {
-#if defined(__amd64__)
+#if defined(a64)
             EHPrint("\e2565CC%p", (void *)Frame->rip);
             EHPrint("\e7925CC-");
             if ((Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uintptr_t)&_kernel_end) || !Kernel)
                 EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
             else
                 EHPrint("Outside Kernel");
-#elif defined(__i386__)
+#elif defined(a32)
             EHPrint("\e2565CC%p", (void *)Frame->eip);
             EHPrint("\e7925CC-");
             if ((Frame->eip >= 0xC0000000 && Frame->eip <= (uintptr_t)&_kernel_end) || !Kernel)
                 EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
             else
                 EHPrint("Outside Kernel");
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
             EHPrint("\e7981FC <- Exception");
             for (int frame = 0; frame < Count; ++frame)
@@ -100,11 +100,11 @@ namespace CrashHandler
                     break;
                 EHPrint("\n\e2565CC%p", (void *)frames->rip);
                 EHPrint("\e7925CC-");
-#if defined(__amd64__)
+#if defined(a64)
                 if ((frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
-#elif defined(__i386__)
+#elif defined(a32)
                 if ((frames->rip >= 0xC0000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
                     EHPrint("\e25CCC9%s", SymHandle->GetSymbolFromAddress(frames->rip));
                 else

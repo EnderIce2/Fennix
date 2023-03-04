@@ -5,7 +5,7 @@
 
 #include "../kernel.h"
 
-#if defined(__amd64__)
+#if defined(a64)
 #include <io.h>
 
 #include "../Architecture/amd64/acpi.hpp"
@@ -75,7 +75,7 @@ namespace Power
     }
 }
 
-#elif defined(__i386__)
+#elif defined(a32)
 
 namespace Power
 {
@@ -99,7 +99,7 @@ namespace Power
     }
 }
 
-#elif defined(__aarch64__)
+#elif defined(aa64)
 
 namespace Power
 {

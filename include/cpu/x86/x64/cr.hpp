@@ -172,127 +172,105 @@ namespace CPU
             uint64_t raw;
         } XCR0;
 
+#if defined(a64)
         SafeFunction static inline CR0 readcr0()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("mov %%cr0, %[Result]"
                  : [Result] "=q"(Result));
-#endif
             return (CR0){.raw = Result};
         }
 
         SafeFunction static inline CR2 readcr2()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("mov %%cr2, %[Result]"
                  : [Result] "=q"(Result));
-#endif
             return (CR2){.raw = Result};
         }
 
         SafeFunction static inline CR3 readcr3()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("mov %%cr3, %[Result]"
                  : [Result] "=q"(Result));
-#endif
             return (CR3){.raw = Result};
         }
 
         SafeFunction static inline CR4 readcr4()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("mov %%cr4, %[Result]"
                  : [Result] "=q"(Result));
-#endif
             return (CR4){.raw = Result};
         }
 
         SafeFunction static inline CR8 readcr8()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("mov %%cr8, %[Result]"
                  : [Result] "=q"(Result));
-#endif
             return (CR8){.raw = Result};
         }
 
         SafeFunction static inline XCR0 readxcr0()
         {
             uint64_t Result = 0;
-#if defined(__amd64__)
             asmv("xgetbv"
                  : "=a"(Result)
                  : "c"(0)
                  : "edx");
-#endif
             return (XCR0){.raw = Result};
         }
 
         SafeFunction static inline void writecr0(CR0 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr0"
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
-#endif
         }
 
         SafeFunction static inline void writecr2(CR2 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr2"
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
-#endif
         }
 
         SafeFunction static inline void writecr3(CR3 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr3"
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
-#endif
         }
 
         SafeFunction static inline void writecr4(CR4 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr4"
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
-#endif
         }
 
         SafeFunction static inline void writecr8(CR8 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("mov %[ControlRegister], %%cr8"
                  :
                  : [ControlRegister] "q"(ControlRegister.raw)
                  : "memory");
-#endif
         }
 
         SafeFunction static inline void writexcr0(XCR0 ControlRegister)
         {
-#if defined(__amd64__)
             asmv("xsetbv"
                  :
                  : "a"(ControlRegister.raw), "c"(0)
                  : "edx");
-#endif
         }
+#endif
     }
 }
 

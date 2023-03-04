@@ -39,7 +39,7 @@ NIF void tracepagetable(PageTable4 *pt)
 {
     for (int i = 0; i < 512; i++)
     {
-#if defined(__amd64__)
+#if defined(a64)
         if (pt->Entries[i].Present)
             debug("Entry %03d: %x %x %x %x %x %x %x %p-%#llx", i,
                   pt->Entries[i].Present, pt->Entries[i].ReadWrite,
@@ -47,8 +47,8 @@ NIF void tracepagetable(PageTable4 *pt)
                   pt->Entries[i].CacheDisable, pt->Entries[i].Accessed,
                   pt->Entries[i].ExecuteDisable, pt->Entries[i].Address << 12,
                   pt->Entries[i]);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
     }
 }
@@ -232,9 +232,9 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     tracepagetable(UserspaceKernelOnlyPageTable);
 #endif
     KPT = KernelPageTable;
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
     asmv("mov %0, %%cr3" ::"r"(KPT));
-#elif defined(__aarch64__)
+#elif defined(aa64)
     asmv("msr ttbr0_el1, %0" ::"r"(KPT));
 #endif
     debug("Page table updated.");

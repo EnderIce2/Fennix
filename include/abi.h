@@ -62,11 +62,11 @@ typedef struct
 
 typedef struct
 {
-#if defined(__amd64__)
+#if defined(a64)
     Elf64_auxv_t archaux;
-#elif defined(__i386__)
+#elif defined(a32)
     Elf32_auxv_t archaux;
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 } AuxiliaryVector;
 

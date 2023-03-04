@@ -4,10 +4,10 @@
 #include <debug.h>
 #include <io.h>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../Architecture/amd64/acpi.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../kernel.h"
@@ -16,7 +16,7 @@ namespace Time
 {
     void time::Sleep(uint64_t Milliseconds)
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000000) / clk;
 #ifdef DEBUG
         uint64_t Counter = mminq(&((HPET *)hpet)->MainCounterValue);
@@ -29,23 +29,23 @@ namespace Time
         while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
             CPU::Pause();
 #endif
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     }
 
     uint64_t time::GetCounter()
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         return mminq(&((HPET *)hpet)->MainCounterValue);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     }
 
     uint64_t time::CalculateTarget(uint64_t Milliseconds)
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         return mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000000) / clk;
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     }
 
@@ -53,7 +53,7 @@ namespace Time
     {
         if (_acpi)
         {
-#if defined(__amd64__)
+#if defined(a64)
             this->acpi = _acpi;
             ACPI::ACPI *acpi = (ACPI::ACPI *)this->acpi;
             if (acpi->HPET)
@@ -76,8 +76,8 @@ namespace Time
                 KPrint("\eFF2200HPET not found");
                 CPU::Stop();
             }
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
         }
     }

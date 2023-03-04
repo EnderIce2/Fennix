@@ -158,7 +158,7 @@ int __ctzdi2(arith64_u64 a)
 
 arith64_u64 __divmoddi4(arith64_u64 a, arith64_u64 b, arith64_u64 *c)
 {
-    if (b > a) //
+    if (b > a)
     {
         if (c)
             *c = a;
@@ -283,3 +283,45 @@ int __gedf2(double a, double b) { return a >= b; }
 int __fixdfsi(double a) { return (int)a; }
 long __fixdfdi(double a) { return (long)a; }
 int __ledf2(double a, double b) { return a <= b; }
+
+/* FIXME: Check if these functions are implemented correctly */
+
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+typedef unsigned int uint32_t;
+typedef struct
+{
+    uint64_t value;
+} atomic_uint64_t;
+
+uint64_t __atomic_load_8(const atomic_uint64_t *p)
+{
+    uint64_t value;
+    __asm__ volatile("lock cmpxchg8b %1"
+                     : "=A"(value)
+                     : "m"(*p)
+                     : "memory");
+    return value;
+}
+
+void __atomic_store_8(atomic_uint64_t *p, uint64_t value)
+{
+    __asm__ volatile("lock cmpxchg8b %0"
+                     : "=m"(p->value)
+                     : "a"((uint32_t)value), "d"((uint32_t)(value >> 32)), "m"(*p)
+                     : "memory");
+}
+
+/* FIXME: __fixsfsi is not implemented correctly(?) */
+int __fixsfsi(float a) { return (int)a; }
+
+int __ltsf2(float a, float b) { return a < b; }
+int __eqsf2(float a, float b) { return a == b; }
+float __divsf3(float a, float b) { return a / b; }
+double __extendsfdf2(float a) { return (double)a; }
+float __truncdfsf2(double a) { return (float)a; }
+float __subsf3(float a, float b) { return a - b; }
+float __floatsisf(int a) { return (float)a; }
+int __fixunssfsi(float a) { return (int)a; }
+float __mulsf3(float a, float b) { return a * b; }
+float __addsf3(float a, float b) { return a + b; }

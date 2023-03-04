@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../../kernel.h"
@@ -269,11 +269,11 @@ namespace CrashHandler
             EHPrint("The processor attempted to access a page that is not present.\n");
 
             CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
-#if defined(__amd64__)
+#if defined(a64)
             EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", PageFaultAddress, Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
             EHPrint("At \e8888FF%#lx \eFAFAFAby \e8888FF%#lx\eFAFAFA\n", PageFaultAddress, Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
             EHPrint("Page: %s\eFAFAFA\n", params.P ? "\e058C19Present" : "\eE85230Not Present");
             EHPrint("Write Operation: \e8888FF%s\eFAFAFA\n", params.W ? "Read-Only" : "Read-Write");
@@ -335,11 +335,11 @@ namespace CrashHandler
         }
         }
 
-#if defined(__amd64__)
+#if defined(a64)
         EHPrint("The exception happened at \e8888FF%#lx\eFAFAFA\n", Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
         EHPrint("The exception happened at \e8888FF%#lx\eFAFAFA\n", Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     }
 }

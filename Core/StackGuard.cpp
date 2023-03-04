@@ -43,15 +43,20 @@ EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fai
     debug("Current stack check guard value: %#lx", __stack_chk_guard);
     KPrint("\eFF0000Stack smashing detected!");
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
     void *Stack = nullptr;
+#if defined(a64)
     asmv("movq %%rsp, %0"
          : "=r"(Stack));
+#elif defined(a32)
+    asmv("movl %%esp, %0"
+         : "=r"(Stack));
+#endif
     error("Stack address: %#lx", Stack);
 
     while (1)
         asmv("cli; hlt");
-#elif defined(__aarch64__)
+#elif defined(aa64)
     asmv("wfe");
 #endif
     CPU::Stop();
@@ -65,10 +70,10 @@ EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void
         error("Buffer overflow detected!");
     KPrint("\eFF0000Buffer overflow detected!");
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
     while (1)
         asmv("cli; hlt");
-#elif defined(__aarch64__)
+#elif defined(aa64)
     asmv("wfe");
 #endif
 }

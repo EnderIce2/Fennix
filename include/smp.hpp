@@ -11,11 +11,11 @@
 
 struct CPUArchData
 {
-#if defined(__amd64__)
+#if defined(a64)
     CPU::x64::FXState *FPU;
     /* TODO */
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 };
 

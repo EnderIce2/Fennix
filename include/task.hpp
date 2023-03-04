@@ -102,13 +102,13 @@ namespace Tasking
         Memory::StackGuard *Stack;
         Memory::MemMgr *Memory;
         TaskStatus Status;
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::TrapFrame Registers;
         uint64_t GSBase, FSBase;
-#elif defined(__i386__)
+#elif defined(a32)
         CPU::x32::TrapFrame Registers; // TODO
         uint64_t GSBase, FSBase;
-#elif defined(__aarch64__)
+#elif defined(aa64)
         uint64_t Registers; // TODO
 #endif
         uintptr_t IPHistory[128];
@@ -250,13 +250,13 @@ namespace Tasking
         void UpdateProcessStatus();
         void WakeUpThreads(void *CPUDataPointer);
 
-#if defined(__amd64__)
+#if defined(a64)
         void Schedule(CPU::x64::TrapFrame *Frame);
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
-#elif defined(__i386__)
+#elif defined(a32)
         void Schedule(void *Frame);
-        void OnInterruptReceived(void *Frame);
-#elif defined(__aarch64__)
+        void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
+#elif defined(aa64)
         void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #endif

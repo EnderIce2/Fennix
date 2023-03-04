@@ -9,10 +9,10 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"
@@ -102,11 +102,11 @@ namespace CrashHandler
     int BackSpaceLimit = 0;
     static char UserInputBuffer[1024];
 
-#if defined(__amd64__)
+#if defined(a64)
     SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-#elif defined(__i386__)
-    SafeFunction void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
-#elif defined(__aarch64__)
+#elif defined(a32)
+    SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
+#elif defined(aa64)
     SafeFunction void CrashKeyboardDriver::OnInterruptReceived(void *Frame)
 #endif
     {

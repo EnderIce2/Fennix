@@ -14,19 +14,19 @@ namespace CPU
 	char *Vendor()
 	{
 		static char Vendor[13];
-#if defined(__amd64__)
+#if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x0, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Vendor + 0, &ebx, 4);
 		memcpy_unsafe(Vendor + 4, &edx, 4);
 		memcpy_unsafe(Vendor + 8, &ecx, 4);
-#elif defined(__i386__)
+#elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x0, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Vendor + 0, &ebx, 4);
 		memcpy_unsafe(Vendor + 4, &edx, 4);
 		memcpy_unsafe(Vendor + 8, &ecx, 4);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Vendor[0]));
 #endif
@@ -36,7 +36,7 @@ namespace CPU
 	char *Name()
 	{
 		static char Name[49];
-#if defined(__amd64__)
+#if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Name + 0, &eax, 4);
@@ -53,7 +53,7 @@ namespace CPU
 		memcpy_unsafe(Name + 36, &ebx, 4);
 		memcpy_unsafe(Name + 40, &ecx, 4);
 		memcpy_unsafe(Name + 44, &edx, 4);
-#elif defined(__i386__)
+#elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Name + 0, &eax, 4);
@@ -70,7 +70,7 @@ namespace CPU
 		memcpy_unsafe(Name + 36, &ebx, 4);
 		memcpy_unsafe(Name + 40, &ecx, 4);
 		memcpy_unsafe(Name + 44, &edx, 4);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Name[0]));
 #endif
@@ -80,19 +80,19 @@ namespace CPU
 	char *Hypervisor()
 	{
 		static char Hypervisor[13];
-#if defined(__amd64__)
+#if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
 		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
 		memcpy_unsafe(Hypervisor + 8, &edx, 4);
-#elif defined(__i386__)
+#elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
 		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
 		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
 		memcpy_unsafe(Hypervisor + 8, &edx, 4);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Hypervisor[0]));
 #endif
@@ -106,17 +106,17 @@ namespace CPU
 		case Check:
 		{
 			uintptr_t Flags;
-#if defined(__amd64__)
+#if defined(a64)
 			asmv("pushfq");
 			asmv("popq %0"
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
-#elif defined(__i386__)
+#elif defined(a32)
 			asmv("pushfl");
 			asmv("popl %0"
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 			asmv("mrs %0, daif"
 				 : "=r"(Flags));
 			return !(Flags & (1 << 2));
@@ -124,18 +124,18 @@ namespace CPU
 		}
 		case Enable:
 		{
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("sti");
-#elif defined(__aarch64__)
+#elif defined(aa64)
 			asmv("msr daifclr, #2");
 #endif
 			return true;
 		}
 		case Disable:
 		{
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cli");
-#elif defined(__aarch64__)
+#elif defined(aa64)
 			asmv("msr daifset, #2");
 #endif
 			return true;
@@ -146,7 +146,7 @@ namespace CPU
 
 	void *PageTable(void *PT)
 	{
-#if defined(__amd64__)
+#if defined(a64)
 		if (PT)
 			asmv("movq %0, %%cr3"
 				 :
@@ -154,7 +154,7 @@ namespace CPU
 		else
 			asmv("movq %%cr3, %0"
 				 : "=r"(PT));
-#elif defined(__i386__)
+#elif defined(a32)
 		if (PT)
 			asmv("movl %0, %%cr3"
 				 :
@@ -162,7 +162,7 @@ namespace CPU
 		else
 			asmv("movl %%cr3, %0"
 				 : "=r"(PT));
-#elif defined(__aarch64__)
+#elif defined(aa64)
 		if (PT)
 			asmv("msr ttbr0_el1, %0"
 				 :
@@ -178,19 +178,19 @@ namespace CPU
 	{
 		bool PGESupport = false;
 		bool SSESupport = false;
-#if defined(__amd64__)
+#if defined(a64)
 		static int BSP = 0;
 		x64::CR0 cr0 = x64::readcr0();
 		x64::CR4 cr4 = x64::readcr4();
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::AMD::CPUID0x1 cpuid1amd;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
@@ -202,12 +202,12 @@ namespace CPU
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::Intel::CPUID0x1 cpuid1intel;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
 				 : "a"(0x1));
@@ -310,8 +310,8 @@ namespace CPU
 			trace("Features for BSP initialized.");
 		if (SSEEnableAfter)
 			SSEEnabled = true;
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 	}
 
@@ -319,13 +319,13 @@ namespace CPU
 	{
 		// TODO: Get the counter from the x2APIC or any other timer that is available. (TSC is not available on all CPUs)
 		uintptr_t Counter;
-#if defined(__amd64__)
+#if defined(a64)
 		asmv("rdtsc"
 			 : "=A"(Counter));
-#elif defined(__i386__)
+#elif defined(a32)
 		asmv("rdtsc"
 			 : "=A"(Counter));
-#elif defined(__aarch64__)
+#elif defined(aa64)
 		asmv("mrs %0, cntvct_el0"
 			 : "=r"(Counter));
 #endif
@@ -334,6 +334,10 @@ namespace CPU
 
 	x86SIMDType CheckSIMD()
 	{
+#if defined(a32)
+		return SIMD_NONE; /* TODO: Support x86 SIMD on x32 */
+#endif
+
 		if (unlikely(!SSEEnabled))
 			return SIMD_NONE;
 
@@ -344,12 +348,12 @@ namespace CPU
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::AMD::CPUID0x1 cpuid1amd;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
@@ -382,12 +386,12 @@ namespace CPU
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::Intel::CPUID0x1 cpuid1intel;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
 				 : "a"(0x1));
@@ -429,12 +433,12 @@ namespace CPU
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::AMD::CPUID0x1 cpuid1amd;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
@@ -452,12 +456,12 @@ namespace CPU
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(__amd64__)
+#if defined(a64)
 			CPU::x64::Intel::CPUID0x1 cpuid1intel;
-#elif defined(__i386__)
+#elif defined(a32)
 			CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
 				 : "a"(0x1));

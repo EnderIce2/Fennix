@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
 
 #ifdef __cplusplus
 extern "C"
@@ -215,6 +215,6 @@ extern "C"
 #define outw(Port, Data) outportw(Port, Data)
 #define outl(Port, Data) outportl(Port, Data)
 
-#endif // defined(__amd64__) || defined(__i386__)
+#endif // defined(a64) || defined(a32)
 
 #endif // !__FENNIX_KERNEL_IO_H__

@@ -384,28 +384,26 @@ namespace CPU
             MSR_CR_PAT_RESET = 0x0007040600070406ULL
         };
 
+#if defined(a64)
         SafeFunction static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;
-#if defined(__amd64__)
             asmv("rdmsr"
                  : "=a"(Low), "=d"(High)
                  : "c"(msr)
                  : "memory");
-#endif
             return ((uint64_t)Low) | (((uint64_t)High) << 32);
         }
 
         SafeFunction static inline void wrmsr(uint32_t msr, uint64_t Value)
         {
             uint32_t Low = Value, High = Value >> 32;
-#if defined(__amd64__)
             asmv("wrmsr"
                  :
                  : "c"(msr), "a"(Low), "d"(High)
                  : "memory");
-#endif
         }
+#endif
     }
 }
 

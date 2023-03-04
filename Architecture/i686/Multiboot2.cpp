@@ -1,9 +1,12 @@
 #include <types.h>
 
 #include <boot/protocols/multiboot2.h>
+#include <memory.hpp>
 #include <io.h>
 
 #include "../../kernel.h"
+
+BootInfo mb2binfo;
 
 enum VideoType
 {
@@ -47,72 +50,52 @@ void GetSMBIOS()
     }
 }
 
-struct multiboot_info
+void ProcessMB2(unsigned long Info)
 {
-    multiboot_uint32_t Size;
-    multiboot_uint32_t Reserved;
-    struct multiboot_tag *Tag;
-};
-
-EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
-{
-    if (Info == NULL || Magic == NULL)
+    uint8_t *VideoBuffer = (uint8_t *)0xB8F00 + 0xC0000000;
+    int pos = 0;
+    auto InfoAddress = Info;
+    for (auto Tag = (struct multiboot_tag *)((uint8_t *)InfoAddress + 8);
+         ;
+         Tag = (struct multiboot_tag *)((multiboot_uint8_t *)Tag + ((Tag->size + 7) & ~7)))
     {
-        if (Magic == NULL)
-            error("Multiboot magic is NULL");
-        if (Info == NULL)
-            error("Multiboot info is NULL");
-        CPU::Stop();
-    }
-    else if (Magic != MULTIBOOT2_BOOTLOADER_MAGIC)
-    {
-        error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
-        trace("Hello, World!");
-        CPU::Stop();
-    }
+        VideoBuffer[pos++] = '.';
+        VideoBuffer[pos++] = 0x2;
 
-    uint64_t div = 1193180 / 1000;
-    outb(0x43, 0xB6);
-    outb(0x42, (uint8_t)div);
-    outb(0x42, (uint8_t)(div >> 8));
-    uint8_t tmp = inb(0x61);
-    if (tmp != (tmp | 3))
-        outb(0x61, tmp | 3);
-
-    BootInfo binfo;
-    uint32_t Itr = 0;
-
-    for (uint32_t i = 8; i < Info->Size; i += Itr)
-    {
-        multiboot_tag *Tag = (multiboot_tag *)((uint8_t *)Info + i);
         if (Tag->type == MULTIBOOT_TAG_TYPE_END)
+        {
+            debug("End of multiboot2 tags");
             break;
+        }
 
         switch (Tag->type)
         {
         case MULTIBOOT_TAG_TYPE_CMDLINE:
         {
-            strncpy(binfo.Kernel.CommandLine,
+            strncpy(mb2binfo.Kernel.CommandLine,
                     ((multiboot_tag_string *)Tag)->string,
                     strlen(((multiboot_tag_string *)Tag)->string));
+            debug("Kernel command line: %s", mb2binfo.Kernel.CommandLine);
             break;
         }
         case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
         {
-            strncpy(binfo.Bootloader.Name,
+            strncpy(mb2binfo.Bootloader.Name,
                     ((multiboot_tag_string *)Tag)->string,
                     strlen(((multiboot_tag_string *)Tag)->string));
+            debug("Bootloader name: %s", mb2binfo.Bootloader.Name);
             break;
         }
         case MULTIBOOT_TAG_TYPE_MODULE:
         {
             multiboot_tag_module *module = (multiboot_tag_module *)Tag;
             static int module_count = 0;
-            binfo.Modules[module_count++].Address = (void *)module->mod_start;
-            binfo.Modules[module_count++].Size = module->size;
-            strncpy(binfo.Modules[module_count++].Path, "(null)", 6);
-            strncpy(binfo.Modules[module_count++].CommandLine, module->cmdline,
+            mb2binfo.Modules[module_count++].Address = (void *)module->mod_start;
+            mb2binfo.Modules[module_count++].Size = module->size;
+            strncpy(mb2binfo.Modules[module_count++].Path, "(null)", 6);
+            strncpy(mb2binfo.Modules[module_count++].CommandLine, module->cmdline,
                     strlen(module->cmdline));
+            debug("Module: %s", mb2binfo.Modules[module_count++].Path);
             break;
         }
         case MULTIBOOT_TAG_TYPE_BASIC_MEMINFO:
@@ -133,8 +116,7 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
         {
             multiboot_tag_mmap *mmap = (multiboot_tag_mmap *)Tag;
             uint32_t EntryCount = mmap->size / sizeof(multiboot_mmap_entry);
-
-            binfo.Memory.Entries = EntryCount;
+            mb2binfo.Memory.Entries = EntryCount;
             for (uint32_t i = 0; i < EntryCount; i++)
             {
                 if (EntryCount > MAX_MEMORY_ENTRIES)
@@ -142,42 +124,45 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
                     warn("Too many memory entries, skipping the rest...");
                     break;
                 }
-
                 multiboot_mmap_entry entry = mmap->entries[i];
-                binfo.Memory.Size += entry.len;
+                mb2binfo.Memory.Size += entry.len;
                 switch (entry.type)
                 {
                 case MULTIBOOT_MEMORY_AVAILABLE:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = Usable;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = Usable;
                     break;
                 case MULTIBOOT_MEMORY_RESERVED:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = Reserved;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = Reserved;
                     break;
                 case MULTIBOOT_MEMORY_ACPI_RECLAIMABLE:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = ACPIReclaimable;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = ACPIReclaimable;
                     break;
                 case MULTIBOOT_MEMORY_NVS:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = ACPINVS;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = ACPINVS;
                     break;
                 case MULTIBOOT_MEMORY_BADRAM:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = BadMemory;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = BadMemory;
                     break;
                 default:
-                    binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-                    binfo.Memory.Entry[i].Length = entry.len;
-                    binfo.Memory.Entry[i].Type = Unknown;
+                    mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
+                    mb2binfo.Memory.Entry[i].Length = entry.len;
+                    mb2binfo.Memory.Entry[i].Type = Unknown;
                     break;
                 }
+                debug("Memory entry: [BaseAddress: %#x, Length: %#x, Type: %d]",
+                      mb2binfo.Memory.Entry[i].BaseAddress,
+                      mb2binfo.Memory.Entry[i].Length,
+                      mb2binfo.Memory.Entry[i].Type);
             }
             break;
         }
@@ -192,14 +177,12 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
         {
             multiboot_tag_framebuffer *fb = (multiboot_tag_framebuffer *)Tag;
             static int fb_count = 0;
-
-            binfo.Framebuffer[fb_count].BaseAddress = (void *)fb->common.framebuffer_addr;
-            binfo.Framebuffer[fb_count].Width = fb->common.framebuffer_width;
-            binfo.Framebuffer[fb_count].Height = fb->common.framebuffer_height;
-            binfo.Framebuffer[fb_count].Pitch = fb->common.framebuffer_pitch;
-            binfo.Framebuffer[fb_count].BitsPerPixel = fb->common.framebuffer_bpp;
-            binfo.Framebuffer[fb_count].MemoryModel = fb->common.framebuffer_type;
-
+            mb2binfo.Framebuffer[fb_count].BaseAddress = (void *)fb->common.framebuffer_addr;
+            mb2binfo.Framebuffer[fb_count].Width = fb->common.framebuffer_width;
+            mb2binfo.Framebuffer[fb_count].Height = fb->common.framebuffer_height;
+            mb2binfo.Framebuffer[fb_count].Pitch = fb->common.framebuffer_pitch;
+            mb2binfo.Framebuffer[fb_count].BitsPerPixel = fb->common.framebuffer_bpp;
+            mb2binfo.Framebuffer[fb_count].MemoryModel = fb->common.framebuffer_type;
             switch (fb->common.framebuffer_type)
             {
             case MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED:
@@ -209,12 +192,12 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
             }
             case MULTIBOOT_FRAMEBUFFER_TYPE_RGB:
             {
-                binfo.Framebuffer[fb_count].RedMaskSize = fb->framebuffer_red_mask_size;
-                binfo.Framebuffer[fb_count].RedMaskShift = fb->framebuffer_red_field_position;
-                binfo.Framebuffer[fb_count].GreenMaskSize = fb->framebuffer_green_mask_size;
-                binfo.Framebuffer[fb_count].GreenMaskShift = fb->framebuffer_green_field_position;
-                binfo.Framebuffer[fb_count].BlueMaskSize = fb->framebuffer_blue_mask_size;
-                binfo.Framebuffer[fb_count].BlueMaskShift = fb->framebuffer_blue_field_position;
+                mb2binfo.Framebuffer[fb_count].RedMaskSize = fb->framebuffer_red_mask_size;
+                mb2binfo.Framebuffer[fb_count].RedMaskShift = fb->framebuffer_red_field_position;
+                mb2binfo.Framebuffer[fb_count].GreenMaskSize = fb->framebuffer_green_mask_size;
+                mb2binfo.Framebuffer[fb_count].GreenMaskShift = fb->framebuffer_green_field_position;
+                mb2binfo.Framebuffer[fb_count].BlueMaskSize = fb->framebuffer_blue_mask_size;
+                mb2binfo.Framebuffer[fb_count].BlueMaskShift = fb->framebuffer_blue_field_position;
                 break;
             }
             case MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT:
@@ -223,12 +206,11 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
                 break;
             }
             }
-            debug("Framebuffer %d: %dx%d %d bpp", i, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
+            debug("Framebuffer %d: %dx%d %d bpp", Tag, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
             debug("More info:\nAddress: %p\nPitch: %lld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d",
                   fb->common.framebuffer_addr, fb->common.framebuffer_pitch, fb->common.framebuffer_type,
                   fb->framebuffer_red_mask_size, fb->framebuffer_red_field_position, fb->framebuffer_green_mask_size,
                   fb->framebuffer_green_field_position, fb->framebuffer_blue_mask_size, fb->framebuffer_blue_field_position);
-
             fb_count++;
             break;
         }
@@ -266,12 +248,14 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
         }
         case MULTIBOOT_TAG_TYPE_ACPI_OLD:
         {
-            binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_old_acpi *)Tag)->rsdp;
+            mb2binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_old_acpi *)Tag)->rsdp;
+            debug("OLD ACPI RSDP: %p", mb2binfo.RSDP);
             break;
         }
         case MULTIBOOT_TAG_TYPE_ACPI_NEW:
         {
-            binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_new_acpi *)Tag)->rsdp;
+            mb2binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_new_acpi *)Tag)->rsdp;
+            debug("NEW ACPI RSDP: %p", mb2binfo.RSDP);
             break;
         }
         case MULTIBOOT_TAG_TYPE_NETWORK:
@@ -307,37 +291,49 @@ EXTERNC void x32Multiboot2Entry(multiboot_info *Info, unsigned int Magic)
         case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
         {
             multiboot_tag_load_base_addr *load_base_addr = (multiboot_tag_load_base_addr *)Tag;
-            binfo.Kernel.PhysicalBase = (void *)load_base_addr->load_base_addr;
-            binfo.Kernel.VirtualBase = (void *)(load_base_addr->load_base_addr + 0xC0000000);
+            mb2binfo.Kernel.PhysicalBase = (void *)load_base_addr->load_base_addr;
+            mb2binfo.Kernel.VirtualBase = (void *)(load_base_addr->load_base_addr + 0xC0000000);
+            debug("Kernel base: %p (physical) %p (virtual)", mb2binfo.Kernel.PhysicalBase, mb2binfo.Kernel.VirtualBase);
+            break;
+        }
+        default:
+        {
+            error("Unknown multiboot2 tag type: %d", Tag->type);
             break;
         }
         }
-        Itr = Tag->size;
-        if ((Itr % 8) != 0)
-            Itr += (8 - Itr % 8);
     }
+}
+
+EXTERNC void x32Multiboot2Entry(unsigned long Info, unsigned int Magic)
+{
+    if (Info == NULL || Magic == NULL)
+    {
+        if (Magic == NULL)
+            error("Multiboot magic is NULL");
+        if (Info == NULL)
+            error("Multiboot info is NULL");
+        CPU::Stop();
+    }
+    else if (Magic != MULTIBOOT2_BOOTLOADER_MAGIC)
+    {
+        error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
+        CPU::Stop();
+    }
+
+    uint64_t div = 1193180 / 1000;
+    outb(0x43, 0xB6);
+    outb(0x42, (uint8_t)div);
+    outb(0x42, (uint8_t)(div >> 8));
+    uint8_t tmp = inb(0x61);
+    if (tmp != (tmp | 3))
+        outb(0x61, tmp | 3);
+
+    ProcessMB2(Info);
 
     tmp = inb(0x61) & 0xFC;
     outb(0x61, tmp);
 
-    int *vm = (int *)0xb8000;
-    // "Not supported yet"
-    vm[0] = 0x054E;
-    vm[1] = 0x056F;
-    vm[2] = 0x0574;
-    vm[3] = 0x0520;
-    vm[4] = 0x0573;
-    vm[5] = 0x0575;
-    vm[6] = 0x0570;
-    vm[7] = 0x0570;
-    vm[8] = 0x0572;
-    vm[9] = 0x056F;
-    vm[10] = 0x0574;
-    vm[11] = 0x0520;
-    vm[12] = 0x0579;
-    vm[13] = 0x0565;
-    vm[14] = 0x0574;
-
     CPU::Stop();
-    // Entry(&binfo);
+    Entry(&mb2binfo);
 }

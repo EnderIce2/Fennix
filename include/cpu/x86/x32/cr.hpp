@@ -134,6 +134,87 @@ namespace CPU
             };
             uint32_t raw;
         } CR8;
+#if defined(a32)
+        SafeFunction static inline CR0 readcr0()
+        {
+            uint32_t Result = 0;
+            asmv("mov %%cr0, %[Result]"
+                 : [Result] "=q"(Result));
+            return (CR0){.raw = Result};
+        }
+
+        SafeFunction static inline CR2 readcr2()
+        {
+            uint32_t Result = 0;
+            asmv("mov %%cr2, %[Result]"
+                 : [Result] "=q"(Result));
+            return (CR2){.raw = Result};
+        }
+
+        SafeFunction static inline CR3 readcr3()
+        {
+            uint32_t Result = 0;
+            asmv("mov %%cr3, %[Result]"
+                 : [Result] "=q"(Result));
+            return (CR3){.raw = Result};
+        }
+
+        SafeFunction static inline CR4 readcr4()
+        {
+            uint32_t Result = 0;
+            asmv("mov %%cr4, %[Result]"
+                 : [Result] "=q"(Result));
+            return (CR4){.raw = Result};
+        }
+
+        SafeFunction static inline CR8 readcr8()
+        {
+            uint32_t Result = 0;
+            asmv("mov %%cr8, %[Result]"
+                 : [Result] "=q"(Result));
+            return (CR8){.raw = Result};
+        }
+
+        SafeFunction static inline void writecr0(CR0 ControlRegister)
+        {
+            asmv("mov %[ControlRegister], %%cr0"
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
+        }
+
+        SafeFunction static inline void writecr2(CR2 ControlRegister)
+        {
+            asmv("mov %[ControlRegister], %%cr2"
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
+        }
+
+        SafeFunction static inline void writecr3(CR3 ControlRegister)
+        {
+            asmv("mov %[ControlRegister], %%cr3"
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
+        }
+
+        SafeFunction static inline void writecr4(CR4 ControlRegister)
+        {
+            asmv("mov %[ControlRegister], %%cr4"
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
+        }
+
+        SafeFunction static inline void writecr8(CR8 ControlRegister)
+        {
+            asmv("mov %[ControlRegister], %%cr8"
+                 :
+                 : [ControlRegister] "q"(ControlRegister.raw)
+                 : "memory");
+        }
+#endif
     }
 }
 

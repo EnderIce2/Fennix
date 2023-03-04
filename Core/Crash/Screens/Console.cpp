@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../../kernel.h"

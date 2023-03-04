@@ -93,23 +93,23 @@
  *
  */
 
-#ifdef __amd64__
+#ifdef a64
 #if UINTPTR_MAX != UINT64_MAX
 #error "uintptr_t is not 64-bit!"
 #endif // UINTPTR_MAX != UINT64_MAX
-#endif // __amd64__
+#endif // a64
 
-#ifdef __i386__
+#ifdef a32
 #if UINTPTR_MAX != UINT32_MAX
 #error "uintptr_t is not 32-bit!"
 #endif // UINTPTR_MAX != UINT32_MAX
-#endif // __i386__
+#endif // a32
 
-#ifdef __aarch64__
+#ifdef aa64
 #if UINTPTR_MAX != UINT64_MAX
 #error "uintptr_t is not 64-bit!"
 #endif // UINTPTR_MAX != UINT64_MAX
-#endif // __aarch64__
+#endif // aa64
 
 NewLock(KernelLock);
 
@@ -184,18 +184,18 @@ EXTERNC NIF void Main(BootInfo *Info)
     }
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
-#if defined(__amd64__)
+#if defined(a64)
     PowerManager->InitDSDT();
-#elif defined(__i386__)
+#elif defined(a32)
     // FIXME: Add ACPI support for i386
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     KPrint("Initializing Timers");
-#if defined(__amd64__)
+#if defined(a64)
     TimeManager = new Time::time(PowerManager->GetACPI());
-#elif defined(__i386__)
+#elif defined(a32)
     TimeManager = new Time::time(PowerManager->GetACPI());
-#elif defined(__aarch64__)
+#elif defined(aa64)
     TimeManager = new Time::time(nullptr);
 #endif
     KPrint("Initializing Bootstrap Processor Timer");

@@ -972,15 +972,39 @@ static uint64_t sys_arch_prctl(int code, unsigned long arg2, unsigned long arg3,
     switch (code)
     {
     case 0x1001: // ARCH_SET_GS
+    {
+#if defined(a64)
         CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, arg2);
+#elif defined(a32)
+        CPU::x32::wrmsr(CPU::x32::MSRID::MSR_GS_BASE, arg2);
+#endif
         return arg2;
+    }
     case 0x1002: // ARCH_SET_FS
+    {
+#if defined(a64)
         CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, arg2);
+#elif defined(a32)
+        CPU::x32::wrmsr(CPU::x32::MSRID::MSR_FS_BASE, arg2);
+#endif
         return arg2;
+    }
     case 0x1003: // ARCH_GET_FS
+    {
+#if defined(a64)
         return CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
+#elif defined(a32)
+        return CPU::x32::rdmsr(CPU::x32::MSRID::MSR_FS_BASE);
+#endif
+    }
     case 0x1004: // ARCH_GET_GS
+    {
+#if defined(a64)
         return CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
+#elif defined(a32)
+        return CPU::x32::rdmsr(CPU::x32::MSRID::MSR_GS_BASE);
+#endif
+    }
     default:
         warn("Unimplemented prctl code %#lx (arg2=%lx, arg3=%lx, arg4=%lx, arg5=%lx)", code, arg2, arg3, arg4, arg5);
         return -1; /* EINVAL */
@@ -2393,7 +2417,7 @@ static void *LinuxSyscallsTable[] = {
 
 uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
-#if defined(__amd64__)
+#if defined(a64)
     if (Frame->rax > sizeof(LinuxSyscallsTable))
     {
         fixme("Syscall %lld not implemented", Frame->rax);
@@ -2409,7 +2433,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
     uint64_t ret = call(Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
     Frame->rax = ret;
     return ret;
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 }

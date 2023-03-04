@@ -13,13 +13,13 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
 #include "../Architecture/amd64/cpu/apic.hpp"
-#elif defined(__i386__)
+#elif defined(a32)
 #include "../../Architecture/i686/cpu/gdt.hpp"
 #include "../Architecture/i686/cpu/apic.hpp"
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"
@@ -386,11 +386,11 @@ namespace CrashHandler
                             continue;
                         EHPrint("\n\e2565CC%p", EHIntFrames[i]);
                         EHPrint("\e7925CC-");
-#if defined(__amd64__)
+#if defined(a64)
                         if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
-#elif defined(__i386__)
+#elif defined(a32)
                         if ((uintptr_t)EHIntFrames[i] >= 0xC0000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
                             EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                         else
@@ -543,20 +543,50 @@ namespace CrashHandler
             switch (cr[0])
             {
             case '0':
+            {
+#if defined(a64)
                 EHPrint("\e44AA000: %#lx\n", CPU::x64::readcr0());
+#elif defined(a32)
+                EHPrint("\e44AA000: %#lx\n", CPU::x32::readcr0());
+#endif
                 break;
+            }
             case '2':
+            {
+#if defined(a64)
                 EHPrint("\e44AA002: %#lx\n", PageFaultAddress);
+#elif defined(a32)
+                EHPrint("\e44AA002: %#lx\n", CPU::x32::readcr2());
+#endif
                 break;
+            }
             case '3':
+            {
+#if defined(a64)
                 EHPrint("\e44AA003: %#lx\n", CPU::x64::readcr3());
+#elif defined(a32)
+                EHPrint("\e44AA003: %#lx\n", CPU::x32::readcr3());
+#endif
                 break;
+            }
             case '4':
+            {
+#if defined(a64)
                 EHPrint("\e44AA004: %#lx\n", CPU::x64::readcr4());
+#elif defined(a32)
+                EHPrint("\e44AA004: %#lx\n", CPU::x32::readcr4());
+#endif
                 break;
+            }
             case '8':
+            {
+#if defined(a64)
                 EHPrint("\e44AA008: %#lx\n", CPU::x64::readcr8());
+#elif defined(a32)
+                EHPrint("\e44AA008: %#lx\n", CPU::x32::readcr8());
+#endif
                 break;
+            }
             default:
                 EHPrint("\eFF0000Invalid CR\n");
                 break;
@@ -723,7 +753,7 @@ namespace CrashHandler
 
     SafeFunction void StopAllCores()
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         /* FIXME: Can't send IPIs to other cores
          * because it causes another exception on
          * the other cores.
@@ -751,7 +781,7 @@ namespace CrashHandler
         __sync;
         CPU::Interrupts(CPU::Disable);
         // }
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     }
 
@@ -761,7 +791,7 @@ namespace CrashHandler
         CPU::Interrupts(CPU::Disable);
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
-#if defined(__amd64__)
+#if defined(a64)
         error("An exception occurred!");
         error("Exception: %#llx", Frame->InterruptNumber);
         for (size_t i = 0; i < INT_FRAMES_MAX; i++)
@@ -998,8 +1028,8 @@ namespace CrashHandler
         }
         goto CrashEnd;
 
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
     CrashEnd:

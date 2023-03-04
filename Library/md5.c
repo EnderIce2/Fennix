@@ -120,7 +120,7 @@ void md5Finalize(MD5Context *ctx)
     unsigned int offset = ctx->size % 64;
     unsigned int padding_length = offset < 56 ? 56 - offset : (56 + 64) - offset;
 
-    // Fill in the padding andndo the changes to size that resulted from the update
+    // Fill in the padding and do the changes to size that resulted from the update
     md5Update(ctx, PADDING, padding_length);
     ctx->size -= (uint64_t)padding_length;
 
@@ -134,7 +134,11 @@ void md5Finalize(MD5Context *ctx)
                    (uint32_t)(ctx->input[(j * 4)]);
     }
     input[14] = (uint32_t)(ctx->size * 8);
+#ifdef a32
+    input[15] = (uint32_t)((ctx->size >> 32) | (ctx->size << 32)) >> 32;
+#else
     input[15] = (uint32_t)((ctx->size * 8) >> 32);
+#endif
 
     md5Step(ctx->buffer, input);
 

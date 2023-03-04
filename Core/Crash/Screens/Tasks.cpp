@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../../kernel.h"
@@ -44,11 +44,11 @@ namespace CrashHandler
         if (TaskManager)
         {
             if (data.Thread)
-#if defined(__amd64__)
+#if defined(a64)
                 EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
                 EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
             EHPrint("\eFAFAFAProcess list (%ld):\n", Plist.size());

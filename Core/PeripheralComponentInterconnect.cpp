@@ -2,10 +2,10 @@
 
 #include <memory.hpp>
 #include <power.hpp>
-#if defined(__amd64__)
+#if defined(a64)
 #include "../Architecture/amd64/acpi.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../kernel.h"
@@ -837,7 +837,7 @@ namespace PCI
 
     PCI::PCI()
     {
-#if defined(__amd64__)
+#if defined(a64)
         int Entries = ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
         for (int t = 0; t < Entries; t++)
         {
@@ -848,9 +848,9 @@ namespace PCI
             for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
                 EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
         }
-#elif defined(__i386__)
+#elif defined(a32)
         error("PCI not implemented on i386");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         error("PCI not implemented on aarch64");
 #endif
     }

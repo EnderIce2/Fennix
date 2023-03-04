@@ -594,7 +594,7 @@ EXTERNC void __chk_fail(void) __attribute__((__noreturn__));
 
 __noreturn static inline void __convert_chk_fail(void)
 {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
     asmv("int3");
 #else
 #error "Not implemented!"

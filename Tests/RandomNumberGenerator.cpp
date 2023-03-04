@@ -9,12 +9,12 @@ __constructor void TestRandom()
     int RDRANDFlag = 0;
     if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
     {
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::AMD::CPUID0x1 cpuid1amd;
-#elif defined(__i386__)
+#elif defined(a32)
         CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         asmv("cpuid"
              : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
              : "a"(0x1));
@@ -23,12 +23,12 @@ __constructor void TestRandom()
     }
     else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
     {
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::Intel::CPUID0x1 cpuid1intel;
-#elif defined(__i386__)
+#elif defined(a32)
         CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         asmv("cpuid"
              : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
              : "a"(0x1));
@@ -39,7 +39,7 @@ __constructor void TestRandom()
     if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
         RDRANDFlag = 0;
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
     if (RDRANDFlag)
     {
         uint64_t RDSEEDValue = 0;

@@ -209,11 +209,11 @@ namespace Driver
         this->UnloadAllDrivers();
     }
 
-#if defined(__amd64__)
+#if defined(a64)
     SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-#elif defined(__i386__)
-    SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
-#elif defined(__aarch64__)
+#elif defined(a32)
+    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
+#elif defined(aa64)
     SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {

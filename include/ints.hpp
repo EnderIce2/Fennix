@@ -12,13 +12,13 @@ namespace Interrupts
 #define INT_FRAMES_MAX 8
 #endif
 
-#if defined(__amd64__)
+#if defined(a64)
     /* APIC::APIC */ extern void *apic[256];       // MAX_CPU
     /* APIC::Timer */ extern void *apicTimer[256]; // MAX_CPU
-#elif defined(__i386__)
+#elif defined(a32)
     /* APIC::APIC */ extern void *apic[256];       // MAX_CPU
     /* APIC::Timer */ extern void *apicTimer[256]; // MAX_CPU
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     extern void *InterruptFrames[INT_FRAMES_MAX];
 
@@ -39,11 +39,11 @@ namespace Interrupts
         ~Handler();
 
     public:
-#if defined(__amd64__)
+#if defined(a64)
         virtual void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
-#elif defined(__i386__)
-        virtual void OnInterruptReceived(void *Frame);
-#elif defined(__aarch64__)
+#elif defined(a32)
+        virtual void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
+#elif defined(aa64)
         virtual void OnInterruptReceived(void *Frame);
 #endif
     };

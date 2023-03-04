@@ -276,7 +276,7 @@ static void *NativeSyscallsTable[] = {
 
 uintptr_t HandleNativeSyscalls(SyscallsFrame *Frame)
 {
-#if defined(__amd64__)
+#if defined(a64)
     // debug("rax: %#llx, rbx: %#llx, rcx: %#llx, rdx: %#llx, rsi: %#llx, rdi: %#llx, rbp: %#llx, r8: %#llx, r9: %#llx, r10: %#llx, r11: %#llx, r12: %#llx, r13: %#llx, r14: %#llx, r15: %#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx, Frame->rsi, Frame->rdi, Frame->rbp, Frame->r8, Frame->r9, Frame->r10, Frame->r11, Frame->r12, Frame->r13, Frame->r14, Frame->r15);
     if (Frame->rax > sizeof(NativeSyscallsTable))
     {
@@ -294,7 +294,7 @@ uintptr_t HandleNativeSyscalls(SyscallsFrame *Frame)
     uintptr_t ret = call((uintptr_t)Frame, Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
     Frame->rax = ret;
     return ret;
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 }

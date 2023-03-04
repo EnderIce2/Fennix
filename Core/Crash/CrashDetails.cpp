@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"
@@ -100,11 +100,11 @@ SafeFunction void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame)
 SafeFunction void StackFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
-#if defined(__amd64__)
+#if defined(a64)
     CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
     CrashHandler::EHPrint("Stack segment fault at address %#lx\n", Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     CrashHandler::EHPrint("External: %d\n", SelCode.External);
     CrashHandler::EHPrint("Table: %d\n", SelCode.Table);
@@ -142,11 +142,11 @@ SafeFunction void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame)
 SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 {
     CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
-#if defined(__amd64__)
+#if defined(a64)
     CrashHandler::EHPrint("\eAFAFAFAn exception occurred at %#lx by %#lx\n", CrashHandler::PageFaultAddress, Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
     CrashHandler::EHPrint("\eAFAFAFAn exception occurred at %#lx by %#lx\n", CrashHandler::PageFaultAddress, Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     CrashHandler::EHPrint("Page: %s\n", params.P ? "Present" : "Not Present");
     CrashHandler::EHPrint("Write Operation: %s\n", params.W ? "Read-Only" : "Read-Write");
@@ -165,15 +165,20 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
     uintptr_t CheckPageFaultAddress = 0;
     CheckPageFaultAddress = CrashHandler::PageFaultAddress;
     if (CheckPageFaultAddress == 0)
-#ifdef __amd64__
+#ifdef a64
         CheckPageFaultAddress = Frame->rip;
-#elif defined(__i386__)
+#elif defined(a32)
         CheckPageFaultAddress = Frame->eip;
-#elif defined(__aarch64__)
+#elif defined(aa64)
         CheckPageFaultAddress = 0;
 #endif
 
+#if defined(a64)
     Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x64::readcr3().raw));
+#elif defined(a32)
+    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x32::readcr3().raw));
+#elif defined(aa64)
+#endif
     bool PageAvailable = vma.Check((void *)CheckPageFaultAddress);
     debug("Page available (Check(...)): %s. %s",
           PageAvailable ? "Yes" : "No",
@@ -213,7 +218,12 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
                   Index.PDPTEIndex,
                   Index.PDEIndex,
                   Index.PTEIndex);
+#if defined(a64)
             Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x64::readcr3().raw)->Entries[Index.PMLIndex];
+#elif defined(a32)
+            Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x32::readcr3().raw)->Entries[Index.PMLIndex];
+#elif defined(aa64)
+#endif
 
             Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
             Memory::PageDirectoryEntryPtr *PDE = (Memory::PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);

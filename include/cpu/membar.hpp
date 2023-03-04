@@ -9,10 +9,10 @@ namespace CPU
     {
         SafeFunction static inline void Barrier()
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("" ::
                      : "memory");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("dmb ish" ::
                      : "memory");
 #endif
@@ -20,10 +20,10 @@ namespace CPU
 
         SafeFunction static inline void Fence()
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("mfence" ::
                      : "memory");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("dmb ish" ::
                      : "memory");
 #endif
@@ -31,10 +31,10 @@ namespace CPU
 
         SafeFunction static inline void StoreFence()
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("sfence" ::
                      : "memory");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("dmb ishst" ::
                      : "memory");
 #endif
@@ -42,10 +42,10 @@ namespace CPU
 
         SafeFunction static inline void LoadFence()
         {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("lfence" ::
                      : "memory");
-#elif defined(__aarch64__)
+#elif defined(aa64)
             asmv("dmb ishld" ::
                      : "memory");
 #endif

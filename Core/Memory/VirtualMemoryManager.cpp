@@ -101,11 +101,11 @@ namespace Memory
         PTE.SetAddress((uintptr_t)PhysicalAddress >> 12);
         PTEPtr->Entries[Index.PTEIndex] = PTE;
 
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::invlpg(VirtualAddress);
-#elif defined(__i386__)
+#elif defined(a32)
         CPU::x32::invlpg(VirtualAddress);
-#elif defined(__aarch64__)
+#elif defined(aa64)
         asmv("dsb sy");
         asmv("tlbi vae1is, %0"
              :
@@ -180,11 +180,11 @@ namespace Memory
         PTE.Present = false;
         PTEPtr->Entries[Index.PTEIndex] = PTE;
 
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::invlpg(VirtualAddress);
-#elif defined(__i386__)
+#elif defined(a32)
         CPU::x32::invlpg(VirtualAddress);
-#elif defined(__aarch64__)
+#elif defined(aa64)
         asmv("dsb sy");
         asmv("tlbi vae1is, %0"
              :

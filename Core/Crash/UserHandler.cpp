@@ -7,10 +7,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"
@@ -34,6 +34,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     CPUData *CurCPU = GetCurrentCPU();
 
     {
+#if defined(a64)
         CPU::x64::CR0 cr0 = CPU::x64::readcr0();
         CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = CrashHandler::PageFaultAddress};
         CPU::x64::CR3 cr3 = CPU::x64::readcr3();
@@ -44,28 +45,41 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
         error("Technical Informations on CPU %lld:", CurCPU->ID);
         uintptr_t ds;
-#if defined(__amd64__)
         asmv("mov %%ds, %0"
              : "=r"(ds));
-#elif defined(__i386__)
+#elif defined(a32)
+        CPU::x32::CR0 cr0 = CPU::x32::readcr0();
+        CPU::x32::CR2 cr2 = CPU::x32::CR2{.PFLA = CrashHandler::PageFaultAddress};
+        CPU::x32::CR3 cr3 = CPU::x32::readcr3();
+        CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+        CPU::x32::CR8 cr8 = CPU::x32::readcr8();
+        CPU::x32::EFER efer;
+        efer.raw = CPU::x32::rdmsr(CPU::x32::MSR_EFER);
+
+        error("Technical Informations on CPU %lld:", CurCPU->ID);
+        uintptr_t ds;
         asmv("mov %%ds, %0"
              : "=r"(ds));
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
+
+#if defined(a64)
         error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
               CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
               Frame->ss, Frame->cs, ds);
-#if defined(__amd64__)
         error("R8=%#llx R9=%#llx R10=%#llx R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
         error("R12=%#llx R13=%#llx R14=%#llx R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
         error("RAX=%#llx RBX=%#llx RCX=%#llx RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
         error("RSI=%#llx RDI=%#llx RBP=%#llx RSP=%#llx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
         error("RIP=%#llx RFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
-#elif defined(__i386__)
+#elif defined(a32)
+        error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
+              CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
+              Frame->ss, Frame->cs, ds);
         error("EAX=%#llx EBX=%#llx ECX=%#llx EDX=%#llx", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
         error("ESI=%#llx EDI=%#llx EBP=%#llx ESP=%#llx", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
         error("EIP=%#llx EFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
         error("CR0=%#llx CR2=%#llx CR3=%#llx CR4=%#llx CR8=%#llx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
 
@@ -81,6 +95,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         error("CR3: PWT:%s PCD:%s PDBR:%#llx",
               cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
 
+#if defined(a64)
         error("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x R2:%#x",
               cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
               cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
@@ -88,10 +103,19 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
               cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
               cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
+#elif defined(a32)
+                error("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x",
+              cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
+              cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
+              cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
+              cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
+              cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
+              cr4.Reserved0, cr4.Reserved1);
+#endif
 
         error("CR8: TPL:%d", cr8.TPL);
 
-#if defined(__amd64__)
+#if defined(a64)
         error("RFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x R3:%#x",
               Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
               Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
@@ -99,7 +123,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
               Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
               Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
-#elif defined(__i386__)
+#elif defined(a32)
         error("EFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x",
               Frame->eflags.CF ? "True " : "False", Frame->eflags.PF ? "True " : "False", Frame->eflags.AF ? "True " : "False", Frame->eflags.ZF ? "True " : "False",
               Frame->eflags.SF ? "True " : "False", Frame->eflags.TF ? "True " : "False", Frame->eflags.IF ? "True " : "False", Frame->eflags.DF ? "True " : "False",
@@ -107,7 +131,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               Frame->eflags.VM ? "True " : "False", Frame->eflags.AC ? "True " : "False", Frame->eflags.VIF ? "True " : "False", Frame->eflags.VIP ? "True " : "False",
               Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
               Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
         error("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
@@ -178,15 +202,15 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     {
         uintptr_t CheckPageFaultAddress = 0;
         CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
-#if defined(__amd64__)
+#if defined(a64)
         CheckPageFaultAddress = CrashHandler::PageFaultAddress;
         if (CheckPageFaultAddress == 0)
             CheckPageFaultAddress = Frame->rip;
 
         error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->rip);
-#elif defined(__i386__)
+#elif defined(a32)
         error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->eip);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
         error("Page: %s", params.P ? "Present" : "Not Present");
         error("Write Operation: %s", params.W ? "Read-Only" : "Read-Write");

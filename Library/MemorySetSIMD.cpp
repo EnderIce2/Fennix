@@ -39,6 +39,7 @@ EXTERNC void *memset_sse4_1(void *dest, int c, size_t n)
 
 EXTERNC void *memset_sse4_2(void *dest, int c, size_t n)
 {
+#if defined(a64)
     char *d = (char *)dest;
 
     if (((uintptr_t)d & 0xF) == 0)
@@ -58,5 +59,6 @@ EXTERNC void *memset_sse4_2(void *dest, int c, size_t n)
     }
 
     memset_unsafe(d, c, n);
+#endif
     return dest;
 }

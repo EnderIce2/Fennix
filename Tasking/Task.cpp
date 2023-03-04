@@ -9,12 +9,12 @@
 
 #include "../kernel.h"
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../Architecture/amd64/cpu/apic.hpp"
 #include "../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
+#elif defined(a32)
 #include "../Architecture/i686/cpu/apic.hpp"
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
 // #define DEBUG_TASKING 1
@@ -43,11 +43,11 @@ namespace Tasking
 
     __naked __used __no_stack_protector NIF void IdleProcessLoop()
     {
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
         asmv("IdleLoop:\n"
              "hlt\n"
              "jmp IdleLoop\n");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         asmv("IdleLoop:\n"
              "wfe\n"
              "b IdleLoop\n");
@@ -394,11 +394,11 @@ namespace Tasking
         //      : "memory");
         // CPU::x64::fxsave(Thread->FPU);
 
-#if defined(__amd64__)
+#if defined(a64)
         memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
         Thread->Registers.rip = (EntryPoint + Offset);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
         switch (Parent->Security.TrustLevel)
         {
@@ -408,7 +408,7 @@ namespace Tasking
         case TaskTrustLevel::Kernel:
         {
             Thread->Stack = new Memory::StackGuard(false, Parent->PageTable);
-#if defined(__amd64__)
+#if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::TrustedByKernel);
             Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
             Thread->FSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
@@ -419,15 +419,15 @@ namespace Tasking
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
             POKE(uintptr_t, Thread->Registers.rsp) = (uintptr_t)ThreadDoExit;
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
             break;
         }
         case TaskTrustLevel::User:
         {
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
-#if defined(__amd64__)
+#if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::Untrusted);
             Thread->GSBase = 0;
             Thread->FSBase = 0;
@@ -577,8 +577,8 @@ namespace Tasking
                 error("Offset is not user accessible");
                 uva.Map((void *)Offset, (void *)Offset, Memory::PTFlag::RW | Memory::PTFlag::US); // We try one more time.
             }
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 #ifdef DEBUG_TASKING
             DumpData(Thread->Name, Thread->Stack, STACK_SIZE);
@@ -613,19 +613,19 @@ namespace Tasking
         Thread->Info.Compatibility = Compatibility;
 
 #ifdef DEBUG
-#ifdef __amd64__
+#ifdef a64
         debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.rip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         else
             debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
-#elif defined(__i386__)
+#elif defined(a32)
         debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.eip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.esp);
         else
             debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.esp);
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
         debug("Created thread \"%s\"(%d) in process \"%s\"(%d)",
               Thread->Name, Thread->ID,
@@ -669,18 +669,18 @@ namespace Tasking
         case TaskTrustLevel::Kernel:
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TTL::TrustedByKernel);
-#if defined(__amd64__)
+#if defined(a64)
             if (!DoNotCreatePageTable)
                 Process->PageTable = (Memory::PageTable4 *)CPU::x64::readcr3().raw;
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
             break;
         }
         case TaskTrustLevel::User:
         {
             SecurityManager.TrustToken(Process->Security.UniqueToken, TTL::Untrusted);
-#if defined(__amd64__)
+#if defined(a64)
             if (!DoNotCreatePageTable)
             {
                 Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
@@ -688,8 +688,8 @@ namespace Tasking
                 for (size_t i = 0; i < TO_PAGES(PAGE_SIZE); i++)
                     Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
             }
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
             break;
         }
@@ -740,20 +740,20 @@ namespace Tasking
     Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x86::IRQ16)
     {
         SmartCriticalSection(TaskingLock);
-#if defined(__amd64__)
+#if defined(a64)
         // Map the IRQ16 to the first CPU.
         ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
         KPrint("Starting Tasking With Instruction Pointer: %p (\e666666%s\eCCCCCC)", EntryPoint, KernelSymbolTable->GetSymbolFromAddress(EntryPoint));
         TaskingLock.Unlock();
 
-#if defined(__amd64__)
+#if defined(a64)
         TaskArchitecture Arch = TaskArchitecture::x64;
-#elif defined(__i386__)
+#elif defined(a32)
         TaskArchitecture Arch = TaskArchitecture::x32;
-#elif defined(__aarch64__)
+#elif defined(aa64)
         TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
@@ -765,12 +765,12 @@ namespace Tasking
         bool MONITORSupported = false;
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
         {
-#if defined(__amd64__)
+#if defined(a64)
             CPU::x64::AMD::CPUID0x1 cpuid1amd;
-#elif defined(__i386__)
+#elif defined(a32)
             CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("cpuid"
                  : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
                  : "a"(0x1));
@@ -779,12 +779,12 @@ namespace Tasking
         }
         else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
         {
-#if defined(__amd64__)
+#if defined(a64)
             CPU::x64::Intel::CPUID0x1 cpuid1intel;
-#elif defined(__i386__)
+#elif defined(a32)
             CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(__amd64__) || defined(__i386__)
+#if defined(a64) || defined(a32)
             asmv("cpuid"
                  : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
                  : "a"(0x1));
@@ -817,7 +817,7 @@ namespace Tasking
             IdleThread->Info.Affinity[i] = true;
         }
         debug("Tasking Started");
-#if defined(__amd64__)
+#if defined(a64)
         ((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
 
         /* FIXME: The kernel is not ready for multi-core tasking. */
@@ -829,8 +829,8 @@ namespace Tasking
         //     icr.Level = APIC::APICLevel::Assert;
         //     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
         // }
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
     }
 

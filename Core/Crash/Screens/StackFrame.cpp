@@ -8,10 +8,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../../../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 
 #include "../../../kernel.h"
@@ -40,11 +40,11 @@ namespace CrashHandler
                     continue;
                 EHPrint("\n\e2565CC%p", EHIntFrames[i]);
                 EHPrint("\e7925CC-");
-#if defined(__amd64__)
+#if defined(a64)
                 if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
-#elif defined(__i386__)
+#elif defined(a32)
                 if ((uintptr_t)EHIntFrames[i] >= 0xC0000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
                     EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                 else

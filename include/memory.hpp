@@ -46,22 +46,19 @@ extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 // From pages
 #define FROM_PAGES(d) ((d)*PAGE_SIZE - 1)
 
+#if defined(a64) || defined(aa64)
 #define NORMAL_VMA_OFFSET 0xFFFF800000000000
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
-
-/**
- * @brief KERNEL_HEAP_BASE is the base address of the kernel heap
- */
 #define KERNEL_HEAP_BASE 0xFFFFA00000000000
-/**
- * @brief USER_HEAP_BASE is the base address of the user heap allocated by the kernel
- */
 #define USER_HEAP_BASE 0xFFFFB00000000000
-
-/**
- * @brief USER_STACK_BASE is the base address of the user stack
- */
 #define USER_STACK_BASE 0xFFFFEFFFFFFF0000
+#elif defined(a32)
+#define NORMAL_VMA_OFFSET 0x80000000
+#define KERNEL_VMA_OFFSET 0xC0000000
+#define KERNEL_HEAP_BASE 0xA0000000
+#define USER_HEAP_BASE 0xB0000000
+#define USER_STACK_BASE 0xEFFFFFFF
+#endif
 
 namespace Memory
 {
@@ -181,15 +178,15 @@ namespace Memory
         /** @brief Set Address */
         void SetAddress(uintptr_t _Address)
         {
-#if defined(__amd64__)
+#if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
-#elif defined(__i386__)
+#elif defined(a32)
             _Address &= 0x000FFFFF;
             this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
-#elif defined(__aarch64__)
+#elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
@@ -199,11 +196,11 @@ namespace Memory
         /** @brief Get Address */
         uintptr_t GetAddress()
         {
-#if defined(__amd64__)
+#if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(__i386__)
+#elif defined(a32)
             return (this->raw & 0x003FFFFF000) >> 12;
-#elif defined(__aarch64__)
+#elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
         }
@@ -236,15 +233,15 @@ namespace Memory
         /** @brief Set PageTableEntryPtr address */
         void SetAddress(uintptr_t _Address)
         {
-#if defined(__amd64__)
+#if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
-#elif defined(__i386__)
+#elif defined(a32)
             _Address &= 0x000FFFFF;
             this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
-#elif defined(__aarch64__)
+#elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
@@ -254,11 +251,11 @@ namespace Memory
         /** @brief Get PageTableEntryPtr address */
         uintptr_t GetAddress()
         {
-#if defined(__amd64__)
+#if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(__i386__)
+#elif defined(a32)
             return (this->raw & 0x003FFFFF000) >> 12;
-#elif defined(__aarch64__)
+#elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
         }
@@ -291,15 +288,15 @@ namespace Memory
         /** @brief Set PageDirectoryEntryPtr address */
         void SetAddress(uintptr_t _Address)
         {
-#if defined(__amd64__)
+#if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
-#elif defined(__i386__)
+#elif defined(a32)
             _Address &= 0x000FFFFF;
             this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
-#elif defined(__aarch64__)
+#elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
@@ -309,11 +306,11 @@ namespace Memory
         /** @brief Get PageDirectoryEntryPtr address */
         uintptr_t GetAddress()
         {
-#if defined(__amd64__)
+#if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(__i386__)
+#elif defined(a32)
             return (this->raw & 0x003FFFFF000) >> 12;
-#elif defined(__aarch64__)
+#elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
         }
@@ -346,15 +343,15 @@ namespace Memory
         /** @brief Set PageDirectoryPointerTableEntryPtr address */
         void SetAddress(uintptr_t _Address)
         {
-#if defined(__amd64__)
+#if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
-#elif defined(__i386__)
+#elif defined(a32)
             _Address &= 0x000FFFFF;
             this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
-#elif defined(__aarch64__)
+#elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
             this->raw |= (_Address << 12);
@@ -364,11 +361,11 @@ namespace Memory
         /** @brief Get PageDirectoryPointerTableEntryPtr address */
         uintptr_t GetAddress()
         {
-#if defined(__amd64__)
+#if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(__i386__)
+#elif defined(a32)
             return (this->raw & 0x003FFFFF000) >> 12;
-#elif defined(__aarch64__)
+#elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
         }

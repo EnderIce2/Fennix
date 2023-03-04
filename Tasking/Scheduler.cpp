@@ -9,12 +9,12 @@
 
 #include "../kernel.h"
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../Architecture/amd64/cpu/apic.hpp"
 #include "../Architecture/amd64/cpu/gdt.hpp"
-#elif defined(__i386__)
+#elif defined(a32)
 #include "../Architecture/i686/cpu/apic.hpp"
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
 NewLock(SchedulerLock);
@@ -94,16 +94,16 @@ extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
 {
     if (TimeSlice == 0)
         TimeSlice = Tasking::TaskPriority::Normal;
-#if defined(__amd64__)
+#if defined(a64)
     ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
+#elif defined(a32)
+#elif defined(aa64)
 #endif
 }
 
 namespace Tasking
 {
-#if defined(__amd64__)
+#if defined(a64)
     SafeFunction NIF bool Task::FindNewProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
@@ -671,7 +671,7 @@ namespace Tasking
     }
 
     SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
-#elif defined(__i386__)
+#elif defined(a32)
     SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
@@ -702,8 +702,8 @@ namespace Tasking
         fixme("unimplemented");
     }
 
-    SafeFunction void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
-#elif defined(__aarch64__)
+    SafeFunction void Task::OnInterruptReceived(CPU::x32::TrapFrame *Frame) { this->Schedule(Frame); }
+#elif defined(aa64)
     SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");

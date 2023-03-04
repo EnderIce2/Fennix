@@ -192,7 +192,11 @@ namespace Memory
         if (PageTable)
             this->PageTable = PageTable;
         else
+#if defined(a64)
             this->PageTable = (PageTable4 *)CPU::x64::readcr3().raw;
+#elif defined(a32)
+            this->PageTable = (PageTable4 *)CPU::x32::readcr3().raw;
+#endif
 
         this->Directory = Directory;
         debug("+ %#lx", this);

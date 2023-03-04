@@ -5,15 +5,15 @@
 #include <smp.hpp>
 #include <io.h>
 
-#if defined(__amd64__)
+#if defined(a64)
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #include "../Architecture/amd64/cpu/idt.hpp"
 #include "../Architecture/amd64/acpi.hpp"
 #include "../Architecture/amd64/cpu/apic.hpp"
-#elif defined(__i386__)
+#elif defined(a32)
 #include "../Architecture/i686/cpu/gdt.hpp"
 #include "../Architecture/i686/cpu/idt.hpp"
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
 
 #include "../crashhandler.hpp"
@@ -30,18 +30,18 @@ namespace Interrupts
     };
     Vector<Event> RegisteredEvents;
 
-#if defined(__amd64__)
+#if defined(a64)
     /* APIC::APIC */ void *apic[MAX_CPU];
     /* APIC::Timer */ void *apicTimer[MAX_CPU];
-#elif defined(__i386__)
+#elif defined(a32)
     /* APIC::APIC */ void *apic[MAX_CPU];
-#elif defined(__aarch64__)
+#elif defined(aa64)
 #endif
     void *InterruptFrames[INT_FRAMES_MAX];
 
     void Initialize(int Core)
     {
-#if defined(__amd64__)
+#if defined(a64)
         GlobalDescriptorTable::Init(Core);
         InterruptDescriptorTable::Init(Core);
         CPUData *CoreData = GetCPU(Core);
@@ -60,16 +60,16 @@ namespace Interrupts
         debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
         asmv("movq %0, %%rsp" ::"r"(CoreData->Stack));
         InitializeSystemCalls();
-#elif defined(__i386__)
+#elif defined(a32)
         warn("i386 is not supported yet");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         warn("aarch64 is not supported yet");
 #endif
     }
 
     void Enable(int Core)
     {
-#if defined(__amd64__)
+#if defined(a64)
         if (((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress != nullptr)
         {
             // TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
@@ -82,9 +82,9 @@ namespace Interrupts
             error("LAPIC not found");
             // TODO: PIC
         }
-#elif defined(__i386__)
+#elif defined(a32)
         warn("i386 is not supported yet");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         warn("aarch64 is not supported yet");
 #endif
     }
@@ -92,16 +92,16 @@ namespace Interrupts
     void InitializeTimer(int Core)
     {
         // TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
-#if defined(__amd64__)
+#if defined(a64)
         if (apic[Core] != nullptr)
             apicTimer[Core] = new APIC::Timer((APIC::APIC *)apic[Core]);
         else
         {
             fixme("apic not found");
         }
-#elif defined(__i386__)
+#elif defined(a32)
         warn("i386 is not supported yet");
-#elif defined(__aarch64__)
+#elif defined(aa64)
         warn("aarch64 is not supported yet");
 #endif
     }
@@ -113,7 +113,7 @@ namespace Interrupts
 
     extern "C" SafeFunction void MainInterruptHandler(void *Data)
     {
-#if defined(__amd64__)
+#if defined(a64)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
 
         memmove(InterruptFrames + 1, InterruptFrames, sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
@@ -159,9 +159,9 @@ namespace Interrupts
             }
             // TODO: PIC
         }
-#elif defined(__i386__)
+#elif defined(a32)
         void *Frame = Data;
-#elif defined(__aarch64__)
+#elif defined(aa64)
         void *Frame = Data;
 #endif
         error("HALT HALT HALT HALT HALT HALT HALT HALT HALT");
@@ -197,15 +197,15 @@ namespace Interrupts
         warn("Event %d not found.", InterruptNumber);
     }
 
-#if defined(__amd64__)
+#if defined(a64)
     void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
     {
         trace("Unhandled interrupt IRQ%d", Frame->InterruptNumber - 32);
-#elif defined(__i386__)
-    void Handler::OnInterruptReceived(void *Frame)
+#elif defined(a32)
+    void Handler::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
     {
         trace("Unhandled interrupt received");
-#elif defined(__aarch64__)
+#elif defined(aa64)
     void Handler::OnInterruptReceived(void *Frame)
     {
         trace("Unhandled interrupt received");
