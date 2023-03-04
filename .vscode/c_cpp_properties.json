@@ -3,6 +3,7 @@
         {
             "name": "Fennix x64 (Linux, GCC, debug)",
             "includePath": [
+                "${workspaceFolder}/include",
                 "${workspaceFolder}/include/**"
             ],
             "defines": [
@@ -49,7 +50,12 @@
                 "-fverbose-asm",
                 "-fstack-usage",
                 "-fstack-check",
-                "-fsanitize=undefined"
+                "-fsanitize=undefined",
+
+                // VSCode flags
+                "-ffreestanding",
+                "-nostdinc",
+                "-nostdinc++"
             ]
         },
         {
@@ -104,7 +110,12 @@
                 "-fverbose-asm",
                 "-fstack-usage",
                 "-fstack-check",
-                "-fsanitize=undefined"
+                "-fsanitize=undefined",
+
+                // VSCode flags
+                "-ffreestanding",
+                "-nostdinc",
+                "-nostdinc++"
             ]
         }
     ],
