@@ -103,6 +103,10 @@ typedef __builtin_va_list va_list;
 
 #endif // __cplusplus
 
+#ifndef __SIG_ATOMIC_TYPE__
+#define __SIG_ATOMIC_TYPE__ int
+#endif
+
 typedef __INT8_TYPE__ int8_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;
