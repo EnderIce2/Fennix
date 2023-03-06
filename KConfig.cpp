@@ -36,6 +36,12 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "VALUE",
      .description = "Number of cores to use (0 = all; 1 is the first code, not 0)"},
 
+    {.identifier = 'p',
+     .access_letters = "pP",
+     .access_name = "ioapicirq",
+     .value_name = "VALUE",
+     .description = "Which core will be used for I/O APIC interrupts"},
+
     {.identifier = 't',
      .access_letters = "tT",
      .access_name = "tasking",
@@ -77,11 +83,12 @@ KernelConfig ParseConfig(char *Config)
     int argc = 0;
     char **argv = nullptr;
 
-    struct KernelConfig config = {Memory::MemoryAllocatorType::Pages,
+    struct KernelConfig config = {Memory::MemoryAllocatorType::XallocV1,
                                   0,
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
                                   {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
-                                  false,
+                                  true,
+                                  0,
                                   0,
                                   false};
 
@@ -318,6 +325,13 @@ ParseSuccess:
             value = cag_option_get_value(&context);
             KPrint("\eAAFFAAUsing %s cores", atoi(value) ? value : "all");
             config.Cores = atoi(value);
+            break;
+        }
+        case 'p':
+        {
+            value = cag_option_get_value(&context);
+            KPrint("\eAAFFAARedirecting I/O APIC interrupts to %s%s", atoi(value) ? "core " : "", atoi(value) ? value : "BSP");
+            config.IOAPICInterruptCore = atoi(value);
             break;
         }
         case 't':
