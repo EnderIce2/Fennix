@@ -310,10 +310,10 @@ typedef intptr_t ssize_t;
                          :          \
                          : "memory")
 
-#define int3                        \
-    __asm__ __volatile__("int $0x3" \
-                         :          \
-                         :          \
+#define int3                    \
+    __asm__ __volatile__("int3" \
+                         :      \
+                         :      \
                          : "memory")
 
 #endif // !__FENNIX_KERNEL_TYPES_H__
