@@ -293,6 +293,7 @@ namespace GraphicalUserInterface
         Rect GetPosition() { return Position; }
         Rect *GetPositionPtr() { return &Position; }
         const char *GetTitle() { return (const char *)Title; }
+        void SetTitle(const char *Title) { strcpy(this->Title, Title); }
         void AddWidget(WidgetCollection *widget);
 
         Window(void *ParentGUI, Rect rect, const char *Title);
