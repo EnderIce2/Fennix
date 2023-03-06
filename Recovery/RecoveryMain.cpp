@@ -11,6 +11,13 @@ using Tasking::TaskTrustLevel;
 using Tasking::TCB;
 using namespace GraphicalUserInterface;
 
+#ifdef DEBUG
+extern uint64_t FIi, PDi, PWi, PWWi, PCi, mmi;
+#endif
+
+extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start;
+extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end;
+
 namespace Recovery
 {
     WidgetCollection *wdgDbgWin = nullptr;
@@ -21,11 +28,17 @@ namespace Recovery
         while (wdgDbgWin == nullptr || DbgWin == nullptr)
             TaskManager->Sleep(100);
 
-        wdgDbgWin->CreateLabel({10, 0, 0, 0}, "Scheduler Ticks  /  Last Task Ticks");
-        GraphicalUserInterface::Handle SchedLblHnd = wdgDbgWin->CreateLabel({10, 20, 0, 0}, "0000000000000000 / 0000000000000000");
+        wdgDbgWin->CreateLabel({5, 0, 0, 0}, "Scheduler Ticks  /  Last Task Ticks");
+        GraphicalUserInterface::Handle SchedLblHnd = wdgDbgWin->CreateLabel({5, 15, 0, 0}, "0000000000000000 / 0000000000000000");
 
-        wdgDbgWin->CreateLabel({10, 60, 0, 0}, "Memory Usage");
-        GraphicalUserInterface::Handle MemLblHnd = wdgDbgWin->CreateLabel({10, 80, 0, 0}, "0MB / 0GB (0MB reserved) 0%");
+        wdgDbgWin->CreateLabel({5, 40, 0, 0}, "Memory Usage");
+        GraphicalUserInterface::Handle MemLblHnd = wdgDbgWin->CreateLabel({5, 55, 0, 0}, "0MB / 0GB (0MB reserved) 0%");
+
+        wdgDbgWin->CreateLabel({5, 95, 0, 0}, "GUI Info");
+        wdgDbgWin->CreateLabel({5, 110, 0, 0}, "  Fetch Inputs   /  Paint Desktop   / Paint Widgets");
+        GraphicalUserInterface::Handle GUI1LblHnd = wdgDbgWin->CreateLabel({5, 125, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
+        wdgDbgWin->CreateLabel({5, 140, 0, 0}, "  Paint Windows  /   Paint Cursor   / Memset & Update");
+        GraphicalUserInterface::Handle GUI2LblHnd = wdgDbgWin->CreateLabel({5, 155, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
 
         DbgWin->AddWidget(wdgDbgWin);
 
@@ -37,8 +50,8 @@ namespace Recovery
         {
             sprintf(TicksText, "%016ld / %016ld", TaskManager->GetSchedulerTicks(), TaskManager->GetLastTaskTicks());
             wdgDbgWin->SetText(SchedLblHnd, TicksText);
-            static int RefreshCounter = 100;
-            if (RefreshCounter-- == 0)
+            static int RefreshMemCounter = 0;
+            if (RefreshMemCounter-- == 0)
             {
                 MemUsed = KernelAllocator.GetUsedMemory();
                 MemTotal = KernelAllocator.GetTotalMemory();
@@ -46,10 +59,22 @@ namespace Recovery
                 int MemPercent = (MemUsed * 100) / MemTotal;
                 sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %d%%", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent);
                 wdgDbgWin->SetText(MemLblHnd, TicksText);
-                RefreshCounter = 100;
+                RefreshMemCounter = 50;
             }
             sprintf(TicksText, "Debug - %ldx%ld", DbgWin->GetPosition().Width, DbgWin->GetPosition().Height);
             DbgWin->SetTitle(TicksText);
+
+#ifdef DEBUG
+            static int RefreshGUIDbgCounter = 0;
+            if (RefreshGUIDbgCounter-- == 0)
+            {
+                sprintf(TicksText, "%016ld / %016ld / %016ld", FIi, PDi, PWi);
+                wdgDbgWin->SetText(GUI1LblHnd, TicksText);
+                sprintf(TicksText, "%016ld / %016ld / %016ld", PWWi, PCi, mmi);
+                wdgDbgWin->SetText(GUI2LblHnd, TicksText);
+                RefreshGUIDbgCounter = 5;
+            }
+#endif
             TaskManager->Sleep(100);
         }
     }
@@ -100,14 +125,16 @@ namespace Recovery
         RecWin->AddWidget(wdgRecWin);
 
         Rect DebugWindow;
-        DebugWindow.Width = 370;
-        DebugWindow.Height = 100;
-        DebugWindow.Left = 25;
+        DebugWindow.Width = 390;
+        DebugWindow.Height = 190;
+        DebugWindow.Left = 5;
         DebugWindow.Top = 25;
         DbgWin = new Window(gui, DebugWindow, "Debug");
         gui->AddWindow(DbgWin);
 
         wdgDbgWin = new WidgetCollection(DbgWin);
+        Video::Font *NewFont = new Video::Font(&_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, Video::FontType::PCScreenFont2);
+        wdgDbgWin->ReplaceFont(NewFont);
         TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RecoveryThreadWrapper)->SetPriority(Tasking::TaskPriority::Idle);
     }
 

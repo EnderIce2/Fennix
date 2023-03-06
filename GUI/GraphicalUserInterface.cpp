@@ -12,6 +12,10 @@ extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start;
 extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end;
 extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_size;
 
+#ifdef DEBUG
+uint64_t FIi = 0, PDi = 0, PWi = 0, PWWi = 0, PCi = 0, mmi = 0;
+#endif
+
 namespace GraphicalUserInterface
 {
     void GUI::FetchInputs()
@@ -200,7 +204,8 @@ namespace GraphicalUserInterface
     {
         if (DesktopBufferRepaint)
         {
-            PutRect(this->DesktopBuffer, this->Desktop, 0x404040);
+            // PutRect(this->DesktopBuffer, this->Desktop, 0x404040);
+            memset(this->DesktopBuffer->Data, 0x404040, this->DesktopBuffer->Size);
             DesktopBufferRepaint = false;
         }
         // Well... I have to do some code optimization on DrawOverBitmap. It's too slow and it's not even using SIMD
@@ -534,13 +539,39 @@ namespace GraphicalUserInterface
         */
         while (IsRunning)
         {
+#ifdef DEBUG
+            FIi = CPU::Counter();
+#endif
             FetchInputs();
+#ifdef DEBUG
+            FIi = CPU::Counter() - FIi;
+            PDi = CPU::Counter();
+#endif
             PaintDesktop();
+#ifdef DEBUG
+            PDi = CPU::Counter() - PDi;
+            PWi = CPU::Counter();
+#endif
             PaintWidgets();
+#ifdef DEBUG
+            PWi = CPU::Counter() - PWi;
+            PWWi = CPU::Counter();
+#endif
             PaintWindows();
+#ifdef DEBUG
+            PWWi = CPU::Counter() - PWWi;
+            PCi = CPU::Counter();
+#endif
             PaintCursor();
+#ifdef DEBUG
+            PCi = CPU::Counter() - PCi;
+            mmi = CPU::Counter();
+#endif
             memcpy(Display->GetBuffer(200)->Buffer, this->BackBuffer->Data, this->BackBuffer->Size);
             Display->SetBuffer(200);
+#ifdef DEBUG
+            mmi = CPU::Counter() - mmi;
+#endif
         }
     }
 
