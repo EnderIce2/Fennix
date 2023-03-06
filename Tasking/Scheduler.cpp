@@ -465,7 +465,6 @@ namespace Tasking
 
     SafeFunction NIF void Task::Schedule(CPU::x64::TrapFrame *Frame)
     {
-        SmartCriticalSection(SchedulerLock);
         if (StopScheduler)
         {
             warn("Scheduler stopped.");
@@ -670,7 +669,11 @@ namespace Tasking
         __sync; /* TODO: Is this really needed? */
     }
 
-    SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame) { this->Schedule(Frame); }
+    SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+    {
+        SmartCriticalSection(SchedulerLock);
+        this->Schedule(Frame);
+    }
 #elif defined(a32)
     SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
