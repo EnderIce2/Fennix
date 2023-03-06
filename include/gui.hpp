@@ -230,6 +230,12 @@ namespace GraphicalUserInterface
         Vector<ButtonObject *> Buttons;
 
     public:
+        void ReplaceFont(Video::Font *NewFont)
+        {
+            delete this->CurrentFont;
+            this->CurrentFont = NewFont;
+        }
+
         Handle CreatePanel(Rect rect, uint32_t Color);
         Handle CreateButton(Rect rect, const char *Text, uintptr_t OnClick = (uintptr_t) nullptr);
         Handle CreateLabel(Rect rect, const char *Text);
