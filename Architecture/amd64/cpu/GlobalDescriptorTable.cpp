@@ -115,6 +115,7 @@ namespace GlobalDescriptorTable
                  : "memory", "rax");
 
         CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+        memset(CPUStackPointer[Core], 0, STACK_SIZE);
         debug("CPU %d Stack Pointer: %#lx", Core, CPUStackPointer[Core]);
 
         uint64_t Base = (uint64_t)&tss[Core];
@@ -132,6 +133,9 @@ namespace GlobalDescriptorTable
         tss[Core].InterruptStackTable[0] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
         tss[Core].InterruptStackTable[1] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
         tss[Core].InterruptStackTable[2] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+        memset((void *)(tss[Core].InterruptStackTable[0] - STACK_SIZE), 0, STACK_SIZE);
+        memset((void *)(tss[Core].InterruptStackTable[1] - STACK_SIZE), 0, STACK_SIZE);
+        memset((void *)(tss[Core].InterruptStackTable[2] - STACK_SIZE), 0, STACK_SIZE);
 
         CPU::x64::ltr(GDT_TSS);
         asmv("mov %%rsp, %0"
