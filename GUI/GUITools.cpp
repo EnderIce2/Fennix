@@ -4,14 +4,8 @@
 
 namespace GraphicalUserInterface
 {
-    inline void InlineSetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color)
+    Ofast inline void InlineSetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color)
     {
-        if (unlikely(!Bitmap))
-            return;
-
-        if (unlikely(!Bitmap->Data))
-            return;
-
         if (unlikely(X < 0 || Y < 0 || X >= Bitmap->Width || Y >= Bitmap->Height))
             return;
 
@@ -22,6 +16,12 @@ namespace GraphicalUserInterface
 
     void SetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color)
     {
+        if (unlikely(!Bitmap))
+            return;
+
+        if (unlikely(!Bitmap->Data))
+            return;
+
         InlineSetPixel(Bitmap, X, Y, Color);
     }
 
@@ -40,22 +40,51 @@ namespace GraphicalUserInterface
         return *Pixel;
     }
 
-    void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
-                        ScreenBitmap *SourceBitmap,
-                        long Top,
-                        long Left, bool IgnoreZero)
+    Ofast void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
+                              ScreenBitmap *SourceBitmap,
+                              long Top,
+                              long Left, bool IgnoreZero)
     {
-        for (uint32_t i = 0; i < SourceBitmap->Width; i++)
-            for (uint32_t j = 0; j < SourceBitmap->Height; j++)
+        if (unlikely(!SourceBitmap) || unlikely(!SourceBitmap->Data) ||
+            unlikely(!DestinationBitmap) || unlikely(!DestinationBitmap->Data))
+            return;
+
+        // for (uint32_t i = 0; i < SourceBitmap->Width; i++)
+        //     for (uint32_t j = 0; j < SourceBitmap->Height; j++)
+        //     {
+        //         uint32_t *Pixel = (uint32_t *)((uintptr_t)SourceBitmap->Data + (j * SourceBitmap->Width + i) * (SourceBitmap->BitsPerPixel / 8));
+        //         if (IgnoreZero && (*Pixel != 0x000000))
+        //             InlineSetPixel(DestinationBitmap, Left + i, Top + j, *Pixel);
+        //     }
+
+        for (uint32_t j = 0; j < SourceBitmap->Height; j++)
+        {
+            uint32_t *Pixel = (uint32_t *)((uintptr_t)SourceBitmap->Data + j * SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8));
+            if (IgnoreZero)
             {
-                uint32_t *Pixel = (uint32_t *)((uintptr_t)SourceBitmap->Data + (j * SourceBitmap->Width + i) * (SourceBitmap->BitsPerPixel / 8));
-                if (IgnoreZero && (*Pixel != 0x000000))
-                    InlineSetPixel(DestinationBitmap, Left + i, Top + j, *Pixel);
+                for (uint32_t i = 0; i < SourceBitmap->Width; i++)
+                {
+                    if (Pixel[i] != 0x000000)
+                        InlineSetPixel(DestinationBitmap, Left + i, Top + j, Pixel[i]);
+                }
             }
+            else
+            {
+                memcpy((void *)((uintptr_t)DestinationBitmap->Data + (Top + j) * DestinationBitmap->Width * (DestinationBitmap->BitsPerPixel / 8) + Left * (DestinationBitmap->BitsPerPixel / 8)),
+                       (void *)((uintptr_t)SourceBitmap->Data + j * SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8)),
+                       SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8));
+            }
+        }
     }
 
-    void PutRect(ScreenBitmap *Bitmap, Rect rect, uint32_t Color)
+    Ofast void PutRect(ScreenBitmap *Bitmap, Rect rect, uint32_t Color)
     {
+        if (unlikely(!Bitmap))
+            return;
+
+        if (unlikely(!Bitmap->Data))
+            return;
+
         for (uint32_t i = 0; i < rect.Width; i++)
             for (uint32_t j = 0; j < rect.Height; j++)
                 InlineSetPixel(Bitmap, rect.Left + i, rect.Top + j, Color);
@@ -63,6 +92,12 @@ namespace GraphicalUserInterface
 
     void PutBorder(ScreenBitmap *Bitmap, Rect rect, uint32_t Color)
     {
+        if (unlikely(!Bitmap))
+            return;
+
+        if (unlikely(!Bitmap->Data))
+            return;
+
         for (uint32_t i = 0; i < rect.Width; i++)
         {
             InlineSetPixel(Bitmap, rect.Left + i, rect.Top, Color);
