@@ -440,7 +440,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case ConfigurationReason:
     {
-        print("Kernel received configuration data.");
+        print("Driver received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
         ABAR = reinterpret_cast<HBAMemory *>(((PCIHeader0 *)PCIBaseAddress)->BAR5);
         KAPI->Memory.Map((void *)ABAR, (void *)ABAR, (1 << 1));
