@@ -435,61 +435,19 @@ namespace Driver
                     switch (fexExtended->Driver.Type)
                     {
                     case FexDriverType::FexDriverType_Generic:
-                    {
-                        DriverCode ret = BindPCIGeneric(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIGeneric(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_Display:
-                    {
-                        DriverCode ret = BindPCIDisplay(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIDisplay(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_Network:
-                    {
-                        DriverCode ret = BindPCINetwork(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCINetwork(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_Storage:
-                    {
-                        DriverCode ret = BindPCIStorage(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIStorage(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_FileSystem:
-                    {
-                        DriverCode ret = BindPCIFileSystem(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIFileSystem(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_Input:
-                    {
-                        DriverCode ret = BindPCIInput(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIInput(mem, fex, PCIDevice);
                     case FexDriverType::FexDriverType_Audio:
-                    {
-                        DriverCode ret = BindPCIAudio(mem, fex, PCIDevice);
-                        if (ret != DriverCode::OK &&
-                            ret != DriverCode::DRIVER_CONFLICT)
-                            continue;
-                        return DriverCode::OK;
-                    }
+                        return BindPCIAudio(mem, fex, PCIDevice);
                     default:
                     {
                         warn("Unknown driver type: %d", fexExtended->Driver.Type);
