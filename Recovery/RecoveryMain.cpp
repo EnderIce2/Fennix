@@ -79,7 +79,12 @@ namespace Recovery
         }
     }
 
-    void RecoveryThreadWrapper() { RecoveryScreen->RecoveryThread(); }
+    void RecoveryThreadWrapper()
+    {
+        while (!RecoveryScreen)
+            CPU::Pause();
+        RecoveryScreen->RecoveryThread();
+    }
 
     void RebootCommandThread()
     {
