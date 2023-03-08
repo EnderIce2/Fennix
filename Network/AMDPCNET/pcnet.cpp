@@ -94,7 +94,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case ConfigurationReason:
     {
-        print("Kernel received configuration data.");
+        print("Driver received configuration data.");
         PCIBaseAddress = reinterpret_cast<PCIDeviceHeader *>(Data->RawPtr);
         if (PCIBaseAddress->VendorID == 0x1022 && PCIBaseAddress->DeviceID == 0x2000)
         {

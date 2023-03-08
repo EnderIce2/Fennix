@@ -50,7 +50,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case ConfigurationReason:
     {
-        print("Kernel received configuration data.");
+        print("Driver received configuration data.");
         break;
     }
     case FetchReason:
