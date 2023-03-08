@@ -58,7 +58,7 @@ struct Fex
     int (*EntryPoint)(void *);
 } __attribute__((packed));
 
-struct KernelCallback;
+union KernelCallback;
 
 struct FexExtended
 {
@@ -73,7 +73,7 @@ struct FexExtended
         enum FexDriverType Type : 4;
         enum FexDriverInputTypes TypeFlags : 4;
         bool OverrideOnConflict : 1;
-        int (*Callback)(struct KernelCallback *);
+        int (*Callback)(union KernelCallback *);
 
         struct DriverBind
         {

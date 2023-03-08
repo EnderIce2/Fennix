@@ -119,67 +119,72 @@ enum CallbackReason
     InputReason,
 };
 
-struct KernelCallback
+union KernelCallback
 {
-    CallbackReason Reason;
-    void *RawPtr;
-    unsigned long RawData;
-
-    /** @brief When the kernel wants to send a packet. */
     struct
     {
-        struct
-        {
-            unsigned char *Data;
-            unsigned long Length;
-        } Send;
+        CallbackReason Reason;
+        void *RawPtr;
+        unsigned long RawData;
 
+        /** @brief When the kernel wants to send a packet. */
         struct
         {
-            char Name[128];
-            unsigned long MAC;
-        } Fetch;
-    } NetworkCallback;
-
-    /** @brief When the kernel wants to write to disk. */
-    struct
-    {
-        struct
-        {
-            unsigned long Sector;
-            unsigned long SectorCount;
-            unsigned char Port;
-            unsigned char *Buffer;
-            bool Write;
-        } RW;
-
-        struct
-        {
-            unsigned char Ports;
-            int BytesPerSector;
-        } Fetch;
-    } DiskCallback;
-
-    struct
-    {
-        struct
-        {
-            unsigned long X;
-            unsigned long Y;
-            unsigned long Z;
             struct
             {
-                bool Left;
-                bool Right;
-                bool Middle;
-            } Buttons;
-        } Mouse;
-    } InputCallback;
+                unsigned char *Data;
+                unsigned long Length;
+            } Send;
 
-    struct
-    {
-        unsigned char Vector;
-    } InterruptInfo;
+            struct
+            {
+                char Name[128];
+                unsigned long MAC;
+            } Fetch;
+        } NetworkCallback;
+
+        /** @brief When the kernel wants to write to disk. */
+        struct
+        {
+            struct
+            {
+                unsigned long Sector;
+                unsigned long SectorCount;
+                unsigned char Port;
+                unsigned char *Buffer;
+                bool Write;
+            } RW;
+
+            struct
+            {
+                unsigned char Ports;
+                int BytesPerSector;
+            } Fetch;
+        } DiskCallback;
+
+        /** @brief When the kernel wants to get mouse position / keyboard key */
+        struct
+        {
+            struct
+            {
+                unsigned long X;
+                unsigned long Y;
+                unsigned long Z;
+                struct
+                {
+                    bool Left;
+                    bool Right;
+                    bool Middle;
+                } Buttons;
+            } Mouse;
+        } InputCallback;
+
+        struct
+        {
+            unsigned char Vector;
+        } InterruptInfo;
+    };
+    unsigned long raw;
 } __attribute__((packed));
 
 #endif // !__FENNIX_DRIVER_API_H__
