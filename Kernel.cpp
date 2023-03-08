@@ -91,6 +91,10 @@
  *    https://en.wikipedia.org/wiki/Inter-process_communication
  *    https://www.geeksforgeeks.org/inter-process-communication-ipc/
  *
+ * - PCI:
+ *    https://wiki.osdev.org/PCI
+ *    https://en.wikipedia.org/wiki/PCI_configuration_space
+ *
  */
 
 #ifdef a64

@@ -104,6 +104,10 @@ namespace PCI
         uint8_t BIST;
     };
 
+    /**
+     * @brief PCI Header Type 0
+     *
+     */
     struct PCIHeader0
     {
         PCIDeviceHeader Header;
@@ -113,18 +117,80 @@ namespace PCI
         uint32_t BAR3;
         uint32_t BAR4;
         uint32_t BAR5;
-        uint32_t CardbusCISPtr;
+        uint32_t CardbusCISPointer;
         uint16_t SubsystemVendorID;
         uint16_t SubsystemID;
-        uint32_t ExpansionROMBaseAddr;
-        uint8_t CapabilitiesPtr;
-        uint8_t Rsv0;
-        uint16_t Rsv1;
-        uint32_t Rsv2;
+        uint32_t ExpansionROMBaseAddress;
+        uint8_t CapabilitiesPointer;
+        uint8_t Reserved0;
+        uint16_t Reserved1;
+        uint32_t Reserved2;
         uint8_t InterruptLine;
         uint8_t InterruptPin;
         uint8_t MinGrant;
         uint8_t MaxLatency;
+    };
+
+    /**
+     * @brief PCI Header Type 1 (PCI-to-PCI Bridge)
+     */
+    struct PCIHeader1
+    {
+        PCIDeviceHeader Header;
+        uint32_t BAR0;
+        uint32_t BAR1;
+        uint8_t PrimaryBusNumber;
+        uint8_t SecondaryBusNumber;
+        uint8_t SubordinateBusNumber;
+        uint8_t SecondaryLatencyTimer;
+        uint8_t IOBase;
+        uint8_t IOLimit;
+        uint16_t SecondaryStatus;
+        uint16_t MemoryBase;
+        uint16_t MemoryLimit;
+        uint16_t PrefetchableMemoryBase;
+        uint16_t PrefetchableMemoryLimit;
+        uint32_t PrefetchableMemoryBaseUpper32;
+        uint32_t PrefetchableMemoryLimitUpper32;
+        uint16_t IOBaseUpper16;
+        uint16_t IOLimitUpper16;
+        uint8_t CapabilitiesPointer;
+        uint8_t Reserved0;
+        uint16_t Reserved1;
+        uint32_t ExpansionROMBaseAddress;
+        uint8_t InterruptLine;
+        uint8_t InterruptPin;
+        uint16_t BridgeControl;
+    };
+
+    /**
+     * @brief PCI Header Type 2 (PCI-to-CardBus Bridge)
+     */
+    struct PCIHeader2
+    {
+        PCIDeviceHeader Header;
+        uint32_t CardbusSocketRegistersBaseAddress;
+        uint8_t CapabilitiesPointer;
+        uint8_t Reserved0;
+        uint16_t SecondaryStatus;
+        uint8_t PCIbusNumber;
+        uint8_t CardbusBusNumber;
+        uint8_t SubordinateBusNumber;
+        uint8_t CardbusLatencyTimer;
+        uint32_t MemoryBase0;
+        uint32_t MemoryLimit0;
+        uint32_t MemoryBase1;
+        uint32_t MemoryLimit1;
+        uint32_t IOBase0;
+        uint32_t IOLimit0;
+        uint32_t IOBase1;
+        uint32_t IOLimit1;
+        uint8_t InterruptLine;
+        uint8_t InterruptPin;
+        uint16_t BridgeControl;
+        uint16_t SubsystemVendorID;
+        uint16_t SubsystemID;
+        uint32_t LegacyBaseAddress;
     };
 
     struct DeviceConfig

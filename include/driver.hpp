@@ -62,6 +62,7 @@ namespace Driver
         unsigned long DriverUIDs = 0;
         DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
 
+        void MapPCIAddresses(PCI::PCIDeviceHeader *PCIDevice);
         DriverCode BindPCIGeneric(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
         DriverCode BindPCIDisplay(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);
         DriverCode BindPCINetwork(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice);

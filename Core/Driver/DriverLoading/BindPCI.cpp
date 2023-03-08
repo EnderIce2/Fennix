@@ -14,6 +14,119 @@
 
 namespace Driver
 {
+    void Driver::MapPCIAddresses(PCI::PCIDeviceHeader *PCIDevice)
+    {
+        Memory::Virtual vma = Memory::Virtual(nullptr);
+
+        debug("Header Type: %d", PCIDevice->HeaderType);
+        switch (PCIDevice->HeaderType)
+        {
+        case 0: // PCI Header 0
+        {
+            uint32_t BAR[6] = {0};
+            size_t BARsSize[6] = {0};
+
+            BAR[0] = ((PCI::PCIHeader0 *)PCIDevice)->BAR0;
+            BAR[1] = ((PCI::PCIHeader0 *)PCIDevice)->BAR1;
+            BAR[2] = ((PCI::PCIHeader0 *)PCIDevice)->BAR2;
+            BAR[3] = ((PCI::PCIHeader0 *)PCIDevice)->BAR3;
+            BAR[4] = ((PCI::PCIHeader0 *)PCIDevice)->BAR4;
+            BAR[5] = ((PCI::PCIHeader0 *)PCIDevice)->BAR5;
+
+            uintptr_t BAR_Type = BAR[0] & 1;
+            uintptr_t BAR_IOBase = BAR[1] & (~3);
+            uintptr_t BAR_MemoryBase = BAR[0] & (~15);
+
+            debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx", BAR_Type, BAR_IOBase, BAR_MemoryBase);
+
+            for (size_t i = 0; i < 6; i++)
+            {
+                if (BAR[i] == 0)
+                    continue;
+                debug("BAR%d: %#lx", i, BAR[i]);
+            }
+
+            /* BARs Size */
+            for (size_t i = 0; i < 6; i++)
+            {
+                if (BAR[i] == 0)
+                    continue;
+
+                if ((BAR[i] & 1) == 0) // Memory Base
+                {
+                    ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = 0xFFFFFFFF;
+                    size_t size = ((PCI::PCIHeader0 *)PCIDevice)->BAR0;
+                    ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = BAR[i];
+                    BARsSize[i] = size & (~15);
+                    BARsSize[i] = ~BARsSize[i] + 1;
+                    BARsSize[i] = BARsSize[i] & 0xFFFFFFFF;
+                    debug("BAR%dSize: %#lx", i, BARsSize[i]);
+                }
+                else if ((BAR[i] & 1) == 1) // I/O Base
+                {
+                    ((PCI::PCIHeader0 *)PCIDevice)->BAR1 = 0xFFFFFFFF;
+                    size_t size = ((PCI::PCIHeader0 *)PCIDevice)->BAR1;
+                    ((PCI::PCIHeader0 *)PCIDevice)->BAR1 = BAR[i];
+                    BARsSize[i] = size & (~3);
+                    BARsSize[i] = ~BARsSize[i] + 1;
+                    BARsSize[i] = BARsSize[i] & 0xFFFF;
+                    debug("BAR%dSize: %#lx", i, BARsSize[i]);
+                }
+            }
+
+            /* Mapping the BARs */
+            for (size_t i = 0; i < 6; i++)
+            {
+                if (BAR[i] == 0)
+                    continue;
+
+                if ((BAR[i] & 1) == 0) // Memory Base
+                {
+                    uintptr_t BARBase = BAR[i] & (~15);
+                    size_t BARSize = BARsSize[i];
+
+                    debug("Mapping BAR%d from %#lx to %#lx", i, BARBase, BARBase + BARSize);
+                    for (uintptr_t j = BARBase;
+                         j < (BARBase + BARSize);
+                         j += PAGE_SIZE)
+                    {
+                        vma.Map((void *)j, (void *)j, Memory::PTFlag::RW | Memory::PTFlag::PWT);
+                    }
+                }
+                else if ((BAR[i] & 1) == 1) // I/O Base
+                {
+                    uintptr_t BARBase = BAR[i] & (~3);
+                    uintptr_t BARSize = BARsSize[i];
+
+                    debug("Mapping BAR%d from %#x to %#x", i, BARBase, BARBase + BARSize);
+                    for (uintptr_t j = BARBase;
+                         j < (BARBase + BARSize);
+                         j += PAGE_SIZE)
+                    {
+                        vma.Map((void *)j, (void *)j, Memory::PTFlag::RW | Memory::PTFlag::PWT);
+                    }
+                }
+            }
+            break;
+        }
+        case 1: // PCI Header 1 (PCI-to-PCI Bridge)
+        {
+            fixme("PCI Header 1 (PCI-to-PCI Bridge) not implemented yet");
+            break;
+        }
+        case 2: // PCI Header 2 (PCI-to-CardBus Bridge)
+        {
+            fixme("PCI Header 2 (PCI-to-CardBus Bridge) not implemented yet");
+            break;
+        }
+        default:
+        {
+            error("Unknown header type %d", PCIDevice->HeaderType);
+            return;
+        }
+        }
+    }
+
     DriverCode Driver::BindPCIGeneric(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice)
     {
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
@@ -317,31 +430,7 @@ namespace Driver
                     }
                     debug("Starting driver %s", fexExtended->Driver.Name);
 
-                    debug("Type: %d; IOBase: %#x; MemoryBase: %#x",
-                          ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1,
-                          ((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3),
-                          ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15));
-
-                    if ((((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1) != 0)
-                        if (!Memory::Virtual().Check((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3))))
-                        {
-                            debug("IO base (BAR1 & ~3) is not mapped");
-                            Memory::Virtual().Map((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), (void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR1 & (~3)), Memory::PTFlag::RW);
-                        }
-
-                    if ((((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 1) == 0)
-                        if (!Memory::Virtual().Check((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15))))
-                        {
-                            debug("Memory base (BAR0 & ~15) is not mapped");
-                            Memory::Virtual().Map((void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), (void *)(uintptr_t)(((PCI::PCIHeader0 *)PCIDevice)->BAR0 & (~15)), Memory::PTFlag::RW);
-
-                            uintptr_t original = ((PCI::PCIHeader0 *)PCIDevice)->BAR0;
-                            ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = 0xFFFFFFFF;
-                            uintptr_t size = ((PCI::PCIHeader0 *)PCIDevice)->BAR0 & 0xFFFFFFF0;
-                            ((PCI::PCIHeader0 *)PCIDevice)->BAR0 = original;
-                            debug("Size: %#lx (%ld pages)", size, TO_PAGES(size));
-                            fixme("TODO: [BUG] Mapping is broken!!!!!!");
-                        }
+                    MapPCIAddresses(PCIDevice);
 
                     switch (fexExtended->Driver.Type)
                     {
