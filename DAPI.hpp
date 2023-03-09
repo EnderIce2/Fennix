@@ -23,10 +23,13 @@ enum DriverReturnCode
     NOT_AUTHORIZED,
     NOT_VALID,
     NOT_ACCEPTED,
+    INVALID_PCI_BAR,
     INVALID_KERNEL_API,
+    INVALID_MEMORY_ALLOCATION,
+    INVALID_DATA,
     DEVICE_NOT_SUPPORTED,
     SYSTEM_NOT_SUPPORTED,
-    KERNEL_API_VERSION_NOT_SUPPORTED
+    KERNEL_API_VERSION_NOT_SUPPORTED,
 };
 
 enum DriverBindType
@@ -73,6 +76,8 @@ struct KernelAPI
         void (*DisplayPrint)(char *Value);
         void *(*memcpy)(void *Destination, void *Source, unsigned long Size);
         void *(*memset)(void *Destination, int Value, unsigned long Size);
+        void (*Sleep)(unsigned long Milliseconds);
+        int (*sprintf)(char *Buffer, const char *Format, ...);
     } Util;
 
     struct KAPIDriverTalk
@@ -105,18 +110,78 @@ struct KernelAPI
 
 enum CallbackReason
 {
+    /**
+     * @brief This is used to detect memory corruption, not used.
+     */
     UnknownReason,
+
+    /**
+     * @brief This is called once the kernel is ready to use the driver and call @see ConfigurationReason .
+     */
     AcknowledgeReason,
-    SendReason,
-    ReceiveReason,
+
+    /**
+     * @brief This is used after the driver is loaded and the kernel is ready to use the driver.
+     *
+     * For PCI drivers, @see RawPtr will be the PCI device address.
+     */
     ConfigurationReason,
-    FetchReason,
-    StopReason,
-    BindReason,
-    UnbindReason,
+
+    /**
+     * @brief This will be called when the registered interrupt is triggered.
+     */
     InterruptReason,
+
+    /**
+     * @brief This is used when the kernel wants to stop the driver.
+     *
+     * The memory allocated by the driver will be freed automatically.
+     */
+    StopReason,
+
     ProcessReason,
     InputReason,
+
+    /* Kernel reserved callbacks. */
+    /* ------------------------------------------------------- */
+    /* Driver callbacks for basic usage. */
+
+    /**
+     * @brief This is used when the kernel sends data.
+     *
+     * - Network
+     *   - Packet
+     * - Audio
+     *   - PCM Data
+     */
+    SendReason,
+
+    /**
+     * @brief This is used when the kernel wants to receive data.
+     * Currently not used.
+     */
+    ReceiveReason,
+
+    /**
+     * @brief This is used to adjust driver settings.
+     *
+     * - Audio
+     *   - Volume
+     *   - PCM Encoding
+     */
+    AdjustReason,
+
+    /**
+     * @brief This is used when the kernel wants to fetch information about the driver.
+     *
+     * - Input
+     *   - Mouse
+     *     - Position
+     *     - Buttons
+     *   - Keyboard
+     *     - Key
+     */
+    FetchReason,
 };
 
 union KernelCallback
@@ -178,6 +243,103 @@ union KernelCallback
                 } Buttons;
             } Mouse;
         } InputCallback;
+
+        struct
+        {
+            struct
+            {
+                bool _Volume;
+                bool _Encoding;
+                bool _SampleRate;
+                bool _Channels;
+
+                /**
+                 * @brief Adjust the volume.
+                 *
+                 * 0 - 100
+                 * @note It may be measured in decibels.
+                 */
+                unsigned char Volume;
+
+                /**
+                 * @brief Adjust the encoding.
+                 * 
+                 * 0 - None, use default
+                 *
+                 * 1 - Signed PCM 8-bit
+                 * 2 - Unsigned PCM 8-bit
+                 *
+                 * 3 - Signed PCM 16-bit Little Endian
+                 * 4 - Signed PCM 20-bit Little Endian
+                 * 5 - Signed PCM 24-bit Little Endian
+                 * 6 - Signed PCM 32-bit Little Endian
+                 *
+                 * 7 - Unsigned PCM 16-bit Little Endian
+                 * 8 - Unsigned PCM 20-bit Little Endian
+                 * 9 - Unsigned PCM 24-bit Little Endian
+                 * 10 - Unsigned PCM 32-bit Little Endian
+                 *
+                 * 11 - Signed PCM 16-bit Big Endian
+                 * 12 - Signed PCM 20-bit Big Endian
+                 * 13 - Signed PCM 24-bit Big Endian
+                 * 14 - Signed PCM 32-bit Big Endian
+                 *
+                 * 15 - Unsigned PCM 16-bit Big Endian
+                 * 16 - Unsigned PCM 20-bit Big Endian
+                 * 17 - Unsigned PCM 24-bit Big Endian
+                 * 18 - Unsigned PCM 32-bit Big Endian
+                 *
+                 * 19 - Float PCM 32-bit Little Endian
+                 * 20 - Float PCM 64-bit Little Endian
+                 *
+                 * 21 - Float PCM 32-bit Big Endian
+                 * 22 - Float PCM 64-bit Big Endian
+                 * 
+                 * 23 - PCM A-law
+                 * 24 - PCM Mu-law
+                 * 
+                 * ... - More
+                 */
+                unsigned short Encoding;
+
+                /**
+                 * @brief Adjust the sample rate.
+                 *
+                 * 0 - 8000 Hz
+                 * 1 - 11025 Hz
+                 * 2 - 16000 Hz
+                 * 3 - 22050 Hz
+                 * 4 - 32000 Hz
+                 * 5 - 44100 Hz
+                 * 6 - 48000 Hz
+                 * 7 - 88200 Hz
+                 * 8 - 96000 Hz
+                 */
+                unsigned char SampleRate;
+
+                /**
+                 * @brief Adjust the channels.
+                 *
+                 * 0 - Mono
+                 * 1 - Stereo
+                 */
+                unsigned char Channels;
+            } Adjust;
+        
+            struct
+            {
+                unsigned char *Data;
+                unsigned long Length;
+            } Send;
+
+            struct
+            {
+                unsigned char Volume;
+                unsigned short Encoding;
+                unsigned char SampleRate;
+                unsigned char Channels;
+            } Fetch;
+        } AudioCallback;
 
         struct
         {
