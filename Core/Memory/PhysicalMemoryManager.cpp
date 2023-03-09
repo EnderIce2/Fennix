@@ -140,7 +140,7 @@ namespace Memory
     {
         if (unlikely(Address == nullptr || Count == 0))
         {
-            warn("%s%s passed to FreePages.", Address == nullptr ? "Null pointer" : "", Count == 0 ? "Zero count" : "");
+            warn("%s%s%s passed to FreePages.", Address == nullptr ? "Null pointer " : "", Address == nullptr && Count == 0 ? "and " : "", Count == 0 ? "Zero count" : "");
             return;
         }
 
