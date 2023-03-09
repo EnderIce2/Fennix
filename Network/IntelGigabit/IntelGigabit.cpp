@@ -192,7 +192,7 @@ TXDescriptor *TX[E1000_NUM_TX_DESC];
 MediaAccessControl MAC;
 InternetProtocol4 IP;
 
-void OutCMD(uint16_t Address, uint32_t Value)
+void WriteCMD(uint16_t Address, uint32_t Value)
 {
     if (BAR.Type == 0)
         mmioout32(BAR.MemoryBase + Address, Value);
@@ -203,7 +203,7 @@ void OutCMD(uint16_t Address, uint32_t Value)
     }
 }
 
-uint32_t InCMD(uint16_t Address)
+uint32_t ReadCMD(uint16_t Address)
 {
     if (BAR.Type == 0)
         return mmioin32(BAR.MemoryBase + Address);
@@ -220,14 +220,14 @@ uint32_t ReadEEPROM(uint8_t Address)
     uint32_t temp = 0;
     if (EEPROMAvailable)
     {
-        OutCMD(REG::EEPROM, (1) | ((uint32_t)(Address) << 8));
-        while (!((temp = InCMD(REG::EEPROM)) & (1 << 4)))
+        WriteCMD(REG::EEPROM, (1) | ((uint32_t)(Address) << 8));
+        while (!((temp = ReadCMD(REG::EEPROM)) & (1 << 4)))
             ;
     }
     else
     {
-        OutCMD(REG::EEPROM, (1) | ((uint32_t)(Address) << 2));
-        while (!((temp = InCMD(REG::EEPROM)) & (1 << 1)))
+        WriteCMD(REG::EEPROM, (1) | ((uint32_t)(Address) << 2));
+        while (!((temp = ReadCMD(REG::EEPROM)) & (1 << 1)))
             ;
     }
     Data = (uint16_t)((temp >> 16) & 0xFFFF);
@@ -279,18 +279,18 @@ void InitializeRX()
         RX[i]->Status = 0;
     }
 
-    OutCMD(REG::TXDESCLO, (uint32_t)((uint64_t)Ptr >> 32));
-    OutCMD(REG::TXDESCHI, (uint32_t)((uint64_t)Ptr & 0xFFFFFFFF));
+    WriteCMD(REG::TXDESCLO, (uint32_t)((uint64_t)Ptr >> 32));
+    WriteCMD(REG::TXDESCHI, (uint32_t)((uint64_t)Ptr & 0xFFFFFFFF));
 
-    OutCMD(REG::RXDESCLO, (uint64_t)Ptr);
-    OutCMD(REG::RXDESCHI, 0);
+    WriteCMD(REG::RXDESCLO, (uint64_t)Ptr);
+    WriteCMD(REG::RXDESCHI, 0);
 
-    OutCMD(REG::RXDESCLEN, E1000_NUM_RX_DESC * 16);
+    WriteCMD(REG::RXDESCLEN, E1000_NUM_RX_DESC * 16);
 
-    OutCMD(REG::RXDESCHEAD, 0);
-    OutCMD(REG::RXDESCTAIL, E1000_NUM_RX_DESC - 1);
+    WriteCMD(REG::RXDESCHEAD, 0);
+    WriteCMD(REG::RXDESCTAIL, E1000_NUM_RX_DESC - 1);
     RXCurrent = 0;
-    OutCMD(REG::RCTRL, RCTL::EN | RCTL::SBP | RCTL::UPE | RCTL::MPE | RCTL::LBM_NONE | RTCL::RDMTS_HALF | RCTL::BAM | RCTL::SECRC | RCTL::BSIZE_8192);
+    WriteCMD(REG::RCTRL, RCTL::EN | RCTL::SBP | RCTL::UPE | RCTL::MPE | RCTL::LBM_NONE | RTCL::RDMTS_HALF | RCTL::BAM | RCTL::SECRC | RCTL::BSIZE_8192);
 }
 
 void InitializeTX()
@@ -307,18 +307,18 @@ void InitializeTX()
         TX[i]->Status = TSTA::DD;
     }
 
-    OutCMD(REG::TXDESCHI, (uint32_t)((uint64_t)Ptr >> 32));
-    OutCMD(REG::TXDESCLO, (uint32_t)((uint64_t)Ptr & 0xFFFFFFFF));
+    WriteCMD(REG::TXDESCHI, (uint32_t)((uint64_t)Ptr >> 32));
+    WriteCMD(REG::TXDESCLO, (uint32_t)((uint64_t)Ptr & 0xFFFFFFFF));
 
-    OutCMD(REG::TXDESCLEN, E1000_NUM_TX_DESC * 16);
+    WriteCMD(REG::TXDESCLEN, E1000_NUM_TX_DESC * 16);
 
-    OutCMD(REG::TXDESCHEAD, 0);
-    OutCMD(REG::TXDESCTAIL, 0);
+    WriteCMD(REG::TXDESCHEAD, 0);
+    WriteCMD(REG::TXDESCTAIL, 0);
     TXCurrent = 0;
-    OutCMD(REG::TCTRL, TCTL::EN_ | TCTL::PSP | (15 << TCTL::CT_SHIFT) | (64 << TCTL::COLD_SHIFT) | TCTL::RTLC);
+    WriteCMD(REG::TCTRL, TCTL::EN_ | TCTL::PSP | (15 << TCTL::CT_SHIFT) | (64 << TCTL::COLD_SHIFT) | TCTL::RTLC);
 
-    OutCMD(REG::TCTRL, 0b0110000000000111111000011111010);
-    OutCMD(REG::TIPG, 0x0060200A);
+    WriteCMD(REG::TCTRL, 0b0110000000000111111000011111010);
+    WriteCMD(REG::TIPG, 0x0060200A);
 }
 
 int DriverEntry(void *Data)
@@ -359,9 +359,9 @@ int CallbackHandler(KernelCallback *Data)
             BAR.MemoryBase = PCIBAR0 & (~15);
 
             // Detect EEPROM
-            OutCMD(REG::EEPROM, 0x1);
+            WriteCMD(REG::EEPROM, 0x1);
             for (int i = 0; i < 1000 && !EEPROMAvailable; i++)
-                if (InCMD(REG::EEPROM) & 0x10)
+                if (ReadCMD(REG::EEPROM) & 0x10)
                     EEPROMAvailable = true;
                 else
                     EEPROMAvailable = false;
@@ -374,15 +374,15 @@ int CallbackHandler(KernelCallback *Data)
             MAC = GetMAC();
 
             // Start link
-            uint32_t cmdret = InCMD(REG::CTRL);
-            OutCMD(REG::CTRL, cmdret | ECTRL::SLU);
+            uint32_t cmdret = ReadCMD(REG::CTRL);
+            WriteCMD(REG::CTRL, cmdret | ECTRL::SLU);
 
             for (int i = 0; i < 0x80; i++)
-                OutCMD(0x5200 + i * 4, 0);
+                WriteCMD(0x5200 + i * 4, 0);
 
-            OutCMD(REG::IMASK, 0x1F6DC);
-            OutCMD(REG::IMASK, 0xFF & ~4);
-            InCMD(0xC0);
+            WriteCMD(REG::IMASK, 0x1F6DC);
+            WriteCMD(REG::IMASK, 0xFF & ~4);
+            ReadCMD(0xC0);
 
             InitializeRX();
             InitializeTX();
@@ -400,9 +400,9 @@ int CallbackHandler(KernelCallback *Data)
             BAR.MemoryBase = PCIBAR0 & (~15);
 
             // Detect EEPROM
-            OutCMD(REG::EEPROM, 0x1);
+            WriteCMD(REG::EEPROM, 0x1);
             for (int i = 0; i < 1000 && !EEPROMAvailable; i++)
-                if (InCMD(REG::EEPROM) & 0x10)
+                if (ReadCMD(REG::EEPROM) & 0x10)
                     EEPROMAvailable = true;
                 else
                     EEPROMAvailable = false;
@@ -429,9 +429,9 @@ int CallbackHandler(KernelCallback *Data)
             BAR.MemoryBase = PCIBAR0 & (~15);
 
             // Detect EEPROM
-            OutCMD(REG::EEPROM, 0x1);
+            WriteCMD(REG::EEPROM, 0x1);
             for (int i = 0; i < 1000 && !EEPROMAvailable; i++)
-                if (InCMD(REG::EEPROM) & 0x10)
+                if (ReadCMD(REG::EEPROM) & 0x10)
                     EEPROMAvailable = true;
                 else
                     EEPROMAvailable = false;
@@ -471,8 +471,8 @@ int CallbackHandler(KernelCallback *Data)
     }
     case InterruptReason:
     {
-        OutCMD(REG::IMASK, 0x1);
-        uint32_t status = InCMD(0xC0);
+        WriteCMD(REG::IMASK, 0x1);
+        uint32_t status = ReadCMD(0xC0);
         UNUSED(status);
 
         while ((RX[RXCurrent]->Status & 0x1))
@@ -483,7 +483,7 @@ int CallbackHandler(KernelCallback *Data)
             RX[RXCurrent]->Status = 0;
             uint16_t OldRXCurrent = RXCurrent;
             RXCurrent = (RXCurrent + 1) % E1000_NUM_RX_DESC;
-            OutCMD(REG::RXDESCTAIL, OldRXCurrent);
+            WriteCMD(REG::RXDESCTAIL, OldRXCurrent);
         }
         break;
     }
@@ -495,7 +495,7 @@ int CallbackHandler(KernelCallback *Data)
         TX[TXCurrent]->Status = 0;
         uint8_t OldTXCurrent = TXCurrent;
         TXCurrent = (TXCurrent + 1) % E1000_NUM_TX_DESC;
-        OutCMD(REG::TXDESCTAIL, TXCurrent);
+        WriteCMD(REG::TXDESCTAIL, TXCurrent);
         while (!(TX[OldTXCurrent]->Status & 0xFF))
             ;
         break;
@@ -503,23 +503,23 @@ int CallbackHandler(KernelCallback *Data)
     case StopReason:
     {
         // Clearing Enable bit in Receive Control Register
-        uint64_t cmdret = InCMD(REG::RCTRL);
-        OutCMD(REG::RCTRL, cmdret & ~RCTL::EN);
+        uint64_t cmdret = ReadCMD(REG::RCTRL);
+        WriteCMD(REG::RCTRL, cmdret & ~RCTL::EN);
 
         // Masking Interrupt Mask, Interrupt Throttling Rate & Interrupt Auto-Mask
-        OutCMD(REG::IMASK, 0x00000000);
-        OutCMD(REG::ITR, 0x00000000);
-        OutCMD(REG::IAM, 0x00000000);
+        WriteCMD(REG::IMASK, 0x00000000);
+        WriteCMD(REG::ITR, 0x00000000);
+        WriteCMD(REG::IAM, 0x00000000);
 
         // Clearing SLU bit in Device Control Register
-        cmdret = InCMD(REG::CTRL);
-        OutCMD(REG::CTRL, cmdret & ~ECTRL::SLU);
+        cmdret = ReadCMD(REG::CTRL);
+        WriteCMD(REG::CTRL, cmdret & ~ECTRL::SLU);
 
         // Clear the Interrupt Cause Read register by reading it
-        InCMD(REG::ICR);
+        ReadCMD(REG::ICR);
 
         // Powering down the device (?)
-        OutCMD(REG::CTRL, PCTRL::POWER_DOWN);
+        WriteCMD(REG::CTRL, PCTRL::POWER_DOWN);
         /* TODO: Stop link; further testing required */
         print("Driver stopped.");
         break;
