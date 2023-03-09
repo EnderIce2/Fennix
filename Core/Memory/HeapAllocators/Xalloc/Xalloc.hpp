@@ -8,6 +8,7 @@
 typedef long unsigned Xuint64_t;
 typedef long unsigned Xsize_t;
 
+#define Xalloc_StopOnFail true
 #define Xalloc_PAGE_SIZE PAGE_SIZE
 #define Xalloc_trace(m, ...) trace(m, ##__VA_ARGS__)
 #define Xalloc_warn(m, ...) warn(m, ##__VA_ARGS__)

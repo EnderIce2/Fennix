@@ -150,7 +150,10 @@ namespace Xalloc
         {
             if (!CurrentBlock->Check())
             {
-                Xalloc_err("Block %#lx checksum failed!", (Xuint64_t)CurrentBlock);
+                Xalloc_err("Block %#lx has an invalid checksum! (%#x != %#x)",
+                           (Xuint64_t)CurrentBlock, CurrentBlock->Checksum, Xalloc_BlockChecksum);
+                while (Xalloc_StopOnFail)
+                    ;
             }
             else if (CurrentBlock->IsFree && CurrentBlock->Size >= Size)
             {
@@ -190,6 +193,8 @@ namespace Xalloc
             if (!CurrentBlock->Check())
             {
                 Xalloc_err("Block %#lx checksum failed!", (Xuint64_t)CurrentBlock);
+                while (Xalloc_StopOnFail)
+                    ;
             }
             else if (CurrentBlock->Address == Address)
             {
