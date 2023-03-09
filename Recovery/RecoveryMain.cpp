@@ -1,14 +1,19 @@
 #include <recovery.hpp>
 #include <task.hpp>
+#include <lock.hpp>
 #include <gui.hpp>
 #include <debug.h>
 
 #include "../kernel.h"
+#include "../Fex.hpp"
+#include "../DAPI.hpp"
 
 using Tasking::IP;
 using Tasking::PCB;
 using Tasking::TaskTrustLevel;
 using Tasking::TCB;
+using VirtualFileSystem::File;
+using VirtualFileSystem::FileStatus;
 using namespace GraphicalUserInterface;
 
 #ifdef DEBUG
@@ -18,10 +23,97 @@ extern uint64_t FIi, PDi, PWi, PWWi, PCi, mmi;
 extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start;
 extern uintptr_t _binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end;
 
+NewLock(PlayAudioLock);
+
 namespace Recovery
 {
     WidgetCollection *wdgDbgWin = nullptr;
     Window *DbgWin = nullptr;
+
+    char *AudioFile = (char *)"/home/default/Music/pcm/FurElise48000.pcm";
+
+    void PlayAudio()
+    {
+        SmartLock(PlayAudioLock);
+        Driver::DriverFile *AudioDrv = nullptr;
+
+        foreach (auto Driver in DriverManager->GetDrivers())
+        {
+            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            {
+                AudioDrv = Driver;
+                break;
+            }
+        }
+
+        if (AudioDrv == nullptr)
+        {
+            error("No audio drivers found! Cannot play audio!");
+            return;
+        }
+
+        shared_ptr<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
+
+        if (pcm->Status != FileStatus::OK)
+        {
+            error("Cannot open audio file! Cannot play audio!");
+            return;
+        }
+
+        void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length));
+        memcpy(PCMRaw, (void *)pcm->node->Address, pcm->node->Length);
+
+        KernelCallback *callback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
+        memset(callback, 0, sizeof(KernelCallback));
+        callback->Reason = SendReason;
+        callback->AudioCallback.Send.Data = (uint8_t *)PCMRaw;
+        callback->AudioCallback.Send.Length = pcm->node->Length;
+        debug("Playing audio...");
+        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)callback);
+        debug("Audio played! %d", status);
+        KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
+        KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
+    }
+
+    void PlayAudioWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)PlayAudio)->SetPriority(Tasking::TaskPriority::Idle); }
+
+    void ChangeSampleRate(char SR)
+    {
+        Driver::DriverFile *AudioDrv = nullptr;
+
+        foreach (auto Driver in DriverManager->GetDrivers())
+        {
+            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            {
+                AudioDrv = Driver;
+                break;
+            }
+        }
+
+        if (AudioDrv == nullptr)
+        {
+            error("No audio drivers found! Cannot play audio!");
+            return;
+        }
+
+        KernelCallback *callback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
+        memset(callback, 0, sizeof(KernelCallback));
+        callback->Reason = AdjustReason;
+        callback->AudioCallback.Adjust._SampleRate = true;
+        callback->AudioCallback.Adjust.SampleRate = SR;
+        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)callback);
+        KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
+    }
+
+    void CSR8000() { ChangeSampleRate(0); }
+    void CSR11025() { ChangeSampleRate(1); }
+    void CSR16000() { ChangeSampleRate(2); }
+    void CSR22050() { ChangeSampleRate(3); }
+    void CSR32000() { ChangeSampleRate(4); }
+    void CSR44100() { ChangeSampleRate(5); }
+    void CSR48000() { ChangeSampleRate(6); }
+    void CSR88200() { ChangeSampleRate(7); }
+    void CSR96000() { ChangeSampleRate(8); }
 
     void KernelRecovery::RecoveryThread()
     {
@@ -39,6 +131,18 @@ namespace Recovery
         GraphicalUserInterface::Handle GUI1LblHnd = wdgDbgWin->CreateLabel({5, 125, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
         wdgDbgWin->CreateLabel({5, 140, 0, 0}, "  Paint Windows  /   Paint Cursor   / Memset & Update");
         GraphicalUserInterface::Handle GUI2LblHnd = wdgDbgWin->CreateLabel({5, 155, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
+
+        wdgDbgWin->CreateLabel({5, 195, 0, 0}, "Audio");
+        wdgDbgWin->CreateButton({5, 210, 85, 15}, "Play Audio", (uintptr_t)PlayAudioWrapper);
+        wdgDbgWin->CreateButton({95, 210, 70, 15}, "8000 Hz", (uintptr_t)CSR8000);
+        wdgDbgWin->CreateButton({185, 210, 70, 15}, "11025 Hz", (uintptr_t)CSR11025);
+        wdgDbgWin->CreateButton({275, 210, 70, 15}, "16000 Hz", (uintptr_t)CSR16000);
+        wdgDbgWin->CreateButton({365, 210, 70, 15}, "22050 Hz", (uintptr_t)CSR22050);
+        wdgDbgWin->CreateButton({5, 230, 70, 15}, "32000 Hz", (uintptr_t)CSR32000);
+        wdgDbgWin->CreateButton({95, 230, 70, 15}, "44100 Hz", (uintptr_t)CSR44100);
+        wdgDbgWin->CreateButton({185, 230, 70, 15}, "48000 Hz", (uintptr_t)CSR48000);
+        wdgDbgWin->CreateButton({275, 230, 70, 15}, "88200 Hz", (uintptr_t)CSR88200);
+        wdgDbgWin->CreateButton({365, 230, 70, 15}, "96000 Hz", (uintptr_t)CSR96000);
 
         DbgWin->AddWidget(wdgDbgWin);
 
@@ -130,8 +234,8 @@ namespace Recovery
         RecWin->AddWidget(wdgRecWin);
 
         Rect DebugWindow;
-        DebugWindow.Width = 390;
-        DebugWindow.Height = 190;
+        DebugWindow.Width = 460;
+        DebugWindow.Height = 305;
         DebugWindow.Left = 5;
         DebugWindow.Top = 25;
         DbgWin = new Window(gui, DebugWindow, "Debug");
