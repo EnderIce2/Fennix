@@ -63,16 +63,15 @@ namespace Recovery
         void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length));
         memcpy(PCMRaw, (void *)pcm->node->Address, pcm->node->Length);
 
-        KernelCallback *callback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
-        memset(callback, 0, sizeof(KernelCallback));
-        callback->Reason = SendReason;
-        callback->AudioCallback.Send.Data = (uint8_t *)PCMRaw;
-        callback->AudioCallback.Send.Length = pcm->node->Length;
+        KernelCallback callback;
+        memset(&callback, 0, sizeof(KernelCallback));
+        callback.Reason = SendReason;
+        callback.AudioCallback.Send.Data = (uint8_t *)PCMRaw;
+        callback.AudioCallback.Send.Length = pcm->node->Length;
         debug("Playing audio...");
-        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)callback);
+        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
-        KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
     }
 
     void PlayAudioWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)PlayAudio)->SetPriority(Tasking::TaskPriority::Idle); }
@@ -96,13 +95,13 @@ namespace Recovery
             return;
         }
 
-        KernelCallback *callback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
-        memset(callback, 0, sizeof(KernelCallback));
-        callback->Reason = AdjustReason;
-        callback->AudioCallback.Adjust._SampleRate = true;
-        callback->AudioCallback.Adjust.SampleRate = SR;
-        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)callback);
-        KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
+        KernelCallback callback;
+        memset(&callback, 0, sizeof(KernelCallback));
+        callback.Reason = AdjustReason;
+        callback.AudioCallback.Adjust._SampleRate = true;
+        callback.AudioCallback.Adjust.SampleRate = SR;
+        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
+        debug("Sample rate changed! %d", status);
     }
 
     void CSR8000() { ChangeSampleRate(0); }
@@ -114,6 +113,46 @@ namespace Recovery
     void CSR48000() { ChangeSampleRate(6); }
     void CSR88200() { ChangeSampleRate(7); }
     void CSR96000() { ChangeSampleRate(8); }
+
+    void ChangeVolume(int percentage)
+    {
+        Driver::DriverFile *AudioDrv = nullptr;
+
+        foreach (auto Driver in DriverManager->GetDrivers())
+        {
+            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            {
+                AudioDrv = Driver;
+                break;
+            }
+        }
+
+        if (AudioDrv == nullptr)
+        {
+            error("No audio drivers found! Cannot play audio!");
+            return;
+        }
+
+        KernelCallback callback;
+        memset(&callback, 0, sizeof(KernelCallback));
+        callback.Reason = AdjustReason;
+        callback.AudioCallback.Adjust._Volume = true;
+        callback.AudioCallback.Adjust.Volume = percentage;
+        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
+        debug("Volume changed! %d", status);
+    }
+
+    void CV0() { ChangeVolume(0); }
+    void CV10() { ChangeVolume(10); }
+    void CV20() { ChangeVolume(20); }
+    void CV30() { ChangeVolume(30); }
+    void CV40() { ChangeVolume(40); }
+    void CV50() { ChangeVolume(50); }
+    void CV60() { ChangeVolume(60); }
+    void CV70() { ChangeVolume(70); }
+    void CV80() { ChangeVolume(80); }
+    void CV90() { ChangeVolume(90); }
+    void CV100() { ChangeVolume(100); }
 
     void KernelRecovery::RecoveryThread()
     {
@@ -134,15 +173,30 @@ namespace Recovery
 
         wdgDbgWin->CreateLabel({5, 195, 0, 0}, "Audio");
         wdgDbgWin->CreateButton({5, 210, 85, 15}, "Play Audio", (uintptr_t)PlayAudioWrapper);
-        wdgDbgWin->CreateButton({95, 210, 70, 15}, "8000 Hz", (uintptr_t)CSR8000);
-        wdgDbgWin->CreateButton({185, 210, 70, 15}, "11025 Hz", (uintptr_t)CSR11025);
-        wdgDbgWin->CreateButton({275, 210, 70, 15}, "16000 Hz", (uintptr_t)CSR16000);
-        wdgDbgWin->CreateButton({365, 210, 70, 15}, "22050 Hz", (uintptr_t)CSR22050);
-        wdgDbgWin->CreateButton({5, 230, 70, 15}, "32000 Hz", (uintptr_t)CSR32000);
-        wdgDbgWin->CreateButton({95, 230, 70, 15}, "44100 Hz", (uintptr_t)CSR44100);
-        wdgDbgWin->CreateButton({185, 230, 70, 15}, "48000 Hz", (uintptr_t)CSR48000);
-        wdgDbgWin->CreateButton({275, 230, 70, 15}, "88200 Hz", (uintptr_t)CSR88200);
-        wdgDbgWin->CreateButton({365, 230, 70, 15}, "96000 Hz", (uintptr_t)CSR96000);
+
+        wdgDbgWin->CreateLabel({5, 235, 0, 0}, "Sample Rate");
+        wdgDbgWin->CreateButton({5, 250, 45, 15}, "8000", (uintptr_t)CSR8000);
+        wdgDbgWin->CreateButton({55, 250, 45, 15}, "11025", (uintptr_t)CSR11025);
+        wdgDbgWin->CreateButton({105, 250, 45, 15}, "16000", (uintptr_t)CSR16000);
+        wdgDbgWin->CreateButton({155, 250, 45, 15}, "22050", (uintptr_t)CSR22050);
+        wdgDbgWin->CreateButton({205, 250, 45, 15}, "32000", (uintptr_t)CSR32000);
+        wdgDbgWin->CreateButton({255, 250, 45, 15}, "44100", (uintptr_t)CSR44100);
+        wdgDbgWin->CreateButton({305, 250, 45, 15}, "48000", (uintptr_t)CSR48000);
+        wdgDbgWin->CreateButton({355, 250, 45, 15}, "88200", (uintptr_t)CSR88200);
+        wdgDbgWin->CreateButton({405, 250, 45, 15}, "96000", (uintptr_t)CSR96000);
+
+        wdgDbgWin->CreateLabel({5, 250, 0, 0}, "Volume");
+        wdgDbgWin->CreateButton({5, 265, 25, 15}, "0%", (uintptr_t)CV0);
+        wdgDbgWin->CreateButton({35, 265, 25, 15}, "10%", (uintptr_t)CV10);
+        wdgDbgWin->CreateButton({65, 265, 25, 15}, "20%", (uintptr_t)CV20);
+        wdgDbgWin->CreateButton({95, 265, 25, 15}, "30%", (uintptr_t)CV30);
+        wdgDbgWin->CreateButton({125, 265, 25, 15}, "40%", (uintptr_t)CV40);
+        wdgDbgWin->CreateButton({155, 265, 25, 15}, "50%", (uintptr_t)CV50);
+        wdgDbgWin->CreateButton({185, 265, 25, 15}, "60%", (uintptr_t)CV60);
+        wdgDbgWin->CreateButton({215, 265, 25, 15}, "70%", (uintptr_t)CV70);
+        wdgDbgWin->CreateButton({245, 265, 25, 15}, "80%", (uintptr_t)CV80);
+        wdgDbgWin->CreateButton({275, 265, 25, 15}, "90%", (uintptr_t)CV90);
+        wdgDbgWin->CreateButton({305, 265, 25, 15}, "100%", (uintptr_t)CV100);
 
         DbgWin->AddWidget(wdgDbgWin);
 
@@ -163,7 +217,7 @@ namespace Recovery
                 int MemPercent = (MemUsed * 100) / MemTotal;
                 sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %d%%", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent);
                 wdgDbgWin->SetText(MemLblHnd, TicksText);
-                RefreshMemCounter = 50;
+                RefreshMemCounter = 25;
             }
             sprintf(TicksText, "Debug - %ldx%ld", DbgWin->GetPosition().Width, DbgWin->GetPosition().Height);
             DbgWin->SetTitle(TicksText);
