@@ -30,9 +30,10 @@ namespace Driver
 
     void Driver::UnloadAllDrivers()
     {
-        debug("%ld drivers loaded, [DUIDs: %ld]", Drivers.size(), DriverUIDs);
-        debug("driver size %ld", Drivers.size());
-        for (size_t i = 0; i < Drivers.size(); i++)
+        size_t DriversNum = Drivers.size();
+        debug("%ld drivers loaded, [DUIDs: %ld]", DriversNum, DriverUIDs);
+        debug("driver size %ld", DriversNum);
+        for (size_t i = 0; i < DriversNum; i++)
         {
             DriverFile *drv = Drivers[i];
             KernelCallback callback;
@@ -41,11 +42,11 @@ namespace Driver
             DriverManager->IOCB(drv->DriverUID, (void *)&callback);
 
             delete drv->MemTrk;
-            for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+            for (size_t j = 0; j < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); j++)
             {
-                if (!drv->InterruptHook[i])
+                if (!drv->InterruptHook[j])
                     continue;
-                delete drv->InterruptHook[i];
+                delete drv->InterruptHook[j];
             }
             Drivers.remove(i);
         }

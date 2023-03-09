@@ -137,8 +137,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -148,6 +152,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -166,8 +181,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -177,6 +196,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -195,8 +225,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -206,6 +240,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -258,8 +303,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -269,6 +318,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -312,8 +372,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -323,6 +387,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -341,8 +416,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -352,6 +431,17 @@ namespace Driver
                     error("Failed to unload conflicting driver %d", DrvID);
                     return DriverCode::DRIVER_CONFLICT;
                 }
+            }
+        }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
             }
         }
 
@@ -370,8 +460,12 @@ namespace Driver
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
                     return DriverCode::DRIVER_CONFLICT;
+
+                DriversToRemove.push_back(Drv->DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -383,10 +477,50 @@ namespace Driver
                 }
             }
         }
+        else
+        {
+            foreach (auto Drv in Drivers)
+            {
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-        fixme("Audio driver: %s", fexExtended->Driver.Name);
-        delete mem;
-        return DriverCode::NOT_IMPLEMENTED;
+                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
+                if (fe->Driver.OverrideOnConflict)
+                    return DriverCode::DRIVER_CONFLICT;
+            }
+        }
+
+        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+
+        DriverInterruptHook *InterruptHook = new DriverInterruptHook(((int)((PCI::PCIHeader0 *)PCIDevice)->InterruptLine) + 32, // x86
+                                                                     (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
+                                                                     KCallback);
+
+        KCallback->RawPtr = PCIDevice;
+        KCallback->Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
+        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
+        {
+            error("Driver %s is not implemented", fexExtended->Driver.Name);
+            delete mem;
+            return DriverCode::NOT_IMPLEMENTED;
+        }
+        else if (CallbackRet == DriverReturnCode::OK)
+            trace("Device found for driver: %s", fexExtended->Driver.Name);
+        else
+        {
+            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
+            delete mem;
+            return DriverCode::DRIVER_RETURNED_ERROR;
+        }
+
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->MemTrk = mem;
+        DrvFile->InterruptHook[0] = InterruptHook;
+        Drivers.push_back(DrvFile);
+        return DriverCode::OK;
     }
 
     DriverCode Driver::DriverLoadBindPCI(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)

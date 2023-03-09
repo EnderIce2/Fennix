@@ -95,6 +95,12 @@
  *    https://wiki.osdev.org/PCI
  *    https://en.wikipedia.org/wiki/PCI_configuration_space
  *
+ * - Audio:
+ *   https://trac.ffmpeg.org/wiki/audio%20types
+ *   https://wiki.osdev.org/AC97
+ *   https://github.com/LemonOSProject/LemonOS
+ *   https://inst.eecs.berkeley.edu//~cs150/Documents/ac97_r23.pdf
+ *
  */
 
 #ifdef a64
