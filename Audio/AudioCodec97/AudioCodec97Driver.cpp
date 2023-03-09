@@ -137,9 +137,9 @@ int CallbackHandler(KernelCallback *Data)
     {
         if (Data->AudioCallback.Adjust._Volume)
         {
-            Volume = Data->AudioCallback.Adjust.Volume;
+            Volume = 0x3F - (0x3F * Data->AudioCallback.Adjust.Volume / 100);
             outw(BAR.MixerAddress + NAM_MasterVolume, MixerVolume(Volume, Volume, Mute));
-            outw(BAR.MixerAddress + NAM_PCMOutVolume, MixerVolume(Volume, Volume, Mute));
+            // outw(BAR.MixerAddress + NAM_PCMOutVolume, MixerVolume(Volume, Volume, Mute));
         }
         else if (Data->AudioCallback.Adjust._Encoding)
         {
@@ -228,7 +228,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case FetchReason:
     {
-        Data->AudioCallback.Fetch.Volume = Volume;
+        Data->AudioCallback.Fetch.Volume = (inw(BAR.MixerAddress + NAM_MasterVolume) & 0x3F) * 100 / 0x3F;
         Data->AudioCallback.Fetch.Encoding = Encoding; /* FIXME */
         Data->AudioCallback.Fetch.SampleRate = SampleRate;
         Data->AudioCallback.Fetch.Channels = Channels;
