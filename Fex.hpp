@@ -45,6 +45,7 @@ enum FexDriverType
 
 enum FexDriverInputTypes
 {
+    FexDriverInputTypes_None = 0b00000000,
     FexDriverInputTypes_Mouse = 0b00000001,
     FexDriverInputTypes_Keyboard = 0b00000010,
     /* ... */
