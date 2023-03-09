@@ -257,7 +257,6 @@ union KernelCallback
                  * @brief Adjust the volume.
                  *
                  * 0 - 100
-                 * @note It may be measured in decibels.
                  */
                 unsigned char Volume;
 
