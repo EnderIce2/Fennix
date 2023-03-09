@@ -44,7 +44,7 @@ extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 // To pages
 #define TO_PAGES(d) ((d) / PAGE_SIZE + 1)
 // From pages
-#define FROM_PAGES(d) ((d)*PAGE_SIZE - 1)
+#define FROM_PAGES(d) ((d)*PAGE_SIZE)
 
 #if defined(a64) || defined(aa64)
 #define NORMAL_VMA_OFFSET 0xFFFF800000000000
