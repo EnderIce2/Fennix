@@ -345,6 +345,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case InterruptReason:
     {
+        break; // Not working as expected
         uint16_t Status = inw(BAR.MixerAddress + PCMOUT_Status);
 
         if (Status & TC_IOCInterruptEnable)
@@ -361,9 +362,11 @@ int CallbackHandler(KernelCallback *Data)
         {
             print("FIFO error.");
         }
-        else
+        else if (Status != 0x0)
         {
-            print("Unknown status.");
+            char UnknownStatusText[64];
+            KAPI->Util.sprintf(UnknownStatusText, "Unknown status: %#lx", Status);
+            print(UnknownStatusText);
         }
 
         outw(BAR.MixerAddress + PCMOUT_Status, 0xFFFF);
