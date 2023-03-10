@@ -185,18 +185,18 @@ namespace Recovery
         wdgDbgWin->CreateButton({355, 250, 45, 15}, "88200", (uintptr_t)CSR88200);
         wdgDbgWin->CreateButton({405, 250, 45, 15}, "96000", (uintptr_t)CSR96000);
 
-        wdgDbgWin->CreateLabel({5, 250, 0, 0}, "Volume");
-        wdgDbgWin->CreateButton({5, 265, 25, 15}, "0%", (uintptr_t)CV0);
-        wdgDbgWin->CreateButton({35, 265, 25, 15}, "10%", (uintptr_t)CV10);
-        wdgDbgWin->CreateButton({65, 265, 25, 15}, "20%", (uintptr_t)CV20);
-        wdgDbgWin->CreateButton({95, 265, 25, 15}, "30%", (uintptr_t)CV30);
-        wdgDbgWin->CreateButton({125, 265, 25, 15}, "40%", (uintptr_t)CV40);
-        wdgDbgWin->CreateButton({155, 265, 25, 15}, "50%", (uintptr_t)CV50);
-        wdgDbgWin->CreateButton({185, 265, 25, 15}, "60%", (uintptr_t)CV60);
-        wdgDbgWin->CreateButton({215, 265, 25, 15}, "70%", (uintptr_t)CV70);
-        wdgDbgWin->CreateButton({245, 265, 25, 15}, "80%", (uintptr_t)CV80);
-        wdgDbgWin->CreateButton({275, 265, 25, 15}, "90%", (uintptr_t)CV90);
-        wdgDbgWin->CreateButton({305, 265, 25, 15}, "100%", (uintptr_t)CV100);
+        wdgDbgWin->CreateLabel({5, 265, 0, 0}, "Volume");
+        wdgDbgWin->CreateButton({5, 280, 25, 15}, "0%", (uintptr_t)CV0);
+        wdgDbgWin->CreateButton({35, 280, 25, 15}, "10%", (uintptr_t)CV10);
+        wdgDbgWin->CreateButton({65, 280, 25, 15}, "20%", (uintptr_t)CV20);
+        wdgDbgWin->CreateButton({95, 280, 25, 15}, "30%", (uintptr_t)CV30);
+        wdgDbgWin->CreateButton({125, 280, 25, 15}, "40%", (uintptr_t)CV40);
+        wdgDbgWin->CreateButton({155, 280, 25, 15}, "50%", (uintptr_t)CV50);
+        wdgDbgWin->CreateButton({185, 280, 25, 15}, "60%", (uintptr_t)CV60);
+        wdgDbgWin->CreateButton({215, 280, 25, 15}, "70%", (uintptr_t)CV70);
+        wdgDbgWin->CreateButton({245, 280, 25, 15}, "80%", (uintptr_t)CV80);
+        wdgDbgWin->CreateButton({275, 280, 25, 15}, "90%", (uintptr_t)CV90);
+        wdgDbgWin->CreateButton({305, 280, 25, 15}, "100%", (uintptr_t)CV100);
 
         DbgWin->AddWidget(wdgDbgWin);
 
