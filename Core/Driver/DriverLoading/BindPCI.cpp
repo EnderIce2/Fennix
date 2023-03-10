@@ -513,6 +513,9 @@ namespace Driver
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
 
+        memset(KCallback, 0, sizeof(KernelCallback));
+        KCallback->Reason = CallbackReason::InterruptReason;
+
         DriverFile *DrvFile = new DriverFile;
         DrvFile->Enabled = true;
         DrvFile->DriverUID = this->DriverUIDs - 1;
