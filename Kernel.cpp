@@ -15,6 +15,12 @@
 #include "Core/smbios.hpp"
 #include "Tests/t.h"
 
+#ifdef DEBUG
+bool EnableExternalMemoryTracer = false; /* This can be modified while we are debugging with GDB. */
+char mExtTrkLog[MEM_TRK_MAX_SIZE];
+LockClass mExtTrkLock;
+#endif
+
 /**
  * Fennix Kernel
  * -------------

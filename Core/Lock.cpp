@@ -110,6 +110,8 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
 
 int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 {
+    if (!TimeManager)
+        return Lock(FunctionName);
     LockData.AttemptingToGet = FunctionName;
     LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
     Atomic<uint64_t> Target = 0;

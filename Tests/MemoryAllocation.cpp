@@ -27,8 +27,16 @@ test_mem_new_delete::~test_mem_new_delete()
         ;
 }
 
+extern bool EnableExternalMemoryTracer;
+
 void TestMemoryAllocation()
 {
+    if (EnableExternalMemoryTracer)
+    {
+        debug("The test is disabled when the external memory tracer is enabled.");
+        return;
+    }
+
     void *tmpAlloc1 = kmalloc(176);
     void *tmpAlloc2 = kmalloc(511);
     void *tmpAlloc3 = kmalloc(1027);
