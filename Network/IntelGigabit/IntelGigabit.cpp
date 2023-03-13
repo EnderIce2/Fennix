@@ -465,7 +465,7 @@ int CallbackHandler(KernelCallback *Data)
     }
     case FetchReason:
     {
-        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel Gigabit Ethernet Controller", 42);
+        KAPI->Util.memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel Gigabit Ethernet Controller", 34);
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }
