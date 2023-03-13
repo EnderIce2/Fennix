@@ -642,14 +642,17 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
-        mExtTrkLock.TimeoutLock(__FUNCTION__, 100000);
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "memcpy( %p %p %ld %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, slen, src, (void *)((uintptr_t)src + len), dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
-            mTrkUART.Write(mExtTrkLog[i]);
             if (mExtTrkLog[i] == '\r')
                 break;
+            mTrkUART.Write(mExtTrkLog[i]);
         }
         mExtTrkLock.Unlock();
     }
@@ -710,14 +713,17 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
-        mExtTrkLock.TimeoutLock(__FUNCTION__, 100000);
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "memset( %p %d %ld %ld )=%#x>%p-%p~%p\n\r", dest, val, len, slen, val, dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
-            mTrkUART.Write(mExtTrkLog[i]);
             if (mExtTrkLog[i] == '\r')
                 break;
+            mTrkUART.Write(mExtTrkLog[i]);
         }
         mExtTrkLock.Unlock();
     }
@@ -784,14 +790,17 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
-        mExtTrkLock.TimeoutLock(__FUNCTION__, 100000);
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "memmove( %p %p %ld %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, slen, dest, (void *)((uintptr_t)dest + len), src, (void *)((uintptr_t)src + len), __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
-            mTrkUART.Write(mExtTrkLog[i]);
             if (mExtTrkLog[i] == '\r')
                 break;
+            mTrkUART.Write(mExtTrkLog[i]);
         }
         mExtTrkLock.Unlock();
     }
@@ -889,14 +898,17 @@ EXTERNC __no_stack_protector void *memcpy(void *dest, const void *src, size_t le
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
-        mExtTrkLock.TimeoutLock(__FUNCTION__, 100000);
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "!memcpy( %p %p %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, dest, (void *)((uintptr_t)dest + len), src, (void *)((uintptr_t)src + len), __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
-            mTrkUART.Write(mExtTrkLog[i]);
             if (mExtTrkLog[i] == '\r')
                 break;
+            mTrkUART.Write(mExtTrkLog[i]);
         }
         mExtTrkLock.Unlock();
     }
@@ -911,14 +923,17 @@ EXTERNC __no_stack_protector void *memset(void *dest, int val, size_t len)
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
-        mExtTrkLock.TimeoutLock(__FUNCTION__, 100000);
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "!memset( %p %d %ld )=%p-%p~%p\n\r", dest, val, len, dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
-            mTrkUART.Write(mExtTrkLog[i]);
             if (mExtTrkLog[i] == '\r')
                 break;
+            mTrkUART.Write(mExtTrkLog[i]);
         }
         mExtTrkLock.Unlock();
     }
