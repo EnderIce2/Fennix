@@ -28,12 +28,13 @@ test_mem_new_delete::~test_mem_new_delete()
 }
 
 extern bool EnableExternalMemoryTracer;
+extern bool DebuggerIsAttached;
 
 void TestMemoryAllocation()
 {
-    if (EnableExternalMemoryTracer)
+    if (EnableExternalMemoryTracer || DebuggerIsAttached)
     {
-        debug("The test is disabled when the external memory tracer is enabled.");
+        debug("The test is disabled when the external memory tracer or a debugger is enabled.");
         return;
     }
 

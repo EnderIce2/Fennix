@@ -52,9 +52,9 @@ int LockClass::Lock(const char *FunctionName)
     LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
 Retry:
     unsigned int i = 0;
-    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
-    if (i >= 0x10000000)
+    if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
         DeadLock(LockData);
         goto Retry;
@@ -89,15 +89,14 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
     if (CoreData != nullptr)
         CCore = CoreData->ID;
 
-    warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld is being held by %ld. Timeout in %ld",
+    uint64_t Counter = TimeManager->GetCounter();
+
+    warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld is being held by %ld. Timeout in %ld (%ld ticks remaining).",
          Lock.AttemptingToGet, Lock.CurrentHolder,
          Lock.Count, Lock.Count > 1 ? "locks" : "lock",
          CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
-         CCore, Lock.Core, this->DeadLocks, Timeout);
+         CCore, Lock.Core, Timeout, Timeout - Counter);
 
-    // TODO: Print on screen too.
-
-    uint64_t Counter = TimeManager->GetCounter();
     if (Timeout < Counter)
     {
         warn("Unlocking lock '%s' because of timeout. (%ld < %ld)", Lock.AttemptingToGet, Timeout, Counter);
@@ -117,13 +116,13 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
     Atomic<uint64_t> Target = 0;
 Retry:
     unsigned int i = 0;
-    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < 0x10000000)
+    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
-    if (i >= 0x10000000)
+    if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
-        if (Target == 0)
-            Target = TimeManager->CalculateTarget(Timeout);
-        TimeoutDeadLock(LockData, Target);
+        if (Target.Load() == 0)
+            Target.Store(TimeManager->CalculateTarget(Timeout));
+        TimeoutDeadLock(LockData, Target.Load());
         goto Retry;
     }
     LockData.Count++;

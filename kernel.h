@@ -20,6 +20,7 @@
 #endif
 
 extern struct BootInfo *bInfo;
+extern bool DebuggerIsAttached;
 #ifdef __cplusplus
 
 #ifdef DEBUG

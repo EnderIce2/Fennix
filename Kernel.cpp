@@ -15,6 +15,8 @@
 #include "Core/smbios.hpp"
 #include "Tests/t.h"
 
+bool DebuggerIsAttached = false;
+
 #ifdef DEBUG
 bool EnableExternalMemoryTracer = false; /* This can be modified while we are debugging with GDB. */
 char mExtTrkLog[MEM_TRK_MAX_SIZE];
@@ -182,6 +184,13 @@ EXTERNC NIF void Main(BootInfo *Info)
     Interrupts::Initialize(0);
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
+
+    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+    {
+        KPrint("\eFFA500Debugger detected! (TCG Virtual Machine)");
+        DebuggerIsAttached = true;
+    }
+
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
     KPrint("Reading Kernel Parameters");
