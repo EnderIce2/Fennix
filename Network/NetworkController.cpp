@@ -167,16 +167,16 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
     {
-        foreach (auto var in this->Interfaces)
-            if (var->DriverID == DriverID)
-                NIManager->Send(var, Data, Size);
+        foreach (auto inf in this->Interfaces)
+            if (inf->DriverID == DriverID)
+                NIManager->Send(inf, Data, Size);
     }
 
     void NetworkInterface::DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
     {
-        foreach (auto var in this->Interfaces)
-            if (var->DriverID == DriverID)
-                NIManager->Receive(var, Data, Size);
+        foreach (auto inf in this->Interfaces)
+            if (inf->DriverID == DriverID)
+                NIManager->Receive(inf, Data, Size);
     }
 
     void NetworkInterface::Send(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
@@ -199,8 +199,8 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::Receive(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
     {
-        foreach (auto var in RegisteredEvents)
-            var->OnInterfaceReceived(Interface, Data, Length);
+        foreach (auto re in RegisteredEvents)
+            re->OnInterfaceReceived(Interface, Data, Length);
     }
 
     Events::Events(DeviceInterface *Interface) { RegisteredEvents.push_back(this); }
