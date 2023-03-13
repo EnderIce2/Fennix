@@ -7,7 +7,7 @@ volatile bool serialports[8] = {false, false, false, false, false, false, false,
 Vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
 
 #if defined(a64) || defined(a32)
-NIF uint8_t NoProfiler_inportb(uint16_t Port)
+NIF __always_inline inline uint8_t NoProfiler_inportb(uint16_t Port)
 {
     uint8_t Result;
     asm("in %%dx, %%al"
@@ -16,7 +16,7 @@ NIF uint8_t NoProfiler_inportb(uint16_t Port)
     return Result;
 }
 
-NIF void NoProfiler_outportb(uint16_t Port, uint8_t Data)
+NIF __always_inline inline void NoProfiler_outportb(uint16_t Port, uint8_t Data)
 {
     asmv("out %%al, %%dx"
          :
