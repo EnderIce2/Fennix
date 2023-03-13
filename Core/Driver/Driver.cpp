@@ -218,7 +218,7 @@ namespace Driver
     SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {
-        SmartCriticalSection(DriverInterruptLock);
+        SmartLock(DriverInterruptLock);
         ((int (*)(void *))(Handle))(Data);
         UNUSED(Frame);
     }
