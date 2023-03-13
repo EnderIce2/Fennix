@@ -72,6 +72,12 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "BOOL",
      .description = "Enable Interrupts On Crash. If enabled, the navigation keys will be enabled on crash"},
 
+     {.identifier = 's',
+     .access_letters = NULL,
+     .access_name = "simd",
+     .value_name = "BOOL",
+     .description = "Enable SIMD instructions"},
+
     {.identifier = 'h',
      .access_letters = "h",
      .access_name = "help",
@@ -90,6 +96,7 @@ KernelConfig ParseConfig(char *Config)
                                   true,
                                   0,
                                   0,
+                                  false,
                                   false};
 
     if (Config == NULL)
@@ -380,6 +387,13 @@ ParseSuccess:
             value = cag_option_get_value(&context);
             strcmp(value, "true") ? config.UnlockDeadLock = false : config.UnlockDeadLock = true;
             KPrint("\eAAFFAAUnlocking the deadlock after 10 retries");
+            break;
+        }
+        case 's':
+        {
+            value = cag_option_get_value(&context);
+            strcmp(value, "true") ? config.SIMD = false : config.SIMD = true;
+            KPrint("\eAAFFAASingle Instruction, Multiple Data (SIMD): %s", value);
             break;
         }
         case 'h':

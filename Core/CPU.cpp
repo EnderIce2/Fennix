@@ -218,6 +218,9 @@ namespace CPU
 				SSESupport = true;
 		}
 
+		if (!Config.SIMD)
+			SSESupport = false;
+
 		if (PGESupport)
 		{
 			debug("Enabling global pages support...");

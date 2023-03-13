@@ -14,6 +14,7 @@ struct KernelConfig
     int Cores;
     int IOAPICInterruptCore;
     bool UnlockDeadLock;
+    bool SIMD;
 };
 
 KernelConfig ParseConfig(char *Config);
