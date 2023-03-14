@@ -154,6 +154,13 @@ namespace Recovery
     void CV90() { ChangeVolume(90); }
     void CV100() { ChangeVolume(100); }
 
+    // void audio_dev_connected() { AudioFile = (char *)"/system/config/audio/media/dev_connected.mp3"; }
+    // void audio_dev_disconnected() { AudioFile = (char *)"/system/config/audio/media/dev_disconnected.mp3"; }
+    // void audio_dev_error() { AudioFile = (char *)"/system/config/audio/media/dev_error.mp3"; }
+    // void audio_error() { AudioFile = (char *)"/system/config/audio/media/error.mp3"; }
+    // void audio_notification() { AudioFile = (char *)"/system/config/audio/media/notification.mp3"; }
+    // void audio_warning() { AudioFile = (char *)"/system/config/audio/media/warning.mp3"; }
+
     void KernelRecovery::RecoveryThread()
     {
         while (wdgDbgWin == nullptr || DbgWin == nullptr)
@@ -198,6 +205,15 @@ namespace Recovery
         wdgDbgWin->CreateButton({275, 280, 25, 15}, "90%", (uintptr_t)CV90);
         wdgDbgWin->CreateButton({305, 280, 25, 15}, "100%", (uintptr_t)CV100);
 
+
+        GraphicalUserInterface::Handle wdgDbgCurrentAudioLbl = wdgDbgWin->CreateLabel({5, 295, 0, 0}, "Current Audio: ");
+        // wdgDbgWin->CreateButton({5, 310, 85, 15}, "dev_connected.mp3", (uintptr_t)audio_dev_connected);
+        // wdgDbgWin->CreateButton({95, 310, 85, 15}, "dev_disconnected.mp3", (uintptr_t)audio_dev_disconnected);
+        // wdgDbgWin->CreateButton({185, 310, 85, 15}, "dev_error.mp3", (uintptr_t)audio_dev_error);
+        // wdgDbgWin->CreateButton({275, 310, 85, 15}, "error.mp3", (uintptr_t)audio_error);
+        // wdgDbgWin->CreateButton({365, 310, 85, 15}, "notification.mp3", (uintptr_t)audio_notification);
+        // wdgDbgWin->CreateButton({455, 310, 85, 15}, "warning.mp3", (uintptr_t)audio_warning);
+
         DbgWin->AddWidget(wdgDbgWin);
 
         char TicksText[128];
@@ -221,6 +237,8 @@ namespace Recovery
             }
             sprintf(TicksText, "Debug - %ldx%ld", DbgWin->GetPosition().Width, DbgWin->GetPosition().Height);
             DbgWin->SetTitle(TicksText);
+            sprintf(TicksText, "Current Audio: %s", AudioFile);
+            wdgDbgWin->SetText(wdgDbgCurrentAudioLbl, TicksText);
 
 #ifdef DEBUG
             static int RefreshGUIDbgCounter = 0;
@@ -289,7 +307,7 @@ namespace Recovery
 
         Rect DebugWindow;
         DebugWindow.Width = 460;
-        DebugWindow.Height = 305;
+        DebugWindow.Height = 315;
         DebugWindow.Left = 5;
         DebugWindow.Top = 25;
         DbgWin = new Window(gui, DebugWindow, "Debug");

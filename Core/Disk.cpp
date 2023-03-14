@@ -143,7 +143,7 @@ namespace Disk
 
             drives.push_back(drive);
         }
-    
+
         KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
     }
 

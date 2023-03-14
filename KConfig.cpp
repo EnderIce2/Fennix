@@ -72,7 +72,7 @@ static struct cag_option ConfigOptions[] = {
      .value_name = "BOOL",
      .description = "Enable Interrupts On Crash. If enabled, the navigation keys will be enabled on crash"},
 
-     {.identifier = 's',
+    {.identifier = 's',
      .access_letters = NULL,
      .access_name = "simd",
      .value_name = "BOOL",
