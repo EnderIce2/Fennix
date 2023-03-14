@@ -16,7 +16,7 @@
 #elif defined(aa64)
 #endif
 
-#include "../crashhandler.hpp"
+#include "crashhandler.hpp"
 #include "../kernel.h"
 
 extern "C" SafeFunction void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
