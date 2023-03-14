@@ -41,13 +41,14 @@ namespace Driver
             debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
             DriverManager->IOCB(drv->DriverUID, (void *)&callback);
 
-            delete drv->MemTrk;
+            delete drv->MemTrk, drv->MemTrk = nullptr;
             for (size_t j = 0; j < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); j++)
             {
                 if (!drv->InterruptHook[j])
                     continue;
-                delete drv->InterruptHook[j];
+                delete drv->InterruptHook[j], drv->InterruptHook[j] = nullptr;
             }
+            delete drv, drv = nullptr;
             Drivers.remove(i);
         }
     }
@@ -65,13 +66,14 @@ namespace Driver
                 debug("Stopping and unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
                 this->IOCB(drv->DriverUID, (void *)&callback);
 
-                delete drv->MemTrk;
+                delete drv->MemTrk, drv->MemTrk = nullptr;
                 for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
                 {
                     if (!drv->InterruptHook[i])
                         continue;
-                    delete drv->InterruptHook[i];
+                    delete drv->InterruptHook[i], drv->InterruptHook[i] = nullptr;
                 }
+                delete drv, drv = nullptr;
                 Drivers.remove(i);
                 return true;
             }

@@ -41,7 +41,7 @@ public:
     ~smart_ptr()
     {
         spdbg("Smart pointer deleted (%#lx)", m_RealPointer);
-        delete (m_RealPointer);
+        delete m_RealPointer, m_RealPointer = nullptr;
     }
 
     T &operator*()
@@ -151,8 +151,8 @@ public:
         if (m_ReferenceCounter->Get() == 0)
         {
             spdbg("[%#lx] Shared pointer deleted (ptr=%#lx, ref=%#lx)", this, m_RealPointer, m_ReferenceCounter);
-            delete m_ReferenceCounter;
-            delete m_RealPointer;
+            delete m_ReferenceCounter, m_ReferenceCounter = nullptr;
+            delete m_RealPointer, m_RealPointer = nullptr;
         }
     }
 
@@ -188,8 +188,8 @@ public:
         (*m_ReferenceCounter)--;
         if (m_ReferenceCounter->Get() == 0)
         {
-            delete m_ReferenceCounter;
             delete m_RealPointer;
+            delete m_ReferenceCounter;
         }
         m_RealPointer = Pointer;
         m_ReferenceCounter = new Counter();
@@ -202,15 +202,13 @@ public:
         spdbg("[%#lx] Shared pointer reset (ptr=%#lx, ref=%#lx)", this, m_RealPointer, m_ReferenceCounter);
         if (m_ReferenceCounter->Get() == 1)
         {
-            delete m_RealPointer;
-            delete m_ReferenceCounter;
+            delete m_RealPointer, m_RealPointer = nullptr;
+            delete m_ReferenceCounter, m_ReferenceCounter = nullptr;
         }
         else
         {
             (*m_ReferenceCounter)--;
         }
-        m_RealPointer = nullptr;
-        m_ReferenceCounter = nullptr;
     }
 
     void swap(shared_ptr<T> &Other)

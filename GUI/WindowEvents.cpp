@@ -15,7 +15,8 @@ namespace GraphicalUserInterface
     {
         // TODO: Optimize this
         this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size));
-        delete this->Buffer;
+        this->Buffer->Data = nullptr;
+        delete this->Buffer, this->Buffer = nullptr;
 
         this->Buffer = new ScreenBitmap;
         this->Buffer->Width = e->Resize.Width;

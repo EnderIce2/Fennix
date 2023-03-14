@@ -49,7 +49,7 @@ namespace Disk
             memcpy(&drive->Table, RWBuffer, sizeof(PartitionTable));
 
             /*
-            ----> Add to devfs the disk
+            TODO: Add to devfs the disk
             */
 
             if (drive->Table.GPT.Signature == GPT_MAGIC)
@@ -101,7 +101,7 @@ namespace Disk
                             sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
 
                             /*
-                            ----> Add to devfs the disk
+                            TODO: Add to devfs the disk
                             */
 
                             delete[] PartitionName;
@@ -131,7 +131,7 @@ namespace Disk
                         sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
 
                         /*
-                        ----> Add to devfs the disk
+                        TODO: Add to devfs the disk
                         */
 
                         delete[] PartitionName;

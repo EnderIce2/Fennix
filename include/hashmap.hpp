@@ -39,9 +39,9 @@ public:
     {
         for (int i = 0; i < HashMapCapacity; i++)
             if (Nodes[i] != nullptr)
-                delete Nodes[i];
-        delete[] Nodes;
-        delete DummyNode;
+                delete Nodes[i], Nodes[i] = nullptr;
+        delete[] Nodes, Nodes = nullptr;
+        delete DummyNode, DummyNode = nullptr;
     }
 
     int HashCode(K Key) { return Key % HashMapCapacity; }

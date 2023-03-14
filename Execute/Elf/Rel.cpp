@@ -62,7 +62,7 @@ namespace Execute
                         SymbolValue = ELFGetSymbolValue(((Elf64_Ehdr *)BaseImage), Section->sh_link, ELF64_R_SYM(RelTable->r_info));
                         if (SymbolValue == 0xdead)
                         {
-                            delete ELFBase.TmpMem;
+                            delete ELFBase.TmpMem, ELFBase.TmpMem = nullptr;
                             return {};
                         }
                     }
@@ -80,7 +80,7 @@ namespace Execute
                     default:
                     {
                         error("Unsupported relocation type: %d", ELF64_R_TYPE(RelTable->r_info));
-                        delete ELFBase.TmpMem;
+                        delete ELFBase.TmpMem, ELFBase.TmpMem = nullptr;
                         return {};
                     }
                     }

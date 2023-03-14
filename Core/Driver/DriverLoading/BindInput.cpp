@@ -50,13 +50,13 @@ namespace Driver
         int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
-            delete mem;
+            delete mem, mem = nullptr;
             error("Driver %s is not implemented", fexExtended->Driver.Name);
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
-            delete mem;
+            delete mem, mem = nullptr;
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
@@ -98,7 +98,7 @@ namespace Driver
 
         if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
         {
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
         debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
@@ -110,7 +110,7 @@ namespace Driver
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::UNKNOWN_DRIVER_TYPE;
         }
         }

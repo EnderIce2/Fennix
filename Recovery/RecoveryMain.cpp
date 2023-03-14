@@ -304,6 +304,6 @@ namespace Recovery
     KernelRecovery::~KernelRecovery()
     {
         debug("Destructor called");
-        delete gui;
+        delete gui, gui = nullptr;
     }
 }

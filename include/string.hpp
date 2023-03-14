@@ -40,7 +40,7 @@ public:
     ~String()
     {
         strdbg("String deleted: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->m_Data, this->m_Data, this->m_Length, this->m_Capacity);
-        delete[] this->m_Data;
+        delete[] this->m_Data, this->m_Data = nullptr;
     }
 
     int length() const

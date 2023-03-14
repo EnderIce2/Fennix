@@ -236,7 +236,7 @@ namespace InterProcessCommunication
 
     IPC::~IPC()
     {
-        delete mem;
+        delete mem, mem = nullptr;
         vfs->Delete(IPCNode, true);
     }
 }

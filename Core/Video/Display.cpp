@@ -74,8 +74,9 @@ namespace Video
         if (this->Buffers[Index] == nullptr)
             return;
         KernelAllocator.FreePages(this->Buffers[Index]->Buffer, TO_PAGES(this->Buffers[Index]->Size));
+        this->Buffers[Index]->Buffer = nullptr;
         this->Buffers[Index]->Checksum = 0; // Making sure that the buffer is not used anymore
-        delete this->Buffers[Index];
+        delete this->Buffers[Index], this->Buffers[Index] = nullptr;
     }
 
     void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)

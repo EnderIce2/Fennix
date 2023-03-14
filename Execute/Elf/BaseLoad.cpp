@@ -39,7 +39,7 @@ namespace Execute
         uintptr_t *TmpBuffer = new uintptr_t[0x1000];
         *(int *)TmpBuffer = 2545;
         InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, 0x1000);
-        delete[] TmpBuffer;
+        delete[] TmpBuffer, TmpBuffer = nullptr;
         debug("Write returned %d", ret);
         if (ret == InterProcessCommunication::IPCErrorCode::IPCNotListening)
         {
@@ -57,7 +57,7 @@ namespace Execute
     void ELFInterpreterThreadWrapper()
     {
         ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterNeededLibraries);
-        delete InterpreterTargetPath;
+        delete InterpreterTargetPath, InterpreterTargetPath = nullptr;
         return;
     }
 
@@ -206,7 +206,7 @@ namespace Execute
             Thread->Memory->Add(p.Address, p.PageCount);
             bl.TmpMem->DetachAddress(p.Address);
         }
-        delete bl.TmpMem;
+        delete bl.TmpMem, bl.TmpMem = nullptr;
 
         bl.sd.Process = Process;
         bl.sd.Thread = Thread;

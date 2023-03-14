@@ -88,10 +88,10 @@ namespace Tasking
                 trace("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
                       Thread->Name, Thread->ID, Thread->Parent->Name, Thread->Parent->ID);
                 // Free memory
-                delete Thread->Stack;
-                delete Thread->Memory;
+                delete Thread->Stack, Thread->Stack = nullptr;
+                delete Thread->Memory, Thread->Memory = nullptr;
                 SecurityManager.DestroyToken(Thread->Security.UniqueToken);
-                delete Thread->Parent->Threads[i];
+                delete Thread->Parent->Threads[i], Thread->Parent->Threads[i] = nullptr;
                 // Remove from the list
                 Thread->Parent->Threads.remove(i);
                 break;
@@ -117,8 +117,8 @@ namespace Tasking
                 {
                     trace("Process \"%s\"(%d) removed from the list", Process->Name, Process->ID);
                     // Free memory
-                    delete ListProcess[i]->IPC;
-                    delete ListProcess[i]->ELFSymbolTable;
+                    delete ListProcess[i]->IPC, ListProcess[i]->IPC = nullptr;
+                    delete ListProcess[i]->ELFSymbolTable, ListProcess[i]->ELFSymbolTable = nullptr;
                     SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
                     if (ListProcess[i]->Security.TrustLevel == TaskTrustLevel::User)
                         KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
@@ -138,7 +138,7 @@ namespace Tasking
                     vfs->Delete(ListProcess[i]->ProcessDirectory, true);
 
                     // Free memory
-                    delete ListProcess[i];
+                    delete ListProcess[i], ListProcess[i] = nullptr;
                     // Remove from the list
                     ListProcess.remove(i);
                     break;
@@ -304,9 +304,9 @@ namespace Tasking
                         }
                     }
 
-                delete Process->IPC;
-                delete Process->ELFSymbolTable;
-                delete Process;
+                delete Process->IPC, Process->IPC = nullptr;
+                delete Process->ELFSymbolTable, Process->ELFSymbolTable = nullptr;
+                delete Process, Process = nullptr;
                 ListProcess.remove(i);
                 NextPID--;
                 break;
@@ -325,10 +325,10 @@ namespace Tasking
             }
         }
 
-        delete Thread->Stack;
-        delete Thread->Memory;
+        delete Thread->Stack, Thread->Stack = nullptr;
+        delete Thread->Memory, Thread->Memory = nullptr;
         SecurityManager.DestroyToken(Thread->Security.UniqueToken);
-        delete Thread;
+        delete Thread, Thread = nullptr;
         NextTID--;
     }
 

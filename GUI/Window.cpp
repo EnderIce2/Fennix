@@ -60,6 +60,6 @@ namespace GraphicalUserInterface
 
     Window::~Window()
     {
-        delete this->mem;
+        delete this->mem, this->mem = nullptr;
     }
 }

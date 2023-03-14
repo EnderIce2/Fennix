@@ -103,7 +103,7 @@ namespace Driver
         }
 
         fixme("Display driver: %s", fexExtended->Driver.Name);
-        delete mem;
+        delete mem, mem = nullptr;
         return DriverCode::NOT_IMPLEMENTED;
     }
 
@@ -147,7 +147,7 @@ namespace Driver
         }
 
         fixme("Network driver: %s", fexExtended->Driver.Name);
-        delete mem;
+        delete mem, mem = nullptr;
         return DriverCode::NOT_IMPLEMENTED;
     }
 
@@ -208,13 +208,13 @@ namespace Driver
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
             error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
 
@@ -267,7 +267,7 @@ namespace Driver
         }
 
         fixme("Filesystem driver: %s", fexExtended->Driver.Name);
-        delete mem;
+        delete mem, mem = nullptr;
         return DriverCode::NOT_IMPLEMENTED;
     }
 
@@ -347,15 +347,15 @@ namespace Driver
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
             error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete InterruptHook;
-            delete mem;
+            delete InterruptHook, InterruptHook = nullptr;
+            delete mem, mem = nullptr;
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete InterruptHook;
-            delete mem;
+            delete InterruptHook, InterruptHook = nullptr;
+            delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
 
@@ -412,7 +412,7 @@ namespace Driver
         }
 
         fixme("Audio driver: %s", fexExtended->Driver.Name);
-        delete mem;
+        delete mem, mem = nullptr;
         return DriverCode::NOT_IMPLEMENTED;
     }
 
@@ -435,7 +435,7 @@ namespace Driver
 
         if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
         {
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
         debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
@@ -459,7 +459,7 @@ namespace Driver
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
-            delete mem;
+            delete mem, mem = nullptr;
             return DriverCode::UNKNOWN_DRIVER_TYPE;
         }
         }

@@ -27,7 +27,7 @@ namespace NetworkARP
                 {
                     DiscoveredAddress *tmp = DiscoveredAddresses[i];
                     netdbg("Removed %s from discovered addresses", IP.v4.ToStringLittleEndian());
-                    delete tmp;
+                    delete tmp, tmp = nullptr;
                     DiscoveredAddresses.remove(i);
                 }
             }
@@ -125,7 +125,7 @@ namespace NetworkARP
                    InternetProtocol().v4.FromHex(Header->TargetIP).ToStringLittleEndian());
             /* Send the request to the broadcast MAC address. */
             Ethernet->Send({.Address = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}}, NetworkEthernet::FrameType::TYPE_ARP, (uint8_t *)Header, sizeof(ARPHeader));
-            delete Header;
+            delete Header, Header = nullptr;
         }
 
         int RequestTimeout = 20;
@@ -160,7 +160,7 @@ namespace NetworkARP
         Header->TargetMAC = b48(ResolvedMAC);
         Header->TargetIP = b32(IP.v4.ToHex());
         Ethernet->Send(MediaAccessControl().FromHex(ResolvedMAC), NetworkEthernet::FrameType::TYPE_ARP, (uint8_t *)Header, sizeof(ARPHeader));
-        delete Header;
+        delete Header, Header = nullptr;
     }
 
     bool ARP::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)

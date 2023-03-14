@@ -117,8 +117,8 @@ namespace GraphicalUserInterface
 
     WidgetCollection::~WidgetCollection()
     {
-        delete this->mem;
-        delete this->Buffer;
-        delete this->CurrentFont;
+        delete this->mem, this->mem = nullptr;
+        delete this->Buffer, this->Buffer = nullptr;
+        delete this->CurrentFont, this->CurrentFont = nullptr;
     }
 }

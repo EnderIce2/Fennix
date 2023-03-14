@@ -71,8 +71,7 @@ public:
         VectorCapacity = 0;
         if (VectorBuffer != nullptr)
         {
-            delete[] VectorBuffer;
-            VectorBuffer = nullptr;
+            delete[] VectorBuffer, VectorBuffer = nullptr;
         }
     }
 
@@ -230,8 +229,7 @@ public:
         VectorSize = 0;
         if (VectorBuffer != nullptr)
         {
-            delete[] VectorBuffer;
-            VectorBuffer = nullptr;
+            delete[] VectorBuffer, VectorBuffer = nullptr;
         }
     }
 

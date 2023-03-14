@@ -94,7 +94,7 @@ namespace VirtualFileSystem
         FinalPath.Get()[Size - 1] = '\0';
 
         // Deallocate the Path array
-        delete[] Path;
+        delete[] Path, Path = nullptr;
 
         vfsdbg("GetPathFromNode()->\"%s\"", FinalPath.Get());
         return FinalPath;
@@ -246,7 +246,7 @@ namespace VirtualFileSystem
         {
             if (strcmp(Parent->Children[i]->Name, Name) == 0)
             {
-                delete Parent->Children[i];
+                delete Parent->Children[i], Parent->Children[i] = nullptr;
                 Parent->Children.remove(i);
                 vfsdbg("RemoveChild()->OK");
                 return FileStatus::OK;

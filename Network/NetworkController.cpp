@@ -46,7 +46,7 @@ namespace NetworkInterfaceManager
             RegisteredEvents.remove(i);
 
         // Delete all interfaces and their callbacks and free the memory
-        delete mem;
+        delete mem, mem = nullptr;
     }
 
     void NetworkInterface::FetchNetworkCards(unsigned long DriverUID)

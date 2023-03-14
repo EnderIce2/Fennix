@@ -636,11 +636,11 @@ namespace GraphicalUserInterface
 
     GUI::~GUI()
     {
-        delete this->mem;
-        delete this->BackBuffer;
-        delete this->DesktopBuffer;
-        delete this->OverlayBuffer;
-        delete this->CursorBuffer;
+        delete this->mem, this->mem = nullptr;
+        delete this->BackBuffer, this->BackBuffer = nullptr;
+        delete this->DesktopBuffer, this->DesktopBuffer = nullptr;
+        delete this->OverlayBuffer, this->OverlayBuffer = nullptr;
+        delete this->CursorBuffer, this->CursorBuffer = nullptr;
         Display->DeleteBuffer(200);
         for (size_t i = 0; i < this->Windows.size(); i++)
             this->Windows.remove(i);
