@@ -378,21 +378,21 @@ ParseSuccess:
         case 'o':
         {
             value = cag_option_get_value(&context);
-            strcmp(value, "true") ? config.InterruptsOnCrash = false : config.InterruptsOnCrash = true;
+            strcmp(value, "true") == 0 ? config.InterruptsOnCrash = true : config.InterruptsOnCrash = false;
             KPrint("\eAAFFAAInterrupts on crash: %s", value);
             break;
         }
         case 'l':
         {
             value = cag_option_get_value(&context);
-            strcmp(value, "true") ? config.UnlockDeadLock = false : config.UnlockDeadLock = true;
+            strcmp(value, "true") == 0 ? config.UnlockDeadLock = true : config.UnlockDeadLock = false;
             KPrint("\eAAFFAAUnlocking the deadlock after 10 retries");
             break;
         }
         case 's':
         {
             value = cag_option_get_value(&context);
-            strcmp(value, "true") ? config.SIMD = false : config.SIMD = true;
+            strcmp(value, "true") == 0 ? config.SIMD = true : config.SIMD = false;
             KPrint("\eAAFFAASingle Instruction, Multiple Data (SIMD): %s", value);
             break;
         }

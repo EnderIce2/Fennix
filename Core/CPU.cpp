@@ -218,8 +218,11 @@ namespace CPU
 				SSESupport = true;
 		}
 
-		if (!Config.SIMD)
+		if (Config.SIMD == false)
+		{
+			debug("Disabling SSE support...");
 			SSESupport = false;
+		}
 
 		if (PGESupport)
 		{

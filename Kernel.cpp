@@ -182,6 +182,8 @@ EXTERNC NIF void Main(BootInfo *Info)
     KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
+    KPrint("Reading Kernel Parameters");
+    Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
 
@@ -193,8 +195,6 @@ EXTERNC NIF void Main(BootInfo *Info)
 
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
-    KPrint("Reading Kernel Parameters");
-    Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
     KPrint("Initializing PCI Manager");
@@ -380,17 +380,17 @@ EXTERNC __no_stack_protector NIF void BeforeShutdown()
     /* TODO: Announce shutdown */
 
     trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
-    delete NIManager;
+    delete NIManager, NIManager = nullptr;
 
-    delete DiskManager;
-    delete DriverManager;
+    delete DiskManager, DiskManager = nullptr;
+    delete DriverManager, DriverManager = nullptr;
     TaskManager->SignalShutdown();
-    delete TaskManager;
+    delete TaskManager, TaskManager = nullptr;
     if (RecoveryScreen)
-        delete RecoveryScreen;
-    delete vfs;
-    delete TimeManager;
-    delete Display;
+        delete RecoveryScreen, RecoveryScreen = nullptr;
+    delete vfs, vfs = nullptr;
+    delete TimeManager, TimeManager = nullptr;
+    delete Display, Display = nullptr;
     // PowerManager should not be called
 
     // https://wiki.osdev.org/Calling_Global_Constructors
