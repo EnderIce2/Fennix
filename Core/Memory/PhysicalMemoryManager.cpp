@@ -1,6 +1,11 @@
 #include <memory.hpp>
 
 #include <debug.h>
+#ifdef DEBUG
+#include <uart.hpp>
+#endif
+
+#include "../../kernel.h"
 
 namespace Memory
 {
@@ -70,6 +75,24 @@ namespace Memory
         if (this->SwapPage((void *)(PageBitmapIndex * PAGE_SIZE)))
         {
             this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
+#ifdef DEBUG
+            if (EnableExternalMemoryTracer)
+            {
+                char LockTmpStr[64];
+                strcpy_unsafe(LockTmpStr, __FUNCTION__);
+                strcat_unsafe(LockTmpStr, "_memTrk");
+                mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+                sprintf(mExtTrkLog, "RequestPage( )=%p~%p\n\r", (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
+                UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+                for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+                {
+                    if (mExtTrkLog[i] == '\r')
+                        break;
+                    mTrkUART.Write(mExtTrkLog[i]);
+                }
+                mExtTrkLock.Unlock();
+            }
+#endif
             return (void *)(PageBitmapIndex * PAGE_SIZE);
         }
 
@@ -96,6 +119,24 @@ namespace Memory
                         goto NextPage;
 
                 this->LockPages((void *)(Index * PAGE_SIZE), Count);
+#ifdef DEBUG
+                if (EnableExternalMemoryTracer)
+                {
+                    char LockTmpStr[64];
+                    strcpy_unsafe(LockTmpStr, __FUNCTION__);
+                    strcat_unsafe(LockTmpStr, "_memTrk");
+                    mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+                    sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r", Count, (void *)(Index * PAGE_SIZE), __builtin_return_address(0));
+                    UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+                    for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+                    {
+                        if (mExtTrkLog[i] == '\r')
+                            break;
+                        mTrkUART.Write(mExtTrkLog[i]);
+                    }
+                    mExtTrkLock.Unlock();
+                }
+#endif
                 return (void *)(Index * PAGE_SIZE);
 
             NextPage:
@@ -107,12 +148,30 @@ namespace Memory
         if (this->SwapPages((void *)(PageBitmapIndex * PAGE_SIZE), Count))
         {
             this->LockPages((void *)(PageBitmapIndex * PAGE_SIZE), Count);
+#ifdef DEBUG
+            if (EnableExternalMemoryTracer)
+            {
+                char LockTmpStr[64];
+                strcpy_unsafe(LockTmpStr, __FUNCTION__);
+                strcat_unsafe(LockTmpStr, "_memTrk");
+                mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+                sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r", Count, (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
+                UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+                for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+                {
+                    if (mExtTrkLog[i] == '\r')
+                        break;
+                    mTrkUART.Write(mExtTrkLog[i]);
+                }
+                mExtTrkLock.Unlock();
+            }
+#endif
             return (void *)(PageBitmapIndex * PAGE_SIZE);
         }
 
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));
         CPU::Halt(true);
-        return nullptr;
+        __builtin_unreachable();
     }
 
     void Physical::FreePage(void *Address)
@@ -134,6 +193,25 @@ namespace Memory
             if (PageBitmapIndex > Index)
                 PageBitmapIndex = Index;
         }
+
+#ifdef DEBUG
+        if (EnableExternalMemoryTracer)
+        {
+            char LockTmpStr[64];
+            strcpy_unsafe(LockTmpStr, __FUNCTION__);
+            strcat_unsafe(LockTmpStr, "_memTrk");
+            mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+            sprintf(mExtTrkLog, "FreePage( %p )=(null)~%p\n\r", Address, __builtin_return_address(0));
+            UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+            for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+            {
+                if (mExtTrkLog[i] == '\r')
+                    break;
+                mTrkUART.Write(mExtTrkLog[i]);
+            }
+            mExtTrkLock.Unlock();
+        }
+#endif
     }
 
     void Physical::FreePages(void *Address, size_t Count)
@@ -143,7 +221,24 @@ namespace Memory
             warn("%s%s%s passed to FreePages.", Address == nullptr ? "Null pointer " : "", Address == nullptr && Count == 0 ? "and " : "", Count == 0 ? "Zero count" : "");
             return;
         }
-
+#ifdef DEBUG
+        if (EnableExternalMemoryTracer)
+        {
+            char LockTmpStr[64];
+            strcpy_unsafe(LockTmpStr, __FUNCTION__);
+            strcat_unsafe(LockTmpStr, "_memTrk");
+            mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+            sprintf(mExtTrkLog, "!FreePages( %p %ld )=(null)~%p\n\r", Address, Count, __builtin_return_address(0));
+            UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+            for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+            {
+                if (mExtTrkLog[i] == '\r')
+                    break;
+                mTrkUART.Write(mExtTrkLog[i]);
+            }
+            mExtTrkLock.Unlock();
+        }
+#endif
         for (size_t t = 0; t < Count; t++)
             this->FreePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
     }
