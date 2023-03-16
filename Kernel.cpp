@@ -45,6 +45,7 @@ LockClass mExtTrkLock;
  * - [ ] Implement a better task manager. (replace struct P/TCB with classes)
  * - [?] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
  * - [ ] Colors in crash screen are not following the kernel color scheme.
+ * - [ ] Find a way to add intrinsics.
  *
  * ISSUES:
  * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -54,6 +55,8 @@ LockClass mExtTrkLock;
  * CREDITS AND REFERENCES:
  * - General:
  *    https://wiki.osdev.org/Main_Page
+ *    https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html#x86-Built-in-Functions
+ *    https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes
  *
  * - Font:
  *    http://www.fial.com/~scott/tamsyn-font/
@@ -105,10 +108,14 @@ LockClass mExtTrkLock;
  *    https://en.wikipedia.org/wiki/PCI_configuration_space
  *
  * - Audio:
- *   https://trac.ffmpeg.org/wiki/audio%20types
- *   https://wiki.osdev.org/AC97
- *   https://github.com/LemonOSProject/LemonOS
- *   https://inst.eecs.berkeley.edu//~cs150/Documents/ac97_r23.pdf
+ *    https://trac.ffmpeg.org/wiki/audio%20types
+ *    https://wiki.osdev.org/AC97
+ *    https://github.com/LemonOSProject/LemonOS
+ *    https://inst.eecs.berkeley.edu//~cs150/Documents/ac97_r23.pdf
+ *
+ * - Intrinsics:
+ *    https://learn.microsoft.com/en-us/cpp/intrinsics/x86-intrinsics-list
+ *    https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html
  *
  */
 
@@ -132,6 +139,9 @@ LockClass mExtTrkLock;
 
 NewLock(KernelLock);
 
+#include <intrin.hpp>
+
+using namespace SSE2;
 using VirtualFileSystem::File;
 using VirtualFileSystem::FileStatus;
 using VirtualFileSystem::Node;
