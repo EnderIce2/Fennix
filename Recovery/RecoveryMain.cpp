@@ -154,6 +154,17 @@ namespace Recovery
     void CV90() { ChangeVolume(90); }
     void CV100() { ChangeVolume(100); }
 
+    void BufBight10() { Display->SetBrightness(10, 200); }
+    void BufBight20() { Display->SetBrightness(20, 200); }
+    void BufBight30() { Display->SetBrightness(30, 200); }
+    void BufBight40() { Display->SetBrightness(40, 200); }
+    void BufBight50() { Display->SetBrightness(50, 200); }
+    void BufBight60() { Display->SetBrightness(60, 200); }
+    void BufBight70() { Display->SetBrightness(70, 200); }
+    void BufBight80() { Display->SetBrightness(80, 200); }
+    void BufBight90() { Display->SetBrightness(90, 200); }
+    void BufBight100() { Display->SetBrightness(100, 200); }
+
     // void audio_dev_connected() { AudioFile = (char *)"/system/config/audio/media/dev_connected.mp3"; }
     // void audio_dev_disconnected() { AudioFile = (char *)"/system/config/audio/media/dev_disconnected.mp3"; }
     // void audio_dev_error() { AudioFile = (char *)"/system/config/audio/media/dev_error.mp3"; }
@@ -205,7 +216,6 @@ namespace Recovery
         wdgDbgWin->CreateButton({275, 280, 25, 15}, "90%", (uintptr_t)CV90);
         wdgDbgWin->CreateButton({305, 280, 25, 15}, "100%", (uintptr_t)CV100);
 
-
         GraphicalUserInterface::Handle wdgDbgCurrentAudioLbl = wdgDbgWin->CreateLabel({5, 295, 0, 0}, "Current Audio: ");
         // wdgDbgWin->CreateButton({5, 310, 85, 15}, "dev_connected.mp3", (uintptr_t)audio_dev_connected);
         // wdgDbgWin->CreateButton({95, 310, 85, 15}, "dev_disconnected.mp3", (uintptr_t)audio_dev_disconnected);
@@ -213,6 +223,18 @@ namespace Recovery
         // wdgDbgWin->CreateButton({275, 310, 85, 15}, "error.mp3", (uintptr_t)audio_error);
         // wdgDbgWin->CreateButton({365, 310, 85, 15}, "notification.mp3", (uintptr_t)audio_notification);
         // wdgDbgWin->CreateButton({455, 310, 85, 15}, "warning.mp3", (uintptr_t)audio_warning);
+
+        wdgDbgWin->CreateLabel({5, 325, 0, 0}, "Display Brightness");
+        wdgDbgWin->CreateButton({5, 340, 25, 15}, "10%", (uintptr_t)BufBight10);
+        wdgDbgWin->CreateButton({35, 340, 25, 15}, "20%", (uintptr_t)BufBight20);
+        wdgDbgWin->CreateButton({65, 340, 25, 15}, "30%", (uintptr_t)BufBight30);
+        wdgDbgWin->CreateButton({95, 340, 25, 15}, "40%", (uintptr_t)BufBight40);
+        wdgDbgWin->CreateButton({125, 340, 25, 15}, "50%", (uintptr_t)BufBight50);
+        wdgDbgWin->CreateButton({155, 340, 25, 15}, "60%", (uintptr_t)BufBight60);
+        wdgDbgWin->CreateButton({185, 340, 25, 15}, "70%", (uintptr_t)BufBight70);
+        wdgDbgWin->CreateButton({215, 340, 25, 15}, "80%", (uintptr_t)BufBight80);
+        wdgDbgWin->CreateButton({245, 340, 25, 15}, "90%", (uintptr_t)BufBight90);
+        wdgDbgWin->CreateButton({275, 340, 25, 15}, "100%", (uintptr_t)BufBight100);
 
         DbgWin->AddWidget(wdgDbgWin);
 
@@ -307,7 +329,7 @@ namespace Recovery
 
         Rect DebugWindow;
         DebugWindow.Width = 460;
-        DebugWindow.Height = 315;
+        DebugWindow.Height = 380;
         DebugWindow.Left = 5;
         DebugWindow.Top = 25;
         DbgWin = new Window(gui, DebugWindow, "Debug");
