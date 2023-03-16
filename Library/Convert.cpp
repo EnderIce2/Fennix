@@ -639,6 +639,31 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
     if (unlikely(len > slen))
         __chk_fail();
 
+    void *ret = nullptr;
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        ret = memcpy_sse(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        ret = memcpy_sse2(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        ret = memcpy_sse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        ret = memcpy_ssse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        ret = memcpy_sse4_1(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        ret = memcpy_sse4_2(dest, src, len);
+        break;
+    default:
+        ret = memcpy_unsafe(dest, src, len);
+        break;
+    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -646,7 +671,9 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
         strcpy_unsafe(LockTmpStr, __FUNCTION__);
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-        sprintf(mExtTrkLog, "memcpy( %p %p %ld %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, slen, src, (void *)((uintptr_t)src + len), dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
+        sprintf(mExtTrkLog, "memcpy( %p %p %ld %ld )=%p~%p\n\r",
+                dest, src, len, slen,
+                ret, __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -657,31 +684,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
         mExtTrkLock.Unlock();
     }
 #endif
-
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        return memcpy_sse(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        return memcpy_sse2(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        return memcpy_sse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        return memcpy_ssse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        return memcpy_sse4_1(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
-        return memcpy_sse4_2(dest, src, len);
-        break;
-    default:
-        return memcpy_unsafe(dest, src, len);
-        break;
-    }
+    return ret;
 }
 
 EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
@@ -710,6 +713,31 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
     if (unlikely(len > slen))
         __chk_fail();
 
+    void *ret = nullptr;
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        ret = memset_sse(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        ret = memset_sse2(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        ret = memset_sse3(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        ret = memset_ssse3(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        ret = memset_sse4_1(dest, val, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        ret = memset_sse4_2(dest, val, len);
+        break;
+    default:
+        ret = memset_unsafe(dest, val, len);
+        break;
+    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -717,7 +745,9 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
         strcpy_unsafe(LockTmpStr, __FUNCTION__);
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-        sprintf(mExtTrkLog, "memset( %p %d %ld %ld )=%#x>%p-%p~%p\n\r", dest, val, len, slen, val, dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
+        sprintf(mExtTrkLog, "memset( %p %d %ld %ld )=%p~%p\n\r",
+                dest, val, len, slen,
+                ret, __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -728,31 +758,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
         mExtTrkLock.Unlock();
     }
 #endif
-
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        return memset_sse(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        return memset_sse2(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        return memset_sse3(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        return memset_ssse3(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        return memset_sse4_1(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
-        return memset_sse4_2(dest, val, len);
-        break;
-    default:
-        return memset_unsafe(dest, val, len);
-        break;
-    }
+    return ret;
 }
 
 EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
@@ -787,6 +793,31 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
     if (unlikely(len > slen))
         __chk_fail();
 
+    void *ret = nullptr;
+    switch (CPU::CheckSIMD())
+    {
+    case CPU::x86SIMDType::SIMD_SSE:
+        ret = memmove_sse(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE2:
+        ret = memmove_sse2(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE3:
+        ret = memmove_sse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSSE3:
+        ret = memmove_ssse3(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE41:
+        ret = memmove_sse4_1(dest, src, len);
+        break;
+    case CPU::x86SIMDType::SIMD_SSE42:
+        ret = memmove_sse4_2(dest, src, len);
+        break;
+    default:
+        ret = memmove_unsafe(dest, src, len);
+        break;
+    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -794,7 +825,9 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
         strcpy_unsafe(LockTmpStr, __FUNCTION__);
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-        sprintf(mExtTrkLog, "memmove( %p %p %ld %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, slen, dest, (void *)((uintptr_t)dest + len), src, (void *)((uintptr_t)src + len), __builtin_return_address(0));
+        sprintf(mExtTrkLog, "memmove( %p %p %ld %ld )=%p~%p\n\r",
+                dest, src, len, slen,
+                ret, __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -805,31 +838,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
         mExtTrkLock.Unlock();
     }
 #endif
-
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        return memmove_sse(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        return memmove_sse2(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        return memmove_sse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        return memmove_ssse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        return memmove_sse4_1(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
-        return memmove_sse4_2(dest, src, len);
-        break;
-    default:
-        return memmove_unsafe(dest, src, len);
-        break;
-    }
+    return ret;
 }
 
 EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)
@@ -895,6 +904,7 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 #undef memcpy
 EXTERNC __no_stack_protector void *memcpy(void *dest, const void *src, size_t len)
 {
+    void *ret = __memcpy_chk(dest, src, len, __builtin_object_size(dest, 0));
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -902,7 +912,9 @@ EXTERNC __no_stack_protector void *memcpy(void *dest, const void *src, size_t le
         strcpy_unsafe(LockTmpStr, __FUNCTION__);
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-        sprintf(mExtTrkLog, "!memcpy( %p %p %ld )=%p-%p>%p-%p~%p\n\r", dest, src, len, dest, (void *)((uintptr_t)dest + len), src, (void *)((uintptr_t)src + len), __builtin_return_address(0));
+        sprintf(mExtTrkLog, "!memcpy( %p %p %ld )=%p~%p\n\r",
+                dest, src, len,
+                ret, __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -913,13 +925,13 @@ EXTERNC __no_stack_protector void *memcpy(void *dest, const void *src, size_t le
         mExtTrkLock.Unlock();
     }
 #endif
-
-    return __memcpy_chk(dest, src, len, __builtin_object_size(dest, 0));
+    return ret;
 }
 
 #undef memset
 EXTERNC __no_stack_protector void *memset(void *dest, int val, size_t len)
 {
+    void *ret = __memset_chk(dest, val, len, __builtin_object_size(dest, 0));
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -927,7 +939,9 @@ EXTERNC __no_stack_protector void *memset(void *dest, int val, size_t len)
         strcpy_unsafe(LockTmpStr, __FUNCTION__);
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-        sprintf(mExtTrkLog, "!memset( %p %d %ld )=%p-%p~%p\n\r", dest, val, len, dest, (void *)((uintptr_t)dest + len), __builtin_return_address(0));
+        sprintf(mExtTrkLog, "!memset( %p %d %ld )=%p~%p\n\r",
+                dest, val, len,
+                ret, __builtin_return_address(0));
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -938,6 +952,5 @@ EXTERNC __no_stack_protector void *memset(void *dest, int val, size_t len)
         mExtTrkLock.Unlock();
     }
 #endif
-
-    return __memset_chk(dest, val, len, __builtin_object_size(dest, 0));
+    return ret;
 }

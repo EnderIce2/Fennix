@@ -82,7 +82,8 @@ namespace Memory
                 strcpy_unsafe(LockTmpStr, __FUNCTION__);
                 strcat_unsafe(LockTmpStr, "_memTrk");
                 mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-                sprintf(mExtTrkLog, "RequestPage( )=%p~%p\n\r", (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
+                sprintf(mExtTrkLog, "RequestPage( )=%p~%p\n\r",
+                        (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
                 UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
                 for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
                 {
@@ -126,7 +127,9 @@ namespace Memory
                     strcpy_unsafe(LockTmpStr, __FUNCTION__);
                     strcat_unsafe(LockTmpStr, "_memTrk");
                     mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-                    sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r", Count, (void *)(Index * PAGE_SIZE), __builtin_return_address(0));
+                    sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r",
+                            Count,
+                            (void *)(Index * PAGE_SIZE), __builtin_return_address(0));
                     UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
                     for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
                     {
@@ -155,7 +158,9 @@ namespace Memory
                 strcpy_unsafe(LockTmpStr, __FUNCTION__);
                 strcat_unsafe(LockTmpStr, "_memTrk");
                 mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-                sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r", Count, (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
+                sprintf(mExtTrkLog, "RequestPages( %ld )=%p~%p\n\r",
+                        Count,
+                        (void *)(PageBitmapIndex * PAGE_SIZE), __builtin_return_address(0));
                 UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
                 for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
                 {
@@ -201,7 +206,9 @@ namespace Memory
             strcpy_unsafe(LockTmpStr, __FUNCTION__);
             strcat_unsafe(LockTmpStr, "_memTrk");
             mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-            sprintf(mExtTrkLog, "FreePage( %p )=(null)~%p\n\r", Address, __builtin_return_address(0));
+            sprintf(mExtTrkLog, "FreePage( %p )~%p\n\r",
+                    Address,
+                    __builtin_return_address(0));
             UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
             for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
             {
@@ -228,7 +235,9 @@ namespace Memory
             strcpy_unsafe(LockTmpStr, __FUNCTION__);
             strcat_unsafe(LockTmpStr, "_memTrk");
             mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-            sprintf(mExtTrkLog, "!FreePages( %p %ld )=(null)~%p\n\r", Address, Count, __builtin_return_address(0));
+            sprintf(mExtTrkLog, "!FreePages( %p %ld )~%p\n\r",
+                    Address, Count,
+                    __builtin_return_address(0));
             UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
             for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
             {
