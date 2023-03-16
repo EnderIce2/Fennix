@@ -48,6 +48,7 @@ namespace Video
         buffer->Color = 0xFFFFFF;
         buffer->CursorX = 0;
         buffer->CursorY = 0;
+        buffer->Brightness = 100;
         this->Buffers[Index] = buffer;
         memset(this->Buffers[Index]->Buffer, 0, Size);
         this->Buffers[Index]->Checksum = 0xDEAD;
@@ -56,6 +57,12 @@ namespace Video
 
     void Display::SetBuffer(int Index)
     {
+        if (this->Buffers[Index]->Brightness != 100)
+            this->SetBrightness(this->Buffers[Index]->Brightness, Index);
+
+        if (this->Buffers[Index]->Brightness == 0) /* Just clear the buffer */
+            memset(this->Buffers[Index]->Buffer, 0, this->Buffers[Index]->Size);
+
         memcpy(this->framebuffer.BaseAddress, this->Buffers[Index]->Buffer, this->Buffers[Index]->Size);
     }
 
@@ -77,6 +84,39 @@ namespace Video
         this->Buffers[Index]->Buffer = nullptr;
         this->Buffers[Index]->Checksum = 0; // Making sure that the buffer is not used anymore
         delete this->Buffers[Index], this->Buffers[Index] = nullptr;
+    }
+
+    void Display::SetBrightness(int Value, int Index)
+    {
+        if (this->Buffers[Index] == nullptr)
+            return;
+
+        if (Value > 100)
+            Value = 100;
+        else if (Value < 0)
+            Value = 0;
+
+        ScreenBuffer *buffer = this->Buffers[Index];
+        uint32_t *pixel = (uint32_t *)buffer->Buffer;
+
+        for (uint32_t y = 0; y < buffer->Height; y++)
+        {
+            for (uint32_t x = 0; x < buffer->Width; x++)
+            {
+                uint32_t color = pixel[y * buffer->Width + x];
+
+                uint8_t r = color & 0xff;
+                uint8_t g = (color >> 8) & 0xff;
+                uint8_t b = (color >> 16) & 0xff;
+
+                r = (r * Value) / 100;
+                g = (g * Value) / 100;
+                b = (b * Value) / 100;
+
+                pixel[y * buffer->Width + x] = (b << 16) | (g << 8) | r;
+            }
+        }
+        buffer->Brightness = Value;
     }
 
     void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)

@@ -83,6 +83,7 @@ namespace Video
         size_t Size;
         uint32_t Color;
         uint32_t CursorX, CursorY;
+        char Brightness;
         long Checksum;
     };
 
@@ -103,6 +104,7 @@ namespace Video
         ScreenBuffer *GetBuffer(int Index);
         void ClearBuffer(int Index);
         void DeleteBuffer(int Index);
+        void SetBrightness(int Value, int Index);
         void SetBufferCursor(int Index, uint32_t X, uint32_t Y);
         void GetBufferCursor(int Index, uint32_t *X, uint32_t *Y);
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index);
