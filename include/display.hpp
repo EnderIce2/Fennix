@@ -99,6 +99,27 @@ namespace Video
     public:
         Font *GetCurrentFont();
         void SetCurrentFont(Font *Font);
+
+        /**
+         * @brief Create a new buffer
+         * 
+         * This function creates a new buffer.
+         * 
+         * @note Some indexes are reserved for the kernel.
+         * 0 - Main buffer
+         * 1 - Loading screen buffer
+         * 200 - GUI buffer
+         * 250 - Empty (crash screen)
+         * 251 - Console (crash screen)
+         * 252 - Tasks (crash screen)
+         * 253 - Frames (crash screen)
+         * 254 - Details (crash screen)
+         * 255 - Main (crash screen)
+         * 
+         * @param Width The width of the buffer
+         * @param Height The height of the buffer
+         * @param Index The index of the buffer (0-255)
+         */
         void CreateBuffer(uint32_t Width, uint32_t Height, int Index);
         void SetBuffer(int Index);
         ScreenBuffer *GetBuffer(int Index);
