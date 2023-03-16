@@ -287,6 +287,9 @@ typedef intptr_t ssize_t;
 #define __warn_unused_result __attribute__((warn_unused_result))
 #define __no_stack_protector __attribute__((no_stack_protector))
 #define __no_instrument_function __attribute__((no_instrument_function))
+#define __no_debug __attribute__((no_debug))
+#define __target(x) __attribute__((target(x)))
+#define __min_vector_width(x) __attribute__((min_vector_width(x)))
 
 // sanitizer
 #define __no_sanitize_address __attribute__((no_sanitize_address))
