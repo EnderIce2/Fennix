@@ -163,6 +163,14 @@ static int sys_file_status(SyscallsFrame *Frame)
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
+static int sys_sleep(SyscallsFrame *Frame, uint64_t Milliseconds)
+{
+    if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
+        return SYSCALL_ACCESS_DENIED;
+    TaskManager->Sleep(Milliseconds);
+    return 0;
+}
+
 static int sys_wait(SyscallsFrame *Frame)
 {
     fixme("sys_wait: %#lx", Frame);
@@ -259,6 +267,7 @@ static void *NativeSyscallsTable[] = {
     [_FileSeek] = (void *)sys_file_seek,
     [_FileStatus] = (void *)sys_file_status,
 
+    [_Sleep] = (void *)sys_sleep,
     [_Wait] = (void *)sys_wait,
     [_Kill] = (void *)sys_kill,
     [_Spawn] = (void *)sys_spawn,

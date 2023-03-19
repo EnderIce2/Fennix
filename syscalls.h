@@ -88,6 +88,12 @@ enum NativeSyscalls
      */
     _FileStatus,
 
+    /** @brief Sleep for a specific amount of time
+     * @fn int Sleep(uint64_t Milliseconds)
+     * This syscall is used to sleep the current thread for a specific amount of time.
+     */
+    _Sleep,
+
     /** @brief Wait for a process or a thread
      * @fn
      * This syscall is used to wait for a specific process or thread to terminate. It returns the exit code of the process or thread.
