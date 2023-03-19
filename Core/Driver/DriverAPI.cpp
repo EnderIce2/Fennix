@@ -44,14 +44,14 @@ void MapMemory(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags)
 {
     SmartLock(DriverDisplayPrintLock);
     drvdbg("Mapping %#lx to %#lx with flags %#lx...", (unsigned long)VirtualAddress, (unsigned long)PhysicalAddress, Flags);
-    Memory::Virtual().Map(VirtualAddress, PhysicalAddress, Flags);
+    Memory::Virtual(KernelPageTable).Map(VirtualAddress, PhysicalAddress, Flags);
 }
 
 void UnmapMemory(void *VirtualAddress)
 {
     SmartLock(DriverDisplayPrintLock);
     drvdbg("Unmapping %#lx...", (unsigned long)VirtualAddress);
-    Memory::Virtual().Unmap(VirtualAddress);
+    Memory::Virtual(KernelPageTable).Unmap(VirtualAddress);
 }
 
 void *Drivermemcpy(void *Destination, void *Source, unsigned long Size)

@@ -32,7 +32,7 @@ namespace ACPI
             {
                 ioapic.push_back((MADTIOApic *)ptr);
                 KPrint("I/O APIC \e8888FF%d\eCCCCCC (Address \e8888FF%#lx\eCCCCCC) found.", ioapic.back()->APICID, ioapic.back()->Address);
-                Memory::Virtual().Map((void *)(uintptr_t)ioapic.back()->Address, (void *)(uintptr_t)ioapic.back()->Address, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
+                Memory::Virtual(KernelPageTable).Map((void *)(uintptr_t)ioapic.back()->Address, (void *)(uintptr_t)ioapic.back()->Address, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
                 break;
             }
             case 2:
@@ -57,7 +57,7 @@ namespace ACPI
                 break;
             }
             }
-            Memory::Virtual().Map((void *)LAPICAddress, (void *)LAPICAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
+            Memory::Virtual(KernelPageTable).Map((void *)LAPICAddress, (void *)LAPICAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
         }
         CPUCores--; // We start at 0 (BSP) and end at 11 (APs), so we have 12 cores.
         KPrint("Total CPU cores: %d", CPUCores + 1);

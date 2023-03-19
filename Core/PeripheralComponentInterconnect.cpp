@@ -769,7 +769,7 @@ namespace PCI
     {
         uintptr_t Offset = Function << 12;
         uintptr_t FunctionAddress = DeviceAddress + Offset;
-        Memory::Virtual().Map((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
+        Memory::Virtual(KernelPageTable).Map((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)FunctionAddress;
         if (PCIDeviceHdr->DeviceID == 0)
             return;
@@ -785,7 +785,7 @@ namespace PCI
     {
         uintptr_t Offset = Device << 15;
         uintptr_t DeviceAddress = BusAddress + Offset;
-        Memory::Virtual().Map((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
+        Memory::Virtual(KernelPageTable).Map((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)DeviceAddress;
         if (PCIDeviceHdr->DeviceID == 0)
             return;
@@ -799,7 +799,7 @@ namespace PCI
     {
         uintptr_t Offset = Bus << 20;
         uintptr_t BusAddress = BaseAddress + Offset;
-        Memory::Virtual().Map((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
+        Memory::Virtual(KernelPageTable).Map((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
         PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)BusAddress;
         if (Bus != 0) // TODO: VirtualBox workaround (UNTESTED ON REAL HARDWARE!)
         {
@@ -839,10 +839,11 @@ namespace PCI
     {
 #if defined(a64)
         int Entries = ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
+        Memory::Virtual vma = Memory::Virtual(KernelPageTable);
         for (int t = 0; t < Entries; t++)
         {
             DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
-            Memory::Virtual().Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
+            vma.Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
             debug("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
                   NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
             for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)

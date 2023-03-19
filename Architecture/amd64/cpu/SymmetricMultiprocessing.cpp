@@ -85,15 +85,17 @@ namespace SMP
                 ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
                 ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
 
-                Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
+                Memory::Virtual vma = Memory::Virtual(KernelPageTable);
+
+                vma.Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 uint64_t TrampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
                 for (uint64_t i = 0; i < (TrampolineLength / PAGE_SIZE) + 2; i++)
-                    Memory::Virtual().Map((void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), (void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                    vma.Map((void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), (void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
 
-                POKE(volatile uint64_t, PAGE_TABLE) = CPU::x64::readcr3().raw;
+                POKE(volatile uint64_t, PAGE_TABLE) = (uint64_t)KernelPageTable;
                 POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
                 POKE(volatile uint64_t, CORE) = i;
 
