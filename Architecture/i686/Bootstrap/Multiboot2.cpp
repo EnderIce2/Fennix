@@ -4,7 +4,7 @@
 #include <memory.hpp>
 #include <io.h>
 
-#include "../../kernel.h"
+#include "../../../kernel.h"
 
 BootInfo mb2binfo;
 
@@ -305,7 +305,7 @@ void ProcessMB2(unsigned long Info)
     }
 }
 
-EXTERNC void x32Multiboot2Entry(unsigned long Info, unsigned int Magic)
+EXTERNC void Multiboot2Entry(unsigned long Info, unsigned int Magic)
 {
     if (Info == NULL || Magic == NULL)
     {
