@@ -19,36 +19,28 @@ namespace FXSR
 {
     void _fxsave(void *mem_addr)
     {
-#ifdef a64
         __builtin_ia32_fxsave(mem_addr);
-#endif
     }
 
     void _fxrstor(void *mem_addr)
     {
-#ifdef a64
         __builtin_ia32_fxrstor(mem_addr);
-#endif
     }
 
     void _fxsave64(void *mem_addr)
     {
-#ifdef a64
         asmv("fxsaveq (%0)"
              :
              : "r"(mem_addr)
              : "memory");
-#endif
     }
 
     void _fxrstor64(void *mem_addr)
     {
-#ifdef a64
         asmv("fxrstorq (%0)"
              :
              : "r"(mem_addr)
              : "memory");
-#endif
     }
 }
 
