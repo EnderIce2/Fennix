@@ -189,7 +189,10 @@ namespace Memory
         }
         size_t Index = (size_t)Address / PAGE_SIZE;
         if (unlikely(PageBitmap[Index] == false))
+        {
+            warn("Tried to free an already free page. (%p)", Address);
             return;
+        }
 
         if (PageBitmap.Set(Index, false))
         {
