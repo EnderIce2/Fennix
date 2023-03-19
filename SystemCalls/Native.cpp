@@ -27,7 +27,8 @@ static inline bool CheckTrust(int TrustLevel)
         return true;
 
     warn("Thread %s(%lld) tried to access a system call \"%s\" with insufficient trust level",
-         KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_extract_return_addr(__builtin_return_address(0))), TaskManager->GetCurrentThread()->Name, TaskManager->GetCurrentThread()->ID);
+         TaskManager->GetCurrentThread()->Name, TaskManager->GetCurrentThread()->ID,
+         KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_extract_return_addr(__builtin_return_address(0))));
     debug("Token: token=%#lx, trust=%d", token, TaskManager->GetSecurityManager()->GetTokenTrustLevel(token));
     return false;
 }
