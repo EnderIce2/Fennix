@@ -96,6 +96,27 @@ NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
              fb_base += PAGE_SIZE)
             va.Map((void *)fb_base, (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
+
+#ifdef DEBUG
+        if (EnableExternalMemoryTracer)
+        {
+            char LockTmpStr[64];
+            strcpy_unsafe(LockTmpStr, __FUNCTION__);
+            strcat_unsafe(LockTmpStr, "_memTrk");
+            mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+            sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
+                    Info->Framebuffer[itrfb].BaseAddress,
+                    (Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE);
+            UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+            for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+            {
+                if (mExtTrkLog[i] == '\r')
+                    break;
+                mTrkUART.Write(mExtTrkLog[i]);
+            }
+            mExtTrkLock.Unlock();
+        }
+#endif
     }
 }
 
@@ -144,6 +165,37 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
 
     debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
           KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
+
+#ifdef DEBUG
+    if (EnableExternalMemoryTracer)
+    {
+        char LockTmpStr[64];
+        strcpy_unsafe(LockTmpStr, __FUNCTION__);
+        strcat_unsafe(LockTmpStr, "_memTrk");
+        mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
+        sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
+                Info->Kernel.PhysicalBase,
+                Info->Kernel.Size);
+        UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
+        for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+        {
+            if (mExtTrkLog[i] == '\r')
+                break;
+            mTrkUART.Write(mExtTrkLog[i]);
+        }
+
+        sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
+                Info->Kernel.VirtualBase,
+                Info->Kernel.Size);
+        mExtTrkLock.Unlock();
+        for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
+        {
+            if (mExtTrkLog[i] == '\r')
+                break;
+            mTrkUART.Write(mExtTrkLog[i]);
+        }
+    }
+#endif
 }
 
 NIF void InitializeMemoryManagement(BootInfo *Info)
