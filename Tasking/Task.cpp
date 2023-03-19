@@ -264,7 +264,7 @@ namespace Tasking
 
     void Task::Sleep(uint64_t Milliseconds)
     {
-        SmartCriticalSection(TaskingLock);
+        SmartLock(TaskingLock);
         TCB *thread = this->GetCurrentThread();
         thread->Status = TaskStatus::Sleeping;
         if (thread->Parent->Threads.size() == 1)
@@ -341,7 +341,7 @@ namespace Tasking
                             TaskArchitecture Architecture,
                             TaskCompatibility Compatibility)
     {
-        SmartCriticalSection(TaskingLock);
+        SmartLock(TaskingLock);
         TCB *Thread = new TCB;
         if (Parent == nullptr)
         {
@@ -641,7 +641,7 @@ namespace Tasking
                              TaskTrustLevel TrustLevel, void *Image,
                              bool DoNotCreatePageTable)
     {
-        SmartCriticalSection(TaskingLock);
+        SmartLock(TaskingLock);
         PCB *Process = new PCB;
         Process->ID = this->NextPID++;
         strcpy(Process->Name, Name);
@@ -739,7 +739,7 @@ namespace Tasking
 
     Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x86::IRQ16)
     {
-        SmartCriticalSection(TaskingLock);
+        SmartLock(TaskingLock);
 #if defined(a64)
         // Map the IRQ16 to the first CPU.
         ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
@@ -837,7 +837,7 @@ namespace Tasking
     Task::~Task()
     {
         debug("Destructor called");
-        SmartCriticalSection(TaskingLock);
+        SmartLock(TaskingLock);
         trace("Stopping tasking");
         foreach (PCB *Process in ListProcess)
         {
