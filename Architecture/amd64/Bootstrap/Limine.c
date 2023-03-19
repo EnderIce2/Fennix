@@ -3,8 +3,8 @@
 #include <debug.h>
 #include <convert.h>
 
-#include "../../../tools/limine/limine.h"
-#include "../../kernel.h"
+#include "../../../../tools/limine/limine.h"
+#include "../../../kernel.h"
 
 void init_limine();
 
