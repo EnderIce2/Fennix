@@ -15,6 +15,8 @@
 #include "Core/smbios.hpp"
 #include "Tests/t.h"
 
+NewLock(ShutdownLock);
+
 bool DebuggerIsAttached = false;
 
 #ifdef DEBUG
@@ -387,6 +389,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 
 EXTERNC __no_stack_protector NIF void BeforeShutdown()
 {
+    SmartLock(ShutdownLock);
     /* TODO: Announce shutdown */
 
     trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
