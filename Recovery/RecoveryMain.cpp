@@ -286,13 +286,13 @@ namespace Recovery
 
     void RebootCommandThread()
     {
-        TaskManager->Sleep(1000);
+        CriticalSection cs;
         PowerManager->Reboot();
     }
 
     void ShutdownCommandThread()
     {
-        TaskManager->Sleep(1000);
+        CriticalSection cs;
         PowerManager->Shutdown();
     }
 
