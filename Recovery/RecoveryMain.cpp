@@ -181,7 +181,7 @@ namespace Recovery
         GraphicalUserInterface::Handle SchedLblHnd = wdgDbgWin->CreateLabel({5, 15, 0, 0}, "0000000000000000 / 0000000000000000");
 
         wdgDbgWin->CreateLabel({5, 40, 0, 0}, "Memory Usage");
-        GraphicalUserInterface::Handle MemLblHnd = wdgDbgWin->CreateLabel({5, 55, 0, 0}, "0MB / 0GB (0MB reserved) 0%");
+        GraphicalUserInterface::Handle MemLblHnd = wdgDbgWin->CreateLabel({5, 55, 0, 0}, "0MB / 0GB (0MB reserved) 0% (0000000000000000 bytes allocated)");
 
         wdgDbgWin->CreateLabel({5, 95, 0, 0}, "GUI Info");
         wdgDbgWin->CreateLabel({5, 110, 0, 0}, "  Fetch Inputs   /  Paint Desktop   / Paint Widgets");
@@ -253,7 +253,7 @@ namespace Recovery
                 MemTotal = KernelAllocator.GetTotalMemory();
                 MemReserved = KernelAllocator.GetReservedMemory();
                 int MemPercent = (MemUsed * 100) / MemTotal;
-                sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %d%%", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent);
+                sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %d%% (%ld bytes allocated)", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent, MemUsed);
                 wdgDbgWin->SetText(MemLblHnd, TicksText);
                 RefreshMemCounter = 25;
             }
