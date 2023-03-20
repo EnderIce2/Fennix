@@ -168,43 +168,43 @@ enum OutputPulseCodeModulationRegisters
      * @brief Physical Address of Buffer Descriptor List
      * @note Length: dword
      */
-    PCMOUT_BufferDescriptorList = NABM_PCMOutBox + NABMBOFF_BufferDescriptorList,
+    PCMOUT_BufferDescriptorList = (int)NABM_PCMOutBox + (int)NABMBOFF_BufferDescriptorList,
 
     /**
      * @brief Number of Actual Processed Buffer Descriptor Entry
      * @note Length: byte
      */
-    PCMOUT_BufferDescriptorEntry = NABM_PCMOutBox + NABMBOFF_BufferDescriptorEntry,
+    PCMOUT_BufferDescriptorEntry = (int)NABM_PCMOutBox + (int)NABMBOFF_BufferDescriptorEntry,
 
     /**
      * @brief Number of all Descriptor Entries
      * @note Length: byte
      */
-    PCMOUT_DescriptorEntries = NABM_PCMOutBox + NABMBOFF_DescriptorEntries,
+    PCMOUT_DescriptorEntries = (int)NABM_PCMOutBox + (int)NABMBOFF_DescriptorEntries,
 
     /**
      * @brief Status of transferring Data
      * @note Length: word
      */
-    PCMOUT_Status = NABM_PCMOutBox + NABMBOFF_Status,
+    PCMOUT_Status = (int)NABM_PCMOutBox + (int)NABMBOFF_Status,
 
     /**
      * @brief Number of transferred Samples in Actual Processed Entry
      * @note Length: word
      */
-    PCMOUT_TransferredSamples = NABM_PCMOutBox + NABMBOFF_TransferredSamples,
+    PCMOUT_TransferredSamples = (int)NABM_PCMOutBox + (int)NABMBOFF_TransferredSamples,
 
     /**
      * @brief Number of next processed Buffer Entry
      * @note Length: byte
      */
-    PCMOUT_NextProcessedBufferEntry = NABM_PCMOutBox + NABMBOFF_NextProcessedBufferEntry,
+    PCMOUT_NextProcessedBufferEntry = (int)NABM_PCMOutBox + (int)NABMBOFF_NextProcessedBufferEntry,
 
     /**
      * @brief Transfer Control
      * @note Length: byte
      */
-    PCMOUT_TransferControl = NABM_PCMOutBox + NABMBOFF_TransferControl,
+    PCMOUT_TransferControl = (int)NABM_PCMOutBox + (int)NABMBOFF_TransferControl,
 };
 
 enum TransferControlRegisters

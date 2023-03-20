@@ -276,7 +276,7 @@ int CallbackHandler(KernelCallback *Data)
                         }
                     }
 
-                } while (RemainingBDL >= DescriptorListLength - 1 && (!inw(BAR.BusMasterAddress + PCMOUT_Status) & TC_DMAControllerControl));
+                } while (RemainingBDL >= DescriptorListLength - 1 && !(inw(BAR.BusMasterAddress + PCMOUT_Status) & TC_DMAControllerControl));
             }
 
             {
@@ -298,7 +298,7 @@ int CallbackHandler(KernelCallback *Data)
 
                     if (Wrote == 0)
                         break;
-                    KAPI->Util.memcpy((void *)DescriptorList[NextBDL].Address, Buffer, Wrote);
+                    KAPI->Util.memcpy((void *)((uint64_t)DescriptorList[NextBDL].Address), Buffer, Wrote);
                     DescriptorList[NextBDL].Flags = 0;
 
                     Buffer += Wrote;
