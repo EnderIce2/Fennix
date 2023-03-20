@@ -25,12 +25,13 @@ namespace Execute
     typedef struct
     {
         char Path[256];
+        void *ElfFile;
         void *MemoryImage;
         struct InterpreterIPCDataLibrary Libraries[64];
     } InterpreterIPCData;
 
     /* Passing arguments as a sanity check and debugging. */
-    void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, Vector<String> NeededLibraries)
+    void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, void *ElfFile, Vector<String> NeededLibraries)
     {
         debug("Interpreter thread started for %s", Path);
         // Interpreter will create an IPC with token "LOAD".
@@ -49,6 +50,7 @@ namespace Execute
         debug("IPC found, sending data...");
         InterpreterIPCData *TmpBuffer = new InterpreterIPCData;
         strcpy(TmpBuffer->Path, Path);
+        TmpBuffer->ElfFile = ElfFile;
         TmpBuffer->MemoryImage = MemoryImage;
         if (NeededLibraries.size() > 256)
             warn("Too many libraries! (max 256)");
@@ -58,7 +60,17 @@ namespace Execute
         }
 
 #ifdef DEBUG
+        debug("OUTSIDE DATA");
+        debug("Path: %s", Path);
+        debug("ElfFile: %p", ElfFile);
+        debug("MemoryImage: %p", MemoryImage);
+        for (size_t i = 0; i < NeededLibraries.size(); i++)
+        {
+            debug("Library: %s", NeededLibraries[i].c_str());
+        }
+        debug("INSIDE DATA");
         debug("Path: %s", TmpBuffer->Path);
+        debug("ElfFile: %p", TmpBuffer->ElfFile);
         debug("MemoryImage: %p", TmpBuffer->MemoryImage);
         for (size_t i = 0; i < NeededLibraries.size(); i++)
         {
@@ -83,10 +95,11 @@ namespace Execute
     PCB *InterpreterTargetProcess;
     String *InterpreterTargetPath; /* We can't have String as a constructor :( */
     void *InterpreterMemoryImage;
+    void *InterpreterElfFile;
     Vector<String> InterpreterNeededLibraries;
     void ELFInterpreterThreadWrapper()
     {
-        ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterNeededLibraries);
+        ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterElfFile, InterpreterNeededLibraries);
         delete InterpreterTargetPath, InterpreterTargetPath = nullptr;
         return;
     }
@@ -214,9 +227,12 @@ namespace Execute
 
         if (bl.Interpreter)
         {
+            debug("ElfFile: %p ELFHeader: %p", ElfFile, ELFHeader);
+
             InterpreterTargetProcess = Process;
             InterpreterTargetPath = new String(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
             InterpreterMemoryImage = bl.VirtualMemoryImage;
+            InterpreterElfFile = ElfFile;
             InterpreterNeededLibraries = bl.NeededLibraries;
             __sync;
             TCB *InterpreterIPCThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ELFInterpreterThreadWrapper);
