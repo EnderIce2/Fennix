@@ -17,6 +17,18 @@ using VirtualFileSystem::NodeFlags;
 
 namespace Execute
 {
+    struct InterpreterIPCDataLibrary
+    {
+        char Name[128];
+    };
+
+    typedef struct
+    {
+        char Path[256];
+        void *MemoryImage;
+        struct InterpreterIPCDataLibrary Libraries[256];
+    } InterpreterIPCData;
+
     /* Passing arguments as a sanity check and debugging. */
     void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, Vector<String> NeededLibraries)
     {
@@ -35,11 +47,18 @@ namespace Execute
                 debug("Retrying...");
         }
         debug("IPC found, sending data...");
+        InterpreterIPCData *TmpBuffer = new InterpreterIPCData;
+        strcpy(TmpBuffer->Path, Path);
+        TmpBuffer->MemoryImage = MemoryImage;
+        if (NeededLibraries.size() > 256)
+            warn("Too many libraries! (max 256)");
+        for (size_t i = 0; i < NeededLibraries.size(); i++)
+        {
+            strcpy(TmpBuffer->Libraries[i].Name, NeededLibraries[i].c_str());
+        }
+        int NotFoundRetry = 0;
     RetryIPCWrite:
-        uintptr_t *TmpBuffer = new uintptr_t[0x1000];
-        *(int *)TmpBuffer = 2545;
-        InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, 0x1000);
-        delete[] TmpBuffer, TmpBuffer = nullptr;
+        InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, sizeof(InterpreterIPCData));
         debug("Write returned %d", ret);
         if (ret == InterProcessCommunication::IPCErrorCode::IPCNotListening)
         {
@@ -47,6 +66,17 @@ namespace Execute
             TaskManager->Sleep(100);
             goto RetryIPCWrite;
         }
+        else if (ret == InterProcessCommunication::IPCErrorCode::IPCIDNotFound)
+        {
+            if (NotFoundRetry < 100)
+            {
+                debug("IPC not found, retrying...");
+                TaskManager->Sleep(1000);
+                NotFoundRetry++;
+                goto RetryIPCWrite;
+            }
+        }
+        delete TmpBuffer;
         CPU::Halt(true);
     }
 
