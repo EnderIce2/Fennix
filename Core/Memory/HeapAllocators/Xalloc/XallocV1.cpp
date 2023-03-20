@@ -212,7 +212,7 @@ namespace Xalloc
             CurrentBlock = CurrentBlock->Next;
         }
 
-        Xalloc_err("Invalid address.");
+        Xalloc_err("Invalid address %#lx.", Address);
         Xalloc_unlock;
     }
 
