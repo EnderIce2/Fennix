@@ -1,6 +1,6 @@
 build:
-	make --quiet -C AHCI build
-	make --quiet -C ATA build
+	make -C AHCI build
+	make -C ATA build
 
 clean:
 	make -C AHCI clean

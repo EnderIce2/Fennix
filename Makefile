@@ -1,12 +1,12 @@
 build:
 	mkdir -p out
-	make --quiet -C Input build
-	make --quiet -C Storage build
-	make --quiet -C Audio build
-	make --quiet -C FileSystem build
-	make --quiet -C Generic build
-	make --quiet -C Network build
-	make --quiet -C Video build
+	make -C Input build
+	make -C Storage build
+	make -C Audio build
+	make -C FileSystem build
+	make -C Generic build
+	make -C Network build
+	make -C Video build
 
 prepare:
 	$(info Nothing to prepare)

@@ -1,5 +1,5 @@
 build:
-	make --quiet -C Framebuffer build
+	make -C Framebuffer build
 
 clean:
 	make -C Framebuffer clean

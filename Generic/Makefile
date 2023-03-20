@@ -1,8 +1,8 @@
 build:
-	make --quiet -C ExampleDriver build
+	make -C ExampleDriver build
 
 prepare:
 	$(info Nothing to prepare)
 
 clean:
-	make --quiet -C ExampleDriver clean
+	make -C ExampleDriver clean

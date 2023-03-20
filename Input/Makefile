@@ -1,7 +1,7 @@
 build:
-	make --quiet -C PS2Mouse build
-	make --quiet -C VMwareMouse build
-	make --quiet -C VirtualBoxMouse build
+	make -C PS2Mouse build
+	make -C VMwareMouse build
+	make -C VirtualBoxMouse build
 
 clean:
 	make -C PS2Mouse clean
