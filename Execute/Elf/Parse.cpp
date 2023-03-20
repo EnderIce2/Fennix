@@ -140,7 +140,7 @@ namespace Execute
         return nullptr;
     }
 
-    void *ELFCreateMemoryImage(Memory::MemMgr *mem, Memory::Virtual &pV, void *ElfFile, size_t Length)
+    MmImage ELFCreateMemoryImage(Memory::MemMgr *mem, Memory::Virtual &pV, void *ElfFile, size_t Length)
     {
         void *MemoryImage = nullptr;
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
@@ -153,7 +153,7 @@ namespace Execute
             fixme("Text relocation is not(?) tested yet!");
             MemoryImage = (uint8_t *)mem->RequestPages(TO_PAGES(Length), true);
             memset(MemoryImage, 0, Length);
-            return MemoryImage;
+            return {MemoryImage, 0x0};
         }
 
         Elf64_Phdr ItrPhdr;
@@ -177,7 +177,7 @@ namespace Execute
                 debug("p_vaddr is 0, allocating %ld pages for image", TO_PAGES(Length));
                 MemoryImage = mem->RequestPages(TO_PAGES(Length), true);
                 memset(MemoryImage, 0, Length);
-                return MemoryImage;
+                return {MemoryImage, (void *)FirstProgramHeaderVirtualAddress};
             }
         }
 
@@ -195,7 +195,7 @@ namespace Execute
             pV.Remap((void *)((uintptr_t)FirstProgramHeaderVirtualAddress + (i * PAGE_SIZE)), (void *)((uintptr_t)MemoryImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
             debug("Remapped: %#lx -> %#lx", (uintptr_t)FirstProgramHeaderVirtualAddress + (i * PAGE_SIZE), (uintptr_t)MemoryImage + (i * PAGE_SIZE));
         }
-        return MemoryImage;
+        return {MemoryImage, (void *)FirstProgramHeaderVirtualAddress};
     }
 
     uintptr_t LoadELFInterpreter(Memory::MemMgr *mem, Memory::Virtual &pV, const char *Interpreter)
@@ -252,7 +252,7 @@ namespace Execute
             ElfAppSize = MAX(ElfAppSize, SegmentEnd);
         }
 
-        void *MemoryImage = ELFCreateMemoryImage(mem, pV, (void *)File->node->Address, ElfAppSize);
+        MmImage MemoryImage = ELFCreateMemoryImage(mem, pV, (void *)File->node->Address, ElfAppSize);
 
         for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
         {
@@ -265,7 +265,7 @@ namespace Execute
                 debug("PT_LOAD - Offset: %#lx, VirtAddr: %#lx, FileSiz: %ld, MemSiz: %ld, Align: %#lx",
                       ItrPhdr.p_offset, ItrPhdr.p_vaddr,
                       ItrPhdr.p_filesz, ItrPhdr.p_memsz, ItrPhdr.p_align);
-                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
+                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Phyiscal;
                 fixme("Address: %#lx %s%s%s", MAddr,
                       (ItrPhdr.p_flags & PF_R) ? "R" : "",
                       (ItrPhdr.p_flags & PF_W) ? "W" : "",
@@ -277,8 +277,8 @@ namespace Execute
         }
 
         vfs->Close(File);
-        debug("Interpreter entry point: %#lx (%#lx + %#lx)", (uintptr_t)MemoryImage + ELFHeader->e_entry,
-              (uintptr_t)MemoryImage, ELFHeader->e_entry);
-        return (uintptr_t)MemoryImage + ELFHeader->e_entry;
+        debug("Interpreter entry point: %#lx (%#lx + %#lx)", (uintptr_t)MemoryImage.Phyiscal + ELFHeader->e_entry,
+              (uintptr_t)MemoryImage.Phyiscal, ELFHeader->e_entry);
+        return (uintptr_t)MemoryImage.Phyiscal + ELFHeader->e_entry;
     }
 }

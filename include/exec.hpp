@@ -62,6 +62,7 @@ namespace Execute
 
         Vector<String> NeededLibraries;
         void *MemoryImage;
+        void *VirtualMemoryImage;
 
         /* This should be deleted after copying the allocated pages to the thread
            Intended to be used only inside BaseLoad.cpp */
@@ -69,6 +70,12 @@ namespace Execute
 
         /* Same as above, for BaseLoad.cpp only */
         Vector<AuxiliaryVector> auxv;
+    };
+
+    struct MmImage
+    {
+        void *Phyiscal;
+        void *Virtual;
     };
 
     BinaryType GetBinaryType(void *Image);
@@ -94,9 +101,9 @@ namespace Execute
      * @param pV Memory::Virtual object to use
      * @param ElfFile ELF file loaded in memory (FULL FILE)
      * @param Length Length of @p ElfFile
-     * @return void* The Memory Image
+     * @return The Memory Image (Physical and Virtual)
      */
-    void *ELFCreateMemoryImage(Memory::MemMgr *mem, Memory::Virtual &pV, void *ElfFile, size_t Length);
+    MmImage ELFCreateMemoryImage(Memory::MemMgr *mem, Memory::Virtual &pV, void *ElfFile, size_t Length);
 
     uintptr_t LoadELFInterpreter(Memory::MemMgr *mem, Memory::Virtual &pV, const char *Interpreter);
 

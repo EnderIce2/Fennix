@@ -26,7 +26,7 @@ namespace Execute
     {
         char Path[256];
         void *MemoryImage;
-        struct InterpreterIPCDataLibrary Libraries[256];
+        struct InterpreterIPCDataLibrary Libraries[64];
     } InterpreterIPCData;
 
     /* Passing arguments as a sanity check and debugging. */
@@ -42,7 +42,7 @@ namespace Execute
             Handle = Process->IPC->SearchByToken(UniqueToken);
             if (Handle == nullptr)
                 debug("Failed");
-            TaskManager->Sleep(100);
+            TaskManager->Sleep(200);
             if (Handle == nullptr)
                 debug("Retrying...");
         }
@@ -56,6 +56,16 @@ namespace Execute
         {
             strcpy(TmpBuffer->Libraries[i].Name, NeededLibraries[i].c_str());
         }
+
+#ifdef DEBUG
+        debug("Path: %s", TmpBuffer->Path);
+        debug("MemoryImage: %p", TmpBuffer->MemoryImage);
+        for (size_t i = 0; i < NeededLibraries.size(); i++)
+        {
+            debug("Library: %s", TmpBuffer->Libraries[i].Name);
+        }
+#endif
+
         int NotFoundRetry = 0;
     RetryIPCWrite:
         InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, sizeof(InterpreterIPCData));
@@ -65,16 +75,6 @@ namespace Execute
             debug("IPC not listening, retrying...");
             TaskManager->Sleep(100);
             goto RetryIPCWrite;
-        }
-        else if (ret == InterProcessCommunication::IPCErrorCode::IPCIDNotFound)
-        {
-            if (NotFoundRetry < 100)
-            {
-                debug("IPC not found, retrying...");
-                TaskManager->Sleep(1000);
-                NotFoundRetry++;
-                goto RetryIPCWrite;
-            }
         }
         delete TmpBuffer;
         CPU::Halt(true);
@@ -216,7 +216,7 @@ namespace Execute
         {
             InterpreterTargetProcess = Process;
             InterpreterTargetPath = new String(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
-            InterpreterMemoryImage = bl.MemoryImage;
+            InterpreterMemoryImage = bl.VirtualMemoryImage;
             InterpreterNeededLibraries = bl.NeededLibraries;
             __sync;
             TCB *InterpreterIPCThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ELFInterpreterThreadWrapper);

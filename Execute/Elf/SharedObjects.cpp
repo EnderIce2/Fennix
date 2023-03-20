@@ -66,7 +66,7 @@ namespace Execute
         memcpy(LibFile, (void *)ElfImage, Length);
 
         Memory::Virtual ncpV = pV;
-        sl.MemoryImage = ELFCreateMemoryImage(mem, ncpV, LibFile, Length);
+        sl.MemoryImage = ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Phyiscal;
 
         {
             uintptr_t BaseAddress = UINTPTR_MAX;

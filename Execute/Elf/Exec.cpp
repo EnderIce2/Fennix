@@ -29,6 +29,7 @@ namespace Execute
         uintptr_t BaseAddress = UINTPTR_MAX;
         uint64_t ElfAppSize = 0;
         uintptr_t EntryPoint = ELFHeader->e_entry;
+        debug("%s's entry point is %#lx", ExFile->Name, EntryPoint);
 
         Elf64_Phdr ItrPhdr;
 
@@ -58,7 +59,7 @@ namespace Execute
         /* If required, MemoryImage will be at virtual address. (unless has PIE)
          *
          * tl;dr this is where the code is stored. */
-        void *MemoryImage = ELFCreateMemoryImage(ELFBase.TmpMem, pV, ElfFile, ElfAppSize);
+        MmImage MemoryImage = ELFCreateMemoryImage(ELFBase.TmpMem, pV, ElfFile, ElfAppSize);
 
         debug("Solving symbols for address: %#llx", (uintptr_t)ElfFile);
         Elf64_Shdr *ElfSections = (Elf64_Shdr *)((uintptr_t)ElfFile + ELFHeader->e_shoff);
@@ -87,7 +88,7 @@ namespace Execute
         /* Calculate entry point */
         memcpy(&ItrPhdr, (uint8_t *)ElfFile + ELFHeader->e_phoff, sizeof(Elf64_Phdr));
         if (ItrPhdr.p_vaddr == 0)
-            EntryPoint += (uintptr_t)MemoryImage;
+            EntryPoint += (uintptr_t)MemoryImage.Virtual;
 
         char InterpreterPath[256];
 
@@ -107,7 +108,7 @@ namespace Execute
                 debug("PT_LOAD - Offset: %#lx, VirtAddr: %#lx, FileSiz: %ld, MemSiz: %ld, Align: %#lx",
                       ItrPhdr.p_offset, ItrPhdr.p_vaddr,
                       ItrPhdr.p_filesz, ItrPhdr.p_memsz, ItrPhdr.p_align);
-                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage;
+                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Phyiscal;
                 fixme("Address: %#lx %s%s%s", MAddr,
                       (ItrPhdr.p_flags & PF_R) ? "R" : "",
                       (ItrPhdr.p_flags & PF_W) ? "W" : "",
@@ -191,14 +192,15 @@ namespace Execute
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)vfs->GetPathFromNode(ExFile->node).Get()}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
-        ELFBase.auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage}}});
+        ELFBase.auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage.Virtual}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader->e_phnum}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader->e_phentsize}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
 
         ELFBase.InstructionPointer = EntryPoint;
-        ELFBase.MemoryImage = MemoryImage;
+        ELFBase.MemoryImage = MemoryImage.Phyiscal;
+        ELFBase.VirtualMemoryImage = MemoryImage.Virtual;
 
         ELFBase.Success = true;
         return ELFBase;
