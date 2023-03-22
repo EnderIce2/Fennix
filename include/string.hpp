@@ -183,15 +183,15 @@ public:
         return strcmp(this->m_Data, Other) != 0;
     }
 
-    class Iterator
+    class iterator
     {
     private:
         char *m_Pointer;
 
     public:
-        Iterator(char *Pointer) : m_Pointer(Pointer) {}
+        iterator(char *Pointer) : m_Pointer(Pointer) {}
 
-        Iterator &operator++()
+        iterator &operator++()
         {
             ++this->m_Pointer;
             strdbg("String iterator incremented: %#lx", this->m_Pointer);
@@ -204,29 +204,29 @@ public:
             return *this->m_Pointer;
         }
 
-        bool operator!=(const Iterator &Other) const
+        bool operator!=(const iterator &Other) const
         {
             strdbg("String iterator compared: %#lx != %#lx", this->m_Pointer, Other.m_Pointer);
             return this->m_Pointer != Other.m_Pointer;
         }
 
-        bool operator==(const Iterator &Other) const
+        bool operator==(const iterator &Other) const
         {
             strdbg("String iterator compared: %#lx == %#lx", this->m_Pointer, Other.m_Pointer);
             return this->m_Pointer == Other.m_Pointer;
         }
     };
 
-    Iterator begin()
+    iterator begin()
     {
         strdbg("String iterator begin: %#lx", this->m_Data);
-        return Iterator(this->m_Data);
+        return iterator(this->m_Data);
     }
 
-    Iterator end()
+    iterator end()
     {
         strdbg("String iterator end: %#lx", this->m_Data + this->m_Length);
-        return Iterator(this->m_Data + this->m_Length);
+        return iterator(this->m_Data + this->m_Length);
     }
 };
 
