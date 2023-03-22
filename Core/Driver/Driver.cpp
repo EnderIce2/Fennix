@@ -182,7 +182,8 @@ namespace Driver
                     if (cwk_path_has_extension(driver->Name))
                     {
                         const char *extension;
-                        cwk_path_get_extension(driver->Name, &extension, nullptr);
+                        size_t extension_length;
+                        cwk_path_get_extension(driver->Name, &extension, &extension_length);
                         debug("Driver: %s; Extension: %s", driver->Name, extension);
                         if (strcmp(extension, ".fex") == 0 || strcmp(extension, ".elf") == 0)
                         {
