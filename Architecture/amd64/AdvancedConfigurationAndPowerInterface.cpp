@@ -24,7 +24,7 @@ namespace ACPI
                     break;
                 if (i == 3)
                 {
-                    trace("%s found!", Signature);
+                    trace("%s found at address %p!", Signature, (uintptr_t)SDTHdr);
                     return SDTHdr;
                 }
             }
@@ -97,6 +97,12 @@ namespace ACPI
         FindTable(XSDT, (char *)"WDAT");
         FindTable(XSDT, (char *)"WDDT");
         FindTable(XSDT, (char *)"WDRT");
+        FindTable(XSDT, (char *)"ATKG");
+        FindTable(XSDT, (char *)"GSCI");
+        FindTable(XSDT, (char *)"IEIT");
+        FindTable(XSDT, (char *)"HMAT");
+        FindTable(XSDT, (char *)"CEDT");
+        FindTable(XSDT, (char *)"AEST");
     }
 
     ACPI::ACPI(BootInfo *Info)
