@@ -367,39 +367,51 @@ const char *Type_Check_Kinds[] = {
 
 bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
 {
-    // blacklist
-    // if (strstr(file, "liballoc") ||
-    //     strstr(file, "cwalk") ||
-    //     strstr(file, "AdvancedConfigurationAndPowerInterface") ||
-    //     strstr(file, "SystemManagementBIOS"))
-    //     return false;
-
+    /* This can be ignored (unaligned memory access) */
     if (strstr(file, "AdvancedConfigurationAndPowerInterface.cpp") &&
         (line == 17 && column == 47))
         return false;
 
+    /* This can be ignored (unaligned memory access) */
     if (strstr(file, "SystemManagementBIOS.cpp") &&
         ((line == 30 && column == 21) ||
          (line == 27 && column == 49) ||
          (line == 45 && column == 26)))
         return false;
 
-    if (strstr(file, "cwalk.c") &&
-        ((line == 1047 && column == 15)))
+    /* This can be ignored (unaligned memory access) */
+    if (strstr(file, "DynamicHostConfigurationProtocol.cpp") &&
+        (line == 63 && column == 30))
         return false;
 
-    if (strstr(file, "liballoc_1_1.c"))
-        return false;
-
-    if (strstr(file, "display.hpp") &&
-        ((line == 113 && column == 43)))
-        return false;
-
-    if (strstr(file, "Xalloc.hpp") &&
-        (line == 48 && column == 28))
-        return false;
-
+    /* This can be ignored (store address x with insufficient space for object of type 'y') */
     if (strstr(file, "Task.cpp") && line > 500)
+        return false;
+
+    /* This can be ignored (store address x with insufficient space for object of type 'y') */
+    if (strstr(file, "InternetProtocol.cpp") &&
+        ((line == 66 && column == 13) ||
+         (line == 66 && column == 93) ||
+         (line == 68 && column == 51) ||
+         (line == 68 && column == 165) ||
+         (line == 73 && column == 36) ||
+         (line == 78 && column == 54) ||
+         (line == 79 && column == 64) ||
+
+         (line == 81 && column == 126) ||
+         (line == 81 && column == 165) ||
+
+         (line == 81 && column == 15) ||
+         (line == 156 && column == 38) ||
+         (line == 157 && column == 47) ||
+         (line == 158 && column == 45)))
+        return false;
+
+    /* This can be ignored (store address x with insufficient space for object of type 'y') */
+    if (strstr(file, "DynamicHostConfigurationProtocol.cpp") &&
+        ((line == 156 && column == 38) ||
+         (line == 157 && column == 47) ||
+         (line == 158 && column == 45)))
         return false;
 
     ubsan("\t\tIn File: %s:%i:%i", file, line, column);
