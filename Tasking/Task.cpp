@@ -465,8 +465,8 @@ namespace Tasking
             char *StackStringsVirtual = (char *)Thread->Stack->GetStackTop();
 
             // Store string pointers for later
-            uintptr_t ArgvStrings[ArgvSize];
-            uintptr_t EnvpStrings[EnvpSize];
+            uintptr_t *ArgvStrings = new uintptr_t[ArgvSize];
+            uintptr_t *EnvpStrings = new uintptr_t[EnvpSize];
 
             for (size_t i = 0; i < ArgvSize; i++)
             {
@@ -557,6 +557,9 @@ namespace Tasking
 
             // Set the stack pointer to the new stack
             Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop() - SubtractStack);
+
+            delete[] ArgvStrings;
+            delete[] EnvpStrings;
 
 #ifdef DEBUG
             DumpData("Stack Data", (void *)((uintptr_t)Thread->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
