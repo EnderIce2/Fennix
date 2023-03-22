@@ -121,9 +121,9 @@ namespace VirtualFileSystem
         Node *FileSystemRoot = nullptr;
 
     public:
-        shared_ptr<char> GetPathFromNode(Node *node);
+        SharedPointer<char> GetPathFromNode(Node *node);
         Node *GetNodeFromPath(const char *Path, Node *Parent = nullptr);
-        shared_ptr<File> ConvertNodeToFILE(Node *node);
+        SharedPointer<File> ConvertNodeToFILE(Node *node);
 
         Node *GetParent(const char *Path, Node *Parent);
         Node *GetRootNode() { return FileSystemRoot; }
@@ -132,7 +132,7 @@ namespace VirtualFileSystem
         Node *GetChild(const char *Name, Node *Parent);
         FileStatus RemoveChild(const char *Name, Node *Parent);
 
-        shared_ptr<char> NormalizePath(const char *Path, Node *Parent = nullptr);
+        SharedPointer<char> NormalizePath(const char *Path, Node *Parent = nullptr);
         bool PathExists(const char *Path, Node *Parent = nullptr);
         Node *CreateRoot(const char *RootName, FileSystemOperations *Operator);
         Node *Create(const char *Path, NodeFlags Flag, Node *Parent = nullptr);
@@ -140,14 +140,14 @@ namespace VirtualFileSystem
         FileStatus Delete(const char *Path, bool Recursive = false, Node *Parent = nullptr);
         FileStatus Delete(Node *Path, bool Recursive = false, Node *Parent = nullptr);
 
-        shared_ptr<File> Mount(const char *Path, FileSystemOperations *Operator);
-        FileStatus Unmount(shared_ptr<File> File);
+        SharedPointer<File> Mount(const char *Path, FileSystemOperations *Operator);
+        FileStatus Unmount(SharedPointer<File> File);
 
-        size_t Read(shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
-        size_t Write(shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Read(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Write(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
 
-        shared_ptr<File> Open(const char *Path, Node *Parent = nullptr);
-        FileStatus Close(shared_ptr<File> File);
+        SharedPointer<File> Open(const char *Path, Node *Parent = nullptr);
+        FileStatus Close(SharedPointer<File> File);
 
         Virtual();
         ~Virtual();

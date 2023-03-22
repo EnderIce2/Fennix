@@ -52,7 +52,7 @@ namespace Recovery
             return;
         }
 
-        shared_ptr<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
+        SharedPointer<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
 
         if (pcm->Status != FileStatus::OK)
         {

@@ -111,7 +111,7 @@ namespace Execute
         cwk_path_get_basename(Path, &BaseName, nullptr);
         TaskArchitecture Arch = TaskArchitecture::UnknownArchitecture;
 
-        shared_ptr<File> ExFile = vfs->Open(Path);
+        SharedPointer<File> ExFile = vfs->Open(Path);
 
         if (ExFile->Status != FileStatus::OK)
         {

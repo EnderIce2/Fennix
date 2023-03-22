@@ -154,7 +154,7 @@ namespace Execute
                 memcpy((void *)InterpreterPath, (uint8_t *)ElfFile + ItrPhdr.p_offset, 256);
                 debug("Interpreter: %s", InterpreterPath);
 
-                shared_ptr<VirtualFileSystem::File> InterpreterFile = vfs->Open(InterpreterPath);
+                SharedPointer<VirtualFileSystem::File> InterpreterFile = vfs->Open(InterpreterPath);
                 if (InterpreterFile->Status != VirtualFileSystem::FileStatus::OK)
                     warn("Failed to open interpreter file: %s", InterpreterPath);
 

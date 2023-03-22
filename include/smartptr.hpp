@@ -22,23 +22,23 @@
  * the object is removed, the object is deleted.
  *
  * Basic Usage:
- * smart_ptr<char> pointer(new char());
+ * SmartPointer<char> pointer(new char());
  * *pointer = 'a';
  * printf("%c", *pointer); // Prints "a"
  */
 template <class T>
-class smart_ptr
+class SmartPointer
 {
     T *m_RealPointer;
 
 public:
-    explicit smart_ptr(T *Pointer = nullptr)
+    explicit SmartPointer(T *Pointer = nullptr)
     {
         spdbg("Smart pointer created (%#lx)", m_RealPointer);
         m_RealPointer = Pointer;
     }
 
-    ~smart_ptr()
+    ~SmartPointer()
     {
         spdbg("Smart pointer deleted (%#lx)", m_RealPointer);
         delete m_RealPointer, m_RealPointer = nullptr;
@@ -58,22 +58,22 @@ public:
 };
 
 template <class T>
-class auto_ptr
+class AutoPointer
 {
 };
 
 template <class T>
-class unique_ptr
+class UniquePointer
 {
 };
 
 template <class T>
-class weak_ptr
+class WeakPointer
 {
 };
 
 template <typename T>
-class shared_ptr
+class SharedPointer
 {
 private:
     class Counter
@@ -127,7 +127,7 @@ private:
     T *m_RealPointer;
 
 public:
-    explicit shared_ptr(T *Pointer = nullptr)
+    explicit SharedPointer(T *Pointer = nullptr)
     {
         m_RealPointer = Pointer;
         m_ReferenceCounter = new Counter();
@@ -136,7 +136,7 @@ public:
             (*m_ReferenceCounter)++;
     }
 
-    shared_ptr(shared_ptr<T> &SPtr)
+    SharedPointer(SharedPointer<T> &SPtr)
     {
         spdbg("[%#lx] Shared pointer copied (ptr=%#lx, ref=%#lx)", this, SPtr.m_RealPointer, SPtr.m_ReferenceCounter);
         m_RealPointer = SPtr.m_RealPointer;
@@ -144,7 +144,7 @@ public:
         (*m_ReferenceCounter)++;
     }
 
-    ~shared_ptr()
+    ~SharedPointer()
     {
         spdbg("[%#lx] Shared pointer destructor called", this);
         (*m_ReferenceCounter)--;
@@ -211,7 +211,7 @@ public:
         }
     }
 
-    void swap(shared_ptr<T> &Other)
+    void swap(SharedPointer<T> &Other)
     {
         spdbg("[%#lx] Shared pointer swap (ptr=%#lx, ref=%#lx <=> ptr=%#lx, ref=%#lx)",
               this, m_RealPointer, m_ReferenceCounter, Other.m_RealPointer, Other.m_ReferenceCounter);
@@ -225,42 +225,42 @@ public:
 };
 
 template <typename T>
-struct remove_reference
+struct RemoveReference
 {
     typedef T type;
 };
 
 template <typename T>
-struct remove_reference<T &>
+struct RemoveReference<T &>
 {
     typedef T type;
 };
 
 template <typename T>
-struct remove_reference<T &&>
+struct RemoveReference<T &&>
 {
     typedef T type;
 };
 
 template <typename T>
-using remove_reference_t = typename remove_reference<T>::type;
+using RemoveReference_t = typename RemoveReference<T>::type;
 
 template <typename T>
-T &&forward(remove_reference_t<T> &t)
+T &&forward(RemoveReference_t<T> &t)
 {
     return static_cast<T &&>(t);
 };
 
 template <typename T>
-T &&forward(remove_reference_t<T> &&t)
+T &&forward(RemoveReference_t<T> &&t)
 {
     return static_cast<T &&>(t);
 };
 
 template <typename T, typename... Args>
-shared_ptr<T> make_shared(Args &&...args)
+SharedPointer<T> MakeShared(Args &&...args)
 {
-    return shared_ptr<T>(new T(forward<Args>(args)...));
+    return SharedPointer<T>(new T(forward<Args>(args)...));
 };
 
 #endif // !__FENNIX_KERNEL_SMART_POINTER_H__

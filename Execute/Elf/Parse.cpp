@@ -207,7 +207,7 @@ namespace Execute
         }
 
         /* No need to check if it's valid, the GetBinaryType() call above does that. */
-        shared_ptr<VirtualFileSystem::File> File = vfs->Open(Interpreter);
+        SharedPointer<VirtualFileSystem::File> File = vfs->Open(Interpreter);
 
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)File->node->Address;
 

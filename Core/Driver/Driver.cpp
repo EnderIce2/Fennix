@@ -174,7 +174,7 @@ namespace Driver
     Driver::Driver()
     {
         SmartCriticalSection(DriverInitLock);
-        shared_ptr<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
+        SharedPointer<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
         if (DriverDirectory->Status == VirtualFileSystem::FileStatus::OK)
         {
             foreach (auto driver in DriverDirectory->node->Children)
