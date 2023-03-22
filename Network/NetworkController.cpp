@@ -123,14 +123,14 @@ namespace NetworkInterfaceManager
             */
             InternetProtocol ip = {.v4 = {.Address = {129, 6, 15, 28}},
                                    .v6 = {.Address = {}}};
-            NetworkUDP::Socket *NTP_Socket = udp->Connect(ip, 123);
-            NetworkNTP::NTP *ntp = new NetworkNTP::NTP(NTP_Socket);
-            udp->Bind(NTP_Socket, ntp);
-            int UnixTimestamp = ntp->ReadTime();
-            Time::Clock time = Time::ConvertFromUnix(UnixTimestamp);
-            DbgWriteScreen("NTP: %d - %d.%d.%d %d:%d:%d", time.Counter,
-                           time.Day, time.Month, time.Year,
-                           time.Hour, time.Minute, time.Second);
+            // NetworkUDP::Socket *NTP_Socket = udp->Connect(ip, 123);
+            // NetworkNTP::NTP *ntp = new NetworkNTP::NTP(NTP_Socket);
+            // udp->Bind(NTP_Socket, ntp);
+            // int UnixTimestamp = ntp->ReadTime();
+            // Time::Clock time = Time::ConvertFromUnix(UnixTimestamp);
+            // DbgWriteScreen("NTP: %d - %d.%d.%d %d:%d:%d", time.Counter,
+            //                time.Day, time.Month, time.Year,
+            //                time.Hour, time.Minute, time.Second);
             TaskManager->Sleep(200);
 
             /* TODO: Store everything in an vector and initialize all network cards */
