@@ -593,6 +593,43 @@ EXTERNC char *ultoa(unsigned long Value, char *Buffer, int Base)
     return reverse(Buffer, 0, i - 1);
 }
 
+EXTERNC int log2(unsigned int n)
+{
+    if (n == 0)
+    {
+        error("log2(0) is undefined.");
+        return -1;
+    }
+
+    int log = 0;
+    
+    if ((n & 0xFFFF0000) != 0)
+    {
+        n >>= 16;
+        log = 16;
+    }
+    
+    if (n >= 256)
+    {
+        n >>= 8;
+        log += 8;
+    }
+
+    if (n >= 16)
+    {
+        n >>= 4;
+        log += 4;
+    }
+
+    if (n >= 4)
+    {
+        n >>= 2;
+        log += 2;
+    }
+    
+    return log + (n >> 1);
+}
+
 EXTERNC void __chk_fail(void) __attribute__((__noreturn__));
 
 __noreturn __always_inline static inline void __convert_chk_fail(void)

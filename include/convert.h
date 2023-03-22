@@ -74,6 +74,7 @@ extern "C"
     int strcasecmp(const char *lhs, const char *rhs);
     char *strtok(char *src, const char *delim);
     long int strtol(const char *str, char **endptr, int base);
+    int log2(unsigned int n);
 
     void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
     void *__memset_chk(void *dest, int val, size_t len, size_t slen);
