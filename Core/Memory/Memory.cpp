@@ -32,9 +32,8 @@ NewLock(OperatorAllocatorLock);
 Physical KernelAllocator;
 PageTable4 *KernelPageTable = nullptr;
 PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
-void *KPT = nullptr;
 
-static MemoryAllocatorType AllocatorType = MemoryAllocatorType::None;
+static MemoryAllocatorType AllocatorType = MemoryAllocatorType::Pages;
 Xalloc::V1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
@@ -131,6 +130,8 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     uintptr_t KernelDataEnd = (uintptr_t)&_kernel_data_end;
     uintptr_t KernelRoDataEnd = (uintptr_t)&_kernel_rodata_end;
     uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
+    uintptr_t KernelFileStart = (uintptr_t)Info->Kernel.FileBase;
+    uintptr_t KernelFileEnd = KernelFileStart + Info->Kernel.Size;
 
     uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
     uintptr_t k;
@@ -161,6 +162,12 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
+    }
+
+    for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
+    {
+        va.Map((void *)k, (void *)k, PTFlag::RW | PTFlag::G);
+        KernelAllocator.LockPage((void *)k);
     }
 
     debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
@@ -253,8 +260,6 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
           TO_MB(KernelAllocator.GetTotalMemory()),
           TO_MB(KernelAllocator.GetReservedMemory()));
 
-    AllocatorType = MemoryAllocatorType::Pages;
-
     trace("Initializing Virtual Memory Manager");
     KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(KernelPageTable, 0, PAGE_SIZE);
@@ -286,11 +291,10 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     debug("Userspace:");
     tracepagetable(UserspaceKernelOnlyPageTable);
 #endif
-    KPT = KernelPageTable;
 #if defined(a64) || defined(a32)
-    asmv("mov %0, %%cr3" ::"r"(KPT));
+    asmv("mov %0, %%cr3" ::"r"(KernelPageTable));
 #elif defined(aa64)
-    asmv("msr ttbr0_el1, %0" ::"r"(KPT));
+    asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
 #endif
     debug("Page table updated.");
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))
