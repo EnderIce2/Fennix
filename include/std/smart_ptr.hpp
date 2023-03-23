@@ -57,6 +57,12 @@ namespace std
             spdbg("Smart pointer dereferenced (%#lx)", m_RealPointer);
             return m_RealPointer;
         }
+
+        T *get()
+        {
+            spdbg("Smart pointer returned (%#lx)", m_RealPointer);
+            return m_RealPointer;
+        }
     };
 
     template <class T>
@@ -78,61 +84,61 @@ namespace std
     class shared_ptr
     {
     private:
-        class Counter
+        class counter
         {
         private:
             unsigned int m_RefCount{};
 
         public:
-            Counter() : m_RefCount(0) { spdbg("Counter %#lx created", this); };
-            Counter(const Counter &) = delete;
-            Counter &operator=(const Counter &) = delete;
-            ~Counter() { spdbg("Counter %#lx deleted", this); }
-            void Reset()
+            counter() : m_RefCount(0) { spdbg("Counter %#lx created", this); };
+            counter(const counter &) = delete;
+            counter &operator=(const counter &) = delete;
+            ~counter() { spdbg("Counter %#lx deleted", this); }
+            void reset()
             {
                 m_RefCount = 0;
-                spdbg("Counter reset");
+                spdbg("reset");
             }
 
-            unsigned int Get()
+            unsigned int get()
             {
                 return m_RefCount;
-                spdbg("Counter returned");
+                spdbg("return");
             }
 
             void operator++()
             {
                 m_RefCount++;
-                spdbg("Counter incremented");
+                spdbg("increment");
             }
 
             void operator++(int)
             {
                 m_RefCount++;
-                spdbg("Counter incremented");
+                spdbg("increment");
             }
 
             void operator--()
             {
                 m_RefCount--;
-                spdbg("Counter decremented");
+                spdbg("decrement");
             }
 
             void operator--(int)
             {
                 m_RefCount--;
-                spdbg("Counter decremented");
+                spdbg("decrement");
             }
         };
 
-        Counter *m_ReferenceCounter;
+        counter *m_ReferenceCounter;
         T *m_RealPointer;
 
     public:
         explicit shared_ptr(T *Pointer = nullptr)
         {
             m_RealPointer = Pointer;
-            m_ReferenceCounter = new Counter();
+            m_ReferenceCounter = new counter();
             spdbg("[%#lx] Shared pointer created (ptr=%#lx, ref=%#lx)", this, Pointer, m_ReferenceCounter);
             if (Pointer)
                 (*m_ReferenceCounter)++;
@@ -150,7 +156,7 @@ namespace std
         {
             spdbg("[%#lx] Shared pointer destructor called", this);
             (*m_ReferenceCounter)--;
-            if (m_ReferenceCounter->Get() == 0)
+            if (m_ReferenceCounter->get() == 0)
             {
                 spdbg("[%#lx] Shared pointer deleted (ptr=%#lx, ref=%#lx)", this, m_RealPointer, m_ReferenceCounter);
                 delete m_ReferenceCounter, m_ReferenceCounter = nullptr;
@@ -158,13 +164,13 @@ namespace std
             }
         }
 
-        unsigned int GetCount()
+        unsigned int get_count()
         {
-            spdbg("[%#lx] Shared pointer count (%d)", this, m_ReferenceCounter->Get());
-            return m_ReferenceCounter->Get();
+            spdbg("[%#lx] Shared pointer count (%d)", this, m_ReferenceCounter->get());
+            return m_ReferenceCounter->get();
         }
 
-        T *Get()
+        T *get()
         {
             spdbg("[%#lx] Shared pointer get (%#lx)", this, m_RealPointer);
             return m_RealPointer;
@@ -188,13 +194,13 @@ namespace std
                 return;
             spdbg("[%#lx] Shared pointer reset (ptr=%#lx, ref=%#lx)", this, Pointer, m_ReferenceCounter);
             (*m_ReferenceCounter)--;
-            if (m_ReferenceCounter->Get() == 0)
+            if (m_ReferenceCounter->get() == 0)
             {
                 delete m_RealPointer;
                 delete m_ReferenceCounter;
             }
             m_RealPointer = Pointer;
-            m_ReferenceCounter = new Counter();
+            m_ReferenceCounter = new counter();
             if (Pointer)
                 (*m_ReferenceCounter)++;
         }
@@ -202,7 +208,7 @@ namespace std
         void reset()
         {
             spdbg("[%#lx] Shared pointer reset (ptr=%#lx, ref=%#lx)", this, m_RealPointer, m_ReferenceCounter);
-            if (m_ReferenceCounter->Get() == 1)
+            if (m_ReferenceCounter->get() == 1)
             {
                 delete m_RealPointer, m_RealPointer = nullptr;
                 delete m_ReferenceCounter, m_ReferenceCounter = nullptr;
@@ -218,7 +224,7 @@ namespace std
             spdbg("[%#lx] Shared pointer swap (ptr=%#lx, ref=%#lx <=> ptr=%#lx, ref=%#lx)",
                   this, m_RealPointer, m_ReferenceCounter, Other.m_RealPointer, Other.m_ReferenceCounter);
             T *tempRealPointer = m_RealPointer;
-            Counter *tempReferenceCounter = m_ReferenceCounter;
+            counter *tempReferenceCounter = m_ReferenceCounter;
             m_RealPointer = Other.m_RealPointer;
             m_ReferenceCounter = Other.m_ReferenceCounter;
             Other.m_RealPointer = tempRealPointer;
@@ -257,6 +263,12 @@ namespace std
     shared_ptr<T> make_shared(Args &&...args)
     {
         return shared_ptr<T>(new T(forward<Args>(args)...));
+    };
+
+    template <typename T, typename... Args>
+    smart_ptr<T> make_smart(Args &&...args)
+    {
+        return smart_ptr<T>(new T(forward<Args>(args)...));
     };
 }
 

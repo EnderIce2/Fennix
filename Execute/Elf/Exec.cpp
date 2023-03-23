@@ -189,7 +189,7 @@ namespace Execute
         strcpy(aux_platform, "x86_64");
 
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-        ELFBase.auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)vfs->GetPathFromNode(ExFile->node).Get()}}});
+        ELFBase.auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)vfs->GetPathFromNode(ExFile->node).get()}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage.Virtual}}});

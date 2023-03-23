@@ -200,13 +200,13 @@ namespace Execute
         switch (ELFHeader->e_type)
         {
         case ET_REL:
-            bl = ELFLoadRel(ElfFile, ExFile.Get(), Process);
+            bl = ELFLoadRel(ElfFile, ExFile.get(), Process);
             break;
         case ET_EXEC:
-            bl = ELFLoadExec(ElfFile, ExFile.Get(), Process);
+            bl = ELFLoadExec(ElfFile, ExFile.get(), Process);
             break;
         case ET_DYN:
-            bl = ELFLoadDyn(ElfFile, ExFile.Get(), Process);
+            bl = ELFLoadDyn(ElfFile, ExFile.get(), Process);
             break;
         case ET_CORE:
         {

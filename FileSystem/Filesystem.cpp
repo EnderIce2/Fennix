@@ -86,17 +86,17 @@ namespace VirtualFileSystem
                 continue;
             }
             size_t ElementSize = strlen(Path[i]);
-            memcpy(FinalPath.Get() + Offset, Path[i], ElementSize);
+            memcpy(FinalPath.get() + Offset, Path[i], ElementSize);
             Offset += ElementSize;
         }
 
         // Add a null terminator to the final path string
-        FinalPath.Get()[Size - 1] = '\0';
+        FinalPath.get()[Size - 1] = '\0';
 
         // Deallocate the Path array
         delete[] Path, Path = nullptr;
 
-        vfsdbg("GetPathFromNode()->\"%s\"", FinalPath.Get());
+        vfsdbg("GetPathFromNode()->\"%s\"", FinalPath.get());
         return FinalPath;
     }
 
@@ -267,17 +267,17 @@ namespace VirtualFileSystem
         if (cwk_path_is_relative(NormalizedPath))
         {
             std::shared_ptr<char> ParentPath = GetPathFromNode(Parent);
-            size_t PathSize = cwk_path_get_absolute(ParentPath.Get(), NormalizedPath, nullptr, 0);
+            size_t PathSize = cwk_path_get_absolute(ParentPath.get(), NormalizedPath, nullptr, 0);
             RelativePath.reset(new char[PathSize + 1]);
-            cwk_path_get_absolute(ParentPath.Get(), NormalizedPath, RelativePath.Get(), PathSize + 1);
+            cwk_path_get_absolute(ParentPath.get(), NormalizedPath, RelativePath.get(), PathSize + 1);
         }
         else
         {
             RelativePath.reset(new char[strlen(NormalizedPath) + 1]);
-            strcpy(RelativePath.Get(), NormalizedPath);
+            strcpy(RelativePath.get(), NormalizedPath);
         }
         delete[] NormalizedPath;
-        vfsdbg("NormalizePath()->\"%s\"", RelativePath.Get());
+        vfsdbg("NormalizePath()->\"%s\"", RelativePath.get());
         return RelativePath;
     }
 
@@ -294,7 +294,7 @@ namespace VirtualFileSystem
 
         vfsdbg("PathExists( Path: \"%s\" Parent: \"%s\" )", Path, Parent->Name);
 
-        if (GetNodeFromPath(NormalizePath(Path, Parent).Get(), Parent))
+        if (GetNodeFromPath(NormalizePath(Path, Parent).get(), Parent))
         {
             vfsdbg("PathExists()->OK");
             return true;
@@ -330,16 +330,16 @@ namespace VirtualFileSystem
         vfsdbg("Virtual::Create( Path: \"%s\" Parent: \"%s\" )", Path, Parent ? Parent->Name : CurrentParent->Name);
 
         std::shared_ptr<char> CleanPath = this->NormalizePath(Path, CurrentParent);
-        vfsdbg("CleanPath: \"%s\"", CleanPath.Get());
+        vfsdbg("CleanPath: \"%s\"", CleanPath.get());
 
-        if (PathExists(CleanPath.Get(), CurrentParent))
+        if (PathExists(CleanPath.get(), CurrentParent))
         {
-            error("Path %s already exists.", CleanPath.Get());
+            error("Path %s already exists.", CleanPath.get());
             goto CreatePathError;
         }
 
         cwk_segment segment;
-        if (!cwk_path_get_first_segment(CleanPath.Get(), &segment))
+        if (!cwk_path_get_first_segment(CleanPath.get(), &segment))
         {
             error("Path doesn't have any segments.");
             goto CreatePathError;
@@ -373,7 +373,7 @@ namespace VirtualFileSystem
         } while (cwk_path_get_next_segment(&segment));
 
         vfsdbg("Virtual::Create()->\"%s\"", CurrentParent->Name);
-        vfsdbg("Path created: \"%s\"", GetPathFromNode(CurrentParent).Get());
+        vfsdbg("Path created: \"%s\"", GetPathFromNode(CurrentParent).get());
         return CurrentParent;
 
     CreatePathError:
@@ -393,16 +393,16 @@ namespace VirtualFileSystem
             Parent = FileSystemRoot;
 
         std::shared_ptr<char> CleanPath = this->NormalizePath(Path, Parent);
-        vfsdbg("CleanPath: \"%s\"", CleanPath.Get());
+        vfsdbg("CleanPath: \"%s\"", CleanPath.get());
 
-        if (!PathExists(CleanPath.Get(), Parent))
+        if (!PathExists(CleanPath.get(), Parent))
         {
-            vfsdbg("Path %s doesn't exist.", CleanPath.Get());
+            vfsdbg("Path %s doesn't exist.", CleanPath.get());
             return InvalidPath;
         }
 
-        Node *NodeToDelete = GetNodeFromPath(CleanPath.Get(), Parent);
-        Node *ParentNode = GetParent(CleanPath.Get(), Parent);
+        Node *NodeToDelete = GetNodeFromPath(CleanPath.get(), Parent);
+        Node *ParentNode = GetParent(CleanPath.get(), Parent);
 
         if (NodeToDelete->Flags == NodeFlags::DIRECTORY)
         {
@@ -411,7 +411,7 @@ namespace VirtualFileSystem
                 foreach (auto Child in NodeToDelete->Children)
                 {
                     VFSLock.Unlock();
-                    FileStatus Status = Delete(GetPathFromNode(Child).Get(), true);
+                    FileStatus Status = Delete(GetPathFromNode(Child).get(), true);
                     VFSLock.Lock(__FUNCTION__);
                     if (Status != FileStatus::OK)
                     {
@@ -422,7 +422,7 @@ namespace VirtualFileSystem
             }
             else if (NodeToDelete->Children.size() > 0)
             {
-                vfsdbg("Directory %s is not empty.", CleanPath.Get());
+                vfsdbg("Directory %s is not empty.", CleanPath.get());
                 return DirectoryNotEmpty;
             }
         }
@@ -437,7 +437,7 @@ namespace VirtualFileSystem
         return OK;
     }
 
-    FileStatus Virtual::Delete(Node *Path, bool Recursive, Node *Parent) { return Delete(GetPathFromNode(Path).Get(), Recursive, Parent); }
+    FileStatus Virtual::Delete(Node *Path, bool Recursive, Node *Parent) { return Delete(GetPathFromNode(Path).get(), Recursive, Parent); }
 
     /* TODO: REWORK */
     std::shared_ptr<File> Virtual::Mount(const char *Path, FileSystemOperations *Operator)
@@ -470,7 +470,7 @@ namespace VirtualFileSystem
     FileStatus Virtual::Unmount(std::shared_ptr<File> File)
     {
         SmartLock(VFSLock);
-        if (unlikely(File.Get()))
+        if (unlikely(File.get()))
             return FileStatus::InvalidParameter;
         fixme("Unmounting %s", File->Name);
         return FileStatus::OK;
@@ -479,7 +479,7 @@ namespace VirtualFileSystem
     size_t Virtual::Read(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.Get()))
+        if (unlikely(!File.get()))
             return 0;
 
         if (unlikely(!File->node))
@@ -503,7 +503,7 @@ namespace VirtualFileSystem
     size_t Virtual::Write(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.Get()))
+        if (unlikely(!File.get()))
             return 0;
 
         if (unlikely(!File->node))
@@ -537,7 +537,7 @@ namespace VirtualFileSystem
             file->node = Parent;
             if (unlikely(!file->node))
                 file->Status = FileStatus::NotFound;
-            cwk_path_get_basename(GetPathFromNode(Parent).Get(), &basename, nullptr);
+            cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
             strcpy(file->Name, basename);
             return file;
         }
@@ -551,7 +551,7 @@ namespace VirtualFileSystem
 
             if (!file->node)
                 file->Status = FileStatus::NotFound;
-            cwk_path_get_basename(GetPathFromNode(Parent).Get(), &basename, nullptr);
+            cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
             strcpy(file->Name, basename);
             return file;
         }
@@ -562,11 +562,11 @@ namespace VirtualFileSystem
         std::shared_ptr<File> file = std::make_shared<File>();
         /* TODO: Check for other errors */
 
-        if (!PathExists(CleanPath.Get(), CurrentParent))
+        if (!PathExists(CleanPath.get(), CurrentParent))
         {
             foreach (auto Child in FileSystemRoot->Children)
             {
-                if (strcmp(Child->Name, CleanPath.Get()) == 0)
+                if (strcmp(Child->Name, CleanPath.get()) == 0)
                 {
                     file->node = Child;
                     if (file->node == nullptr)
@@ -575,24 +575,24 @@ namespace VirtualFileSystem
                         file->node = nullptr;
                         return file;
                     }
-                    cwk_path_get_basename(GetPathFromNode(Child).Get(), &basename, nullptr);
+                    cwk_path_get_basename(GetPathFromNode(Child).get(), &basename, nullptr);
                     strcpy(file->Name, basename);
                     return file;
                 }
             }
 
-            file->node = GetNodeFromPath(CleanPath.Get(), FileSystemRoot->Children[0]);
+            file->node = GetNodeFromPath(CleanPath.get(), FileSystemRoot->Children[0]);
             if (file->node)
             {
-                cwk_path_get_basename(GetPathFromNode(file->node).Get(), &basename, nullptr);
+                cwk_path_get_basename(GetPathFromNode(file->node).get(), &basename, nullptr);
                 strcpy(file->Name, basename);
                 return file;
             }
         }
         else
         {
-            file->node = GetNodeFromPath(CleanPath.Get(), CurrentParent);
-            cwk_path_get_basename(CleanPath.Get(), &basename, nullptr);
+            file->node = GetNodeFromPath(CleanPath.get(), CurrentParent);
+            cwk_path_get_basename(CleanPath.get(), &basename, nullptr);
             strcpy(file->Name, basename);
             return file;
         }
@@ -604,7 +604,7 @@ namespace VirtualFileSystem
     FileStatus Virtual::Close(std::shared_ptr<File> File)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.Get()))
+        if (unlikely(!File.get()))
             return FileStatus::InvalidHandle;
         vfsdbg("Closing %s", File->Name);
         return FileStatus::OK;
