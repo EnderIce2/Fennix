@@ -200,10 +200,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     CPU::InitializeFeatures(0);
 
     if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-    {
-        KPrint("\eFFA500Debugger detected! (TCG Virtual Machine)");
-        DebuggerIsAttached = true;
-    }
+        KPrint("\eFFA500TCG Virtual Machine detected.");
 
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
@@ -371,12 +368,14 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 
     InitializeMemoryManagement(Info);
 
+    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+        DebuggerIsAttached = true;
+
+#ifdef DEBUG
     /* I had to do this because KernelAllocator
      * is a global constructor but we need
      * memory management to be initialized first.
      */
-#ifdef DEBUG
-    // Running tests
     TestString();
     TestMemoryAllocation();
 #endif
