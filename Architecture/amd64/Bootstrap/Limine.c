@@ -237,7 +237,7 @@ SafeFunction NIF void init_limine()
 
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
-    binfo.Kernel.FileBase = KernelFileResponse->kernel_file->address;
+    binfo.Kernel.FileBase = KernelFileResponse->kernel_file->address - 0xffff800000000000;
     strncpy(binfo.Kernel.CommandLine,
             KernelFileResponse->kernel_file->cmdline,
             strlen(KernelFileResponse->kernel_file->cmdline) + 1);
