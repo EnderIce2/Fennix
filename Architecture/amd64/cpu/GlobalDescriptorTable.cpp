@@ -138,8 +138,6 @@ namespace GlobalDescriptorTable
         memset((void *)(tss[Core].InterruptStackTable[2] - STACK_SIZE), 0, STACK_SIZE);
 
         CPU::x64::ltr(GDT_TSS);
-        asmv("mov %%rsp, %0"
-             : "=r"(tss[Core].StackPointer[0]));
 
         debug("GDT_KERNEL_CODE: %#lx", GDT_KERNEL_CODE);
         debug("GDT_KERNEL_DATA: %#lx", GDT_KERNEL_DATA);
