@@ -152,28 +152,28 @@ namespace Memory
         PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
         if (!PML4.Present)
         {
-            error("Page not present");
+            error("Page %#lx not present", PML4.GetAddress());
             return;
         }
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.Address << 12);
         PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
         if (!PDPTE.Present)
         {
-            error("Page not present");
+            error("Page %#lx not present", PDPTE.GetAddress());
             return;
         }
         PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.Address << 12);
         PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
         if (!PDE.Present)
         {
-            error("Page not present");
+            error("Page %#lx not present", PDE.GetAddress());
             return;
         }
         PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.Address << 12);
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)
         {
-            error("Page not present");
+            error("Page %#lx not present", PTE.GetAddress());
             return;
         }
 
