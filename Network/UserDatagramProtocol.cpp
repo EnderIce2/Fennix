@@ -10,7 +10,7 @@ namespace NetworkUDP
         Socket *UDPSocket;
         uint16_t Port;
     };
-    Vector<EventInfo> RegisteredEvents;
+    std::vector<EventInfo> RegisteredEvents;
 
     UDPEvents::UDPEvents() {}
 

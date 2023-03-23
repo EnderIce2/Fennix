@@ -52,7 +52,7 @@ namespace Recovery
             return;
         }
 
-        SharedPointer<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
+        std::shared_ptr<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
 
         if (pcm->Status != FileStatus::OK)
         {
@@ -72,6 +72,7 @@ namespace Recovery
         int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
+        vfs->Close(pcm);
     }
 
     void PlayAudioWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)PlayAudio)->SetPriority(Tasking::TaskPriority::Idle); }

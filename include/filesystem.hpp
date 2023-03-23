@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#include <smartptr.hpp>
+#include <smart_ptr.hpp>
 #include <vector.hpp>
 
 namespace VirtualFileSystem
@@ -104,7 +104,7 @@ namespace VirtualFileSystem
         1 - etc
         ...
         */
-        Vector<Node *> Children;
+        std::vector<Node *> Children;
     };
 
     struct File
@@ -121,9 +121,9 @@ namespace VirtualFileSystem
         Node *FileSystemRoot = nullptr;
 
     public:
-        SharedPointer<char> GetPathFromNode(Node *node);
+        std::shared_ptr<char> GetPathFromNode(Node *node);
         Node *GetNodeFromPath(const char *Path, Node *Parent = nullptr);
-        SharedPointer<File> ConvertNodeToFILE(Node *node);
+        std::shared_ptr<File> ConvertNodeToFILE(Node *node);
 
         Node *GetParent(const char *Path, Node *Parent);
         Node *GetRootNode() { return FileSystemRoot; }
@@ -132,7 +132,7 @@ namespace VirtualFileSystem
         Node *GetChild(const char *Name, Node *Parent);
         FileStatus RemoveChild(const char *Name, Node *Parent);
 
-        SharedPointer<char> NormalizePath(const char *Path, Node *Parent = nullptr);
+        std::shared_ptr<char> NormalizePath(const char *Path, Node *Parent = nullptr);
         bool PathExists(const char *Path, Node *Parent = nullptr);
         Node *CreateRoot(const char *RootName, FileSystemOperations *Operator);
         Node *Create(const char *Path, NodeFlags Flag, Node *Parent = nullptr);
@@ -140,14 +140,14 @@ namespace VirtualFileSystem
         FileStatus Delete(const char *Path, bool Recursive = false, Node *Parent = nullptr);
         FileStatus Delete(Node *Path, bool Recursive = false, Node *Parent = nullptr);
 
-        SharedPointer<File> Mount(const char *Path, FileSystemOperations *Operator);
-        FileStatus Unmount(SharedPointer<File> File);
+        std::shared_ptr<File> Mount(const char *Path, FileSystemOperations *Operator);
+        FileStatus Unmount(std::shared_ptr<File> File);
 
-        size_t Read(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
-        size_t Write(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Read(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Write(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
 
-        SharedPointer<File> Open(const char *Path, Node *Parent = nullptr);
-        FileStatus Close(SharedPointer<File> File);
+        std::shared_ptr<File> Open(const char *Path, Node *Parent = nullptr);
+        FileStatus Close(std::shared_ptr<File> File);
 
         Virtual();
         ~Virtual();

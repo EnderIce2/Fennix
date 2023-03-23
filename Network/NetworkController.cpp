@@ -17,7 +17,7 @@
 
 namespace NetworkInterfaceManager
 {
-    Vector<Events *> RegisteredEvents;
+    std::vector<Events *> RegisteredEvents;
 
     NetworkInterface::NetworkInterface()
     {

@@ -1,7 +1,7 @@
 #ifdef DEBUG
 
-#include <string.hpp>
 #include <memory.hpp>
+#include <string.hpp>
 #include <debug.h>
 
 /* Originally from: https://github.com/EnderIce2/FennixProject/blob/main/kernel/test.cpp */

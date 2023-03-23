@@ -58,7 +58,7 @@ namespace Driver
     class Driver
     {
     private:
-        Vector<DriverFile *> Drivers;
+        std::vector<DriverFile *> Drivers;
         unsigned long DriverUIDs = 0;
         DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
 
@@ -100,7 +100,7 @@ namespace Driver
         DriverCode DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
 
     public:
-        Vector<DriverFile *> GetDrivers() { return Drivers; }
+        std::vector<DriverFile *> GetDrivers() { return Drivers; }
         void UnloadAllDrivers();
         bool UnloadDriver(unsigned long DUID);
         int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);

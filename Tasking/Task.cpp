@@ -336,7 +336,7 @@ namespace Tasking
                             IP EntryPoint,
                             const char **argv,
                             const char **envp,
-                            const Vector<AuxiliaryVector> &auxv,
+                            const std::vector<AuxiliaryVector> &auxv,
                             IPOffset Offset,
                             TaskArchitecture Architecture,
                             TaskCompatibility Compatibility)
@@ -505,7 +505,7 @@ namespace Tasking
             *Stack64 = AT_NULL;
 
             // auxv_array is initialized with auxv elements. If the array is empty then we add a null terminator
-            Vector<AuxiliaryVector> auxv_array = auxv;
+            std::vector<AuxiliaryVector> auxv_array = auxv;
             if (auxv_array.size() == 0)
                 auxv_array.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
 
@@ -760,7 +760,7 @@ namespace Tasking
         TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
-        TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, Vector<AuxiliaryVector>(), 0, Arch);
+        TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);

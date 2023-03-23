@@ -28,7 +28,7 @@ namespace Interrupts
         int ID;
         void *Data;
     };
-    Vector<Event> RegisteredEvents;
+    std::vector<Event> RegisteredEvents;
 
 #if defined(a64)
     /* APIC::APIC */ void *apic[MAX_CPU];

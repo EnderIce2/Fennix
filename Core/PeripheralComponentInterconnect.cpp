@@ -817,18 +817,18 @@ namespace PCI
             EnumerateDevice(BusAddress, Device);
     }
 
-    Vector<PCIDeviceHeader *> PCI::FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF)
+    std::vector<PCIDeviceHeader *> PCI::FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF)
     {
-        Vector<PCIDeviceHeader *> DeviceFound;
+        std::vector<PCIDeviceHeader *> DeviceFound;
         for (auto var : Devices)
             if (var->Class == Class && var->Subclass == Subclass && var->ProgIF == ProgIF)
                 DeviceFound.push_back(var);
         return DeviceFound;
     }
 
-    Vector<PCIDeviceHeader *> PCI::FindPCIDevice(int VendorID, int DeviceID)
+    std::vector<PCIDeviceHeader *> PCI::FindPCIDevice(int VendorID, int DeviceID)
     {
-        Vector<PCIDeviceHeader *> DeviceFound;
+        std::vector<PCIDeviceHeader *> DeviceFound;
         for (auto var : Devices)
             if (var->VendorID == VendorID && var->DeviceID == DeviceID)
                 DeviceFound.push_back(var);

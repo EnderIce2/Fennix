@@ -1,12 +1,13 @@
 #include <driver.hpp>
 
-#include <ints.hpp>
 #include <memory.hpp>
+#include <ints.hpp>
 #include <task.hpp>
 #include <lock.hpp>
 #include <printf.h>
 #include <cwalk.h>
 #include <md5.h>
+// #include <ini.h>
 
 #include "../../kernel.h"
 #include "../../DAPI.hpp"
@@ -174,7 +175,12 @@ namespace Driver
     Driver::Driver()
     {
         SmartCriticalSection(DriverInitLock);
-        SharedPointer<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
+
+        std::string DriverConfigFile = Config.DriverDirectory;
+        DriverConfigFile << "/config.ini";
+        fixme("Loading driver config file: %s", DriverConfigFile.c_str());
+
+        std::shared_ptr<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
         if (DriverDirectory->Status == VirtualFileSystem::FileStatus::OK)
         {
             foreach (auto driver in DriverDirectory->node->Children)

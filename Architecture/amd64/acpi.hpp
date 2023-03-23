@@ -235,10 +235,10 @@ namespace ACPI
             void *VirtualAddress;
         };
 
-        Vector<MADTIOApic *> ioapic;
-        Vector<MADTIso *> iso;
-        Vector<MADTNmi *> nmi;
-        Vector<LocalAPIC *> lapic;
+        std::vector<MADTIOApic *> ioapic;
+        std::vector<MADTIso *> iso;
+        std::vector<MADTNmi *> nmi;
+        std::vector<LocalAPIC *> lapic;
         struct LAPIC *LAPICAddress;
         uint16_t CPUCores;
 

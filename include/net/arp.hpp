@@ -59,7 +59,7 @@ namespace NetworkARP
             DA_UPDATE = 4
         };
 
-        Vector<NetworkARP::DiscoveredAddress *> DiscoveredAddresses;
+        std::vector<NetworkARP::DiscoveredAddress *> DiscoveredAddresses;
         DiscoveredAddress *ManageDiscoveredAddresses(DAType Type, InternetProtocol IP, MediaAccessControl MAC);
         DiscoveredAddress *Search(InternetProtocol TargetIP);
         DiscoveredAddress *Update(InternetProtocol TargetIP, MediaAccessControl TargetMAC);

@@ -136,8 +136,8 @@ namespace Execute
                             break;
                         }
 
-                        String ReqLib = (char *)((uintptr_t)ElfFile + DynamicString->sh_offset + Dynamic[i].d_un.d_val);
-                        debug("DT_NEEDED - Name[%ld]: %s", i, ReqLib.c_str());
+                        const char *ReqLib = (const char *)((uintptr_t)ElfFile + DynamicString->sh_offset + Dynamic[i].d_un.d_val);
+                        debug("DT_NEEDED - Name[%ld]: %s", i, ReqLib);
                         ELFBase.NeededLibraries.push_back(ReqLib);
                     }
                     else if (Dynamic[i].d_tag == DT_NULL)
@@ -154,7 +154,7 @@ namespace Execute
                 memcpy((void *)InterpreterPath, (uint8_t *)ElfFile + ItrPhdr.p_offset, 256);
                 debug("Interpreter: %s", InterpreterPath);
 
-                SharedPointer<VirtualFileSystem::File> InterpreterFile = vfs->Open(InterpreterPath);
+                std::shared_ptr<VirtualFileSystem::File> InterpreterFile = vfs->Open(InterpreterPath);
                 if (InterpreterFile->Status != VirtualFileSystem::FileStatus::OK)
                     warn("Failed to open interpreter file: %s", InterpreterPath);
 

@@ -1,10 +1,18 @@
+/* This function includes all the standard headers and defines some useful macros.
+ * Note: This std implementation is not complete.
+ */
 #ifndef __FENNIX_KERNEL_STD_H__
 #define __FENNIX_KERNEL_STD_H__
 
 #include <types.h>
-#include <smartptr.hpp>
-#include <vector.hpp>
-#include <string.hpp>
+#include <std/unordered_map.hpp>
+#include <std/functional.hpp>
+#include <std/stdexcept.hpp>
+#include <std/smart_ptr.hpp>
+#include <std/utility.hpp>
+#include <std/vector.hpp>
+#include <std/string.hpp>
+#include <std/list.hpp>
 
 /**
  * @brief // stub namespace for std::align_val_t and new operator
@@ -13,103 +21,39 @@
 namespace std
 {
     typedef __SIZE_TYPE__ size_t;
+    static const size_t npos = -1;
+
     enum class align_val_t : std::size_t
     {
     };
 
-    template <class T>
-    class smart_ptr
+    template <typename InputIt, typename OutputIt, typename UnaryOperation>
+    OutputIt transform(InputIt first, InputIt last, OutputIt result, UnaryOperation op)
     {
-    public:
-        using SmartPointer<T>::SmartPointer;
-        using SmartPointer<T>::operator*;
-        using SmartPointer<T>::operator->;
+        while (first != last)
+        {
+            *result = op(*first);
+            ++first;
+            ++result;
+        }
+        return result;
     };
 
-    template <class T>
-    class auto_ptr
+    inline __always_inline int tolower(int c)
     {
-    public:
-        using AutoPointer<T>::AutoPointer;
-    };
+        if (c >= 'A' && c <= 'Z')
+            return c + ('a' - 'A');
+        else
+            return c;
+    }
 
-    template <class T>
-    class unique_ptr
+    inline __always_inline int toupper(int c)
     {
-    public:
-        using UniquePointer<T>::UniquePointer;
-    };
-
-    template <class T>
-    class weak_ptr
-    {
-    public:
-        using WeakPointer<T>::WeakPointer;
-    };
-
-    template <typename T>
-    class shared_ptr
-    {
-        using SharedPointer<T>::SharedPointer;
-        using SharedPointer<T>::operator*;
-        using SharedPointer<T>::operator->;
-    };
-
-    template <typename T>
-    struct remove_reference
-    {
-        typedef T type;
-    };
-
-    template <typename T>
-    struct remove_reference<T &>
-    {
-        typedef T type;
-    };
-
-    template <typename T>
-    struct remove_reference<T &&>
-    {
-        typedef T type;
-    };
-
-    template <typename T>
-    using remove_reference_t = typename remove_reference<T>::type;
-
-    template <typename T>
-    T &&forward(remove_reference_t<T> &t) { return static_cast<T &&>(t); };
-
-    template <typename T>
-    T &&forward(remove_reference_t<T> &&t) { return static_cast<T &&>(t); };
-
-    template <typename T, typename... Args>
-    shared_ptr<T> make_shared(Args &&...args)
-    {
-        return SharedPointer<T>(new T(forward<Args>(args)...));
-    };
-
-    template <class T>
-    class vector : public Vector<T>
-    {
-    public:
-        using Vector<T>::Vector;
-        using Vector<T>::operator=;
-        using Vector<T>::operator[];
-        using typename Vector<T>::iterator;
-    };
-
-    class string : public String
-    {
-    public:
-        using String::String;
-        using String::operator=;
-        using String::operator+;
-        using String::operator<<;
-        using String::operator[];
-        using String::operator==;
-        using String::operator!=;
-        using typename String::iterator;
-    };
+        if (c >= 'a' && c <= 'z')
+            return c - ('a' - 'A');
+        else
+            return c;
+    }
 }
 
 #endif // !__FENNIX_KERNEL_STD_H__

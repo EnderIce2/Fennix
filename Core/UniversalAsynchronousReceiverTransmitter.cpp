@@ -4,7 +4,7 @@
 #include <debug.h>
 
 volatile bool serialports[8] = {false, false, false, false, false, false, false, false};
-Vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
+std::vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
 
 #if defined(a64) || defined(a32)
 NIF __always_inline inline uint8_t NoProfiler_inportb(uint16_t Port)

@@ -39,7 +39,7 @@ namespace CrashHandler
             "Terminated", // Terminated
         };
 
-        Vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
+        std::vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
 
         if (TaskManager)
         {

@@ -3,8 +3,8 @@
 
 #include <types.h>
 
-#include <vector.hpp>
 #include <debug.h>
+#include <vector.hpp>
 
 namespace PCI
 {
@@ -205,15 +205,15 @@ namespace PCI
     class PCI
     {
     private:
-        Vector<PCIDeviceHeader *> Devices;
+        std::vector<PCIDeviceHeader *> Devices;
 
     public:
-        Vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
+        std::vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
         void EnumerateFunction(uintptr_t DeviceAddress, uint64_t Function);
         void EnumerateDevice(uintptr_t BusAddress, uint64_t Device);
         void EnumerateBus(uintptr_t BaseAddress, uint64_t Bus);
-        Vector<PCIDeviceHeader *> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
-        Vector<PCIDeviceHeader *> FindPCIDevice(int VendorID, int DeviceID);
+        std::vector<PCIDeviceHeader *> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
+        std::vector<PCIDeviceHeader *> FindPCIDevice(int VendorID, int DeviceID);
 
         PCI();
         ~PCI();

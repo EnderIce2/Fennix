@@ -11,7 +11,7 @@ namespace NetworkEthernet
         uint16_t Type;
     };
 
-    Vector<EthernetEventHelperStruct> RegisteredEvents;
+    std::vector<EthernetEventHelperStruct> RegisteredEvents;
 
     Ethernet::Ethernet(NetworkInterfaceManager::DeviceInterface *Interface) : NetworkInterfaceManager::Events(Interface)
     {

@@ -1,6 +1,6 @@
 #include <filesystem.hpp>
 
-#include <smartptr.hpp>
+#include <smart_ptr.hpp>
 #include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
@@ -22,7 +22,7 @@ NewLock(VFSLock);
 
 namespace VirtualFileSystem
 {
-    SharedPointer<char> Virtual::GetPathFromNode(Node *node)
+    std::shared_ptr<char> Virtual::GetPathFromNode(Node *node)
     {
         vfsdbg("GetPathFromNode( Node: \"%s\" )", node->Name);
         Node *Parent = node;
@@ -73,7 +73,7 @@ namespace VirtualFileSystem
         }
 
         // Allocate a new string for the final path
-        SharedPointer<char> FinalPath;
+        std::shared_ptr<char> FinalPath;
         FinalPath.reset(new char[Size]);
 
         size_t Offset = 0;
@@ -152,9 +152,9 @@ namespace VirtualFileSystem
         return nullptr;
     }
 
-    SharedPointer<File> Virtual::ConvertNodeToFILE(Node *node)
+    std::shared_ptr<File> Virtual::ConvertNodeToFILE(Node *node)
     {
-        SharedPointer<File> file = MakeShared<File>();
+        std::shared_ptr<File> file = std::make_shared<File>();
         file->Status = FileStatus::OK;
         file->node = node;
         return file;
@@ -256,17 +256,17 @@ namespace VirtualFileSystem
         return FileStatus::NotFound;
     }
 
-    SharedPointer<char> Virtual::NormalizePath(const char *Path, Node *Parent)
+    std::shared_ptr<char> Virtual::NormalizePath(const char *Path, Node *Parent)
     {
         vfsdbg("NormalizePath( Path: \"%s\" Parent: \"%s\" )", Path, Parent->Name);
         char *NormalizedPath = new char[strlen((char *)Path) + 1];
-        SharedPointer<char> RelativePath;
+        std::shared_ptr<char> RelativePath;
 
         cwk_path_normalize(Path, NormalizedPath, strlen((char *)Path) + 1);
 
         if (cwk_path_is_relative(NormalizedPath))
         {
-            SharedPointer<char> ParentPath = GetPathFromNode(Parent);
+            std::shared_ptr<char> ParentPath = GetPathFromNode(Parent);
             size_t PathSize = cwk_path_get_absolute(ParentPath.Get(), NormalizedPath, nullptr, 0);
             RelativePath.reset(new char[PathSize + 1]);
             cwk_path_get_absolute(ParentPath.Get(), NormalizedPath, RelativePath.Get(), PathSize + 1);
@@ -329,7 +329,7 @@ namespace VirtualFileSystem
         Node *CurrentParent = this->GetParent(Path, Parent);
         vfsdbg("Virtual::Create( Path: \"%s\" Parent: \"%s\" )", Path, Parent ? Parent->Name : CurrentParent->Name);
 
-        SharedPointer<char> CleanPath = this->NormalizePath(Path, CurrentParent);
+        std::shared_ptr<char> CleanPath = this->NormalizePath(Path, CurrentParent);
         vfsdbg("CleanPath: \"%s\"", CleanPath.Get());
 
         if (PathExists(CleanPath.Get(), CurrentParent))
@@ -392,7 +392,7 @@ namespace VirtualFileSystem
         if (Parent == nullptr)
             Parent = FileSystemRoot;
 
-        SharedPointer<char> CleanPath = this->NormalizePath(Path, Parent);
+        std::shared_ptr<char> CleanPath = this->NormalizePath(Path, Parent);
         vfsdbg("CleanPath: \"%s\"", CleanPath.Get());
 
         if (!PathExists(CleanPath.Get(), Parent))
@@ -440,10 +440,10 @@ namespace VirtualFileSystem
     FileStatus Virtual::Delete(Node *Path, bool Recursive, Node *Parent) { return Delete(GetPathFromNode(Path).Get(), Recursive, Parent); }
 
     /* TODO: REWORK */
-    SharedPointer<File> Virtual::Mount(const char *Path, FileSystemOperations *Operator)
+    std::shared_ptr<File> Virtual::Mount(const char *Path, FileSystemOperations *Operator)
     {
         SmartLock(VFSLock);
-        SharedPointer<File> file = MakeShared<File>();
+        std::shared_ptr<File> file = std::make_shared<File>();
 
         if (unlikely(!Operator))
         {
@@ -467,7 +467,7 @@ namespace VirtualFileSystem
         return file;
     }
 
-    FileStatus Virtual::Unmount(SharedPointer<File> File)
+    FileStatus Virtual::Unmount(std::shared_ptr<File> File)
     {
         SmartLock(VFSLock);
         if (unlikely(File.Get()))
@@ -476,7 +476,7 @@ namespace VirtualFileSystem
         return FileStatus::OK;
     }
 
-    size_t Virtual::Read(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Read(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File.Get()))
@@ -500,7 +500,7 @@ namespace VirtualFileSystem
         return File->node->Operator->Read(File->node, Offset, Size, Buffer);
     }
 
-    size_t Virtual::Write(SharedPointer<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Write(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File.Get()))
@@ -525,7 +525,7 @@ namespace VirtualFileSystem
     }
 
     /* TODO: CHECK Open */
-    SharedPointer<File> Virtual::Open(const char *Path, Node *Parent)
+    std::shared_ptr<File> Virtual::Open(const char *Path, Node *Parent)
     {
         SmartLock(VFSLock);
         vfsdbg("Opening %s with parent %s", Path, Parent ? Parent->Name : "(null)");
@@ -533,7 +533,7 @@ namespace VirtualFileSystem
 
         if (strcmp(Path, ".") == 0)
         {
-            SharedPointer<File> file = MakeShared<File>();
+            std::shared_ptr<File> file = std::make_shared<File>();
             file->node = Parent;
             if (unlikely(!file->node))
                 file->Status = FileStatus::NotFound;
@@ -544,7 +544,7 @@ namespace VirtualFileSystem
 
         if (strcmp(Path, "..") == 0)
         {
-            SharedPointer<File> file = MakeShared<File>();
+            std::shared_ptr<File> file = std::make_shared<File>();
 
             if (Parent->Parent != nullptr)
                 file->node = Parent->Parent;
@@ -557,9 +557,9 @@ namespace VirtualFileSystem
         }
 
         Node *CurrentParent = this->GetParent(Path, Parent);
-        SharedPointer<char> CleanPath = NormalizePath(Path, CurrentParent);
+        std::shared_ptr<char> CleanPath = NormalizePath(Path, CurrentParent);
 
-        SharedPointer<File> file = MakeShared<File>();
+        std::shared_ptr<File> file = std::make_shared<File>();
         /* TODO: Check for other errors */
 
         if (!PathExists(CleanPath.Get(), CurrentParent))
@@ -601,7 +601,7 @@ namespace VirtualFileSystem
         return file;
     }
 
-    FileStatus Virtual::Close(SharedPointer<File> File)
+    FileStatus Virtual::Close(std::shared_ptr<File> File)
     {
         SmartLock(VFSLock);
         if (unlikely(!File.Get()))

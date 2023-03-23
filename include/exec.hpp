@@ -4,8 +4,8 @@
 #include <types.h>
 
 #include <filesystem.hpp>
-#include <string.hpp>
 #include <task.hpp>
+#include <std.hpp>
 #include <elf.h>
 
 namespace Execute
@@ -60,7 +60,7 @@ namespace Execute
         SpawnData sd;
         Tasking::IP InstructionPointer;
 
-        Vector<String> NeededLibraries;
+        std::vector<const char *> NeededLibraries;
         void *MemoryImage;
         void *VirtualMemoryImage;
 
@@ -69,7 +69,7 @@ namespace Execute
         Memory::MemMgr *TmpMem;
 
         /* Same as above, for BaseLoad.cpp only */
-        Vector<AuxiliaryVector> auxv;
+        std::vector<AuxiliaryVector> auxv;
     };
 
     struct MmImage

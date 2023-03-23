@@ -49,7 +49,7 @@ namespace NetworkIPv4
         kfree(Packet);
     }
 
-    Vector<IPv4Events *> RegisteredEvents;
+    std::vector<IPv4Events *> RegisteredEvents;
 
     bool IPv4::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
     {

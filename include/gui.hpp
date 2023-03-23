@@ -225,9 +225,9 @@ namespace GraphicalUserInterface
             uintptr_t OnClick;
         };
 
-        Vector<LabelObject *> Labels;
-        Vector<PanelObject *> Panels;
-        Vector<ButtonObject *> Buttons;
+        std::vector<LabelObject *> Labels;
+        std::vector<PanelObject *> Panels;
+        std::vector<ButtonObject *> Buttons;
 
     public:
         void ReplaceFont(Video::Font *NewFont)
@@ -286,7 +286,7 @@ namespace GraphicalUserInterface
         Rect Position;
         Rect LastPosition;
         char Title[256];
-        Vector<WidgetCollection *> Widgets;
+        std::vector<WidgetCollection *> Widgets;
         void *ParentGUI;
 
         bool Maximized;
@@ -360,8 +360,8 @@ namespace GraphicalUserInterface
         ScreenBitmap *DesktopBuffer;
         ScreenBitmap *OverlayBuffer;
         ScreenBitmap *CursorBuffer;
-        Vector<WidgetCollection *> Widgets;
-        Vector<Window *> Windows;
+        std::vector<WidgetCollection *> Widgets;
+        std::vector<Window *> Windows;
         CursorType Cursor = CursorType::Arrow;
         CursorType LastCursor = CursorType::Arrow;
         bool CursorVisible = true;

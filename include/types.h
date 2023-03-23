@@ -35,8 +35,10 @@
 #define UNUSED(x) (void)(x)
 #define CONCAT(x, y) x##y
 
+#ifndef __cplusplus /* This conflicts with std */
 #define toupper(c) ((c)-0x20 * (((c) >= 'a') && ((c) <= 'z')))
 #define tolower(c) ((c) + 0x20 * (((c) >= 'A') && ((c) <= 'Z')))
+#endif
 
 #ifndef __va_list__
 typedef __builtin_va_list va_list;

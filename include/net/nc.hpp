@@ -50,7 +50,7 @@ namespace NetworkInterfaceManager
     private:
         Memory::MemMgr *mem;
         int CardIDs = 0;
-        Vector<DeviceInterface *> Interfaces;
+        std::vector<DeviceInterface *> Interfaces;
 
         Tasking::TCB *NetSvcThread;
         void StopNetworkStack();

@@ -133,7 +133,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -177,7 +177,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -221,7 +221,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -299,7 +299,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -368,7 +368,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -412,7 +412,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -456,7 +456,7 @@ namespace Driver
 
         if (fexExtended->Driver.OverrideOnConflict)
         {
-            Vector<int> DriversToRemove = Vector<int>();
+            std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
@@ -539,7 +539,7 @@ namespace Driver
                 if (((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[Vidx] == 0 || ((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[Didx] == 0)
                     continue;
 
-                Vector<PCI::PCIDeviceHeader *> devices = PCIManager->FindPCIDevice(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[Vidx], ((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[Didx]);
+                std::vector<PCI::PCIDeviceHeader *> devices = PCIManager->FindPCIDevice(((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.VendorID[Vidx], ((FexExtended *)DrvExtHdr)->Driver.Bind.PCI.DeviceID[Didx]);
                 if (devices.size() == 0)
                     continue;
 

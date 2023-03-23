@@ -20,7 +20,7 @@ namespace Execute
                          .Process = nullptr,
                          .Thread = nullptr};
 
-        SharedPointer<VirtualFileSystem::File> ExFile = vfs->Open(Path);
+        std::shared_ptr<VirtualFileSystem::File> ExFile = vfs->Open(Path);
 
         if (ExFile->Status == VirtualFileSystem::FileStatus::OK)
         {
@@ -48,7 +48,7 @@ namespace Execute
                     for (size_t i = 0; i < TO_PAGES(ExFile->node->Length); i++)
                         pva.Map((void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), (void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
 
-                    Vector<AuxiliaryVector> auxv; // TODO!
+                    std::vector<AuxiliaryVector> auxv; // TODO!
 
                     TCB *Thread = TaskManager->CreateThread(Process,
                                                             (IP)FexHdr->EntryPoint,

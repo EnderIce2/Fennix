@@ -5,7 +5,6 @@
 #include <filesystem.hpp>
 #include <boot/binfo.h>
 #include <bitmap.hpp>
-#include <vector.hpp>
 #include <lock.hpp>
 #include <std.hpp>
 #endif // __cplusplus
@@ -639,7 +638,7 @@ namespace Memory
             size_t PageCount;
         };
 
-        Vector<AllocatedPages> GetAllocatedPagesList() { return AllocatedPagesList; }
+        std::vector<AllocatedPages> GetAllocatedPagesList() { return AllocatedPagesList; }
         uint64_t GetAllocatedMemorySize();
 
         bool Add(void *Address, size_t Count);
@@ -657,7 +656,7 @@ namespace Memory
         PageTable4 *PageTable;
         VirtualFileSystem::Node *Directory;
 
-        Vector<AllocatedPages> AllocatedPagesList;
+        std::vector<AllocatedPages> AllocatedPagesList;
     };
 }
 

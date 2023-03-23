@@ -21,7 +21,7 @@ NewLock(ExecuteServiceLock);
 namespace Execute
 {
     Memory::MemMgr *mem = nullptr;
-    Vector<SharedLibraries> Libs;
+    std::vector<SharedLibraries> Libs;
 
     void StartExecuteService()
     {

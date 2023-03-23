@@ -173,8 +173,8 @@ namespace Tasking
         TaskStatus Status;
         TaskSecurity Security;
         TaskInfo Info;
-        Vector<TCB *> Threads;
-        Vector<PCB *> Children;
+        std::vector<TCB *> Threads;
+        std::vector<PCB *> Children;
         InterProcessCommunication::IPC *IPC;
         Memory::PageTable4 *PageTable;
         SymbolResolver::Symbols *ELFSymbolTable;
@@ -203,7 +203,7 @@ namespace Tasking
             bool Process;
         };
 
-        Vector<TokenData> Tokens;
+        std::vector<TokenData> Tokens;
 
     public:
         Token CreateToken();
@@ -226,7 +226,7 @@ namespace Tasking
         UPID NextPID = 0;
         UTID NextTID = 0;
 
-        Vector<PCB *> ListProcess;
+        std::vector<PCB *> ListProcess;
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
         Atomic<uint64_t> SchedulerTicks = 0;
@@ -265,7 +265,7 @@ namespace Tasking
     public:
         uint64_t GetSchedulerTicks() { return SchedulerTicks.Load(); }
         uint64_t GetLastTaskTicks() { return LastTaskTicks.Load(); }
-        Vector<PCB *> GetProcessList() { return ListProcess; }
+        std::vector<PCB *> GetProcessList() { return ListProcess; }
         Security *GetSecurityManager() { return &SecurityManager; }
         void Panic() { StopScheduler = true; }
         void Schedule();
@@ -335,7 +335,7 @@ namespace Tasking
                           IP EntryPoint,
                           const char **argv = nullptr,
                           const char **envp = nullptr,
-                          const Vector<AuxiliaryVector> &auxv = Vector<AuxiliaryVector>(),
+                          const std::vector<AuxiliaryVector> &auxv = std::vector<AuxiliaryVector>(),
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,
                           TaskCompatibility Compatibility = TaskCompatibility::Native);

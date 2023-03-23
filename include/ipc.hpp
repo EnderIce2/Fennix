@@ -50,7 +50,7 @@ namespace InterProcessCommunication
     private:
         NewLock(IPCLock);
         IPCID NextID = 0;
-        Vector<IPCHandle *> Handles;
+        std::vector<IPCHandle *> Handles;
         Memory::MemMgr *mem;
         VirtualFileSystem::Node *IPCNode;
         void *Process;

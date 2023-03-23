@@ -31,7 +31,7 @@ namespace Execute
     } InterpreterIPCData;
 
     /* Passing arguments as a sanity check and debugging. */
-    void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, void *ElfFile, Vector<String> NeededLibraries)
+    void ELFInterpreterIPCThread(PCB *Process, char *Path, void *MemoryImage, void *ElfFile, std::vector<const char *> NeededLibraries)
     {
         debug("Interpreter thread started for %s", Path);
         // Interpreter will create an IPC with token "LOAD".
@@ -56,7 +56,7 @@ namespace Execute
             warn("Too many libraries! (max 256)");
         for (size_t i = 0; i < NeededLibraries.size(); i++)
         {
-            strcpy(TmpBuffer->Libraries[i].Name, NeededLibraries[i].c_str());
+            strcpy(TmpBuffer->Libraries[i].Name, NeededLibraries[i]);
         }
 
 #ifdef DEBUG
@@ -66,7 +66,7 @@ namespace Execute
         debug("MemoryImage: %p", MemoryImage);
         for (size_t i = 0; i < NeededLibraries.size(); i++)
         {
-            debug("Library: %s", NeededLibraries[i].c_str());
+            debug("Library: %s", NeededLibraries[i]);
         }
         debug("INSIDE DATA");
         debug("Path: %s", TmpBuffer->Path);
@@ -93,10 +93,10 @@ namespace Execute
     }
 
     PCB *InterpreterTargetProcess;
-    String *InterpreterTargetPath; /* We can't have String as a constructor :( */
+    std::string *InterpreterTargetPath; /* We can't have String as a constructor :( */
     void *InterpreterMemoryImage;
     void *InterpreterElfFile;
-    Vector<String> InterpreterNeededLibraries;
+    std::vector<const char *> InterpreterNeededLibraries;
     void ELFInterpreterThreadWrapper()
     {
         ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterElfFile, InterpreterNeededLibraries);
@@ -111,7 +111,7 @@ namespace Execute
         cwk_path_get_basename(Path, &BaseName, nullptr);
         TaskArchitecture Arch = TaskArchitecture::UnknownArchitecture;
 
-        SharedPointer<File> ExFile = vfs->Open(Path);
+        std::shared_ptr<File> ExFile = vfs->Open(Path);
 
         if (ExFile->Status != FileStatus::OK)
         {
@@ -230,7 +230,7 @@ namespace Execute
             debug("ElfFile: %p ELFHeader: %p", ElfFile, ELFHeader);
 
             InterpreterTargetProcess = Process;
-            InterpreterTargetPath = new String(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
+            InterpreterTargetPath = new std::string(Path); /* We store in a String because Path may get changed while outside ELFLoad(). */
             InterpreterMemoryImage = bl.VirtualMemoryImage;
             InterpreterElfFile = ElfFile;
             InterpreterNeededLibraries = bl.NeededLibraries;

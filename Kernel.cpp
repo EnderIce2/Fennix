@@ -314,7 +314,7 @@ EXTERNC NIF void Main(BootInfo *Info)
         DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
     else
     {
-        SharedPointer<File> dev = vfs->Open("/system/dev");
+        std::shared_ptr<File> dev = vfs->Open("/system/dev");
         if (dev->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/dev is not a directory! Halting...");
@@ -328,7 +328,7 @@ EXTERNC NIF void Main(BootInfo *Info)
         MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
     else
     {
-        SharedPointer<File> mnt = vfs->Open("/system/mnt");
+        std::shared_ptr<File> mnt = vfs->Open("/system/mnt");
         if (mnt->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/mnt is not a directory! Halting...");
@@ -342,7 +342,7 @@ EXTERNC NIF void Main(BootInfo *Info)
         ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
     else
     {
-        SharedPointer<File> proc = vfs->Open("/system/proc", nullptr);
+        std::shared_ptr<File> proc = vfs->Open("/system/proc", nullptr);
         if (proc->node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/proc is not a directory! Halting...");

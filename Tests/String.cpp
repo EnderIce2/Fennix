@@ -1,11 +1,11 @@
 #ifdef DEBUG
 
-#include <string.hpp>
+#include <std/string.hpp>
 #include <debug.h>
 
 void TestString()
 {
-    String hw("Hello, world!");
+    std::string hw("Hello, world!");
     debug("String length: %d", hw.length());
     debug("String capacity: %d", hw.capacity());
     debug("String data: %s", hw.c_str());
@@ -18,7 +18,7 @@ void TestString()
             ;
     }
 
-    String hi("Hi");
+    std::string hi("Hi");
     char chi[3];
     chi[0] = hi[0];
     chi[1] = hi[1];
@@ -52,9 +52,9 @@ void TestString()
             ;
     }
 
-    String eq0("Hello, world!");
-    String eq1("Hello, world!");
-    String eq2("World, hello!");
+    std::string eq0("Hello, world!");
+    std::string eq1("Hello, world!");
+    std::string eq2("World, hello!");
 
     if (eq0 == eq1)
         debug("String equality works!");
@@ -92,9 +92,9 @@ void TestString()
             ;
     }
 
-    String a("Hello");
-    String b("World");
-    String c;
+    std::string a("Hello");
+    std::string b("World");
+    std::string c;
     c = a + ", " + b + "!";
 
     if (c == "Hello, World!")

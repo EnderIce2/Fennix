@@ -69,7 +69,7 @@ namespace Execute
     BinaryType GetBinaryType(char *Path)
     {
         BinaryType Type = BinaryType::BinTypeInvalid;
-        SharedPointer<VirtualFileSystem::File> ExFile = vfs->Open(Path);
+        std::shared_ptr<VirtualFileSystem::File> ExFile = vfs->Open(Path);
 
         if (ExFile->Status == VirtualFileSystem::FileStatus::OK)
         {
