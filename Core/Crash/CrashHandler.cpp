@@ -800,7 +800,13 @@ namespace CrashHandler
 
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
-            debug("Exception in kernel mode (ip: %#lx (%s), cr2: %#lx)", Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol", PageFaultAddress);
+            if (PageFaultAddress)
+                debug("Exception in kernel mode (ip: %#lx cr2: %#lx (%s))",
+                      Frame->rip, PageFaultAddress, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            else
+                debug("Exception in kernel mode (ip: %#lx (%s))",
+                      Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+
             if (TaskManager)
                 TaskManager->Panic();
             ForceUnlock = true;
@@ -809,7 +815,12 @@ namespace CrashHandler
         }
         else
         {
-            debug("Exception in user mode (ip: %#lx (%s), cr2: %#lx)", Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol", PageFaultAddress);
+            if (PageFaultAddress)
+                debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
+                      Frame->rip, PageFaultAddress, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            else
+                debug("Exception in user mode (ip: %#lx (%s))",
+                      Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
             CPUData *data = GetCurrentCPU();
             if (!data)
             {
