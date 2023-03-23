@@ -128,11 +128,6 @@ enum CallbackReason
     ConfigurationReason,
 
     /**
-     * @brief This will be called when the registered interrupt is triggered.
-     */
-    InterruptReason,
-
-    /**
      * @brief This is used when the kernel wants to stop the driver.
      *
      * The memory allocated by the driver will be freed automatically.
@@ -262,7 +257,7 @@ union KernelCallback
 
                 /**
                  * @brief Adjust the encoding.
-                 * 
+                 *
                  * 0 - None, use default
                  *
                  * 1 - Signed PCM 8-bit
@@ -293,10 +288,10 @@ union KernelCallback
                  *
                  * 21 - Float PCM 32-bit Big Endian
                  * 22 - Float PCM 64-bit Big Endian
-                 * 
+                 *
                  * 23 - PCM A-law
                  * 24 - PCM Mu-law
-                 * 
+                 *
                  * ... - More
                  */
                 unsigned short Encoding;
@@ -324,7 +319,7 @@ union KernelCallback
                  */
                 unsigned char Channels;
             } Adjust;
-        
+
             struct
             {
                 unsigned char *Data;
@@ -344,6 +339,58 @@ union KernelCallback
         {
             unsigned char Vector;
         } InterruptInfo;
+    };
+    unsigned long raw;
+} __attribute__((packed));
+
+union CPURegisters
+{
+    struct
+    {
+#if defined(__x86_64__) || defined(__amd64__)
+        unsigned long r15;
+        unsigned long r14;
+        unsigned long r13;
+        unsigned long r12;
+        unsigned long r11;
+        unsigned long r10;
+        unsigned long r9;
+        unsigned long r8;
+
+        unsigned long rbp;
+        unsigned long rdi;
+        unsigned long rsi;
+        unsigned long rdx;
+        unsigned long rcx;
+        unsigned long rbx;
+        unsigned long rax;
+
+        unsigned long InterruptNumber;
+        unsigned long ErrorCode;
+        unsigned long rip;
+        unsigned long cs;
+        unsigned long rflags;
+        unsigned long rsp;
+        unsigned long ss;
+#elif defined(__i386__) || defined(__i686__)
+        unsigned int ebp;
+        unsigned int edi;
+        unsigned int esi;
+        unsigned int edx;
+        unsigned int ecx;
+        unsigned int ebx;
+        unsigned int eax;
+
+        unsigned int InterruptNumber;
+        unsigned int ErrorCode;
+        unsigned int eip;
+        unsigned int cs;
+        unsigned int eflags;
+        unsigned int esp;
+        unsigned int ss;
+#else
+#error "Unsupported architecture"
+#endif
     };
     unsigned long raw;
 } __attribute__((packed));
