@@ -245,9 +245,6 @@ int CallbackHandler(KernelCallback *Data)
     }
     case SendReason:
     {
-        for (size_t i = 0; i < 10; i++)
-            KAPI->Util.Sleep(1000);
-        return OK;
         unsigned char *Buffer = (unsigned char *)Data->AudioCallback.Send.Data;
         unsigned int Length = Data->AudioCallback.Send.Length;
 
