@@ -69,12 +69,7 @@ namespace Memory
             if (PageBitmap[PageBitmapIndex] == true)
                 continue;
             this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
-            return (void *)(PageBitmapIndex * PAGE_SIZE);
-        }
 
-        if (this->SwapPage((void *)(PageBitmapIndex * PAGE_SIZE)))
-        {
-            this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
 #ifdef DEBUG
             if (EnableExternalMemoryTracer)
             {
@@ -94,6 +89,12 @@ namespace Memory
                 mExtTrkLock.Unlock();
             }
 #endif
+            return (void *)(PageBitmapIndex * PAGE_SIZE);
+        }
+
+        if (this->SwapPage((void *)(PageBitmapIndex * PAGE_SIZE)))
+        {
+            this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
             return (void *)(PageBitmapIndex * PAGE_SIZE);
         }
 
