@@ -3,6 +3,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 /*                           The driver is
  *       This is a driver     for Fennix     Driver Entry Extended Header
@@ -18,10 +19,11 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Name = "Example Driver",
         .Type = FexDriverType_Generic,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_INTERRUPT,
             .Interrupt = {
-                .Vector = {0xFF},
+                .Vector = {222}, // IRQ222
             }}}};
 
 // Global variable that holds the kernel API
@@ -61,11 +63,6 @@ int CallbackHandler(KernelCallback *Data)
         print("Kernel acknowledged the driver.");
         break;
     }
-    case InterruptReason:
-    {
-        print("Interrupt received.");
-        break;
-    }
     case StopReason:
     {
         print("Driver stopped.");
@@ -77,5 +74,11 @@ int CallbackHandler(KernelCallback *Data)
         break;
     }
     }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    print("Interrupt received.");
     return OK;
 }

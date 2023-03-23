@@ -7,6 +7,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -17,10 +18,11 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Name = "ATA",
         .Type = FexDriverType_Storage,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_INTERRUPT,
             .Interrupt = {
-                .Vector = {0xE, 0xF}, // IRQ14, IRQ15
+                .Vector = {14, 15}, // IRQ14, IRQ15
             }}}};
 
 KernelAPI *KAPI;
@@ -57,18 +59,6 @@ int CallbackHandler(KernelCallback *Data)
     {
         break;
     }
-    case InterruptReason:
-    {
-        if (Data->InterruptInfo.Vector == 0xE)
-        {
-            print("IRQ14");
-        }
-        else if (Data->InterruptInfo.Vector == 0xF)
-        {
-            print("IRQ15");
-        }
-        break;
-    }
     case SendReason:
     case ReceiveReason:
     {
@@ -85,6 +75,19 @@ int CallbackHandler(KernelCallback *Data)
         print("Unknown reason.");
         break;
     }
+    }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *Registers)
+{
+    if (Registers->InterruptNumber == 0xE)
+    {
+        print("IRQ14");
+    }
+    else if (Registers->InterruptNumber == 0xF)
+    {
+        print("IRQ15");
     }
     return OK;
 }

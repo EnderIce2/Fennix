@@ -7,6 +7,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -17,6 +18,7 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Name = "Intel Gigabit Ethernet Controller",
         .Type = FexDriverType_Network,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
@@ -469,24 +471,6 @@ int CallbackHandler(KernelCallback *Data)
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }
-    case InterruptReason:
-    {
-        WriteCMD(REG::IMASK, 0x1);
-        uint32_t status = ReadCMD(0xC0);
-        UNUSED(status);
-
-        while ((RX[RXCurrent]->Status & 0x1))
-        {
-            uint8_t *Data = (uint8_t *)RX[RXCurrent]->Address;
-            uint16_t DataLength = RX[RXCurrent]->Length;
-            KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, Data, DataLength);
-            RX[RXCurrent]->Status = 0;
-            uint16_t OldRXCurrent = RXCurrent;
-            RXCurrent = (RXCurrent + 1) % E1000_NUM_RX_DESC;
-            WriteCMD(REG::RXDESCTAIL, OldRXCurrent);
-        }
-        break;
-    }
     case SendReason:
     {
         TX[TXCurrent]->Address = (uint64_t)Data->NetworkCallback.Send.Data;
@@ -529,6 +513,25 @@ int CallbackHandler(KernelCallback *Data)
         print("Unknown reason.");
         break;
     }
+    }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    WriteCMD(REG::IMASK, 0x1);
+    uint32_t status = ReadCMD(0xC0);
+    UNUSED(status);
+
+    while ((RX[RXCurrent]->Status & 0x1))
+    {
+        uint8_t *Data = (uint8_t *)RX[RXCurrent]->Address;
+        uint16_t DataLength = RX[RXCurrent]->Length;
+        KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, Data, DataLength);
+        RX[RXCurrent]->Status = 0;
+        uint16_t OldRXCurrent = RXCurrent;
+        RXCurrent = (RXCurrent + 1) % E1000_NUM_RX_DESC;
+        WriteCMD(REG::RXDESCTAIL, OldRXCurrent);
     }
     return OK;
 }

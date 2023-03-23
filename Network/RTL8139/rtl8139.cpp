@@ -7,6 +7,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -17,6 +18,7 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Name = "RTL8139",
         .Type = FexDriverType_Network,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
@@ -173,23 +175,6 @@ int CallbackHandler(KernelCallback *Data)
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }
-    case InterruptReason:
-    {
-        uint16_t Status = RTLIW(0x3E);
-        UNUSED(Status);
-
-        uint16_t *Data = (uint16_t *)(RXBuffer + CurrentPacket);
-        uint16_t DataLength = *(Data + 1);
-        Data = Data + 2;
-        KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, (uint8_t *)Data, DataLength);
-        CurrentPacket = (CurrentPacket + DataLength + 4 + 3) & (~3);
-        if (CurrentPacket > 8192)
-            CurrentPacket -= 8192;
-        RTLOW(0x38, CurrentPacket - 0x10);
-
-        RTLOW(0x3E, (1 << 0) | (1 << 2));
-        break;
-    }
     case SendReason:
     {
         RTLOL(TSAD[TXCurrent], static_cast<uint32_t>(reinterpret_cast<uint64_t>(Data->NetworkCallback.Send.Data)));
@@ -210,5 +195,23 @@ int CallbackHandler(KernelCallback *Data)
         break;
     }
     }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    uint16_t Status = RTLIW(0x3E);
+    UNUSED(Status);
+
+    uint16_t *Data = (uint16_t *)(RXBuffer + CurrentPacket);
+    uint16_t DataLength = *(Data + 1);
+    Data = Data + 2;
+    KAPI->Command.Network.ReceivePacket(KAPI->Info.DriverUID, (uint8_t *)Data, DataLength);
+    CurrentPacket = (CurrentPacket + DataLength + 4 + 3) & (~3);
+    if (CurrentPacket > 8192)
+        CurrentPacket -= 8192;
+    RTLOW(0x38, CurrentPacket - 0x10);
+
+    RTLOW(0x3E, (1 << 0) | (1 << 2));
     return OK;
 }

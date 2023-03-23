@@ -6,6 +6,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -18,10 +19,11 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .TypeFlags = FexDriverInputTypes_Mouse,
         .OverrideOnConflict = false,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_INTERRUPT,
             .Interrupt = {
-                .Vector = {0xC}, // IRQ12
+                .Vector = {12}, // IRQ12
             }}}};
 
 KernelAPI *KAPI;
@@ -156,118 +158,119 @@ int CallbackHandler(KernelCallback *Data)
         print("Driver stopped.");
         break;
     }
-    case InterruptReason:
-    {
-        uint8_t Data = inb(0x60);
-
-        if (__builtin_expect(!!(PacketReady), 0))
-        {
-            bool XNegative, YNegative, XOverflow, YOverflow;
-
-            if (Packet[0] & PS2XSign)
-                XNegative = true;
-            else
-                XNegative = false;
-
-            if (Packet[0] & PS2YSign)
-                YNegative = true;
-            else
-                YNegative = false;
-
-            if (Packet[0] & PS2XOverflow)
-                XOverflow = true;
-            else
-                XOverflow = false;
-
-            if (Packet[0] & PS2YOverflow)
-                YOverflow = true;
-            else
-                YOverflow = false;
-
-            if (!XNegative)
-            {
-                MouseX += Packet[1];
-                if (XOverflow)
-                    MouseX += 255;
-            }
-            else
-            {
-                Packet[1] = 256 - Packet[1];
-                MouseX -= Packet[1];
-                if (XOverflow)
-                    MouseX -= 255;
-            }
-
-            if (!YNegative)
-            {
-                MouseY -= Packet[2];
-                if (YOverflow)
-                    MouseY -= 255;
-            }
-            else
-            {
-                Packet[2] = 256 - Packet[2];
-                MouseY += Packet[2];
-                if (YOverflow)
-                    MouseY += 255;
-            }
-
-            uint32_t Width = KAPI->Display.GetWidth();
-            uint32_t Height = KAPI->Display.GetHeight();
-
-            if (MouseX < 0)
-                MouseX = 0;
-
-            if ((uint32_t)MouseX > Width - 1)
-                MouseX = Width - 1;
-
-            if (MouseY < 0)
-                MouseY = 0;
-            if ((uint32_t)MouseY > Height - 1)
-                MouseY = Height - 1;
-
-            MouseLeft = 0;
-            MouseMiddle = 0;
-            MouseRight = 0;
-
-            if (Packet[0] & PS2LeftButton)
-                MouseLeft = 1;
-            if (Packet[0] & PS2MiddleButton)
-                MouseMiddle = 1;
-            if (Packet[0] & PS2RightButton)
-                MouseRight = 1;
-            PacketReady = false;
-        }
-
-        switch (Cycle)
-        {
-        case 0:
-        {
-            if ((Data & 0b00001000) == 0)
-                break;
-            Packet[0] = Data;
-            Cycle++;
-            break;
-        }
-        case 1:
-        {
-            Packet[1] = Data;
-            Cycle++;
-            break;
-        }
-        case 2:
-        {
-            Packet[2] = Data;
-            PacketReady = true;
-            Cycle = 0;
-            break;
-        }
-        }
-        break;
-    }
     default:
     {
         print("Unknown reason.");
+        break;
+    }
+    }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    uint8_t Data = inb(0x60);
+
+    if (__builtin_expect(!!(PacketReady), 0))
+    {
+        bool XNegative, YNegative, XOverflow, YOverflow;
+
+        if (Packet[0] & PS2XSign)
+            XNegative = true;
+        else
+            XNegative = false;
+
+        if (Packet[0] & PS2YSign)
+            YNegative = true;
+        else
+            YNegative = false;
+
+        if (Packet[0] & PS2XOverflow)
+            XOverflow = true;
+        else
+            XOverflow = false;
+
+        if (Packet[0] & PS2YOverflow)
+            YOverflow = true;
+        else
+            YOverflow = false;
+
+        if (!XNegative)
+        {
+            MouseX += Packet[1];
+            if (XOverflow)
+                MouseX += 255;
+        }
+        else
+        {
+            Packet[1] = 256 - Packet[1];
+            MouseX -= Packet[1];
+            if (XOverflow)
+                MouseX -= 255;
+        }
+
+        if (!YNegative)
+        {
+            MouseY -= Packet[2];
+            if (YOverflow)
+                MouseY -= 255;
+        }
+        else
+        {
+            Packet[2] = 256 - Packet[2];
+            MouseY += Packet[2];
+            if (YOverflow)
+                MouseY += 255;
+        }
+
+        uint32_t Width = KAPI->Display.GetWidth();
+        uint32_t Height = KAPI->Display.GetHeight();
+
+        if (MouseX < 0)
+            MouseX = 0;
+
+        if ((uint32_t)MouseX > Width - 1)
+            MouseX = Width - 1;
+
+        if (MouseY < 0)
+            MouseY = 0;
+        if ((uint32_t)MouseY > Height - 1)
+            MouseY = Height - 1;
+
+        MouseLeft = 0;
+        MouseMiddle = 0;
+        MouseRight = 0;
+
+        if (Packet[0] & PS2LeftButton)
+            MouseLeft = 1;
+        if (Packet[0] & PS2MiddleButton)
+            MouseMiddle = 1;
+        if (Packet[0] & PS2RightButton)
+            MouseRight = 1;
+        PacketReady = false;
+    }
+
+    switch (Cycle)
+    {
+    case 0:
+    {
+        if ((Data & 0b00001000) == 0)
+            break;
+        Packet[0] = Data;
+        Cycle++;
+        break;
+    }
+    case 1:
+    {
+        Packet[1] = Data;
+        Cycle++;
+        break;
+    }
+    case 2:
+    {
+        Packet[2] = Data;
+        PacketReady = true;
+        Cycle = 0;
         break;
     }
     }

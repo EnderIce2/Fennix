@@ -6,6 +6,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -18,10 +19,11 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .TypeFlags = FexDriverInputTypes_Mouse,
         .OverrideOnConflict = true,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_INTERRUPT,
             .Interrupt = {
-                .Vector = {0xC}, // IRQ12
+                .Vector = {12}, // IRQ12
             }}}};
 
 KernelAPI *KAPI;
@@ -240,43 +242,43 @@ int CallbackHandler(KernelCallback *Data)
         print("Driver stopped.");
         break;
     }
-    case InterruptReason:
-    {
-        uint8_t Data = inb(0x60);
-        (void)Data;
-        VMwareCommand cmd;
-        cmd.bx = 0;
-        cmd.command = CMD_ABSPOINTER_STATUS;
-        CommandSend(&cmd);
-
-        if (cmd.ax == 0xFFFF0000)
-        {
-            print("VMware mouse is not connected?");
-            Relative();
-            Absolute();
-            return ERROR;
-        }
-        if ((cmd.ax & 0xFFFF) < 4)
-            return ERROR;
-
-        cmd.bx = 4;
-        cmd.command = CMD_ABSPOINTER_DATA;
-        CommandSend(&cmd);
-
-        int flags = (cmd.ax & 0xFFFF0000) >> 16; /* Not important */
-        (void)flags;
-        MouseButton = (cmd.ax & 0xFFFF); /* 0x10 = Right, 0x20 = Left, 0x08 = Middle */
-        MouseX = cmd.bx;                 /* Both X and Y are scaled from 0 to 0xFFFF */
-        MouseY = cmd.cx;                 /* You should map these somewhere to the actual resolution. */
-        MouseZ = (int8_t)cmd.dx;         /* Z is a single signed byte indicating scroll direction. */
-        break;
-    }
-
     default:
     {
         print("Unknown reason.");
         break;
     }
     }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    uint8_t Data = inb(0x60);
+    (void)Data;
+    VMwareCommand cmd;
+    cmd.bx = 0;
+    cmd.command = CMD_ABSPOINTER_STATUS;
+    CommandSend(&cmd);
+
+    if (cmd.ax == 0xFFFF0000)
+    {
+        print("VMware mouse is not connected?");
+        Relative();
+        Absolute();
+        return ERROR;
+    }
+    if ((cmd.ax & 0xFFFF) < 4)
+        return ERROR;
+
+    cmd.bx = 4;
+    cmd.command = CMD_ABSPOINTER_DATA;
+    CommandSend(&cmd);
+
+    int flags = (cmd.ax & 0xFFFF0000) >> 16; /* Not important */
+    (void)flags;
+    MouseButton = (cmd.ax & 0xFFFF); /* 0x10 = Right, 0x20 = Left, 0x08 = Middle */
+    MouseX = cmd.bx;                 /* Both X and Y are scaled from 0 to 0xFFFF */
+    MouseY = cmd.cx;                 /* You should map these somewhere to the actual resolution. */
+    MouseZ = (int8_t)cmd.dx;         /* Z is a single signed byte indicating scroll direction. */
     return OK;
 }

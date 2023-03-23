@@ -4,6 +4,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -16,6 +17,7 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .TypeFlags = FexDriverInputTypes_None,
         .OverrideOnConflict = false,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
@@ -99,13 +101,20 @@ int CallbackHandler(KernelCallback *Data)
         DescriptorList = (BufferDescriptorList *)KAPI->Memory.RequestPage((sizeof(BufferDescriptorList) * DescriptorListLength) / KAPI->Memory.PageSize + 1);
         KAPI->Util.memset(DescriptorList, 0, sizeof(BufferDescriptorList) * DescriptorListLength);
 
+        uint16_t DLSampleCount = KAPI->Memory.PageSize / SampleSize;
+        char DLLogBuffer[128];
         for (int i = 0; i < DescriptorListLength; i++)
         {
-            DescriptorList[i] = {
-                .Address = (uint32_t)(uint64_t)KAPI->Memory.RequestPage(sizeof(uint16_t *) / KAPI->Memory.PageSize + 1),
-                .SampleCount = (uint16_t)(KAPI->Memory.PageSize / SampleSize),
-                .Flags = 0,
-            };
+            int DescriptorPages = sizeof(uint16_t *) / KAPI->Memory.PageSize + 1;
+            DescriptorList[i].Address = (uint32_t)(uint64_t)KAPI->Memory.RequestPage(DescriptorPages);
+            DescriptorList[i].SampleCount = DLSampleCount;
+            DescriptorList[i].Flags = 0;
+            KAPI->Util.sprintf(DLLogBuffer, "DescriptorList[%d] = { Address: 0x%x (%d %s), SampleCount: %d, Flags: 0x%x }",
+                               i,
+                               DescriptorList[i].Address, DescriptorPages, DescriptorPages == 1 ? "page" : "pages",
+                               DescriptorList[i].SampleCount,
+                               DescriptorList[i].Flags);
+            print(DLLogBuffer);
         }
 
         outw(BAR.MixerAddress + NAM_MasterVolume, MixerVolume(Volume, Volume, Mute));
@@ -236,10 +245,19 @@ int CallbackHandler(KernelCallback *Data)
     }
     case SendReason:
     {
+        for (size_t i = 0; i < 10; i++)
+            KAPI->Util.Sleep(1000);
+        return OK;
         unsigned char *Buffer = (unsigned char *)Data->AudioCallback.Send.Data;
         unsigned int Length = Data->AudioCallback.Send.Length;
 
-        if (Length % (SampleSize * Channels))
+        if (Buffer == nullptr)
+        {
+            print("Invalid buffer.");
+            return INVALID_DATA;
+        }
+
+        if ((Length == 0) || (Length % (SampleSize * Channels)))
         {
             print("Invalid buffer length.");
             return INVALID_DATA;
@@ -270,10 +288,7 @@ int CallbackHandler(KernelCallback *Data)
                     {
                         long SampleCount = DescriptorList[(CurrentBDL + 1) % DescriptorListLength].SampleCount / Channels;
                         if (SampleCount > 0)
-                        {
-                            // KAPI->Util.Sleep(SampleCount * 1000000 / SampleRate); // microseconds
                             KAPI->Util.Sleep(SampleCount * 1000 / SampleRate); // milliseconds
-                        }
                     }
 
                 } while (RemainingBDL >= DescriptorListLength - 1 && !(inw(BAR.BusMasterAddress + PCMOUT_Status) & TC_DMAControllerControl));
@@ -294,7 +309,7 @@ int CallbackHandler(KernelCallback *Data)
 
                 do
                 {
-                    int Wrote = ((KAPI->Memory.PageSize > Length) ? Length : KAPI->Memory.PageSize);
+                    int Wrote = (KAPI->Memory.PageSize > Length) ? Length : KAPI->Memory.PageSize;
 
                     if (Wrote == 0)
                         break;
@@ -343,40 +358,40 @@ int CallbackHandler(KernelCallback *Data)
         print("Driver stopped.");
         break;
     }
-    case InterruptReason:
-    {
-        break; // Not working as expected
-        uint16_t Status = inw(BAR.MixerAddress + PCMOUT_Status);
-
-        if (Status & TC_IOCInterruptEnable)
-        {
-            print("Interrupt on completion.");
-        }
-        else if (Status & TC_LastBufferEntryInterruptEnable)
-        {
-            print("Last buffer entry.");
-            // Stop DMA
-            outb(BAR.BusMasterAddress + PCMOUT_TransferControl, inb(BAR.BusMasterAddress + PCMOUT_TransferControl) & ~TC_DMAControllerControl);
-        }
-        else if (Status & TC_FifoERRORInterruptEnable)
-        {
-            print("FIFO error.");
-        }
-        else if (Status != 0x0)
-        {
-            char UnknownStatusText[64];
-            KAPI->Util.sprintf(UnknownStatusText, "Unknown status: %#lx", Status);
-            print(UnknownStatusText);
-        }
-
-        outw(BAR.MixerAddress + PCMOUT_Status, 0xFFFF);
-        break;
-    }
     default:
     {
         print("Unknown reason.");
         break;
     }
     }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
+    uint16_t Status = inw(BAR.MixerAddress + PCMOUT_Status);
+
+    if (Status & TC_IOCInterruptEnable)
+    {
+        print("Interrupt on completion.");
+    }
+    else if (Status & TC_LastBufferEntryInterruptEnable)
+    {
+        print("Last buffer entry.");
+        // Stop DMA
+        outb(BAR.BusMasterAddress + PCMOUT_TransferControl, inb(BAR.BusMasterAddress + PCMOUT_TransferControl) & ~TC_DMAControllerControl);
+    }
+    else if (Status & TC_FifoERRORInterruptEnable)
+    {
+        print("FIFO error.");
+    }
+    else if (Status != 0x0)
+    {
+        char UnknownStatusText[64];
+        KAPI->Util.sprintf(UnknownStatusText, "Unknown status: %#lx", Status);
+        print(UnknownStatusText);
+    }
+
+    outw(BAR.MixerAddress + PCMOUT_Status, 0xFFFF);
     return OK;
 }

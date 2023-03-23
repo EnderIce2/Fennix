@@ -7,6 +7,7 @@
 
 extern "C" int DriverEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
+int InterruptCallback(CPURegisters *Registers);
 
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
@@ -17,6 +18,7 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
         .Name = "Virtio Network",
         .Type = FexDriverType_Network,
         .Callback = CallbackHandler,
+        .InterruptCallback = InterruptCallback,
         .Bind = {
             .Type = BIND_PCI,
             .PCI = {
@@ -84,10 +86,6 @@ int CallbackHandler(KernelCallback *Data)
         Data->NetworkCallback.Fetch.MAC = MAC.ToHex();
         break;
     }
-    case InterruptReason:
-    {
-        break;
-    }
     case SendReason:
     {
         break;
@@ -104,5 +102,10 @@ int CallbackHandler(KernelCallback *Data)
         break;
     }
     }
+    return OK;
+}
+
+int InterruptCallback(CPURegisters *)
+{
     return OK;
 }
