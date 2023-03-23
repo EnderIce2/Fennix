@@ -159,4 +159,6 @@ namespace GlobalDescriptorTable
         asmv("mov %%rsp, %0"
              : "=r"(tss[CPUID].StackPointer[0]));
     }
+
+    void *GetKernelStack() { return (void *)tss[GetCurrentCPU()->ID].StackPointer[0]; }
 }

@@ -135,6 +135,7 @@ namespace GlobalDescriptorTable
     extern TaskStateSegment tss[];
     void Init(int Core);
     void SetKernelStack(void *Stack);
+    void *GetKernelStack();
 }
 
 #define GDT_KERNEL_CODE offsetof(GlobalDescriptorTable::GlobalDescriptorTableEntries, Code)
