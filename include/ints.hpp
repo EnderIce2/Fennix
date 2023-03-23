@@ -33,8 +33,17 @@ namespace Interrupts
         int InterruptNumber;
 
     protected:
+        /**
+         * @brief Set a new interrupt number.
+         * @param InterruptNumber The interrupt number. NOT the IRQ number! (IRQ0 != 32)
+         */
         void SetInterruptNumber(int InterruptNumber) { this->InterruptNumber = InterruptNumber; }
         int GetInterruptNumber() { return InterruptNumber; }
+
+        /**
+         * @brief Create a new interrupt handler.
+         * @param InterruptNumber The interrupt number. NOT the IRQ number! (IRQ0 != 32)
+         */
         Handler(int InterruptNumber);
         ~Handler();
 

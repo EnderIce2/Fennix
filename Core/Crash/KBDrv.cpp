@@ -77,7 +77,7 @@ static inline int GetLetterFromScanCode(uint8_t ScanCode)
 
 namespace CrashHandler
 {
-    CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(CPU::x86::IRQ1)
+    CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
     {
         while (inb(0x64) & 0x1)
             inb(0x60);

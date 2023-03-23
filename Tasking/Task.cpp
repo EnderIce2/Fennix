@@ -740,7 +740,7 @@ namespace Tasking
         return Process;
     }
 
-    Task::Task(const IP EntryPoint) : Interrupts::Handler(CPU::x86::IRQ16)
+    Task::Task(const IP EntryPoint) : Interrupts::Handler(16) /* IRQ16 */
     {
         SmartLock(TaskingLock);
 #if defined(a64)

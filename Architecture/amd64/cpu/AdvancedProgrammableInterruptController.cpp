@@ -347,7 +347,7 @@ namespace APIC
         this->lapic->Write(APIC_TIMER, timer.raw);
     }
 
-    Timer::Timer(APIC *apic) : Interrupts::Handler(IRQ0)
+    Timer::Timer(APIC *apic) : Interrupts::Handler(0) /* IRQ0 */
     {
         SmartCriticalSection(APICLock);
         this->lapic = apic;

@@ -134,7 +134,11 @@ namespace Interrupts
             bool InterruptHandled = false;
             foreach (auto ev in RegisteredEvents)
             {
+#if defined(a64) || defined(a32)
+                if ((ev.ID + CPU::x86::IRQ0) == static_cast<int>(Frame->InterruptNumber))
+#elif defined(aa64)
                 if (ev.ID == static_cast<int>(Frame->InterruptNumber))
+#endif
                 {
                     ((Handler *)ev.Data)->OnInterruptReceived(Frame);
                     InterruptHandled = true;
@@ -174,18 +178,18 @@ namespace Interrupts
         {
             if (ev.ID == InterruptNumber)
             {
-                warn("IRQ%d is already registered.", InterruptNumber - 32);
+                warn("IRQ%d is already registered.", InterruptNumber);
             }
         }
 
-        debug("Registering interrupt handler for IRQ%d.", InterruptNumber - 32);
+        debug("Registering interrupt handler for IRQ%d.", InterruptNumber);
         this->InterruptNumber = InterruptNumber;
         RegisteredEvents.push_back({InterruptNumber, this});
     }
 
     Handler::~Handler()
     {
-        debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber - 32);
+        debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber);
         for (size_t i = 0; i < RegisteredEvents.size(); i++)
         {
             if (RegisteredEvents[i].ID == InterruptNumber)
