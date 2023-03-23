@@ -27,11 +27,21 @@ namespace Driver
         DRIVER_CONFLICT
     };
 
+    class DriverInterruptHook;
+    struct DriverFile
+    {
+        bool Enabled;
+        unsigned long DriverUID;
+        void *Address;
+        void *InterruptCallback;
+        Memory::MemMgr *MemTrk;
+        DriverInterruptHook *InterruptHook[16];
+    };
+
     class DriverInterruptHook : public Interrupts::Handler
     {
     private:
-        void *Handle;
-        void *Data;
+        DriverFile *Handle;
 
 #if defined(a64)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
@@ -42,17 +52,8 @@ namespace Driver
 #endif
 
     public:
-        DriverInterruptHook(int Interrupt, void *Address, void *ParamData);
+        DriverInterruptHook(int Interrupt, DriverFile *Handle);
         virtual ~DriverInterruptHook() = default;
-    };
-
-    struct DriverFile
-    {
-        bool Enabled;
-        unsigned long DriverUID;
-        void *Address;
-        Memory::MemMgr *MemTrk;
-        DriverInterruptHook *InterruptHook[16];
     };
 
     class Driver

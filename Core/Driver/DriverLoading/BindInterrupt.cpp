@@ -25,9 +25,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -47,9 +49,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
         }
 
@@ -58,6 +62,7 @@ namespace Driver
         DrvFile->Enabled = true;
         DrvFile->DriverUID = this->DriverUIDs - 1;
         DrvFile->Address = (void *)fex;
+        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
         DrvFile->MemTrk = mem;
         Drivers.push_back(DrvFile);
         return DriverCode::OK;
@@ -74,9 +79,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -96,9 +103,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
         }
 
@@ -118,9 +127,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -140,9 +151,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
         }
 
@@ -154,7 +167,6 @@ namespace Driver
     DriverCode Driver::BindInterruptStorage(Memory::MemMgr *mem, void *fex)
     {
         return DriverCode::NOT_IMPLEMENTED; // FIXME
-
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
 
         if (fexExtended->Driver.OverrideOnConflict)
@@ -164,9 +176,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -186,43 +200,50 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
-        }
-
-        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
-        UNUSED(KCallback); // Shut up clang
-        for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
-        {
-            if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
-                break;
-
-            fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", fexExtended->Driver.Bind.Interrupt.Vector[i]);
-        }
-
-        KCallback->RawPtr = nullptr;
-        KCallback->Reason = CallbackReason::ConfigurationReason;
-        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
-        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
-        {
-            error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete mem, mem = nullptr;
-            return DriverCode::NOT_IMPLEMENTED;
-        }
-        else if (CallbackRet != DriverReturnCode::OK)
-        {
-            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete mem, mem = nullptr;
-            return DriverCode::DRIVER_RETURNED_ERROR;
         }
 
         DriverFile *DrvFile = new DriverFile;
         DrvFile->Enabled = true;
         DrvFile->DriverUID = this->DriverUIDs - 1;
         DrvFile->Address = (void *)fex;
+        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
         DrvFile->MemTrk = mem;
+        if (fexExtended->Driver.InterruptCallback)
+        {
+            for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
+            {
+                if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
+                    break;
+                DrvFile->InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
+            }
+        }
+
+        KernelCallback KCallback = {.raw = 0};
+        KCallback.RawPtr = nullptr;
+        KCallback.Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(&KCallback);
+
+        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
+        {
+            error("Driver %s is not implemented", fexExtended->Driver.Name);
+            delete DrvFile, DrvFile = nullptr;
+            delete mem, mem = nullptr;
+            return DriverCode::NOT_IMPLEMENTED;
+        }
+        else if (CallbackRet != DriverReturnCode::OK)
+        {
+            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
+            delete DrvFile, DrvFile = nullptr;
+            delete mem, mem = nullptr;
+            return DriverCode::DRIVER_RETURNED_ERROR;
+        }
+
         Drivers.push_back(DrvFile);
         return DriverCode::OK;
     }
@@ -238,9 +259,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -260,9 +283,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
         }
 
@@ -323,51 +348,42 @@ namespace Driver
             }
         }
 
-        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
-
-        DriverInterruptHook *InterruptHook = nullptr;
-        if (fexExtended->Driver.Bind.Interrupt.Vector[0] != 0)
-            InterruptHook = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[0] + 32, // x86
-                                                    (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
-                                                    KCallback);
-
-        for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
+        DriverFile *DrvFile = new DriverFile;
+        DrvFile->Enabled = true;
+        DrvFile->DriverUID = this->DriverUIDs - 1;
+        DrvFile->Address = (void *)fex;
+        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
+        DrvFile->MemTrk = mem;
+        if (fexExtended->Driver.InterruptCallback)
         {
-            if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
-                break;
-            // InterruptHook = new DriverInterruptHook((fexExtended->Driver.Bind.Interrupt.Vector[i] + 32, // x86
-            //                                         (void *)((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex),
-            //                                         KCallback);
-            fixme("TODO: MULTIPLE BIND INTERRUPT VECTORS %d", fexExtended->Driver.Bind.Interrupt.Vector[i]);
+            for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
+            {
+                if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
+                    break;
+                DrvFile->InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
+            }
         }
 
-        KCallback->RawPtr = nullptr;
-        KCallback->Reason = CallbackReason::ConfigurationReason;
-        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
+        KernelCallback KCallback = {.raw = 0};
+        KCallback.RawPtr = nullptr;
+        KCallback.Reason = CallbackReason::ConfigurationReason;
+        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(&KCallback);
+
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
             error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete InterruptHook, InterruptHook = nullptr;
+            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete InterruptHook, InterruptHook = nullptr;
+            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
 
-        memset(KCallback, 0, sizeof(KernelCallback));
-        KCallback->Reason = CallbackReason::InterruptReason;
-
-        DriverFile *DrvFile = new DriverFile;
-        DrvFile->Enabled = true;
-        DrvFile->DriverUID = this->DriverUIDs - 1;
-        DrvFile->Address = (void *)fex;
-        DrvFile->MemTrk = mem;
-        DrvFile->InterruptHook[0] = InterruptHook;
         Drivers.push_back(DrvFile);
         return DriverCode::OK;
     }
@@ -383,9 +399,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
 
                 DriversToRemove.push_back(Drv->DriverUID);
             }
@@ -405,9 +423,11 @@ namespace Driver
             {
                 FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
 
-                debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                 if (fe->Driver.OverrideOnConflict)
+                {
+                    debug("Driver %s is conflicting with %s", fe->Driver.Name, fexExtended->Driver.Name);
                     return DriverCode::DRIVER_CONFLICT;
+                }
             }
         }
 

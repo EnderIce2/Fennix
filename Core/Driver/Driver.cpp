@@ -104,6 +104,11 @@ namespace Driver
         ((KernelAPI *)KAPIAddress)->Info.Offset = (unsigned long)fex;
         ((KernelAPI *)KAPIAddress)->Info.DriverUID = DriverUIDs++;
 
+#ifdef DEBUG
+        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+        debug("DRIVER: %s HAS DRIVER ID %ld", fexExtended->Driver.Name, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
+#endif
+
         debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
         int ret = ((int (*)(KernelAPI *))((uintptr_t)((Fex *)fex)->EntryPoint + (uintptr_t)fex))(((KernelAPI *)KAPIAddress));
 
@@ -227,15 +232,72 @@ namespace Driver
     SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
 #endif
     {
-        SmartLock(DriverInterruptLock);
-        ((int (*)(void *))(Handle))(Data);
+        SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
+        if (!Handle->InterruptCallback)
+        {
+#if defined(a64) || defined(a32)
+            int IntNum = Frame->InterruptNumber - 32;
+#elif defined(aa64)
+            int IntNum = Frame->InterruptNumber;
+#endif
+            warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle->DriverUID);
+            return;
+        }
+        CPURegisters regs;
+#if defined(a64)
+        regs.r15 = Frame->r15;
+        regs.r14 = Frame->r14;
+        regs.r13 = Frame->r13;
+        regs.r12 = Frame->r12;
+        regs.r11 = Frame->r11;
+        regs.r10 = Frame->r10;
+        regs.r9 = Frame->r9;
+        regs.r8 = Frame->r8;
+
+        regs.rbp = Frame->rbp;
+        regs.rdi = Frame->rdi;
+        regs.rsi = Frame->rsi;
+        regs.rdx = Frame->rdx;
+        regs.rcx = Frame->rcx;
+        regs.rbx = Frame->rbx;
+        regs.rax = Frame->rax;
+
+        regs.InterruptNumber = Frame->InterruptNumber;
+        regs.ErrorCode = Frame->ErrorCode;
+        regs.rip = Frame->rip;
+        regs.cs = Frame->cs;
+        regs.rflags = Frame->rflags.raw;
+        regs.rsp = Frame->rsp;
+        regs.ss = Frame->ss;
+#elif defined(a32)
+        regs.ebp = Frame->ebp;
+        regs.edi = Frame->edi;
+        regs.esi = Frame->esi;
+        regs.edx = Frame->edx;
+        regs.ecx = Frame->ecx;
+        regs.ebx = Frame->ebx;
+        regs.eax = Frame->eax;
+
+        regs.InterruptNumber = Frame->InterruptNumber;
+        regs.ErrorCode = Frame->ErrorCode;
+        regs.eip = Frame->eip;
+        regs.cs = Frame->cs;
+        regs.eflags = Frame->eflags.raw;
+        regs.esp = Frame->esp;
+        regs.ss = Frame->ss;
+#elif defined(aa64)
+#endif
+        ((int (*)(void *))(Handle->InterruptCallback))(&regs);
         UNUSED(Frame);
     }
 
-    DriverInterruptHook::DriverInterruptHook(int Interrupt, void *Address, void *ParamData) : Interrupts::Handler(Interrupt)
+    DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile *Handle) : Interrupts::Handler(Interrupt)
     {
-        trace("Interrupt %d Hooked", Interrupt - 32); // x86
-        Handle = Address;
-        Data = ParamData;
+        this->Handle = Handle;
+#if defined(a64) || defined(a32)
+        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle->DriverUID);
+#elif defined(aa64)
+        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle->DriverUID);
+#endif
     }
 }
