@@ -48,11 +48,14 @@ LockClass mExtTrkLock;
  * - [?] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
  * - [ ] Colors in crash screen are not following the kernel color scheme.
  * - [ ] Find a way to add intrinsics.
+ * - [ ] Rework PSF1 font loader.
  *
  * ISSUES:
  * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
- * - [ ] After setting the new stack pointer, the kernel crashes with an invalid opcode.
+ * - [?] After setting the new stack pointer, the kernel crashes with an invalid opcode.
  * - [ ] Somewhere in the kernel, the memory is wrongly freed or memcpy/memset.
+ * - [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
+ * - [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
  *
  * CREDITS AND REFERENCES:
  * - General:
@@ -169,12 +172,15 @@ EXTERNC void putchar(char c) { Display->Print(c, 0); }
 EXTERNC void KPrint(const char *Format, ...)
 {
     SmartLock(KernelLock);
+
     Time::Clock tm = Time::ReadClock();
     printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
+
     va_list args;
     va_start(args, Format);
     vprintf(Format, args);
     va_end(args);
+
     putchar('\n');
     Display->SetBuffer(0);
 }
@@ -185,6 +191,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
     memcpy(bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
+
     Display = new Video::Display(bInfo->Framebuffer[0]);
     printf("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     /**************************************************************************************/
@@ -192,10 +199,13 @@ EXTERNC NIF void Main(BootInfo *Info)
            BootClock.Hour, BootClock.Minute, BootClock.Second,
            BootClock.Day, BootClock.Month, BootClock.Year);
     KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
+
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
+
     KPrint("Reading Kernel Parameters");
     Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
+
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
 
@@ -204,10 +214,13 @@ EXTERNC NIF void Main(BootInfo *Info)
 
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
+
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
+
     KPrint("Initializing PCI Manager");
     PCIManager = new PCI::PCI;
+
     foreach (auto Device in PCIManager->GetDevices())
     {
         KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
@@ -217,14 +230,17 @@ EXTERNC NIF void Main(BootInfo *Info)
                PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
                PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
     }
+
     KPrint("Enabling Interrupts on Bootstrap Processor");
     Interrupts::Enable(0);
+
 #if defined(a64)
     PowerManager->InitDSDT();
 #elif defined(a32)
     // FIXME: Add ACPI support for i386
 #elif defined(aa64)
 #endif
+
     KPrint("Initializing Timers");
 #if defined(a64)
     TimeManager = new Time::time(PowerManager->GetACPI());
@@ -233,8 +249,10 @@ EXTERNC NIF void Main(BootInfo *Info)
 #elif defined(aa64)
     TimeManager = new Time::time(nullptr);
 #endif
+
     KPrint("Initializing Bootstrap Processor Timer");
     Interrupts::InitializeTimer(0);
+
     KPrint("Initializing SMP");
     SMP::Initialize(PowerManager->GetMADT());
 

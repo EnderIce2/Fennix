@@ -155,6 +155,7 @@ namespace Memory
             error("Page %#lx not present", PML4.GetAddress());
             return;
         }
+
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.Address << 12);
         PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
         if (!PDPTE.Present)
@@ -162,6 +163,7 @@ namespace Memory
             error("Page %#lx not present", PDPTE.GetAddress());
             return;
         }
+
         PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.Address << 12);
         PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
         if (!PDE.Present)
@@ -169,6 +171,7 @@ namespace Memory
             error("Page %#lx not present", PDE.GetAddress());
             return;
         }
+
         PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.Address << 12);
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)

@@ -14,8 +14,10 @@ namespace InterruptDescriptorTable
 {
     static InterruptDescriptorTableEntry Entries[0x100];
 
-    InterruptDescriptorTableDescriptor idtd = {.Length = sizeof(Entries) - 1,
-                                               .Entries = Entries};
+    InterruptDescriptorTableDescriptor idtd = {
+        .Length = sizeof(Entries) - 1,
+        .Entries = Entries,
+    };
 
     void SetEntry(uint8_t Index,
                   void (*Base)(),
@@ -36,19 +38,10 @@ namespace InterruptDescriptorTable
         Entries[Index].Present = 1;
     }
 
-    extern "C" __attribute__((naked, used, no_stack_protector)) void ExceptionHandlerStub()
+    extern "C" __naked __used __no_stack_protector void ExceptionHandlerStub()
     {
-        asm(
-            // "cmp $0x1000, %rsp\n"    // Just in case the stack is corrupted
-            // "jng .skip_swap_check_1\n" /* if is not greater than */
-            // "cmpw $0x8, 0x8(%rsp)\n"
-            // "je .skip_swap_check_1\n"
-            // "swapgs\n"
-            // ".skip_swap_check_1:\n"
+        asm("cld\n"
 
-            "cld\n" // clear direction flag
-
-            // push all registers
             "pushq %rax\n"
             "pushq %rbx\n"
             "pushq %rcx\n"
@@ -68,7 +61,6 @@ namespace InterruptDescriptorTable
             "movq %rsp, %rdi\n"
             "call ExceptionHandler\n"
 
-            // pop all registers
             "popq %r15\n"
             "popq %r14\n"
             "popq %r13\n"
@@ -87,44 +79,13 @@ namespace InterruptDescriptorTable
 
             "addq $16, %rsp\n"
 
-            // "cmp $0x1000, %rsp\n"
-            // "jng .skip_swap_check_2\n"
-            // "cmpw $0x8, 0x8(%rsp)\n"
-            // "je .skip_swap_check_2\n"
-            // "swapgs\n"
-            // ".skip_swap_check_2:\n"
-
             "iretq"); // pop CS RIP RFLAGS SS RSP
     }
 
-    extern "C" void WarnSwapgs() { warn("swapgs"); }
-
-    // void *OriginalCR3;
-    extern "C" __attribute__((naked, used, no_stack_protector)) void InterruptHandlerStub()
+    extern "C" __naked __used __no_stack_protector void InterruptHandlerStub()
     {
-        // // Store cr3 to OriginalCR3
-        // asmv("mov %%cr3, %0"
-        //      : "=q"(OriginalCR3)
-        //      :
-        //      : "memory");
-        // // Set cr3 to KPT (Kernel Page Table)
-        // asmv("mov %0, %%cr3"
-        //      :
-        //      : "q"(KPT)
-        //      : "memory");
+        asm("cld\n"
 
-        // GlobalDescriptorTable::SetKernelStack(nullptr);
-
-        asm(
-            // "cmp $0x1000, %rsp\n"
-            // "jng .skip_swap_check__1\n"
-            // "cmpw $0x8, 0x8(%rsp)\n"
-            // "je .skip_swap_check__1\n"
-            // "swapgs\n"
-            // "call WarnSwapgs\n"
-            // ".skip_swap_check__1:\n"
-
-            "cld\n"
             "pushq %rax\n"
             "pushq %rbx\n"
             "pushq %rcx\n"
@@ -142,28 +103,9 @@ namespace InterruptDescriptorTable
             "pushq %r15\n"
 
             "movq %rsp, %rdi\n"
-            "call MainInterruptHandler\n");
+            "call MainInterruptHandler\n"
 
-        // // Check if the current cr3 is the same as the KPT
-        // // If not, then we need to restore the cr3
-        // asmv("pushq %rax\n"        // push rax
-        //      "pushq %rbx\n"        // push rbx
-        //      "movq %cr3, %rbx\n"); // mov cr3 to rbx
-        // asmv("movq %0, %%rax\n"    // mov KPT to rax
-        //      :
-        //      : "q"(KPT)
-        //      : "memory");
-        // asmv("cmpq %rax, %rbx\n"         // compare cr3 to rax
-        //      "jne .skip_restore_cr3\n"); // if not equal, skip restore cr3
-        // asmv("movq %0, %%cr3\n" // restore cr3
-        //      :
-        //      : "q"(OriginalCR3)
-        //      : "memory");
-        // asm(".skip_restore_cr3:\n" // skip restore cr3 label
-        //     "popq %rax\n"          // KPT
-        //     "popq %rbx\n");        // cr3
-
-        asm("popq %r15\n"
+            "popq %r15\n"
             "popq %r14\n"
             "popq %r13\n"
             "popq %r12\n"
@@ -181,38 +123,30 @@ namespace InterruptDescriptorTable
 
             "addq $16, %rsp\n"
 
-            // "cmp $0x1000, %rsp\n"
-            // "jng .skip_swap_check__2\n"
-            // "cmpw $0x8, 0x8(%rsp)\n"
-            // "je .skip_swap_check__2\n"
-            // "call WarnSwapgs\n"
-            // "swapgs\n"
-            // ".skip_swap_check__2:\n"
-
-            "iretq");
+            "iretq"); // pop CS RIP RFLAGS SS RSP
     }
 
 #pragma region Exceptions
 
-#define EXCEPTION_HANDLER(num)                                                      \
-    __attribute__((naked, no_stack_protector)) static void InterruptHandler_##num() \
-    {                                                                               \
-        asm("pushq $0\npushq $" #num "\n"                                           \
-            "jmp ExceptionHandlerStub");                                            \
+#define EXCEPTION_HANDLER(num)                                               \
+    __naked __used __no_stack_protector static void InterruptHandler_##num() \
+    {                                                                        \
+        asm("pushq $0\npushq $" #num "\n"                                    \
+            "jmp ExceptionHandlerStub");                                     \
     }
 
-#define EXCEPTION_ERROR_HANDLER(num)                                                \
-    __attribute__((naked, no_stack_protector)) static void InterruptHandler_##num() \
-    {                                                                               \
-        asm("pushq $" #num "\n"                                                     \
-            "jmp ExceptionHandlerStub");                                            \
+#define EXCEPTION_ERROR_HANDLER(num)                                         \
+    __naked __used __no_stack_protector static void InterruptHandler_##num() \
+    {                                                                        \
+        asm("pushq $" #num "\n"                                              \
+            "jmp ExceptionHandlerStub");                                     \
     }
 
-#define INTERRUPT_HANDLER(num)                                                     \
-    __attribute__((naked, used, no_stack_protector)) void InterruptHandler_##num() \
-    {                                                                              \
-        asm("pushq $0\npushq $" #num "\n"                                          \
-            "jmp InterruptHandlerStub\n");                                         \
+#define INTERRUPT_HANDLER(num)                                        \
+    __naked __used __no_stack_protector void InterruptHandler_##num() \
+    {                                                                 \
+        asm("pushq $0\npushq $" #num "\n"                             \
+            "jmp InterruptHandlerStub\n");                            \
     }
 
     /* ISR */
@@ -487,9 +421,7 @@ namespace InterruptDescriptorTable
 
     void Init(int Core)
     {
-        UNUSED(Core);
-        static int once = 0;
-        if (!once++)
+        if (Core == 0) /* Disable PIC using BSP */
         {
             // PIC
             outb(0x20, 0x10 | 0x1);

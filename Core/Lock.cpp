@@ -50,33 +50,38 @@ int LockClass::Lock(const char *FunctionName)
 {
     LockData.AttemptingToGet = FunctionName;
     LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
+
 Retry:
-    unsigned int i = 0;
+    int i = 0;
     while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
+
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
         DeadLock(LockData);
         goto Retry;
     }
+
     LockData.Count++;
     LockData.CurrentHolder = FunctionName;
     LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
+
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
-    LocksCount++;
-    __sync;
 
+    LocksCount++;
+
+    __sync;
     return 0;
 }
 
 int LockClass::Unlock()
 {
     __sync;
+
     IsLocked.Store(false, MemoryOrder::Release);
     LockData.Count--;
-    IsLocked = false;
     LocksCount--;
 
     return 0;
@@ -86,6 +91,7 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
 {
     CPUData *CoreData = GetCurrentCPU();
     long CCore = 0xdead;
+
     if (CoreData != nullptr)
         CCore = CoreData->ID;
 
@@ -111,13 +117,16 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 {
     if (!TimeManager)
         return Lock(FunctionName);
+
     LockData.AttemptingToGet = FunctionName;
     LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
+
     Atomic<uint64_t> Target = 0;
 Retry:
-    unsigned int i = 0;
+    int i = 0;
     while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
+
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
         if (Target.Load() == 0)
@@ -125,14 +134,17 @@ Retry:
         TimeoutDeadLock(LockData, Target.Load());
         goto Retry;
     }
+
     LockData.Count++;
     LockData.CurrentHolder = FunctionName;
     LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
+
     CPUData *CoreData = GetCurrentCPU();
     if (CoreData != nullptr)
         LockData.Core = CoreData->ID;
-    LocksCount++;
-    __sync;
 
+    LocksCount++;
+
+    __sync;
     return 0;
 }

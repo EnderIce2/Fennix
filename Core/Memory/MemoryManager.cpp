@@ -107,6 +107,7 @@ namespace Memory
             int Flags = Memory::PTFlag::RW;
             if (User)
                 Flags |= Memory::PTFlag::US;
+
             Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Flags);
         }
 
@@ -125,16 +126,18 @@ namespace Memory
 
         AllocatedPagesList.push_back({Address, Count});
 
-        /* For security reasons, we clear the memory
-           if the page is user accessible. */
+        /* For security reasons, we clear the allocated page
+           if it's a user page. */
         if (User)
             memset(Address, 0, Count * PAGE_SIZE);
+
         return Address;
     }
 
     void MemMgr::FreePages(void *Address, size_t Count)
     {
         for (size_t i = 0; i < AllocatedPagesList.size(); i++)
+        {
             if (AllocatedPagesList[i].Address == Address)
             {
                 /** TODO: Advanced checks. Allow if the page count is less than the requested one.
@@ -150,9 +153,12 @@ namespace Memory
                 }
 
                 KernelAllocator.FreePages(Address, Count);
+
                 for (size_t i = 0; i < Count; i++)
+                {
                     Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
-                // Memory::Virtual(this->PageTable).Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
+                    // Memory::Virtual(this->PageTable).Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
+                }
 
                 if (this->Directory)
                 {
@@ -166,11 +172,13 @@ namespace Memory
                 AllocatedPagesList.remove(i);
                 return;
             }
+        }
     }
 
     void MemMgr::DetachAddress(void *Address)
     {
         for (size_t i = 0; i < AllocatedPagesList.size(); i++)
+        {
             if (AllocatedPagesList[i].Address == Address)
             {
                 if (this->Directory)
@@ -185,6 +193,7 @@ namespace Memory
                 AllocatedPagesList.remove(i);
                 return;
             }
+        }
     }
 
     MemMgr::MemMgr(PageTable4 *PageTable, VirtualFileSystem::Node *Directory)
@@ -192,11 +201,13 @@ namespace Memory
         if (PageTable)
             this->PageTable = PageTable;
         else
+        {
 #if defined(a64)
             this->PageTable = (PageTable4 *)CPU::x64::readcr3().raw;
 #elif defined(a32)
             this->PageTable = (PageTable4 *)CPU::x32::readcr3().raw;
 #endif
+        }
 
         this->Directory = Directory;
         debug("+ %#lx", this);
@@ -212,8 +223,10 @@ namespace Memory
         }
 
         if (this->Directory)
+        {
             foreach (auto Child in this->Directory->Children)
                 vfs->Delete(Child, true);
+        }
 
         debug("- %#lx", this);
     }

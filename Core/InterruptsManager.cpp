@@ -58,7 +58,8 @@ namespace Interrupts
             CPU::Stop();
         }
         debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
-        asmv("movq %0, %%rsp" ::"r"(CoreData->Stack));
+        /* TODO: Implement a proper way to set the stack pointer. */
+        // asmv("movq %0, %%rsp" ::"r"(CoreData->Stack));
         InitializeSystemCalls();
 #elif defined(a32)
         warn("i386 is not supported yet");

@@ -92,19 +92,23 @@ namespace Video
     private:
         BootInfo::FramebufferInfo framebuffer;
         Font *CurrentFont;
-        ScreenBuffer *Buffers[256];
+        ScreenBuffer Buffers[256];
         bool ColorIteration = false;
         int ColorPickerIteration = 0;
 
     public:
         Font *GetCurrentFont();
         void SetCurrentFont(Font *Font);
+        uint16_t GetBitsPerPixel();
+        uint64_t GetPitch();
 
         /**
          * @brief Create a new buffer
-         * 
+         *
          * This function creates a new buffer.
          * 
+         * For @see Width and @see Height. Both values must be greater than 0.
+         *
          * @note Some indexes are reserved for the kernel.
          * 0 - Main buffer
          * 1 - Loading screen buffer
@@ -115,7 +119,7 @@ namespace Video
          * 253 - Frames (crash screen)
          * 254 - Details (crash screen)
          * 255 - Main (crash screen)
-         * 
+         *
          * @param Width The width of the buffer
          * @param Height The height of the buffer
          * @param Index The index of the buffer (0-255)
@@ -130,8 +134,6 @@ namespace Video
         void GetBufferCursor(int Index, uint32_t *X, uint32_t *Y);
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index);
         uint32_t GetPixel(uint32_t X, uint32_t Y, int Index);
-        uint16_t GetBitsPerPixel();
-        uint64_t GetPitch();
         void Scroll(int Index, int Lines);
 
         char Print(char Char, int Index, bool WriteToUART = false);

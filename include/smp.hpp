@@ -50,7 +50,7 @@ struct CPUData
 
     /** @brief Is CPU online? */
     bool IsActive;
-};
+} __aligned(16);
 
 CPUData *GetCurrentCPU();
 CPUData *GetCPU(long ID);

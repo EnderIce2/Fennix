@@ -25,7 +25,7 @@ enum SMPTrampolineAddress
 volatile bool CPUEnabled = false;
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-static __attribute__((aligned(PAGE_SIZE))) CPUData CPUs[MAX_CPU] = {0};
+static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
 
 SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
 
@@ -33,6 +33,7 @@ SafeFunction CPUData *GetCurrentCPU()
 {
     if (unlikely(!Interrupts::apic[0]))
         return &CPUs[0]; /* No APIC means we are on the BSP. */
+
     int CoreID = ((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24;
 
     if (unlikely((&CPUs[CoreID])->IsActive != true))
