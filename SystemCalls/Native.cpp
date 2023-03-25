@@ -54,7 +54,7 @@ static int sys_print(SyscallsFrame *Frame, char Char, int Index)
 
     char ret = Display->Print(Char, Index, true);
 #ifdef DEBUG
-    if (!Config.BootAnimation && Index != 0)
+    if (!Config.BootAnimation && Index == 0)
         Display->SetBuffer(Index);
 #endif
     UNUSED(Frame);
