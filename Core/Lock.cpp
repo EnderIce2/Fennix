@@ -5,6 +5,8 @@
 
 #include "../kernel.h"
 
+// #define PRINT_BACKTRACE
+
 bool ForceUnlock = false;
 Atomic<size_t> LocksCount = 0;
 
@@ -30,6 +32,23 @@ void LockClass::DeadLock(SpinLockData Lock)
          Lock.Count, Lock.Count > 1 ? "locks" : "lock",
          CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
          CCore, Lock.Core, this->DeadLocks);
+
+#ifdef PRINT_BACKTRACE
+    if (KernelSymbolTable)
+    {
+        debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
+    }
+#endif
 
     // TODO: Print on screen too.
 
@@ -102,6 +121,23 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
          Lock.Count, Lock.Count > 1 ? "locks" : "lock",
          CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
          CCore, Lock.Core, Timeout, Timeout - Counter);
+
+#ifdef PRINT_BACKTRACE
+    if (KernelSymbolTable)
+    {
+        debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
+              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
+    }
+#endif
 
     if (Timeout < Counter)
     {
