@@ -304,7 +304,7 @@ EXTERNC int isempty(char *str)
     return 1;
 }
 
-EXTERNC unsigned int isdelim(char c, char *delim)
+EXTERNC unsigned int isdelim(char c, const char *delim)
 {
     while (*delim != '\0')
     {

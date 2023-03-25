@@ -12,7 +12,7 @@ extern "C"
     int isempty(char *str);
     int isalpha(int c);
     int isupper(int c);
-    unsigned int isdelim(char c, char *delim);
+    unsigned int isdelim(char c, const char *delim);
     long abs(long i);
     void swap(char *x, char *y);
     char *reverse(char *Buffer, int i, int j);
