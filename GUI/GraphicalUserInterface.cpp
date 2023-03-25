@@ -636,6 +636,7 @@ namespace GraphicalUserInterface
 
     GUI::~GUI()
     {
+        debug("Destructor called");
         delete this->mem, this->mem = nullptr;
         delete this->BackBuffer, this->BackBuffer = nullptr;
         delete this->DesktopBuffer, this->DesktopBuffer = nullptr;

@@ -15,8 +15,6 @@
 #include "Core/smbios.hpp"
 #include "Tests/t.h"
 
-NewLock(ShutdownLock);
-
 bool DebuggerIsAttached = false;
 
 #ifdef DEBUG
@@ -49,6 +47,7 @@ LockClass mExtTrkLock;
  * - [ ] Colors in crash screen are not following the kernel color scheme.
  * - [ ] Find a way to add intrinsics.
  * - [ ] Rework PSF1 font loader.
+ * - [ ] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
  *
  * ISSUES:
  * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -160,14 +159,28 @@ PCI::PCI *PCIManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 Time::time *TimeManager = nullptr;
 VirtualFileSystem::Virtual *vfs = nullptr;
+VirtualFileSystem::Virtual *bootanim_vfs = nullptr;
 
-KernelConfig Config;
 Time::Clock BootClock;
+
+KernelConfig Config = {
+    .AllocatorType = Memory::MemoryAllocatorType::XallocV1,
+    .SchedulerType = 0,
+    .DriverDirectory = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
+    .InitPath = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
+    .InterruptsOnCrash = true,
+    .Cores = 0,
+    .IOAPICInterruptCore = 0,
+    .UnlockDeadLock = false,
+    .SIMD = false,
+    .BootAnimation = false,
+};
 
 extern bool EnableProfiler;
 
 // For the Display class. Printing on first buffer as default.
-EXTERNC void putchar(char c) { Display->Print(c, 0); }
+int PutCharBufferIndex = 0;
+EXTERNC void putchar(char c) { Display->Print(c, PutCharBufferIndex); }
 
 EXTERNC void KPrint(const char *Format, ...)
 {
@@ -182,7 +195,8 @@ EXTERNC void KPrint(const char *Format, ...)
     va_end(args);
 
     putchar('\n');
-    Display->SetBuffer(0);
+    if (!Config.BootAnimation)
+        Display->SetBuffer(0);
 }
 
 EXTERNC NIF void Main(BootInfo *Info)
@@ -204,7 +218,20 @@ EXTERNC NIF void Main(BootInfo *Info)
     Interrupts::Initialize(0);
 
     KPrint("Reading Kernel Parameters");
-    Config = ParseConfig((char *)bInfo->Kernel.CommandLine);
+    ParseConfig((char *)bInfo->Kernel.CommandLine, &Config);
+
+    if (Config.BootAnimation)
+    {
+        Display->CreateBuffer(0, 0, 1);
+
+        Video::ScreenBuffer *buf = Display->GetBuffer(1);
+        Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
+        Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
+        PutCharBufferIndex = 1;
+        printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n", KERNEL_VERSION, GIT_COMMIT_SHORT);
+        Display->SetBuffer(1);
+        PutCharBufferIndex = 0;
+    }
 
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
@@ -320,7 +347,30 @@ EXTERNC NIF void Main(BootInfo *Info)
 
     KPrint("Initializing Filesystem...");
     vfs = new VirtualFileSystem::Virtual;
-    new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[0].Address, vfs); // TODO: Detect initrd
+
+    if (Config.BootAnimation)
+        bootanim_vfs = new VirtualFileSystem::Virtual;
+
+    for (size_t i = 0; i < MAX_MODULES; i++)
+    {
+        if (!bInfo->Modules[i].Address)
+            continue;
+
+        if (strcmp(bInfo->Modules[i].CommandLine, "initrd") == 0)
+        {
+            debug("Found initrd at %p", bInfo->Modules[i].Address);
+            static char initrd = 0;
+            if (!initrd++)
+                new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[i].Address, vfs);
+        }
+        if (strcmp(bInfo->Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
+        {
+            debug("Found bootanim at %p", bInfo->Modules[i].Address);
+            static char bootanim = 0;
+            if (!bootanim++)
+                new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[i].Address, bootanim_vfs);
+        }
+    }
 
     if (!vfs->PathExists("/system"))
         vfs->Create("/system", NodeFlags::DIRECTORY);
@@ -404,23 +454,41 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 
-EXTERNC __no_stack_protector NIF void BeforeShutdown()
+EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 {
-    SmartLock(ShutdownLock);
     /* TODO: Announce shutdown */
 
     trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
-    delete NIManager, NIManager = nullptr;
 
-    delete DiskManager, DiskManager = nullptr;
-    delete DriverManager, DriverManager = nullptr;
-    TaskManager->SignalShutdown();
-    delete TaskManager, TaskManager = nullptr;
     if (RecoveryScreen)
         delete RecoveryScreen, RecoveryScreen = nullptr;
-    delete vfs, vfs = nullptr;
-    delete TimeManager, TimeManager = nullptr;
-    delete Display, Display = nullptr;
+
+    if (NIManager)
+        delete NIManager, NIManager = nullptr;
+
+    if (DiskManager)
+        delete DiskManager, DiskManager = nullptr;
+
+    if (DriverManager)
+        delete DriverManager, DriverManager = nullptr;
+
+    if (TaskManager)
+    {
+        TaskManager->SignalShutdown();
+        delete TaskManager, TaskManager = nullptr;
+    }
+
+    if (vfs)
+        delete vfs, vfs = nullptr;
+
+    if (bootanim_vfs)
+        delete bootanim_vfs, bootanim_vfs = nullptr;
+
+    if (TimeManager)
+        delete TimeManager, TimeManager = nullptr;
+
+    if (Display)
+        delete Display, Display = nullptr;
     // PowerManager should not be called
 
     // https://wiki.osdev.org/Calling_Global_Constructors

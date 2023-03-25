@@ -3,6 +3,7 @@
 
 #include <types.h>
 #include <memory.hpp>
+#include <task.hpp>
 
 namespace Recovery
 {
@@ -10,6 +11,8 @@ namespace Recovery
     {
     private:
         Memory::MemMgr *mem;
+        Tasking::TCB *guiThread;
+        Tasking::TCB *recoveryThread;
 
     public:
         void RecoveryThread();

@@ -61,15 +61,10 @@ namespace ACPI
         }
         else if (Event & ACPI_POWER_BUTTON)
         {
-            BeforeShutdown();
-            this->Shutdown();
-            Time::Clock tm = Time::ReadClock();
-            while (tm.Second == Time::ReadClock().Second)
-                ;
-            outw(0xB004, 0x2000);
-            outw(0x604, 0x2000);
-            outw(0x4004, 0x3400);
-            CPU::Stop();
+            if (TaskManager)
+                TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)KST_Shutdown);
+            else
+                KernelShutdownThread(false);
         }
         else if (Event & ACPI_SLEEP_BUTTON)
         {

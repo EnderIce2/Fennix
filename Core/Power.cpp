@@ -14,8 +14,6 @@ namespace Power
 {
     void Power::Reboot()
     {
-        BeforeShutdown();
-
         if (((ACPI::ACPI *)this->acpi)->FADT)
             if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
                 ((ACPI::DSDT *)this->dsdt)->Reboot();
@@ -44,8 +42,6 @@ namespace Power
 
     void Power::Shutdown()
     {
-        BeforeShutdown();
-
         if (((ACPI::ACPI *)this->acpi)->FADT)
             if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
                 ((ACPI::DSDT *)this->dsdt)->Shutdown();

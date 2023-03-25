@@ -8,6 +8,14 @@
 #include <exec.hpp>
 #include <cwalk.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_STDIO
+#define STBI_NO_LINEAR
+#define STBI_NO_THREAD_LOCALS
+#define STBI_NO_HDR
+#define STBI_ONLY_TGA
+#include <stb/image.h>
+
 #include "DAPI.hpp"
 #include "Fex.hpp"
 
@@ -24,6 +32,8 @@ VirtualFileSystem::Node *DevFS = nullptr;
 VirtualFileSystem::Node *MntFS = nullptr;
 VirtualFileSystem::Node *ProcFS = nullptr;
 
+NewLock(ShutdownLock);
+
 #ifdef DEBUG
 void TreeFS(Node *node, int Depth)
 {
@@ -31,7 +41,8 @@ void TreeFS(Node *node, int Depth)
     foreach (auto Chld in node->Children)
     {
         printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
-        Display->SetBuffer(0);
+        if (!Config.BootAnimation)
+            Display->SetBuffer(0);
         TaskManager->Sleep(100);
         TreeFS(Chld, Depth + 1);
     }
@@ -102,7 +113,8 @@ void TaskMgr()
         if (sanity > 1000)
             sanity = 0;
         Display->SetBufferCursor(0, tmpX, tmpY);
-        Display->SetBuffer(0);
+        if (!Config.BootAnimation)
+            Display->SetBuffer(0);
         CPU::Interrupts(CPU::Enable);
     }
 }
@@ -130,9 +142,184 @@ Execute::SpawnData SpawnInit()
     return Execute::Spawn(Config.InitPath, argv, envp);
 }
 
+/* Files: 0.tga 1.tga ... 40.tga */
+void *Frames[41];
+uint32_t FrameSizes[41];
+uint32_t FrameCount = 1;
+
+void BootLogoAnimationThread()
+{
+    char BootAnimPath[16];
+    while (FrameCount < 41)
+    {
+        sprintf(BootAnimPath, "%d.tga", FrameCount);
+        std::shared_ptr<File> ba = bootanim_vfs->Open(BootAnimPath);
+        if (ba->Status != FileStatus::OK)
+        {
+            bootanim_vfs->Close(ba);
+            debug("Failed to load boot animation frame %s", BootAnimPath);
+            break;
+        }
+
+        FrameSizes[FrameCount] = ba->node->Length;
+        Frames[FrameCount] = new uint8_t[ba->node->Length];
+        memcpy((void *)Frames[FrameCount], (void *)ba->node->Address, ba->node->Length);
+        bootanim_vfs->Close(ba);
+        FrameCount++;
+    }
+
+    uint32_t DispX = Display->GetBuffer(1)->Width;
+    uint32_t DispY = Display->GetBuffer(1)->Height;
+
+    for (size_t i = 1; i < FrameCount; i++)
+    {
+        int x, y, channels;
+
+        if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
+            continue;
+
+        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
+
+        if (img == NULL)
+            continue;
+
+        int offsetX = DispX / 2 - x / 2;
+        int offsetY = DispY / 2 - y / 2;
+
+        for (int i = 0; i < x * y; i++)
+        {
+            uint32_t pixel = ((uint32_t *)img)[i];
+            uint8_t r = (pixel >> 16) & 0xFF;
+            uint8_t g = (pixel >> 8) & 0xFF;
+            uint8_t b = (pixel >> 0) & 0xFF;
+            uint8_t a = (pixel >> 24) & 0xFF;
+
+            if (a != 0xFF)
+            {
+                r = (r * a) / 0xFF;
+                g = (g * a) / 0xFF;
+                b = (b * a) / 0xFF;
+            }
+
+            Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
+        }
+
+        free(img);
+        Display->SetBuffer(1);
+    }
+
+    int brightness = 100;
+    while (brightness >= 0)
+    {
+        brightness -= 10;
+        Display->SetBrightness(brightness, 1);
+        Display->SetBuffer(1);
+    }
+}
+
+void ExitLogoAnimationThread()
+{
+    Display->SetBrightness(100, 1);
+    Display->SetBuffer(1);
+
+    /* Files: 26.tga 25.tga ... 1.tga */
+    uint32_t DispX = Display->GetBuffer(1)->Width;
+    uint32_t DispY = Display->GetBuffer(1)->Height;
+
+    // for (size_t i = 26; i > 0; i--)
+    // {
+    //     int x, y, channels;
+
+    //     if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
+    //         continue;
+
+    //     uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
+
+    //     if (img == NULL)
+    //         continue;
+
+    //     int offsetX = DispX / 2 - x / 2;
+    //     int offsetY = DispY / 2 - y / 2;
+
+    //     for (int i = 0; i < x * y; i++)
+    //     {
+    //         uint32_t pixel = ((uint32_t *)img)[i];
+    //         uint8_t r = (pixel >> 16) & 0xFF;
+    //         uint8_t g = (pixel >> 8) & 0xFF;
+    //         uint8_t b = (pixel >> 0) & 0xFF;
+    //         uint8_t a = (pixel >> 24) & 0xFF;
+
+    //         if (a != 0xFF)
+    //         {
+    //             r = (r * a) / 0xFF;
+    //             g = (g * a) / 0xFF;
+    //             b = (b * a) / 0xFF;
+    //         }
+
+    //         Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
+    //     }
+
+    //     free(img);
+    //     Display->SetBuffer(1);
+    // }
+
+    for (size_t i = 40; i > 25; i--)
+    {
+        int x, y, channels;
+
+        if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
+            continue;
+
+        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
+
+        if (img == NULL)
+            continue;
+
+        int offsetX = DispX / 2 - x / 2;
+        int offsetY = DispY / 2 - y / 2;
+
+        for (int i = 0; i < x * y; i++)
+        {
+            uint32_t pixel = ((uint32_t *)img)[i];
+            uint8_t r = (pixel >> 16) & 0xFF;
+            uint8_t g = (pixel >> 8) & 0xFF;
+            uint8_t b = (pixel >> 0) & 0xFF;
+            uint8_t a = (pixel >> 24) & 0xFF;
+
+            if (a != 0xFF)
+            {
+                r = (r * a) / 0xFF;
+                g = (g * a) / 0xFF;
+                b = (b * a) / 0xFF;
+            }
+
+            Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
+        }
+
+        free(img);
+        Display->SetBuffer(1);
+    }
+
+    int brightness = 100;
+    while (brightness >= 0)
+    {
+        brightness -= 10;
+        Display->SetBrightness(brightness, 1);
+        Display->SetBuffer(1);
+    }
+}
+
 void KernelMainThread()
 {
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Critical);
+
+    Tasking::TCB *blaThread = nullptr;
+
+    if (Config.BootAnimation)
+    {
+        blaThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)BootLogoAnimationThread);
+        blaThread->Rename("Logo Animation");
+    }
 
 #ifdef DEBUG
     /* TODO: This should not be enabled because it may cause a deadlock. Not sure where or how. */
@@ -171,7 +358,8 @@ void KernelMainThread()
     const char *USpace_msg = "Setting up userspace";
     for (size_t i = 0; i < strlen(USpace_msg); i++)
         Display->Print(USpace_msg[i], 0);
-    Display->SetBuffer(0);
+    if (!Config.BootAnimation)
+        Display->SetBuffer(0);
 
     Execute::SpawnData ret = {Execute::ExStatus::Unknown, nullptr, nullptr};
     Tasking::TCB *ExecuteThread = nullptr;
@@ -182,12 +370,14 @@ void KernelMainThread()
     ExecuteThread->SetPriority(Tasking::Idle);
 
     Display->Print('.', 0);
-    Display->SetBuffer(0);
+    if (!Config.BootAnimation)
+        Display->SetBuffer(0);
 
     ret = SpawnInit();
 
     Display->Print('.', 0);
-    Display->SetBuffer(0);
+    if (!Config.BootAnimation)
+        Display->SetBuffer(0);
 
     if (ret.Status != Execute::ExStatus::OK)
     {
@@ -200,7 +390,8 @@ void KernelMainThread()
 
     Display->Print('.', 0);
     Display->Print('\n', 0);
-    Display->SetBuffer(0);
+    if (!Config.BootAnimation)
+        Display->SetBuffer(0);
 
     KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Idle);
@@ -213,6 +404,7 @@ Exit:
         KPrint("\eE85230Userspace process exited with code %d", ExitCode);
         KPrint("Dropping to recovery screen...");
         TaskManager->Sleep(2500);
+        TaskManager->WaitForThread(blaThread);
         RecoveryScreen = new Recovery::KernelRecovery;
     }
     else
@@ -224,9 +416,21 @@ Exit:
     CPU::Halt(true);
 }
 
-void KernelShutdownThread(bool Reboot)
+void __no_stack_protector KernelShutdownThread(bool Reboot)
 {
-    BeforeShutdown();
+    SmartLock(ShutdownLock);
+    debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");
+    if (Config.BootAnimation && TaskManager)
+    {
+        if (RecoveryScreen)
+            delete RecoveryScreen, RecoveryScreen = nullptr;
+
+        Tasking::TCB *elaThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)ExitLogoAnimationThread);
+        elaThread->Rename("Logo Animation");
+        TaskManager->WaitForThread(elaThread);
+    }
+
+    BeforeShutdown(Reboot);
 
     trace("%s...", Reboot ? "Rebooting" : "Shutting down");
     if (Reboot)
@@ -235,3 +439,6 @@ void KernelShutdownThread(bool Reboot)
         PowerManager->Shutdown();
     CPU::Stop();
 }
+
+void KST_Reboot() { KernelShutdownThread(true); }
+void KST_Shutdown() { KernelShutdownThread(false); }

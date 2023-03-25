@@ -38,6 +38,7 @@ extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
 extern VirtualFileSystem::Virtual *vfs;
+extern VirtualFileSystem::Virtual *bootanim_vfs;
 extern Driver::Driver *DriverManager;
 extern Disk::Manager *DiskManager;
 extern NetworkInterfaceManager::NetworkInterface *NIManager;
@@ -54,10 +55,12 @@ extern VirtualFileSystem::Node *ProcFS;
 EXTERNC void putchar(char c);
 EXTERNC void KPrint(const char *format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
-EXTERNC void BeforeShutdown();
+EXTERNC void BeforeShutdown(bool Reboot);
 EXTERNC void TaskingPanic();
 
 EXTERNC void KernelMainThread();
 EXTERNC void KernelShutdownThread(bool Reboot);
+EXTERNC void KST_Reboot();
+EXTERNC void KST_Shutdown();
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__

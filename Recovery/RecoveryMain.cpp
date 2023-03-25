@@ -285,17 +285,8 @@ namespace Recovery
         RecoveryScreen->RecoveryThread();
     }
 
-    void RebootCommandThread()
-    {
-        CriticalSection cs;
-        PowerManager->Reboot();
-    }
-
-    void ShutdownCommandThread()
-    {
-        CriticalSection cs;
-        PowerManager->Shutdown();
-    }
+    void RebootCommandThread() { KST_Reboot(); }
+    void ShutdownCommandThread() { KST_Shutdown(); }
 
     void RebootCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RebootCommandThread); }
     void ShutdownCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ShutdownCommandThread); }
@@ -309,7 +300,7 @@ namespace Recovery
 
         gui = new GraphicalUserInterface::GUI;
 
-        TCB *guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper);
+        guiThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)GUIWrapper);
         guiThread->Rename("GUI Thread");
         guiThread->SetPriority(Tasking::TaskPriority::Critical);
 
@@ -339,12 +330,16 @@ namespace Recovery
         wdgDbgWin = new WidgetCollection(DbgWin);
         Video::Font *NewFont = new Video::Font(&_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, Video::FontType::PCScreenFont2);
         wdgDbgWin->ReplaceFont(NewFont);
-        TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RecoveryThreadWrapper)->SetPriority(Tasking::TaskPriority::Idle);
+        recoveryThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RecoveryThreadWrapper);
+        recoveryThread->Rename("Recovery Thread");
+        recoveryThread->SetPriority(Tasking::TaskPriority::Idle);
     }
 
     KernelRecovery::~KernelRecovery()
     {
         debug("Destructor called");
+        TaskManager->KillThread(guiThread, 0);
+        TaskManager->KillThread(recoveryThread, 0);
         delete gui, gui = nullptr;
     }
 }
