@@ -356,9 +356,9 @@ namespace Tasking
         else
             Thread->Parent = Parent;
 
-        if (!Parent)
+        if (InvalidPCB(Parent))
         {
-            error("Parent is null");
+            error("Parent is invalid");
             delete Thread;
             return nullptr;
         }
@@ -434,9 +434,6 @@ namespace Tasking
             Thread->Registers.cs = GDT_USER_CODE;
             Thread->Registers.ss = GDT_USER_DATA;
             Thread->Registers.rflags.AlwaysOne = 1;
-            // Thread->Registers.rflags.PF = 1;
-            // Thread->Registers.rflags.SF = 1;
-            // Thread->Registers.rflags.IOPL = 3;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
             Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
@@ -842,6 +839,23 @@ namespace Tasking
         debug("Destructor called");
         SmartLock(TaskingLock);
         trace("Stopping tasking");
+        /*size_t ExpectedToBeTerminated = 0;
+        foreach (PCB *Process in ListProcess)
+        {
+            foreach (TCB *Thread in Process->Threads)
+            {
+                if (Thread == GetCurrentCPU()->CurrentThread.Load())
+                    continue;
+                this->KillThread(Thread, 0xFFFF);
+                ExpectedToBeTerminated++;
+            }
+
+            if (Process == GetCurrentCPU()->CurrentProcess.Load())
+                continue;
+            this->KillProcess(Process, 0xFFFF);
+            ExpectedToBeTerminated++;
+        }*/
+
         foreach (PCB *Process in ListProcess)
         {
             foreach (TCB *Thread in Process->Threads)
@@ -863,7 +877,7 @@ namespace Tasking
                     continue;
                 NotTerminated++;
             }
-            if (NotTerminated == 0)
+            if (NotTerminated == 0 /*1*/)
                 break;
             TaskingScheduler_OneShot(100);
         }
