@@ -50,7 +50,10 @@ namespace Video
     void Display::SetBuffer(int Index)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         if (this->Buffers[Index].Brightness != 100)
             this->SetBrightness(this->Buffers[Index].Brightness, Index);
@@ -66,7 +69,10 @@ namespace Video
     void Display::ClearBuffer(int Index)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         memset(this->Buffers[Index].Buffer, 0, this->Buffers[Index].Size);
     }
@@ -74,17 +80,24 @@ namespace Video
     void Display::DeleteBuffer(int Index)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         KernelAllocator.FreePages(this->Buffers[Index].Buffer, TO_PAGES(this->Buffers[Index].Size));
         this->Buffers[Index].Buffer = nullptr;
         this->Buffers[Index].Checksum = 0;
+        debug("Buffer %d deleted", Index);
     }
 
     void Display::SetBrightness(int Value, int Index)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         if (Value > 100)
             Value = 100;
@@ -116,7 +129,10 @@ namespace Video
     void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         this->Buffers[Index].CursorX = X;
         this->Buffers[Index].CursorY = Y;
@@ -125,7 +141,10 @@ namespace Video
     void Display::GetBufferCursor(int Index, uint32_t *X, uint32_t *Y)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         *X = this->Buffers[Index].CursorX;
         *Y = this->Buffers[Index].CursorY;
@@ -134,7 +153,10 @@ namespace Video
     void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         if (unlikely(X >= this->Buffers[Index].Width))
             X = this->Buffers[Index].Width - 1;
@@ -161,7 +183,10 @@ namespace Video
     void Display::Scroll(int Index, int Lines)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         if (Lines == 0)
             return;
@@ -339,7 +364,10 @@ namespace Video
     void Display::DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
             return;
+        }
 
         this->Buffers[Index].CursorX = X;
         this->Buffers[Index].CursorY = Y;
@@ -368,6 +396,9 @@ namespace Video
         this->SetBuffer(0);
 
         for (size_t i = 0; i < sizeof(this->Buffers) / sizeof(this->Buffers[0]); i++)
-            this->DeleteBuffer(i);
+        {
+            if (this->Buffers[i].Checksum == 0xDEAD)
+                this->DeleteBuffer(i);
+        }
     }
 }
