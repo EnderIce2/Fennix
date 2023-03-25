@@ -63,7 +63,7 @@ namespace VirtualFileSystem
         }
 
     public:
-        USTAR(uintptr_t Address, Virtual *vfs);
+        USTAR(uintptr_t Address, Virtual *vfs_ctx);
         ~USTAR();
     };
 }

@@ -24,7 +24,7 @@ namespace VirtualFileSystem
         .Read = USTAR_Read,
     };
 
-    USTAR::USTAR(uintptr_t Address, Virtual *vfs)
+    USTAR::USTAR(uintptr_t Address, Virtual *vfs_ctx)
     {
         trace("Initializing USTAR with address %#llx", Address);
 
@@ -39,7 +39,7 @@ namespace VirtualFileSystem
               string2int(((FileHeader *)Address)->mode),
               ((FileHeader *)Address)->size);
 
-        vfs->CreateRoot("/", &ustar_op);
+        vfs_ctx->CreateRoot("/", &ustar_op);
 
         for (size_t i = 0;; i++)
         {
@@ -60,7 +60,7 @@ namespace VirtualFileSystem
             if (isempty((char *)header->name))
                 goto NextFileAddress;
 
-            node = vfs->Create(header->name, NodeFlags::NODE_FLAG_ERROR);
+            node = vfs_ctx->Create(header->name, NodeFlags::NODE_FLAG_ERROR);
             debug("Added node: %s", node->Name);
             if (node == nullptr)
             {
