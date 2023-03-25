@@ -463,7 +463,7 @@ namespace CPU
                 uint64_t VIF : 1;
                 /** @brief Virtual Interrupt Pending */
                 uint64_t VIP : 1;
-                /** @brief ID Flag */
+                /** @brief ID Flag (Allow using CPUID instruction) */
                 uint64_t ID : 1;
                 /** @brief Reserved */
                 uint64_t Reserved3 : 10;
