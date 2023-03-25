@@ -15,8 +15,9 @@ struct KernelConfig
     int IOAPICInterruptCore;
     bool UnlockDeadLock;
     bool SIMD;
+    bool BootAnimation;
 };
 
-KernelConfig ParseConfig(char *Config);
+void ParseConfig(char *ConfigString, KernelConfig *ModConfig);
 
 #endif // !__FENNIX_KERNEL_KERNEL_CONFIG_H__
