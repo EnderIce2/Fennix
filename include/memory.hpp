@@ -676,14 +676,14 @@ extern Memory::PageTable4 *UserspaceKernelOnlyPageTable;
 
 #endif // __cplusplus
 
-EXTERNC void *HeapMalloc(size_t Size);
-EXTERNC void *HeapCalloc(size_t n, size_t Size);
-EXTERNC void *HeapRealloc(void *Address, size_t Size);
-EXTERNC void HeapFree(void *Address);
+EXTERNC void *malloc(size_t Size);
+EXTERNC void *calloc(size_t n, size_t Size);
+EXTERNC void *realloc(void *Address, size_t Size);
+EXTERNC void free(void *Address);
 
-#define kmalloc(Size) HeapMalloc(Size)
-#define kcalloc(n, Size) HeapCalloc(n, Size)
-#define krealloc(Address, Size) HeapRealloc(Address, Size)
-#define kfree(Address) HeapFree(Address)
+#define kmalloc(Size) malloc(Size)
+#define kcalloc(n, Size) calloc(n, Size)
+#define krealloc(Address, Size) realloc(Address, Size)
+#define kfree(Address) free(Address)
 
 #endif // !__FENNIX_KERNEL_INTERNAL_MEMORY_H__

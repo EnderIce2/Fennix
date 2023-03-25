@@ -309,7 +309,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     }
 }
 
-void *HeapMalloc(size_t Size)
+void *malloc(size_t Size)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -362,7 +362,7 @@ void *HeapMalloc(size_t Size)
     return ret;
 }
 
-void *HeapCalloc(size_t n, size_t Size)
+void *calloc(size_t n, size_t Size)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -415,7 +415,7 @@ void *HeapCalloc(size_t n, size_t Size)
     return ret;
 }
 
-void *HeapRealloc(void *Address, size_t Size)
+void *realloc(void *Address, size_t Size)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -468,7 +468,7 @@ void *HeapRealloc(void *Address, size_t Size)
     return ret;
 }
 
-void HeapFree(void *Address)
+void free(void *Address)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -525,7 +525,7 @@ void *operator new(size_t Size)
 #endif
     memdbg("new(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    void *ret = HeapMalloc(Size);
+    void *ret = malloc(Size);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -556,7 +556,7 @@ void *operator new[](size_t Size)
 #endif
     memdbg("new[](%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    void *ret = HeapMalloc(Size);
+    void *ret = malloc(Size);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -588,7 +588,7 @@ void *operator new(unsigned long Size, std::align_val_t Alignment)
     memdbg("new(%d, %d)->[%s]", Size, Alignment, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
     fixme("operator new with alignment(%#lx) is not implemented", Alignment);
 
-    void *ret = HeapMalloc(Size);
+    void *ret = malloc(Size);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -619,7 +619,7 @@ void operator delete(void *Pointer)
 #endif
     memdbg("delete(%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    HeapFree(Pointer);
+    free(Pointer);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -649,7 +649,7 @@ void operator delete[](void *Pointer)
 #endif
     memdbg("delete[](%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    HeapFree(Pointer);
+    free(Pointer);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -680,7 +680,7 @@ void operator delete(void *Pointer, long unsigned int Size)
 #endif
     memdbg("delete(%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    HeapFree(Pointer);
+    free(Pointer);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -711,7 +711,7 @@ void operator delete[](void *Pointer, long unsigned int Size)
 #endif
     memdbg("delete[](%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
 
-    HeapFree(Pointer);
+    free(Pointer);
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
