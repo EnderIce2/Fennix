@@ -531,6 +531,14 @@ namespace VirtualFileSystem
         vfsdbg("Opening %s with parent %s", Path, Parent ? Parent->Name : "(null)");
         const char *basename;
 
+        if (strcmp(Path, "/") == 0)
+        {
+            std::shared_ptr<File> file = std::make_shared<File>();
+            file->node = FileSystemRoot;
+            strcpy(file->Name, "/");
+            return file;
+        }
+
         if (strcmp(Path, ".") == 0)
         {
             std::shared_ptr<File> file = std::make_shared<File>();
