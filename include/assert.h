@@ -1,8 +1,6 @@
 #ifndef __FENNIX_KERNEL_ASSERT_H__
 #define __FENNIX_KERNEL_ASSERT_H__
 
-#include <types.h>
-
 #include <debug.h>
 
 #define assert(x)                                                                                                    \

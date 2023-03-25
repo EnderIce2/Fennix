@@ -1,6 +1,4 @@
-#ifndef __FENNIX_KERNEL_STUB_STDINT_H__
-#define __FENNIX_KERNEL_STUB_STDINT_H__
+#ifndef _STDINT_H
+#define _STDINT_H
 
-#include <types.h>
-
-#endif // !__FENNIX_KERNEL_STUB_STDINT_H__
+#endif // !_STDINT_H
