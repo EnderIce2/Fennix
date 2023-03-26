@@ -284,6 +284,21 @@ namespace Tasking
         // This should hang until all processes are terminated
     }
 
+    void Task::CleanupProcessesThread()
+    {
+        while (true)
+        {
+            this->Sleep(1000);
+            foreach (auto process in ListProcess)
+            {
+                if (InvalidPCB(process))
+                    continue;
+
+                RemoveProcess(process);
+            }
+        }
+    }
+
     void Task::RevertProcessCreation(PCB *Process)
     {
         for (size_t i = 0; i < ListProcess.size(); i++)
@@ -837,34 +852,23 @@ namespace Tasking
     Task::~Task()
     {
         debug("Destructor called");
-        SmartLock(TaskingLock);
-        trace("Stopping tasking");
-        /*size_t ExpectedToBeTerminated = 0;
-        foreach (PCB *Process in ListProcess)
         {
-            foreach (TCB *Thread in Process->Threads)
+            SmartLock(TaskingLock);
+            foreach (PCB *Process in ListProcess)
             {
-                if (Thread == GetCurrentCPU()->CurrentThread.Load())
+                foreach (TCB *Thread in Process->Threads)
+                {
+                    if (Thread == GetCurrentCPU()->CurrentThread.Load() ||
+                        Thread == CleanupThread)
+                        continue;
+                    this->KillThread(Thread, 0xFFFF);
+                }
+
+                if (Process == GetCurrentCPU()->CurrentProcess.Load())
                     continue;
-                this->KillThread(Thread, 0xFFFF);
-                ExpectedToBeTerminated++;
+                this->KillProcess(Process, 0xFFFF);
             }
-
-            if (Process == GetCurrentCPU()->CurrentProcess.Load())
-                continue;
-            this->KillProcess(Process, 0xFFFF);
-            ExpectedToBeTerminated++;
-        }*/
-
-        foreach (PCB *Process in ListProcess)
-        {
-            foreach (TCB *Thread in Process->Threads)
-                Thread->Status = TaskStatus::Terminated;
-
-            Process->Status = TaskStatus::Terminated;
         }
-
-        TaskingLock.Unlock();
 
         while (ListProcess.size() > 0)
         {
@@ -877,7 +881,7 @@ namespace Tasking
                     continue;
                 NotTerminated++;
             }
-            if (NotTerminated == 0 /*1*/)
+            if (NotTerminated == 1)
                 break;
             TaskingScheduler_OneShot(100);
         }

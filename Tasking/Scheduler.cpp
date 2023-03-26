@@ -270,16 +270,6 @@ namespace Tasking
         return false;
     }
 
-    SafeFunction NIF void Task::SchedulerCleanupProcesses()
-    {
-        foreach (auto process in ListProcess)
-        {
-            if (InvalidPCB(process))
-                continue;
-            RemoveProcess(process);
-        }
-    }
-
     SafeFunction NIF bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
@@ -546,9 +536,6 @@ namespace Tasking
             }
             schedbg("Passed GetNextAvailableProcess");
 
-            this->SchedulerCleanupProcesses();
-            schedbg("Passed SchedulerCleanupProcesses");
-
             if (SchedulerSearchProcessThread(CurrentCPU))
             {
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
@@ -690,11 +677,6 @@ namespace Tasking
         fixme("unimplemented");
     }
 
-    SafeFunction void Task::SchedulerCleanupProcesses()
-    {
-        fixme("unimplemented");
-    }
-
     SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
@@ -718,11 +700,6 @@ namespace Tasking
     }
 
     SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
-    {
-        fixme("unimplemented");
-    }
-
-    SafeFunction void Task::SchedulerCleanupProcesses()
     {
         fixme("unimplemented");
     }

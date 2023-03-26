@@ -229,9 +229,10 @@ namespace Tasking
         std::vector<PCB *> ListProcess;
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
+        TCB *CleanupThread = nullptr;
         Atomic<uint64_t> SchedulerTicks = 0;
         Atomic<uint64_t> LastTaskTicks = 0;
-
+        bool StopScheduler = false;
         bool InvalidPCB(PCB *pcb);
         bool InvalidTCB(TCB *tcb);
 
@@ -245,7 +246,6 @@ namespace Tasking
         bool FindNewProcess(void *CPUDataPointer);
         bool GetNextAvailableThread(void *CPUDataPointer);
         bool GetNextAvailableProcess(void *CPUDataPointer);
-        void SchedulerCleanupProcesses();
         bool SchedulerSearchProcessThread(void *CPUDataPointer);
         void UpdateProcessStatus();
         void WakeUpThreads(void *CPUDataPointer);
@@ -260,13 +260,14 @@ namespace Tasking
         void Schedule(void *Frame);
         void OnInterruptReceived(void *Frame);
 #endif
-        bool StopScheduler = false;
 
     public:
+        void SetCleanupThread(TCB *Thread) { CleanupThread = Thread; }
         uint64_t GetSchedulerTicks() { return SchedulerTicks.Load(); }
         uint64_t GetLastTaskTicks() { return LastTaskTicks.Load(); }
         std::vector<PCB *> GetProcessList() { return ListProcess; }
         Security *GetSecurityManager() { return &SecurityManager; }
+        void CleanupProcessesThread();
         void Panic() { StopScheduler = true; }
         void Schedule();
         void SignalShutdown();

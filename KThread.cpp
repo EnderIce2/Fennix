@@ -178,7 +178,7 @@ void BootLogoAnimationThread()
         if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
             continue;
 
-        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
+        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, STBI_rgb_alpha);
 
         if (img == NULL)
             continue;
@@ -233,7 +233,7 @@ void ExitLogoAnimationThread()
         if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
             continue;
 
-        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
+        uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, STBI_rgb_alpha);
 
         if (img == NULL)
             continue;
@@ -272,8 +272,13 @@ void ExitLogoAnimationThread()
     }
 }
 
+void CleanupProcessesThreadWrapper() { TaskManager->CleanupProcessesThread(); }
+
 void KernelMainThread()
 {
+    Tasking::TCB *clnThd = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CleanupProcessesThreadWrapper);
+    clnThd->SetPriority(Tasking::Idle);
+    TaskManager->SetCleanupThread(clnThd);
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Critical);
 
     Tasking::TCB *blaThread = nullptr;
