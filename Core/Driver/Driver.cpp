@@ -36,20 +36,20 @@ namespace Driver
         debug("driver size %ld", DriversNum);
         for (size_t i = 0; i < DriversNum; i++)
         {
-            DriverFile *drv = Drivers[i];
+            DriverFile drv = Drivers[i];
             KernelCallback callback;
             callback.Reason = StopReason;
-            debug("Stopping & unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
-            DriverManager->IOCB(drv->DriverUID, (void *)&callback);
+            debug("Stopping & unloading driver %ld [%#lx]", drv.DriverUID, drv.Address);
+            DriverManager->IOCB(drv.DriverUID, (void *)&callback);
 
-            delete drv->MemTrk, drv->MemTrk = nullptr;
-            for (size_t j = 0; j < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); j++)
+            for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
             {
-                if (!drv->InterruptHook[j])
+                if (!drv.InterruptHook[j])
                     continue;
-                delete drv->InterruptHook[j], drv->InterruptHook[j] = nullptr;
+                delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
             }
-            delete drv, drv = nullptr;
+            if (drv.MemTrk)
+                delete drv.MemTrk, drv.MemTrk = nullptr;
             Drivers.remove(i);
         }
     }
@@ -59,22 +59,21 @@ namespace Driver
         debug("Searching for driver %ld", DUID);
         for (size_t i = 0; i < Drivers.size(); i++)
         {
-            DriverFile *drv = Drivers[i];
-            if (drv->DriverUID == DUID)
+            DriverFile drv = Drivers[i];
+            if (drv.DriverUID == DUID)
             {
                 KernelCallback callback;
                 callback.Reason = StopReason;
-                debug("Stopping and unloading driver %ld [%#lx]", drv->DriverUID, drv->Address);
-                this->IOCB(drv->DriverUID, (void *)&callback);
+                debug("Stopping and unloading driver %ld [%#lx]", drv.DriverUID, drv.Address);
+                this->IOCB(drv.DriverUID, (void *)&callback);
 
-                delete drv->MemTrk, drv->MemTrk = nullptr;
-                for (size_t i = 0; i < sizeof(drv->InterruptHook) / sizeof(drv->InterruptHook[0]); i++)
+                for (size_t i = 0; i < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); i++)
                 {
-                    if (!drv->InterruptHook[i])
+                    if (!drv.InterruptHook[i])
                         continue;
-                    delete drv->InterruptHook[i], drv->InterruptHook[i] = nullptr;
+                    delete drv.InterruptHook[i], drv.InterruptHook[i] = nullptr;
                 }
-                delete drv, drv = nullptr;
+                delete drv.MemTrk, drv.MemTrk = nullptr;
                 Drivers.remove(i);
                 return true;
             }
@@ -86,10 +85,10 @@ namespace Driver
     {
         foreach (auto Drv in Drivers)
         {
-            if (Drv->DriverUID == DUID)
+            if (Drv.DriverUID == DUID)
             {
-                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS);
-                int ret = ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)Drv->Address))(KCB);
+                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS);
+                int ret = ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)Drv.Address))(KCB);
                 __sync;
                 return ret;
             }
@@ -233,14 +232,14 @@ namespace Driver
 #endif
     {
         SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
-        if (!Handle->InterruptCallback)
+        if (!Handle.InterruptCallback)
         {
 #if defined(a64) || defined(a32)
             int IntNum = Frame->InterruptNumber - 32;
 #elif defined(aa64)
             int IntNum = Frame->InterruptNumber;
 #endif
-            warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle->DriverUID);
+            warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle.DriverUID);
             return;
         }
         CPURegisters regs;
@@ -287,15 +286,15 @@ namespace Driver
         regs.ss = Frame->ss;
 #elif defined(aa64)
 #endif
-        ((int (*)(void *))(Handle->InterruptCallback))(&regs);
+        ((int (*)(void *))(Handle.InterruptCallback))(&regs);
         UNUSED(Frame);
     }
 
-    DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile *Handle) : Interrupts::Handler(Interrupt)
+    DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile Handle) : Interrupts::Handler(Interrupt)
     {
         this->Handle = Handle;
 #if defined(a64) || defined(a32)
-        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle->DriverUID);
+        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #elif defined(aa64)
         trace("Interrupt %d hooked to driver %ld", Interrupt, Handle->DriverUID);
 #endif

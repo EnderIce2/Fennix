@@ -30,18 +30,18 @@ namespace Driver
     class DriverInterruptHook;
     struct DriverFile
     {
-        bool Enabled;
-        unsigned long DriverUID;
-        void *Address;
-        void *InterruptCallback;
-        Memory::MemMgr *MemTrk;
-        DriverInterruptHook *InterruptHook[16];
+        bool Enabled = false;
+        unsigned long DriverUID = 0;
+        void *Address = nullptr;
+        void *InterruptCallback = nullptr;
+        Memory::MemMgr *MemTrk = nullptr;
+        DriverInterruptHook *InterruptHook[16] = {nullptr};
     };
 
     class DriverInterruptHook : public Interrupts::Handler
     {
     private:
-        DriverFile *Handle;
+        DriverFile Handle;
 
 #if defined(a64)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
@@ -52,14 +52,14 @@ namespace Driver
 #endif
 
     public:
-        DriverInterruptHook(int Interrupt, DriverFile *Handle);
+        DriverInterruptHook(int Interrupt, DriverFile Handle);
         virtual ~DriverInterruptHook() = default;
     };
 
     class Driver
     {
     private:
-        std::vector<DriverFile *> Drivers;
+        std::vector<DriverFile> Drivers;
         unsigned long DriverUIDs = 0;
         DriverCode CallDriverEntryPoint(void *fex, void *KAPIAddress);
 
@@ -101,7 +101,7 @@ namespace Driver
         DriverCode DriverLoadBindProcess(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf = false);
 
     public:
-        std::vector<DriverFile *> GetDrivers() { return Drivers; }
+        std::vector<DriverFile> GetDrivers() { return Drivers; }
         void UnloadAllDrivers();
         bool UnloadDriver(unsigned long DUID);
         int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);

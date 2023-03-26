@@ -25,8 +25,8 @@ namespace NetworkInterfaceManager
         if (DriverManager->GetDrivers().size() > 0)
         {
             foreach (auto Driver in DriverManager->GetDrivers())
-                if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Network)
-                    this->FetchNetworkCards(Driver->DriverUID);
+                if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Network)
+                    this->FetchNetworkCards(Driver.DriverUID);
         }
         else
             KPrint("\eE85230No network drivers found! Cannot fetch network cards!");

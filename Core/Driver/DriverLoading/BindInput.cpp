@@ -63,12 +63,12 @@ namespace Driver
 
         fixme("Input driver: %s", fexExtended->Driver.Name);
 
-        DriverFile *DrvFile = new DriverFile;
-        DrvFile->Enabled = true;
-        DrvFile->DriverUID = this->DriverUIDs - 1;
-        DrvFile->Address = (void *)fex;
-        DrvFile->MemTrk = mem;
-        DrvFile->InterruptHook[0] = nullptr;
+        DriverFile DrvFile = {
+            .Enabled = true,
+            .DriverUID = this->DriverUIDs - 1,
+            .Address = (void *)fex,
+            .MemTrk = mem,
+        };
         Drivers.push_back(DrvFile);
         return DriverCode::OK;
     }

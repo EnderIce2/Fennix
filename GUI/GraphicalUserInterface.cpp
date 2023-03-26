@@ -26,17 +26,17 @@ namespace GraphicalUserInterface
         {
             foreach (auto Driver in DriverManager->GetDrivers())
             {
-                if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Input &&
-                    ((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.TypeFlags & FexDriverInputTypes::FexDriverInputTypes_Mouse)
+                if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Input &&
+                    ((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.TypeFlags & FexDriverInputTypes::FexDriverInputTypes_Mouse)
                 {
 #ifdef DEBUG
                     static int once = 0;
                     if (!once++)
-                        debug("Found mouse driver %ld", Driver->DriverUID);
+                        debug("Found mouse driver %ld", Driver.DriverUID);
 #endif
                     KernelCallback callback;
                     callback.Reason = FetchReason;
-                    DriverManager->IOCB(Driver->DriverUID, (void *)&callback);
+                    DriverManager->IOCB(Driver.DriverUID, (void *)&callback);
                     Mouse.X = callback.InputCallback.Mouse.X;
                     Mouse.Y = callback.InputCallback.Mouse.Y;
                     Mouse.Z = callback.InputCallback.Mouse.Z;

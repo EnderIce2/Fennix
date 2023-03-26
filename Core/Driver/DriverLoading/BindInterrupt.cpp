@@ -23,7 +23,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -31,7 +31,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -47,7 +47,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -58,12 +58,13 @@ namespace Driver
         }
 
         fixme("Generic driver: %s", fexExtended->Driver.Name);
-        DriverFile *DrvFile = new DriverFile;
-        DrvFile->Enabled = true;
-        DrvFile->DriverUID = this->DriverUIDs - 1;
-        DrvFile->Address = (void *)fex;
-        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
-        DrvFile->MemTrk = mem;
+        DriverFile DrvFile = {
+            .Enabled = true,
+            .DriverUID = this->DriverUIDs - 1,
+            .Address = (void *)fex,
+            .InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback),
+            .MemTrk = mem,
+        };
         Drivers.push_back(DrvFile);
         return DriverCode::OK;
     }
@@ -77,7 +78,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -85,7 +86,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -101,7 +102,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -125,7 +126,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -133,7 +134,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -149,7 +150,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -174,7 +175,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -182,7 +183,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -198,7 +199,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -207,20 +208,20 @@ namespace Driver
                 }
             }
         }
-
-        DriverFile *DrvFile = new DriverFile;
-        DrvFile->Enabled = true;
-        DrvFile->DriverUID = this->DriverUIDs - 1;
-        DrvFile->Address = (void *)fex;
-        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
-        DrvFile->MemTrk = mem;
+        DriverFile DrvFile = {
+            .Enabled = true,
+            .DriverUID = this->DriverUIDs - 1,
+            .Address = (void *)fex,
+            .InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback),
+            .MemTrk = mem,
+        };
         if (fexExtended->Driver.InterruptCallback)
         {
             for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
             {
                 if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
                     break;
-                DrvFile->InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
+                DrvFile.InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
             }
         }
 
@@ -232,14 +233,12 @@ namespace Driver
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
             error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
@@ -257,7 +256,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -265,7 +264,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -281,7 +280,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -306,7 +305,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if ((fe->Driver.TypeFlags & FexDriverInputTypes_Mouse &&
                      fexExtended->Driver.TypeFlags & FexDriverInputTypes_Mouse) ||
@@ -317,7 +316,7 @@ namespace Driver
                     if (fe->Driver.OverrideOnConflict)
                         return DriverCode::DRIVER_CONFLICT;
 
-                    DriversToRemove.push_back(Drv->DriverUID);
+                    DriversToRemove.push_back(Drv.DriverUID);
                 }
             }
 
@@ -334,7 +333,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if ((fe->Driver.TypeFlags & FexDriverInputTypes_Mouse &&
                      fexExtended->Driver.TypeFlags & FexDriverInputTypes_Mouse) ||
@@ -348,19 +347,20 @@ namespace Driver
             }
         }
 
-        DriverFile *DrvFile = new DriverFile;
-        DrvFile->Enabled = true;
-        DrvFile->DriverUID = this->DriverUIDs - 1;
-        DrvFile->Address = (void *)fex;
-        DrvFile->InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback);
-        DrvFile->MemTrk = mem;
+        DriverFile DrvFile = {
+            .Enabled = true,
+            .DriverUID = this->DriverUIDs - 1,
+            .Address = (void *)fex,
+            .InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexExtended->Driver.InterruptCallback),
+            .MemTrk = mem,
+        };
         if (fexExtended->Driver.InterruptCallback)
         {
             for (unsigned long i = 0; i < sizeof(fexExtended->Driver.Bind.Interrupt.Vector) / sizeof(fexExtended->Driver.Bind.Interrupt.Vector[0]); i++)
             {
                 if (fexExtended->Driver.Bind.Interrupt.Vector[i] == 0)
                     break;
-                DrvFile->InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
+                DrvFile.InterruptHook[i] = new DriverInterruptHook(fexExtended->Driver.Bind.Interrupt.Vector[i], DrvFile);
             }
         }
 
@@ -372,14 +372,12 @@ namespace Driver
         if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
         {
             error("Driver %s is not implemented", fexExtended->Driver.Name);
-            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::NOT_IMPLEMENTED;
         }
         else if (CallbackRet != DriverReturnCode::OK)
         {
             error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            delete DrvFile, DrvFile = nullptr;
             delete mem, mem = nullptr;
             return DriverCode::DRIVER_RETURNED_ERROR;
         }
@@ -397,7 +395,7 @@ namespace Driver
             std::vector<int> DriversToRemove = std::vector<int>();
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {
@@ -405,7 +403,7 @@ namespace Driver
                     return DriverCode::DRIVER_CONFLICT;
                 }
 
-                DriversToRemove.push_back(Drv->DriverUID);
+                DriversToRemove.push_back(Drv.DriverUID);
             }
 
             foreach (auto DrvID in DriversToRemove)
@@ -421,7 +419,7 @@ namespace Driver
         {
             foreach (auto Drv in Drivers)
             {
-                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv->Address + EXTENDED_SECTION_ADDRESS));
+                FexExtended *fe = ((FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS));
 
                 if (fe->Driver.OverrideOnConflict)
                 {

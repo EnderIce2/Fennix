@@ -792,6 +792,7 @@ namespace CrashHandler
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(a64)
+        error("-----------------------------------------------------------------------------------");
         error("An exception occurred!");
         error("Exception: %#llx", Frame->InterruptNumber);
         for (size_t i = 0; i < INT_FRAMES_MAX; i++)

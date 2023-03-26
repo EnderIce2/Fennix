@@ -226,43 +226,6 @@ void ExitLogoAnimationThread()
     uint32_t DispX = Display->GetBuffer(1)->Width;
     uint32_t DispY = Display->GetBuffer(1)->Height;
 
-    // for (size_t i = 26; i > 0; i--)
-    // {
-    //     int x, y, channels;
-
-    //     if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
-    //         continue;
-
-    //     uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, 4);
-
-    //     if (img == NULL)
-    //         continue;
-
-    //     int offsetX = DispX / 2 - x / 2;
-    //     int offsetY = DispY / 2 - y / 2;
-
-    //     for (int i = 0; i < x * y; i++)
-    //     {
-    //         uint32_t pixel = ((uint32_t *)img)[i];
-    //         uint8_t r = (pixel >> 16) & 0xFF;
-    //         uint8_t g = (pixel >> 8) & 0xFF;
-    //         uint8_t b = (pixel >> 0) & 0xFF;
-    //         uint8_t a = (pixel >> 24) & 0xFF;
-
-    //         if (a != 0xFF)
-    //         {
-    //             r = (r * a) / 0xFF;
-    //             g = (g * a) / 0xFF;
-    //             b = (b * a) / 0xFF;
-    //         }
-
-    //         Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
-    //     }
-
-    //     free(img);
-    //     Display->SetBuffer(1);
-    // }
-
     for (size_t i = 40; i > 25; i--)
     {
         int x, y, channels;
@@ -342,8 +305,8 @@ void KernelMainThread()
     if (DriverManager->GetDrivers().size() > 0)
     {
         foreach (auto Driver in DriverManager->GetDrivers())
-            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
-                DiskManager->FetchDisks(Driver->DriverUID);
+            if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Storage)
+                DiskManager->FetchDisks(Driver.DriverUID);
     }
     else
         KPrint("\eE85230No disk drivers found! Cannot fetch disks!");

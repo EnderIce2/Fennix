@@ -35,18 +35,18 @@ namespace Recovery
     void PlayAudio()
     {
         SmartLock(PlayAudioLock);
-        Driver::DriverFile *AudioDrv = nullptr;
+        Driver::DriverFile AudioDrv;
 
         foreach (auto Driver in DriverManager->GetDrivers())
         {
-            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
             {
                 AudioDrv = Driver;
                 break;
             }
         }
 
-        if (AudioDrv == nullptr)
+        if (!AudioDrv.Enabled)
         {
             error("No audio drivers found! Cannot play audio!");
             return;
@@ -69,7 +69,7 @@ namespace Recovery
         callback.AudioCallback.Send.Data = (uint8_t *)PCMRaw;
         callback.AudioCallback.Send.Length = pcm->node->Length;
         debug("Playing audio...");
-        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
         vfs->Close(pcm);
@@ -79,18 +79,18 @@ namespace Recovery
 
     void ChangeSampleRate(char SR)
     {
-        Driver::DriverFile *AudioDrv = nullptr;
+        Driver::DriverFile AudioDrv;
 
         foreach (auto Driver in DriverManager->GetDrivers())
         {
-            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
             {
                 AudioDrv = Driver;
                 break;
             }
         }
 
-        if (AudioDrv == nullptr)
+        if (!AudioDrv.Enabled)
         {
             error("No audio drivers found! Cannot play audio!");
             return;
@@ -101,7 +101,7 @@ namespace Recovery
         callback.Reason = AdjustReason;
         callback.AudioCallback.Adjust._SampleRate = true;
         callback.AudioCallback.Adjust.SampleRate = SR;
-        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
         debug("Sample rate changed! %d", status);
     }
 
@@ -117,18 +117,18 @@ namespace Recovery
 
     void ChangeVolume(int percentage)
     {
-        Driver::DriverFile *AudioDrv = nullptr;
+        Driver::DriverFile AudioDrv;
 
         foreach (auto Driver in DriverManager->GetDrivers())
         {
-            if (((FexExtended *)((uintptr_t)Driver->Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
+            if (((FexExtended *)((uintptr_t)Driver.Address + EXTENDED_SECTION_ADDRESS))->Driver.Type == FexDriverType::FexDriverType_Audio)
             {
                 AudioDrv = Driver;
                 break;
             }
         }
 
-        if (AudioDrv == nullptr)
+        if (!AudioDrv.Enabled)
         {
             error("No audio drivers found! Cannot play audio!");
             return;
@@ -139,7 +139,7 @@ namespace Recovery
         callback.Reason = AdjustReason;
         callback.AudioCallback.Adjust._Volume = true;
         callback.AudioCallback.Adjust.Volume = percentage;
-        int status = DriverManager->IOCB(AudioDrv->DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
         debug("Volume changed! %d", status);
     }
 
