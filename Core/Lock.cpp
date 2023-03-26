@@ -5,7 +5,11 @@
 
 #include "../kernel.h"
 
-// #define PRINT_BACKTRACE
+#define PRINT_BACKTRACE
+
+#ifdef PRINT_BACKTRACE
+#pragma GCC diagnostic ignored "-Wframe-address"
+#endif
 
 bool ForceUnlock = false;
 Atomic<size_t> LocksCount = 0;
