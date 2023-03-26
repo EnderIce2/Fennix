@@ -379,12 +379,12 @@ namespace Memory
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
         {
             if (Info->Memory.Entry[i].Type != Usable)
-                this->ReservePages((void *)Info->Memory.Entry[i].BaseAddress, Info->Memory.Entry[i].Length / PAGE_SIZE + 1);
+                this->ReservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
         }
 
         trace("Locking bitmap pages...");
         this->ReservePages(0, 0x100);
-        this->LockPages(PageBitmap.Buffer, PageBitmap.Size / PAGE_SIZE + 1);
+        this->LockPages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
     }
 
     Physical::Physical() {}
