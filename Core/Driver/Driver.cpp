@@ -45,7 +45,7 @@ namespace Driver
             for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
             {
                 if (!drv.InterruptHook[j])
-                    continue;
+                    break;
                 delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
             }
             if (drv.MemTrk)
@@ -70,7 +70,7 @@ namespace Driver
                 for (size_t i = 0; i < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); i++)
                 {
                     if (!drv.InterruptHook[i])
-                        continue;
+                        break;
                     delete drv.InterruptHook[i], drv.InterruptHook[i] = nullptr;
                 }
                 delete drv.MemTrk, drv.MemTrk = nullptr;
