@@ -188,6 +188,9 @@ namespace Video
             return;
         }
 
+        if (this->Buffers[Index].DoNotScroll)
+            return;
+
         if (Lines == 0)
             return;
 
@@ -199,6 +202,17 @@ namespace Video
             memmove(this->Buffers[Index].Buffer, (uint8_t *)this->Buffers[Index].Buffer + BytesToMove, BytesToClear);
             memset((uint8_t *)this->Buffers[Index].Buffer + BytesToClear, 0, BytesToMove);
         }
+    }
+
+    void Display::SetDoNotScroll(bool Value, int Index)
+    {
+        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        {
+            debug("Invalid buffer %d", Index);
+            return;
+        }
+
+        this->Buffers[Index].DoNotScroll = Value;
     }
 
     char Display::Print(char Char, int Index, bool WriteToUART)
@@ -302,8 +316,11 @@ namespace Video
 
         if (this->Buffers[Index].CursorY + FontHeight >= this->Buffers[Index].Height)
         {
-            this->Buffers[Index].CursorY -= FontHeight;
-            this->Scroll(Index, 1);
+            if (!this->Buffers[Index].DoNotScroll)
+            {
+                this->Buffers[Index].CursorY -= FontHeight;
+                this->Scroll(Index, 1);
+            }
         }
 
         switch (this->CurrentFont->GetInfo().Type)

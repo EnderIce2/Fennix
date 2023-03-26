@@ -84,6 +84,7 @@ namespace Video
         uint32_t Color;
         uint32_t CursorX, CursorY;
         char Brightness;
+        bool DoNotScroll;
         long Checksum;
     };
 
@@ -135,6 +136,7 @@ namespace Video
         void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index);
         uint32_t GetPixel(uint32_t X, uint32_t Y, int Index);
         void Scroll(int Index, int Lines);
+        void SetDoNotScroll(bool Value, int Index);
 
         char Print(char Char, int Index, bool WriteToUART = false);
         void DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART = false);

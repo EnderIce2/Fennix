@@ -224,6 +224,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     {
         Display->CreateBuffer(0, 0, 1);
 
+        Display->SetDoNotScroll(true, 1);
         Video::ScreenBuffer *buf = Display->GetBuffer(1);
         Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
         Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
