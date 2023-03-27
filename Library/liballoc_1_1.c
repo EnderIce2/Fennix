@@ -1,5 +1,8 @@
 #include "liballoc_1_1.h"
 
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"

@@ -69,15 +69,15 @@ namespace GraphicalUserInterface
             this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
             memset(this->Buffer->Data, 0, this->Buffer->Size);
 
-            NeedRedraw = true;
+            this->NeedRedraw = true;
         }
 
-        if (NeedRedraw)
+        if (this->NeedRedraw)
         {
             memset(this->Buffer->Data, 0, this->Buffer->Size);
             this->OnPaintBackground(e);
             this->OnPaintForeground(e);
-            NeedRedraw = false;
+            this->NeedRedraw = false;
         }
         DrawOverBitmap(((Window *)this->ParentWindow)->GetBuffer(), this->Buffer, 0, 0);
     }
@@ -92,7 +92,7 @@ namespace GraphicalUserInterface
                 {
                     debug("Button Hold");
                     Button->Pressed = true;
-                    NeedRedraw = true;
+                    this->NeedRedraw = true;
                 }
             }
         }
@@ -114,7 +114,7 @@ namespace GraphicalUserInterface
                             ((void (*)(void))Button->OnClick)();
 
                         Button->Pressed = false;
-                        NeedRedraw = true;
+                        this->NeedRedraw = true;
                     }
                 }
             }
@@ -128,12 +128,12 @@ namespace GraphicalUserInterface
             if (Button->rect.Contains(e->MouseMove.X, e->MouseMove.Y))
             {
                 Button->Hover = true;
-                NeedRedraw = true;
+                this->NeedRedraw = true;
             }
             else
             {
                 Button->Hover = false;
-                NeedRedraw = true;
+                this->NeedRedraw = true;
             }
         }
     }

@@ -12,7 +12,7 @@ namespace std
 
     public:
         runtime_error(const char *what_arg) : m_what(what_arg) {}
-        const char *what() const { return m_what; }
+        const char *what() const { return this->m_what; }
     };
 }
 

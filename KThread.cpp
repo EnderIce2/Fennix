@@ -161,7 +161,7 @@ void BootLogoAnimationThread()
             break;
         }
 
-        FrameSizes[FrameCount] = ba->node->Length;
+        FrameSizes[FrameCount] = s_cst(uint32_t, ba->node->Length);
         Frames[FrameCount] = new uint8_t[ba->node->Length];
         memcpy((void *)Frames[FrameCount], (void *)ba->node->Address, ba->node->Length);
         bootanim_vfs->Close(ba);
@@ -189,10 +189,10 @@ void BootLogoAnimationThread()
         for (int i = 0; i < x * y; i++)
         {
             uint32_t pixel = ((uint32_t *)img)[i];
-            uint8_t r = (pixel >> 16) & 0xFF;
-            uint8_t g = (pixel >> 8) & 0xFF;
-            uint8_t b = (pixel >> 0) & 0xFF;
-            uint8_t a = (pixel >> 24) & 0xFF;
+            int r = (pixel >> 16) & 0xFF;
+            int g = (pixel >> 8) & 0xFF;
+            int b = (pixel >> 0) & 0xFF;
+            int a = (pixel >> 24) & 0xFF;
 
             if (a != 0xFF)
             {
@@ -244,10 +244,10 @@ void ExitLogoAnimationThread()
         for (int i = 0; i < x * y; i++)
         {
             uint32_t pixel = ((uint32_t *)img)[i];
-            uint8_t r = (pixel >> 16) & 0xFF;
-            uint8_t g = (pixel >> 8) & 0xFF;
-            uint8_t b = (pixel >> 0) & 0xFF;
-            uint8_t a = (pixel >> 24) & 0xFF;
+            int r = (pixel >> 16) & 0xFF;
+            int g = (pixel >> 8) & 0xFF;
+            int b = (pixel >> 0) & 0xFF;
+            int a = (pixel >> 24) & 0xFF;
 
             if (a != 0xFF)
             {

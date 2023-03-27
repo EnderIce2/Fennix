@@ -8,18 +8,18 @@
     {
 #define END_EXTERNC \
     }
-#else
+#else // __cplusplus
 #define EXTERNC
 #define START_EXTERNC
 #define END_EXTERNC
-#endif
+#endif // __cplusplus
 
 #ifdef __cplusplus
 #define NULL 0
-#else
+#else // __cplusplus
 #define NULL ((void *)0)
 #define bool _Bool
-#endif
+#endif // __cplusplus
 
 #define asm __asm__
 #define asmv __asm__ volatile
@@ -30,7 +30,12 @@
 #ifdef __cplusplus
 #define foreach for
 #define in :
-#endif
+
+#define r_cst(t, v) reinterpret_cast<t>(v)
+#define c_cst(t, v) const_cast<t>(v)
+#define s_cst(t, v) static_cast<t>(v)
+#define d_cst(t, v) dynamic_cast<t>(v)
+#endif // __cplusplus
 
 #define UNUSED(x) (void)(x)
 #define CONCAT(x, y) x##y
@@ -231,11 +236,32 @@ typedef intptr_t ssize_t;
                                    : "memory");
 #endif
 
+#ifdef __INT48_TYPE__
+typedef __INT48_TYPE__ int48_t;
+typedef __UINT48_TYPE__ uint48_t;
+typedef int48_t int_least48_t;
+typedef uint48_t uint_least48_t;
+typedef int48_t int_fast48_t;
+typedef uint48_t uint_fast48_t;
+#else // __INT48_TYPE__
+typedef __INT64_TYPE__ int48_t;
+typedef __UINT64_TYPE__ uint48_t;
+typedef int48_t int_least48_t;
+typedef uint48_t uint_least48_t;
+typedef int48_t int_fast48_t;
+typedef uint48_t uint_fast48_t;
+#endif // __INT48_TYPE__
+
 #define b4(x) ((x & 0x0F) << 4 | (x & 0xF0) >> 4)
 #define b8(x) ((x)&0xFF)
 #define b16(x) __builtin_bswap16(x)
 #define b32(x) __builtin_bswap32(x)
-#define b48(x) (((((x)&0x0000000000ff) << 40) | (((x)&0x00000000ff00) << 24) | (((x)&0x000000ff0000) << 8) | (((x)&0x0000ff000000) >> 8) | (((x)&0x00ff00000000) >> 24) | (((x)&0xff0000000000) >> 40)))
+#define b48(x) (((((x)&0x0000000000ff) << 40) | \
+                 (((x)&0x00000000ff00) << 24) | \
+                 (((x)&0x000000ff0000) << 8) |  \
+                 (((x)&0x0000ff000000) >> 8) |  \
+                 (((x)&0x00ff00000000) >> 24) | \
+                 (((x)&0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
 /* https://gcc.gnu.org/onlinedocs/gcc-9.5.0/gnat_ugn/Optimization-Levels.html */

@@ -126,6 +126,9 @@ namespace CrashHandler
         case KEY_D_RIGHT:
         case KEY_D_DOWN:
             ArrowInput(scanCode);
+            break;
+        default:
+            break;
         }
 
         int key = GetLetterFromScanCode(scanCode);
@@ -148,8 +151,8 @@ namespace CrashHandler
             }
             else
             {
-                append(UserInputBuffer, key);
-                Display->Print(key, SBIdx);
+                append(UserInputBuffer, s_cst(char, key));
+                Display->Print((char)key, SBIdx);
                 BackSpaceLimit++;
             }
             Display->SetBuffer(SBIdx); // Update as we type.

@@ -235,9 +235,9 @@ namespace Driver
         if (!Handle.InterruptCallback)
         {
 #if defined(a64) || defined(a32)
-            int IntNum = Frame->InterruptNumber - 32;
+            uint64_t IntNum = Frame->InterruptNumber - 32;
 #elif defined(aa64)
-            int IntNum = Frame->InterruptNumber;
+            uint64_t IntNum = Frame->InterruptNumber;
 #endif
             warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle.DriverUID);
             return;

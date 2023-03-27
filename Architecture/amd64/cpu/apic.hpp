@@ -309,12 +309,12 @@ namespace APIC
         void EOI();
         void RedirectIRQs(int CPU = 0);
         void WaitForIPI();
-        void IPI(uint8_t CPU, InterruptCommandRegisterLow icr);
-        void SendInitIPI(uint8_t CPU);
-        void SendStartupIPI(uint8_t CPU, uint64_t StartupAddress);
+        void IPI(int CPU, InterruptCommandRegisterLow icr);
+        void SendInitIPI(int CPU);
+        void SendStartupIPI(int CPU, uint64_t StartupAddress);
         uint32_t IOGetMaxRedirect(uint32_t APICID);
-        void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
-        void RedirectIRQ(int CPU, uint8_t IRQ, int Status);
+        void RawRedirectIRQ(uint16_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
+        void RedirectIRQ(int CPU, uint16_t IRQ, int Status);
         APIC(int Core);
         ~APIC();
     };

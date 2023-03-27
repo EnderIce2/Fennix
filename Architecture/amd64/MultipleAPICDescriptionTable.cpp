@@ -56,6 +56,11 @@ namespace ACPI
                 KPrint("APIC found at \e8888FF%#lx\eCCCCCC", LAPICAddress);
                 break;
             }
+            default:
+            {
+                KPrint("Unknown MADT entry \e8888FF%#lx\eCCCCCC", *(ptr));
+                break;
+            }
             }
             Memory::Virtual(KernelPageTable).Map((void *)LAPICAddress, (void *)LAPICAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
         }

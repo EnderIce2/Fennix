@@ -123,9 +123,9 @@ SafeFunction NIF void init_limine()
     {
         struct limine_framebuffer *framebuffer = FrameBufferResponse->framebuffers[i];
         binfo.Framebuffer[i].BaseAddress = (void *)((uint64_t)framebuffer->address - 0xffff800000000000);
-        binfo.Framebuffer[i].Width = framebuffer->width;
-        binfo.Framebuffer[i].Height = framebuffer->height;
-        binfo.Framebuffer[i].Pitch = framebuffer->pitch;
+        binfo.Framebuffer[i].Width = (uint32_t)framebuffer->width;
+        binfo.Framebuffer[i].Height = (uint32_t)framebuffer->height;
+        binfo.Framebuffer[i].Pitch = (uint32_t)framebuffer->pitch;
         binfo.Framebuffer[i].BitsPerPixel = framebuffer->bpp;
         binfo.Framebuffer[i].MemoryModel = framebuffer->memory_model;
         binfo.Framebuffer[i].RedMaskSize = framebuffer->red_mask_size;
@@ -237,7 +237,7 @@ SafeFunction NIF void init_limine()
 
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
-    binfo.Kernel.FileBase = KernelFileResponse->kernel_file->address - 0xffff800000000000;
+    binfo.Kernel.FileBase = (void *)((uint64_t)KernelFileResponse->kernel_file->address - 0xffff800000000000);
     strncpy(binfo.Kernel.CommandLine,
             KernelFileResponse->kernel_file->cmdline,
             strlen(KernelFileResponse->kernel_file->cmdline) + 1);

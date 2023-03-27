@@ -141,6 +141,13 @@ namespace CrashHandler
                 EHPrint("                %ld\n", SelCode.Idx);
                 break;
             }
+            default:
+            {
+                EHPrint("         ?        \n");
+                EHPrint("         ?        \n");
+                EHPrint("         %ld\n", SelCode.Idx);
+                break;
+            }
             }
             break;
         }
@@ -179,6 +186,13 @@ namespace CrashHandler
                 EHPrint("                ^ \n");
                 EHPrint("                | \n");
                 EHPrint("                %ld\n", SelCode.Idx);
+                break;
+            }
+            default:
+            {
+                EHPrint("         ?        \n");
+                EHPrint("         ?        \n");
+                EHPrint("         %ld\n", SelCode.Idx);
                 break;
             }
             }
@@ -220,6 +234,13 @@ namespace CrashHandler
                 EHPrint("                %ld\n", SelCode.Idx);
                 break;
             }
+            default:
+            {
+                EHPrint("         ?        \n");
+                EHPrint("         ?        \n");
+                EHPrint("         %ld\n", SelCode.Idx);
+                break;
+            }
             }
             break;
         }
@@ -258,6 +279,13 @@ namespace CrashHandler
                 EHPrint("                ^ \n");
                 EHPrint("                | \n");
                 EHPrint("                %ld\n", SelCode.Idx);
+                break;
+            }
+            default:
+            {
+                EHPrint("         ?        \n");
+                EHPrint("         ?        \n");
+                EHPrint("         %ld\n", SelCode.Idx);
                 break;
             }
             }

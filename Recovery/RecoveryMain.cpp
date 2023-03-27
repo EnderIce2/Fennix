@@ -115,7 +115,7 @@ namespace Recovery
     void CSR88200() { ChangeSampleRate(7); }
     void CSR96000() { ChangeSampleRate(8); }
 
-    void ChangeVolume(int percentage)
+    void ChangeVolume(char percentage)
     {
         Driver::DriverFile AudioDrv;
 
@@ -253,8 +253,8 @@ namespace Recovery
                 MemUsed = KernelAllocator.GetUsedMemory();
                 MemTotal = KernelAllocator.GetTotalMemory();
                 MemReserved = KernelAllocator.GetReservedMemory();
-                int MemPercent = (MemUsed * 100) / MemTotal;
-                sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %d%% (%ld bytes allocated)", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent, MemUsed);
+                uint64_t MemPercent = (MemUsed * 100) / MemTotal;
+                sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %ld%% (%ld bytes allocated)", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent, MemUsed);
                 wdgDbgWin->SetText(MemLblHnd, TicksText);
                 RefreshMemCounter = 25;
             }

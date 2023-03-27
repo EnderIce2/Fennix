@@ -31,7 +31,7 @@ struct CPUData
     uintptr_t Stack;
 
     /** @brief CPU ID. */
-    long ID;
+    int ID;
 
     /** @brief Local CPU error code. */
     long ErrorCode;

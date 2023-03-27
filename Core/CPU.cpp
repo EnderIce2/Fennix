@@ -140,6 +140,8 @@ namespace CPU
 #endif
 			return true;
 		}
+		default:
+			break;
 		}
 		return false;
 	}

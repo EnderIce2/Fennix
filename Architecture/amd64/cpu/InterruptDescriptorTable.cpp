@@ -7,6 +7,9 @@
 
 #include "gdt.hpp"
 
+/* conversion from ‘uint64_t’ {aka ‘long unsigned int’} to ‘unsigned char:2’ may change value */
+#pragma GCC diagnostic ignored "-Wconversion"
+
 extern "C" void MainInterruptHandler(void *Data);
 extern "C" void ExceptionHandler(void *Data);
 
@@ -26,8 +29,8 @@ namespace InterruptDescriptorTable
                   InterruptDescriptorTableFlags Ring,
                   uint16_t SegmentSelector)
     {
-        Entries[Index].BaseLow = (uint16_t)((uint64_t)Base & 0xFFFF);
-        Entries[Index].BaseHigh = (uint64_t)((uint64_t)Base >> 16 /* & 0xFFFF */);
+        Entries[Index].BaseLow = s_cst(uint16_t, ((uint64_t)Base & 0xFFFF));
+        Entries[Index].BaseHigh = s_cst(uint64_t, ((uint64_t)Base >> 16 /* & 0xFFFF */));
         Entries[Index].SegmentSelector = SegmentSelector;
         Entries[Index].Flags = Attribute;
         Entries[Index].Reserved1 = 0;

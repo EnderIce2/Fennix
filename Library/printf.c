@@ -37,6 +37,8 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
 // Define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H=1 ...) to include the
 // printf_config.h header file
 #if PRINTF_INCLUDE_CONFIG_H
@@ -353,6 +355,8 @@ static inline NIF void append_termination_with_gadget(output_gadget_t *gadget)
     printf_size_t null_char_pos = gadget->pos < gadget->max_chars ? gadget->pos : gadget->max_chars - 1;
     gadget->buffer[null_char_pos] = '\0';
 }
+
+extern void putchar(char c);
 
 // We can't use putchar_ as is, since our output gadget
 // only takes pointers to functions with an extra argument

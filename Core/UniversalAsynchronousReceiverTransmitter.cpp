@@ -80,16 +80,16 @@ namespace UniversalAsynchronousReceiverTransmitter
             return;
 
         // Initialize the serial port
-        NoProfiler_outportb(Port + 1, 0x00);                  // Disable all interrupts
-        NoProfiler_outportb(Port + 3, SERIAL_ENABLE_DLAB);    // Enable DLAB (set baud rate divisor)
-        NoProfiler_outportb(Port + 0, SERIAL_RATE_115200_LO); // Set divisor to 1 (lo byte) 115200 baud
-        NoProfiler_outportb(Port + 1, SERIAL_RATE_115200_HI); //                  (hi byte)
-        NoProfiler_outportb(Port + 3, 0x03);                  // 8 bits, no parity, one stop bit
-        NoProfiler_outportb(Port + 2, 0xC7);                  // Enable FIFO, clear them, with 14-byte threshold
-        NoProfiler_outportb(Port + 4, 0x0B);                  // IRQs enabled, RTS/DSR set
+        NoProfiler_outportb(s_cst(uint16_t, Port + 1), 0x00);                  // Disable all interrupts
+        NoProfiler_outportb(s_cst(uint16_t, Port + 3), SERIAL_ENABLE_DLAB);    // Enable DLAB (set baud rate divisor)
+        NoProfiler_outportb(s_cst(uint16_t, Port + 0), SERIAL_RATE_115200_LO); // Set divisor to 1 (lo byte) 115200 baud
+        NoProfiler_outportb(s_cst(uint16_t, Port + 1), SERIAL_RATE_115200_HI); //                  (hi byte)
+        NoProfiler_outportb(s_cst(uint16_t, Port + 3), 0x03);                  // 8 bits, no parity, one stop bit
+        NoProfiler_outportb(s_cst(uint16_t, Port + 2), 0xC7);                  // Enable FIFO, clear them, with 14-byte threshold
+        NoProfiler_outportb(s_cst(uint16_t, Port + 4), 0x0B);                  // IRQs enabled, RTS/DSR set
 
         // Check if the serial port is faulty.
-        if (NoProfiler_inportb(Port + 0) != 0xAE)
+        if (NoProfiler_inportb(s_cst(uint16_t, Port + 0)) != 0xAE)
         {
             static int once = 0;
             if (!once++)
@@ -99,7 +99,7 @@ namespace UniversalAsynchronousReceiverTransmitter
         }
 
         // Set to normal operation mode.
-        NoProfiler_outportb(Port + 4, 0x0F);
+        NoProfiler_outportb(s_cst(uint16_t, Port + 4), 0x0F);
         serialports[PortNumber] = true;
 #endif
     }
@@ -109,7 +109,7 @@ namespace UniversalAsynchronousReceiverTransmitter
     SafeFunction NIF void UART::Write(uint8_t Char)
     {
 #if defined(a64) || defined(a32)
-        while ((NoProfiler_inportb(Port + 5) & SERIAL_BUFFER_EMPTY) == 0)
+        while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & SERIAL_BUFFER_EMPTY) == 0)
             ;
         NoProfiler_outportb(Port, Char);
 #endif
@@ -121,7 +121,7 @@ namespace UniversalAsynchronousReceiverTransmitter
     SafeFunction NIF uint8_t UART::Read()
     {
 #if defined(a64) || defined(a32)
-        while ((NoProfiler_inportb(Port + 5) & 1) == 0)
+        while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & 1) == 0)
             ;
         return NoProfiler_inportb(Port);
 #endif

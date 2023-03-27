@@ -243,6 +243,11 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
             KPrint("\eFF2200System Halted.");
             CPU::Stop();
         }
+        default:
+        {
+            KPrint("\eFF2200Unknown option: %c", identifier);
+            break;
+        }
         }
     }
     debug("Config loaded");

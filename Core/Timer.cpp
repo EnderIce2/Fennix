@@ -64,7 +64,7 @@ namespace Time
                 this->hpet = (void *)acpi->HPET->Address.Address;
                 HPET *hpet = (HPET *)this->hpet;
                 trace("%s timer is at address %016p", acpi->HPET->Header.OEMID, (void *)acpi->HPET->Address.Address);
-                clk = hpet->GeneralCapabilities >> 32;
+                clk = s_cst(uint32_t, hpet->GeneralCapabilities >> 32);
                 mmoutq(&hpet->GeneralConfiguration, 0);
                 mmoutq(&hpet->MainCounterValue, 0);
                 mmoutq(&hpet->GeneralConfiguration, 1);

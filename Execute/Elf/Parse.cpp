@@ -50,6 +50,10 @@ namespace Execute
                 SymbolTable = shdr;
                 StringTable = GetELFSection(Header, shdr->sh_link);
                 break;
+            default:
+            {
+                break;
+            }
             }
         }
 

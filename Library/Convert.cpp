@@ -20,13 +20,13 @@ EXTERNC int memcmp(const void *vl, const void *vr, size_t n)
 
 EXTERNC void backspace(char s[])
 {
-    int len = strlen(s);
+    int len = s_cst(int, strlen(s));
     s[len - 1] = '\0';
 }
 
 EXTERNC void append(char s[], char n)
 {
-    int len = strlen(s);
+    int len = s_cst(int, strlen(s));
     s[len] = n;
     s[len + 1] = '\0';
 }
@@ -184,7 +184,7 @@ EXTERNC long int strtol(const char *str, char **endptr, int base)
         base = c == '0' ? 8 : 10;
 
     cutoff = neg ? LONG_MIN : LONG_MAX;
-    cutlim = cutoff % base;
+    cutlim = s_cst(int, cutoff % base);
     cutoff /= base;
     for (acc = 0, any = 0;; c = *s++)
     {
@@ -249,7 +249,7 @@ EXTERNC unsigned long int strtoul(const char *str, char **endptr, int base)
         base = c == '0' ? 8 : 10;
 
     cutoff = neg ? LONG_MIN : LONG_MAX;
-    cutlim = cutoff % base;
+    cutlim = s_cst(int, cutoff % base);
     cutoff /= base;
     for (acc = 0, any = 0;; c = *s++)
     {
@@ -342,8 +342,12 @@ EXTERNC float sqrtf(float x)
     float guess = x / 2.0f;
     for (short i = 0; i < 10; i++)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
         if (guess == 0.0f)
             return 0.0f;
+#pragma GCC diagnostic pop
+
         guess = (guess + x / guess) / 2.0f;
     }
     return guess;
@@ -366,7 +370,10 @@ EXTERNC float lerp(float a, float b, float t)
 
 EXTERNC float smoothstep(float a, float b, float t)
 {
-    t = clamp(t, 0.0, 1.0);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-conversion"
+    t = clamp(s_cst(double, t), 0.0, 1.0);
+#pragma GCC diagnostic pop
     return lerp(a, b, t * t * (3 - 2 * t));
 }
 
@@ -420,8 +427,8 @@ EXTERNC char *strtok(char *src, const char *delim)
 EXTERNC int atoi(const char *String)
 {
     uint64_t Length = strlen((char *)String);
-    uint64_t OutBuffer = 0;
-    uint64_t Power = 1;
+    int OutBuffer = 0;
+    int Power = 1;
     for (uint64_t i = Length; i > 0; --i)
     {
         OutBuffer += (String[i - 1] - 48) * Power;
@@ -517,16 +524,16 @@ EXTERNC char *itoa(int Value, char *Buffer, int Base)
     if (Base < 2 || Base > 32)
         return Buffer;
 
-    int n = abs(Value);
+    int n = s_cst(int, abs(Value));
     int i = 0;
 
     while (n)
     {
-        int r = n % Base;
+        int r = s_cst(int, n % Base);
         if (r >= 10)
-            Buffer[i++] = 65 + (r - 10);
+            Buffer[i++] = s_cst(char, 65 + (r - 10));
         else
-            Buffer[i++] = 48 + r;
+            Buffer[i++] = s_cst(char, 48 + r);
         n = n / Base;
     }
 
@@ -550,11 +557,11 @@ EXTERNC char *ltoa(long Value, char *Buffer, int Base)
 
     while (n)
     {
-        int r = n % Base;
+        int r = s_cst(int, n % Base);
         if (r >= 10)
-            Buffer[i++] = 65 + (r - 10);
+            Buffer[i++] = s_cst(char, 65 + (r - 10));
         else
-            Buffer[i++] = 48 + r;
+            Buffer[i++] = s_cst(char, 48 + r);
         n = n / Base;
     }
 
@@ -578,11 +585,11 @@ EXTERNC char *ultoa(unsigned long Value, char *Buffer, int Base)
 
     while (n)
     {
-        int r = n % Base;
+        int r = s_cst(int, n % Base);
         if (r >= 10)
-            Buffer[i++] = 65 + (r - 10);
+            Buffer[i++] = s_cst(char, 65 + (r - 10));
         else
-            Buffer[i++] = 48 + r;
+            Buffer[i++] = s_cst(char, 48 + r);
         n = n / Base;
     }
 

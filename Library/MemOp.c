@@ -4,6 +4,9 @@
 #include <limits.h>
 #include <debug.h>
 
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 /* Some of the functions are from musl library */
 /* https://www.musl-libc.org/ */
 /*
@@ -85,9 +88,11 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
     }
 
     if (n >= 32)
+    {
         switch ((uintptr_t)d % 4)
         {
         case 1:
+        {
             w = *(u32 *)s;
             *d++ = *s++;
             *d++ = *s++;
@@ -105,7 +110,9 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
                 *(u32 *)(d + 12) = (x LS 24) | (w RS 8);
             }
             break;
+        }
         case 2:
+        {
             w = *(u32 *)s;
             *d++ = *s++;
             *d++ = *s++;
@@ -122,7 +129,9 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
                 *(u32 *)(d + 12) = (x LS 16) | (w RS 16);
             }
             break;
+        }
         case 3:
+        {
             w = *(u32 *)s;
             *d++ = *s++;
             n -= 1;
@@ -139,6 +148,11 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
             }
             break;
         }
+        default:
+            break;
+        }
+    }
+
     if (n & 16)
     {
         *d++ = *s++;
@@ -158,6 +172,7 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
         *d++ = *s++;
         *d++ = *s++;
     }
+
     if (n & 8)
     {
         *d++ = *s++;
@@ -169,6 +184,7 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
         *d++ = *s++;
         *d++ = *s++;
     }
+
     if (n & 4)
     {
         *d++ = *s++;
@@ -176,11 +192,13 @@ void *memcpy_unsafe(void *dest, const void *src, size_t n)
         *d++ = *s++;
         *d++ = *s++;
     }
+
     if (n & 2)
     {
         *d++ = *s++;
         *d++ = *s++;
     }
+
     if (n & 1)
     {
         *d = *s;
@@ -200,18 +218,24 @@ void *memset_unsafe(void *dest, int c, size_t n)
 
     if (!n)
         return dest;
+
     s[0] = c;
     s[n - 1] = c;
+
     if (n <= 2)
         return dest;
+
     s[1] = c;
     s[2] = c;
     s[n - 2] = c;
     s[n - 3] = c;
+
     if (n <= 6)
         return dest;
+
     s[3] = c;
     s[n - 4] = c;
+
     if (n <= 8)
         return dest;
 
@@ -227,14 +251,18 @@ void *memset_unsafe(void *dest, int c, size_t n)
     u32 c32 = ((u32)-1) / 255 * (unsigned char)c;
     *(u32 *)(s + 0) = c32;
     *(u32 *)(s + n - 4) = c32;
+
     if (n <= 8)
         return dest;
+
     *(u32 *)(s + 4) = c32;
     *(u32 *)(s + 8) = c32;
     *(u32 *)(s + n - 12) = c32;
     *(u32 *)(s + n - 8) = c32;
+
     if (n <= 24)
         return dest;
+
     *(u32 *)(s + 12) = c32;
     *(u32 *)(s + 16) = c32;
     *(u32 *)(s + 20) = c32;
@@ -276,6 +304,7 @@ void *memmove_unsafe(void *dest, const void *src, size_t n)
 
     if (d == s)
         return d;
+
     if ((uintptr_t)s - (uintptr_t)d - n <= -2 * n)
         return memcpy(d, s, n);
 
@@ -288,6 +317,7 @@ void *memmove_unsafe(void *dest, const void *src, size_t n)
             {
                 if (!n--)
                     return dest;
+
                 *d++ = *s++;
             }
             for (; n >= WS; n -= WS, d += WS, s += WS)
@@ -306,6 +336,7 @@ void *memmove_unsafe(void *dest, const void *src, size_t n)
             {
                 if (!n--)
                     return dest;
+
                 d[n] = s[n];
             }
             while (n >= WS)

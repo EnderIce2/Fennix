@@ -28,7 +28,7 @@ namespace NetworkInterfaceManager
         void *DriverCallBackAddress;
 
         /** @brief Reserved */
-        unsigned int DriverID;
+        unsigned long DriverID;
     };
 
     class Events

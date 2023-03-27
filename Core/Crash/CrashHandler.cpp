@@ -508,7 +508,7 @@ namespace CrashHandler
                     EHPrint("\e00FF000");
                 if (i % 128 == 127)
                 {
-                    short Percentage = (i * 100) / bm.Size;
+                    short Percentage = s_cst(short, (i * 100) / bm.Size);
                     EHPrint("\n\eFAFAFA[%03ld%%] %08ld: ", Percentage, i);
                     Display->SetBuffer(SBIdx);
                 }
@@ -524,8 +524,8 @@ namespace CrashHandler
             uint64_t Reserved = KernelAllocator.GetReservedMemory();
 
             EHPrint("\e22AA44Total: %ld bytes\n\eFF0000Used: %ld bytes\n\e00FF00Free: %ld bytes\n\eFF00FFReserved: %ld bytes\n", Total, Used, Free, Reserved);
-            int Progress = (Used * 100) / Total;
-            int ReservedProgress = (Reserved * 100) / Total;
+            int Progress = s_cst(int, (Used * 100) / Total);
+            int ReservedProgress = s_cst(int, (Reserved * 100) / Total);
             EHPrint("\e22AA44%3d%% \eCCCCCC[", Progress);
             for (int i = 0; i < Progress; i++)
                 EHPrint("\eFF0000|");
@@ -695,7 +695,7 @@ namespace CrashHandler
 
                 if (unlikely(i % 0x1000 == 0))
                 {
-                    int NewProgress = (i * 100) / ProgressLength;
+                    int NewProgress = (int)((i * 100) / ProgressLength);
                     if (unlikely(NewProgress != Progress))
                     {
                         Progress = NewProgress;

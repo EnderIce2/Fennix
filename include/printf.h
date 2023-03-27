@@ -95,8 +95,8 @@ extern "C"
      *
      * @param c the single character to print
      */
-    PRINTF_VISIBILITY
-    void putchar(char c);
+    // PRINTF_VISIBILITY
+    // void putchar(char c);
 
     /**
      * An implementation of the C standard's printf/vprintf

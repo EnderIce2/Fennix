@@ -116,14 +116,14 @@ namespace Video
                 uint8_t g = (color >> 8) & 0xff;
                 uint8_t b = (color >> 16) & 0xff;
 
-                r = (r * Value) / 100;
-                g = (g * Value) / 100;
-                b = (b * Value) / 100;
+                r = s_cst(uint8_t, (r * Value) / 100);
+                g = s_cst(uint8_t, (g * Value) / 100);
+                b = s_cst(uint8_t, (b * Value) / 100);
 
                 pixel[y * this->Buffers[Index].Width + x] = (b << 16) | (g << 8) | r;
             }
         }
-        this->Buffers[Index].Brightness = Value;
+        this->Buffers[Index].Brightness = s_cst(char, Value);
     }
 
     void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)
@@ -198,7 +198,7 @@ namespace Video
         {
             uint32_t LineSize = this->Buffers[Index].Width * (this->framebuffer.BitsPerPixel / 8);
             uint32_t BytesToMove = LineSize * Lines * this->CurrentFont->GetInfo().Height;
-            uint32_t BytesToClear = this->Buffers[Index].Size - BytesToMove;
+            size_t BytesToClear = this->Buffers[Index].Size - BytesToMove;
             memmove(this->Buffers[Index].Buffer, (uint8_t *)this->Buffers[Index].Buffer + BytesToMove, BytesToClear);
             memset((uint8_t *)this->Buffers[Index].Buffer + BytesToClear, 0, BytesToMove);
         }
@@ -304,6 +304,8 @@ namespace Video
             this->Buffers[Index].CursorY += this->GetCurrentFont()->GetInfo().Height;
             return Char;
         }
+        default:
+            break;
         }
 
         uint32_t FontHeight = this->GetCurrentFont()->GetInfo().Height;
@@ -412,7 +414,7 @@ namespace Video
         this->ClearBuffer(0);
         this->SetBuffer(0);
 
-        for (size_t i = 0; i < sizeof(this->Buffers) / sizeof(this->Buffers[0]); i++)
+        for (int i = 0; i < s_cst(int, sizeof(this->Buffers) / sizeof(this->Buffers[0])); i++)
         {
             if (this->Buffers[i].Checksum == 0xBBFFE515A117E)
                 this->DeleteBuffer(i);

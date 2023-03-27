@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 
 #include <assert.h>
 #include <cargs.h>

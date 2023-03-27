@@ -52,17 +52,17 @@ namespace std
                 VectorBuffer[i] = Initial;
         }
 
-        NIF vector(const vector<T> &vector)
+        NIF vector(const vector<T> &v)
         {
-            VectorSize = vector.VectorSize;
-            VectorCapacity = vector.VectorCapacity;
+            VectorSize = v.VectorSize;
+            VectorCapacity = v.VectorCapacity;
 #ifdef DEBUG_MEM_ALLOCATION
             debug("VECTOR INIT: vector( <vector> )->Size: %lld", VectorSize);
 #endif
             assert(VectorSize > 0);
             VectorBuffer = new T[VectorSize];
             for (size_t i = 0; i < VectorSize; i++)
-                VectorBuffer[i] = vector.VectorBuffer[i];
+                VectorBuffer[i] = v.VectorBuffer[i];
         }
 
         NIF ~vector()
@@ -248,17 +248,17 @@ namespace std
             return VectorBuffer[Index];
         }
 
-        NIF vector<T> &operator=(const vector<T> &vector)
+        NIF vector<T> &operator=(const vector<T> &v)
         {
             delete[] VectorBuffer;
-            VectorSize = vector.VectorSize;
-            VectorCapacity = vector.VectorCapacity;
+            VectorSize = v.VectorSize;
+            VectorCapacity = v.VectorCapacity;
 #ifdef DEBUG_MEM_ALLOCATION
             debug("VECTOR ALLOCATION: operator=( <vector> )->Size:%lld", VectorSize);
 #endif
             VectorBuffer = new T[VectorSize];
             for (size_t i = 0; i < VectorSize; i++)
-                VectorBuffer[i] = vector.VectorBuffer[i];
+                VectorBuffer[i] = v.VectorBuffer[i];
             return *this;
         }
     };

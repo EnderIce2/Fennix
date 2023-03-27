@@ -50,7 +50,7 @@ SafeFunction CPUData *GetCurrentCPU()
 extern "C" void StartCPU()
 {
     CPU::Interrupts(CPU::Disable);
-    uint64_t CoreID = (int)*reinterpret_cast<int *>(CORE);
+    int CoreID = (int)*reinterpret_cast<int *>(CORE);
     CPU::InitializeFeatures(CoreID);
     // Initialize GDT and IDT
     Interrupts::Initialize(CoreID);
@@ -96,14 +96,14 @@ namespace SMP
 
                 memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
 
-                POKE(volatile uint64_t, PAGE_TABLE) = (uint64_t)KernelPageTable;
-                POKE(volatile uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
-                POKE(volatile uint64_t, CORE) = i;
+                VPOKE(uint64_t, PAGE_TABLE) = (uint64_t)KernelPageTable;
+                VPOKE(uint64_t, STACK) = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+                VPOKE(int, CORE) = i;
 
                 asmv("sgdt [0x580]\n"
                      "sidt [0x590]\n");
 
-                POKE(volatile uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
+                VPOKE(uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
 
                 ((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(((ACPI::MADT *)madt)->lapic[i]->APICId);
                 ((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(((ACPI::MADT *)madt)->lapic[i]->APICId, TRAMPOLINE_START);

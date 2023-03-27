@@ -314,7 +314,7 @@ namespace APIC
         void SendStartupIPI(uint8_t CPU, uint64_t StartupAddress);
         uint32_t IOGetMaxRedirect(uint32_t APICID);
         void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
-        void RedirectIRQ(int CPU, uint8_t IRQ, int Status);
+        void RedirectIRQ(int CPU, uint16_t IRQ, int Status);
         APIC(int Core);
         ~APIC();
     };

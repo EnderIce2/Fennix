@@ -23,8 +23,8 @@ struct BootInfo
     struct FramebufferInfo
     {
         void *BaseAddress;
-        __UINT64_TYPE__ Width;
-        __UINT64_TYPE__ Height;
+        __UINT32_TYPE__ Width;
+        __UINT32_TYPE__ Height;
         __UINT64_TYPE__ Pitch;
         __UINT16_TYPE__ BitsPerPixel;
         __UINT8_TYPE__ MemoryModel;

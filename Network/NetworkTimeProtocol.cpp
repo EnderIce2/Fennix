@@ -49,8 +49,8 @@ namespace NetworkNTP
             TaskManager->Sleep(1000);
         }
 
-        int UnixTimestamp = b32(this->NTPPacket.TransmitTimestamp[0]) - 2208988800;
+        long UnixTimestamp = b32(this->NTPPacket.TransmitTimestamp[0]) - 2208988800;
         debug("Unix time: %d", UnixTimestamp);
-        return UnixTimestamp;
+        return s_cst(int, UnixTimestamp);
     }
 }

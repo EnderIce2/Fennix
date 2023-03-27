@@ -124,8 +124,8 @@ namespace ACPI
 
         if (FADT)
         {
-            outb(FADT->SMI_CommandPort, FADT->AcpiEnable);
-            while (!(inw(FADT->PM1aControlBlock) & 1))
+            outb(s_cst(uint16_t, FADT->SMI_CommandPort), FADT->AcpiEnable);
+            while (!(inw(s_cst(uint16_t, FADT->PM1aControlBlock)) & 1))
                 ;
         }
     }

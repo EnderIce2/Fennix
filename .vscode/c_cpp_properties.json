@@ -30,6 +30,18 @@
                 "-mcmodel=kernel",
                 "-fno-builtin",
 
+                // Warnings
+                "-Wall",
+                "-Wextra",
+                "-Wfloat-equal",
+                "-Wpointer-arith",
+                "-Wcast-align",
+                "-Wredundant-decls",
+			    "-Winit-self",
+                "-Wswitch-default",
+                "-Wstrict-overflow=5",
+			    "-Wconversion",
+
                 // C++ flags
                 "-fno-rtti",
                 "-fexceptions",
@@ -89,6 +101,18 @@
                 "-pipe",
                 "-msoft-float",
                 "-fno-builtin",
+
+                // Warnings
+                "-Wall",
+                "-Wextra",
+                "-Wfloat-equal",
+                "-Wpointer-arith",
+                "-Wcast-align",
+                "-Wredundant-decls",
+			    "-Winit-self",
+                "-Wswitch-default",
+                "-Wstrict-overflow=5",
+			    "-Wconversion",
 
                 // C++ flags
                 "-fno-rtti",

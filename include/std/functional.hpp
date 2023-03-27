@@ -17,15 +17,15 @@ namespace std
 
             const uint8_t *data = reinterpret_cast<const uint8_t *>(&key);
             const size_t size = sizeof(Key);
-            uint64_t hash = fnv_offset_basis;
+            uint64_t ret = fnv_offset_basis;
 
             for (size_t i = 0; i < size; ++i)
             {
-                hash ^= static_cast<uint64_t>(data[i]);
-                hash *= fnv_prime;
+                ret ^= static_cast<uint64_t>(data[i]);
+                ret *= fnv_prime;
             }
 
-            return static_cast<size_t>(hash);
+            return static_cast<size_t>(ret);
         }
     };
 }

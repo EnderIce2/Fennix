@@ -190,16 +190,16 @@ namespace Interrupts
 
     Handler::~Handler()
     {
-        debug("Unregistering interrupt handler for IRQ%d.", InterruptNumber);
+        debug("Unregistering interrupt handler for IRQ%d.", this->InterruptNumber);
         for (size_t i = 0; i < RegisteredEvents.size(); i++)
         {
-            if (RegisteredEvents[i].ID == InterruptNumber)
+            if (RegisteredEvents[i].ID == this->InterruptNumber)
             {
                 RegisteredEvents.remove(i);
                 return;
             }
         }
-        warn("Event %d not found.", InterruptNumber);
+        warn("Event %d not found.", this->InterruptNumber);
     }
 
 #if defined(a64)

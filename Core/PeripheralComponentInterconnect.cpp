@@ -22,9 +22,9 @@ namespace PCI
             {
                 uint8_t Digit = (Value >> (4 - (i * 4))) & 0xF;
                 if (Digit < 10)
-                    Buffer[i] = '0' + Digit;
+                    Buffer[i] = s_cst(char, '0' + Digit);
                 else
-                    Buffer[i] = 'A' + (Digit - 10);
+                    Buffer[i] = s_cst(char, 'A' + (Digit - 10));
             }
             return Buffer;
         }
@@ -37,9 +37,9 @@ namespace PCI
             {
                 uint8_t Digit = (Value >> (28 - (i * 4))) & 0xF;
                 if (Digit < 10)
-                    Buffer[i] = '0' + Digit;
+                    Buffer[i] = s_cst(char, '0' + Digit);
                 else
-                    Buffer[i] = 'A' + (Digit - 10);
+                    Buffer[i] = s_cst(char, 'A' + (Digit - 10));
             }
             return Buffer;
         }
@@ -555,6 +555,8 @@ namespace PCI
                 }
                 break;
             }
+            default:
+                break;
             }
             fixme("Unknown device %04x:%04x", VendorID, DeviceID);
             return u32ToHexString(DeviceID);
@@ -649,7 +651,10 @@ namespace PCI
                     }
                     break;
                 }
+                default:
+                    break;
                 }
+            default:
                 break;
             }
             case 0x03:
@@ -666,6 +671,8 @@ namespace PCI
                     default:
                         return "VGA Compatible Controller";
                     }
+                    break;
+                default:
                     break;
                 }
                 break;
@@ -838,7 +845,7 @@ namespace PCI
     PCI::PCI()
     {
 #if defined(a64)
-        int Entries = ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig);
+        int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
         Memory::Virtual vma = Memory::Virtual(KernelPageTable);
         for (int t = 0; t < Entries; t++)
         {

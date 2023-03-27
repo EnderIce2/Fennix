@@ -64,11 +64,11 @@ enum MemoryOrder
 template <typename T>
 class Atomic
 {
-    _Atomic(T) m_Value;
+    _Atomic(T) Value;
 
 public:
-    Atomic() : m_Value(0) {}
-    Atomic(T Init) : m_Value(Init) {}
+    Atomic() : Value(0) {}
+    Atomic(T Init) : Value(Init) {}
 
     /**
      * @brief Load the value of the atomic variable
@@ -78,7 +78,7 @@ public:
      */
     T Load(MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic_n(load)(&m_Value, Order);
+        return builtin_atomic_n(load)(&this->Value, Order);
     }
 
     /**
@@ -89,7 +89,7 @@ public:
      */
     void Store(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic_n(store)(&m_Value, v, Order);
+        return builtin_atomic_n(store)(&this->Value, v, Order);
     }
 
     /**
@@ -101,7 +101,7 @@ public:
      */
     T Exchange(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic_n(exchange)(&m_Value, v, Order);
+        return builtin_atomic_n(exchange)(&this->Value, v, Order);
     }
 
     /**
@@ -115,7 +115,7 @@ public:
      */
     bool CompareExchange(T &Expected, T Desired, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic_n(compare_exchange)(&m_Value, &Expected, Desired, true, Order, Order);
+        return builtin_atomic_n(compare_exchange)(&this->Value, &Expected, Desired, true, Order, Order);
     }
 
     /**
@@ -127,7 +127,7 @@ public:
      */
     T FetchAdd(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_add)(&m_Value, v, Order);
+        return builtin_atomic(fetch_add)(&this->Value, v, Order);
     }
 
     /**
@@ -139,7 +139,7 @@ public:
      */
     T FetchSub(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_sub)(&m_Value, v, Order);
+        return builtin_atomic(fetch_sub)(&this->Value, v, Order);
     }
 
     /**
@@ -151,7 +151,7 @@ public:
      */
     T FetchAnd(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_and)(&m_Value, v, Order);
+        return builtin_atomic(fetch_and)(&this->Value, v, Order);
     }
 
     /**
@@ -163,7 +163,7 @@ public:
      */
     T FetchOr(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_or)(&m_Value, v, Order);
+        return builtin_atomic(fetch_or)(&this->Value, v, Order);
     }
 
     /**
@@ -175,7 +175,7 @@ public:
      */
     T FetchXor(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_xor)(&m_Value, v, Order);
+        return builtin_atomic(fetch_xor)(&this->Value, v, Order);
     }
 
     /**
@@ -187,7 +187,7 @@ public:
      */
     T FetchNand(T v, MemoryOrder Order = MemoryOrder::SeqCst)
     {
-        return builtin_atomic(fetch_nand)(&m_Value, v, Order);
+        return builtin_atomic(fetch_nand)(&this->Value, v, Order);
     }
 
     operator bool() { return this->Load() != 0; }

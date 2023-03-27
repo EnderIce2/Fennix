@@ -136,6 +136,8 @@ namespace GraphicalUserInterface
     {
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
     void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, long *CharCursorX, long *CharCursorY)
     {
         switch (font->GetInfo().Type)
@@ -182,6 +184,7 @@ namespace GraphicalUserInterface
             break;
         }
     }
+#pragma GCC diagnostic pop
 
     void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color)
     {

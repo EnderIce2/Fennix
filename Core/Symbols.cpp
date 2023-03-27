@@ -46,6 +46,8 @@ namespace SymbolResolver
                     debug("String table found, %d entries", ElfSections[i].sh_size);
                 }
                 break;
+            default:
+                break;
             }
 
         if (ElfSymbols != nullptr && strtab != nullptr)

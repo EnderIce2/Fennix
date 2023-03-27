@@ -16,16 +16,6 @@ static inline void DbgNetwork() { return; }
 static inline void DbgDumpData(const char *Description, void *Address, unsigned long Length) { return; }
 #endif
 
-// TODO: How i would do this?
-typedef __UINT64_TYPE__ uint48_t;
-
-#define b4(x) ((x & 0x0F) << 4 | (x & 0xF0) >> 4)
-#define b8(x) ((x)&0xFF)
-#define b16(x) __builtin_bswap16(x)
-#define b32(x) __builtin_bswap32(x)
-#define b48(x) (((((x)&0x0000000000ff) << 40) | (((x)&0x00000000ff00) << 24) | (((x)&0x000000ff0000) << 8) | (((x)&0x0000ff000000) >> 8) | (((x)&0x00ff00000000) >> 24) | (((x)&0xff0000000000) >> 40)))
-#define b64(x) __builtin_bswap64(x)
-
 enum Endianness
 {
     LITTLE_ENDIAN,
@@ -149,10 +139,10 @@ struct InternetProtocol
 
         inline uint32_t ToHex()
         {
-            return ((uint64_t)this->Address[0] << 24) |
-                   ((uint64_t)this->Address[1] << 16) |
-                   ((uint64_t)this->Address[2] << 8) |
-                   ((uint64_t)this->Address[3]);
+            return ((uint32_t)this->Address[0] << 24) |
+                   ((uint32_t)this->Address[1] << 16) |
+                   ((uint32_t)this->Address[2] << 8) |
+                   ((uint32_t)this->Address[3]);
         }
 
         inline InternetProtocol::Version4 FromHex(uint32_t Hex)

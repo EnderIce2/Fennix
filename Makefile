@@ -49,7 +49,10 @@ INCLUDE_DIR = ./include
 LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
 
 # Disable all warnings by adding "-w" in WARNCFLAG and if you want to treat the warnings as errors, add "-Werror"
-WARNCFLAG = -Wall -Wextra
+WARNCFLAG = -Wall -Wextra \
+			-Wfloat-equal -Wpointer-arith -Wcast-align \
+			-Wredundant-decls -Winit-self -Wswitch-default \
+			-Wstrict-overflow=5 -Wconversion
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
@@ -58,6 +61,8 @@ CFLAGS :=										\
 	-DKERNEL_VERSION='"$(KERNEL_VERSION)"'		\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\
 	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"'
+
+SIMD_FLAGS := -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mavx512f
 
 ifeq ($(OSARCH), amd64)
 

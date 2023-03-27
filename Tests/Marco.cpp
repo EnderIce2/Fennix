@@ -29,13 +29,13 @@ __constructor void TestMacros()
     debug("-------------------------");
 
     {
-        uintptr_t actual = PAGE_SIZE;
-        int expected = 1;
+        uint64_t actual = PAGE_SIZE;
+        uint64_t expected = 1;
 
         for (int i = 0; i < 128; i++)
         {
-            int a = TO_PAGES(actual);
-            uintptr_t b = FROM_PAGES(expected);
+            uint64_t a = TO_PAGES(actual);
+            uint64_t b = FROM_PAGES(expected);
 
             /* TODO: This is a workaround for now. */
             if (a != expected + 1)

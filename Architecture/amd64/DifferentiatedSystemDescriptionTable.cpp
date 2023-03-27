@@ -39,13 +39,13 @@ namespace ACPI
             uint16_t a = 0, b = 0;
             if (acpi->FADT->PM1aEventBlock)
             {
-                a = inw(acpi->FADT->PM1aEventBlock);
-                outw(acpi->FADT->PM1aEventBlock, a);
+                a = inw(s_cst(uint16_t, acpi->FADT->PM1aEventBlock));
+                outw(s_cst(uint16_t, acpi->FADT->PM1aEventBlock), a);
             }
             if (acpi->FADT->PM1bEventBlock)
             {
-                b = inw(acpi->FADT->PM1bEventBlock);
-                outw(acpi->FADT->PM1bEventBlock, b);
+                b = inw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock));
+                outw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock), b);
             }
             Event = a | b;
         }
@@ -99,12 +99,24 @@ namespace ACPI
         trace("Shutting down...");
         if (SCI_EN == 1)
         {
-            outw(acpi->FADT->PM1aControlBlock, (inw(acpi->FADT->PM1aControlBlock) & 0xE3FF) | ((SLP_TYPa << 10) | ACPI_SLEEP));
+            outw(s_cst(uint16_t, acpi->FADT->PM1aControlBlock),
+                 s_cst(uint16_t,
+                       (inw(s_cst(uint16_t,
+                                  acpi->FADT->PM1aControlBlock)) &
+                        0xE3FF) |
+                           ((SLP_TYPa << 10) | ACPI_SLEEP)));
+
             if (acpi->FADT->PM1bControlBlock)
-                outw(acpi->FADT->PM1bControlBlock, (inw(acpi->FADT->PM1bControlBlock) & 0xE3FF) | ((SLP_TYPb << 10) | ACPI_SLEEP));
-            outw(PM1a_CNT, SLP_TYPa | SLP_EN);
+                outw(s_cst(uint16_t, acpi->FADT->PM1bControlBlock),
+                     s_cst(uint16_t,
+                           (inw(
+                                s_cst(uint16_t, acpi->FADT->PM1bControlBlock)) &
+                            0xE3FF) |
+                               ((SLP_TYPb << 10) | ACPI_SLEEP)));
+
+            outw(s_cst(uint16_t, PM1a_CNT), SLP_TYPa | SLP_EN);
             if (PM1b_CNT)
-                outw(PM1b_CNT, SLP_TYPb | SLP_EN);
+                outw(s_cst(uint16_t, PM1b_CNT), SLP_TYPb | SLP_EN);
         }
     }
 
@@ -114,12 +126,17 @@ namespace ACPI
         switch (acpi->FADT->ResetReg.AddressSpace)
         {
         case ACPI_GAS_MMIO:
+        {
             *(uint8_t *)(acpi->FADT->ResetReg.Address) = acpi->FADT->ResetValue;
             break;
+        }
         case ACPI_GAS_IO:
-            outb(acpi->FADT->ResetReg.Address, acpi->FADT->ResetValue);
+        {
+            outb(s_cst(uint16_t, acpi->FADT->ResetReg.Address), acpi->FADT->ResetValue);
             break;
+        }
         case ACPI_GAS_PCI:
+        {
             fixme("ACPI_GAS_PCI not supported.");
             /*
                 seg      - 0
@@ -130,6 +147,12 @@ namespace ACPI
                 value    - FADT->ResetValue
             */
             break;
+        }
+        default:
+        {
+            error("Unknown reset register address space: %d", acpi->FADT->ResetReg.AddressSpace);
+            break;
+        }
         }
     }
 
@@ -157,11 +180,11 @@ namespace ACPI
             S5Address += ((*S5Address & 0xC0) >> 6) + 2;
             if (*S5Address == 0x0A)
                 S5Address++;
-            SLP_TYPa = *(S5Address) << 10;
+            SLP_TYPa = s_cst(uint16_t, *(S5Address) << 10);
             S5Address++;
             if (*S5Address == 0x0A)
                 S5Address++;
-            SLP_TYPb = *(S5Address) << 10;
+            SLP_TYPb = s_cst(uint16_t, *(S5Address) << 10);
             SMI_CMD = acpi->FADT->SMI_CommandPort;
             ACPI_ENABLE = acpi->FADT->AcpiEnable;
             ACPI_DISABLE = acpi->FADT->AcpiDisable;
@@ -175,8 +198,8 @@ namespace ACPI
 
             uint16_t value = ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_WAKE;
             {
-                uint16_t a = acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2);
-                uint16_t b = acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2);
+                uint16_t a = s_cst(uint16_t, acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2));
+                uint16_t b = s_cst(uint16_t, acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2));
                 debug("SCI Event: %#llx [a:%#x b:%#x]", value, a, b);
                 if (acpi->FADT->PM1aEventBlock)
                     outw(a, value);
@@ -188,13 +211,13 @@ namespace ACPI
                 uint16_t a = 0, b = 0;
                 if (acpi->FADT->PM1aEventBlock)
                 {
-                    a = inw(acpi->FADT->PM1aEventBlock);
-                    outw(acpi->FADT->PM1aEventBlock, a);
+                    a = inw(s_cst(uint16_t, acpi->FADT->PM1aEventBlock));
+                    outw(s_cst(uint16_t, acpi->FADT->PM1aEventBlock), a);
                 }
                 if (acpi->FADT->PM1bEventBlock)
                 {
-                    b = inw(acpi->FADT->PM1bEventBlock);
-                    outw(acpi->FADT->PM1bEventBlock, b);
+                    b = inw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock));
+                    outw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock), b);
                 }
             }
             ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);

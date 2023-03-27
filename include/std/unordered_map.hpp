@@ -19,23 +19,23 @@ namespace std
 
     private:
         static const size_t DEFAULT_NUM_BUCKETS = 10;
-        std::vector<bucket> m_buckets;
+        std::vector<bucket> bkts;
 
         size_t hash(const key_type &key) const
         {
             std::hash<key_type> hash_function;
-            return hash_function(key) % m_buckets.size();
+            return hash_function(key) % this->bkts.size();
         }
 
     public:
-        unordered_map() : m_buckets(DEFAULT_NUM_BUCKETS) {}
-        unordered_map(size_t num_buckets) : m_buckets(num_buckets) {}
+        unordered_map() : bkts(DEFAULT_NUM_BUCKETS) {}
+        unordered_map(size_t num_buckets) : bkts(num_buckets) {}
 
         void insert(const key_value_pair &pair)
         {
             size_t bucket_index = hash(pair.first);
-            bucket &bucket = m_buckets[bucket_index];
-            for (auto it = bucket.begin(); it != bucket.end(); ++it)
+            bucket &bkt = this->bkts[bucket_index];
+            for (auto it = bkt.begin(); it != bkt.end(); ++it)
             {
                 if (it->first == pair.first)
                 {
@@ -43,14 +43,14 @@ namespace std
                     return;
                 }
             }
-            bucket.push_back(pair);
+            bkt.push_back(pair);
         }
 
         bool contains(const key_type &key) const
         {
             size_t bucket_index = hash(key);
-            const bucket &bucket = m_buckets[bucket_index];
-            for (auto it = bucket.begin(); it != bucket.end(); ++it)
+            const bucket &bkt = this->bkts[bucket_index];
+            for (auto it = bkt.begin(); it != bkt.end(); ++it)
             {
                 if (it->first == key)
                 {
@@ -63,34 +63,34 @@ namespace std
         iterator find(const key_type &k)
         {
             size_t bucket_index = hash(k);
-            bucket &bucket = m_buckets[bucket_index];
-            for (auto it = bucket.begin(); it != bucket.end(); ++it)
+            bucket &bkt = this->bkts[bucket_index];
+            for (auto it = bkt.begin(); it != bkt.end(); ++it)
             {
                 if (it->first == k)
                     return it;
             }
-            return bucket.end();
+            return bkt.end();
         }
 
         const_iterator find(const key_type &k) const
         {
             size_t bucket_index = hash(k);
-            const bucket &bucket = m_buckets[bucket_index];
-            for (auto it = bucket.begin(); it != bucket.end(); ++it)
+            const bucket &bkt = this->bkts[bucket_index];
+            for (auto it = bkt.begin(); it != bkt.end(); ++it)
             {
                 if (it->first == k)
                     return it;
             }
-            return bucket.end();
+            return bkt.end();
         }
 
-        iterator end() noexcept { return m_buckets.end(); }
+        iterator end() noexcept { return this->bkts.end(); }
 
         size_t size() const
         {
             size_t count = 0;
-            for (const auto &bucket : m_buckets)
-                count += bucket.size();
+            foreach (const auto &bkt in this->bkts)
+                count += bkt.size();
 
             return count;
         }
@@ -98,14 +98,14 @@ namespace std
         value_type &operator[](const key_type &key)
         {
             size_t bucket_index = hash(key);
-            bucket &bucket = m_buckets[bucket_index];
-            for (auto it = bucket.begin(); it != bucket.end(); ++it)
+            bucket &bkt = this->bkts[bucket_index];
+            for (auto it = bkt.begin(); it != bkt.end(); ++it)
             {
                 if (it->first == key)
                     return it->second;
             }
-            bucket.emplace_back(key, value_type());
-            return bucket.back().second;
+            bkt.emplace_back(key, value_type());
+            return bkt.back().second;
         }
     };
 }

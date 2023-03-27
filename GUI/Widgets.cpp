@@ -17,7 +17,7 @@ namespace GraphicalUserInterface
 {
     Handle WidgetCollection::CreatePanel(Rect rect, uint32_t Color)
     {
-        PanelObject *panel = (PanelObject *)mem->RequestPages(TO_PAGES(sizeof(PanelObject)));
+        PanelObject *panel = (PanelObject *)this->mem->RequestPages(TO_PAGES(sizeof(PanelObject)));
 
         panel->Handle.Type[0] = 'P';
         panel->Handle.Type[1] = 'N';
@@ -31,13 +31,13 @@ namespace GraphicalUserInterface
         panel->Shadow = false;
 
         Panels.push_back(panel);
-        NeedRedraw = true;
+        this->NeedRedraw = true;
         return (Handle)panel;
     }
 
     Handle WidgetCollection::CreateLabel(Rect rect, const char *Text)
     {
-        LabelObject *label = (LabelObject *)mem->RequestPages(TO_PAGES(sizeof(LabelObject)));
+        LabelObject *label = (LabelObject *)this->mem->RequestPages(TO_PAGES(sizeof(LabelObject)));
 
         label->Handle.Type[0] = 'L';
         label->Handle.Type[1] = 'B';
@@ -57,7 +57,7 @@ namespace GraphicalUserInterface
 
     Handle WidgetCollection::CreateButton(Rect rect, const char *Text, uintptr_t OnClick)
     {
-        ButtonObject *button = (ButtonObject *)mem->RequestPages(TO_PAGES(sizeof(ButtonObject)));
+        ButtonObject *button = (ButtonObject *)this->mem->RequestPages(TO_PAGES(sizeof(ButtonObject)));
 
         button->Handle.Type[0] = 'B';
         button->Handle.Type[1] = 'T';
@@ -77,7 +77,7 @@ namespace GraphicalUserInterface
         button->OnClick = OnClick;
 
         Buttons.push_back(button);
-        NeedRedraw = true;
+        this->NeedRedraw = true;
         return (Handle)button;
     }
 
@@ -88,7 +88,7 @@ namespace GraphicalUserInterface
         {
             LabelObject *label = (LabelObject *)handle;
             strcpy(label->Text, Text);
-            NeedRedraw = true;
+            this->NeedRedraw = true;
         }
     }
 
