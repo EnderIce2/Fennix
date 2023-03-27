@@ -25,7 +25,7 @@ namespace Video
             debug("Buffer %d created with default size (%d, %d)", Index, Width, Height);
         }
 
-        if (this->Buffers[Index].Checksum == 0xDEAD)
+        if (this->Buffers[Index].Checksum == 0xBBFFE515A117E)
         {
             warn("Buffer %d already exists, skipping creation", Index);
             return;
@@ -43,13 +43,13 @@ namespace Video
         this->Buffers[Index].CursorX = 0;
         this->Buffers[Index].CursorY = 0;
         this->Buffers[Index].Brightness = 100;
-        this->Buffers[Index].Checksum = 0xDEAD;
+        this->Buffers[Index].Checksum = 0xBBFFE515A117E;
         debug("Buffer %d created", Index);
     }
 
     void Display::SetBuffer(int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -68,7 +68,7 @@ namespace Video
 
     void Display::ClearBuffer(int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -79,7 +79,7 @@ namespace Video
 
     void Display::DeleteBuffer(int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -93,7 +93,7 @@ namespace Video
 
     void Display::SetBrightness(int Value, int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -128,7 +128,7 @@ namespace Video
 
     void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -140,7 +140,7 @@ namespace Video
 
     void Display::GetBufferCursor(int Index, uint32_t *X, uint32_t *Y)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -152,7 +152,7 @@ namespace Video
 
     void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -170,7 +170,7 @@ namespace Video
 
     uint32_t Display::GetPixel(uint32_t X, uint32_t Y, int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
             return 0;
 
         if (unlikely(X >= this->Buffers[Index].Width || Y >= this->Buffers[Index].Height))
@@ -182,7 +182,7 @@ namespace Video
 
     void Display::Scroll(int Index, int Lines)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -206,7 +206,7 @@ namespace Video
 
     void Display::SetDoNotScroll(bool Value, int Index)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -217,7 +217,7 @@ namespace Video
 
     char Display::Print(char Char, int Index, bool WriteToUART)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
             return 0;
 
         // SmartLock(PrintLock);
@@ -380,7 +380,7 @@ namespace Video
 
     void Display::DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART)
     {
-        if (unlikely(this->Buffers[Index].Checksum != 0xDEAD))
+        if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
         {
             debug("Invalid buffer %d", Index);
             return;
@@ -414,7 +414,7 @@ namespace Video
 
         for (size_t i = 0; i < sizeof(this->Buffers) / sizeof(this->Buffers[0]); i++)
         {
-            if (this->Buffers[i].Checksum == 0xDEAD)
+            if (this->Buffers[i].Checksum == 0xBBFFE515A117E)
                 this->DeleteBuffer(i);
         }
     }
