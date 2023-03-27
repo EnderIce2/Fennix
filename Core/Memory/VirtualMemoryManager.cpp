@@ -49,6 +49,8 @@ namespace Memory
             return;
         }
 
+        Flags |= PTFlag::P;
+
         PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
         // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
         uint64_t DirectoryFlags = Flags & 0x3F;

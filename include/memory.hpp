@@ -546,7 +546,7 @@ namespace Memory
          * @param PhysicalAddress Physical address of the page.
          * @param Flags Flags of the page. Check PTFlag enum.
          */
-        void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags);
+        void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flag = PTFlag::P);
 
         /**
          * @brief Map multiple pages.

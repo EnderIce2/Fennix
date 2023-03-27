@@ -136,6 +136,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
     uintptr_t k;
 
+    /* Text section */
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
@@ -143,6 +144,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
+    /* Data section */
     for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
@@ -150,13 +152,15 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
+    /* Read only data section */
     for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::P | PTFlag::G);
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
+    /* BSS section */
     for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
@@ -164,14 +168,15 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
+    /* Kernel file */
     for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)k, PTFlag::RW | PTFlag::G);
+        va.Map((void *)k, (void *)k, PTFlag::G);
         KernelAllocator.LockPage((void *)k);
     }
 
     debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
-          KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, Info->Kernel.PhysicalBase, BaseKernelMapAddress - PAGE_SIZE);
+          KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, KernelFileStart, KernelFileEnd);
 
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
