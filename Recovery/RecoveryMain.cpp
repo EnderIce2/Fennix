@@ -34,6 +34,7 @@ namespace Recovery
 
     void PlayAudio()
     {
+        TaskManager->GetCurrentThread()->Rename("PlayAudio Test");
         SmartLock(PlayAudioLock);
         Driver::DriverFile AudioDrv;
 
@@ -73,6 +74,7 @@ namespace Recovery
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
         vfs->Close(pcm);
+        TEXIT(0);
     }
 
     void PlayAudioWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)PlayAudio)->SetPriority(Tasking::TaskPriority::Idle); }
