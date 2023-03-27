@@ -602,13 +602,13 @@ EXTERNC int log2(unsigned int n)
     }
 
     int log = 0;
-    
+
     if ((n & 0xFFFF0000) != 0)
     {
         n >>= 16;
         log = 16;
     }
-    
+
     if (n >= 256)
     {
         n >>= 8;
@@ -626,7 +626,7 @@ EXTERNC int log2(unsigned int n)
         n >>= 2;
         log += 2;
     }
-    
+
     return log + (n >> 1);
 }
 
@@ -677,30 +677,21 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
         __chk_fail();
 
     void *ret = nullptr;
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        ret = memcpy_sse(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        ret = memcpy_sse2(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        ret = memcpy_sse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        ret = memcpy_ssse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        ret = memcpy_sse4_1(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
+    uint64_t simd = CPU::CheckSIMD();
+    if (simd & CPU::x86SIMDType::SIMD_SSE42)
         ret = memcpy_sse4_2(dest, src, len);
-        break;
-    default:
+    else if (simd & CPU::x86SIMDType::SIMD_SSE41)
+        ret = memcpy_sse4_1(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
+        ret = memcpy_ssse3(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE3)
+        ret = memcpy_sse3(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE2)
+        ret = memcpy_sse2(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE)
+        ret = memcpy_sse(dest, src, len);
+    else
         ret = memcpy_unsafe(dest, src, len);
-        break;
-    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -751,30 +742,21 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
         __chk_fail();
 
     void *ret = nullptr;
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        ret = memset_sse(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        ret = memset_sse2(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        ret = memset_sse3(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        ret = memset_ssse3(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        ret = memset_sse4_1(dest, val, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
+    uint64_t simd = CPU::CheckSIMD();
+    if (simd & CPU::x86SIMDType::SIMD_SSE42)
         ret = memset_sse4_2(dest, val, len);
-        break;
-    default:
+    else if (simd & CPU::x86SIMDType::SIMD_SSE41)
+        ret = memset_sse4_1(dest, val, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
+        ret = memset_ssse3(dest, val, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE3)
+        ret = memset_sse3(dest, val, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE2)
+        ret = memset_sse2(dest, val, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE)
+        ret = memset_sse(dest, val, len);
+    else
         ret = memset_unsafe(dest, val, len);
-        break;
-    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {
@@ -831,30 +813,21 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
         __chk_fail();
 
     void *ret = nullptr;
-    switch (CPU::CheckSIMD())
-    {
-    case CPU::x86SIMDType::SIMD_SSE:
-        ret = memmove_sse(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE2:
-        ret = memmove_sse2(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE3:
-        ret = memmove_sse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSSE3:
-        ret = memmove_ssse3(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE41:
-        ret = memmove_sse4_1(dest, src, len);
-        break;
-    case CPU::x86SIMDType::SIMD_SSE42:
+    uint64_t simd = CPU::CheckSIMD();
+    if (simd & CPU::x86SIMDType::SIMD_SSE42)
         ret = memmove_sse4_2(dest, src, len);
-        break;
-    default:
+    else if (simd & CPU::x86SIMDType::SIMD_SSE41)
+        ret = memmove_sse4_1(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
+        ret = memmove_ssse3(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE3)
+        ret = memmove_sse3(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE2)
+        ret = memmove_sse2(dest, src, len);
+    else if (simd & CPU::x86SIMDType::SIMD_SSE)
+        ret = memmove_sse(dest, src, len);
+    else
         ret = memmove_unsafe(dest, src, len);
-        break;
-    }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
     {

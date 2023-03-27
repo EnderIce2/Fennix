@@ -43,36 +43,45 @@ namespace CPU
 
     enum x86SIMDType
     {
-        SIMD_NONE,
-        SIMD_SSE,
-        SIMD_SSE2,
-        SIMD_SSE3,
-        SIMD_SSSE3,
-        SIMD_SSE41,
-        SIMD_SSE42,
-        SIMD_AVX,
-        SIMD_AVX2,
-        SIMD_AVX512F,
-        SIMD_AVX512BW,
-        SIMD_AVX512CD,
-        SIMD_AVX512DQ,
-        SIMD_AVX512ER,
-        SIMD_AVX512IFMA,
-        SIMD_AVX512PF,
-        SIMD_AVX512VBMI,
-        SIMD_AVX512VL,
-        SIMD_AVX512VNNI,
-        SIMD_AVX512BITALG,
-        SIMD_AVX512VPOPCNTDQ,
-        SIMD_AVX512_4VNNIW,
-        SIMD_AVX512_4FMAPS,
-        SIMD_AVX512_VP2INTERSECT,
-        SIMD_AVX512_BF16,
-        SIMD_AVX512_VBMI2,
-        SIMD_AVX512_GFNI,
-        SIMD_AVX512_VAES,
-        SIMD_AVX512_VPCLMULQDQ,
-        SIMD_AVX512_VNNI,
+        SIMD_NONE = (1 << 0),
+
+        SIMD_SSE = (1 << 1),
+        SIMD_SSE2 = (1 << 2),
+        SIMD_SSE3 = (1 << 3),
+        SIMD_SSSE3 = (1 << 4),
+        SIMD_SSE41 = (1 << 5),
+        SIMD_SSE42 = (1 << 6),
+
+        SIMD_AVX = (1 << 7),
+        SIMD_AVX2 = (1 << 8),
+        SIMD_AVX512 = (1 << 9),
+
+        SIMD_AVX512F = (1 << 10),
+        SIMD_AVX512CD = (1 << 11),
+        SIMD_AVX512ER = (1 << 12),
+        SIMD_AVX512PF = (1 << 13),
+
+        SIMD_AVX512VL = (1 << 14),
+        SIMD_AVX512DQ = (1 << 16),
+        SIMD_AVX512BW = (1 << 15),
+
+        SIMD_AVX512IFMA = (1 << 17),
+        SIMD_AVX512VBMI = (1 << 18),
+
+        SIMD_AVX5124VNNIW = (1 << 19),
+        SIMD_AVX5124FMAPS = (1 << 20),
+
+        SIMD_AVX512VPOPCNTDQ = (1 << 21),
+
+        SIMD_AVX512VNNI = (1 << 22),
+        SIMD_AVX512VBMI2 = (1 << 23),
+        SIMD_AVX512BITALG = (1 << 24),
+
+        SIMD_AVX512VP2INTERSECT = (1 << 25),
+
+        SIMD_AVX512GFNI = (1 << 26),
+        SIMD_AVX512VPCLMULQDQ = (1 << 27),
+        SIMD_AVX512VAES = (1 << 28),
     };
 
     /**
@@ -99,9 +108,9 @@ namespace CPU
     /**
      * @brief Check SIMD support. It will return the highest supported SIMD type.
      *
-     * @return x86SIMDType
+     * @return x86SIMDType flags.
      */
-    x86SIMDType CheckSIMD();
+    uint64_t CheckSIMD();
 
     /**
      * @brief Check SIMD support.

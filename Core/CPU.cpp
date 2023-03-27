@@ -338,7 +338,7 @@ namespace CPU
 		return Counter;
 	}
 
-	x86SIMDType CheckSIMD()
+	uint64_t CheckSIMD()
 	{
 #if defined(a32)
 		return SIMD_NONE; /* TODO: Support x86 SIMD on x32 */
@@ -347,7 +347,9 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return SIMD_NONE;
 
-		static x86SIMDType SIMDType = SIMD_NONE;
+		// return SIMD_SSE;
+
+		static uint64_t SIMDType = SIMD_NONE;
 
 		if (likely(SIMDType != SIMD_NONE))
 			return SIMDType;
@@ -365,15 +367,15 @@ namespace CPU
 				 : "a"(0x1));
 #endif
 			if (cpuid1amd.ECX.SSE4_2)
-				SIMDType = SIMD_SSE42;
+				SIMDType |= SIMD_SSE42;
 			else if (cpuid1amd.ECX.SSE4_1)
-				SIMDType = SIMD_SSE41;
+				SIMDType |= SIMD_SSE41;
 			else if (cpuid1amd.ECX.SSE3)
-				SIMDType = SIMD_SSE3;
+				SIMDType |= SIMD_SSE3;
 			else if (cpuid1amd.EDX.SSE2)
-				SIMDType = SIMD_SSE2;
+				SIMDType |= SIMD_SSE2;
 			else if (cpuid1amd.EDX.SSE)
-				SIMDType = SIMD_SSE;
+				SIMDType |= SIMD_SSE;
 
 #ifdef DEBUG
 			if (cpuid1amd.ECX.SSE4_2)
@@ -403,15 +405,15 @@ namespace CPU
 				 : "a"(0x1));
 #endif
 			if (cpuid1intel.ECX.SSE4_2)
-				SIMDType = SIMD_SSE42;
+				SIMDType |= SIMD_SSE42;
 			else if (cpuid1intel.ECX.SSE4_1)
-				SIMDType = SIMD_SSE41;
+				SIMDType |= SIMD_SSE41;
 			else if (cpuid1intel.ECX.SSE3)
-				SIMDType = SIMD_SSE3;
+				SIMDType |= SIMD_SSE3;
 			else if (cpuid1intel.EDX.SSE2)
-				SIMDType = SIMD_SSE2;
+				SIMDType |= SIMD_SSE2;
 			else if (cpuid1intel.EDX.SSE)
-				SIMDType = SIMD_SSE;
+				SIMDType |= SIMD_SSE;
 
 #ifdef DEBUG
 			if (cpuid1intel.ECX.SSE4_2)
@@ -429,6 +431,7 @@ namespace CPU
 			return SIMDType;
 		}
 
+		debug("No SIMD support.");
 		return SIMD_NONE;
 	}
 
