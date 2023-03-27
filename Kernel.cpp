@@ -48,6 +48,8 @@ LockClass mExtTrkLock;
  * - [ ] Find a way to add intrinsics.
  * - [ ] Rework PSF1 font loader.
  * - [ ] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
+ * - [ ] Implement a better Display::SetBrightness() function.
+ * - [ ] Fix memcpy, memset and memcmp functions (they are not working properly with SIMD).
  *
  * ISSUES:
  * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
