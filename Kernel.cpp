@@ -7,6 +7,7 @@
 #include <convert.h>
 #include <printf.h>
 #include <lock.hpp>
+#include <uart.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cargs.h>
@@ -182,7 +183,13 @@ extern bool EnableProfiler;
 
 // For the Display class. Printing on first buffer as default.
 int PutCharBufferIndex = 0;
-EXTERNC void putchar(char c) { Display->Print(c, PutCharBufferIndex); }
+EXTERNC void putchar(char c)
+{
+    if (Display)
+        Display->Print(c, PutCharBufferIndex);
+    else
+        UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
+}
 
 EXTERNC void KPrint(const char *Format, ...)
 {
@@ -197,7 +204,7 @@ EXTERNC void KPrint(const char *Format, ...)
     va_end(args);
 
     putchar('\n');
-    if (!Config.BootAnimation)
+    if (!Config.BootAnimation && Display)
         Display->SetBuffer(0);
 }
 
