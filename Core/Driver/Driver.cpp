@@ -29,6 +29,28 @@ namespace Driver
         "Input",
         "Audio"};
 
+    void Driver::Panic()
+    {
+        size_t DriversNum = Drivers.size();
+        debug("%ld drivers loaded, [DUIDs: %ld]", DriversNum, DriverUIDs);
+        debug("driver size %ld", DriversNum);
+        for (size_t i = 0; i < DriversNum; i++)
+        {
+            DriverFile drv = Drivers[i];
+            KernelCallback callback;
+            callback.Reason = StopReason;
+            debug("Removing interrupt hook for %ld [%#lx]", drv.DriverUID, drv.Address);
+            DriverManager->IOCB(drv.DriverUID, (void *)&callback);
+
+            for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
+            {
+                if (!drv.InterruptHook[j])
+                    continue;
+                delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
+            }
+        }
+    }
+
     void Driver::UnloadAllDrivers()
     {
         size_t DriversNum = Drivers.size();

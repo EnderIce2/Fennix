@@ -102,6 +102,7 @@ namespace Driver
 
     public:
         std::vector<DriverFile> GetDrivers() { return Drivers; }
+        void Panic();
         void UnloadAllDrivers();
         bool UnloadDriver(unsigned long DUID);
         int IOCB(unsigned long DUID, /* KernelCallback */ void *KCB);

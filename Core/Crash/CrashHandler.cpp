@@ -917,7 +917,7 @@ namespace CrashHandler
         ExceptionOccurred = true;
 
         if (DriverManager)
-            DriverManager->UnloadAllDrivers();
+            DriverManager->Panic();
 
         debug("Reading control registers...");
         crashdata.Frame = Frame;
