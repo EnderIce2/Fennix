@@ -346,6 +346,9 @@ namespace Tasking
     };
 }
 
+#define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
+#define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code
+
 extern "C" void TaskingScheduler_OneShot(int TimeSlice);
 
 #endif // !__FENNIX_KERNEL_TASKING_H__

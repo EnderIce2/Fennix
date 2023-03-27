@@ -47,9 +47,6 @@ extern VirtualFileSystem::Node *DevFS;
 extern VirtualFileSystem::Node *MntFS;
 extern VirtualFileSystem::Node *ProcFS;
 
-#define PEXIT(Code) TaskManager->GetCurrentProcess()->ExitCode = Code
-#define TEXIT(Code) TaskManager->GetCurrentThread()->ExitCode = Code
-
 #endif // __cplusplus
 
 EXTERNC void putchar(char c);
