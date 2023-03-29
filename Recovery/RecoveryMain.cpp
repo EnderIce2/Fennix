@@ -30,7 +30,7 @@ namespace Recovery
     WidgetCollection *wdgDbgWin = nullptr;
     Window *DbgWin = nullptr;
 
-    char *AudioFile = (char *)"/home/default/Music/pcm/FurElise48000.pcm";
+    char *AudioFile = (char *)"/home/default/Music/Ludwig van Beethoven - Fur Elise.mp3";
 
     void PlayAudio()
     {
