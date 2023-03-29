@@ -13,17 +13,17 @@ GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
 
 ifeq ($(OSARCH), amd64)
-S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/i686/*" -not -path "./arch/aarch64/*")
-C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/i686/*" -not -path "./arch/aarch64/*")
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i686/*" -not -path "./arch/aarch64/*")
-else ifeq ($(OSARCH), i686)
+S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
+C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
+CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
+else ifeq ($(OSARCH), i386)
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
-S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/i686/*")
-C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/i686/*")
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i686/*")
+S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
+C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
+CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 endif
 HEADERS = $(sort $(dir $(wildcard ../../include/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
@@ -50,11 +50,11 @@ CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
 		  -march=x86-64 -pipe -ffunction-sections			\
 		  -msoft-float -fno-builtin
 
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 
 CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow		\
 		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections	\
-		  -march=i686 -pipe -msoft-float -fno-builtin
+		  -march=i386 -pipe -msoft-float -fno-builtin
 
 else ifeq ($(OSARCH), aarch64)
 
@@ -65,7 +65,7 @@ endif
 build: $(FILENAME)
 ifeq ($(OSARCH), amd64)
 	$(OBJDUMP) -b binary -D -m i386:x86-64 -d $(FILENAME) > file_dump.map
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 
 else ifeq ($(OSARCH), aarch64)
 
