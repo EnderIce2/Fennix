@@ -37,10 +37,10 @@
                 "-Wpointer-arith",
                 "-Wcast-align",
                 "-Wredundant-decls",
-			    "-Winit-self",
+                "-Winit-self",
                 "-Wswitch-default",
                 "-Wstrict-overflow=5",
-			    "-Wconversion",
+                "-Wconversion",
 
                 // C++ flags
                 "-fno-rtti",
@@ -84,7 +84,7 @@
                 "a32",
                 "DEBUG=\"1\""
             ],
-            "compilerPath": "${workspaceFolder}/../tools/cross/bin/i686-elf-gcc",
+            "compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-elf-gcc",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x86",
@@ -109,17 +109,17 @@
                 "-Wpointer-arith",
                 "-Wcast-align",
                 "-Wredundant-decls",
-			    "-Winit-self",
+                "-Winit-self",
                 "-Wswitch-default",
                 "-Wstrict-overflow=5",
-			    "-Wconversion",
+                "-Wconversion",
 
                 // C++ flags
                 "-fno-rtti",
                 "-fexceptions",
 
                 // Linker flags
-                "-T${workspaceFolder}/Architecture/i686/linker.ld",
+                "-T${workspaceFolder}/Architecture/i386/linker.ld",
                 "-Wl,-static,--no-dynamic-linker,-ztext",
                 "-nostdlib",
                 "-nodefaultlibs",

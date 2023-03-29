@@ -13,7 +13,7 @@
 #include "../Architecture/amd64/cpu/apic.hpp"
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(a32)
-#include "../Architecture/i686/cpu/apic.hpp"
+#include "../Architecture/i386/cpu/apic.hpp"
 #elif defined(aa64)
 #endif
 

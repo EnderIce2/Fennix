@@ -11,8 +11,8 @@
 #include "../Architecture/amd64/acpi.hpp"
 #include "../Architecture/amd64/cpu/apic.hpp"
 #elif defined(a32)
-#include "../Architecture/i686/cpu/gdt.hpp"
-#include "../Architecture/i686/cpu/idt.hpp"
+#include "../Architecture/i386/cpu/gdt.hpp"
+#include "../Architecture/i386/cpu/idt.hpp"
 #elif defined(aa64)
 #endif
 

@@ -372,7 +372,7 @@ union CPURegisters
         unsigned long rflags;
         unsigned long rsp;
         unsigned long ss;
-#elif defined(__i386__) || defined(__i686__)
+#elif defined(__i386__)
         unsigned int ebp;
         unsigned int edi;
         unsigned int esi;

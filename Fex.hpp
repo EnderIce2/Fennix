@@ -74,7 +74,7 @@ struct FexExtended
         char Name[64];
         enum FexDriverType Type : 4;
         enum FexDriverInputTypes TypeFlags : 4;
-        bool OverrideOnConflict : 1;
+        char OverrideOnConflict : 1;
         int (*Callback)(union KernelCallback *);
         int (*InterruptCallback)(union CPURegisters *);
 

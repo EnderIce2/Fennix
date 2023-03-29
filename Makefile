@@ -22,23 +22,23 @@ GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
 BMP_SOURCES = $(shell find ./ -type f -name '*.bmp')
 PSF_SOURCES = $(shell find ./ -type f -name '*.psf')
 ifeq ($(OSARCH), amd64)
-ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
-S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
-C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
-RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/i686/*" -not -path "./Architecture/aarch64/*")
-else ifeq ($(OSARCH), i686)
+ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+else ifeq ($(OSARCH), i386)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
-ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
-S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
-C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
-RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i686/*")
+ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
+S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
+C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
+CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
+RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 endif
 HEADERS = $(sort $(dir $(wildcard ./include/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
@@ -77,13 +77,13 @@ LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 	-zmax-page-size=0x1000					\
 	-Wl,-Map kernel.map -shared
 
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 
 CFLAGS += -fno-pic -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
 		  -mno-red-zone -march=pentium -pipe -msoft-float	\
 		  -fno-builtin -Da32
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
-LDFLAGS += -TArchitecture/i686/linker.ld 	\
+LDFLAGS += -TArchitecture/i386/linker.ld 	\
 	-fno-pic -fno-pie 						\
 	-Wl,-static,--no-dynamic-linker,-ztext 	\
 	-nostdlib -nodefaultlibs -nolibc  		\
@@ -100,7 +100,7 @@ endif
 
 ifeq ($(OSARCH), amd64)
 NASMFLAGS := -f elf64
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 NASMFLAGS := -f elf32
 else ifeq ($(OSARCH), aarch64)
 NASMFLAGS :=
@@ -162,7 +162,7 @@ $(KERNEL_FILENAME): $(OBJ)
 	$(info Compiling $<)
 ifeq ($(OSARCH), amd64)
 	$(AS) -c $< -o $@
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 	$(AS) -c $< -o $@
 else ifeq ($(OSARCH), aarch64)
 	$(AS) -c $< -o $@
@@ -171,7 +171,7 @@ endif
 %.o: %.psf
 ifeq ($(OSARCH), amd64)
 	$(OBJCOPY) -O elf64-x86-64 -I binary $< $@
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 	$(OBJCOPY) -O elf32-i386 -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
 	$(OBJCOPY) -O elf64-littleaarch64 -I binary $< $@
@@ -181,7 +181,7 @@ endif
 %.o: %.bmp
 ifeq ($(OSARCH), amd64)
 	$(OBJCOPY) -O elf64-x86-64 -I binary $< $@
-else ifeq ($(OSARCH), i686)
+else ifeq ($(OSARCH), i386)
 	$(OBJCOPY) -O elf32-i386 -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
 	$(OBJCOPY) -O elf64-littlearch64 -I binary $< $@
