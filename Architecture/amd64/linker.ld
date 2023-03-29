@@ -15,6 +15,14 @@ SECTIONS
         *(.multiboot2 .multiboot2.*)
     }
 
+    .bootstrap :
+    {
+        *(.bootstrap.text .bootstrap.text.*)
+        *(.bootstrap.data .bootstrap.data.*)
+        *(.bootstrap.rodata .bootstrap.rodata.*)
+        *(.bootstrap.bss .bootstrap.bss.*)
+    }
+
     . += KERNEL_VMA;
 
     _kernel_start = .;

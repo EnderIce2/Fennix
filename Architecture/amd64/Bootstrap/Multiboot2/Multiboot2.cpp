@@ -4,7 +4,7 @@
 #include <memory.hpp>
 #include <io.h>
 
-#include "../../../kernel.h"
+#include "../../../../kernel.h"
 
 BootInfo mb2binfo;
 

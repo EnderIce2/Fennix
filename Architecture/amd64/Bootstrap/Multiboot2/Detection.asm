@@ -1,4 +1,5 @@
 [bits 32]
+section .bootstrap.text
 global DetectCPUID
 DetectCPUID:
     pushfd
