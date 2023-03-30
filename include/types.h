@@ -152,7 +152,9 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__ size_t;
-// typedef __WCHAR_TYPE__ wchar_t;
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
 typedef __WINT_TYPE__ wint_t;
 typedef __SIG_ATOMIC_TYPE__ sig_atomic_t;
 // TODO: ssize_t
@@ -243,7 +245,7 @@ typedef int48_t int_least48_t;
 typedef uint48_t uint_least48_t;
 typedef int48_t int_fast48_t;
 typedef uint48_t uint_fast48_t;
-#else // __INT48_TYPE__
+#else  // __INT48_TYPE__
 typedef __INT64_TYPE__ int48_t;
 typedef __UINT64_TYPE__ uint48_t;
 typedef int48_t int_least48_t;

@@ -424,6 +424,97 @@ EXTERNC char *strtok(char *src, const char *delim)
     return NULL;
 }
 
+int strcasecmp(const char *s1, const char *s2)
+{
+    const unsigned char *p1 = (const unsigned char *)s1;
+    const unsigned char *p2 = (const unsigned char *)s2;
+    int result;
+    if (p1 == p2)
+        return 0;
+    while ((result = std::tolower(*p1) - std::tolower(*p2++)) == 0)
+        if (*p1++ == '\0')
+            break;
+    return result;
+}
+
+size_t wcslen(const wchar_t *s)
+{
+    size_t len = 0;
+
+    while (s[len] != L'\0')
+    {
+        if (s[++len] == L'\0')
+            return len;
+        if (s[++len] == L'\0')
+            return len;
+        if (s[++len] == L'\0')
+            return len;
+        ++len;
+    }
+
+    return len;
+}
+
+size_t wcsrtombs(char *dst, const wchar_t **src, size_t len, mbstate_t *ps)
+{
+    size_t count = 0;
+
+    while (len > 0)
+    {
+        wchar_t wc = **src;
+        if (wc == L'\0')
+            break;
+
+        if (wc < 0x80)
+        {
+            if (dst)
+                *dst++ = (char)wc;
+            count++;
+            len--;
+        }
+        else if (wc < 0x800)
+        {
+            if (dst)
+            {
+                *dst++ = (char)(0xC0 | (wc >> 6));
+                *dst++ = (char)(0x80 | (wc & 0x3F));
+            }
+            count += 2;
+            len -= 2;
+        }
+        else if (wc < 0x10000)
+        {
+            if (dst)
+            {
+                *dst++ = (char)(0xE0 | (wc >> 12));
+                *dst++ = (char)(0x80 | ((wc >> 6) & 0x3F));
+                *dst++ = (char)(0x80 | (wc & 0x3F));
+            }
+            count += 3;
+            len -= 3;
+        }
+        else
+        {
+            if (dst)
+            {
+                *dst++ = (char)(0xF0 | (wc >> 18));
+                *dst++ = (char)(0x80 | ((wc >> 12) & 0x3F));
+                *dst++ = (char)(0x80 | ((wc >> 6) & 0x3F));
+                *dst++ = (char)(0x80 | (wc & 0x3F));
+            }
+            count += 4;
+            len -= 4;
+        }
+
+        (*src)++;
+    }
+
+    if (dst)
+        *dst = '\0';
+
+    return count;
+}
+
 EXTERNC int atoi(const char *String)
 {
     uint64_t Length = strlen((char *)String);

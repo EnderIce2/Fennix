@@ -5,6 +5,13 @@
 extern "C"
 {
 #endif
+
+    typedef struct mbstate_t
+    {
+        int count;
+        unsigned int value;
+    } mbstate_t;
+
 #define NAN (__builtin_nanf(""))
 
     int isdigit(int c);
@@ -71,9 +78,11 @@ extern "C"
     char *strchr(const char *String, int Char);
     char *strrchr(const char *String, int Char);
     int strncasecmp(const char *lhs, const char *rhs, long unsigned int Count);
-    int strcasecmp(const char *lhs, const char *rhs);
+    int strcasecmp(const char *s1, const char *s2);
     char *strtok(char *src, const char *delim);
     long int strtol(const char *str, char **endptr, int base);
+    size_t wcslen(const wchar_t *s);
+    size_t wcsrtombs(char *dst, const wchar_t **src, size_t len, mbstate_t *ps);
     int log2(unsigned int n);
 
     void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
