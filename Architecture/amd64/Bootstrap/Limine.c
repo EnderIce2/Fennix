@@ -122,6 +122,7 @@ SafeFunction NIF void init_limine()
     for (uint64_t i = 0; i < FrameBufferResponse->framebuffer_count; i++)
     {
         struct limine_framebuffer *framebuffer = FrameBufferResponse->framebuffers[i];
+        binfo.Framebuffer[i].Type = RGB;
         binfo.Framebuffer[i].BaseAddress = (void *)((uint64_t)framebuffer->address - 0xffff800000000000);
         binfo.Framebuffer[i].Width = (uint32_t)framebuffer->width;
         binfo.Framebuffer[i].Height = (uint32_t)framebuffer->height;
