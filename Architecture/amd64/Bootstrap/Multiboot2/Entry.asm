@@ -16,10 +16,22 @@ global MB2_start
 extern MB2_start_c
 
 [bits 32]
+
+section .bootstrap.data
+global MB2_HeaderMagic
+MB2_HeaderMagic:
+    times (0x64) dq 0
+
+global MB2_HeaderInfo
+MB2_HeaderInfo:
+	times (0x64) dq 0
+
 section .bootstrap.text
 MB2_start:
 	cli
 	mov word [0xb8F00], 0x072E ; .
+    mov [MB2_HeaderMagic], eax
+    mov [MB2_HeaderInfo], ebx
 
 	; We need to check if the CPU supports 64-bit mode
 	call DetectCPUID
@@ -88,10 +100,11 @@ HigherHalfStart:
 
 	mov word [0xb8F08], 0x072E ; .
 	mov rsp, (KernelStack + KERNEL_STACK_SIZE)
+	mov rbp, (KernelStack + KERNEL_STACK_SIZE)
 
-	push rax ; Multiboot2 Magic
-	add rbx, KERNEL_VIRTUAL_BASE
-	push rbx ; Multiboot2 Header
+	cld
+	cli
+
 	call Multiboot2Entry
 	.Loop:
 		hlt

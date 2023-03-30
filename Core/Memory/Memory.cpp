@@ -71,8 +71,8 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
         for (size_t t = 0; t < MemSize; t += PAGE_SIZE)
         {
             va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
-            va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
-            VirtualOffsetNormalVMA += PAGE_SIZE;
+            // va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
+            // VirtualOffsetNormalVMA += PAGE_SIZE;
         }
     }
     else

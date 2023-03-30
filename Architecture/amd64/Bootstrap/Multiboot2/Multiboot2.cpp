@@ -6,8 +6,6 @@
 
 #include "../../../../kernel.h"
 
-BootInfo mb2binfo;
-
 enum VideoType
 {
     VIDEO_TYPE_NONE = 0x00,
@@ -50,9 +48,37 @@ void GetSMBIOS()
     }
 }
 
-void ProcessMB2(unsigned long Info)
+extern "C" unsigned int MB2_HeaderMagic;
+extern "C" unsigned long MB2_HeaderInfo;
+
+EXTERNC void Multiboot2Entry()
 {
-    uint8_t *VideoBuffer = (uint8_t *)0xB8F00 + 0xC0000000;
+    unsigned long Info = MB2_HeaderInfo;
+    unsigned int Magic = MB2_HeaderMagic;
+    if (Info == NULL || Magic == NULL)
+    {
+        if (Magic == NULL)
+            error("Multiboot magic is NULL");
+        if (Info == NULL)
+            error("Multiboot info is NULL");
+        CPU::Stop();
+    }
+    else if (Magic != MULTIBOOT2_BOOTLOADER_MAGIC)
+    {
+        error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
+        CPU::Stop();
+    }
+
+    uint64_t div = 1193180 / 1000;
+    outb(0x43, 0xB6);
+    outb(0x42, (uint8_t)div);
+    outb(0x42, (uint8_t)(div >> 8));
+    uint8_t tmp = inb(0x61);
+    if (tmp != (tmp | 3))
+        outb(0x61, tmp | 3);
+
+    BootInfo mb2binfo;
+    uint8_t *VideoBuffer = (uint8_t *)0xB8F00;
     int pos = 0;
     auto InfoAddress = Info;
     for (auto Tag = (struct multiboot_tag *)((uint8_t *)InfoAddress + 8);
@@ -90,7 +116,7 @@ void ProcessMB2(unsigned long Info)
         {
             multiboot_tag_module *module = (multiboot_tag_module *)Tag;
             static int module_count = 0;
-            mb2binfo.Modules[module_count++].Address = (void *)module->mod_start;
+            mb2binfo.Modules[module_count++].Address = (void *)(uint64_t)module->mod_start;
             mb2binfo.Modules[module_count++].Size = module->size;
             strncpy(mb2binfo.Modules[module_count++].Path, "(null)", 6);
             strncpy(mb2binfo.Modules[module_count++].CommandLine, module->cmdline,
@@ -187,11 +213,12 @@ void ProcessMB2(unsigned long Info)
             {
             case MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED:
             {
-                fixme("indexed");
+                mb2binfo.Framebuffer[fb_count].Type = Indexed;
                 break;
             }
             case MULTIBOOT_FRAMEBUFFER_TYPE_RGB:
             {
+                mb2binfo.Framebuffer[fb_count].Type = RGB;
                 mb2binfo.Framebuffer[fb_count].RedMaskSize = fb->framebuffer_red_mask_size;
                 mb2binfo.Framebuffer[fb_count].RedMaskShift = fb->framebuffer_red_field_position;
                 mb2binfo.Framebuffer[fb_count].GreenMaskSize = fb->framebuffer_green_mask_size;
@@ -202,11 +229,11 @@ void ProcessMB2(unsigned long Info)
             }
             case MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT:
             {
-                fixme("ega_text");
+                mb2binfo.Framebuffer[fb_count].Type = EGA;
                 break;
             }
             }
-            debug("Framebuffer %d: %dx%d %d bpp", Tag, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
+            debug("Framebuffer %d: %dx%d %d bpp", fb_count, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
             debug("More info:\nAddress: %p\nPitch: %lld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d",
                   fb->common.framebuffer_addr, fb->common.framebuffer_pitch, fb->common.framebuffer_type,
                   fb->framebuffer_red_mask_size, fb->framebuffer_red_field_position, fb->framebuffer_green_mask_size,
@@ -291,8 +318,8 @@ void ProcessMB2(unsigned long Info)
         case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
         {
             multiboot_tag_load_base_addr *load_base_addr = (multiboot_tag_load_base_addr *)Tag;
-            mb2binfo.Kernel.PhysicalBase = (void *)load_base_addr->load_base_addr;
-            mb2binfo.Kernel.VirtualBase = (void *)(load_base_addr->load_base_addr + 0xC0000000);
+            mb2binfo.Kernel.PhysicalBase = (void *)(uint64_t)load_base_addr->load_base_addr;
+            mb2binfo.Kernel.VirtualBase = (void *)(uint64_t)(load_base_addr->load_base_addr + 0xFFFFFFFF80000000);
             debug("Kernel base: %p (physical) %p (virtual)", mb2binfo.Kernel.PhysicalBase, mb2binfo.Kernel.VirtualBase);
             break;
         }
@@ -303,37 +330,9 @@ void ProcessMB2(unsigned long Info)
         }
         }
     }
-}
-
-EXTERNC void Multiboot2Entry(unsigned long Info, unsigned int Magic)
-{
-    if (Info == NULL || Magic == NULL)
-    {
-        if (Magic == NULL)
-            error("Multiboot magic is NULL");
-        if (Info == NULL)
-            error("Multiboot info is NULL");
-        CPU::Stop();
-    }
-    else if (Magic != MULTIBOOT2_BOOTLOADER_MAGIC)
-    {
-        error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
-        CPU::Stop();
-    }
-
-    uint64_t div = 1193180 / 1000;
-    outb(0x43, 0xB6);
-    outb(0x42, (uint8_t)div);
-    outb(0x42, (uint8_t)(div >> 8));
-    uint8_t tmp = inb(0x61);
-    if (tmp != (tmp | 3))
-        outb(0x61, tmp | 3);
-
-    ProcessMB2(Info);
 
     tmp = inb(0x61) & 0xFC;
     outb(0x61, tmp);
 
-    CPU::Stop();
     Entry(&mb2binfo);
 }

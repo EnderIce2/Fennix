@@ -3,7 +3,7 @@
 
 enum MemoryType
 {
-    Unknown,
+    Unknown_Memory_Type,
     Usable,
     Reserved,
     ACPIReclaimable,
@@ -11,7 +11,16 @@ enum MemoryType
     BadMemory,
     BootloaderReclaimable,
     KernelAndModules,
-    Framebuffer
+    Framebuffer,
+    Unknown
+};
+
+enum FramebufferType
+{
+    Unknown_Framebuffer_Type,
+    Indexed,
+    RGB,
+    EGA
 };
 
 #define MAX_FRAMEBUFFERS 16
@@ -22,6 +31,7 @@ struct BootInfo
 {
     struct FramebufferInfo
     {
+        enum FramebufferType Type;
         void *BaseAddress;
         __UINT64_TYPE__ Width;
         __UINT64_TYPE__ Height;
