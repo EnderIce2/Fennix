@@ -89,7 +89,11 @@ namespace Execute
             goto RetryIPCWrite;
         }
         delete TmpBuffer;
-        CPU::Halt(true);
+        /* Prevent race condition, maybe a
+           better idea is to watch when the
+           IPC is destroyed. */
+        TaskManager->Sleep(5000);
+        TEXIT(0);
     }
 
     PCB *InterpreterTargetProcess;
