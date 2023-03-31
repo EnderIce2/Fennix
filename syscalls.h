@@ -210,6 +210,11 @@ enum SyscallsErrorCodes
     SYSCALL_OK = 0,
 };
 
+static inline bool IsSyscallError(long ret)
+{
+    return ret < 0;
+}
+
 static inline long syscall0(long syscall)
 {
     unsigned long ret;

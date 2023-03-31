@@ -26,47 +26,60 @@ namespace Execute
     void StartExecuteService()
     {
         mem = new Memory::MemMgr;
-        // return;
 
         while (true)
         {
-            ExecuteServiceLock.Lock(__FUNCTION__);
-            foreach (auto &Lib in Libs)
             {
-                if (Lib.RefCount > 0)
+                SmartLock(ExecuteServiceLock);
+                foreach (auto &Lib in Libs)
                 {
-                    Lib.Timeout = TimeManager->CalculateTarget(600000);
-                    debug("Reset timeout for %s", Lib.Identifier);
-                    continue;
+                    if (Lib.RefCount > 0)
+                    {
+                        Lib.Timeout = TimeManager->CalculateTarget(600000);
+                        debug("Reset timeout for %s", Lib.Identifier);
+                        continue;
+                    }
+                    if (Lib.Timeout < TimeManager->GetCounter())
+                    {
+                        // TODO: Remove
+                        fixme("Removed library %s because of timeout", Lib.Identifier);
+                    }
+                    else
+                        debug("Timeout for %s is %ld", Lib.Identifier, Lib.Timeout);
                 }
-                if (Lib.Timeout < TimeManager->GetCounter())
-                {
-                    // TODO: Remove
-                    fixme("Removed library %s because of timeout", Lib.Identifier);
-                }
-                else
-                    debug("Timeout for %s is %ld", Lib.Identifier, Lib.Timeout);
+                debug("Waiting 10 seconds...");
             }
-            debug("Waiting 10 seconds...");
-            ExecuteServiceLock.Unlock();
             TaskManager->Sleep(10000);
         }
     }
 
-    SharedLibraries *AddLibrary(char *Identifier, void *ElfImage, size_t Length, const Memory::Virtual &pV)
+    bool AddLibrary(char *Identifier, void *ElfImage, size_t Length, const Memory::Virtual &pV)
     {
         SmartLock(ExecuteServiceLock);
         SharedLibraries sl;
+
+        foreach (auto lib in Libs)
+        {
+            if (strcmp(lib.Identifier, Identifier) == 0)
+            {
+                debug("Library %s already loaded", Identifier);
+                lib.RefCount++;
+                return true;
+            }
+        }
 
         strcpy(sl.Identifier, Identifier);
         sl.Timeout = TimeManager->CalculateTarget(600000); /* 10 minutes */
         sl.RefCount = 0;
 
         void *LibFile = mem->RequestPages(TO_PAGES(Length), true);
+        debug("LibFile: %#lx", LibFile);
         memcpy(LibFile, (void *)ElfImage, Length);
+        Memory::Virtual().Map(LibFile, LibFile, TO_PAGES(Length), Memory::RW | Memory::US | Memory::G);
 
         Memory::Virtual ncpV = pV;
-        sl.MemoryImage = ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Phyiscal;
+        sl.MemoryImage = r_cst(uint64_t, ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Phyiscal);
+        debug("MemoryImage: %#lx", sl.MemoryImage);
 
         {
             uintptr_t BaseAddress = UINTPTR_MAX;
@@ -99,17 +112,34 @@ namespace Execute
             }
         }
 
-        sl.Address = LibFile;
+        sl.Address = r_cst(uint64_t, LibFile);
+        debug("Casted LibFile %#lx -> %#lx", LibFile, sl.Address);
         sl.Length = Length;
 
         debug("Library %s loaded at %#lx (full file: %#lx)", Identifier, sl.MemoryImage, LibFile);
 
         Libs.push_back(sl);
-        return &Libs[Libs.size() - 1];
+        return true;
     }
 
     void SearchLibrary(char *Identifier)
     {
         SmartLock(ExecuteServiceLock);
+    }
+
+    SharedLibraries GetLibrary(char *Identifier)
+    {
+        SmartLock(ExecuteServiceLock);
+        foreach (auto Lib in Libs)
+        {
+            if (strcmp(Lib.Identifier, Identifier) == 0)
+            {
+                Lib.RefCount++;
+                debug("Library %s found (%#lx %#lx)", Identifier, Lib.Address, Lib.MemoryImage);
+                return Lib;
+            }
+        }
+        // throw std::runtime_error("Library not found");
+        return SharedLibraries();
     }
 }

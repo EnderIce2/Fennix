@@ -44,12 +44,12 @@ namespace Execute
 
     struct SharedLibraries
     {
-        char Identifier[256];
+        char Identifier[64];
         uint64_t Timeout;
-        long RefCount;
+        int RefCount;
 
-        void *Address;
-        void *MemoryImage;
+        uintptr_t Address;
+        uintptr_t MemoryImage;
         size_t Length;
     };
 
@@ -120,11 +120,12 @@ namespace Execute
                            Tasking::PCB *Process);
 
     void StartExecuteService();
-    SharedLibraries *AddLibrary(char *Identifier,
-                                void *ElfImage,
-                                size_t Length,
-                                const Memory::Virtual &pV = Memory::Virtual());
+    bool AddLibrary(char *Identifier,
+                    void *ElfImage,
+                    size_t Length,
+                    const Memory::Virtual &pV = Memory::Virtual());
     void SearchLibrary(char *Identifier);
+    SharedLibraries GetLibrary(char *Identifier);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__

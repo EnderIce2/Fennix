@@ -1,6 +1,7 @@
 #include <syscalls.hpp>
 #include <memory.hpp>
 #include <lock.hpp>
+#include <exec.hpp>
 
 #include <debug.h>
 
@@ -53,9 +54,12 @@ static int sys_print(SyscallsFrame *Frame, char Char, int Index)
         return SYSCALL_ACCESS_DENIED;
 
     char ret = Display->Print(Char, Index, true);
-#ifdef DEBUG
     if (!Config.BootAnimation && Index == 0)
+#ifdef DEBUG
         Display->SetBuffer(Index);
+#else
+        if (Char == '\n')
+            Display->SetBuffer(Index);
 #endif
     UNUSED(Frame);
     return ret;
@@ -106,6 +110,84 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         return PAGE_SIZE;
     case KCTL_IS_CRITICAL:
         return TaskManager->GetCurrentThread()->Security.IsCritical;
+    case KCTL_REGISTER_ELF_LIB:
+    {
+        char *Identifier = (char *)Arg1;
+        const char *Path = (const char *)Arg2;
+
+        if (!Identifier || !Path)
+            return SYSCALL_INVALID_ARGUMENT;
+
+        std::string FullPath = Path;
+        int retries = 0;
+    RetryReadPath:
+        debug("KCTL_REGISTER_ELF_LIB: Trying to open %s", FullPath.c_str());
+        std::shared_ptr<VirtualFileSystem::File> f = vfs->Open(FullPath.c_str());
+
+        if (f->Status != VirtualFileSystem::FileStatus::OK)
+        {
+            FullPath.clear();
+            switch (retries)
+            {
+            case 0:
+                FullPath = "/system/lib/";
+                break;
+            case 1:
+                FullPath = "/system/lib64/";
+                break;
+            case 2:
+                FullPath = "/system/";
+                break;
+            case 3:
+            {
+                // TODO: Check process binary path
+                break;
+            }
+            default:
+            {
+                vfs->Close(f);
+                return SYSCALL_INVALID_ARGUMENT;
+            }
+            }
+            FullPath += Path;
+            vfs->Close(f);
+            retries++;
+            goto RetryReadPath;
+        }
+
+        vfs->Close(f);
+        if (Execute::AddLibrary(Identifier, (void *)f->node->Address, f->node->Length))
+            return SYSCALL_OK;
+        else
+            return SYSCALL_INTERNAL_ERROR;
+    }
+    case KCTL_GET_ELF_LIB_FILE:
+    {
+        char *Identifier = (char *)Arg1;
+        if (!Identifier)
+            return 0;
+
+        Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
+        if (!lib.Address)
+            debug("Failed to get library address %#lx", (uintptr_t)lib.Address);
+
+        debug("Returning library address %#lx", (uintptr_t)lib.Address);
+        return (uintptr_t)lib.Address;
+    }
+    case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
+    {
+        char *Identifier = (char *)Arg1;
+        if (!Identifier)
+            return 0;
+
+        Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
+
+        if (!lib.MemoryImage)
+            debug("Failed to get library memory image %#lx", (uintptr_t)lib.MemoryImage);
+
+        debug("Returning memory image %#lx", (uintptr_t)lib.MemoryImage);
+        return (uintptr_t)lib.MemoryImage;
+    }
     default:
     {
         warn("KernelCTL: Unknown command: %lld", Command);
