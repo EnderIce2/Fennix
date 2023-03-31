@@ -540,6 +540,13 @@ namespace Memory
         bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
 
         /**
+         * @brief Get physical address of the page.
+         * @param VirtualAddress Virtual address of the page.
+         * @return Physical address of the page.
+         */
+        void *GetPhysical(void *VirtualAddress);
+
+        /**
          * @brief Map page.
          *
          * @param VirtualAddress Virtual address of the page.

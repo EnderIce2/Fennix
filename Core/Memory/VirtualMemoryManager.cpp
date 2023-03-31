@@ -40,6 +40,41 @@ namespace Memory
         return false;
     }
 
+    void *Virtual::GetPhysical(void *VirtualAddress)
+    {
+        // 0x1000 aligned
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
+
+        PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
+        PageDirectoryEntryPtr *PDE = nullptr;
+        PageTableEntryPtr *PTE = nullptr;
+
+        if (PML4.Present)
+        {
+            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
+            if (PDPTE)
+                if (PDPTE->Entries[Index.PDPTEIndex].Present)
+                {
+                    PDE = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+                    if (PDE)
+                        if (PDE->Entries[Index.PDEIndex].Present)
+                        {
+                            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+                            if (PTE)
+                                if (PTE->Entries[Index.PTEIndex].Present)
+                                {
+                                    return (void *)((uintptr_t)PTE->Entries[Index.PTEIndex].GetAddress() << 12);
+                                }
+                        }
+                }
+        }
+        return nullptr;
+    }
+
     void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
     {
         SmartLock(this->MemoryLock);
