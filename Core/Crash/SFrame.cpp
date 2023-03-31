@@ -23,29 +23,11 @@ namespace CrashHandler
         uintptr_t rip;
     };
 
-    SafeFunction void TraceFrames(CHArchTrapFrame *Frame, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel)
+    SafeFunction void TraceFrames(CRData data, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel)
     {
-        if (!Memory::Virtual().Check(Frame))
+        if (!Memory::Virtual().Check(data.Frame))
         {
-            EHPrint("Invalid frame pointer: %p\n", Frame);
-            return;
-        }
-
-#if defined(a64)
-        struct StackFrame *frames = (struct StackFrame *)Frame->rbp; // (struct StackFrame *)__builtin_frame_address(0);
-        if (!Memory::Virtual().Check((void *)Frame->rbp))
-#elif defined(a32)
-        struct StackFrame *frames = (struct StackFrame *)Frame->ebp; // (struct StackFrame *)__builtin_frame_address(0);
-        if (!Memory::Virtual().Check((void *)Frame->ebp))
-#elif defined(aa64)
-#endif
-        {
-            #if defined(a64)
-            EHPrint("Invalid rbp pointer: %p\n", Frame->rbp);
-            #elif defined(a32)
-            EHPrint("Invalid ebp pointer: %p\n", Frame->ebp);
-            #elif defined(aa64)
-#endif
+            EHPrint("Invalid frame pointer: %p\n", data.Frame);
             return;
         }
 
@@ -55,21 +37,49 @@ namespace CrashHandler
             return;
         }
 
-        debug("\nStack tracing... %p %d %p %d", Frame, Count, frames, Kernel);
+        bool TriedRetryBP = false;
+        struct StackFrame *frames = nullptr;
+    RetryBP:
+#if defined(a64)
+        if (TriedRetryBP == false)
+            frames = (struct StackFrame *)data.Frame->rbp;
+#elif defined(a32)
+        if (TriedRetryBP == false)
+            frames = (struct StackFrame *)data.Frame->ebp;
+#elif defined(aa64)
+#endif
+        if (!Memory::Virtual().Check((void *)frames))
+        {
+            if (TriedRetryBP == false)
+            {
+                frames = (struct StackFrame *)Memory::Virtual(data.Process->PageTable).GetPhysical((void *)frames);
+                TriedRetryBP = true;
+                goto RetryBP;
+            }
+#if defined(a64)
+            EHPrint("Invalid rbp pointer: %p\n", data.Frame->rbp);
+#elif defined(a32)
+            EHPrint("Invalid ebp pointer: %p\n", data.Frame->ebp);
+#elif defined(aa64)
+#endif
+            return;
+        }
+
+        debug("\nStack tracing... %p %d %p %d", data.Frame, Count, frames, Kernel);
         EHPrint("\e7981FC\nStack Trace:\n");
         if (!frames || !frames->rip || !frames->rbp)
         {
 #if defined(a64)
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
+            EHPrint("\e2565CC%p", (void *)data.Frame->rip);
 #elif defined(a32)
-            EHPrint("\e2565CC%p", (void *)Frame->eip);
+            EHPrint("\e2565CC%p", (void *)data.Frame->eip);
 #elif defined(aa64)
 #endif
             EHPrint("\e7925CC-");
 #if defined(a64)
-            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
+            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(data.Frame->rip));
 #elif defined(a32)
-            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
+            EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(data.Frame->eip));
 #elif defined(aa64)
 #endif
             EHPrint("\e7981FC <- Exception");
@@ -78,17 +88,17 @@ namespace CrashHandler
         else
         {
 #if defined(a64)
-            EHPrint("\e2565CC%p", (void *)Frame->rip);
+            EHPrint("\e2565CC%p", (void *)data.Frame->rip);
             EHPrint("\e7925CC-");
-            if ((Frame->rip >= 0xFFFFFFFF80000000 && Frame->rip <= (uintptr_t)&_kernel_end) || !Kernel)
-                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->rip));
+            if ((data.Frame->rip >= 0xFFFFFFFF80000000 && data.Frame->rip <= (uintptr_t)&_kernel_end) || !Kernel)
+                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(data.Frame->rip));
             else
                 EHPrint("Outside Kernel");
 #elif defined(a32)
-            EHPrint("\e2565CC%p", (void *)Frame->eip);
+            EHPrint("\e2565CC%p", (void *)data.Frame->eip);
             EHPrint("\e7925CC-");
-            if ((Frame->eip >= 0xC0000000 && Frame->eip <= (uintptr_t)&_kernel_end) || !Kernel)
-                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(Frame->eip));
+            if ((data.Frame->eip >= 0xC0000000 && data.Frame->eip <= (uintptr_t)&_kernel_end) || !Kernel)
+                EHPrint("\eAA25CC%s", SymHandle->GetSymbolFromAddress(data.Frame->eip));
             else
                 EHPrint("Outside Kernel");
 #elif defined(aa64)

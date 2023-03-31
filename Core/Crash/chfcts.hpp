@@ -256,7 +256,7 @@ namespace CrashHandler
         ~CrashKeyboardDriver();
     };
 
-    void TraceFrames(CHArchTrapFrame *Frame, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel);
+    void TraceFrames(CRData data, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel);
 
     void ArrowInput(uint8_t key);
     void UserInput(char *Input);
