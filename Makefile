@@ -66,8 +66,8 @@ SIMD_FLAGS := -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mavx51
 
 ifeq ($(OSARCH), amd64)
 
-CFLAGS += -fno-pic -fno-pie							\
-		  -mno-red-zone -march=core2 -pipe			\
+CFLAGS += -fno-pic -fno-pie					\
+		  -mno-red-zone -march=core2 -pipe	\
 		  -mcmodel=kernel -fno-builtin -Da64
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/amd64/linker.ld 	\
@@ -92,9 +92,13 @@ LDFLAGS += -TArchitecture/i386/linker.ld 	\
 
 else ifeq ($(OSARCH), aarch64)
 
-CFLAGS += -pipe -fno-builtin -fPIC -Wstack-protector -Daa64
-CFLAG_STACK_PROTECTOR := -fstack-protector-all -fstack-clash-protection
-LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC
+CFLAGS += -pipe -fno-builtin -Wstack-protector -Daa64 -fPIC -mno-outline-atomics
+CFLAG_STACK_PROTECTOR := -fstack-protector-all
+LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC -pie \
+	-Wl,-static,--no-dynamic-linker,-ztext \
+	-nostdlib -nodefaultlibs -nolibc \
+	-zmax-page-size=0x1000 \
+	-Wl,-Map kernel.map -static
 
 endif
 
@@ -166,13 +170,7 @@ endif
 
 %.o: %.S
 	$(info Compiling $<)
-ifeq ($(OSARCH), amd64)
 	$(AS) -c $< -o $@
-else ifeq ($(OSARCH), i386)
-	$(AS) -c $< -o $@
-else ifeq ($(OSARCH), aarch64)
-	$(AS) -c $< -o $@
-endif
 
 %.o: %.psf
 ifeq ($(OSARCH), amd64)
