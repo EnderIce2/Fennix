@@ -68,6 +68,15 @@ struct CRData
 };
 #elif defined(aa64)
 typedef struct CPU::aarch64::TrapFrame CHArchTrapFrame;
+
+struct CRData
+{
+    CHArchTrapFrame *Frame;
+
+    long ID;
+    Tasking::PCB *Process;
+    Tasking::TCB *Thread;
+};
 #endif
 
 enum Keys
@@ -266,7 +275,7 @@ namespace CrashHandler
 #elif defined(a32)
         void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 #elif defined(aa64)
-        void OnInterruptReceived(void *Frame);
+        void OnInterruptReceived(CPU::aarch64::TrapFrame *Frame);
 #endif
     public:
         CrashKeyboardDriver();

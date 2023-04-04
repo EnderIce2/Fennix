@@ -274,8 +274,8 @@ namespace Tasking
         void Schedule(void *Frame);
         void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 #elif defined(aa64)
-        void Schedule(void *Frame);
-        void OnInterruptReceived(void *Frame);
+        void Schedule(CPU::aarch64::TrapFrame *Frame);
+        void OnInterruptReceived(CPU::aarch64::TrapFrame *Frame);
 #endif
 
     public:

@@ -2451,6 +2451,8 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
     Frame->rax = ret;
     return ret;
 #elif defined(a32)
+    return 0;
 #elif defined(aa64)
+    return 0;
 #endif
 }

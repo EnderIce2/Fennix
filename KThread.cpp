@@ -125,7 +125,13 @@ void TaskMgr()
                        Statuses[Status], Thd->Name, StatusesSign[Status]);
             }
         }
+#if defined(a64)
         register uintptr_t CurrentStackAddress asm("rsp");
+#elif defined(a32)
+        register uintptr_t CurrentStackAddress asm("esp");
+#elif defined(aa64)
+        register uintptr_t CurrentStackAddress asm("sp");
+#endif
         printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
         if (sanity > 1000)
             sanity = 0;

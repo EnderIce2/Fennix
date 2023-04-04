@@ -156,16 +156,20 @@ namespace CPU
     /**
      * @brief Stop the CPU (infinite loop)
      */
+#if defined(a64) || defined(a32)
     SafeFunction __noreturn __naked __used inline void Stop()
     {
-#if defined(a64) || defined(a32)
         asmv("CPUStopLoop:\n"
              "cli\n"
              "hlt\n"
              "jmp CPUStopLoop");
-#elif defined(aa64)
-        asmv("msr daifset, #2");
-        asmv("wfe");
+#elif defined(aa64) // annoying warning: "‘noreturn’ function does return" and "‘naked’ attribute directive ignored"
+    SafeFunction __used inline void Stop()
+    {
+        asmv("CPUStopLoop:\n"
+             "msr daifset, #2\n" // Disable IRQs (bit 1 of the DAIF register)
+             "wfi\n"             // Wait for Interrupt (puts the processor in low-power state until an interrupt occurs)
+             "b CPUStopLoop");   // Branch to the beginning of the loop
 #endif
     }
 
@@ -772,6 +776,29 @@ namespace CPU
 
     namespace aarch64
     {
+        typedef struct TrapFrame
+        {
+            uint64_t x19; // General purpose
+            uint64_t x20; // General purpose
+            uint64_t x21; // General purpose
+            uint64_t x22; // General purpose
+            uint64_t x23; // General purpose
+            uint64_t x24; // General purpose
+            uint64_t x25; // General purpose
+            uint64_t x26; // General purpose
+
+            uint64_t x27; // Stack frame pointer
+            uint64_t x28; // Link register
+            uint64_t x29; // Frame pointer
+            uint64_t x30; // Program counter
+
+            uint64_t sp_el0;                  // Stack pointer
+            uint64_t elr_el1;                 // Exception Link Register
+            uint64_t spsr_el1;                // Saved Program Status Register
+            uint64_t ErrorCode /* esr_el1 */; // Exception Syndrome Register
+
+            uint64_t InterruptNumber /* iar_el1 */; // Interrupt Acknowledge Register
+        } TrapFrame;
     }
 }
 

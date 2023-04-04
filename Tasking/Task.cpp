@@ -58,13 +58,15 @@ namespace Tasking
         // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
     }
 
+#if defined(a64) || defined(a32)
     __naked __used __no_stack_protector NIF void IdleProcessLoop()
     {
-#if defined(a64) || defined(a32)
         asmv("IdleLoop:\n"
              "hlt\n"
              "jmp IdleLoop\n");
 #elif defined(aa64)
+    __used __no_stack_protector NIF void IdleProcessLoop()
+    {
         asmv("IdleLoop:\n"
              "wfe\n"
              "b IdleLoop\n");
@@ -291,7 +293,11 @@ namespace Tasking
         // TaskingScheduler_OneShot(1);
         // IRQ16
         TaskingLock.Unlock();
+#if defined(a64) || defined(a32)
         asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#elif defined(aa64)
+        asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#endif
     }
 
     void Task::SignalShutdown()
@@ -786,7 +792,7 @@ namespace Tasking
 #elif defined(a32)
         TaskArchitecture Arch = TaskArchitecture::x32;
 #elif defined(aa64)
-        TaskArchitecture Arch = TaskArchitecture::ARM64;
+    TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
         TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), 0, Arch);
@@ -806,8 +812,8 @@ namespace Tasking
             asmv("cpuid"
                  : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
                  : "a"(0x1));
-#endif
             MONITORSupported = cpuid1amd.ECX.MONITOR;
+#endif
         }
         else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
         {
@@ -820,8 +826,8 @@ namespace Tasking
             asmv("cpuid"
                  : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
                  : "a"(0x1));
-#endif
             MONITORSupported = cpuid1intel.ECX.MONITOR;
+#endif
         }
 
         if (MONITORSupported)

@@ -132,6 +132,7 @@ namespace CrashHandler
 #elif defined(a32)
                 if ((frames->rip >= 0xC0000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
 #elif defined(aa64)
+                if ((frames->rip >= 0xFFFFFFFF80000000 && frames->rip <= (uintptr_t)&_kernel_end) || !Kernel)
 #endif
                     EHPrint("\e25CCC9%s", SymHandle->GetSymbolFromAddress(frames->rip));
                 else

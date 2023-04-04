@@ -184,7 +184,7 @@ namespace Interrupts
 #elif defined(a32)
         void *Frame = Data;
 #elif defined(aa64)
-        void *Frame = Data;
+        CPU::aarch64::TrapFrame *Frame = (CPU::aarch64::TrapFrame *)Data;
 #endif
         error("HALT HALT HALT HALT HALT HALT HALT HALT HALT");
         CPU::Stop();
@@ -228,7 +228,7 @@ namespace Interrupts
     {
         trace("Unhandled interrupt received");
 #elif defined(aa64)
-    void Handler::OnInterruptReceived(void *Frame)
+    void Handler::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
     {
         trace("Unhandled interrupt received");
 #endif

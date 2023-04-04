@@ -195,7 +195,10 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 #elif defined(a32)
     Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x32::readcr3().raw));
 #elif defined(aa64)
+    Memory::Virtual vma = Memory::Virtual();
+#warning "TODO: aa64"
 #endif
+
     bool PageAvailable = vma.Check((void *)CheckPageFaultAddress);
     debug("Page available (Check(...)): %s. %s",
           PageAvailable ? "Yes" : "No",
@@ -240,6 +243,8 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 #elif defined(a32)
             Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x32::readcr3().raw)->Entries[Index.PMLIndex];
 #elif defined(aa64)
+            Memory::PageMapLevel4 PML4 = {.raw = 0};
+#warning "TODO: aa64"
 #endif
 
             Memory::PageDirectoryPointerTableEntryPtr *PDPTE = (Memory::PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);

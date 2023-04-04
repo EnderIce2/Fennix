@@ -65,7 +65,7 @@ namespace Driver
 #elif defined(a32)
         void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 #elif defined(aa64)
-        void OnInterruptReceived(void *Frame);
+        void OnInterruptReceived(CPU::aarch64::TrapFrame *Frame);
 #endif
 
     public:

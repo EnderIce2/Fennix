@@ -111,7 +111,10 @@ ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
 #	CFLAGS += -pg
 #	CFLAGS += -finstrument-functions
-	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fstack-check -fsanitize=undefined
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fsanitize=undefined
+ifneq ($(OSARCH), aarch64)
+	CFLAGS += -fstack-check
+endif
 	LDFLAGS += -ggdb3 -O0
 	NASMFLAGS += -F dwarf -g
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
@@ -155,6 +158,9 @@ $(KERNEL_FILENAME): $(OBJ)
 	$(RUSTC) $< -C panic=abort -C soft-float --emit=obj -o $@
 
 %.o: %.asm
+ifeq ($(OSARCH), aarch64)
+	$(error aarch64 does not support NASM)
+endif
 	$(info Compiling $<)
 	$(NASM) $< $(NASMFLAGS) -o $@
 

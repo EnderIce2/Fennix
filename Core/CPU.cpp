@@ -366,8 +366,9 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return SIMD_NONE;
 
-		// return SIMD_SSE;
+			// return SIMD_SSE;
 
+#if defined(a64) || defined(a32)
 		static uint64_t SIMDType = SIMD_NONE;
 
 		if (likely(SIMDType != SIMD_NONE))
@@ -380,11 +381,10 @@ namespace CPU
 #elif defined(a32)
 			CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
-#endif
+
 			if (cpuid1amd.ECX.SSE4_2)
 				SIMDType |= SIMD_SSE42;
 			else if (cpuid1amd.ECX.SSE4_1)
@@ -418,11 +418,10 @@ namespace CPU
 #elif defined(a32)
 			CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
 				 : "a"(0x1));
-#endif
+
 			if (cpuid1intel.ECX.SSE4_2)
 				SIMDType |= SIMD_SSE42;
 			else if (cpuid1intel.ECX.SSE4_1)
@@ -446,11 +445,11 @@ namespace CPU
 			if (cpuid1intel.EDX.SSE)
 				debug("SSE is supported.");
 #endif
-
 			return SIMDType;
 		}
 
 		debug("No SIMD support.");
+#endif // a64 || a32
 		return SIMD_NONE;
 	}
 
@@ -459,6 +458,7 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return false;
 
+#if defined(a64) || defined(a32)
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(a64)
@@ -466,11 +466,10 @@ namespace CPU
 #elif defined(a32)
 			CPU::x32::AMD::CPUID0x1 cpuid1amd;
 #endif
-#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
-#endif
+
 			if (Type == SIMD_SSE42)
 				return cpuid1amd.ECX.SSE4_2;
 			else if (Type == SIMD_SSE41)
@@ -489,11 +488,10 @@ namespace CPU
 #elif defined(a32)
 			CPU::x32::Intel::CPUID0x1 cpuid1intel;
 #endif
-#if defined(a64) || defined(a32)
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
 				 : "a"(0x1));
-#endif
+
 			if (Type == SIMD_SSE42)
 				return cpuid1intel.ECX.SSE4_2;
 			else if (Type == SIMD_SSE41)
@@ -505,7 +503,7 @@ namespace CPU
 			else if (Type == SIMD_SSE)
 				return cpuid1intel.EDX.SSE;
 		}
-
+#endif // a64 || a32
 		return false;
 	}
 }

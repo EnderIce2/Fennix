@@ -421,7 +421,7 @@ union CPURegisters
         unsigned int esp;
         unsigned int ss;
 #else
-#error "Unsupported architecture"
+#warning "Unsupported architecture"
 #endif
     };
     unsigned long raw;

@@ -752,7 +752,7 @@ __noreturn __always_inline static inline void __convert_chk_fail(void)
 #if defined(a64) || defined(a32)
     asmv("int3");
 #else
-#error "Not implemented!"
+#warning "Not implemented!"
 #endif
     __builtin_unreachable();
 }

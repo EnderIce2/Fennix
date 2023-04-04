@@ -726,11 +726,11 @@ namespace Tasking
         fixme("unimplemented");
     }
 
-    SafeFunction void Task::Schedule(void *Frame)
+    SafeFunction void Task::Schedule(CPU::aarch64::TrapFrame *Frame)
     {
         fixme("unimplemented");
     }
 
-    SafeFunction void Task::OnInterruptReceived(void *Frame) { this->Schedule(Frame); }
+    SafeFunction void Task::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame) { this->Schedule(Frame); }
 #endif
 }

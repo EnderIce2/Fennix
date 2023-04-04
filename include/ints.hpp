@@ -70,7 +70,7 @@ namespace Interrupts
 #elif defined(a32)
         virtual void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 #elif defined(aa64)
-        virtual void OnInterruptReceived(void *Frame);
+        virtual void OnInterruptReceived(CPU::aarch64::TrapFrame *Frame);
 #endif
     };
 }

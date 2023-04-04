@@ -267,7 +267,7 @@ namespace Driver
 #elif defined(a32)
     SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
 #elif defined(aa64)
-    SafeFunction void DriverInterruptHook::OnInterruptReceived(void *Frame)
+    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
 #endif
     {
         SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
@@ -335,7 +335,7 @@ namespace Driver
 #if defined(a64) || defined(a32)
         trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #elif defined(aa64)
-        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle->DriverUID);
+        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #endif
     }
 }

@@ -21,6 +21,7 @@
 #include <types.h>
 #include <debug.h>
 
+#if defined(a64) || defined(a32)
 #define MMX_FN_ATTR __always_inline __target("mmx")
 #define SSE_FN_ATTR __always_inline __target("sse")
 #define SSE2_FN_ATTR __always_inline __target("sse2")
@@ -30,6 +31,18 @@
 #define SSE4_2_FN_ATTR __always_inline __target("sse4.2")
 #define AVX_FN_ATTR __always_inline __target("avx")
 #define AVX2_FN_ATTR __always_inline __target("avx2")
+#elif defined(aa64)
+#define MMX_FN_ATTR __always_inline
+#define SSE_FN_ATTR __always_inline
+#define SSE2_FN_ATTR __always_inline
+#define SSE3_FN_ATTR __always_inline
+#define SSSE3_FN_ATTR __always_inline
+#define SSE4_1_FN_ATTR __always_inline
+#define SSE4_2_FN_ATTR __always_inline
+#define AVX_FN_ATTR __always_inline
+#define AVX2_FN_ATTR __always_inline
+#endif
+
 #define ST_IN static inline
 
 namespace FXSR
@@ -73,19 +86,24 @@ namespace SMAP
 {
     void _clac(void)
     {
+#if defined(a64) || defined(a32)
         asmv("clac" ::
                  : "cc");
+#endif // a64 || a32
     }
 
     void _stac(void)
     {
+#if defined(a64) || defined(a32)
         asmv("stac" ::
                  : "cc");
+#endif // a64 || a32
     }
 }
 
 namespace MMX
 {
+#if defined(a64) || defined(a32)
     typedef long long __m64 __attribute__((__vector_size__(8), __aligned__(8)));
 
     typedef long long __v1di __attribute__((__vector_size__(8)));
@@ -97,10 +115,12 @@ namespace MMX
     {
         __builtin_ia32_emms();
     }
+#endif // a64 || a32
 }
 
 namespace SSE
 {
+#if defined(a64) || defined(a32)
     typedef int __v4si __attribute__((__vector_size__(16)));
     typedef unsigned int __v4su __attribute__((__vector_size__(16)));
     typedef float __v4sf __attribute__((__vector_size__(16)));
@@ -119,10 +139,12 @@ namespace SSE
     {
         return (__m128)((__v4sf)a + (__v4sf)b);
     }
+#endif // a64 || a32
 }
 
 namespace SSE2
 {
+#if defined(a64) || defined(a32)
     typedef double __v2df __attribute__((__vector_size__(16)));
 
     typedef long long __v2di __attribute__((__vector_size__(16)));
@@ -178,41 +200,49 @@ namespace SSE2
                      : "=m"(*mem_addr)
                      : "x"(a));
     }
+#endif // a64 || a32
 }
 
 namespace SSE3
 {
-
+#if defined(a64) || defined(a32)
+#endif // a64 || a32
 }
 
 namespace SSSE3
 {
-
+#if defined(a64) || defined(a32)
+#endif // a64 || a32
 }
 
 namespace SSE4_1
 {
+#if defined(a64) || defined(a32)
     typedef long long __m128i __attribute__((__vector_size__(16), __aligned__(16)));
 
     ST_IN SSE4_1_FN_ATTR __m128i _mm_cvtepu8_epi32(__m128i a);
     ST_IN SSE4_1_FN_ATTR __m128i _mm_mullo_epi32(__m128i a, __m128i b);
     ST_IN SSE4_1_FN_ATTR __m128i _mm_srli_epi32(__m128i a, int imm8);
     ST_IN SSE4_1_FN_ATTR int _mm_cvtsi128_si32(__m128i a);
+#endif // a64 || a32
 }
 
 namespace SSE4_2
 {
-
+#if defined(a64) || defined(a32)
+#endif // a64 || a32
 }
 
 namespace AVX
 {
-
+#if defined(a64) || defined(a32)
+#endif // a64 || a32
 }
 
 namespace AVX2
 {
-
+#if defined(a64) || defined(a32)
+#endif // a64 || a32
 }
 
 #endif // !__FENNIX_KERNEL_SIMD_H__

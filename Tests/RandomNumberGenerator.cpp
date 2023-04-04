@@ -35,8 +35,8 @@ __constructor void TestRandom()
         asmv("cpuid"
              : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
              : "a"(0x1));
-#endif
         RDRANDFlag = cpuid1amd.ECX.RDRAND;
+#endif
     }
     else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
     {
@@ -49,8 +49,8 @@ __constructor void TestRandom()
         asmv("cpuid"
              : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
              : "a"(0x1));
-#endif
         RDRANDFlag = cpuid1intel.ECX.RDRAND;
+#endif
     }
 
     if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)

@@ -375,8 +375,10 @@ namespace CrashHandler
             int tmpidx = SBIdx;
             SBIdx = atoi(arg);
             Display->SetBuffer(SBIdx);
+#if defined(a64) || defined(a32)
             for (int i = 0; i < 5000000; i++)
                 inb(0x80);
+#endif // a64 || a32
             SBIdx = tmpidx;
             Display->SetBuffer(SBIdx);
         }
@@ -408,12 +410,15 @@ namespace CrashHandler
 #elif defined(a32)
                         if ((uintptr_t)EHIntFrames[i] >= 0xC0000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #elif defined(aa64)
+                        if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #endif
                             EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                         else
                             EHPrint("\eFF4CA9Outside Kernel");
+#if defined(a64) || defined(a32)
                         for (int i = 0; i < 20000; i++)
                             inb(0x80);
+#endif // a64 || a32
                         Display->SetBuffer(SBIdx);
                     }
                 }
@@ -619,6 +624,7 @@ namespace CrashHandler
             }
             else
             {
+#if defined(a64) || defined(a32)
                 GlobalDescriptorTable::TaskStateSegment tss = GlobalDescriptorTable::tss[TSSIndex];
                 EHPrint("\eFAFAFAStack Pointer 0: \eAABB22%#lx\n", tss.StackPointer[0]);
                 EHPrint("\eFAFAFAStack Pointer 1: \eAABB22%#lx\n", tss.StackPointer[1]);
@@ -637,6 +643,9 @@ namespace CrashHandler
                 EHPrint("\eFAFAFAReserved 0: \eAABB22%#lx\n", tss.Reserved0);
                 EHPrint("\eFAFAFAReserved 1: \eAABB22%#lx\n", tss.Reserved1);
                 EHPrint("\eFAFAFAReserved 2: \eAABB22%#lx\n", tss.Reserved2);
+#elif defined(aa64)
+                EHPrint("\eFF0000AArch64 does not have TSS\n");
+#endif
             }
         }
         else if (strncmp(Input, "dump", 4) == 0)
@@ -1058,7 +1067,9 @@ namespace CrashHandler
         goto CrashEnd;
 
 #elif defined(a32)
+        goto CrashEnd;
 #elif defined(aa64)
+        goto CrashEnd;
 #endif
 
     CrashEnd:

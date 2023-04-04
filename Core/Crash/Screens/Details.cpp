@@ -86,6 +86,8 @@ namespace CrashHandler
         EHPrint("EIP=%#llx  EFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
 #elif defined(aa64)
 #endif
+
+#if defined(a64) || defined(a32)
         EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", data.cr0.raw, data.cr2.raw, data.cr3.raw, data.cr4.raw, data.cr8.raw);
         EHPrint("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx\n", data.dr0, data.dr1, data.dr2, data.dr3, data.dr6, data.dr7.raw);
 
@@ -111,10 +113,9 @@ namespace CrashHandler
                 data.cr4.Reserved0, data.cr4.Reserved1, data.cr4.Reserved2);
 #elif defined(a32)
                 data.cr4.Reserved0, data.cr4.Reserved1, 0);
-#elif defined(aa64)
 #endif
-
         EHPrint("\e79FCF5CR8: TPL:%d\n", data.cr8.TPL);
+#endif // a64 || a32
 
 #if defined(a64)
         EHPrint("\eFCFC02RFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x R3:%#x\n",
@@ -135,6 +136,7 @@ namespace CrashHandler
 #elif defined(aa64)
 #endif
 
+#if defined(a64) || defined(a32)
         EHPrint("\eA0F0F0DR7: LDR0:%s     GDR0:%s     LDR1:%s     GDR1:%s\n     LDR2:%s     GDR2:%s     LDR3:%s     GDR3:%s\n     CDR0:%s     SDR0:%s     CDR1:%s     SDR1:%s\n     CDR2:%s     SDR2:%s     CDR3:%s     SDR3:%s\n     R:%#x\n",
                 data.dr7.LocalDR0 ? "True " : "False", data.dr7.GlobalDR0 ? "True " : "False", data.dr7.LocalDR1 ? "True " : "False", data.dr7.GlobalDR1 ? "True " : "False",
                 data.dr7.LocalDR2 ? "True " : "False", data.dr7.GlobalDR2 ? "True " : "False", data.dr7.LocalDR3 ? "True " : "False", data.dr7.GlobalDR3 ? "True " : "False",
@@ -146,6 +148,7 @@ namespace CrashHandler
                 data.efer.SCE ? "True " : "False", data.efer.LME ? "True " : "False", data.efer.LMA ? "True " : "False", data.efer.NXE ? "True " : "False",
                 data.efer.SVME ? "True " : "False", data.efer.LMSLE ? "True " : "False", data.efer.FFXSR ? "True " : "False", data.efer.TCE ? "True " : "False",
                 data.efer.Reserved0, data.efer.Reserved1, data.efer.Reserved2);
+#endif
 
         switch (data.Frame->InterruptNumber)
         {
