@@ -23,13 +23,13 @@
 #include "../../../../tools/limine/limine.h"
 #include "../../../kernel.h"
 
-void init_limine();
+void InitLimine();
 
 static volatile struct limine_entry_point_request EntryPointRequest = {
     .id = LIMINE_ENTRY_POINT_REQUEST,
     .revision = 0,
     .response = NULL,
-    .entry = init_limine};
+    .entry = InitLimine};
 static volatile struct limine_bootloader_info_request BootloaderInfoRequest = {
     .id = LIMINE_BOOTLOADER_INFO_REQUEST,
     .revision = 0};
@@ -54,12 +54,24 @@ static volatile struct limine_kernel_file_request KernelFileRequest = {
 static volatile struct limine_module_request ModuleRequest = {
     .id = LIMINE_MODULE_REQUEST,
     .revision = 0};
-
 static volatile struct limine_smbios_request SmbiosRequest = {
     .id = LIMINE_SMBIOS_REQUEST,
     .revision = 0};
 
-SafeFunction NIF void init_limine()
+void *TempStackPtr = NULL;
+__naked __used __no_stack_protector void InitLimine()
+{
+    asmv("mov %%rsp, %0"
+         : "=r"(TempStackPtr));
+
+    asmv("mov %0, %%rsp"
+         :
+         : "r"((uintptr_t)TempStackPtr - 0xFFFF800000000000));
+
+    asmv("jmp InitLimineAfterStack");
+}
+
+SafeFunction NIF void InitLimineAfterStack()
 {
     struct BootInfo binfo;
     struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;
@@ -140,7 +152,7 @@ SafeFunction NIF void init_limine()
     {
         struct limine_framebuffer *framebuffer = FrameBufferResponse->framebuffers[i];
         binfo.Framebuffer[i].Type = RGB;
-        binfo.Framebuffer[i].BaseAddress = (void *)((uint64_t)framebuffer->address - 0xffff800000000000);
+        binfo.Framebuffer[i].BaseAddress = (void *)((uint64_t)framebuffer->address - 0xFFFF800000000000);
         binfo.Framebuffer[i].Width = (uint32_t)framebuffer->width;
         binfo.Framebuffer[i].Height = (uint32_t)framebuffer->height;
         binfo.Framebuffer[i].Pitch = (uint32_t)framebuffer->pitch;
@@ -156,7 +168,7 @@ SafeFunction NIF void init_limine()
         binfo.Framebuffer[i].EDIDSize = framebuffer->edid_size;
         debug("Framebuffer %d: %dx%d %d bpp", i, framebuffer->width, framebuffer->height, framebuffer->bpp);
         debug("More info:\nAddress: %p\nPitch: %ld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d\nEDID: %p\nEDIDSize: %d",
-              (uint64_t)framebuffer->address - 0xffff800000000000, framebuffer->pitch, framebuffer->memory_model, framebuffer->red_mask_size, framebuffer->red_mask_shift, framebuffer->green_mask_size, framebuffer->green_mask_shift, framebuffer->blue_mask_size, framebuffer->blue_mask_shift, framebuffer->edid, framebuffer->edid_size);
+              (uint64_t)framebuffer->address - 0xFFFF800000000000, framebuffer->pitch, framebuffer->memory_model, framebuffer->red_mask_size, framebuffer->red_mask_shift, framebuffer->green_mask_size, framebuffer->green_mask_shift, framebuffer->blue_mask_size, framebuffer->blue_mask_shift, framebuffer->edid, framebuffer->edid_size);
     }
 
     binfo.Memory.Entries = MemmapResponse->entry_count;
@@ -228,7 +240,7 @@ SafeFunction NIF void init_limine()
             break;
         }
 
-        binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000);
+        binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xFFFF800000000000);
         strncpy(binfo.Modules[i].Path,
                 ModuleResponse->modules[i]->path,
                 strlen(ModuleResponse->modules[i]->path) + 1);
@@ -237,25 +249,25 @@ SafeFunction NIF void init_limine()
                 strlen(ModuleResponse->modules[i]->cmdline) + 1);
         binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
         debug("Module %d:\nAddress: %p\nPath: %s\nCommand Line: %s\nSize: %ld", i,
-              (uint64_t)ModuleResponse->modules[i]->address - 0xffff800000000000, ModuleResponse->modules[i]->path,
+              (uint64_t)ModuleResponse->modules[i]->address - 0xFFFF800000000000, ModuleResponse->modules[i]->path,
               ModuleResponse->modules[i]->cmdline, ModuleResponse->modules[i]->size);
     }
 
-    binfo.RSDP = (struct RSDPInfo *)((uint64_t)RsdpResponse->address - 0xffff800000000000);
+    binfo.RSDP = (struct RSDPInfo *)((uint64_t)RsdpResponse->address - 0xFFFF800000000000);
     trace("RSDP: %p(%p) [Signature: %.8s] [OEM: %.6s]",
           RsdpResponse->address, binfo.RSDP, binfo.RSDP->Signature, binfo.RSDP->OEMID);
 
     debug("SMBIOS: %p %p", SmbiosResponse->entry_32, SmbiosResponse->entry_64);
     if (SmbiosResponse->entry_32 != NULL)
-        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_32 - 0xffff800000000000);
+        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_32 - 0xFFFF800000000000);
     else if (SmbiosResponse->entry_64 != NULL)
-        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_64 - 0xffff800000000000);
+        binfo.SMBIOSPtr = (void *)((uint64_t)SmbiosResponse->entry_64 - 0xFFFF800000000000);
     else
         binfo.SMBIOSPtr = NULL;
 
     binfo.Kernel.PhysicalBase = (void *)KernelAddressResponse->physical_base;
     binfo.Kernel.VirtualBase = (void *)KernelAddressResponse->virtual_base;
-    binfo.Kernel.FileBase = (void *)((uint64_t)KernelFileResponse->kernel_file->address - 0xffff800000000000);
+    binfo.Kernel.FileBase = (void *)((uint64_t)KernelFileResponse->kernel_file->address - 0xFFFF800000000000);
     strncpy(binfo.Kernel.CommandLine,
             KernelFileResponse->kernel_file->cmdline,
             strlen(KernelFileResponse->kernel_file->cmdline) + 1);

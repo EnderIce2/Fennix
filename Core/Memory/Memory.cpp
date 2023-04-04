@@ -82,14 +82,9 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
         void *NullAddress = KernelAllocator.RequestPage();
         memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
         va.Map((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
-        uintptr_t VirtualOffsetNormalVMA = NORMAL_VMA_OFFSET;
         size_t MemSize = Info->Memory.Size;
         for (size_t t = 0; t < MemSize; t += PAGE_SIZE)
-        {
             va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
-            va.Map((void *)VirtualOffsetNormalVMA, (void *)t, PTFlag::RW /* | PTFlag::US */);
-            VirtualOffsetNormalVMA += PAGE_SIZE;
-        }
     }
     else
     {
