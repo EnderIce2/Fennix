@@ -159,15 +159,15 @@ Execute::SpawnData SpawnInit()
     return Execute::Spawn(Config.InitPath, argv, envp);
 }
 
-/* Files: 0.tga 1.tga ... 40.tga */
-void *Frames[41];
-uint32_t FrameSizes[41];
+/* Files: 0.tga 1.tga ... 26.tga */
+void *Frames[27];
+uint32_t FrameSizes[27];
 uint32_t FrameCount = 1;
 
 void BootLogoAnimationThread()
 {
     char BootAnimPath[16];
-    while (FrameCount < 41)
+    while (FrameCount < 27)
     {
         sprintf(BootAnimPath, "%d.tga", FrameCount);
         std::shared_ptr<File> ba = bootanim_vfs->Open(BootAnimPath);
