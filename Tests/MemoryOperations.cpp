@@ -15,6 +15,8 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifdef DEBUG
+
 #include <types.h>
 #include <memory.hpp>
 #include <convert.h>
@@ -135,3 +137,5 @@ __constructor void TestMemoryOperations()
 
     debug("Memory operations test passed");
 }
+
+#endif
