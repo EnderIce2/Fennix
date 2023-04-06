@@ -386,14 +386,14 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
 {
     /* This can be ignored (unaligned memory access) */
     if (strstr(file, "AdvancedConfigurationAndPowerInterface.cpp") &&
-        (line == 17 && column == 47))
+        (line == 34 && column == 47))
         return false;
 
     /* This can be ignored (unaligned memory access) */
     if (strstr(file, "SystemManagementBIOS.cpp") &&
-        ((line == 30 && column == 21) ||
-         (line == 27 && column == 49) ||
-         (line == 45 && column == 26)))
+        ((line == 47 && column == 21) ||
+         (line == 44 && column == 49) ||
+         (line == 62 && column == 26)))
         return false;
 
     /* This can be ignored (unaligned memory access) */
