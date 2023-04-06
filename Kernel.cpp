@@ -143,6 +143,9 @@ LockClass mExtTrkLock;
  *    https://learn.microsoft.com/en-us/cpp/intrinsics/x86-intrinsics-list
  *    https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html
  *
+ * - CPUID lists:
+ *    https://www.amd.com/system/files/TechDocs/40332.pdf
+ *
  */
 
 #ifdef a64
