@@ -205,9 +205,9 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(a64)
-			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
 #elif defined(a32)
-			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
 #endif
 #if defined(a64) || defined(a32)
 			asmv("cpuid"
@@ -222,9 +222,9 @@ namespace CPU
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 #if defined(a64)
-			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
 #elif defined(a32)
-			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
 #endif
 #if defined(a64) || defined(a32)
 			asmv("cpuid"
@@ -377,17 +377,17 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(a64)
-			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
 #elif defined(a32)
-			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
 #endif
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
 
-			if (cpuid1amd.ECX.SSE4_2)
+			if (cpuid1amd.ECX.SSE42)
 				SIMDType |= SIMD_SSE42;
-			else if (cpuid1amd.ECX.SSE4_1)
+			else if (cpuid1amd.ECX.SSE41)
 				SIMDType |= SIMD_SSE41;
 			else if (cpuid1amd.ECX.SSE3)
 				SIMDType |= SIMD_SSE3;
@@ -397,9 +397,9 @@ namespace CPU
 				SIMDType |= SIMD_SSE;
 
 #ifdef DEBUG
-			if (cpuid1amd.ECX.SSE4_2)
+			if (cpuid1amd.ECX.SSE42)
 				debug("SSE4.2 is supported.");
-			if (cpuid1amd.ECX.SSE4_1)
+			if (cpuid1amd.ECX.SSE41)
 				debug("SSE4.1 is supported.");
 			if (cpuid1amd.ECX.SSE3)
 				debug("SSE3 is supported.");
@@ -414,9 +414,9 @@ namespace CPU
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 #if defined(a64)
-			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
 #elif defined(a32)
-			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
 #endif
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
@@ -462,18 +462,18 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 #if defined(a64)
-			CPU::x64::AMD::CPUID0x1 cpuid1amd;
+			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
 #elif defined(a32)
-			CPU::x32::AMD::CPUID0x1 cpuid1amd;
+			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
 #endif
 			asmv("cpuid"
 				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
 				 : "a"(0x1));
 
 			if (Type == SIMD_SSE42)
-				return cpuid1amd.ECX.SSE4_2;
+				return cpuid1amd.ECX.SSE42;
 			else if (Type == SIMD_SSE41)
-				return cpuid1amd.ECX.SSE4_1;
+				return cpuid1amd.ECX.SSE41;
 			else if (Type == SIMD_SSE3)
 				return cpuid1amd.ECX.SSE3;
 			else if (Type == SIMD_SSE2)
@@ -484,9 +484,9 @@ namespace CPU
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 #if defined(a64)
-			CPU::x64::Intel::CPUID0x1 cpuid1intel;
+			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
 #elif defined(a32)
-			CPU::x32::Intel::CPUID0x1 cpuid1intel;
+			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
 #endif
 			asmv("cpuid"
 				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)

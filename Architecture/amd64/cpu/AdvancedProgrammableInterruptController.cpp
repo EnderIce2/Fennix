@@ -259,25 +259,27 @@ namespace APIC
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
         {
 #if defined(a64)
-            CPU::x64::AMD::CPUID0x1 cpuid1amd;
+            CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
 #elif defined(a32)
-            CPU::x32::AMD::CPUID0x1 cpuid1amd;
+            CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
 #endif
 #if defined(a64) || defined(a32)
             asmv("cpuid"
                  : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
                  : "a"(0x1));
 #endif
-            // FIXME: Not sure if I configured this correctly or something else is wrong
-            // x2APICSupported = cpuid1amd.ECX.x2APIC;
-            fixme("AMD does even support x2APIC? ECX->Reserved10: %#lx", cpuid1amd.ECX.Reserved10);
+            if (cpuid1amd.ECX.x2APIC)
+            {
+                // x2APICSupported = cpuid1amd.ECX.x2APIC;
+                fixme("x2APIC is supported");
+            }
         }
         else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
         {
 #if defined(a64)
-            CPU::x64::Intel::CPUID0x1 cpuid1intel;
+            CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
 #elif defined(a32)
-            CPU::x32::Intel::CPUID0x1 cpuid1intel;
+            CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
 #endif
 #if defined(a64) || defined(a32)
             asmv("cpuid"

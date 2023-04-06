@@ -28,7 +28,7 @@ namespace CPU
         namespace Intel
         {
             /** @brief Basic CPU information */
-            struct CPUID0x0
+            struct CPUID0x00000000
             {
                 union
                 {
@@ -65,7 +65,7 @@ namespace CPU
             };
 
             /** @brief Additional CPU information */
-            struct CPUID0x1
+            struct CPUID0x00000001
             {
                 union
                 {
@@ -178,7 +178,7 @@ namespace CPU
             };
 
             /** @brief CPU cache and TLB */
-            struct CPUID0x2
+            struct CPUID0x00000002
             {
                 union
                 {
@@ -230,7 +230,7 @@ namespace CPU
             };
 
             /** @brief CPU serial number */
-            struct CPUID0x3
+            struct CPUID0x00000003
             {
                 union
                 {
@@ -270,7 +270,7 @@ namespace CPU
             };
 
             /** @brief Cache information */
-            struct CPUID0x4_1
+            struct CPUID0x00000004_1
             {
                 union
                 {
@@ -318,7 +318,7 @@ namespace CPU
             };
 
             /** @brief MONITOR information */
-            struct CPUID0x5
+            struct CPUID0x00000005
             {
                 union
                 {
@@ -367,7 +367,7 @@ namespace CPU
             };
 
             /** @brief Thermal and power management information */
-            struct CPUID0x6
+            struct CPUID0x00000006
             {
                 union
                 {
@@ -410,7 +410,7 @@ namespace CPU
             };
 
             /** @brief Extended feature flags enumeration */
-            struct CPUID0x7_0
+            struct CPUID0x00000007_0
             {
                 union
                 {
@@ -627,7 +627,7 @@ namespace CPU
             };
 
             /** @brief Extended feature flags enumeration */
-            struct CPUID0x7_1
+            struct CPUID0x00000007_1
             {
                 union
                 {
@@ -724,7 +724,7 @@ namespace CPU
             };
 
             /** @brief Performance monitors */
-            struct CPUID0xA
+            struct CPUID0x0000000A
             {
                 union
                 {
@@ -776,7 +776,7 @@ namespace CPU
             };
 
             /** @brief Get CPU frequency information */
-            struct CPUID0x15
+            struct CPUID0x00000015
             {
                 union
                 {
@@ -828,7 +828,7 @@ namespace CPU
             };
 
             /** @brief Get CPU frequency information */
-            struct CPUID0x16
+            struct CPUID0x00000016
             {
                 union
                 {

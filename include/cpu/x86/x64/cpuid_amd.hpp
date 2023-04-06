@@ -537,7 +537,7 @@ namespace CPU
                         uint64_t Reserved0 : 11;
                         uint64_t CET_U : 1;
                         uint64_t CET_S : 1;
-                        uint64_t Reserved0 : 19;
+                        uint64_t Reserved1 : 19;
                     };
                     uint64_t raw;
                 } ECX;

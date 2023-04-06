@@ -804,9 +804,9 @@ namespace Tasking
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
         {
 #if defined(a64)
-            CPU::x64::AMD::CPUID0x1 cpuid1amd;
+            CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
 #elif defined(a32)
-            CPU::x32::AMD::CPUID0x1 cpuid1amd;
+            CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
 #endif
 #if defined(a64) || defined(a32)
             asmv("cpuid"
@@ -818,9 +818,9 @@ namespace Tasking
         else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
         {
 #if defined(a64)
-            CPU::x64::Intel::CPUID0x1 cpuid1intel;
+            CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
 #elif defined(a32)
-            CPU::x32::Intel::CPUID0x1 cpuid1intel;
+            CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
 #endif
 #if defined(a64) || defined(a32)
             asmv("cpuid"
