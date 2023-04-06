@@ -879,53 +879,6 @@ namespace CPU
                 } EDX;
             };
 
-            /** @brief Get CPU hypervisor information */
-            struct CPUID0x40000000
-            {
-                union
-                {
-                    struct
-                    {
-                        /**
-                         * @brief Maximum input value for hypervisor CPUID information.
-                         * @note Can be from 0x40000001 to 0x400000FF
-                         */
-                        uint64_t MaximumInputValue : 32;
-                    };
-                    uint64_t raw;
-                } EAX;
-
-                union
-                {
-                    struct
-                    {
-                        /** @brief Hypervisor vendor signature */
-                        char Hypervisor[4];
-                    };
-                    uint64_t raw;
-                } EBX;
-
-                union
-                {
-                    struct
-                    {
-                        /** @brief Hypervisor vendor signature */
-                        char Hypervisor[4];
-                    };
-                    uint64_t raw;
-                } ECX;
-
-                union
-                {
-                    struct
-                    {
-                        /** @brief Hypervisor vendor signature */
-                        char Hypervisor[4];
-                    };
-                    uint64_t raw;
-                } EDX;
-            };
-
             /** @brief Extended CPU information */
             struct CPUID0x80000000
             {
