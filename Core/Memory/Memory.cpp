@@ -84,7 +84,7 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
         va.Map((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
         size_t MemSize = Info->Memory.Size;
         for (size_t t = 0; t < MemSize; t += PAGE_SIZE)
-            va.Map((void *)t, (void *)t, PTFlag::RW /* | PTFlag::US */);
+            va.Map((void *)t, (void *)t, PTFlag::RW);
     }
     else
     {

@@ -53,7 +53,11 @@ extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 // geopbyte
 #define TO_GPB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 
-#define PAGE_SIZE 0x1000       // 4KB
+#define PAGE_SIZE 0x1000        // 4KB
+#define PAGE_SIZE_4K PAGE_SIZE  // 4KB
+#define PAGE_SIZE_2M 0x200000   // 2MB
+#define PAGE_SIZE_1G 0x40000000 // 1GB
+
 #define STACK_SIZE 0x4000      // 16kb
 #define USER_STACK_SIZE 0x2000 // 8kb
 
@@ -421,24 +425,28 @@ namespace Memory
 
     public:
         Bitmap GetPageBitmap() { return PageBitmap; }
+
         /**
          * @brief Get Total Memory
          *
          * @return uint64_t
          */
         uint64_t GetTotalMemory();
+
         /**
          * @brief Get Free Memory
          *
          * @return uint64_t
          */
         uint64_t GetFreeMemory();
+
         /**
          * @brief Get Reserved Memory
          *
          * @return uint64_t
          */
         uint64_t GetReservedMemory();
+
         /**
          * @brief Get Used Memory
          *
@@ -454,6 +462,7 @@ namespace Memory
          * @return false if swap was unsuccessful
          */
         bool SwapPage(void *Address);
+
         /**
          * @brief Swap pages
          *
@@ -463,6 +472,7 @@ namespace Memory
          * @return false if swap was unsuccessful
          */
         bool SwapPages(void *Address, size_t PageCount);
+
         /**
          * @brief Unswap page
          *
@@ -471,6 +481,7 @@ namespace Memory
          * @return false if unswap was unsuccessful
          */
         bool UnswapPage(void *Address);
+
         /**
          * @brief Unswap pages
          *
@@ -487,6 +498,7 @@ namespace Memory
          * @param Address Address of the page
          */
         void LockPage(void *Address);
+
         /**
          * @brief Lock pages
          *
@@ -501,6 +513,7 @@ namespace Memory
          * @return void* Allocated page address
          */
         void *RequestPage();
+
         /**
          * @brief Request pages
          *
@@ -508,12 +521,14 @@ namespace Memory
          * @return void* Allocated pages address
          */
         void *RequestPages(size_t Count);
+
         /**
          * @brief Free page
          *
          * @param Address Address of the page
          */
         void FreePage(void *Address);
+
         /**
          * @brief Free pages
          *
@@ -521,10 +536,13 @@ namespace Memory
          * @param PageCount Number of pages
          */
         void FreePages(void *Address, size_t Count);
+
         /** @brief Do not use. */
         void Init(BootInfo *Info);
+
         /** @brief Do not use. */
         Physical();
+
         /** @brief Do not use. */
         ~Physical();
     };
