@@ -36,8 +36,7 @@ namespace Video
             PSF2_HEADER *font2 = (PSF2_HEADER *)KernelAllocator.RequestPages(FontDataLength / PAGE_SIZE + 1);
             memcpy((void *)font2, Start, FontDataLength);
 
-            for (uintptr_t i = 0; i < FontDataLength / PAGE_SIZE + 1; i++)
-                Memory::Virtual().Map((void *)(font2 + (i * PAGE_SIZE)), (void *)(font2 + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+            Memory::Virtual().Map((void *)font2, (void *)font2, FontDataLength, Memory::PTFlag::RW);
 
             if (font2->magic[0] != PSF2_MAGIC0 || font2->magic[1] != PSF2_MAGIC1 || font2->magic[2] != PSF2_MAGIC2 || font2->magic[3] != PSF2_MAGIC3)
             {

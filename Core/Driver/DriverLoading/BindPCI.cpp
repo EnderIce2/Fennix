@@ -33,8 +33,6 @@ namespace Driver
 {
     void Driver::MapPCIAddresses(PCI::PCIDeviceHeader *PCIDevice)
     {
-        Memory::Virtual vma = Memory::Virtual(nullptr);
-
         debug("Header Type: %d", PCIDevice->HeaderType);
         switch (PCIDevice->HeaderType)
         {
@@ -103,12 +101,7 @@ namespace Driver
                     size_t BARSize = BARsSize[i];
 
                     debug("Mapping BAR%d from %#lx to %#lx", i, BARBase, BARBase + BARSize);
-                    for (uintptr_t j = BARBase;
-                         j < (BARBase + BARSize);
-                         j += PAGE_SIZE)
-                    {
-                        vma.Map((void *)j, (void *)j, Memory::PTFlag::RW | Memory::PTFlag::PWT);
-                    }
+                    Memory::Virtual().Map((void *)BARBase, (void *)BARBase, BARSize, Memory::PTFlag::RW | Memory::PTFlag::PWT);
                 }
                 else if ((BAR[i] & 1) == 1) // I/O Base
                 {
@@ -116,12 +109,7 @@ namespace Driver
                     uintptr_t BARSize = BARsSize[i];
 
                     debug("Mapping BAR%d from %#x to %#x", i, BARBase, BARBase + BARSize);
-                    for (uintptr_t j = BARBase;
-                         j < (BARBase + BARSize);
-                         j += PAGE_SIZE)
-                    {
-                        vma.Map((void *)j, (void *)j, Memory::PTFlag::RW | Memory::PTFlag::PWT);
-                    }
+                    Memory::Virtual().Map((void *)BARBase, (void *)BARBase, BARSize, Memory::PTFlag::RW | Memory::PTFlag::PWT);
                 }
             }
             break;

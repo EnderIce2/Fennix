@@ -92,7 +92,7 @@ namespace Execute
         void *LibFile = mem->RequestPages(TO_PAGES(Length), true);
         debug("LibFile: %#lx", LibFile);
         memcpy(LibFile, (void *)ElfImage, Length);
-        Memory::Virtual().Map(LibFile, LibFile, TO_PAGES(Length), Memory::RW | Memory::US | Memory::G);
+        Memory::Virtual().Map(LibFile, LibFile, Length, Memory::RW | Memory::US | Memory::G);
 
         Memory::Virtual ncpV = pV;
         sl.MemoryImage = r_cst(uint64_t, ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Phyiscal);

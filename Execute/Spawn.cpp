@@ -61,9 +61,7 @@ namespace Execute
                     void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->node->Length));
                     memcpy(BaseImage, (void *)ExFile->node->Address, ExFile->node->Length);
 
-                    Memory::Virtual pva = Memory::Virtual(Process->PageTable);
-                    for (size_t i = 0; i < TO_PAGES(ExFile->node->Length); i++)
-                        pva.Map((void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), (void *)((uintptr_t)BaseImage + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                    Memory::Virtual(Process->PageTable).Map((void *)BaseImage, (void *)BaseImage, ExFile->node->Length, Memory::PTFlag::RW | Memory::PTFlag::US);
 
                     std::vector<AuxiliaryVector> auxv; // TODO!
 

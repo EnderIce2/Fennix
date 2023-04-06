@@ -103,13 +103,10 @@ namespace SMP
                 ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
                 ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
 
-                Memory::Virtual vma = Memory::Virtual(KernelPageTable);
-
-                vma.Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
+                Memory::Virtual(KernelPageTable).Map(0x0, 0x0, Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 uint64_t TrampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
-                for (uint64_t i = 0; i < (TrampolineLength / PAGE_SIZE) + 2; i++)
-                    vma.Map((void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), (void *)(TRAMPOLINE_START + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);
+                Memory::Virtual(KernelPageTable).Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START, TrampolineLength, Memory::PTFlag::RW | Memory::PTFlag::US);
 
                 memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
 

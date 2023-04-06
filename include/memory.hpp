@@ -174,7 +174,7 @@ namespace Memory
 
     /* 2.2 Paging in IA-32e Mode - https://composter.com.ua/documents/TLBs_Paging-Structure_Caches_and_Their_Invalidation.pdf */
 
-    union __attribute__((packed)) PageTableEntry
+    union __packed PageTableEntry
     {
         struct
         {
@@ -187,10 +187,10 @@ namespace Memory
             bool Dirty : 1;              // 6
             bool PageAttributeTable : 1; // 7
             bool Global : 1;             // 8
-            uint8_t Available0 : 3;      // 9-11
-            uint64_t Address : 40;       // 12-51
-            uint32_t Available1 : 7;     // 52-58
-            uint8_t ProtectionKey : 4;   // 59-62
+            char Available0 : 3;         // 9-11
+            long Address : 40;           // 12-51
+            char Available1 : 7;         // 52-58
+            char ProtectionKey : 4;      // 59-62
             bool ExecuteDisable : 1;     // 63
         };
         uint64_t raw;
@@ -226,28 +226,49 @@ namespace Memory
         }
     };
 
-    struct __attribute__((packed)) PageTableEntryPtr
+    struct __packed PageTableEntryPtr
     {
         PageTableEntry Entries[511];
     };
 
-    union __attribute__((packed)) PageDirectoryEntry
+    union __packed PageDirectoryEntry
     {
         struct
         {
-            bool Present : 1;         // 0
-            bool ReadWrite : 1;       // 1
-            bool UserSupervisor : 1;  // 2
-            bool WriteThrough : 1;    // 3
-            bool CacheDisable : 1;    // 4
-            bool Accessed : 1;        // 5
-            bool Available0 : 1;      // 6
-            bool PageSize : 1;        // 7
-            uint8_t Available1 : 4;   // 8-11
-            uint64_t Address : 40;    // 12-51
-            uint32_t Available2 : 11; // 52-62
-            bool ExecuteDisable : 1;  // 63
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool PageSize : 1;       // 7
+            char Available1 : 4;     // 8-11
+            long Address : 40;       // 12-51
+            short Available2 : 11;   // 52-62
+            bool ExecuteDisable : 1; // 63
         };
+
+        struct
+        {
+            bool Present : 1;            // 0
+            bool ReadWrite : 1;          // 1
+            bool UserSupervisor : 1;     // 2
+            bool WriteThrough : 1;       // 3
+            bool CacheDisable : 1;       // 4
+            bool Accessed : 1;           // 5
+            bool Dirty : 1;              // 6
+            bool PageSize : 1;           // 7
+            bool Global : 1;             // 8
+            char Available0 : 3;         // 9-11
+            bool PageAttributeTable : 1; // 12
+            char Reserved0 : 8;          // 13-20
+            long Address : 31;           // 21-51
+            char Available1 : 7;         // 52-58
+            char ProtectionKey : 4;      // 59-62
+            bool ExecuteDisable : 1;     // 63
+        } TwoMB;
+
         uint64_t raw;
 
         /** @brief Set PageTableEntryPtr address */
@@ -281,28 +302,49 @@ namespace Memory
         }
     };
 
-    struct __attribute__((packed)) PageDirectoryEntryPtr
+    struct __packed PageDirectoryEntryPtr
     {
         PageDirectoryEntry Entries[511];
     };
 
-    union __attribute__((packed)) PageDirectoryPointerTableEntry
+    union __packed PageDirectoryPointerTableEntry
     {
         struct
         {
-            bool Present : 1;         // 0
-            bool ReadWrite : 1;       // 1
-            bool UserSupervisor : 1;  // 2
-            bool WriteThrough : 1;    // 3
-            bool CacheDisable : 1;    // 4
-            bool Accessed : 1;        // 5
-            bool Available0 : 1;      // 6
-            bool PageSize : 1;        // 7
-            uint8_t Available1 : 4;   // 8-11
-            uint64_t Address : 40;    // 12-51
-            uint32_t Available2 : 11; // 52-62
-            bool ExecuteDisable : 1;  // 63
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool PageSize : 1;       // 7
+            char Available1 : 4;     // 8-11
+            long Address : 40;       // 12-51
+            short Available2 : 11;   // 52-62
+            bool ExecuteDisable : 1; // 63
         };
+
+        struct
+        {
+            bool Present : 1;            // 0
+            bool ReadWrite : 1;          // 1
+            bool UserSupervisor : 1;     // 2
+            bool WriteThrough : 1;       // 3
+            bool CacheDisable : 1;       // 4
+            bool Accessed : 1;           // 5
+            bool Dirty : 1;              // 6
+            bool PageSize : 1;           // 7
+            bool Global : 1;             // 8
+            char Available0 : 3;         // 9-11
+            bool PageAttributeTable : 1; // 12
+            int Reserved0 : 17;          // 13-29
+            long Address : 22;           // 30-51
+            char Available1 : 7;         // 52-58
+            char ProtectionKey : 4;      // 59-62
+            bool ExecuteDisable : 1;     // 63
+        } OneGB;
+
         uint64_t raw;
 
         /** @brief Set PageDirectoryEntryPtr address */
@@ -336,27 +378,27 @@ namespace Memory
         }
     };
 
-    struct __attribute__((packed)) PageDirectoryPointerTableEntryPtr
+    struct __packed PageDirectoryPointerTableEntryPtr
     {
         PageDirectoryPointerTableEntry Entries[511];
     };
 
-    union __attribute__((packed)) PageMapLevel4
+    union __packed PageMapLevel4
     {
         struct
         {
-            bool Present : 1;         // 0
-            bool ReadWrite : 1;       // 1
-            bool UserSupervisor : 1;  // 2
-            bool WriteThrough : 1;    // 3
-            bool CacheDisable : 1;    // 4
-            bool Accessed : 1;        // 5
-            bool Available0 : 1;      // 6
-            bool Reserved0 : 1;       // 7
-            uint8_t Available1 : 4;   // 8-11
-            uint64_t Address : 40;    // 12-51
-            uint32_t Available2 : 11; // 52-62
-            bool ExecuteDisable : 1;  // 63
+            bool Present : 1;        // 0
+            bool ReadWrite : 1;      // 1
+            bool UserSupervisor : 1; // 2
+            bool WriteThrough : 1;   // 3
+            bool CacheDisable : 1;   // 4
+            bool Accessed : 1;       // 5
+            bool Available0 : 1;     // 6
+            bool Reserved0 : 1;      // 7
+            char Available1 : 4;     // 8-11
+            long Address : 40;       // 12-51
+            short Available2 : 11;   // 52-62
+            bool ExecuteDisable : 1; // 63
         };
         uint64_t raw;
 
@@ -396,7 +438,7 @@ namespace Memory
         PageMapLevel4 Entries[511];
     } __attribute__((aligned(0x1000)));
 
-    struct __attribute__((packed)) PageMapLevel5
+    struct __packed PageMapLevel5
     {
         /* FIXME: NOT IMPLEMENTED! */
     };
@@ -554,6 +596,13 @@ namespace Memory
         PageTable4 *Table = nullptr;
 
     public:
+        enum MapType
+        {
+            FourKB,
+            TwoMB,
+            OneGB
+        };
+
         class PageMapIndexer
         {
         public:
@@ -572,7 +621,7 @@ namespace Memory
          * @return true if page has the specified flag.
          * @return false if page is has the specified flag.
          */
-        bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
+        bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P, MapType Type = MapType::FourKB);
 
         /**
          * @brief Get physical address of the page.
@@ -588,7 +637,7 @@ namespace Memory
          * @param PhysicalAddress Physical address of the page.
          * @param Flags Flags of the page. Check PTFlag enum.
          */
-        void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flag = PTFlag::P);
+        void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flag = PTFlag::P, MapType Type = MapType::FourKB);
 
         /**
          * @brief Map multiple pages.
@@ -598,22 +647,22 @@ namespace Memory
          * @param PageCount Number of pages.
          * @param Flags Flags of the page. Check PTFlag enum.
          */
-        void Map(void *VirtualAddress, void *PhysicalAddress, size_t PageCount, uint64_t Flags);
+        void Map(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, MapType Type = MapType::FourKB);
 
         /**
          * @brief Unmap page.
          *
          * @param VirtualAddress Virtual address of the page.
          */
-        void Unmap(void *VirtualAddress);
+        void Unmap(void *VirtualAddress, MapType Type = MapType::FourKB);
 
         /**
          * @brief Unmap multiple pages.
          *
          * @param VirtualAddress First virtual address of the page.
-         * @param PageCount Number of pages.
+         * @param Length Number of pages.
          */
-        void Unmap(void *VirtualAddress, size_t PageCount);
+        void Unmap(void *VirtualAddress, size_t Length, MapType Type = MapType::FourKB);
 
         /**
          * @brief Remap page.
@@ -622,7 +671,7 @@ namespace Memory
          * @param PhysicalAddress Physical address of the page.
          * @param Flags Flags of the page. Check PTFlag enum.
          */
-        void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags);
+        void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type = MapType::FourKB);
 
         /**
          * @brief Construct a new Virtual object

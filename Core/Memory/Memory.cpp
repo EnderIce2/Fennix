@@ -75,22 +75,47 @@ NIF void tracepagetable(PageTable4 *pt)
 
 NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
 {
-    static int once = 0;
-    if (!once++)
+    bool Page1GBSupport = false;
+    bool PSESupport = false;
+
+    if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
     {
-        Virtual va = Virtual(PT);
-        void *NullAddress = KernelAllocator.RequestPage();
-        memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
-        va.Map((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
-        size_t MemSize = Info->Memory.Size;
-        for (size_t t = 0; t < MemSize; t += PAGE_SIZE)
-            va.Map((void *)t, (void *)t, PTFlag::RW);
+        CPU::x86::AMD::CPUID0x80000001 cpuid;
+        cpuid.Get();
+        Page1GBSupport = cpuid.EDX.Page1GB;
+        PSESupport = cpuid.EDX.PSE;
+    }
+    else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+    {
+        CPU::x86::Intel::CPUID0x80000001 cpuid;
+        cpuid.Get();
+    }
+
+    Virtual va = Virtual(PT);
+    size_t MemSize = Info->Memory.Size;
+
+    if (Page1GBSupport && PSESupport)
+    {
+        debug("1GB Page Support Enabled");
+#if defined(a64)
+        CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+        cr4.PSE = 1;
+        CPU::x64::writecr4(cr4);
+#elif defined(a32)
+        CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+        cr4.PSE = 1;
+        CPU::x32::writecr4(cr4);
+#elif defined(aa64)
+#endif
+
+        va.Map((void *)0, (void *)0, MemSize, PTFlag::RW | PTFlag::PS /* , Virtual::MapType::OneGB */);
     }
     else
-    {
-        error("MapFromZero() called more than once!");
-        CPU::Stop();
-    }
+        va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
+
+    void *NullAddress = KernelAllocator.RequestPage();
+    memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
+    va.Remap((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
 }
 
 NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
@@ -151,7 +176,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     /* Text section */
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
-        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW);
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.LockPage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
