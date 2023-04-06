@@ -20,19 +20,17 @@
 
 #include <types.h>
 
-#include <cstring>
-#include <cpu/x86/x32/cpuid_amd.hpp>
-#include <cpu/x86/x32/cpuid_intel.hpp>
+#include <cpu/x86/cpuid_intel.hpp>
+#include <cpu/x86/cpuid_amd.hpp>
 #include <cpu/x86/x32/cr.hpp>
 #include <cpu/x86/x32/msr.hpp>
-#include <cpu/x86/x64/cpuid_amd.hpp>
-#include <cpu/x86/x64/cpuid_intel.hpp>
 #include <cpu/x86/x64/cr.hpp>
 #include <cpu/x86/x64/msr.hpp>
 #include <cpu/x86/exceptions.hpp>
 #include <cpu/x86/interrupts.hpp>
 #include <cpu/signatures.hpp>
 #include <cpu/membar.hpp>
+#include <cstring>
 
 /**
  * @brief CPU related functions.

@@ -15,14 +15,14 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_CPU_x64_CPUID_AMD_H__
-#define __FENNIX_KERNEL_CPU_x64_CPUID_AMD_H__
+#ifndef __FENNIX_KERNEL_CPU_x86_CPUID_AMD_H__
+#define __FENNIX_KERNEL_CPU_x86_CPUID_AMD_H__
 
 #include <types.h>
 
 namespace CPU
 {
-    namespace x64
+    namespace x86
     {
         /** @brief EXPERIMENTAL IMPLEMENTATION */
         namespace AMD
@@ -30,12 +30,21 @@ namespace CPU
             /** @brief Basic CPU information */
             struct CPUID0x00000000
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Largest Standard Function Number */
                 union
                 {
                     struct
                     {
-                        uint64_t LFuncStd : 32;
+                        uint32_t LFuncStd : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -74,19 +83,28 @@ namespace CPU
             /** @brief Additional CPU information */
             struct CPUID0x00000001
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Family, Model, Stepping Identifiers */
                 union
                 {
                     /* "This function is an identical copy of CPUID Fn8000_0001_EAX." */
                     struct
                     {
-                        uint64_t Stepping : 4;
-                        uint64_t BaseModel : 4;
-                        uint64_t BaseFamily : 4;
-                        uint64_t Reserved0 : 4;
-                        uint64_t ExtModel : 4;
-                        uint64_t ExtFamily : 8;
-                        uint64_t Reserved1 : 4;
+                        uint32_t Stepping : 4;
+                        uint32_t BaseModel : 4;
+                        uint32_t BaseFamily : 4;
+                        uint32_t Reserved0 : 4;
+                        uint32_t ExtModel : 4;
+                        uint32_t ExtFamily : 8;
+                        uint32_t Reserved1 : 4;
                     };
                     uint64_t raw;
                 } EAX;
@@ -96,10 +114,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t BrandId : 8;
-                        uint64_t CLFlush : 8;
-                        uint64_t LogicalProcessorCount : 8;
-                        uint64_t LocalApicId : 8;
+                        uint32_t BrandId : 8;
+                        uint32_t CLFlush : 8;
+                        uint32_t LogicalProcessorCount : 8;
+                        uint32_t LocalApicId : 8;
                     };
                     uint64_t raw;
                 } EBX;
@@ -109,33 +127,33 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t SSE3 : 1;
-                        uint64_t PCLMULQDQ : 1;
-                        uint64_t Reserved0 : 1;
-                        uint64_t MONITOR : 1;
-                        uint64_t Reserved1 : 5;
-                        uint64_t SSSE3 : 1;
-                        uint64_t Reserved2 : 2;
-                        uint64_t FMA : 1;
-                        uint64_t CMPXCHG16B : 1;
-                        uint64_t Reserved3 : 5;
-                        uint64_t SSE41 : 1;
-                        uint64_t SSE42 : 1;
-                        uint64_t x2APIC : 1;
-                        uint64_t MOVBE : 1;
-                        uint64_t POPCNT : 1;
-                        uint64_t Reserved4 : 1;
-                        uint64_t AES : 1;
-                        uint64_t XSAVE : 1;
-                        uint64_t OSXSAVE : 1;
-                        uint64_t AVX : 1;
-                        uint64_t F16C : 1;
-                        uint64_t RDRAND : 1;
+                        uint32_t SSE3 : 1;
+                        uint32_t PCLMULQDQ : 1;
+                        uint32_t Reserved0 : 1;
+                        uint32_t MONITOR : 1;
+                        uint32_t Reserved1 : 5;
+                        uint32_t SSSE3 : 1;
+                        uint32_t Reserved2 : 2;
+                        uint32_t FMA : 1;
+                        uint32_t CMPXCHG16B : 1;
+                        uint32_t Reserved3 : 5;
+                        uint32_t SSE41 : 1;
+                        uint32_t SSE42 : 1;
+                        uint32_t x2APIC : 1;
+                        uint32_t MOVBE : 1;
+                        uint32_t POPCNT : 1;
+                        uint32_t Reserved4 : 1;
+                        uint32_t AES : 1;
+                        uint32_t XSAVE : 1;
+                        uint32_t OSXSAVE : 1;
+                        uint32_t AVX : 1;
+                        uint32_t F16C : 1;
+                        uint32_t RDRAND : 1;
 
                         /**
                          * @brief Reserved for use by hypervisor to indicate guest status.
                          */
-                        uint64_t Hypervisor : 1;
+                        uint32_t Hypervisor : 1;
                     };
                     uint64_t raw;
                 } ECX;
@@ -145,34 +163,34 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t FPU : 1;
-                        uint64_t VME : 1;
-                        uint64_t DE : 1;
-                        uint64_t PSE : 1;
-                        uint64_t TSC : 1;
-                        uint64_t MSR : 1;
-                        uint64_t PAE : 1;
-                        uint64_t MCE : 1;
-                        uint64_t CMPXCHG8B : 1;
-                        uint64_t APIC : 1;
-                        uint64_t Reserved0 : 1;
-                        uint64_t SysEnterSysExit : 1;
-                        uint64_t MTRR : 1;
-                        uint64_t PGE : 1;
-                        uint64_t MCA : 1;
-                        uint64_t CMOV : 1;
-                        uint64_t PAT : 1;
-                        uint64_t PSE36 : 1;
-                        uint64_t Reserved1 : 1;
-                        uint64_t CLFSH : 1;
-                        uint64_t Reserved2 : 3;
-                        uint64_t MMX : 1;
-                        uint64_t FXSR : 1;
-                        uint64_t SSE : 1;
-                        uint64_t SSE2 : 1;
-                        uint64_t Reserved3 : 1;
-                        uint64_t HTT : 1;
-                        uint64_t Reserved4 : 3;
+                        uint32_t FPU : 1;
+                        uint32_t VME : 1;
+                        uint32_t DE : 1;
+                        uint32_t PSE : 1;
+                        uint32_t TSC : 1;
+                        uint32_t MSR : 1;
+                        uint32_t PAE : 1;
+                        uint32_t MCE : 1;
+                        uint32_t CMPXCHG8B : 1;
+                        uint32_t APIC : 1;
+                        uint32_t Reserved0 : 1;
+                        uint32_t SysEnterSysExit : 1;
+                        uint32_t MTRR : 1;
+                        uint32_t PGE : 1;
+                        uint32_t MCA : 1;
+                        uint32_t CMOV : 1;
+                        uint32_t PAT : 1;
+                        uint32_t PSE36 : 1;
+                        uint32_t Reserved1 : 1;
+                        uint32_t CLFSH : 1;
+                        uint32_t Reserved2 : 3;
+                        uint32_t MMX : 1;
+                        uint32_t FXSR : 1;
+                        uint32_t SSE : 1;
+                        uint32_t SSE2 : 1;
+                        uint32_t Reserved3 : 1;
+                        uint32_t HTT : 1;
+                        uint32_t Reserved4 : 3;
                     };
                     uint64_t raw;
                 } EDX;
@@ -181,13 +199,22 @@ namespace CPU
             /** @brief Monitor and MWait Features */
             struct CPUID0x00000005
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Monitor/MWait */
                 union
                 {
                     struct
                     {
-                        uint64_t MonLineSizeMin : 16;
-                        uint64_t Reserved0 : 16;
+                        uint32_t MonLineSizeMin : 16;
+                        uint32_t Reserved0 : 16;
                     };
                     uint64_t raw;
                 } EAX;
@@ -197,8 +224,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t MonLineSizeMax : 16;
-                        uint64_t Reserved0 : 16;
+                        uint32_t MonLineSizeMax : 16;
+                        uint32_t Reserved0 : 16;
                     };
                     uint64_t raw;
                 } EBX;
@@ -208,9 +235,9 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t EMX : 1;
-                        uint64_t IBE : 1;
-                        uint64_t Reserved0 : 30;
+                        uint32_t EMX : 1;
+                        uint32_t IBE : 1;
+                        uint32_t Reserved0 : 30;
                     };
                     uint64_t raw;
                 } ECX;
@@ -220,7 +247,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -229,14 +256,23 @@ namespace CPU
             /** @brief Power Management Related Features */
             struct CPUID0x00000006
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Local APIC Timer Invariance */
                 union
                 {
                     struct
                     {
-                        uint64_t Reserved0 : 2;
-                        uint64_t ARAT : 1;
-                        uint64_t Reserved1 : 29;
+                        uint32_t Reserved0 : 2;
+                        uint32_t ARAT : 1;
+                        uint32_t Reserved1 : 29;
                     };
                     uint64_t raw;
                 } EAX;
@@ -246,7 +282,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -256,8 +292,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t EffFreq : 1;
-                        uint64_t Reserved0 : 31;
+                        uint32_t EffFreq : 1;
+                        uint32_t Reserved0 : 31;
                     };
                     uint64_t raw;
                 } ECX;
@@ -267,7 +303,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -276,12 +312,21 @@ namespace CPU
             /** @brief Structured Extended Feature Identifiers */
             struct CPUID0x00000007
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Structured Extended Feature Identifiers */
                 union
                 {
                     struct
                     {
-                        uint64_t MaxSubFn : 32;
+                        uint32_t MaxSubFn : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -291,31 +336,31 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t FSGSBASE : 1;
-                        uint64_t Reserved0 : 2;
-                        uint64_t BMI1 : 1;
-                        uint64_t Reserved1 : 1;
-                        uint64_t AVX2 : 1;
-                        uint64_t Reserved2 : 1;
-                        uint64_t SMEP : 1;
-                        uint64_t BMI2 : 1;
-                        uint64_t Reserved3 : 1;
-                        uint64_t INVPCID : 1;
-                        uint64_t Reserved4 : 1;
-                        uint64_t PQM : 1;
-                        uint64_t Reserved5 : 2;
-                        uint64_t PQE : 1;
-                        uint64_t Reserved6 : 2;
-                        uint64_t RDSEED : 1;
-                        uint64_t ADX : 1;
-                        uint64_t SMAP : 1;
-                        uint64_t Reserved7 : 1;
-                        uint64_t RDPID : 1;
-                        uint64_t CLFLUSHOPT : 1;
-                        uint64_t CLWB : 1;
-                        uint64_t Reserved8 : 4;
-                        uint64_t SHA : 1;
-                        uint64_t Reserved9 : 2;
+                        uint32_t FSGSBASE : 1;
+                        uint32_t Reserved0 : 2;
+                        uint32_t BMI1 : 1;
+                        uint32_t Reserved1 : 1;
+                        uint32_t AVX2 : 1;
+                        uint32_t Reserved2 : 1;
+                        uint32_t SMEP : 1;
+                        uint32_t BMI2 : 1;
+                        uint32_t Reserved3 : 1;
+                        uint32_t INVPCID : 1;
+                        uint32_t Reserved4 : 1;
+                        uint32_t PQM : 1;
+                        uint32_t Reserved5 : 2;
+                        uint32_t PQE : 1;
+                        uint32_t Reserved6 : 2;
+                        uint32_t RDSEED : 1;
+                        uint32_t ADX : 1;
+                        uint32_t SMAP : 1;
+                        uint32_t Reserved7 : 1;
+                        uint32_t RDPID : 1;
+                        uint32_t CLFLUSHOPT : 1;
+                        uint32_t CLWB : 1;
+                        uint32_t Reserved8 : 4;
+                        uint32_t SHA : 1;
+                        uint32_t Reserved9 : 2;
                     };
                     uint64_t raw;
                 } EBX;
@@ -325,18 +370,18 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved0 : 2;
-                        uint64_t UMIP : 1;
-                        uint64_t PKU : 1;
-                        uint64_t OSPKE : 1;
-                        uint64_t Reserved1 : 2;
-                        uint64_t CET_SS : 1;
-                        uint64_t Reserved2 : 1;
-                        uint64_t VAES : 1;
-                        uint64_t VPCLMULQDQ : 1;
-                        uint64_t Reserved3 : 5;
-                        uint64_t LA57 : 1;
-                        uint64_t Reserved4 : 15;
+                        uint32_t Reserved0 : 2;
+                        uint32_t UMIP : 1;
+                        uint32_t PKU : 1;
+                        uint32_t OSPKE : 1;
+                        uint32_t Reserved1 : 2;
+                        uint32_t CET_SS : 1;
+                        uint32_t Reserved2 : 1;
+                        uint32_t VAES : 1;
+                        uint32_t VPCLMULQDQ : 1;
+                        uint32_t Reserved3 : 5;
+                        uint32_t LA57 : 1;
+                        uint32_t Reserved4 : 15;
                     };
                     uint64_t raw;
                 } ECX;
@@ -346,7 +391,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -355,13 +400,22 @@ namespace CPU
             /** @brief Thread Level - Extended Topology Enumeration */
             struct CPUID0x0000000B_ECX_0
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Extended Topology Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t ThreadMaskWidth : 5;
-                        uint64_t Reserved0 : 27;
+                        uint32_t ThreadMaskWidth : 5;
+                        uint32_t Reserved0 : 27;
                     };
                     uint64_t raw;
                 } EAX;
@@ -371,8 +425,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t NumberOfThreadsInACore : 5; /* No field name */
-                        uint64_t Reserved0 : 27;
+                        uint32_t NumberOfThreadsInACore : 5; /* No field name */
+                        uint32_t Reserved0 : 27;
                     };
                     uint64_t raw;
                 } EBX;
@@ -382,9 +436,9 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t ECXInputValue : 8;
-                        uint64_t LevelNumber : 8;
-                        uint64_t Reserved0 : 16;
+                        uint32_t ECXInputValue : 8;
+                        uint32_t LevelNumber : 8;
+                        uint32_t Reserved0 : 16;
                     };
                     uint64_t raw;
                 } ECX;
@@ -394,7 +448,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t x2APID_ID : 32;
+                        uint32_t x2APID_ID : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -403,13 +457,22 @@ namespace CPU
             /** @brief Core Level - Extended Topology Enumeration */
             struct CPUID0x0000000B_ECX_1
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Extended Topology Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t CoreMaskWidth : 5;
-                        uint64_t Reserved0 : 27;
+                        uint32_t CoreMaskWidth : 5;
+                        uint32_t Reserved0 : 27;
                     };
                     uint64_t raw;
                 } EAX;
@@ -419,8 +482,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t NumberOfLogicalCoresInSocket : 5; /* No field name */
-                        uint64_t Reserved0 : 27;
+                        uint32_t NumberOfLogicalCoresInSocket : 5; /* No field name */
+                        uint32_t Reserved0 : 27;
                     };
                     uint64_t raw;
                 } EBX;
@@ -430,9 +493,9 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t ECXInputValue : 8;
-                        uint64_t LevelNumber : 8;
-                        uint64_t Reserved0 : 16;
+                        uint32_t ECXInputValue : 8;
+                        uint32_t LevelNumber : 8;
+                        uint32_t Reserved0 : 16;
                     };
                     uint64_t raw;
                 } ECX;
@@ -442,7 +505,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t x2APID_ID : 32;
+                        uint32_t x2APID_ID : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -451,12 +514,21 @@ namespace CPU
             /** @brief Processor Extended State Enumeration */
             struct CPUID0x0000000D_ECX_0
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Processor Extended State Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t XFeatureSupportedMask : 32;
+                        uint32_t XFeatureSupportedMask : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -466,7 +538,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t XFeatureEnabledSizeMax : 32;
+                        uint32_t XFeatureEnabledSizeMax : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -476,7 +548,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t XFeatureSupportedSizeMax : 32;
+                        uint32_t XFeatureSupportedSizeMax : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -486,7 +558,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t XFeatureSupportedMask : 32;
+                        uint32_t XFeatureSupportedMask : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -495,16 +567,25 @@ namespace CPU
             /** @brief Processor Extended State Enumeration */
             struct CPUID0x0000000D_ECX_1
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Processor Extended State Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t XSAVEOPT : 1;
-                        uint64_t XSAVEC : 1;
-                        uint64_t XGETBV : 1;
-                        uint64_t XSAVES : 1;
-                        uint64_t Reserved0 : 28;
+                        uint32_t XSAVEOPT : 1;
+                        uint32_t XSAVEC : 1;
+                        uint32_t XGETBV : 1;
+                        uint32_t XSAVES : 1;
+                        uint32_t Reserved0 : 28;
                     };
                     uint64_t raw;
                 } EAX;
@@ -524,7 +605,7 @@ namespace CPU
                          * + ((XSS[CET_U] == 1) ? 0000_0010h : 0)
                          * + ((XSS[CET_S] == 1) ? 0000_0018h : 0)
                          */
-                        uint64_t ebx : 32;
+                        uint32_t ebx : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -534,10 +615,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved0 : 11;
-                        uint64_t CET_U : 1;
-                        uint64_t CET_S : 1;
-                        uint64_t Reserved1 : 19;
+                        uint32_t Reserved0 : 11;
+                        uint32_t CET_U : 1;
+                        uint32_t CET_S : 1;
+                        uint32_t Reserved1 : 19;
                     };
                     uint64_t raw;
                 } ECX;
@@ -547,7 +628,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -556,12 +637,21 @@ namespace CPU
             /** @brief Processor Extended State Enumeration */
             struct CPUID0x0000000D_ECX_2
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Processor Extended State Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t YmmSaveStateSize : 32;
+                        uint32_t YmmSaveStateSize : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -571,7 +661,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t YmmSaveStateOffset : 32;
+                        uint32_t YmmSaveStateOffset : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -581,7 +671,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -591,7 +681,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -600,12 +690,21 @@ namespace CPU
             /** @brief Processor Extended State Emulation */
             struct CPUID0x0000000D_ECX_11
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Processor Extended State Emulation */
                 union
                 {
                     struct
                     {
-                        uint64_t CetSupervisorSize : 32;
+                        uint32_t CetSupervisorSize : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -615,7 +714,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t CetSupervisorOffset : 32;
+                        uint32_t CetSupervisorOffset : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -625,8 +724,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 31;
-                        uint64_t US : 1;
+                        uint32_t Reserved : 31;
+                        uint32_t US : 1;
                     };
                     uint64_t raw;
                 } ECX;
@@ -636,7 +735,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Unused : 32;
+                        uint32_t Unused : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -645,12 +744,21 @@ namespace CPU
             /** @brief Processor Extended State Enumeration */
             struct CPUID0x0000000D_ECX_3H
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Processor Extended State Enumeration */
                 union
                 {
                     struct
                     {
-                        uint64_t LwpSaveStateSize : 32;
+                        uint32_t LwpSaveStateSize : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -660,7 +768,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t LwpSaveStateOffset : 32;
+                        uint32_t LwpSaveStateOffset : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -670,7 +778,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -680,7 +788,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -689,12 +797,21 @@ namespace CPU
             /** @brief Maximum Extended Function Number and Vendor String */
             struct CPUID0x80000000
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Largest Extended Function Number */
                 union
                 {
                     struct
                     {
-                        uint64_t LFuncExt : 32;
+                        uint32_t LFuncExt : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -733,19 +850,28 @@ namespace CPU
             /** @brief Extended Processor and Processor Feature Identifiers */
             struct CPUID0x80000001
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief AMD Family, Model, Stepping */
                 union
                 {
                     /* "This function is an identical copy of CPUID Fn0000_0001_EAX." */
                     struct
                     {
-                        uint64_t Stepping : 4;
-                        uint64_t BaseModel : 4;
-                        uint64_t BaseFamily : 4;
-                        uint64_t Reserved0 : 4;
-                        uint64_t ExtendedModel : 4;
-                        uint64_t ExtendedFamily : 8;
-                        uint64_t Reserved1 : 4;
+                        uint32_t Stepping : 4;
+                        uint32_t BaseModel : 4;
+                        uint32_t BaseFamily : 4;
+                        uint32_t Reserved0 : 4;
+                        uint32_t ExtendedModel : 4;
+                        uint32_t ExtendedFamily : 8;
+                        uint32_t Reserved1 : 4;
                     };
                     uint64_t raw;
                 } EAX;
@@ -755,9 +881,9 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t BrandId : 16;
-                        uint64_t Reserved0 : 12;
-                        uint64_t PkgType : 4;
+                        uint32_t BrandId : 16;
+                        uint32_t Reserved0 : 12;
+                        uint32_t PkgType : 4;
                     };
                     uint64_t raw;
                 } EBX;
@@ -767,36 +893,36 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t LahfSahf : 1;
-                        uint64_t CmpLegacy : 1;
-                        uint64_t SVM : 1;
-                        uint64_t ExtApicSpace : 1;
-                        uint64_t AltMovCr8 : 1;
-                        uint64_t ABM : 1;
-                        uint64_t SSE4A : 1;
-                        uint64_t MisAlignSse : 1;
-                        uint64_t ThreeDNowPrefetch : 1;
-                        uint64_t OSVW : 1;
-                        uint64_t IBS : 1;
-                        uint64_t XOP : 1;
-                        uint64_t SKINIT : 1;
-                        uint64_t WDT : 1;
-                        uint64_t Reserved0 : 1;
-                        uint64_t LWP : 1;
-                        uint64_t FMA4 : 1;
-                        uint64_t TCE : 1;
-                        uint64_t Reserved1 : 3;
-                        uint64_t TBM : 1;
-                        uint64_t TopologyExtensions : 1;
-                        uint64_t PerfCtrExtCore : 1;
-                        uint64_t PerfCtrExtNB : 1;
-                        uint64_t Reserved2 : 1;
-                        uint64_t DataBkptExt : 1;
-                        uint64_t PerfTsc : 1;
-                        uint64_t PerfCtrExtLLC : 1;
-                        uint64_t MONITORX : 1;
-                        uint64_t AddrMaskExt : 1;
-                        uint64_t Reserved3 : 1;
+                        uint32_t LahfSahf : 1;
+                        uint32_t CmpLegacy : 1;
+                        uint32_t SVM : 1;
+                        uint32_t ExtApicSpace : 1;
+                        uint32_t AltMovCr8 : 1;
+                        uint32_t ABM : 1;
+                        uint32_t SSE4A : 1;
+                        uint32_t MisAlignSse : 1;
+                        uint32_t ThreeDNowPrefetch : 1;
+                        uint32_t OSVW : 1;
+                        uint32_t IBS : 1;
+                        uint32_t XOP : 1;
+                        uint32_t SKINIT : 1;
+                        uint32_t WDT : 1;
+                        uint32_t Reserved0 : 1;
+                        uint32_t LWP : 1;
+                        uint32_t FMA4 : 1;
+                        uint32_t TCE : 1;
+                        uint32_t Reserved1 : 3;
+                        uint32_t TBM : 1;
+                        uint32_t TopologyExtensions : 1;
+                        uint32_t PerfCtrExtCore : 1;
+                        uint32_t PerfCtrExtNB : 1;
+                        uint32_t Reserved2 : 1;
+                        uint32_t DataBkptExt : 1;
+                        uint32_t PerfTsc : 1;
+                        uint32_t PerfCtrExtLLC : 1;
+                        uint32_t MONITORX : 1;
+                        uint32_t AddrMaskExt : 1;
+                        uint32_t Reserved3 : 1;
                     };
                     uint64_t raw;
                 } ECX;
@@ -806,37 +932,37 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t FPU : 1;
-                        uint64_t VME : 1;
-                        uint64_t DE : 1;
-                        uint64_t PSE : 1;
-                        uint64_t TSC : 1;
-                        uint64_t MSR : 1;
-                        uint64_t PAE : 1;
-                        uint64_t MCE : 1;
-                        uint64_t CMPXCHG8B : 1;
-                        uint64_t APIC : 1;
-                        uint64_t Reserved0 : 1;
-                        uint64_t SysCallSysRet : 1;
-                        uint64_t MTRR : 1;
-                        uint64_t PGE : 1;
-                        uint64_t MCA : 1;
-                        uint64_t CMOV : 1;
-                        uint64_t PAT : 1;
-                        uint64_t PSE36 : 1;
-                        uint64_t Reserved1 : 2;
-                        uint64_t NX : 1;
-                        uint64_t Reserved2 : 1;
-                        uint64_t MmxExt : 1;
-                        uint64_t MMX : 1;
-                        uint64_t FXSR : 1;
-                        uint64_t FFXSR : 1;
-                        uint64_t Page1GB : 1;
-                        uint64_t RDTSCP : 1;
-                        uint64_t Reserved3 : 1;
-                        uint64_t LM : 1;
-                        uint64_t ThreeDNowExtended : 1;
-                        uint64_t ThreeDNow : 1;
+                        uint32_t FPU : 1;
+                        uint32_t VME : 1;
+                        uint32_t DE : 1;
+                        uint32_t PSE : 1;
+                        uint32_t TSC : 1;
+                        uint32_t MSR : 1;
+                        uint32_t PAE : 1;
+                        uint32_t MCE : 1;
+                        uint32_t CMPXCHG8B : 1;
+                        uint32_t APIC : 1;
+                        uint32_t Reserved0 : 1;
+                        uint32_t SysCallSysRet : 1;
+                        uint32_t MTRR : 1;
+                        uint32_t PGE : 1;
+                        uint32_t MCA : 1;
+                        uint32_t CMOV : 1;
+                        uint32_t PAT : 1;
+                        uint32_t PSE36 : 1;
+                        uint32_t Reserved1 : 2;
+                        uint32_t NX : 1;
+                        uint32_t Reserved2 : 1;
+                        uint32_t MmxExt : 1;
+                        uint32_t MMX : 1;
+                        uint32_t FXSR : 1;
+                        uint32_t FFXSR : 1;
+                        uint32_t Page1GB : 1;
+                        uint32_t RDTSCP : 1;
+                        uint32_t Reserved3 : 1;
+                        uint32_t LM : 1;
+                        uint32_t ThreeDNowExtended : 1;
+                        uint32_t ThreeDNow : 1;
                     };
                     uint64_t raw;
                 } EDX;
@@ -845,6 +971,15 @@ namespace CPU
             /** @brief Extended Processor Name String */
             struct CPUID0x80000002
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 union
                 {
                     struct
@@ -885,6 +1020,15 @@ namespace CPU
             /** @brief Extended Processor Name String */
             struct CPUID0x80000003
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 union
                 {
                     struct
@@ -925,6 +1069,15 @@ namespace CPU
             /** @brief Extended Processor Name String */
             struct CPUID0x80000004
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 union
                 {
                     struct
@@ -965,15 +1118,24 @@ namespace CPU
             /** @brief L1 Cache and TLB Information */
             struct CPUID0x80000005
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief L1 TLB 2M/4M Information */
                 union
                 {
                     struct
                     {
-                        uint64_t L1ITlb2and4MSize : 8;
-                        uint64_t L1ITlb2and4MAssoc : 8;
-                        uint64_t L1DTlb2and4MSize : 8;
-                        uint64_t L1DTlb2and4MAssoc : 8;
+                        uint32_t L1ITlb2and4MSize : 8;
+                        uint32_t L1ITlb2and4MAssoc : 8;
+                        uint32_t L1DTlb2and4MSize : 8;
+                        uint32_t L1DTlb2and4MAssoc : 8;
                     };
                     uint64_t raw;
                 } EAX;
@@ -983,10 +1145,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L1ITlb4KSize : 8;
-                        uint64_t L1ITlb4KAssoc : 8;
-                        uint64_t L1DTlb4KSize : 8;
-                        uint64_t L1DTlb4KAssoc : 8;
+                        uint32_t L1ITlb4KSize : 8;
+                        uint32_t L1ITlb4KAssoc : 8;
+                        uint32_t L1DTlb4KSize : 8;
+                        uint32_t L1DTlb4KAssoc : 8;
                     };
                     uint64_t raw;
                 } EBX;
@@ -996,10 +1158,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L1DcLineSize : 8;
-                        uint64_t L1DcLinesPerTag : 8;
-                        uint64_t L1DcAssoc : 8;
-                        uint64_t L1DcSize : 8;
+                        uint32_t L1DcLineSize : 8;
+                        uint32_t L1DcLinesPerTag : 8;
+                        uint32_t L1DcAssoc : 8;
+                        uint32_t L1DcSize : 8;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1009,10 +1171,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L1IcLineSize : 8;
-                        uint64_t L1IcLinesPerTag : 8;
-                        uint64_t L1IcAssoc : 8;
-                        uint64_t L1IcSize : 8;
+                        uint32_t L1IcLineSize : 8;
+                        uint32_t L1IcLinesPerTag : 8;
+                        uint32_t L1IcAssoc : 8;
+                        uint32_t L1IcSize : 8;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1021,15 +1183,24 @@ namespace CPU
             /** @brief L2 Cache and TLB and L3 Cache Information */
             struct CPUID0x80000006
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief L2 TLB 2M/4M Information */
                 union
                 {
                     struct
                     {
-                        uint64_t L2ITlb2and4MSize : 12;
-                        uint64_t L2ITlb2and4MAssoc : 4;
-                        uint64_t L2DTlb2and4MSize : 12;
-                        uint64_t L2DTlb2and4MAssoc : 4;
+                        uint32_t L2ITlb2and4MSize : 12;
+                        uint32_t L2ITlb2and4MAssoc : 4;
+                        uint32_t L2DTlb2and4MSize : 12;
+                        uint32_t L2DTlb2and4MAssoc : 4;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1039,10 +1210,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L2ITlb4KSize : 12;
-                        uint64_t L2ITlb4KAssoc : 4;
-                        uint64_t L2DTlb4KSize : 12;
-                        uint64_t L2DTlb4KAssoc : 4;
+                        uint32_t L2ITlb4KSize : 12;
+                        uint32_t L2ITlb4KAssoc : 4;
+                        uint32_t L2DTlb4KSize : 12;
+                        uint32_t L2DTlb4KAssoc : 4;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1052,10 +1223,10 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L2LineSize : 8;
-                        uint64_t L2LinesPerTag : 4;
-                        uint64_t L2Assoc : 4;
-                        uint64_t L2Size : 16;
+                        uint32_t L2LineSize : 8;
+                        uint32_t L2LinesPerTag : 4;
+                        uint32_t L2Assoc : 4;
+                        uint32_t L2Size : 16;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1065,11 +1236,11 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t L3LineSize : 8;
-                        uint64_t L3LinesPerTag : 4;
-                        uint64_t L3Assoc : 4;
-                        uint64_t Reserved0 : 2;
-                        uint64_t L3Size : 14;
+                        uint32_t L3LineSize : 8;
+                        uint32_t L3LinesPerTag : 4;
+                        uint32_t L3Assoc : 4;
+                        uint32_t Reserved0 : 2;
+                        uint32_t L3Size : 14;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1078,11 +1249,20 @@ namespace CPU
             /** @brief Processor Power Management and RAS Capabilities */
             struct CPUID0x80000007
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 union
                 {
                     struct
                     {
-                        uint64_t Reserved : 32;
+                        uint32_t Reserved : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1092,11 +1272,11 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t McaOverflowRecov : 1;
-                        uint64_t SUCCOR : 1;
-                        uint64_t HWA : 1;
-                        uint64_t ScalableMca : 1;
-                        uint64_t Reserved0 : 28;
+                        uint32_t McaOverflowRecov : 1;
+                        uint32_t SUCCOR : 1;
+                        uint32_t HWA : 1;
+                        uint32_t ScalableMca : 1;
+                        uint32_t Reserved0 : 28;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1106,7 +1286,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t CpuPwrSampleTimeRatio : 32;
+                        uint32_t CpuPwrSampleTimeRatio : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1116,20 +1296,20 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t TS : 1;
-                        uint64_t FID : 1;
-                        uint64_t VID : 1;
-                        uint64_t TTP : 1;
-                        uint64_t TM : 1;
-                        uint64_t Reserved0 : 1;
-                        uint64_t OneHundredMHzSteps : 1;
-                        uint64_t HwPstate : 1;
-                        uint64_t TscInvariant : 1;
-                        uint64_t CPB : 1;
-                        uint64_t EffFreqRO : 1;
-                        uint64_t ProcFeedbackInterface : 1;
-                        uint64_t ProcPowerReporting : 1;
-                        uint64_t Reserved1 : 19;
+                        uint32_t TS : 1;
+                        uint32_t FID : 1;
+                        uint32_t VID : 1;
+                        uint32_t TTP : 1;
+                        uint32_t TM : 1;
+                        uint32_t Reserved0 : 1;
+                        uint32_t OneHundredMHzSteps : 1;
+                        uint32_t HwPstate : 1;
+                        uint32_t TscInvariant : 1;
+                        uint32_t CPB : 1;
+                        uint32_t EffFreqRO : 1;
+                        uint32_t ProcFeedbackInterface : 1;
+                        uint32_t ProcPowerReporting : 1;
+                        uint32_t Reserved1 : 19;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1138,15 +1318,24 @@ namespace CPU
             /** @brief Processor Capacity Parameters and Extended Feature Identification */
             struct CPUID0x80000008
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief Long Mode Size Identifiers */
                 union
                 {
                     struct
                     {
-                        uint64_t PhysAddrSize : 8;
-                        uint64_t LinAddrSize : 8;
-                        uint64_t GuestPhysAddrSize : 8;
-                        uint64_t Reserved0 : 8;
+                        uint32_t PhysAddrSize : 8;
+                        uint32_t LinAddrSize : 8;
+                        uint32_t GuestPhysAddrSize : 8;
+                        uint32_t Reserved0 : 8;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1156,33 +1345,33 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t CLZERO : 1;
-                        uint64_t InstRetCntMsr : 1;
-                        uint64_t RstrFpErrPtrs : 1;
-                        uint64_t INVLPGB : 1;
-                        uint64_t RDPRU : 1;
-                        uint64_t Reserved0 : 3;
-                        uint64_t MCOMMIT : 1;
-                        uint64_t WBNOINVD : 1;
-                        uint64_t Reserved1 : 2;
-                        uint64_t IBPB : 1;
-                        uint64_t INT_WBINVD : 1;
-                        uint64_t IBRS : 1;
-                        uint64_t STIBP : 1;
-                        uint64_t IbrsAlwaysOn : 1;
-                        uint64_t StibpAlwaysOn : 1;
-                        uint64_t IbrsPreferred : 1;
-                        uint64_t IbrsSameMode : 1;
-                        uint64_t EferLmsleUnsupported : 1;
-                        uint64_t INVLPGBnestedPages : 1;
-                        uint64_t Reserved2 : 2;
-                        uint64_t SSBD : 1;
-                        uint64_t SsbdVirtSpecCtrl : 1;
-                        uint64_t SsbdNotRequired : 1;
-                        uint64_t Reserved3 : 1;
-                        uint64_t PSFD : 1;
-                        uint64_t BTC_NO : 1;
-                        uint64_t Reserved4 : 2;
+                        uint32_t CLZERO : 1;
+                        uint32_t InstRetCntMsr : 1;
+                        uint32_t RstrFpErrPtrs : 1;
+                        uint32_t INVLPGB : 1;
+                        uint32_t RDPRU : 1;
+                        uint32_t Reserved0 : 3;
+                        uint32_t MCOMMIT : 1;
+                        uint32_t WBNOINVD : 1;
+                        uint32_t Reserved1 : 2;
+                        uint32_t IBPB : 1;
+                        uint32_t INT_WBINVD : 1;
+                        uint32_t IBRS : 1;
+                        uint32_t STIBP : 1;
+                        uint32_t IbrsAlwaysOn : 1;
+                        uint32_t StibpAlwaysOn : 1;
+                        uint32_t IbrsPreferred : 1;
+                        uint32_t IbrsSameMode : 1;
+                        uint32_t EferLmsleUnsupported : 1;
+                        uint32_t INVLPGBnestedPages : 1;
+                        uint32_t Reserved2 : 2;
+                        uint32_t SSBD : 1;
+                        uint32_t SsbdVirtSpecCtrl : 1;
+                        uint32_t SsbdNotRequired : 1;
+                        uint32_t Reserved3 : 1;
+                        uint32_t PSFD : 1;
+                        uint32_t BTC_NO : 1;
+                        uint32_t Reserved4 : 2;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1192,11 +1381,11 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t NT : 8;
-                        uint64_t Reserved0 : 4;
-                        uint64_t ApicIdSize : 4;
-                        uint64_t PerfTscSize : 2;
-                        uint64_t Reserved1 : 14;
+                        uint32_t NT : 8;
+                        uint32_t Reserved0 : 4;
+                        uint32_t ApicIdSize : 4;
+                        uint32_t PerfTscSize : 2;
+                        uint32_t Reserved1 : 14;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1206,8 +1395,8 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t InvlpgbCountMax : 16;
-                        uint64_t MaxRdpruID : 16;
+                        uint32_t InvlpgbCountMax : 16;
+                        uint32_t MaxRdpruID : 16;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1216,12 +1405,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000000A
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1231,7 +1429,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1241,7 +1439,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1251,7 +1449,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1260,12 +1458,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000019
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1275,7 +1482,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1285,7 +1492,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1295,7 +1502,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1304,12 +1511,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001A
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1319,7 +1535,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1329,7 +1545,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1339,7 +1555,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1348,12 +1564,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001B
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1363,7 +1588,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1373,7 +1598,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1383,7 +1608,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1392,12 +1617,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001C
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1407,7 +1641,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1417,7 +1651,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1427,7 +1661,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1436,12 +1670,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001D
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1451,7 +1694,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1461,7 +1704,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1471,7 +1714,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1480,12 +1723,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001E
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1495,7 +1747,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1505,7 +1757,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1515,7 +1767,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1524,12 +1776,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x8000001F
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1539,7 +1800,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1549,7 +1810,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1559,7 +1820,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1568,12 +1829,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000020
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1583,7 +1853,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1593,7 +1863,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1603,7 +1873,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1612,12 +1882,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000021
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1627,7 +1906,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1637,7 +1916,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1647,7 +1926,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1656,12 +1935,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000022
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1671,7 +1959,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1681,7 +1969,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1691,7 +1979,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1700,12 +1988,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000023
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1715,7 +2012,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1725,7 +2022,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1735,7 +2032,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1744,12 +2041,21 @@ namespace CPU
             /** @brief TODO */
             struct CPUID0x80000026
             {
+                void Get()
+                {
+#if defined(a64) || defined(a32)
+                    asmv("cpuid"
+                         : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
+                         : "a"(0x1));
+#endif // a64 || a32
+                }
+
                 /** @brief  */
                 union
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EAX;
@@ -1759,7 +2065,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EBX;
@@ -1769,7 +2075,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } ECX;
@@ -1779,7 +2085,7 @@ namespace CPU
                 {
                     struct
                     {
-                        uint64_t todo : 32;
+                        uint32_t todo : 32;
                     };
                     uint64_t raw;
                 } EDX;
@@ -1788,4 +2094,4 @@ namespace CPU
     }
 }
 
-#endif // !__FENNIX_KERNEL_CPU_x64_CPUID_AMD_H__
+#endif // !__FENNIX_KERNEL_CPU_x86_CPUID_AMD_H__

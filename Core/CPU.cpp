@@ -204,36 +204,20 @@ namespace CPU
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(a64)
-			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
-#elif defined(a32)
-			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
-#endif
-#if defined(a64) || defined(a32)
-			asmv("cpuid"
-				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
-				 : "a"(0x1));
-#endif
-			if (cpuid1amd.EDX.PGE)
+			CPU::x86::AMD::CPUID0x00000001 cpuid;
+            cpuid.Get();
+			if (cpuid.EDX.PGE)
 				PGESupport = true;
-			if (cpuid1amd.EDX.SSE)
+			if (cpuid.EDX.SSE)
 				SSESupport = true;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(a64)
-			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
-#elif defined(a32)
-			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
-#endif
-#if defined(a64) || defined(a32)
-			asmv("cpuid"
-				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
-				 : "a"(0x1));
-#endif
-			if (cpuid1intel.EDX.PGE)
+			CPU::x86::Intel::CPUID0x00000001 cpuid;
+            cpuid.Get();
+			if (cpuid.EDX.PGE)
 				PGESupport = true;
-			if (cpuid1intel.EDX.SSE)
+			if (cpuid.EDX.SSE)
 				SSESupport = true;
 		}
 
@@ -376,36 +360,32 @@ namespace CPU
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(a64)
-			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
-#elif defined(a32)
-			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
-#endif
+			CPU::x86::AMD::CPUID0x00000001 cpuid;
 			asmv("cpuid"
-				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
 				 : "a"(0x1));
 
-			if (cpuid1amd.ECX.SSE42)
+			if (cpuid.ECX.SSE42)
 				SIMDType |= SIMD_SSE42;
-			else if (cpuid1amd.ECX.SSE41)
+			else if (cpuid.ECX.SSE41)
 				SIMDType |= SIMD_SSE41;
-			else if (cpuid1amd.ECX.SSE3)
+			else if (cpuid.ECX.SSE3)
 				SIMDType |= SIMD_SSE3;
-			else if (cpuid1amd.EDX.SSE2)
+			else if (cpuid.EDX.SSE2)
 				SIMDType |= SIMD_SSE2;
-			else if (cpuid1amd.EDX.SSE)
+			else if (cpuid.EDX.SSE)
 				SIMDType |= SIMD_SSE;
 
 #ifdef DEBUG
-			if (cpuid1amd.ECX.SSE42)
+			if (cpuid.ECX.SSE42)
 				debug("SSE4.2 is supported.");
-			if (cpuid1amd.ECX.SSE41)
+			if (cpuid.ECX.SSE41)
 				debug("SSE4.1 is supported.");
-			if (cpuid1amd.ECX.SSE3)
+			if (cpuid.ECX.SSE3)
 				debug("SSE3 is supported.");
-			if (cpuid1amd.EDX.SSE2)
+			if (cpuid.EDX.SSE2)
 				debug("SSE2 is supported.");
-			if (cpuid1amd.EDX.SSE)
+			if (cpuid.EDX.SSE)
 				debug("SSE is supported.");
 #endif
 
@@ -413,36 +393,32 @@ namespace CPU
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(a64)
-			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
-#elif defined(a32)
-			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
-#endif
+			CPU::x86::Intel::CPUID0x00000001 cpuid;
 			asmv("cpuid"
-				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
 				 : "a"(0x1));
 
-			if (cpuid1intel.ECX.SSE4_2)
+			if (cpuid.ECX.SSE4_2)
 				SIMDType |= SIMD_SSE42;
-			else if (cpuid1intel.ECX.SSE4_1)
+			else if (cpuid.ECX.SSE4_1)
 				SIMDType |= SIMD_SSE41;
-			else if (cpuid1intel.ECX.SSE3)
+			else if (cpuid.ECX.SSE3)
 				SIMDType |= SIMD_SSE3;
-			else if (cpuid1intel.EDX.SSE2)
+			else if (cpuid.EDX.SSE2)
 				SIMDType |= SIMD_SSE2;
-			else if (cpuid1intel.EDX.SSE)
+			else if (cpuid.EDX.SSE)
 				SIMDType |= SIMD_SSE;
 
 #ifdef DEBUG
-			if (cpuid1intel.ECX.SSE4_2)
+			if (cpuid.ECX.SSE4_2)
 				debug("SSE4.2 is supported.");
-			if (cpuid1intel.ECX.SSE4_1)
+			if (cpuid.ECX.SSE4_1)
 				debug("SSE4.1 is supported.");
-			if (cpuid1intel.ECX.SSE3)
+			if (cpuid.ECX.SSE3)
 				debug("SSE3 is supported.");
-			if (cpuid1intel.EDX.SSE2)
+			if (cpuid.EDX.SSE2)
 				debug("SSE2 is supported.");
-			if (cpuid1intel.EDX.SSE)
+			if (cpuid.EDX.SSE)
 				debug("SSE is supported.");
 #endif
 			return SIMDType;
@@ -461,47 +437,39 @@ namespace CPU
 #if defined(a64) || defined(a32)
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-#if defined(a64)
-			CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
-#elif defined(a32)
-			CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
-#endif
+			CPU::x86::AMD::CPUID0x00000001 cpuid;
 			asmv("cpuid"
-				 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
+				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
 				 : "a"(0x1));
 
 			if (Type == SIMD_SSE42)
-				return cpuid1amd.ECX.SSE42;
+				return cpuid.ECX.SSE42;
 			else if (Type == SIMD_SSE41)
-				return cpuid1amd.ECX.SSE41;
+				return cpuid.ECX.SSE41;
 			else if (Type == SIMD_SSE3)
-				return cpuid1amd.ECX.SSE3;
+				return cpuid.ECX.SSE3;
 			else if (Type == SIMD_SSE2)
-				return cpuid1amd.EDX.SSE2;
+				return cpuid.EDX.SSE2;
 			else if (Type == SIMD_SSE)
-				return cpuid1amd.EDX.SSE;
+				return cpuid.EDX.SSE;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-#if defined(a64)
-			CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
-#elif defined(a32)
-			CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
-#endif
+			CPU::x86::Intel::CPUID0x00000001 cpuid;
 			asmv("cpuid"
-				 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
+				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
 				 : "a"(0x1));
 
 			if (Type == SIMD_SSE42)
-				return cpuid1intel.ECX.SSE4_2;
+				return cpuid.ECX.SSE4_2;
 			else if (Type == SIMD_SSE41)
-				return cpuid1intel.ECX.SSE4_1;
+				return cpuid.ECX.SSE4_1;
 			else if (Type == SIMD_SSE3)
-				return cpuid1intel.ECX.SSE3;
+				return cpuid.ECX.SSE3;
 			else if (Type == SIMD_SSE2)
-				return cpuid1intel.EDX.SSE2;
+				return cpuid.EDX.SSE2;
 			else if (Type == SIMD_SSE)
-				return cpuid1intel.EDX.SSE;
+				return cpuid.EDX.SSE;
 		}
 #endif // a64 || a32
 		return false;

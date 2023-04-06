@@ -258,35 +258,19 @@ namespace APIC
         bool x2APICSupported = false;
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
         {
-#if defined(a64)
-            CPU::x64::AMD::CPUID0x00000001 cpuid1amd;
-#elif defined(a32)
-            CPU::x32::AMD::CPUID0x00000001 cpuid1amd;
-#endif
-#if defined(a64) || defined(a32)
-            asmv("cpuid"
-                 : "=a"(cpuid1amd.EAX.raw), "=b"(cpuid1amd.EBX.raw), "=c"(cpuid1amd.ECX.raw), "=d"(cpuid1amd.EDX.raw)
-                 : "a"(0x1));
-#endif
-            if (cpuid1amd.ECX.x2APIC)
+            CPU::x86::AMD::CPUID0x00000001 cpuid;
+            cpuid.Get();
+            if (cpuid.ECX.x2APIC)
             {
-                // x2APICSupported = cpuid1amd.ECX.x2APIC;
+                // x2APICSupported = cpuid.ECX.x2APIC;
                 fixme("x2APIC is supported");
             }
         }
         else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
         {
-#if defined(a64)
-            CPU::x64::Intel::CPUID0x00000001 cpuid1intel;
-#elif defined(a32)
-            CPU::x32::Intel::CPUID0x00000001 cpuid1intel;
-#endif
-#if defined(a64) || defined(a32)
-            asmv("cpuid"
-                 : "=a"(cpuid1intel.EAX.raw), "=b"(cpuid1intel.EBX.raw), "=c"(cpuid1intel.ECX.raw), "=d"(cpuid1intel.EDX.raw)
-                 : "a"(0x1));
-#endif
-            x2APICSupported = cpuid1intel.ECX.x2APIC;
+            CPU::x86::Intel::CPUID0x00000001 cpuid;
+            cpuid.Get();
+            x2APICSupported = cpuid.ECX.x2APIC;
         }
 
         if (x2APICSupported)
