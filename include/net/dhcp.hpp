@@ -42,7 +42,7 @@ namespace NetworkDHCP
         uint8_t ServerHostName[64];
         uint8_t BootFileName[128];
         uint8_t Options[64];
-    } __attribute__((packed));
+    } __packed;
 
     enum DHCPOperation
     {

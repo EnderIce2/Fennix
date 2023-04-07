@@ -55,7 +55,7 @@ namespace NetworkARP
         uint32_t SenderIP;
         uint48_t TargetMAC : 48;
         uint32_t TargetIP;
-    } __attribute__((packed));
+    } __packed;
 
     struct DiscoveredAddress
     {

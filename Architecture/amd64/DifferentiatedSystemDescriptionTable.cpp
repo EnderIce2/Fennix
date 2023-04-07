@@ -36,7 +36,7 @@
 
 namespace ACPI
 {
-    __attribute__((always_inline)) inline bool IsCanonical(uint64_t Address)
+    __always_inline inline bool IsCanonical(uint64_t Address)
     {
         return ((Address <= 0x00007FFFFFFFFFFF) || ((Address >= 0xFFFF800000000000) && (Address <= 0xFFFFFFFFFFFFFFFF)));
     }

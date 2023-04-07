@@ -68,7 +68,7 @@ namespace GlobalDescriptorTable
              * @details This bit must be 1 for all valid descriptors.
              */
             uint8_t P : 1;
-        } __attribute__((packed));
+        } __packed;
         uint8_t Raw;
     };
 
@@ -85,7 +85,7 @@ namespace GlobalDescriptorTable
              * @details If the long mode bit is set, the segment is in 64-bit long mode.
              */
             uint8_t L : 1;
-        } __attribute__((packed));
+        } __packed;
         uint8_t Raw;
     };
 
@@ -101,18 +101,18 @@ namespace GlobalDescriptorTable
         /* HIGH */
         uint32_t BaseUpper;
         uint32_t Reserved;
-    } __attribute__((packed)) TaskStateSegmentEntry;
+    } __packed TaskStateSegmentEntry;
 
     typedef struct _TaskStateSegment
     {
-        uint32_t Reserved0 __attribute__((aligned(16)));
+        uint32_t Reserved0 __aligned(0x10);
         uint64_t StackPointer[3];
         uint64_t Reserved1;
         uint64_t InterruptStackTable[7];
         uint64_t Reserved2;
         uint16_t Reserved3;
         uint16_t IOMapBaseAddressOffset;
-    } __attribute__((packed)) TaskStateSegment;
+    } __packed TaskStateSegment;
 
     typedef struct _GlobalDescriptorTableEntry
     {
@@ -128,7 +128,7 @@ namespace GlobalDescriptorTable
         GlobalDescriptorTableFlags Flags;
         /** @brief High Base */
         uint8_t BaseHigh;
-    } __attribute__((packed)) GlobalDescriptorTableEntry;
+    } __packed GlobalDescriptorTableEntry;
 
     typedef struct _GlobalDescriptorTableEntries
     {
@@ -138,7 +138,7 @@ namespace GlobalDescriptorTable
         GlobalDescriptorTableEntry UserData;
         GlobalDescriptorTableEntry UserCode;
         TaskStateSegmentEntry TaskStateSegment;
-    } __attribute__((packed)) GlobalDescriptorTableEntries;
+    } __packed GlobalDescriptorTableEntries;
 
     typedef struct _GlobalDescriptorTableDescriptor
     {
@@ -146,7 +146,7 @@ namespace GlobalDescriptorTable
         uint16_t Length;
         /** @brief GDT entries address */
         GlobalDescriptorTableEntries *Entries;
-    } __attribute__((packed)) GlobalDescriptorTableDescriptor;
+    } __packed GlobalDescriptorTableDescriptor;
 
     extern void *CPUStackPointer[];
     extern TaskStateSegment tss[];

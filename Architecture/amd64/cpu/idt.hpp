@@ -48,13 +48,13 @@ namespace InterruptDescriptorTable
         uint64_t Present : 1;
         uint64_t BaseHigh : 48;
         uint64_t Reserved3 : 32;
-    } __attribute__((packed)) InterruptDescriptorTableEntry;
+    } __packed InterruptDescriptorTableEntry;
 
     typedef struct _InterruptDescriptorTableDescriptor
     {
         uint16_t Length;
         InterruptDescriptorTableEntry *Entries;
-    } __attribute__((packed)) InterruptDescriptorTableDescriptor;
+    } __packed InterruptDescriptorTableDescriptor;
 
     void SetEntry(uint8_t Index, void (*Base)(), InterruptDescriptorTableFlags Attribute, uint8_t InterruptStackTable, InterruptDescriptorTableFlags Ring, uint16_t SegmentSelector);
     void Init(int Core);

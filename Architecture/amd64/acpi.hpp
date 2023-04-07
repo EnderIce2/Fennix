@@ -41,7 +41,7 @@ namespace ACPI
             uint32_t OEMRevision;
             uint32_t CreatorID;
             uint32_t CreatorRevision;
-        } __attribute__((packed));
+        } __packed;
 
         struct GenericAddressStructure
         {
@@ -50,13 +50,13 @@ namespace ACPI
             uint8_t BitOffset;
             uint8_t AccessSize;
             uint64_t Address;
-        } __attribute__((packed));
+        } __packed;
 
         struct MCFGHeader
         {
             struct ACPIHeader Header;
             uint64_t Reserved;
-        } __attribute__((packed));
+        } __packed;
 
         struct HPETHeader
         {
@@ -71,7 +71,7 @@ namespace ACPI
             uint8_t HPETNumber;
             uint16_t MinimumTick;
             uint8_t PageProtection;
-        } __attribute__((packed));
+        } __packed;
 
         struct FADTHeader
         {
@@ -127,7 +127,7 @@ namespace ACPI
             struct GenericAddressStructure X_PMTimerBlock;
             struct GenericAddressStructure X_GPE0Block;
             struct GenericAddressStructure X_GPE1Block;
-        } __attribute__((packed));
+        } __packed;
 
         struct BGRTHeader
         {
@@ -181,7 +181,7 @@ namespace ACPI
             uint32_t LocalControllerAddress;
             uint32_t Flags;
             char Entries[];
-        } __attribute__((packed));
+        } __packed;
 
         ACPIHeader *XSDT = nullptr;
         MCFGHeader *MCFG = nullptr;
@@ -209,7 +209,7 @@ namespace ACPI
         {
             uint8_t Type;
             uint8_t Length;
-        } __attribute__((packed));
+        } __packed;
 
         struct MADTIOApic
         {
@@ -218,7 +218,7 @@ namespace ACPI
             uint8_t reserved;
             uint32_t Address;
             uint32_t GSIBase;
-        } __attribute__((packed));
+        } __packed;
 
         struct MADTIso
         {
@@ -227,7 +227,7 @@ namespace ACPI
             uint8_t IRQSource;
             uint32_t GSI;
             uint16_t Flags;
-        } __attribute__((packed));
+        } __packed;
 
         struct MADTNmi
         {
@@ -235,7 +235,7 @@ namespace ACPI
             uint8_t processor;
             uint16_t flags;
             uint8_t lint;
-        } __attribute__((packed));
+        } __packed;
 
         struct LocalAPIC
         {
@@ -243,7 +243,7 @@ namespace ACPI
             uint8_t ACPIProcessorId;
             uint8_t APICId;
             uint32_t Flags;
-        } __attribute__((packed));
+        } __packed;
 
         struct LAPIC
         {

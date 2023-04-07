@@ -21,9 +21,9 @@
 
 #include "../kernel.h"
 
-/* EXTERNC */ __attribute__((weak)) uintptr_t __stack_chk_guard = 0;
+/* EXTERNC */ __weak uintptr_t __stack_chk_guard = 0;
 
-EXTERNC __attribute__((weak, no_stack_protector)) uintptr_t __stack_chk_guard_init(void)
+EXTERNC __weak __no_stack_protector uintptr_t __stack_chk_guard_init(void)
 {
     int MaxRetries = 0;
 #if UINTPTR_MAX == UINT32_MAX
@@ -44,7 +44,7 @@ Retry:
 #endif
 }
 
-EXTERNC __attribute__((constructor, no_stack_protector)) void __guard_setup(void)
+EXTERNC __constructor __no_stack_protector void __guard_setup(void)
 {
     debug("StackGuard: __guard_setup");
     if (__stack_chk_guard == 0)
@@ -52,7 +52,7 @@ EXTERNC __attribute__((constructor, no_stack_protector)) void __guard_setup(void
     debug("Stack guard value: %ld", __stack_chk_guard);
 }
 
-EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fail(void)
+EXTERNC __weak __noreturn __no_stack_protector void __stack_chk_fail(void)
 {
     TaskingPanic();
     for (short i = 0; i < 10; i++)
@@ -80,7 +80,7 @@ EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __stack_chk_fai
 }
 
 // https://github.com/gcc-mirror/gcc/blob/master/libssp/ssp.c
-EXTERNC __attribute__((weak, noreturn, no_stack_protector)) void __chk_fail(void)
+EXTERNC __weak __noreturn __no_stack_protector void __chk_fail(void)
 {
     TaskingPanic();
     for (short i = 0; i < 10; i++)

@@ -436,7 +436,7 @@ namespace Memory
     struct PageTable4
     {
         PageMapLevel4 Entries[511];
-    } __attribute__((aligned(0x1000)));
+    } __aligned(0x1000);
 
     struct __packed PageMapLevel5
     {
@@ -446,7 +446,7 @@ namespace Memory
     struct PageTable5
     {
         PageMapLevel5 Entries[511];
-    } __attribute__((aligned(0x1000)));
+    } __aligned(0x1000);
 
     class Physical
     {

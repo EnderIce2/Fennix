@@ -66,7 +66,7 @@ namespace VirtualFileSystem
             uint32_t HiddenSectors;
             /** @brief Large sector count. This field is set if there are more than 65535 sectors in the volume, resulting in a value which does not fit in the Number of Sectors entry at 0x13. */
             uint32_t Sectors32;
-        } __attribute__((__packed__));
+        } __packed;
 
         FatType GetFATType(BIOSParameterBlock *bpb);
         FAT(void *partition);

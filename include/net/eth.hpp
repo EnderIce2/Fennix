@@ -36,7 +36,7 @@ namespace NetworkEthernet
         uint48_t DestinationMAC : 48;
         uint48_t SourceMAC : 48;
         uint16_t Type;
-    } __attribute__((packed));
+    } __packed;
 
     struct EthernetPacket
     {

@@ -745,7 +745,7 @@ EXTERNC int log2(unsigned int n)
     return log + (n >> 1);
 }
 
-EXTERNC void __chk_fail(void) __attribute__((__noreturn__));
+EXTERNC void __chk_fail(void) __noreturn;
 
 __noreturn __always_inline static inline void __convert_chk_fail(void)
 {

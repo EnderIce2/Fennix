@@ -51,7 +51,7 @@ namespace Disk
         uint8_t CHSLast[3];
         uint32_t LBAFirst;
         uint32_t Sectors;
-    } __attribute__((packed));
+    } __packed;
 
     struct MasterBootRecord
     {
@@ -60,7 +60,7 @@ namespace Disk
         uint16_t Reserved;
         MasterBootRecordPartition Partitions[4];
         uint8_t Signature[2];
-    } __attribute__((packed));
+    } __packed;
 
     struct GUIDPartitionTablePartition
     {
@@ -72,7 +72,7 @@ namespace Disk
         uint64_t EndLBA;
         uint64_t Attributes;
         char Label[72];
-    } __attribute__((packed));
+    } __packed;
 
     struct GUIDPartitionTable
     {
@@ -91,7 +91,7 @@ namespace Disk
         uint32_t PartCount;
         uint32_t EntrySize;
         uint32_t PartCRC32;
-    } __attribute__((packed));
+    } __packed;
 
     struct PartitionTable
     {

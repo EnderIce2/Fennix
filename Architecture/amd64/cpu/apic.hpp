@@ -170,7 +170,7 @@ namespace APIC
             uint64_t Reserved2 : 14;
         };
         uint64_t raw;
-    } __attribute__((packed)) LVTTimer;
+    } __packed LVTTimer;
 
     typedef union
     {
@@ -190,7 +190,7 @@ namespace APIC
             uint64_t Reserved1 : 19;
         };
         uint64_t raw;
-    } __attribute__((packed)) Spurious;
+    } __packed Spurious;
 
     typedef union
     {
@@ -239,7 +239,7 @@ namespace APIC
             uint64_t Reserved2 : 12;
         };
         uint64_t raw;
-    } __attribute__((packed)) InterruptCommandRegisterLow;
+    } __packed InterruptCommandRegisterLow;
 
     typedef union
     {
@@ -251,7 +251,7 @@ namespace APIC
             uint64_t Destination : 8;
         };
         uint64_t raw;
-    } __attribute__((packed)) InterruptCommandRegisterHigh;
+    } __packed InterruptCommandRegisterHigh;
 
     typedef union
     {
@@ -298,7 +298,7 @@ namespace APIC
             uint64_t High;
         } split;
         uint64_t raw;
-    } __attribute__((packed)) IOAPICRedirectEntry;
+    } __packed IOAPICRedirectEntry;
 
     typedef union
     {
@@ -310,7 +310,7 @@ namespace APIC
             uint64_t Reserved2 : 8;
         };
         uint64_t raw;
-    } __attribute__((packed)) IOAPICVersion;
+    } __packed IOAPICVersion;
 
     class APIC
     {

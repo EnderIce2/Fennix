@@ -139,7 +139,7 @@ namespace NetworkNTP
          * @note Only when the NTP authentication scheme is used
          */
         // uint32_t MessageAuthenticationCode;
-    } __attribute__((packed));
+    } __packed;
 
     class NTP : public NetworkUDP::UDPEvents
     {

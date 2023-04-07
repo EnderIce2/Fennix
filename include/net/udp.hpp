@@ -31,7 +31,7 @@ namespace NetworkUDP
         uint16_t DestinationPort;
         uint16_t Length;
         uint16_t Checksum;
-    } __attribute__((packed));
+    } __packed;
 
     struct UDPPacket
     {

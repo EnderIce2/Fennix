@@ -308,7 +308,7 @@ namespace CPU
                 uint32_t Reserved2 : 32;
             };
             uint32_t raw;
-        } __attribute__((packed)) EFER;
+        } __packed EFER;
 
         // ! TODO: UNTESTED!
         typedef union DR7
@@ -377,7 +377,7 @@ namespace CPU
             uint8_t st[8][16];
             /** @brief XMM registers */
             uint8_t xmm[16][16];
-        } __attribute__((packed));
+        } __packed;
 
         /**
          * @brief CPUID
@@ -445,7 +445,7 @@ namespace CPU
                 uint32_t ApicBaseHi : 32;
             };
             uint64_t raw;
-        } __attribute__((packed)) APIC_BASE;
+        } __packed APIC_BASE;
 
         typedef union
         {
@@ -555,7 +555,7 @@ namespace CPU
                 uint64_t Reserved2 : 32;
             };
             uint64_t raw;
-        } __attribute__((packed)) EFER;
+        } __packed EFER;
 
         // ! TODO: UNTESTED!
         typedef union DR7
@@ -674,7 +674,7 @@ namespace CPU
             uint8_t st[8][16];
             /** @brief XMM registers */
             uint8_t xmm[16][16];
-        } __attribute__((packed));
+        } __packed;
 
         SafeFunction static inline void lgdt(void *gdt)
         {

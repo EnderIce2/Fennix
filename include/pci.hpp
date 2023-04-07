@@ -217,7 +217,7 @@ namespace PCI
         uint8_t StartBus;
         uint8_t EndBus;
         uint32_t Reserved;
-    } __attribute__((packed));
+    } __packed;
 
     class PCI
     {

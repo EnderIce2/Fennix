@@ -19,7 +19,7 @@
 
 #include <cpu.hpp>
 
-extern "C" __attribute__((naked, used, no_stack_protector)) void SystemCallHandlerStub()
+extern "C" __naked __used __no_stack_protector void SystemCallHandlerStub()
 {
 
 }
