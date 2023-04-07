@@ -20,6 +20,14 @@
 
 #include <types.h>
 
+#if defined(a64)
+typedef uint64_t cpuid_t;
+#elif defined(a32)
+typedef uint32_t cpuid_t;
+#else
+typedef uint64_t cpuid_t;
+#endif // a64 || a32
+
 namespace CPU
 {
     namespace x86
@@ -45,7 +53,7 @@ namespace CPU
                     {
                         uint32_t HighestFunctionSupported : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
                 union
                 {
@@ -53,7 +61,7 @@ namespace CPU
                     {
                         char rbx[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
                 union
                 {
@@ -61,7 +69,7 @@ namespace CPU
                     {
                         char rcx[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
                 union
                 {
@@ -69,7 +77,7 @@ namespace CPU
                     {
                         char rdx[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -98,7 +106,7 @@ namespace CPU
                         uint32_t ExtendedFamily : 8;
                         uint32_t Reserved1 : 4;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -110,7 +118,7 @@ namespace CPU
                         uint32_t LogicalProcessorsPerPackage : 8;
                         uint32_t LocalAPICID : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -151,7 +159,7 @@ namespace CPU
                         uint32_t Reserved2 : 1;
                         uint32_t Hypervisor : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -191,7 +199,7 @@ namespace CPU
                         uint32_t Reserved2 : 1;
                         uint32_t PBE : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -216,7 +224,7 @@ namespace CPU
                         uint32_t Associativity : 8;
                         uint32_t CacheSize : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -228,7 +236,7 @@ namespace CPU
                         uint32_t Associativity : 8;
                         uint32_t CacheSize : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -240,7 +248,7 @@ namespace CPU
                         uint32_t Associativity : 8;
                         uint32_t CacheSize : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -252,7 +260,7 @@ namespace CPU
                         uint32_t Associativity : 8;
                         uint32_t CacheSize : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -274,7 +282,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -283,7 +291,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -292,7 +300,7 @@ namespace CPU
                     {
                         uint32_t ProcessorSerialNumber : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -301,7 +309,7 @@ namespace CPU
                     {
                         uint32_t ProcessorSerialNumber : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -329,7 +337,7 @@ namespace CPU
                         uint32_t MaxAddressableIdsForLogicalProcessors : 12;
                         uint32_t CoresPerPackage : 6;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -340,7 +348,7 @@ namespace CPU
                         uint32_t PhysicalLinePartitions : 10;
                         uint32_t WaysOfAssociativity : 10;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -349,7 +357,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -358,7 +366,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -381,7 +389,7 @@ namespace CPU
                         uint32_t SmallestMonitorLineSize : 16;
                         uint32_t Reserved : 16;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -391,7 +399,7 @@ namespace CPU
                         uint32_t LargestMonitorLineSize : 16;
                         uint32_t Reserved : 16;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -402,7 +410,7 @@ namespace CPU
                         uint32_t InterruptsAsBreakEvent : 1;
                         uint32_t Reserved : 30;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -416,7 +424,7 @@ namespace CPU
                         uint32_t C4 : 4;
                         uint32_t Reserved : 12;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -439,7 +447,7 @@ namespace CPU
                         uint32_t SensorSupported : 1;
                         uint32_t Reserved : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -449,7 +457,7 @@ namespace CPU
                         uint32_t InterruptThreshold : 4;
                         uint32_t Reserved : 26;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -459,7 +467,7 @@ namespace CPU
                         uint32_t ACNT_MCNT : 1;
                         uint32_t Reserved : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -468,7 +476,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -490,7 +498,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -562,7 +570,7 @@ namespace CPU
                         /** @brief AVX-512 Vector Length Extensions */
                         uint32_t AVX512VL : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -624,7 +632,7 @@ namespace CPU
                         /** @brief Protection Keys for Supervisor-mode pages */
                         uint32_t PKS : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -694,7 +702,7 @@ namespace CPU
                         /** @brief Speculative Store Bypass Disable, as mitigation for Speculative Store Bypass (IA32_SPEC_CTRL) */
                         uint32_t SSBD : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -758,7 +766,7 @@ namespace CPU
                         /** @brief RDMSRLIST and WRMSRLIST instructions, and the IA32_BARRIER MSR */
                         uint32_t MSRLIST : 1;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -770,7 +778,7 @@ namespace CPU
                         /** @brief Reserved */
                         uint32_t Reserved : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -780,7 +788,7 @@ namespace CPU
                         /** @brief Reserved */
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -800,7 +808,7 @@ namespace CPU
                         /** @brief Reserved */
                         uint32_t Reserved2 : 17;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -825,7 +833,7 @@ namespace CPU
                         uint32_t BitWidthOfCounters : 8;
                         uint32_t LengthOfEBXBitVector : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -841,7 +849,7 @@ namespace CPU
                         uint32_t BranchMissesRetired : 1;
                         uint32_t Reserved : 25;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -852,7 +860,7 @@ namespace CPU
                         uint32_t CounterWidth : 8;
                         uint32_t Reserved : 19;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -861,7 +869,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -886,7 +894,7 @@ namespace CPU
                         uint32_t BitWidthOfCounters : 8;
                         uint32_t LengthOfEBXBitVector : 8;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -902,7 +910,7 @@ namespace CPU
                         uint32_t BranchMissesRetired : 1;
                         uint32_t Reserved : 25;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -913,7 +921,7 @@ namespace CPU
                         uint32_t CounterWidth : 8;
                         uint32_t Reserved : 19;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -922,7 +930,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -949,7 +957,7 @@ namespace CPU
                          */
                         uint32_t Denominator : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -963,7 +971,7 @@ namespace CPU
                          */
                         uint32_t Numerator : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -973,7 +981,7 @@ namespace CPU
                         /** @brief Core crystal clock frequency in Hz */
                         uint32_t CoreCrystalClock : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -983,7 +991,7 @@ namespace CPU
                         /** @brief Reserved */
                         uint32_t Reserved : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
             };
 
@@ -1005,7 +1013,7 @@ namespace CPU
                     {
                         uint32_t HighestExtendedFunctionSupported : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1014,7 +1022,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1023,7 +1031,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1032,9 +1040,9 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief Extended CPU information */
@@ -1055,7 +1063,7 @@ namespace CPU
                     {
                         uint32_t Unknown : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1064,7 +1072,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1074,7 +1082,7 @@ namespace CPU
                         uint32_t LAHF_SAHF : 1;
                         uint32_t Reserved : 31;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1089,9 +1097,9 @@ namespace CPU
                         uint32_t EMT64T : 1;
                         uint32_t Reserved3 : 2;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief CPU brand string */
@@ -1112,7 +1120,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1121,7 +1129,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1130,7 +1138,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1139,9 +1147,9 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief CPU brand string */
@@ -1162,7 +1170,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1171,7 +1179,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1180,7 +1188,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1189,9 +1197,9 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief CPU brand string */
@@ -1212,7 +1220,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1221,7 +1229,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1230,7 +1238,7 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1239,9 +1247,9 @@ namespace CPU
                     {
                         char Brand[4];
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief CPU cache line information */
@@ -1265,7 +1273,7 @@ namespace CPU
                         uint32_t DataCount : 12;
                         uint32_t DataAssociativity : 4;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1277,7 +1285,7 @@ namespace CPU
                         uint32_t DataCount : 12;
                         uint32_t DataAssociativity : 4;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1289,7 +1297,7 @@ namespace CPU
                         uint32_t Associativity : 4;
                         uint32_t CacheSize : 16;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1298,9 +1306,9 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief Virtual and physical memory size */
@@ -1323,7 +1331,7 @@ namespace CPU
                         uint32_t LinearAddressBits : 8;
                         uint32_t Reserved : 16;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1332,7 +1340,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1341,7 +1349,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1350,9 +1358,9 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
 
             /** @brief Secure virtual machine parameters */
@@ -1374,7 +1382,7 @@ namespace CPU
                         uint32_t SVMRevision : 8;
                         uint32_t Reserved : 24;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EAX;
 
                 union
@@ -1383,7 +1391,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EBX;
 
                 union
@@ -1392,7 +1400,7 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } ECX;
 
                 union
@@ -1401,9 +1409,9 @@ namespace CPU
                     {
                         uint32_t Reserved : 32;
                     };
-                    uint64_t raw;
+                    cpuid_t raw;
                 } EDX;
-                uint64_t raw;
+                cpuid_t raw;
             };
         }
     }
