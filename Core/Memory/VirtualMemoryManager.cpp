@@ -127,75 +127,67 @@ namespace Memory
         // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
         uint64_t DirectoryFlags = Flags & 0x3F;
 
-        PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = nullptr;
-        if (!PML4.Present)
+        if (!PML4->Present)
         {
-            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPage();
+            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryPointerTableEntryPtr)));
             memset(PDPTEPtr, 0, PAGE_SIZE);
-            PML4.Present = true;
-            PML4.SetAddress((uintptr_t)PDPTEPtr >> 12);
+            PML4->Present = true;
+            PML4->SetAddress((uintptr_t)PDPTEPtr >> 12);
         }
         else
-            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
+            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)(PML4->GetAddress() << 12);
+        PML4->raw |= DirectoryFlags;
 
+        PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
         if (Type == MapType::OneGB)
         {
-            PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
-            PDPTE.raw |= Flags;
-            PDPTE.PageSize = true;
-            PDPTE.SetAddress((uintptr_t)PhysicalAddress >> 12);
-            PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
+            PDPTE->raw |= Flags;
+            PDPTE->PageSize = true;
+            PDPTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
+            debug("Mapped 1GB page at %p to %p", VirtualAddress, PhysicalAddress);
             return;
         }
 
-        PML4.raw |= DirectoryFlags;
-        this->Table->Entries[Index.PMLIndex] = PML4;
-
-        PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
         PageDirectoryEntryPtr *PDEPtr = nullptr;
-        if (!PDPTE.Present)
+        if (!PDPTE->Present)
         {
-            PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPage();
+            PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryEntryPtr)));
             memset(PDEPtr, 0, PAGE_SIZE);
-            PDPTE.Present = true;
-            PDPTE.SetAddress((uintptr_t)PDEPtr >> 12);
+            PDPTE->Present = true;
+            PDPTE->SetAddress((uintptr_t)PDEPtr >> 12);
         }
         else
-            PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.GetAddress() << 12);
+            PDEPtr = (PageDirectoryEntryPtr *)(PDPTE->GetAddress() << 12);
+        PDPTE->raw |= DirectoryFlags;
 
+        PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
         if (Type == MapType::TwoMB)
         {
-            PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
-            PDE.raw |= Flags;
-            PDE.PageSize = true;
-            PDE.SetAddress((uintptr_t)PhysicalAddress >> 12);
-            PDEPtr->Entries[Index.PDEIndex] = PDE;
+            PDE->raw |= Flags;
+            PDE->PageSize = true;
+            PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
+            debug("Mapped 2MB page at %p to %p", VirtualAddress, PhysicalAddress);
             return;
         }
 
-        PDPTE.raw |= DirectoryFlags;
-        PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
-
-        PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
         PageTableEntryPtr *PTEPtr = nullptr;
-        if (!PDE.Present)
+        if (!PDE->Present)
         {
-            PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPage();
+            PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTableEntryPtr)));
             memset(PTEPtr, 0, PAGE_SIZE);
-            PDE.Present = true;
-            PDE.SetAddress((uintptr_t)PTEPtr >> 12);
+            PDE->Present = true;
+            PDE->SetAddress((uintptr_t)PTEPtr >> 12);
         }
         else
-            PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.GetAddress() << 12);
-        PDE.raw |= DirectoryFlags;
-        PDEPtr->Entries[Index.PDEIndex] = PDE;
+            PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+        PDE->raw |= DirectoryFlags;
 
-        PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
-        PTE.Present = true;
-        PTE.raw |= Flags;
-        PTE.SetAddress((uintptr_t)PhysicalAddress >> 12);
-        PTEPtr->Entries[Index.PTEIndex] = PTE;
+        PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
+        PTE->Present = true;
+        PTE->raw |= Flags;
+        PTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
 
 #if defined(a64)
         CPU::x64::invlpg(VirtualAddress);
@@ -229,19 +221,6 @@ namespace Memory
 #endif
     }
 
-    void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, MapType Type)
-    {
-        int PageSize = PAGE_SIZE_4K;
-
-        if (Type == MapType::TwoMB)
-            PageSize = PAGE_SIZE_2M;
-        else if (Type == MapType::OneGB)
-            PageSize = PAGE_SIZE_1G;
-
-        for (uintptr_t i = 0; i < Length; i += PageSize)
-            this->Map((void *)((uintptr_t)VirtualAddress + i), (void *)((uintptr_t)PhysicalAddress + i), Flags, Type);
-    }
-
     void Virtual::Unmap(void *VirtualAddress, MapType Type)
     {
         SmartLock(this->MemoryLock);
@@ -252,44 +231,42 @@ namespace Memory
         }
 
         PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
-        PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
-        if (!PML4.Present)
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+        if (!PML4->Present)
         {
-            error("Page %#lx not present", PML4.GetAddress());
+            error("Page %#lx not present", PML4->GetAddress());
             return;
         }
 
-        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.Address << 12);
-        PageDirectoryPointerTableEntry PDPTE = PDPTEPtr->Entries[Index.PDPTEIndex];
-        if (!PDPTE.Present)
+        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
+        PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
+        if (!PDPTE->Present)
         {
-            error("Page %#lx not present", PDPTE.GetAddress());
+            error("Page %#lx not present", PDPTE->GetAddress());
             return;
         }
 
-        if (Type == MapType::OneGB && PDPTE.PageSize)
+        if (Type == MapType::OneGB && PDPTE->PageSize)
         {
-            PDPTE.Present = false;
-            PDPTEPtr->Entries[Index.PDPTEIndex] = PDPTE;
+            PDPTE->Present = false;
             return;
         }
 
-        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE.Address << 12);
-        PageDirectoryEntry PDE = PDEPtr->Entries[Index.PDEIndex];
-        if (!PDE.Present)
+        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Address << 12);
+        PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
+        if (!PDE->Present)
         {
-            error("Page %#lx not present", PDE.GetAddress());
+            error("Page %#lx not present", PDE->GetAddress());
             return;
         }
 
-        if (Type == MapType::TwoMB && PDE.PageSize)
+        if (Type == MapType::TwoMB && PDE->PageSize)
         {
-            PDE.Present = false;
-            PDEPtr->Entries[Index.PDEIndex] = PDE;
+            PDE->Present = false;
             return;
         }
 
-        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE.Address << 12);
+        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE->Address << 12);
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)
         {
@@ -313,25 +290,6 @@ namespace Memory
         asmv("dsb sy");
         asmv("isb");
 #endif
-    }
-
-    void Virtual::Unmap(void *VirtualAddress, size_t Length, MapType Type)
-    {
-        int PageSize = PAGE_SIZE_4K;
-
-        if (Type == MapType::TwoMB)
-            PageSize = PAGE_SIZE_2M;
-        else if (Type == MapType::OneGB)
-            PageSize = PAGE_SIZE_1G;
-
-        for (uintptr_t i = 0; i < Length; i += PageSize)
-            this->Unmap((void *)((uintptr_t)VirtualAddress + i), Type);
-    }
-
-    void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
-    {
-        this->Unmap(VirtualAddress, Type);
-        this->Map(VirtualAddress, PhysicalAddress, Flags, Type);
     }
 
     Virtual::Virtual(PageTable4 *Table)

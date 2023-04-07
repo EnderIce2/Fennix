@@ -39,16 +39,18 @@
 #define memdbg(m, ...)
 #endif
 
-using namespace Memory;
-
 #ifdef DEBUG_ALLOCATIONS_SL
 NewLock(AllocatorLock);
 NewLock(OperatorAllocatorLock);
 #endif
 
+using namespace Memory;
+
 Physical KernelAllocator;
 PageTable4 *KernelPageTable = nullptr;
 PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
+bool Page1GBSupport = false;
+bool PSESupport = false;
 
 static MemoryAllocatorType AllocatorType = MemoryAllocatorType::Pages;
 Xalloc::V1 *XallocV1Allocator = nullptr;
@@ -75,40 +77,27 @@ NIF void tracepagetable(PageTable4 *pt)
 
 NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
 {
-    bool Page1GBSupport = false;
-    bool PSESupport = false;
-
-    if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-    {
-        CPU::x86::AMD::CPUID0x80000001 cpuid;
-        cpuid.Get();
-        Page1GBSupport = cpuid.EDX.Page1GB;
-        PSESupport = cpuid.EDX.PSE;
-    }
-    else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-    {
-        CPU::x86::Intel::CPUID0x80000001 cpuid;
-        cpuid.Get();
-    }
-
+    debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
     Virtual va = Virtual(PT);
     size_t MemSize = Info->Memory.Size;
 
     if (Page1GBSupport && PSESupport)
     {
-        debug("1GB Page Support Enabled");
-#if defined(a64)
-        CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-        cr4.PSE = 1;
-        CPU::x64::writecr4(cr4);
-#elif defined(a32)
-        CPU::x32::CR4 cr4 = CPU::x32::readcr4();
-        cr4.PSE = 1;
-        CPU::x32::writecr4(cr4);
-#elif defined(aa64)
-#endif
+        /* Map the first 100MB of memory as 4KB pages */
 
-        va.Map((void *)0, (void *)0, MemSize, PTFlag::RW | PTFlag::PS /* , Virtual::MapType::OneGB */);
+        // uintptr_t Physical4KBSectionStart = 0x10000000;
+        // va.Map((void *)0,
+        //        (void *)0,
+        //        Physical4KBSectionStart,
+        //        PTFlag::RW);
+
+        // va.Map((void *)Physical4KBSectionStart,
+        //        (void *)Physical4KBSectionStart,
+        //        MemSize - Physical4KBSectionStart,
+        //        PTFlag::RW,
+        //        Virtual::MapType::OneGB);
+
+        va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
     }
     else
         va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
@@ -120,6 +109,7 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
 
 NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
 {
+    debug("Mapping Framebuffer");
     Virtual va = Virtual(PT);
     int itrfb = 0;
     while (1)
@@ -127,10 +117,10 @@ NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
         if (!Info->Framebuffer[itrfb].BaseAddress)
             break;
 
-        for (uintptr_t fb_base = (uintptr_t)Info->Framebuffer[itrfb].BaseAddress;
-             fb_base < ((uintptr_t)Info->Framebuffer[itrfb].BaseAddress + ((Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE));
-             fb_base += PAGE_SIZE)
-            va.Map((void *)fb_base, (void *)fb_base, PTFlag::RW | PTFlag::US | PTFlag::G);
+        va.OptimizedMap((void *)Info->Framebuffer[itrfb].BaseAddress,
+                        (void *)Info->Framebuffer[itrfb].BaseAddress,
+                        Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height,
+                        PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
 
 #ifdef DEBUG
@@ -158,10 +148,7 @@ NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
 
 NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
 {
-    /*    KernelStart             KernelTextEnd       KernelRoDataEnd                  KernelEnd
-    Kernel Start & Text Start ------ Text End ------ Kernel Rodata End ------ Kernel Data End & Kernel End
-    */
-    Virtual va = Virtual(PT);
+    debug("Mapping Kernel");
     uintptr_t KernelStart = (uintptr_t)&_kernel_start;
     uintptr_t KernelTextEnd = (uintptr_t)&_kernel_text_end;
     uintptr_t KernelDataEnd = (uintptr_t)&_kernel_data_end;
@@ -170,8 +157,15 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     uintptr_t KernelFileStart = (uintptr_t)Info->Kernel.FileBase;
     uintptr_t KernelFileEnd = KernelFileStart + Info->Kernel.Size;
 
+    debug("File size: %ld KB", TO_KB(Info->Kernel.Size));
+    debug(".text size: %ld KB", TO_KB(KernelTextEnd - KernelStart));
+    debug(".data size: %ld KB", TO_KB(KernelDataEnd - KernelTextEnd));
+    debug(".rodata size: %ld KB", TO_KB(KernelRoDataEnd - KernelDataEnd));
+    debug(".bss size: %ld KB", TO_KB(KernelEnd - KernelRoDataEnd));
+
     uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
     uintptr_t k;
+    Virtual va = Virtual(PT);
 
     /* Text section */
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
@@ -211,9 +205,6 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
         va.Map((void *)k, (void *)k, PTFlag::G);
         KernelAllocator.LockPage((void *)k);
     }
-
-    debug("\nStart: %#llx - Text End: %#llx - RoEnd: %#llx - End: %#llx\nStart Physical: %#llx - End Physical: %#llx",
-          KernelStart, KernelTextEnd, KernelRoDataEnd, KernelEnd, KernelFileStart, KernelFileEnd);
 
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
@@ -309,22 +300,40 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     UserspaceKernelOnlyPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
     memset(UserspaceKernelOnlyPageTable, 0, PAGE_SIZE);
 
-    debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
+    if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+    {
+        CPU::x86::AMD::CPUID0x80000001 cpuid;
+        cpuid.Get();
+        PSESupport = cpuid.EDX.PSE;
+        Page1GBSupport = cpuid.EDX.Page1GB;
+    }
+    else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+    {
+        CPU::x86::Intel::CPUID0x80000001 cpuid;
+        cpuid.Get();
+        fixme("Intel PSE support");
+    }
+
+    if (Page1GBSupport && PSESupport)
+    {
+        debug("1GB Page Support Enabled");
+#if defined(a64)
+        CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+        cr4.PSE = 1;
+        CPU::x64::writecr4(cr4);
+#elif defined(a32)
+        CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+        cr4.PSE = 1;
+        CPU::x32::writecr4(cr4);
+#elif defined(aa64)
+#endif
+    }
+
     MapFromZero(KernelPageTable, Info);
-    debug("Mapping from 0x0 %#llx for Userspace Page Table", Info->Memory.Size);
-    UserspaceKernelOnlyPageTable[0] = KernelPageTable[0];
-
-    /* Mapping Framebuffer address */
-    debug("Mapping Framebuffer");
     MapFramebuffer(KernelPageTable, Info);
-    debug("Mapping Framebuffer for Userspace Page Table");
-    MapFramebuffer(UserspaceKernelOnlyPageTable, Info);
-
-    /* Kernel mapping */
-    debug("Mapping Kernel");
     MapKernel(KernelPageTable, Info);
-    debug("Mapping Kernel for Userspace Page Table");
-    MapKernel(UserspaceKernelOnlyPageTable, Info);
+
+    memcpy(UserspaceKernelOnlyPageTable, KernelPageTable, sizeof(PageTable4));
 
     trace("Applying new page table from address %p", KernelPageTable);
 #ifdef DEBUG

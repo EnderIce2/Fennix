@@ -33,25 +33,25 @@ extern uintptr_t _kernel_start, _kernel_end;
 extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 
 // kilobyte
-#define TO_KB(d) (d / 1024)
+#define TO_KB(d) ((d) / 1024)
 // megabyte
-#define TO_MB(d) (d / 1024 / 1024)
+#define TO_MB(d) ((d) / 1024 / 1024)
 // gigabyte
-#define TO_GB(d) (d / 1024 / 1024 / 1024)
+#define TO_GB(d) ((d) / 1024 / 1024 / 1024)
 // terabyte
-#define TO_TB(d) (d / 1024 / 1024 / 1024 / 1024)
+#define TO_TB(d) ((d) / 1024 / 1024 / 1024 / 1024)
 // petabyte
-#define TO_PB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_PB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024)
 // exobyte
-#define TO_EB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_EB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 // zettabyte
-#define TO_ZB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_ZB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 // yottabyte
-#define TO_YB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_YB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 // brontobyte
-#define TO_BB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_BB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 // geopbyte
-#define TO_GPB(d) (d / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+#define TO_GPB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 
 #define PAGE_SIZE 0x1000        // 4KB
 #define PAGE_SIZE_4K PAGE_SIZE  // 4KB
@@ -178,20 +178,20 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;            // 0
-            bool ReadWrite : 1;          // 1
-            bool UserSupervisor : 1;     // 2
-            bool WriteThrough : 1;       // 3
-            bool CacheDisable : 1;       // 4
-            bool Accessed : 1;           // 5
-            bool Dirty : 1;              // 6
-            bool PageAttributeTable : 1; // 7
-            bool Global : 1;             // 8
-            char Available0 : 3;         // 9-11
-            long Address : 40;           // 12-51
-            char Available1 : 7;         // 52-58
-            char ProtectionKey : 4;      // 59-62
-            bool ExecuteDisable : 1;     // 63
+            uint64_t Present : 1;            // 0
+            uint64_t ReadWrite : 1;          // 1
+            uint64_t UserSupervisor : 1;     // 2
+            uint64_t WriteThrough : 1;       // 3
+            uint64_t CacheDisable : 1;       // 4
+            uint64_t Accessed : 1;           // 5
+            uint64_t Dirty : 1;              // 6
+            uint64_t PageAttributeTable : 1; // 7
+            uint64_t Global : 1;             // 8
+            uint64_t Available0 : 3;         // 9-11
+            uint64_t Address : 40;           // 12-51
+            uint64_t Available1 : 7;         // 52-58
+            uint64_t ProtectionKey : 4;      // 59-62
+            uint64_t ExecuteDisable : 1;     // 63
         };
         uint64_t raw;
 
@@ -235,38 +235,38 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool PageSize : 1;       // 7
-            char Available1 : 4;     // 8-11
-            long Address : 40;       // 12-51
-            short Available2 : 11;   // 52-62
-            bool ExecuteDisable : 1; // 63
+            uint64_t Present : 1;        // 0
+            uint64_t ReadWrite : 1;      // 1
+            uint64_t UserSupervisor : 1; // 2
+            uint64_t WriteThrough : 1;   // 3
+            uint64_t CacheDisable : 1;   // 4
+            uint64_t Accessed : 1;       // 5
+            uint64_t Available0 : 1;     // 6
+            uint64_t PageSize : 1;       // 7
+            uint64_t Available1 : 4;     // 8-11
+            uint64_t Address : 40;       // 12-51
+            uint64_t Available2 : 11;    // 52-62
+            uint64_t ExecuteDisable : 1; // 63
         };
 
         struct
         {
-            bool Present : 1;            // 0
-            bool ReadWrite : 1;          // 1
-            bool UserSupervisor : 1;     // 2
-            bool WriteThrough : 1;       // 3
-            bool CacheDisable : 1;       // 4
-            bool Accessed : 1;           // 5
-            bool Dirty : 1;              // 6
-            bool PageSize : 1;           // 7
-            bool Global : 1;             // 8
-            char Available0 : 3;         // 9-11
-            bool PageAttributeTable : 1; // 12
-            char Reserved0 : 8;          // 13-20
-            long Address : 31;           // 21-51
-            char Available1 : 7;         // 52-58
-            char ProtectionKey : 4;      // 59-62
-            bool ExecuteDisable : 1;     // 63
+            uint64_t Present : 1;            // 0
+            uint64_t ReadWrite : 1;          // 1
+            uint64_t UserSupervisor : 1;     // 2
+            uint64_t WriteThrough : 1;       // 3
+            uint64_t CacheDisable : 1;       // 4
+            uint64_t Accessed : 1;           // 5
+            uint64_t Dirty : 1;              // 6
+            uint64_t PageSize : 1;           // 7
+            uint64_t Global : 1;             // 8
+            uint64_t Available0 : 3;         // 9-11
+            uint64_t PageAttributeTable : 1; // 12
+            uint64_t Reserved0 : 8;          // 13-20
+            uint64_t Address : 31;           // 21-51
+            uint64_t Available1 : 7;         // 52-58
+            uint64_t ProtectionKey : 4;      // 59-62
+            uint64_t ExecuteDisable : 1;     // 63
         } TwoMB;
 
         uint64_t raw;
@@ -311,38 +311,38 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool PageSize : 1;       // 7
-            char Available1 : 4;     // 8-11
-            long Address : 40;       // 12-51
-            short Available2 : 11;   // 52-62
-            bool ExecuteDisable : 1; // 63
+            uint64_t Present : 1;        // 0
+            uint64_t ReadWrite : 1;      // 1
+            uint64_t UserSupervisor : 1; // 2
+            uint64_t WriteThrough : 1;   // 3
+            uint64_t CacheDisable : 1;   // 4
+            uint64_t Accessed : 1;       // 5
+            uint64_t Available0 : 1;     // 6
+            uint64_t PageSize : 1;       // 7
+            uint64_t Available1 : 4;     // 8-11
+            uint64_t Address : 40;       // 12-51
+            uint64_t Available2 : 11;    // 52-62
+            uint64_t ExecuteDisable : 1; // 63
         };
 
         struct
         {
-            bool Present : 1;            // 0
-            bool ReadWrite : 1;          // 1
-            bool UserSupervisor : 1;     // 2
-            bool WriteThrough : 1;       // 3
-            bool CacheDisable : 1;       // 4
-            bool Accessed : 1;           // 5
-            bool Dirty : 1;              // 6
-            bool PageSize : 1;           // 7
-            bool Global : 1;             // 8
-            char Available0 : 3;         // 9-11
-            bool PageAttributeTable : 1; // 12
-            int Reserved0 : 17;          // 13-29
-            long Address : 22;           // 30-51
-            char Available1 : 7;         // 52-58
-            char ProtectionKey : 4;      // 59-62
-            bool ExecuteDisable : 1;     // 63
+            uint64_t Present : 1;            // 0
+            uint64_t ReadWrite : 1;          // 1
+            uint64_t UserSupervisor : 1;     // 2
+            uint64_t WriteThrough : 1;       // 3
+            uint64_t CacheDisable : 1;       // 4
+            uint64_t Accessed : 1;           // 5
+            uint64_t Dirty : 1;              // 6
+            uint64_t PageSize : 1;           // 7
+            uint64_t Global : 1;             // 8
+            uint64_t Available0 : 3;         // 9-11
+            uint64_t PageAttributeTable : 1; // 12
+            uint64_t Reserved0 : 17;         // 13-29
+            uint64_t Address : 22;           // 30-51
+            uint64_t Available1 : 7;         // 52-58
+            uint64_t ProtectionKey : 4;      // 59-62
+            uint64_t ExecuteDisable : 1;     // 63
         } OneGB;
 
         uint64_t raw;
@@ -387,18 +387,18 @@ namespace Memory
     {
         struct
         {
-            bool Present : 1;        // 0
-            bool ReadWrite : 1;      // 1
-            bool UserSupervisor : 1; // 2
-            bool WriteThrough : 1;   // 3
-            bool CacheDisable : 1;   // 4
-            bool Accessed : 1;       // 5
-            bool Available0 : 1;     // 6
-            bool Reserved0 : 1;      // 7
-            char Available1 : 4;     // 8-11
-            long Address : 40;       // 12-51
-            short Available2 : 11;   // 52-62
-            bool ExecuteDisable : 1; // 63
+            uint64_t Present : 1;        // 0
+            uint64_t ReadWrite : 1;      // 1
+            uint64_t UserSupervisor : 1; // 2
+            uint64_t WriteThrough : 1;   // 3
+            uint64_t CacheDisable : 1;   // 4
+            uint64_t Accessed : 1;       // 5
+            uint64_t Available0 : 1;     // 6
+            uint64_t Reserved0 : 1;      // 7
+            uint64_t Available1 : 4;     // 8-11
+            uint64_t Address : 40;       // 12-51
+            uint64_t Available2 : 11;    // 52-62
+            uint64_t ExecuteDisable : 1; // 63
         };
         uint64_t raw;
 
@@ -598,6 +598,7 @@ namespace Memory
     public:
         enum MapType
         {
+            NoMapType,
             FourKB,
             TwoMB,
             OneGB
@@ -618,6 +619,7 @@ namespace Memory
          *
          * @param VirtualAddress Virtual address of the page
          * @param Flag Flag to check
+         * @param Type Type of the page. Check MapType enum.
          * @return true if page has the specified flag.
          * @return false if page is has the specified flag.
          */
@@ -636,6 +638,7 @@ namespace Memory
          * @param VirtualAddress Virtual address of the page.
          * @param PhysicalAddress Physical address of the page.
          * @param Flags Flags of the page. Check PTFlag enum.
+         * @param Type Type of the page. Check MapType enum.
          */
         void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flag = PTFlag::P, MapType Type = MapType::FourKB);
 
@@ -644,15 +647,101 @@ namespace Memory
          *
          * @param VirtualAddress First virtual address of the page.
          * @param PhysicalAddress First physical address of the page.
-         * @param PageCount Number of pages.
+         * @param Length Length to map.
          * @param Flags Flags of the page. Check PTFlag enum.
+         * @param Type Type of the page. Check MapType enum.
          */
-        void Map(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, MapType Type = MapType::FourKB);
+        __always_inline inline void Map(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, MapType Type = MapType::FourKB)
+        {
+            int PageSize = PAGE_SIZE_4K;
+
+            if (Type == MapType::TwoMB)
+                PageSize = PAGE_SIZE_2M;
+            else if (Type == MapType::OneGB)
+                PageSize = PAGE_SIZE_1G;
+
+            for (uintptr_t i = 0; i < Length; i += PageSize)
+                this->Map((void *)((uintptr_t)VirtualAddress + i), (void *)((uintptr_t)PhysicalAddress + i), Flags, Type);
+        }
+
+        /**
+         * @brief Map multiple pages efficiently.
+         *
+         * This function will detect the best page size to map the pages.
+         *
+         * @note This function will not check if PSE or 1GB pages are enabled or supported.
+         *
+         * @param VirtualAddress First virtual address of the page.
+         * @param PhysicalAddress First physical address of the page.
+         * @param Length Length of the pages.
+         * @param Flags Flags of the page. Check PTFlag enum.
+         * @param Fit If true, the function will try to fit the pages in the smallest page size.
+         * @param FailOnModulo If true, the function will return NoMapType if the length is not a multiple of the page size.
+         * @return The best page size to map the pages.
+         */
+        __always_inline inline MapType OptimizedMap(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, bool Fit = false, bool FailOnModulo = false)
+        {
+            if (unlikely(Fit))
+            {
+                while (Length >= PAGE_SIZE_1G)
+                {
+                    this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Virtual::MapType::OneGB);
+                    VirtualAddress = (void *)((uintptr_t)VirtualAddress + PAGE_SIZE_1G);
+                    PhysicalAddress = (void *)((uintptr_t)PhysicalAddress + PAGE_SIZE_1G);
+                    Length -= PAGE_SIZE_1G;
+                }
+
+                while (Length >= PAGE_SIZE_2M)
+                {
+                    this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Virtual::MapType::TwoMB);
+                    VirtualAddress = (void *)((uintptr_t)VirtualAddress + PAGE_SIZE_2M);
+                    PhysicalAddress = (void *)((uintptr_t)PhysicalAddress + PAGE_SIZE_2M);
+                    Length -= PAGE_SIZE_2M;
+                }
+
+                while (Length >= PAGE_SIZE_4K)
+                {
+                    this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Virtual::MapType::FourKB);
+                    VirtualAddress = (void *)((uintptr_t)VirtualAddress + PAGE_SIZE_4K);
+                    PhysicalAddress = (void *)((uintptr_t)PhysicalAddress + PAGE_SIZE_4K);
+                    Length -= PAGE_SIZE_4K;
+                }
+
+                return Virtual::MapType::FourKB;
+            }
+
+            Virtual::MapType Type = Virtual::MapType::FourKB;
+
+            if (Length >= PAGE_SIZE_1G)
+            {
+                Type = Virtual::MapType::OneGB;
+                if (Length % PAGE_SIZE_1G != 0)
+                {
+                    warn("Length is not a multiple of 1GB.");
+                    if (FailOnModulo)
+                        return Virtual::MapType::NoMapType;
+                }
+            }
+            else if (Length >= PAGE_SIZE_2M)
+            {
+                Type = Virtual::MapType::TwoMB;
+                if (Length % PAGE_SIZE_2M != 0)
+                {
+                    warn("Length is not a multiple of 2MB.");
+                    if (FailOnModulo)
+                        return Virtual::MapType::NoMapType;
+                }
+            }
+
+            this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Type);
+            return Type;
+        }
 
         /**
          * @brief Unmap page.
          *
          * @param VirtualAddress Virtual address of the page.
+         * @param Type Type of the page. Check MapType enum.
          */
         void Unmap(void *VirtualAddress, MapType Type = MapType::FourKB);
 
@@ -660,9 +749,21 @@ namespace Memory
          * @brief Unmap multiple pages.
          *
          * @param VirtualAddress First virtual address of the page.
-         * @param Length Number of pages.
+         * @param Length Length to map.
+         * @param Type Type of the page. Check MapType enum.
          */
-        void Unmap(void *VirtualAddress, size_t Length, MapType Type = MapType::FourKB);
+        __always_inline inline void Unmap(void *VirtualAddress, size_t Length, MapType Type = MapType::FourKB)
+        {
+            int PageSize = PAGE_SIZE_4K;
+
+            if (Type == MapType::TwoMB)
+                PageSize = PAGE_SIZE_2M;
+            else if (Type == MapType::OneGB)
+                PageSize = PAGE_SIZE_1G;
+
+            for (uintptr_t i = 0; i < Length; i += PageSize)
+                this->Unmap((void *)((uintptr_t)VirtualAddress + i), Type);
+        }
 
         /**
          * @brief Remap page.
@@ -670,8 +771,13 @@ namespace Memory
          * @param VirtualAddress Virtual address of the page.
          * @param PhysicalAddress Physical address of the page.
          * @param Flags Flags of the page. Check PTFlag enum.
+         * @param Type Type of the page. Check MapType enum.
          */
-        void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type = MapType::FourKB);
+        __always_inline inline void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type = MapType::FourKB)
+        {
+            this->Unmap(VirtualAddress, Type);
+            this->Map(VirtualAddress, PhysicalAddress, Flags, Type);
+        }
 
         /**
          * @brief Construct a new Virtual object
