@@ -229,6 +229,7 @@ void BootLogoAnimationThread()
 
         free(img);
         Display->SetBuffer(1);
+        TaskManager->Sleep(50);
     }
 
     int brightness = 100;
@@ -237,6 +238,7 @@ void BootLogoAnimationThread()
         brightness -= 10;
         Display->SetBrightness(brightness, 1);
         Display->SetBuffer(1);
+        TaskManager->Sleep(10);
     }
 }
 
@@ -284,6 +286,7 @@ void ExitLogoAnimationThread()
 
         free(img);
         Display->SetBuffer(1);
+        TaskManager->Sleep(50);
     }
 
     int brightness = 100;
@@ -292,6 +295,7 @@ void ExitLogoAnimationThread()
         brightness -= 10;
         Display->SetBrightness(brightness, 1);
         Display->SetBuffer(1);
+        TaskManager->Sleep(10);
     }
 }
 
