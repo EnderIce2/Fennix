@@ -19,6 +19,7 @@
 
 #include <types.h>
 #include <memory.hpp>
+#include <assert.h>
 #include <debug.h>
 
 __constructor void TestMacros()
@@ -61,6 +62,17 @@ __constructor void TestMacros()
             error("t2: FROM_PAGES is not equal to 8192");
             inf_loop;
         }
+    }
+
+    {
+        int a = 10;
+        assert(a == 10);
+
+        const char *str = "Hello";
+        assert(str != nullptr && str[0] == 'H');
+
+        bool flag = false;
+        assert(!flag);
     }
 
     debug("-------------------------");
