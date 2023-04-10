@@ -31,7 +31,7 @@
 bool ForceUnlock = false;
 std::atomic_size_t LocksCount = 0;
 
-size_t GetLocksCount() { return LocksCount; }
+size_t GetLocksCount() { return LocksCount.load(); }
 
 void LockClass::DeadLock(SpinLockData Lock)
 {

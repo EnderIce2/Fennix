@@ -40,11 +40,11 @@ C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 endif
-HEADERS = $(sort $(dir $(wildcard ./include/*)))
+HEADERS = $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
-INCLUDE_DIR = ./include
+INCLUDE_DIR = -I./include -I./include_std
 
 LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
 
@@ -56,7 +56,7 @@ WARNCFLAG = -Wall -Wextra \
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
-	-I$(INCLUDE_DIR)							\
+	$(INCLUDE_DIR)								\
 	-DKERNEL_NAME='"$(OSNAME)"' 				\
 	-DKERNEL_VERSION='"$(KERNEL_VERSION)"'		\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\

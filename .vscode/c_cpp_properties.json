@@ -4,7 +4,9 @@
             "name": "Fennix x64 (Linux, GCC, debug)",
             "includePath": [
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/include/**"
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include_std",
+                "${workspaceFolder}/include_std/**"
             ],
             "defines": [
                 "__debug_vscode__",
@@ -74,7 +76,10 @@
         {
             "name": "Fennix x32 (Linux, GCC, debug)",
             "includePath": [
-                "${workspaceFolder}/include/**"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include_std",
+                "${workspaceFolder}/include_std/**"
             ],
             "defines": [
                 "__debug_vscode__",
@@ -147,7 +152,10 @@
         {
             "name": "Fennix Aarch64 (Linux, GCC, debug)",
             "includePath": [
-                "${workspaceFolder}/include/**"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include_std",
+                "${workspaceFolder}/include_std/**"
             ],
             "defines": [
                 "__debug_vscode__",

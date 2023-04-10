@@ -22,7 +22,6 @@
 #include <printf.h>
 #include <lock.hpp>
 #include <cwalk.h>
-#include <sys.h>
 
 #include "../kernel.h"
 
@@ -189,9 +188,7 @@ namespace VirtualFileSystem
         Node *ParentNode = nullptr;
         if (FileSystemRoot->Children.size() >= 1)
         {
-            if (FileSystemRoot->Children[0] == nullptr)
-                panic("Root node is null!");
-
+            assert(FileSystemRoot->Children[0] != nullptr);
             ParentNode = FileSystemRoot->Children[0]; // 0 - filesystem root
         }
         else
