@@ -20,10 +20,10 @@
 
 #include <types.h>
 #include <filesystem.hpp>
-#include <vector.hpp>
 #include <memory.hpp>
-#include <atomic.hpp>
 #include <lock.hpp>
+#include <vector>
+#include <atomic>
 
 namespace InterProcessCommunication
 {
@@ -59,7 +59,7 @@ namespace InterProcessCommunication
         VirtualFileSystem::Node *Node;
         void *Buffer;
         long Length;
-        Atomic<bool> Listening;
+        std::atomic_bool Listening;
     };
 
     class IPC

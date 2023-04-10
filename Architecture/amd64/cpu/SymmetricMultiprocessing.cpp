@@ -18,10 +18,10 @@
 #include <smp.hpp>
 
 #include <memory.hpp>
-#include <atomic.hpp>
 #include <ints.hpp>
 #include <assert.h>
 #include <cpu.hpp>
+#include <atomic>
 
 #include "../../../kernel.h"
 #include "../acpi.hpp"
@@ -41,7 +41,7 @@ enum SMPTrampolineAddress
     TRAMPOLINE_START = 0x2000
 };
 
-Atomic<bool> CPUEnabled = false;
+std::atomic_bool CPUEnabled = false;
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
@@ -79,7 +79,7 @@ extern "C" void StartCPU()
 
     CPU::Interrupts(CPU::Enable);
     KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
-    CPUEnabled.Store(true, MemoryOrder::Release);
+    CPUEnabled.store(true, std::memory_order_release);
     CPU::Halt(true);
 }
 
@@ -124,9 +124,9 @@ namespace SMP
                 ((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(((ACPI::MADT *)madt)->lapic[i]->APICId);
                 ((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(((ACPI::MADT *)madt)->lapic[i]->APICId, TRAMPOLINE_START);
 
-                while (!CPUEnabled.Load(MemoryOrder::Acquire))
+                while (!CPUEnabled.load(std::memory_order_acquire))
                     CPU::Pause();
-                CPUEnabled.Store(false, MemoryOrder::Release);
+                CPUEnabled.store(false, std::memory_order_release);
                 trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
             }
             else

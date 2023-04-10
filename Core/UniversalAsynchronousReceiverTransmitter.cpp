@@ -17,8 +17,8 @@
 
 #include <uart.hpp>
 
-#include <vector.hpp>
 #include <debug.h>
+#include <vector>
 
 volatile bool serialports[8] = {false, false, false, false, false, false, false, false};
 std::vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;

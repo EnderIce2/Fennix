@@ -20,8 +20,8 @@
 
 #include <types.h>
 
-#include <atomic.hpp>
 #include <cpu.hpp>
+#include <atomic>
 
 #ifdef __cplusplus
 
@@ -40,19 +40,19 @@ class LockClass
 {
     struct SpinLockData
     {
-        Atomic<uint64_t> LockData = 0x0;
-        Atomic<const char *> CurrentHolder = "(nul)";
-        Atomic<const char *> AttemptingToGet = "(nul)";
-        Atomic<uintptr_t> StackPointerHolder = 0;
-        Atomic<uintptr_t> StackPointerAttempt = 0;
-        Atomic<size_t> Count = 0;
-        Atomic<long> Core = 0;
+        std::atomic_uint64_t LockData = 0x0;
+        std::atomic<const char *> CurrentHolder = "(nul)";
+        std::atomic<const char *> AttemptingToGet = "(nul)";
+        std::atomic_uintptr_t StackPointerHolder = 0;
+        std::atomic_uintptr_t StackPointerAttempt = 0;
+        std::atomic_size_t Count = 0;
+        std::atomic_long Core = 0;
     };
 
 private:
     SpinLockData LockData;
-    Atomic<bool> IsLocked = false;
-    Atomic<unsigned long> DeadLocks = 0;
+    std::atomic_bool IsLocked = false;
+    std::atomic_ulong DeadLocks = 0;
 
     void DeadLock(SpinLockData Lock);
     void TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout);

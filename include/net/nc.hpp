@@ -19,11 +19,11 @@
 #define __FENNIX_KERNEL_NETWORK_CONTROLLER_H__
 
 #include <net/net.hpp>
-#include <vector.hpp>
 #include <memory.hpp>
 #include <task.hpp>
 #include <types.h>
 #include <debug.h>
+#include <vector>
 
 namespace NetworkInterfaceManager
 {

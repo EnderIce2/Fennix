@@ -999,8 +999,8 @@ namespace CrashHandler
 
         if (TaskManager && cpudata != nullptr)
         {
-            crashdata.Process = cpudata->CurrentProcess.Load();
-            crashdata.Thread = cpudata->CurrentThread.Load();
+            crashdata.Process = cpudata->CurrentProcess.load();
+            crashdata.Thread = cpudata->CurrentThread.load();
 
             error("Current Process: %s(%ld)",
                   cpudata->CurrentProcess->Name,

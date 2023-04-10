@@ -18,8 +18,8 @@
 #include <ints.hpp>
 
 #include <syscalls.hpp>
-#include <vector.hpp>
 #include <smp.hpp>
+#include <vector>
 #include <io.h>
 
 #if defined(a64)

@@ -21,7 +21,7 @@
 #include <types.h>
 
 #include <debug.h>
-#include <vector.hpp>
+#include <vector>
 
 namespace PCI
 {

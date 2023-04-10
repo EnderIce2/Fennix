@@ -19,7 +19,7 @@
 #define __FENNIX_KERNEL_DISK_H__
 
 #include <types.h>
-#include <vector.hpp>
+#include <vector>
 
 namespace Disk
 {

@@ -20,8 +20,8 @@
 
 #include <net/eth.hpp>
 #include <net/nc.hpp>
-#include <vector.hpp>
 #include <types.h>
+#include <vector>
 
 namespace NetworkARP
 {

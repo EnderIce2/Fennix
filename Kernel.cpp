@@ -155,6 +155,10 @@ LockClass mExtTrkLock;
  *    https://en.wikipedia.org/wiki/Control_register
  *    https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
  *    https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
+ * 
+ * - Atomic operations:
+ *    https://en.cppreference.com/w/cpp/atomic/atomic
+ * 
  */
 
 #ifdef a64

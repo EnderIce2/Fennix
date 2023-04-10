@@ -17,9 +17,9 @@
 
 #include <task.hpp>
 
-#include <vector.hpp>
 #include <rand.hpp>
 #include <debug.h>
+#include <vector>
 
 namespace Tasking
 {

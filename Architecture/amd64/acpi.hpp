@@ -22,8 +22,8 @@
 
 #include <boot/binfo.h>
 #include <ints.hpp>
-#include <vector.hpp>
 #include <cpu.hpp>
+#include <vector>
 
 namespace ACPI
 {

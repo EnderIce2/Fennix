@@ -29,7 +29,7 @@
 #endif
 
 bool ForceUnlock = false;
-Atomic<size_t> LocksCount = 0;
+std::atomic_size_t LocksCount = 0;
 
 size_t GetLocksCount() { return LocksCount; }
 
@@ -75,7 +75,7 @@ void LockClass::DeadLock(SpinLockData Lock)
 
     this->DeadLocks++;
 
-    if (Config.UnlockDeadLock && this->DeadLocks.Load() > 10)
+    if (Config.UnlockDeadLock && this->DeadLocks.load() > 10)
     {
         warn("Unlocking lock '%s' to prevent deadlock. (this is enabled in the kernel config)", Lock.AttemptingToGet);
         this->DeadLocks = 0;
@@ -93,7 +93,7 @@ int LockClass::Lock(const char *FunctionName)
 
 Retry:
     int i = 0;
-    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
+    while (IsLocked.exchange(true, std::memory_order_acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
 
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
@@ -120,7 +120,7 @@ int LockClass::Unlock()
 {
     __sync;
 
-    IsLocked.Store(false, MemoryOrder::Release);
+    IsLocked.store(false, std::memory_order_release);
     LockData.Count--;
     LocksCount--;
 
@@ -178,17 +178,17 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
     LockData.AttemptingToGet = FunctionName;
     LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
 
-    Atomic<uint64_t> Target = 0;
+    std::atomic_uint64_t Target = 0;
 Retry:
     int i = 0;
-    while (IsLocked.Exchange(true, MemoryOrder::Acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
+    while (IsLocked.exchange(true, std::memory_order_acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
         CPU::Pause();
 
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
-        if (Target.Load() == 0)
-            Target.Store(TimeManager->CalculateTarget(Timeout));
-        TimeoutDeadLock(LockData, Target.Load());
+        if (Target.load() == 0)
+            Target.store(TimeManager->CalculateTarget(Timeout));
+        TimeoutDeadLock(LockData, Target.load());
         goto Retry;
     }
 

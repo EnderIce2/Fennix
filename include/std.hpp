@@ -22,14 +22,15 @@
 #define __FENNIX_KERNEL_STD_H__
 
 #include <types.h>
-#include <std/unordered_map.hpp>
+#include <std/atomic.hpp>
 #include <std/functional.hpp>
-#include <std/stdexcept.hpp>
+#include <std/list.hpp>
 #include <std/smart_ptr.hpp>
+#include <std/stdexcept.hpp>
+#include <std/string.hpp>
+#include <std/unordered_map.hpp>
 #include <std/utility.hpp>
 #include <std/vector.hpp>
-#include <std/string.hpp>
-#include <std/list.hpp>
 
 /**
  * @brief // stub namespace for std::align_val_t and new operator

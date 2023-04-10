@@ -21,7 +21,7 @@
 #include <types.h>
 
 #include <smart_ptr.hpp>
-#include <vector.hpp>
+#include <vector>
 
 namespace VirtualFileSystem
 {

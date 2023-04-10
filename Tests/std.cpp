@@ -15,5 +15,22 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
-#include <convert.h>
+#ifdef DEBUG
+
+#include <std.hpp>
+#include <assert.h>
+
+__constructor void Test_std()
+{
+    std::atomic_int a = 0;
+    a++;
+    assert(a == 1);
+
+    int b = a.exchange(2);
+    assert(b == 1);
+    assert(a == 2);
+
+    debug("std: OK");
+}
+
+#endif // DEBUG

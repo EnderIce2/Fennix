@@ -20,12 +20,12 @@
 
 #include <types.h>
 
-#include <vector.hpp>
 #include <memory.hpp>
 #include <ints.hpp>
 #include <debug.h>
 #include <cpu.hpp>
 #include <pci.hpp>
+#include <vector>
 
 namespace Driver
 {

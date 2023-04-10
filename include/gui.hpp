@@ -21,8 +21,8 @@
 #include <types.h>
 #include <display.hpp>
 #include <memory.hpp>
-#include <vector.hpp>
 #include <debug.h>
+#include <vector>
 
 namespace GraphicalUserInterface
 {

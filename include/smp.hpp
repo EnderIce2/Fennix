@@ -18,9 +18,9 @@
 #ifndef __FENNIX_KERNEL_SMP_H__
 #define __FENNIX_KERNEL_SMP_H__
 
-#include <types.h>
-#include <atomic.hpp>
 #include <task.hpp>
+#include <types.h>
+#include <atomic>
 
 /** @brief Maximum supported number of CPU cores by the kernel */
 #define MAX_CPU 256
@@ -54,10 +54,10 @@ struct CPUData
     long ErrorCode;
 
     /** @brief Current running process */
-    Atomic<Tasking::PCB *> CurrentProcess;
+    std::atomic<Tasking::PCB *> CurrentProcess;
 
     /** @brief Current running thread */
-    Atomic<Tasking::TCB *> CurrentThread;
+    std::atomic<Tasking::TCB *> CurrentThread;
 
     /** @brief Architecture-specific data. */
     CPUArchData Data;

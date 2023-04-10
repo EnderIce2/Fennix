@@ -124,12 +124,12 @@ namespace Tasking
     SafeFunction NIF bool Task::FindNewProcess(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
-        fnp_schedbg("%d processes", ListProcess.size());
+        fnp_schedbg("%d processes", ProcessList.size());
 #ifdef DEBUG_FIND_NEW_PROCESS
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
             fnp_schedbg("Process %d %s", process->ID, process->Name);
 #endif
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
         {
             if (InvalidPCB(process))
                 continue;
@@ -179,7 +179,7 @@ namespace Tasking
 
         for (size_t i = 0; i < CurrentCPU->CurrentProcess->Threads.size(); i++)
         {
-            if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread.Load())
+            if (CurrentCPU->CurrentProcess->Threads[i] == CurrentCPU->CurrentThread.load())
             {
                 size_t TempIndex = i;
             RetryAnotherThread:
@@ -213,7 +213,7 @@ namespace Tasking
                 CurrentCPU->CurrentThread = nextThread;
                 gnat_schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d",
                              thread->ID, thread->Parent->Name,
-                             CurrentCPU->CurrentProcess->Threads.size(), ListProcess.size());
+                             CurrentCPU->CurrentProcess->Threads.size(), ProcessList.size());
                 return true;
             }
 #ifdef DEBUG
@@ -232,9 +232,9 @@ namespace Tasking
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
         bool Skip = true;
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
         {
-            if (process == CurrentCPU->CurrentProcess.Load())
+            if (process == CurrentCPU->CurrentProcess.load())
             {
                 Skip = false;
                 gnap_schedbg("Found current process %#lx", process);
@@ -279,7 +279,7 @@ namespace Tasking
                 CurrentCPU->CurrentProcess = process;
                 CurrentCPU->CurrentThread = thread;
                 gnap_schedbg("[cur proc+1 -> first thd] Scheduling thread %d %s->%d (Total Procs %d)",
-                             thread->ID, thread->Name, process->Threads.size(), ListProcess.size());
+                             thread->ID, thread->Name, process->Threads.size(), ProcessList.size());
                 return true;
             }
         }
@@ -291,7 +291,7 @@ namespace Tasking
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
         {
             if (InvalidPCB(process))
             {
@@ -325,7 +325,7 @@ namespace Tasking
                 CurrentCPU->CurrentProcess = process;
                 CurrentCPU->CurrentThread = thread;
                 sspt_schedbg("[proc 0 -> end -> first thd] Scheduling thread %d parent of %s->%d (Procs %d)",
-                             thread->ID, thread->Parent->Name, process->Threads.size(), ListProcess.size());
+                             thread->ID, thread->Parent->Name, process->Threads.size(), ProcessList.size());
                 return true;
             }
         }
@@ -334,7 +334,7 @@ namespace Tasking
 
     SafeFunction NIF void Task::UpdateProcessStatus()
     {
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
         {
             if (InvalidPCB(process))
                 continue;
@@ -363,7 +363,7 @@ namespace Tasking
     SafeFunction NIF void Task::WakeUpThreads(void *CPUDataPointer)
     {
         CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
-        foreach (auto process in ListProcess)
+        foreach (auto process in ProcessList)
         {
             if (InvalidPCB(process))
                 continue;
@@ -479,7 +479,7 @@ namespace Tasking
         }
         CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); /* Restore kernel page table for safety reasons. */
         uint64_t SchedTmpTicks = CPU::Counter();
-        this->LastTaskTicks.Store(SchedTmpTicks - this->SchedulerTicks.Load());
+        this->LastTaskTicks.store(SchedTmpTicks - this->SchedulerTicks.load());
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
@@ -509,7 +509,7 @@ namespace Tasking
         }
 #endif
 
-        if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.Load()) || InvalidTCB(CurrentCPU->CurrentThread.Load())))
+        if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.load()) || InvalidTCB(CurrentCPU->CurrentThread.load())))
         {
             schedbg("Invalid process or thread. Finding a new one.");
             if (this->FindNewProcess(CurrentCPU))
@@ -669,7 +669,7 @@ namespace Tasking
 
     /* RealEnd->[Function Exit] */
     RealEnd:
-        this->SchedulerTicks.Store(CPU::Counter() - SchedTmpTicks);
+        this->SchedulerTicks.store(CPU::Counter() - SchedTmpTicks);
         __sync; /* TODO: Is this really needed? */
     }
 

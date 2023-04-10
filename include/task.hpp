@@ -21,13 +21,13 @@
 #include <types.h>
 
 #include <filesystem.hpp>
-#include <ints.hpp>
 #include <symbols.hpp>
-#include <vector.hpp>
 #include <memory.hpp>
-#include <atomic.hpp>
+#include <ints.hpp>
 #include <ipc.hpp>
 #include <debug.h>
+#include <vector>
+#include <atomic>
 #include <abi.h>
 
 namespace Tasking
@@ -136,18 +136,14 @@ namespace Tasking
         void Rename(const char *name)
         {
             CriticalSection cs;
-            if (!Name[0])
+            if (strlen(name) > 256 || strlen(name) == 0)
             {
-                warn("Tried to rename thread %d to NULL", ID);
+                debug("Invalid thread name");
                 return;
             }
+
             trace("Renaming thread %s to %s", Name, name);
-            for (int i = 0; i < 256; i++)
-            {
-                Name[i] = name[i];
-                if (name[i] == '\0')
-                    break;
-            }
+            strncpy(Name, name, 256);
         }
 
         void SetPriority(TaskPriority priority)
@@ -243,12 +239,12 @@ namespace Tasking
         UPID NextPID = 0;
         UTID NextTID = 0;
 
-        std::vector<PCB *> ListProcess;
+        std::vector<PCB *> ProcessList;
         PCB *IdleProcess = nullptr;
         TCB *IdleThread = nullptr;
         TCB *CleanupThread = nullptr;
-        Atomic<uint64_t> SchedulerTicks = 0;
-        Atomic<uint64_t> LastTaskTicks = 0;
+        std::atomic_uint64_t SchedulerTicks = 0;
+        std::atomic_uint64_t LastTaskTicks = 0;
         bool StopScheduler = false;
         bool InvalidPCB(PCB *pcb);
         bool InvalidTCB(TCB *tcb);
@@ -280,9 +276,9 @@ namespace Tasking
 
     public:
         void SetCleanupThread(TCB *Thread) { CleanupThread = Thread; }
-        uint64_t GetSchedulerTicks() { return SchedulerTicks.Load(); }
-        uint64_t GetLastTaskTicks() { return LastTaskTicks.Load(); }
-        std::vector<PCB *> GetProcessList() { return ListProcess; }
+        uint64_t GetSchedulerTicks() { return SchedulerTicks.load(); }
+        uint64_t GetLastTaskTicks() { return LastTaskTicks.load(); }
+        std::vector<PCB *> GetProcessList() { return ProcessList; }
         Security *GetSecurityManager() { return &SecurityManager; }
         void CleanupProcessesThread();
         void Panic() { StopScheduler = true; }

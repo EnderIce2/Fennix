@@ -130,36 +130,36 @@ namespace Tasking
             foreach (PCB *process in Process->Children)
                 RemoveProcess(process);
 
-            for (size_t i = 0; i < ListProcess.size(); i++)
+            for (size_t i = 0; i < ProcessList.size(); i++)
             {
-                if (ListProcess[i] == Process)
+                if (ProcessList[i] == Process)
                 {
                     trace("Process \"%s\"(%d) removed from the list", Process->Name, Process->ID);
                     // Free memory
-                    delete ListProcess[i]->IPC, ListProcess[i]->IPC = nullptr;
-                    delete ListProcess[i]->ELFSymbolTable, ListProcess[i]->ELFSymbolTable = nullptr;
-                    SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
-                    if (ListProcess[i]->Security.TrustLevel == TaskTrustLevel::User)
-                        KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
+                    delete ProcessList[i]->IPC, ProcessList[i]->IPC = nullptr;
+                    delete ProcessList[i]->ELFSymbolTable, ProcessList[i]->ELFSymbolTable = nullptr;
+                    SecurityManager.DestroyToken(ProcessList[i]->Security.UniqueToken);
+                    if (ProcessList[i]->Security.TrustLevel == TaskTrustLevel::User)
+                        KernelAllocator.FreePages((void *)ProcessList[i]->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
 
                     // Remove the process from parent's children list
-                    if (ListProcess[i]->Parent)
-                        for (size_t j = 0; j < ListProcess[i]->Parent->Children.size(); j++)
+                    if (ProcessList[i]->Parent)
+                        for (size_t j = 0; j < ProcessList[i]->Parent->Children.size(); j++)
                         {
-                            if (ListProcess[i]->Parent->Children[j] == ListProcess[i])
+                            if (ProcessList[i]->Parent->Children[j] == ProcessList[i])
                             {
-                                ListProcess[i]->Parent->Children.remove(j);
+                                ProcessList[i]->Parent->Children.remove(j);
                                 break;
                             }
                         }
 
                     // Delete process directory
-                    vfs->Delete(ListProcess[i]->ProcessDirectory, true);
+                    vfs->Delete(ProcessList[i]->ProcessDirectory, true);
 
                     // Free memory
-                    delete ListProcess[i], ListProcess[i] = nullptr;
+                    delete ProcessList[i], ProcessList[i] = nullptr;
                     // Remove from the list
-                    ListProcess.remove(i);
+                    ProcessList.remove(i);
                     break;
                 }
             }
@@ -217,23 +217,23 @@ namespace Tasking
         CPU::Halt(true);
     }
 
-    PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess.Load(); }
-    TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread.Load(); }
+    PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess.load(); }
+    TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread.load(); }
 
     PCB *Task::GetProcessByID(UPID ID)
     {
-        for (size_t i = 0; i < ListProcess.size(); i++)
-            if (ListProcess[i]->ID == ID)
-                return ListProcess[i];
+        for (size_t i = 0; i < ProcessList.size(); i++)
+            if (ProcessList[i]->ID == ID)
+                return ProcessList[i];
         return nullptr;
     }
 
     TCB *Task::GetThreadByID(UTID ID)
     {
-        for (size_t i = 0; i < ListProcess.size(); i++)
-            for (size_t j = 0; j < ListProcess[i]->Threads.size(); j++)
-                if (ListProcess[i]->Threads[j]->ID == ID)
-                    return ListProcess[i]->Threads[j];
+        for (size_t i = 0; i < ProcessList.size(); i++)
+            for (size_t j = 0; j < ProcessList[i]->Threads.size(); j++)
+                if (ProcessList[i]->Threads[j]->ID == ID)
+                    return ProcessList[i]->Threads[j];
         return nullptr;
     }
 
@@ -312,7 +312,7 @@ namespace Tasking
         while (true)
         {
             this->Sleep(1000);
-            foreach (auto process in ListProcess)
+            foreach (auto process in ProcessList)
             {
                 if (InvalidPCB(process))
                     continue;
@@ -324,9 +324,9 @@ namespace Tasking
 
     void Task::RevertProcessCreation(PCB *Process)
     {
-        for (size_t i = 0; i < ListProcess.size(); i++)
+        for (size_t i = 0; i < ProcessList.size(); i++)
         {
-            if (ListProcess[i] == Process)
+            if (ProcessList[i] == Process)
             {
                 SecurityManager.DestroyToken(Process->Security.UniqueToken);
                 if (Process->Security.TrustLevel == TaskTrustLevel::User)
@@ -345,7 +345,7 @@ namespace Tasking
                 delete Process->IPC, Process->IPC = nullptr;
                 delete Process->ELFSymbolTable, Process->ELFSymbolTable = nullptr;
                 delete Process, Process = nullptr;
-                ListProcess.remove(i);
+                ProcessList.remove(i);
                 NextPID--;
                 break;
             }
@@ -769,7 +769,7 @@ namespace Tasking
 
         if (Parent)
             Parent->Children.push_back(Process);
-        ListProcess.push_back(Process);
+        ProcessList.push_back(Process);
         return Process;
     }
 
@@ -859,27 +859,27 @@ namespace Tasking
         debug("Destructor called");
         {
             SmartLock(TaskingLock);
-            foreach (PCB *Process in ListProcess)
+            foreach (PCB *Process in ProcessList)
             {
                 foreach (TCB *Thread in Process->Threads)
                 {
-                    if (Thread == GetCurrentCPU()->CurrentThread.Load() ||
+                    if (Thread == GetCurrentCPU()->CurrentThread.load() ||
                         Thread == CleanupThread)
                         continue;
                     this->KillThread(Thread, 0xFFFF);
                 }
 
-                if (Process == GetCurrentCPU()->CurrentProcess.Load())
+                if (Process == GetCurrentCPU()->CurrentProcess.load())
                     continue;
                 this->KillProcess(Process, 0xFFFF);
             }
         }
 
-        while (ListProcess.size() > 0)
+        while (ProcessList.size() > 0)
         {
-            trace("Waiting for %d processes to terminate", ListProcess.size());
+            trace("Waiting for %d processes to terminate", ProcessList.size());
             int NotTerminated = 0;
-            foreach (PCB *Process in ListProcess)
+            foreach (PCB *Process in ProcessList)
             {
                 debug("Process %s(%d) is still running (or waiting to be removed status %#lx)", Process->Name, Process->ID, Process->Status);
                 if (Process->Status == TaskStatus::Terminated)
