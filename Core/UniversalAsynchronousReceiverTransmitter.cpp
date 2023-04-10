@@ -23,7 +23,7 @@
 volatile bool serialports[8] = {false, false, false, false, false, false, false, false};
 std::vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
 NIF __always_inline inline uint8_t NoProfiler_inportb(uint16_t Port)
 {
     uint8_t Result;
@@ -56,7 +56,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     SafeFunction NIF UART::UART(SerialPorts Port)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         if (Port == COMNULL)
             return;
 
@@ -125,7 +125,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     SafeFunction NIF void UART::Write(uint8_t Char)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & SERIAL_BUFFER_EMPTY) == 0)
             ;
         NoProfiler_outportb(Port, Char);
@@ -137,7 +137,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     SafeFunction NIF uint8_t UART::Read()
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & 1) == 0)
             ;
         return NoProfiler_inportb(Port);
@@ -146,7 +146,7 @@ namespace UniversalAsynchronousReceiverTransmitter
         {
             if (e->GetRegisteredPort() == Port || e->GetRegisteredPort() == COMNULL)
             {
-#if defined(a64) || defined(a32)
+#if defined(a86)
                 e->OnReceived(NoProfiler_inportb(Port));
 #endif
             }

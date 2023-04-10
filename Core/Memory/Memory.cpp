@@ -48,7 +48,6 @@ using namespace Memory;
 
 Physical KernelAllocator;
 PageTable4 *KernelPageTable = nullptr;
-PageTable4 *UserspaceKernelOnlyPageTable = nullptr;
 bool Page1GBSupport = false;
 bool PSESupport = false;
 
@@ -102,9 +101,7 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
     else
         va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
 
-    void *NullAddress = KernelAllocator.RequestPage();
-    memset(NullAddress, 0, PAGE_SIZE); // TODO: If the CPU instruction pointer hits this page, there should be function to handle it. (memcpy assembly code?)
-    va.Remap((void *)0, (void *)NullAddress, PTFlag::RW | PTFlag::US);
+    va.Unmap((void *)0);
 }
 
 NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
@@ -171,7 +168,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
@@ -179,7 +176,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
@@ -187,7 +184,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::G);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
@@ -195,7 +192,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
-        KernelAllocator.LockPage((void *)BaseKernelMapAddress);
+        KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
@@ -203,7 +200,7 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)k, PTFlag::G);
-        KernelAllocator.LockPage((void *)k);
+        KernelAllocator.ReservePage((void *)k);
     }
 
 #ifdef DEBUG
@@ -243,8 +240,8 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 #ifdef DEBUG
     for (uint64_t i = 0; i < Info->Memory.Entries; i++)
     {
-        uintptr_t Base = reinterpret_cast<uintptr_t>(Info->Memory.Entry[i].BaseAddress);
-        uintptr_t Length = Info->Memory.Entry[i].Length;
+        uintptr_t Base = r_cst(uintptr_t, Info->Memory.Entry[i].BaseAddress);
+        size_t Length = Info->Memory.Entry[i].Length;
         uintptr_t End = Base + Length;
         const char *Type = "Unknown";
 
@@ -293,12 +290,21 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
           TO_MB(KernelAllocator.GetTotalMemory()),
           TO_MB(KernelAllocator.GetReservedMemory()));
 
-    trace("Initializing Virtual Memory Manager");
-    KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-    memset(KernelPageTable, 0, PAGE_SIZE);
+    /* -- Debugging --
+        size_t bmap_size = KernelAllocator.GetPageBitmap().Size;
+        for (size_t i = 0; i < bmap_size; i++)
+        {
+            bool idx = KernelAllocator.GetPageBitmap().Get(i);
+            if (idx == true)
+                debug("Page %04d: %#lx", i, i * PAGE_SIZE);
+        }
 
-    UserspaceKernelOnlyPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-    memset(UserspaceKernelOnlyPageTable, 0, PAGE_SIZE);
+        inf_loop debug("Alloc.: %#lx", KernelAllocator.RequestPage());
+    */
+
+    trace("Initializing Virtual Memory Manager");
+    KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE + 1));
+    memset(KernelPageTable, 0, PAGE_SIZE);
 
     if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
     {
@@ -333,16 +339,11 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     MapFramebuffer(KernelPageTable, Info);
     MapKernel(KernelPageTable, Info);
 
-    memcpy(UserspaceKernelOnlyPageTable, KernelPageTable, sizeof(PageTable4));
-
-    trace("Applying new page table from address %p", KernelPageTable);
+    trace("Applying new page table from address %#lx", KernelPageTable);
 #ifdef DEBUG
-    debug("Kernel:");
     tracepagetable(KernelPageTable);
-    debug("Userspace:");
-    tracepagetable(UserspaceKernelOnlyPageTable);
 #endif
-#if defined(a64) || defined(a32)
+#if defined(a86)
     asmv("mov %0, %%cr3" ::"r"(KernelPageTable));
 #elif defined(aa64)
     asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
@@ -372,7 +373,7 @@ void *malloc(size_t Size)
     {
     case MemoryAllocatorType::Pages:
     {
-        ret = KernelAllocator.RequestPages(TO_PAGES(Size));
+        ret = KernelAllocator.RequestPages(TO_PAGES(Size + 1));
         memset(ret, 0, Size);
         break;
     }
@@ -425,7 +426,7 @@ void *calloc(size_t n, size_t Size)
     {
     case MemoryAllocatorType::Pages:
     {
-        ret = KernelAllocator.RequestPages(TO_PAGES(n * Size));
+        ret = KernelAllocator.RequestPages(TO_PAGES(n * Size + 1));
         memset(ret, 0, n * Size);
         break;
     }
@@ -478,7 +479,7 @@ void *realloc(void *Address, size_t Size)
     {
     case unlikely(MemoryAllocatorType::Pages):
     {
-        ret = KernelAllocator.RequestPages(TO_PAGES(Size)); // WARNING: Potential memory leak
+        ret = KernelAllocator.RequestPages(TO_PAGES(Size + 1)); // WARNING: Potential memory leak
         memset(ret, 0, Size);
         break;
     }

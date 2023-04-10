@@ -50,7 +50,7 @@ namespace Video
 
         size_t Size = this->framebuffer.Pitch * Height;
 
-        this->Buffers[Index].Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
+        this->Buffers[Index].Buffer = KernelAllocator.RequestPages(TO_PAGES(Size + 1));
         memset(this->Buffers[Index].Buffer, 0, Size);
 
         this->Buffers[Index].Width = Width;
@@ -102,7 +102,7 @@ namespace Video
             return;
         }
 
-        KernelAllocator.FreePages(this->Buffers[Index].Buffer, TO_PAGES(this->Buffers[Index].Size));
+        KernelAllocator.FreePages(this->Buffers[Index].Buffer, TO_PAGES(this->Buffers[Index].Size + 1));
         this->Buffers[Index].Buffer = nullptr;
         this->Buffers[Index].Checksum = 0;
         debug("Buffer %d deleted", Index);

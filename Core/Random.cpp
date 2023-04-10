@@ -41,7 +41,7 @@ namespace Random
         if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
             RDRANDFlag = 0;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         if (RDRANDFlag)
         {
             uint16_t RDRANDValue = 0;
@@ -74,7 +74,7 @@ namespace Random
         if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
             RDRANDFlag = 0;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         if (RDRANDFlag)
         {
             uint32_t RDRANDValue = 0;
@@ -107,7 +107,7 @@ namespace Random
         if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
             RDRANDFlag = 0;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         if (RDRANDFlag)
         {
             uint64_t RDRANDValue = 0;

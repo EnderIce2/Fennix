@@ -31,7 +31,7 @@ namespace GraphicalUserInterface
     void Window::OnResize(Event *e)
     {
         // TODO: Optimize this
-        this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size));
+        this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size + 1));
         this->Buffer->Data = nullptr;
         delete this->Buffer, this->Buffer = nullptr;
 
@@ -41,7 +41,7 @@ namespace GraphicalUserInterface
         this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->Buffer->Pitch = Display->GetPitch();
         this->Buffer->Size = this->Buffer->Pitch * e->Resize.Height;
-        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
+        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
         memset(this->Buffer->Data, 0, this->Buffer->Size);
         this->OnPaint(e);
     }

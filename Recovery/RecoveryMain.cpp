@@ -78,7 +78,7 @@ namespace Recovery
             return;
         }
 
-        void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length));
+        void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length + 1));
         memcpy(PCMRaw, (void *)pcm->node->Address, pcm->node->Length);
 
         KernelCallback callback;
@@ -89,7 +89,7 @@ namespace Recovery
         debug("Playing audio...");
         int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
         debug("Audio played! %d", status);
-        KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length));
+        KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length + 1));
         vfs->Close(pcm);
         TEXIT(0);
     }

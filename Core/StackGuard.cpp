@@ -60,7 +60,7 @@ EXTERNC __weak __noreturn __no_stack_protector void __stack_chk_fail(void)
     debug("Current stack check guard value: %#lx", __stack_chk_guard);
     KPrint("\eFF0000Stack smashing detected!");
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
     void *Stack = nullptr;
 #if defined(a64)
     asmv("movq %%rsp, %0"
@@ -87,7 +87,7 @@ EXTERNC __weak __noreturn __no_stack_protector void __chk_fail(void)
         error("Buffer overflow detected!");
     KPrint("\eFF0000Buffer overflow detected!");
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
     while (1)
         asmv("cli; hlt");
 #elif defined(aa64)

@@ -43,7 +43,7 @@ EXTERNC SafeFunction NIF void __cyg_profile_func_enter(void *Function, void *Cal
         return;
 
     while (Wait)
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("pause");
 #elif defined(aa64)
         asmv("yield");
@@ -80,7 +80,7 @@ EXTERNC SafeFunction NIF void __cyg_profile_func_exit(void *Function, void *Call
         return;
 
     while (Wait)
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("pause");
 #elif defined(aa64)
         asmv("yield");

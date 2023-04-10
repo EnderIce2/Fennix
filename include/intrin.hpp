@@ -21,7 +21,7 @@
 #include <types.h>
 #include <debug.h>
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #define MMX_FN_ATTR __always_inline __target("mmx")
 #define SSE_FN_ATTR __always_inline __target("sse")
 #define SSE2_FN_ATTR __always_inline __target("sse2")
@@ -86,7 +86,7 @@ namespace SMAP
 {
     void _clac(void)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("clac" ::
                  : "cc");
 #endif // a64 || a32
@@ -94,7 +94,7 @@ namespace SMAP
 
     void _stac(void)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("stac" ::
                  : "cc");
 #endif // a64 || a32
@@ -103,7 +103,7 @@ namespace SMAP
 
 namespace MMX
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
     typedef long long __m64 __attribute__((__vector_size__(8), __aligned__(8)));
 
     typedef long long __v1di __attribute__((__vector_size__(8)));
@@ -120,7 +120,7 @@ namespace MMX
 
 namespace SSE
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
     typedef int __v4si __attribute__((__vector_size__(16)));
     typedef unsigned int __v4su __attribute__((__vector_size__(16)));
     typedef float __v4sf __attribute__((__vector_size__(16)));
@@ -144,7 +144,7 @@ namespace SSE
 
 namespace SSE2
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
     typedef double __v2df __attribute__((__vector_size__(16)));
 
     typedef long long __v2di __attribute__((__vector_size__(16)));
@@ -205,19 +205,19 @@ namespace SSE2
 
 namespace SSE3
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #endif // a64 || a32
 }
 
 namespace SSSE3
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #endif // a64 || a32
 }
 
 namespace SSE4_1
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
     typedef long long __m128i __attribute__((__vector_size__(16), __aligned__(16)));
 
     ST_IN SSE4_1_FN_ATTR __m128i _mm_cvtepu8_epi32(__m128i a);
@@ -229,19 +229,19 @@ namespace SSE4_1
 
 namespace SSE4_2
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #endif // a64 || a32
 }
 
 namespace AVX
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #endif // a64 || a32
 }
 
 namespace AVX2
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
 #endif // a64 || a32
 }
 

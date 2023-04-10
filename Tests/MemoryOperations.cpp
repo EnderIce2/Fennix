@@ -38,32 +38,29 @@ __constructor void TestMemoryOperations()
     char str2[] = "World";
 
     memcpy_unsafe(arr2, arr1, sizeof(arr1));
-    debug("memcpy: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d\n",
+    debug("memcpy: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
           arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
     if (memcmp(arr1, arr2, sizeof(arr1)) != 0)
     {
-        error("memcpy failed!\n");
-        while (1)
-            ;
+        error("memcpy failed!");
+        inf_loop;
     }
 
     memset_unsafe(arr2, 0, sizeof(arr2));
-    debug("memset: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d\n",
+    debug("memset: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
           arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
     if (memcmp(arr1, arr2, sizeof(arr1)) == 0)
     {
-        error("memset failed!\n");
-        while (1)
-            ;
+        error("memset failed!");
+        inf_loop;
     }
 
     memmove_unsafe(str1 + 3, str1, strlen(str1) + 1);
-    debug("memmove: str1=%s\n", str1);
+    debug("memmove: str1=%s", str1);
     if (strcmp(str1, "HelHello") != 0)
     {
-        error("memmove failed!\n");
-        while (1)
-            ;
+        error("memmove failed!");
+        inf_loop;
     }
 
     char carr[1024];
@@ -82,7 +79,7 @@ __constructor void TestMemoryOperations()
         {
             if (carr[i] != 'a')
             {
-                error("memcpy failed!\n");
+                error("memcpy failed!");
                 while (1)
                     ;
             }
@@ -97,7 +94,7 @@ __constructor void TestMemoryOperations()
         {
             if (carr[i] != 'b')
             {
-                error("memcpy failed!\n");
+                error("memcpy failed!");
                 while (1)
                     ;
             }
@@ -113,7 +110,7 @@ __constructor void TestMemoryOperations()
         {
             if (carr[i] != 'c')
             {
-                error("memcpy failed!\n");
+                error("memcpy failed!");
                 while (1)
                     ;
             }
@@ -128,7 +125,7 @@ __constructor void TestMemoryOperations()
         {
             if (carr[i] != 'd')
             {
-                error("memset failed!\n");
+                error("memset failed!");
                 while (1)
                     ;
             }

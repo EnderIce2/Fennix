@@ -66,7 +66,7 @@ namespace GraphicalUserInterface
         this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->Buffer->Pitch = Display->GetPitch();
         this->Buffer->Size = this->Buffer->Pitch * rect.Height;
-        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
+        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
         memset(this->Buffer->Data, 0, this->Buffer->Size);
         this->ParentGUI = ParentGUI;
         this->Position = rect;

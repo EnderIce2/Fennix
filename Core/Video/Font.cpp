@@ -33,7 +33,7 @@ namespace Video
         {
             this->Info.PSF2Font = new PSF2_FONT;
 
-            PSF2_HEADER *font2 = (PSF2_HEADER *)KernelAllocator.RequestPages(FontDataLength / PAGE_SIZE + 1);
+            PSF2_HEADER *font2 = (PSF2_HEADER *)KernelAllocator.RequestPages(TO_PAGES(FontDataLength + 1));
             memcpy((void *)font2, Start, FontDataLength);
 
             Memory::Virtual().Map((void *)font2, (void *)font2, FontDataLength, Memory::PTFlag::RW);
@@ -41,7 +41,7 @@ namespace Video
             if (font2->magic[0] != PSF2_MAGIC0 || font2->magic[1] != PSF2_MAGIC1 || font2->magic[2] != PSF2_MAGIC2 || font2->magic[3] != PSF2_MAGIC3)
             {
                 error("Font2 magic mismatch.");
-                KernelAllocator.FreePages((void *)font2, FontDataLength / PAGE_SIZE + 1);
+                KernelAllocator.FreePages((void *)font2, TO_PAGES(FontDataLength + 1));
                 return;
             }
 

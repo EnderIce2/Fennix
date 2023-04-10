@@ -172,7 +172,7 @@ namespace Execute
         if (ELFGetDynamicTag(ElfFile, DT_TEXTREL))
         {
             fixme("Text relocation is not(?) tested yet!");
-            MemoryImage = (uint8_t *)mem->RequestPages(TO_PAGES(Length), true);
+            MemoryImage = (uint8_t *)mem->RequestPages(TO_PAGES(Length + 1), true);
             memset(MemoryImage, 0, Length);
             return {MemoryImage, 0x0};
         }
@@ -196,14 +196,14 @@ namespace Execute
             if (ItrPhdr.p_type == PT_LOAD && ItrPhdr.p_vaddr == 0)
             {
                 debug("p_vaddr is 0, allocating %ld pages for image", TO_PAGES(Length));
-                MemoryImage = mem->RequestPages(TO_PAGES(Length), true);
+                MemoryImage = mem->RequestPages(TO_PAGES(Length + 1), true);
                 memset(MemoryImage, 0, Length);
                 return {MemoryImage, (void *)FirstProgramHeaderVirtualAddress};
             }
         }
 
         debug("Allocating %ld pages for image", TO_PAGES(Length));
-        MemoryImage = mem->RequestPages(TO_PAGES(Length));
+        MemoryImage = mem->RequestPages(TO_PAGES(Length + 1));
         memset(MemoryImage, 0, Length);
 
         if (FirstProgramHeaderVirtualAddress != 0)

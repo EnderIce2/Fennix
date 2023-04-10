@@ -198,7 +198,7 @@ namespace ACPI
 
         void *FindTable(ACPIHeader *ACPIHeader, char *Signature);
         void SearchTables(ACPIHeader *Header);
-        ACPI(BootInfo *Info);
+        ACPI();
         ~ACPI();
     };
 

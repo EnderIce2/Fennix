@@ -199,7 +199,6 @@ void ProcessMB2(unsigned long Info)
             mb2binfo.Framebuffer[fb_count].Height = fb->common.framebuffer_height;
             mb2binfo.Framebuffer[fb_count].Pitch = fb->common.framebuffer_pitch;
             mb2binfo.Framebuffer[fb_count].BitsPerPixel = fb->common.framebuffer_bpp;
-            mb2binfo.Framebuffer[fb_count].MemoryModel = fb->common.framebuffer_type;
             switch (fb->common.framebuffer_type)
             {
             case MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED:

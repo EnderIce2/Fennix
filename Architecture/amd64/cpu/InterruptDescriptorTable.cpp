@@ -23,6 +23,7 @@
 #include <io.h>
 
 #include "gdt.hpp"
+#include "../../../kernel.h"
 
 /* conversion from ‘uint64_t’ {aka ‘long unsigned int’} to ‘unsigned char:2’ may change value */
 #pragma GCC diagnostic ignored "-Wconversion"
@@ -41,24 +42,25 @@ namespace InterruptDescriptorTable
 
     void SetEntry(uint8_t Index,
                   void (*Base)(),
-                  InterruptDescriptorTableFlags Attribute,
                   uint8_t InterruptStackTable,
-                  InterruptDescriptorTableFlags Ring,
+                  InterruptGateType Gate,
+                  InterruptRingType Ring,
+                  bool Present,
                   uint16_t SegmentSelector)
     {
         Entries[Index].BaseLow = s_cst(uint16_t, ((uint64_t)Base & 0xFFFF));
         Entries[Index].BaseHigh = s_cst(uint64_t, ((uint64_t)Base >> 16 /* & 0xFFFF */));
         Entries[Index].SegmentSelector = SegmentSelector;
-        Entries[Index].Flags = Attribute;
+        Entries[Index].Flags = Gate;
         Entries[Index].Reserved1 = 0;
         Entries[Index].Reserved2 = 0;
         Entries[Index].Reserved3 = 0;
         Entries[Index].InterruptStackTable = InterruptStackTable;
         Entries[Index].Ring = Ring;
-        Entries[Index].Present = 1;
+        Entries[Index].Present = Present;
     }
 
-    extern "C" __naked __used __no_stack_protector void ExceptionHandlerStub()
+    extern "C" __naked __used __no_stack_protector __aligned(16) void ExceptionHandlerStub()
     {
         asm("cld\n"
 
@@ -102,7 +104,7 @@ namespace InterruptDescriptorTable
             "iretq"); // pop CS RIP RFLAGS SS RSP
     }
 
-    extern "C" __naked __used __no_stack_protector void InterruptHandlerStub()
+    extern "C" __naked __used __no_stack_protector __aligned(16) void InterruptHandlerStub()
     {
         asm("cld\n"
 
@@ -148,25 +150,25 @@ namespace InterruptDescriptorTable
 
 #pragma region Exceptions
 
-#define EXCEPTION_HANDLER(num)                                               \
-    __naked __used __no_stack_protector static void InterruptHandler_##num() \
-    {                                                                        \
-        asm("pushq $0\npushq $" #num "\n"                                    \
-            "jmp ExceptionHandlerStub");                                     \
+#define EXCEPTION_HANDLER(num)                                                             \
+    __naked __used __no_stack_protector __aligned(16) static void InterruptHandler_##num() \
+    {                                                                                      \
+        asm("pushq $0\npushq $" #num "\n"                                                  \
+            "jmp ExceptionHandlerStub");                                                   \
     }
 
-#define EXCEPTION_ERROR_HANDLER(num)                                         \
-    __naked __used __no_stack_protector static void InterruptHandler_##num() \
-    {                                                                        \
-        asm("pushq $" #num "\n"                                              \
-            "jmp ExceptionHandlerStub");                                     \
+#define EXCEPTION_ERROR_HANDLER(num)                                                       \
+    __naked __used __no_stack_protector __aligned(16) static void InterruptHandler_##num() \
+    {                                                                                      \
+        asm("pushq $" #num "\n"                                                            \
+            "jmp ExceptionHandlerStub");                                                   \
     }
 
-#define INTERRUPT_HANDLER(num)                                        \
-    __naked __used __no_stack_protector void InterruptHandler_##num() \
-    {                                                                 \
-        asm("pushq $0\npushq $" #num "\n"                             \
-            "jmp InterruptHandlerStub\n");                            \
+#define INTERRUPT_HANDLER(num)                                                      \
+    __naked __used __no_stack_protector __aligned(16) void InterruptHandler_##num() \
+    {                                                                               \
+        asm("pushq $0\npushq $" #num "\n"                                           \
+            "jmp InterruptHandlerStub\n");                                          \
     }
 
     /* ISR */
@@ -472,271 +474,280 @@ namespace InterruptDescriptorTable
 
         /* ISR */
 
-        SetEntry(0x0, InterruptHandler_0x0, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1, InterruptHandler_0x1, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2, InterruptHandler_0x2, FlagGate_32BIT_TRAP, 2, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3, InterruptHandler_0x3, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4, InterruptHandler_0x4, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5, InterruptHandler_0x5, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6, InterruptHandler_0x6, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7, InterruptHandler_0x7, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8, InterruptHandler_0x8, FlagGate_32BIT_TRAP, 3, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9, InterruptHandler_0x9, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa, InterruptHandler_0xa, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb, InterruptHandler_0xb, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc, InterruptHandler_0xc, FlagGate_32BIT_TRAP, 3, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd, InterruptHandler_0xd, FlagGate_32BIT_TRAP, 3, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe, InterruptHandler_0xe, FlagGate_32BIT_TRAP, 3, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf, InterruptHandler_0xf, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x10, InterruptHandler_0x10, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x11, InterruptHandler_0x11, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x12, InterruptHandler_0x12, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x13, InterruptHandler_0x13, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x14, InterruptHandler_0x14, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x15, InterruptHandler_0x15, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x16, InterruptHandler_0x16, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x17, InterruptHandler_0x17, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x18, InterruptHandler_0x18, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x19, InterruptHandler_0x19, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1a, InterruptHandler_0x1a, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1b, InterruptHandler_0x1b, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1c, InterruptHandler_0x1c, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1d, InterruptHandler_0x1d, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1e, InterruptHandler_0x1e, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x1f, InterruptHandler_0x1f, FlagGate_32BIT_TRAP, 1, FlagGate_RING0, GDT_KERNEL_CODE);
+#ifdef DEBUG
+        if (!DebuggerIsAttached)
+        {
+#endif
+            SetEntry(0x0, InterruptHandler_0x0, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1, InterruptHandler_0x1, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x2, InterruptHandler_0x2, 2, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x3, InterruptHandler_0x3, 1, TRAP_32BIT, RING3, (!DebuggerIsAttached), GDT_KERNEL_CODE); /* Do not handle breakpoints if we are debugging the kernel. */
+            SetEntry(0x4, InterruptHandler_0x4, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x5, InterruptHandler_0x5, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x6, InterruptHandler_0x6, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x7, InterruptHandler_0x7, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x8, InterruptHandler_0x8, 3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x9, InterruptHandler_0x9, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xa, InterruptHandler_0xa, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xb, InterruptHandler_0xb, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xc, InterruptHandler_0xc, 3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xd, InterruptHandler_0xd, 3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xe, InterruptHandler_0xe, 3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0xf, InterruptHandler_0xf, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x10, InterruptHandler_0x10, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x11, InterruptHandler_0x11, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x12, InterruptHandler_0x12, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x13, InterruptHandler_0x13, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x14, InterruptHandler_0x14, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x15, InterruptHandler_0x15, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x16, InterruptHandler_0x16, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x17, InterruptHandler_0x17, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x18, InterruptHandler_0x18, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x19, InterruptHandler_0x19, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1a, InterruptHandler_0x1a, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1b, InterruptHandler_0x1b, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1c, InterruptHandler_0x1c, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1d, InterruptHandler_0x1d, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1e, InterruptHandler_0x1e, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+            SetEntry(0x1f, InterruptHandler_0x1f, 1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+#ifdef DEBUG
+        }
+        else
+            KPrint("\eFFA500The debugger is attached, not setting up the ISR.");
+#endif
 
         /* IRQ */
 
-        SetEntry(0x20, InterruptHandler_0x20, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x21, InterruptHandler_0x21, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x22, InterruptHandler_0x22, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x23, InterruptHandler_0x23, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x24, InterruptHandler_0x24, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x25, InterruptHandler_0x25, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x26, InterruptHandler_0x26, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x27, InterruptHandler_0x27, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x28, InterruptHandler_0x28, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x29, InterruptHandler_0x29, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2a, InterruptHandler_0x2a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2b, InterruptHandler_0x2b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2c, InterruptHandler_0x2c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2d, InterruptHandler_0x2d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2e, InterruptHandler_0x2e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x2f, InterruptHandler_0x2f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
+        SetEntry(0x20, InterruptHandler_0x20, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x21, InterruptHandler_0x21, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x22, InterruptHandler_0x22, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x23, InterruptHandler_0x23, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x24, InterruptHandler_0x24, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x25, InterruptHandler_0x25, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x26, InterruptHandler_0x26, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x27, InterruptHandler_0x27, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x28, InterruptHandler_0x28, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x29, InterruptHandler_0x29, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2a, InterruptHandler_0x2a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2b, InterruptHandler_0x2b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2c, InterruptHandler_0x2c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2d, InterruptHandler_0x2d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2e, InterruptHandler_0x2e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x2f, InterruptHandler_0x2f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
 
         /* Reserved by OS */
 
-        SetEntry(0x30, InterruptHandler_0x30, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x31, InterruptHandler_0x31, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x32, InterruptHandler_0x32, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x33, InterruptHandler_0x33, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x34, InterruptHandler_0x34, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x35, InterruptHandler_0x35, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x36, InterruptHandler_0x36, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x37, InterruptHandler_0x37, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x38, InterruptHandler_0x38, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x39, InterruptHandler_0x39, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3a, InterruptHandler_0x3a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3b, InterruptHandler_0x3b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3c, InterruptHandler_0x3c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3d, InterruptHandler_0x3d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
+        SetEntry(0x30, InterruptHandler_0x30, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x31, InterruptHandler_0x31, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x32, InterruptHandler_0x32, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x33, InterruptHandler_0x33, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x34, InterruptHandler_0x34, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x35, InterruptHandler_0x35, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x36, InterruptHandler_0x36, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x37, InterruptHandler_0x37, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x38, InterruptHandler_0x38, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x39, InterruptHandler_0x39, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x3a, InterruptHandler_0x3a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x3b, InterruptHandler_0x3b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x3c, InterruptHandler_0x3c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x3d, InterruptHandler_0x3d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
 
         /* Free */
 
-        SetEntry(0x3e, InterruptHandler_0x3e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x3f, InterruptHandler_0x3f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x40, InterruptHandler_0x40, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x41, InterruptHandler_0x41, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x42, InterruptHandler_0x42, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x43, InterruptHandler_0x43, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x44, InterruptHandler_0x44, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x45, InterruptHandler_0x45, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x46, InterruptHandler_0x46, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x47, InterruptHandler_0x47, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x48, InterruptHandler_0x48, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x49, InterruptHandler_0x49, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4a, InterruptHandler_0x4a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4b, InterruptHandler_0x4b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4c, InterruptHandler_0x4c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4d, InterruptHandler_0x4d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4e, InterruptHandler_0x4e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x4f, InterruptHandler_0x4f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x50, InterruptHandler_0x50, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x51, InterruptHandler_0x51, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x52, InterruptHandler_0x52, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x53, InterruptHandler_0x53, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x54, InterruptHandler_0x54, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x55, InterruptHandler_0x55, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x56, InterruptHandler_0x56, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x57, InterruptHandler_0x57, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x58, InterruptHandler_0x58, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x59, InterruptHandler_0x59, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5a, InterruptHandler_0x5a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5b, InterruptHandler_0x5b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5c, InterruptHandler_0x5c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5d, InterruptHandler_0x5d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5e, InterruptHandler_0x5e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x5f, InterruptHandler_0x5f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x60, InterruptHandler_0x60, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x61, InterruptHandler_0x61, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x62, InterruptHandler_0x62, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x63, InterruptHandler_0x63, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x64, InterruptHandler_0x64, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x65, InterruptHandler_0x65, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x66, InterruptHandler_0x66, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x67, InterruptHandler_0x67, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x68, InterruptHandler_0x68, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x69, InterruptHandler_0x69, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6a, InterruptHandler_0x6a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6b, InterruptHandler_0x6b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6c, InterruptHandler_0x6c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6d, InterruptHandler_0x6d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6e, InterruptHandler_0x6e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x6f, InterruptHandler_0x6f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x70, InterruptHandler_0x70, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x71, InterruptHandler_0x71, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x72, InterruptHandler_0x72, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x73, InterruptHandler_0x73, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x74, InterruptHandler_0x74, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x75, InterruptHandler_0x75, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x76, InterruptHandler_0x76, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x77, InterruptHandler_0x77, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x78, InterruptHandler_0x78, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x79, InterruptHandler_0x79, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7a, InterruptHandler_0x7a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7b, InterruptHandler_0x7b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7c, InterruptHandler_0x7c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7d, InterruptHandler_0x7d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7e, InterruptHandler_0x7e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x7f, InterruptHandler_0x7f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x80, InterruptHandler_0x80, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x81, InterruptHandler_0x81, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x82, InterruptHandler_0x82, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x83, InterruptHandler_0x83, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x84, InterruptHandler_0x84, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x85, InterruptHandler_0x85, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x86, InterruptHandler_0x86, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x87, InterruptHandler_0x87, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x88, InterruptHandler_0x88, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x89, InterruptHandler_0x89, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8a, InterruptHandler_0x8a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8b, InterruptHandler_0x8b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8c, InterruptHandler_0x8c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8d, InterruptHandler_0x8d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8e, InterruptHandler_0x8e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x8f, InterruptHandler_0x8f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x90, InterruptHandler_0x90, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x91, InterruptHandler_0x91, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x92, InterruptHandler_0x92, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x93, InterruptHandler_0x93, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x94, InterruptHandler_0x94, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x95, InterruptHandler_0x95, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x96, InterruptHandler_0x96, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x97, InterruptHandler_0x97, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x98, InterruptHandler_0x98, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x99, InterruptHandler_0x99, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9a, InterruptHandler_0x9a, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9b, InterruptHandler_0x9b, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9c, InterruptHandler_0x9c, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9d, InterruptHandler_0x9d, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9e, InterruptHandler_0x9e, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0x9f, InterruptHandler_0x9f, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa0, InterruptHandler_0xa0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa1, InterruptHandler_0xa1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa2, InterruptHandler_0xa2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa3, InterruptHandler_0xa3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa4, InterruptHandler_0xa4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa5, InterruptHandler_0xa5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa6, InterruptHandler_0xa6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa7, InterruptHandler_0xa7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa8, InterruptHandler_0xa8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xa9, InterruptHandler_0xa9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xaa, InterruptHandler_0xaa, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xab, InterruptHandler_0xab, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xac, InterruptHandler_0xac, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xad, InterruptHandler_0xad, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xae, InterruptHandler_0xae, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xaf, InterruptHandler_0xaf, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb0, InterruptHandler_0xb0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb1, InterruptHandler_0xb1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb2, InterruptHandler_0xb2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb3, InterruptHandler_0xb3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb4, InterruptHandler_0xb4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb5, InterruptHandler_0xb5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb6, InterruptHandler_0xb6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb7, InterruptHandler_0xb7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb8, InterruptHandler_0xb8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xb9, InterruptHandler_0xb9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xba, InterruptHandler_0xba, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xbb, InterruptHandler_0xbb, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xbc, InterruptHandler_0xbc, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xbd, InterruptHandler_0xbd, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xbe, InterruptHandler_0xbe, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xbf, InterruptHandler_0xbf, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc0, InterruptHandler_0xc0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc1, InterruptHandler_0xc1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc2, InterruptHandler_0xc2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc3, InterruptHandler_0xc3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc4, InterruptHandler_0xc4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc5, InterruptHandler_0xc5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc6, InterruptHandler_0xc6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc7, InterruptHandler_0xc7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc8, InterruptHandler_0xc8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xc9, InterruptHandler_0xc9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xca, InterruptHandler_0xca, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xcb, InterruptHandler_0xcb, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xcc, InterruptHandler_0xcc, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xcd, InterruptHandler_0xcd, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xce, InterruptHandler_0xce, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xcf, InterruptHandler_0xcf, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd0, InterruptHandler_0xd0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd1, InterruptHandler_0xd1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd2, InterruptHandler_0xd2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd3, InterruptHandler_0xd3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd4, InterruptHandler_0xd4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd5, InterruptHandler_0xd5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd6, InterruptHandler_0xd6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd7, InterruptHandler_0xd7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd8, InterruptHandler_0xd8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xd9, InterruptHandler_0xd9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xda, InterruptHandler_0xda, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xdb, InterruptHandler_0xdb, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xdc, InterruptHandler_0xdc, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xdd, InterruptHandler_0xdd, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xde, InterruptHandler_0xde, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xdf, InterruptHandler_0xdf, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe0, InterruptHandler_0xe0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe1, InterruptHandler_0xe1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe2, InterruptHandler_0xe2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe3, InterruptHandler_0xe3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe4, InterruptHandler_0xe4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe5, InterruptHandler_0xe5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe6, InterruptHandler_0xe6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe7, InterruptHandler_0xe7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe8, InterruptHandler_0xe8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xe9, InterruptHandler_0xe9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xea, InterruptHandler_0xea, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xeb, InterruptHandler_0xeb, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xec, InterruptHandler_0xec, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xed, InterruptHandler_0xed, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xee, InterruptHandler_0xee, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xef, InterruptHandler_0xef, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf0, InterruptHandler_0xf0, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf1, InterruptHandler_0xf1, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf2, InterruptHandler_0xf2, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf3, InterruptHandler_0xf3, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf4, InterruptHandler_0xf4, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf5, InterruptHandler_0xf5, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf6, InterruptHandler_0xf6, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf7, InterruptHandler_0xf7, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf8, InterruptHandler_0xf8, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xf9, InterruptHandler_0xf9, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xfa, InterruptHandler_0xfa, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xfb, InterruptHandler_0xfb, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xfc, InterruptHandler_0xfc, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xfd, InterruptHandler_0xfd, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xfe, InterruptHandler_0xfe, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
-        SetEntry(0xff, InterruptHandler_0xff, FlagGate_32BIT_TRAP, 0, FlagGate_RING0, GDT_KERNEL_CODE);
+        SetEntry(0x3e, InterruptHandler_0x3e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x3f, InterruptHandler_0x3f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x40, InterruptHandler_0x40, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x41, InterruptHandler_0x41, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x42, InterruptHandler_0x42, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x43, InterruptHandler_0x43, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x44, InterruptHandler_0x44, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x45, InterruptHandler_0x45, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x46, InterruptHandler_0x46, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x47, InterruptHandler_0x47, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x48, InterruptHandler_0x48, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x49, InterruptHandler_0x49, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4a, InterruptHandler_0x4a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4b, InterruptHandler_0x4b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4c, InterruptHandler_0x4c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4d, InterruptHandler_0x4d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4e, InterruptHandler_0x4e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x4f, InterruptHandler_0x4f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x50, InterruptHandler_0x50, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x51, InterruptHandler_0x51, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x52, InterruptHandler_0x52, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x53, InterruptHandler_0x53, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x54, InterruptHandler_0x54, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x55, InterruptHandler_0x55, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x56, InterruptHandler_0x56, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x57, InterruptHandler_0x57, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x58, InterruptHandler_0x58, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x59, InterruptHandler_0x59, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5a, InterruptHandler_0x5a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5b, InterruptHandler_0x5b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5c, InterruptHandler_0x5c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5d, InterruptHandler_0x5d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5e, InterruptHandler_0x5e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x5f, InterruptHandler_0x5f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x60, InterruptHandler_0x60, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x61, InterruptHandler_0x61, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x62, InterruptHandler_0x62, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x63, InterruptHandler_0x63, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x64, InterruptHandler_0x64, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x65, InterruptHandler_0x65, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x66, InterruptHandler_0x66, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x67, InterruptHandler_0x67, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x68, InterruptHandler_0x68, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x69, InterruptHandler_0x69, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6a, InterruptHandler_0x6a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6b, InterruptHandler_0x6b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6c, InterruptHandler_0x6c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6d, InterruptHandler_0x6d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6e, InterruptHandler_0x6e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x6f, InterruptHandler_0x6f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x70, InterruptHandler_0x70, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x71, InterruptHandler_0x71, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x72, InterruptHandler_0x72, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x73, InterruptHandler_0x73, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x74, InterruptHandler_0x74, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x75, InterruptHandler_0x75, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x76, InterruptHandler_0x76, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x77, InterruptHandler_0x77, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x78, InterruptHandler_0x78, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x79, InterruptHandler_0x79, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7a, InterruptHandler_0x7a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7b, InterruptHandler_0x7b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7c, InterruptHandler_0x7c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7d, InterruptHandler_0x7d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7e, InterruptHandler_0x7e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x7f, InterruptHandler_0x7f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x80, InterruptHandler_0x80, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x81, InterruptHandler_0x81, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x82, InterruptHandler_0x82, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x83, InterruptHandler_0x83, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x84, InterruptHandler_0x84, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x85, InterruptHandler_0x85, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x86, InterruptHandler_0x86, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x87, InterruptHandler_0x87, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x88, InterruptHandler_0x88, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x89, InterruptHandler_0x89, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8a, InterruptHandler_0x8a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8b, InterruptHandler_0x8b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8c, InterruptHandler_0x8c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8d, InterruptHandler_0x8d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8e, InterruptHandler_0x8e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x8f, InterruptHandler_0x8f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x90, InterruptHandler_0x90, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x91, InterruptHandler_0x91, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x92, InterruptHandler_0x92, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x93, InterruptHandler_0x93, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x94, InterruptHandler_0x94, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x95, InterruptHandler_0x95, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x96, InterruptHandler_0x96, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x97, InterruptHandler_0x97, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x98, InterruptHandler_0x98, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x99, InterruptHandler_0x99, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9a, InterruptHandler_0x9a, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9b, InterruptHandler_0x9b, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9c, InterruptHandler_0x9c, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9d, InterruptHandler_0x9d, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9e, InterruptHandler_0x9e, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0x9f, InterruptHandler_0x9f, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa0, InterruptHandler_0xa0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa1, InterruptHandler_0xa1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa2, InterruptHandler_0xa2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa3, InterruptHandler_0xa3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa4, InterruptHandler_0xa4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa5, InterruptHandler_0xa5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa6, InterruptHandler_0xa6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa7, InterruptHandler_0xa7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa8, InterruptHandler_0xa8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xa9, InterruptHandler_0xa9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xaa, InterruptHandler_0xaa, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xab, InterruptHandler_0xab, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xac, InterruptHandler_0xac, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xad, InterruptHandler_0xad, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xae, InterruptHandler_0xae, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xaf, InterruptHandler_0xaf, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb0, InterruptHandler_0xb0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb1, InterruptHandler_0xb1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb2, InterruptHandler_0xb2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb3, InterruptHandler_0xb3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb4, InterruptHandler_0xb4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb5, InterruptHandler_0xb5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb6, InterruptHandler_0xb6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb7, InterruptHandler_0xb7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb8, InterruptHandler_0xb8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xb9, InterruptHandler_0xb9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xba, InterruptHandler_0xba, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xbb, InterruptHandler_0xbb, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xbc, InterruptHandler_0xbc, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xbd, InterruptHandler_0xbd, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xbe, InterruptHandler_0xbe, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xbf, InterruptHandler_0xbf, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc0, InterruptHandler_0xc0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc1, InterruptHandler_0xc1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc2, InterruptHandler_0xc2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc3, InterruptHandler_0xc3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc4, InterruptHandler_0xc4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc5, InterruptHandler_0xc5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc6, InterruptHandler_0xc6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc7, InterruptHandler_0xc7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc8, InterruptHandler_0xc8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xc9, InterruptHandler_0xc9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xca, InterruptHandler_0xca, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xcb, InterruptHandler_0xcb, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xcc, InterruptHandler_0xcc, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xcd, InterruptHandler_0xcd, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xce, InterruptHandler_0xce, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xcf, InterruptHandler_0xcf, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd0, InterruptHandler_0xd0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd1, InterruptHandler_0xd1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd2, InterruptHandler_0xd2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd3, InterruptHandler_0xd3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd4, InterruptHandler_0xd4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd5, InterruptHandler_0xd5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd6, InterruptHandler_0xd6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd7, InterruptHandler_0xd7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd8, InterruptHandler_0xd8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xd9, InterruptHandler_0xd9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xda, InterruptHandler_0xda, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xdb, InterruptHandler_0xdb, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xdc, InterruptHandler_0xdc, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xdd, InterruptHandler_0xdd, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xde, InterruptHandler_0xde, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xdf, InterruptHandler_0xdf, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe0, InterruptHandler_0xe0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe1, InterruptHandler_0xe1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe2, InterruptHandler_0xe2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe3, InterruptHandler_0xe3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe4, InterruptHandler_0xe4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe5, InterruptHandler_0xe5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe6, InterruptHandler_0xe6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe7, InterruptHandler_0xe7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe8, InterruptHandler_0xe8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xe9, InterruptHandler_0xe9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xea, InterruptHandler_0xea, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xeb, InterruptHandler_0xeb, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xec, InterruptHandler_0xec, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xed, InterruptHandler_0xed, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xee, InterruptHandler_0xee, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xef, InterruptHandler_0xef, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf0, InterruptHandler_0xf0, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf1, InterruptHandler_0xf1, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf2, InterruptHandler_0xf2, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf3, InterruptHandler_0xf3, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf4, InterruptHandler_0xf4, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf5, InterruptHandler_0xf5, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf6, InterruptHandler_0xf6, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf7, InterruptHandler_0xf7, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf8, InterruptHandler_0xf8, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xf9, InterruptHandler_0xf9, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xfa, InterruptHandler_0xfa, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xfb, InterruptHandler_0xfb, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xfc, InterruptHandler_0xfc, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xfd, InterruptHandler_0xfd, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xfe, InterruptHandler_0xfe, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
+        SetEntry(0xff, InterruptHandler_0xff, 0, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
         CPU::x64::lidt(&idtd);
     }
 }

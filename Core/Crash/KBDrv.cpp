@@ -96,7 +96,7 @@ namespace CrashHandler
 {
     CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         while (inb(0x64) & 0x1)
             inb(0x60);
 
@@ -109,7 +109,7 @@ namespace CrashHandler
 
         outb(0x21, 0xFD);
         outb(0xA1, 0xFF);
-#endif // defined(a64) || defined(a32)
+#endif // defined(a86)
 
         CPU::Interrupts(CPU::Enable); // Just to be sure.
     }
@@ -130,7 +130,7 @@ namespace CrashHandler
     SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
 #endif
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         UNUSED(Frame);
         uint8_t scanCode = inb(0x60);
         if (scanCode == KEY_D_TAB ||
@@ -184,7 +184,7 @@ namespace CrashHandler
     SafeFunction void HookKeyboard()
     {
         CrashKeyboardDriver kbd; // We don't want to allocate memory.
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("KeyboardHookLoop: nop; jmp KeyboardHookLoop;");
 #elif defined(aa64)
         asmv("KeyboardHookLoop: nop; b KeyboardHookLoop;");

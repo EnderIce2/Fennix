@@ -30,19 +30,21 @@ namespace CPU
 
 	char *Vendor()
 	{
-		static char Vendor[13];
+		static char Vendor[13] = {0};
+		if (Vendor[0] != 0)
+			return Vendor;
 #if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x0, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Vendor + 0, &ebx, 4);
-		memcpy_unsafe(Vendor + 4, &edx, 4);
-		memcpy_unsafe(Vendor + 8, &ecx, 4);
+		memcpy(Vendor + 0, &ebx, 4);
+		memcpy(Vendor + 4, &edx, 4);
+		memcpy(Vendor + 8, &ecx, 4);
 #elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x0, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Vendor + 0, &ebx, 4);
-		memcpy_unsafe(Vendor + 4, &edx, 4);
-		memcpy_unsafe(Vendor + 8, &ecx, 4);
+		memcpy(Vendor + 0, &ebx, 4);
+		memcpy(Vendor + 4, &edx, 4);
+		memcpy(Vendor + 8, &ecx, 4);
 #elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Vendor[0]));
@@ -52,41 +54,43 @@ namespace CPU
 
 	char *Name()
 	{
-		static char Name[49];
+		static char Name[49] = {0};
+		if (Name[0] != 0)
+			return Name;
 #if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 0, &eax, 4);
-		memcpy_unsafe(Name + 4, &ebx, 4);
-		memcpy_unsafe(Name + 8, &ecx, 4);
-		memcpy_unsafe(Name + 12, &edx, 4);
+		memcpy(Name + 0, &eax, 4);
+		memcpy(Name + 4, &ebx, 4);
+		memcpy(Name + 8, &ecx, 4);
+		memcpy(Name + 12, &edx, 4);
 		x64::cpuid(0x80000003, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 16, &eax, 4);
-		memcpy_unsafe(Name + 20, &ebx, 4);
-		memcpy_unsafe(Name + 24, &ecx, 4);
-		memcpy_unsafe(Name + 28, &edx, 4);
+		memcpy(Name + 16, &eax, 4);
+		memcpy(Name + 20, &ebx, 4);
+		memcpy(Name + 24, &ecx, 4);
+		memcpy(Name + 28, &edx, 4);
 		x64::cpuid(0x80000004, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 32, &eax, 4);
-		memcpy_unsafe(Name + 36, &ebx, 4);
-		memcpy_unsafe(Name + 40, &ecx, 4);
-		memcpy_unsafe(Name + 44, &edx, 4);
+		memcpy(Name + 32, &eax, 4);
+		memcpy(Name + 36, &ebx, 4);
+		memcpy(Name + 40, &ecx, 4);
+		memcpy(Name + 44, &edx, 4);
 #elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 0, &eax, 4);
-		memcpy_unsafe(Name + 4, &ebx, 4);
-		memcpy_unsafe(Name + 8, &ecx, 4);
-		memcpy_unsafe(Name + 12, &edx, 4);
+		memcpy(Name + 0, &eax, 4);
+		memcpy(Name + 4, &ebx, 4);
+		memcpy(Name + 8, &ecx, 4);
+		memcpy(Name + 12, &edx, 4);
 		x32::cpuid(0x80000003, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 16, &eax, 4);
-		memcpy_unsafe(Name + 20, &ebx, 4);
-		memcpy_unsafe(Name + 24, &ecx, 4);
-		memcpy_unsafe(Name + 28, &edx, 4);
+		memcpy(Name + 16, &eax, 4);
+		memcpy(Name + 20, &ebx, 4);
+		memcpy(Name + 24, &ecx, 4);
+		memcpy(Name + 28, &edx, 4);
 		x32::cpuid(0x80000004, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Name + 32, &eax, 4);
-		memcpy_unsafe(Name + 36, &ebx, 4);
-		memcpy_unsafe(Name + 40, &ecx, 4);
-		memcpy_unsafe(Name + 44, &edx, 4);
+		memcpy(Name + 32, &eax, 4);
+		memcpy(Name + 36, &ebx, 4);
+		memcpy(Name + 40, &ecx, 4);
+		memcpy(Name + 44, &edx, 4);
 #elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Name[0]));
@@ -96,19 +100,21 @@ namespace CPU
 
 	char *Hypervisor()
 	{
-		static char Hypervisor[13];
+		static char Hypervisor[13] = {0};
+		if (Hypervisor[0] != 0)
+			return Hypervisor;
 #if defined(a64)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
-		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
-		memcpy_unsafe(Hypervisor + 8, &edx, 4);
+		memcpy(Hypervisor + 0, &ebx, 4);
+		memcpy(Hypervisor + 4, &ecx, 4);
+		memcpy(Hypervisor + 8, &edx, 4);
 #elif defined(a32)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
-		memcpy_unsafe(Hypervisor + 0, &ebx, 4);
-		memcpy_unsafe(Hypervisor + 4, &ecx, 4);
-		memcpy_unsafe(Hypervisor + 8, &edx, 4);
+		memcpy(Hypervisor + 0, &ebx, 4);
+		memcpy(Hypervisor + 4, &ecx, 4);
+		memcpy(Hypervisor + 8, &edx, 4);
 #elif defined(aa64)
 		asmv("mrs %0, MIDR_EL1"
 			 : "=r"(Hypervisor[0]));
@@ -141,7 +147,7 @@ namespace CPU
 		}
 		case Enable:
 		{
-#if defined(a64) || defined(a32)
+#if defined(a86)
 			asmv("sti");
 #elif defined(aa64)
 			asmv("msr daifclr, #2");
@@ -150,7 +156,7 @@ namespace CPU
 		}
 		case Disable:
 		{
-#if defined(a64) || defined(a32)
+#if defined(a86)
 			asmv("cli");
 #elif defined(aa64)
 			asmv("msr daifset, #2");
@@ -195,30 +201,41 @@ namespace CPU
 
 	void InitializeFeatures(long Core)
 	{
+#if defined(a64)
 		bool PGESupport = false;
 		bool SSESupport = false;
-#if defined(a64)
+		bool UMIPSupport = false;
+		bool SMEPSupport = false;
+		bool SMAPSupport = false;
+
 		static int BSP = 0;
 		x64::CR0 cr0 = x64::readcr0();
 		x64::CR4 cr4 = x64::readcr4();
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
-			CPU::x86::AMD::CPUID0x00000001 cpuid;
-            cpuid.Get();
-			if (cpuid.EDX.PGE)
-				PGESupport = true;
-			if (cpuid.EDX.SSE)
-				SSESupport = true;
+			CPU::x86::AMD::CPUID0x00000001 cpuid1;
+			CPU::x86::AMD::CPUID0x00000007 cpuid7;
+			cpuid1.Get();
+			cpuid7.Get();
+
+			PGESupport = cpuid1.EDX.PGE;
+			SSESupport = cpuid1.EDX.SSE;
+			SMEPSupport = cpuid7.EBX.SMEP;
+			SMAPSupport = cpuid7.EBX.SMAP;
+			UMIPSupport = cpuid7.ECX.UMIP;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
-			CPU::x86::Intel::CPUID0x00000001 cpuid;
-            cpuid.Get();
-			if (cpuid.EDX.PGE)
-				PGESupport = true;
-			if (cpuid.EDX.SSE)
-				SSESupport = true;
+			CPU::x86::Intel::CPUID0x00000001 cpuid1;
+			CPU::x86::Intel::CPUID0x00000007_0 cpuid7_0;
+			cpuid1.Get();
+			cpuid7_0.Get();
+			PGESupport = cpuid1.EDX.PGE;
+			SSESupport = cpuid1.EDX.SSE;
+			SMEPSupport = cpuid7_0.EBX.SMEP;
+			SMAPSupport = cpuid7_0.EBX.SMAP;
+			UMIPSupport = cpuid7_0.ECX.UMIP;
 		}
 
 		if (Config.SIMD == false)
@@ -251,7 +268,7 @@ namespace CPU
 			cr4.OSXMMEXCPT = 1;
 
 			CPUData *CoreData = GetCPU(Core);
-			CoreData->Data.FPU = (CPU::x64::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
+			CoreData->Data.FPU = (CPU::x64::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x64::FXState) + 1));
 			memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
 			CoreData->Data.FPU->mxcsr = 0b0001111110000000;
 			CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
@@ -261,47 +278,40 @@ namespace CPU
 			SSEEnableAfter = true;
 		}
 
-		if (!BSP)
-			KPrint("Enabling CPU cache.");
-
 		cr0.NW = 0;
 		cr0.CD = 0;
 		cr0.WP = 1;
 
 		x64::writecr0(cr0);
 
-		// FIXME: I don't think this is reporting correctly. This has to be fixed asap.
-		debug("Enabling UMIP, SMEP & SMAP support...");
-		uint32_t eax, ebx, ecx, edx;
-		x64::cpuid(0x1, &eax, &ebx, &ecx, &edx);
-		if (edx & (1 << 2)) // https://en.wikipedia.org/wiki/Control_register
-		{
-			if (!BSP)
-				KPrint("UMIP is supported.");
-			debug("UMIP is supported.");
-			// cr4.UMIP = 1;
-		}
-		if (edx & (1 << 7)) // https://en.wikipedia.org/wiki/Control_register#SMEP
-							// https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
-		{
-			if (!BSP)
-				KPrint("SMEP is supported.");
-			debug("SMEP is supported.");
-			// cr4.SMEP = 1;
-		}
-		if (edx & (1 << 20)) // https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
-		{
-			if (!BSP)
-				KPrint("SMAP is supported.");
-			debug("SMAP is supported.");
-			// cr4.SMAP = 1;
-		}
 		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
 			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 		{
-			debug("Writing CR4...");
-			x64::writecr4(cr4);
-			debug("Wrote CR4.");
+			// FIXME: I don't think this is reporting correctly. This has to be fixed asap.
+			debug("Enabling UMIP, SMEP & SMAP support...");
+			if (UMIPSupport)
+			{
+				if (!BSP)
+					KPrint("UMIP is supported.");
+				debug("UMIP is supported.");
+				// cr4.UMIP = 1;
+			}
+
+			if (SMEPSupport)
+			{
+				if (!BSP)
+					KPrint("SMEP is supported.");
+				debug("SMEP is supported.");
+				// cr4.SMEP = 1;
+			}
+
+			if (SMAPSupport)
+			{
+				if (!BSP)
+					KPrint("SMAP is supported.");
+				debug("SMAP is supported.");
+				// cr4.SMAP = 1;
+			}
 		}
 		else
 		{
@@ -313,6 +323,11 @@ namespace CPU
 					KPrint("QEMU (TCG) detected. Not using UMIP, SMEP & SMAP");
 			}
 		}
+
+		debug("Writing CR4...");
+		x64::writecr4(cr4);
+		debug("Wrote CR4.");
+
 		debug("Enabling PAT support...");
 		x64::wrmsr(x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)
@@ -352,7 +367,7 @@ namespace CPU
 
 			// return SIMD_SSE;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
 		static uint64_t SIMDType = SIMD_NONE;
 
 		if (likely(SIMDType != SIMD_NONE))
@@ -434,7 +449,7 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return false;
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;

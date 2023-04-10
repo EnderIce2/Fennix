@@ -31,8 +31,7 @@ void TestString()
     else
     {
         error("String comparison doesn't work! \"%s\"", hw.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     std::string hi("Hi");
@@ -45,8 +44,7 @@ void TestString()
     else
     {
         error("String indexing doesn't work! \"%s\" \"%s\"", chi, hi.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     hi << " there!";
@@ -55,8 +53,7 @@ void TestString()
     else
     {
         error("String concatenation doesn't work! \"%s\"", hi.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     hi << " " << hw;
@@ -65,8 +62,7 @@ void TestString()
     else
     {
         error("String concatenation doesn't work! \"%s\"", hi.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     std::string eq0("Hello, world!");
@@ -78,8 +74,7 @@ void TestString()
     else
     {
         error("String equality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq1.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     if (eq0 != eq2)
@@ -87,8 +82,7 @@ void TestString()
     else
     {
         error("String inequality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq2.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 
     char chw[14];
@@ -105,8 +99,7 @@ void TestString()
     else
     {
         error("String iteration doesn't work! \"%s\" \"%s\" %d", chw, hw.c_str(), i);
-        while (1)
-            ;
+        inf_loop;
     }
 
     std::string a("Hello");
@@ -119,8 +112,7 @@ void TestString()
     else
     {
         error("String addition doesn't work! \"%s\"", c.c_str());
-        while (1)
-            ;
+        inf_loop;
     }
 }
 

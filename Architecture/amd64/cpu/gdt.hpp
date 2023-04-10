@@ -32,42 +32,42 @@ namespace GlobalDescriptorTable
             /** @brief Access bit.
              * @note The CPU sets this bit to 1 when the segment is accessed.
              */
-            uint8_t A : 1;
+            uint64_t A : 1;
 
             /** @brief Readable bit for code segments, writable bit for data segments.
              * @details For code segments, this bit must be 1 for the segment to be readable.
              * @details For data segments, this bit must be 1 for the segment to be writable.
              */
-            uint8_t RW : 1;
+            uint64_t RW : 1;
 
             /** @brief Direction bit for data segments, conforming bit for code segments.
              * @details For data segments, this bit must be 1 for the segment to grow up (higher addresses).
              * @details For code segments, this bit must be 1 for code in the segment to be able to be executed from an equal or lower privilege level.
              */
-            uint8_t DC : 1;
+            uint64_t DC : 1;
 
             /** @brief Executable bit.
              * @details This bit must be 1 for code-segment descriptors.
              * @details This bit must be 0 for data-segment and system descriptors.
              */
-            uint8_t E : 1;
+            uint64_t E : 1;
 
             /** @brief Descriptor type.
              * @details This bit must be 0 for system descriptors.
              * @details This bit must be 1 for code or data segment descriptor.
              */
-            uint8_t S : 1;
+            uint64_t S : 1;
 
             /** @brief Descriptor privilege level.
              * @details This field determines the privilege level of the segment.
              * @details 0 = kernel mode, 3 = user mode.
              */
-            uint8_t DPL : 2;
+            uint64_t DPL : 2;
 
             /** @brief Present bit.
              * @details This bit must be 1 for all valid descriptors.
              */
-            uint8_t P : 1;
+            uint64_t P : 1;
         } __packed;
         uint8_t Raw;
     };
@@ -78,13 +78,13 @@ namespace GlobalDescriptorTable
         struct
         {
             /** @brief Unknown. */
-            uint8_t Unknown : 5;
+            uint64_t Unknown : 5;
 
             /** @brief Long mode.
              * @details If the long mode bit is clear, the segment is in 32-bit protected mode.
              * @details If the long mode bit is set, the segment is in 64-bit long mode.
              */
-            uint8_t L : 1;
+            uint64_t L : 1;
         } __packed;
         uint8_t Raw;
     };
@@ -105,7 +105,7 @@ namespace GlobalDescriptorTable
 
     typedef struct _TaskStateSegment
     {
-        uint32_t Reserved0 __aligned(0x10);
+        uint32_t Reserved0 __aligned(16);
         uint64_t StackPointer[3];
         uint64_t Reserved1;
         uint64_t InterruptStackTable[7];

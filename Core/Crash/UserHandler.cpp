@@ -99,7 +99,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #elif defined(aa64)
 #endif
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         error("CR0=%#llx CR2=%#llx CR3=%#llx CR4=%#llx CR8=%#llx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
 
         error("CR0: PE:%s MP:%s EM:%s TS:%s ET:%s NE:%s WP:%s AM:%s NW:%s CD:%s PG:%s R0:%#x R1:%#x R2:%#x",
@@ -113,7 +113,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
         error("CR3: PWT:%s PCD:%s PDBR:%#llx",
               cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
-#endif // defined(a64) || defined(a32)
+#endif // defined(a86)
 
 #if defined(a64)
         error("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x R2:%#x",
@@ -133,9 +133,9 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               cr4.Reserved0, cr4.Reserved1);
 #endif
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         error("CR8: TPL:%d", cr8.TPL);
-#endif // defined(a64) || defined(a32)
+#endif // defined(a86)
 
 #if defined(a64)
         error("RFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x R3:%#x",
@@ -156,7 +156,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #elif defined(aa64)
 #endif
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         error("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
               efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
               efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",

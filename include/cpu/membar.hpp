@@ -26,7 +26,7 @@ namespace CPU
     {
         SafeFunction static inline void Barrier()
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("" ::
                      : "memory");
 #elif defined(aa64)
@@ -37,7 +37,7 @@ namespace CPU
 
         SafeFunction static inline void Fence()
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("mfence" ::
                      : "memory");
 #elif defined(aa64)
@@ -48,7 +48,7 @@ namespace CPU
 
         SafeFunction static inline void StoreFence()
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("sfence" ::
                      : "memory");
 #elif defined(aa64)
@@ -59,7 +59,7 @@ namespace CPU
 
         SafeFunction static inline void LoadFence()
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("lfence" ::
                      : "memory");
 #elif defined(aa64)

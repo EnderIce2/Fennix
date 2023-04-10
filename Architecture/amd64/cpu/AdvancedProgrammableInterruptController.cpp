@@ -48,10 +48,12 @@ namespace APIC
 
     uint32_t APIC::Read(uint32_t Register)
     {
+#ifdef DEBUG
         if (Register != APIC_ICRLO &&
             Register != APIC_ICRHI &&
             Register != APIC_ID)
             debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
+#endif
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -70,6 +72,7 @@ namespace APIC
 
     void APIC::Write(uint32_t Register, uint32_t Value)
     {
+#ifdef DEBUG
         if (Register != APIC_EOI &&
             Register != APIC_TDCR &&
             Register != APIC_TIMER &&
@@ -77,6 +80,7 @@ namespace APIC
             Register != APIC_ICRLO &&
             Register != APIC_ICRHI)
             debug("APIC::Write(%#lx, %#lx) [x2=%d]", Register, Value, x2APICSupported ? 1 : 0);
+#endif
         if (x2APICSupported)
         {
             if (Register != APIC_ICRHI)
@@ -129,8 +133,8 @@ namespace APIC
         SmartCriticalSection(APICLock);
         if (x2APICSupported)
         {
-            fixme("Not implemented for x2APIC");
-            // wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32);
+            wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+            this->WaitForIPI();
         }
         else
         {
@@ -145,8 +149,11 @@ namespace APIC
         SmartCriticalSection(APICLock);
         if (x2APICSupported)
         {
-            fixme("Not implemented for x2APIC");
-            // wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32);
+            InterruptCommandRegisterLow icr = {.raw = 0};
+            icr.DeliveryMode = INIT;
+            icr.Level = Assert;
+            wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+            this->WaitForIPI();
         }
         else
         {
@@ -164,8 +171,12 @@ namespace APIC
         SmartCriticalSection(APICLock);
         if (x2APICSupported)
         {
-            warn("Not tested for x2APIC");
-            wrmsr(MSR_X2APIC_ICR, ((uint64_t)CPU) << 32 | StartupAddress);
+            InterruptCommandRegisterLow icr = {.raw = 0};
+            icr.Vector = s_cst(uint8_t, StartupAddress >> 12);
+            icr.DeliveryMode = Startup;
+            icr.Level = Assert;
+            wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+            this->WaitForIPI();
         }
         else
         {
@@ -254,6 +265,7 @@ namespace APIC
         uint64_t BaseHigh = BaseStruct.ApicBaseHi;
         this->APICBaseAddress = BaseLow << 12u | BaseHigh << 32u;
         trace("APIC Address: %#lx", this->APICBaseAddress);
+        Memory::Virtual().Map((void *)this->APICBaseAddress, (void *)this->APICBaseAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD);
 
         bool x2APICSupported = false;
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
@@ -270,7 +282,11 @@ namespace APIC
         {
             CPU::x86::Intel::CPUID0x00000001 cpuid;
             cpuid.Get();
-            x2APICSupported = cpuid.ECX.x2APIC;
+            if (cpuid.ECX.x2APIC)
+            {
+                // x2APICSupported = cpuid.ECX.x2APIC;
+                fixme("x2APIC is supported");
+            }
         }
 
         if (x2APICSupported)

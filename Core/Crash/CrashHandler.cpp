@@ -375,7 +375,7 @@ namespace CrashHandler
             int tmpidx = SBIdx;
             SBIdx = atoi(arg);
             Display->SetBuffer(SBIdx);
-#if defined(a64) || defined(a32)
+#if defined(a86)
             for (int i = 0; i < 5000000; i++)
                 inb(0x80);
 #endif // a64 || a32
@@ -415,7 +415,7 @@ namespace CrashHandler
                             EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
                         else
                             EHPrint("\eFF4CA9Outside Kernel");
-#if defined(a64) || defined(a32)
+#if defined(a86)
                         for (int i = 0; i < 20000; i++)
                             inb(0x80);
 #endif // a64 || a32
@@ -624,7 +624,7 @@ namespace CrashHandler
             }
             else
             {
-#if defined(a64) || defined(a32)
+#if defined(a86)
                 GlobalDescriptorTable::TaskStateSegment tss = GlobalDescriptorTable::tss[TSSIndex];
                 EHPrint("\eFAFAFAStack Pointer 0: \eAABB22%#lx\n", tss.StackPointer[0]);
                 EHPrint("\eFAFAFAStack Pointer 1: \eAABB22%#lx\n", tss.StackPointer[1]);
@@ -779,7 +779,7 @@ namespace CrashHandler
 
     SafeFunction void StopAllCores()
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         /* FIXME: Can't send IPIs to other cores
          * because it causes another exception on
          * the other cores.

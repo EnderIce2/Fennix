@@ -71,7 +71,8 @@ enum FexDriverType
     FexDriverType_Storage,
     FexDriverType_FileSystem,
     FexDriverType_Input,
-    FexDriverType_Audio
+    FexDriverType_Audio,
+    FexDriverType_ACPI,
     /* ... */
 };
 

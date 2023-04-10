@@ -87,7 +87,7 @@ namespace CrashHandler
 #elif defined(aa64)
 #endif
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", data.cr0.raw, data.cr2.raw, data.cr3.raw, data.cr4.raw, data.cr8.raw);
         EHPrint("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx\n", data.dr0, data.dr1, data.dr2, data.dr3, data.dr6, data.dr7.raw);
 
@@ -136,7 +136,7 @@ namespace CrashHandler
 #elif defined(aa64)
 #endif
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
         EHPrint("\eA0F0F0DR7: LDR0:%s     GDR0:%s     LDR1:%s     GDR1:%s\n     LDR2:%s     GDR2:%s     LDR3:%s     GDR3:%s\n     CDR0:%s     SDR0:%s     CDR1:%s     SDR1:%s\n     CDR2:%s     SDR2:%s     CDR3:%s     SDR3:%s\n     R:%#x\n",
                 data.dr7.LocalDR0 ? "True " : "False", data.dr7.GlobalDR0 ? "True " : "False", data.dr7.LocalDR1 ? "True " : "False", data.dr7.GlobalDR1 ? "True " : "False",
                 data.dr7.LocalDR2 ? "True " : "False", data.dr7.GlobalDR2 ? "True " : "False", data.dr7.LocalDR3 ? "True " : "False", data.dr7.GlobalDR3 ? "True " : "False",

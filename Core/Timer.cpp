@@ -33,7 +33,7 @@ namespace Time
 {
     void time::Sleep(uint64_t Milliseconds)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000000) / clk;
 #ifdef DEBUG
         uint64_t Counter = mminq(&((HPET *)hpet)->MainCounterValue);
@@ -52,7 +52,7 @@ namespace Time
 
     uint64_t time::GetCounter()
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         return mminq(&((HPET *)hpet)->MainCounterValue);
 #elif defined(aa64)
 #endif
@@ -60,7 +60,7 @@ namespace Time
 
     uint64_t time::CalculateTarget(uint64_t Milliseconds)
     {
-#if defined(a64) || defined(a32)
+#if defined(a86)
         return mminq(&((HPET *)hpet)->MainCounterValue) + (Milliseconds * 1000000000000) / clk;
 #elif defined(aa64)
 #endif
@@ -75,7 +75,7 @@ namespace Time
             ACPI::ACPI *acpi = (ACPI::ACPI *)this->acpi;
             if (acpi->HPET)
             {
-                Memory::Virtual().Map((void *)acpi->HPET->Address.Address,
+                Memory::Virtual().Remap((void *)acpi->HPET->Address.Address,
                                       (void *)acpi->HPET->Address.Address,
                                       Memory::PTFlag::RW | Memory::PTFlag::PCD);
                 this->hpet = (void *)acpi->HPET->Address.Address;

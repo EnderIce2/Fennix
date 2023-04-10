@@ -77,7 +77,7 @@ namespace Power
 
     Power::Power()
     {
-        this->acpi = new ACPI::ACPI(bInfo);
+        this->acpi = new ACPI::ACPI;
         this->madt = new ACPI::MADT(((ACPI::ACPI *)acpi)->MADT);
         trace("Power manager initialized");
     }

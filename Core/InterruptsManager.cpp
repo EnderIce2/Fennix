@@ -67,16 +67,14 @@ namespace Interrupts
         CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
         CoreData->ID = Core;
         CoreData->IsActive = true;
-        CoreData->SystemCallStack = (uint8_t *)((uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE);
-        CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+        CoreData->SystemCallStack = (uint8_t *)((uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE);
+        CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE;
         if (CoreData->Checksum != CPU_DATA_CHECKSUM)
         {
             KPrint("CPU %d checksum mismatch! %x != %x", Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
             CPU::Stop();
         }
         debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
-        /* TODO: Implement a proper way to set the stack pointer. */
-        // asmv("movq %0, %%rsp" ::"r"(CoreData->Stack));
         InitializeSystemCalls();
 #elif defined(a32)
         warn("i386 is not supported yet");
@@ -152,7 +150,7 @@ namespace Interrupts
             bool InterruptHandled = false;
             foreach (auto ev in RegisteredEvents)
             {
-#if defined(a64) || defined(a32)
+#if defined(a86)
                 if ((ev.ID + CPU::x86::IRQ0) == static_cast<int>(Frame->InterruptNumber))
 #elif defined(aa64)
                 if (ev.ID == static_cast<int>(Frame->InterruptNumber))

@@ -54,7 +54,6 @@ struct BootInfo
         __UINT32_TYPE__ Height;
         __UINT64_TYPE__ Pitch;
         __UINT16_TYPE__ BitsPerPixel;
-        __UINT8_TYPE__ MemoryModel;
         __UINT8_TYPE__ RedMaskSize;
         __UINT8_TYPE__ RedMaskShift;
         __UINT8_TYPE__ GreenMaskSize;

@@ -13,8 +13,16 @@
 ;   You should have received a copy of the GNU General Public License
 ;   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 
+; This has to be the same as enum SMPTrampolineAddress.
+TRAMPOLINE_PAGE_TABLE equ 0x500
+TRAMPOLINE_START_ADDR equ 0x520
+TRAMPOLINE_STACK equ 0x570
+TRAMPOLINE_GDT equ 0x580
+TRAMPOLINE_IDT equ 0x590
+TRAMPOLINE_CORE equ 0x600
+TRAMPOLINE_START equ 0x2000
+
 [bits 16]
-TRAMPOLINE_BASE equ 0x2000
 
 extern StartCPU
 global _trampoline_start
@@ -26,11 +34,11 @@ _trampoline_start:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    o32 lgdt [ProtectedMode_gdtr - _trampoline_start + TRAMPOLINE_BASE]
+    o32 lgdt [ProtectedMode_gdtr - _trampoline_start + TRAMPOLINE_START]
     mov eax, cr0
     or al, 0x1
     mov cr0, eax
-    jmp 0x8:(Trampoline32 - _trampoline_start + TRAMPOLINE_BASE)
+    jmp 0x8:(Trampoline32 - _trampoline_start + TRAMPOLINE_START)
 
 [bits 32]
 section .text
@@ -39,7 +47,7 @@ Trampoline32:
     mov ds, bx
     mov es, bx
     mov ss, bx
-    mov eax, dword [0x500]
+    mov eax, dword [TRAMPOLINE_PAGE_TABLE]
     mov cr3, eax
     mov eax, cr4
     or eax, 1 << 5 ; Set the PAE-bit, which is the 6th bit (bit 5).
@@ -52,8 +60,8 @@ Trampoline32:
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax
-    lgdt [LongMode_gdtr - _trampoline_start + TRAMPOLINE_BASE]
-    jmp 0x8:(Trampoline64 - _trampoline_start + TRAMPOLINE_BASE)
+    lgdt [LongMode_gdtr - _trampoline_start + TRAMPOLINE_START]
+    jmp 0x8:(Trampoline64 - _trampoline_start + TRAMPOLINE_START)
 
 [bits 64]
 Trampoline64:
@@ -64,9 +72,9 @@ Trampoline64:
     mov ax, 0x0
     mov fs, ax
     mov gs, ax
-    lgdt [0x580]
-    lidt [0x590]
-    mov rsp, [0x570]
+    lgdt [TRAMPOLINE_GDT]
+    lidt [TRAMPOLINE_IDT]
+    mov rsp, [TRAMPOLINE_STACK]
     mov rbp, 0x0 ; Terminate stack traces here.
     ; Reset RFLAGS.
     push 0x0
@@ -91,7 +99,7 @@ vcode64:
 align 16
 LongMode_gdtr:
     dw LongModeGDTEnd - LongModeGDTStart - 1
-    dq LongModeGDTStart - _trampoline_start + TRAMPOLINE_BASE
+    dq LongModeGDTStart - _trampoline_start + TRAMPOLINE_START
 
 align 16
 LongModeGDTStart:
@@ -103,7 +111,7 @@ LongModeGDTEnd:
 align 16
 ProtectedMode_gdtr:
     dw ProtectedModeGDTEnd - ProtectedModeGDTStart - 1
-    dd ProtectedModeGDTStart - _trampoline_start + TRAMPOLINE_BASE
+    dd ProtectedModeGDTStart - _trampoline_start + TRAMPOLINE_START
 
 align 16
 ProtectedModeGDTStart:

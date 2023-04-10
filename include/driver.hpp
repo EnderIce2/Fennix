@@ -52,7 +52,7 @@ namespace Driver
         void *Address = nullptr;
         void *InterruptCallback = nullptr;
         Memory::MemMgr *MemTrk = nullptr;
-        DriverInterruptHook *InterruptHook[16] = {nullptr};
+        DriverInterruptHook *InterruptHook[16]{};
     };
 
     class DriverInterruptHook : public Interrupts::Handler

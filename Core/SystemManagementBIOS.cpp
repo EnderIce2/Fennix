@@ -21,22 +21,20 @@
 
 #include "../kernel.h"
 
-/* https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.2.0.pdf */
-
 namespace SMBIOS
 {
     bool CheckSMBIOS()
     {
-        if (bInfo->SMBIOSPtr != nullptr && bInfo->SMBIOSPtr < (void *)0xffffffffffff0000)
+        if (bInfo.SMBIOSPtr != nullptr && bInfo.SMBIOSPtr < (void *)0xFFFFFFFFFFFF0000)
         {
-            debug("SMBIOS is available (%#lx).", bInfo->SMBIOSPtr);
+            debug("SMBIOS is available (%#lx).", bInfo.SMBIOSPtr);
             return true;
         }
-        debug("SMBIOS is not available. (%#lx)", bInfo->SMBIOSPtr);
+        debug("SMBIOS is not available. (%#lx)", bInfo.SMBIOSPtr);
         return false;
     }
 
-    SMBIOSEntryPoint *GetSMBIOSEntryPoint() { return (SMBIOSEntryPoint *)bInfo->SMBIOSPtr; }
+    SMBIOSEntryPoint *GetSMBIOSEntryPoint() { return (SMBIOSEntryPoint *)bInfo.SMBIOSPtr; }
 
     static inline int SMBIOSTableLength(SMBIOSHeader *Hdr)
     {
@@ -52,7 +50,7 @@ namespace SMBIOS
         if (!CheckSMBIOS())
             return nullptr;
 
-        SMBIOSEntryPoint *Header = (SMBIOSEntryPoint *)bInfo->SMBIOSPtr;
+        SMBIOSEntryPoint *Header = (SMBIOSEntryPoint *)bInfo.SMBIOSPtr;
         debug("Getting SMBIOS header for type %d", Type);
 
         struct SMBIOSHeader *hdr = (SMBIOSHeader *)(uintptr_t)Header->TableAddress;

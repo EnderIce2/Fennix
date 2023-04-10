@@ -58,7 +58,7 @@ namespace Tasking
         // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
     }
 
-#if defined(a64) || defined(a32)
+#if defined(a86)
     __naked __used __no_stack_protector NIF void IdleProcessLoop()
     {
         asmv("IdleLoop:\n"
@@ -140,7 +140,7 @@ namespace Tasking
                     delete ListProcess[i]->ELFSymbolTable, ListProcess[i]->ELFSymbolTable = nullptr;
                     SecurityManager.DestroyToken(ListProcess[i]->Security.UniqueToken);
                     if (ListProcess[i]->Security.TrustLevel == TaskTrustLevel::User)
-                        KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(PAGE_SIZE));
+                        KernelAllocator.FreePages((void *)ListProcess[i]->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
 
                     // Remove the process from parent's children list
                     if (ListProcess[i]->Parent)
@@ -293,7 +293,7 @@ namespace Tasking
         // TaskingScheduler_OneShot(1);
         // IRQ16
         TaskingLock.Unlock();
-#if defined(a64) || defined(a32)
+#if defined(a86)
         asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
 #elif defined(aa64)
         asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
@@ -330,7 +330,7 @@ namespace Tasking
             {
                 SecurityManager.DestroyToken(Process->Security.UniqueToken);
                 if (Process->Security.TrustLevel == TaskTrustLevel::User)
-                    KernelAllocator.FreePages((void *)Process->PageTable, TO_PAGES(PAGE_SIZE));
+                    KernelAllocator.FreePages((void *)Process->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
 
                 if (Process->Parent)
                     for (size_t j = 0; j < Process->Parent->Children.size(); j++)
@@ -408,7 +408,7 @@ namespace Tasking
         Thread->ExitCode = 0xdead;
         Thread->Status = TaskStatus::Ready;
         Thread->Memory = new Memory::MemMgr(Parent->PageTable, Parent->memDirectory);
-        Thread->FPU = (CPU::x64::FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(CPU::x64::FXState)));
+        Thread->FPU = (CPU::x64::FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(CPU::x64::FXState) + 1));
         memset(Thread->FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
 
         Thread->Security.TrustLevel = Parent->Security.TrustLevel;
@@ -721,9 +721,8 @@ namespace Tasking
 #if defined(a64)
             if (!DoNotCreatePageTable)
             {
-                Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE));
-                memcpy(Process->PageTable, (void *)UserspaceKernelOnlyPageTable, PAGE_SIZE);
-                Memory::Virtual(Process->PageTable).Map((void *)Process->PageTable, (void *)Process->PageTable, Memory::PTFlag::RW); // Make sure the page table is mapped.
+                Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(sizeof(Memory::PageTable4) + 1));
+                memcpy(Process->PageTable, (void *)KernelPageTable, PAGE_SIZE);
             }
 #elif defined(a32)
 #elif defined(aa64)

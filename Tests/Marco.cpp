@@ -15,6 +15,8 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifdef DEBUG
+
 #include <types.h>
 #include <memory.hpp>
 #include <debug.h>
@@ -23,54 +25,71 @@ __constructor void TestMacros()
 {
     {
         int a = TO_PAGES(4096);
-        int b = FROM_PAGES(2);
+        int b = FROM_PAGES(1);
 
         debug("a: 4096 -> %d", a);
         debug("b:   a  -> %d", b);
 
+        if (a != 1)
+        {
+            error("t1: TO_PAGES is not equal to 1");
+            inf_loop;
+        }
+
+        if (b != 4096)
+        {
+            error("t1: FROM_PAGES is not equal to 4096");
+            inf_loop;
+        }
+    }
+
+    {
+        int a = TO_PAGES(4097);
+        int b = FROM_PAGES(2);
+
+        debug("a: 4097 -> %d", a);
+        debug("b:   a  -> %d", b);
+
         if (a != 2)
         {
-            error("TO_PAGES is not equal to 2");
-            while (1)
-                ;
+            error("t2: TO_PAGES is not equal to 2");
+            inf_loop;
         }
 
         if (b != 8192)
         {
-            error("FROM_PAGES is not equal to 8192");
-            while (1)
-                ;
+            error("t2: FROM_PAGES is not equal to 8192");
+            inf_loop;
         }
     }
 
     debug("-------------------------");
 
     {
-        uint64_t actual = PAGE_SIZE;
-        uint64_t expected = 1;
+        uint64_t bytes = PAGE_SIZE;
+        uint64_t pgs = 1;
 
         for (int i = 0; i < 128; i++)
         {
-            uint64_t a = TO_PAGES(actual);
-            uint64_t b = FROM_PAGES(expected);
+            uint64_t cnv_to_pgs = TO_PAGES(bytes);
+            uint64_t cnv_from_pgs = FROM_PAGES(pgs);
 
-            /* TODO: This is a workaround for now. */
-            if (a != expected + 1)
+            if (cnv_to_pgs != pgs)
             {
-                error("TO_PAGES is not equal to %d (actual: %d)", expected, a);
-                while (1)
-                    ;
+                error("TO_PAGES is not equal to %d (pages: %d)", pgs, cnv_to_pgs);
+                inf_loop;
             }
 
-            if (b != actual)
+            if (cnv_from_pgs != bytes)
             {
-                error("FROM_PAGES is not equal to %d (actual: %d)", actual, b);
-                while (1)
-                    ;
+                error("FROM_PAGES is not equal to %d (bytes: %d)", bytes, cnv_from_pgs);
+                inf_loop;
             }
 
-            actual += PAGE_SIZE;
-            expected++;
+            bytes += PAGE_SIZE;
+            pgs++;
         }
     }
 }
+
+#endif // DEBUG

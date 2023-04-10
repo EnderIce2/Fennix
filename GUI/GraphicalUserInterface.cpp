@@ -618,7 +618,7 @@ namespace GraphicalUserInterface
         this->BackBuffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->BackBuffer->Pitch = Display->GetPitch();
         this->BackBuffer->Size = Display->GetBuffer(200)->Size;
-        this->BackBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->BackBuffer->Size));
+        this->BackBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->BackBuffer->Size + 1));
         memset(this->BackBuffer->Data, 0, this->BackBuffer->Size);
 
         this->DesktopBuffer = new ScreenBitmap;
@@ -627,7 +627,7 @@ namespace GraphicalUserInterface
         this->DesktopBuffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->DesktopBuffer->Pitch = Display->GetPitch();
         this->DesktopBuffer->Size = Display->GetBuffer(200)->Size;
-        this->DesktopBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->DesktopBuffer->Size));
+        this->DesktopBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->DesktopBuffer->Size + 1));
         memset(this->DesktopBuffer->Data, 0, this->DesktopBuffer->Size);
 
         this->OverlayBuffer = new ScreenBitmap;
@@ -636,7 +636,7 @@ namespace GraphicalUserInterface
         this->OverlayBuffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->OverlayBuffer->Pitch = Display->GetPitch();
         this->OverlayBuffer->Size = Display->GetBuffer(200)->Size;
-        this->OverlayBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->OverlayBuffer->Size));
+        this->OverlayBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->OverlayBuffer->Size + 1));
         memset(this->OverlayBuffer->Data, 0, this->OverlayBuffer->Size);
 
         this->CursorBuffer = new ScreenBitmap;
@@ -645,7 +645,7 @@ namespace GraphicalUserInterface
         this->CursorBuffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->CursorBuffer->Pitch = Display->GetPitch();
         this->CursorBuffer->Size = this->CursorBuffer->Width * this->CursorBuffer->Height * (this->CursorBuffer->BitsPerPixel / 8);
-        this->CursorBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->CursorBuffer->Size));
+        this->CursorBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->CursorBuffer->Size + 1));
         memset(this->CursorBuffer->Data, 0, this->CursorBuffer->Size);
 
         this->IsRunning = true;

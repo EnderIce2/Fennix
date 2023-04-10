@@ -68,12 +68,12 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::FetchNetworkCards(unsigned long DriverUID)
     {
-        KernelCallback *cb = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback)));
+        KernelCallback *cb = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback) + 1));
         memset(cb, 0, sizeof(KernelCallback));
         cb->Reason = FetchReason;
         DriverManager->IOCB(DriverUID, (void *)cb);
 
-        DeviceInterface *Iface = (DeviceInterface *)mem->RequestPages(TO_PAGES(sizeof(DeviceInterface)));
+        DeviceInterface *Iface = (DeviceInterface *)mem->RequestPages(TO_PAGES(sizeof(DeviceInterface) + 1));
         strcpy(Iface->Name, cb->NetworkCallback.Fetch.Name);
         Iface->ID = this->CardIDs++;
         Iface->MAC.FromHex(cb->NetworkCallback.Fetch.MAC);
@@ -198,7 +198,7 @@ namespace NetworkInterfaceManager
 
     void NetworkInterface::Send(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
     {
-        void *DataToBeSent = mem->RequestPages(TO_PAGES(Length));
+        void *DataToBeSent = mem->RequestPages(TO_PAGES(Length + 1));
         memcpy(DataToBeSent, Data, Length);
 
         KernelCallback *cb = (KernelCallback *)Interface->DriverCallBackAddress;
@@ -209,7 +209,7 @@ namespace NetworkInterfaceManager
         cb->NetworkCallback.Send.Length = Length;
         DriverManager->IOCB(Interface->DriverID, (void *)cb);
 
-        mem->FreePages(DataToBeSent, TO_PAGES(Length));
+        mem->FreePages(DataToBeSent, TO_PAGES(Length + 1));
         foreach (auto var in RegisteredEvents)
             var->OnInterfaceSent(Interface, Data, Length);
     }

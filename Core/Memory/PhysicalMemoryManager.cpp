@@ -295,7 +295,7 @@ namespace Memory
         if (unlikely(Address == nullptr))
             warn("Trying to reserve null address.");
 
-        uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
+        uintptr_t Index = (Address == NULL) ? 0 : (uintptr_t)Address / PAGE_SIZE;
 
         if (unlikely(PageBitmap[Index] == true))
             return;
@@ -313,7 +313,18 @@ namespace Memory
             warn("Trying to reserve %s%s.", Address ? "null address" : "", PageCount ? "0 pages" : "");
 
         for (size_t t = 0; t < PageCount; t++)
-            this->ReservePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
+        {
+            uintptr_t Index = ((uintptr_t)Address + (t * PAGE_SIZE)) / PAGE_SIZE;
+
+            if (unlikely(PageBitmap[Index] == true))
+                return;
+
+            if (PageBitmap.Set(Index, true))
+            {
+                FreeMemory -= PAGE_SIZE;
+                ReservedMemory += PAGE_SIZE;
+            }
+        }
     }
 
     void Physical::UnreservePage(void *Address)
@@ -321,7 +332,7 @@ namespace Memory
         if (unlikely(Address == nullptr))
             warn("Trying to unreserve null address.");
 
-        uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
+        uintptr_t Index = (Address == NULL) ? 0 : (uintptr_t)Address / PAGE_SIZE;
 
         if (unlikely(PageBitmap[Index] == false))
             return;
@@ -341,7 +352,20 @@ namespace Memory
             warn("Trying to unreserve %s%s.", Address ? "null address" : "", PageCount ? "0 pages" : "");
 
         for (size_t t = 0; t < PageCount; t++)
-            this->UnreservePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
+        {
+            uintptr_t Index = ((uintptr_t)Address + (t * PAGE_SIZE)) / PAGE_SIZE;
+
+            if (unlikely(PageBitmap[Index] == false))
+                return;
+
+            if (PageBitmap.Set(Index, false))
+            {
+                FreeMemory += PAGE_SIZE;
+                ReservedMemory -= PAGE_SIZE;
+                if (PageBitmapIndex > Index)
+                    PageBitmapIndex = Index;
+            }
+        }
     }
 
     void Physical::Init(BootInfo *Info)
@@ -349,6 +373,7 @@ namespace Memory
         SmartLock(this->MemoryLock);
 
         uint64_t MemorySize = Info->Memory.Size;
+        debug("Memory size: %lld bytes (%ld pages)", MemorySize, TO_PAGES(MemorySize));
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
 
@@ -381,8 +406,9 @@ namespace Memory
             CPU::Stop();
         }
 
+        /* TODO: Read swap config and make the configure the bitmap size correctly */
         size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
-        trace("Initializing Bitmap at %llp-%llp (%lld Bytes)",
+        debug("Initializing Bitmap at %llp-%llp (%lld Bytes)",
               LargestFreeMemorySegment,
               (void *)((uintptr_t)LargestFreeMemorySegment + BitmapSize),
               BitmapSize);
@@ -392,16 +418,27 @@ namespace Memory
         for (size_t i = 0; i < BitmapSize; i++)
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
-        trace("Reserving pages...");
+        debug("Reserving pages...");
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
         {
             if (Info->Memory.Entry[i].Type != Usable)
                 this->ReservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
         }
 
-        trace("Locking bitmap pages...");
-        this->ReservePages(0, 0x100);
-        this->LockPages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
+        /* Making sure that the lower memory area is properly reserved. */
+        this->ReservePages(0, 0x200);
+        for (uint64_t i = 0; i < Info->Memory.Entries; i++)
+        {
+            if (Info->Memory.Entry[i].Type == Usable)
+                this->UnreservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
+        }
+
+        debug("Reserving pages for SMP...");
+        this->ReservePage((void *)0x0); /* Trampoline stack, gdt, idt, etc... */
+        this->ReservePage((void *)0x2000); /* TRAMPOLINE_START */
+
+        debug("Reserving bitmap pages...");
+        this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
     }
 
     Physical::Physical() {}

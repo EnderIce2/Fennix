@@ -29,7 +29,7 @@ extern "C" uint64_t SystemCallsHandler(SyscallsFrame *regs);
 
 extern "C" void SystemCallHandlerStub();
 
-extern "C" __naked __used __no_stack_protector void SystemCallHandlerStub()
+extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHandlerStub()
 {
     asmv("swapgs\n"
 

@@ -89,7 +89,7 @@ namespace Execute
         sl.Timeout = TimeManager->CalculateTarget(600000); /* 10 minutes */
         sl.RefCount = 0;
 
-        void *LibFile = mem->RequestPages(TO_PAGES(Length), true);
+        void *LibFile = mem->RequestPages(TO_PAGES(Length + 1), true);
         debug("LibFile: %#lx", LibFile);
         memcpy(LibFile, (void *)ElfImage, Length);
         Memory::Virtual().Map(LibFile, LibFile, Length, Memory::RW | Memory::US | Memory::G);

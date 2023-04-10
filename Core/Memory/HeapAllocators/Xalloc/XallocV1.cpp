@@ -20,8 +20,8 @@
 Xalloc_def;
 
 #define XALLOC_CONCAT(x, y) x##y
-#define XStoP(x) (x / Xalloc_PAGE_SIZE + 1)
-#define XPtoS(x) (x * Xalloc_PAGE_SIZE)
+#define XStoP(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
+#define XPtoS(d) ((d)*PAGE_SIZE)
 #define Xalloc_BlockChecksum 0xA110C
 
 extern "C" void *Xalloc_REQUEST_PAGES(Xsize_t Pages);
@@ -70,14 +70,14 @@ namespace Xalloc
 
         Block(Xsize_t Size)
         {
-            this->Address = Xalloc_REQUEST_PAGES(XStoP(Size));
+            this->Address = Xalloc_REQUEST_PAGES(XStoP(Size + 1));
             this->Size = Size;
             Xmemset(this->Address, 0, Size);
         }
 
         ~Block()
         {
-            Xalloc_FREE_PAGES(this->Address, XStoP(this->Size));
+            Xalloc_FREE_PAGES(this->Address, XStoP(this->Size + 1));
         }
 
         /**
@@ -120,7 +120,7 @@ namespace Xalloc
     {
         if (this->SMAPUsed)
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asm volatile("stac" ::
                              : "cc");
 #endif
@@ -131,7 +131,7 @@ namespace Xalloc
     {
         if (this->SMAPUsed)
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asm volatile("clac" ::
                              : "cc");
 #endif
@@ -209,7 +209,8 @@ namespace Xalloc
         {
             if (!CurrentBlock->Check())
             {
-                Xalloc_err("Block %#lx checksum failed!", (Xuint64_t)CurrentBlock);
+                Xalloc_err("Block %#lx has an invalid checksum! (%#x != %#x)",
+                           (Xuint64_t)CurrentBlock, CurrentBlock->Checksum, Xalloc_BlockChecksum);
                 while (Xalloc_StopOnFail)
                     ;
             }

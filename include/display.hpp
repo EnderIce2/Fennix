@@ -109,7 +109,7 @@ namespace Video
     {
     private:
         BootInfo::FramebufferInfo framebuffer;
-        Font *CurrentFont;
+        Font *CurrentFont = nullptr;
         ScreenBuffer Buffers[256];
         bool ColorIteration = false;
         int ColorPickerIteration = 0;

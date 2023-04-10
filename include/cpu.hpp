@@ -143,7 +143,7 @@ namespace CPU
     {
         do
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("pause");
 #elif defined(aa64)
             asmv("yield");
@@ -154,7 +154,7 @@ namespace CPU
     /**
      * @brief Stop the CPU (infinite loop)
      */
-#if defined(a64) || defined(a32)
+#if defined(a86)
     SafeFunction __noreturn __naked __used inline void Stop()
     {
         asmv("CPUStopLoop:\n"
@@ -178,7 +178,7 @@ namespace CPU
     {
         do
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             asmv("hlt");
 #elif defined(aa64)
             asmv("wfe");

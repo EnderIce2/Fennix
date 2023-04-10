@@ -44,6 +44,9 @@
 #define true 1
 #define false 0
 
+#define inf_loop while (1)
+#define ilp inf_loop; /* Used for debugging */
+
 #ifdef __cplusplus
 #define foreach for
 #define in :

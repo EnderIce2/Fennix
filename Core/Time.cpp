@@ -24,7 +24,7 @@ namespace Time
     Clock ReadClock()
     {
         Clock tm;
-#if defined(a64) || defined(a32)
+#if defined(a86)
         uint32_t t = 0;
         outb(0x70, 0x00);
         t = inb(0x71);

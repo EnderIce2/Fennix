@@ -58,7 +58,7 @@ namespace Execute
                     cwk_path_get_basename(Path, &BaseName, nullptr);
                     PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
 
-                    void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->node->Length));
+                    void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->node->Length + 1));
                     memcpy(BaseImage, (void *)ExFile->node->Address, ExFile->node->Length);
 
                     Memory::Virtual(Process->PageTable).Map((void *)BaseImage, (void *)BaseImage, ExFile->node->Length, Memory::PTFlag::RW | Memory::PTFlag::US);

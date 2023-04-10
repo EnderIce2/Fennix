@@ -20,6 +20,8 @@
 #include <debug.h>
 #include <io.h>
 
+#include "../../kernel.h"
+
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 
 namespace ACPI
@@ -28,20 +30,20 @@ namespace ACPI
     {
         for (uint64_t t = 0; t < ((ACPIHeader->Length - sizeof(ACPI::ACPIHeader)) / (XSDTSupported ? 8 : 4)); t++)
         {
-            // Should I be concerned about unaligned memory access?
+            // TODO: Should I be concerned about unaligned memory access?
             ACPI::ACPIHeader *SDTHdr = nullptr;
             if (XSDTSupported)
                 SDTHdr = (ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 8)));
             else
                 SDTHdr = (ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 4)));
 
-            for (uint64_t i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if (SDTHdr->Signature[i] != Signature[i])
                     break;
                 if (i == 3)
                 {
-                    trace("%s found at address %p!", Signature, (uintptr_t)SDTHdr);
+                    trace("%s found at address %p", Signature, (uintptr_t)SDTHdr);
                     return SDTHdr;
                 }
             }
@@ -55,86 +57,86 @@ namespace ACPI
         if (!Header)
             return;
 
-        HPET = (HPETHeader *)FindTable(XSDT, (char *)"HPET");
-        FADT = (FADTHeader *)FindTable(XSDT, (char *)"FACP");
-        MCFG = (MCFGHeader *)FindTable(XSDT, (char *)"MCFG");
-        BGRT = (BGRTHeader *)FindTable(XSDT, (char *)"BGRT");
-        SRAT = (SRATHeader *)FindTable(XSDT, (char *)"SRAT");
-        TPM2 = (TPM2Header *)FindTable(XSDT, (char *)"TPM2");
-        TCPA = (TCPAHeader *)FindTable(XSDT, (char *)"TCPA");
-        WAET = (WAETHeader *)FindTable(XSDT, (char *)"WAET");
-        MADT = (MADTHeader *)FindTable(XSDT, (char *)"APIC");
-        HEST = (HESTHeader *)FindTable(XSDT, (char *)"HEST");
-        FindTable(XSDT, (char *)"BERT");
-        FindTable(XSDT, (char *)"CPEP");
-        FindTable(XSDT, (char *)"DSDT");
-        FindTable(XSDT, (char *)"ECDT");
-        FindTable(XSDT, (char *)"EINJ");
-        FindTable(XSDT, (char *)"ERST");
-        FindTable(XSDT, (char *)"FACS");
-        FindTable(XSDT, (char *)"MSCT");
-        FindTable(XSDT, (char *)"MPST");
-        FindTable(XSDT, (char *)"OEMx");
-        FindTable(XSDT, (char *)"PMTT");
-        FindTable(XSDT, (char *)"PSDT");
-        FindTable(XSDT, (char *)"RASF");
-        FindTable(XSDT, (char *)"RSDT");
-        FindTable(XSDT, (char *)"SBST");
-        FindTable(XSDT, (char *)"SLIT");
-        FindTable(XSDT, (char *)"SSDT");
-        FindTable(XSDT, (char *)"XSDT");
-        FindTable(XSDT, (char *)"DRTM");
-        FindTable(XSDT, (char *)"FPDT");
-        FindTable(XSDT, (char *)"GTDT");
-        FindTable(XSDT, (char *)"PCCT");
-        FindTable(XSDT, (char *)"S3PT");
-        FindTable(XSDT, (char *)"MATR");
-        FindTable(XSDT, (char *)"MSDM");
-        FindTable(XSDT, (char *)"WPBT");
-        FindTable(XSDT, (char *)"OSDT");
-        FindTable(XSDT, (char *)"RSDP");
-        FindTable(XSDT, (char *)"NFIT");
-        FindTable(XSDT, (char *)"ASF!");
-        FindTable(XSDT, (char *)"BOOT");
-        FindTable(XSDT, (char *)"CSRT");
-        FindTable(XSDT, (char *)"DBG2");
-        FindTable(XSDT, (char *)"DBGP");
-        FindTable(XSDT, (char *)"DMAR");
-        FindTable(XSDT, (char *)"IBFT");
-        FindTable(XSDT, (char *)"IORT");
-        FindTable(XSDT, (char *)"IVRS");
-        FindTable(XSDT, (char *)"LPIT");
-        FindTable(XSDT, (char *)"MCHI");
-        FindTable(XSDT, (char *)"MTMR");
-        FindTable(XSDT, (char *)"SLIC");
-        FindTable(XSDT, (char *)"SPCR");
-        FindTable(XSDT, (char *)"SPMI");
-        FindTable(XSDT, (char *)"UEFI");
-        FindTable(XSDT, (char *)"VRTC");
-        FindTable(XSDT, (char *)"WDAT");
-        FindTable(XSDT, (char *)"WDDT");
-        FindTable(XSDT, (char *)"WDRT");
-        FindTable(XSDT, (char *)"ATKG");
-        FindTable(XSDT, (char *)"GSCI");
-        FindTable(XSDT, (char *)"IEIT");
-        FindTable(XSDT, (char *)"HMAT");
-        FindTable(XSDT, (char *)"CEDT");
-        FindTable(XSDT, (char *)"AEST");
+        HPET = (HPETHeader *)FindTable(Header, (char *)"HPET");
+        FADT = (FADTHeader *)FindTable(Header, (char *)"FACP");
+        MCFG = (MCFGHeader *)FindTable(Header, (char *)"MCFG");
+        BGRT = (BGRTHeader *)FindTable(Header, (char *)"BGRT");
+        SRAT = (SRATHeader *)FindTable(Header, (char *)"SRAT");
+        TPM2 = (TPM2Header *)FindTable(Header, (char *)"TPM2");
+        TCPA = (TCPAHeader *)FindTable(Header, (char *)"TCPA");
+        WAET = (WAETHeader *)FindTable(Header, (char *)"WAET");
+        MADT = (MADTHeader *)FindTable(Header, (char *)"APIC");
+        HEST = (HESTHeader *)FindTable(Header, (char *)"HEST");
+        FindTable(Header, (char *)"BERT");
+        FindTable(Header, (char *)"CPEP");
+        FindTable(Header, (char *)"DSDT");
+        FindTable(Header, (char *)"ECDT");
+        FindTable(Header, (char *)"EINJ");
+        FindTable(Header, (char *)"ERST");
+        FindTable(Header, (char *)"FACS");
+        FindTable(Header, (char *)"MSCT");
+        FindTable(Header, (char *)"MPST");
+        FindTable(Header, (char *)"OEMx");
+        FindTable(Header, (char *)"PMTT");
+        FindTable(Header, (char *)"PSDT");
+        FindTable(Header, (char *)"RASF");
+        FindTable(Header, (char *)"RSDT");
+        FindTable(Header, (char *)"SBST");
+        FindTable(Header, (char *)"SLIT");
+        FindTable(Header, (char *)"SSDT");
+        FindTable(Header, (char *)"XSDT");
+        FindTable(Header, (char *)"DRTM");
+        FindTable(Header, (char *)"FPDT");
+        FindTable(Header, (char *)"GTDT");
+        FindTable(Header, (char *)"PCCT");
+        FindTable(Header, (char *)"S3PT");
+        FindTable(Header, (char *)"MATR");
+        FindTable(Header, (char *)"MSDM");
+        FindTable(Header, (char *)"WPBT");
+        FindTable(Header, (char *)"OSDT");
+        FindTable(Header, (char *)"RSDP");
+        FindTable(Header, (char *)"NFIT");
+        FindTable(Header, (char *)"ASF!");
+        FindTable(Header, (char *)"BOOT");
+        FindTable(Header, (char *)"CSRT");
+        FindTable(Header, (char *)"DBG2");
+        FindTable(Header, (char *)"DBGP");
+        FindTable(Header, (char *)"DMAR");
+        FindTable(Header, (char *)"IBFT");
+        FindTable(Header, (char *)"IORT");
+        FindTable(Header, (char *)"IVRS");
+        FindTable(Header, (char *)"LPIT");
+        FindTable(Header, (char *)"MCHI");
+        FindTable(Header, (char *)"MTMR");
+        FindTable(Header, (char *)"SLIC");
+        FindTable(Header, (char *)"SPCR");
+        FindTable(Header, (char *)"SPMI");
+        FindTable(Header, (char *)"UEFI");
+        FindTable(Header, (char *)"VRTC");
+        FindTable(Header, (char *)"WDAT");
+        FindTable(Header, (char *)"WDDT");
+        FindTable(Header, (char *)"WDRT");
+        FindTable(Header, (char *)"ATKG");
+        FindTable(Header, (char *)"GSCI");
+        FindTable(Header, (char *)"IEIT");
+        FindTable(Header, (char *)"HMAT");
+        FindTable(Header, (char *)"CEDT");
+        FindTable(Header, (char *)"AEST");
     }
 
-    ACPI::ACPI(BootInfo *Info)
+    ACPI::ACPI()
     {
         trace("Initializing ACPI");
-        if (Info->RSDP->Revision >= 2 && Info->RSDP->XSDTAddress)
+        if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
         {
             debug("XSDT supported");
             XSDTSupported = true;
-            XSDT = (ACPIHeader *)(Info->RSDP->XSDTAddress);
+            XSDT = (ACPIHeader *)(bInfo.RSDP->XSDTAddress);
         }
         else
         {
             debug("RSDT supported");
-            XSDT = (ACPIHeader *)(uintptr_t)Info->RSDP->RSDTAddress;
+            XSDT = (ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
         }
 
         this->SearchTables(XSDT);

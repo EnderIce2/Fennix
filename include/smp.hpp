@@ -45,7 +45,7 @@ struct CPUData
     uintptr_t TempStack; /* gs+0x8 */
 
     /** @brief Used by CPU */
-    uintptr_t Stack;
+    uintptr_t Stack; /* gs+0x10 */
 
     /** @brief CPU ID. */
     int ID;

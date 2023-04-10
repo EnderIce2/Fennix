@@ -62,7 +62,7 @@ extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 #define USER_STACK_SIZE 0x2000 // 8kb
 
 // To pages
-#define TO_PAGES(d) ((d) / PAGE_SIZE + 1)
+#define TO_PAGES(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
 // From pages
 #define FROM_PAGES(d) ((d)*PAGE_SIZE)
 
@@ -436,6 +436,18 @@ namespace Memory
     struct PageTable4
     {
         PageMapLevel4 Entries[511];
+
+        /**
+         * @brief Update CR3 with this PageTable4
+         */
+        void Update()
+        {
+#if defined(a86)
+            asmv("mov %0, %%cr3" ::"r"(this));
+#elif defined(aa64)
+            asmv("msr ttbr0_el1, %0" ::"r"(this));
+#endif
+        }
     } __aligned(0x1000);
 
     struct __packed PageMapLevel5
@@ -459,11 +471,6 @@ namespace Memory
         uint64_t UsedMemory = 0;
         uint64_t PageBitmapIndex = 0;
         Bitmap PageBitmap;
-
-        void ReservePage(void *Address);
-        void ReservePages(void *Address, size_t PageCount);
-        void UnreservePage(void *Address);
-        void UnreservePages(void *Address, size_t PageCount);
 
     public:
         Bitmap GetPageBitmap() { return PageBitmap; }
@@ -548,6 +555,11 @@ namespace Memory
          * @param PageCount Number of pages
          */
         void LockPages(void *Address, size_t PageCount);
+
+        void ReservePage(void *Address);
+        void ReservePages(void *Address, size_t PageCount);
+        void UnreservePage(void *Address);
+        void UnreservePages(void *Address, size_t PageCount);
 
         /**
          * @brief Request page
@@ -869,7 +881,6 @@ void operator delete[](void *Pointer, long unsigned int Size);
 
 extern Memory::Physical KernelAllocator;
 extern Memory::PageTable4 *KernelPageTable;
-extern Memory::PageTable4 *UserspaceKernelOnlyPageTable;
 
 #endif // __cplusplus
 

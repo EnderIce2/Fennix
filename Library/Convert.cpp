@@ -749,7 +749,7 @@ EXTERNC void __chk_fail(void) __noreturn;
 
 __noreturn __always_inline static inline void __convert_chk_fail(void)
 {
-#if defined(a64) || defined(a32)
+#if defined(a86)
     asmv("int3");
 #else
 #warning "Not implemented!"

@@ -131,8 +131,8 @@ namespace Memory
         PageDirectoryPointerTableEntryPtr *PDPTEPtr = nullptr;
         if (!PML4->Present)
         {
-            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryPointerTableEntryPtr)));
-            memset(PDPTEPtr, 0, PAGE_SIZE);
+            PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryPointerTableEntryPtr) + 1));
+            memset(PDPTEPtr, 0, sizeof(PageDirectoryPointerTableEntryPtr));
             PML4->Present = true;
             PML4->SetAddress((uintptr_t)PDPTEPtr >> 12);
         }
@@ -153,8 +153,8 @@ namespace Memory
         PageDirectoryEntryPtr *PDEPtr = nullptr;
         if (!PDPTE->Present)
         {
-            PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryEntryPtr)));
-            memset(PDEPtr, 0, PAGE_SIZE);
+            PDEPtr = (PageDirectoryEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageDirectoryEntryPtr) + 1));
+            memset(PDEPtr, 0, sizeof(PageDirectoryEntryPtr));
             PDPTE->Present = true;
             PDPTE->SetAddress((uintptr_t)PDEPtr >> 12);
         }
@@ -175,8 +175,8 @@ namespace Memory
         PageTableEntryPtr *PTEPtr = nullptr;
         if (!PDE->Present)
         {
-            PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTableEntryPtr)));
-            memset(PTEPtr, 0, PAGE_SIZE);
+            PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTableEntryPtr) + 1));
+            memset(PTEPtr, 0, sizeof(PageTableEntryPtr));
             PDE->Present = true;
             PDE->SetAddress((uintptr_t)PTEPtr >> 12);
         }
@@ -217,7 +217,7 @@ namespace Memory
         (byte & 0x01 ? '1' : '0')
 
         if (!this->Check(VirtualAddress, (PTFlag)Flags, Type)) // quick workaround just to see where it fails
-            warn("Failed to map %#lx - %#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
+            warn("Failed to map v:%#lx p:%#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
 #endif
     }
 

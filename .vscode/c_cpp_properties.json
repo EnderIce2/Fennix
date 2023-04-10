@@ -13,6 +13,7 @@
                 "GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
                 "GIT_COMMIT_SHORT=\"0000000\"",
                 "a64",
+                "a86",
                 "DEBUG=\"1\""
             ],
             "compilerPath": "${workspaceFolder}/../tools/cross/bin/amd64-elf-gcc",
@@ -82,6 +83,7 @@
                 "GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
                 "GIT_COMMIT_SHORT=\"0000000\"",
                 "a32",
+                "a86",
                 "DEBUG=\"1\""
             ],
             "compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-elf-gcc",

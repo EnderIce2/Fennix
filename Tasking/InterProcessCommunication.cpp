@@ -27,7 +27,7 @@ namespace InterProcessCommunication
     IPCHandle *IPC::Create(IPCType Type, char UniqueToken[16])
     {
         SmartLock(this->IPCLock);
-        IPCHandle *Hnd = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle)));
+        IPCHandle *Hnd = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle) + 1));
 
         Hnd->ID = NextID++;
         Hnd->Node = vfs->Create(UniqueToken, VirtualFileSystem::NodeFlags::FILE, IPCNode);
@@ -48,7 +48,7 @@ namespace InterProcessCommunication
             if (Handles[i]->ID == ID)
             {
                 vfs->Delete(Handles[i]->Node);
-                mem->FreePages(Handles[i], TO_PAGES(sizeof(IPCHandle)));
+                mem->FreePages(Handles[i], TO_PAGES(sizeof(IPCHandle) + 1));
                 Handles.remove(i);
                 debug("Destroyed IPC with ID %d", ID);
                 return IPCSuccess;
@@ -71,7 +71,7 @@ namespace InterProcessCommunication
                 if (Hnd->Buffer != nullptr || Hnd->Length != 0)
                     return IPCAlreadyAllocated;
 
-                Hnd->Buffer = (uint8_t *)mem->RequestPages(TO_PAGES(Size));
+                Hnd->Buffer = (uint8_t *)mem->RequestPages(TO_PAGES(Size + 1));
                 Hnd->Length = Size;
                 return IPCSuccess;
             }
@@ -89,7 +89,7 @@ namespace InterProcessCommunication
                 if (Hnd->Buffer == nullptr || Hnd->Length == 0)
                     return IPCNotAllocated;
 
-                mem->FreePages(Hnd->Buffer, TO_PAGES(Hnd->Length));
+                mem->FreePages(Hnd->Buffer, TO_PAGES(Hnd->Length + 1));
                 Hnd->Buffer = nullptr;
                 Hnd->Length = 0;
                 return IPCSuccess;

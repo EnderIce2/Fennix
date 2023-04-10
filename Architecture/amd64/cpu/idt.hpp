@@ -22,19 +22,22 @@
 
 namespace InterruptDescriptorTable
 {
-    typedef enum _InterruptDescriptorTableFlags
+    typedef enum _InterruptGateType
     {
-        FlagGate_TASK = 0b101,
-        FlagGate_16BIT_INT = 0b110,
-        FlagGate_16BIT_TRAP = 0b111,
-        FlagGate_32BIT_INT = 0b1110,
-        FlagGate_32BIT_TRAP = 0b1111,
-        FlagGate_RING0 = 0b0,
-        FlagGate_RING1 = 0b1,
-        FlagGate_RING2 = 0b10,
-        FlagGate_RING3 = 0b11,
-        FlagGate_PRESENT = 0b1, // Not sure if this is correct.
-    } InterruptDescriptorTableFlags;
+        TASK = 0b101,
+        INT_16BIT = 0b110,
+        TRAP_16BIT = 0b111,
+        INT_32BIT = 0b1110,
+        TRAP_32BIT = 0b1111,
+    } InterruptGateType;
+
+    typedef enum _InterruptRingType
+    {
+        RING0 = 0b0,
+        RING1 = 0b1,
+        RING2 = 0b10,
+        RING3 = 0b11,
+    } InterruptRingType;
 
     typedef struct _InterruptDescriptorTableEntry
     {
@@ -42,7 +45,7 @@ namespace InterruptDescriptorTable
         uint64_t SegmentSelector : 16;
         uint64_t InterruptStackTable : 3;
         uint64_t Reserved1 : 5;
-        InterruptDescriptorTableFlags Flags : 4;
+        uint64_t Flags : 4;
         uint64_t Reserved2 : 1;
         uint64_t Ring : 2;
         uint64_t Present : 1;
@@ -56,7 +59,14 @@ namespace InterruptDescriptorTable
         InterruptDescriptorTableEntry *Entries;
     } __packed InterruptDescriptorTableDescriptor;
 
-    void SetEntry(uint8_t Index, void (*Base)(), InterruptDescriptorTableFlags Attribute, uint8_t InterruptStackTable, InterruptDescriptorTableFlags Ring, uint16_t SegmentSelector);
+    void SetEntry(uint8_t Index,
+                  void (*Base)(),
+                  uint8_t InterruptStackTable,
+                  InterruptGateType Gate,
+                  InterruptRingType Ring,
+                  bool Present,
+                  uint16_t SegmentSelector);
+
     void Init(int Core);
 }
 

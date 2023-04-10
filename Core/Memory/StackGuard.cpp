@@ -28,7 +28,7 @@ namespace Memory
 
         if (this->UserMode)
         {
-            void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
+            void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE + 1));
             memset(AllocatedStack, 0, USER_STACK_SIZE);
             debug("AllocatedStack: %p", AllocatedStack);
 
@@ -52,7 +52,7 @@ namespace Memory
         }
         else
         {
-            this->StackBottom = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+            this->StackBottom = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
             memset(this->StackBottom, 0, STACK_SIZE);
             debug("StackBottom: %p", this->StackBottom);
 
@@ -70,7 +70,7 @@ namespace Memory
     StackGuard::~StackGuard()
     {
         fixme("Temporarily disabled stack guard deallocation");
-        // KernelAllocator.FreePages(this->StackBottom, TO_PAGES(this->Size));
+        // KernelAllocator.FreePages(this->StackBottom, TO_PAGES(this->Size + 1));
         // debug("Freed stack at %p", this->StackBottom);
     }
 
@@ -85,7 +85,7 @@ namespace Memory
             }
             else
             {
-                void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE));
+                void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE + 1));
                 debug("AllocatedStack: %p", AllocatedStack);
                 memset(AllocatedStack, 0, USER_STACK_SIZE);
                 for (uintptr_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)

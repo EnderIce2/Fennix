@@ -28,21 +28,17 @@ namespace Disk
 {
     void Manager::FetchDisks(unsigned long DriverUID)
     {
-        KernelCallback *callback = (KernelCallback *)KernelAllocator.RequestPages(TO_PAGES(sizeof(KernelCallback)));
-        memset(callback, 0, sizeof(KernelCallback));
-        callback->Reason = FetchReason;
-        DriverManager->IOCB(DriverUID, (void *)callback);
-        this->AvailablePorts = callback->DiskCallback.Fetch.Ports;
-        this->BytesPerSector = callback->DiskCallback.Fetch.BytesPerSector;
+        KernelCallback callback{};
+        callback.Reason = FetchReason;
+        DriverManager->IOCB(DriverUID, (void *)&callback);
+        this->AvailablePorts = callback.DiskCallback.Fetch.Ports;
+        this->BytesPerSector = callback.DiskCallback.Fetch.BytesPerSector;
         debug("AvailablePorts:%ld BytesPerSector:%ld", this->AvailablePorts, this->BytesPerSector);
 
         if (this->AvailablePorts <= 0)
-        {
-            KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
             return;
-        }
 
-        uint8_t *RWBuffer = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(this->BytesPerSector));
+        uint8_t *RWBuffer = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(this->BytesPerSector + 1));
 
         for (unsigned char ItrPort = 0; ItrPort < this->AvailablePorts; ItrPort++)
         {
@@ -53,16 +49,15 @@ namespace Disk
             drive->MechanicalDisk = true;
 
             memset(RWBuffer, 0, this->BytesPerSector);
-            memset(callback, 0, sizeof(KernelCallback));
-            callback->Reason = ReceiveReason;
-            callback->DiskCallback.RW = {
+            callback.Reason = ReceiveReason;
+            callback.DiskCallback.RW = {
                 .Sector = 0,
                 .SectorCount = 2,
                 .Port = ItrPort,
                 .Buffer = RWBuffer,
                 .Write = false,
             };
-            DriverManager->IOCB(DriverUID, (void *)callback);
+            DriverManager->IOCB(DriverUID, (void *)&callback);
             memcpy(&drive->Table, RWBuffer, sizeof(PartitionTable));
 
             /*
@@ -77,16 +72,15 @@ namespace Disk
                 for (uint32_t Block = 0; Block < Sectors; Block++)
                 {
                     memset(RWBuffer, 0, this->BytesPerSector);
-                    memset(callback, 0, sizeof(KernelCallback));
-                    callback->Reason = ReceiveReason;
-                    callback->DiskCallback.RW = {
+                    callback.Reason = ReceiveReason;
+                    callback.DiskCallback.RW = {
                         .Sector = 2 + Block,
                         .SectorCount = 1,
                         .Port = ItrPort,
                         .Buffer = RWBuffer,
                         .Write = false,
                     };
-                    DriverManager->IOCB(DriverUID, (void *)callback);
+                    DriverManager->IOCB(DriverUID, (void *)&callback);
 
                     for (uint32_t e = 0; e < Entries; e++)
                     {
@@ -160,8 +154,8 @@ namespace Disk
 
             drives.push_back(drive);
         }
-
-        KernelAllocator.FreePages((void *)callback, TO_PAGES(sizeof(KernelCallback)));
+   
+        KernelAllocator.FreePages(RWBuffer, TO_PAGES(this->BytesPerSector + 1));
     }
 
     Manager::Manager()

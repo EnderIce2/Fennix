@@ -103,7 +103,7 @@ void TaskMgr()
         {
             for (short j = 0; j < 200; j++)
             {
-                uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo->Framebuffer[0].BitsPerPixel / 8));
+                uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
                 *Pixel = 0x222222;
             }
         }

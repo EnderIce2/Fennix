@@ -115,8 +115,8 @@ namespace GlobalDescriptorTable
         .TaskStateSegment = {},
     };
 
-    GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
-    GlobalDescriptorTableDescriptor gdt[MAX_CPU];
+    GlobalDescriptorTableEntries GDTEntries[MAX_CPU] __aligned(16);
+    GlobalDescriptorTableDescriptor gdt[MAX_CPU] __aligned(16);
 
     TaskStateSegment tss[MAX_CPU] = {
         0,
@@ -154,12 +154,14 @@ namespace GlobalDescriptorTable
              "movw %%ax, %%es\n" ::
                  : "memory", "rax");
 
-        CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+        CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
         memset(CPUStackPointer[Core], 0, STACK_SIZE);
-        debug("CPU %d Stack Pointer: %#lx", Core, CPUStackPointer[Core]);
+        debug("CPU %d Stack Pointer: %#lx-%#lx (%d pages)", Core,
+              CPUStackPointer[Core], (uintptr_t)CPUStackPointer[Core] + STACK_SIZE,
+              TO_PAGES(STACK_SIZE + 1));
 
-        uint64_t Base = (uint64_t)&tss[Core];
-        uint64_t Limit = Base + sizeof(TaskStateSegment);
+        uintptr_t Base = (uintptr_t)&tss[Core];
+        size_t Limit = Base + sizeof(TaskStateSegment);
         gdt[Core].Entries->TaskStateSegment.Length = Limit & 0xFFFF;
         gdt[Core].Entries->TaskStateSegment.BaseLow = Base & 0xFFFF;
         gdt[Core].Entries->TaskStateSegment.BaseMiddle = (Base >> 16) & 0xFF;
@@ -170,12 +172,15 @@ namespace GlobalDescriptorTable
 
         tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
         tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
-        tss[Core].InterruptStackTable[0] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
-        tss[Core].InterruptStackTable[1] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
-        tss[Core].InterruptStackTable[2] = (uint64_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
-        memset((void *)(tss[Core].InterruptStackTable[0] - STACK_SIZE), 0, STACK_SIZE);
-        memset((void *)(tss[Core].InterruptStackTable[1] - STACK_SIZE), 0, STACK_SIZE);
-        memset((void *)(tss[Core].InterruptStackTable[2] - STACK_SIZE), 0, STACK_SIZE);
+
+        for (size_t i = 0; i < sizeof(tss[Core].InterruptStackTable) / sizeof(tss[Core].InterruptStackTable[7]); i++)
+        {
+            void *NewStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+
+            tss[Core].InterruptStackTable[i] = (uint64_t)NewStack + STACK_SIZE;
+            memset((void *)(tss[Core].InterruptStackTable[i] - STACK_SIZE), 0, STACK_SIZE);
+            debug("IST-%d: %#lx-%#lx", i, NewStack, (uintptr_t)NewStack + STACK_SIZE);
+        }
 
         CPU::x64::ltr(GDT_TSS);
 

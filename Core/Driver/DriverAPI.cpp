@@ -46,7 +46,7 @@ void DriverDisplayPrint(char *String)
 
 void *RequestPage(unsigned long Size)
 {
-    void *ret = KernelAllocator.RequestPages(Size);
+    void *ret = KernelAllocator.RequestPages(Size + 1);
     drvdbg("Allocated %ld pages (%#lx-%#lx)", Size, (unsigned long)ret, (unsigned long)ret + FROM_PAGES(Size));
     return ret;
 }
@@ -54,7 +54,7 @@ void *RequestPage(unsigned long Size)
 void FreePage(void *Page, unsigned long Size)
 {
     drvdbg("Freeing %ld pages (%#lx-%#lx)", Size, (unsigned long)Page, (unsigned long)Page + FROM_PAGES(Size));
-    KernelAllocator.FreePages(Page, Size);
+    KernelAllocator.FreePages(Page, Size + 1);
 }
 
 void MapMemory(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags)
@@ -164,6 +164,7 @@ KernelAPI KernelAPITemplate = {
     .Info = {
         .Offset = 0,
         .DriverUID = 0,
+        .KernelDebug = false,
     },
     .Memory = {
         .PageSize = PAGE_SIZE,

@@ -1,18 +1,18 @@
 /*
-    This file is part of Fennix Kernel.
+   This file is part of Fennix Kernel.
 
-    Fennix Kernel is free software: you can redistribute it and/or
-    modify it under the terms of the GNU General Public License as
-    published by the Free Software Foundation, either version 3 of
-    the License, or (at your option) any later version.
+   Fennix Kernel is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
 
-    Fennix Kernel is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-    GNU General Public License for more details.
+   Fennix Kernel is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "kernel.h"
@@ -70,6 +70,8 @@ LockClass mExtTrkLock;
  * - [ ] Fix memcpy, memset and memcmp functions (they are not working properly with SIMD).
  * - [ ] Support Aarch64.
  * - [ ] Fully support i386.
+ * - [ ] SMP trampoline shouldn't be hardcoded at 0x2000.
+ * - [ ] Rework the stack guard.
  *
  * ISSUES:
  * - [ ] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -146,6 +148,13 @@ LockClass mExtTrkLock;
  * - CPUID lists:
  *    https://www.amd.com/system/files/TechDocs/40332.pdf
  *
+ * - SMBIOS:
+ *    https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.2.0.pdf
+ *
+ * - UMIP, SMAP and SMEP:
+ *    https://en.wikipedia.org/wiki/Control_register
+ *    https://web.archive.org/web/20160312223150/http://ncsi.com/nsatc11/presentations/wednesday/emerging_technologies/fischer.pdf
+ *    https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention
  */
 
 #ifdef a64
@@ -176,7 +185,7 @@ using VirtualFileSystem::FileStatus;
 using VirtualFileSystem::Node;
 using VirtualFileSystem::NodeFlags;
 
-BootInfo *bInfo = nullptr;
+__aligned(16) BootInfo bInfo{};
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
@@ -233,11 +242,11 @@ EXTERNC void KPrint(const char *Format, ...)
 EXTERNC NIF void Main(BootInfo *Info)
 {
     BootClock = Time::ReadClock();
-    bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo)));
-    memcpy(bInfo, Info, sizeof(BootInfo));
+    // bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo) + 1));
+    memcpy(&bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
 
-    Display = new Video::Display(bInfo->Framebuffer[0]);
+    Display = new Video::Display(bInfo.Framebuffer[0]);
     printf("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     /**************************************************************************************/
     KPrint("Time: \e8888FF%02d:%02d:%02d %02d/%02d/%02d UTC",
@@ -249,7 +258,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     Interrupts::Initialize(0);
 
     KPrint("Reading Kernel Parameters");
-    ParseConfig((char *)bInfo->Kernel.CommandLine, &Config);
+    ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
 
     if (Config.BootAnimation)
     {
@@ -268,8 +277,8 @@ EXTERNC NIF void Main(BootInfo *Info)
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
 
-    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-        KPrint("\eFFA500TCG Virtual Machine detected.");
+    if (DebuggerIsAttached)
+        KPrint("\eFFA500Kernel debugger detected.");
 
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
@@ -385,22 +394,22 @@ EXTERNC NIF void Main(BootInfo *Info)
 
     for (size_t i = 0; i < MAX_MODULES; i++)
     {
-        if (!bInfo->Modules[i].Address)
+        if (!bInfo.Modules[i].Address)
             continue;
 
-        if (strcmp(bInfo->Modules[i].CommandLine, "initrd") == 0)
+        if (strcmp(bInfo.Modules[i].CommandLine, "initrd") == 0)
         {
-            debug("Found initrd at %p", bInfo->Modules[i].Address);
+            debug("Found initrd at %p", bInfo.Modules[i].Address);
             static char initrd = 0;
             if (!initrd++)
-                new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[i].Address, vfs);
+                new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, vfs);
         }
-        if (strcmp(bInfo->Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
+        if (strcmp(bInfo.Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
         {
-            debug("Found bootanim at %p", bInfo->Modules[i].Address);
+            debug("Found bootanim at %p", bInfo.Modules[i].Address);
             static char bootanim = 0;
             if (!bootanim++)
-                new VirtualFileSystem::USTAR((uintptr_t)bInfo->Modules[i].Address, bootanim_vfs);
+                new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, bootanim_vfs);
         }
     }
 
@@ -462,14 +471,17 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 {
     trace("Hello, World!");
 
+    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+    {
+        debug("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
+        DebuggerIsAttached = true;
+    }
+
     // https://wiki.osdev.org/Calling_Global_Constructors
     for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
         (*func)();
 
     InitializeMemoryManagement(Info);
-
-    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-        DebuggerIsAttached = true;
 
 #ifdef DEBUG
     /* I had to do this because KernelAllocator

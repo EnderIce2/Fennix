@@ -36,7 +36,7 @@
 #include <pci.hpp>
 #endif
 
-extern struct BootInfo *bInfo;
+extern struct BootInfo bInfo;
 extern bool DebuggerIsAttached;
 #ifdef __cplusplus
 

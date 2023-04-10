@@ -455,7 +455,7 @@ namespace Driver
     {
         UNUSED(IsElf);
         Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
-        Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size));
+        Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size + 1));
         memcpy(fex, (void *)DriverAddress, Size);
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
         debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
@@ -466,7 +466,7 @@ namespace Driver
               result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
         kfree(result);
 #endif
-        KernelAPI *KAPI = (KernelAPI *)mem->RequestPages(TO_PAGES(sizeof(KernelAPI)));
+        KernelAPI *KAPI = (KernelAPI *)mem->RequestPages(TO_PAGES(sizeof(KernelAPI) + 1));
 
         if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
         {

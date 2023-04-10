@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach to a running QEMU instance",
+            "name": "Attach to a running VM instance",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/kernel.fsys",

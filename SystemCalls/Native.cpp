@@ -88,7 +88,7 @@ static uintptr_t sys_request_pages(SyscallsFrame *Frame, size_t Count)
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
     UNUSED(Frame);
-    return (uintptr_t)TaskManager->GetCurrentThread()->Memory->RequestPages(Count, true);
+    return (uintptr_t)TaskManager->GetCurrentThread()->Memory->RequestPages(Count + 1, true);
 }
 
 static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
@@ -96,7 +96,7 @@ static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
     /* Allow everyone to free pages */
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
-    TaskManager->GetCurrentThread()->Memory->FreePages((void *)Address, Count);
+    TaskManager->GetCurrentThread()->Memory->FreePages((void *)Address, Count + 1);
     UNUSED(Frame);
     return SYSCALL_OK;
 }

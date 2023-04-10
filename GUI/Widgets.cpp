@@ -34,7 +34,7 @@ namespace GraphicalUserInterface
 {
     Handle WidgetCollection::CreatePanel(Rect rect, uint32_t Color)
     {
-        PanelObject *panel = (PanelObject *)this->mem->RequestPages(TO_PAGES(sizeof(PanelObject)));
+        PanelObject *panel = (PanelObject *)this->mem->RequestPages(TO_PAGES(sizeof(PanelObject) + 1));
 
         panel->Handle.Type[0] = 'P';
         panel->Handle.Type[1] = 'N';
@@ -54,7 +54,7 @@ namespace GraphicalUserInterface
 
     Handle WidgetCollection::CreateLabel(Rect rect, const char *Text)
     {
-        LabelObject *label = (LabelObject *)this->mem->RequestPages(TO_PAGES(sizeof(LabelObject)));
+        LabelObject *label = (LabelObject *)this->mem->RequestPages(TO_PAGES(sizeof(LabelObject) + 1));
 
         label->Handle.Type[0] = 'L';
         label->Handle.Type[1] = 'B';
@@ -74,7 +74,7 @@ namespace GraphicalUserInterface
 
     Handle WidgetCollection::CreateButton(Rect rect, const char *Text, uintptr_t OnClick)
     {
-        ButtonObject *button = (ButtonObject *)this->mem->RequestPages(TO_PAGES(sizeof(ButtonObject)));
+        ButtonObject *button = (ButtonObject *)this->mem->RequestPages(TO_PAGES(sizeof(ButtonObject) + 1));
 
         button->Handle.Type[0] = 'B';
         button->Handle.Type[1] = 'T';
@@ -126,7 +126,7 @@ namespace GraphicalUserInterface
         this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->Buffer->Pitch = Display->GetPitch();
         this->Buffer->Size = this->Buffer->Pitch * ((Window *)this->ParentWindow)->GetPosition().Height;
-        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
+        this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
         memset(this->Buffer->Data, 0, this->Buffer->Size);
 
         this->CurrentFont = new Video::Font(&_binary_Files_tamsyn_font_1_11_Tamsyn10x20r_psf_start, &_binary_Files_tamsyn_font_1_11_Tamsyn10x20r_psf_end, Video::FontType::PCScreenFont2);

@@ -386,7 +386,8 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
 {
     /* This can be ignored (unaligned memory access) */
     if (strstr(file, "AdvancedConfigurationAndPowerInterface.cpp") &&
-        (line == 34 && column == 47))
+        ((line == 34 && column == 47) ||
+         (line == 36 && column == 47)))
         return false;
 
     /* This can be ignored (unaligned memory access) */
@@ -399,6 +400,9 @@ bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
     /* This can be ignored (unaligned memory access) */
     if (strstr(file, "DynamicHostConfigurationProtocol.cpp") &&
         (line == 63 && column == 30))
+        return false;
+
+    if (strstr(file, "liballoc_1_1.c"))
         return false;
 
     /* This can be ignored (store address x with insufficient space for object of type 'y') */

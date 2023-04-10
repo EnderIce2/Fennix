@@ -86,6 +86,7 @@ struct KernelAPI
     {
         unsigned long Offset;
         unsigned long DriverUID;
+        char KernelDebug;
     } Info;
 
     struct KAPIMemory

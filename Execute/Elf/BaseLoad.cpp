@@ -159,7 +159,7 @@ namespace Execute
         size_t ExFileSize = ExFile->node->Length;
 
         /* Allocate elf in memory */
-        void *ElfFile = KernelAllocator.RequestPages(TO_PAGES(ExFileSize));
+        void *ElfFile = KernelAllocator.RequestPages(TO_PAGES(ExFileSize + 1));
         /* Copy the file to the allocated memory */
         memcpy(ElfFile, (void *)ExFile->node->Address, ExFileSize);
         debug("Image Size: %#lx - %#lx (length: %ld)", ElfFile, (uintptr_t)ElfFile + ExFileSize, ExFileSize);

@@ -85,6 +85,7 @@ namespace Driver
             {
                 if (!drv.InterruptHook[j])
                     break;
+                debug("Interrupt hook %#lx", drv.InterruptHook[j]);
                 delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
             }
             if (drv.MemTrk)
@@ -106,11 +107,12 @@ namespace Driver
                 debug("Stopping and unloading driver %ld [%#lx]", drv.DriverUID, drv.Address);
                 this->IOCB(drv.DriverUID, (void *)&callback);
 
-                for (size_t i = 0; i < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); i++)
+                for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
                 {
-                    if (!drv.InterruptHook[i])
+                    if (!drv.InterruptHook[j])
                         break;
-                    delete drv.InterruptHook[i], drv.InterruptHook[i] = nullptr;
+                    debug("Interrupt hook %#lx", drv.InterruptHook[j]);
+                    delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
                 }
                 delete drv.MemTrk, drv.MemTrk = nullptr;
                 Drivers.remove(i);
@@ -141,6 +143,7 @@ namespace Driver
 
         ((KernelAPI *)KAPIAddress)->Info.Offset = (unsigned long)fex;
         ((KernelAPI *)KAPIAddress)->Info.DriverUID = DriverUIDs++;
+        ((KernelAPI *)KAPIAddress)->Info.KernelDebug = DebuggerIsAttached;
 
 #ifdef DEBUG
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
@@ -273,7 +276,7 @@ namespace Driver
         SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
         if (!Handle.InterruptCallback)
         {
-#if defined(a64) || defined(a32)
+#if defined(a86)
             uint64_t IntNum = Frame->InterruptNumber - 32;
 #elif defined(aa64)
             uint64_t IntNum = Frame->InterruptNumber;
@@ -332,7 +335,7 @@ namespace Driver
     DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile Handle) : Interrupts::Handler(Interrupt)
     {
         this->Handle = Handle;
-#if defined(a64) || defined(a32)
+#if defined(a86)
         trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #elif defined(aa64)
         trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);

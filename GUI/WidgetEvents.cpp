@@ -73,7 +73,7 @@ namespace GraphicalUserInterface
             LastWidth = ((Window *)this->ParentWindow)->GetPosition().Width;
             LastHeight = ((Window *)this->ParentWindow)->GetPosition().Height;
 
-            this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size));
+            this->mem->FreePages(this->Buffer->Data, TO_PAGES(this->Buffer->Size + 1));
             this->Buffer->Data = nullptr;
             delete this->Buffer, this->Buffer = nullptr;
 
@@ -83,7 +83,7 @@ namespace GraphicalUserInterface
             this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
             this->Buffer->Pitch = Display->GetPitch();
             this->Buffer->Size = this->Buffer->Pitch * LastHeight;
-            this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size));
+            this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
             memset(this->Buffer->Data, 0, this->Buffer->Size);
 
             this->NeedRedraw = true;

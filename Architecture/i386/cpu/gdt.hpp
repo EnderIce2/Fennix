@@ -105,7 +105,7 @@ namespace GlobalDescriptorTable
 
     typedef struct _TaskStateSegment
     {
-        uint32_t Reserved0 __aligned(0x10);
+        uint32_t Reserved0 __aligned(16);
         uint64_t StackPointer[3];
         uint64_t Reserved1;
         uint64_t InterruptStackTable[7];
