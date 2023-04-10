@@ -42,11 +42,11 @@ namespace Disk
 
         for (unsigned char ItrPort = 0; ItrPort < this->AvailablePorts; ItrPort++)
         {
-            Drive *drive = new Drive;
-            sprintf(drive->Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
-            debug("Drive Name: %s", drive->Name);
+            Drive drive{};
+            sprintf(drive.Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
+            debug("Drive Name: %s", drive.Name);
             // TODO: Implement disk type detection. Very useful in the future.
-            drive->MechanicalDisk = true;
+            drive.MechanicalDisk = true;
 
             memset(RWBuffer, 0, this->BytesPerSector);
             callback.Reason = ReceiveReason;
@@ -58,17 +58,17 @@ namespace Disk
                 .Write = false,
             };
             DriverManager->IOCB(DriverUID, (void *)&callback);
-            memcpy(&drive->Table, RWBuffer, sizeof(PartitionTable));
+            memcpy(&drive.Table, RWBuffer, sizeof(PartitionTable));
 
             /*
             TODO: Add to devfs the disk
             */
 
-            if (drive->Table.GPT.Signature == GPT_MAGIC)
+            if (drive.Table.GPT.Signature == GPT_MAGIC)
             {
-                drive->Style = GPT;
-                uint32_t Entries = 512 / drive->Table.GPT.EntrySize;
-                uint32_t Sectors = drive->Table.GPT.PartCount / Entries;
+                drive.Style = GPT;
+                uint32_t Entries = 512 / drive.Table.GPT.EntrySize;
+                uint32_t Sectors = drive.Table.GPT.PartCount / Entries;
                 for (uint32_t Block = 0; Block < Sectors; Block++)
                 {
                     memset(RWBuffer, 0, this->BytesPerSector);
@@ -87,17 +87,17 @@ namespace Disk
                         GUIDPartitionTablePartition GPTPartition = reinterpret_cast<GUIDPartitionTablePartition *>(RWBuffer)[e];
                         if (GPTPartition.TypeLow || GPTPartition.TypeHigh)
                         {
-                            Partition *partition = new Partition;
-                            memcpy(partition->Label, GPTPartition.Label, sizeof(partition->Label));
-                            partition->StartLBA = GPTPartition.StartLBA;
-                            partition->EndLBA = GPTPartition.EndLBA;
-                            partition->Sectors = partition->EndLBA - partition->StartLBA;
-                            partition->Port = ItrPort;
-                            partition->Flags = Present;
-                            partition->Style = GPT;
+                            Partition partition{};
+                            memcpy(partition.Label, GPTPartition.Label, sizeof(partition.Label));
+                            partition.StartLBA = GPTPartition.StartLBA;
+                            partition.EndLBA = GPTPartition.EndLBA;
+                            partition.Sectors = partition.EndLBA - partition.StartLBA;
+                            partition.Port = ItrPort;
+                            partition.Flags = Present;
+                            partition.Style = GPT;
                             if (GPTPartition.Attributes & 1)
-                                partition->Flags |= EFISystemPartition;
-                            partition->Index = drive->Partitions.size();
+                                partition.Flags |= EFISystemPartition;
+                            partition.Index = drive.Partitions.size();
                             // why there is NUL (\0) between every char?????
                             char PartName[72];
                             memcpy(PartName, GPTPartition.Label, 72);
@@ -105,56 +105,56 @@ namespace Disk
                                 if (PartName[i] == '\0')
                                     PartName[i] = ' ';
                             PartName[71] = '\0';
-                            trace("GPT partition \"%s\" found with %lld sectors", PartName, partition->Sectors);
-                            drive->Partitions.push_back(partition);
+                            trace("GPT partition \"%s\" found with %lld sectors", PartName, partition.Sectors);
+                            drive.Partitions.push_back(partition);
 
-                            char *PartitionName = new char[64];
-                            sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
+                            // char *PartitionName = new char[64];
+                            // sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition.Index);
 
                             /*
                             TODO: Add to devfs the disk
                             */
 
-                            delete[] PartitionName;
+                            // delete[] PartitionName;
                         }
                     }
                 }
-                trace("%d GPT partitions found.", drive->Partitions.size());
+                trace("%d GPT partitions found.", drive.Partitions.size());
             }
-            else if (drive->Table.MBR.Signature[0] == MBR_MAGIC0 && drive->Table.MBR.Signature[1] == MBR_MAGIC1)
+            else if (drive.Table.MBR.Signature[0] == MBR_MAGIC0 && drive.Table.MBR.Signature[1] == MBR_MAGIC1)
             {
-                drive->Style = MBR;
+                drive.Style = MBR;
                 for (size_t p = 0; p < 4; p++)
-                    if (drive->Table.MBR.Partitions[p].LBAFirst != 0)
+                    if (drive.Table.MBR.Partitions[p].LBAFirst != 0)
                     {
-                        Partition *partition = new Partition;
-                        partition->StartLBA = drive->Table.MBR.Partitions[p].LBAFirst;
-                        partition->EndLBA = drive->Table.MBR.Partitions[p].LBAFirst + drive->Table.MBR.Partitions[p].Sectors;
-                        partition->Sectors = drive->Table.MBR.Partitions[p].Sectors;
-                        partition->Port = ItrPort;
-                        partition->Flags = Present;
-                        partition->Style = MBR;
-                        partition->Index = drive->Partitions.size();
-                        trace("Partition \"%#llx\" found with %lld sectors.", drive->Table.MBR.UniqueID, partition->Sectors);
-                        drive->Partitions.push_back(partition);
+                        Partition partition{};
+                        partition.StartLBA = drive.Table.MBR.Partitions[p].LBAFirst;
+                        partition.EndLBA = drive.Table.MBR.Partitions[p].LBAFirst + drive.Table.MBR.Partitions[p].Sectors;
+                        partition.Sectors = drive.Table.MBR.Partitions[p].Sectors;
+                        partition.Port = ItrPort;
+                        partition.Flags = Present;
+                        partition.Style = MBR;
+                        partition.Index = drive.Partitions.size();
+                        trace("Partition \"%#llx\" found with %lld sectors.", drive.Table.MBR.UniqueID, partition.Sectors);
+                        drive.Partitions.push_back(partition);
 
-                        char *PartitionName = new char[64];
-                        sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition->Index);
+                        // char *PartitionName = new char[64];
+                        // sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition.Index);
 
                         /*
                         TODO: Add to devfs the disk
                         */
 
-                        delete[] PartitionName;
+                        // delete[] PartitionName;
                     }
-                trace("%d MBR partitions found.", drive->Partitions.size());
+                trace("%d MBR partitions found.", drive.Partitions.size());
             }
             else
                 warn("No partition table found on port %d!", ItrPort);
 
             drives.push_back(drive);
         }
-   
+
         KernelAllocator.FreePages(RWBuffer, TO_PAGES(this->BytesPerSector + 1));
     }
 

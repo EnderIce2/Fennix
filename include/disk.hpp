@@ -138,7 +138,7 @@ namespace Disk
         uint8_t *Buffer = nullptr;
         PartitionTable Table;
         PartitionStyle Style = PartitionStyle::Unknown;
-        std::vector<Partition *> Partitions;
+        std::vector<Partition> Partitions;
         bool MechanicalDisk = false;
         size_t UniqueIdentifier = 0xdeadbeef;
 
@@ -170,7 +170,7 @@ namespace Disk
         unsigned char AvailablePorts = 0;
         int BytesPerSector = 0;
 
-        std::vector<Drive *> drives;
+        std::vector<Drive> drives;
 
     public:
         void FetchDisks(unsigned long DriverUID);
