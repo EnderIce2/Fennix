@@ -31,73 +31,8 @@
 
 namespace Driver
 {
-    DriverCode Driver::BindInputGeneric(Memory::MemMgr *mem, void *fex)
+    DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::BindInputDisplay(Memory::MemMgr *mem, void *fex)
-    {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::BindInputNetwork(Memory::MemMgr *mem, void *fex)
-    {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::BindInputStorage(Memory::MemMgr *mem, void *fex)
-    {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::BindInputFileSystem(Memory::MemMgr *mem, void *fex)
-    {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::BindInputInput(Memory::MemMgr *mem, void *fex)
-    {
-        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
-        KernelCallback *KCallback = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback) + 1));
-
-        fixme("Input driver: %s", fexExtended->Driver.Name);
-        KCallback->RawPtr = nullptr;
-        KCallback->Reason = CallbackReason::ConfigurationReason;
-        int CallbackRet = ((int (*)(KernelCallback *))((uintptr_t)fexExtended->Driver.Callback + (uintptr_t)fex))(KCallback);
-        if (CallbackRet == DriverReturnCode::NOT_IMPLEMENTED)
-        {
-            delete mem, mem = nullptr;
-            error("Driver %s is not implemented", fexExtended->Driver.Name);
-            return DriverCode::NOT_IMPLEMENTED;
-        }
-        else if (CallbackRet != DriverReturnCode::OK)
-        {
-            delete mem, mem = nullptr;
-            error("Driver %s returned error %d", fexExtended->Driver.Name, CallbackRet);
-            return DriverCode::DRIVER_RETURNED_ERROR;
-        }
-
-        fixme("Input driver: %s", fexExtended->Driver.Name);
-
-        DriverFile DrvFile = {
-            .Enabled = true,
-            .DriverUID = this->DriverUIDs - 1,
-            .Address = (void *)fex,
-            .MemTrk = mem,
-        };
-        Drivers.push_back(DrvFile);
-        return DriverCode::OK;
-    }
-
-    DriverCode Driver::BindInputAudio(Memory::MemMgr *mem, void *fex)
-    {
-        return DriverCode::NOT_IMPLEMENTED;
-    }
-
-    DriverCode Driver::DriverLoadBindInput(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
-    {
-        UNUSED(DrvExtHdr);
         UNUSED(IsElf);
         Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
         Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size + 1));
@@ -122,8 +57,20 @@ namespace Driver
 
         switch (fexExtended->Driver.Type)
         {
+        case FexDriverType::FexDriverType_Generic:
+            return BindInterruptGeneric(mem, fex);
+        case FexDriverType::FexDriverType_Display:
+            return BindInterruptDisplay(mem, fex);
+        case FexDriverType::FexDriverType_Network:
+            return BindInterruptNetwork(mem, fex);
+        case FexDriverType::FexDriverType_Storage:
+            return BindInterruptStorage(mem, fex);
+        case FexDriverType::FexDriverType_FileSystem:
+            return BindInterruptFileSystem(mem, fex);
         case FexDriverType::FexDriverType_Input:
-            return BindInputInput(mem, fex);
+            return BindInterruptInput(mem, fex);
+        case FexDriverType::FexDriverType_Audio:
+            return BindInterruptAudio(mem, fex);
         default:
         {
             warn("Unknown driver type: %d", fexExtended->Driver.Type);
