@@ -81,13 +81,12 @@ namespace Recovery
         void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length + 1));
         memcpy(PCMRaw, (void *)pcm->node->Address, pcm->node->Length);
 
-        KernelCallback callback;
-        memset(&callback, 0, sizeof(KernelCallback));
+        KernelCallback callback{};
         callback.Reason = SendReason;
         callback.AudioCallback.Send.Data = (uint8_t *)PCMRaw;
         callback.AudioCallback.Send.Length = pcm->node->Length;
         debug("Playing audio...");
-        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length + 1));
         vfs->Close(pcm);
@@ -115,12 +114,11 @@ namespace Recovery
             return;
         }
 
-        KernelCallback callback;
-        memset(&callback, 0, sizeof(KernelCallback));
+        KernelCallback callback{};
         callback.Reason = AdjustReason;
         callback.AudioCallback.Adjust._SampleRate = true;
         callback.AudioCallback.Adjust.SampleRate = SR;
-        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
         debug("Sample rate changed! %d", status);
     }
 
@@ -153,12 +151,11 @@ namespace Recovery
             return;
         }
 
-        KernelCallback callback;
-        memset(&callback, 0, sizeof(KernelCallback));
+        KernelCallback callback{};
         callback.Reason = AdjustReason;
         callback.AudioCallback.Adjust._Volume = true;
         callback.AudioCallback.Adjust.Volume = percentage;
-        int status = DriverManager->IOCB(AudioDrv.DriverUID, (void *)&callback);
+        int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
         debug("Volume changed! %d", status);
     }
 

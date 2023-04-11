@@ -42,9 +42,6 @@ namespace NetworkInterfaceManager
         InternetProtocol IP;
 
         /** @brief Reserved */
-        void *DriverCallBackAddress;
-
-        /** @brief Reserved */
         unsigned long DriverID;
     };
 

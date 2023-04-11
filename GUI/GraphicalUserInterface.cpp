@@ -51,9 +51,9 @@ namespace GraphicalUserInterface
                     if (!once++)
                         debug("Found mouse driver %ld", Driver.DriverUID);
 #endif
-                    KernelCallback callback;
+                    KernelCallback callback{};
                     callback.Reason = FetchReason;
-                    DriverManager->IOCB(Driver.DriverUID, (void *)&callback);
+                    DriverManager->IOCB(Driver.DriverUID, &callback);
                     Mouse.X = callback.InputCallback.Mouse.X;
                     Mouse.Y = callback.InputCallback.Mouse.Y;
                     Mouse.Z = callback.InputCallback.Mouse.Z;

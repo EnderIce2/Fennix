@@ -53,12 +53,18 @@ namespace Driver
         void *InterruptCallback = nullptr;
         Memory::MemMgr *MemTrk = nullptr;
         DriverInterruptHook *InterruptHook[16]{};
+
+        bool operator==(const DriverFile &Other) const
+        {
+            return DriverUID == Other.DriverUID;
+        }
     };
 
     class DriverInterruptHook : public Interrupts::Handler
     {
     private:
         DriverFile Handle;
+        bool Enabled = true;
 
 #if defined(a64)
         void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
@@ -69,6 +75,9 @@ namespace Driver
 #endif
 
     public:
+        void Enable() { Enabled = true; }
+        void Disable() { Enabled = false; }
+        bool IsEnabled() { return Enabled; }
         DriverInterruptHook(int Interrupt, DriverFile Handle);
         virtual ~DriverInterruptHook() = default;
     };

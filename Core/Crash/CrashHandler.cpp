@@ -836,9 +836,12 @@ namespace CrashHandler
             CPUData *data = GetCurrentCPU();
             if (data)
             {
-                if (!data->CurrentThread->Security.IsCritical)
+                if (data->CurrentThread)
                 {
-                    fixme("Exception in non-critical thread (kernel mode)");
+                    if (!data->CurrentThread->Security.IsCritical)
+                    {
+                        fixme("Exception in non-critical thread (kernel mode)");
+                    }
                 }
             }
 

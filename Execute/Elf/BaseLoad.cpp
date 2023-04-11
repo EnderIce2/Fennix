@@ -122,7 +122,6 @@ namespace Execute
     {
         ELFInterpreterIPCThread(InterpreterTargetProcess, (char *)InterpreterTargetPath->c_str(), InterpreterMemoryImage, InterpreterElfFile, InterpreterNeededLibraries);
         delete InterpreterTargetPath, InterpreterTargetPath = nullptr;
-        return;
     }
 
     ELFBaseLoad ELFLoad(char *Path, const char **argv, const char **envp, Tasking::TaskCompatibility Compatibility)

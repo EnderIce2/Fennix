@@ -62,22 +62,29 @@ namespace NetworkInterfaceManager
         for (size_t i = 0; i < RegisteredEvents.size(); i++)
             RegisteredEvents.remove(i);
 
+        foreach (auto inf in Interfaces)
+        {
+            if (inf)
+            {
+                Interfaces.remove(inf);
+                delete inf, inf = nullptr;
+            }
+        }
+
         // Delete all interfaces and their callbacks and free the memory
         delete mem, mem = nullptr;
     }
 
     void NetworkInterface::FetchNetworkCards(unsigned long DriverUID)
     {
-        KernelCallback *cb = (KernelCallback *)mem->RequestPages(TO_PAGES(sizeof(KernelCallback) + 1));
-        memset(cb, 0, sizeof(KernelCallback));
-        cb->Reason = FetchReason;
-        DriverManager->IOCB(DriverUID, (void *)cb);
+        KernelCallback cb{};
+        cb.Reason = FetchReason;
+        DriverManager->IOCB(DriverUID, &cb);
 
         DeviceInterface *Iface = (DeviceInterface *)mem->RequestPages(TO_PAGES(sizeof(DeviceInterface) + 1));
-        strcpy(Iface->Name, cb->NetworkCallback.Fetch.Name);
+        strcpy(Iface->Name, cb.NetworkCallback.Fetch.Name);
         Iface->ID = this->CardIDs++;
-        Iface->MAC.FromHex(cb->NetworkCallback.Fetch.MAC);
-        Iface->DriverCallBackAddress = cb;
+        Iface->MAC.FromHex(cb.NetworkCallback.Fetch.MAC);
         Iface->DriverID = DriverUID;
         Interfaces.push_back(Iface);
 
@@ -98,7 +105,7 @@ namespace NetworkInterfaceManager
         TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Critical);
         DeviceInterface *DefaultDevice = nullptr;
         foreach (auto inf in Interfaces)
-            if (inf && inf->DriverCallBackAddress)
+            if (inf)
             {
                 DefaultDevice = inf;
                 break;
@@ -201,13 +208,11 @@ namespace NetworkInterfaceManager
         void *DataToBeSent = mem->RequestPages(TO_PAGES(Length + 1));
         memcpy(DataToBeSent, Data, Length);
 
-        KernelCallback *cb = (KernelCallback *)Interface->DriverCallBackAddress;
-
-        memset(cb, 0, sizeof(KernelCallback));
-        cb->Reason = SendReason;
-        cb->NetworkCallback.Send.Data = (uint8_t *)DataToBeSent;
-        cb->NetworkCallback.Send.Length = Length;
-        DriverManager->IOCB(Interface->DriverID, (void *)cb);
+        KernelCallback cb{};
+        cb.Reason = SendReason;
+        cb.NetworkCallback.Send.Data = (uint8_t *)DataToBeSent;
+        cb.NetworkCallback.Send.Length = Length;
+        DriverManager->IOCB(Interface->DriverID, &cb);
 
         mem->FreePages(DataToBeSent, TO_PAGES(Length + 1));
         foreach (auto var in RegisteredEvents)

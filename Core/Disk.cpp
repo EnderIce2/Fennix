@@ -30,7 +30,7 @@ namespace Disk
     {
         KernelCallback callback{};
         callback.Reason = FetchReason;
-        DriverManager->IOCB(DriverUID, (void *)&callback);
+        DriverManager->IOCB(DriverUID, &callback);
         this->AvailablePorts = callback.DiskCallback.Fetch.Ports;
         this->BytesPerSector = callback.DiskCallback.Fetch.BytesPerSector;
         debug("AvailablePorts:%ld BytesPerSector:%ld", this->AvailablePorts, this->BytesPerSector);
@@ -57,7 +57,7 @@ namespace Disk
                 .Buffer = RWBuffer,
                 .Write = false,
             };
-            DriverManager->IOCB(DriverUID, (void *)&callback);
+            DriverManager->IOCB(DriverUID, &callback);
             memcpy(&drive.Table, RWBuffer, sizeof(PartitionTable));
 
             /*
@@ -80,7 +80,7 @@ namespace Disk
                         .Buffer = RWBuffer,
                         .Write = false,
                     };
-                    DriverManager->IOCB(DriverUID, (void *)&callback);
+                    DriverManager->IOCB(DriverUID, &callback);
 
                     for (uint32_t e = 0; e < Entries; e++)
                     {
