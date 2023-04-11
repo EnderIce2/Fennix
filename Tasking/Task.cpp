@@ -445,6 +445,7 @@ namespace Tasking
             [[fallthrough]];
         case TaskTrustLevel::Kernel:
         {
+            Thread->Security.IsCritical = true;
             Thread->Stack = new Memory::StackGuard(false, Parent->PageTable);
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::TrustedByKernel);
@@ -706,6 +707,7 @@ namespace Tasking
             [[fallthrough]];
         case TaskTrustLevel::Kernel:
         {
+            Process->Security.IsCritical = true;
             SecurityManager.TrustToken(Process->Security.UniqueToken, TTL::TrustedByKernel);
 #if defined(a64)
             if (!DoNotCreatePageTable)

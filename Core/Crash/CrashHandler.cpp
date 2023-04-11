@@ -818,8 +818,7 @@ namespace CrashHandler
         SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 #if defined(a64)
-        error("-----------------------------------------------------------------------------------");
-        error("An exception occurred!");
+        debug("-----------------------------------------------------------------------------------");
         error("Exception: %#llx", Frame->InterruptNumber);
         for (size_t i = 0; i < INT_FRAMES_MAX; i++)
             EHIntFrames[i] = Interrupts::InterruptFrames[i];
@@ -833,6 +832,15 @@ namespace CrashHandler
             else
                 debug("Exception in kernel mode (ip: %#lx (%s))",
                       Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+
+            CPUData *data = GetCurrentCPU();
+            if (data)
+            {
+                if (!data->CurrentThread->Security.IsCritical)
+                {
+                    fixme("Exception in non-critical thread (kernel mode)");
+                }
+            }
 
             if (TaskManager)
                 TaskManager->Panic();
