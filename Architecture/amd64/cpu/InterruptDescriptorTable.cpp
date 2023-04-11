@@ -63,6 +63,7 @@ namespace InterruptDescriptorTable
     extern "C" __naked __used __no_stack_protector __aligned(16) void ExceptionHandlerStub()
     {
         asm("cld\n"
+            "cli\n"
 
             "pushq %rax\n"
             "pushq %rbx\n"
@@ -107,6 +108,7 @@ namespace InterruptDescriptorTable
     extern "C" __naked __used __no_stack_protector __aligned(16) void InterruptHandlerStub()
     {
         asm("cld\n"
+            "cli\n"
 
             "pushq %rax\n"
             "pushq %rbx\n"
@@ -145,6 +147,7 @@ namespace InterruptDescriptorTable
 
             "addq $16, %rsp\n"
 
+            "sti\n"
             "iretq"); // pop CS RIP RFLAGS SS RSP
     }
 
