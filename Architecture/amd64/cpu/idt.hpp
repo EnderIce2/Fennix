@@ -39,6 +39,17 @@ namespace InterruptDescriptorTable
         RING3 = 0b11,
     } InterruptRingType;
 
+    typedef enum _InterruptStackTableType
+    {
+        IST0 = 0b0,
+        IST1 = 0b1,
+        IST2 = 0b10,
+        IST3 = 0b11,
+        IST4 = 0b100,
+        IST5 = 0b101,
+        IST6 = 0b110,
+    } InterruptStackTableType;
+
     typedef struct _InterruptDescriptorTableEntry
     {
         uint64_t BaseLow : 16;
@@ -61,7 +72,7 @@ namespace InterruptDescriptorTable
 
     void SetEntry(uint8_t Index,
                   void (*Base)(),
-                  uint8_t InterruptStackTable,
+                  InterruptStackTableType InterruptStackTable,
                   InterruptGateType Gate,
                   InterruptRingType Ring,
                   bool Present,
