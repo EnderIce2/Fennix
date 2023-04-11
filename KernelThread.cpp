@@ -332,7 +332,7 @@ void KernelMainThread()
 
     KPrint("Loading Drivers...");
     DriverManager = new Driver::Driver;
-
+KST_Shutdown();
     KPrint("Fetching Disks...");
     if (DriverManager->GetDrivers().size() > 0)
     {

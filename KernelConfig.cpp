@@ -201,13 +201,13 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
             }
             else if (strcmp(value, "single") == 0)
             {
-                KPrint("\eAAFFAAUsing Mono-Tasking Scheduler");
+                KPrint("\eAAFFAAUsing Single-Tasking Scheduler");
                 ModConfig->SchedulerType = 0;
             }
             else
             {
                 KPrint("\eAAFFAAUnknown scheduler: %s", value);
-                ModConfig->SchedulerType = 0;
+                ModConfig->SchedulerType = 1;
             }
             break;
         }
