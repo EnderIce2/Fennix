@@ -203,7 +203,7 @@ Time::Clock BootClock;
 
 KernelConfig Config = {
     .AllocatorType = Memory::MemoryAllocatorType::XallocV1,
-    .SchedulerType = 0,
+    .SchedulerType = 1,
     .DriverDirectory = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
     .InitPath = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
     .InterruptsOnCrash = true,
