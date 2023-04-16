@@ -24,7 +24,6 @@
 #include <printf.h>
 #include <cwalk.h>
 #include <md5.h>
-// #include <ini.h>
 
 #include "../../kernel.h"
 #include "../../DAPI.hpp"
@@ -36,16 +35,6 @@ NewLock(DriverInterruptLock);
 
 namespace Driver
 {
-    const char *DriverTypesName[] = {
-        "Unknown",
-        "Generic",
-        "Display",
-        "Network",
-        "Storage",
-        "FileSystem",
-        "Input",
-        "Audio"};
-
     void Driver::Panic()
     {
 #ifdef DEBUG

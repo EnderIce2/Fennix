@@ -24,24 +24,27 @@ namespace Random
 
     uint16_t rand16()
     {
-        int RDRANDFlag = 0;
-        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-        {
-            CPU::x86::AMD::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-        {
-            CPU::x86::Intel::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-
-        if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-            RDRANDFlag = 0;
-
 #if defined(a86)
+        static int RDRANDFlag = 0x1A1A;
+        if (unlikely(RDRANDFlag == 0x1A1A))
+        {
+            if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+            {
+                if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+                {
+                    CPU::x86::AMD::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+                else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+                {
+                    CPU::x86::Intel::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+            }
+        }
+
         if (RDRANDFlag)
         {
             uint16_t RDRANDValue = 0;
@@ -49,32 +52,36 @@ namespace Random
                  : "=r"(RDRANDValue));
             return RDRANDValue;
         }
-#endif
 
         Seed = Seed * 1103515245 + 12345;
         return (uint16_t)(Seed / 65536) % __UINT16_MAX__;
+#endif
+        return 0;
     }
 
     uint32_t rand32()
     {
-        int RDRANDFlag = 0;
-        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-        {
-            CPU::x86::AMD::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-        {
-            CPU::x86::Intel::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-
-        if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-            RDRANDFlag = 0;
-
 #if defined(a86)
+        static int RDRANDFlag = 0x1A1A;
+        if (unlikely(RDRANDFlag == 0x1A1A))
+        {
+            if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+            {
+                if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+                {
+                    CPU::x86::AMD::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+                else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+                {
+                    CPU::x86::Intel::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+            }
+        }
+
         if (RDRANDFlag)
         {
             uint32_t RDRANDValue = 0;
@@ -82,32 +89,36 @@ namespace Random
                  : "=r"(RDRANDValue));
             return RDRANDValue;
         }
-#endif
 
         Seed = Seed * 1103515245 + 12345;
-        return (uint32_t)(Seed / 65536) % __UINT16_MAX__;
+        return (uint32_t)(Seed / 65536) % __UINT32_MAX__;
+#endif
+        return 0;
     }
 
     uint64_t rand64()
     {
-        int RDRANDFlag = 0;
-        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-        {
-            CPU::x86::AMD::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-        {
-            CPU::x86::Intel::CPUID0x00000001 cpuid;
-            cpuid.Get();
-            RDRANDFlag = cpuid.ECX.RDRAND;
-        }
-
-        if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-            RDRANDFlag = 0;
-
 #if defined(a86)
+        static int RDRANDFlag = 0x1A1A;
+        if (unlikely(RDRANDFlag == 0x1A1A))
+        {
+            if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+            {
+                if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+                {
+                    CPU::x86::AMD::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+                else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+                {
+                    CPU::x86::Intel::CPUID0x00000001 cpuid;
+                    cpuid.Get();
+                    RDRANDFlag = cpuid.ECX.RDRAND;
+                }
+            }
+        }
+
         if (RDRANDFlag)
         {
             uint64_t RDRANDValue = 0;
@@ -115,10 +126,11 @@ namespace Random
                  : "=r"(RDRANDValue));
             return RDRANDValue;
         }
-#endif
 
         Seed = Seed * 1103515245 + 12345;
-        return (uint64_t)(Seed / 65536) % __UINT16_MAX__;
+        return (uint64_t)(Seed / 65536) % __UINT64_MAX__;
+#endif
+        return 0;
     }
 
     void ChangeSeed(uint64_t CustomSeed) { Seed = CustomSeed; }
