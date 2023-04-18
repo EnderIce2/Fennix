@@ -54,15 +54,8 @@ namespace Driver
 
             debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx", BAR_Type, BAR_IOBase, BAR_MemoryBase);
 
-            for (size_t i = 0; i < 6; i++)
-            {
-                if (BAR[i] == 0)
-                    continue;
-                debug("BAR%d: %#lx", i, BAR[i]);
-            }
-
             /* BARs Size */
-            for (size_t i = 0; i < 6; i++)
+            for (short i = 0; i < 6; i++)
             {
                 if (BAR[i] == 0)
                     continue;
@@ -75,7 +68,7 @@ namespace Driver
                     BARsSize[i] = size & (~15);
                     BARsSize[i] = ~BARsSize[i] + 1;
                     BARsSize[i] = BARsSize[i] & 0xFFFFFFFF;
-                    debug("BAR%dSize: %#lx", i, BARsSize[i]);
+                    debug("BAR%d %#lx size: %d", i, BAR[i], BARsSize[i]);
                 }
                 else if ((BAR[i] & 1) == 1) // I/O Base
                 {
@@ -85,12 +78,12 @@ namespace Driver
                     BARsSize[i] = size & (~3);
                     BARsSize[i] = ~BARsSize[i] + 1;
                     BARsSize[i] = BARsSize[i] & 0xFFFF;
-                    debug("BAR%dSize: %#lx", i, BARsSize[i]);
+                    debug("BAR%d %#lx size: %d", i, BAR[i], BARsSize[i]);
                 }
             }
 
             /* Mapping the BARs */
-            for (size_t i = 0; i < 6; i++)
+            for (short i = 0; i < 6; i++)
             {
                 if (BAR[i] == 0)
                     continue;
@@ -100,15 +93,15 @@ namespace Driver
                     uintptr_t BARBase = BAR[i] & (~15);
                     size_t BARSize = BARsSize[i];
 
-                    debug("Mapping BAR%d from %#lx to %#lx", i, BARBase, BARBase + BARSize);
+                    debug("Mapping BAR%d %#lx-%#lx", i, BARBase, BARBase + BARSize);
                     Memory::Virtual().Map((void *)BARBase, (void *)BARBase, BARSize, Memory::PTFlag::RW | Memory::PTFlag::PWT);
                 }
                 else if ((BAR[i] & 1) == 1) // I/O Base
                 {
                     uintptr_t BARBase = BAR[i] & (~3);
-                    uintptr_t BARSize = BARsSize[i];
+                    size_t BARSize = BARsSize[i];
 
-                    debug("Mapping BAR%d from %#x to %#x", i, BARBase, BARBase + BARSize);
+                    debug("Mapping BAR%d %#x-%#x", i, BARBase, BARBase + BARSize);
                     Memory::Virtual().Map((void *)BARBase, (void *)BARBase, BARSize, Memory::PTFlag::RW | Memory::PTFlag::PWT);
                 }
             }
