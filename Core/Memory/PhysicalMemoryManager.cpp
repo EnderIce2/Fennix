@@ -419,14 +419,9 @@ namespace Memory
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
         debug("Reserving pages...");
-        for (uint64_t i = 0; i < Info->Memory.Entries; i++)
-        {
-            if (Info->Memory.Entry[i].Type != Usable)
-                this->ReservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
-        }
+        this->ReservePages(0, TO_PAGES(Info->Memory.Size));
+        debug("Unreserving usable pages...");
 
-        /* Making sure that the lower memory area is properly reserved. */
-        this->ReservePages(0, 0x200);
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
         {
             if (Info->Memory.Entry[i].Type == Usable)
