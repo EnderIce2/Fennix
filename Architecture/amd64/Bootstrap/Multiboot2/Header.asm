@@ -1,3 +1,5 @@
+extern MB2_start
+
 [bits 32]
 section .multiboot2
 align 4096
@@ -33,6 +35,22 @@ MB2_INFO_REQUEST_TAG_START:
     dd 20 ; EFI 64-bit Image Handle Pointer
     dd 21 ; Load Base Address
 MB2_INFO_REQUEST_TAG_END:
+align 8
+MB2_ENTRY_TAG:        
+    dw 3
+    dw 0
+    dd MB2_ENTRY_TAG_END - MB2_ENTRY_TAG
+    dd MB2_start
+MB2_ENTRY_TAG_END:
+align 8
+MB2_FRAMEBUFFER_TAG_START:
+    dw 5
+    dw 1
+    dd MB2_FRAMEBUFFER_TAG_END - MB2_FRAMEBUFFER_TAG_START
+    dd 1280 ; Width
+    dd 720 ; Height
+    dd 32 ; Depth
+MB2_FRAMEBUFFER_TAG_END:
 align 8
 MB2_TAG_START:
     dw 0

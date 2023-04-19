@@ -16,7 +16,7 @@ DetectCPUID:
     jz .NoCPUID
     ret
 .NoCPUID:
-    mov word [0xb8F00], 0xF00F ; .
+    ; mov word [0xb8F00], 0xF00F ; .
 .Loop:
     cli
     hlt
@@ -34,7 +34,7 @@ Detect64Bit:
     jz .NoLongMode
     ret
 .NoLongMode:
-    mov word [0xb8F00], 0xF00A ; .
+    ; mov word [0xb8F00], 0xF00A ; .
 .Loop:
     cli
     hlt

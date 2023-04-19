@@ -259,6 +259,10 @@ __always_inline inline SafeFunction NIF void Map(void *VirtualAddress, void *Phy
 
 EXTERNC __attribute__((section(".bootstrap.text"))) SafeFunction NIF __attribute__((section(".bootstrap.text"))) void UpdatePageTable64()
 {
+    /*
+    TODO: this code corrupts the page table
+    */
+
     BPTable = (PageTable4 *)BootPageTable;
 
     // for (size_t i = 0; i < 0x10000000; i += 0x1000)

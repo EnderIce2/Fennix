@@ -29,7 +29,7 @@ MB2_HeaderInfo:
 section .bootstrap.text
 MB2_start:
 	cli
-	mov word [0xb8F00], 0x072E ; .
+	; mov word [0xb8F00], 0x072E ; .
     mov [MB2_HeaderMagic], eax
     mov [MB2_HeaderInfo], ebx
 
@@ -37,7 +37,7 @@ MB2_start:
 	call DetectCPUID
 	call Detect64Bit
 
-	mov word [0xb8F02], 0x072E ; .
+	; mov word [0xb8F02], 0x072E ; .
 
 	mov ecx, cr0
 	and ecx, 0x7fffffff ; Clear PG
@@ -56,7 +56,7 @@ MB2_start:
 	mov edi, BootPageTable
 	mov cr3, edi
 
-	mov word [0xb8F04], 0x072E ; .
+	; mov word [0xb8F04], 0x072E ; .
 
 	; Enable long mode
 	mov ecx, 0xC0000080 ; EFER
@@ -84,7 +84,7 @@ MB2_start:
 [bits 64]
 HigherHalfStart:
 	cli
-	mov word [0xb8F06], 0x072E ; .
+	; mov word [0xb8F06], 0x072E ; .
 	call UpdatePageTable64
 
 	; Load the new page table
@@ -98,7 +98,7 @@ HigherHalfStart:
 	mov gs, ax
 	mov ss, ax
 
-	mov word [0xb8F08], 0x072E ; .
+	; mov word [0xb8F08], 0x072E ; .
 	mov rsp, (KernelStack + KERNEL_STACK_SIZE)
 	mov rbp, (KernelStack + KERNEL_STACK_SIZE)
 

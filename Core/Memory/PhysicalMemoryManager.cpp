@@ -7,6 +7,8 @@
 
 #include "../../kernel.h"
 
+extern "C" char BootPageTable[]; // 0x10000 in length
+
 namespace Memory
 {
     uint64_t Physical::GetTotalMemory()
@@ -371,8 +373,10 @@ namespace Memory
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
             if (Info->Memory.Entry[i].Type != Usable)
                 this->ReservePages((void *)Info->Memory.Entry[i].BaseAddress, Info->Memory.Entry[i].Length / PAGE_SIZE + 1);
-        trace("Locking bitmap pages...");
+
         this->ReservePages(0, 0x100);
+        this->ReservePages(BootPageTable, TO_PAGES(0x10000));
+        trace("Locking bitmap pages...");
         this->LockPages(PageBitmap.Buffer, PageBitmap.Size / PAGE_SIZE + 1);
     }
 

@@ -1,7 +1,7 @@
-PAGE_TABLE_SIZE equ 0x4 ; 1GB
+PAGE_TABLE_SIZE equ 0x8 ; 2GB
 [bits 32]
 
-section .bootstrap.data
+section .bootstrap.bss
 align 0x1000
 global BootPageTable
 BootPageTable:
