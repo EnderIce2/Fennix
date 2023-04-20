@@ -31,6 +31,18 @@ KernelAPI *KAPI;
 
 /* --------------------------------------------------------------------------------------------------------- */
 
+bool IsATAPresent()
+{
+    outb(0x1F0 + 2, 0);
+    outb(0x1F0 + 3, 0);
+    outb(0x1F0 + 4, 0);
+    outb(0x1F0 + 5, 0);
+    outb(0x1F0 + 7, 0xEC);
+    if (inb(0x1F0 + 7) == 0 || inb(0x1F0 + 1) != 0)
+        return false;
+    return true;
+}
+
 int DriverEntry(void *Data)
 {
     if (!Data)
@@ -38,7 +50,12 @@ int DriverEntry(void *Data)
     KAPI = (KernelAPI *)Data;
     if (KAPI->Version.Major < 0 || KAPI->Version.Minor < 0 || KAPI->Version.Patch < 0)
         return KERNEL_API_VERSION_NOT_SUPPORTED;
-    return OK;
+
+    if (!IsATAPresent())
+        return NOT_AVAILABLE;
+    print("ATA device found.");
+
+    return NOT_IMPLEMENTED;
 }
 
 int CallbackHandler(KernelCallback *Data)
