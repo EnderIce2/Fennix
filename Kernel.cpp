@@ -54,7 +54,7 @@ LockClass mExtTrkLock;
  * - KernelMainThread() is the first function to be called by the task manager.
  *
  * TODO:
- * - [ ] Optimize SMP.
+ * - [x] Optimize SMP.
  * - [ ] Support IPv6.
  * - [ ] Endianess of the network stack (currently: [HOST](LSB)<=>[NETWORK](MSB)). Not sure if this is a standard or not.
  * - [ ] Support 32-bit applications (ELF, PE, etc).
@@ -63,20 +63,22 @@ LockClass mExtTrkLock;
  * - [ ] Implement a better task manager. (replace struct P/TCB with classes)
  * - [?] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
  * - [ ] Colors in crash screen are not following the kernel color scheme.
- * - [ ] Find a way to add intrinsics.
+ * - [x] Find a way to add intrinsics.
  * - [ ] Rework PSF1 font loader.
- * - [ ] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
+ * - [x] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
  * - [ ] Implement a better Display::SetBrightness() function.
  * - [ ] Fix memcpy, memset and memcmp functions (they are not working properly with SIMD).
  * - [ ] Support Aarch64.
  * - [ ] Fully support i386.
  * - [ ] SMP trampoline shouldn't be hardcoded at 0x2000.
  * - [ ] Rework the stack guard.
+ * - [ ] Mutex implementation.
+ * - [ ] Vector should have a mutex.
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
  * - [x] After setting the new stack pointer, the kernel crashes with an invalid opcode.
- * - [ ] Somewhere in the kernel, the memory is wrongly freed or memcpy/memset.
+ * - [?] Somewhere in the kernel, the memory is wrongly freed or memcpy/memset.
  * - [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
  * - [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
  *
