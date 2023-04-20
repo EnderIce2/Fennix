@@ -49,6 +49,7 @@ namespace NetworkARP
                     netdbg("Removed %s from discovered addresses", IP.v4.ToStringLittleEndian());
                     delete tmp, tmp = nullptr;
                     DiscoveredAddresses.remove(i);
+                    break;
                 }
             }
             return nullptr;

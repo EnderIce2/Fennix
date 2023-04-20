@@ -161,7 +161,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
     SafeFunction NIF Events::~Events()
     {
-        for (uintptr_t i = 0; i < RegisteredEvents.size(); i++)
+        for (size_t i = 0; i < RegisteredEvents.size(); i++)
             if (RegisteredEvents[i] == this)
             {
                 RegisteredEvents.remove(i);

@@ -59,8 +59,7 @@ namespace NetworkInterfaceManager
         this->StopNetworkStack();
 
         // Unregister all events
-        for (size_t i = 0; i < RegisteredEvents.size(); i++)
-            RegisteredEvents.remove(i);
+        RegisteredEvents.clear();
 
         foreach (auto inf in Interfaces)
         {

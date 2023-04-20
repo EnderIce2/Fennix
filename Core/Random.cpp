@@ -43,6 +43,8 @@ namespace Random
                     RDRANDFlag = cpuid.ECX.RDRAND;
                 }
             }
+            else
+                RDRANDFlag = 0;
         }
 
         if (RDRANDFlag)
@@ -80,6 +82,8 @@ namespace Random
                     RDRANDFlag = cpuid.ECX.RDRAND;
                 }
             }
+            else
+                RDRANDFlag = 0;
         }
 
         if (RDRANDFlag)
@@ -117,6 +121,8 @@ namespace Random
                     RDRANDFlag = cpuid.ECX.RDRAND;
                 }
             }
+            else
+                RDRANDFlag = 0;
         }
 
         if (RDRANDFlag)

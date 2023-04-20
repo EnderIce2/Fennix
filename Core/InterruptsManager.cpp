@@ -131,6 +131,7 @@ namespace Interrupts
     {
 #if defined(a64)
         CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
+        // debug("IRQ%ld", Frame->InterruptNumber - 32);
 
         memmove(InterruptFrames + 1, InterruptFrames, sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
         InterruptFrames[0] = (void *)Frame->rip;

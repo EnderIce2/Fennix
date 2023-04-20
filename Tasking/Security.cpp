@@ -145,10 +145,5 @@ namespace Tasking
     }
 
     Security::Security() {}
-
-    Security::~Security()
-    {
-        for (size_t i = 0; i < Tokens.size(); i++)
-            Tokens.remove(i);
-    }
+    Security::~Security() { Tokens.clear(); }
 }

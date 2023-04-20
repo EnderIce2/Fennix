@@ -83,8 +83,8 @@ namespace Driver
             }
             if (drv.MemTrk)
                 delete drv.MemTrk, drv.MemTrk = nullptr;
-            Drivers.remove(drv);
         }
+        Drivers.clear();
     }
 
     bool Driver::UnloadDriver(unsigned long DUID)
@@ -268,7 +268,10 @@ namespace Driver
     {
         SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
         if (!this->Enabled)
+        {
+            debug("Interrupt hook is not enabled");
             return;
+        }
 
         if (!Handle.InterruptCallback)
         {

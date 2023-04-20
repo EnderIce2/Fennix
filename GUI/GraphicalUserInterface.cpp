@@ -660,7 +660,6 @@ namespace GraphicalUserInterface
         delete this->OverlayBuffer, this->OverlayBuffer = nullptr;
         delete this->CursorBuffer, this->CursorBuffer = nullptr;
         Display->DeleteBuffer(200);
-        for (size_t i = 0; i < this->Windows.size(); i++)
-            this->Windows.remove(i);
+        this->Windows.clear();
     }
 }
