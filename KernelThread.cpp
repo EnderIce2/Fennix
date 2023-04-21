@@ -145,15 +145,11 @@ void TaskMgr()
 
 Execute::SpawnData SpawnInit()
 {
-    const char *envp[9] = {
+    const char *envp[5] = {
         "PATH=/system:/system/bin",
         "TERM=tty",
         "HOME=/",
         "USER=root",
-        "SHELL=/system/sh",
-        "PWD=/",
-        "LANG=en_US.UTF-8",
-        "TZ=UTC",
         nullptr};
 
     const char *argv[4] = {
