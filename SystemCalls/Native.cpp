@@ -205,6 +205,15 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         debug("Returning memory image %#lx (%s)", (uintptr_t)lib.MemoryImage, Identifier);
         return (uintptr_t)lib.MemoryImage;
     }
+    case KCTL_GET_FRAMEBUFFER_BUFFER:
+        return r_cst(uint64_t, Display->GetBuffer(0)->Buffer);
+    case KCTL_GET_FRAMEBUFFER_WIDTH:
+        return Display->GetBuffer(0)->Width;
+    case KCTL_GET_FRAMEBUFFER_HEIGHT:
+        return Display->GetBuffer(0)->Height;
+    case KCTL_GET_FRAMEBUFFER_SIZE:
+        return Display->GetBuffer(0)->Size;
+
     default:
     {
         warn("KernelCTL: Unknown command: %lld", Command);
@@ -419,9 +428,9 @@ uintptr_t HandleNativeSyscalls(SyscallsFrame *Frame)
         return SYSCALL_INTERNAL_ERROR;
     }
 
-    debug("[%#lx]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
-          Frame->rax,
-          Frame->rdi, Frame->rsi, Frame->rdx, Frame->rcx, Frame->r8, Frame->r9);
+    // debug("[%#lx]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
+    //       Frame->rax,
+    //       Frame->rdi, Frame->rsi, Frame->rdx, Frame->rcx, Frame->r8, Frame->r9);
 
     uintptr_t ret = call((uintptr_t)Frame, Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
     Frame->rax = ret;
