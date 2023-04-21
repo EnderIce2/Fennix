@@ -32,7 +32,7 @@ using namespace Tasking;
 namespace Execute
 {
     ELFBaseLoad ELFLoadExec(void *ElfFile,
-                            VirtualFileSystem::File *ExFile,
+                            VirtualFileSystem::File &ExFile,
                             Tasking::PCB *Process)
     {
         debug("Executable");
@@ -46,7 +46,7 @@ namespace Execute
         uintptr_t BaseAddress = UINTPTR_MAX;
         uint64_t ElfAppSize = 0;
         uintptr_t EntryPoint = ELFHeader->e_entry;
-        debug("%s's entry point is %#lx", ExFile->Name, EntryPoint);
+        debug("%s's entry point is %#lx", ExFile.Name, EntryPoint);
 
         Elf64_Phdr ItrPhdr;
 
@@ -171,8 +171,8 @@ namespace Execute
                 memcpy((void *)InterpreterPath, (uint8_t *)ElfFile + ItrPhdr.p_offset, 256);
                 debug("Interpreter: %s", InterpreterPath);
 
-                std::shared_ptr<VirtualFileSystem::File> InterpreterFile = vfs->Open(InterpreterPath);
-                if (InterpreterFile->Status != VirtualFileSystem::FileStatus::OK)
+                VirtualFileSystem::File InterpreterFile = vfs->Open(InterpreterPath);
+                if (!InterpreterFile.IsOK())
                     warn("Failed to open interpreter file: %s", InterpreterPath);
 
                 vfs->Close(InterpreterFile);
@@ -206,7 +206,7 @@ namespace Execute
         strcpy(aux_platform, "x86_64");
 
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-        ELFBase.auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)vfs->GetPathFromNode(ExFile->node).get()}}});
+        ELFBase.auxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)vfs->GetPathFromNode(ExFile.node).get()}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)MemoryImage.Virtual}}});

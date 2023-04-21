@@ -27,7 +27,7 @@ namespace Execute
     /* Originally from https://wiki.osdev.org/ELF_Tutorial */
 
     ELFBaseLoad ELFLoadRel(void *BaseImage,
-                           VirtualFileSystem::File *ExFile,
+                           VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process)
     {
         debug("Relocatable");

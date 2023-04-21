@@ -232,9 +232,9 @@ namespace Execute
         }
 
         /* No need to check if it's valid, the GetBinaryType() call above does that. */
-        std::shared_ptr<VirtualFileSystem::File> File = vfs->Open(Interpreter);
+        VirtualFileSystem::File File = vfs->Open(Interpreter);
 
-        Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)File->node->Address;
+        Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)File.node->Address;
 
 #ifdef DEBUG
         const char *InterpreterType[6] = {
@@ -259,7 +259,7 @@ namespace Execute
         for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
         {
             memcpy(&ItrPhdr,
-                   (uint8_t *)File->node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
+                   (uint8_t *)File.node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
                    sizeof(Elf64_Phdr));
 
             BaseAddress = MIN(BaseAddress, ItrPhdr.p_vaddr);
@@ -269,7 +269,7 @@ namespace Execute
         for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
         {
             memcpy(&ItrPhdr,
-                   (uint8_t *)File->node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
+                   (uint8_t *)File.node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
                    sizeof(Elf64_Phdr));
 
             uintptr_t SegmentEnd;
@@ -277,12 +277,12 @@ namespace Execute
             ElfAppSize = MAX(ElfAppSize, SegmentEnd);
         }
 
-        MmImage MemoryImage = ELFCreateMemoryImage(mem, pV, (void *)File->node->Address, ElfAppSize);
+        MmImage MemoryImage = ELFCreateMemoryImage(mem, pV, (void *)File.node->Address, ElfAppSize);
 
         for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
         {
             memcpy(&ItrPhdr,
-                   (uint8_t *)File->node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
+                   (uint8_t *)File.node->Address + ELFHeader->e_phoff + ELFHeader->e_phentsize * i,
                    sizeof(Elf64_Phdr));
 
             if (ItrPhdr.p_type == PT_LOAD)
@@ -296,8 +296,8 @@ namespace Execute
                       (ItrPhdr.p_flags & PF_W) ? "W" : "",
                       (ItrPhdr.p_flags & PF_X) ? "X" : "");
 
-                memcpy((void *)MAddr, (uint8_t *)File->node->Address + ItrPhdr.p_offset, ItrPhdr.p_filesz);
-                debug("memcpy: %#lx => %#lx (%ld bytes)", (uint8_t *)File->node->Address + ItrPhdr.p_offset, MAddr, ItrPhdr.p_filesz);
+                memcpy((void *)MAddr, (uint8_t *)File.node->Address + ItrPhdr.p_offset, ItrPhdr.p_filesz);
+                debug("memcpy: %#lx => %#lx (%ld bytes)", (uint8_t *)File.node->Address + ItrPhdr.p_offset, MAddr, ItrPhdr.p_filesz);
             }
         }
 

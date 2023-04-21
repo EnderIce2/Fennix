@@ -219,10 +219,10 @@ namespace Driver
         DriverConfigFile << "/config.ini";
         fixme("Loading driver config file: %s", DriverConfigFile.c_str());
 
-        std::shared_ptr<VirtualFileSystem::File> DriverDirectory = vfs->Open(Config.DriverDirectory);
-        if (DriverDirectory->Status == VirtualFileSystem::FileStatus::OK)
+        VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
+        if (DriverDirectory.IsOK())
         {
-            foreach (auto driver in DriverDirectory->node->Children)
+            foreach (auto driver in DriverDirectory.node->Children)
                 if (driver->Flags == VirtualFileSystem::NodeFlags::FILE)
                     if (cwk_path_has_extension(driver->Name))
                     {
@@ -246,7 +246,7 @@ namespace Driver
         }
         else
         {
-            KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory->Status);
+            KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
             CPU::Stop();
         }
         vfs->Close(DriverDirectory);

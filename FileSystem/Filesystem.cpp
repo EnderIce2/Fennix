@@ -168,11 +168,11 @@ namespace VirtualFileSystem
         return nullptr;
     }
 
-    std::shared_ptr<File> Virtual::ConvertNodeToFILE(Node *node)
+    File Virtual::ConvertNodeToFILE(Node *node)
     {
-        std::shared_ptr<File> file = std::make_shared<File>();
-        file->Status = FileStatus::OK;
-        file->node = node;
+        File file{};
+        file.Status = FileStatus::OK;
+        file.node = node;
         return file;
     }
 
@@ -454,92 +454,86 @@ namespace VirtualFileSystem
     FileStatus Virtual::Delete(Node *Path, bool Recursive, Node *Parent) { return Delete(GetPathFromNode(Path).get(), Recursive, Parent); }
 
     /* TODO: REWORK */
-    std::shared_ptr<File> Virtual::Mount(const char *Path, FileSystemOperations *Operator)
+    File Virtual::Mount(const char *Path, FileSystemOperations *Operator)
     {
         SmartLock(VFSLock);
-        std::shared_ptr<File> file = std::make_shared<File>();
+        File file{};
 
         if (unlikely(!Operator))
         {
-            file->Status = FileStatus::InvalidOperator;
+            file.Status = FileStatus::InvalidOperator;
             return file;
         }
 
         if (unlikely(isempty((char *)Path)))
         {
-            file->Status = FileStatus::InvalidParameter;
+            file.Status = FileStatus::InvalidParameter;
             return file;
         }
 
         vfsdbg("Mounting %s", Path);
         const char *PathCopy;
         cwk_path_get_basename(Path, &PathCopy, 0);
-        strcpy(file->Name, PathCopy);
-        file->Status = FileStatus::OK;
-        file->node = Create(Path, NodeFlags::MOUNTPOINT);
-        file->node->Operator = Operator;
+        strcpy(file.Name, PathCopy);
+        file.Status = FileStatus::OK;
+        file.node = Create(Path, NodeFlags::MOUNTPOINT);
+        file.node->Operator = Operator;
         return file;
     }
 
-    FileStatus Virtual::Unmount(std::shared_ptr<File> File)
+    FileStatus Virtual::Unmount(File &File)
     {
         SmartLock(VFSLock);
-        if (unlikely(File.get()))
+        if (unlikely(!File.node))
             return FileStatus::InvalidParameter;
-        fixme("Unmounting %s", File->Name);
+        fixme("Unmounting %s", File.Name);
         return FileStatus::OK;
     }
 
-    size_t Virtual::Read(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Read(File &File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.get()))
-            return 0;
-
-        if (unlikely(!File->node))
+        if (unlikely(!File.node))
         {
-            File->Status = FileStatus::InvalidNode;
+            File.Status = FileStatus::InvalidNode;
             return 0;
         }
 
-        if (unlikely(!File->node->Operator))
+        if (unlikely(!File.node->Operator))
         {
-            File->Status = FileStatus::InvalidOperator;
+            File.Status = FileStatus::InvalidOperator;
             return 0;
         }
 
-        File->Status = FileStatus::OK;
+        File.Status = FileStatus::OK;
 
-        vfsdbg("Reading %s out->%016x", File->Name, Buffer);
-        return File->node->Operator->Read(File->node, Offset, Size, Buffer);
+        vfsdbg("Reading %s out->%016x", File.Name, Buffer);
+        return File.node->Operator->Read(File.node, Offset, Size, Buffer);
     }
 
-    size_t Virtual::Write(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Write(File &File, size_t Offset, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.get()))
-            return 0;
-
-        if (unlikely(!File->node))
+        if (unlikely(!File.node))
         {
-            File->Status = FileStatus::InvalidNode;
+            File.Status = FileStatus::InvalidNode;
             return 0;
         }
 
-        if (unlikely(!File->node->Operator))
+        if (unlikely(!File.node->Operator))
         {
-            File->Status = FileStatus::InvalidOperator;
+            File.Status = FileStatus::InvalidOperator;
             return 0;
         }
 
-        File->Status = FileStatus::OK;
+        File.Status = FileStatus::OK;
 
-        vfsdbg("Writing %s out->%016x", File->Name, Buffer);
-        return File->node->Operator->Write(File->node, Offset, Size, Buffer);
+        vfsdbg("Writing %s out->%016x", File.Name, Buffer);
+        return File.node->Operator->Write(File.node, Offset, Size, Buffer);
     }
 
     /* TODO: CHECK Open */
-    std::shared_ptr<File> Virtual::Open(const char *Path, Node *Parent)
+    File Virtual::Open(const char *Path, Node *Parent)
     {
         SmartLock(VFSLock);
         vfsdbg("Opening %s with parent %s", Path, Parent ? Parent->Name : "(null)");
@@ -547,41 +541,41 @@ namespace VirtualFileSystem
 
         if (strcmp(Path, "/") == 0)
         {
-            std::shared_ptr<File> file = std::make_shared<File>();
-            file->node = FileSystemRoot;
-            strcpy(file->Name, "/");
+            File file{};
+            file.node = FileSystemRoot;
+            strcpy(file.Name, "/");
             return file;
         }
 
         if (strcmp(Path, ".") == 0)
         {
-            std::shared_ptr<File> file = std::make_shared<File>();
-            file->node = Parent;
-            if (unlikely(!file->node))
-                file->Status = FileStatus::NotFound;
+            File file{};
+            file.node = Parent;
+            if (unlikely(!file.node))
+                file.Status = FileStatus::NotFound;
             cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
-            strcpy(file->Name, basename);
+            strcpy(file.Name, basename);
             return file;
         }
 
         if (strcmp(Path, "..") == 0)
         {
-            std::shared_ptr<File> file = std::make_shared<File>();
+            File file{};
 
             if (Parent->Parent != nullptr)
-                file->node = Parent->Parent;
+                file.node = Parent->Parent;
 
-            if (!file->node)
-                file->Status = FileStatus::NotFound;
+            if (!file.node)
+                file.Status = FileStatus::NotFound;
             cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
-            strcpy(file->Name, basename);
+            strcpy(file.Name, basename);
             return file;
         }
 
         Node *CurrentParent = this->GetParent(Path, Parent);
         std::shared_ptr<char> CleanPath = NormalizePath(Path, CurrentParent);
 
-        std::shared_ptr<File> file = std::make_shared<File>();
+        File file{};
         /* TODO: Check for other errors */
 
         if (!PathExists(CleanPath.get(), CurrentParent))
@@ -590,45 +584,45 @@ namespace VirtualFileSystem
             {
                 if (strcmp(Child->Name, CleanPath.get()) == 0)
                 {
-                    file->node = Child;
-                    if (file->node == nullptr)
+                    file.node = Child;
+                    if (file.node == nullptr)
                     {
-                        file->Status = FileStatus::UnknownFileStatusError;
-                        file->node = nullptr;
+                        file.Status = FileStatus::UnknownFileStatusError;
+                        file.node = nullptr;
                         return file;
                     }
                     cwk_path_get_basename(GetPathFromNode(Child).get(), &basename, nullptr);
-                    strcpy(file->Name, basename);
+                    strcpy(file.Name, basename);
                     return file;
                 }
             }
 
-            file->node = GetNodeFromPath(CleanPath.get(), FileSystemRoot->Children[0]);
-            if (file->node)
+            file.node = GetNodeFromPath(CleanPath.get(), FileSystemRoot->Children[0]);
+            if (file.node)
             {
-                cwk_path_get_basename(GetPathFromNode(file->node).get(), &basename, nullptr);
-                strcpy(file->Name, basename);
+                cwk_path_get_basename(GetPathFromNode(file.node).get(), &basename, nullptr);
+                strcpy(file.Name, basename);
                 return file;
             }
         }
         else
         {
-            file->node = GetNodeFromPath(CleanPath.get(), CurrentParent);
+            file.node = GetNodeFromPath(CleanPath.get(), CurrentParent);
             cwk_path_get_basename(CleanPath.get(), &basename, nullptr);
-            strcpy(file->Name, basename);
+            strcpy(file.Name, basename);
             return file;
         }
 
-        file->Status = FileStatus::NotFound;
+        file.Status = FileStatus::NotFound;
         return file;
     }
 
-    FileStatus Virtual::Close(std::shared_ptr<File> File)
+    FileStatus Virtual::Close(File &File)
     {
         SmartLock(VFSLock);
-        if (unlikely(!File.get()))
+        if (unlikely(!File.node))
             return FileStatus::InvalidHandle;
-        vfsdbg("Closing %s", File->Name);
+        vfsdbg("Closing %s", File.Name);
         return FileStatus::OK;
     }
 

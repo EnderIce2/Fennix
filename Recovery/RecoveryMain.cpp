@@ -70,25 +70,25 @@ namespace Recovery
             return;
         }
 
-        std::shared_ptr<VirtualFileSystem::File> pcm = vfs->Open(AudioFile);
+        VirtualFileSystem::File pcm = vfs->Open(AudioFile);
 
-        if (pcm->Status != FileStatus::OK)
+        if (!pcm.IsOK())
         {
             error("Cannot open audio file! Cannot play audio!");
             return;
         }
 
-        void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm->node->Length + 1));
-        memcpy(PCMRaw, (void *)pcm->node->Address, pcm->node->Length);
+        void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm.node->Length + 1));
+        memcpy(PCMRaw, (void *)pcm.node->Address, pcm.node->Length);
 
         KernelCallback callback{};
         callback.Reason = SendReason;
         callback.AudioCallback.Send.Data = (uint8_t *)PCMRaw;
-        callback.AudioCallback.Send.Length = pcm->node->Length;
+        callback.AudioCallback.Send.Length = pcm.node->Length;
         debug("Playing audio...");
         int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
         debug("Audio played! %d", status);
-        KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm->node->Length + 1));
+        KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm.node->Length + 1));
         vfs->Close(pcm);
         TEXIT(0);
     }

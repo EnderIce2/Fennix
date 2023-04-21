@@ -37,11 +37,11 @@ namespace Execute
                          .Process = nullptr,
                          .Thread = nullptr};
 
-        std::shared_ptr<VirtualFileSystem::File> ExFile = vfs->Open(Path);
+        VirtualFileSystem::File ExFile = vfs->Open(Path);
 
-        if (ExFile->Status == VirtualFileSystem::FileStatus::OK)
+        if (ExFile.IsOK())
         {
-            if (ExFile->node->Flags != VirtualFileSystem::NodeFlags::FILE)
+            if (ExFile.node->Flags != VirtualFileSystem::NodeFlags::FILE)
             {
                 ret.Status = ExStatus::InvalidFilePath;
                 goto Exit;
@@ -51,17 +51,17 @@ namespace Execute
             {
             case BinaryType::BinTypeFex:
             {
-                Fex *FexHdr = (Fex *)ExFile->node->Address;
+                Fex *FexHdr = (Fex *)ExFile.node->Address;
                 if (FexHdr->Type == FexFormatType::FexFormatType_Executable)
                 {
                     const char *BaseName;
                     cwk_path_get_basename(Path, &BaseName, nullptr);
                     PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
 
-                    void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile->node->Length + 1));
-                    memcpy(BaseImage, (void *)ExFile->node->Address, ExFile->node->Length);
+                    void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile.node->Length + 1));
+                    memcpy(BaseImage, (void *)ExFile.node->Address, ExFile.node->Length);
 
-                    Memory::Virtual(Process->PageTable).Map((void *)BaseImage, (void *)BaseImage, ExFile->node->Length, Memory::PTFlag::RW | Memory::PTFlag::US);
+                    Memory::Virtual(Process->PageTable).Map((void *)BaseImage, (void *)BaseImage, ExFile.node->Length, Memory::PTFlag::RW | Memory::PTFlag::US);
 
                     std::vector<AuxiliaryVector> auxv; // TODO!
 
@@ -97,7 +97,7 @@ namespace Execute
             }
             }
         }
-        else if (ExFile->Status == VirtualFileSystem::FileStatus::NotFound)
+        else if (ExFile.Status == VirtualFileSystem::FileStatus::NotFound)
             ret.Status = ExStatus::InvalidFilePath;
         else
             ret.Status = ExStatus::InvalidFile;

@@ -32,7 +32,7 @@ using namespace Tasking;
 namespace Execute
 {
     ELFBaseLoad ELFLoadDyn(void *BaseImage,
-                           VirtualFileSystem::File *ExFile,
+                           VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process)
     {
         fixme("Not implemented");

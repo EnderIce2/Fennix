@@ -86,12 +86,12 @@ namespace Execute
     BinaryType GetBinaryType(char *Path)
     {
         BinaryType Type = BinaryType::BinTypeInvalid;
-        std::shared_ptr<VirtualFileSystem::File> ExFile = vfs->Open(Path);
+        VirtualFileSystem::File ExFile = vfs->Open(Path);
 
-        if (ExFile->Status == VirtualFileSystem::FileStatus::OK)
+        if (ExFile.IsOK())
         {
             debug("File opened: %s", Path);
-            Type = GetBinaryType((void *)ExFile->node->Address);
+            Type = GetBinaryType((void *)ExFile.node->Address);
         }
 
         vfs->Close(ExFile);

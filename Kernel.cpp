@@ -426,42 +426,42 @@ EXTERNC NIF void Main(BootInfo *Info)
         DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
     else
     {
-        std::shared_ptr<File> dev = vfs->Open("/system/dev");
-        if (dev->node->Flags != NodeFlags::DIRECTORY)
+        File dev = vfs->Open("/system/dev");
+        if (dev.node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/dev is not a directory! Halting...");
             CPU::Stop();
         }
         vfs->Close(dev);
-        DevFS = dev->node;
+        DevFS = dev.node;
     }
 
     if (!vfs->PathExists("/system/mnt"))
         MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
     else
     {
-        std::shared_ptr<File> mnt = vfs->Open("/system/mnt");
-        if (mnt->node->Flags != NodeFlags::DIRECTORY)
+        File mnt = vfs->Open("/system/mnt");
+        if (mnt.node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/mnt is not a directory! Halting...");
             CPU::Stop();
         }
         vfs->Close(mnt);
-        MntFS = mnt->node;
+        MntFS = mnt.node;
     }
 
     if (!vfs->PathExists("/system/proc"))
         ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
     else
     {
-        std::shared_ptr<File> proc = vfs->Open("/system/proc", nullptr);
-        if (proc->node->Flags != NodeFlags::DIRECTORY)
+        File proc = vfs->Open("/system/proc", nullptr);
+        if (proc.node->Flags != NodeFlags::DIRECTORY)
         {
             KPrint("\eE85230/system/proc is not a directory! Halting...");
             CPU::Stop();
         }
         vfs->Close(proc);
-        ProcFS = proc->node;
+        ProcFS = proc.node;
     }
 
     KPrint("\e058C19################################");

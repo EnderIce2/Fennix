@@ -125,15 +125,15 @@ namespace Execute
     uintptr_t LoadELFInterpreter(Memory::MemMgr *mem, Memory::Virtual &pV, const char *Interpreter);
 
     ELFBaseLoad ELFLoadRel(void *ElfFile,
-                           VirtualFileSystem::File *ExFile,
+                           VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process);
 
     ELFBaseLoad ELFLoadExec(void *ElfFile,
-                            VirtualFileSystem::File *ExFile,
+                            VirtualFileSystem::File &ExFile,
                             Tasking::PCB *Process);
 
     ELFBaseLoad ELFLoadDyn(void *ElfFile,
-                           VirtualFileSystem::File *ExFile,
+                           VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process);
 
     void StartExecuteService();

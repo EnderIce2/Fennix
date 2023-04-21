@@ -19,7 +19,6 @@
 #define __FENNIX_KERNEL_FILESYSTEM_H__
 
 #include <types.h>
-
 #include <smart_ptr.hpp>
 #include <vector>
 
@@ -129,6 +128,8 @@ namespace VirtualFileSystem
         char Name[FILENAME_LENGTH];
         FileStatus Status;
         Node *node;
+
+        bool IsOK() { return Status == FileStatus::OK; }
     };
 
     /* Manage / etc.. */
@@ -140,7 +141,14 @@ namespace VirtualFileSystem
     public:
         std::shared_ptr<char> GetPathFromNode(Node *node);
         Node *GetNodeFromPath(const char *Path, Node *Parent = nullptr);
-        std::shared_ptr<File> ConvertNodeToFILE(Node *node);
+
+        /**
+         * @brief Convert a Node to a File
+         *
+         * @param node Node to convert
+         * @return Converted node
+         */
+        File ConvertNodeToFILE(Node *node);
 
         Node *GetParent(const char *Path, Node *Parent);
         Node *GetRootNode() { return FileSystemRoot; }
@@ -157,14 +165,14 @@ namespace VirtualFileSystem
         FileStatus Delete(const char *Path, bool Recursive = false, Node *Parent = nullptr);
         FileStatus Delete(Node *Path, bool Recursive = false, Node *Parent = nullptr);
 
-        std::shared_ptr<File> Mount(const char *Path, FileSystemOperations *Operator);
-        FileStatus Unmount(std::shared_ptr<File> File);
+        File Mount(const char *Path, FileSystemOperations *Operator);
+        FileStatus Unmount(File &File);
 
-        size_t Read(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
-        size_t Write(std::shared_ptr<File> File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Read(File &File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Write(File &File, size_t Offset, uint8_t *Buffer, size_t Size);
 
-        std::shared_ptr<File> Open(const char *Path, Node *Parent = nullptr);
-        FileStatus Close(std::shared_ptr<File> File);
+        File Open(const char *Path, Node *Parent = nullptr);
+        FileStatus Close(File &File);
 
         Virtual();
         ~Virtual();

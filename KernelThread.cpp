@@ -176,17 +176,17 @@ void BootLogoAnimationThread()
     while (FrameCount < 27)
     {
         sprintf(BootAnimPath, "%d.tga", FrameCount);
-        std::shared_ptr<File> ba = bootanim_vfs->Open(BootAnimPath);
-        if (ba->Status != FileStatus::OK)
+        File ba = bootanim_vfs->Open(BootAnimPath);
+        if (!ba.IsOK())
         {
             bootanim_vfs->Close(ba);
             debug("Failed to load boot animation frame %s", BootAnimPath);
             break;
         }
 
-        FrameSizes[FrameCount] = s_cst(uint32_t, ba->node->Length);
-        Frames[FrameCount] = new uint8_t[ba->node->Length];
-        memcpy((void *)Frames[FrameCount], (void *)ba->node->Address, ba->node->Length);
+        FrameSizes[FrameCount] = s_cst(uint32_t, ba.node->Length);
+        Frames[FrameCount] = new uint8_t[ba.node->Length];
+        memcpy((void *)Frames[FrameCount], (void *)ba.node->Address, ba.node->Length);
         bootanim_vfs->Close(ba);
         FrameCount++;
     }

@@ -131,9 +131,9 @@ namespace Execute
         cwk_path_get_basename(Path, &BaseName, nullptr);
         TaskArchitecture Arch = TaskArchitecture::UnknownArchitecture;
 
-        std::shared_ptr<File> ExFile = vfs->Open(Path);
+        File ExFile = vfs->Open(Path);
 
-        if (ExFile->Status != FileStatus::OK)
+        if (ExFile.Status != FileStatus::OK)
         {
             vfs->Close(ExFile);
             error("Failed to open file: %s", Path);
@@ -141,7 +141,7 @@ namespace Execute
         }
         else
         {
-            if (ExFile->node->Flags != NodeFlags::FILE)
+            if (ExFile.node->Flags != NodeFlags::FILE)
             {
                 vfs->Close(ExFile);
                 error("Invalid file path: %s", Path);
@@ -155,12 +155,12 @@ namespace Execute
             }
         }
 
-        size_t ExFileSize = ExFile->node->Length;
+        size_t ExFileSize = ExFile.node->Length;
 
         /* Allocate elf in memory */
         void *ElfFile = KernelAllocator.RequestPages(TO_PAGES(ExFileSize + 1));
         /* Copy the file to the allocated memory */
-        memcpy(ElfFile, (void *)ExFile->node->Address, ExFileSize);
+        memcpy(ElfFile, (void *)ExFile.node->Address, ExFileSize);
         debug("Image Size: %#lx - %#lx (length: %ld)", ElfFile, (uintptr_t)ElfFile + ExFileSize, ExFileSize);
 
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
@@ -220,13 +220,13 @@ namespace Execute
         switch (ELFHeader->e_type)
         {
         case ET_REL:
-            bl = ELFLoadRel(ElfFile, ExFile.get(), Process);
+            bl = ELFLoadRel(ElfFile, ExFile, Process);
             break;
         case ET_EXEC:
-            bl = ELFLoadExec(ElfFile, ExFile.get(), Process);
+            bl = ELFLoadExec(ElfFile, ExFile, Process);
             break;
         case ET_DYN:
-            bl = ELFLoadDyn(ElfFile, ExFile.get(), Process);
+            bl = ELFLoadDyn(ElfFile, ExFile, Process);
             break;
         case ET_CORE:
         {
