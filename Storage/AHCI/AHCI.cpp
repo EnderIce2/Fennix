@@ -428,6 +428,10 @@ int DriverEntry(void *Data)
     KAPI = (KernelAPI *)Data;
     if (KAPI->Version.Major < 0 || KAPI->Version.Minor < 0 || KAPI->Version.Patch < 0)
         return KERNEL_API_VERSION_NOT_SUPPORTED;
+
+    if (KAPI->Info.KernelDebug) /* FIXME: TCG doesn't like this driver. */
+        return NOT_AVAILABLE;
+
     return OK;
 }
 
