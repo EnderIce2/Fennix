@@ -85,25 +85,25 @@ enum NativeSyscalls
     _IPC,
 
     /** @brief Open a file
-     * @fn
+     * @fn void *FileOpen(const char *Path, uint64_t Flags)
      * This syscall is used to open a file with the provided path and flags.
      */
     _FileOpen,
 
     /** @brief Close a file
-     * @fn
+     * @fn int FileClose(void *KernelPrivate)
      * This syscall is used to close a file that was previously opened.
      */
     _FileClose,
 
     /** @brief Read from a file
-     * @fn
+     * @fn uint64_t FileRead(void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
      * This syscall is used to read a specific number of bytes from a file at a specific offset.
      */
     _FileRead,
 
     /** @brief Write to a file
-     * @fn
+     * @fn uint64_t FileWrite(void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
      * This syscall is used to write a specific number of bytes to a file at a specific offset.
      */
     _FileWrite,
