@@ -139,9 +139,9 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         int retries = 0;
     RetryReadPath:
         debug("KCTL_REGISTER_ELF_LIB: Trying to open %s", FullPath.c_str());
-        std::shared_ptr<VirtualFileSystem::File> f = vfs->Open(FullPath.c_str());
+        VirtualFileSystem::File f = vfs->Open(FullPath.c_str());
 
-        if (f->Status != VirtualFileSystem::FileStatus::OK)
+        if (!f.IsOK())
         {
             FullPath.clear();
             switch (retries)
@@ -173,7 +173,7 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         }
 
         vfs->Close(f);
-        if (Execute::AddLibrary(Identifier, (void *)f->node->Address, f->node->Length))
+        if (Execute::AddLibrary(Identifier, (void *)f.node->Address, f.node->Length))
             return SYSCALL_OK;
         else
             return SYSCALL_INTERNAL_ERROR;
@@ -230,26 +230,45 @@ static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType T
 
 static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t Flags)
 {
-    fixme("%s, %#lx", Path, Flags);
-    return 0;
+    debug("(Path: %s, Flags: %#lx)", Path, Flags);
+    VirtualFileSystem::File KPObj = vfs->Open(Path);
+    if (!KPObj.IsOK())
+    {
+        debug("Failed to open file %s (%d)", Path, KPObj.Status);
+        vfs->Close(KPObj);
+        return SYSCALL_INTERNAL_ERROR;
+    }
+
+    VirtualFileSystem::File *KernelPrivate = (VirtualFileSystem::File *)TaskManager->GetCurrentThread()->Memory->RequestPages(TO_PAGES(sizeof(VirtualFileSystem::File)));
+    *KernelPrivate = KPObj;
+    debug("Opened file %s (%d)", KPObj.Name, KPObj.Status);
+    return (uint64_t)KernelPrivate;
 }
 
 static int sys_file_close(SyscallsFrame *Frame, void *KernelPrivate)
 {
-    fixme("%#lx", KernelPrivate);
-    return SYSCALL_OK;
+    debug("(KernelPrivate: %#lx)", KernelPrivate);
+    if (KernelPrivate)
+    {
+        VirtualFileSystem::File KPObj = *(VirtualFileSystem::File *)KernelPrivate;
+        debug("Closed file %s (%d)", KPObj.Name, KPObj.Status);
+        vfs->Close(KPObj);
+        TaskManager->GetCurrentThread()->Memory->FreePages(KernelPrivate, TO_PAGES(sizeof(VirtualFileSystem::File)));
+        return SYSCALL_OK;
+    }
+    return SYSCALL_INVALID_ARGUMENT;
 }
 
 static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
-    fixme("%#lx, %#lx, %#lx, %#lx, %#lx", Frame, KernelPrivate, Offset, Buffer, Size);
-    return 0;
+    debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
+    return vfs->Read(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
 }
 
 static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
-    fixme("%#lx, %#lx, %#lx, %#lx, %#lx", Frame, KernelPrivate, Offset, Buffer, Size);
-    return 0;
+    debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
+    return vfs->Write(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
 }
 
 static int sys_file_seek(SyscallsFrame *Frame)
