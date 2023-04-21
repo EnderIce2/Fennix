@@ -107,7 +107,7 @@ namespace Execute
     Elf64_Shdr *GetELFSection(Elf64_Ehdr *Header, uint64_t Index);
     char *GetELFStringTable(Elf64_Ehdr *Header);
     char *ELFLookupString(Elf64_Ehdr *Header, uintptr_t Offset);
-    void *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name);
+    Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name);
     uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index);
     Elf64_Dyn *ELFGetDynamicTag(void *ElfFile, enum DynamicArrayTags Tag);
 

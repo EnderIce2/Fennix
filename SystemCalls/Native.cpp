@@ -188,7 +188,7 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         if (!lib.Address)
             debug("Failed to get library address %#lx", (uintptr_t)lib.Address);
 
-        debug("Returning library address %#lx", (uintptr_t)lib.Address);
+        debug("Returning library address %#lx (%s)", (uintptr_t)lib.Address, Identifier);
         return (uintptr_t)lib.Address;
     }
     case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
@@ -202,7 +202,7 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         if (!lib.MemoryImage)
             debug("Failed to get library memory image %#lx", (uintptr_t)lib.MemoryImage);
 
-        debug("Returning memory image %#lx", (uintptr_t)lib.MemoryImage);
+        debug("Returning memory image %#lx (%s)", (uintptr_t)lib.MemoryImage, Identifier);
         return (uintptr_t)lib.MemoryImage;
     }
     default:
@@ -228,28 +228,28 @@ static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType T
     return TaskManager->GetCurrentProcess()->IPC->HandleSyscall(Command, Type, ID, Flags, Buffer, Size);
 }
 
-static int sys_file_open(SyscallsFrame *Frame)
+static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t Flags)
 {
-    fixme("sys_file_open: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    fixme("%s, %#lx", Path, Flags);
+    return 0;
 }
 
-static int sys_file_close(SyscallsFrame *Frame)
+static int sys_file_close(SyscallsFrame *Frame, void *KernelPrivate)
 {
-    fixme("sys_file_close: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    fixme("%#lx", KernelPrivate);
+    return SYSCALL_OK;
 }
 
-static int sys_file_read(SyscallsFrame *Frame)
+static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
-    fixme("sys_file_read: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    fixme("%#lx, %#lx, %#lx, %#lx, %#lx", Frame, KernelPrivate, Offset, Buffer, Size);
+    return 0;
 }
 
-static int sys_file_write(SyscallsFrame *Frame)
+static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
-    fixme("sys_file_write: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    fixme("%#lx, %#lx, %#lx, %#lx, %#lx", Frame, KernelPrivate, Offset, Buffer, Size);
+    return 0;
 }
 
 static int sys_file_seek(SyscallsFrame *Frame)

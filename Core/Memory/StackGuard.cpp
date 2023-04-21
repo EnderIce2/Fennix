@@ -32,9 +32,10 @@ namespace Memory
             memset(AllocatedStack, 0, USER_STACK_SIZE);
             debug("AllocatedStack: %p", AllocatedStack);
 
+            Virtual va = Virtual(Table);
             for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
             {
-                Virtual(Table).Map((void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
+                va.Map((void *)(USER_STACK_BASE + (i * PAGE_SIZE)),
                                    (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)),
                                    PTFlag::RW | PTFlag::US);
 
@@ -88,9 +89,10 @@ namespace Memory
                 void *AllocatedStack = KernelAllocator.RequestPages(TO_PAGES(USER_STACK_SIZE + 1));
                 debug("AllocatedStack: %p", AllocatedStack);
                 memset(AllocatedStack, 0, USER_STACK_SIZE);
+                Virtual va = Virtual(this->Table);
                 for (uintptr_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
                 {
-                    Virtual(this->Table).Map((void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
+                    va.Map((void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)), PTFlag::RW | PTFlag::US);
                     debug("Mapped %p to %p", (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE)), (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE)));
                 }
                 this->StackBottom = (void *)((uintptr_t)this->StackBottom - USER_STACK_SIZE);

@@ -51,7 +51,7 @@ namespace Execute
         return StringTable + Offset;
     }
 
-    void *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name)
+    Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name)
     {
         Elf64_Shdr *SymbolTable = nullptr;
         Elf64_Shdr *StringTable = nullptr;
@@ -82,7 +82,7 @@ namespace Execute
             Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
             String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
             if (strcmp(String, Name) == 0)
-                return (void *)Symbol->st_value;
+                return Symbol;
         }
         return nullptr;
     }
@@ -108,7 +108,7 @@ namespace Execute
             Elf64_Shdr *StringTable = GetELFSection(Header, SymbolTable->sh_link);
             const char *Name = (const char *)Header + StringTable->sh_offset + Symbol->st_name;
 
-            void *Target = ELFLookupSymbol(Header, Name);
+            void *Target = (void *)ELFLookupSymbol(Header, Name)->st_value;
             if (Target == nullptr)
             {
                 if (ELF64_ST_BIND(Symbol->st_info) & STB_WEAK)
@@ -165,6 +165,8 @@ namespace Execute
     {
         void *MemoryImage = nullptr;
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
+        bool IsPIC = ELFHeader->e_type == ET_DYN;
+        debug("Elf %s PIC", IsPIC ? "is" : "is not");
 
         /* TODO: Not sure what I am supposed to do with this.
          * It is supposed to detect if it's PIC or not but I
@@ -195,15 +197,17 @@ namespace Execute
 
             if (ItrPhdr.p_type == PT_LOAD && ItrPhdr.p_vaddr == 0)
             {
-                debug("p_vaddr is 0, allocating %ld pages for image", TO_PAGES(Length));
-                MemoryImage = mem->RequestPages(TO_PAGES(Length + 1), true);
+                debug("p_vaddr is 0, allocating %ld pages for image (size: %#lx)", TO_PAGES(Length), Length);
+                MemoryImage = mem->RequestPages(TO_PAGES(Length), true);
+                debug("MemoryImage: %#lx-%#lx", MemoryImage, (uintptr_t)MemoryImage + Length);
                 memset(MemoryImage, 0, Length);
                 return {MemoryImage, (void *)FirstProgramHeaderVirtualAddress};
             }
         }
 
-        debug("Allocating %ld pages for image", TO_PAGES(Length));
-        MemoryImage = mem->RequestPages(TO_PAGES(Length + 1));
+        debug("Allocating %ld pages for image (size: %#lx)", TO_PAGES(Length), Length);
+        MemoryImage = mem->RequestPages(TO_PAGES(Length));
+        debug("MemoryImage: %#lx-%#lx", MemoryImage, (uintptr_t)MemoryImage + Length);
         memset(MemoryImage, 0, Length);
 
         if (FirstProgramHeaderVirtualAddress != 0)

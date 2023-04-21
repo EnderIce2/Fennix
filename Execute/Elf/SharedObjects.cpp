@@ -127,6 +127,95 @@ namespace Execute
                 debug("memcpy: %#lx => %#lx (%ld bytes)", (uint8_t *)LibFile + ItrProgramHeader.p_offset, (uintptr_t)MAddr, ItrProgramHeader.p_filesz);
                 break;
             }
+
+            struct Elf64_Dyn *JmpRel = ELFGetDynamicTag((void *)LibFile, DT_JMPREL);
+            struct Elf64_Dyn *SymTab = ELFGetDynamicTag((void *)LibFile, DT_SYMTAB);
+            struct Elf64_Dyn *StrTab = ELFGetDynamicTag((void *)LibFile, DT_STRTAB);
+
+            if (!JmpRel)
+            {
+                debug("No DT_JMPREL");
+            }
+
+            if (!SymTab)
+            {
+                debug("No DT_SYMTAB");
+            }
+
+            if (!StrTab)
+            {
+                debug("No DT_STRTAB");
+            }
+
+            if (JmpRel && SymTab && StrTab)
+            {
+                debug("JmpRel: %#lx, SymTab: %#lx, StrTab: %#lx", JmpRel->d_un.d_ptr, SymTab->d_un.d_ptr, StrTab->d_un.d_ptr);
+                Elf64_Rela *_JmpRel = (Elf64_Rela *)(sl.MemoryImage + (JmpRel->d_un.d_ptr - BaseAddress));
+                Elf64_Sym *_SymTab = (Elf64_Sym *)(sl.MemoryImage + (SymTab->d_un.d_ptr - BaseAddress));
+
+                char *_DynStr = (char *)(sl.MemoryImage + (StrTab->d_un.d_ptr - BaseAddress));
+
+                Elf64_Shdr *gotSection = nullptr;
+                for (Elf64_Half i = 0; i < ((Elf64_Ehdr *)LibFile)->e_shnum; i++)
+                {
+                    Elf64_Shdr *shdr = (Elf64_Shdr *)((uint8_t *)LibFile + ((Elf64_Ehdr *)LibFile)->e_shoff + i * sizeof(Elf64_Shdr));
+                    if (shdr->sh_type == SHT_PROGBITS && (shdr->sh_flags & SHF_WRITE) && (shdr->sh_flags & SHF_ALLOC))
+                    {
+                        gotSection = shdr;
+                        break;
+                    }
+                }
+
+                debug("LIB_DBG");
+
+                if (gotSection)
+                {
+                    Elf64_Xword numEntries = gotSection->sh_size / sizeof(Elf64_Addr);
+                    for (Elf64_Xword i = 0; i < numEntries - 3; i++)
+                    {
+                        Elf64_Rela *Rel = _JmpRel + i;
+                        Elf64_Addr *GOTEntry = (Elf64_Addr *)(Rel->r_offset + sl.MemoryImage);
+
+                        Elf64_Xword RelType = ELF64_R_TYPE(Rel->r_info);
+                        debug("r_offset: %#lx RelType: %d", Rel->r_offset, RelType);
+
+                        switch (RelType)
+                        {
+                        case R_X86_64_NONE:
+                            break;
+                        case R_X86_64_JUMP_SLOT:
+                        {
+                            Elf64_Xword SymIndex = ELF64_R_SYM(Rel->r_info);
+                            Elf64_Sym *Sym = _SymTab + SymIndex;
+
+                            if (Sym->st_name)
+                            {
+                                char *SymName = _DynStr + Sym->st_name;
+                                debug("SymName: %s", SymName);
+
+                                Elf64_Sym *LibSym = ELFLookupSymbol((Elf64_Ehdr *)LibFile, SymName);
+
+                                if (LibSym)
+                                {
+                                    *GOTEntry = (Elf64_Addr)(sl.MemoryImage + LibSym->st_value);
+                                    debug("GOT[%ld]: %#lx + %#lx = %#lx", i, sl.MemoryImage, LibSym->st_value, *GOTEntry);
+                                }
+                            }
+                            break;
+                        }
+                        default:
+                        {
+                            fixme("RelType %d not supported", RelType);
+                            break;
+                        }
+                        }
+
+                        debug("GOT[%ld](%#lx): %#lx", i, GOTEntry, *GOTEntry);
+                    }
+                }
+                else
+                    debug("GOT section not found");
+            }
         }
 
         sl.Address = r_cst(uint64_t, LibFile);
