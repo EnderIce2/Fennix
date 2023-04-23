@@ -52,7 +52,7 @@ namespace Execute
                 {
                     if (Lib.RefCount > 0)
                     {
-                        Lib.Timeout = TimeManager->CalculateTarget(600000);
+                        Lib.Timeout = TimeManager->CalculateTarget(10, Time::Units::Minutes);
                         debug("Reset timeout for %s", Lib.Identifier);
                         continue;
                     }
@@ -86,7 +86,7 @@ namespace Execute
         }
 
         strcpy(sl.Identifier, Identifier);
-        sl.Timeout = TimeManager->CalculateTarget(600000); /* 10 minutes */
+        sl.Timeout = TimeManager->CalculateTarget(10, Time::Units::Minutes);
         sl.RefCount = 0;
 
         void *LibFile = mem->RequestPages(TO_PAGES(Length + 1), true);

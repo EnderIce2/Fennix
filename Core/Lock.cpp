@@ -187,7 +187,7 @@ Retry:
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
         if (Target.load() == 0)
-            Target.store(TimeManager->CalculateTarget(Timeout));
+            Target.store(TimeManager->CalculateTarget(Timeout, Time::Units::Milliseconds));
         TimeoutDeadLock(LockData, Target.load());
         goto Retry;
     }

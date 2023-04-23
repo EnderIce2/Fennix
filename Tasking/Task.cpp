@@ -288,7 +288,7 @@ namespace Tasking
         thread->Status = TaskStatus::Sleeping;
         if (thread->Parent->Threads.size() == 1)
             thread->Parent->Status = TaskStatus::Sleeping;
-        thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds);
+        thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds, Time::Units::Milliseconds);
         tskdbg("Thread \"%s\"(%d) is going to sleep until %llu", thread->Name, thread->ID, thread->Info.SleepUntil);
         // TaskingScheduler_OneShot(1);
         // IRQ16

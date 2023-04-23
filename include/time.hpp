@@ -19,6 +19,7 @@
 #define __FENNIX_KERNEL_TIME_H__
 
 #include <types.h>
+#include <debug.h>
 
 namespace Time
 {
@@ -31,7 +32,22 @@ namespace Time
     Clock ReadClock();
     Clock ConvertFromUnix(int Timestamp);
 
-    class time
+    enum Units
+    {
+        Femtoseconds,
+        Picoseconds,
+        Nanoseconds,
+        Microseconds,
+        Milliseconds,
+        Seconds,
+        Minutes,
+        Hours,
+        Days,
+        Months,
+        Years
+    };
+
+    class HighPrecisionEventTimer
     {
     private:
         struct HPET
@@ -47,14 +63,70 @@ namespace Time
             uint64_t Reserved4;
         };
 
-        void *acpi;
-        void *hpet;
         uint32_t clk = 0;
+        HPET *hpet;
+
+        uint64_t ConvertUnit(Units Unit)
+        {
+            switch (Unit)
+            {
+            case Femtoseconds:
+                return 1;
+            case Picoseconds:
+                return 1000;
+            case Nanoseconds:
+                return 1000000;
+            case Microseconds:
+                return 1000000000;
+            case Milliseconds:
+                return 1000000000000;
+            case Seconds:
+                return 1000000000000000;
+            case Minutes:
+                return 1000000000000000000;
+            // case Hours:
+            //     return 1000000000000000000000;
+            // case Days:
+            //     return 1000000000000000000000000;
+            // case Months:
+            //     return 1000000000000000000000000000;
+            // case Years:
+            //     return 1000000000000000000000000000000;
+            default:
+                error("Invalid time unit %d", Unit);
+                return 1;
+            }
+        }
 
     public:
-        void Sleep(uint64_t Milliseconds);
+        bool Sleep(uint64_t Duration, Units Unit);
         uint64_t GetCounter();
-        uint64_t CalculateTarget(uint64_t Milliseconds);
+        uint64_t CalculateTarget(uint64_t Target, Units Unit);
+
+        HighPrecisionEventTimer(void *hpet);
+        ~HighPrecisionEventTimer();
+    };
+
+    class time
+    {
+    private:
+        enum _ActiveTimer
+        {
+            NONE,
+            RTC,
+            PIT,
+            HPET,
+            ACPI,
+            APIC,
+            TSC,
+        } ActiveTimer = NONE;
+
+        HighPrecisionEventTimer *hpet;
+
+    public:
+        bool Sleep(uint64_t Duration, Units Unit);
+        uint64_t GetCounter();
+        uint64_t CalculateTarget(uint64_t Target, Units Unit);
         time(void *acpi);
         ~time();
     };

@@ -144,7 +144,7 @@ void DriverSleep(unsigned long Milliseconds)
     if (TaskManager)
         TaskManager->Sleep(Milliseconds);
     else
-        TimeManager->Sleep(Milliseconds);
+        TimeManager->Sleep(Milliseconds, Time::Units::Milliseconds);
 }
 
 int Driversprintf(char *Buffer, const char *Format, ...)

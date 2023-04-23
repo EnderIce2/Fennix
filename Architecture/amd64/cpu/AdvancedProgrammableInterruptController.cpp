@@ -377,7 +377,7 @@ namespace APIC
         this->lapic->Write(APIC_TDCR, Divider);
         this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 
-        TimeManager->Sleep(1);
+        TimeManager->Sleep(1, Time::Units::Milliseconds);
 
         // Mask the timer
         this->lapic->Write(APIC_TIMER, 0x10000 /* LVTTimer.Mask flag */);
