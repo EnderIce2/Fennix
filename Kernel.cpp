@@ -231,8 +231,16 @@ EXTERNC void KPrint(const char *Format, ...)
 {
     SmartLock(KernelLock);
 
-    Time::Clock tm = Time::ReadClock();
-    printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
+    if (TimeManager)
+    {
+        uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
+        if (Nanoseconds != 0)
+        {
+            printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+                   Nanoseconds / 10000000,
+                   Nanoseconds % 10000000);
+        }
+    }
 
     va_list args;
     va_start(args, Format);

@@ -344,11 +344,7 @@ void KernelMainThread()
     KPrint("Starting Network Interface Manager...");
     NIManager->StartService();
 
-    Time::Clock tm = Time::ReadClock();
-    printf("\eCCCCCC[\e00AEFF%02d:%02d:%02d\eCCCCCC] ", tm.Hour, tm.Minute, tm.Second);
-    const char *USpace_msg = "Setting up userspace";
-    for (size_t i = 0; i < strlen(USpace_msg); i++)
-        Display->Print(USpace_msg[i], 0);
+    printf("\eCCCCCC[\e00AEFFKernel Thread\eCCCCCC] Setting up userspace");
     if (!Config.BootAnimation)
         Display->SetBuffer(0);
 
