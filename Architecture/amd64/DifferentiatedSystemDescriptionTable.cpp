@@ -79,7 +79,12 @@ namespace ACPI
         else if (Event & ACPI_POWER_BUTTON)
         {
             if (TaskManager)
-                TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)KST_Shutdown);
+            {
+                Tasking::PCB *ParentProcess = TaskManager->GetCurrentProcess();
+                if (!ParentProcess)
+                    ParentProcess = GetCPU(0)->CurrentProcess.load();
+                TaskManager->CreateThread(ParentProcess, (Tasking::IP)KST_Shutdown);
+            }
             else
                 KernelShutdownThread(false);
         }
