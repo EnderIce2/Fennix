@@ -24,6 +24,7 @@
 #if defined(a64)
 #include "../../Architecture/amd64/acpi.hpp"
 #elif defined(a32)
+#include "../../Architecture/i386/acpi.hpp"
 #elif defined(aa64)
 #endif
 
@@ -149,6 +150,7 @@ namespace Time
 
     void time::FindTimers(void *acpi)
     {
+#if defined(a86)
         /* TODO: RTC check */
         /* TODO: PIT check */
 
@@ -200,7 +202,7 @@ namespace Time
         }
         else
             KPrint("\eFF2200TSC is not invariant");
-
+#endif
     }
 
     time::time()
