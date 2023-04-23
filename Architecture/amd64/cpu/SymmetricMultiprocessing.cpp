@@ -103,6 +103,7 @@ namespace SMP
         /* We reserved the TRAMPOLINE_START address inside Physical class. */
         Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START, TrampolineLength, Memory::PTFlag::RW);
         memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
+        debug("Trampoline address: %#lx-%#lx", TRAMPOLINE_START, TRAMPOLINE_START + TrampolineLength);
 
         void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
         asmv("sgdt [0x580]\n"

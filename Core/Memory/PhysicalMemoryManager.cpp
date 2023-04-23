@@ -430,7 +430,7 @@ namespace Memory
 
         debug("Reserving pages for SMP...");
         this->ReservePage((void *)0x0); /* Trampoline stack, gdt, idt, etc... */
-        this->ReservePage((void *)0x2000); /* TRAMPOLINE_START */
+        this->ReservePages((void *)0x2000, 4); /* TRAMPOLINE_START */
 
         debug("Reserving bitmap pages...");
         this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
