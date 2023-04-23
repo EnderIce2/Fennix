@@ -103,7 +103,7 @@ namespace Time
         bool Sleep(uint64_t Duration, Units Unit);
         uint64_t GetCounter();
         uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetMillisecondsSinceClassCreation();
+        uint64_t GetNanosecondsSinceClassCreation();
 
         HighPrecisionEventTimer(void *hpet);
         ~HighPrecisionEventTimer();
@@ -151,7 +151,7 @@ namespace Time
         bool Sleep(uint64_t Duration, Units Unit);
         uint64_t GetCounter();
         uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetMillisecondsSinceClassCreation();
+        uint64_t GetNanosecondsSinceClassCreation();
 
         TimeStampCounter();
         ~TimeStampCounter();
@@ -192,7 +192,7 @@ namespace Time
         bool Sleep(uint64_t Duration, Units Unit);
         uint64_t GetCounter();
         uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetMillisecondsSinceClassCreation();
+        uint64_t GetNanosecondsSinceClassCreation();
         void FindTimers(void *acpi);
         time();
         ~time();

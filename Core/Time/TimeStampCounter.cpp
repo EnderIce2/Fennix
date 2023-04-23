@@ -55,7 +55,7 @@ namespace Time
 #endif
     }
 
-    uint64_t TimeStampCounter::GetMillisecondsSinceClassCreation()
+    uint64_t TimeStampCounter::GetNanosecondsSinceClassCreation()
     {
 #if defined(a86)
         return (this->GetCounter() - this->ClassCreationTime) / this->clk;

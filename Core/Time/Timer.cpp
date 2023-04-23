@@ -118,7 +118,7 @@ namespace Time
         }
     }
 
-    uint64_t time::GetMillisecondsSinceClassCreation()
+    uint64_t time::GetNanosecondsSinceClassCreation()
     {
         switch (ActiveTimer)
         {
@@ -132,7 +132,7 @@ namespace Time
             fixme("PIT sleep not implemented");
             return false;
         case HPET:
-            return this->hpet->GetMillisecondsSinceClassCreation();
+            return this->hpet->GetNanosecondsSinceClassCreation();
         case ACPI:
             fixme("ACPI sleep not implemented");
             return false;
@@ -140,7 +140,7 @@ namespace Time
             fixme("APIC sleep not implemented");
             return false;
         case TSC:
-            return this->tsc->GetMillisecondsSinceClassCreation();
+            return this->tsc->GetNanosecondsSinceClassCreation();
         default:
             error("Unknown timer");
             return false;

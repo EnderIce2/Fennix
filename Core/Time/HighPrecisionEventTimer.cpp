@@ -55,10 +55,13 @@ namespace Time
 #endif
     }
 
-    uint64_t HighPrecisionEventTimer::GetMillisecondsSinceClassCreation()
+    uint64_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
     {
 #if defined(a86)
-        return (this->GetCounter() - this->ClassCreationTime) / (this->clk / this->ConvertUnit(Units::Milliseconds));
+        uint64_t Subtraction = this->GetCounter() - this->ClassCreationTime;
+        if (Subtraction <= 0 || this->clk <= 0)
+            return 0;
+        return Subtraction / (this->clk / ConvertUnit(Units::Nanoseconds));
 #endif
     }
 
