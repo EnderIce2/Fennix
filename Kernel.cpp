@@ -247,7 +247,7 @@ EXTERNC void KPrint(const char *Format, ...)
     vprintf(Format, args);
     va_end(args);
 
-    putchar('\n');
+    printf("\eCCCCCC\n");
     if (!Config.BootAnimation && Display)
         Display->SetBuffer(0);
 }
@@ -255,17 +255,13 @@ EXTERNC void KPrint(const char *Format, ...)
 EXTERNC NIF void Main(BootInfo *Info)
 {
     BootClock = Time::ReadClock();
-    // bInfo = (BootInfo *)KernelAllocator.RequestPages(TO_PAGES(sizeof(BootInfo) + 1));
     memcpy(&bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
 
     Display = new Video::Display(bInfo.Framebuffer[0]);
-    printf("\eFFFFFF%s - %s [\e058C19%s\eFFFFFF]\n", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
+    KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     /**************************************************************************************/
-    KPrint("Time: \e8888FF%02d:%02d:%02d %02d/%02d/%02d UTC",
-           BootClock.Hour, BootClock.Minute, BootClock.Second,
-           BootClock.Day, BootClock.Month, BootClock.Year);
-    KPrint("CPU: \e8822AA%s \e8888FF%s (\e058C19%s\e8888FF)", CPU::Vendor(), CPU::Name(), CPU::Hypervisor());
+    KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
