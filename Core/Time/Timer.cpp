@@ -45,7 +45,7 @@ namespace Time
             fixme("PIT sleep not implemented");
             return false;
         case HPET:
-            return hpet->Sleep(Duration, Unit);
+            return this->hpet->Sleep(Duration, Unit);
         case ACPI:
             fixme("ACPI sleep not implemented");
             return false;
@@ -53,8 +53,7 @@ namespace Time
             fixme("APIC sleep not implemented");
             return false;
         case TSC:
-            fixme("TSC sleep not implemented");
-            return false;
+            return this->tsc->Sleep(Duration, Unit);
         default:
             error("Unknown timer");
             return false;
@@ -75,7 +74,7 @@ namespace Time
             fixme("PIT sleep not implemented");
             return false;
         case HPET:
-            return hpet->GetCounter();
+            return this->hpet->GetCounter();
         case ACPI:
             fixme("ACPI sleep not implemented");
             return false;
@@ -83,8 +82,7 @@ namespace Time
             fixme("APIC sleep not implemented");
             return false;
         case TSC:
-            fixme("TSC sleep not implemented");
-            return false;
+            return this->tsc->GetCounter();
         default:
             error("Unknown timer");
             return false;
@@ -105,7 +103,7 @@ namespace Time
             fixme("PIT sleep not implemented");
             return false;
         case HPET:
-            return hpet->CalculateTarget(Target, Unit);
+            return this->hpet->CalculateTarget(Target, Unit);
         case ACPI:
             fixme("ACPI sleep not implemented");
             return false;
@@ -113,15 +111,43 @@ namespace Time
             fixme("APIC sleep not implemented");
             return false;
         case TSC:
-            fixme("TSC sleep not implemented");
-            return false;
+            return this->tsc->CalculateTarget(Target, Unit);
         default:
             error("Unknown timer");
             return false;
         }
     }
 
-    time::time(void *acpi)
+    uint64_t time::GetMillisecondsSinceClassCreation()
+    {
+        switch (ActiveTimer)
+        {
+        case NONE:
+            error("No timer is active");
+            return false;
+        case RTC:
+            fixme("RTC sleep not implemented");
+            return false;
+        case PIT:
+            fixme("PIT sleep not implemented");
+            return false;
+        case HPET:
+            return this->hpet->GetMillisecondsSinceClassCreation();
+        case ACPI:
+            fixme("ACPI sleep not implemented");
+            return false;
+        case APIC:
+            fixme("APIC sleep not implemented");
+            return false;
+        case TSC:
+            return this->tsc->GetMillisecondsSinceClassCreation();
+        default:
+            error("Unknown timer");
+            return false;
+        }
+    }
+
+    void time::FindTimers(void *acpi)
     {
         /* TODO: RTC check */
         /* TODO: PIT check */
@@ -132,17 +158,56 @@ namespace Time
             {
                 hpet = new HighPrecisionEventTimer(((ACPI::ACPI *)acpi)->HPET);
                 ActiveTimer = HPET;
+                SupportedTimers |= HPET;
+                KPrint("\e11FF11HPET found");
+            }
+            else
+            {
+                KPrint("\eFF2200HPET not found");
             }
 
             /* TODO: ACPI check */
             /* TODO: APIC check */
         }
+        else
+        {
+            KPrint("\eFF2200ACPI not found");
+        }
 
-        /* TODO: TSC check */
+        bool TSCInvariant = false;
+        if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+        {
+            CPU::x86::AMD::CPUID0x80000007 cpuid80000007;
+            cpuid80000007.Get();
+            if (cpuid80000007.EDX.TscInvariant)
+                TSCInvariant = true;
+        }
+        else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+        {
+            // TODO: Intel 0x80000007
+            CPU::x86::AMD::CPUID0x80000007 cpuid80000007;
+            cpuid80000007.Get();
+            if (cpuid80000007.EDX.TscInvariant)
+                TSCInvariant = true;
+        }
+
+        if (TSCInvariant)
+        {
+            tsc = new TimeStampCounter;
+            // FIXME: ActiveTimer = TSC;
+            SupportedTimers |= TSC;
+            KPrint("\e11FF11Invariant TSC found");
+        }
+        else
+            KPrint("\eFF2200TSC is not invariant");
+
+    }
+
+    time::time()
+    {
     }
 
     time::~time()
     {
-        debug("Destructor called");
     }
 }

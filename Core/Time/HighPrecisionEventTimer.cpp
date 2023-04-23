@@ -55,6 +55,13 @@ namespace Time
 #endif
     }
 
+    uint64_t HighPrecisionEventTimer::GetMillisecondsSinceClassCreation()
+    {
+#if defined(a86)
+        return (this->GetCounter() - this->ClassCreationTime) / (this->clk / this->ConvertUnit(Units::Milliseconds));
+#endif
+    }
+
     HighPrecisionEventTimer::HighPrecisionEventTimer(void *hpet)
     {
 #if defined(a86)
@@ -68,6 +75,7 @@ namespace Time
         mmoutq(&this->hpet->GeneralConfiguration, 0);
         mmoutq(&this->hpet->MainCounterValue, 0);
         mmoutq(&this->hpet->GeneralConfiguration, 1);
+        ClassCreationTime = this->GetCounter();
 #endif
     }
 

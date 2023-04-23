@@ -316,13 +316,8 @@ EXTERNC NIF void Main(BootInfo *Info)
 #endif
 
     KPrint("Initializing Timers");
-#if defined(a64)
-    TimeManager = new Time::time(PowerManager->GetACPI());
-#elif defined(a32)
-    TimeManager = new Time::time(PowerManager->GetACPI());
-#elif defined(aa64)
-    TimeManager = new Time::time(nullptr);
-#endif
+    TimeManager = new Time::time;
+    TimeManager->FindTimers(PowerManager->GetACPI());
 
     KPrint("Initializing Bootstrap Processor Timer");
     Interrupts::InitializeTimer(0);
