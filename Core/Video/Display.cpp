@@ -418,9 +418,11 @@ namespace Video
         if (LoadDefaultFont)
         {
             this->CurrentFont = new Font(&_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_Files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, FontType::PCScreenFont2);
+#ifdef DEBUG
             FontInfo Info = this->CurrentFont->GetInfo();
             debug("Font loaded: %dx%d %s",
                   Info.Width, Info.Height, Info.Type == FontType::PCScreenFont1 ? "PSF1" : "PSF2");
+#endif
         }
         this->CreateBuffer(Info.Width, Info.Height, 0);
     }

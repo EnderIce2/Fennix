@@ -33,6 +33,7 @@ namespace Driver
 {
     DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
     {
+        UNUSED(DrvExtHdr);
         UNUSED(IsElf);
         Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
         Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size + 1));

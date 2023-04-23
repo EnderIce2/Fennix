@@ -48,21 +48,25 @@ namespace GraphicalUserInterface
 
     void Window::OnMinimize(Event *e)
     {
+        UNUSED(e);
         fixme("Window::OnMinimize() not implemented");
     }
 
     void Window::OnMaximize(Event *e)
     {
+        UNUSED(e);
         fixme("Window::OnMaximize() not implemented");
     }
 
     void Window::OnClose(Event *e)
     {
+        UNUSED(e);
         fixme("Window::OnClose() not implemented");
     }
 
     void Window::OnPaintBackground(Event *e)
     {
+        UNUSED(e);
         Rect PaintPosition = this->Position;
         PaintPosition.Left = 0;
         PaintPosition.Top = 0;

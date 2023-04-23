@@ -89,6 +89,7 @@ namespace Xalloc
         {
             void *ptr = Xalloc_REQUEST_PAGES(XStoP(sizeof(Block)));
             return ptr;
+            (void)(Size);
         }
 
         /**

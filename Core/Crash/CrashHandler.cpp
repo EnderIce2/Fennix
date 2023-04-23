@@ -827,11 +827,15 @@ namespace CrashHandler
         if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
         {
             if (PageFaultAddress)
+            {
                 debug("Exception in kernel mode (ip: %#lx cr2: %#lx (%s))",
                       Frame->rip, PageFaultAddress, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            }
             else
+            {
                 debug("Exception in kernel mode (ip: %#lx (%s))",
                       Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            }
 
             CPUData *data = GetCurrentCPU();
             if (data)
@@ -854,11 +858,15 @@ namespace CrashHandler
         else
         {
             if (PageFaultAddress)
+            {
                 debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
                       Frame->rip, PageFaultAddress, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            }
             else
+            {
                 debug("Exception in user mode (ip: %#lx (%s))",
                       Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+            }
             CPUData *data = GetCurrentCPU();
             if (!data)
             {

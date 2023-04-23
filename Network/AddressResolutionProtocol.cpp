@@ -190,6 +190,7 @@ namespace NetworkARP
 
     bool ARP::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
     {
+        UNUSED(Length);
         netdbg("Received packet");
         ARPHeader *Header = (ARPHeader *)Data;
 

@@ -33,6 +33,7 @@ namespace Driver
 {
     DriverCode Driver::BindPCIGeneric(Memory::MemMgr *mem, void *fex, PCI::PCIDeviceHeader *PCIDevice)
     {
+        UNUSED(PCIDevice);
         FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
 
         if (fexExtended->Driver.OverrideOnConflict)

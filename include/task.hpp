@@ -261,7 +261,7 @@ namespace Tasking
         bool GetNextAvailableProcess(void *CPUDataPointer);
         bool SchedulerSearchProcessThread(void *CPUDataPointer);
         void UpdateProcessStatus();
-        void WakeUpThreads(void *CPUDataPointer);
+        void WakeUpThreads();
 
 #if defined(a64)
         void Schedule(CPU::x64::TrapFrame *Frame);

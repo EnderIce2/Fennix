@@ -44,7 +44,9 @@ namespace Execute
                 return BinaryType::BinTypeFex;
             }
             else if (FexHdr->Type == FexFormatType::FexFormatType_Driver)
+            {
                 debug("Fex Driver is not supposed to be executed.");
+            }
         }
         /* Check ELF magic. */
         else if (ELFHeader->e_ident[EI_MAG0] == ELFMAG0 &&

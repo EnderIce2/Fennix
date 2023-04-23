@@ -87,6 +87,7 @@ namespace Recovery
         callback.AudioCallback.Send.Length = pcm.node->Length;
         debug("Playing audio...");
         int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
+        UNUSED(status);
         debug("Audio played! %d", status);
         KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm.node->Length + 1));
         vfs->Close(pcm);
@@ -119,6 +120,7 @@ namespace Recovery
         callback.AudioCallback.Adjust._SampleRate = true;
         callback.AudioCallback.Adjust.SampleRate = SR;
         int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
+        UNUSED(status);
         debug("Sample rate changed! %d", status);
     }
 
@@ -156,6 +158,7 @@ namespace Recovery
         callback.AudioCallback.Adjust._Volume = true;
         callback.AudioCallback.Adjust.Volume = percentage;
         int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
+        UNUSED(status);
         debug("Volume changed! %d", status);
     }
 
@@ -200,11 +203,13 @@ namespace Recovery
         wdgDbgWin->CreateLabel({5, 40, 0, 0}, "Memory Usage");
         GraphicalUserInterface::Handle MemLblHnd = wdgDbgWin->CreateLabel({5, 55, 0, 0}, "0MB / 0GB (0MB reserved) 0% (0000000000000000 bytes allocated)");
 
+#ifdef DEBUG
         wdgDbgWin->CreateLabel({5, 95, 0, 0}, "GUI Info");
         wdgDbgWin->CreateLabel({5, 110, 0, 0}, "  Fetch Inputs   /  Paint Desktop   / Paint Widgets");
         GraphicalUserInterface::Handle GUI1LblHnd = wdgDbgWin->CreateLabel({5, 125, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
         wdgDbgWin->CreateLabel({5, 140, 0, 0}, "  Paint Windows  /   Paint Cursor   / Memset & Update");
         GraphicalUserInterface::Handle GUI2LblHnd = wdgDbgWin->CreateLabel({5, 155, 0, 0}, "0000000000000000 / 0000000000000000 / 0000000000000000");
+#endif
 
         wdgDbgWin->CreateLabel({5, 195, 0, 0}, "Audio");
         wdgDbgWin->CreateButton({5, 210, 85, 15}, "Play Audio", (uintptr_t)PlayAudioWrapper);

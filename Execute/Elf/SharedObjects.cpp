@@ -62,7 +62,9 @@ namespace Execute
                         fixme("Removed library %s because of timeout", Lib.Identifier);
                     }
                     else
+                    {
                         debug("Timeout for %s is %ld", Lib.Identifier, Lib.Timeout);
+                    }
                 }
                 debug("Waiting 10 seconds...");
             }
@@ -214,7 +216,9 @@ namespace Execute
                     }
                 }
                 else
+                {
                     debug("GOT section not found");
+                }
             }
         }
 
@@ -230,6 +234,7 @@ namespace Execute
 
     void SearchLibrary(char *Identifier)
     {
+        UNUSED(Identifier);
         SmartLock(ExecuteServiceLock);
     }
 

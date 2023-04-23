@@ -62,6 +62,16 @@ namespace NetworkICMPv6
     ICMPv6::ICMPv6(NetworkInterfaceManager::DeviceInterface *Interface) { this->Interface = Interface; }
     ICMPv6::~ICMPv6() {}
 
-    void ICMPv6::Send(uint8_t *Data, uint64_t Length) { fixme("Unimplemented"); }
-    void ICMPv6::Receive(uint8_t *Data) { fixme("Unimplemented"); }
+    void ICMPv6::Send(uint8_t *Data, uint64_t Length)
+    {
+        UNUSED(Data);
+        UNUSED(Length);
+        fixme("Unimplemented");
+    }
+
+    void ICMPv6::Receive(uint8_t *Data)
+    {
+        UNUSED(Data);
+        fixme("Unimplemented");
+    }
 }

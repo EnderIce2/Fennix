@@ -445,115 +445,153 @@ void __ubsan_handle_type_mismatch_v1(struct type_mismatch_v1_data *type_mismatch
     if (pointer == 0)
     {
         if (UBSANMsg(location->file, location->line, location->column))
+        {
             ubsan("Null pointer access.");
+        }
     }
     else if (type_mismatch->alignment != 0 && is_aligned(pointer, type_mismatch->alignment))
     {
         if (UBSANMsg(location->file, location->line, location->column))
+        {
             ubsan("Unaligned memory access %#llx.", pointer);
+        }
     }
     else
     {
         if (UBSANMsg(location->file, location->line, location->column))
+        {
             ubsan("%s address %#llx with insufficient space for object of type %s",
                   Type_Check_Kinds[type_mismatch->type_check_kind], (void *)pointer, type_mismatch->type->name);
+        }
     }
 }
 
 void __ubsan_handle_add_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Addition overflow.");
+    }
 }
 
 void __ubsan_handle_sub_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Subtraction overflow.");
+    }
 }
 
 void __ubsan_handle_mul_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Multiplication overflow.");
+    }
 }
 
 void __ubsan_handle_divrem_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Division overflow.");
+    }
 }
 
 void __ubsan_handle_negate_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Negation overflow.");
+    }
 }
 
 void __ubsan_handle_pointer_overflow(struct overflow_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Pointer overflow.");
+    }
 }
 
 void __ubsan_handle_shift_out_of_bounds(struct shift_out_of_bounds_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Shift out of bounds.");
+    }
 }
 
 void __ubsan_handle_load_invalid_value(struct invalid_value_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Invalid load value.");
+    }
 }
 
 void __ubsan_handle_out_of_bounds(struct array_out_of_bounds_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Array out of bounds.");
+    }
 }
 
 void __ubsan_handle_vla_bound_not_positive(struct negative_vla_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Variable-length argument is negative.");
+    }
 }
 
 void __ubsan_handle_nonnull_return(struct nonnull_return_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Non-null return is null.");
+    }
 }
 
 void __ubsan_handle_nonnull_return_v1(struct nonnull_return_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Non-null return is null.");
+    }
 }
 
 void __ubsan_handle_nonnull_arg(struct nonnull_arg_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Non-null argument is null.");
+    }
 }
 
 void __ubsan_handle_builtin_unreachable(struct unreachable_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Unreachable code reached.");
+    }
 }
 
 void __ubsan_handle_invalid_builtin(struct invalid_builtin_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Invalid builtin.");
+    }
 }
 
 void __ubsan_handle_missing_return(struct unreachable_data *data)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Missing return.");
+    }
 }
 
 void __ubsan_vptr_type_cache(uintptr_t *cache, uintptr_t ptr)
@@ -565,6 +603,8 @@ void __ubsan_vptr_type_cache(uintptr_t *cache, uintptr_t ptr)
 void __ubsan_handle_dynamic_type_cache_miss(struct dynamic_type_cache_miss_data *data, uintptr_t ptr)
 {
     if (UBSANMsg(data->location.file, data->location.line, data->location.column))
+    {
         ubsan("Dynamic type cache miss.");
+    }
     UNUSED(ptr);
 }

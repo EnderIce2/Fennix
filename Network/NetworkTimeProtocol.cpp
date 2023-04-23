@@ -24,6 +24,8 @@ namespace NetworkNTP
 {
     void NTP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length)
     {
+        UNUSED(Socket);
+        UNUSED(Length);
         this->NTPPacket = *(NTPHeader *)Data;
         this->TimeReceived = true;
         netdbg("Received UDP packet for NTP.");

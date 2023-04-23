@@ -155,6 +155,8 @@ namespace NetworkDHCP
 
     void DHCP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length)
     {
+        UNUSED(Socket);
+        UNUSED(Length);
         DHCPHeader *Packet = (DHCPHeader *)Data;
         uint8_t *MessageType = (uint8_t *)GetOption(Packet, DHCP_OPTION_MESSAGE_TYPE);
 

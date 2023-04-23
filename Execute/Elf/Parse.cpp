@@ -166,6 +166,7 @@ namespace Execute
         void *MemoryImage = nullptr;
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
         bool IsPIC = ELFHeader->e_type == ET_DYN;
+        UNUSED(IsPIC);
         debug("Elf %s PIC", IsPIC ? "is" : "is not");
 
         /* TODO: Not sure what I am supposed to do with this.

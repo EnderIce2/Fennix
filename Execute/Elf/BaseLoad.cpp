@@ -59,10 +59,15 @@ namespace Execute
             debug("Searching for IPC with token %s", UniqueToken);
             Handle = Process->IPC->SearchByToken(UniqueToken);
             if (Handle == nullptr)
+            {
                 debug("Failed");
+            }
+
             TaskManager->Sleep(200);
             if (Handle == nullptr)
+            {
                 debug("Retrying...");
+            }
         }
         debug("IPC found, sending data...");
         InterpreterIPCData *TmpBuffer = new InterpreterIPCData;
@@ -95,7 +100,6 @@ namespace Execute
         }
 #endif
 
-        int NotFoundRetry = 0;
     RetryIPCWrite:
         InterProcessCommunication::IPCErrorCode ret = Process->IPC->Write(Handle->ID, TmpBuffer, sizeof(InterpreterIPCData));
         debug("Write returned %d", ret);

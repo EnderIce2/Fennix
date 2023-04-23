@@ -55,9 +55,16 @@ namespace NetworkEthernet
 
     public:
         FrameType GetFrameType() { return FType; }
-        virtual void OnEthernetPacketSent(EthernetPacket *Packet) { netdbg("Event not handled. [%p]", Packet); }
+        virtual void OnEthernetPacketSent(EthernetPacket *Packet)
+        {
+            UNUSED(Packet);
+            netdbg("Event not handled. [%p]", Packet);
+        }
+
         virtual bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
         {
+            UNUSED(Data);
+            UNUSED(Length);
             netdbg("Event not handled. [%p, %d]", Data, Length);
             return false;
         }

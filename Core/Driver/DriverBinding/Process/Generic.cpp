@@ -33,6 +33,8 @@ namespace Driver
 {
     DriverCode Driver::BindProcessGeneric(Memory::MemMgr *mem, void *fex)
     {
+        UNUSED(mem);
+        UNUSED(fex);
         return DriverCode::NOT_IMPLEMENTED;
     }
 }

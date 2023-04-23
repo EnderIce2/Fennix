@@ -30,7 +30,13 @@ void DbgDumpData(const char *Description, void *Address, unsigned long Length);
 #else
 #define netdbg(m, ...)
 static inline void DbgNetwork() { return; }
-static inline void DbgDumpData(const char *Description, void *Address, unsigned long Length) { return; }
+static inline void DbgDumpData(const char *Description, void *Address, unsigned long Length)
+{
+    UNUSED(Description);
+    UNUSED(Address);
+    UNUSED(Length);
+    return;
+}
 #endif
 
 enum Endianness

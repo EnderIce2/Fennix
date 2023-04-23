@@ -33,6 +33,8 @@ namespace Driver
 {
     DriverCode Driver::BindProcessAudio(Memory::MemMgr *mem, void *fex)
     {
+        UNUSED(mem);
+        UNUSED(fex);
         return DriverCode::NOT_IMPLEMENTED;
     }
 }

@@ -767,7 +767,9 @@ namespace Tasking
             Process->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)Image);
         }
         else
+        {
             debug("No image provided for process \"%s\"(%d)", Process->Name, Process->ID);
+        }
 
         if (Parent)
             Parent->Children.push_back(Process);

@@ -48,11 +48,13 @@ namespace Driver
             BAR[4] = ((PCI::PCIHeader0 *)PCIDevice)->BAR4;
             BAR[5] = ((PCI::PCIHeader0 *)PCIDevice)->BAR5;
 
+#ifdef DEBUG
             uintptr_t BAR_Type = BAR[0] & 1;
             uintptr_t BAR_IOBase = BAR[1] & (~3);
             uintptr_t BAR_MemoryBase = BAR[0] & (~15);
 
             debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx", BAR_Type, BAR_IOBase, BAR_MemoryBase);
+#endif
 
             /* BARs Size */
             for (short i = 0; i < 6; i++)

@@ -124,6 +124,10 @@ namespace NetworkIPv4
 
         virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length)
         {
+            UNUSED(SourceIP);
+            UNUSED(DestinationIP);
+            UNUSED(Data);
+            UNUSED(Length);
             warn("Not implemented.");
             return false;
         }

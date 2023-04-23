@@ -145,12 +145,17 @@ namespace GraphicalUserInterface
 
     void PutBorderWithShadow(ScreenBitmap *Bitmap, Rect rect, uint32_t Color)
     {
+        UNUSED(Bitmap);
+        UNUSED(rect);
+        UNUSED(Color);
     }
 
 #define SHADOW_SIZE 12
 
     void DrawShadow(ScreenBitmap *Bitmap, Rect rect)
     {
+        UNUSED(Bitmap);
+        UNUSED(rect);
     }
 
 #pragma GCC diagnostic push
@@ -161,7 +166,7 @@ namespace GraphicalUserInterface
         {
         case Video::FontType::PCScreenFont1:
         {
-            uint32_t *PixelPtr = (uint32_t *)Bitmap->Data;
+            // uint32_t *PixelPtr = (uint32_t *)Bitmap->Data;
             char *FontPtr = (char *)font->GetInfo().PSF1Font->GlyphBuffer + (c * font->GetInfo().PSF1Font->Header->charsize);
             for (int64_t Y = *CharCursorY; Y < *CharCursorY + 16; Y++)
             {
@@ -205,5 +210,9 @@ namespace GraphicalUserInterface
 
     void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color)
     {
+        UNUSED(Bitmap);
+        UNUSED(rect);
+        UNUSED(Text);
+        UNUSED(Color);
     }
 }

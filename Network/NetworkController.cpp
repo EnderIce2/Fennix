@@ -144,8 +144,8 @@ namespace NetworkInterfaceManager
             - 0.ro.pool.ntp.org ( {86, 127, 71, 168} )
             - time-a-g.nist.gov ( {129, 6, 15, 28} )
             */
-            InternetProtocol ip = {.v4 = {.Address = {129, 6, 15, 28}},
-                                   .v6 = {.Address = {}}};
+            // InternetProtocol ip = {.v4 = {.Address = {129, 6, 15, 28}},
+            //                        .v6 = {.Address = {}}};
             // NetworkUDP::Socket *NTP_Socket = udp->Connect(ip, 123);
             // NetworkNTP::NTP *ntp = new NetworkNTP::NTP(NTP_Socket);
             // udp->Bind(NTP_Socket, ntp);
@@ -170,12 +170,20 @@ namespace NetworkInterfaceManager
 
     ReadFSFunction(NetRead)
     {
+        UNUSED(node);
+        UNUSED(Offset);
+        UNUSED(Size);
+        UNUSED(Buffer);
         fixme("Not implemented.");
         return Size;
     }
 
     WriteFSFunction(NetWrite)
     {
+        UNUSED(node);
+        UNUSED(Offset);
+        UNUSED(Size);
+        UNUSED(Buffer);
         fixme("Not implemented.");
         return Size;
     }
@@ -224,7 +232,11 @@ namespace NetworkInterfaceManager
             re->OnInterfaceReceived(Interface, Data, Length);
     }
 
-    Events::Events(DeviceInterface *Interface) { RegisteredEvents.push_back(this); }
+    Events::Events(DeviceInterface *Interface)
+    {
+        UNUSED(Interface);
+        RegisteredEvents.push_back(this);
+    }
 
     Events::~Events()
     {

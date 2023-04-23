@@ -360,9 +360,8 @@ namespace Tasking
         }
     }
 
-    SafeFunction NIF void Task::WakeUpThreads(void *CPUDataPointer)
+    SafeFunction NIF void Task::WakeUpThreads()
     {
-        CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
         foreach (auto process in ProcessList)
         {
             if (InvalidPCB(process))
@@ -532,7 +531,7 @@ namespace Tasking
             this->UpdateProcessStatus();
             schedbg("Passed UpdateProcessStatus");
 
-            this->WakeUpThreads(CurrentCPU);
+            this->WakeUpThreads();
             schedbg("Passed WakeUpThreads");
 
             if (this->GetNextAvailableThread(CurrentCPU))

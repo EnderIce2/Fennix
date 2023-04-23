@@ -30,10 +30,12 @@ namespace GraphicalUserInterface
 {
     void WidgetCollection::OnPaintBackground(Event *e)
     {
+        UNUSED(e);
     }
 
     void WidgetCollection::OnPaintForeground(Event *e)
     {
+        UNUSED(e);
         foreach (auto Panel in this->Panels)
         {
             PutRect(this->Buffer, Panel->rect, Panel->Color);

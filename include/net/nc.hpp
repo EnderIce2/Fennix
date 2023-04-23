@@ -52,11 +52,39 @@ namespace NetworkInterfaceManager
         ~Events();
 
     public:
-        virtual void OnInterfaceAdded(DeviceInterface *Interface) { netdbg("Event for %s not handled.", Interface->Name); }
-        virtual void OnInterfaceRemoved(DeviceInterface *Interface) { netdbg("Event for %s not handled.", Interface->Name); }
-        virtual void OnInterfaceChanged(DeviceInterface *Interface) { netdbg("Event for %s not handled.", Interface->Name); }
-        virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, uint64_t Length) { netdbg("Event for %s not handled.", Interface->Name); }
-        virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, uint64_t Length) { netdbg("Event for %s not handled.", Interface->Name); }
+        virtual void OnInterfaceAdded(DeviceInterface *Interface)
+        {
+            UNUSED(Interface);
+            netdbg("Event for %s not handled.", Interface->Name);
+        }
+
+        virtual void OnInterfaceRemoved(DeviceInterface *Interface)
+        {
+            UNUSED(Interface);
+            netdbg("Event for %s not handled.", Interface->Name);
+        }
+
+        virtual void OnInterfaceChanged(DeviceInterface *Interface)
+        {
+            UNUSED(Interface);
+            netdbg("Event for %s not handled.", Interface->Name);
+        }
+
+        virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+        {
+            UNUSED(Interface);
+            UNUSED(Data);
+            UNUSED(Length);
+            netdbg("Event for %s not handled.", Interface->Name);
+        }
+
+        virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+        {
+            UNUSED(Interface);
+            UNUSED(Data);
+            UNUSED(Length);
+            netdbg("Event for %s not handled.", Interface->Name);
+        }
     };
 
     class NetworkInterface

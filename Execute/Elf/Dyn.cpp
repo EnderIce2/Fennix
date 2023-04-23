@@ -35,6 +35,9 @@ namespace Execute
                            VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process)
     {
+        UNUSED(BaseImage);
+        UNUSED(ExFile);
+        UNUSED(Process);
         fixme("Not implemented");
         return {};
     }

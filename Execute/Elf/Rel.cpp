@@ -30,6 +30,7 @@ namespace Execute
                            VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process)
     {
+        UNUSED(ExFile);
         debug("Relocatable");
         /* TODO: I have to fully implement this, but for now I will leave it as it is now. */
         warn("Relocatable ELF is not fully supported yet");

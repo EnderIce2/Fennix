@@ -50,6 +50,9 @@ namespace NetworkUDP
     public:
         virtual void OnUDPPacketReceived(Socket *Socket, uint8_t *Data, uint64_t Length)
         {
+            UNUSED(Socket);
+            UNUSED(Data);
+            UNUSED(Length);
             warn("Not implemented.");
         }
     };
