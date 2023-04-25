@@ -74,6 +74,7 @@ LockClass mExtTrkLock;
  * - [ ] Rework the stack guard.
  * - [ ] Mutex implementation.
  * - [ ] Vector should have a mutex.
+ * - [ ] Update SMBIOS functions to support newer versions and actually use it.
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -152,7 +153,8 @@ LockClass mExtTrkLock;
  *    https://www.amd.com/system/files/TechDocs/40332.pdf
  *
  * - SMBIOS:
- *    https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.2.0.pdf
+ *    https://www.dmtf.org/dsp/DSP0134
+ *    https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.6.0.pdf
  *
  * - UMIP, SMAP and SMEP:
  *    https://en.wikipedia.org/wiki/Control_register
