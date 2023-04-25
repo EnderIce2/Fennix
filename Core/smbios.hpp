@@ -190,7 +190,7 @@ namespace SMBIOS
         unsigned char ProcessorType;
         unsigned char ProcessorFamily;
         unsigned char ProcessorManufacturer;
-        unsigned long ProcessorID[2];
+        unsigned long ProcessorID;
         unsigned char ProcessorVersion;
         unsigned char Voltage;
         unsigned short ExternalClock;
