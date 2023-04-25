@@ -80,10 +80,10 @@ namespace ACPI
         {
             if (TaskManager)
             {
-                Tasking::PCB *ParentProcess = TaskManager->GetCurrentProcess();
-                if (!ParentProcess)
-                    ParentProcess = GetCPU(0)->CurrentProcess.load();
-                TaskManager->CreateThread(ParentProcess, (Tasking::IP)KST_Shutdown);
+                TaskManager->CreateThread(TaskManager->CreateProcess(nullptr,
+                                                                     "Shutdown",
+                                                                     Tasking::TaskTrustLevel::Kernel),
+                                          (Tasking::IP)KST_Shutdown);
             }
             else
                 KernelShutdownThread(false);

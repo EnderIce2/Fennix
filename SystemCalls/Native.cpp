@@ -113,8 +113,7 @@ static int sys_detach_address(SyscallsFrame *Frame, uintptr_t Address)
 
 static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
 {
-    /* Only trusted threads can use kernelctl */
-    if (!CheckTrust(TrustedByKernel | Trusted))
+    if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
 
     switch (Command)
@@ -129,6 +128,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
         return TaskManager->GetCurrentThread()->Security.IsCritical;
     case KCTL_REGISTER_ELF_LIB:
     {
+        if (!CheckTrust(TrustedByKernel | Trusted))
+            return SYSCALL_ACCESS_DENIED;
         char *Identifier = (char *)Arg1;
         const char *Path = (const char *)Arg2;
 
@@ -180,6 +181,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
     }
     case KCTL_GET_ELF_LIB_FILE:
     {
+        if (!CheckTrust(TrustedByKernel | Trusted))
+            return SYSCALL_ACCESS_DENIED;
         char *Identifier = (char *)Arg1;
         if (!Identifier)
             return 0;
@@ -195,6 +198,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
     }
     case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
     {
+        if (!CheckTrust(TrustedByKernel | Trusted))
+            return SYSCALL_ACCESS_DENIED;
         char *Identifier = (char *)Arg1;
         if (!Identifier)
             return 0;

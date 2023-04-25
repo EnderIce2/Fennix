@@ -61,4 +61,5 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
     }
     }
     assert(false); /* Should never reach here. */
+    return 0;
 }

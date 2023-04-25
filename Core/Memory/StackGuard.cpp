@@ -65,7 +65,7 @@ namespace Memory
             this->Size = STACK_SIZE;
         }
 
-        trace("Allocated stack at %p", this->StackBottom);
+        debug("Allocated stack at %p", this->StackBottom);
     }
 
     StackGuard::~StackGuard()
