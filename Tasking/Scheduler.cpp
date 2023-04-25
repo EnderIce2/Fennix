@@ -476,8 +476,9 @@ namespace Tasking
             warn("Scheduler stopped.");
             return;
         }
+        bool ProcessNotChanged = false;
         CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); /* Restore kernel page table for safety reasons. */
-        uint64_t SchedTmpTicks = CPU::Counter();
+        uint64_t SchedTmpTicks = TimeManager->GetCounter();
         this->LastTaskTicks.store(SchedTmpTicks - this->SchedulerTicks.load());
         CPUData *CurrentCPU = GetCurrentCPU();
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
@@ -511,6 +512,7 @@ namespace Tasking
         if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.load()) || InvalidTCB(CurrentCPU->CurrentThread.load())))
         {
             schedbg("Invalid process or thread. Finding a new one.");
+            ProcessNotChanged = true;
             if (this->FindNewProcess(CurrentCPU))
                 goto Success;
             else
@@ -539,6 +541,7 @@ namespace Tasking
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
                 SuccessSource = 1;
 #endif
+                ProcessNotChanged = true;
                 goto Success;
             }
             schedbg("Passed GetNextAvailableThread");
@@ -567,21 +570,23 @@ namespace Tasking
             }
         }
 
-        /* [this]->RealEnd */
         warn("Unwanted reach!");
         TaskingScheduler_OneShot(100);
-        goto RealEnd;
+        goto End;
 
-    /* Idle-->Success */
     Idle:
+        ProcessNotChanged = true;
         CurrentCPU->CurrentProcess = IdleProcess;
         CurrentCPU->CurrentThread = IdleThread;
 
-    /* Success-->End */
     Success:
         schedbg("Process \"%s\"(%d) Thread \"%s\"(%d) is now running on CPU %d",
                 CurrentCPU->CurrentProcess->Name, CurrentCPU->CurrentProcess->ID,
                 CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID, CurrentCPU->ID);
+
+        if (!ProcessNotChanged)
+            UpdateUsage(&CurrentCPU->CurrentProcess->Info, &CurrentCPU->CurrentProcess->Security, CurrentCPU->ID);
+        UpdateUsage(&CurrentCPU->CurrentThread->Info, &CurrentCPU->CurrentThread->Security, CurrentCPU->ID);
 
         CurrentCPU->CurrentProcess->Status = TaskStatus::Running;
         CurrentCPU->CurrentThread->Status = TaskStatus::Running;
@@ -621,21 +626,9 @@ namespace Tasking
             break;
         }
 
-        /* End-->RealEnd */
-        // End:
-        /* TODO: This is not accurate. */
-        if (CurrentCPU->CurrentProcess->Security.TrustLevel == TaskTrustLevel::User)
-            UpdateUserTime(&CurrentCPU->CurrentProcess->Info);
-        else
-            UpdateKernelTime(&CurrentCPU->CurrentProcess->Info);
-
-        if (CurrentCPU->CurrentThread->Security.TrustLevel == TaskTrustLevel::User)
-            UpdateUserTime(&CurrentCPU->CurrentThread->Info);
-        else
-            UpdateKernelTime(&CurrentCPU->CurrentThread->Info);
-
-        UpdateUsage(&CurrentCPU->CurrentProcess->Info, CurrentCPU->ID);
-        UpdateUsage(&CurrentCPU->CurrentThread->Info, CurrentCPU->ID);
+        if (!ProcessNotChanged)
+            (&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetCounter();
+        (&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetCounter();
         TaskingScheduler_OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
         if (CurrentCPU->CurrentThread->Security.IsDebugEnabled && CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
@@ -666,9 +659,8 @@ namespace Tasking
                 Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
         schedbg("================================================================");
 
-    /* RealEnd->[Function Exit] */
-    RealEnd:
-        this->SchedulerTicks.store(CPU::Counter() - SchedTmpTicks);
+    End:
+        this->SchedulerTicks.store(TimeManager->GetCounter() - SchedTmpTicks);
         __sync; /* TODO: Is this really needed? */
     }
 

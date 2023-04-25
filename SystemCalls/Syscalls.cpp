@@ -28,13 +28,26 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
     CPU::Interrupts(CPU::Enable);
     SmartLock(SyscallsLock); /* TODO: This should be replaced or moved somewhere else. */
 
-#if defined(a64)
-    switch (TaskManager->GetCurrentThread()->Info.Compatibility)
+    Tasking::TaskInfo *Ptinfo = &TaskManager->GetCurrentProcess()->Info;
+    Tasking::TaskInfo *Ttinfo = &TaskManager->GetCurrentThread()->Info;
+    uint64_t TempTimeCalc = TimeManager->GetCounter();
+
+    switch (Ttinfo->Compatibility)
     {
     case Tasking::TaskCompatibility::Native:
-        return HandleNativeSyscalls(Frame);
+    {
+        uintptr_t ret = HandleNativeSyscalls(Frame);
+        Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+        Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+        return ret;
+    }
     case Tasking::TaskCompatibility::Linux:
-        return HandleLinuxSyscalls(Frame);
+    {
+        uintptr_t ret = HandleLinuxSyscalls(Frame);
+        Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+        Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+        return ret;
+    }
     case Tasking::TaskCompatibility::Windows:
     {
         error("Windows compatibility not implemented yet.");
@@ -47,10 +60,5 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
         break;
     }
     }
-#elif defined(a32)
-    fixme("System call %lld", Frame->eax);
-#elif defined(aa64)
-    fixme("System call");
-#endif
-    return -1;
+    assert(false); /* Should never reach here. */
 }

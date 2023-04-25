@@ -81,6 +81,7 @@ LockClass mExtTrkLock;
  * - [?] Somewhere in the kernel, the memory is wrongly freed or memcpy/memset.
  * - [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
  * - [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
+ * - [ ] CPU usage is not working properly.
  *
  * CREDITS AND REFERENCES:
  * - General:
@@ -200,8 +201,6 @@ Time::time *TimeManager = nullptr;
 VirtualFileSystem::Virtual *vfs = nullptr;
 VirtualFileSystem::Virtual *bootanim_vfs = nullptr;
 
-Time::Clock BootClock;
-
 KernelConfig Config = {
     .AllocatorType = Memory::MemoryAllocatorType::XallocV1,
     .SchedulerType = 1,
@@ -254,17 +253,22 @@ EXTERNC void KPrint(const char *Format, ...)
 
 EXTERNC NIF void Main(BootInfo *Info)
 {
-    BootClock = Time::ReadClock();
     memcpy(&bInfo, Info, sizeof(BootInfo));
     debug("BootInfo structure is at %p", bInfo);
 
     Display = new Video::Display(bInfo.Framebuffer[0]);
     KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
-    /**************************************************************************************/
     KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
+    if (DebuggerIsAttached)
+        KPrint("\eFFA500Kernel debugger detected.");
+
+    /**************************************************************************************/
 
     KPrint("Initializing GDT and IDT");
     Interrupts::Initialize(0);
+
+    KPrint("Loading Kernel Symbols");
+    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
 
     KPrint("Reading Kernel Parameters");
     ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
@@ -286,14 +290,22 @@ EXTERNC NIF void Main(BootInfo *Info)
     KPrint("Initializing CPU Features");
     CPU::InitializeFeatures(0);
 
-    if (DebuggerIsAttached)
-        KPrint("\eFFA500Kernel debugger detected.");
-
-    KPrint("Loading Kernel Symbols");
-    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
-
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
+
+#if defined(a64)
+    PowerManager->InitDSDT();
+#elif defined(a32)
+    // FIXME: Add ACPI support for i386
+#elif defined(aa64)
+#endif
+
+    KPrint("Enabling Interrupts on Bootstrap Processor");
+    Interrupts::Enable(0);
+
+    KPrint("Initializing Timers");
+    TimeManager = new Time::time;
+    TimeManager->FindTimers(PowerManager->GetACPI());
 
     KPrint("Initializing PCI Manager");
     PCIManager = new PCI::PCI;
@@ -307,20 +319,6 @@ EXTERNC NIF void Main(BootInfo *Info)
                PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
                PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
     }
-
-    KPrint("Enabling Interrupts on Bootstrap Processor");
-    Interrupts::Enable(0);
-
-#if defined(a64)
-    PowerManager->InitDSDT();
-#elif defined(a32)
-    // FIXME: Add ACPI support for i386
-#elif defined(aa64)
-#endif
-
-    KPrint("Initializing Timers");
-    TimeManager = new Time::time;
-    TimeManager->FindTimers(PowerManager->GetACPI());
 
     KPrint("Initializing Bootstrap Processor Timer");
     Interrupts::InitializeTimer(0);

@@ -95,13 +95,12 @@ namespace Tasking
 
     struct TaskInfo
     {
+        uint64_t OldUserTime = 0;
+        uint64_t OldKernelTime = 0;
+
         uint64_t SleepUntil = 0;
-        uint64_t SpawnTime = 0;
-        uint64_t OldUserTime = 0, CurrentUserTime = 0;
-        uint64_t OldKernelTime = 0, CurrentKernelTime = 0;
-        uint64_t KernelTime = 0, UserTime = 0;
+        uint64_t KernelTime = 0, UserTime = 0, SpawnTime = 0, LastUpdateTime = 0;
         uint64_t Year, Month, Day, Hour, Minute, Second;
-        uint64_t Usage[256]; // MAX_CPU
         bool Affinity[256];  // MAX_CPU
         TaskPriority Priority;
         TaskArchitecture Architecture;
@@ -252,9 +251,7 @@ namespace Tasking
         void RemoveThread(TCB *tcb);
         void RemoveProcess(PCB *pcb);
 
-        void UpdateUserTime(TaskInfo *Info);
-        void UpdateKernelTime(TaskInfo *Info);
-        void UpdateUsage(TaskInfo *Info, int Core);
+        void UpdateUsage(TaskInfo *Info, TaskSecurity *Security, int Core);
 
         bool FindNewProcess(void *CPUDataPointer);
         bool GetNextAvailableThread(void *CPUDataPointer);
@@ -286,14 +283,6 @@ namespace Tasking
         void SignalShutdown();
         void RevertProcessCreation(PCB *Process);
         void RevertThreadCreation(TCB *Thread);
-
-        long GetUsage(int Core)
-        {
-            if (IdleProcess)
-                return 100 - IdleProcess->Info.Usage[Core];
-            else
-                return 0;
-        }
 
         void KillThread(TCB *tcb, int Code)
         {

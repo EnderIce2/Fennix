@@ -92,16 +92,53 @@ const char *SuccessSourceStrings[] = {
     "SchedulerSearchProcessThread",
 };
 
-void TaskMgr()
+void TaskMgr_Dummy100Usage()
 {
     while (1)
+        ;
+}
+
+void TaskMgr_Dummy0Usage()
+{
+    while (1)
+        TaskManager->Sleep(1000000);
+}
+
+uint64_t GetUsage(uint64_t OldSystemTime, Tasking::TaskInfo *Info)
+{
+    /* https://github.com/reactos/reactos/blob/560671a784c1e0e0aa7590df5e0598c1e2f41f5a/base/applications/taskmgr/perfdata.c#L347 */
+    if (Info->OldKernelTime || Info->OldUserTime)
     {
-        CPU::Interrupts(CPU::Disable);
+        uint64_t SystemTime = TimeManager->GetCounter() - OldSystemTime;
+        uint64_t CurrentTime = Info->KernelTime + Info->UserTime;
+        uint64_t OldTime = Info->OldKernelTime + Info->OldUserTime;
+        uint64_t CpuUsage = (CurrentTime - OldTime) / SystemTime;
+        CpuUsage = CpuUsage * 100;
+
+        // debug("CurrentTime: %ld OldTime: %ld Time Diff: %ld Usage: %ld%%",
+        //       CurrentTime, OldTime, SystemTime, CpuUsage);
+
+        Info->OldKernelTime = Info->KernelTime;
+        Info->OldUserTime = Info->UserTime;
+        return CpuUsage;
+    }
+    Info->OldKernelTime = Info->KernelTime;
+    Info->OldUserTime = Info->UserTime;
+    return 0;
+}
+
+void TaskMgr()
+{
+    TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy100Usage)->Rename("Dummy 100% Usage");
+    TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy0Usage)->Rename("Dummy 0% Usage");
+
+    while (1)
+    {
         static int sanity = 0;
         Video::ScreenBuffer *sb = Display->GetBuffer(0);
-        for (short i = 0; i < 340; i++)
+        for (short i = 0; i < 500; i++)
         {
-            for (short j = 0; j < 200; j++)
+            for (short j = 0; j < 500; j++)
             {
                 uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
                 *Pixel = 0x222222;
@@ -112,19 +149,23 @@ void TaskMgr()
         Display->GetBufferCursor(0, &tmpX, &tmpY);
         Display->SetBufferCursor(0, 0, 0);
         printf("\eF02C21Task Manager\n");
+        static uint64_t OldSystemTime = 0;
         foreach (auto Proc in TaskManager->GetProcessList())
         {
             int Status = Proc->Status;
-            printf("\e%s-> \eAABBCC%s \e00AAAA%s\n",
-                   Statuses[Status], Proc->Name, StatusesSign[Status]);
+            uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
+            printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
+                   Statuses[Status], Proc->Name, StatusesSign[Status], ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
 
             foreach (auto Thd in Proc->Threads)
             {
                 Status = Thd->Status;
-                printf("  \e%s-> \eAABBCC%s \e00AAAA%s\n\eAABBCC",
-                       Statuses[Status], Thd->Name, StatusesSign[Status]);
+                uint64_t ThreadCpuUsage = GetUsage(OldSystemTime, &Thd->Info);
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n\eAABBCC",
+                       Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime, Thd->Info.UserTime);
             }
         }
+        OldSystemTime = TimeManager->GetCounter();
 #if defined(a64)
         register uintptr_t CurrentStackAddress asm("rsp");
 #elif defined(a32)
@@ -138,7 +179,8 @@ void TaskMgr()
         Display->SetBufferCursor(0, tmpX, tmpY);
         if (!Config.BootAnimation)
             Display->SetBuffer(0);
-        CPU::Interrupts(CPU::Enable);
+
+        TaskManager->Sleep(100);
     }
 }
 #endif
@@ -315,7 +357,7 @@ void KernelMainThread()
 #ifdef DEBUG
     /* TODO: This should not be enabled because it may cause a deadlock. Not sure where or how. */
     // Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
-    // TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority(Tasking::High);
+    // TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority(Tasking::Low);
 
     TreeFS(vfs->GetRootNode(), 0);
 #endif

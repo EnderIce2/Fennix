@@ -172,40 +172,16 @@ namespace Tasking
         }
     }
 
-    SafeFunction NIF void Task::UpdateUserTime(TaskInfo *Info)
+    SafeFunction NIF void Task::UpdateUsage(TaskInfo *Info, TaskSecurity *Security, int Core)
     {
-        // TODO
-        Info->UserTime++;
-    }
+        uint64_t CurrentTime = TimeManager->GetCounter();
+        uint64_t TimePassed = CurrentTime - Info->LastUpdateTime;
+        // Info->LastUpdateTime = CurrentTime;
 
-    SafeFunction NIF void Task::UpdateKernelTime(TaskInfo *Info)
-    {
-        // TODO
-        Info->KernelTime++;
-    }
-
-    SafeFunction NIF void Task::UpdateUsage(TaskInfo *Info, int Core)
-    {
-        if (Info->Affinity[Core] == true)
-        {
-            // TODO: Not working(?)
-            uint64_t CounterNow = CPU::Counter();
-
-            Info->OldUserTime = Info->CurrentUserTime;
-            Info->OldKernelTime = Info->CurrentKernelTime;
-
-            Info->CurrentUserTime = Info->UserTime;
-            Info->CurrentKernelTime = Info->KernelTime;
-
-            Info->Usage[Core] = (Info->CurrentUserTime - Info->OldUserTime) + (Info->CurrentKernelTime - Info->OldKernelTime);
-            Info->Usage[Core] = (Info->Usage[Core] * 100) / (CounterNow - Info->SpawnTime);
-
-            Info->OldUserTime = Info->CurrentUserTime;
-            Info->OldKernelTime = Info->CurrentKernelTime;
-
-            Info->CurrentUserTime = Info->UserTime;
-            Info->CurrentKernelTime = Info->KernelTime;
-        }
+        if (Security->TrustLevel == TaskTrustLevel::User)
+            Info->UserTime += TimePassed;
+        else
+            Info->KernelTime += TimePassed;
     }
 
     void ThreadDoExit()
@@ -635,7 +611,7 @@ namespace Tasking
         }
 
         Thread->Info = {};
-        Thread->Info.SpawnTime = CPU::Counter();
+        Thread->Info.SpawnTime = TimeManager->GetCounter();
         Thread->Info.Year = 0;
         Thread->Info.Month = 0;
         Thread->Info.Day = 0;
@@ -644,7 +620,6 @@ namespace Tasking
         Thread->Info.Second = 0;
         for (int i = 0; i < MAX_CPU; i++)
         {
-            Thread->Info.Usage[i] = 0;
             Thread->Info.Affinity[i] = true;
         }
         Thread->Info.Priority = TaskPriority::Normal;
@@ -741,7 +716,7 @@ namespace Tasking
         }
 
         Process->Info = {};
-        Process->Info.SpawnTime = CPU::Counter();
+        Process->Info.SpawnTime = TimeManager->GetCounter();
         Process->Info.Year = 0;
         Process->Info.Month = 0;
         Process->Info.Day = 0;
@@ -750,7 +725,6 @@ namespace Tasking
         Process->Info.Second = 0;
         for (int i = 0; i < MAX_CPU; i++)
         {
-            Process->Info.Usage[i] = 0;
             Process->Info.Affinity[i] = true;
         }
         Process->Info.Priority = TaskPriority::Normal;
