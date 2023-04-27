@@ -275,7 +275,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
             break;
         }
 
-        debug("%lld: %#016llx-%#016llx %s",
+        debug("%ld: %p-%p %s",
               i,
               Base,
               End,

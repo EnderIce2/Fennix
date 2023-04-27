@@ -18,31 +18,33 @@
 OUTPUT_FORMAT(elf32-i386)
 OUTPUT_ARCH(i386)
 
-ENTRY(MB2_start)
+ENTRY(_start)
 
 SECTIONS
 {
-    . = 0xC0100000;
-    _kernel_start = .;
+    . = 0xC0000000;
 
-    .text ALIGN(4096) : AT(ADDR(.text) - 0xC0000000)
+    _kernel_start = .;
+    .text :
     {
-        *(.multiboot2)
         *(.text .text.*)
     }
-    _kernel_text_end = .;
+    _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    . += CONSTANT(MAXPAGESIZE);
 
-    .data ALIGN (4096) : AT(ADDR(.data) - 0xC0000000)
+    .data :
     {
         *(.data .data.*)
     }
-    _kernel_data_end = .;
+    _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    . += CONSTANT(MAXPAGESIZE);
 
-    .rodata ALIGN (4096) : AT(ADDR(.rodata) - 0xC0000000)
+    .rodata :
     {
         *(.rodata .rodata.*)
     }
-    _kernel_rodata_end = .;
+    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    . += CONSTANT(MAXPAGESIZE);
 
     .init_array :
     {
@@ -61,12 +63,13 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
 
-    .bss ALIGN (4096) : AT(ADDR(.bss) - 0xC0000000)
+    .bss :
     {
         *(COMMON)
         *(.bss .bss.*)
     }
-    _kernel_end = .;
+    . += CONSTANT(MAXPAGESIZE);
+    _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     /DISCARD/ :
     {

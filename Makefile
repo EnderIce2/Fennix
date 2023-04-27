@@ -193,4 +193,4 @@ endif
 	$(NM) $@
 
 clean:
-	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map kernel_dump_intel.map initrd.tar.gz $(OBJ) $(STACK_USAGE_OBJ) $(GCNO_OBJ) $(KERNEL_FILENAME)
+	rm -f *.bin *.o *.elf *.sym kernel.map kernel_dump.map kernel_dump_intel.map $(OBJ) $(STACK_USAGE_OBJ) $(GCNO_OBJ) $(KERNEL_FILENAME)
