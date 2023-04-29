@@ -1,0 +1,40 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FLDR.elf",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/FLDR.elf",
+            "cwd": "${workspaceRoot}",
+            "args": [],
+            "targetArchitecture": "x86",
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerArgs": "",
+            "externalConsole": false,
+            "additionalSOLibSearchPath": "${workspaceRoot}",
+            "customLaunchSetupCommands": [
+                {
+                    "text": "target remote localhost:1234",
+                    "description": "Connect to QEMU remote debugger"
+                }
+            ],
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "text": "set breakpoint pending on",
+                    "description": "Make breakpoint pending on future shared library load."
+                },
+                {
+                    "text": "file ${workspaceRoot}/FLDR.elf",
+                    "description": "Load binary."
+                },
+            ]
+        }
+    ]
+}
