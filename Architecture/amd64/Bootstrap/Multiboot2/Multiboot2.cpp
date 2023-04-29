@@ -244,8 +244,8 @@ EXTERNC void Multiboot2Entry()
         case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
         {
             multiboot_tag_elf_sections *elf = (multiboot_tag_elf_sections *)Tag;
-            fixme("elf_sections->[num=%d, size=%d, entsize=%d, shndx=%d]",
-                  elf->num, elf->size, elf->entsize, elf->shndx);
+            fixme("elf_sections->[sections=%#lx num=%d, size=%d, entsize=%d, shndx=%d]",
+                  &elf->sections, elf->num, elf->size, elf->entsize, elf->shndx);
             break;
         }
         case MULTIBOOT_TAG_TYPE_APM:
