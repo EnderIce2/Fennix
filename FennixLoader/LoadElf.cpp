@@ -93,8 +93,12 @@ bool LoadElfInMemory(void *Address, size_t Length, bool Allow64)
             void *StackTop = (void *)((uintptr_t)Stack + PAGE_SIZE - 1);
             debug("Stack top at: %p", StackTop);
 
-            debug("Kernel Entry Point: %p", (void *)Header32->e_entry);
+            debug("Memory Info: %lldMB / %lldMB (%lldMB reserved)",
+                 TO_MB(KernelAllocator32.UsedMemory),
+                 TO_MB(KernelAllocator32.TotalMemory),
+                 TO_MB(KernelAllocator32.ReservedMemory));
 
+            debug("Kernel Entry Point: %p", (void *)Header32->e_entry);
             KernelJumpAddress = (uint64_t)Header32->e_entry;
 
             asmv("cli");
