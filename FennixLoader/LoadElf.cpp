@@ -76,8 +76,10 @@ bool LoadElfInMemory(void *Address, size_t Length, bool Allow64)
                 debug("  Mapping %d pages at %p (%p-%p)", TO_PAGES(SegmentSize), VirtualAddress, PhysicalAddress, (void *)((uintptr_t)PhysicalAddress + TO_PAGES(SegmentSize) * PAGE_SIZE));
                 Memory32::Virtual().Map(VirtualAddress, PhysicalAddress, SegmentSize, P | RW);
 
-                debug("  Copying %#x bytes to %p", ProgramHeader[i].p_filesz, PhysicalAddress);
-                memcpy(PhysicalAddress, (void *)((uintptr_t)Address + ProgramHeader[i].p_offset), ProgramHeader[i].p_filesz);
+                void *memcpy_Dest = (void *)((uintptr_t)PhysicalAddress + (ProgramHeader[i].p_vaddr - 0xC0000000));
+                void *memcpy_Src = (void *)((uintptr_t)Address + ProgramHeader[i].p_offset);
+                debug("  memcpy(%p, %p, %#x)", memcpy_Dest, memcpy_Src, ProgramHeader[i].p_filesz);
+                memcpy(memcpy_Dest, memcpy_Src, ProgramHeader[i].p_filesz);
 
                 if (ProgramHeader[i].p_filesz < ProgramHeader[i].p_memsz)
                 {
@@ -87,16 +89,16 @@ bool LoadElfInMemory(void *Address, size_t Length, bool Allow64)
             }
 
             void *Stack = KernelAllocator32.RequestPage();
-            memset(Stack, 0, PAGE_SIZE);
+            memset(Stack, 0, PAGE_SIZE - 1);
             debug("Stack allocated at: %p", Stack);
 
-            void *StackTop = (void *)((uintptr_t)Stack + PAGE_SIZE - 1);
+            void *StackTop = (void *)((uintptr_t)Stack + PAGE_SIZE - 0x10);
             debug("Stack top at: %p", StackTop);
 
             debug("Memory Info: %lldMB / %lldMB (%lldMB reserved)",
-                 TO_MB(KernelAllocator32.UsedMemory),
-                 TO_MB(KernelAllocator32.TotalMemory),
-                 TO_MB(KernelAllocator32.ReservedMemory));
+                  TO_MB(KernelAllocator32.UsedMemory),
+                  TO_MB(KernelAllocator32.TotalMemory),
+                  TO_MB(KernelAllocator32.ReservedMemory));
 
             debug("Kernel Entry Point: %p", (void *)Header32->e_entry);
             KernelJumpAddress = (uint64_t)Header32->e_entry;
@@ -119,13 +121,13 @@ bool LoadElfInMemory(void *Address, size_t Length, bool Allow64)
                  "mov $0, %esi\n"
                  "mov $0, %edi\n"
                  "mov $0, %ebp\n");
-            asmv("jmp %0"
+            asmv("call %0"
                  :
                  : "r"(KernelJumpAddress));
-
-            // asmv("call %0"
+            // asmv("jmp %0"
             //      :
             //      : "r"(KernelJumpAddress));
+
 
             // asmv("call *%0"
             //      :
