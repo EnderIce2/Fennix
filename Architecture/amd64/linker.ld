@@ -33,11 +33,12 @@ SECTIONS
         *(.multiboot2)
         *(.bootstrap .bootstrap.*)
     }
-    _bootstrap_end = .;
+    . += CONSTANT(MAXPAGESIZE);
+    _bootstrap_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     . += KERNEL_VMA;
-
-    _kernel_start = .;
+    . += CONSTANT(MAXPAGESIZE);
+    _kernel_start = ALIGN(CONSTANT(MAXPAGESIZE));
     .text : AT(ADDR(.text) - KERNEL_VMA)
     {
         *(.text .text.*)

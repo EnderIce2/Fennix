@@ -24,6 +24,8 @@
 
 #include "../../kernel.h"
 
+extern "C" char BootPageTable[]; // 0x10000 in length
+
 namespace Memory
 {
     uint64_t Physical::GetTotalMemory()
@@ -450,7 +452,7 @@ namespace Memory
 
         for (uint64_t i = 0; i < Info->Memory.Entries; i++)
         {
-            if (Info->Memory.Entry[i].Type == Usable)
+            if (Info->Memory.Entry[i].Type == Usable && Info->Memory.Entry[i].BaseAddress != 0x0)
                 this->UnreservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
         }
 
@@ -460,6 +462,10 @@ namespace Memory
 
         debug("Reserving bitmap pages...");
         this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
+        debug("Reserving kernel...");
+        this->ReservePages(BootPageTable, TO_PAGES(0x10000));
+        this->ReservePages(&_bootstrap_start, TO_PAGES((uintptr_t)&_bootstrap_end - (uintptr_t)&_bootstrap_start));
+        this->ReservePages(&_kernel_start, TO_PAGES((uintptr_t)&_kernel_end - (uintptr_t)&_kernel_start));
     }
 
     Physical::Physical() {}
