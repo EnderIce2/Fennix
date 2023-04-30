@@ -30,6 +30,7 @@
 #ifdef __cplusplus
 
 extern uintptr_t _kernel_start, _kernel_end;
+extern uintptr_t _bootstrap_start, _bootstrap_end;
 extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 
 // kilobyte

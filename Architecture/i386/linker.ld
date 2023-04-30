@@ -22,24 +22,26 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0xC0000000;
+    . = 0xC0100000;
 
     _kernel_start = .;
-    .text :
+    .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
     {
+        *(.multiboot)
+        *(.multiboot2)
         *(.text .text.*)
     }
     _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
-    .data :
+    .data ALIGN(4K) : AT(ADDR(.data) - 0xC0000000)
     {
         *(.data .data.*)
     }
     _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
-    .rodata :
+    .rodata ALIGN(4K) : AT(ADDR(.rodata) - 0xC0000000)
     {
         *(.rodata .rodata.*)
     }
@@ -63,7 +65,7 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
 
-    .bss :
+    .bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
     {
         *(COMMON)
         *(.bss .bss.*)

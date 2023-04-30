@@ -388,7 +388,10 @@ namespace Memory
                 {
                     /* We don't want to use 0 as a memory address. */
                     if (Info->Memory.Entry[i].BaseAddress == 0x0)
+                    {
+                        debug("Ignoring memory segment at 0x0");
                         continue;
+                    }
 
                     LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
                     LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
@@ -399,6 +402,29 @@ namespace Memory
                 }
             }
         }
+
+#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+        if (LargestFreeMemorySegment >= Info->Kernel.PhysicalBase &&
+            LargestFreeMemorySegment <= (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size))
+        {
+            void *NewLargestFreeMemorySegment = (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size);
+            void *RoundNewLargestFreeMemorySegment = (void *)ROUND_UP((uintptr_t)NewLargestFreeMemorySegment, PAGE_SIZE);
+
+            debug("Rounding %p to %p", NewLargestFreeMemorySegment, RoundNewLargestFreeMemorySegment);
+            info("Largest free memory segment is in the kernel, moving it to %p", RoundNewLargestFreeMemorySegment);
+            LargestFreeMemorySegment = RoundNewLargestFreeMemorySegment;
+
+            if (RoundNewLargestFreeMemorySegment >= &_bootstrap_start &&
+                RoundNewLargestFreeMemorySegment <= (void *)((uintptr_t)&_bootstrap_end + &_bootstrap_start))
+            {
+                void *NewNewLargestFreeMemorySegment = (void *)((uintptr_t)&_bootstrap_end + &_bootstrap_start);
+                void *RoundNewNewLargestFreeMemorySegment = (void *)ROUND_UP((uintptr_t)NewNewLargestFreeMemorySegment, PAGE_SIZE);
+                debug("Rounding %p to %p", NewNewLargestFreeMemorySegment, RoundNewNewLargestFreeMemorySegment);
+                info("Largest free memory segment is in the bootstrap, moving it to %p", RoundNewNewLargestFreeMemorySegment);
+                LargestFreeMemorySegment = RoundNewNewLargestFreeMemorySegment;
+            }
+        }
+#undef ROUND_UP
 
         if (LargestFreeMemorySegment == nullptr)
         {
@@ -429,7 +455,7 @@ namespace Memory
         }
 
         debug("Reserving pages for SMP...");
-        this->ReservePage((void *)0x0); /* Trampoline stack, gdt, idt, etc... */
+        this->ReservePage((void *)0x0);        /* Trampoline stack, gdt, idt, etc... */
         this->ReservePages((void *)0x2000, 4); /* TRAMPOLINE_START */
 
         debug("Reserving bitmap pages...");

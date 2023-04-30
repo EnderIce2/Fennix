@@ -36,7 +36,7 @@ CPUData *GetCurrentCPU()
     uint64_t ret = 0;
     if (!(&CPUs[ret])->IsActive)
     {
-        error("CPU %d is not active!", ret);
+        // error("CPU %d is not active!", ret);
         return &CPUs[0];
     }
     assert((&CPUs[ret])->Checksum == CPU_DATA_CHECKSUM);
