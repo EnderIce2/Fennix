@@ -18,37 +18,48 @@
 OUTPUT_FORMAT(elf32-i386)
 OUTPUT_ARCH(i386)
 
+KERNEL_VMA = 0xC0000000;
+
 ENTRY(_start)
 
 SECTIONS
 {
-    . = 0xC0100000;
+    . = 0x100000;
 
-    _kernel_start = .;
-    .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
+    _bootstrap_start = .;
+    .bootstrap :
     {
         *(.multiboot)
         *(.multiboot2)
+        *(.bootstrap .bootstrap.*)
+    }
+    _bootstrap_end = .;
+
+    . += KERNEL_VMA;
+
+    _kernel_start = .;
+    .text : AT(ADDR(.text) - KERNEL_VMA)
+    {
         *(.text .text.*)
     }
     _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
-    .data ALIGN(4K) : AT(ADDR(.data) - 0xC0000000)
+    .data : AT(ADDR(.data) - KERNEL_VMA)
     {
         *(.data .data.*)
     }
     _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
-    .rodata ALIGN(4K) : AT(ADDR(.rodata) - 0xC0000000)
+    .rodata : AT(ADDR(.rodata) - KERNEL_VMA)
     {
         *(.rodata .rodata.*)
     }
     _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
-    .init_array :
+    .init_array : AT(ADDR(.init_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__init_array_start = .);
         KEEP(*(.init_array .ctors))
@@ -56,7 +67,7 @@ SECTIONS
         PROVIDE_HIDDEN (__init_array_end = .);
     }
 
-    .fini_array :
+    .fini_array : AT(ADDR(.fini_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__fini_array_start = .);
         KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
@@ -65,7 +76,7 @@ SECTIONS
     }
     . += CONSTANT(MAXPAGESIZE);
 
-    .bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
+    .bss : AT(ADDR(.bss) - KERNEL_VMA)
     {
         *(COMMON)
         *(.bss .bss.*)
