@@ -268,6 +268,7 @@ static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t F
 static int sys_file_close(SyscallsFrame *Frame, void *KernelPrivate)
 {
     debug("(KernelPrivate: %#lx)", KernelPrivate);
+
     if (KernelPrivate)
     {
         VirtualFileSystem::File KPObj = *(VirtualFileSystem::File *)KernelPrivate;
@@ -282,6 +283,9 @@ static int sys_file_close(SyscallsFrame *Frame, void *KernelPrivate)
 
 static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
+    if (KernelPrivate == nullptr)
+        return 0;
+
     debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
     return vfs->Read(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
     UNUSED(Frame);
@@ -289,6 +293,9 @@ static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint64_
 
 static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
 {
+    if (KernelPrivate == nullptr)
+        return 0;
+
     debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
     return vfs->Write(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
     UNUSED(Frame);
