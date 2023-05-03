@@ -107,7 +107,7 @@ namespace Execute
         if (ItrPhdr.p_vaddr == 0)
             EntryPoint += (uintptr_t)MemoryImage.Virtual;
 
-        char InterpreterPath[256];
+        char InterpreterPath[256] = {'\0'};
 
         for (Elf64_Half i = 0; i < ELFHeader->e_phnum; i++)
         {
