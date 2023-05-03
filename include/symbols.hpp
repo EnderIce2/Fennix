@@ -31,13 +31,13 @@ namespace SymbolResolver
 
         SymbolTable SymTable[0x10000];
         uintptr_t TotalEntries = 0;
+        void *Image;
 
     public:
+        void *GetImage() { return this->Image; }
         Symbols(uintptr_t ImageAddress);
         ~Symbols();
         const char *GetSymbolFromAddress(uintptr_t Address);
         void AddSymbol(uintptr_t Address, const char *Name);
     };
 }
-
-extern SymbolResolver::Symbols *SymTbl;

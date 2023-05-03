@@ -291,7 +291,7 @@ namespace Execute
                 debug("PT_LOAD - Offset: %#lx, VirtAddr: %#lx, FileSiz: %ld, MemSiz: %ld, Align: %#lx",
                       ItrPhdr.p_offset, ItrPhdr.p_vaddr,
                       ItrPhdr.p_filesz, ItrPhdr.p_memsz, ItrPhdr.p_align);
-                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Phyiscal;
+                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Physical;
                 fixme("Address: %#lx %s%s%s", MAddr,
                       (ItrPhdr.p_flags & PF_R) ? "R" : "",
                       (ItrPhdr.p_flags & PF_W) ? "W" : "",
@@ -303,8 +303,8 @@ namespace Execute
         }
 
         vfs->Close(File);
-        debug("Interpreter entry point: %#lx (%#lx + %#lx)", (uintptr_t)MemoryImage.Phyiscal + ELFHeader->e_entry,
-              (uintptr_t)MemoryImage.Phyiscal, ELFHeader->e_entry);
-        return (uintptr_t)MemoryImage.Phyiscal + ELFHeader->e_entry;
+        debug("Interpreter entry point: %#lx (%#lx + %#lx)", (uintptr_t)MemoryImage.Physical + ELFHeader->e_entry,
+              (uintptr_t)MemoryImage.Physical, ELFHeader->e_entry);
+        return (uintptr_t)MemoryImage.Physical + ELFHeader->e_entry;
     }
 }

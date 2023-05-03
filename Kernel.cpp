@@ -75,6 +75,7 @@ LockClass mExtTrkLock;
  * - [ ] Mutex implementation.
  * - [ ] Vector should have a mutex.
  * - [ ] Update SMBIOS functions to support newer versions and actually use it.
+ * - [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -83,6 +84,7 @@ LockClass mExtTrkLock;
  * - [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
  * - [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
  * - [ ] CPU usage is not working properly.
+ * - [ ] fork() syscall is not working.
  *
  * CREDITS AND REFERENCES:
  * - General:

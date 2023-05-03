@@ -91,7 +91,7 @@ namespace Execute
 
     struct MmImage
     {
-        void *Phyiscal;
+        void *Physical;
         void *Virtual;
     };
 

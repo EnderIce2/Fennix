@@ -25,7 +25,7 @@
 #include "../syscalls.h"
 #include "../kernel.h"
 
-#include "../../Userspace/libs/include/sysbase.h"
+#include "../../Userspace/libs/include/libsys/base.h" /* KCtl */
 #include "../ipc.h"
 
 using InterProcessCommunication::IPC;
@@ -315,6 +315,69 @@ static int sys_sleep(SyscallsFrame *Frame, uint64_t Milliseconds)
     return 0;
 }
 
+static int _ChildPID = 0;
+
+static int sys_fork(SyscallsFrame *Frame)
+{
+    UNUSED(Frame);
+    if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
+        return SYSCALL_ACCESS_DENIED;
+
+    fixme("sys_fork: %#lx", Frame);
+    return SYSCALL_NOT_IMPLEMENTED;
+
+    Tasking::PCB *Parent = TaskManager->GetCurrentThread()->Parent;
+    Tasking::TCB *Thread = TaskManager->GetCurrentThread();
+
+    Tasking::PCB *NewProcess = TaskManager->CreateProcess(Parent,
+                                                          Parent->Name,
+                                                          Parent->Security.TrustLevel,
+                                                          Parent->ELFSymbolTable ? Parent->ELFSymbolTable->GetImage() : nullptr);
+
+    if (!NewProcess)
+    {
+        error("Failed to create process for fork");
+        return SYSCALL_ERROR;
+    }
+
+    strncpy(NewProcess->Name, Parent->Name, sizeof(NewProcess->Name));
+    NewProcess->IPC->Fork(Parent->IPC); // FIXME: Do we need to do this?
+
+    Tasking::TCB *NewThread = TaskManager->CreateThread(NewProcess,
+                                                        0,
+                                                        nullptr,
+                                                        nullptr,
+                                                        std::vector<AuxiliaryVector>(),
+                                                        0,
+                                                        Thread->Info.Architecture,
+                                                        Thread->Info.Compatibility,
+                                                        true);
+
+    if (!NewThread)
+    {
+        error("Failed to create thread for fork");
+        return SYSCALL_ERROR;
+    }
+    _ChildPID = (int)NewThread->ID;
+
+    memcpy(NewThread->FPU, Thread->FPU, sizeof(CPU::x64::FXState));
+    NewThread->Stack->Fork(Thread->Stack);
+
+    strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
+    NewThread->Info = Thread->Info;
+    NewThread->GSBase = Thread->GSBase;
+    NewThread->FSBase = Thread->FSBase;
+    TaskManager->Sleep(10); /* Re-schedule */
+    NewThread->Registers = Thread->Registers;
+
+    debug("Forked thread \"%s\"(%d) from process \"%s\"(%d)", NewThread->Name, NewThread->ID, NewProcess->Name, NewProcess->ID);
+    NewThread->Status = Tasking::TaskStatus::Ready;
+
+    if (_ChildPID == (int)TaskManager->GetCurrentThread()->ID)
+        return 0;
+    return (int)NewThread->ID;
+}
+
 static int sys_wait(SyscallsFrame *Frame)
 {
     fixme("sys_wait: %#lx", Frame);
@@ -333,10 +396,12 @@ static int sys_spawn(SyscallsFrame *Frame)
     return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_spawn_thread(SyscallsFrame *Frame)
+static int sys_spawn_thread(SyscallsFrame *Frame, uint64_t InstructionPointer)
 {
-    fixme("sys_spawn_thread: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    Tasking::TCB *thread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), InstructionPointer);
+    if (thread)
+        return (int)thread->ID;
+    return SYSCALL_ERROR;
 }
 
 static int sys_get_thread_list_of_process(SyscallsFrame *Frame)
@@ -355,6 +420,16 @@ static int sys_get_current_thread(SyscallsFrame *Frame)
 {
     fixme("sys_get_current_thread: %#lx", Frame);
     return SYSCALL_NOT_IMPLEMENTED;
+}
+
+static int sys_get_current_process_id(SyscallsFrame *Frame)
+{
+    return (int)TaskManager->GetCurrentProcess()->ID;
+}
+
+static int sys_get_current_thread_id(SyscallsFrame *Frame)
+{
+    return (int)TaskManager->GetCurrentThread()->ID;
 }
 
 static int sys_get_process_by_pid(SyscallsFrame *Frame)
@@ -412,6 +487,7 @@ static void *NativeSyscallsTable[] = {
     [_FileStatus] = (void *)sys_file_status,
 
     [_Sleep] = (void *)sys_sleep,
+    [_Fork] = (void *)sys_fork,
     [_Wait] = (void *)sys_wait,
     [_Kill] = (void *)sys_kill,
     [_Spawn] = (void *)sys_spawn,
@@ -419,6 +495,8 @@ static void *NativeSyscallsTable[] = {
     [_GetThreadListOfProcess] = (void *)sys_get_thread_list_of_process,
     [_GetCurrentProcess] = (void *)sys_get_current_process,
     [_GetCurrentThread] = (void *)sys_get_current_thread,
+    [_GetCurrentProcessID] = (void *)sys_get_current_process_id,
+    [_GetCurrentThreadID] = (void *)sys_get_current_thread_id,
     [_GetProcessByPID] = (void *)sys_get_process_by_pid,
     [_GetThreadByTID] = (void *)sys_get_thread_by_tid,
     [_KillProcess] = (void *)sys_kill_process,

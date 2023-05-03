@@ -125,7 +125,7 @@ namespace Memory
             if (User)
                 Flags |= Memory::PTFlag::US;
 
-            Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Flags);
+            Memory::Virtual(this->Table).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Flags);
         }
 
         if (this->Directory)
@@ -173,8 +173,8 @@ namespace Memory
 
                 for (size_t i = 0; i < Count; i++)
                 {
-                    Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
-                    // Memory::Virtual(this->PageTable).Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
+                    Memory::Virtual(this->Table).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+                    // Memory::Virtual(this->Table).Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
                 }
 
                 if (this->Directory)
@@ -213,16 +213,16 @@ namespace Memory
         }
     }
 
-    MemMgr::MemMgr(PageTable4 *PageTable, VirtualFileSystem::Node *Directory)
+    MemMgr::MemMgr(PageTable *Table, VirtualFileSystem::Node *Directory)
     {
-        if (PageTable)
-            this->PageTable = PageTable;
+        if (Table)
+            this->Table = Table;
         else
         {
 #if defined(a64)
-            this->PageTable = (PageTable4 *)CPU::x64::readcr3().raw;
+            this->Table = (PageTable *)CPU::x64::readcr3().raw;
 #elif defined(a32)
-            this->PageTable = (PageTable4 *)CPU::x32::readcr3().raw;
+            this->Table = (PageTable *)CPU::x32::readcr3().raw;
 #endif
         }
 
@@ -236,7 +236,7 @@ namespace Memory
         {
             KernelAllocator.FreePages(ap.Address, ap.PageCount);
             for (size_t i = 0; i < ap.PageCount; i++)
-                Memory::Virtual(this->PageTable).Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+                Memory::Virtual(this->Table).Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
         }
 
         if (this->Directory)

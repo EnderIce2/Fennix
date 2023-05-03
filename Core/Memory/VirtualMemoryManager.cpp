@@ -292,12 +292,12 @@ namespace Memory
 #endif
     }
 
-    Virtual::Virtual(PageTable4 *Table)
+    Virtual::Virtual(PageTable *Table)
     {
         if (Table)
             this->Table = Table;
         else
-            this->Table = (PageTable4 *)CPU::PageTable();
+            this->Table = (PageTable *)CPU::PageTable();
     }
 
     Virtual::~Virtual() {}

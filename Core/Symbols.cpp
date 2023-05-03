@@ -27,6 +27,7 @@ namespace SymbolResolver
 {
     Symbols::Symbols(uintptr_t ImageAddress)
     {
+        this->Image = (void *)ImageAddress;
         debug("Solving symbols for address: %#llx", ImageAddress);
         Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
         if (Header->e_ident[0] != 0x7F &&
@@ -87,25 +88,14 @@ namespace SymbolResolver
                 this->TotalEntries--;
             }
 
-#ifdef DEBUG
-            static int once = 0;
-#endif
-
             trace("Symbol table loaded, %d entries (%ldKB)", this->TotalEntries, TO_KB(this->TotalEntries * sizeof(SymbolTable)));
             for (uintptr_t i = 0, g = this->TotalEntries; i < g; i++)
             {
                 this->SymTable[i].Address = ElfSymbols[i].st_value;
                 this->SymTable[i].FunctionName = &strtab[ElfSymbols[i].st_name];
-#ifdef DEBUG
-                if (once)
-                    debug("Symbol %d: %#llx %s", i, this->SymTable[i].Address, this->SymTable[i].FunctionName);
-#endif
-            }
 
-#ifdef DEBUG
-            if (!once)
-                once++;
-#endif
+                // debug("Symbol %d: %#llx %s", i, this->SymTable[i].Address, this->SymTable[i].FunctionName);
+            }
         }
     }
 

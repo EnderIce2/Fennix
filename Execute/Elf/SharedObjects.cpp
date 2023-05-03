@@ -97,7 +97,7 @@ namespace Execute
         Memory::Virtual().Map(LibFile, LibFile, Length, Memory::RW | Memory::US | Memory::G);
 
         Memory::Virtual ncpV = pV;
-        sl.MemoryImage = r_cst(uint64_t, ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Phyiscal);
+        sl.MemoryImage = r_cst(uint64_t, ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Physical);
         debug("MemoryImage: %#lx", sl.MemoryImage);
 
         {

@@ -56,6 +56,7 @@ extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
 #define PAGE_SIZE 0x1000        // 4KB
 #define PAGE_SIZE_4K PAGE_SIZE  // 4KB
 #define PAGE_SIZE_2M 0x200000   // 2MB
+#define PAGE_SIZE_4M 0x400000   // 4MB
 #define PAGE_SIZE_1G 0x40000000 // 1GB
 
 #define STACK_SIZE 0x4000      // 16kb
@@ -228,7 +229,7 @@ namespace Memory
 
     struct __packed PageTableEntryPtr
     {
-        PageTableEntry Entries[511];
+        PageTableEntry Entries[512];
     };
 
     union __packed PageDirectoryEntry
@@ -304,7 +305,7 @@ namespace Memory
 
     struct __packed PageDirectoryEntryPtr
     {
-        PageDirectoryEntry Entries[511];
+        PageDirectoryEntry Entries[512];
     };
 
     union __packed PageDirectoryPointerTableEntry
@@ -380,7 +381,7 @@ namespace Memory
 
     struct __packed PageDirectoryPointerTableEntryPtr
     {
-        PageDirectoryPointerTableEntry Entries[511];
+        PageDirectoryPointerTableEntry Entries[512];
     };
 
     union __packed PageMapLevel4
@@ -433,31 +434,22 @@ namespace Memory
         }
     };
 
-    struct PageTable4
+    class PageTable
     {
-        PageMapLevel4 Entries[511];
+    public:
+        PageMapLevel4 Entries[512];
 
         /**
-         * @brief Update CR3 with this PageTable4
+         * @brief Update CR3 with this PageTable
          */
-        void Update()
-        {
-#if defined(a86)
-            asmv("mov %0, %%cr3" ::"r"(this));
-#elif defined(aa64)
-            asmv("msr ttbr0_el1, %0" ::"r"(this));
-#endif
-        }
-    } __aligned(0x1000);
+        void Update();
 
-    struct __packed PageMapLevel5
-    {
-        /* FIXME: NOT IMPLEMENTED! */
-    };
-
-    struct PageTable5
-    {
-        PageMapLevel5 Entries[511];
+        /**
+         * @brief Fork this PageTable
+         *
+         * @return A new PageTable with the same content
+         */
+        PageTable Fork();
     } __aligned(0x1000);
 
     class Physical
@@ -605,7 +597,7 @@ namespace Memory
     {
     private:
         NewLock(MemoryLock);
-        PageTable4 *Table = nullptr;
+        PageTable *Table = nullptr;
 
     public:
         enum MapType
@@ -796,7 +788,7 @@ namespace Memory
          *
          * @param Table Page table. If null, it will use the current page table.
          */
-        Virtual(PageTable4 *Table = nullptr);
+        Virtual(PageTable *Table = nullptr);
 
         /**
          * @brief Destroy the Virtual object
@@ -808,30 +800,70 @@ namespace Memory
     class StackGuard
     {
     private:
+        struct AllocatedPages
+        {
+            void *PhysicalAddress;
+            void *VirtualAddress;
+        };
+
         void *StackBottom = nullptr;
         void *StackTop = nullptr;
-        void *StackPhyiscalBottom = nullptr;
-        void *StackPhyiscalTop = nullptr;
+        void *StackPhysicalBottom = nullptr;
+        void *StackPhysicalTop = nullptr;
         uint64_t Size = 0;
         bool UserMode = false;
-        PageTable4 *Table = nullptr;
+        bool Expanded = false;
+        PageTable *Table = nullptr;
+        std::vector<AllocatedPages> AllocatedPagesList;
 
     public:
+        std::vector<AllocatedPages> GetAllocatedPages() { return AllocatedPagesList; }
+
+        /** @brief Fork stack guard */
+        void Fork(StackGuard *Parent);
+
+        /** @brief For general info */
+        uint64_t GetSize() { return Size; }
+
+        /** @brief For general info */
+        bool GetUserMode() { return UserMode; }
+
+        /** @brief For general info */
+        bool IsExpanded() { return Expanded; }
+
         /** @brief For general info */
         void *GetStackBottom() { return StackBottom; }
+
         /** @brief For RSP */
         void *GetStackTop() { return StackTop; }
-        /** @brief For general info */
-        void *GetStackPhysicalBottom() { return StackPhyiscalBottom; }
-        /** @brief For general info */
-        void *GetStackPhysicalTop() { return StackPhyiscalTop; }
+
+        /** @brief For general info (avoid if possible)
+         * @note This can be used only if the stack was NOT expanded.
+         */
+        void *GetStackPhysicalBottom()
+        {
+            if (Expanded)
+                return nullptr;
+            return StackPhysicalBottom;
+        }
+
+        /** @brief For general info (avoid if possible)
+         * @note This can be used only if the stack was NOT expanded.
+         */
+        void *GetStackPhysicalTop()
+        {
+            if (Expanded)
+                return nullptr;
+            return StackPhysicalTop;
+        }
+
         /** @brief Called by exception handler */
         bool Expand(uintptr_t FaultAddress);
         /**
          * @brief Construct a new Stack Guard object
          * @param User Stack for user mode?
          */
-        StackGuard(bool User, PageTable4 *Table);
+        StackGuard(bool User, PageTable *Table);
         /**
          * @brief Destroy the Stack Guard object
          */
@@ -857,12 +889,12 @@ namespace Memory
 
         void DetachAddress(void *Address);
 
-        MemMgr(PageTable4 *PageTable = nullptr, VirtualFileSystem::Node *Directory = nullptr);
+        MemMgr(PageTable *Table = nullptr, VirtualFileSystem::Node *Directory = nullptr);
         ~MemMgr();
 
     private:
         Bitmap PageBitmap;
-        PageTable4 *PageTable;
+        PageTable *Table;
         VirtualFileSystem::Node *Directory;
 
         std::vector<AllocatedPages> AllocatedPagesList;
@@ -880,7 +912,7 @@ void operator delete(void *Pointer, long unsigned int Size);
 void operator delete[](void *Pointer, long unsigned int Size);
 
 extern Memory::Physical KernelAllocator;
-extern Memory::PageTable4 *KernelPageTable;
+extern Memory::PageTable *KernelPageTable;
 
 #endif // __cplusplus
 

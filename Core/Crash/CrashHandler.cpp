@@ -430,7 +430,7 @@ namespace CrashHandler
             uintptr_t Address = NULL;
             Address = strtol(arg, NULL, 16);
             debug("Converted %s to %#lx", arg, Address);
-            Memory::PageTable4 *BasePageTable = (Memory::PageTable4 *)Address;
+            Memory::PageTable *BasePageTable = (Memory::PageTable *)Address;
             if (Memory::Virtual().Check(BasePageTable))
             {
                 for (int PMLIndex = 0; PMLIndex < 512; PMLIndex++)

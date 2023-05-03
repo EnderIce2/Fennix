@@ -125,7 +125,7 @@ namespace Execute
                 debug("PT_LOAD - Offset: %#lx, VirtAddr: %#lx, FileSiz: %ld, MemSiz: %ld, Align: %#lx",
                       ItrPhdr.p_offset, ItrPhdr.p_vaddr,
                       ItrPhdr.p_filesz, ItrPhdr.p_memsz, ItrPhdr.p_align);
-                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Phyiscal;
+                uintptr_t MAddr = (ItrPhdr.p_vaddr - BaseAddress) + (uintptr_t)MemoryImage.Physical;
                 fixme("Address: %#lx %s%s%s", MAddr,
                       (ItrPhdr.p_flags & PF_R) ? "R" : "",
                       (ItrPhdr.p_flags & PF_W) ? "W" : "",
@@ -216,7 +216,7 @@ namespace Execute
         ELFBase.auxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFHeader->e_phoff}}});
 
         ELFBase.InstructionPointer = EntryPoint;
-        ELFBase.MemoryImage = MemoryImage.Phyiscal;
+        ELFBase.MemoryImage = MemoryImage.Physical;
         ELFBase.VirtualMemoryImage = MemoryImage.Virtual;
 
         ELFBase.Success = true;

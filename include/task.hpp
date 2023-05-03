@@ -101,7 +101,7 @@ namespace Tasking
         uint64_t SleepUntil = 0;
         uint64_t KernelTime = 0, UserTime = 0, SpawnTime = 0, LastUpdateTime = 0;
         uint64_t Year, Month, Day, Hour, Minute, Second;
-        bool Affinity[256];  // MAX_CPU
+        bool Affinity[256]; // MAX_CPU
         TaskPriority Priority;
         TaskArchitecture Architecture;
         TaskCompatibility Compatibility;
@@ -188,7 +188,7 @@ namespace Tasking
         std::vector<TCB *> Threads;
         std::vector<PCB *> Children;
         InterProcessCommunication::IPC *IPC;
-        Memory::PageTable4 *PageTable;
+        Memory::PageTable *PageTable;
         SymbolResolver::Symbols *ELFSymbolTable;
         VirtualFileSystem::Node *ProcessDirectory;
         VirtualFileSystem::Node *memDirectory;
@@ -341,7 +341,8 @@ namespace Tasking
                           const std::vector<AuxiliaryVector> &auxv = std::vector<AuxiliaryVector>(),
                           IPOffset Offset = 0,
                           TaskArchitecture Architecture = TaskArchitecture::x64,
-                          TaskCompatibility Compatibility = TaskCompatibility::Native);
+                          TaskCompatibility Compatibility = TaskCompatibility::Native,
+                          bool ThreadNotReady = false);
 
         Task(const IP EntryPoint);
         ~Task();

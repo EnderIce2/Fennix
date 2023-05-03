@@ -24,6 +24,20 @@
 
 namespace InterProcessCommunication
 {
+    void IPC::Fork(IPC *Parent)
+    {
+        std::vector<IPCHandle *> ParentHandles = Parent->GetHandles();
+
+        foreach (auto Hnd in ParentHandles)
+        {
+            debug("Forking IPC with ID %d", Hnd->ID);
+            IPCHandle *NewHnd = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle) + 1));
+            memcpy(NewHnd, Hnd, sizeof(IPCHandle));
+            NewHnd->Node = vfs->Create(Hnd->Node->Name, VirtualFileSystem::NodeFlags::FILE, IPCNode);
+            Handles.push_back(NewHnd);
+        }
+    }
+
     IPCHandle *IPC::Create(IPCType Type, char UniqueToken[16])
     {
         SmartLock(this->IPCLock);

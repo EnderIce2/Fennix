@@ -191,9 +191,9 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
 #endif
 
 #if defined(a64)
-    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x64::readcr3().raw));
+    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable *)CPU::x64::readcr3().raw));
 #elif defined(a32)
-    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable4 *)CPU::x32::readcr3().raw));
+    Memory::Virtual vma = Memory::Virtual(((Memory::PageTable *)CPU::x32::readcr3().raw));
 #elif defined(aa64)
     Memory::Virtual vma = Memory::Virtual();
 #warning "TODO: aa64"
@@ -239,9 +239,9 @@ SafeFunction void PageFaultExceptionHandler(CHArchTrapFrame *Frame)
                   Index.PDEIndex,
                   Index.PTEIndex);
 #if defined(a64)
-            Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x64::readcr3().raw)->Entries[Index.PMLIndex];
+            Memory::PageMapLevel4 PML4 = ((Memory::PageTable *)CPU::x64::readcr3().raw)->Entries[Index.PMLIndex];
 #elif defined(a32)
-            Memory::PageMapLevel4 PML4 = ((Memory::PageTable4 *)CPU::x32::readcr3().raw)->Entries[Index.PMLIndex];
+            Memory::PageMapLevel4 PML4 = ((Memory::PageTable *)CPU::x32::readcr3().raw)->Entries[Index.PMLIndex];
 #elif defined(aa64)
             Memory::PageMapLevel4 PML4 = {.raw = 0};
 #warning "TODO: aa64"

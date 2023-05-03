@@ -73,6 +73,8 @@ namespace InterProcessCommunication
         void *Process;
 
     public:
+        std::vector<IPCHandle *> GetHandles() { return Handles; }
+        void Fork(IPC *Parent);
         IPCHandle *Create(IPCType Type, char UniqueToken[16]);
         IPCErrorCode Destroy(IPCID ID);
         IPCErrorCode Allocate(IPCID ID, long Size);

@@ -47,7 +47,7 @@ NewLock(OperatorAllocatorLock);
 using namespace Memory;
 
 Physical KernelAllocator;
-PageTable4 *KernelPageTable = nullptr;
+PageTable *KernelPageTable = nullptr;
 bool Page1GBSupport = false;
 bool PSESupport = false;
 
@@ -55,7 +55,7 @@ static MemoryAllocatorType AllocatorType = MemoryAllocatorType::Pages;
 Xalloc::V1 *XallocV1Allocator = nullptr;
 
 #ifdef DEBUG
-NIF void tracepagetable(PageTable4 *pt)
+NIF void tracepagetable(PageTable *pt)
 {
     for (int i = 0; i < 512; i++)
     {
@@ -74,7 +74,7 @@ NIF void tracepagetable(PageTable4 *pt)
 }
 #endif
 
-NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
+NIF void MapFromZero(PageTable *PT, BootInfo *Info)
 {
     debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
     Virtual va = Virtual(PT);
@@ -104,7 +104,7 @@ NIF void MapFromZero(PageTable4 *PT, BootInfo *Info)
     va.Unmap((void *)0);
 }
 
-NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
+NIF void MapFramebuffer(PageTable *PT, BootInfo *Info)
 {
     debug("Mapping Framebuffer");
     Virtual va = Virtual(PT);
@@ -143,7 +143,7 @@ NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
     }
 }
 
-NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
+NIF void MapKernel(PageTable *PT, BootInfo *Info)
 {
     debug("Mapping Kernel");
     uintptr_t KernelStart = (uintptr_t)&_kernel_start;
@@ -303,7 +303,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
     */
 
     trace("Initializing Virtual Memory Manager");
-    KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE + 1));
+    KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE + 1));
     memset(KernelPageTable, 0, PAGE_SIZE);
 
     if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)

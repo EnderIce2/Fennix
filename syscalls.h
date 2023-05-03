@@ -126,6 +126,12 @@ enum NativeSyscalls
      */
     _Sleep,
 
+    /** @brief Fork the current process
+     * @fn int Fork()
+     * This syscall is used to create a new process that is a copy of the current process.
+    */
+    _Fork,
+
     /** @brief Wait for a process or a thread
      * @fn
      * This syscall is used to wait for a specific process or thread to terminate. It returns the exit code of the process or thread.
@@ -145,7 +151,7 @@ enum NativeSyscalls
     _Spawn,
 
     /** @brief Spawn a new thread
-     * @fn
+     * @fn int SpawnThread(uint64_t InstructionPointer)
      * This syscall is used to create a new thread within the current process with the provided function and arguments.
      */
     _SpawnThread,
@@ -167,6 +173,18 @@ enum NativeSyscalls
      * This syscall is used to retrieve information about the current thread.
      */
     _GetCurrentThread,
+
+    /** @brief Get current process ID
+     * @fn int GetCurrentProcessID()
+     * This syscall is used to retrieve information about the current process.
+     */
+    _GetCurrentProcessID,
+
+    /** @brief Get current thread ID
+     * @fn int GetCurrentThreadID()
+     * This syscall is used to retrieve information about the current thread.
+     */
+    _GetCurrentThreadID,
 
     /** @brief Get process by PID
      * @fn

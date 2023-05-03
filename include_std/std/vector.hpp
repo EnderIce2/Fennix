@@ -76,10 +76,12 @@ namespace std
 #ifdef DEBUG_MEM_ALLOCATION
             debug("VECTOR INIT: vector( <vector> )->Size: %lld", VectorSize);
 #endif
-            assert(VectorSize > 0);
-            VectorBuffer = new T[VectorSize];
-            for (size_t i = 0; i < VectorSize; i++)
-                VectorBuffer[i] = v.VectorBuffer[i];
+            if (VectorSize > 0)
+            {
+                VectorBuffer = new T[VectorSize];
+                for (size_t i = 0; i < VectorSize; i++)
+                    VectorBuffer[i] = v.VectorBuffer[i];
+            }
         }
 
         NIF ~vector()

@@ -129,6 +129,8 @@ uint64_t GetUsage(uint64_t OldSystemTime, Tasking::TaskInfo *Info)
 
 void TaskMgr()
 {
+    TaskManager->GetCurrentThread()->Rename("Debug Task Manager");
+    TaskManager->GetCurrentThread()->SetPriority(Tasking::Low);
     TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy100Usage)->Rename("Dummy 100% Usage");
     TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy0Usage)->Rename("Dummy 0% Usage");
 
@@ -136,7 +138,7 @@ void TaskMgr()
     {
         static int sanity = 0;
         Video::ScreenBuffer *sb = Display->GetBuffer(0);
-        for (short i = 0; i < 500; i++)
+        for (short i = 0; i < 1000; i++)
         {
             for (short j = 0; j < 500; j++)
             {
@@ -152,6 +154,8 @@ void TaskMgr()
         static uint64_t OldSystemTime = 0;
         foreach (auto Proc in TaskManager->GetProcessList())
         {
+            if (!Proc)
+                continue;
             int Status = Proc->Status;
             uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
             printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
@@ -159,10 +163,14 @@ void TaskMgr()
 
             foreach (auto Thd in Proc->Threads)
             {
+                if (!Thd)
+                    continue;
                 Status = Thd->Status;
                 uint64_t ThreadCpuUsage = GetUsage(OldSystemTime, &Thd->Info);
-                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n\eAABBCC",
-                       Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime, Thd->Info.UserTime);
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
+                       Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime,
+                       Thd->Info.UserTime, Thd->Registers.rip,
+                       Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.rip) : "unknown");
             }
         }
         OldSystemTime = TimeManager->GetCounter();
@@ -355,10 +363,7 @@ void KernelMainThread()
     }
 
 #ifdef DEBUG
-    /* TODO: This should not be enabled because it may cause a deadlock. Not sure where or how. */
-    // Tasking::PCB *tskMgr = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), "Debug Task Manager", Tasking::TaskTrustLevel::Kernel);
-    // TaskManager->CreateThread(tskMgr, (Tasking::IP)TaskMgr)->SetPriority(Tasking::Low);
-
+    // Tasking::TCB *tskMgr = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
     TreeFS(vfs->GetRootNode(), 0);
 #endif
 

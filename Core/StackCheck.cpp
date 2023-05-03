@@ -46,7 +46,7 @@ Retry:
 
 EXTERNC __constructor __no_stack_protector void __guard_setup(void)
 {
-    debug("StackGuard: __guard_setup");
+    debug("__guard_setup");
     if (__stack_chk_guard == 0)
         __stack_chk_guard = __stack_chk_guard_init();
     debug("Stack guard value: %ld", __stack_chk_guard);

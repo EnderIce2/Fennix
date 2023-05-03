@@ -140,7 +140,7 @@ namespace Tasking
                     delete ProcessList[i]->ELFSymbolTable, ProcessList[i]->ELFSymbolTable = nullptr;
                     SecurityManager.DestroyToken(ProcessList[i]->Security.UniqueToken);
                     if (ProcessList[i]->Security.TrustLevel == TaskTrustLevel::User)
-                        KernelAllocator.FreePages((void *)ProcessList[i]->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
+                        KernelAllocator.FreePages((void *)ProcessList[i]->PageTable, TO_PAGES(sizeof(Memory::PageTable) + 1));
 
                     // Remove the process from parent's children list
                     if (ProcessList[i]->Parent)
@@ -306,7 +306,7 @@ namespace Tasking
             {
                 SecurityManager.DestroyToken(Process->Security.UniqueToken);
                 if (Process->Security.TrustLevel == TaskTrustLevel::User)
-                    KernelAllocator.FreePages((void *)Process->PageTable, TO_PAGES(sizeof(Memory::PageTable4) + 1));
+                    KernelAllocator.FreePages((void *)Process->PageTable, TO_PAGES(sizeof(Memory::PageTable) + 1));
 
                 if (Process->Parent)
                     for (size_t j = 0; j < Process->Parent->Children.size(); j++)
@@ -353,7 +353,8 @@ namespace Tasking
                             const std::vector<AuxiliaryVector> &auxv,
                             IPOffset Offset,
                             TaskArchitecture Architecture,
-                            TaskCompatibility Compatibility)
+                            TaskCompatibility Compatibility,
+                            bool ThreadNotReady)
     {
         SmartLock(TaskingLock);
         TCB *Thread = new TCB;
@@ -382,10 +383,13 @@ namespace Tasking
         Thread->EntryPoint = EntryPoint;
         Thread->Offset = Offset;
         Thread->ExitCode = 0xdead;
-        Thread->Status = TaskStatus::Ready;
+        if (ThreadNotReady)
+            Thread->Status = TaskStatus::Waiting;
+        else
+            Thread->Status = TaskStatus::Ready;
         Thread->Memory = new Memory::MemMgr(Parent->PageTable, Parent->memDirectory);
         Thread->FPU = (CPU::x64::FXState *)Thread->Memory->RequestPages(TO_PAGES(sizeof(CPU::x64::FXState) + 1));
-        memset(Thread->FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x64::FXState))));
+        memset(Thread->FPU, 0, sizeof(CPU::x64::FXState));
 
         Thread->Security.TrustLevel = Parent->Security.TrustLevel;
         Thread->Security.UniqueToken = SecurityManager.CreateToken();
@@ -395,7 +399,7 @@ namespace Tasking
         Thread->FPU->mxcsrmask = 0b1111111110111111;
         Thread->FPU->fcw = 0b0000001100111111;
 
-        CPU::x64::fxrstor(Thread->FPU);
+        // CPU::x64::fxrstor(Thread->FPU);
         // uint16_t FCW = 0b1100111111;
         // asmv("fldcw %0"
         //      :
@@ -451,10 +455,12 @@ namespace Tasking
             Thread->Registers.rflags.AlwaysOne = 1;
             Thread->Registers.rflags.IF = 1;
             Thread->Registers.rflags.ID = 1;
-            Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop());
+            /* We need to leave the libc's crt
+               to make a syscall when the Thread
+               is exited or we are going to get
+               GPF or PF exception. */
 
 #pragma region
-
             size_t ArgvSize = 0;
             if (argv)
                 while (argv[ArgvSize] != nullptr)
@@ -477,8 +483,12 @@ namespace Tasking
             char *StackStringsVirtual = (char *)Thread->Stack->GetStackTop();
 
             // Store string pointers for later
-            uintptr_t *ArgvStrings = new uintptr_t[ArgvSize];
-            uintptr_t *EnvpStrings = new uintptr_t[EnvpSize];
+            uintptr_t *ArgvStrings = nullptr;
+            uintptr_t *EnvpStrings = nullptr;
+            if (ArgvSize > 0)
+                ArgvStrings = new uintptr_t[ArgvSize];
+            if (EnvpSize > 0)
+                EnvpStrings = new uintptr_t[EnvpSize];
 
             for (size_t i = 0; i < ArgvSize; i++)
             {
@@ -570,8 +580,10 @@ namespace Tasking
             // Set the stack pointer to the new stack
             Thread->Registers.rsp = ((uintptr_t)Thread->Stack->GetStackTop() - SubtractStack);
 
-            delete[] ArgvStrings;
-            delete[] EnvpStrings;
+            if (ArgvSize > 0)
+                delete[] ArgvStrings;
+            if (EnvpSize > 0)
+                delete[] EnvpStrings;
 
 #ifdef DEBUG
             DumpData("Stack Data", (void *)((uintptr_t)Thread->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
@@ -584,14 +596,6 @@ namespace Tasking
 
 #pragma endregion
 
-            /* We need to leave the libc's crt to make a syscall when the Thread is exited or we are going to get GPF or PF exception. */
-
-            Memory::Virtual uva = Memory::Virtual(Parent->PageTable);
-            if (!uva.Check((void *)Offset, Memory::PTFlag::US))
-            {
-                error("Offset is not user accessible");
-                uva.Map((void *)Offset, (void *)Offset, Memory::PTFlag::RW | Memory::PTFlag::US); // We try one more time.
-            }
 #elif defined(a32)
 #elif defined(aa64)
 #endif
@@ -686,7 +690,7 @@ namespace Tasking
             SecurityManager.TrustToken(Process->Security.UniqueToken, TTL::TrustedByKernel);
 #if defined(a64)
             if (!DoNotCreatePageTable)
-                Process->PageTable = (Memory::PageTable4 *)CPU::x64::readcr3().raw;
+                Process->PageTable = (Memory::PageTable *)CPU::x64::readcr3().raw;
 #elif defined(a32)
 #elif defined(aa64)
 #endif
@@ -698,8 +702,8 @@ namespace Tasking
 #if defined(a64)
             if (!DoNotCreatePageTable)
             {
-                Process->PageTable = (Memory::PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(sizeof(Memory::PageTable4) + 1));
-                memcpy(Process->PageTable, (void *)KernelPageTable, PAGE_SIZE);
+                Process->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(sizeof(Memory::PageTable) + 1));
+                memcpy(Process->PageTable, (void *)KernelPageTable, sizeof(Memory::PageTable));
             }
 #elif defined(a32)
 #elif defined(aa64)
@@ -730,7 +734,7 @@ namespace Tasking
         Process->Info.Priority = TaskPriority::Normal;
 
         debug("Process page table: %#lx", Process->PageTable);
-        debug("Created process \"%s\"(%d) in process \"%s\"(%d)",
+        debug("Created process \"%s\"(%d). Parent \"%s\"(%d)",
               Process->Name, Process->ID,
               Parent ? Process->Parent->Name : "None",
               Parent ? Process->Parent->ID : 0);
@@ -771,6 +775,7 @@ namespace Tasking
     TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
+        kproc->ELFSymbolTable = KernelSymbolTable;
         TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), 0, Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
@@ -803,6 +808,7 @@ namespace Tasking
 
         TaskingLock.Unlock();
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Kernel);
+        IdleProcess->ELFSymbolTable = KernelSymbolTable;
         for (int i = 0; i < SMP::CPUCores; i++)
         {
             IdleThread = CreateThread(IdleProcess, reinterpret_cast<uintptr_t>(IdleProcessLoop));

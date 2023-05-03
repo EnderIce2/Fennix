@@ -47,7 +47,7 @@ namespace NetworkNTP
         netdbg("Requesting time");
         this->TimeReceived = false;
 
-        NTPHeader ReqPacket;                      // This may require phyiscal memory allocation but Ethernet already has this job.
+        NTPHeader ReqPacket;                      // This may require physical memory allocation but Ethernet already has this job.
         memset(&ReqPacket, 0, sizeof(NTPHeader)); // Zero out the packet
         *((char *)&ReqPacket) = 0x1b;             // byteswap nightmare, this is the code below but in little endian
         // ReqPacket.LeapIndicator = 0;
