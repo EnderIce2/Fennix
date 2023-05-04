@@ -167,8 +167,9 @@ namespace Tasking
         else
         {
             foreach (TCB *thread in Process->Threads)
-                if (thread->Status == Terminated)
-                    RemoveThread(thread);
+                if (!InvalidTCB(thread))
+                    if (thread->Status == Terminated)
+                        RemoveThread(thread);
         }
     }
 
