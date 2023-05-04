@@ -297,15 +297,15 @@ EXTERNC NIF void Main(BootInfo *Info)
     KPrint("Initializing Power Manager");
     PowerManager = new Power::Power;
 
+    KPrint("Enabling Interrupts on Bootstrap Processor");
+    Interrupts::Enable(0);
+
 #if defined(a64)
     PowerManager->InitDSDT();
 #elif defined(a32)
     // FIXME: Add ACPI support for i386
 #elif defined(aa64)
 #endif
-
-    KPrint("Enabling Interrupts on Bootstrap Processor");
-    Interrupts::Enable(0);
 
     KPrint("Initializing Timers");
     TimeManager = new Time::time;
@@ -484,6 +484,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     }
 
     // https://wiki.osdev.org/Calling_Global_Constructors
+    trace("There are %d constructors to call", __init_array_end - __init_array_start);
     for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
         (*func)();
 
