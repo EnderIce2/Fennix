@@ -31,17 +31,17 @@ extern "C" void SystemCallHandlerStub();
 
 extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHandlerStub()
 {
-    asmv("swapgs\n"
+    asmv("swapgs\n");
 
-         "mov %rsp, %gs:0x8\n" // CPUData->TempStack
-         "mov %gs:0x0, %rsp\n" // CPUData->SystemCallStack
-         "push $0x1b\n"        // user data segment
-         "push %gs:0x8\n"       // saved stack
-         "push %r11\n"         // saved rflags
-         "push $0x23\n"        // user code segment
-         "push %rcx\n"         // Current RIP
+    asmv("mov %rsp, %gs:0x8\n"); // CPUData->TempStack
+    asmv("mov %gs:0x0, %rsp\n"); // CPUData->SystemCallStack
+    asmv("push $0x1b\n");        // user data segment
+    asmv("push %gs:0x8\n");      // saved stack
+    asmv("push %r11\n");         // saved rflags
+    asmv("push $0x23\n");        // user code segment
+    asmv("push %rcx\n");         // Current RIP
 
-         "push %rax\n"
+    asmv("push %rax\n"
          "push %rbx\n"
          "push %rcx\n"
          "push %rdx\n"
@@ -55,13 +55,13 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
          "push %r12\n"
          "push %r13\n"
          "push %r14\n"
-         "push %r15\n"
+         "push %r15\n");
 
-         "mov %rsp, %rdi\n"
-         "mov $0, %rbp\n"
-         "call SystemCallsHandler\n"
+    asmv("mov %rsp, %rdi\n");
+    asmv("mov $0, %rbp\n");
+    asmv("call SystemCallsHandler\n");
 
-         "pop %r15\n"
+    asmv("pop %r15\n"
          "pop %r14\n"
          "pop %r13\n"
          "pop %r12\n"
@@ -74,13 +74,16 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
          "pop %rsi\n"
          "pop %rdx\n"
          "pop %rcx\n"
-         "pop %rbx\n"
+         "pop %rbx\n");
 
-         "mov %gs:0x8, %rsp\n" // CPUData->TempStack
+    asmv("mov %gs:0x8, %rsp\n"); // CPUData->TempStack
+#ifdef DEBUG
+    asmv("movq $0, %gs:0x8\n"); // Easier to debug stacks // FIXME: Can't use xor
+#endif
 
-         "swapgs\n"
-         "sti\n"
-         "sysretq\n");
+    asmv("swapgs\n");
+    asmv("sti\n");
+    asmv("sysretq\n");
 }
 
 void InitializeSystemCalls()
