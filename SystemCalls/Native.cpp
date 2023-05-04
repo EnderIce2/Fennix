@@ -372,9 +372,22 @@ static int sys_fork(SyscallsFrame *Frame)
 
     strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
     NewThread->Info = Thread->Info;
+    NewThread->ShadowGSBase = Thread->ShadowGSBase;
     NewThread->GSBase = Thread->GSBase;
     NewThread->FSBase = Thread->FSBase;
-    TaskManager->Sleep(10); /* Re-schedule */
+
+    CriticalSection cs;
+    static int RetChild = 0;
+
+#if defined(a86)
+    asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#elif defined(aa64)
+    asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#endif
+    if (RetChild--)
+        return 0;
+    RetChild = 1;
+
     NewThread->Registers = Thread->Registers;
 
     debug("Forked thread \"%s\"(%d) from process \"%s\"(%d)", NewThread->Name, NewThread->ID, NewProcess->Name, NewProcess->ID);

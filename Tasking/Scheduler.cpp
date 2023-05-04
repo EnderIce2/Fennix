@@ -522,6 +522,7 @@ namespace Tasking
         {
             CurrentCPU->CurrentThread->Registers = *Frame;
             CPU::x64::fxsave(CurrentCPU->CurrentThread->FPU);
+            CurrentCPU->CurrentThread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSR_SHADOW_GS_BASE);
             CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
             CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 
@@ -604,6 +605,7 @@ namespace Tasking
         asmv("movq %cr3, %rax");
         asmv("movq %rax, %cr3");
         CPU::x64::fxrstor(CurrentCPU->CurrentThread->FPU);
+        CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
         CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
         CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 

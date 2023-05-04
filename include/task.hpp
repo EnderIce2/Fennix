@@ -120,7 +120,7 @@ namespace Tasking
         TaskStatus Status;
 #if defined(a64)
         CPU::x64::TrapFrame Registers;
-        uint64_t GSBase, FSBase;
+        uint64_t ShadowGSBase, GSBase, FSBase;
 #elif defined(a32)
         CPU::x32::TrapFrame Registers; // TODO
         uint64_t GSBase, FSBase;

@@ -429,6 +429,7 @@ namespace Tasking
             Thread->Stack = new Memory::StackGuard(false, Parent->PageTable);
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::TrustedByKernel);
+            Thread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
             Thread->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
             Thread->FSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
             Thread->Registers.cs = GDT_KERNEL_CODE;
@@ -448,6 +449,7 @@ namespace Tasking
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::Untrusted);
+            Thread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
             Thread->GSBase = 0;
             Thread->FSBase = 0;
             Thread->Registers.cs = GDT_USER_CODE;
