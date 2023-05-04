@@ -181,7 +181,7 @@ namespace Execute
             /* ... */
             case PT_PHDR:
             {
-                debug("PT_PHDR - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
+                fixme("PT_PHDR - Offset: %#lx VirtAddr: %#lx FileSiz: %ld MemSiz: %ld Align: %#lx",
                       ItrPhdr.p_offset, ItrPhdr.p_vaddr,
                       ItrPhdr.p_filesz, ItrPhdr.p_memsz, ItrPhdr.p_align);
                 break;
