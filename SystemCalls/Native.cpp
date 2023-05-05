@@ -376,21 +376,41 @@ static int sys_fork(SyscallsFrame *Frame)
     NewThread->GSBase = Thread->GSBase;
     NewThread->FSBase = Thread->FSBase;
 
-    CriticalSection cs;
+    CPU::Interrupts(CPU::Disable);
     static int RetChild = 0;
+    static uint64_t ReturnAddress = 0;
+    static uint64_t ChildStackPointer = 0;
 
 #if defined(a86)
     asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
 #elif defined(aa64)
     asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
 #endif
+
     if (RetChild--)
-        return 0;
+    {
+        /* We can't just return 0; because the CPUData->SystemCallStack is no longer valid */
+        asmv("movq %0, %%rcx\n"
+             :
+             : "r"(ReturnAddress));
+        asmv("movq $0, %rax\n"); // Return 0 to the child
+        asmv("mov %0, %%rsp\n"
+             :
+             : "r"(ChildStackPointer));
+        asmv("mov %0, %%rbp\n"
+             :
+             : "r"(ChildStackPointer));
+        asmv("swapgs\n");  // Swap GS back to the user GS
+        asmv("sti\n");     // Enable interrupts
+        asmv("sysretq\n"); // Return to rcx address in user mode
+    }
     RetChild = 1;
+    ReturnAddress = Frame->ReturnAddress;
+    ChildStackPointer = Frame->StackPointer;
 
     NewThread->Registers = Thread->Registers;
 
-    debug("Forked thread \"%s\"(%d) from process \"%s\"(%d)", NewThread->Name, NewThread->ID, NewProcess->Name, NewProcess->ID);
+    debug("Forked thread \"%s\"(%d) to \"%s\"(%d)", Thread->Name, Thread->ID, NewThread->Name, NewThread->ID);
     NewThread->Status = Tasking::TaskStatus::Ready;
 
     if (_ChildPID == (int)TaskManager->GetCurrentThread()->ID)
