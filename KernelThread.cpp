@@ -16,6 +16,9 @@
 */
 
 #include "kernel.h"
+#ifdef DEBUG
+#include "Tests/t.h"
+#endif
 
 #include <filesystem/ustar.hpp>
 #include <power.hpp>
@@ -127,15 +130,24 @@ uint64_t GetUsage(uint64_t OldSystemTime, Tasking::TaskInfo *Info)
     return 0;
 }
 
+static int ShowTaskManager = 0;
+
 void TaskMgr()
 {
     TaskManager->GetCurrentThread()->Rename("Debug Task Manager");
     TaskManager->GetCurrentThread()->SetPriority(Tasking::Low);
+
+    while (ShowTaskManager == 0)
+        CPU::Pause();
+
     TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy100Usage)->Rename("Dummy 100% Usage");
     TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy0Usage)->Rename("Dummy 0% Usage");
 
-    while (1)
+    while (true)
     {
+        while (ShowTaskManager == 0)
+            CPU::Pause();
+
         static int sanity = 0;
         Video::ScreenBuffer *sb = Display->GetBuffer(0);
         for (short i = 0; i < 1000; i++)
@@ -190,6 +202,48 @@ void TaskMgr()
 
         TaskManager->Sleep(100);
     }
+}
+
+void TestSyscallsKernel()
+{
+    return;
+    KPrint("Testing syscalls...");
+    Tasking::PCB *SyscallsTestProcess = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(),
+                                                                   "Syscalls Test",
+                                                                   Tasking::TaskTrustLevel::User,
+                                                                   KernelSymbolTable);
+
+    Tasking::TCB *SyscallsTestThread = TaskManager->CreateThread(SyscallsTestProcess,
+                                                                 (Tasking::IP)TestSyscalls,
+                                                                 nullptr,
+                                                                 nullptr,
+                                                                 std::vector<AuxiliaryVector>(),
+                                                                 0,
+                                                                 Tasking::TaskArchitecture::x64,
+                                                                 Tasking::TaskCompatibility::Native,
+                                                                 true);
+    SyscallsTestThread->SetCritical(true);
+    TaskManager->GetSecurityManager()->TrustToken(SyscallsTestThread->Security.UniqueToken, Tasking::TTL::FullTrust);
+
+    Memory::Virtual va = Memory::Virtual(SyscallsTestProcess->PageTable);
+
+    // va.Remap((void *)TestSyscalls, va.GetPhysical((void *)TestSyscalls), Memory::P | Memory::RW | Memory::US);
+
+    // for (uintptr_t k = (uintptr_t)&_kernel_start; k < (uintptr_t)&_kernel_end; k += PAGE_SIZE)
+    // {
+    //     va.Remap((void *)k, (void *)va.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
+    //     debug("Remapped %#lx %#lx", k, va.GetPhysical((void *)k));
+    // }
+
+    for (uintptr_t k = (uintptr_t)TestSyscalls - PAGE_SIZE; k < (uintptr_t)TestSyscalls + FROM_PAGES(5); k += PAGE_SIZE)
+    {
+        va.Remap((void *)k, (void *)va.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
+        debug("Remapped %#lx %#lx", k, va.GetPhysical((void *)k));
+    }
+
+    SyscallsTestThread->Status = Tasking::TaskStatus::Ready;
+    TaskManager->WaitForThread(SyscallsTestThread);
+    KPrint("Test complete");
 }
 #endif
 
@@ -363,8 +417,9 @@ void KernelMainThread()
     }
 
 #ifdef DEBUG
-    // Tasking::TCB *tskMgr = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
+    Tasking::TCB *tskMgr = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
     TreeFS(vfs->GetRootNode(), 0);
+    TestSyscallsKernel();
 #endif
 
     KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);

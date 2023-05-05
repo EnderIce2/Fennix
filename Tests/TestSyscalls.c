@@ -15,15 +15,33 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_non_constructor_tests_H__
-#define __FENNIX_KERNEL_non_constructor_tests_H__
-#ifdef DEBUG
-
 #include <types.h>
 
-void TestString();
-void TestMemoryAllocation();
-EXTERNC void TestSyscalls();
+#include "../syscalls.h"
 
-#endif // DEBUG
-#endif // !__FENNIX_KERNEL_non_constructor_tests_H__
+#ifdef DEBUG
+
+__aligned(0x1000) __no_stack_protector void TestSyscalls()
+{
+   __asm__ __volatile__("syscall"
+                        :
+                        : "a"(_Print), "D"('H'), "S"(0)
+                        : "rcx", "r11", "memory");
+
+   int fork_id = -0xda;
+
+   __asm__ __volatile__("syscall"
+                        : "=a"(fork_id)
+                        : "a"(_Fork)
+                        : "rcx", "r11", "memory");
+
+   __asm__ __volatile__("syscall"
+                        :
+                        : "a"(_Exit), "D"(fork_id)
+                        : "rcx", "r11", "memory");
+
+   while (1)
+      ;
+}
+
+#endif
