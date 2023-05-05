@@ -212,6 +212,7 @@ namespace Execute
         /* ------------------------------------------------------------------------------------------------------------------------------ */
 
         PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User, ElfFile);
+        Process->SetWorkingDirectory(vfs->GetNodeFromPath(Path)->Parent);
         Memory::Virtual pV = Memory::Virtual(Process->PageTable);
         for (size_t i = 0; i < TO_PAGES(ExFileSize); i++)
             pV.Remap((void *)((uintptr_t)ElfFile + (i * PAGE_SIZE)), (void *)((uintptr_t)ElfFile + (i * PAGE_SIZE)), Memory::PTFlag::RW | Memory::PTFlag::US);

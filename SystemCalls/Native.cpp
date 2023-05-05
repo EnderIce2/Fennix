@@ -250,7 +250,7 @@ static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType T
 static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t Flags)
 {
     debug("(Path: %s, Flags: %#lx)", Path, Flags);
-    VirtualFileSystem::File KPObj = vfs->Open(Path);
+    VirtualFileSystem::File KPObj = vfs->Open(Path, TaskManager->GetCurrentProcess()->CurrentWorkingDirectory);
     if (!KPObj.IsOK())
     {
         debug("Failed to open file %s (%d)", Path, KPObj.Status);
@@ -307,13 +307,13 @@ static uint64_t sys_file_seek(SyscallsFrame *Frame, void *KernelPrivate, uint64_
     if (KernelPrivate == nullptr)
         return 0;
 
-    debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %#lx)", KernelPrivate, Offset, Whence);
+    debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %d)", KernelPrivate, Offset, Whence);
     VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
 
     if (KPObj->node->Operator->Seek == nullptr)
         return SYSCALL_INTERNAL_ERROR;
 
-    return KPObj->node->Operator->Seek(KPObj->node, Offset, Whence);
+    return KPObj->node->Operator->Seek(KPObj->node, Offset, (uint8_t)Whence);
     UNUSED(Frame);
 }
 

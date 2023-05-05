@@ -190,8 +190,16 @@ namespace Tasking
         InterProcessCommunication::IPC *IPC;
         Memory::PageTable *PageTable;
         SymbolResolver::Symbols *ELFSymbolTable;
+        VirtualFileSystem::Node *CurrentWorkingDirectory;
         VirtualFileSystem::Node *ProcessDirectory;
         VirtualFileSystem::Node *memDirectory;
+
+        void SetWorkingDirectory(VirtualFileSystem::Node *node)
+        {
+            CriticalSection cs;
+            trace("Setting working directory of process %s to %#lx (%s)", Name, node, node->Name);
+            CurrentWorkingDirectory = node;
+        }
     };
 
     /** @brief Token Trust Level */
