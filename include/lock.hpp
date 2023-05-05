@@ -38,6 +38,7 @@ size_t GetLocksCount();
 /** @brief Please use this macro to create a new lock. */
 class LockClass
 {
+public:
     struct SpinLockData
     {
         std::atomic_uint64_t LockData = 0x0;

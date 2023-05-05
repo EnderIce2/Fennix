@@ -22,10 +22,57 @@
 
 #include "../kernel.h"
 
-// #define PRINT_BACKTRACE
+#ifdef DEBUG
+#define PRINT_BACKTRACE
+#endif
 
 #ifdef PRINT_BACKTRACE
 #pragma GCC diagnostic ignored "-Wframe-address"
+
+void PrintStacktrace(LockClass::SpinLockData *Lock)
+{
+    if (KernelSymbolTable)
+    {
+        struct StackFrame
+        {
+            uintptr_t BasePointer;
+            uintptr_t ReturnAddress;
+        };
+
+        char DbgAttempt[1024] = "\0";
+        char DbgHolder[1024] = "\0";
+
+        StackFrame *FrameAttempt = (StackFrame *)Lock->StackPointerAttempt.load();
+        StackFrame *FrameHolder = (StackFrame *)Lock->StackPointerHolder.load();
+
+        while (Memory::Virtual().Check(FrameAttempt))
+        {
+            sprintf(DbgAttempt + strlen(DbgAttempt), "%s<-", KernelSymbolTable->GetSymbolFromAddress(FrameAttempt->ReturnAddress));
+            FrameAttempt = (StackFrame *)FrameAttempt->BasePointer;
+        }
+
+        while (Memory::Virtual().Check(FrameHolder))
+        {
+            sprintf(DbgHolder + strlen(DbgHolder), "%s<-", KernelSymbolTable->GetSymbolFromAddress(FrameHolder->ReturnAddress));
+            FrameHolder = (StackFrame *)FrameHolder->BasePointer;
+        }
+
+        debug("Attempt: %s", DbgAttempt);
+        debug("Holder: %s", DbgHolder);
+
+        // debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
+        //       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
+    }
+}
 #endif
 
 bool ForceUnlock = false;
@@ -55,20 +102,7 @@ void LockClass::DeadLock(SpinLockData Lock)
          CCore, Lock.Core, this->DeadLocks);
 
 #ifdef PRINT_BACKTRACE
-    if (KernelSymbolTable)
-    {
-        debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
-    }
+    PrintStacktrace(&Lock);
 #endif
 
     // TODO: Print on screen too.
@@ -144,20 +178,7 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
          CCore, Lock.Core, Timeout, Timeout - Counter);
 
 #ifdef PRINT_BACKTRACE
-    if (KernelSymbolTable)
-    {
-        debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
-              KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
-    }
+    PrintStacktrace(&Lock);
 #endif
 
     if (Timeout < Counter)
