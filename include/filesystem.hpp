@@ -158,6 +158,8 @@ namespace VirtualFileSystem
          */
         File ConvertNodeToFILE(Node *node);
 
+        bool PathIsRelative(const char *Path);
+
         Node *GetParent(const char *Path, Node *Parent);
         Node *GetRootNode() { return FileSystemRoot; }
 

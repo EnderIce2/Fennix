@@ -176,6 +176,14 @@ namespace VirtualFileSystem
         return file;
     }
 
+    bool Virtual::PathIsRelative(const char *Path)
+    {
+        vfsdbg("PathIsRelative( Path: \"%s\" )", Path);
+        bool IsRelative = cwk_path_is_relative(Path);
+        vfsdbg("PathIsRelative()->%s", IsRelative ? "true" : "false");
+        return IsRelative;
+    }
+
     Node *Virtual::GetParent(const char *Path, Node *Parent)
     {
         vfsdbg("GetParent( Path: \"%s\" Parent: \"%s\" )", Path, Parent->Name);
