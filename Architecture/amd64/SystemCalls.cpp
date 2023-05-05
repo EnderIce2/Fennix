@@ -31,17 +31,16 @@ extern "C" void SystemCallHandlerStub();
 
 extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHandlerStub()
 {
-    asmv("swapgs\n");
+    asmv("swapgs\n");            /* Swap GS to get the CPUData */
+    asmv("mov %rsp, %gs:0x8\n"); /* We save the current rsp to CPUData->TempStack */
+    asmv("mov %gs:0x0, %rsp\n"); /* Get CPUData->SystemCallStack and set it as rsp */
+    asmv("push $0x1b\n");        /* Push user data segment for SyscallsFrame */
+    asmv("push %gs:0x8\n");      /* Push CPUData->TempStack (old rsp) for SyscallsFrame */
+    asmv("push %r11\n");         /* Push the flags for SyscallsFrame */
+    asmv("push $0x23\n");        /* Push user code segment for SyscallsFrame */
+    asmv("push %rcx\n");         /* Push the return address for SyscallsFrame + sysretq (https://www.felixcloutier.com/x86/sysret) */
 
-    asmv("mov %rsp, %gs:0x8\n"); // CPUData->TempStack
-    asmv("mov %gs:0x0, %rsp\n"); // CPUData->SystemCallStack
-    asmv("push $0x1b\n");        // user data segment
-    asmv("push %gs:0x8\n");      // saved stack
-    asmv("push %r11\n");         // saved rflags
-    asmv("push $0x23\n");        // user code segment
-    asmv("push %rcx\n");         // Current RIP
-
-    asmv("push %rax\n"
+    asmv("push %rax\n" /* Push registers */
          "push %rbx\n"
          "push %rcx\n"
          "push %rdx\n"
@@ -57,11 +56,11 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
          "push %r14\n"
          "push %r15\n");
 
-    asmv("mov %rsp, %rdi\n");
+    asmv("mov %rsp, %rdi\n"); /* Set the first argument to the SyscallsFrame pointer */
     asmv("mov $0, %rbp\n");
     asmv("call SystemCallsHandler\n");
 
-    asmv("pop %r15\n"
+    asmv("pop %r15\n" /* Pop registers except rax */
          "pop %r14\n"
          "pop %r13\n"
          "pop %r12\n"
@@ -76,14 +75,14 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
          "pop %rcx\n"
          "pop %rbx\n");
 
-    asmv("mov %gs:0x8, %rsp\n"); // CPUData->TempStack
+    asmv("mov %gs:0x8, %rsp\n"); // Restore rsp from CPUData->TempStack
 #ifdef DEBUG
     asmv("movq $0, %gs:0x8\n"); // Easier to debug stacks // FIXME: Can't use xor
 #endif
 
-    asmv("swapgs\n");
-    asmv("sti\n");
-    asmv("sysretq\n");
+    asmv("swapgs\n");  // Swap GS back to the user GS
+    asmv("sti\n");     // Enable interrupts
+    asmv("sysretq\n"); // Return to rcx address in user mode
 }
 
 void InitializeSystemCalls()
