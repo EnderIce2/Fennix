@@ -26,6 +26,10 @@ namespace VirtualFileSystem
 {
 #define FILENAME_LENGTH 256
 
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+
     struct Node;
 
     typedef size_t (*OperationMount)(const char *, unsigned long, const void *);
@@ -37,6 +41,7 @@ namespace VirtualFileSystem
     typedef size_t (*OperationSync)(void);
     typedef void (*OperationCreate)(Node *node, char *Name, uint16_t NameLength);
     typedef void (*OperationMkdir)(Node *node, char *Name, uint16_t NameLength);
+    typedef size_t (*OperationSeek)(Node *node, size_t Offset, uint8_t Whence);
 
 #define MountFSFunction(name) size_t name(const char *unknown0, unsigned long unknown1, const uint8_t *unknown2)
 #define UMountFSFunction(name) size_t name(int unknown0)
@@ -48,6 +53,7 @@ namespace VirtualFileSystem
 #define SyncFSFunction(name) size_t name(void)
 #define CreateFSFunction(name) void name(VirtualFileSystem::Node *node, char *Name, uint16_t NameLength)
 #define MkdirFSFunction(name) void name(VirtualFileSystem::Node *node, char *Name, uint16_t NameLength)
+#define SeekFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Offset, uint8_t Whence)
 
     enum FileStatus
     {
@@ -101,6 +107,7 @@ namespace VirtualFileSystem
         OperationClose Close = nullptr;
         OperationCreate Create = nullptr;
         OperationMkdir MakeDirectory = nullptr;
+        OperationSeek Seek = nullptr;
     };
 
     struct Node
@@ -113,6 +120,7 @@ namespace VirtualFileSystem
         uint64_t UserIdentifier = 0, GroupIdentifier = 0;
         uintptr_t Address = 0;
         size_t Length = 0;
+        uint64_t Offset = 0;
         Node *Parent = nullptr;
         FileSystemOperations *Operator = nullptr;
         /* For root node:

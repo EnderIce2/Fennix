@@ -36,9 +36,44 @@ namespace VirtualFileSystem
         return Size;
     }
 
+    SeekFSFunction(USTAR_Seek)
+    {
+        long NewOffset;
+
+        if (Whence == SEEK_SET)
+        {
+            if (Offset > node->Length)
+                return -1;
+            node->Offset = Offset;
+            NewOffset = node->Offset;
+        }
+        else if (Whence == SEEK_CUR)
+        {
+            NewOffset = node->Offset + Offset;
+            if (NewOffset > node->Length || NewOffset < 0)
+                return -1;
+            node->Offset = NewOffset;
+        }
+        else if (Whence == SEEK_END)
+        {
+            NewOffset = node->Length + Offset;
+            if (NewOffset < 0)
+                return -1;
+            node->Offset = NewOffset;
+        }
+        else
+        {
+            error("Invalid whence!");
+            return -1;
+        }
+
+        return NewOffset;
+    }
+
     FileSystemOperations ustar_op = {
         .Name = "ustar",
         .Read = USTAR_Read,
+        .Seek = USTAR_Seek,
     };
 
     USTAR::USTAR(uintptr_t Address, Virtual *vfs_ctx)

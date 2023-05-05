@@ -19,6 +19,7 @@
 #include <memory.hpp>
 #include <lock.hpp>
 #include <exec.hpp>
+#include <errno.h>
 
 #include <debug.h>
 
@@ -301,10 +302,19 @@ static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint64
     UNUSED(Frame);
 }
 
-static int sys_file_seek(SyscallsFrame *Frame)
+static uint64_t sys_file_seek(SyscallsFrame *Frame, void *KernelPrivate, uint64_t Offset, int Whence)
 {
-    fixme("sys_file_seek: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
+    if (KernelPrivate == nullptr)
+        return 0;
+
+    debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %#lx)", KernelPrivate, Offset, Whence);
+    VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
+
+    if (KPObj->node->Operator->Seek == nullptr)
+        return SYSCALL_INTERNAL_ERROR;
+
+    return KPObj->node->Operator->Seek(KPObj->node, Offset, Whence);
+    UNUSED(Frame);
 }
 
 static int sys_file_status(SyscallsFrame *Frame)

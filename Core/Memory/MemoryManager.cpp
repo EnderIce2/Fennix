@@ -46,10 +46,45 @@ namespace Memory
         return Size;
     }
 
+    SeekFSFunction(MEM_Seek)
+    {
+        long NewOffset;
+
+        if (Whence == SEEK_SET)
+        {
+            if (Offset > node->Length)
+                return -1;
+            node->Offset = Offset;
+            NewOffset = node->Offset;
+        }
+        else if (Whence == SEEK_CUR)
+        {
+            NewOffset = node->Offset + Offset;
+            if (NewOffset > node->Length || NewOffset < 0)
+                return -1;
+            node->Offset = NewOffset;
+        }
+        else if (Whence == SEEK_END)
+        {
+            NewOffset = node->Length + Offset;
+            if (NewOffset < 0)
+                return -1;
+            node->Offset = NewOffset;
+        }
+        else
+        {
+            error("Invalid whence!");
+            return -1;
+        }
+
+        return NewOffset;
+    }
+
     VirtualFileSystem::FileSystemOperations mem_op = {
         .Name = "mem",
         .Read = MEM_Read,
         .Write = MEM_Write,
+        .Seek = MEM_Seek,
     };
 
     uint64_t MemMgr::GetAllocatedMemorySize()

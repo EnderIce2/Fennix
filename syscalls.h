@@ -109,7 +109,7 @@ enum NativeSyscalls
     _FileWrite,
 
     /** @brief Seek in a file
-     * @fn
+     * @fn uint64_t FileSeek(void *KernelPrivate, uint64_t Offset, int Whence)
      * This syscall is used to change the current offset in a file.
      */
     _FileSeek,
