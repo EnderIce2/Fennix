@@ -60,7 +60,7 @@ namespace Memory
         else if (Whence == SEEK_CUR)
         {
             NewOffset = node->Offset + Offset;
-            if (NewOffset > node->Length || NewOffset < 0)
+            if ((size_t)NewOffset > node->Length || NewOffset < 0)
                 return -1;
             node->Offset = NewOffset;
         }
