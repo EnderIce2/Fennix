@@ -244,6 +244,7 @@ namespace Tasking
         TCB *CleanupThread = nullptr;
         std::atomic_uint64_t SchedulerTicks = 0;
         std::atomic_uint64_t LastTaskTicks = 0;
+        std::atomic_int LastCore = 0;
         bool StopScheduler = false;
         bool InvalidPCB(PCB *pcb);
         bool InvalidTCB(TCB *tcb);
@@ -275,6 +276,7 @@ namespace Tasking
         void SetCleanupThread(TCB *Thread) { CleanupThread = Thread; }
         uint64_t GetSchedulerTicks() { return SchedulerTicks.load(); }
         uint64_t GetLastTaskTicks() { return LastTaskTicks.load(); }
+        uint64_t GetLastCore() { return LastCore.load(); }
         std::vector<PCB *> GetProcessList() { return ProcessList; }
         Security *GetSecurityManager() { return &SecurityManager; }
         void CleanupProcessesThread();

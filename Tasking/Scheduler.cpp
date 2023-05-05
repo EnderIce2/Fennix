@@ -481,6 +481,7 @@ namespace Tasking
         uint64_t SchedTmpTicks = TimeManager->GetCounter();
         this->LastTaskTicks.store(SchedTmpTicks - this->SchedulerTicks.load());
         CPUData *CurrentCPU = GetCurrentCPU();
+        this->LastCore.store(CurrentCPU->ID);
         schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
         schedbg("%d: %ld%%", CurrentCPU->ID, GetUsage(CurrentCPU->ID));
 

@@ -258,6 +258,8 @@ namespace Recovery
         wdgDbgWin->CreateButton({245, 340, 25, 15}, "90%", (uintptr_t)BufBight90);
         wdgDbgWin->CreateButton({275, 340, 25, 15}, "100%", (uintptr_t)BufBight100);
 
+        GraphicalUserInterface::Handle wdgDbgCurrentCPUSchedCoreLbl = wdgDbgWin->CreateLabel({5, 355, 0, 0}, "CPU Scheduled Core: Unknown");
+
         DbgWin->AddWidget(wdgDbgWin);
 
         char TicksText[128];
@@ -268,6 +270,8 @@ namespace Recovery
         {
             sprintf(TicksText, "%016ld / %016ld", TaskManager->GetSchedulerTicks(), TaskManager->GetLastTaskTicks());
             wdgDbgWin->SetText(SchedLblHnd, TicksText);
+            sprintf(TicksText, "CPU Scheduled Core: %ld", TaskManager->GetLastCore());
+            wdgDbgWin->SetText(wdgDbgCurrentCPUSchedCoreLbl, TicksText);
             static int RefreshMemCounter = 0;
             if (RefreshMemCounter-- == 0)
             {
