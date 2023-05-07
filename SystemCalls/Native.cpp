@@ -25,7 +25,6 @@
 #include "../syscalls.h"
 #include "../kernel.h"
 
-#include "../../Userspace/libs/include/sysbase.h"
 #include "../ipc.h"
 
 using InterProcessCommunication::IPC;
@@ -111,124 +110,125 @@ static int sys_detach_address(SyscallsFrame *Frame, uintptr_t Address)
     return SYSCALL_OK;
 }
 
-static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
+static uintptr_t sys_kernelctl(SyscallsFrame *Frame, uint64_t Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
 {
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
 
-    switch (Command)
-    {
-    case KCTL_GET_PID:
-        return TaskManager->GetCurrentThread()->Parent->ID;
-    case KCTL_GET_TID:
-        return TaskManager->GetCurrentThread()->ID;
-    case KCTL_GET_PAGE_SIZE:
-        return PAGE_SIZE;
-    case KCTL_IS_CRITICAL:
-        return TaskManager->GetCurrentThread()->Security.IsCritical;
-    case KCTL_REGISTER_ELF_LIB:
-    {
-        if (!CheckTrust(TrustedByKernel | Trusted))
-            return SYSCALL_ACCESS_DENIED;
-        char *Identifier = (char *)Arg1;
-        const char *Path = (const char *)Arg2;
+    return SYSCALL_NOT_IMPLEMENTED;
 
-        if (!Identifier || !Path)
-            return SYSCALL_INVALID_ARGUMENT;
+    // switch (Command)
+    // {
+    // case KCTL_GET_PID:
+    //     return TaskManager->GetCurrentThread()->Parent->ID;
+    // case KCTL_GET_TID:
+    //     return TaskManager->GetCurrentThread()->ID;
+    // case KCTL_GET_PAGE_SIZE:
+    //     return PAGE_SIZE;
+    // case KCTL_IS_CRITICAL:
+    //     return TaskManager->GetCurrentThread()->Security.IsCritical;
+    // case KCTL_REGISTER_ELF_LIB:
+    // {
+    //     if (!CheckTrust(TrustedByKernel | Trusted))
+    //         return SYSCALL_ACCESS_DENIED;
+    //     char *Identifier = (char *)Arg1;
+    //     const char *Path = (const char *)Arg2;
 
-        std::string FullPath = Path;
-        int retries = 0;
-    RetryReadPath:
-        debug("KCTL_REGISTER_ELF_LIB: Trying to open %s", FullPath.c_str());
-        VirtualFileSystem::File f = vfs->Open(FullPath.c_str());
+    //     if (!Identifier || !Path)
+    //         return SYSCALL_INVALID_ARGUMENT;
 
-        if (!f.IsOK())
-        {
-            FullPath.clear();
-            switch (retries)
-            {
-            case 0:
-                FullPath = "/system/lib/";
-                break;
-            case 1:
-                FullPath = "/system/lib64/";
-                break;
-            case 2:
-                FullPath = "/system/";
-                break;
-            case 3:
-            {
-                // TODO: Check process binary path
-                break;
-            }
-            default:
-            {
-                vfs->Close(f);
-                return SYSCALL_INVALID_ARGUMENT;
-            }
-            }
-            FullPath += Path;
-            vfs->Close(f);
-            retries++;
-            goto RetryReadPath;
-        }
+    //     std::string FullPath = Path;
+    //     int retries = 0;
+    // RetryReadPath:
+    //     debug("KCTL_REGISTER_ELF_LIB: Trying to open %s", FullPath.c_str());
+    //     VirtualFileSystem::File f = vfs->Open(FullPath.c_str());
 
-        vfs->Close(f);
-        if (Execute::AddLibrary(Identifier, (void *)f.node->Address, f.node->Length))
-            return SYSCALL_OK;
-        else
-            return SYSCALL_INTERNAL_ERROR;
-    }
-    case KCTL_GET_ELF_LIB_FILE:
-    {
-        if (!CheckTrust(TrustedByKernel | Trusted))
-            return SYSCALL_ACCESS_DENIED;
-        char *Identifier = (char *)Arg1;
-        if (!Identifier)
-            return 0;
+    //     if (!f.IsOK())
+    //     {
+    //         FullPath.clear();
+    //         switch (retries)
+    //         {
+    //         case 0:
+    //             FullPath = "/system/lib/";
+    //             break;
+    //         case 1:
+    //             FullPath = "/system/lib64/";
+    //             break;
+    //         case 2:
+    //             FullPath = "/system/";
+    //             break;
+    //         case 3:
+    //         {
+    //             // TODO: Check process binary path
+    //             break;
+    //         }
+    //         default:
+    //         {
+    //             vfs->Close(f);
+    //             return SYSCALL_INVALID_ARGUMENT;
+    //         }
+    //         }
+    //         FullPath += Path;
+    //         vfs->Close(f);
+    //         retries++;
+    //         goto RetryReadPath;
+    //     }
 
-        Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
-        if (!lib.Address)
-        {
-            debug("Failed to get library address %#lx", (uintptr_t)lib.Address);
-        }
+    //     vfs->Close(f);
+    //     if (Execute::AddLibrary(Identifier, (void *)f.node->Address, f.node->Length))
+    //         return SYSCALL_OK;
+    //     else
+    //         return SYSCALL_INTERNAL_ERROR;
+    // }
+    // case KCTL_GET_ELF_LIB_FILE:
+    // {
+    //     if (!CheckTrust(TrustedByKernel | Trusted))
+    //         return SYSCALL_ACCESS_DENIED;
+    //     char *Identifier = (char *)Arg1;
+    //     if (!Identifier)
+    //         return 0;
 
-        debug("Returning library address %#lx (%s)", (uintptr_t)lib.Address, Identifier);
-        return (uintptr_t)lib.Address;
-    }
-    case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
-    {
-        if (!CheckTrust(TrustedByKernel | Trusted))
-            return SYSCALL_ACCESS_DENIED;
-        char *Identifier = (char *)Arg1;
-        if (!Identifier)
-            return 0;
+    //     Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
+    //     if (!lib.Address)
+    //     {
+    //         debug("Failed to get library address %#lx", (uintptr_t)lib.Address);
+    //     }
 
-        Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
+    //     debug("Returning library address %#lx (%s)", (uintptr_t)lib.Address, Identifier);
+    //     return (uintptr_t)lib.Address;
+    // }
+    // case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
+    // {
+    //     if (!CheckTrust(TrustedByKernel | Trusted))
+    //         return SYSCALL_ACCESS_DENIED;
+    //     char *Identifier = (char *)Arg1;
+    //     if (!Identifier)
+    //         return 0;
 
-        if (!lib.MemoryImage)
-        {
-            debug("Failed to get library memory image %#lx", (uintptr_t)lib.MemoryImage);
-        }
+    //     Execute::SharedLibraries lib = Execute::GetLibrary(Identifier);
 
-        debug("Returning memory image %#lx (%s)", (uintptr_t)lib.MemoryImage, Identifier);
-        return (uintptr_t)lib.MemoryImage;
-    }
-    case KCTL_GET_FRAMEBUFFER_BUFFER:
-        return r_cst(uint64_t, Display->GetBuffer(0)->Buffer);
-    case KCTL_GET_FRAMEBUFFER_WIDTH:
-        return Display->GetBuffer(0)->Width;
-    case KCTL_GET_FRAMEBUFFER_HEIGHT:
-        return Display->GetBuffer(0)->Height;
-    case KCTL_GET_FRAMEBUFFER_SIZE:
-        return Display->GetBuffer(0)->Size;
+    //     if (!lib.MemoryImage)
+    //     {
+    //         debug("Failed to get library memory image %#lx", (uintptr_t)lib.MemoryImage);
+    //     }
 
-    default:
-    {
-        warn("KernelCTL: Unknown command: %lld", Command);
-        return SYSCALL_INVALID_ARGUMENT;
-    }
-    }
+    //     debug("Returning memory image %#lx (%s)", (uintptr_t)lib.MemoryImage, Identifier);
+    //     return (uintptr_t)lib.MemoryImage;
+    // }
+    // case KCTL_GET_FRAMEBUFFER_BUFFER:
+    //     return r_cst(uint64_t, Display->GetBuffer(0)->Buffer);
+    // case KCTL_GET_FRAMEBUFFER_WIDTH:
+    //     return Display->GetBuffer(0)->Width;
+    // case KCTL_GET_FRAMEBUFFER_HEIGHT:
+    //     return Display->GetBuffer(0)->Height;
+    // case KCTL_GET_FRAMEBUFFER_SIZE:
+    //     return Display->GetBuffer(0)->Size;
+    // default:
+    // {
+    //     warn("KernelCTL: Unknown command: %lld", Command);
+    //     return SYSCALL_INVALID_ARGUMENT;
+    // }
+    // }
 
     UNUSED(Arg1);
     UNUSED(Arg2);

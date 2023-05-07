@@ -255,9 +255,6 @@ EXTERNC void KPrint(const char *Format, ...)
 
 EXTERNC NIF void Main(BootInfo *Info)
 {
-    memcpy(&bInfo, Info, sizeof(BootInfo));
-    debug("BootInfo structure is at %p", bInfo);
-
     Display = new Video::Display(bInfo.Framebuffer[0]);
     KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
@@ -270,7 +267,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     Interrupts::Initialize(0);
 
     KPrint("Loading Kernel Symbols");
-    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
+    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
     KPrint("Reading Kernel Parameters");
     ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
@@ -496,8 +493,23 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     TestMemoryAllocation();
 #endif
 
+    /* This is allocated in RAM. */
+    static BootInfo *bootInfo_temp = nullptr;
+    bootInfo_temp = Info; /* Info will be lost after changing the rsp and bsp. */
+
+    /* NO RETURN BEYOND THIS POINT */
+    void *KernelStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+    asmv("mov %0, %%rsp"
+         :
+         : "r"(KernelStack)
+         : "memory");
+    asmv("mov $0, %rbp");
+
+    memcpy(&bInfo, bootInfo_temp, sizeof(BootInfo));
+    debug("BootInfo structure is at %p", &bInfo);
+
     EnableProfiler = true;
-    Main(Info);
+    Main(bootInfo_temp);
 }
 
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"

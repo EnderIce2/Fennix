@@ -146,6 +146,7 @@ NIF void MapFramebuffer(PageTable4 *PT, BootInfo *Info)
 NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
 {
     debug("Mapping Kernel");
+    uintptr_t BootstrapStart = (uintptr_t)&_bootstrap_start;
     uintptr_t KernelStart = (uintptr_t)&_kernel_start;
     uintptr_t KernelTextEnd = (uintptr_t)&_kernel_text_end;
     uintptr_t KernelDataEnd = (uintptr_t)&_kernel_data_end;
@@ -153,6 +154,9 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
     uintptr_t KernelFileStart = (uintptr_t)Info->Kernel.FileBase;
     uintptr_t KernelFileEnd = KernelFileStart + Info->Kernel.Size;
+
+    debug("Kernel physical address: %#lx - %#lx", Info->Kernel.PhysicalBase, (uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size);
+    debug("Kernel file base: %#lx - %#lx", KernelFileStart, KernelFileEnd);
 
     debug("File size: %ld KB", TO_KB(Info->Kernel.Size));
     debug(".text size: %ld KB", TO_KB(KernelTextEnd - KernelStart));
@@ -164,9 +168,23 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     uintptr_t k;
     Virtual va = Virtual(PT);
 
+    /* Bootstrap section */
+    for (k = BootstrapStart; k < KernelStart - KERNEL_VMA_OFFSET; k += PAGE_SIZE)
+    {
+#ifdef DEBUG /* vscode debugging */
+        void *BKMA = (void *)BaseKernelMapAddress, *K_ = (void *)k;
+#endif
+        va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+        KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
+        BaseKernelMapAddress += PAGE_SIZE;
+    }
+
     /* Text section */
     for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
+#ifdef DEBUG /* vscode debugging */
+        void *BKMA = (void *)BaseKernelMapAddress, *K_ = (void *)k;
+#endif
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
@@ -175,6 +193,9 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     /* Data section */
     for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
     {
+#ifdef DEBUG /* vscode debugging */
+        void *BKMA = (void *)BaseKernelMapAddress, *K_ = (void *)k;
+#endif
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
@@ -183,6 +204,9 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     /* Read only data section */
     for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
+#ifdef DEBUG /* vscode debugging */
+        void *BKMA = (void *)BaseKernelMapAddress, *K_ = (void *)k;
+#endif
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
@@ -191,17 +215,23 @@ NIF void MapKernel(PageTable4 *PT, BootInfo *Info)
     /* BSS section */
     for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
     {
+#ifdef DEBUG /* vscode debugging */
+        void *BKMA = (void *)BaseKernelMapAddress, *K_ = (void *)k;
+#endif
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
+    debug("BaseKernelMapAddress: %#lx - %#lx", Info->Kernel.PhysicalBase, BaseKernelMapAddress);
+
     /* Kernel file */
-    for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
-    {
-        va.Map((void *)k, (void *)k, PTFlag::G);
-        KernelAllocator.ReservePage((void *)k);
-    }
+    if (KernelFileStart != 0)
+        for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
+        {
+            va.Map((void *)k, (void *)k, PTFlag::G);
+            KernelAllocator.ReservePage((void *)k);
+        }
 
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
@@ -304,6 +334,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 
     trace("Initializing Virtual Memory Manager");
     KernelPageTable = (PageTable4 *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE + 1));
+    debug("Page table allocated at %#lx", KernelPageTable);
     memset(KernelPageTable, 0, PAGE_SIZE);
 
     if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)

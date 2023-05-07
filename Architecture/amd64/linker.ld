@@ -57,8 +57,6 @@ SECTIONS
     {
         *(.rodata .rodata.*)
     }
-    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
-    . += CONSTANT(MAXPAGESIZE);
 
     .init_array : AT(ADDR(.init_array) - KERNEL_VMA)
     {
@@ -75,6 +73,7 @@ SECTIONS
         KEEP(*(.fini_array .dtors))
         PROVIDE_HIDDEN (__fini_array_end = .);
     }
+    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
     . += CONSTANT(MAXPAGESIZE);
 
     .bss : AT(ADDR(.bss) - KERNEL_VMA)

@@ -33,7 +33,7 @@ union __attribute__((packed)) PageTableEntry
 
 struct __attribute__((packed)) PageTableEntryPtr
 {
-    PageTableEntry Entries[511];
+    PageTableEntry Entries[512];
 };
 
 union __attribute__((packed)) PageDirectoryEntry
@@ -67,7 +67,7 @@ union __attribute__((packed)) PageDirectoryEntry
 
 struct __attribute__((packed)) PageDirectoryEntryPtr
 {
-    PageDirectoryEntry Entries[511];
+    PageDirectoryEntry Entries[512];
 };
 
 union __attribute__((packed)) PageDirectoryPointerTableEntry
@@ -101,7 +101,7 @@ union __attribute__((packed)) PageDirectoryPointerTableEntry
 
 struct __attribute__((packed)) PageDirectoryPointerTableEntryPtr
 {
-    PageDirectoryPointerTableEntry Entries[511];
+    PageDirectoryPointerTableEntry Entries[512];
 };
 
 union __attribute__((packed)) PageMapLevel4
@@ -135,7 +135,7 @@ union __attribute__((packed)) PageMapLevel4
 
 struct PageTable4
 {
-    PageMapLevel4 Entries[511];
+    PageMapLevel4 Entries[512];
 } __attribute__((aligned(0x1000)));
 
 extern "C" char BootPageTable[];
@@ -177,7 +177,7 @@ public:
     }
 };
 
-__always_inline inline SafeFunction NIF void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
+__attribute__((section(".bootstrap.text"))) SafeFunction NIF void MB2_64_Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
 {
     PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
     // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
@@ -188,9 +188,11 @@ __always_inline inline SafeFunction NIF void Map(void *VirtualAddress, void *Phy
     if (!PML4.Present)
     {
         PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)RequestPage();
+        if (PDPTEPtr == nullptr)
+            return;
         {
             void *ptr = PDPTEPtr;
-            int value = 0;
+            uint8_t value = 0;
             size_t num = 0x1000;
             uint8_t *p = (uint8_t *)ptr;
             for (size_t i = 0; i < num; i++)
@@ -209,9 +211,11 @@ __always_inline inline SafeFunction NIF void Map(void *VirtualAddress, void *Phy
     if (!PDPTE.Present)
     {
         PDEPtr = (PageDirectoryEntryPtr *)RequestPage();
+        if (PDEPtr == nullptr)
+            return;
         {
             void *ptr = PDEPtr;
-            int value = 0;
+            uint8_t value = 0;
             size_t num = 0x1000;
             uint8_t *p = (uint8_t *)ptr;
             for (size_t i = 0; i < num; i++)
@@ -230,9 +234,11 @@ __always_inline inline SafeFunction NIF void Map(void *VirtualAddress, void *Phy
     if (!PDE.Present)
     {
         PTEPtr = (PageTableEntryPtr *)RequestPage();
+        if (PTEPtr == nullptr)
+            return;
         {
             void *ptr = PTEPtr;
-            int value = 0;
+            uint8_t value = 0;
             size_t num = 0x1000;
             uint8_t *p = (uint8_t *)ptr;
             for (size_t i = 0; i < num; i++)
@@ -262,14 +268,14 @@ EXTERNC __attribute__((section(".bootstrap.text"))) SafeFunction NIF __attribute
     BPTable = (PageTable4 *)BootPageTable;
 
     // for (size_t i = 0; i < 0x10000000; i += 0x1000)
-    //     Map((void *)i, (void *)i, 0x3);
+    //     MB2_64_Map((void *)i, (void *)i, 0x3);
 
     uintptr_t KernelStart = (uintptr_t)&_kernel_start;
     uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
     uintptr_t PhysicalStart = KernelStart - 0xFFFFFFFF80000000;
     for (uintptr_t i = KernelStart; i < KernelEnd; i += 0x1000)
     {
-        Map((void *)i, (void *)PhysicalStart, 0x3);
+        MB2_64_Map((void *)i, (void *)PhysicalStart, 0x3);
         PhysicalStart += 0x1000;
     }
 

@@ -28,6 +28,13 @@ namespace SymbolResolver
     Symbols::Symbols(uintptr_t ImageAddress)
     {
         debug("Solving symbols for address: %#llx", ImageAddress);
+
+        if (ImageAddress == 0)
+        {
+            error("Invalid image address");
+            return;
+        }
+
         Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
         if (Header->e_ident[0] != 0x7F &&
             Header->e_ident[1] != 'E' &&

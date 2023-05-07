@@ -229,7 +229,7 @@ namespace Memory
 
     struct __packed PageTableEntryPtr
     {
-        PageTableEntry Entries[511];
+        PageTableEntry Entries[512];
     };
 
     union __packed PageDirectoryEntry
@@ -305,7 +305,7 @@ namespace Memory
 
     struct __packed PageDirectoryEntryPtr
     {
-        PageDirectoryEntry Entries[511];
+        PageDirectoryEntry Entries[512];
     };
 
     union __packed PageDirectoryPointerTableEntry
@@ -381,7 +381,7 @@ namespace Memory
 
     struct __packed PageDirectoryPointerTableEntryPtr
     {
-        PageDirectoryPointerTableEntry Entries[511];
+        PageDirectoryPointerTableEntry Entries[512];
     };
 
     union __packed PageMapLevel4
@@ -436,7 +436,7 @@ namespace Memory
 
     struct PageTable4
     {
-        PageMapLevel4 Entries[511];
+        PageMapLevel4 Entries[512];
 
         /**
          * @brief Update CR3 with this PageTable4
@@ -458,7 +458,7 @@ namespace Memory
 
     struct PageTable5
     {
-        PageMapLevel5 Entries[511];
+        PageMapLevel5 Entries[512];
     } __aligned(0x1000);
 
     class Physical

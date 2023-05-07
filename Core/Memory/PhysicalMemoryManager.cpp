@@ -22,6 +22,8 @@
 #include <uart.hpp>
 #endif
 
+#include "../../Architecture/amd64/acpi.hpp"
+
 #include "../../kernel.h"
 
 extern "C" char BootPageTable[]; // 0x10000 in length
@@ -379,6 +381,7 @@ namespace Memory
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
 
+        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
         void *LargestFreeMemorySegment = nullptr;
         uint64_t LargestFreeMemorySegmentSize = 0;
 
@@ -395,38 +398,53 @@ namespace Memory
                         continue;
                     }
 
-                    LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
-                    LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
+                    if (Info->Memory.Entry[i].Length > BitmapSize + 0x1000)
+                    {
+                        LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
+                        LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
 
-                    debug("Largest free memory segment: %llp (%lldMB)",
-                          (void *)Info->Memory.Entry[i].BaseAddress,
-                          TO_MB(Info->Memory.Entry[i].Length));
+#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
+                        if (LargestFreeMemorySegment >= Info->Kernel.PhysicalBase &&
+                            LargestFreeMemorySegment <= (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size))
+                        {
+                            debug("Kernel range: %#lx-%#lx", Info->Kernel.PhysicalBase, (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size));
+
+                            void *NewLargestFreeMemorySegment = (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size);
+                            void *RoundNewLargestFreeMemorySegment = (void *)ROUND_UP((uintptr_t)NewLargestFreeMemorySegment, PAGE_SIZE);
+                            RoundNewLargestFreeMemorySegment = (void *)((uintptr_t)RoundNewLargestFreeMemorySegment + PAGE_SIZE); /* Leave a page between the kernel and the bitmap */
+
+                            debug("Rounding %p to %p", NewLargestFreeMemorySegment, RoundNewLargestFreeMemorySegment);
+                            info("Memory bitmap's memory segment is in the kernel, moving it to %p", RoundNewLargestFreeMemorySegment);
+                            LargestFreeMemorySegmentSize = (uintptr_t)LargestFreeMemorySegmentSize - ((uintptr_t)RoundNewLargestFreeMemorySegment - (uintptr_t)LargestFreeMemorySegment);
+                            LargestFreeMemorySegment = RoundNewLargestFreeMemorySegment;
+                        }
+#undef ROUND_UP
+
+                        if (LargestFreeMemorySegmentSize < BitmapSize + 0x1000)
+                        {
+                            trace("Largest free memory segment is too small (%lld bytes), skipping...",
+                                  LargestFreeMemorySegmentSize);
+                            continue;
+                        }
+
+                        debug("Found a memory segment of %lld bytes (%lldMB) at %llp (out segment is %lld bytes (%lldKB)))",
+                              LargestFreeMemorySegmentSize,
+                              TO_MB(LargestFreeMemorySegmentSize),
+                              LargestFreeMemorySegment,
+                              BitmapSize,
+                              TO_KB(BitmapSize));
+                        break;
+                    }
+
+                    //     LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
+                    //     LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
+
+                    //     debug("Largest free memory segment: %llp (%lldMB)",
+                    //           (void *)Info->Memory.Entry[i].BaseAddress,
+                    //           TO_MB(Info->Memory.Entry[i].Length));
                 }
             }
         }
-
-#define ROUND_UP(N, S) ((((N) + (S)-1) / (S)) * (S))
-        if (LargestFreeMemorySegment >= Info->Kernel.PhysicalBase &&
-            LargestFreeMemorySegment <= (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size))
-        {
-            void *NewLargestFreeMemorySegment = (void *)((uintptr_t)Info->Kernel.PhysicalBase + Info->Kernel.Size);
-            void *RoundNewLargestFreeMemorySegment = (void *)ROUND_UP((uintptr_t)NewLargestFreeMemorySegment, PAGE_SIZE);
-
-            debug("Rounding %p to %p", NewLargestFreeMemorySegment, RoundNewLargestFreeMemorySegment);
-            info("Largest free memory segment is in the kernel, moving it to %p", RoundNewLargestFreeMemorySegment);
-            LargestFreeMemorySegment = RoundNewLargestFreeMemorySegment;
-
-            if (RoundNewLargestFreeMemorySegment >= &_bootstrap_start &&
-                RoundNewLargestFreeMemorySegment <= (void *)((uintptr_t)&_bootstrap_end + &_bootstrap_start))
-            {
-                void *NewNewLargestFreeMemorySegment = (void *)((uintptr_t)&_bootstrap_end + &_bootstrap_start);
-                void *RoundNewNewLargestFreeMemorySegment = (void *)ROUND_UP((uintptr_t)NewNewLargestFreeMemorySegment, PAGE_SIZE);
-                debug("Rounding %p to %p", NewNewLargestFreeMemorySegment, RoundNewNewLargestFreeMemorySegment);
-                info("Largest free memory segment is in the bootstrap, moving it to %p", RoundNewNewLargestFreeMemorySegment);
-                LargestFreeMemorySegment = RoundNewNewLargestFreeMemorySegment;
-            }
-        }
-#undef ROUND_UP
 
         if (LargestFreeMemorySegment == nullptr)
         {
@@ -435,7 +453,6 @@ namespace Memory
         }
 
         /* TODO: Read swap config and make the configure the bitmap size correctly */
-        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
         debug("Initializing Bitmap at %llp-%llp (%lld Bytes)",
               LargestFreeMemorySegment,
               (void *)((uintptr_t)LargestFreeMemorySegment + BitmapSize),
@@ -460,12 +477,63 @@ namespace Memory
         this->ReservePage((void *)0x0);        /* Trampoline stack, gdt, idt, etc... */
         this->ReservePages((void *)0x2000, 4); /* TRAMPOLINE_START */
 
-        debug("Reserving bitmap pages...");
+        debug("Reserving bitmap region %#lx-%#lx...", PageBitmap.Buffer, (void *)((uintptr_t)PageBitmap.Buffer + PageBitmap.Size));
         this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
-        debug("Reserving kernel...");
-        this->ReservePages(BootPageTable, TO_PAGES(0x10000));
+        // debug("Reserving page table...");
+        // this->ReservePages(BootPageTable, TO_PAGES(0x10000)); << in the bootstrap region
+        debug("Reserving kernel bootstrap region %#lx-%#lx...", &_bootstrap_start, &_bootstrap_end);
         this->ReservePages(&_bootstrap_start, TO_PAGES((uintptr_t)&_bootstrap_end - (uintptr_t)&_bootstrap_start));
-        this->ReservePages(&_kernel_start, TO_PAGES((uintptr_t)&_kernel_end - (uintptr_t)&_kernel_start));
+        void *KernelPhysicalStart = (void *)(((uintptr_t)&_kernel_start - KERNEL_VMA_OFFSET));
+        void *KernelPhysicalEnd = (void *)(((uintptr_t)&_kernel_end - KERNEL_VMA_OFFSET));
+        debug("Reserving kernel region %#lx-%#lx...", KernelPhysicalStart, KernelPhysicalEnd);
+        this->ReservePages((void *)KernelPhysicalStart, TO_PAGES((uintptr_t)&_kernel_end - (uintptr_t)&_kernel_start));
+
+        ACPI::ACPI::ACPIHeader *hdr = nullptr;
+        bool XSDT = false;
+
+        if (Info->RSDP->Revision >= 2 && Info->RSDP->XSDTAddress)
+        {
+            hdr = (ACPI::ACPI::ACPIHeader *)(Info->RSDP->XSDTAddress);
+            XSDT = true;
+        }
+        else
+        {
+            hdr = (ACPI::ACPI::ACPIHeader *)(uintptr_t)Info->RSDP->RSDTAddress;
+        }
+
+        debug("Reserving RSDT...");
+        this->ReservePages((void*)Info->RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
+
+        debug("Reserving ACPI tables...");
+
+        uint64_t TableSize = ((hdr->Length - sizeof(ACPI::ACPI::ACPIHeader)) / (XSDT ? 8 : 4));
+        debug("Table size: %lld", TableSize);
+
+        for (uint64_t t = 0; t < TableSize; t++)
+        {
+            // TODO: Should I be concerned about unaligned memory access?
+            ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
+            if (XSDT)
+                SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)hdr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 8)));
+            else
+                SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)hdr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 4)));
+
+            this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
+        }
+
+        debug("Reserving kernel modules...");
+
+        for (uint64_t i = 0; i < MAX_MODULES; i++)
+        {
+            if (Info->Modules[i].Address == 0x0)
+                continue;
+
+            debug("Reserving module %s (%#lx-%#lx)...", Info->Modules[i].CommandLine,
+                  Info->Modules[i].Address, (void *)((uintptr_t)Info->Modules[i].Address + Info->Modules[i].Size));
+        
+            this->ReservePages((void *)Info->Modules[i].Address, TO_PAGES(Info->Modules[i].Size));
+        }
+
     }
 
     Physical::Physical() {}
