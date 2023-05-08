@@ -39,41 +39,38 @@ SECTIONS
 {
     . = 0x100000;
     _bootstrap_start = .;
-    .bootstrap :
+    .bootstrap ALIGN(CONSTANT(MAXPAGESIZE)) :
     {
         *(.multiboot)
         *(.multiboot2)
         *(.bootstrap .bootstrap.*)
     } :bootstrap
-    . += CONSTANT(MAXPAGESIZE);
     _bootstrap_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     . += KERNEL_VMA;
 
     _kernel_start = ALIGN(CONSTANT(MAXPAGESIZE));
     _kernel_text_start = ALIGN(CONSTANT(MAXPAGESIZE));
-    .text : AT(ADDR(.text) - KERNEL_VMA)
+    .text ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.text) - KERNEL_VMA)
     {
         *(.text .text.*)
     } :text
-    . += CONSTANT(MAXPAGESIZE);
     _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     _kernel_data_start = ALIGN(CONSTANT(MAXPAGESIZE));
-    .data : AT(ADDR(.data) - KERNEL_VMA)
+    .data ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.data) - KERNEL_VMA)
     {
         *(.data .data.*)
     } :data
-    . += CONSTANT(MAXPAGESIZE);
     _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     _kernel_rodata_start = ALIGN(CONSTANT(MAXPAGESIZE));
-    .rodata : AT(ADDR(.rodata) - KERNEL_VMA)
+    .rodata ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.rodata) - KERNEL_VMA)
     {
         *(.rodata .rodata.*)
     } :rodata
 
-    .init_array : AT(ADDR(.init_array) - KERNEL_VMA)
+    .init_array ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.init_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__init_array_start = .);
         KEEP(*(.init_array .ctors))
@@ -81,23 +78,21 @@ SECTIONS
         PROVIDE_HIDDEN (__init_array_end = .);
     } :rodata
 
-    .fini_array : AT(ADDR(.fini_array) - KERNEL_VMA)
+    .fini_array ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.fini_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__fini_array_start = .);
         KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
         KEEP(*(.fini_array .dtors))
         PROVIDE_HIDDEN (__fini_array_end = .);
     } :rodata
-    . += CONSTANT(MAXPAGESIZE);
     _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     _kernel_bss_start = ALIGN(CONSTANT(MAXPAGESIZE));
-    .bss : AT(ADDR(.bss) - KERNEL_VMA)
+    .bss ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.bss) - KERNEL_VMA)
     {
         *(COMMON)
         *(.bss .bss.*)
     } :bss
-    . += CONSTANT(MAXPAGESIZE);
     _kernel_bss_end = ALIGN(CONSTANT(MAXPAGESIZE));
     _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
