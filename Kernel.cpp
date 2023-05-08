@@ -255,11 +255,8 @@ EXTERNC void KPrint(const char *Format, ...)
         Display->SetBuffer(0);
 }
 
-EXTERNC NIF void Main(BootInfo *Info)
+EXTERNC NIF void Main()
 {
-    memcpy(&bInfo, Info, sizeof(BootInfo));
-    debug("BootInfo structure is at %p", bInfo);
-
     Display = new Video::Display(bInfo.Framebuffer[0]);
     KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
     KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
@@ -272,7 +269,7 @@ EXTERNC NIF void Main(BootInfo *Info)
     Interrupts::Initialize(0);
 
     KPrint("Loading Kernel Symbols");
-    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)Info->Kernel.FileBase);
+    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
     KPrint("Reading Kernel Parameters");
     ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
@@ -483,6 +480,9 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
         DebuggerIsAttached = true;
     }
 
+    memcpy(&bInfo, Info, sizeof(BootInfo));
+    debug("BootInfo structure is at %p", &bInfo);
+
     // https://wiki.osdev.org/Calling_Global_Constructors
     trace("There are %d constructors to call", __init_array_end - __init_array_start);
     for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
@@ -499,8 +499,17 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     TestMemoryAllocation();
 #endif
 
+    void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+    uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
+    debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
+    asmv("mov %0, %%rsp"
+         :
+         : "r"(KernelStack)
+         : "memory");
+    asmv("mov $0, %rbp");
+
     EnableProfiler = true;
-    Main(Info);
+    Main();
 }
 
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
