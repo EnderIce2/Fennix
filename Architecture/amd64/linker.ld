@@ -41,6 +41,8 @@ SECTIONS
     _bootstrap_start = .;
     .bootstrap :
     {
+        *(.multiboot)
+        *(.multiboot2)
         *(.bootstrap .bootstrap.*)
     } :bootstrap
     . += CONSTANT(MAXPAGESIZE);
