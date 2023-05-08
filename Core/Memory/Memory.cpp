@@ -243,10 +243,13 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
     debug("Base kernel map address: %#lx", BaseKernelMapAddress);
 
     /* Kernel file */
-    for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
+    if (KernelFileStart != 0)
     {
-        va.Map((void *)k, (void *)k, PTFlag::G);
-        KernelAllocator.ReservePage((void *)k);
+        for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
+        {
+            va.Map((void *)k, (void *)k, PTFlag::G);
+            KernelAllocator.ReservePage((void *)k);
+        }
     }
 
 #ifdef DEBUG
@@ -389,11 +392,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 #ifdef DEBUG
     tracepagetable(KernelPageTable);
 #endif
-#if defined(a86)
-    asmv("mov %0, %%cr3" ::"r"(KernelPageTable));
-#elif defined(aa64)
-    asmv("msr ttbr0_el1, %0" ::"r"(KernelPageTable));
-#endif
+    CPU::PageTable(KernelPageTable);
     debug("Page table updated.");
     if (strstr(Info->Kernel.CommandLine, "xallocv1"))
     {

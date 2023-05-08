@@ -27,6 +27,12 @@ namespace SymbolResolver
 {
     Symbols::Symbols(uintptr_t ImageAddress)
     {
+        if (ImageAddress == 0 || Memory::Virtual().Check((void *)ImageAddress) == false)
+        {
+            error("Invalid image address %#lx", ImageAddress);
+            return;
+        }
+
         this->Image = (void *)ImageAddress;
         debug("Solving symbols for address: %#llx", ImageAddress);
         Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
