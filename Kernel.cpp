@@ -488,16 +488,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
         (*func)();
 
-    InitializeMemoryManagement(Info);
-
-#ifdef DEBUG
-    /* I had to do this because KernelAllocator
-     * is a global constructor but we need
-     * memory management to be initialized first.
-     */
-    TestString();
-    TestMemoryAllocation();
-#endif
+    InitializeMemoryManagement();
 
     void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
     uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
@@ -507,6 +498,15 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
          : "r"(KernelStack)
          : "memory");
     asmv("mov $0, %rbp");
+
+#ifdef DEBUG
+    /* I had to do this because KernelAllocator
+     * is a global constructor but we need
+     * memory management to be initialized first.
+     */
+    TestString();
+    TestMemoryAllocation();
+#endif
 
     EnableProfiler = true;
     Main();

@@ -368,11 +368,11 @@ namespace Memory
         }
     }
 
-    void Physical::Init(BootInfo *Info)
+    void Physical::Init()
     {
         SmartLock(this->MemoryLock);
 
-        uint64_t MemorySize = Info->Memory.Size;
+        uint64_t MemorySize = bInfo.Memory.Size;
         debug("Memory size: %lld bytes (%ld pages)", MemorySize, TO_PAGES(MemorySize));
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
@@ -380,22 +380,22 @@ namespace Memory
         void *LargestFreeMemorySegment = nullptr;
         uint64_t LargestFreeMemorySegmentSize = 0;
 
-        for (uint64_t i = 0; i < Info->Memory.Entries; i++)
+        for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
         {
-            if (Info->Memory.Entry[i].Type == Usable)
+            if (bInfo.Memory.Entry[i].Type == Usable)
             {
-                if (Info->Memory.Entry[i].Length > LargestFreeMemorySegmentSize)
+                if (bInfo.Memory.Entry[i].Length > LargestFreeMemorySegmentSize)
                 {
                     /* We don't want to use 0 as a memory address. */
-                    if (Info->Memory.Entry[i].BaseAddress == 0x0)
+                    if (bInfo.Memory.Entry[i].BaseAddress == 0x0)
                         continue;
 
-                    LargestFreeMemorySegment = (void *)Info->Memory.Entry[i].BaseAddress;
-                    LargestFreeMemorySegmentSize = Info->Memory.Entry[i].Length;
+                    LargestFreeMemorySegment = (void *)bInfo.Memory.Entry[i].BaseAddress;
+                    LargestFreeMemorySegmentSize = bInfo.Memory.Entry[i].Length;
 
                     debug("Largest free memory segment: %llp (%lldMB)",
-                          (void *)Info->Memory.Entry[i].BaseAddress,
-                          TO_MB(Info->Memory.Entry[i].Length));
+                          (void *)bInfo.Memory.Entry[i].BaseAddress,
+                          TO_MB(bInfo.Memory.Entry[i].Length));
                 }
             }
         }
@@ -419,13 +419,13 @@ namespace Memory
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
         debug("Reserving pages...");
-        this->ReservePages(0, TO_PAGES(Info->Memory.Size));
+        this->ReservePages(0, TO_PAGES(bInfo.Memory.Size));
         debug("Unreserving usable pages...");
 
-        for (uint64_t i = 0; i < Info->Memory.Entries; i++)
+        for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
         {
-            if (Info->Memory.Entry[i].Type == Usable)
-                this->UnreservePages(Info->Memory.Entry[i].BaseAddress, TO_PAGES(Info->Memory.Entry[i].Length));
+            if (bInfo.Memory.Entry[i].Type == Usable)
+                this->UnreservePages(bInfo.Memory.Entry[i].BaseAddress, TO_PAGES(bInfo.Memory.Entry[i].Length));
         }
 
         debug("Reserving pages for SMP...");

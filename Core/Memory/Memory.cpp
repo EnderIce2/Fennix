@@ -74,11 +74,11 @@ NIF void tracepagetable(PageTable *pt)
 }
 #endif
 
-NIF void MapFromZero(PageTable *PT, BootInfo *Info)
+NIF void MapFromZero(PageTable *PT)
 {
-    debug("Mapping from 0x0 to %#llx", Info->Memory.Size);
+    debug("Mapping from 0x0 to %#llx", bInfo.Memory.Size);
     Virtual va = Virtual(PT);
-    size_t MemSize = Info->Memory.Size;
+    size_t MemSize = bInfo.Memory.Size;
 
     if (Page1GBSupport && PSESupport)
     {
@@ -104,19 +104,19 @@ NIF void MapFromZero(PageTable *PT, BootInfo *Info)
     va.Unmap((void *)0);
 }
 
-NIF void MapFramebuffer(PageTable *PT, BootInfo *Info)
+NIF void MapFramebuffer(PageTable *PT)
 {
     debug("Mapping Framebuffer");
     Virtual va = Virtual(PT);
     int itrfb = 0;
     while (1)
     {
-        if (!Info->Framebuffer[itrfb].BaseAddress)
+        if (!bInfo.Framebuffer[itrfb].BaseAddress)
             break;
 
-        va.OptimizedMap((void *)Info->Framebuffer[itrfb].BaseAddress,
-                        (void *)Info->Framebuffer[itrfb].BaseAddress,
-                        Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height,
+        va.OptimizedMap((void *)bInfo.Framebuffer[itrfb].BaseAddress,
+                        (void *)bInfo.Framebuffer[itrfb].BaseAddress,
+                        bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height,
                         PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
 
@@ -128,8 +128,8 @@ NIF void MapFramebuffer(PageTable *PT, BootInfo *Info)
             strcat_unsafe(LockTmpStr, "_memTrk");
             mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
             sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-                    Info->Framebuffer[itrfb].BaseAddress,
-                    (Info->Framebuffer[itrfb].Pitch * Info->Framebuffer[itrfb].Height) + PAGE_SIZE);
+                    bInfo.Framebuffer[itrfb].BaseAddress,
+                    (bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height) + PAGE_SIZE);
             UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
             for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
             {
@@ -143,7 +143,7 @@ NIF void MapFramebuffer(PageTable *PT, BootInfo *Info)
     }
 }
 
-NIF void MapKernel(PageTable *PT, BootInfo *Info)
+NIF void MapKernel(PageTable *PT)
 {
     debug("Mapping Kernel");
 
@@ -169,8 +169,8 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
 
     uintptr_t KernelStart = (uintptr_t)&_kernel_start;
     uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
-    uintptr_t KernelFileStart = (uintptr_t)Info->Kernel.FileBase;
-    uintptr_t KernelFileEnd = KernelFileStart + Info->Kernel.Size;
+    uintptr_t KernelFileStart = (uintptr_t)bInfo.Kernel.FileBase;
+    uintptr_t KernelFileEnd = KernelFileStart + bInfo.Kernel.Size;
 
     debug("Bootstrap: %#lx-%#lx", BootstrapStart, BootstrapEnd);
     debug("Kernel text: %#lx-%#lx", KernelTextStart, KernelTextEnd);
@@ -180,14 +180,14 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
     debug("Kernel: %#lx-%#lx", KernelStart, KernelEnd);
     debug("Kernel file: %#lx-%#lx", KernelFileStart, KernelFileEnd);
 
-    debug("File size: %ld KB", TO_KB(Info->Kernel.Size));
+    debug("File size: %ld KB", TO_KB(bInfo.Kernel.Size));
     debug(".bootstrap size: %ld KB", TO_KB(BootstrapEnd - BootstrapStart));
     debug(".text size: %ld KB", TO_KB(KernelTextEnd - KernelTextStart));
     debug(".data size: %ld KB", TO_KB(KernelDataEnd - KernelDataStart));
     debug(".rodata size: %ld KB", TO_KB(KernelRoDataEnd - KernelRoDataStart));
     debug(".bss size: %ld KB", TO_KB(KernelBssEnd - KernelBssStart));
 
-    uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
+    uintptr_t BaseKernelMapAddress = (uintptr_t)bInfo.Kernel.PhysicalBase;
     debug("Base kernel map address: %#lx", BaseKernelMapAddress);
     uintptr_t k;
     Virtual va = Virtual(PT);
@@ -260,8 +260,8 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
         strcat_unsafe(LockTmpStr, "_memTrk");
         mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
         sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-                Info->Kernel.PhysicalBase,
-                Info->Kernel.Size);
+                bInfo.Kernel.PhysicalBase,
+                bInfo.Kernel.Size);
         UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -271,8 +271,8 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
         }
 
         sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-                Info->Kernel.VirtualBase,
-                Info->Kernel.Size);
+                bInfo.Kernel.VirtualBase,
+                bInfo.Kernel.Size);
         mExtTrkLock.Unlock();
         for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
         {
@@ -284,17 +284,17 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
 #endif
 }
 
-NIF void InitializeMemoryManagement(BootInfo *Info)
+NIF void InitializeMemoryManagement()
 {
 #ifdef DEBUG
-    for (uint64_t i = 0; i < Info->Memory.Entries; i++)
+    for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
     {
-        uintptr_t Base = r_cst(uintptr_t, Info->Memory.Entry[i].BaseAddress);
-        size_t Length = Info->Memory.Entry[i].Length;
+        uintptr_t Base = r_cst(uintptr_t, bInfo.Memory.Entry[i].BaseAddress);
+        size_t Length = bInfo.Memory.Entry[i].Length;
         uintptr_t End = Base + Length;
         const char *Type = "Unknown";
 
-        switch (Info->Memory.Entry[i].Type)
+        switch (bInfo.Memory.Entry[i].Type)
         {
         case likely(Usable):
             Type = "Usable";
@@ -333,7 +333,7 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 #endif
     trace("Initializing Physical Memory Manager");
     // KernelAllocator = Physical(); <- Already called in the constructor
-    KernelAllocator.Init(Info);
+    KernelAllocator.Init();
     debug("Memory Info: %lldMB / %lldMB (%lldMB reserved)",
           TO_MB(KernelAllocator.GetUsedMemory()),
           TO_MB(KernelAllocator.GetTotalMemory()),
@@ -384,9 +384,9 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 #endif
     }
 
-    MapFromZero(KernelPageTable, Info);
-    MapFramebuffer(KernelPageTable, Info);
-    MapKernel(KernelPageTable, Info);
+    MapFromZero(KernelPageTable);
+    MapFramebuffer(KernelPageTable);
+    MapKernel(KernelPageTable);
 
     trace("Applying new page table from address %#lx", KernelPageTable);
 #ifdef DEBUG
@@ -394,13 +394,13 @@ NIF void InitializeMemoryManagement(BootInfo *Info)
 #endif
     CPU::PageTable(KernelPageTable);
     debug("Page table updated.");
-    if (strstr(Info->Kernel.CommandLine, "xallocv1"))
+    if (strstr(bInfo.Kernel.CommandLine, "xallocv1"))
     {
         XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
         AllocatorType = MemoryAllocatorType::XallocV1;
         trace("XallocV1 Allocator initialized (%p)", XallocV1Allocator);
     }
-    else if (strstr(Info->Kernel.CommandLine, "liballoc11"))
+    else if (strstr(bInfo.Kernel.CommandLine, "liballoc11"))
     {
         AllocatorType = MemoryAllocatorType::liballoc11;
     }

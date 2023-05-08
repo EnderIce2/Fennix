@@ -588,7 +588,7 @@ namespace Memory
         void FreePages(void *Address, size_t Count);
 
         /** @brief Do not use. */
-        void Init(BootInfo *Info);
+        void Init();
 
         /** @brief Do not use. */
         Physical();
@@ -905,7 +905,7 @@ namespace Memory
     };
 }
 
-void InitializeMemoryManagement(BootInfo *Info);
+void InitializeMemoryManagement();
 
 void *operator new(size_t Size);
 void *operator new[](size_t Size);
