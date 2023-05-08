@@ -1,16 +1,19 @@
+[bits 32]
+extern Multiboot2_start
+
 ; https://www.gnu.org/software/grub/manual/multiboot2/multiboot.html
 section .multiboot2
 align 4096
-HEADER_START:
+MULTIBOOT2_HEADER_START:
     dd 0xE85250D6
     dd 0
-    dd (HEADER_END - HEADER_START)
-    dd 0x100000000 - (HEADER_END - HEADER_START) - 0 - 0xE85250D6
+    dd (MULTIBOOT2_HEADER_END - MULTIBOOT2_HEADER_START)
+    dd 0x100000000 - (MULTIBOOT2_HEADER_END - MULTIBOOT2_HEADER_START) - 0 - 0xE85250D6
 align 8
-MB2_INFO_REQUEST_TAG_START:
+InfoRequestTag_Start:
     dw 1
     dw 0
-    dd MB2_INFO_REQUEST_TAG_END - MB2_INFO_REQUEST_TAG_START
+    dd InfoRequestTag_End - InfoRequestTag_Start
     dd 1 ; Command Line
     dd 2 ; Boot Loader Name
     dd 3 ; Module
@@ -32,33 +35,40 @@ MB2_INFO_REQUEST_TAG_START:
     dd 19 ; EFI 32-bit Image Handle Pointer
     dd 20 ; EFI 64-bit Image Handle Pointer
     dd 21 ; Load Base Address
-MB2_INFO_REQUEST_TAG_END:
+InfoRequestTag_End:
 align 8
-MB2_FRAMEBUFFER_TAG_START:
+FramebufferTag_Start:
     dw 5
     dw 1
-    dd MB2_FRAMEBUFFER_TAG_END - MB2_FRAMEBUFFER_TAG_START
+    dd FramebufferTag_End - FramebufferTag_Start
     dd 0
     dd 0
     dd 32
-MB2_FRAMEBUFFER_TAG_END:
+FramebufferTag_End:
 align 8
-MB2_EGA_SUPPORT_TAG_START:
+EGATextSupportTag_Start:
     dw 4
     dw 0
-    dd MB2_EGA_SUPPORT_TAG_END - MB2_EGA_SUPPORT_TAG_START
+    dd EGATextSupportTag_End - EGATextSupportTag_Start
     dd 1 ; https://www.gnu.org/software/grub/manual/multiboot2/html_node/Console-header-tags.html
-MB2_EGA_SUPPORT_TAG_END:
+EGATextSupportTag_End:
 align 8
-MB2_MODULE_ALIGN_TAG_START:
+AlignedModulesTag_Start:
     dw 6
     dw 0
-    dd MB2_MODULE_ALIGN_TAG_END - MB2_MODULE_ALIGN_TAG_START
-MB2_MODULE_ALIGN_TAG_END:
+    dd AlignedModulesTag_End - AlignedModulesTag_Start
+AlignedModulesTag_End:
 align 8
-MB2_TAG_START:
+EntryAddressTag_Start:
+    dw 9
+    dw 0
+    dd EntryAddressTag_End - EntryAddressTag_Start
+    dd Multiboot2_start
+EntryAddressTag_End:
+align 8
+EndTag_Start:
     dw 0
     dw 0
-    dd MB2_TAG_END - MB2_TAG_START
-MB2_TAG_END:
-HEADER_END:
+    dd EndTag_End - EndTag_Start
+EndTag_End:
+MULTIBOOT2_HEADER_END:
