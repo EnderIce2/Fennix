@@ -20,55 +20,83 @@ OUTPUT_ARCH(i386:x86-64)
 
 ENTRY(_start)
 
+PF_R = 0x4;
+PF_W = 0x2;
+PF_X = 0x1;
+
+PHDRS
+{
+    bootstrap   PT_LOAD    FLAGS( PF_R | PF_W /*| PF_X*/ );
+    text        PT_LOAD    FLAGS( PF_R | PF_X );
+    data        PT_LOAD    FLAGS( PF_R | PF_W );
+    rodata      PT_LOAD    FLAGS( PF_R );
+    bss         PT_LOAD    FLAGS( PF_R | PF_W );
+}
+
+KERNEL_VMA = 0xFFFFFFFF80000000;
+
 SECTIONS
 {
-    . = 0xffffffff80000000;
+    . = 0x100000;
+    _bootstrap_start = .;
+    .bootstrap :
+    {
+        *(.bootstrap .bootstrap.*)
+    } :bootstrap
+    . += CONSTANT(MAXPAGESIZE);
+    _bootstrap_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-    _kernel_start = .;
-    .text :
+    . += KERNEL_VMA;
+
+    _kernel_start = ALIGN(CONSTANT(MAXPAGESIZE));
+    _kernel_text_start = ALIGN(CONSTANT(MAXPAGESIZE));
+    .text : AT(ADDR(.text) - KERNEL_VMA)
     {
         *(.text .text.*)
-    }
-    _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    } :text
     . += CONSTANT(MAXPAGESIZE);
+    _kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-    .data :
+    _kernel_data_start = ALIGN(CONSTANT(MAXPAGESIZE));
+    .data : AT(ADDR(.data) - KERNEL_VMA)
     {
         *(.data .data.*)
-    }
-    _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
+    } :data
     . += CONSTANT(MAXPAGESIZE);
+    _kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-    .rodata :
+    _kernel_rodata_start = ALIGN(CONSTANT(MAXPAGESIZE));
+    .rodata : AT(ADDR(.rodata) - KERNEL_VMA)
     {
         *(.rodata .rodata.*)
-    }
-    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
-    . += CONSTANT(MAXPAGESIZE);
+    } :rodata
 
-    .init_array :
+    .init_array : AT(ADDR(.init_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__init_array_start = .);
         KEEP(*(.init_array .ctors))
         KEEP(*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
         PROVIDE_HIDDEN (__init_array_end = .);
-    }
+    } :rodata
 
-    .fini_array :
+    .fini_array : AT(ADDR(.fini_array) - KERNEL_VMA)
     {
         PROVIDE_HIDDEN(__fini_array_start = .);
         KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
         KEEP(*(.fini_array .dtors))
         PROVIDE_HIDDEN (__fini_array_end = .);
-    }
+    } :rodata
     . += CONSTANT(MAXPAGESIZE);
+    _kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-    .bss :
+    _kernel_bss_start = ALIGN(CONSTANT(MAXPAGESIZE));
+    .bss : AT(ADDR(.bss) - KERNEL_VMA)
     {
         *(COMMON)
         *(.bss .bss.*)
-    }
+    } :bss
     . += CONSTANT(MAXPAGESIZE);
+    _kernel_bss_end = ALIGN(CONSTANT(MAXPAGESIZE));
     _kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
     /DISCARD/ :

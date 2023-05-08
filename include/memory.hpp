@@ -29,8 +29,12 @@
 
 #ifdef __cplusplus
 
+extern uintptr_t _bootstrap_start, _bootstrap_end;
 extern uintptr_t _kernel_start, _kernel_end;
-extern uintptr_t _kernel_text_end, _kernel_data_end, _kernel_rodata_end;
+extern uintptr_t _kernel_text_start, _kernel_text_end;
+extern uintptr_t _kernel_data_start, _kernel_data_end;
+extern uintptr_t _kernel_rodata_start, _kernel_rodata_end;
+extern uintptr_t _kernel_bss_start, _kernel_bss_end;
 
 // kilobyte
 #define TO_KB(d) ((d) / 1024)

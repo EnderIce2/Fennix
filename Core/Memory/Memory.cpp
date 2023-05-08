@@ -146,26 +146,70 @@ NIF void MapFramebuffer(PageTable *PT, BootInfo *Info)
 NIF void MapKernel(PageTable *PT, BootInfo *Info)
 {
     debug("Mapping Kernel");
-    uintptr_t KernelStart = (uintptr_t)&_kernel_start;
+
+    /* RWX */
+    uintptr_t BootstrapStart = (uintptr_t)&_bootstrap_start;
+    uintptr_t BootstrapEnd = (uintptr_t)&_bootstrap_end;
+
+    /* RX */
+    uintptr_t KernelTextStart = (uintptr_t)&_kernel_text_start;
     uintptr_t KernelTextEnd = (uintptr_t)&_kernel_text_end;
+
+    /* RW */
+    uintptr_t KernelDataStart = (uintptr_t)&_kernel_data_start;
     uintptr_t KernelDataEnd = (uintptr_t)&_kernel_data_end;
+
+    /* R */
+    uintptr_t KernelRoDataStart = (uintptr_t)&_kernel_rodata_start;
     uintptr_t KernelRoDataEnd = (uintptr_t)&_kernel_rodata_end;
+
+    /* RW */
+    uintptr_t KernelBssStart = (uintptr_t)&_kernel_bss_start;
+    uintptr_t KernelBssEnd = (uintptr_t)&_kernel_bss_end;
+
+    uintptr_t KernelStart = (uintptr_t)&_kernel_start;
     uintptr_t KernelEnd = (uintptr_t)&_kernel_end;
     uintptr_t KernelFileStart = (uintptr_t)Info->Kernel.FileBase;
     uintptr_t KernelFileEnd = KernelFileStart + Info->Kernel.Size;
 
+    debug("Bootstrap: %#lx-%#lx", BootstrapStart, BootstrapEnd);
+    debug("Kernel text: %#lx-%#lx", KernelTextStart, KernelTextEnd);
+    debug("Kernel data: %#lx-%#lx", KernelDataStart, KernelDataEnd);
+    debug("Kernel rodata: %#lx-%#lx", KernelRoDataStart, KernelRoDataEnd);
+    debug("Kernel bss: %#lx-%#lx", KernelBssStart, KernelBssEnd);
+    debug("Kernel: %#lx-%#lx", KernelStart, KernelEnd);
+    debug("Kernel file: %#lx-%#lx", KernelFileStart, KernelFileEnd);
+
     debug("File size: %ld KB", TO_KB(Info->Kernel.Size));
-    debug(".text size: %ld KB", TO_KB(KernelTextEnd - KernelStart));
-    debug(".data size: %ld KB", TO_KB(KernelDataEnd - KernelTextEnd));
-    debug(".rodata size: %ld KB", TO_KB(KernelRoDataEnd - KernelDataEnd));
-    debug(".bss size: %ld KB", TO_KB(KernelEnd - KernelRoDataEnd));
+    debug(".bootstrap size: %ld KB", TO_KB(BootstrapEnd - BootstrapStart));
+    debug(".text size: %ld KB", TO_KB(KernelTextEnd - KernelTextStart));
+    debug(".data size: %ld KB", TO_KB(KernelDataEnd - KernelDataStart));
+    debug(".rodata size: %ld KB", TO_KB(KernelRoDataEnd - KernelRoDataStart));
+    debug(".bss size: %ld KB", TO_KB(KernelBssEnd - KernelBssStart));
 
     uintptr_t BaseKernelMapAddress = (uintptr_t)Info->Kernel.PhysicalBase;
+    debug("Base kernel map address: %#lx", BaseKernelMapAddress);
     uintptr_t k;
     Virtual va = Virtual(PT);
 
+    /* Bootstrap section */
+    if (BaseKernelMapAddress == BootstrapStart)
+    {
+        for (k = BootstrapStart; k < BootstrapEnd; k += PAGE_SIZE)
+        {
+            va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+            KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
+            BaseKernelMapAddress += PAGE_SIZE;
+        }
+    }
+    else
+    {
+        trace("Ignoring bootstrap section.");
+        /* Bootstrap section must be mapped at 0x100000. */
+    }
+
     /* Text section */
-    for (k = KernelStart; k < KernelTextEnd; k += PAGE_SIZE)
+    for (k = KernelTextStart; k < KernelTextEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
@@ -173,7 +217,7 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
     }
 
     /* Data section */
-    for (k = KernelTextEnd; k < KernelDataEnd; k += PAGE_SIZE)
+    for (k = KernelDataStart; k < KernelDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
@@ -181,20 +225,22 @@ NIF void MapKernel(PageTable *PT, BootInfo *Info)
     }
 
     /* Read only data section */
-    for (k = KernelDataEnd; k < KernelRoDataEnd; k += PAGE_SIZE)
+    for (k = KernelRoDataStart; k < KernelRoDataEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
 
-    /* BSS section */
-    for (k = KernelRoDataEnd; k < KernelEnd; k += PAGE_SIZE)
+    /* Block starting symbol section */
+    for (k = KernelBssStart; k < KernelBssEnd; k += PAGE_SIZE)
     {
         va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
         KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
         BaseKernelMapAddress += PAGE_SIZE;
     }
+
+    debug("Base kernel map address: %#lx", BaseKernelMapAddress);
 
     /* Kernel file */
     for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
