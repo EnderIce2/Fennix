@@ -123,7 +123,7 @@ namespace Tasking
         uint64_t ShadowGSBase, GSBase, FSBase;
 #elif defined(a32)
         CPU::x32::TrapFrame Registers; // TODO
-        uint64_t GSBase, FSBase;
+        uint64_t ShadowGSBase, GSBase, FSBase;
 #elif defined(aa64)
         uint64_t Registers; // TODO
 #endif

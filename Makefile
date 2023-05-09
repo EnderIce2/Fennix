@@ -24,24 +24,27 @@ PSF_SOURCES = $(shell find ./ -type f -name '*.psf')
 ifeq ($(OSARCH), amd64)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
+s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), i386)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
+s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
+s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 endif
 HEADERS = $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
-OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
+OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(s_SOURCES:.s=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
 INCLUDE_DIR = -I./include -I./include_std
@@ -52,7 +55,7 @@ LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
 WARNCFLAG = -Wall -Wextra \
 			-Wfloat-equal -Wpointer-arith -Wcast-align \
 			-Wredundant-decls -Winit-self -Wswitch-default \
-			-Wstrict-overflow=5 -Wconversion
+			-Wstrict-overflow=5 -Wconversion -w
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
@@ -169,6 +172,10 @@ endif
 	$(NASM) $< $(NASMFLAGS) -o $@
 
 %.o: %.S
+	$(info Compiling $<)
+	$(AS) -c $< -o $@
+
+%.o: %.s
 	$(info Compiling $<)
 	$(AS) -c $< -o $@
 

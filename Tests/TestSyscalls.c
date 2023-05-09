@@ -23,6 +23,7 @@
 
 __aligned(0x1000) __no_stack_protector void TestSyscalls()
 {
+#if defined(a64)
    __asm__ __volatile__("syscall"
                         :
                         : "a"(_Print), "D"('H'), "S"(0)
@@ -39,7 +40,9 @@ __aligned(0x1000) __no_stack_protector void TestSyscalls()
                         :
                         : "a"(_Exit), "D"(fork_id)
                         : "rcx", "r11", "memory");
-
+#elif defined(a32)
+#elif defined(aa64)
+#endif
    while (1)
       ;
 }

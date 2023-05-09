@@ -179,10 +179,18 @@ void TaskMgr()
                     continue;
                 Status = Thd->Status;
                 uint64_t ThreadCpuUsage = GetUsage(OldSystemTime, &Thd->Info);
+#if defined(a64)
                 printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
                        Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime,
                        Thd->Info.UserTime, Thd->Registers.rip,
                        Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.rip) : "unknown");
+#elif defined(a32)
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
+                       Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime,
+                       Thd->Info.UserTime, Thd->Registers.eip,
+                       Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.eip) : "unknown");
+#elif defined(aa64)
+#endif
             }
         }
         OldSystemTime = TimeManager->GetCounter();

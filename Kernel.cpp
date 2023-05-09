@@ -17,7 +17,6 @@
 
 #include "kernel.h"
 
-#include <boot/protocols/multiboot2.h>
 #include <filesystem/ustar.hpp>
 #include <ints.hpp>
 #include <memory.hpp>
@@ -76,6 +75,7 @@ LockClass mExtTrkLock;
  * - [ ] Vector should have a mutex.
  * - [ ] Update SMBIOS functions to support newer versions and actually use it.
  * - [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
+ * - [ ] Bootstrap should have a separate bss section + PHDR.
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -493,11 +493,25 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
     uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
     debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
+#if defined(a64)
     asmv("mov %0, %%rsp"
          :
          : "r"(KernelStack)
          : "memory");
     asmv("mov $0, %rbp");
+#elif defined(a32)
+    asmv("mov %0, %%esp"
+         :
+         : "r"(KernelStack)
+         : "memory");
+    asmv("mov $0, %ebp");
+#elif defined(aa64)
+    asmv("mov %0, %%sp"
+         :
+         : "r"(KernelStack)
+         : "memory");
+    asmv("mov $0, %fp");
+#endif
 
 #ifdef DEBUG
     /* I had to do this because KernelAllocator
