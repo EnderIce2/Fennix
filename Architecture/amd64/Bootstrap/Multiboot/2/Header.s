@@ -60,8 +60,8 @@ FramebufferTag_Start:
 	.word 5
 	.word 1
 	.long FramebufferTag_End - FramebufferTag_Start
-	.long 0
-	.long 0
+	.long 1280
+	.long 720
 	.long 32
 FramebufferTag_End:
 .align 8
