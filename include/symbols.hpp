@@ -30,14 +30,16 @@ namespace SymbolResolver
         };
 
         SymbolTable SymTable[0x10000];
-        uintptr_t TotalEntries = 0;
+        int64_t TotalEntries = 0;
         void *Image;
 
     public:
+        size_t GetTotalEntries() { return this->TotalEntries; }
         void *GetImage() { return this->Image; }
-        Symbols(uintptr_t ImageAddress);
-        ~Symbols();
         const char *GetSymbolFromAddress(uintptr_t Address);
         void AddSymbol(uintptr_t Address, const char *Name);
+        void AddBySymbolInfo(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections);
+        Symbols(uintptr_t ImageAddress);
+        ~Symbols();
     };
 }

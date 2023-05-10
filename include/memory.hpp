@@ -468,6 +468,8 @@ namespace Memory
         uint64_t PageBitmapIndex = 0;
         Bitmap PageBitmap;
 
+        void ReserveEssentials();
+
     public:
         Bitmap GetPageBitmap() { return PageBitmap; }
 

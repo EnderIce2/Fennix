@@ -133,6 +133,14 @@ struct BootInfo
         void *FileBase;
         char CommandLine[256];
         __UINT64_TYPE__ Size;
+
+        struct KernelSymbolInfo
+        {
+            __UINT32_TYPE__ Num;
+            __UINT32_TYPE__ EntSize;
+            __UINT32_TYPE__ Shndx;
+            __UINTPTR_TYPE__ Sections;
+        } Symbols;
     } Kernel;
 
     struct BootloaderInfo

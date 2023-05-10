@@ -25,6 +25,105 @@
 
 namespace SymbolResolver
 {
+    const NIF char *Symbols::GetSymbolFromAddress(uintptr_t Address)
+    {
+        Symbols::SymbolTable Result{0, (char *)"<unknown>"};
+        for (int64_t i = 0; i < this->TotalEntries; i++)
+            if (this->SymTable[i].Address <= Address && this->SymTable[i].Address > Result.Address)
+                Result = this->SymTable[i];
+        return Result.FunctionName;
+    }
+
+    void Symbols::AddSymbol(uintptr_t Address, const char *Name)
+    {
+        if (this->TotalEntries >= 0x10000)
+        {
+            error("Symbol table is full");
+            return;
+        }
+
+        this->SymTable[this->TotalEntries].Address = Address;
+        strcpy(this->SymTable[this->TotalEntries].FunctionName, Name);
+        this->TotalEntries++;
+    }
+
+    __no_sanitize("alignment") void Symbols::AddBySymbolInfo(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections)
+    {
+        if (this->TotalEntries >= 0x10000)
+        {
+            error("Symbol table is full");
+            return;
+        }
+
+        Elf64_Shdr *ElfSections = (Elf64_Shdr *)(Sections);
+        Elf64_Sym *ElfSymbols = nullptr;
+        char *strtab = nullptr;
+
+        for (uint64_t i = 0; i < Num; i++)
+            switch (ElfSections[i].sh_type)
+            {
+            case SHT_SYMTAB:
+                ElfSymbols = (Elf64_Sym *)(Sections + ElfSections[i].sh_offset);
+                this->TotalEntries = ElfSections[i].sh_size / sizeof(Elf64_Sym);
+                if (this->TotalEntries >= 0x10000)
+                    this->TotalEntries = 0x10000 - 1;
+
+                debug("Symbol table found, %d entries", this->TotalEntries);
+                break;
+            case SHT_STRTAB:
+                if (Shndx == i)
+                {
+                    debug("String table found, %d entries", ElfSections[i].sh_size);
+                }
+                else
+                {
+                    strtab = (char *)(Sections + ElfSections[i].sh_offset);
+                    debug("String table found, %d entries", ElfSections[i].sh_size);
+                }
+                break;
+            default:
+                break;
+            }
+
+        if (ElfSymbols != nullptr && strtab != nullptr)
+        {
+            int64_t Index, MinimumIndex;
+            for (int64_t i = 0; i < this->TotalEntries - 1; i++)
+            {
+                MinimumIndex = i;
+                for (Index = i + 1; Index < this->TotalEntries; Index++)
+                    if (ElfSymbols[Index].st_value < ElfSymbols[MinimumIndex].st_value)
+                        MinimumIndex = Index;
+                Elf64_Sym tmp = ElfSymbols[MinimumIndex];
+                ElfSymbols[MinimumIndex] = ElfSymbols[i];
+                ElfSymbols[i] = tmp;
+            }
+
+            while (ElfSymbols[0].st_value == 0)
+            {
+                if (this->TotalEntries <= 0)
+                    break;
+                ElfSymbols++;
+                this->TotalEntries--;
+            }
+
+            if (this->TotalEntries <= 0)
+            {
+                error("Symbol table is empty");
+                return;
+            }
+
+            trace("Symbol table loaded, %d entries (%ldKB)", this->TotalEntries, TO_KB(this->TotalEntries * sizeof(SymbolTable)));
+            for (uintptr_t i = 0, g = this->TotalEntries; i < g; i++)
+            {
+                this->SymTable[i].Address = ElfSymbols[i].st_value;
+                this->SymTable[i].FunctionName = &strtab[ElfSymbols[i].st_name];
+
+                // debug("Symbol %d: %#llx %s", i, this->SymTable[i].Address, this->SymTable[i].FunctionName);
+            }
+        }
+    }
+
     Symbols::Symbols(uintptr_t ImageAddress)
     {
         if (ImageAddress == 0 || Memory::Virtual().Check((void *)ImageAddress) == false)
@@ -76,8 +175,8 @@ namespace SymbolResolver
 
         if (ElfSymbols != nullptr && strtab != nullptr)
         {
-            uintptr_t Index, MinimumIndex;
-            for (uintptr_t i = 0; i < this->TotalEntries - 1; i++)
+            int64_t Index, MinimumIndex;
+            for (int64_t i = 0; i < this->TotalEntries - 1; i++)
             {
                 MinimumIndex = i;
                 for (Index = i + 1; Index < this->TotalEntries; Index++)
@@ -106,26 +205,4 @@ namespace SymbolResolver
     }
 
     Symbols::~Symbols() {}
-
-    const NIF char *Symbols::GetSymbolFromAddress(uintptr_t Address)
-    {
-        Symbols::SymbolTable Result{0, (char *)"<unknown>"};
-        for (uintptr_t i = 0; i < this->TotalEntries; i++)
-            if (this->SymTable[i].Address <= Address && this->SymTable[i].Address > Result.Address)
-                Result = this->SymTable[i];
-        return Result.FunctionName;
-    }
-
-    NIF void Symbols::AddSymbol(uintptr_t Address, const char *Name)
-    {
-        if (this->TotalEntries >= 0x10000)
-        {
-            error("Symbol table is full");
-            return;
-        }
-
-        this->SymTable[this->TotalEntries].Address = Address;
-        strcpy(this->SymTable[this->TotalEntries].FunctionName, Name);
-        this->TotalEntries++;
-    }
 }

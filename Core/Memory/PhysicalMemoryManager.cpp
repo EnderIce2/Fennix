@@ -377,63 +377,100 @@ namespace Memory
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
 
-        void *LargestFreeMemorySegment = nullptr;
-        uint64_t LargestFreeMemorySegmentSize = 0;
+        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
+        uintptr_t BitmapAddress = 0x0;
+        size_t BitmapAddressSize = 0;
+
+        uintptr_t KernelStart = (uintptr_t)bInfo.Kernel.PhysicalBase;
+        uintptr_t KernelEnd = (uintptr_t)bInfo.Kernel.PhysicalBase + bInfo.Kernel.Size;
 
         for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
         {
             if (bInfo.Memory.Entry[i].Type == Usable)
             {
-                if (bInfo.Memory.Entry[i].Length > LargestFreeMemorySegmentSize)
+                uintptr_t RegionAddress = (uintptr_t)bInfo.Memory.Entry[i].BaseAddress;
+                uintptr_t RegionSize = bInfo.Memory.Entry[i].Length;
+
+                /* We don't want to use 0 as a memory address. */
+                if (RegionAddress == 0x0)
+                    continue;
+
+                if ((BitmapSize + 0x100) > RegionSize)
                 {
-                    /* We don't want to use 0 as a memory address. */
-                    if (bInfo.Memory.Entry[i].BaseAddress == 0x0)
-                        continue;
-
-                    LargestFreeMemorySegment = (void *)bInfo.Memory.Entry[i].BaseAddress;
-                    LargestFreeMemorySegmentSize = bInfo.Memory.Entry[i].Length;
-
-                    debug("Largest free memory segment: %llp (%lldMB)",
-                          (void *)bInfo.Memory.Entry[i].BaseAddress,
-                          TO_MB(bInfo.Memory.Entry[i].Length));
+                    debug("Region %p-%p (%dMB) is too small for bitmap.",
+                          (void *)RegionAddress,
+                          (void *)(RegionAddress + RegionSize),
+                          TO_MB(RegionSize));
+                    continue;
                 }
+
+                BitmapAddress = RegionAddress;
+                BitmapAddressSize = RegionSize;
+
+                if (RegionAddress >= KernelStart && KernelEnd <= (RegionAddress + RegionSize))
+                {
+                    BitmapAddress = KernelEnd;
+                    BitmapAddressSize = RegionSize - (KernelEnd - RegionAddress);
+                }
+
+                if ((BitmapSize + 0x100) > BitmapAddressSize)
+                {
+                    debug("Region %p-%p (%dMB) is too small for bitmap.",
+                          (void *)RegionAddress,
+                          (void *)(RegionAddress + BitmapAddressSize),
+                          TO_MB(BitmapAddressSize));
+                    continue;
+                }
+
+                for (size_t i = 0; i < MAX_MODULES; i++)
+                {
+                    uintptr_t ModuleStart = (uintptr_t)bInfo.Modules[i].Address;
+                    uintptr_t ModuleEnd = (uintptr_t)bInfo.Modules[i].Address + bInfo.Modules[i].Size;
+
+                    if (ModuleStart == 0x0)
+                        break;
+
+                    if (RegionAddress >= ModuleStart && ModuleEnd <= (RegionAddress + RegionSize))
+                    {
+                        BitmapAddress = ModuleEnd;
+                        BitmapAddressSize = RegionSize - (ModuleEnd - RegionAddress);
+                    }
+                }
+
+                if ((BitmapSize + 0x100) > BitmapAddressSize)
+                {
+                    debug("Region %p-%p (%dMB) is too small for bitmap.",
+                          (void *)BitmapAddress,
+                          (void *)(BitmapAddress + BitmapAddressSize),
+                          TO_MB(BitmapAddressSize));
+                    continue;
+                }
+
+                debug("Found free memory for bitmap: %p (%dMB)",
+                      (void *)BitmapAddress,
+                      TO_MB(BitmapAddressSize));
+                break;
             }
         }
 
-        if (LargestFreeMemorySegment == nullptr)
+        if (BitmapAddress == 0x0)
         {
             error("No free memory found!");
             CPU::Stop();
         }
 
         /* TODO: Read swap config and make the configure the bitmap size correctly */
-        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
-        debug("Initializing Bitmap at %llp-%llp (%lld Bytes)",
-              LargestFreeMemorySegment,
-              (void *)((uintptr_t)LargestFreeMemorySegment + BitmapSize),
+        debug("Initializing Bitmap at %p-%p (%d Bytes)",
+              BitmapAddress,
+              (void *)(BitmapAddress + BitmapSize),
               BitmapSize);
 
         PageBitmap.Size = BitmapSize;
-        PageBitmap.Buffer = (uint8_t *)LargestFreeMemorySegment;
+        PageBitmap.Buffer = (uint8_t *)BitmapAddress;
         for (size_t i = 0; i < BitmapSize; i++)
             *(uint8_t *)(PageBitmap.Buffer + i) = 0;
 
-        debug("Reserving pages...");
-        this->ReservePages(0, TO_PAGES(bInfo.Memory.Size));
-        debug("Unreserving usable pages...");
-
-        for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
-        {
-            if (bInfo.Memory.Entry[i].Type == Usable)
-                this->UnreservePages(bInfo.Memory.Entry[i].BaseAddress, TO_PAGES(bInfo.Memory.Entry[i].Length));
-        }
-
-        debug("Reserving pages for SMP...");
-        this->ReservePage((void *)0x0); /* Trampoline stack, gdt, idt, etc... */
-        this->ReservePages((void *)0x2000, 4); /* TRAMPOLINE_START */
-
-        debug("Reserving bitmap pages...");
-        this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
+        ReserveEssentials();
     }
 
     Physical::Physical() {}

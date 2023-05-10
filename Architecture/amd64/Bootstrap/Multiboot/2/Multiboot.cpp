@@ -217,8 +217,10 @@ EXTERNC void multiboot_main(uint64_t Magic, uint64_t Info)
             case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
             {
                 multiboot_tag_elf_sections *elf = (multiboot_tag_elf_sections *)Tag;
-                fixme("elf_sections->[num=%d, size=%d, entsize=%d, shndx=%d]",
-                      elf->num, elf->size, elf->entsize, elf->shndx);
+                mb2binfo.Kernel.Symbols.Num = elf->num;
+                mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
+                mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
+                mb2binfo.Kernel.Symbols.Sections = (uintptr_t)&elf->sections;
                 break;
             }
             case MULTIBOOT_TAG_TYPE_APM:

@@ -271,6 +271,15 @@ EXTERNC NIF void Main()
     KPrint("Loading Kernel Symbols");
     KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
+    if (KernelSymbolTable->GetTotalEntries() == 0 &&
+        bInfo.Kernel.Symbols.Num &&
+        bInfo.Kernel.Symbols.EntSize &&
+        bInfo.Kernel.Symbols.Shndx)
+        KernelSymbolTable->AddBySymbolInfo(bInfo.Kernel.Symbols.Num,
+                                           bInfo.Kernel.Symbols.EntSize,
+                                           bInfo.Kernel.Symbols.Shndx,
+                                           bInfo.Kernel.Symbols.Sections);
+
     KPrint("Reading Kernel Parameters");
     ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
 
