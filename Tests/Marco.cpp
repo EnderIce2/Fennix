@@ -102,6 +102,27 @@ __constructor void TestMacros()
             pgs++;
         }
     }
+
+    {
+        debug("Testing ROUND_UP and ROUND_DOWN");
+        int x = 0x101;
+        int y = 0x100;
+        int result;
+
+        result = ROUND_UP(x, y);
+        if (result != 0x200)
+        {
+            error("ERROR: ROUND_UP failed: %d != 0x200\n", result);
+            inf_loop;
+        }
+
+        result = ROUND_DOWN(x, y);
+        if (result != 0x100)
+        {
+            error("ERROR: ROUND_DOWN failed: %d != 0x100\n", result);
+            inf_loop;
+        }
+    }
 }
 
 #endif // DEBUG

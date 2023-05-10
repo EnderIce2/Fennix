@@ -81,6 +81,9 @@ typedef __builtin_va_list va_list;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
+#define ROUND_UP(x, y) (((x) + (y)-1) & ~((y)-1))
+#define ROUND_DOWN(x, y) ((x) & ~((y)-1))
+
 #define VPOKE(type, address) (*((volatile type *)(address)))
 #define POKE(type, address) (*((type *)(address)))
 
@@ -342,10 +345,13 @@ typedef uint48_t uint_fast48_t;
 #define __min_vector_width(x) __attribute__((min_vector_width(x)))
 
 // sanitizer
+#define __no_sanitize(x) __attribute__((no_sanitize(x)))
 #define __no_sanitize_address __attribute__((no_sanitize_address))
-#define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
+/** @brief The no_address_safety_analysis is a deprecated alias of the no_sanitize_address attribute, new code should use no_sanitize_address. */
 #define __no_address_safety_analysis __attribute__((no_address_safety_analysis))
 #define __no_sanitize_thread __attribute__((no_sanitize_thread))
+#define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
+#define __no_sanitize_coverage __attribute__((no_sanitize_coverage))
 
 #define __synchronize __sync_synchronize()
 #define __sync __synchronize
