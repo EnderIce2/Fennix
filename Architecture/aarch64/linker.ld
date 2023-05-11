@@ -19,6 +19,7 @@ ENTRY(_start)
 
 SECTIONS
 {
+    _bootstrap_start = .;
     .text.boot :
     {
         *(.text.boot)
@@ -27,8 +28,10 @@ SECTIONS
         *(.text.bss)
         _bss_end = .;
     }
+    _bootstrap_end = .;
 
     _kernel_start = .;
+    _kernel_text_start = .;
     .text :
     {
         KEEP(*(.text.boot))
@@ -37,6 +40,7 @@ SECTIONS
     . = ALIGN(4096);
     _kernel_text_end = .;
 
+    _kernel_data_start = .;
     .data :
     {
         *(.data .data.*)
@@ -44,12 +48,12 @@ SECTIONS
     . = ALIGN(4096);
     _kernel_data_end = .;
 
+    _kernel_rodata_start = .;
     .rodata :
     {
         *(.rodata .rodata.*)
     }
     . = ALIGN(4096);
-    _kernel_rodata_end = .;
 
     .init_array :
     {
@@ -66,12 +70,15 @@ SECTIONS
         KEEP(*(.fini_array .dtors))
         PROVIDE_HIDDEN (__fini_array_end = .);
     }
+    _kernel_rodata_end = .;
 
+    _kernel_bss_start = .;
     .bss :
     {
         *(.bss .bss.*)
     }
     . = ALIGN(4096);
+    _kernel_bss_end = .;
     _kernel_end = .;
     _bss_size = _kernel_end - _kernel_rodata_end;
 

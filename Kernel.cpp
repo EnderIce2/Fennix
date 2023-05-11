@@ -525,11 +525,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
          : "memory");
     asmv("mov $0, %ebp");
 #elif defined(aa64)
-    asmv("mov %0, %%sp"
-         :
-         : "r"(KernelStack)
-         : "memory");
-    asmv("mov $0, %fp");
+#warning "Kernel stack is not set!"
 #endif
 
 #ifdef DEBUG

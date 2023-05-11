@@ -59,6 +59,8 @@ typedef struct SyscallsFrame
     uint32_t StackPointer;
     uint32_t StackSegment;
 #elif defined(aa64)
+    uint32_t ReturnAddress;
+    uint32_t StackPointer;
 #endif
 } SyscallsFrame;
 

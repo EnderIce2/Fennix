@@ -390,9 +390,11 @@ static int sys_fork(SyscallsFrame *Frame)
 
     strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
     NewThread->Info = Thread->Info;
+#ifdef a86
     NewThread->ShadowGSBase = Thread->ShadowGSBase;
     NewThread->GSBase = Thread->GSBase;
     NewThread->FSBase = Thread->FSBase;
+#endif
 
     CPU::Interrupts(CPU::Disable);
     static int RetChild = 0;
