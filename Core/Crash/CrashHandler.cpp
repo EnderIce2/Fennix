@@ -435,6 +435,7 @@ namespace CrashHandler
             {
                 for (int PMLIndex = 0; PMLIndex < 512; PMLIndex++)
                 {
+#if defined(a64)
                     Memory::PageMapLevel4 PML4 = BasePageTable->Entries[PMLIndex];
                     EHPrint("\e888888# \eAABBCC%03d-%03d-%03d-%03d\e4500F5: P:%s RW:%s US:%s PWT:%s PCB:%s A:%s NX:%s Address:\e888888%#lx\n",
                             PMLIndex, 0, 0, 0,
@@ -514,6 +515,7 @@ namespace CrashHandler
                             }
                         }
                     }
+#endif
                 }
             }
         }

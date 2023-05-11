@@ -102,7 +102,7 @@ namespace Video
         uint32_t CursorX, CursorY;
         char Brightness;
         bool DoNotScroll;
-        long Checksum;
+        long long Checksum;
     };
 
     class Display

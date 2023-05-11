@@ -23,8 +23,24 @@ align 0x1000
 global BootPageTable
 BootPageTable:
     dd 0x00000083
+    dd 0x00400083
+    dd 0x00800083
+    dd 0x00C00083
+    dd 0x01000083
+    dd 0x01400083
+    dd 0x01800083
+    dd 0x01C00083
+    dd 0x02000083
+    dd 0x02400083
+    times (KERNEL_PAGE_NUMBER - 10) dd 0
     dd 0x00000083
-    times (KERNEL_PAGE_NUMBER - 2) dd 0
-    dd 0x00000083
-    dd 0x00000083
-    times (1024 - KERNEL_PAGE_NUMBER - 2) dd 0
+    dd 0x00400083
+    dd 0x00800083
+    dd 0x00C00083
+    dd 0x01000083
+    dd 0x01400083
+    dd 0x01800083
+    dd 0x01C00083
+    dd 0x02000083
+    dd 0x02400083
+    times (1024 - KERNEL_PAGE_NUMBER - 10) dd 0

@@ -287,6 +287,7 @@ NIF void MapKernel(PageTable *PT)
 NIF void InitializeMemoryManagement()
 {
 #ifdef DEBUG
+#ifndef a32
     for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
     {
         uintptr_t Base = r_cst(uintptr_t, bInfo.Memory.Entry[i].BaseAddress);
@@ -330,7 +331,8 @@ NIF void InitializeMemoryManagement()
               End,
               Type);
     }
-#endif
+#endif // a32
+#endif // DEBUG
     trace("Initializing Physical Memory Manager");
     // KernelAllocator = Physical(); <- Already called in the constructor
     KernelAllocator.Init();
@@ -364,14 +366,13 @@ NIF void InitializeMemoryManagement()
     }
     else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
     {
-        CPU::x86::Intel::CPUID0x80000001 cpuid;
+        CPU::x86::Intel::CPUID0x00000001 cpuid;
         cpuid.Get();
-        fixme("Intel PSE support");
+        PSESupport = cpuid.EDX.PSE;
     }
 
-    if (Page1GBSupport && PSESupport)
+    if (PSESupport)
     {
-        debug("1GB Page Support Enabled");
 #if defined(a64)
         CPU::x64::CR4 cr4 = CPU::x64::readcr4();
         cr4.PSE = 1;
@@ -382,7 +383,13 @@ NIF void InitializeMemoryManagement()
         CPU::x32::writecr4(cr4);
 #elif defined(aa64)
 #endif
+        trace("PSE Support Enabled");
     }
+
+#ifdef DEBUG
+    if (Page1GBSupport)
+        debug("1GB Page Support Enabled");
+#endif
 
     MapFromZero(KernelPageTable);
     MapFramebuffer(KernelPageTable);
@@ -615,7 +622,7 @@ void free(void *Address)
 #endif
 }
 
-void *operator new(size_t Size)
+void *operator new(std::size_t Size)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -646,7 +653,7 @@ void *operator new(size_t Size)
     return ret;
 }
 
-void *operator new[](size_t Size)
+void *operator new[](std::size_t Size)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
@@ -677,7 +684,7 @@ void *operator new[](size_t Size)
     return ret;
 }
 
-void *operator new(unsigned long Size, std::align_val_t Alignment)
+void *operator new(std::size_t Size, std::align_val_t Alignment)
 {
 #ifdef DEBUG_ALLOCATIONS_SL
     SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));

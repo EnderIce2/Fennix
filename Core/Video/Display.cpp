@@ -232,7 +232,10 @@ namespace Video
         this->Buffers[Index].DoNotScroll = Value;
     }
 
-    char Display::Print(char Char, int Index, bool WriteToUART)
+#if defined(a32)
+    __no_sanitize("undefined")
+#endif
+        char Display::Print(char Char, int Index, bool WriteToUART)
     {
         if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
             return 0;

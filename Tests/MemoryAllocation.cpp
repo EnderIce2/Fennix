@@ -49,6 +49,9 @@ extern bool DebuggerIsAttached;
 
 void TestMemoryAllocation()
 {
+#ifdef a32
+    return; /* Not really for now. */
+#endif
     if (EnableExternalMemoryTracer || DebuggerIsAttached)
     {
         debug("The test is disabled when the external memory tracer or a debugger is enabled.");

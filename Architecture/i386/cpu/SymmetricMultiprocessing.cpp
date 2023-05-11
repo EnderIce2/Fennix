@@ -17,26 +17,38 @@
 
 #include <smp.hpp>
 
-#include <ints.hpp>
 #include <memory.hpp>
+#include <ints.hpp>
 #include <assert.h>
 #include <cpu.hpp>
+#include <atomic>
 
 #include "../../../kernel.h"
 
-volatile bool CPUEnabled = false;
+enum SMPTrampolineAddress
+{
+    PAGE_TABLE = 0x500,
+    START_ADDR = 0x520,
+    STACK = 0x570,
+    GDT = 0x580,
+    IDT = 0x590,
+    CORE = 0x600,
+    TRAMPOLINE_START = 0x2000
+};
+
+std::atomic_bool CPUEnabled = false;
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __aligned(0x1000) CPUData CPUs[MAX_CPU] = {0};
 
-CPUData *GetCPU(uint64_t id) { return &CPUs[id]; }
+SafeFunction CPUData *GetCPU(uint64_t id) { return &CPUs[id]; }
 
-CPUData *GetCurrentCPU()
+SafeFunction CPUData *GetCurrentCPU()
 {
     uint64_t ret = 0;
     if (!(&CPUs[ret])->IsActive)
     {
-        error("CPU %d is not active!", ret);
+        // error("CPU %d is not active!", ret); FIXME
         return &CPUs[0];
     }
     assert((&CPUs[ret])->Checksum == CPU_DATA_CHECKSUM);

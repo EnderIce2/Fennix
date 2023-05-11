@@ -23,7 +23,7 @@
 #include "multiboot2.h"
 #include "../../../../../kernel.h"
 
-EXTERNC void multiboot_main(uint64_t Magic, uint64_t Info)
+EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 {
     if (Info == NULL || Magic == NULL)
     {

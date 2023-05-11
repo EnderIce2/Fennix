@@ -23,7 +23,7 @@
 #include "multiboot2.h"
 #include "../../../../../kernel.h"
 
-EXTERNC void multiboot_main(uint32_t Magic, uint32_t Info)
+EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 {
     if (Info == NULL || Magic == NULL)
     {
@@ -217,8 +217,10 @@ EXTERNC void multiboot_main(uint32_t Magic, uint32_t Info)
             case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:
             {
                 multiboot_tag_elf_sections *elf = (multiboot_tag_elf_sections *)Tag;
-                fixme("elf_sections->[num=%d, size=%d, entsize=%d, shndx=%d]",
-                      elf->num, elf->size, elf->entsize, elf->shndx);
+                mb2binfo.Kernel.Symbols.Num = elf->num;
+                mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
+                mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
+                mb2binfo.Kernel.Symbols.Sections = (uintptr_t)&elf->sections;
                 break;
             }
             case MULTIBOOT_TAG_TYPE_APM:

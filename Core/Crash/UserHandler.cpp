@@ -281,6 +281,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
                 if (Present)
                 {
+#if defined(a64)
                     uintptr_t CheckPageFaultLinearAddress = (uintptr_t)CheckPageFaultAddress;
                     CheckPageFaultLinearAddress &= 0xFFFFFFFFFFFFF000;
                     debug("%#lx -> %#lx", CheckPageFaultAddress, CheckPageFaultLinearAddress);
@@ -345,6 +346,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
                           PTE->Entries[Index.PTEIndex].ProtectionKey,
                           PTE->Entries[Index.PTEIndex].ExecuteDisable ? "1" : "0",
                           PTE->Entries[Index.PTEIndex].GetAddress() << 12);
+#endif
                 }
             }
         }

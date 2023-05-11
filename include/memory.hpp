@@ -24,6 +24,7 @@
 #include <bitmap.hpp>
 #include <lock.hpp>
 #include <std.hpp>
+#include <cstddef>
 #endif // __cplusplus
 #include <types.h>
 
@@ -177,28 +178,44 @@ namespace Memory
         XD = (uint64_t)1 << 63
     };
 
-    /* 2.2 Paging in IA-32e Mode - https://composter.com.ua/documents/TLBs_Paging-Structure_Caches_and_Their_Invalidation.pdf */
-
     union __packed PageTableEntry
     {
+#if defined(a64)
         struct
         {
-            uint64_t Present : 1;            // 0
-            uint64_t ReadWrite : 1;          // 1
-            uint64_t UserSupervisor : 1;     // 2
-            uint64_t WriteThrough : 1;       // 3
-            uint64_t CacheDisable : 1;       // 4
-            uint64_t Accessed : 1;           // 5
-            uint64_t Dirty : 1;              // 6
-            uint64_t PageAttributeTable : 1; // 7
-            uint64_t Global : 1;             // 8
-            uint64_t Available0 : 3;         // 9-11
-            uint64_t Address : 40;           // 12-51
-            uint64_t Available1 : 7;         // 52-58
-            uint64_t ProtectionKey : 4;      // 59-62
-            uint64_t ExecuteDisable : 1;     // 63
+            uintptr_t Present : 1;            // 0
+            uintptr_t ReadWrite : 1;          // 1
+            uintptr_t UserSupervisor : 1;     // 2
+            uintptr_t WriteThrough : 1;       // 3
+            uintptr_t CacheDisable : 1;       // 4
+            uintptr_t Accessed : 1;           // 5
+            uintptr_t Dirty : 1;              // 6
+            uintptr_t PageAttributeTable : 1; // 7
+            uintptr_t Global : 1;             // 8
+            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Address : 40;           // 12-51
+            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t ProtectionKey : 4;      // 59-62
+            uintptr_t ExecuteDisable : 1;     // 63
         };
-        uint64_t raw;
+#elif defined(a32)
+        struct
+        {
+            uintptr_t Present : 1;            // 0
+            uintptr_t ReadWrite : 1;          // 1
+            uintptr_t UserSupervisor : 1;     // 2
+            uintptr_t WriteThrough : 1;       // 3
+            uintptr_t CacheDisable : 1;       // 4
+            uintptr_t Accessed : 1;           // 5
+            uintptr_t Dirty : 1;              // 6
+            uintptr_t PageAttributeTable : 1; // 7
+            uintptr_t Global : 1;             // 8
+            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Address : 20;           // 12-31
+        };
+#elif defined(aa64)
+#endif
+        uintptr_t raw;
 
         /** @brief Set Address */
         void SetAddress(uintptr_t _Address)
@@ -233,48 +250,87 @@ namespace Memory
 
     struct __packed PageTableEntryPtr
     {
+#if defined(a64)
         PageTableEntry Entries[512];
+#elif defined(a32)
+        PageTableEntry Entries[1024];
+#elif defined(aa64)
+#endif
     };
 
     union __packed PageDirectoryEntry
     {
+#if defined(a64)
         struct
         {
-            uint64_t Present : 1;        // 0
-            uint64_t ReadWrite : 1;      // 1
-            uint64_t UserSupervisor : 1; // 2
-            uint64_t WriteThrough : 1;   // 3
-            uint64_t CacheDisable : 1;   // 4
-            uint64_t Accessed : 1;       // 5
-            uint64_t Available0 : 1;     // 6
-            uint64_t PageSize : 1;       // 7
-            uint64_t Available1 : 4;     // 8-11
-            uint64_t Address : 40;       // 12-51
-            uint64_t Available2 : 11;    // 52-62
-            uint64_t ExecuteDisable : 1; // 63
+            uintptr_t Present : 1;        // 0
+            uintptr_t ReadWrite : 1;      // 1
+            uintptr_t UserSupervisor : 1; // 2
+            uintptr_t WriteThrough : 1;   // 3
+            uintptr_t CacheDisable : 1;   // 4
+            uintptr_t Accessed : 1;       // 5
+            uintptr_t Available0 : 1;     // 6
+            uintptr_t PageSize : 1;       // 7
+            uintptr_t Available1 : 4;     // 8-11
+            uintptr_t Address : 40;       // 12-51
+            uintptr_t Available2 : 11;    // 52-62
+            uintptr_t ExecuteDisable : 1; // 63
         };
 
         struct
         {
-            uint64_t Present : 1;            // 0
-            uint64_t ReadWrite : 1;          // 1
-            uint64_t UserSupervisor : 1;     // 2
-            uint64_t WriteThrough : 1;       // 3
-            uint64_t CacheDisable : 1;       // 4
-            uint64_t Accessed : 1;           // 5
-            uint64_t Dirty : 1;              // 6
-            uint64_t PageSize : 1;           // 7
-            uint64_t Global : 1;             // 8
-            uint64_t Available0 : 3;         // 9-11
-            uint64_t PageAttributeTable : 1; // 12
-            uint64_t Reserved0 : 8;          // 13-20
-            uint64_t Address : 31;           // 21-51
-            uint64_t Available1 : 7;         // 52-58
-            uint64_t ProtectionKey : 4;      // 59-62
-            uint64_t ExecuteDisable : 1;     // 63
+            uintptr_t Present : 1;            // 0
+            uintptr_t ReadWrite : 1;          // 1
+            uintptr_t UserSupervisor : 1;     // 2
+            uintptr_t WriteThrough : 1;       // 3
+            uintptr_t CacheDisable : 1;       // 4
+            uintptr_t Accessed : 1;           // 5
+            uintptr_t Dirty : 1;              // 6
+            uintptr_t PageSize : 1;           // 7
+            uintptr_t Global : 1;             // 8
+            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t PageAttributeTable : 1; // 12
+            uintptr_t Reserved0 : 8;          // 13-20
+            uintptr_t Address : 31;           // 21-51
+            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t ProtectionKey : 4;      // 59-62
+            uintptr_t ExecuteDisable : 1;     // 63
         } TwoMB;
+#elif defined(a32)
+        struct
+        {
+            uintptr_t Present : 1;        // 0
+            uintptr_t ReadWrite : 1;      // 1
+            uintptr_t UserSupervisor : 1; // 2
+            uintptr_t WriteThrough : 1;   // 3
+            uintptr_t CacheDisable : 1;   // 4
+            uintptr_t Accessed : 1;       // 5
+            uintptr_t Available0 : 1;     // 6
+            uintptr_t PageSize : 1;       // 7
+            uintptr_t Available1 : 4;     // 8-11
+            uintptr_t Address : 20;       // 12-31
+        };
 
-        uint64_t raw;
+        struct
+        {
+            uintptr_t Present : 1;            // 0
+            uintptr_t ReadWrite : 1;          // 1
+            uintptr_t UserSupervisor : 1;     // 2
+            uintptr_t WriteThrough : 1;       // 3
+            uintptr_t CacheDisable : 1;       // 4
+            uintptr_t Accessed : 1;           // 5
+            uintptr_t Dirty : 1;              // 6
+            uintptr_t PageSize : 1;           // 7
+            uintptr_t Global : 1;             // 8
+            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t PageAttributeTable : 1; // 12
+            uintptr_t Address0 : 8;           // 13-20
+            uintptr_t Reserved0 : 1;          // 21
+            uintptr_t Address1 : 10;          // 22-31
+        } FourMB;
+#elif defined(aa64)
+#endif
+        uintptr_t raw;
 
         /** @brief Set PageTableEntryPtr address */
         void SetAddress(uintptr_t _Address)
@@ -316,41 +372,41 @@ namespace Memory
     {
         struct
         {
-            uint64_t Present : 1;        // 0
-            uint64_t ReadWrite : 1;      // 1
-            uint64_t UserSupervisor : 1; // 2
-            uint64_t WriteThrough : 1;   // 3
-            uint64_t CacheDisable : 1;   // 4
-            uint64_t Accessed : 1;       // 5
-            uint64_t Available0 : 1;     // 6
-            uint64_t PageSize : 1;       // 7
-            uint64_t Available1 : 4;     // 8-11
-            uint64_t Address : 40;       // 12-51
-            uint64_t Available2 : 11;    // 52-62
-            uint64_t ExecuteDisable : 1; // 63
+            uintptr_t Present : 1;        // 0
+            uintptr_t ReadWrite : 1;      // 1
+            uintptr_t UserSupervisor : 1; // 2
+            uintptr_t WriteThrough : 1;   // 3
+            uintptr_t CacheDisable : 1;   // 4
+            uintptr_t Accessed : 1;       // 5
+            uintptr_t Available0 : 1;     // 6
+            uintptr_t PageSize : 1;       // 7
+            uintptr_t Available1 : 4;     // 8-11
+            uintptr_t Address : 40;       // 12-51
+            uintptr_t Available2 : 11;    // 52-62
+            uintptr_t ExecuteDisable : 1; // 63
         };
 
         struct
         {
-            uint64_t Present : 1;            // 0
-            uint64_t ReadWrite : 1;          // 1
-            uint64_t UserSupervisor : 1;     // 2
-            uint64_t WriteThrough : 1;       // 3
-            uint64_t CacheDisable : 1;       // 4
-            uint64_t Accessed : 1;           // 5
-            uint64_t Dirty : 1;              // 6
-            uint64_t PageSize : 1;           // 7
-            uint64_t Global : 1;             // 8
-            uint64_t Available0 : 3;         // 9-11
-            uint64_t PageAttributeTable : 1; // 12
-            uint64_t Reserved0 : 17;         // 13-29
-            uint64_t Address : 22;           // 30-51
-            uint64_t Available1 : 7;         // 52-58
-            uint64_t ProtectionKey : 4;      // 59-62
-            uint64_t ExecuteDisable : 1;     // 63
+            uintptr_t Present : 1;            // 0
+            uintptr_t ReadWrite : 1;          // 1
+            uintptr_t UserSupervisor : 1;     // 2
+            uintptr_t WriteThrough : 1;       // 3
+            uintptr_t CacheDisable : 1;       // 4
+            uintptr_t Accessed : 1;           // 5
+            uintptr_t Dirty : 1;              // 6
+            uintptr_t PageSize : 1;           // 7
+            uintptr_t Global : 1;             // 8
+            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t PageAttributeTable : 1; // 12
+            uintptr_t Reserved0 : 17;         // 13-29
+            uintptr_t Address : 22;           // 30-51
+            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t ProtectionKey : 4;      // 59-62
+            uintptr_t ExecuteDisable : 1;     // 63
         } OneGB;
 
-        uint64_t raw;
+        uintptr_t raw;
 
         /** @brief Set PageDirectoryEntryPtr address */
         void SetAddress(uintptr_t _Address)
@@ -392,20 +448,20 @@ namespace Memory
     {
         struct
         {
-            uint64_t Present : 1;        // 0
-            uint64_t ReadWrite : 1;      // 1
-            uint64_t UserSupervisor : 1; // 2
-            uint64_t WriteThrough : 1;   // 3
-            uint64_t CacheDisable : 1;   // 4
-            uint64_t Accessed : 1;       // 5
-            uint64_t Available0 : 1;     // 6
-            uint64_t Reserved0 : 1;      // 7
-            uint64_t Available1 : 4;     // 8-11
-            uint64_t Address : 40;       // 12-51
-            uint64_t Available2 : 11;    // 52-62
-            uint64_t ExecuteDisable : 1; // 63
+            uintptr_t Present : 1;        // 0
+            uintptr_t ReadWrite : 1;      // 1
+            uintptr_t UserSupervisor : 1; // 2
+            uintptr_t WriteThrough : 1;   // 3
+            uintptr_t CacheDisable : 1;   // 4
+            uintptr_t Accessed : 1;       // 5
+            uintptr_t Available0 : 1;     // 6
+            uintptr_t Reserved0 : 1;      // 7
+            uintptr_t Available1 : 4;     // 8-11
+            uintptr_t Address : 40;       // 12-51
+            uintptr_t Available2 : 11;    // 52-62
+            uintptr_t ExecuteDisable : 1; // 63
         };
-        uint64_t raw;
+        uintptr_t raw;
 
         /** @brief Set PageDirectoryPointerTableEntryPtr address */
         void SetAddress(uintptr_t _Address)
@@ -438,10 +494,70 @@ namespace Memory
         }
     };
 
+    struct __packed PageMapLevel4Ptr
+    {
+        PageMapLevel4 Entries[512];
+    };
+
+    union __packed PageMapLevel5
+    {
+        struct
+        {
+            uintptr_t Present : 1;        // 0
+            uintptr_t ReadWrite : 1;      // 1
+            uintptr_t UserSupervisor : 1; // 2
+            uintptr_t WriteThrough : 1;   // 3
+            uintptr_t CacheDisable : 1;   // 4
+            uintptr_t Accessed : 1;       // 5
+            uintptr_t Available0 : 1;     // 6
+            uintptr_t Reserved0 : 1;      // 7
+            uintptr_t Available1 : 4;     // 8-11
+            uintptr_t Address : 40;       // 12-51
+            uintptr_t Available2 : 11;    // 52-62
+            uintptr_t ExecuteDisable : 1; // 63
+        };
+        uintptr_t raw;
+
+        /** @brief Set PageMapLevel4Ptr address */
+        void SetAddress(uintptr_t _Address)
+        {
+#if defined(a64)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#elif defined(a32)
+            _Address &= 0x000FFFFF;
+            this->raw &= 0xFFC00003;
+            this->raw |= (_Address << 12);
+#elif defined(aa64)
+            _Address &= 0x000000FFFFFFFFFF;
+            this->raw &= 0xFFF0000000000FFF;
+            this->raw |= (_Address << 12);
+#endif
+        }
+
+        /** @brief Get PageMapLevel4Ptr address */
+        uintptr_t GetAddress()
+        {
+#if defined(a64)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#elif defined(a32)
+            return (this->raw & 0x003FFFFF000) >> 12;
+#elif defined(aa64)
+            return (this->raw & 0x000FFFFFFFFFF000) >> 12;
+#endif
+        }
+    };
+
     class PageTable
     {
     public:
+#if defined(a64)
         PageMapLevel4 Entries[512];
+#elif defined(a32)
+        PageDirectoryEntry Entries[1024];
+#elif defined(aa64)
+#endif
 
         /**
          * @brief Update CR3 with this PageTable
@@ -611,14 +727,17 @@ namespace Memory
             NoMapType,
             FourKB,
             TwoMB,
+            FourMB,
             OneGB
         };
 
         class PageMapIndexer
         {
         public:
+#if defined(a64)
             uintptr_t PMLIndex = 0;
             uintptr_t PDPTEIndex = 0;
+#endif
             uintptr_t PDEIndex = 0;
             uintptr_t PTEIndex = 0;
             PageMapIndexer(uintptr_t VirtualAddress);
@@ -667,6 +786,8 @@ namespace Memory
 
             if (Type == MapType::TwoMB)
                 PageSize = PAGE_SIZE_2M;
+            else if (Type == MapType::FourMB)
+                PageSize = PAGE_SIZE_4M;
             else if (Type == MapType::OneGB)
                 PageSize = PAGE_SIZE_1G;
 
@@ -701,6 +822,14 @@ namespace Memory
                     Length -= PAGE_SIZE_1G;
                 }
 
+                while (Length >= PAGE_SIZE_4M)
+                {
+                    this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Virtual::MapType::FourMB);
+                    VirtualAddress = (void *)((uintptr_t)VirtualAddress + PAGE_SIZE_4M);
+                    PhysicalAddress = (void *)((uintptr_t)PhysicalAddress + PAGE_SIZE_4M);
+                    Length -= PAGE_SIZE_4M;
+                }
+
                 while (Length >= PAGE_SIZE_2M)
                 {
                     this->Map(VirtualAddress, PhysicalAddress, Length, Flags, Virtual::MapType::TwoMB);
@@ -728,6 +857,16 @@ namespace Memory
                 if (Length % PAGE_SIZE_1G != 0)
                 {
                     warn("Length is not a multiple of 1GB.");
+                    if (FailOnModulo)
+                        return Virtual::MapType::NoMapType;
+                }
+            }
+            else if (Length >= PAGE_SIZE_4M)
+            {
+                Type = Virtual::MapType::FourMB;
+                if (Length % PAGE_SIZE_4M != 0)
+                {
+                    warn("Length is not a multiple of 4MB.");
                     if (FailOnModulo)
                         return Virtual::MapType::NoMapType;
                 }
@@ -768,6 +907,8 @@ namespace Memory
 
             if (Type == MapType::TwoMB)
                 PageSize = PAGE_SIZE_2M;
+            else if (Type == MapType::FourMB)
+                PageSize = PAGE_SIZE_4M;
             else if (Type == MapType::OneGB)
                 PageSize = PAGE_SIZE_1G;
 
@@ -909,9 +1050,9 @@ namespace Memory
 
 void InitializeMemoryManagement();
 
-void *operator new(size_t Size);
-void *operator new[](size_t Size);
-void *operator new(size_t Size, std::align_val_t Alignment);
+void *operator new(std::size_t Size);
+void *operator new[](std::size_t Size);
+void *operator new(std::size_t Size, std::align_val_t Alignment);
 void operator delete(void *Pointer);
 void operator delete[](void *Pointer);
 void operator delete(void *Pointer, long unsigned int Size);

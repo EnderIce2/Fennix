@@ -37,8 +37,6 @@ namespace Memory
         this->PTEIndex = Address & 0x3FF;
         Address >>= 10;
         this->PDEIndex = Address & 0x3FF;
-        Address >>= 10;
-        this->PDPTEIndex = Address & 0x3FF;
 #elif defined(aa64)
 #endif
     }
