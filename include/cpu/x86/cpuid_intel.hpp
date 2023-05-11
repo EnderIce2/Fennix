@@ -59,7 +59,7 @@ namespace CPU
                 {
                     struct
                     {
-                        char rbx[4];
+                        char Vendor[4];
                     };
                     cpuid_t raw;
                 } EBX;
@@ -67,7 +67,7 @@ namespace CPU
                 {
                     struct
                     {
-                        char rcx[4];
+                        char Vendor[4];
                     };
                     cpuid_t raw;
                 } ECX;
@@ -75,7 +75,7 @@ namespace CPU
                 {
                     struct
                     {
-                        char rdx[4];
+                        char Vendor[4];
                     };
                     cpuid_t raw;
                 } EDX;
@@ -97,10 +97,18 @@ namespace CPU
                 {
                     struct
                     {
-                        uint32_t SteppingID : 4;
-                        uint32_t ModelID : 4;
-                        uint32_t FamilyID : 4;
-                        uint32_t Type : 2;
+                        uint32_t Stepping : 4;
+                        uint32_t Model : 4;
+                        uint32_t Family : 4;
+                        /**
+                         * @brief Processor Type
+                         * 
+                         * 00: Original OEM Processor
+                         * 01: Intel OverDrive Processor
+                         * 10: Dual processor
+                         * 11: Intel reserved
+                         */
+                        uint32_t ProcessorType : 2;
                         uint32_t Reserved0 : 2;
                         uint32_t ExtendedModel : 4;
                         uint32_t ExtendedFamily : 8;
@@ -116,7 +124,7 @@ namespace CPU
                         uint32_t BrandIndex : 8;
                         uint32_t CLFLUSHLineSize : 8;
                         uint32_t LogicalProcessorsPerPackage : 8;
-                        uint32_t LocalAPICID : 8;
+                        uint32_t DefaultAPICID : 8;
                     };
                     cpuid_t raw;
                 } EBX;
@@ -126,7 +134,7 @@ namespace CPU
                     struct
                     {
                         uint32_t SSE3 : 1;
-                        uint32_t PCLMULQDQ : 1;
+                        uint32_t PCLMULDQ : 1;
                         uint32_t DTES64 : 1;
                         uint32_t MONITOR : 1;
                         uint32_t DS_CPL : 1;
@@ -138,8 +146,8 @@ namespace CPU
                         uint32_t CNXT_ID : 1;
                         uint32_t Reserved0 : 1;
                         uint32_t FMA : 1;
-                        uint32_t CMPXCHG16B : 1;
-                        uint32_t xTPRUpdateControl : 1;
+                        uint32_t CX16 : 1;
+                        uint32_t xTPR : 1;
                         uint32_t PDCM : 1;
                         uint32_t Reserved1 : 1;
                         uint32_t PCID : 1;
@@ -149,14 +157,17 @@ namespace CPU
                         uint32_t x2APIC : 1;
                         uint32_t MOVBE : 1;
                         uint32_t POPCNT : 1;
-                        uint32_t TSCDeadline : 1;
+                        uint32_t TSC_DEADLINE : 1;
                         uint32_t AES : 1;
                         uint32_t XSAVE : 1;
                         uint32_t OSXSAVE : 1;
                         uint32_t AVX : 1;
                         uint32_t F16C : 1;
                         uint32_t RDRAND : 1;
-                        uint32_t Reserved2 : 1;
+                        /**
+                         * @note Not sure if this is correct
+                         * Intel documentation says it's "Not Used; Always returns 0."
+                         */
                         uint32_t Hypervisor : 1;
                     };
                     cpuid_t raw;
@@ -203,7 +214,7 @@ namespace CPU
                 } EDX;
             };
 
-            /** @brief CPU cache and TLB */
+            /** @brief CPU cache and TLB */ /* FIXME TODO */
             struct CPUID0x00000002
             {
                 __always_inline inline void Get()

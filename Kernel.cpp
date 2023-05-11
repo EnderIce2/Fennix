@@ -153,6 +153,7 @@ LockClass mExtTrkLock;
  *
  * - CPUID lists:
  *    https://www.amd.com/system/files/TechDocs/40332.pdf
+ *    https://www.scss.tcd.ie/~jones/CS4021/processor-identification-cpuid-instruction-note.pdf
  *
  * - SMBIOS:
  *    https://www.dmtf.org/dsp/DSP0134
