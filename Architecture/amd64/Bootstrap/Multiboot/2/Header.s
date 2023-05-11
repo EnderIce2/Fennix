@@ -60,8 +60,8 @@ FramebufferTag_Start:
 	.word 5
 	.word 1
 	.long FramebufferTag_End - FramebufferTag_Start
-	.long 1280
-	.long 720
+	.long 0
+	.long 0
 	.long 32
 FramebufferTag_End:
 .align 8
@@ -69,7 +69,7 @@ EGATextSupportTag_Start:
 	.word 4
 	.word 0
 	.long EGATextSupportTag_End - EGATextSupportTag_Start
-	.long 1 /* https://www.gnu.org/software/grub/manual/multiboot2/html_node/Console-header-tags.html */
+	.long 0 /* https://www.gnu.org/software/grub/manual/multiboot2/html_node/Console-header-tags.html */
 EGATextSupportTag_End:
 .align 8
 AlignedModulesTag_Start:

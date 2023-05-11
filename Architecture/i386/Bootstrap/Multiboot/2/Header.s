@@ -55,7 +55,7 @@ InfoRequestTag_Start:
 	.long 20 /* EFI 64-bit Image Handle Pointer */
 	.long 21 /* Load Base Address */
 InfoRequestTag_End:
-/*.align 8
+.align 8
 FramebufferTag_Start:
 	.word 5
 	.word 1
@@ -63,13 +63,13 @@ FramebufferTag_Start:
 	.long 0
 	.long 0
 	.long 32
-FramebufferTag_End:*/
+FramebufferTag_End:
 .align 8
 EGATextSupportTag_Start:
 	.word 4
 	.word 0
 	.long EGATextSupportTag_End - EGATextSupportTag_Start
-	.long 1 /* https://www.gnu.org/software/grub/manual/multiboot2/html_node/Console-header-tags.html */
+	.long 0 /* https://www.gnu.org/software/grub/manual/multiboot2/html_node/Console-header-tags.html */
 EGATextSupportTag_End:
 .align 8
 AlignedModulesTag_Start:
