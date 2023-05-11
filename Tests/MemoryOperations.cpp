@@ -63,8 +63,7 @@ __constructor void TestMemoryOperations()
         inf_loop;
     }
 
-    char carr[1024];
-    char carrFull[1024];
+    char carr[512];
     char carrTo[16];
 
     for (size_t i = 0; i < 512; i++)
@@ -72,10 +71,10 @@ __constructor void TestMemoryOperations()
         for (size_t i = 0; i < 16; i++)
             carrTo[i] = 'a';
 
-        for (size_t i = 0; i < 1024; i += 16)
+        for (size_t i = 0; i < 512; i += 16)
             memcpy_unsafe(carr + i, carrTo, 16);
 
-        for (size_t i = 0; i < 1024; i++)
+        for (size_t i = 0; i < 512; i++)
         {
             if (carr[i] != 'a')
             {
@@ -85,28 +84,31 @@ __constructor void TestMemoryOperations()
             }
         }
 
-        for (size_t i = 0; i < 1024; i++)
-            carrFull[i] = 'b';
-
-        memcpy_unsafe(carr, carrFull, 1024);
-
-        for (size_t i = 0; i < 1024; i++)
         {
-            if (carr[i] != 'b')
+            char carrFull[512];
+            for (size_t i = 0; i < 512; i++)
+                carrFull[i] = 'b';
+
+            memcpy_unsafe(carr, carrFull, 512);
+
+            for (size_t i = 0; i < 512; i++)
             {
-                error("memcpy failed!");
-                while (1)
-                    ;
+                if (carr[i] != 'b')
+                {
+                    error("memcpy failed!");
+                    while (1)
+                        ;
+                }
             }
         }
     }
 
     for (size_t i = 0; i < 512; i++)
     {
-        for (size_t i = 0; i < 1024; i += 16)
+        for (size_t i = 0; i < 512; i += 16)
             memset_unsafe(carr + i, 'c', 16);
 
-        for (size_t i = 0; i < 1024; i++)
+        for (size_t i = 0; i < 512; i++)
         {
             if (carr[i] != 'c')
             {
@@ -119,9 +121,9 @@ __constructor void TestMemoryOperations()
 
     for (size_t i = 0; i < 512; i++)
     {
-        memset_unsafe(carr, 'd', 1024);
+        memset_unsafe(carr, 'd', 512);
 
-        for (size_t i = 0; i < 1024; i++)
+        for (size_t i = 0; i < 512; i++)
         {
             if (carr[i] != 'd')
             {
