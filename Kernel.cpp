@@ -426,6 +426,15 @@ EXTERNC NIF void Main()
         }
     }
 
+    if (vfs->GetRootNode()->Children.size() == 0)
+    {
+        VirtualFileSystem::FileSystemOperations null_op = {
+            .Name = "null",
+        };
+
+        vfs->CreateRoot("/", &null_op);
+    }
+
     if (!vfs->PathExists("/system"))
         vfs->Create("/system", NodeFlags::DIRECTORY);
 
