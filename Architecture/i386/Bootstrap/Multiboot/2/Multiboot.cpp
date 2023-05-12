@@ -114,7 +114,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
                 mb2binfo.Memory.Entries = EntryCount;
                 for (uint32_t i = 0; i < EntryCount; i++)
                 {
-                    if (EntryCount > MAX_MEMORY_ENTRIES)
+                    if (i > MAX_MEMORY_ENTRIES)
                     {
                         warn("Too many memory entries, skipping the rest...");
                         break;
