@@ -85,7 +85,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
                 multiboot_tag_module *module = (multiboot_tag_module *)Tag;
                 static int module_count = 0;
                 mb2binfo.Modules[module_count].Address = (void *)(uint64_t)module->mod_start;
-                mb2binfo.Modules[module_count].Size = module->size;
+                mb2binfo.Modules[module_count].Size = module->mod_end - module->mod_start;
                 strncpy(mb2binfo.Modules[module_count].Path, "(null)", 6);
                 strncpy(mb2binfo.Modules[module_count].CommandLine, module->cmdline,
                         strlen(module->cmdline));
