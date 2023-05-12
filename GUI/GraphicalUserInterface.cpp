@@ -68,7 +68,9 @@ namespace GraphicalUserInterface
 
         if (unlikely(!FoundMouseDriver))
         {
-            debug("No mouse driver found.");
+            static int once = 0;
+            if (!once++)
+                debug("No mouse driver found.");
             Mouse.X = Display->GetBuffer(200)->Width / 2;
             Mouse.Y = Display->GetBuffer(200)->Height / 2;
             Mouse.Z = 0;
