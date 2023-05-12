@@ -101,7 +101,13 @@ namespace Memory
 		debug("Reserving RSDT...");
 		this->ReservePages((void *)bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
 
-#if defined(a32)
+#if defined(a64)
+		if ((uintptr_t)ACPIPtr > 0x7FE00000) /* FIXME */
+		{
+			error("ACPI table is located above 0x7FE00000, which is not mapped.");
+			return;
+		}
+#elif defined(a32)
 		if ((uintptr_t)ACPIPtr > 0x2800000) /* FIXME */
 		{
 			error("ACPI table is located above 0x2800000, which is not mapped.");
