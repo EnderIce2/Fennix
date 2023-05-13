@@ -43,7 +43,7 @@ namespace Disk
         for (unsigned char ItrPort = 0; ItrPort < this->AvailablePorts; ItrPort++)
         {
             Drive drive{};
-            sprintf(drive.Name, "sd%ld-%d", DriverUID, this->AvailablePorts);
+            sprintf(drive.Name, "sd%ld", DriverUID);
             debug("Drive Name: %s", drive.Name);
             // TODO: Implement disk type detection. Very useful in the future.
             drive.MechanicalDisk = true;
@@ -88,9 +88,29 @@ namespace Disk
                         if (memcmp(GPTPartition.PartitionType, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", sizeof(GPTPartition.PartitionType)) != 0)
                         {
                             Partition partition{};
+                            memset(partition.Label, '\0', sizeof(partition.Label));
+                            // Convert utf16 to utf8
                             for (int i = 0; i < 36; i++)
-                                memcpy(partition.Label + i * 2, &GPTPartition.PartitionName[i], 2);
-                            partition.Label[71] = '\0';
+                            {
+                                uint16_t utf16 = GPTPartition.PartitionName[i];
+                                if (utf16 == 0)
+                                    break;
+                                if (utf16 < 0x80)
+                                    partition.Label[i] = (char)utf16;
+                                else if (utf16 < 0x800)
+                                {
+                                    partition.Label[i] = (char)(0xC0 | (utf16 >> 6));
+                                    partition.Label[i + 1] = (char)(0x80 | (utf16 & 0x3F));
+                                    i++;
+                                }
+                                else
+                                {
+                                    partition.Label[i] = (char)(0xE0 | (utf16 >> 12));
+                                    partition.Label[i + 1] = (char)(0x80 | ((utf16 >> 6) & 0x3F));
+                                    partition.Label[i + 2] = (char)(0x80 | (utf16 & 0x3F));
+                                    i += 2;
+                                }
+                            }
                             partition.StartLBA = GPTPartition.FirstLBA;
                             partition.EndLBA = GPTPartition.LastLBA;
                             partition.Sectors = partition.EndLBA - partition.StartLBA;
@@ -103,14 +123,13 @@ namespace Disk
                             trace("GPT partition \"%s\" found with %lld sectors", partition.Label, partition.Sectors);
                             drive.Partitions.push_back(partition);
 
-                            // char *PartitionName = new char[64];
-                            // sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition.Index);
+                            char PartitionName[64];
+                            sprintf(PartitionName, "sd%ldp%ld", drives.size(), partition.Index);
+                            fixme("PartitionName: %s", PartitionName);
 
                             /*
                             TODO: Add to devfs the disk
                             */
-
-                            // delete[] PartitionName;
                         }
                     }
                 }
@@ -133,14 +152,13 @@ namespace Disk
                         trace("Partition \"%#llx\" found with %lld sectors.", drive.Table.MBR.UniqueID, partition.Sectors);
                         drive.Partitions.push_back(partition);
 
-                        // char *PartitionName = new char[64];
-                        // sprintf(PartitionName, "sd%ldp%ld", drives.size() - 1, partition.Index);
+                        char PartitionName[64];
+                        sprintf(PartitionName, "sd%ldp%ld", drives.size(), partition.Index);
+                        fixme("PartitionName: %s", PartitionName);
 
                         /*
                         TODO: Add to devfs the disk
                         */
-
-                        // delete[] PartitionName;
                     }
                 trace("%d MBR partitions found.", drive.Partitions.size());
             }
