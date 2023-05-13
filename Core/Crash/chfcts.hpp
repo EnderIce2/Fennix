@@ -58,7 +58,6 @@ struct CRData
     CPU::x32::CR3 cr3;
     CPU::x32::CR4 cr4;
     CPU::x32::CR8 cr8;
-    CPU::x32::EFER efer;
     uintptr_t dr0, dr1, dr2, dr3, dr6;
     CPU::x32::DR7 dr7;
 

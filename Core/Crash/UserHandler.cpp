@@ -70,8 +70,6 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         CPU::x32::CR3 cr3 = CPU::x32::readcr3();
         CPU::x32::CR4 cr4 = CPU::x32::readcr4();
         CPU::x32::CR8 cr8 = CPU::x32::readcr8();
-        CPU::x32::EFER efer;
-        efer.raw = CPU::x32::rdmsr(CPU::x32::MSR_EFER);
 
         error("Technical Informations on CPU %lld:", CurCPU->ID);
         uintptr_t ds;
@@ -95,7 +93,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               Frame->ss, Frame->cs, ds);
         error("EAX=%#llx EBX=%#llx ECX=%#llx EDX=%#llx", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
         error("ESI=%#llx EDI=%#llx EBP=%#llx ESP=%#llx", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
-        error("EIP=%#llx EFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+        error("EIP=%#llx EFL=%#llx INT=%#llx ERR=%#llx", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
 #elif defined(aa64)
 #endif
 
@@ -156,12 +154,12 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #elif defined(aa64)
 #endif
 
-#if defined(a86)
+#if defined(a64)
         error("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
               efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
               efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",
               efer.Reserved0, efer.Reserved1, efer.Reserved2);
-#endif // a64 || a32
+#endif
     }
 
     switch (Frame->InterruptNumber)

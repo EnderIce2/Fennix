@@ -279,37 +279,6 @@ namespace CPU
             uint32_t ss;              // Stack Segment
         } TrapFrame;
 
-        /* TODO: Does EFER exists in x32? */
-        typedef union EFER
-        {
-            struct
-            {
-                /** @brief Enable syscall & sysret instructions in 64-bit mode. */
-                uint32_t SCE : 1;
-                /** @brief Reserved */
-                uint32_t Reserved0 : 7;
-                /** @brief Enable long mode. */
-                uint32_t LME : 1;
-                /** @brief Reserved */
-                uint32_t Reserved1 : 1;
-                /** @brief Indicates long. */
-                uint32_t LMA : 1;
-                /** @brief Enable No-Execute Bit */
-                uint32_t NXE : 1;
-                /** @brief Enable Secure Virtual Machine */
-                uint32_t SVME : 1;
-                /** @brief Enable Long Mode Segment Limit */
-                uint32_t LMSLE : 1;
-                /** @brief Enable Fast FXSAVE/FXRSTOR */
-                uint32_t FFXSR : 1;
-                /** @brief Enable Translation Cache Extension */
-                uint32_t TCE : 1;
-                /** @brief Reserved */
-                uint32_t Reserved2 : 32;
-            };
-            uint32_t raw;
-        } __packed EFER;
-
         // ! TODO: UNTESTED!
         typedef union DR7
         {
@@ -412,6 +381,32 @@ namespace CPU
                  : "memory");
 #else
             UNUSED(Address);
+#endif
+        }
+
+        SafeFunction static inline void fxsave(void *FXSaveArea)
+        {
+#if defined(a32)
+            if (!FXSaveArea)
+                return;
+
+            asmv("fxsave (%0)"
+                 :
+                 : "r"(FXSaveArea)
+                 : "memory");
+#endif
+        }
+
+        SafeFunction static inline void fxrstor(void *FXRstorArea)
+        {
+#if defined(a32)
+            if (!FXRstorArea)
+                return;
+
+            asmv("fxrstor (%0)"
+                 :
+                 : "r"(FXRstorArea)
+                 : "memory");
 #endif
         }
     }
