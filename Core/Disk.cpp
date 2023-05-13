@@ -84,13 +84,15 @@ namespace Disk
 
                     for (uint32_t e = 0; e < Entries; e++)
                     {
-                        GUIDPartitionTablePartition GPTPartition = reinterpret_cast<GUIDPartitionTablePartition *>(RWBuffer)[e];
-                        if (GPTPartition.TypeLow || GPTPartition.TypeHigh)
+                        GUIDPartitionTableEntry GPTPartition = reinterpret_cast<GUIDPartitionTableEntry *>(RWBuffer)[e];
+                        if (memcmp(GPTPartition.PartitionType, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", sizeof(GPTPartition.PartitionType)) != 0)
                         {
                             Partition partition{};
-                            memcpy(partition.Label, GPTPartition.Label, sizeof(partition.Label));
-                            partition.StartLBA = GPTPartition.StartLBA;
-                            partition.EndLBA = GPTPartition.EndLBA;
+                            for (int i = 0; i < 36; i++)
+                                memcpy(partition.Label + i * 2, &GPTPartition.PartitionName[i], 2);
+                            partition.Label[71] = '\0';
+                            partition.StartLBA = GPTPartition.FirstLBA;
+                            partition.EndLBA = GPTPartition.LastLBA;
                             partition.Sectors = partition.EndLBA - partition.StartLBA;
                             partition.Port = ItrPort;
                             partition.Flags = Present;
@@ -98,14 +100,7 @@ namespace Disk
                             if (GPTPartition.Attributes & 1)
                                 partition.Flags |= EFISystemPartition;
                             partition.Index = drive.Partitions.size();
-                            // why there is NUL (\0) between every char?????
-                            char PartName[72];
-                            memcpy(PartName, GPTPartition.Label, 72);
-                            for (int i = 0; i < 72; i++)
-                                if (PartName[i] == '\0')
-                                    PartName[i] = ' ';
-                            PartName[71] = '\0';
-                            trace("GPT partition \"%s\" found with %lld sectors", PartName, partition.Sectors);
+                            trace("GPT partition \"%s\" found with %lld sectors", partition.Label, partition.Sectors);
                             drive.Partitions.push_back(partition);
 
                             // char *PartitionName = new char[64];

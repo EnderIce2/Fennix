@@ -62,16 +62,14 @@ namespace Disk
         uint8_t Signature[2];
     } __packed;
 
-    struct GUIDPartitionTablePartition
+    struct GUIDPartitionTableEntry
     {
-        uint64_t TypeLow;
-        uint64_t TypeHigh;
-        uint64_t GUIDLow;
-        uint64_t GUIDHigh;
-        uint64_t StartLBA;
-        uint64_t EndLBA;
+        uint8_t PartitionType[16];
+        uint8_t UniquePartitionGUID[16];
+        uint64_t FirstLBA;
+        uint64_t LastLBA;
         uint64_t Attributes;
-        char Label[72];
+        uint16_t PartitionName[36];
     } __packed;
 
     struct GUIDPartitionTable
