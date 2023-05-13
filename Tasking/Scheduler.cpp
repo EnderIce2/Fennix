@@ -676,21 +676,25 @@ namespace Tasking
     SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
+        return false;
     }
 
     SafeFunction bool Task::GetNextAvailableThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
+        return false;
     }
 
     SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
     {
         fixme("unimplemented");
+        return false;
     }
 
     SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
     {
         fixme("unimplemented");
+        return false;
     }
 
     SafeFunction void Task::Schedule(void *Frame)

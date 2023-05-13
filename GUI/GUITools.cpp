@@ -21,7 +21,7 @@
 
 namespace GraphicalUserInterface
 {
-    Ofast inline void InlineSetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color)
+    Ofast inline void InlineSetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color)
     {
         if (unlikely(X < 0 || Y < 0 || X >= Bitmap->Width || Y >= Bitmap->Height))
             return;
@@ -31,7 +31,7 @@ namespace GraphicalUserInterface
         // Bitmap->Data[Y * Bitmap->Width + X] = Color;
     }
 
-    void SetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color)
+    void SetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color)
     {
         if (unlikely(!Bitmap))
             return;
@@ -42,7 +42,7 @@ namespace GraphicalUserInterface
         InlineSetPixel(Bitmap, X, Y, Color);
     }
 
-    uint32_t GetPixel(ScreenBitmap *Bitmap, long X, long Y)
+    uint32_t GetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y)
     {
         if (unlikely(!Bitmap))
             return 0;
@@ -59,8 +59,8 @@ namespace GraphicalUserInterface
 
     Ofast void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
                               ScreenBitmap *SourceBitmap,
-                              long Top,
-                              long Left, bool IgnoreZero)
+                              int64_t Top,
+                              int64_t Left, bool IgnoreZero)
     {
         if (unlikely(!SourceBitmap) || unlikely(!SourceBitmap->Data) ||
             unlikely(!DestinationBitmap) || unlikely(!DestinationBitmap->Data))
@@ -89,7 +89,7 @@ namespace GraphicalUserInterface
             {
                 memcpy((void *)((uintptr_t)DestinationBitmap->Data + (Top + j) * DestinationBitmap->Width * (DestinationBitmap->BitsPerPixel / 8) + Left * (DestinationBitmap->BitsPerPixel / 8)),
                        (void *)((uintptr_t)SourceBitmap->Data + j * SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8)),
-                       SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8));
+                       (size_t)(SourceBitmap->Width * (SourceBitmap->BitsPerPixel / 8)));
             }
         }
     }
@@ -160,7 +160,7 @@ namespace GraphicalUserInterface
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
-    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, long *CharCursorX, long *CharCursorY)
+    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, int64_t *CharCursorX, int64_t *CharCursorY)
     {
         switch (font->GetInfo().Type)
         {

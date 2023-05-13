@@ -240,7 +240,7 @@ EXTERNC void KPrint(const char *Format, ...)
         uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
         if (Nanoseconds != 0)
         {
-            printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+            printf("\eCCCCCC[\e00AEFF%llu.%07llu\eCCCCCC] ",
                    Nanoseconds / 10000000,
                    Nanoseconds % 10000000);
         }

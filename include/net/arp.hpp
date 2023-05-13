@@ -80,7 +80,7 @@ namespace NetworkARP
         DiscoveredAddress *ManageDiscoveredAddresses(DAType Type, InternetProtocol IP, MediaAccessControl MAC);
         DiscoveredAddress *Search(InternetProtocol TargetIP);
         DiscoveredAddress *Update(InternetProtocol TargetIP, MediaAccessControl TargetMAC);
-        bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length);
+        bool OnEthernetPacketReceived(uint8_t *Data, size_t Length);
 
     public:
         ARP(NetworkEthernet::Ethernet *Ethernet);

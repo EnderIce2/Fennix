@@ -83,7 +83,7 @@ namespace CrashHandler
                 data.Frame->ss, data.Frame->cs, ds);
         EHPrint("EAX=%#llx  EBX=%#llx  ECX=%#llx  EDX=%#llx\n", data.Frame->eax, data.Frame->ebx, data.Frame->ecx, data.Frame->edx);
         EHPrint("ESI=%#llx  EDI=%#llx  EBP=%#llx  ESP=%#llx\n", data.Frame->esi, data.Frame->edi, data.Frame->ebp, data.Frame->esp);
-        EHPrint("EIP=%#llx  EFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
+        EHPrint("EIP=%#llx  EFL=%#llx  INT=%#llx  ERR=%#llx\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode);
 #elif defined(aa64)
 #endif
 
@@ -144,10 +144,12 @@ namespace CrashHandler
                 data.dr7.ConditionsDR2 ? "True " : "False", data.dr7.SizeDR2 ? "True " : "False", data.dr7.ConditionsDR3 ? "True " : "False", data.dr7.SizeDR3 ? "True " : "False",
                 data.dr7.Reserved);
 
+#ifdef a64
         EHPrint("\e009FF0EFER: SCE:%s      LME:%s      LMA:%s      NXE:%s\n     SVME:%s    LMSLE:%s    FFXSR:%s      TCE:%s\n     R0:%#x R1:%#x R2:%#x\n",
                 data.efer.SCE ? "True " : "False", data.efer.LME ? "True " : "False", data.efer.LMA ? "True " : "False", data.efer.NXE ? "True " : "False",
                 data.efer.SVME ? "True " : "False", data.efer.LMSLE ? "True " : "False", data.efer.FFXSR ? "True " : "False", data.efer.TCE ? "True " : "False",
                 data.efer.Reserved0, data.efer.Reserved1, data.efer.Reserved2);
+#endif // a64
 #endif
 
         switch (data.Frame->InterruptNumber)

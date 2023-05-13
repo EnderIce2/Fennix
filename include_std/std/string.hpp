@@ -353,7 +353,7 @@ namespace std
             if (Pos >= this->Length)
                 return;
 
-            if ((int64_t)Count < 0)
+            if ((int64_t)Count <= 0)
                 return;
 
             if (Pos + Count > this->Length)
@@ -377,7 +377,7 @@ namespace std
             if (Pos >= this->Length)
                 return;
 
-            if ((int64_t)Count < 0)
+            if ((int64_t)Count <= 0)
                 return;
 
             if (Pos + Count > this->Length)

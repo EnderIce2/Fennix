@@ -278,7 +278,7 @@ namespace ACPI
         uint8_t PM1_CNT_LEN = 0;
 
         ACPI *acpi;
-        void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
+        void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 
     public:
         bool ACPIShutdownSupported = false;

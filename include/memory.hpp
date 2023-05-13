@@ -180,9 +180,9 @@ namespace Memory
 
     union __packed PageTableEntry
     {
-#if defined(a64)
         struct
         {
+#if defined(a64)
             uintptr_t Present : 1;            // 0
             uintptr_t ReadWrite : 1;          // 1
             uintptr_t UserSupervisor : 1;     // 2
@@ -197,10 +197,7 @@ namespace Memory
             uintptr_t Available1 : 7;         // 52-58
             uintptr_t ProtectionKey : 4;      // 59-62
             uintptr_t ExecuteDisable : 1;     // 63
-        };
 #elif defined(a32)
-        struct
-        {
             uintptr_t Present : 1;            // 0
             uintptr_t ReadWrite : 1;          // 1
             uintptr_t UserSupervisor : 1;     // 2
@@ -212,9 +209,9 @@ namespace Memory
             uintptr_t Global : 1;             // 8
             uintptr_t Available0 : 3;         // 9-11
             uintptr_t Address : 20;           // 12-31
-        };
 #elif defined(aa64)
 #endif
+        };
         uintptr_t raw;
 
         /** @brief Set Address */
@@ -241,7 +238,7 @@ namespace Memory
 #if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #elif defined(a32)
-            return (this->raw & 0x003FFFFF000) >> 12;
+            return ((uintptr_t)(this->raw & 0x003FFFFF000) >> 12);
 #elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
@@ -356,7 +353,7 @@ namespace Memory
 #if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #elif defined(a32)
-            return (this->raw & 0x003FFFFF000) >> 12;
+            return ((uintptr_t)(this->raw & 0x003FFFFF000) >> 12);
 #elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
@@ -370,6 +367,7 @@ namespace Memory
 
     union __packed PageDirectoryPointerTableEntry
     {
+#if defined(a64)
         struct
         {
             uintptr_t Present : 1;        // 0
@@ -405,7 +403,8 @@ namespace Memory
             uintptr_t ProtectionKey : 4;      // 59-62
             uintptr_t ExecuteDisable : 1;     // 63
         } OneGB;
-
+#elif defined(aa64)
+#endif
         uintptr_t raw;
 
         /** @brief Set PageDirectoryEntryPtr address */
@@ -414,10 +413,6 @@ namespace Memory
 #if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
-            this->raw |= (_Address << 12);
-#elif defined(a32)
-            _Address &= 0x000FFFFF;
-            this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
 #elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
@@ -432,7 +427,7 @@ namespace Memory
 #if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #elif defined(a32)
-            return (this->raw & 0x003FFFFF000) >> 12;
+            return 0;
 #elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
@@ -446,6 +441,7 @@ namespace Memory
 
     union __packed PageMapLevel4
     {
+#if defined(a64)
         struct
         {
             uintptr_t Present : 1;        // 0
@@ -461,6 +457,8 @@ namespace Memory
             uintptr_t Available2 : 11;    // 52-62
             uintptr_t ExecuteDisable : 1; // 63
         };
+#elif defined(aa64)
+#endif
         uintptr_t raw;
 
         /** @brief Set PageDirectoryPointerTableEntryPtr address */
@@ -469,10 +467,6 @@ namespace Memory
 #if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
-            this->raw |= (_Address << 12);
-#elif defined(a32)
-            _Address &= 0x000FFFFF;
-            this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
 #elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
@@ -487,7 +481,7 @@ namespace Memory
 #if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #elif defined(a32)
-            return (this->raw & 0x003FFFFF000) >> 12;
+            return 0;
 #elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
@@ -501,6 +495,7 @@ namespace Memory
 
     union __packed PageMapLevel5
     {
+#if defined(a64)
         struct
         {
             uintptr_t Present : 1;        // 0
@@ -516,6 +511,8 @@ namespace Memory
             uintptr_t Available2 : 11;    // 52-62
             uintptr_t ExecuteDisable : 1; // 63
         };
+#elif defined(aa64)
+#endif
         uintptr_t raw;
 
         /** @brief Set PageMapLevel4Ptr address */
@@ -524,10 +521,6 @@ namespace Memory
 #if defined(a64)
             _Address &= 0x000000FFFFFFFFFF;
             this->raw &= 0xFFF0000000000FFF;
-            this->raw |= (_Address << 12);
-#elif defined(a32)
-            _Address &= 0x000FFFFF;
-            this->raw &= 0xFFC00003;
             this->raw |= (_Address << 12);
 #elif defined(aa64)
             _Address &= 0x000000FFFFFFFFFF;
@@ -542,7 +535,7 @@ namespace Memory
 #if defined(a64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #elif defined(a32)
-            return (this->raw & 0x003FFFFF000) >> 12;
+            return 0;
 #elif defined(aa64)
             return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif

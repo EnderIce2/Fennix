@@ -25,9 +25,9 @@ namespace Tasking
 {
     Token Security::CreateToken()
     {
-        uint64_t ret = 0;
+        Token ret = 0;
     Retry:
-        ret = Random::rand64();
+        ret = (Token)Random::rand64();
         foreach (auto t in Tokens)
             if (t.token == ret)
                 goto Retry;

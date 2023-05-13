@@ -26,7 +26,7 @@ namespace Memory
     {
         // 0x1000 aligned
         uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFFFFFFFFFF000;
+        Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDEIndex];
@@ -51,7 +51,7 @@ namespace Memory
     {
         // 0x1000 aligned
         uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFFFFFFFFFF000;
+        Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
         PageDirectoryEntry PDE = this->Table->Entries[Index.PDEIndex];
@@ -90,7 +90,7 @@ namespace Memory
         PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
         if (Type == MapType::FourMB)
         {
-            PDE->raw |= Flags;
+            PDE->raw |= (uintptr_t)Flags;
             PDE->PageSize = true;
             PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
             debug("Mapped 4MB page at %p to %p", VirtualAddress, PhysicalAddress);
@@ -107,11 +107,11 @@ namespace Memory
         }
         else
             PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
-        PDE->raw |= DirectoryFlags;
+        PDE->raw |= (uintptr_t)DirectoryFlags;
 
         PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
         PTE->Present = true;
-        PTE->raw |= Flags;
+        PTE->raw |= (uintptr_t)Flags;
         PTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
 
 #if defined(a64)

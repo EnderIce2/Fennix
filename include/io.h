@@ -174,6 +174,7 @@ extern "C"
              : "memory");
     }
 
+#if defined(a64)
     static inline void mmoutq(void *Address, uint64_t Value)
     {
         asmv("mov %1, %0"
@@ -181,6 +182,7 @@ extern "C"
              : "r"(Value)
              : "memory");
     }
+#endif
 
     static inline uint8_t mminb(void *Address)
     {
@@ -212,6 +214,7 @@ extern "C"
         return Result;
     }
 
+#if defined(a64)
     static inline uint64_t mminq(void *Address)
     {
         uint64_t Result;
@@ -221,6 +224,7 @@ extern "C"
              : "memory");
         return Result;
     }
+#endif
 #ifdef __cplusplus
 }
 #endif

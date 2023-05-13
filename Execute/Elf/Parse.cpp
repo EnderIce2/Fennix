@@ -53,6 +53,7 @@ namespace Execute
 
     Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name)
     {
+#if defined(a64)
         Elf64_Shdr *SymbolTable = nullptr;
         Elf64_Shdr *StringTable = nullptr;
         Elf64_Sym *Symbol = nullptr;
@@ -84,11 +85,14 @@ namespace Execute
             if (strcmp(String, Name) == 0)
                 return Symbol;
         }
+#elif defined(a32)
+#endif
         return nullptr;
     }
 
     uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index)
     {
+#if defined(a64)
         if (Table == SHN_UNDEF || Index == SHN_UNDEF)
             return 0;
         Elf64_Shdr *SymbolTable = GetELFSection(Header, Table);
@@ -129,10 +133,14 @@ namespace Execute
             Elf64_Shdr *Target = GetELFSection(Header, Symbol->st_shndx);
             return (uintptr_t)Header + Symbol->st_value + Target->sh_offset;
         }
+#elif defined(a32)
+        return 0;
+#endif
     }
 
     Elf64_Dyn *ELFGetDynamicTag(void *ElfFile, enum DynamicArrayTags Tag)
     {
+#if defined(a64)
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
 
         Elf64_Phdr ItrPhdr;
@@ -159,10 +167,14 @@ namespace Execute
         }
         debug("Dynamic tag %d not found.", Tag);
         return nullptr;
+#elif defined(a32)
+        return nullptr;
+#endif
     }
 
     MmImage ELFCreateMemoryImage(Memory::MemMgr *mem, Memory::Virtual &pV, void *ElfFile, size_t Length)
     {
+#if defined(a64)
         void *MemoryImage = nullptr;
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)ElfFile;
         bool IsPIC = ELFHeader->e_type == ET_DYN;
@@ -222,6 +234,9 @@ namespace Execute
             debug("Remapped: %#lx -> %#lx", (uintptr_t)FirstProgramHeaderVirtualAddress + (i * PAGE_SIZE), (uintptr_t)MemoryImage + (i * PAGE_SIZE));
         }
         return {MemoryImage, (void *)FirstProgramHeaderVirtualAddress};
+#elif defined(a32)
+        return {};
+#endif
     }
 
     uintptr_t LoadELFInterpreter(Memory::MemMgr *mem, Memory::Virtual &pV, const char *Interpreter)
@@ -235,6 +250,7 @@ namespace Execute
         /* No need to check if it's valid, the GetBinaryType() call above does that. */
         VirtualFileSystem::File File = vfs->Open(Interpreter);
 
+#if defined(a64)
         Elf64_Ehdr *ELFHeader = (Elf64_Ehdr *)File.node->Address;
 
 #ifdef DEBUG
@@ -306,5 +322,9 @@ namespace Execute
         debug("Interpreter entry point: %#lx (%#lx + %#lx)", (uintptr_t)MemoryImage.Physical + ELFHeader->e_entry,
               (uintptr_t)MemoryImage.Physical, ELFHeader->e_entry);
         return (uintptr_t)MemoryImage.Physical + ELFHeader->e_entry;
+#elif defined(a32)
+        vfs->Close(File);
+        return 0;
+#endif
     }
 }

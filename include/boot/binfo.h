@@ -52,7 +52,7 @@ struct BootInfo
         void *BaseAddress;
         __UINT32_TYPE__ Width;
         __UINT32_TYPE__ Height;
-        __UINT64_TYPE__ Pitch;
+        __SIZE_TYPE__ Pitch;
         __UINT16_TYPE__ BitsPerPixel;
         __UINT8_TYPE__ RedMaskSize;
         __UINT8_TYPE__ RedMaskShift;
@@ -61,7 +61,7 @@ struct BootInfo
         __UINT8_TYPE__ BlueMaskSize;
         __UINT8_TYPE__ BlueMaskShift;
         void *ExtendedDisplayIdentificationData;
-        __UINT64_TYPE__ EDIDSize;
+        __SIZE_TYPE__ EDIDSize;
     } Framebuffer[MAX_FRAMEBUFFERS];
 
     struct MemoryInfo
@@ -69,11 +69,11 @@ struct BootInfo
         struct MemoryEntryInfo
         {
             void *BaseAddress;
-            __UINT64_TYPE__ Length;
+            __SIZE_TYPE__ Length;
             enum MemoryType Type;
         } Entry[MAX_MEMORY_ENTRIES];
-        __UINT64_TYPE__ Entries;
-        __UINT64_TYPE__ Size;
+        __SIZE_TYPE__ Entries;
+        __SIZE_TYPE__ Size;
     } Memory;
 
     struct ModuleInfo
@@ -81,7 +81,7 @@ struct BootInfo
         void *Address;
         char Path[256];
         char CommandLine[256];
-        __UINT64_TYPE__ Size;
+        __SIZE_TYPE__ Size;
     } Modules[MAX_MODULES];
 
     struct RSDPInfo
@@ -132,7 +132,7 @@ struct BootInfo
         void *VirtualBase;
         void *FileBase;
         char CommandLine[256];
-        __UINT64_TYPE__ Size;
+        __SIZE_TYPE__ Size;
 
         struct KernelSymbolInfo
         {

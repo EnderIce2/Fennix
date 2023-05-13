@@ -34,7 +34,7 @@ namespace NetworkIPv4
         debug("IPv4 interface %#lx destroyed.", this);
     }
 
-    void IPv4::Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol DestinationIP)
+    void IPv4::Send(uint8_t *Data, size_t Length, uint8_t Protocol, InternetProtocol DestinationIP)
     {
         netdbg("Sending %ld bytes to %s", Length, DestinationIP.v4.ToStringLittleEndian());
         IPv4Packet *Packet = (IPv4Packet *)kmalloc(Length + sizeof(IPv4Header));
@@ -68,7 +68,7 @@ namespace NetworkIPv4
 
     std::vector<IPv4Events *> RegisteredEvents;
 
-    bool IPv4::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
+    bool IPv4::OnEthernetPacketReceived(uint8_t *Data, size_t Length)
     {
         IPv4Packet *Packet = (IPv4Packet *)Data;
         netdbg("Received %d bytes [Protocol %ld]", Length, Packet->Header.Protocol);
@@ -82,7 +82,7 @@ namespace NetworkIPv4
 
         if (b32(Packet->Header.DestinationIP) == Ethernet->GetInterface()->IP.v4.ToHex() || b32(Packet->Header.DestinationIP) == 0xFFFFFFFF || Ethernet->GetInterface()->IP.v4.ToHex() == 0)
         {
-            uint64_t TotalLength = Packet->Header.TotalLength;
+            size_t TotalLength = Packet->Header.TotalLength;
             if (TotalLength > Length)
                 TotalLength = Length;
 
@@ -127,7 +127,7 @@ namespace NetworkIPv4
 
     IPv4Events::~IPv4Events()
     {
-        for (uint64_t i = 0; i < RegisteredEvents.size(); i++)
+        for (size_t i = 0; i < RegisteredEvents.size(); i++)
             if (RegisteredEvents[i] == this)
             {
                 RegisteredEvents.remove(i);

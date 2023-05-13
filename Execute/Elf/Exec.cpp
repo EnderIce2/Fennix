@@ -35,6 +35,7 @@ namespace Execute
                             VirtualFileSystem::File &ExFile,
                             Tasking::PCB *Process)
     {
+#if defined(a64)
         debug("Executable");
         ELFBaseLoad ELFBase = {};
         /* This should be deleted inside BaseLoad.cpp */
@@ -221,5 +222,8 @@ namespace Execute
 
         ELFBase.Success = true;
         return ELFBase;
+#elif defined(a32)
+        return {};
+#endif
     }
 }

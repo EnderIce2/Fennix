@@ -268,9 +268,9 @@ namespace Recovery
         uint64_t MemReserved = 0;
         while (true)
         {
-            sprintf(TicksText, "%016ld / %016ld", TaskManager->GetSchedulerTicks(), TaskManager->GetLastTaskTicks());
+            sprintf(TicksText, "%016lld / %016lld", TaskManager->GetSchedulerTicks(), TaskManager->GetLastTaskTicks());
             wdgDbgWin->SetText(SchedLblHnd, TicksText);
-            sprintf(TicksText, "CPU Scheduled Core: %ld", TaskManager->GetLastCore());
+            sprintf(TicksText, "CPU Scheduled Core: %lld", TaskManager->GetLastCore());
             wdgDbgWin->SetText(wdgDbgCurrentCPUSchedCoreLbl, TicksText);
             static int RefreshMemCounter = 0;
             if (RefreshMemCounter-- == 0)
@@ -279,7 +279,7 @@ namespace Recovery
                 MemTotal = KernelAllocator.GetTotalMemory();
                 MemReserved = KernelAllocator.GetReservedMemory();
                 uint64_t MemPercent = (MemUsed * 100) / MemTotal;
-                sprintf(TicksText, "%ldMB / %ldGB (%ldMB reserved) %ld%% (%ld bytes allocated)", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent, MemUsed);
+                sprintf(TicksText, "%lldMB / %lldGB (%lldMB reserved) %lld%% (%lld bytes allocated)", TO_MB(MemUsed), TO_GB(MemTotal), TO_MB(MemReserved), MemPercent, MemUsed);
                 wdgDbgWin->SetText(MemLblHnd, TicksText);
                 RefreshMemCounter = 25;
             }
@@ -292,9 +292,9 @@ namespace Recovery
             static int RefreshGUIDbgCounter = 0;
             if (RefreshGUIDbgCounter-- == 0)
             {
-                sprintf(TicksText, "%016ld / %016ld / %016ld", FIi, PDi, PWi);
+                sprintf(TicksText, "%016lld / %016lld / %016lld", FIi, PDi, PWi);
                 wdgDbgWin->SetText(GUI1LblHnd, TicksText);
-                sprintf(TicksText, "%016ld / %016ld / %016ld", PWWi, PCi, mmi);
+                sprintf(TicksText, "%016lld / %016lld / %016lld", PWWi, PCi, mmi);
                 wdgDbgWin->SetText(GUI2LblHnd, TicksText);
                 RefreshGUIDbgCounter = 5;
             }

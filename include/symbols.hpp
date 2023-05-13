@@ -34,7 +34,7 @@ namespace SymbolResolver
         void *Image;
 
     public:
-        size_t GetTotalEntries() { return this->TotalEntries; }
+        int64_t GetTotalEntries() { return this->TotalEntries; }
         void *GetImage() { return this->Image; }
         const char *GetSymbolFromAddress(uintptr_t Address);
         void AddSymbol(uintptr_t Address, const char *Name);

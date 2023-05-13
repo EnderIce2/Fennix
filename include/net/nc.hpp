@@ -70,7 +70,7 @@ namespace NetworkInterfaceManager
             netdbg("Event for %s not handled.", Interface->Name);
         }
 
-        virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+        virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, size_t Length)
         {
             UNUSED(Interface);
             UNUSED(Data);
@@ -78,7 +78,7 @@ namespace NetworkInterfaceManager
             netdbg("Event for %s not handled.", Interface->Name);
         }
 
-        virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+        virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, size_t Length)
         {
             UNUSED(Interface);
             UNUSED(Data);
@@ -104,8 +104,8 @@ namespace NetworkInterfaceManager
 
         void StartService();
 
-        void Send(DeviceInterface *Interface, uint8_t *Data, uint64_t Length);
-        void Receive(DeviceInterface *Interface, uint8_t *Data, uint64_t Length);
+        void Send(DeviceInterface *Interface, uint8_t *Data, size_t Length);
+        void Receive(DeviceInterface *Interface, uint8_t *Data, size_t Length);
 
         void DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size);
         void DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size);

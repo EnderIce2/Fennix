@@ -210,7 +210,7 @@ namespace NetworkInterfaceManager
                 NIManager->Receive(inf, Data, Size);
     }
 
-    void NetworkInterface::Send(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+    void NetworkInterface::Send(DeviceInterface *Interface, uint8_t *Data, size_t Length)
     {
         void *DataToBeSent = mem->RequestPages(TO_PAGES(Length + 1));
         memcpy(DataToBeSent, Data, Length);
@@ -226,7 +226,7 @@ namespace NetworkInterfaceManager
             var->OnInterfaceSent(Interface, Data, Length);
     }
 
-    void NetworkInterface::Receive(DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+    void NetworkInterface::Receive(DeviceInterface *Interface, uint8_t *Data, size_t Length)
     {
         foreach (auto re in RegisteredEvents)
             re->OnInterfaceReceived(Interface, Data, Length);

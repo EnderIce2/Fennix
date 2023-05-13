@@ -62,7 +62,7 @@ namespace NetworkICMPv6
     ICMPv6::ICMPv6(NetworkInterfaceManager::DeviceInterface *Interface) { this->Interface = Interface; }
     ICMPv6::~ICMPv6() {}
 
-    void ICMPv6::Send(uint8_t *Data, uint64_t Length)
+    void ICMPv6::Send(uint8_t *Data, size_t Length)
     {
         UNUSED(Data);
         UNUSED(Length);

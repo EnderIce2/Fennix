@@ -43,7 +43,7 @@ __constructor void TestRandom()
 #if defined(a86)
     if (RDRANDFlag)
     {
-        uint64_t RDSEEDValue = 0;
+        uintptr_t RDSEEDValue = 0;
         asmv("1: rdseed %0; jnc 1b"
              : "=r"(RDSEEDValue));
         debug("RDSEED: %ld", RDSEEDValue);

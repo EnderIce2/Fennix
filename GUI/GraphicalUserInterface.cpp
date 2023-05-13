@@ -152,8 +152,8 @@ namespace GraphicalUserInterface
                     {
                         if (MouseArray[1].Left)
                         {
-                            wnd->GetPositionPtr()->Width += Mouse.X - MouseArray[0].X;
-                            wnd->GetPositionPtr()->Height += Mouse.Y - MouseArray[0].Y;
+                            wnd->GetPositionPtr()->Width += (size_t)(Mouse.X - MouseArray[0].X);
+                            wnd->GetPositionPtr()->Height += (size_t)(Mouse.Y - MouseArray[0].Y);
 
                             if (wnd->GetPositionPtr()->Width < 200)
                             {
@@ -398,8 +398,8 @@ namespace GraphicalUserInterface
                 TopBarTextPos.Top += 4;
 
                 // Title bar text
-                long CharCursorX = TopBarTextPos.Left;
-                long CharCursorY = TopBarTextPos.Top;
+                int64_t CharCursorX = TopBarTextPos.Left;
+                int64_t CharCursorY = TopBarTextPos.Top;
                 for (uint64_t i = 0; i < strlen(wnd->GetTitle()); i++)
                     PaintChar(this->CurrentFont, this->OverlayBuffer, wnd->GetTitle()[i], 0xFFFFFF, &CharCursorX, &CharCursorY);
 
@@ -646,7 +646,7 @@ namespace GraphicalUserInterface
         this->CursorBuffer->Height = 25;
         this->CursorBuffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->CursorBuffer->Pitch = Display->GetPitch();
-        this->CursorBuffer->Size = this->CursorBuffer->Width * this->CursorBuffer->Height * (this->CursorBuffer->BitsPerPixel / 8);
+        this->CursorBuffer->Size = (size_t)(this->CursorBuffer->Width * this->CursorBuffer->Height * (this->CursorBuffer->BitsPerPixel / 8));
         this->CursorBuffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->CursorBuffer->Size + 1));
         memset(this->CursorBuffer->Data, 0, this->CursorBuffer->Size);
 

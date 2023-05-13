@@ -42,8 +42,8 @@ namespace GraphicalUserInterface
     {
         int64_t Width;
         int64_t Height;
-        uint64_t Size;
-        uint64_t Pitch;
+        size_t Size;
+        size_t Pitch;
         uint64_t BitsPerPixel;
         uint8_t *Data;
     };
@@ -52,8 +52,8 @@ namespace GraphicalUserInterface
     {
         int64_t Left;
         int64_t Top;
-        int64_t Width;
-        int64_t Height;
+        size_t Width;
+        size_t Height;
 
         bool Contains(int64_t X, int64_t Y)
         {
@@ -89,8 +89,8 @@ namespace GraphicalUserInterface
     {
         struct
         {
-            int64_t Width;
-            int64_t Height;
+            size_t Width;
+            size_t Height;
         } Resize;
 
         struct
@@ -178,18 +178,18 @@ namespace GraphicalUserInterface
         virtual void OnPaintChildrenAll(Event *e) {}
     */
 
-    void SetPixel(ScreenBitmap *Bitmap, long X, long Y, uint32_t Color);
+    void SetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color);
     void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
                         ScreenBitmap *SourceBitmap,
-                        long Top,
-                        long Left,
+                        int64_t Top,
+                        int64_t Left,
                         bool IgnoreZero = true);
     void PutRect(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
     void PutBorder(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
     uint32_t BlendColors(uint32_t c1, uint32_t c2, float t);
     void PutBorderWithShadow(ScreenBitmap *Bitmap, Rect rect, uint32_t Color);
     void DrawShadow(ScreenBitmap *Bitmap, Rect rect);
-    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, long *CharCursorX, long *CharCursorY);
+    void PaintChar(Video::Font *font, ScreenBitmap *Bitmap, char c, uint32_t Color, int64_t *CharCursorX, int64_t *CharCursorY);
     void DrawString(ScreenBitmap *Bitmap, Rect rect, const char *Text, uint32_t Color);
 
     class WidgetCollection
@@ -212,7 +212,7 @@ namespace GraphicalUserInterface
             Rect rect;
             char Text[512];
             uint32_t Color;
-            long CharCursorX, CharCursorY;
+            int64_t CharCursorX, CharCursorY;
         };
 
         struct PanelObject
@@ -235,7 +235,7 @@ namespace GraphicalUserInterface
             uint32_t PressedColor;
             uint32_t BorderColor;
             uint32_t ShadowColor;
-            long CharCursorX, CharCursorY;
+            int64_t CharCursorX, CharCursorY;
             bool Shadow;
             bool Hover;
             bool Pressed;

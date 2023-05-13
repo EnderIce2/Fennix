@@ -413,7 +413,7 @@ namespace CPU
 
         SafeFunction static inline void wrmsr(uint32_t msr, uint64_t Value)
         {
-            uint32_t Low = Value, High = Value >> 32;
+            uint32_t Low = (uint32_t)Value, High = (uint32_t)(Value >> 32);
             asmv("wrmsr"
                  :
                  : "c"(msr), "a"(Low), "d"(High)

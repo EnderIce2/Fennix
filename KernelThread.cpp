@@ -170,7 +170,7 @@ void TaskMgr()
                 continue;
             int Status = Proc->Status;
             uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
-            printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
+            printf("\e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld)\n",
                    Statuses[Status], Proc->Name, StatusesSign[Status], ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
 
             foreach (auto Thd in Proc->Threads)
@@ -185,7 +185,7 @@ void TaskMgr()
                        Thd->Info.UserTime, Thd->Registers.rip,
                        Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.rip) : "unknown");
 #elif defined(a32)
-                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
+                printf("  \e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
                        Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime,
                        Thd->Info.UserTime, Thd->Registers.eip,
                        Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.eip) : "unknown");
@@ -283,7 +283,7 @@ void BootLogoAnimationThread()
     char BootAnimPath[16];
     while (FrameCount < 27)
     {
-        sprintf(BootAnimPath, "%d.tga", FrameCount);
+        sprintf(BootAnimPath, "%ld.tga", FrameCount);
         File ba = bootanim_vfs->Open(BootAnimPath);
         if (!ba.IsOK())
         {

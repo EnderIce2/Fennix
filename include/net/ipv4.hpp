@@ -91,7 +91,7 @@ namespace NetworkIPv4
         NetworkARP::ARP *ARP;
         NetworkEthernet::Ethernet *Ethernet;
 
-        virtual bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length);
+        virtual bool OnEthernetPacketReceived(uint8_t *Data, size_t Length);
 
     public:
         InternetProtocol GatewayIP;
@@ -107,7 +107,7 @@ namespace NetworkIPv4
          * @param Protocol The protocol of the packet.
          * @param DestinationIP The IP address of the destination. (Big-endian)
          */
-        void Send(uint8_t *Data, uint64_t Length, uint8_t Protocol, InternetProtocol DestinationIP);
+        void Send(uint8_t *Data, size_t Length, uint8_t Protocol, InternetProtocol DestinationIP);
     };
 
     class IPv4Events
@@ -122,7 +122,7 @@ namespace NetworkIPv4
     public:
         uint8_t GetProtocol() { return Protocol; }
 
-        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length)
+        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, size_t Length)
         {
             UNUSED(SourceIP);
             UNUSED(DestinationIP);

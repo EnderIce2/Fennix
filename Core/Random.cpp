@@ -127,7 +127,7 @@ namespace Random
 
         if (RDRANDFlag)
         {
-            uint64_t RDRANDValue = 0;
+            uintptr_t RDRANDValue = 0;
             asmv("1: rdrand %0; jnc 1b"
                  : "=r"(RDRANDValue));
             return RDRANDValue;

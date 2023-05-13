@@ -41,7 +41,7 @@ std::atomic_bool CPUEnabled = false;
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __aligned(0x1000) CPUData CPUs[MAX_CPU] = {0};
 
-SafeFunction CPUData *GetCPU(uint64_t id) { return &CPUs[id]; }
+SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
 
 SafeFunction CPUData *GetCurrentCPU()
 {

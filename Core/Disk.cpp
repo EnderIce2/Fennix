@@ -113,7 +113,7 @@ namespace Disk
                             }
                             partition.StartLBA = GPTPartition.FirstLBA;
                             partition.EndLBA = GPTPartition.LastLBA;
-                            partition.Sectors = partition.EndLBA - partition.StartLBA;
+                            partition.Sectors = (size_t)(partition.EndLBA - partition.StartLBA);
                             partition.Port = ItrPort;
                             partition.Flags = Present;
                             partition.Style = GPT;

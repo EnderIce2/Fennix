@@ -31,7 +31,7 @@ namespace Video
     Font *Display::GetCurrentFont() { return CurrentFont; }
     void Display::SetCurrentFont(Font *Font) { CurrentFont = Font; }
     uint16_t Display::GetBitsPerPixel() { return this->framebuffer.BitsPerPixel; }
-    uint64_t Display::GetPitch() { return this->framebuffer.Pitch; }
+    size_t Display::GetPitch() { return this->framebuffer.Pitch; }
 
     void Display::CreateBuffer(uint32_t Width, uint32_t Height, int Index)
     {

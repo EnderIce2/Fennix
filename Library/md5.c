@@ -135,7 +135,7 @@ void md5Finalize(MD5Context *ctx)
     }
     input[14] = (uint32_t)(ctx->size * 8);
 #ifdef a32
-    input[15] = (uint32_t)((ctx->size >> 32) | (ctx->size << 32)) >> 32;
+    input[15] = (uint32_t)((uint64_t)(((uint64_t)ctx->size >> 32) | ((uint64_t)ctx->size << 32)) >> 32);
 #else
     input[15] = (uint32_t)((ctx->size * 8) >> 32);
 #endif

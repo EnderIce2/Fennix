@@ -188,7 +188,7 @@ namespace NetworkARP
         delete Header, Header = nullptr;
     }
 
-    bool ARP::OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
+    bool ARP::OnEthernetPacketReceived(uint8_t *Data, size_t Length)
     {
         UNUSED(Length);
         netdbg("Received packet");

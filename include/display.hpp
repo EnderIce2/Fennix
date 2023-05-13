@@ -118,7 +118,7 @@ namespace Video
         Font *GetCurrentFont();
         void SetCurrentFont(Font *Font);
         uint16_t GetBitsPerPixel();
-        uint64_t GetPitch();
+        size_t GetPitch();
 
         /**
          * @brief Create a new buffer

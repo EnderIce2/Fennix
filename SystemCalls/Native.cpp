@@ -294,7 +294,7 @@ static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint64_
         return 0;
 
     debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
-    return vfs->Read(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
+    return vfs->Read(*(VirtualFileSystem::File *)KernelPrivate, (size_t)Offset, Buffer, (size_t)Size);
     UNUSED(Frame);
 }
 
@@ -304,7 +304,7 @@ static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint64
         return 0;
 
     debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Offset, Buffer, Size);
-    return vfs->Write(*(VirtualFileSystem::File *)KernelPrivate, Offset, Buffer, Size);
+    return vfs->Write(*(VirtualFileSystem::File *)KernelPrivate, (size_t)Offset, Buffer, (size_t)Size);
     UNUSED(Frame);
 }
 
@@ -319,7 +319,7 @@ static uint64_t sys_file_seek(SyscallsFrame *Frame, void *KernelPrivate, uint64_
     if (KPObj->node->Operator->Seek == nullptr)
         return SYSCALL_INTERNAL_ERROR;
 
-    uint64_t ret = KPObj->node->Operator->Seek(KPObj->node, Offset, (uint8_t)Whence);
+    uint64_t ret = KPObj->node->Operator->Seek(KPObj->node, (size_t)Offset, (uint8_t)Whence);
     debug("Seek %s %ld", KPObj->Name, ret);
     return ret;
     UNUSED(Frame);
@@ -458,7 +458,7 @@ static int sys_spawn(SyscallsFrame *Frame)
 
 static int sys_spawn_thread(SyscallsFrame *Frame, uint64_t InstructionPointer)
 {
-    Tasking::TCB *thread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), InstructionPointer);
+    Tasking::TCB *thread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)InstructionPointer);
     if (thread)
         return (int)thread->ID;
     return SYSCALL_ERROR;

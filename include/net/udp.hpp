@@ -48,7 +48,7 @@ namespace NetworkUDP
         ~UDPEvents();
 
     public:
-        virtual void OnUDPPacketReceived(Socket *Socket, uint8_t *Data, uint64_t Length)
+        virtual void OnUDPPacketReceived(Socket *Socket, uint8_t *Data, size_t Length)
         {
             UNUSED(Socket);
             UNUSED(Data);
@@ -72,10 +72,10 @@ namespace NetworkUDP
         virtual Socket *Connect(InternetProtocol IP, uint16_t Port);
         virtual Socket *Listen(uint16_t Port);
         virtual void Disconnect(Socket *Socket);
-        virtual void Send(Socket *Socket, uint8_t *Data, uint64_t Length);
+        virtual void Send(Socket *Socket, uint8_t *Data, size_t Length);
         virtual void Bind(Socket *Socket, UDPEvents *EventHandler);
 
-        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length);
+        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, size_t Length);
     };
 
     class Socket

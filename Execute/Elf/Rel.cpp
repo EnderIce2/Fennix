@@ -30,6 +30,7 @@ namespace Execute
                            VirtualFileSystem::File &ExFile,
                            Tasking::PCB *Process)
     {
+#if defined(a64)
         UNUSED(ExFile);
         debug("Relocatable");
         /* TODO: I have to fully implement this, but for now I will leave it as it is now. */
@@ -105,5 +106,8 @@ namespace Execute
             }
         }
         return ELFBase;
+#elif defined(a32)
+        return {};
+#endif
     }
 }

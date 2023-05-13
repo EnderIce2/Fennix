@@ -61,7 +61,7 @@ namespace NetworkEthernet
             netdbg("Event not handled. [%p]", Packet);
         }
 
-        virtual bool OnEthernetPacketReceived(uint8_t *Data, uint64_t Length)
+        virtual bool OnEthernetPacketReceived(uint8_t *Data, size_t Length)
         {
             UNUSED(Data);
             UNUSED(Length);
@@ -74,8 +74,8 @@ namespace NetworkEthernet
     {
     private:
         NetworkInterfaceManager::DeviceInterface *Interface;
-        void Receive(uint8_t *Data, uint64_t Length);
-        void OnInterfaceReceived(NetworkInterfaceManager::DeviceInterface *Interface, uint8_t *Data, uint64_t Length);
+        void Receive(uint8_t *Data, size_t Length);
+        void OnInterfaceReceived(NetworkInterfaceManager::DeviceInterface *Interface, uint8_t *Data, size_t Length);
 
     public:
         /** @brief Get driver interface
@@ -101,7 +101,7 @@ namespace NetworkEthernet
          * @param Data The data to send.
          * @param Length The length of the data.
          */
-        void Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, uint64_t Length);
+        void Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, size_t Length);
     };
 }
 

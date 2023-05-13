@@ -227,6 +227,6 @@ struct InternetProtocol
     } v6;
 };
 
-uint16_t CalculateChecksum(uint16_t *Data, uint64_t Length);
+uint16_t CalculateChecksum(uint16_t *Data, size_t Length);
 
 #endif // !__FENNIX_KERNEL_NETWORK_H__

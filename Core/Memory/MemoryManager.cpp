@@ -55,11 +55,11 @@ namespace Memory
             if (Offset > node->Length)
                 return -1;
             node->Offset = Offset;
-            NewOffset = node->Offset;
+            NewOffset = (long)node->Offset;
         }
         else if (Whence == SEEK_CUR)
         {
-            NewOffset = node->Offset + Offset;
+            NewOffset = (long)(node->Offset + Offset);
             if ((size_t)NewOffset > node->Length || NewOffset < 0)
                 return -1;
             node->Offset = NewOffset;

@@ -226,9 +226,9 @@ namespace PCI
 
     public:
         std::vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
-        void EnumerateFunction(uintptr_t DeviceAddress, uint64_t Function);
-        void EnumerateDevice(uintptr_t BusAddress, uint64_t Device);
-        void EnumerateBus(uintptr_t BaseAddress, uint64_t Bus);
+        void EnumerateFunction(uintptr_t DeviceAddress, uintptr_t Function);
+        void EnumerateDevice(uintptr_t BusAddress, uintptr_t Device);
+        void EnumerateBus(uintptr_t BaseAddress, uintptr_t Bus);
         std::vector<PCIDeviceHeader *> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
         std::vector<PCIDeviceHeader *> FindPCIDevice(int VendorID, int DeviceID);
 

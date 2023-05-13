@@ -17,7 +17,7 @@
 
 #include <net/net.hpp>
 
-uint16_t CalculateChecksum(uint16_t *Data, uint64_t Length)
+uint16_t CalculateChecksum(uint16_t *Data, size_t Length)
 {
     uint16_t *Data16 = (uint16_t *)Data;
     uint64_t Checksum = 0;

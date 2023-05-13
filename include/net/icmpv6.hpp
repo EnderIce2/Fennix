@@ -48,7 +48,7 @@ namespace NetworkICMPv6
 
         ICMPv6(NetworkInterfaceManager::DeviceInterface *Interface);
         ~ICMPv6();
-        void Send(uint8_t *Data, uint64_t Length);
+        void Send(uint8_t *Data, size_t Length);
         void Receive(uint8_t *Data);
     };
 }

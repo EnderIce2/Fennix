@@ -662,9 +662,9 @@ namespace CrashHandler
             else
             {
                 uint64_t Address = strtoul(addr, NULL, 16);
-                uint64_t Length = strtoul(len, NULL, 10);
+                size_t Length = strtoul(len, NULL, 10);
                 debug("Dumping %ld bytes from %#lx\n", Length, Address);
-                EHDumpData((void *)Address, Length);
+                EHDumpData((void *)Address, (unsigned long)Length);
             }
         }
         else if (strncmp(Input, "uartmemdmp", 10) == 0)
@@ -705,13 +705,13 @@ namespace CrashHandler
             }
             EHPrint("\eF8F8F8Dumping memory to UART port %c (%#lx) and %s inaccessible pages.\n", cPort[0], port, cBoolSkip[0] == '1' ? "skipping" : "zeroing");
             Display->SetBuffer(SBIdx);
-            uint64_t Length = KernelAllocator.GetTotalMemory();
-            uint64_t ProgressLength = Length;
+            uint64_t TotalMemLength = KernelAllocator.GetTotalMemory();
+            uint64_t ProgressLength = TotalMemLength;
             UniversalAsynchronousReceiverTransmitter::UART uart(port);
             Memory::Virtual vma;
             uint8_t *Address = reinterpret_cast<uint8_t *>(0x0);
             int Progress = 0;
-            for (size_t i = 0; i < Length; i++)
+            for (size_t i = 0; i < TotalMemLength; i++)
             {
                 if (vma.Check(Address))
                     uart.Write(*Address);

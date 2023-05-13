@@ -66,8 +66,8 @@ namespace GraphicalUserInterface
 
     void WidgetCollection::OnPaint(Event *e)
     {
-        static long LastWidth = 0;
-        static long LastHeight = 0;
+        static int64_t LastWidth = 0;
+        static int64_t LastHeight = 0;
 
         if (LastWidth != ((Window *)this->ParentWindow)->GetPosition().Width ||
             LastHeight != ((Window *)this->ParentWindow)->GetPosition().Height)
@@ -84,7 +84,7 @@ namespace GraphicalUserInterface
             this->Buffer->Height = LastHeight;
             this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
             this->Buffer->Pitch = Display->GetPitch();
-            this->Buffer->Size = this->Buffer->Pitch * LastHeight;
+            this->Buffer->Size = this->Buffer->Pitch * (size_t)LastHeight;
             this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
             memset(this->Buffer->Data, 0, this->Buffer->Size);
 

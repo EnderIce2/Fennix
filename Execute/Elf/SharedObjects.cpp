@@ -100,8 +100,9 @@ namespace Execute
         sl.MemoryImage = r_cst(uint64_t, ELFCreateMemoryImage(mem, ncpV, LibFile, Length).Physical);
         debug("MemoryImage: %#lx", sl.MemoryImage);
 
+        uintptr_t BaseAddress = UINTPTR_MAX;
         {
-            uintptr_t BaseAddress = UINTPTR_MAX;
+#if defined(a64)
             Elf64_Phdr ItrProgramHeader;
 
             for (Elf64_Half i = 0; i < ((Elf64_Ehdr *)LibFile)->e_phnum; i++)
@@ -128,8 +129,11 @@ namespace Execute
                 memcpy((void *)MAddr, (uint8_t *)LibFile + ItrProgramHeader.p_offset, ItrProgramHeader.p_filesz);
                 debug("memcpy: %#lx => %#lx (%ld bytes)", (uint8_t *)LibFile + ItrProgramHeader.p_offset, (uintptr_t)MAddr, ItrProgramHeader.p_filesz);
                 break;
+#elif defined(a32)
+#endif
             }
 
+#if defined(a64)
             struct Elf64_Dyn *JmpRel = ELFGetDynamicTag((void *)LibFile, DT_JMPREL);
             struct Elf64_Dyn *SymTab = ELFGetDynamicTag((void *)LibFile, DT_SYMTAB);
             struct Elf64_Dyn *StrTab = ELFGetDynamicTag((void *)LibFile, DT_STRTAB);
@@ -230,6 +234,9 @@ namespace Execute
 
         Libs.push_back(sl);
         return true;
+#elif defined(a32)
+        return false;
+#endif
     }
 
     void SearchLibrary(char *Identifier)

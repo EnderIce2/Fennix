@@ -48,7 +48,7 @@ namespace Driver
     struct DriverFile
     {
         bool Enabled = false;
-        unsigned long DriverUID = 0;
+        size_t DriverUID = 0;
         void *Address = nullptr;
         void *InterruptCallback = nullptr;
         Memory::MemMgr *MemTrk = nullptr;

@@ -201,14 +201,14 @@ namespace CPU
 
 	void InitializeFeatures(long Core)
 	{
-#if defined(a64)
+		static int BSP = 0;
 		bool PGESupport = false;
 		bool SSESupport = false;
+#if defined(a64)
 		bool UMIPSupport = false;
 		bool SMEPSupport = false;
 		bool SMAPSupport = false;
 
-		static int BSP = 0;
 		x64::CR0 cr0 = x64::readcr0();
 		x64::CR4 cr4 = x64::readcr4();
 
@@ -335,6 +335,105 @@ namespace CPU
 		if (SSEEnableAfter)
 			SSEEnabled = true;
 #elif defined(a32)
+
+		x32::CR0 cr0 = x32::readcr0();
+		x32::CR4 cr4 = x32::readcr4();
+
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
+			CPU::x86::AMD::CPUID0x00000001 cpuid1;
+			cpuid1.Get();
+
+			PGESupport = cpuid1.EDX.PGE;
+			SSESupport = cpuid1.EDX.SSE;
+		}
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+			CPU::x86::Intel::CPUID0x00000001 cpuid1;
+			cpuid1.Get();
+			PGESupport = cpuid1.EDX.PGE;
+			SSESupport = cpuid1.EDX.SSE;
+		}
+
+		if (Config.SIMD == false)
+		{
+			debug("Disabling SSE support...");
+			SSESupport = false;
+		}
+
+		if (PGESupport)
+		{
+			debug("Enabling global pages support...");
+			if (!BSP)
+				KPrint("Global Pages is supported.");
+			cr4.PGE = 1;
+		}
+
+		bool SSEEnableAfter = false;
+
+		/* Not sure if my code is not working properly or something else is the issue. */
+		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0 &&
+			 strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
+			SSESupport)
+		{
+			debug("Enabling FPU...");
+			bool FPU = false;
+			{
+				x32::CR0 _cr0;
+				__asm__ __volatile__(
+					"mov %%cr0, %0\n\t"
+					"and $0xfffffff8, %0\n\t"
+					"mov %0, %%cr0\n\t"
+					"fninit\n\t"
+					"fwait\n\t"
+					"mov %%cr0, %0\n\t"
+					: "=r"(_cr0.raw)
+					:
+					: "memory");
+				if ((_cr0.EM) == 0)
+				{
+					FPU = true;
+					debug("FPU is supported");
+				}
+			}
+
+			if (FPU)
+				KPrint("FPU is supported.");
+
+			debug("Enabling SSE support...");
+			if (!BSP)
+				KPrint("SSE is supported.");
+			cr0.EM = 0;
+			cr0.MP = 1;
+			cr4.OSFXSR = 1;
+			cr4.OSXMMEXCPT = 1;
+
+			CPUData *CoreData = GetCPU(Core);
+			CoreData->Data.FPU = (CPU::x32::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x32::FXState) + 1));
+			memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x32::FXState))));
+			CoreData->Data.FPU->mxcsr = 0b0001111110000000;
+			CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
+			CoreData->Data.FPU->fcw = 0b0000001100111111;
+			CPU::x32::fxrstor(CoreData->Data.FPU);
+
+			SSEEnableAfter = true;
+		}
+
+		cr0.NW = 0;
+		cr0.CD = 0;
+		cr0.WP = 1;
+
+		x32::writecr0(cr0);
+		debug("Writing CR4...");
+		x32::writecr4(cr4);
+		debug("Wrote CR4.");
+
+		debug("Enabling PAT support...");
+		x32::wrmsr(x32::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
+		if (!BSP++)
+			trace("Features for BSP initialized.");
+		if (SSEEnableAfter)
+			SSEEnabled = true;
 #elif defined(aa64)
 #endif
 	}
@@ -358,10 +457,6 @@ namespace CPU
 
 	uint64_t CheckSIMD()
 	{
-#if defined(a32)
-		return SIMD_NONE; /* TODO: Support x86 SIMD on x32 */
-#endif
-
 		if (unlikely(!SSEEnabled))
 			return SIMD_NONE;
 

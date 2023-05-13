@@ -160,7 +160,7 @@ namespace NetworkDHCP
 
         void CreatePacket(DHCPHeader *Packet, uint8_t MessageType, uint32_t RequestIP);
         void *GetOption(DHCPHeader *Packet, uint8_t Type);
-        void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length);
+        void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length);
 
     public:
         /** @brief IP address (Little-endian) */

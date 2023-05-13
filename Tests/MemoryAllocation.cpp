@@ -71,7 +71,7 @@ void TestMemoryAllocation()
             uint64_t prq1 = (uint64_t)KernelAllocator.RequestPage();
             KernelAllocator.FreePage((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
                 KernelAllocator.FreePage(KernelAllocator.RequestPage());
 
             uint64_t prq2 = (uint64_t)KernelAllocator.RequestPage();
@@ -86,7 +86,7 @@ void TestMemoryAllocation()
             uint64_t prq1 = (uint64_t)KernelAllocator.RequestPages(10);
             KernelAllocator.FreePages((void *)prq1, 10);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
                 KernelAllocator.FreePages(KernelAllocator.RequestPages(20), 20);
 
             uint64_t prq2 = (uint64_t)KernelAllocator.RequestPages(10);
@@ -98,13 +98,13 @@ void TestMemoryAllocation()
 
         debug("Multiple Fixed Malloc Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
                 kfree(kmalloc(0x10000));
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:\t\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -113,13 +113,13 @@ void TestMemoryAllocation()
 
         debug("Multiple Dynamic Malloc Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
                 kfree(kmalloc(i));
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -128,16 +128,16 @@ void TestMemoryAllocation()
 
         debug("New/Delete Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
             {
                 test_mem_new_delete *t = new test_mem_new_delete();
                 delete t;
             }
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:               \t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -146,16 +146,16 @@ void TestMemoryAllocation()
 
         debug("New/Delete Fixed Array Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
             {
                 char *t = new char[128];
                 delete[] t;
             }
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:    \t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -164,10 +164,10 @@ void TestMemoryAllocation()
 
         debug("New/Delete Dynamic Array Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
             {
                 if (i == 0)
                     continue;
@@ -175,7 +175,7 @@ void TestMemoryAllocation()
                 delete[] t;
             }
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:\t1-[%#lx]; 2-[%#lx]\n", (void *)prq1, (void *)prq2);
@@ -184,16 +184,16 @@ void TestMemoryAllocation()
 
         debug("calloc Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
             {
                 char *t = (char *)kcalloc(128, 1);
                 kfree(t);
             }
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -202,17 +202,17 @@ void TestMemoryAllocation()
 
         debug("realloc Test");
         {
-            uint64_t prq1 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq1 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq1);
 
-            for (uint64_t i = 0; i < MEMTEST_ITERATIONS; i++)
+            for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
             {
                 char *t = (char *)kmalloc(128);
                 t = (char *)krealloc(t, 256);
                 kfree(t);
             }
 
-            uint64_t prq2 = (uint64_t)kmalloc(0x1000);
+            uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
             debug(" Result:\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);

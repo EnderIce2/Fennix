@@ -153,7 +153,7 @@ namespace NetworkDHCP
         return nullptr;
     }
 
-    void DHCP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length)
+    void DHCP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length)
     {
         UNUSED(Socket);
         UNUSED(Length);

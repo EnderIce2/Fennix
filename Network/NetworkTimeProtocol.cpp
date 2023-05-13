@@ -22,7 +22,7 @@
 
 namespace NetworkNTP
 {
-    void NTP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length)
+    void NTP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length)
     {
         UNUSED(Socket);
         UNUSED(Length);
@@ -68,7 +68,7 @@ namespace NetworkNTP
             TaskManager->Sleep(1000);
         }
 
-        long UnixTimestamp = b32(this->NTPPacket.TransmitTimestamp[0]) - 2208988800;
+        uint64_t UnixTimestamp = (b32(this->NTPPacket.TransmitTimestamp[0])) - 2208988800;
         debug("Unix time: %d", UnixTimestamp);
         return s_cst(int, UnixTimestamp);
     }

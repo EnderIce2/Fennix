@@ -148,7 +148,7 @@ namespace NetworkNTP
         bool TimeReceived = false;
         NTPHeader NTPPacket;
 
-        virtual void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, uint64_t Length);
+        virtual void OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length);
 
     public:
         NTP(NetworkUDP::Socket *Socket);

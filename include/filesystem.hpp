@@ -120,7 +120,7 @@ namespace VirtualFileSystem
         uint64_t UserIdentifier = 0, GroupIdentifier = 0;
         uintptr_t Address = 0;
         size_t Length = 0;
-        uint64_t Offset = 0;
+        size_t Offset = 0;
         Node *Parent = nullptr;
         FileSystemOperations *Operator = nullptr;
         /* For root node:

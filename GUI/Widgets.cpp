@@ -125,7 +125,7 @@ namespace GraphicalUserInterface
         this->Buffer->Height = ((Window *)this->ParentWindow)->GetPosition().Height;
         this->Buffer->BitsPerPixel = Display->GetBitsPerPixel();
         this->Buffer->Pitch = Display->GetPitch();
-        this->Buffer->Size = this->Buffer->Pitch * ((Window *)this->ParentWindow)->GetPosition().Height;
+        this->Buffer->Size = (size_t)(this->Buffer->Pitch * ((Window *)this->ParentWindow)->GetPosition().Height);
         this->Buffer->Data = (uint8_t *)this->mem->RequestPages(TO_PAGES(this->Buffer->Size + 1));
         memset(this->Buffer->Data, 0, this->Buffer->Size);
 

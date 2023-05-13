@@ -377,7 +377,7 @@ namespace Memory
         TotalMemory = MemorySize;
         FreeMemory = MemorySize;
 
-        size_t BitmapSize = (MemorySize / PAGE_SIZE) / 8 + 1;
+        size_t BitmapSize = (size_t)(MemorySize / PAGE_SIZE) / 8 + 1;
         uintptr_t BitmapAddress = 0x0;
         size_t BitmapAddressSize = 0;
 

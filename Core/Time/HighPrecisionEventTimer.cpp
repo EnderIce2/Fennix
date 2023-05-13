@@ -34,25 +34,35 @@ namespace Time
 {
     bool HighPrecisionEventTimer::Sleep(uint64_t Duration, Units Unit)
     {
-#if defined(a86)
+#if defined(a64)
         uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
         while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
             CPU::Pause();
         return true;
+#elif defined(a32)
+        uint64_t Target = mminl(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
+        while (mminl(&((HPET *)hpet)->MainCounterValue) < Target)
+            CPU::Pause();
+        return true;
 #endif
+return false;
     }
 
     uint64_t HighPrecisionEventTimer::GetCounter()
     {
-#if defined(a86)
+#if defined(a64)
         return mminq(&((HPET *)hpet)->MainCounterValue);
+#elif defined(a32)
+        return mminl(&((HPET *)hpet)->MainCounterValue);
 #endif
     }
 
     uint64_t HighPrecisionEventTimer::CalculateTarget(uint64_t Target, Units Unit)
     {
-#if defined(a86)
+#if defined(a64)
         return mminq(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
+#elif defined(a32)
+        return mminl(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #endif
     }
 
@@ -75,10 +85,16 @@ namespace Time
                                 Memory::PTFlag::RW | Memory::PTFlag::PCD);
         this->hpet = (HPET *)HPET_HDR->Address.Address;
         trace("%s timer is at address %016p", HPET_HDR->Header.OEMID, (void *)HPET_HDR->Address.Address);
-        clk = s_cst(uint32_t, this->hpet->GeneralCapabilities >> 32);
+        clk = s_cst(uint32_t, (uint64_t)this->hpet->GeneralCapabilities >> 32);
+#ifdef a64
         mmoutq(&this->hpet->GeneralConfiguration, 0);
         mmoutq(&this->hpet->MainCounterValue, 0);
         mmoutq(&this->hpet->GeneralConfiguration, 1);
+#else
+        mmoutl(&this->hpet->GeneralConfiguration, 0);
+        mmoutl(&this->hpet->MainCounterValue, 0);
+        mmoutl(&this->hpet->GeneralConfiguration, 1);
+#endif
         ClassCreationTime = this->GetCounter();
 #endif
     }

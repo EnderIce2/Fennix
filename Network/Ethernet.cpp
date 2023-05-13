@@ -43,7 +43,7 @@ namespace NetworkEthernet
         debug("Ethernet interface %#lx destroyed.", this);
     }
 
-    void Ethernet::Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, uint64_t Length)
+    void Ethernet::Send(MediaAccessControl MAC, FrameType Type, uint8_t *Data, size_t Length)
     {
         netdbg("Sending frame type %#x to %s", Type, MAC.ToString());
         size_t PacketLength = sizeof(EthernetHeader) + Length;
@@ -60,7 +60,7 @@ namespace NetworkEthernet
         kfree(Packet);
     }
 
-    void Ethernet::Receive(uint8_t *Data, uint64_t Length)
+    void Ethernet::Receive(uint8_t *Data, size_t Length)
     {
         EthernetPacket *Packet = (EthernetPacket *)Data;
         size_t PacketLength = Length - sizeof(EthernetHeader);
@@ -124,7 +124,7 @@ namespace NetworkEthernet
         }
     }
 
-    void Ethernet::OnInterfaceReceived(NetworkInterfaceManager::DeviceInterface *Interface, uint8_t *Data, uint64_t Length)
+    void Ethernet::OnInterfaceReceived(NetworkInterfaceManager::DeviceInterface *Interface, uint8_t *Data, size_t Length)
     {
         if (Interface == this->Interface)
             this->Receive(Data, Length);

@@ -101,8 +101,8 @@ namespace Disk
     {
     public:
         char Label[72] = "Unidentified Partition";
-        size_t StartLBA = 0xdeadbeef;
-        size_t EndLBA = 0xdeadbeef;
+        uint64_t StartLBA = 0xdeadbeef;
+        uint64_t EndLBA = 0xdeadbeef;
         size_t Sectors = 0xdeadbeef;
         size_t Flags = 0xdeadbeef;
         unsigned char Port = 0;

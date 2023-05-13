@@ -184,7 +184,7 @@ namespace ACPI
         uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);
         uint8_t *S5Address = (uint8_t *)(Address) + 36;
         ACPI::ACPI::ACPIHeader *Header = (ACPI::ACPI::ACPIHeader *)Address;
-        uint64_t Length = Header->Length;
+        size_t Length = Header->Length;
         while (Length-- > 0)
         {
             if (!memcmp(S5Address, "_S5_", 4))

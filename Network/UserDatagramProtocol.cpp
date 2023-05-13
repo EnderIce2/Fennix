@@ -76,7 +76,7 @@ namespace NetworkUDP
         fixme("Not implemented.");
     }
 
-    void UDP::Send(Socket *Socket, uint8_t *Data, uint64_t Length)
+    void UDP::Send(Socket *Socket, uint8_t *Data, size_t Length)
     {
         netdbg("Sending %d bytes to %s", Length, Socket->RemoteIP.v4.ToStringLittleEndian(), Socket->RemotePort);
         uint16_t TotalLength = s_cst(uint16_t, Length + sizeof(UDPHeader));
@@ -97,7 +97,7 @@ namespace NetworkUDP
         Socket->EventHandler = EventHandler;
     }
 
-    bool UDP::OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, uint64_t Length)
+    bool UDP::OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, size_t Length)
     {
         netdbg("Received %d bytes from %s", Length, SourceIP.v4.ToStringLittleEndian());
         if (Length < sizeof(UDPHeader))

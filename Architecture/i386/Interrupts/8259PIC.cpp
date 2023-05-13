@@ -68,13 +68,13 @@ namespace PIC
         if (IRQ < 8)
         {
             Port = MasterDataPort;
-            Value = MasterMask & ~(1 << IRQ);
+            Value = (uint8_t)(MasterMask & ~(1 << IRQ));
             MasterMask = Value;
         }
         else
         {
             Port = SlaveDataPort;
-            Value = SlaveMask & ~(1 << (IRQ - 8));
+            Value = (uint8_t)(SlaveMask & ~(1 << (IRQ - 8)));
             SlaveMask = Value;
         }
 
@@ -122,7 +122,7 @@ namespace PIC
 
     void PIT::PrepareSleep(uint32_t Milliseconds)
     {
-        uint16_t Divisor = 1193182 / Frequency;
+        uint16_t Divisor = (uint16_t)(1193182 / Frequency);
         uint8_t Low = (uint8_t)(Divisor & 0xFF);
         uint8_t High = (uint8_t)((Divisor >> 8) & 0xFF);
 

@@ -116,7 +116,7 @@ NIF void MapFramebuffer(PageTable *PT)
 
         va.OptimizedMap((void *)bInfo.Framebuffer[itrfb].BaseAddress,
                         (void *)bInfo.Framebuffer[itrfb].BaseAddress,
-                        bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height,
+                        (size_t)(bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height),
                         PTFlag::RW | PTFlag::US | PTFlag::G);
         itrfb++;
 

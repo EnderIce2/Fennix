@@ -32,6 +32,8 @@ struct CPUArchData
     CPU::x64::FXState *FPU;
     /* TODO */
 #elif defined(a32)
+    CPU::x32::FXState *FPU;
+    /* TODO */
 #elif defined(aa64)
 #endif
 };
