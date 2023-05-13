@@ -55,7 +55,7 @@ namespace SymbolResolver
             return;
         }
 
-#if defined(a64)
+#if defined(a64) || defined(aa64)
         Elf64_Shdr *ElfSections = (Elf64_Shdr *)(Sections);
         Elf64_Sym *ElfSymbols = nullptr;
 #elif defined(a32)
@@ -68,7 +68,7 @@ namespace SymbolResolver
             switch (ElfSections[i].sh_type)
             {
             case SHT_SYMTAB:
-#if defined(a64)
+#if defined(a64) || defined(aa64)
                 ElfSymbols = (Elf64_Sym *)(Sections + ElfSections[i].sh_offset);
                 this->TotalEntries = ElfSections[i].sh_size / sizeof(Elf64_Sym);
 #elif defined(a32)
@@ -104,7 +104,7 @@ namespace SymbolResolver
                 for (Index = i + 1; Index < this->TotalEntries; Index++)
                     if (ElfSymbols[Index].st_value < ElfSymbols[MinimumIndex].st_value)
                         MinimumIndex = Index;
-#if defined(a64)
+#if defined(a64) || defined(aa64)
                 Elf64_Sym tmp = ElfSymbols[MinimumIndex];
 #elif defined(a32)
                 Elf32_Sym tmp = ElfSymbols[MinimumIndex];
@@ -148,7 +148,7 @@ namespace SymbolResolver
 
         this->Image = (void *)ImageAddress;
         debug("Solving symbols for address: %#llx", ImageAddress);
-#if defined(a64)
+#if defined(a64) || defined(aa64)
         Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
 #elif defined(a32)
         Elf32_Ehdr *Header = (Elf32_Ehdr *)ImageAddress;
@@ -161,7 +161,7 @@ namespace SymbolResolver
             error("Invalid ELF header");
             return;
         }
-#if defined(a64)
+#if defined(a64) || defined(aa64)
         Elf64_Shdr *ElfSections = (Elf64_Shdr *)(ImageAddress + Header->e_shoff);
         Elf64_Sym *ElfSymbols = nullptr;
 #elif defined(a32)
@@ -174,7 +174,7 @@ namespace SymbolResolver
             switch (ElfSections[i].sh_type)
             {
             case SHT_SYMTAB:
-#if defined(a64)
+#if defined(a64) || defined(aa64)
                 ElfSymbols = (Elf64_Sym *)(ImageAddress + ElfSections[i].sh_offset);
                 this->TotalEntries = ElfSections[i].sh_size / sizeof(Elf64_Sym);
 #elif defined(a32)
@@ -210,7 +210,7 @@ namespace SymbolResolver
                 for (Index = i + 1; Index < this->TotalEntries; Index++)
                     if (ElfSymbols[Index].st_value < ElfSymbols[MinimumIndex].st_value)
                         MinimumIndex = Index;
-#if defined(a64)
+#if defined(a64) || defined(aa64)
                 Elf64_Sym tmp = ElfSymbols[MinimumIndex];
 #elif defined(a32)
                 Elf32_Sym tmp = ElfSymbols[MinimumIndex];
