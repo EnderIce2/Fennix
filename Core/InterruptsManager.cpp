@@ -77,7 +77,22 @@ namespace Interrupts
         debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
         InitializeSystemCalls();
 #elif defined(a32)
-        warn("i386 is not supported yet");
+        GlobalDescriptorTable::Init(Core);
+        InterruptDescriptorTable::Init(Core);
+        CPUData *CoreData = GetCPU(Core);
+        CoreData->Checksum = CPU_DATA_CHECKSUM;
+        CPU::x32::wrmsr(CPU::x32::MSR_GS_BASE, (uint64_t)CoreData);
+        CPU::x32::wrmsr(CPU::x32::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
+        CoreData->ID = Core;
+        CoreData->IsActive = true;
+        CoreData->SystemCallStack = (uint8_t *)((uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE);
+        CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE;
+        if (CoreData->Checksum != CPU_DATA_CHECKSUM)
+        {
+            KPrint("CPU %d checksum mismatch! %x != %x", Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
+            CPU::Stop();
+        }
+        debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
 #elif defined(aa64)
         warn("aarch64 is not supported yet");
 #endif

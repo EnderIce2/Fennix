@@ -25,75 +25,123 @@
 namespace GlobalDescriptorTable
 {
     static GlobalDescriptorTableEntries GDTEntriesTemplate = {
-        // null
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.Raw = 0x0},
-         .Flags = {.Raw = 0x0},
-         .BaseHigh = 0x0},
+        .Null =
+            {
+                .Limit0 = 0x0,
+                .BaseLow = 0x0,
+                .BaseMiddle = 0x0,
+                .Access = {.Raw = 0x0},
+                // .Limit1 = 0x0,
+                .Flags = {.Raw = 0x0},
+                .BaseHigh = 0x0,
+            },
 
-        // kernel code
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.A = 0,
+        .Code =
+            {
+                .Limit0 = 0xFFFF,
+                .BaseLow = 0x0,
+                .BaseMiddle = 0x0,
+                .Access = {
+                    .A = 0,
                     .RW = 1,
                     .DC = 0,
                     .E = 1,
                     .S = 1,
                     .DPL = 0,
-                    .P = 1},
-         .Flags = {.Unknown = 0x0, .L = 1},
-         .BaseHigh = 0x0},
+                    .P = 1,
+                },
+                // .Limit1 = 0xF,
+                .Flags = {
+                    .Reserved = 0xF, /* Workaround for Limit1 */
 
-        // kernel data
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.A = 0,
-                    .RW = 1,
-                    .DC = 0,
-                    .E = 0,
-                    .S = 1,
-                    .DPL = 0,
-                    .P = 1},
-         .Flags = {.Raw = 0x0},
-         .BaseHigh = 0x0},
+                    .AVL = 0,
+                    .L = 0,
+                    .DB = 1,
+                    .G = 1,
+                },
+                .BaseHigh = 0x0,
+            },
 
-        // user data
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.A = 0,
-                    .RW = 1,
-                    .DC = 0,
-                    .E = 0,
-                    .S = 1,
-                    .DPL = 3,
-                    .P = 1},
-         .Flags = {.Raw = 0x0},
-         .BaseHigh = 0x0},
+        .Data = {
+            .Limit0 = 0xFFFF,
+            .BaseLow = 0x0,
+            .BaseMiddle = 0x0,
+            .Access = {
+                .A = 0,
+                .RW = 1,
+                .DC = 0,
+                .E = 0,
+                .S = 1,
+                .DPL = 0,
+                .P = 1,
+            },
+            // .Limit1 = 0xF,
+            .Flags = {
+                .Reserved = 0xF, /* Workaround for Limit1 */
 
-        // user code
-        {.Length = 0x0,
-         .BaseLow = 0x0,
-         .BaseMiddle = 0x0,
-         .Access = {.A = 0,
-                    .RW = 1,
-                    .DC = 0,
-                    .E = 1,
-                    .S = 1,
-                    .DPL = 3,
-                    .P = 1},
-         .Flags = {.Unknown = 0x0, .L = 1},
-         .BaseHigh = 0x0},
+                .AVL = 0,
+                .L = 0,
+                .DB = 1,
+                .G = 1,
+            },
+            .BaseHigh = 0x0,
+        },
 
-        // tss
-        {}};
+        .UserData = {
+            .Limit0 = 0xFFFF,
+            .BaseLow = 0x0,
+            .BaseMiddle = 0x0,
+            .Access = {
+                .A = 0,
+                .RW = 1,
+                .DC = 0,
+                .E = 0,
+                .S = 1,
+                .DPL = 3,
+                .P = 1,
+            },
+            // .Limit1 = 0xF,
+            .Flags = {
+                .Reserved = 0xF, /* Workaround for Limit1 */
 
-    GlobalDescriptorTableEntries GDTEntries[MAX_CPU];
-    GlobalDescriptorTableDescriptor gdt[MAX_CPU];
+                .AVL = 0,
+                .L = 0,
+                .DB = 1,
+                .G = 1,
+            },
+            .BaseHigh = 0x0,
+        },
+
+        .UserCode = {
+            .Limit0 = 0xFFFF,
+            .BaseLow = 0x0,
+            .BaseMiddle = 0x0,
+            .Access = {
+                .A = 0,
+                .RW = 1,
+                .DC = 0,
+                .E = 1,
+                .S = 1,
+                .DPL = 3,
+                .P = 1,
+            },
+            // .Limit1 = 0xF,
+            .Flags = {
+                .Reserved = 0xF, /* Workaround for Limit1 */
+
+                .AVL = 0,
+                .L = 0,
+                .DB = 1,
+                .G = 1,
+            },
+            .BaseHigh = 0x0,
+        },
+
+        .TaskStateSegment = {},
+    };
+
+    GlobalDescriptorTableEntries GDTEntries[MAX_CPU] __aligned(16);
+    GlobalDescriptorTableDescriptor gdt[MAX_CPU] __aligned(16);
 
     TaskStateSegment tss[MAX_CPU] = {
         0,
@@ -102,15 +150,123 @@ namespace GlobalDescriptorTable
         {0, 0, 0, 0, 0, 0, 0},
         0,
         0,
+        0,
     };
 
     void *CPUStackPointer[MAX_CPU];
 
     SafeFunction void Init(int Core)
     {
+        memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
+        gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
+
+        debug("GDT: %#lx", &gdt[Core]);
+        debug("GDT KERNEL: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_KERNEL_CODE,
+              GDTEntries[Core].Code.Limit0,
+              GDTEntries[Core].Code.BaseLow,
+              GDTEntries[Core].Code.BaseMiddle,
+              GDTEntries[Core].Code.Access.Raw,
+              GDTEntries[Core].Code.Flags.Reserved,
+              GDTEntries[Core].Code.Flags.Raw & ~0xF,
+              GDTEntries[Core].Code.BaseHigh);
+
+        debug("GDT KERNEL: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_KERNEL_DATA,
+              GDTEntries[Core].Data.Limit0,
+              GDTEntries[Core].Data.BaseLow,
+              GDTEntries[Core].Data.BaseMiddle,
+              GDTEntries[Core].Data.Access.Raw,
+              GDTEntries[Core].Data.Flags.Reserved,
+              GDTEntries[Core].Data.Flags.Raw & ~0xF,
+              GDTEntries[Core].Data.BaseHigh);
+
+        debug("GDT USER: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_USER_CODE,
+              GDTEntries[Core].UserCode.Limit0,
+              GDTEntries[Core].UserCode.BaseLow,
+              GDTEntries[Core].UserCode.BaseMiddle,
+              GDTEntries[Core].UserCode.Access.Raw,
+              GDTEntries[Core].UserCode.Flags.Reserved,
+              GDTEntries[Core].UserCode.Flags.Raw & ~0xF,
+              GDTEntries[Core].UserCode.BaseHigh);
+
+        debug("GDT USER: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_USER_DATA,
+              GDTEntries[Core].UserData.Limit0,
+              GDTEntries[Core].UserData.BaseLow,
+              GDTEntries[Core].UserData.BaseMiddle,
+              GDTEntries[Core].UserData.Access.Raw,
+              GDTEntries[Core].UserData.Flags.Reserved,
+              GDTEntries[Core].UserData.Flags.Raw & ~0xF,
+              GDTEntries[Core].UserData.BaseHigh);
+
+        CPU::x32::lgdt(&gdt[Core]);
+
+        asmv("mov %%esp, %%eax\n"
+             "push $16\n"
+             "push %%eax\n"
+             "pushf\n"
+             "push $8\n"
+             "push $1f\n"
+             "iret\n"
+             "1:\n"
+             "movw $16, %%ax\n"
+             "movw %%ax, %%ds\n"
+             "movw %%ax, %%es\n" ::
+                 : "memory", "eax");
+
+        CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+        memset(CPUStackPointer[Core], 0, STACK_SIZE);
+        debug("CPU %d Stack Pointer: %#lx-%#lx (%d pages)", Core,
+              CPUStackPointer[Core], (uintptr_t)CPUStackPointer[Core] + STACK_SIZE,
+              TO_PAGES(STACK_SIZE + 1));
+
+        uintptr_t Base = (uintptr_t)&tss[Core];
+        size_t Limit = Base + sizeof(TaskStateSegment);
+        gdt[Core].Entries->TaskStateSegment.Limit = Limit & 0xFFFF;
+        gdt[Core].Entries->TaskStateSegment.BaseLow = Base & 0xFFFF;
+        gdt[Core].Entries->TaskStateSegment.BaseMiddle = (Base >> 16) & 0xFF;
+        gdt[Core].Entries->TaskStateSegment.BaseHigh = (Base >> 24) & 0xFF;
+        gdt[Core].Entries->TaskStateSegment.BaseUpper = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
+        gdt[Core].Entries->TaskStateSegment.Access = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
+        gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);
+
+        tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
+        tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
+        tss[Core].StackPointer[1] = 0x0;
+        tss[Core].StackPointer[2] = 0x0;
+
+        for (size_t i = 0; i < sizeof(tss[Core].InterruptStackTable) / sizeof(tss[Core].InterruptStackTable[7]); i++)
+        {
+            void *NewStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+
+            tss[Core].InterruptStackTable[i] = (uint64_t)NewStack + STACK_SIZE;
+            memset((void *)(tss[Core].InterruptStackTable[i] - STACK_SIZE), 0, STACK_SIZE);
+            debug("IST-%d: %#lx-%#lx", i, NewStack, (uintptr_t)NewStack + STACK_SIZE);
+        }
+
+        CPU::x32::ltr(GDT_TSS);
+        debug("Global Descriptor Table initialized");
     }
 
     SafeFunction void SetKernelStack(void *Stack)
     {
+        long CPUID = GetCurrentCPU()->ID;
+        if (Stack != nullptr)
+            tss[CPUID].StackPointer[0] = (uint64_t)Stack;
+        else
+            tss[CPUID].StackPointer[0] = (uint64_t)CPUStackPointer[CPUID] + STACK_SIZE;
+
+        /*
+        FIXME: There's a bug in kernel which if
+        we won't update "tss[CPUID].StackPointer[0]"
+        with the current stack pointer, the kernel
+        will crash.
+        */
+        asmv("mov %%esp, %0"
+             : "=r"(tss[CPUID].StackPointer[0]));
     }
+
+    void *GetKernelStack() { return (void *)tss[GetCurrentCPU()->ID].StackPointer[0]; }
 }

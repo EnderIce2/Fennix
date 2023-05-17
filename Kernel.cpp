@@ -536,7 +536,6 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
     TestString();
     TestMemoryAllocation();
 #endif
-
     EnableProfiler = true;
     Main();
 }

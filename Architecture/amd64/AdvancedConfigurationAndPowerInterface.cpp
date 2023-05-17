@@ -22,20 +22,23 @@
 
 #include "../../kernel.h"
 
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-
 namespace ACPI
 {
-    void *ACPI::FindTable(ACPI::ACPIHeader *ACPIHeader, char *Signature)
+    __no_sanitize("alignment") void *ACPI::FindTable(ACPI::ACPIHeader *ACPIHeader, char *Signature)
     {
         for (uint64_t t = 0; t < ((ACPIHeader->Length - sizeof(ACPI::ACPIHeader)) / (XSDTSupported ? 8 : 4)); t++)
         {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+
             // TODO: Should I be concerned about unaligned memory access?
             ACPI::ACPIHeader *SDTHdr = nullptr;
             if (XSDTSupported)
                 SDTHdr = (ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 8)));
             else
                 SDTHdr = (ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 4)));
+
+#pragma GCC diagnostic pop
 
             for (int i = 0; i < 4; i++)
             {

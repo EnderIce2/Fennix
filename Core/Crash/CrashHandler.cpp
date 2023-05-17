@@ -817,8 +817,8 @@ namespace CrashHandler
     {
         // TODO: SUPPORT SMP
         CPU::Interrupts(CPU::Disable);
-        SBIdx = 255;
         CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
+        SBIdx = 255;
 #if defined(a64)
         debug("-----------------------------------------------------------------------------------");
         error("Exception: %#llx", Frame->InterruptNumber);

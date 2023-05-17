@@ -382,216 +382,121 @@ const char *Type_Check_Kinds[] = {
     "Cast to virtual base of",
 };
 
-bool UBSANMsg(const char *file, uint32_t line, uint32_t column)
-{
-    /* This can be ignored (unaligned memory access) */
-    if (strstr(file, "AdvancedConfigurationAndPowerInterface.cpp") &&
-        ((line == 34 && column == 47) ||
-         (line == 36 && column == 47)))
-        return false;
-
-    /* This can be ignored (unaligned memory access) */
-    if (strstr(file, "SystemManagementBIOS.cpp") &&
-        ((line == 47 && column == 21) ||
-         (line == 44 && column == 49) ||
-         (line == 62 && column == 26)))
-        return false;
-
-    /* This can be ignored (unaligned memory access) */
-    if (strstr(file, "DynamicHostConfigurationProtocol.cpp") &&
-        (line == 63 && column == 30))
-        return false;
-
-    if (strstr(file, "liballoc_1_1.c"))
-        return false;
-
-    /* This can be ignored (store address x with insufficient space for object of type 'y') */
-    if (strstr(file, "Task.cpp") && line > 500)
-        return false;
-
-    /* This can be ignored (store address x with insufficient space for object of type 'y') */
-    if (strstr(file, "InternetProtocol.cpp") &&
-        ((line == 66 && column == 13) ||
-         (line == 66 && column == 93) ||
-         (line == 68 && column == 51) ||
-         (line == 68 && column == 165) ||
-         (line == 73 && column == 36) ||
-         (line == 78 && column == 54) ||
-         (line == 79 && column == 64) ||
-
-         (line == 81 && column == 126) ||
-         (line == 81 && column == 165) ||
-
-         (line == 81 && column == 15) ||
-         (line == 156 && column == 38) ||
-         (line == 157 && column == 47) ||
-         (line == 158 && column == 45)))
-        return false;
-
-    /* This can be ignored (store address x with insufficient space for object of type 'y') */
-    if (strstr(file, "DynamicHostConfigurationProtocol.cpp") &&
-        ((line == 156 && column == 38) ||
-         (line == 157 && column == 47) ||
-         (line == 158 && column == 45)))
-        return false;
-
-    ubsan("\t\tIn File: %s:%i:%i", file, line, column);
-    return true;
-}
-
 void __ubsan_handle_type_mismatch_v1(struct type_mismatch_v1_data *type_mismatch, uintptr_t pointer)
 {
     struct source_location *location = &type_mismatch->location;
     if (pointer == 0)
     {
-        if (UBSANMsg(location->file, location->line, location->column))
-        {
-            ubsan("Null pointer access.");
-        }
+        ubsan("\t\tIn File: %s:%i:%i", location->file, location->line, location->column);
+        ubsan("Null pointer access.");
     }
     else if (type_mismatch->alignment != 0 && is_aligned(pointer, type_mismatch->alignment))
     {
-        if (UBSANMsg(location->file, location->line, location->column))
-        {
-            ubsan("Unaligned memory access %#llx.", pointer);
-        }
+        ubsan("\t\tIn File: %s:%i:%i", location->file, location->line, location->column);
+        ubsan("Unaligned memory access %#llx.", pointer);
     }
     else
     {
-        if (UBSANMsg(location->file, location->line, location->column))
-        {
-            ubsan("%s address %#llx with insufficient space for object of type %s",
-                  Type_Check_Kinds[type_mismatch->type_check_kind], (void *)pointer, type_mismatch->type->name);
-        }
+        ubsan("\t\tIn File: %s:%i:%i", location->file, location->line, location->column);
+        ubsan("%s address %#llx with insufficient space for object of type %s",
+              Type_Check_Kinds[type_mismatch->type_check_kind], (void *)pointer, type_mismatch->type->name);
     }
 }
 
 void __ubsan_handle_add_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Addition overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Addition overflow.");
 }
 
 void __ubsan_handle_sub_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Subtraction overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Subtraction overflow.");
 }
 
 void __ubsan_handle_mul_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Multiplication overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Multiplication overflow.");
 }
 
 void __ubsan_handle_divrem_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Division overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Division overflow.");
 }
 
 void __ubsan_handle_negate_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Negation overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Negation overflow.");
 }
 
 void __ubsan_handle_pointer_overflow(struct overflow_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Pointer overflow.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Pointer overflow.");
 }
 
 void __ubsan_handle_shift_out_of_bounds(struct shift_out_of_bounds_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Shift out of bounds.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Shift out of bounds.");
 }
 
 void __ubsan_handle_load_invalid_value(struct invalid_value_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Invalid load value.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Invalid load value.");
 }
 
 void __ubsan_handle_out_of_bounds(struct array_out_of_bounds_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Array out of bounds.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Array out of bounds.");
 }
 
 void __ubsan_handle_vla_bound_not_positive(struct negative_vla_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Variable-length argument is negative.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Variable-length argument is negative.");
 }
 
 void __ubsan_handle_nonnull_return(struct nonnull_return_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Non-null return is null.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Non-null return is null.");
 }
 
 void __ubsan_handle_nonnull_return_v1(struct nonnull_return_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Non-null return is null.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Non-null return is null.");
 }
 
 void __ubsan_handle_nonnull_arg(struct nonnull_arg_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Non-null argument is null.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Non-null argument is null.");
 }
 
 void __ubsan_handle_builtin_unreachable(struct unreachable_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Unreachable code reached.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Unreachable code reached.");
 }
 
 void __ubsan_handle_invalid_builtin(struct invalid_builtin_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Invalid builtin.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Invalid builtin.");
 }
 
 void __ubsan_handle_missing_return(struct unreachable_data *data)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Missing return.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Missing return.");
 }
 
 void __ubsan_vptr_type_cache(uintptr_t *cache, uintptr_t ptr)
@@ -602,9 +507,7 @@ void __ubsan_vptr_type_cache(uintptr_t *cache, uintptr_t ptr)
 
 void __ubsan_handle_dynamic_type_cache_miss(struct dynamic_type_cache_miss_data *data, uintptr_t ptr)
 {
-    if (UBSANMsg(data->location.file, data->location.line, data->location.column))
-    {
-        ubsan("Dynamic type cache miss.");
-    }
+    ubsan("\t\tIn File: %s:%i:%i", data->location.file, data->location.line, data->location.column);
+    ubsan("Dynamic type cache miss.");
     UNUSED(ptr);
 }

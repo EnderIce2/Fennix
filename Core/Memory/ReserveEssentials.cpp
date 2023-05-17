@@ -120,12 +120,17 @@ namespace Memory
 
 		for (size_t t = 0; t < TableSize; t++)
 		{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+
 			// TODO: Should I be concerned about unaligned memory access?
 			ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
 			if (XSDT)
 				SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 8)));
 			else
 				SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 4)));
+
+#pragma GCC diagnostic pop
 
 			this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
 		}

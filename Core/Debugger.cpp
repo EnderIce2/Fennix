@@ -57,7 +57,7 @@ static inline NIF void WritePrefix(DebugLevel Level, const char *File, int Line,
     case DebugLevelUbsan:
     {
         DbgLvlString = "UBSAN";
-        fctprintf(uart_wrapper, nullptr, "%s|%s: ", DbgLvlString, Function);
+        fctprintf(uart_wrapper, nullptr, "%s| ", DbgLvlString);
         return;
     }
     default:

@@ -105,15 +105,18 @@ namespace UniversalAsynchronousReceiverTransmitter
         NoProfiler_outportb(s_cst(uint16_t, Port + 2), 0xC7);                  // Enable FIFO, clear them, with 14-byte threshold
         NoProfiler_outportb(s_cst(uint16_t, Port + 4), 0x0B);                  // IRQs enabled, RTS/DSR set
 
+        /* FIXME  https://wiki.osdev.org/Serial_Ports */
+        // NoProfiler_outportb(s_cst(uint16_t, Port + 0), 0x1E);
+        // NoProfiler_outportb(s_cst(uint16_t, Port + 0), 0xAE);
         // Check if the serial port is faulty.
-        if (NoProfiler_inportb(s_cst(uint16_t, Port + 0)) != 0xAE)
-        {
-            static int once = 0;
-            if (!once++)
-                warn("Serial port %#llx is faulty.", Port);
-            // serialports[Port] = false; // ignore for now
-            // return;
-        }
+        // if (NoProfiler_inportb(s_cst(uint16_t, Port + 0)) != 0xAE)
+        // {
+        //     static int once = 0;
+        //     if (!once++)
+        //         warn("Serial port %#llx is faulty.", Port);
+        //     // serialports[Port] = false; // ignore for now
+        //     // return;
+        // }
 
         // Set to normal operation mode.
         NoProfiler_outportb(s_cst(uint16_t, Port + 4), 0x0F);

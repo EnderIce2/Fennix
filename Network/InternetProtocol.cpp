@@ -68,7 +68,7 @@ namespace NetworkIPv4
 
     std::vector<IPv4Events *> RegisteredEvents;
 
-    bool IPv4::OnEthernetPacketReceived(uint8_t *Data, size_t Length)
+    __no_sanitize("alignment") bool IPv4::OnEthernetPacketReceived(uint8_t *Data, size_t Length)
     {
         IPv4Packet *Packet = (IPv4Packet *)Data;
         netdbg("Received %d bytes [Protocol %ld]", Length, Packet->Header.Protocol);

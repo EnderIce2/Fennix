@@ -276,7 +276,7 @@ Execute::SpawnData SpawnInit()
 /* Files: 0.tga 1.tga ... 26.tga */
 void *Frames[27];
 uint32_t FrameSizes[27];
-uint32_t FrameCount = 1;
+size_t FrameCount = 1;
 
 void BootLogoAnimationThread()
 {

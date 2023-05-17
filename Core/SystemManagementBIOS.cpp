@@ -36,7 +36,7 @@ namespace SMBIOS
 
     SMBIOSEntryPoint *GetSMBIOSEntryPoint() { return (SMBIOSEntryPoint *)bInfo.SMBIOSPtr; }
 
-    static inline int SMBIOSTableLength(SMBIOSHeader *Hdr)
+    __no_sanitize("alignment") static inline int SMBIOSTableLength(SMBIOSHeader *Hdr)
     {
         int i;
         const char *strtab = (char *)Hdr + Hdr->Length;
@@ -45,7 +45,7 @@ namespace SMBIOS
         return Hdr->Length + i + 1;
     }
 
-    void *GetSMBIOSHeader(SMBIOSType Type)
+    __no_sanitize("alignment") void *GetSMBIOSHeader(SMBIOSType Type)
     {
         if (!CheckSMBIOS())
             return nullptr;

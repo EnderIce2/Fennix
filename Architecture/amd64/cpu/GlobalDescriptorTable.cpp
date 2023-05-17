@@ -27,17 +27,18 @@ namespace GlobalDescriptorTable
     static GlobalDescriptorTableEntries GDTEntriesTemplate = {
         .Null =
             {
-                .Length = 0x0,
+                .Limit0 = 0x0,
                 .BaseLow = 0x0,
                 .BaseMiddle = 0x0,
                 .Access = {.Raw = 0x0},
+                // .Limit1 = 0x0,
                 .Flags = {.Raw = 0x0},
                 .BaseHigh = 0x0,
             },
 
         .Code =
             {
-                .Length = 0x0,
+                .Limit0 = 0xFFFF,
                 .BaseLow = 0x0,
                 .BaseMiddle = 0x0,
                 .Access = {
@@ -49,15 +50,20 @@ namespace GlobalDescriptorTable
                     .DPL = 0,
                     .P = 1,
                 },
+                // .Limit1 = 0xF,
                 .Flags = {
-                    .Unknown = 0x0,
+                    .Reserved = 0xF, /* Workaround for Limit1 */
+
+                    .AVL = 0,
                     .L = 1,
+                    .DB = 0,
+                    .G = 1,
                 },
                 .BaseHigh = 0x0,
             },
 
         .Data = {
-            .Length = 0x0,
+            .Limit0 = 0xFFFF,
             .BaseLow = 0x0,
             .BaseMiddle = 0x0,
             .Access = {
@@ -69,12 +75,20 @@ namespace GlobalDescriptorTable
                 .DPL = 0,
                 .P = 1,
             },
-            .Flags = {.Raw = 0x0},
+            // .Limit1 = 0xF,
+            .Flags = {
+                .Reserved = 0xF, /* Workaround for Limit1 */
+
+                .AVL = 0,
+                .L = 0,
+                .DB = 1,
+                .G = 1,
+            },
             .BaseHigh = 0x0,
         },
 
         .UserData = {
-            .Length = 0x0,
+            .Limit0 = 0xFFFF,
             .BaseLow = 0x0,
             .BaseMiddle = 0x0,
             .Access = {
@@ -86,14 +100,20 @@ namespace GlobalDescriptorTable
                 .DPL = 3,
                 .P = 1,
             },
+            // .Limit1 = 0xF,
             .Flags = {
-                .Raw = 0x0,
+                .Reserved = 0xF, /* Workaround for Limit1 */
+
+                .AVL = 0,
+                .L = 0,
+                .DB = 1,
+                .G = 1,
             },
             .BaseHigh = 0x0,
         },
 
         .UserCode = {
-            .Length = 0x0,
+            .Limit0 = 0xFFFF,
             .BaseLow = 0x0,
             .BaseMiddle = 0x0,
             .Access = {
@@ -105,9 +125,14 @@ namespace GlobalDescriptorTable
                 .DPL = 3,
                 .P = 1,
             },
+            // .Limit1 = 0xF,
             .Flags = {
-                .Unknown = 0x0,
+                .Reserved = 0xF, /* Workaround for Limit1 */
+
+                .AVL = 0,
                 .L = 1,
+                .DB = 0,
+                .G = 1,
             },
             .BaseHigh = 0x0,
         },
@@ -135,10 +160,47 @@ namespace GlobalDescriptorTable
         memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
         gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
 
-        debug("Kernel: Code Access: %ld; Data Access: %ld", GDTEntries[Core].Code.Access.Raw, GDTEntries[Core].Data.Access.Raw);
-        debug("Kernel: Code Flags: %ld; Data Flags: %ld", GDTEntries[Core].Code.Flags.Raw, GDTEntries[Core].Data.Flags.Raw);
-        debug("User: Code Access: %ld; Data Access: %ld", GDTEntries[Core].UserCode.Access.Raw, GDTEntries[Core].UserData.Access.Raw);
-        debug("User: Code Flags: %ld; Data Flags: %ld", GDTEntries[Core].UserCode.Flags.Raw, GDTEntries[Core].UserData.Flags.Raw);
+        debug("GDT: %#lx", &gdt[Core]);
+        debug("GDT KERNEL: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_KERNEL_CODE,
+              GDTEntries[Core].Code.Limit0,
+              GDTEntries[Core].Code.BaseLow,
+              GDTEntries[Core].Code.BaseMiddle,
+              GDTEntries[Core].Code.Access.Raw,
+              GDTEntries[Core].Code.Flags.Reserved,
+              GDTEntries[Core].Code.Flags.Raw & ~0xF,
+              GDTEntries[Core].Code.BaseHigh);
+
+        debug("GDT KERNEL: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_KERNEL_DATA,
+              GDTEntries[Core].Data.Limit0,
+              GDTEntries[Core].Data.BaseLow,
+              GDTEntries[Core].Data.BaseMiddle,
+              GDTEntries[Core].Data.Access.Raw,
+              GDTEntries[Core].Data.Flags.Reserved,
+              GDTEntries[Core].Data.Flags.Raw & ~0xF,
+              GDTEntries[Core].Data.BaseHigh);
+
+        debug("GDT USER: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_USER_CODE,
+              GDTEntries[Core].UserCode.Limit0,
+              GDTEntries[Core].UserCode.BaseLow,
+              GDTEntries[Core].UserCode.BaseMiddle,
+              GDTEntries[Core].UserCode.Access.Raw,
+              GDTEntries[Core].UserCode.Flags.Reserved,
+              GDTEntries[Core].UserCode.Flags.Raw & ~0xF,
+              GDTEntries[Core].UserCode.BaseHigh);
+
+        debug("GDT USER: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
+              GDT_USER_DATA,
+              GDTEntries[Core].UserData.Limit0,
+              GDTEntries[Core].UserData.BaseLow,
+              GDTEntries[Core].UserData.BaseMiddle,
+              GDTEntries[Core].UserData.Access.Raw,
+              GDTEntries[Core].UserData.Flags.Reserved,
+              GDTEntries[Core].UserData.Flags.Raw & ~0xF,
+              GDTEntries[Core].UserData.BaseHigh);
+
         CPU::x64::lgdt(&gdt[Core]);
 
         asmv("movq %%rsp, %%rax\n"
@@ -162,16 +224,18 @@ namespace GlobalDescriptorTable
 
         uintptr_t Base = (uintptr_t)&tss[Core];
         size_t Limit = Base + sizeof(TaskStateSegment);
-        gdt[Core].Entries->TaskStateSegment.Length = Limit & 0xFFFF;
+        gdt[Core].Entries->TaskStateSegment.Limit = Limit & 0xFFFF;
         gdt[Core].Entries->TaskStateSegment.BaseLow = Base & 0xFFFF;
         gdt[Core].Entries->TaskStateSegment.BaseMiddle = (Base >> 16) & 0xFF;
         gdt[Core].Entries->TaskStateSegment.BaseHigh = (Base >> 24) & 0xFF;
         gdt[Core].Entries->TaskStateSegment.BaseUpper = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
-        gdt[Core].Entries->TaskStateSegment.Flags = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
+        gdt[Core].Entries->TaskStateSegment.Access = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
         gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);
 
         tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
         tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
+        tss[Core].StackPointer[1] = 0x0;
+        tss[Core].StackPointer[2] = 0x0;
 
         for (size_t i = 0; i < sizeof(tss[Core].InterruptStackTable) / sizeof(tss[Core].InterruptStackTable[7]); i++)
         {
@@ -183,12 +247,6 @@ namespace GlobalDescriptorTable
         }
 
         CPU::x64::ltr(GDT_TSS);
-
-        debug("GDT_KERNEL_CODE: %#lx", GDT_KERNEL_CODE);
-        debug("GDT_KERNEL_DATA: %#lx", GDT_KERNEL_DATA);
-        debug("GDT_USER_CODE: %#lx", GDT_USER_CODE);
-        debug("GDT_USER_DATA: %#lx", GDT_USER_DATA);
-        debug("GDT_TSS: %#lx", GDT_TSS);
         debug("Global Descriptor Table initialized");
     }
 

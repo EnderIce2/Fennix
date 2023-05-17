@@ -50,7 +50,7 @@ namespace NetworkDHCP
         debug("DHCP interface %#lx destroyed.", this);
     }
 
-    void DHCP::CreatePacket(DHCPHeader *Packet, uint8_t MessageType, uint32_t RequestIP)
+    __no_sanitize("alignment") void DHCP::CreatePacket(DHCPHeader *Packet, uint8_t MessageType, uint32_t RequestIP)
     {
         Packet->Opcode = b8(DHCP_OP_BOOTREQUEST);
         Packet->HardwareType = b8(1);
@@ -153,7 +153,7 @@ namespace NetworkDHCP
         return nullptr;
     }
 
-    void DHCP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length)
+    __no_sanitize("alignment") void DHCP::OnUDPPacketReceived(NetworkUDP::Socket *Socket, uint8_t *Data, size_t Length)
     {
         UNUSED(Socket);
         UNUSED(Length);

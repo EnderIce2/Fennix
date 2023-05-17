@@ -247,7 +247,7 @@ void TestMemoryAllocation()
     assert(InvMlc == nullptr);
     kfree(InvMlc);
 
-    debug("Memory Test Complete\n");
+    debug("Memory Test Complete");
 }
 
 #endif // DEBUG

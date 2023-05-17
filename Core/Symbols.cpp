@@ -49,6 +49,10 @@ namespace SymbolResolver
 
     __no_sanitize("alignment") void Symbols::AddBySymbolInfo(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections)
     {
+#ifdef a32
+        fixme("Function not working on 32-bit");
+        return;
+#endif
         if (this->TotalEntries >= 0x10000)
         {
             error("Symbol table is full");

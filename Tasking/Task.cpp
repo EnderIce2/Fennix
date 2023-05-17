@@ -347,15 +347,15 @@ namespace Tasking
         NextTID--;
     }
 
-    TCB *Task::CreateThread(PCB *Parent,
-                            IP EntryPoint,
-                            const char **argv,
-                            const char **envp,
-                            const std::vector<AuxiliaryVector> &auxv,
-                            IPOffset Offset,
-                            TaskArchitecture Architecture,
-                            TaskCompatibility Compatibility,
-                            bool ThreadNotReady)
+    __no_sanitize("undefined") TCB *Task::CreateThread(PCB *Parent,
+                                                         IP EntryPoint,
+                                                         const char **argv,
+                                                         const char **envp,
+                                                         const std::vector<AuxiliaryVector> &auxv,
+                                                         IPOffset Offset,
+                                                         TaskArchitecture Architecture,
+                                                         TaskCompatibility Compatibility,
+                                                         bool ThreadNotReady)
     {
         SmartLock(TaskingLock);
         TCB *Thread = new TCB;

@@ -262,21 +262,31 @@ namespace CPU
 
         typedef struct TrapFrame
         {
-            uint32_t ebp; // Base Pointer (meant for stack frames)
+            // uint32_t ebp; // Base Pointer (meant for stack frames)
+            // uint32_t edi; // Destination index for string operations
+            // uint32_t esi; // Source index for string operations
+            // uint32_t edx; // Data (commonly extends the A register)
+            // uint32_t ecx; // Counter
+            // uint32_t ebx; // Base
+            // uint32_t eax; // Accumulator
+
             uint32_t edi; // Destination index for string operations
             uint32_t esi; // Source index for string operations
+            uint32_t ebp; // Base Pointer (meant for stack frames)
+            uint32_t esp; // Stack Pointer
+            uint32_t ebx; // Base
             uint32_t edx; // Data (commonly extends the A register)
             uint32_t ecx; // Counter
-            uint32_t ebx; // Base
             uint32_t eax; // Accumulator
 
             uint32_t InterruptNumber; // Interrupt Number
             uint32_t ErrorCode;       // Error code
-            uint32_t eip;             // Instruction Pointer
-            uint32_t cs;              // Code Segment
-            EFLAGS eflags;            // Register Flags
-            uint32_t esp;             // Stack Pointer
-            uint32_t ss;              // Stack Segment
+
+            uint32_t eip;  // Instruction Pointer
+            uint32_t cs;   // Code Segment
+            EFLAGS eflags; // Register Flags
+            // uint32_t esp;  // Stack Pointer
+            uint32_t ss; // Stack Segment
         } TrapFrame;
 
         // ! TODO: UNTESTED!
@@ -359,7 +369,7 @@ namespace CPU
          */
         static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
-#if defined(a32)
+#ifdef a32
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
@@ -372,9 +382,36 @@ namespace CPU
 #endif
         }
 
+        SafeFunction static inline void lgdt(void *gdt)
+        {
+#ifdef a32
+            asmv("lgdt (%0)"
+                 :
+                 : "r"(gdt));
+#endif
+        }
+
+        SafeFunction static inline void lidt(void *idt)
+        {
+#ifdef a32
+            asmv("lidt (%0)"
+                 :
+                 : "r"(idt));
+#endif
+        }
+
+        SafeFunction static inline void ltr(uint16_t Segment)
+        {
+#ifdef a32
+            asmv("ltr %0"
+                 :
+                 : "r"(Segment));
+#endif
+        }
+
         SafeFunction static inline void invlpg(void *Address)
         {
-#if defined(a32)
+#ifdef a32
             asmv("invlpg (%0)"
                  :
                  : "r"(Address)
@@ -386,7 +423,7 @@ namespace CPU
 
         SafeFunction static inline void fxsave(void *FXSaveArea)
         {
-#if defined(a32)
+#ifdef a32
             if (!FXSaveArea)
                 return;
 
@@ -399,7 +436,7 @@ namespace CPU
 
         SafeFunction static inline void fxrstor(void *FXRstorArea)
         {
-#if defined(a32)
+#ifdef a32
             if (!FXRstorArea)
                 return;
 
@@ -515,11 +552,12 @@ namespace CPU
 
             uint64_t InterruptNumber; // Interrupt Number
             uint64_t ErrorCode;       // Error code
-            uint64_t rip;             // Instruction Pointer
-            uint64_t cs;              // Code Segment
-            RFLAGS rflags;            // Register Flags
-            uint64_t rsp;             // Stack Pointer
-            uint64_t ss;              // Stack Segment
+
+            uint64_t rip;  // Instruction Pointer
+            uint64_t cs;   // Code Segment
+            RFLAGS rflags; // Register Flags
+            uint64_t rsp;  // Stack Pointer
+            uint64_t ss;   // Stack Segment
         } TrapFrame;
 
         typedef union EFER
@@ -673,7 +711,7 @@ namespace CPU
 
         SafeFunction static inline void lgdt(void *gdt)
         {
-#if defined(a64)
+#ifdef a64
             asmv("lgdt (%0)"
                  :
                  : "r"(gdt));
@@ -682,7 +720,7 @@ namespace CPU
 
         SafeFunction static inline void lidt(void *idt)
         {
-#if defined(a64)
+#ifdef a64
             asmv("lidt (%0)"
                  :
                  : "r"(idt));
@@ -691,7 +729,7 @@ namespace CPU
 
         SafeFunction static inline void ltr(uint16_t Segment)
         {
-#if defined(a64)
+#ifdef a64
             asmv("ltr %0"
                  :
                  : "r"(Segment));
@@ -700,7 +738,7 @@ namespace CPU
 
         SafeFunction static inline void invlpg(void *Address)
         {
-#if defined(a64)
+#ifdef a64
             asmv("invlpg (%0)"
                  :
                  : "r"(Address)
@@ -719,7 +757,7 @@ namespace CPU
          */
         SafeFunction static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
         {
-#if defined(a64)
+#ifdef a64
             asmv("cpuid"
                  : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
                  : "a"(Function));
@@ -742,7 +780,7 @@ namespace CPU
 
         SafeFunction static inline void fxsave(void *FXSaveArea)
         {
-#if defined(a64)
+#ifdef a64
             if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
                 return;
 
@@ -755,7 +793,7 @@ namespace CPU
 
         SafeFunction static inline void fxrstor(void *FXRstorArea)
         {
-#if defined(a64)
+#ifdef a64
             if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
                 return;
 
