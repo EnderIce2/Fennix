@@ -102,7 +102,7 @@ static long long l_possibleOverruns = 0; ///< Number of possible overruns
 
 // ***********   HELPER FUNCTIONS  *******************************
 
-static void *liballoc_memset(void *s, int c, size_t n)
+__no_sanitize("undefined") static void *liballoc_memset(void *s, int c, size_t n)
 {
 	unsigned int i;
 	for (i = 0; i < n; i++)
@@ -110,7 +110,7 @@ static void *liballoc_memset(void *s, int c, size_t n)
 
 	return s;
 }
-static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
+__no_sanitize("undefined") static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
 {
 	char *cdest;
 	char *csrc;
@@ -136,7 +136,7 @@ static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
 }
 
 #if defined LIBALLOCDEBUG || defined LIBALLOCINFO
-static void liballoc_dump()
+__no_sanitize("undefined") static void liballoc_dump()
 {
 #ifdef LIBALLOCDEBUG
 	struct liballoc_major *maj = l_memRoot;
@@ -177,7 +177,7 @@ static void liballoc_dump()
 
 // ***************************************************************
 
-static struct liballoc_major *allocate_new_page(unsigned int size)
+__no_sanitize("undefined") static struct liballoc_major *allocate_new_page(unsigned int size)
 {
 	unsigned int st;
 	struct liballoc_major *maj;
@@ -228,7 +228,7 @@ static struct liballoc_major *allocate_new_page(unsigned int size)
 	return maj;
 }
 
-void *PREFIX(malloc)(size_t req_size)
+__no_sanitize("undefined") void *PREFIX(malloc)(size_t req_size)
 {
 	int startedBet = 0;
 	unsigned long long bestSize = 0;
@@ -561,7 +561,7 @@ void *PREFIX(malloc)(size_t req_size)
 	return NULL;
 }
 
-void PREFIX(free)(void *ptr)
+__no_sanitize("undefined") void PREFIX(free)(void *ptr)
 {
 	struct liballoc_minor *min;
 	struct liballoc_major *maj;
@@ -686,7 +686,7 @@ void PREFIX(free)(void *ptr)
 	liballoc_unlock(); // release the lock
 }
 
-void *PREFIX(calloc)(size_t nobj, size_t size)
+__no_sanitize("undefined") void *PREFIX(calloc)(size_t nobj, size_t size)
 {
 	int real_size;
 	void *p;
@@ -700,7 +700,7 @@ void *PREFIX(calloc)(size_t nobj, size_t size)
 	return p;
 }
 
-void *PREFIX(realloc)(void *p, size_t size)
+__no_sanitize("undefined") void *PREFIX(realloc)(void *p, size_t size)
 {
 	void *ptr;
 	struct liballoc_minor *min;
