@@ -30,9 +30,9 @@ namespace GraphicalUserInterface
 
 	struct MouseData
 	{
-		int64_t X;
-		int64_t Y;
-		int64_t Z;
+		size_t X;
+		size_t Y;
+		size_t Z;
 		bool Left;
 		bool Right;
 		bool Middle;
@@ -40,8 +40,8 @@ namespace GraphicalUserInterface
 
 	struct ScreenBitmap
 	{
-		int64_t Width;
-		int64_t Height;
+		size_t Width;
+		size_t Height;
 		size_t Size;
 		size_t Pitch;
 		uint64_t BitsPerPixel;
@@ -50,19 +50,25 @@ namespace GraphicalUserInterface
 
 	struct Rect
 	{
-		size_t Left;
-		size_t Top;
+		int64_t Left;
+		int64_t Top;
 		size_t Width;
 		size_t Height;
 
-		bool Contains(size_t X, size_t Y)
+		bool Contains(int64_t X, int64_t Y)
 		{
-			return (X >= Left && X <= Left + Width && Y >= Top && Y <= Top + Height);
+			return (X >= Left &&
+					X <= Left + (int64_t)Width &&
+					Y >= Top &&
+					Y <= Top + (int64_t)Height);
 		}
 
 		bool Contains(Rect rect)
 		{
-			return (rect.Left >= Left && rect.Left + rect.Width <= Left + Width && rect.Top >= Top && rect.Top + rect.Height <= Top + Height);
+			return (rect.Left >= Left &&
+					rect.Left + rect.Width <= Left + Width &&
+					rect.Top >= Top &&
+					rect.Top + rect.Height <= Top + Height);
 		}
 	};
 
@@ -95,8 +101,8 @@ namespace GraphicalUserInterface
 
 		struct
 		{
-			int64_t X;
-			int64_t Y;
+			size_t X;
+			size_t Y;
 			bool Left;
 			bool Right;
 			bool Middle;
@@ -104,8 +110,8 @@ namespace GraphicalUserInterface
 
 		struct
 		{
-			int64_t X;
-			int64_t Y;
+			size_t X;
+			size_t Y;
 			bool Left;
 			bool Right;
 			bool Middle;
@@ -113,8 +119,8 @@ namespace GraphicalUserInterface
 
 		struct
 		{
-			int64_t X;
-			int64_t Y;
+			size_t X;
+			size_t Y;
 			bool Left;
 			bool Right;
 			bool Middle;
@@ -178,7 +184,7 @@ namespace GraphicalUserInterface
 		virtual void OnPaintChildrenAll(Event *e) {}
 	*/
 
-	void SetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color);
+	void SetPixel(ScreenBitmap *Bitmap, size_t X, size_t Y, uint32_t Color);
 	void DrawOverBitmap(ScreenBitmap *DestinationBitmap,
 						ScreenBitmap *SourceBitmap,
 						int64_t Top,

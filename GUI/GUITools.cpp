@@ -23,7 +23,7 @@ namespace GraphicalUserInterface
 {
     Ofast inline void InlineSetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color)
     {
-        if (unlikely(X < 0 || Y < 0 || X >= Bitmap->Width || Y >= Bitmap->Height))
+        if (unlikely(X < 0 || Y < 0 || X >= (int64_t)Bitmap->Width || Y >= (int64_t)Bitmap->Height))
             return;
 
         uint32_t *Pixel = (uint32_t *)((uintptr_t)Bitmap->Data + (Y * Bitmap->Width + X) * (Bitmap->BitsPerPixel / 8));
@@ -31,7 +31,7 @@ namespace GraphicalUserInterface
         // Bitmap->Data[Y * Bitmap->Width + X] = Color;
     }
 
-    void SetPixel(ScreenBitmap *Bitmap, int64_t X, int64_t Y, uint32_t Color)
+    void SetPixel(ScreenBitmap *Bitmap, size_t X, size_t Y, uint32_t Color)
     {
         if (unlikely(!Bitmap))
             return;
@@ -50,7 +50,7 @@ namespace GraphicalUserInterface
         if (unlikely(!Bitmap->Data))
             return 0;
 
-        if (unlikely(X < 0 || Y < 0 || X >= Bitmap->Width || Y >= Bitmap->Height))
+        if (unlikely(X < 0 || Y < 0 || X >= (int64_t)Bitmap->Width || Y >= (int64_t)Bitmap->Height))
             return 0;
 
         uint32_t *Pixel = (uint32_t *)((uintptr_t)Bitmap->Data + (Y * Bitmap->Width + X) * (Bitmap->BitsPerPixel / 8));

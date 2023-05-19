@@ -279,10 +279,10 @@ namespace GraphicalUserInterface
 
 			MinimizeButtonPos.Left = TopBarPos.Left + TopBarPos.Width - 60;
 
-			if (unlikely(MouseArray[0].X >= (int64_t)(MinimizeButtonPos.Left) &&
-						 MouseArray[0].X <= (int64_t)(CloseButtonPos.Left + CloseButtonPos.Width) &&
-						 MouseArray[0].Y >= (int64_t)(CloseButtonPos.Top) &&
-						 MouseArray[0].Y <= (int64_t)(CloseButtonPos.Top + CloseButtonPos.Height)))
+			if (unlikely(MouseArray[0].X >= (size_t)MinimizeButtonPos.Left &&
+						 MouseArray[0].X <= (size_t)CloseButtonPos.Left + CloseButtonPos.Width &&
+						 MouseArray[0].Y >= (size_t)CloseButtonPos.Top &&
+						 MouseArray[0].Y <= (size_t)CloseButtonPos.Top + CloseButtonPos.Height))
 			{
 				OverlayBufferRepaint = true;
 			}
@@ -311,10 +311,10 @@ namespace GraphicalUserInterface
 
 				PutRect(this->OverlayBuffer, TopBarPos, 0x282828);
 				// Title bar buttons (close, minimize, maximize) on the right
-				if (MouseArray[0].X >= (int64_t)(CloseButtonPos.Left) &&
-					MouseArray[0].X <= (int64_t)(CloseButtonPos.Left + CloseButtonPos.Width) &&
-					MouseArray[0].Y >= (int64_t)(CloseButtonPos.Top) &&
-					MouseArray[0].Y <= (int64_t)(CloseButtonPos.Top + CloseButtonPos.Height))
+				if (MouseArray[0].X >= (size_t)CloseButtonPos.Left &&
+					MouseArray[0].X <= (size_t)CloseButtonPos.Left + CloseButtonPos.Width &&
+					MouseArray[0].Y >= (size_t)CloseButtonPos.Top &&
+					MouseArray[0].Y <= (size_t)CloseButtonPos.Top + CloseButtonPos.Height)
 				{
 					PutRect(this->OverlayBuffer, CloseButtonPos, MouseArray[0].Left ? 0xFF5500 : 0xFF0000);
 					RepaintNeeded = true;
@@ -324,10 +324,10 @@ namespace GraphicalUserInterface
 					PutRect(this->OverlayBuffer, MaximizeButtonPos, 0x282828);
 				}
 
-				if (MouseArray[0].X >= (int64_t)(MaximizeButtonPos.Left) &&
-					MouseArray[0].X <= (int64_t)(MaximizeButtonPos.Left + MaximizeButtonPos.Width) &&
-					MouseArray[0].Y >= (int64_t)(MaximizeButtonPos.Top) &&
-					MouseArray[0].Y <= (int64_t)(MaximizeButtonPos.Top + MaximizeButtonPos.Height))
+				if (MouseArray[0].X >= (size_t)MaximizeButtonPos.Left &&
+					MouseArray[0].X <= (size_t)MaximizeButtonPos.Left + MaximizeButtonPos.Width &&
+					MouseArray[0].Y >= (size_t)MaximizeButtonPos.Top &&
+					MouseArray[0].Y <= (size_t)MaximizeButtonPos.Top + MaximizeButtonPos.Height)
 				{
 					PutRect(this->OverlayBuffer, MaximizeButtonPos, MouseArray[0].Left ? 0x454545 : 0x404040);
 					RepaintNeeded = true;
@@ -337,10 +337,10 @@ namespace GraphicalUserInterface
 					PutRect(this->OverlayBuffer, MaximizeButtonPos, 0x282828);
 				}
 
-				if (MouseArray[0].X >= (int64_t)(MinimizeButtonPos.Left) &&
-					MouseArray[0].X <= (int64_t)(MinimizeButtonPos.Left + MinimizeButtonPos.Width) &&
-					MouseArray[0].Y >= (int64_t)(MinimizeButtonPos.Top) &&
-					MouseArray[0].Y <= (int64_t)(MinimizeButtonPos.Top + MinimizeButtonPos.Height))
+				if (MouseArray[0].X >= (size_t)MinimizeButtonPos.Left &&
+					MouseArray[0].X <= (size_t)MinimizeButtonPos.Left + MinimizeButtonPos.Width &&
+					MouseArray[0].Y >= (size_t)MinimizeButtonPos.Top &&
+					MouseArray[0].Y <= (size_t)MinimizeButtonPos.Top + MinimizeButtonPos.Height)
 				{
 					PutRect(this->OverlayBuffer, MinimizeButtonPos, MouseArray[0].Left ? 0x454545 : 0x404040);
 					RepaintNeeded = true;
