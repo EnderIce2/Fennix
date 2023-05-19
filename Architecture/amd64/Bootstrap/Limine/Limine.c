@@ -33,9 +33,6 @@ static volatile struct limine_entry_point_request EntryPointRequest = {
 static volatile struct limine_bootloader_info_request BootloaderInfoRequest = {
     .id = LIMINE_BOOTLOADER_INFO_REQUEST,
     .revision = 0};
-static volatile struct limine_terminal_request TerminalRequest = {
-    .id = LIMINE_TERMINAL_REQUEST,
-    .revision = 0};
 static volatile struct limine_framebuffer_request FramebufferRequest = {
     .id = LIMINE_FRAMEBUFFER_REQUEST,
     .revision = 0};
@@ -93,15 +90,6 @@ SafeFunction NIF void InitLimineAfterStack()
     struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;
     info("Bootloader: %s %s", BootloaderInfoResponse->name, BootloaderInfoResponse->version);
 
-    struct limine_terminal_response *TerminalResponse = TerminalRequest.response;
-
-    if (TerminalResponse == NULL || TerminalResponse->terminal_count < 1)
-    {
-        warn("No terminal available.");
-        inf_loop asmv("hlt");
-    }
-    TerminalResponse->write(TerminalResponse->terminals[0], "\033[37mPlease wait... ", 20);
-
     struct limine_framebuffer_response *FrameBufferResponse = FramebufferRequest.response;
     struct limine_memmap_response *MemmapResponse = MemmapRequest.response;
     struct limine_kernel_address_response *KernelAddressResponse = KernelAddressRequest.response;
@@ -114,8 +102,6 @@ SafeFunction NIF void InitLimineAfterStack()
     {
         error("No framebuffer available [%#lx;%ld]", FrameBufferResponse,
               (FrameBufferResponse == NULL) ? 0 : FrameBufferResponse->framebuffer_count);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No framebuffer available", 24);
         inf_loop asmv("hlt");
     }
 
@@ -123,16 +109,12 @@ SafeFunction NIF void InitLimineAfterStack()
     {
         error("No memory map available [%#lx;%ld]", MemmapResponse,
               (MemmapResponse == NULL) ? 0 : MemmapResponse->entry_count);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No memory map available", 23);
         inf_loop asmv("hlt");
     }
 
     if (KernelAddressResponse == NULL)
     {
         error("No kernel address available [%#lx]", KernelAddressResponse);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No kernel address available", 27);
         inf_loop asmv("hlt");
     }
 
@@ -140,8 +122,6 @@ SafeFunction NIF void InitLimineAfterStack()
     {
         error("No RSDP address available [%#lx;%#lx]", RsdpResponse,
               (RsdpResponse == NULL) ? 0 : RsdpResponse->address);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No RSDP address available", 25);
         inf_loop asmv("hlt");
     }
 
@@ -149,8 +129,6 @@ SafeFunction NIF void InitLimineAfterStack()
     {
         error("No kernel file available [%#lx;%#lx]", KernelFileResponse,
               (KernelFileResponse == NULL) ? 0 : KernelFileResponse->kernel_file);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No kernel file available", 24);
         inf_loop asmv("hlt");
     }
 
@@ -158,8 +136,6 @@ SafeFunction NIF void InitLimineAfterStack()
     {
         error("No module information available [%#lx;%ld]", ModuleResponse,
               (ModuleResponse == NULL) ? 0 : ModuleResponse->module_count);
-
-        TerminalResponse->write(TerminalResponse->terminals[0], "No module information available", 31);
         inf_loop asmv("hlt");
     }
 
@@ -176,7 +152,6 @@ SafeFunction NIF void InitLimineAfterStack()
         default:
         {
             error("Unsupported framebuffer memory model %d", framebuffer->memory_model);
-            TerminalResponse->write(TerminalResponse->terminals[0], "Unsupported framebuffer memory model", 37);
             inf_loop asmv("hlt");
         }
         }
