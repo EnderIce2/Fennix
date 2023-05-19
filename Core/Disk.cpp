@@ -87,9 +87,21 @@ namespace Disk
                         GUIDPartitionTableEntry GPTPartition = reinterpret_cast<GUIDPartitionTableEntry *>(RWBuffer)[e];
                         if (memcmp(GPTPartition.PartitionType, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", sizeof(GPTPartition.PartitionType)) != 0)
                         {
+                            debug("Partition Type: %02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                                  GPTPartition.PartitionType[0], GPTPartition.PartitionType[1], GPTPartition.PartitionType[2], GPTPartition.PartitionType[3],
+                                  GPTPartition.PartitionType[4], GPTPartition.PartitionType[5], GPTPartition.PartitionType[6], GPTPartition.PartitionType[7],
+                                  GPTPartition.PartitionType[8], GPTPartition.PartitionType[9], GPTPartition.PartitionType[10], GPTPartition.PartitionType[11],
+                                  GPTPartition.PartitionType[12], GPTPartition.PartitionType[13], GPTPartition.PartitionType[14], GPTPartition.PartitionType[15]);
+
+                            debug("Unique Partition GUID: %02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                                  GPTPartition.UniquePartitionGUID[0], GPTPartition.UniquePartitionGUID[1], GPTPartition.UniquePartitionGUID[2], GPTPartition.UniquePartitionGUID[3],
+                                  GPTPartition.UniquePartitionGUID[4], GPTPartition.UniquePartitionGUID[5], GPTPartition.UniquePartitionGUID[6], GPTPartition.UniquePartitionGUID[7],
+                                  GPTPartition.UniquePartitionGUID[8], GPTPartition.UniquePartitionGUID[9], GPTPartition.UniquePartitionGUID[10], GPTPartition.UniquePartitionGUID[11],
+                                  GPTPartition.UniquePartitionGUID[12], GPTPartition.UniquePartitionGUID[13], GPTPartition.UniquePartitionGUID[14], GPTPartition.UniquePartitionGUID[15]);
+
                             Partition partition{};
                             memset(partition.Label, '\0', sizeof(partition.Label));
-                            // Convert utf16 to utf8
+                            /* Convert utf16 to utf8 */
                             for (int i = 0; i < 36; i++)
                             {
                                 uint16_t utf16 = GPTPartition.PartitionName[i];
