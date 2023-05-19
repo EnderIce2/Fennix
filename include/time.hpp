@@ -23,180 +23,180 @@
 
 namespace Time
 {
-    struct Clock
-    {
-        int Year, Month, Day, Hour, Minute, Second;
-        uint64_t Counter;
-    };
+	struct Clock
+	{
+		int Year, Month, Day, Hour, Minute, Second;
+		size_t Counter;
+	};
 
-    Clock ReadClock();
-    Clock ConvertFromUnix(int Timestamp);
+	Clock ReadClock();
+	Clock ConvertFromUnix(int Timestamp);
 
-    enum Units
-    {
-        Femtoseconds,
-        Picoseconds,
-        Nanoseconds,
-        Microseconds,
-        Milliseconds,
-        Seconds,
-        Minutes,
-        Hours,
-        Days,
-        Months,
-        Years
-    };
+	enum Units
+	{
+		Femtoseconds,
+		Picoseconds,
+		Nanoseconds,
+		Microseconds,
+		Milliseconds,
+		Seconds,
+		Minutes,
+		Hours,
+		Days,
+		Months,
+		Years
+	};
 
-    class HighPrecisionEventTimer
-    {
-    private:
-        struct HPET
-        {
-            uintptr_t GeneralCapabilities;
-            uintptr_t Reserved0;
-            uintptr_t GeneralConfiguration;
-            uintptr_t Reserved1;
-            uintptr_t GeneralIntStatus;
-            uintptr_t Reserved2;
-            uintptr_t Reserved3[24];
-            uintptr_t MainCounterValue;
-            uintptr_t Reserved4;
-        };
+	class HighPrecisionEventTimer
+	{
+	private:
+		struct HPET
+		{
+			uintptr_t GeneralCapabilities;
+			uintptr_t Reserved0;
+			uintptr_t GeneralConfiguration;
+			uintptr_t Reserved1;
+			uintptr_t GeneralIntStatus;
+			uintptr_t Reserved2;
+			uintptr_t Reserved3[24];
+			uintptr_t MainCounterValue;
+			uintptr_t Reserved4;
+		};
 
-        uint32_t clk = 0;
-        HPET *hpet = nullptr;
-        uint64_t ClassCreationTime = 0;
+		uint32_t clk = 0;
+		HPET *hpet = nullptr;
+		size_t ClassCreationTime = 0;
 
-        inline uint64_t ConvertUnit(Units Unit)
-        {
-            switch (Unit)
-            {
-            case Femtoseconds:
-                return 1;
-            case Picoseconds:
-                return 1000;
-            case Nanoseconds:
-                return 1000000;
-            case Microseconds:
-                return 1000000000;
-            case Milliseconds:
-                return 1000000000000;
-            case Seconds:
-                return 1000000000000000;
-            case Minutes:
-                return 1000000000000000000;
-            // case Hours:
-            //     return 1000000000000000000000;
-            // case Days:
-            //     return 1000000000000000000000000;
-            // case Months:
-            //     return 1000000000000000000000000000;
-            // case Years:
-            //     return 1000000000000000000000000000000;
-            default:
-                error("Invalid time unit %d", Unit);
-                return 1;
-            }
-        }
+		inline size_t ConvertUnit(Units Unit)
+		{
+			switch (Unit)
+			{
+			case Femtoseconds:
+				return 1;
+			case Picoseconds:
+				return 1000;
+			case Nanoseconds:
+				return 1000000;
+			case Microseconds:
+				return 1000000000;
+			case Milliseconds:
+				return 1000000000000;
+			case Seconds:
+				return 1000000000000000;
+			case Minutes:
+				return 1000000000000000000;
+			// case Hours:
+			//     return 1000000000000000000000;
+			// case Days:
+			//     return 1000000000000000000000000;
+			// case Months:
+			//     return 1000000000000000000000000000;
+			// case Years:
+			//     return 1000000000000000000000000000000;
+			default:
+				error("Invalid time unit %d", Unit);
+				return 1;
+			}
+		}
 
-    public:
-        bool Sleep(uint64_t Duration, Units Unit);
-        uint64_t GetCounter();
-        uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetNanosecondsSinceClassCreation();
+	public:
+		bool Sleep(size_t Duration, Units Unit);
+		size_t GetCounter();
+		size_t CalculateTarget(size_t Target, Units Unit);
+		size_t GetNanosecondsSinceClassCreation();
 
-        HighPrecisionEventTimer(void *hpet);
-        ~HighPrecisionEventTimer();
-    };
+		HighPrecisionEventTimer(void *hpet);
+		~HighPrecisionEventTimer();
+	};
 
-    class TimeStampCounter
-    {
-    private:
-        uint64_t clk = 0;
-        uint64_t ClassCreationTime = 0;
+	class TimeStampCounter
+	{
+	private:
+		size_t clk = 0;
+		size_t ClassCreationTime = 0;
 
-        inline uint64_t ConvertUnit(Units Unit)
-        {
-            switch (Unit)
-            {
-            case Femtoseconds:
-                return 1;
-            case Picoseconds:
-                return 1000;
-            case Nanoseconds:
-                return 1000000;
-            case Microseconds:
-                return 1000000000;
-            case Milliseconds:
-                return 1000000000000;
-            case Seconds:
-                return 1000000000000000;
-            case Minutes:
-                return 1000000000000000000;
-            // case Hours:
-            //     return 1000000000000000000000;
-            // case Days:
-            //     return 1000000000000000000000000;
-            // case Months:
-            //     return 1000000000000000000000000000;
-            // case Years:
-            //     return 1000000000000000000000000000000;
-            default:
-                error("Invalid time unit %d", Unit);
-                return 1;
-            }
-        }
+		inline size_t ConvertUnit(Units Unit)
+		{
+			switch (Unit)
+			{
+			case Femtoseconds:
+				return 1;
+			case Picoseconds:
+				return 1000;
+			case Nanoseconds:
+				return 1000000;
+			case Microseconds:
+				return 1000000000;
+			case Milliseconds:
+				return 1000000000000;
+			case Seconds:
+				return 1000000000000000;
+			case Minutes:
+				return 1000000000000000000;
+			// case Hours:
+			//     return 1000000000000000000000;
+			// case Days:
+			//     return 1000000000000000000000000;
+			// case Months:
+			//     return 1000000000000000000000000000;
+			// case Years:
+			//     return 1000000000000000000000000000000;
+			default:
+				error("Invalid time unit %d", Unit);
+				return 1;
+			}
+		}
 
-    public:
-        bool Sleep(uint64_t Duration, Units Unit);
-        uint64_t GetCounter();
-        uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetNanosecondsSinceClassCreation();
+	public:
+		bool Sleep(size_t Duration, Units Unit);
+		size_t GetCounter();
+		size_t CalculateTarget(size_t Target, Units Unit);
+		size_t GetNanosecondsSinceClassCreation();
 
-        TimeStampCounter();
-        ~TimeStampCounter();
-    };
+		TimeStampCounter();
+		~TimeStampCounter();
+	};
 
-    class time
-    {
-    public:
-        enum TimeActiveTimer
-        {
-            NONE = 0b0,
-            RTC = 0b1,
-            PIT = 0b10,
-            HPET = 0b100,
-            ACPI = 0b1000,
-            APIC = 0b10000,
-            TSC = 0b100000
-        };
+	class time
+	{
+	public:
+		enum TimeActiveTimer
+		{
+			NONE = 0b0,
+			RTC = 0b1,
+			PIT = 0b10,
+			HPET = 0b100,
+			ACPI = 0b1000,
+			APIC = 0b10000,
+			TSC = 0b100000
+		};
 
-    private:
-        int SupportedTimers = 0;
-        TimeActiveTimer ActiveTimer = NONE;
+	private:
+		int SupportedTimers = 0;
+		TimeActiveTimer ActiveTimer = NONE;
 
-        HighPrecisionEventTimer *hpet;
-        TimeStampCounter *tsc;
+		HighPrecisionEventTimer *hpet;
+		TimeStampCounter *tsc;
 
-    public:
-        int GetSupportedTimers() { return SupportedTimers; }
-        TimeActiveTimer GetActiveTimer() { return ActiveTimer; }
-        bool ChangeActiveTimer(TimeActiveTimer Timer)
-        {
-            if (!(SupportedTimers & Timer))
-                return false;
-            ActiveTimer = Timer;
-            return true;
-        }
+	public:
+		int GetSupportedTimers() { return SupportedTimers; }
+		TimeActiveTimer GetActiveTimer() { return ActiveTimer; }
+		bool ChangeActiveTimer(TimeActiveTimer Timer)
+		{
+			if (!(SupportedTimers & Timer))
+				return false;
+			ActiveTimer = Timer;
+			return true;
+		}
 
-        bool Sleep(uint64_t Duration, Units Unit);
-        uint64_t GetCounter();
-        uint64_t CalculateTarget(uint64_t Target, Units Unit);
-        uint64_t GetNanosecondsSinceClassCreation();
-        void FindTimers(void *acpi);
-        time();
-        ~time();
-    };
+		bool Sleep(size_t Duration, Units Unit);
+		size_t GetCounter();
+		size_t CalculateTarget(size_t Target, Units Unit);
+		size_t GetNanosecondsSinceClassCreation();
+		void FindTimers(void *acpi);
+		time();
+		~time();
+	};
 }
  
 #endif // !__FENNIX_KERNEL_TIME_H__

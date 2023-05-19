@@ -20,321 +20,317 @@
 #include <memory.hpp>
 #include <ints.hpp>
 #include <task.hpp>
-#include <lock.hpp>
 #include <printf.h>
 #include <cwalk.h>
 #include <md5.h>
 
+#include "../../Drivers/drv.hpp"
 #include "../../kernel.h"
 #include "../../DAPI.hpp"
 #include "../../Fex.hpp"
 #include "api.hpp"
 
-NewLock(DriverInitLock);
-NewLock(DriverInterruptLock);
-
 namespace Driver
 {
-    void Driver::Panic()
-    {
-#ifdef DEBUG
-        size_t DriversNum = Drivers.size();
-        debug("%ld drivers loaded, [DUIDs: %ld]", DriversNum, DriverUIDs);
-        debug("driver size %ld", DriversNum);
-#endif
+	void Driver::Panic()
+	{
+		debug("%ld drivers loaded, [DriverUIDs: %ld]", Drivers.size(), DriverUIDs - 1);
 
-        foreach (auto drv in Drivers)
-        {
-            KernelCallback callback{};
-            callback.Reason = StopReason;
-            DriverManager->IOCB(drv.DriverUID, &callback);
+		foreach (auto Drv in Drivers)
+		{
+			KernelCallback callback{};
+			callback.Reason = StopReason;
+			DriverManager->IOCB(Drv.DriverUID, &callback);
 
-            for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
-            {
-                if (!drv.InterruptHook[j])
-                    continue;
-                drv.InterruptHook[j]->Disable();
-                debug("Interrupt hook %#lx disabled", drv.InterruptHook[j]);
-            }
-        }
-    }
+			for (size_t j = 0; j < sizeof(Drv.InterruptHook) / sizeof(Drv.InterruptHook[0]); j++)
+			{
+				if (!Drv.InterruptHook[j])
+					continue;
 
-    void Driver::UnloadAllDrivers()
-    {
-#ifdef DEBUG
-        size_t DriversNum = Drivers.size();
-        debug("%ld drivers loaded, [DUIDs: %ld]", DriversNum, DriverUIDs);
-        debug("driver size %ld", DriversNum);
-#endif
+				Drv.InterruptHook[j]->Disable();
+				debug("Interrupt hook %#lx disabled", Drv.InterruptHook[j]);
+			}
+		}
+	}
 
-        foreach (auto drv in Drivers)
-        {
-            KernelCallback callback{};
-            callback.Reason = StopReason;
-            debug("Stopping & unloading driver %ld [%#lx]", drv.DriverUID, drv.Address);
-            DriverManager->IOCB(drv.DriverUID, &callback);
+	void Driver::UnloadAllDrivers()
+	{
+		debug("%ld drivers loaded, [DriverUIDs: %ld]", Drivers.size(), DriverUIDs - 1);
 
-            for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
-            {
-                if (!drv.InterruptHook[j])
-                    continue;
-                debug("Interrupt hook %#lx", drv.InterruptHook[j]);
-                delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
-            }
-            if (drv.MemTrk)
-                delete drv.MemTrk, drv.MemTrk = nullptr;
-        }
-        Drivers.clear();
-    }
+		foreach (auto Drv in Drivers)
+		{
+			KernelCallback callback{};
+			callback.Reason = StopReason;
+			debug("Stopping & unloading driver %ld [%#lx]", Drv.DriverUID, Drv.Address);
+			DriverManager->IOCB(Drv.DriverUID, &callback);
 
-    bool Driver::UnloadDriver(unsigned long DUID)
-    {
-        debug("Searching for driver %ld", DUID);
+			for (size_t j = 0; j < sizeof(Drv.InterruptHook) / sizeof(Drv.InterruptHook[0]); j++)
+			{
+				if (!Drv.InterruptHook[j])
+					continue;
 
-        foreach (auto drv in Drivers)
-        {
-            if (drv.DriverUID == DUID)
-            {
-                KernelCallback callback{};
-                callback.Reason = StopReason;
-                debug("Stopping and unloading driver %ld [%#lx]", drv.DriverUID, drv.Address);
-                this->IOCB(drv.DriverUID, &callback);
+				debug("Interrupt hook %#lx", Drv.InterruptHook[j]);
+				delete Drv.InterruptHook[j], Drv.InterruptHook[j] = nullptr;
+			}
 
-                for (size_t j = 0; j < sizeof(drv.InterruptHook) / sizeof(drv.InterruptHook[0]); j++)
-                {
-                    if (!drv.InterruptHook[j])
-                        continue;
-                    debug("Interrupt hook %#lx", drv.InterruptHook[j]);
-                    delete drv.InterruptHook[j], drv.InterruptHook[j] = nullptr;
-                }
-                delete drv.MemTrk, drv.MemTrk = nullptr;
-                Drivers.remove(drv);
-                return true;
-            }
-        }
-        return false;
-    }
+			if (Drv.MemTrk)
+				delete Drv.MemTrk, Drv.MemTrk = nullptr;
+		}
+		Drivers.clear();
+	}
 
-    int Driver::IOCB(unsigned long DUID, void *KCB)
-    {
-        foreach (auto Drv in Drivers)
-        {
-            if (Drv.DriverUID == DUID)
-            {
-                FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)Drv.Address + EXTENDED_SECTION_ADDRESS);
-                int ret = ((int (*)(void *))((uintptr_t)DrvExtHdr->Driver.Callback + (uintptr_t)Drv.Address))(KCB);
-                __sync;
-                return ret;
-            }
-        }
-        return -1;
-    }
+	bool Driver::UnloadDriver(unsigned long DUID)
+	{
+		debug("Searching for driver %ld", DUID);
 
-    DriverCode Driver::CallDriverEntryPoint(void *fex, void *KAPIAddress)
-    {
-        memcpy(KAPIAddress, &KernelAPITemplate, sizeof(KernelAPI));
+		foreach (auto Drv in Drivers)
+		{
+			if (Drv.DriverUID != DUID)
+				continue;
 
-        ((KernelAPI *)KAPIAddress)->Info.Offset = (unsigned long)fex;
-        ((KernelAPI *)KAPIAddress)->Info.DriverUID = DriverUIDs++;
-        ((KernelAPI *)KAPIAddress)->Info.KernelDebug = DebuggerIsAttached;
+			KernelCallback callback{};
+			callback.Reason = StopReason;
+			debug("Stopping & unloading driver %ld [%#lx]", Drv.DriverUID, Drv.Address);
+			this->IOCB(Drv.DriverUID, &callback);
 
-#ifdef DEBUG
-        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
-        debug("DRIVER: %s HAS DRIVER ID %ld", fexExtended->Driver.Name, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
-#endif
+			for (size_t j = 0; j < sizeof(Drv.InterruptHook) / sizeof(Drv.InterruptHook[0]); j++)
+			{
+				if (!Drv.InterruptHook[j])
+					continue;
 
-        debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, ((KernelAPI *)KAPIAddress)->Info.DriverUID);
-        int ret = ((int (*)(KernelAPI *))((uintptr_t)((Fex *)fex)->EntryPoint + (uintptr_t)fex))(((KernelAPI *)KAPIAddress));
+				debug("Interrupt hook %#lx", Drv.InterruptHook[j]);
+				delete Drv.InterruptHook[j], Drv.InterruptHook[j] = nullptr;
+			}
 
-        if (DriverReturnCode::OK != ret)
-            return DriverCode::DRIVER_RETURNED_ERROR;
-        return DriverCode::OK;
-    }
+			if (Drv.MemTrk)
+				delete Drv.MemTrk, Drv.MemTrk = nullptr;
 
-    DriverCode Driver::LoadDriver(uintptr_t DriverAddress, uintptr_t Size)
-    {
-        Fex *DrvHdr = (Fex *)DriverAddress;
-        if (DrvHdr->Magic[0] != 'F' || DrvHdr->Magic[1] != 'E' || DrvHdr->Magic[2] != 'X' || DrvHdr->Magic[3] != '\0')
-        {
-            if (Size > 0x1000)
-            {
-                Fex *ElfDrvHdr = (Fex *)(DriverAddress + 0x1000);
-                if (ElfDrvHdr->Magic[0] != 'F' || ElfDrvHdr->Magic[1] != 'E' || ElfDrvHdr->Magic[2] != 'X' || ElfDrvHdr->Magic[3] != '\0')
-                    return DriverCode::INVALID_FEX_HEADER;
-                else
-                {
-                    debug("Fex Magic: \"%s\"; Type: %d; OS: %d; EntryPoint: %#lx", ElfDrvHdr->Magic, ElfDrvHdr->Type, ElfDrvHdr->OS, ElfDrvHdr->EntryPoint);
+			Drivers.remove(Drv);
+			return true;
+		}
+		return false;
+	}
 
-                    if (ElfDrvHdr->Type == FexFormatType::FexFormatType_Driver)
-                    {
-                        FexExtended *ElfDrvExtHdr = (FexExtended *)((uintptr_t)ElfDrvHdr + EXTENDED_SECTION_ADDRESS);
-                        debug("Name: \"%s\"; Type: %d; Callback: %#lx", ElfDrvExtHdr->Driver.Name, ElfDrvExtHdr->Driver.Type, ElfDrvExtHdr->Driver.Callback);
+	int Driver::IOCB(unsigned long DUID, void *KCB)
+	{
+		foreach (auto Drv in Drivers)
+		{
+			if (Drv.DriverUID != DUID)
+				continue;
 
-                        if (ElfDrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
-                            return this->DriverLoadBindPCI(ElfDrvExtHdr, DriverAddress, Size, true);
-                        else if (ElfDrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INTERRUPT)
-                            return this->DriverLoadBindInterrupt(ElfDrvExtHdr, DriverAddress, Size, true);
-                        else if (ElfDrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PROCESS)
-                            return this->DriverLoadBindProcess(ElfDrvExtHdr, DriverAddress, Size, true);
-                        else if (ElfDrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INPUT)
-                            return this->DriverLoadBindInput(ElfDrvExtHdr, DriverAddress, Size, true);
-                        else
-                            error("Unknown driver bind type: %d", ElfDrvExtHdr->Driver.Bind.Type);
-                    }
-                    else
-                        return DriverCode::NOT_DRIVER;
-                }
-            }
-            else
-                return DriverCode::INVALID_FEX_HEADER;
-        }
-        debug("Fex Magic: \"%s\"; Type: %d; OS: %d; EntryPoint: %#lx", DrvHdr->Magic, DrvHdr->Type, DrvHdr->OS, DrvHdr->EntryPoint);
+			FexExtended *fexE = (FexExtended *)Drv.ExtendedHeaderAddress;
+			return ((int (*)(void *))((uintptr_t)fexE->Driver.Callback + (uintptr_t)Drv.Address))(KCB);
+		}
+		return -1;
+	}
 
-        if (DrvHdr->Type == FexFormatType::FexFormatType_Driver)
-        {
-            FexExtended *DrvExtHdr = (FexExtended *)((uintptr_t)DrvHdr + EXTENDED_SECTION_ADDRESS);
-            debug("Name: \"%s\"; Type: %d; Callback: %#lx", DrvExtHdr->Driver.Name, DrvExtHdr->Driver.Type, DrvExtHdr->Driver.Callback);
+	DriverCode Driver::CallDriverEntryPoint(void *fex, bool BuiltIn)
+	{
+		DriverCode ret{};
+		KernelAPI DriverKAPI = KernelAPITemplate;
 
-            if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PCI)
-                return this->DriverLoadBindPCI(DrvExtHdr, DriverAddress, Size);
-            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INTERRUPT)
-                return this->DriverLoadBindInterrupt(DrvExtHdr, DriverAddress, Size);
-            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_PROCESS)
-                return this->DriverLoadBindProcess(DrvExtHdr, DriverAddress, Size);
-            else if (DrvExtHdr->Driver.Bind.Type == DriverBindType::BIND_INPUT)
-                return this->DriverLoadBindInput(DrvExtHdr, DriverAddress, Size);
-            else
-                error("Unknown driver bind type: %d", DrvExtHdr->Driver.Bind.Type);
-        }
-        else
-            return DriverCode::NOT_DRIVER;
-        return DriverCode::ERROR;
-    }
+		DriverKAPI.Info.DriverUID = DriverUIDs++;
+		DriverKAPI.Info.KernelDebug = DebuggerIsAttached;
 
-    Driver::Driver()
-    {
-        SmartCriticalSection(DriverInitLock);
+		debug("Calling driver entry point ( %#lx %ld )", (unsigned long)fex, DriverKAPI.Info.DriverUID);
 
-        std::string DriverConfigFile = Config.DriverDirectory;
-        DriverConfigFile << "/config.ini";
-        fixme("Loading driver config file: %s", DriverConfigFile.c_str());
+		if (!BuiltIn)
+		{
+			DriverKAPI.Info.Offset = (unsigned long)fex;
 
-        VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
-        if (DriverDirectory.IsOK())
-        {
-            foreach (auto driver in DriverDirectory.node->Children)
-                if (driver->Flags == VirtualFileSystem::NodeFlags::FILE)
-                    if (cwk_path_has_extension(driver->Name))
-                    {
-                        const char *extension;
-                        size_t extension_length;
-                        cwk_path_get_extension(driver->Name, &extension, &extension_length);
-                        debug("Driver: %s; Extension: %s", driver->Name, extension);
-                        if (strcmp(extension, ".fex") == 0 || strcmp(extension, ".elf") == 0)
-                        {
-                            uintptr_t ret = this->LoadDriver(driver->Address, driver->Length);
-                            char RetString[128];
-                            if (ret == DriverCode::OK)
-                                strncpy(RetString, "\e058C19OK", 10);
-                            else if (ret == DriverCode::NOT_AVAILABLE)
-                                strncpy(RetString, "\eFF7900NOT AVAILABLE", 21);
-                            else
-                                sprintf(RetString, "\eE85230FAILED (%#lx)", ret);
-                            KPrint("%s %s", driver->Name, RetString);
-                        }
-                    }
-        }
-        else
-            KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
-        vfs->Close(DriverDirectory);
-    }
+			debug("DRIVER: %s HAS DRIVER ID %ld",
+				  ((FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS))->Driver.Name,
+				  DriverKAPI.Info.DriverUID);
+			ret = ((DriverCode(*)(KernelAPI *))((uintptr_t)((Fex *)fex)->EntryPoint + (uintptr_t)fex))(((KernelAPI *)&DriverKAPI));
+		}
+		else
+		{
+			debug("DRIVER: BUILTIN HAS DRIVER ID %ld", DriverKAPI.Info.DriverUID);
+			ret = ((DriverCode(*)(KernelAPI *))((uintptr_t)fex))(((KernelAPI *)&DriverKAPI));
+		}
 
-    Driver::~Driver()
-    {
-        debug("Destructor called");
-        this->UnloadAllDrivers();
-    }
+		if (DriverCode::OK != ret)
+		{
+			DriverUIDs--;
+			return ret;
+		}
+		return DriverCode::OK;
+	}
+
+	DriverCode Driver::LoadDriver(uintptr_t DriverAddress, uintptr_t Size)
+	{
+		Fex *DrvHdr = (Fex *)DriverAddress;
+		if (DrvHdr->Magic[0] != 'F' || DrvHdr->Magic[1] != 'E' || DrvHdr->Magic[2] != 'X' || DrvHdr->Magic[3] != '\0')
+			return DriverCode::INVALID_FEX_HEADER;
+
+		debug("Fex Magic: \"%s\"; Type: %d; OS: %d; EntryPoint: %#lx", DrvHdr->Magic, DrvHdr->Type, DrvHdr->OS, DrvHdr->EntryPoint);
+
+		if (DrvHdr->Type != FexFormatType::FexFormatType_Driver)
+			return DriverCode::NOT_DRIVER;
+
+		FexExtended *fexE = (FexExtended *)((uintptr_t)DrvHdr + EXTENDED_SECTION_ADDRESS);
+		debug("Name: \"%s\"; Type: %d; Callback: %#lx", fexE->Driver.Name, fexE->Driver.Type, fexE->Driver.Callback);
+
+		switch (fexE->Driver.Bind.Type)
+		{
+		case DriverBindType::BIND_PCI:
+			return this->DriverLoadBindPCI(DriverAddress, Size);
+		case DriverBindType::BIND_INTERRUPT:
+			return this->DriverLoadBindInterrupt(DriverAddress, Size);
+		case DriverBindType::BIND_PROCESS:
+			return this->DriverLoadBindProcess(DriverAddress, Size);
+		case DriverBindType::BIND_INPUT:
+			return this->DriverLoadBindInput(DriverAddress, Size);
+		default:
+		{
+			error("Unknown driver bind type: %d", fexE->Driver.Bind.Type);
+			return DriverCode::UNKNOWN_DRIVER_BIND_TYPE;
+		}
+		}
+	}
+
+	void Driver::LoadDrivers()
+	{
+		SmartCriticalSection(DriverInitLock);
+
+		std::string DriverConfigFile = Config.DriverDirectory;
+		DriverConfigFile << "/config.ini";
+		fixme("Loading driver config file: %s", DriverConfigFile.c_str());
+
+		VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
+		if (!DriverDirectory.IsOK())
+		{
+			KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
+			vfs->Close(DriverDirectory);
+		}
+
+		debug("Loading built-in drivers");
+		StartAHCI();
+		StartVMwareMouse();
+		StartPS2Mouse();
+		StartATA();
+		StartAC97();
+		StartRTL8139();
+		StartPCNET();
+		StartGigabit();
+
+		debug("Loading drivers from %s", Config.DriverDirectory);
+		foreach (auto DrvFile in DriverDirectory.node->Children)
+		{
+			if (DrvFile->Flags != VirtualFileSystem::NodeFlags::FILE)
+				continue;
+
+			if (cwk_path_has_extension(DrvFile->Name))
+			{
+				const char *extension;
+				size_t extension_length;
+				cwk_path_get_extension(DrvFile->Name, &extension, &extension_length);
+				debug("File: %s; Extension: %s", DrvFile->Name, extension);
+				if (strcmp(extension, ".fex") == 0)
+				{
+					uintptr_t ret = this->LoadDriver(DrvFile->Address, DrvFile->Length);
+					std::string RetString;
+					if (ret == DriverCode::OK)
+						RetString << "\e058C19OK";
+					else if (ret == DriverCode::NOT_AVAILABLE)
+						RetString << "\eFF7900NOT AVAILABLE";
+					else
+						RetString << "\eE85230FAILED";
+					KPrint("%s %s %#lx", DrvFile->Name, RetString.c_str(), ret);
+				}
+			}
+		}
+		vfs->Close(DriverDirectory);
+	}
+
+	Driver::Driver() {}
+
+	Driver::~Driver()
+	{
+		debug("Destructor called");
+		this->UnloadAllDrivers();
+	}
 
 #if defined(a64)
-    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+	SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
 #elif defined(a32)
-    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
+	SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
 #elif defined(aa64)
-    SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
+	SafeFunction void DriverInterruptHook::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
 #endif
-    {
-        SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
-        if (!this->Enabled)
-        {
-            debug("Interrupt hook is not enabled");
-            return;
-        }
+	{
+		SmartLock(DriverInterruptLock); /* Lock in case of multiple interrupts firing at the same time */
+		if (!this->Enabled)
+		{
+			debug("Interrupt hook is not enabled");
+			return;
+		}
 
-        if (!Handle.InterruptCallback)
-        {
+		if (!Handle.InterruptCallback)
+		{
 #if defined(a86)
-            uint64_t IntNum = Frame->InterruptNumber - 32;
+			uint64_t IntNum = Frame->InterruptNumber - 32;
 #elif defined(aa64)
-            uint64_t IntNum = Frame->InterruptNumber;
+			uint64_t IntNum = Frame->InterruptNumber;
 #endif
-            warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle.DriverUID);
-            return;
-        }
-        CPURegisters regs;
+			warn("Interrupt callback for %ld is not set for driver %ld!", IntNum, Handle.DriverUID);
+			return;
+		}
+		CPURegisters regs;
 #if defined(a64)
-        regs.r15 = Frame->r15;
-        regs.r14 = Frame->r14;
-        regs.r13 = Frame->r13;
-        regs.r12 = Frame->r12;
-        regs.r11 = Frame->r11;
-        regs.r10 = Frame->r10;
-        regs.r9 = Frame->r9;
-        regs.r8 = Frame->r8;
+		regs.r15 = Frame->r15;
+		regs.r14 = Frame->r14;
+		regs.r13 = Frame->r13;
+		regs.r12 = Frame->r12;
+		regs.r11 = Frame->r11;
+		regs.r10 = Frame->r10;
+		regs.r9 = Frame->r9;
+		regs.r8 = Frame->r8;
 
-        regs.rbp = Frame->rbp;
-        regs.rdi = Frame->rdi;
-        regs.rsi = Frame->rsi;
-        regs.rdx = Frame->rdx;
-        regs.rcx = Frame->rcx;
-        regs.rbx = Frame->rbx;
-        regs.rax = Frame->rax;
+		regs.rbp = Frame->rbp;
+		regs.rdi = Frame->rdi;
+		regs.rsi = Frame->rsi;
+		regs.rdx = Frame->rdx;
+		regs.rcx = Frame->rcx;
+		regs.rbx = Frame->rbx;
+		regs.rax = Frame->rax;
 
-        regs.InterruptNumber = Frame->InterruptNumber;
-        regs.ErrorCode = Frame->ErrorCode;
-        regs.rip = Frame->rip;
-        regs.cs = Frame->cs;
-        regs.rflags = Frame->rflags.raw;
-        regs.rsp = Frame->rsp;
-        regs.ss = Frame->ss;
+		regs.InterruptNumber = Frame->InterruptNumber;
+		regs.ErrorCode = Frame->ErrorCode;
+		regs.rip = Frame->rip;
+		regs.cs = Frame->cs;
+		regs.rflags = Frame->rflags.raw;
+		regs.rsp = Frame->rsp;
+		regs.ss = Frame->ss;
 #elif defined(a32)
-        regs.ebp = Frame->ebp;
-        regs.edi = Frame->edi;
-        regs.esi = Frame->esi;
-        regs.edx = Frame->edx;
-        regs.ecx = Frame->ecx;
-        regs.ebx = Frame->ebx;
-        regs.eax = Frame->eax;
+		regs.ebp = Frame->ebp;
+		regs.edi = Frame->edi;
+		regs.esi = Frame->esi;
+		regs.edx = Frame->edx;
+		regs.ecx = Frame->ecx;
+		regs.ebx = Frame->ebx;
+		regs.eax = Frame->eax;
 
-        regs.InterruptNumber = Frame->InterruptNumber;
-        regs.ErrorCode = Frame->ErrorCode;
-        regs.eip = Frame->eip;
-        regs.cs = Frame->cs;
-        regs.eflags = Frame->eflags.raw;
-        regs.esp = Frame->esp;
-        regs.ss = Frame->ss;
+		regs.InterruptNumber = Frame->InterruptNumber;
+		regs.ErrorCode = Frame->ErrorCode;
+		regs.eip = Frame->eip;
+		regs.cs = Frame->cs;
+		regs.eflags = Frame->eflags.raw;
+		regs.esp = Frame->esp;
+		regs.ss = Frame->ss;
 #elif defined(aa64)
 #endif
-        ((int (*)(void *))(Handle.InterruptCallback))(&regs);
-        UNUSED(Frame);
-    }
+		((int (*)(void *))(Handle.InterruptCallback))(&regs);
+		UNUSED(Frame);
+	}
 
-    DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile Handle) : Interrupts::Handler(Interrupt)
-    {
-        this->Handle = Handle;
+	DriverInterruptHook::DriverInterruptHook(int Interrupt, DriverFile Handle) : Interrupts::Handler(Interrupt)
+	{
+		this->Handle = Handle;
 #if defined(a86)
-        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
+		trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #elif defined(aa64)
-        trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
+		trace("Interrupt %d hooked to driver %ld", Interrupt, Handle.DriverUID);
 #endif
-    }
+	}
 }

@@ -22,24 +22,24 @@
 
 enum DebugLevel
 {
-    DebugLevelNone = 0,
-    DebugLevelError = 1,
-    DebugLevelWarning = 2,
-    DebugLevelInfo = 3,
-    DebugLevelDebug = 4,
-    DebugLevelTrace = 5,
-    DebugLevelFixme = 6,
-    DebugLevelUbsan = 7
+	DebugLevelNone = 0,
+	DebugLevelError = 1,
+	DebugLevelWarning = 2,
+	DebugLevelInfo = 3,
+	DebugLevelDebug = 4,
+	DebugLevelTrace = 5,
+	DebugLevelFixme = 6,
+	DebugLevelUbsan = 7
 };
 
 #ifdef __cplusplus
 
 namespace SysDbg
 {
-    void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
-    void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
-    void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
-    void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
+	void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
+	void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
+	void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
+	void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...);
 }
 
 #define error(Format, ...) SysDbg::WriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
@@ -102,5 +102,7 @@ void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, co
 #define locked_fixme(Format, ...) SysDbgLockedWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 
 #endif // __cplusplus
+
+#define stub fixme("stub")
 
 #endif // !__FENNIX_KERNEL_DEBUGGER_H__

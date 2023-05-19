@@ -15,26 +15,24 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../../api.hpp"
+#ifndef __FENNIX_KERNEL_AMD_PCNET_H__
+#define __FENNIX_KERNEL_AMD_PCNET_H__
 
-#include <ints.hpp>
-#include <memory.hpp>
-#include <task.hpp>
-#include <lock.hpp>
-#include <printf.h>
-#include <cwalk.h>
-#include <md5.h>
+#include <types.h>
+#include "../../DAPI.hpp"
 
-#include "../../../../kernel.h"
-#include "../../../../DAPI.hpp"
-#include "../../../../Fex.hpp"
-
-namespace Driver
+namespace PCNET
 {
-    DriverCode Driver::BindProcessFileSystem(Memory::MemMgr *mem, void *fex)
-    {
-        UNUSED(mem);
-        UNUSED(fex);
-        return DriverCode::NOT_IMPLEMENTED;
-    }
+	struct BARData
+	{
+		uint8_t Type;
+		uint16_t IOBase;
+		uint64_t MemoryBase;
+	};
+
+	int DriverEntry(void *);
+	int CallbackHandler(KernelCallback *);
+	int InterruptCallback(CPURegisters *);
 }
+
+#endif // !__FENNIX_KERNEL_AMD_PCNET_H__

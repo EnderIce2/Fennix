@@ -31,51 +31,51 @@
 
 namespace Time
 {
-    bool TimeStampCounter::Sleep(uint64_t Duration, Units Unit)
-    {
+	bool TimeStampCounter::Sleep(size_t Duration, Units Unit)
+	{
 #if defined(a86)
-        uint64_t Target = this->GetCounter() + (Duration * ConvertUnit(Unit)) / this->clk;
-        while (this->GetCounter() < Target)
-            CPU::Pause();
-        return true;
+		size_t Target = this->GetCounter() + (Duration * ConvertUnit(Unit)) / this->clk;
+		while (this->GetCounter() < Target)
+			CPU::Pause();
+		return true;
 #endif
-    }
+	}
 
-    uint64_t TimeStampCounter::GetCounter()
-    {
+	size_t TimeStampCounter::GetCounter()
+	{
 #if defined(a86)
-        return CPU::Counter();
+		return CPU::Counter();
 #endif
-    }
+	}
 
-    uint64_t TimeStampCounter::CalculateTarget(uint64_t Target, Units Unit)
-    {
+	size_t TimeStampCounter::CalculateTarget(size_t Target, Units Unit)
+	{
 #if defined(a86)
-        return this->GetCounter() + (Target * ConvertUnit(Unit)) / this->clk;
+		return this->GetCounter() + (Target * ConvertUnit(Unit)) / this->clk;
 #endif
-    }
+	}
 
-    uint64_t TimeStampCounter::GetNanosecondsSinceClassCreation()
-    {
+	size_t TimeStampCounter::GetNanosecondsSinceClassCreation()
+	{
 #if defined(a86)
-        return (this->GetCounter() - this->ClassCreationTime) / this->clk;
+		return (this->GetCounter() - this->ClassCreationTime) / this->clk;
 #endif
-    }
+	}
 
-    TimeStampCounter::TimeStampCounter()
-    {
+	TimeStampCounter::TimeStampCounter()
+	{
 #if defined(a86)
-        fixme(""); // FIXME: This is not a good way to measure the clock speed
-        uint64_t Start = CPU::Counter();
-        TimeManager->Sleep(1, Units::Milliseconds);
-        uint64_t End = CPU::Counter();
+		fixme(""); // FIXME: This is not a good way to measure the clock speed
+		size_t Start = CPU::Counter();
+		TimeManager->Sleep(1, Units::Milliseconds);
+		size_t End = CPU::Counter();
 
-        this->clk = End - Start;
-        this->ClassCreationTime = this->GetCounter();
+		this->clk = End - Start;
+		this->ClassCreationTime = this->GetCounter();
 #endif
-    }
+	}
 
-    TimeStampCounter::~TimeStampCounter()
-    {
-    }
+	TimeStampCounter::~TimeStampCounter()
+	{
+	}
 }

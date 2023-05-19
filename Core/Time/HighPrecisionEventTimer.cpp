@@ -32,70 +32,70 @@
 
 namespace Time
 {
-    bool HighPrecisionEventTimer::Sleep(uint64_t Duration, Units Unit)
+    bool HighPrecisionEventTimer::Sleep(size_t Duration, Units Unit)
     {
 #if defined(a64)
-        uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
-        while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
-            CPU::Pause();
-        return true;
+	size_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
+	while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
+	    CPU::Pause();
+	return true;
 #elif defined(a32)
-        uint64_t Target = mminl(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
-        while (mminl(&((HPET *)hpet)->MainCounterValue) < Target)
-            CPU::Pause();
-        return true;
+	size_t Target = mminl(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
+	while (mminl(&((HPET *)hpet)->MainCounterValue) < Target)
+	    CPU::Pause();
+	return true;
 #endif
 return false;
     }
 
-    uint64_t HighPrecisionEventTimer::GetCounter()
+    size_t HighPrecisionEventTimer::GetCounter()
     {
 #if defined(a64)
-        return mminq(&((HPET *)hpet)->MainCounterValue);
+	return mminq(&((HPET *)hpet)->MainCounterValue);
 #elif defined(a32)
-        return mminl(&((HPET *)hpet)->MainCounterValue);
+	return mminl(&((HPET *)hpet)->MainCounterValue);
 #endif
     }
 
-    uint64_t HighPrecisionEventTimer::CalculateTarget(uint64_t Target, Units Unit)
+    size_t HighPrecisionEventTimer::CalculateTarget(size_t Target, Units Unit)
     {
 #if defined(a64)
-        return mminq(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
+	return mminq(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #elif defined(a32)
-        return mminl(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
+	return mminl(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #endif
     }
 
-    uint64_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
+    size_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
     {
 #if defined(a86)
-        uint64_t Subtraction = this->GetCounter() - this->ClassCreationTime;
-        if (Subtraction <= 0 || this->clk <= 0)
-            return 0;
-        return Subtraction / (this->clk / ConvertUnit(Units::Nanoseconds));
+	size_t Subtraction = this->GetCounter() - this->ClassCreationTime;
+	if (Subtraction <= 0 || this->clk <= 0)
+	    return 0;
+	return Subtraction / (this->clk / ConvertUnit(Units::Nanoseconds));
 #endif
     }
 
     HighPrecisionEventTimer::HighPrecisionEventTimer(void *hpet)
     {
 #if defined(a86)
-        ACPI::ACPI::HPETHeader *HPET_HDR = (ACPI::ACPI::HPETHeader *)hpet;
-        Memory::Virtual().Remap((void *)HPET_HDR->Address.Address,
-                                (void *)HPET_HDR->Address.Address,
-                                Memory::PTFlag::RW | Memory::PTFlag::PCD);
-        this->hpet = (HPET *)HPET_HDR->Address.Address;
-        trace("%s timer is at address %016p", HPET_HDR->Header.OEMID, (void *)HPET_HDR->Address.Address);
-        clk = s_cst(uint32_t, (uint64_t)this->hpet->GeneralCapabilities >> 32);
+	ACPI::ACPI::HPETHeader *HPET_HDR = (ACPI::ACPI::HPETHeader *)hpet;
+	Memory::Virtual().Remap((void *)HPET_HDR->Address.Address,
+				(void *)HPET_HDR->Address.Address,
+				Memory::PTFlag::RW | Memory::PTFlag::PCD);
+	this->hpet = (HPET *)HPET_HDR->Address.Address;
+	trace("%s timer is at address %016p", HPET_HDR->Header.OEMID, (void *)HPET_HDR->Address.Address);
+	clk = s_cst(uint32_t, (uint64_t)this->hpet->GeneralCapabilities >> 32);
 #ifdef a64
-        mmoutq(&this->hpet->GeneralConfiguration, 0);
-        mmoutq(&this->hpet->MainCounterValue, 0);
-        mmoutq(&this->hpet->GeneralConfiguration, 1);
+	mmoutq(&this->hpet->GeneralConfiguration, 0);
+	mmoutq(&this->hpet->MainCounterValue, 0);
+	mmoutq(&this->hpet->GeneralConfiguration, 1);
 #else
-        mmoutl(&this->hpet->GeneralConfiguration, 0);
-        mmoutl(&this->hpet->MainCounterValue, 0);
-        mmoutl(&this->hpet->GeneralConfiguration, 1);
+	mmoutl(&this->hpet->GeneralConfiguration, 0);
+	mmoutl(&this->hpet->MainCounterValue, 0);
+	mmoutl(&this->hpet->GeneralConfiguration, 1);
 #endif
-        ClassCreationTime = this->GetCounter();
+	ClassCreationTime = this->GetCounter();
 #endif
     }
 

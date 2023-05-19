@@ -76,6 +76,7 @@ LockClass mExtTrkLock;
  * - [ ] Update SMBIOS functions to support newer versions and actually use it.
  * - [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
  * - [ ] Bootstrap should have a separate bss section + PHDR.
+ * - [ ] Reimplement the driver conflict detection.
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -207,16 +208,16 @@ VirtualFileSystem::Virtual *vfs = nullptr;
 VirtualFileSystem::Virtual *bootanim_vfs = nullptr;
 
 KernelConfig Config = {
-    .AllocatorType = Memory::MemoryAllocatorType::XallocV1,
-    .SchedulerType = 1,
-    .DriverDirectory = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
-    .InitPath = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
-    .InterruptsOnCrash = true,
-    .Cores = 0,
-    .IOAPICInterruptCore = 0,
-    .UnlockDeadLock = false,
-    .SIMD = false,
-    .BootAnimation = false,
+	.AllocatorType = Memory::MemoryAllocatorType::XallocV1,
+	.SchedulerType = 1,
+	.DriverDirectory = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
+	.InitPath = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
+	.InterruptsOnCrash = true,
+	.Cores = 0,
+	.IOAPICInterruptCore = 0,
+	.UnlockDeadLock = false,
+	.SIMD = false,
+	.BootAnimation = false,
 };
 
 extern bool EnableProfiler;
@@ -225,264 +226,264 @@ extern bool EnableProfiler;
 int PutCharBufferIndex = 0;
 EXTERNC void putchar(char c)
 {
-    if (Display)
-        Display->Print(c, PutCharBufferIndex);
-    else
-        UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
+	if (Display)
+		Display->Print(c, PutCharBufferIndex);
+	else
+		UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
 }
 
 EXTERNC void KPrint(const char *Format, ...)
 {
-    SmartLock(KernelLock);
+	SmartLock(KernelLock);
 
-    if (TimeManager)
-    {
-        uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
-        if (Nanoseconds != 0)
-        {
-            printf("\eCCCCCC[\e00AEFF%llu.%07llu\eCCCCCC] ",
-                   Nanoseconds / 10000000,
-                   Nanoseconds % 10000000);
-        }
-    }
+	if (TimeManager)
+	{
+		uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
+		if (Nanoseconds != 0)
+		{
+			printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+				   Nanoseconds / 10000000,
+				   Nanoseconds % 10000000);
+		}
+	}
 
-    va_list args;
-    va_start(args, Format);
-    vprintf(Format, args);
-    va_end(args);
+	va_list args;
+	va_start(args, Format);
+	vprintf(Format, args);
+	va_end(args);
 
-    printf("\eCCCCCC\n");
-    if (!Config.BootAnimation && Display)
-        Display->SetBuffer(0);
+	printf("\eCCCCCC\n");
+	if (!Config.BootAnimation && Display)
+		Display->SetBuffer(0);
 }
 
 EXTERNC NIF void Main()
 {
-    Display = new Video::Display(bInfo.Framebuffer[0]);
-    KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
-    KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
-    if (DebuggerIsAttached)
-        KPrint("\eFFA500Kernel debugger detected.");
+	Display = new Video::Display(bInfo.Framebuffer[0]);
+	KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
+	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
+	if (DebuggerIsAttached)
+		KPrint("\eFFA500Kernel debugger detected.");
 
-    /**************************************************************************************/
+	/**************************************************************************************/
 
-    KPrint("Initializing GDT and IDT");
-    Interrupts::Initialize(0);
+	KPrint("Initializing GDT and IDT");
+	Interrupts::Initialize(0);
 
-    KPrint("Loading Kernel Symbols");
-    KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
+	KPrint("Loading Kernel Symbols");
+	KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
-    if (KernelSymbolTable->GetTotalEntries() == 0 &&
-        bInfo.Kernel.Symbols.Num &&
-        bInfo.Kernel.Symbols.EntSize &&
-        bInfo.Kernel.Symbols.Shndx)
-        KernelSymbolTable->AddBySymbolInfo(bInfo.Kernel.Symbols.Num,
-                                           bInfo.Kernel.Symbols.EntSize,
-                                           bInfo.Kernel.Symbols.Shndx,
-                                           bInfo.Kernel.Symbols.Sections);
+	if (KernelSymbolTable->GetTotalEntries() == 0 &&
+		bInfo.Kernel.Symbols.Num &&
+		bInfo.Kernel.Symbols.EntSize &&
+		bInfo.Kernel.Symbols.Shndx)
+		KernelSymbolTable->AddBySymbolInfo(bInfo.Kernel.Symbols.Num,
+										   bInfo.Kernel.Symbols.EntSize,
+										   bInfo.Kernel.Symbols.Shndx,
+										   bInfo.Kernel.Symbols.Sections);
 
-    KPrint("Reading Kernel Parameters");
-    ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
+	KPrint("Reading Kernel Parameters");
+	ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
 
-    if (Config.BootAnimation)
-    {
-        Display->CreateBuffer(0, 0, 1);
+	if (Config.BootAnimation)
+	{
+		Display->CreateBuffer(0, 0, 1);
 
-        Display->SetDoNotScroll(true, 1);
-        Video::ScreenBuffer *buf = Display->GetBuffer(1);
-        Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
-        Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
-        PutCharBufferIndex = 1;
-        printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n", KERNEL_VERSION, GIT_COMMIT_SHORT);
-        Display->SetBuffer(1);
-        PutCharBufferIndex = 0;
-    }
+		Display->SetDoNotScroll(true, 1);
+		Video::ScreenBuffer *buf = Display->GetBuffer(1);
+		Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
+		Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
+		PutCharBufferIndex = 1;
+		printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n", KERNEL_VERSION, GIT_COMMIT_SHORT);
+		Display->SetBuffer(1);
+		PutCharBufferIndex = 0;
+	}
 
-    KPrint("Initializing CPU Features");
-    CPU::InitializeFeatures(0);
+	KPrint("Initializing CPU Features");
+	CPU::InitializeFeatures(0);
 
-    KPrint("Initializing Power Manager");
-    PowerManager = new Power::Power;
+	KPrint("Initializing Power Manager");
+	PowerManager = new Power::Power;
 
-    KPrint("Enabling Interrupts on Bootstrap Processor");
-    Interrupts::Enable(0);
+	KPrint("Enabling Interrupts on Bootstrap Processor");
+	Interrupts::Enable(0);
 
 #if defined(a64)
-    PowerManager->InitDSDT();
+	PowerManager->InitDSDT();
 #elif defined(a32)
-    // FIXME: Add ACPI support for i386
+	// FIXME: Add ACPI support for i386
 #elif defined(aa64)
 #endif
 
-    KPrint("Initializing Timers");
-    TimeManager = new Time::time;
-    TimeManager->FindTimers(PowerManager->GetACPI());
+	KPrint("Initializing Timers");
+	TimeManager = new Time::time;
+	TimeManager->FindTimers(PowerManager->GetACPI());
 
-    KPrint("Initializing PCI Manager");
-    PCIManager = new PCI::PCI;
+	KPrint("Initializing PCI Manager");
+	PCIManager = new PCI::PCI;
 
-    foreach (auto Device in PCIManager->GetDevices())
-    {
-        KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-               PCI::Descriptors::GetVendorName(Device->VendorID),
-               PCI::Descriptors::GetDeviceName(Device->VendorID, Device->DeviceID),
-               PCI::Descriptors::DeviceClasses[Device->Class],
-               PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
-               PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
-    }
+	foreach (auto Device in PCIManager->GetDevices())
+	{
+		KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
+			   PCI::Descriptors::GetVendorName(Device->VendorID),
+			   PCI::Descriptors::GetDeviceName(Device->VendorID, Device->DeviceID),
+			   PCI::Descriptors::DeviceClasses[Device->Class],
+			   PCI::Descriptors::GetSubclassName(Device->Class, Device->Subclass),
+			   PCI::Descriptors::GetProgIFName(Device->Class, Device->Subclass, Device->ProgIF));
+	}
 
-    KPrint("Initializing Bootstrap Processor Timer");
-    Interrupts::InitializeTimer(0);
+	KPrint("Initializing Bootstrap Processor Timer");
+	Interrupts::InitializeTimer(0);
 
-    KPrint("Initializing SMP");
-    SMP::Initialize(PowerManager->GetMADT());
+	KPrint("Initializing SMP");
+	SMP::Initialize(PowerManager->GetMADT());
 
-    if (SMBIOS::CheckSMBIOS())
-    {
-        SMBIOS::SMBIOSEntryPoint *smbios = SMBIOS::GetSMBIOSEntryPoint();
-        SMBIOS::SMBIOSBIOSInformation *bios = SMBIOS::GetBIOSInformation();
-        SMBIOS::SMBIOSSystemInformation *system = SMBIOS::GetSystemInformation();
-        SMBIOS::SMBIOSBaseBoardInformation *baseboard = SMBIOS::GetBaseBoardInformation();
+	if (SMBIOS::CheckSMBIOS())
+	{
+		SMBIOS::SMBIOSEntryPoint *smbios = SMBIOS::GetSMBIOSEntryPoint();
+		SMBIOS::SMBIOSBIOSInformation *bios = SMBIOS::GetBIOSInformation();
+		SMBIOS::SMBIOSSystemInformation *system = SMBIOS::GetSystemInformation();
+		SMBIOS::SMBIOSBaseBoardInformation *baseboard = SMBIOS::GetBaseBoardInformation();
 
-        debug("SMBIOS: %p", smbios);
-        debug("BIOS: %p", bios);
-        debug("System: %p", system);
-        debug("Baseboard: %p", baseboard);
+		debug("SMBIOS: %p", smbios);
+		debug("BIOS: %p", bios);
+		debug("System: %p", system);
+		debug("Baseboard: %p", baseboard);
 
-        if (smbios)
-            KPrint("SMBIOS: \eCCCCCCString:\e8888FF%.4s \eCCCCCCVersion (Major Minor):\e8888FF%d %d \eCCCCCCTable:\e8888FF%#x \eCCCCCCLength:\e8888FF%d",
-                   smbios->EntryPointString, smbios->MajorVersion, smbios->MinorVersion,
-                   smbios->TableAddress, smbios->TableLength);
-        else
-            KPrint("SMBIOS: \e8888FFSMBIOS found but not supported?");
+		if (smbios)
+			KPrint("SMBIOS: \eCCCCCCString:\e8888FF%.4s \eCCCCCCVersion (Major Minor):\e8888FF%d %d \eCCCCCCTable:\e8888FF%#x \eCCCCCCLength:\e8888FF%d",
+				   smbios->EntryPointString, smbios->MajorVersion, smbios->MinorVersion,
+				   smbios->TableAddress, smbios->TableLength);
+		else
+			KPrint("SMBIOS: \e8888FFSMBIOS found but not supported?");
 
-        if (bios)
-        {
-            const char *BIOSVendor = bios->GetString(bios->Vendor);
-            const char *BIOSVersion = bios->GetString(bios->Version);
-            const char *BIOSReleaseDate = bios->GetString(bios->ReleaseDate);
-            debug("%d %d %d", bios->Vendor, bios->Version, bios->ReleaseDate);
-            KPrint("BIOS: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-                   BIOSVendor, BIOSVersion, BIOSReleaseDate);
-        }
+		if (bios)
+		{
+			const char *BIOSVendor = bios->GetString(bios->Vendor);
+			const char *BIOSVersion = bios->GetString(bios->Version);
+			const char *BIOSReleaseDate = bios->GetString(bios->ReleaseDate);
+			debug("%d %d %d", bios->Vendor, bios->Version, bios->ReleaseDate);
+			KPrint("BIOS: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
+				   BIOSVendor, BIOSVersion, BIOSReleaseDate);
+		}
 
-        if (system)
-        {
-            const char *SystemManufacturer = system->GetString(system->Manufacturer);
-            const char *SystemProductName = system->GetString(system->ProductName);
-            const char *SystemVersion = system->GetString(system->Version);
-            const char *SystemSerialNumber = system->GetString(system->SerialNumber);
-            const char *SystemSKU = system->GetString(system->SKU);
-            const char *SystemFamily = system->GetString(system->Family);
-            debug("%d %d %d %d %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c %d %d", system->Manufacturer, system->ProductName, system->Version,
-                  system->SerialNumber,
-                  system->UUID[0], system->UUID[1], system->UUID[2], system->UUID[3],
-                  system->UUID[4], system->UUID[5], system->UUID[6], system->UUID[7],
-                  system->UUID[8], system->UUID[9], system->UUID[10], system->UUID[11],
-                  system->UUID[12], system->UUID[13], system->UUID[14], system->UUID[15],
-                  system->SKU, system->Family);
-            KPrint("System: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-                   SystemManufacturer, SystemProductName, SystemVersion, SystemSerialNumber, SystemSKU, SystemFamily);
-        }
+		if (system)
+		{
+			const char *SystemManufacturer = system->GetString(system->Manufacturer);
+			const char *SystemProductName = system->GetString(system->ProductName);
+			const char *SystemVersion = system->GetString(system->Version);
+			const char *SystemSerialNumber = system->GetString(system->SerialNumber);
+			const char *SystemSKU = system->GetString(system->SKU);
+			const char *SystemFamily = system->GetString(system->Family);
+			debug("%d %d %d %d %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c %d %d", system->Manufacturer, system->ProductName, system->Version,
+				  system->SerialNumber,
+				  system->UUID[0], system->UUID[1], system->UUID[2], system->UUID[3],
+				  system->UUID[4], system->UUID[5], system->UUID[6], system->UUID[7],
+				  system->UUID[8], system->UUID[9], system->UUID[10], system->UUID[11],
+				  system->UUID[12], system->UUID[13], system->UUID[14], system->UUID[15],
+				  system->SKU, system->Family);
+			KPrint("System: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
+				   SystemManufacturer, SystemProductName, SystemVersion, SystemSerialNumber, SystemSKU, SystemFamily);
+		}
 
-        if (baseboard)
-        {
-            const char *Manufacturer = baseboard->GetString(baseboard->Manufacturer);
-            const char *Product = baseboard->GetString(baseboard->Product);
-            const char *Version = baseboard->GetString(baseboard->Version);
-            const char *SerialNumber = baseboard->GetString(baseboard->SerialNumber);
-            debug("%d %d %d %d", baseboard->Manufacturer, baseboard->Product, baseboard->Version, baseboard->SerialNumber);
-            KPrint("Baseboard: \eCCCCCC\e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-                   Manufacturer, Product, Version, SerialNumber);
-        }
-    }
-    else
-        KPrint("SMBIOS: \eFF0000Not Found");
+		if (baseboard)
+		{
+			const char *Manufacturer = baseboard->GetString(baseboard->Manufacturer);
+			const char *Product = baseboard->GetString(baseboard->Product);
+			const char *Version = baseboard->GetString(baseboard->Version);
+			const char *SerialNumber = baseboard->GetString(baseboard->SerialNumber);
+			debug("%d %d %d %d", baseboard->Manufacturer, baseboard->Product, baseboard->Version, baseboard->SerialNumber);
+			KPrint("Baseboard: \eCCCCCC\e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
+				   Manufacturer, Product, Version, SerialNumber);
+		}
+	}
+	else
+		KPrint("SMBIOS: \eFF0000Not Found");
 
-    KPrint("Initializing Filesystem...");
-    vfs = new VirtualFileSystem::Virtual;
+	KPrint("Initializing Filesystem...");
+	vfs = new VirtualFileSystem::Virtual;
 
-    if (Config.BootAnimation)
-        bootanim_vfs = new VirtualFileSystem::Virtual;
+	if (Config.BootAnimation)
+		bootanim_vfs = new VirtualFileSystem::Virtual;
 
-    for (size_t i = 0; i < MAX_MODULES; i++)
-    {
-        if (!bInfo.Modules[i].Address)
-            continue;
+	for (size_t i = 0; i < MAX_MODULES; i++)
+	{
+		if (!bInfo.Modules[i].Address)
+			continue;
 
-        if (strcmp(bInfo.Modules[i].CommandLine, "initrd") == 0)
-        {
-            debug("Found initrd at %p", bInfo.Modules[i].Address);
-            static char initrd = 0;
-            if (!initrd++)
-                new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, vfs);
-        }
-        if (strcmp(bInfo.Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
-        {
-            debug("Found bootanim at %p", bInfo.Modules[i].Address);
-            static char bootanim = 0;
-            if (!bootanim++)
-                new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, bootanim_vfs);
-        }
-    }
+		if (strcmp(bInfo.Modules[i].CommandLine, "initrd") == 0)
+		{
+			debug("Found initrd at %p", bInfo.Modules[i].Address);
+			static char initrd = 0;
+			if (!initrd++)
+				new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, vfs);
+		}
+		if (strcmp(bInfo.Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
+		{
+			debug("Found bootanim at %p", bInfo.Modules[i].Address);
+			static char bootanim = 0;
+			if (!bootanim++)
+				new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, bootanim_vfs);
+		}
+	}
 
-    if (vfs->GetRootNode()->Children.size() == 0)
-    {
-        VirtualFileSystem::FileSystemOperations null_op = {
-            .Name = "null",
-        };
+	if (vfs->GetRootNode()->Children.size() == 0)
+	{
+		VirtualFileSystem::FileSystemOperations null_op = {
+			.Name = "null",
+		};
 
-        vfs->CreateRoot("/", &null_op);
-    }
+		vfs->CreateRoot("/", &null_op);
+	}
 
-    if (!vfs->PathExists("/system"))
-        vfs->Create("/system", NodeFlags::DIRECTORY);
+	if (!vfs->PathExists("/system"))
+		vfs->Create("/system", NodeFlags::DIRECTORY);
 
-    if (!vfs->PathExists("/system/dev"))
-        DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
-    else
-    {
-        File dev = vfs->Open("/system/dev");
-        if (dev.node->Flags != NodeFlags::DIRECTORY)
-        {
-            KPrint("\eE85230/system/dev is not a directory! Halting...");
-            CPU::Stop();
-        }
-        vfs->Close(dev);
-        DevFS = dev.node;
-    }
+	if (!vfs->PathExists("/system/dev"))
+		DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
+	else
+	{
+		File dev = vfs->Open("/system/dev");
+		if (dev.node->Flags != NodeFlags::DIRECTORY)
+		{
+			KPrint("\eE85230/system/dev is not a directory! Halting...");
+			CPU::Stop();
+		}
+		vfs->Close(dev);
+		DevFS = dev.node;
+	}
 
-    if (!vfs->PathExists("/system/mnt"))
-        MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
-    else
-    {
-        File mnt = vfs->Open("/system/mnt");
-        if (mnt.node->Flags != NodeFlags::DIRECTORY)
-        {
-            KPrint("\eE85230/system/mnt is not a directory! Halting...");
-            CPU::Stop();
-        }
-        vfs->Close(mnt);
-        MntFS = mnt.node;
-    }
+	if (!vfs->PathExists("/system/mnt"))
+		MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
+	else
+	{
+		File mnt = vfs->Open("/system/mnt");
+		if (mnt.node->Flags != NodeFlags::DIRECTORY)
+		{
+			KPrint("\eE85230/system/mnt is not a directory! Halting...");
+			CPU::Stop();
+		}
+		vfs->Close(mnt);
+		MntFS = mnt.node;
+	}
 
-    if (!vfs->PathExists("/system/proc"))
-        ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
-    else
-    {
-        File proc = vfs->Open("/system/proc", nullptr);
-        if (proc.node->Flags != NodeFlags::DIRECTORY)
-        {
-            KPrint("\eE85230/system/proc is not a directory! Halting...");
-            CPU::Stop();
-        }
-        vfs->Close(proc);
-        ProcFS = proc.node;
-    }
+	if (!vfs->PathExists("/system/proc"))
+		ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
+	else
+	{
+		File proc = vfs->Open("/system/proc", nullptr);
+		if (proc.node->Flags != NodeFlags::DIRECTORY)
+		{
+			KPrint("\eE85230/system/proc is not a directory! Halting...");
+			CPU::Stop();
+		}
+		vfs->Close(proc);
+		ProcFS = proc.node;
+	}
 
-    KPrint("\e058C19################################");
-    TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
-    CPU::Halt(true);
+	KPrint("\e058C19################################");
+	TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
+	CPU::Halt(true);
 }
 
 typedef void (*CallPtr)(void);
@@ -491,104 +492,104 @@ extern CallPtr __fini_array_start[0], __fini_array_end[0];
 
 EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 {
-    trace("Hello, World!");
+	trace("Hello, World!");
 
-    if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-    {
-        debug("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
-        DebuggerIsAttached = true;
-    }
+	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+	{
+		debug("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
+		DebuggerIsAttached = true;
+	}
 
-    memcpy(&bInfo, Info, sizeof(BootInfo));
-    debug("BootInfo structure is at %p", &bInfo);
+	memcpy(&bInfo, Info, sizeof(BootInfo));
+	debug("BootInfo structure is at %p", &bInfo);
 
-    // https://wiki.osdev.org/Calling_Global_Constructors
-    trace("There are %d constructors to call", __init_array_end - __init_array_start);
-    for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
-        (*func)();
+	// https://wiki.osdev.org/Calling_Global_Constructors
+	trace("There are %d constructors to call", __init_array_end - __init_array_start);
+	for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
+		(*func)();
 
-    InitializeMemoryManagement();
+	InitializeMemoryManagement();
 
-    void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
-    uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
-    debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
+	void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+	uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
+	debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
 #if defined(a64)
-    asmv("mov %0, %%rsp"
-         :
-         : "r"(KernelStack)
-         : "memory");
-    asmv("mov $0, %rbp");
+	asmv("mov %0, %%rsp"
+		 :
+		 : "r"(KernelStack)
+		 : "memory");
+	asmv("mov $0, %rbp");
 #elif defined(a32)
-    asmv("mov %0, %%esp"
-         :
-         : "r"(KernelStack)
-         : "memory");
-    asmv("mov $0, %ebp");
+	asmv("mov %0, %%esp"
+		 :
+		 : "r"(KernelStack)
+		 : "memory");
+	asmv("mov $0, %ebp");
 #elif defined(aa64)
 #warning "Kernel stack is not set!"
 #endif
 
 #ifdef DEBUG
-    /* I had to do this because KernelAllocator
-     * is a global constructor but we need
-     * memory management to be initialized first.
-     */
-    TestString();
-    TestMemoryAllocation();
+	/* I had to do this because KernelAllocator
+	 * is a global constructor but we need
+	 * memory management to be initialized first.
+	 */
+	TestString();
+	TestMemoryAllocation();
 #endif
-    EnableProfiler = true;
-    Main();
+	EnableProfiler = true;
+	Main();
 }
 
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 
 EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 {
-    UNUSED(Reboot);
-    /* TODO: Announce shutdown */
+	UNUSED(Reboot);
+	/* TODO: Announce shutdown */
 
-    trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
+	trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
 
-    if (RecoveryScreen)
-        delete RecoveryScreen, RecoveryScreen = nullptr;
+	if (RecoveryScreen)
+		delete RecoveryScreen, RecoveryScreen = nullptr;
 
-    if (NIManager)
-        delete NIManager, NIManager = nullptr;
+	if (NIManager)
+		delete NIManager, NIManager = nullptr;
 
-    if (DiskManager)
-        delete DiskManager, DiskManager = nullptr;
+	if (DiskManager)
+		delete DiskManager, DiskManager = nullptr;
 
-    if (DriverManager)
-        delete DriverManager, DriverManager = nullptr;
+	if (DriverManager)
+		delete DriverManager, DriverManager = nullptr;
 
-    if (TaskManager)
-    {
-        TaskManager->SignalShutdown();
-        delete TaskManager, TaskManager = nullptr;
-    }
+	if (TaskManager)
+	{
+		TaskManager->SignalShutdown();
+		delete TaskManager, TaskManager = nullptr;
+	}
 
-    if (vfs)
-        delete vfs, vfs = nullptr;
+	if (vfs)
+		delete vfs, vfs = nullptr;
 
-    if (bootanim_vfs)
-        delete bootanim_vfs, bootanim_vfs = nullptr;
+	if (bootanim_vfs)
+		delete bootanim_vfs, bootanim_vfs = nullptr;
 
-    if (TimeManager)
-        delete TimeManager, TimeManager = nullptr;
+	if (TimeManager)
+		delete TimeManager, TimeManager = nullptr;
 
-    if (Display)
-        delete Display, Display = nullptr;
-    // PowerManager should not be called
+	if (Display)
+		delete Display, Display = nullptr;
+	// PowerManager should not be called
 
-    // https://wiki.osdev.org/Calling_Global_Constructors
-    debug("Calling destructors...");
-    for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
-        (*func)();
-    debug("Done.");
+	// https://wiki.osdev.org/Calling_Global_Constructors
+	debug("Calling destructors...");
+	for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
+		(*func)();
+	debug("Done.");
 }
 
 EXTERNC void TaskingPanic()
 {
-    if (TaskManager)
-        TaskManager->Panic();
+	if (TaskManager)
+		TaskManager->Panic();
 }

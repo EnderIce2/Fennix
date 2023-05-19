@@ -15,26 +15,17 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../../api.hpp"
+#ifndef __FENNIX_KERNEL_ATA_H__
+#define __FENNIX_KERNEL_ATA_H__
 
-#include <ints.hpp>
-#include <memory.hpp>
-#include <task.hpp>
-#include <lock.hpp>
-#include <printf.h>
-#include <cwalk.h>
-#include <md5.h>
+#include <types.h>
+#include "../../DAPI.hpp"
 
-#include "../../../../kernel.h"
-#include "../../../../DAPI.hpp"
-#include "../../../../Fex.hpp"
-
-namespace Driver
+namespace AdvancedTechnologyAttachment
 {
-    DriverCode Driver::BindProcessDisplay(Memory::MemMgr *mem, void *fex)
-    {
-        UNUSED(mem);
-        UNUSED(fex);
-        return DriverCode::NOT_IMPLEMENTED;
-    }
+	int DriverEntry(void *);
+	int CallbackHandler(KernelCallback *);
+	int InterruptCallback(CPURegisters *);
 }
+
+#endif // !__FENNIX_KERNEL_ATA_H__

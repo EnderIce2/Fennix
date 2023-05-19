@@ -48,48 +48,48 @@
 
 enum FexFormatType
 {
-    FexFormatType_Unknown,
-    FexFormatType_Executable,
-    FexFormatType_Driver
-    /* ... */
+	FexFormatType_Unknown,
+	FexFormatType_Executable,
+	FexFormatType_Driver
+	/* ... */
 };
 
 enum FexOSType
 {
-    FexOSType_Unknown,
-    FexOSType_Fennix,
-    FexOSType_Linux
-    /* ... */
+	FexOSType_Unknown,
+	FexOSType_Fennix,
+	FexOSType_Linux
+	/* ... */
 };
 
 enum FexDriverType
 {
-    FexDriverType_Unknown,
-    FexDriverType_Generic,
-    FexDriverType_Display,
-    FexDriverType_Network,
-    FexDriverType_Storage,
-    FexDriverType_FileSystem,
-    FexDriverType_Input,
-    FexDriverType_Audio,
-    FexDriverType_ACPI,
-    /* ... */
+	FexDriverType_Unknown,
+	FexDriverType_Generic,
+	FexDriverType_Display,
+	FexDriverType_Network,
+	FexDriverType_Storage,
+	FexDriverType_FileSystem,
+	FexDriverType_Input,
+	FexDriverType_Audio,
+	FexDriverType_ACPI,
+	/* ... */
 };
 
 enum FexDriverInputTypes
 {
-    FexDriverInputTypes_None = 0b00000000,
-    FexDriverInputTypes_Mouse = 0b00000001,
-    FexDriverInputTypes_Keyboard = 0b00000010,
-    /* ... */
+	FexDriverInputTypes_None = 0b00000000,
+	FexDriverInputTypes_Mouse = 0b00000001,
+	FexDriverInputTypes_Keyboard = 0b00000010,
+	/* ... */
 };
 
 struct Fex
 {
-    char Magic[4];
-    enum FexFormatType Type : 4;
-    enum FexOSType OS : 4;
-    int (*EntryPoint)(void *);
+	char Magic[4];
+	enum FexFormatType Type : 4;
+	enum FexOSType OS : 4;
+	int (*EntryPoint)(void *);
 } __attribute__((packed));
 
 union KernelCallback;
@@ -97,49 +97,49 @@ union CPURegisters;
 
 struct FexExtended
 {
-    struct
-    {
+	struct
+	{
 
-    } Executable;
+	} Executable;
 
-    struct
-    {
-        char Name[64];
-        enum FexDriverType Type : 4;
-        enum FexDriverInputTypes TypeFlags : 4;
-        char OverrideOnConflict : 1;
-        int (*Callback)(union KernelCallback *);
-        int (*InterruptCallback)(union CPURegisters *);
+	struct
+	{
+		char Name[64];
+		enum FexDriverType Type : 4;
+		enum FexDriverInputTypes TypeFlags : 4;
+		char OverrideOnConflict;
+		int (*Callback)(union KernelCallback *);
+		int (*InterruptCallback)(union CPURegisters *);
 
-        struct DriverBind
-        {
-            int Type;
-            struct
-            {
-                unsigned char Vector[16];
-            } Interrupt;
+		struct DriverBind
+		{
+			int Type;
+			struct
+			{
+				unsigned char Vector[16];
+			} Interrupt;
 
-            struct
-            {
-                unsigned int ProcessId[16];
-            } Process;
+			struct
+			{
+				unsigned int ProcessId[16];
+			} Process;
 
-            struct
-            {
-                unsigned short VendorID[16];
-                unsigned short DeviceID[16];
-                unsigned short Class;
-                unsigned short SubClass;
-                unsigned short ProgIF;
-            } PCI;
+			struct
+			{
+				unsigned short VendorID[16];
+				unsigned short DeviceID[16];
+				unsigned short Class;
+				unsigned short SubClass;
+				unsigned short ProgIF;
+			} PCI;
 
-            struct
-            {
-                char AttachToMouse;
-                char AttachToKeyboard;
-            } Input;
-        } Bind;
-    } Driver;
+			struct
+			{
+				char AttachToMouse;
+				char AttachToKeyboard;
+			} Input;
+		} Bind;
+	} Driver;
 } __attribute__((packed));
 
 /**
@@ -152,10 +152,10 @@ struct FexExtended
  * @note Must include ".header : { *(.header .header.*) }" in linker script
  */
 #define HEAD(FormatType, OperatingSystem, Address)               \
-    __attribute__((section(".header"))) struct Fex FexHeader = { \
-        .Magic = {'F', 'E', 'X', '\0'},                          \
-        .Type = FormatType,                                      \
-        .OS = OperatingSystem,                                   \
-        .EntryPoint = Address}
+	__attribute__((section(".header"))) struct Fex FexHeader = { \
+		.Magic = {'F', 'E', 'X', '\0'},                          \
+		.Type = FormatType,                                      \
+		.OS = OperatingSystem,                                   \
+		.EntryPoint = Address}
 
 #endif // !__FENNIX_FILE_FEX_H__

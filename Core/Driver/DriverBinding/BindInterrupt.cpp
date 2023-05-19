@@ -31,55 +31,88 @@
 
 namespace Driver
 {
-    DriverCode Driver::DriverLoadBindInterrupt(void *DrvExtHdr, uintptr_t DriverAddress, size_t Size, bool IsElf)
-    {
-        UNUSED(DrvExtHdr);
-        UNUSED(IsElf);
-        Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
-        Fex *fex = (Fex *)mem->RequestPages(TO_PAGES(Size + 1));
-        memcpy(fex, (void *)DriverAddress, Size);
-        FexExtended *fexExtended = (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
-        debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
-#ifdef DEBUG
-        uint8_t *result = md5File((uint8_t *)fex, Size);
-        debug("MD5: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-              result[0], result[1], result[2], result[3], result[4], result[5], result[6], result[7],
-              result[8], result[9], result[10], result[11], result[12], result[13], result[14], result[15]);
-        kfree(result);
-#endif
-        KernelAPI *KAPI = (KernelAPI *)mem->RequestPages(TO_PAGES(sizeof(KernelAPI) + 1));
+	DriverCode Driver::DriverLoadBindInterrupt(uintptr_t DriverAddress, size_t Size, bool IsBuiltIn)
+	{
+		Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
 
-        if (CallDriverEntryPoint(fex, KAPI) != DriverCode::OK)
-        {
-            delete mem, mem = nullptr;
-            return DriverCode::DRIVER_RETURNED_ERROR;
-        }
-        debug("Starting driver %s (offset: %#lx)", fexExtended->Driver.Name, fex);
+		BuiltInDriverInfo *bidi = (BuiltInDriverInfo *)DriverAddress;
+		Fex *fex = nullptr;
+		if (!IsBuiltIn)
+		{
+			fex = (Fex *)mem->RequestPages(TO_PAGES(Size + 1));
+			memcpy(fex, (void *)DriverAddress, Size);
+			debug("Driver allocated at %#lx-%#lx", fex, (uintptr_t)fex + Size);
+		}
+		else
+			fex = (Fex *)bidi->EntryPoint;
+		DriverCode ret = CallDriverEntryPoint(fex, IsBuiltIn);
+		if (ret != DriverCode::OK)
+		{
+			delete mem;
+			return ret;
+		}
 
-        switch (fexExtended->Driver.Type)
-        {
-        case FexDriverType::FexDriverType_Generic:
-            return BindInterruptGeneric(mem, fex);
-        case FexDriverType::FexDriverType_Display:
-            return BindInterruptDisplay(mem, fex);
-        case FexDriverType::FexDriverType_Network:
-            return BindInterruptNetwork(mem, fex);
-        case FexDriverType::FexDriverType_Storage:
-            return BindInterruptStorage(mem, fex);
-        case FexDriverType::FexDriverType_FileSystem:
-            return BindInterruptFileSystem(mem, fex);
-        case FexDriverType::FexDriverType_Input:
-            return BindInterruptInput(mem, fex);
-        case FexDriverType::FexDriverType_Audio:
-            return BindInterruptAudio(mem, fex);
-        default:
-        {
-            warn("Unknown driver type: %d", fexExtended->Driver.Type);
-            delete mem, mem = nullptr;
-            return DriverCode::UNKNOWN_DRIVER_TYPE;
-        }
-        }
+		if (IsBuiltIn)
+			fex = 0x0; /* Addresses are absolute if built-in. */
 
-        return DriverCode::OK;
-    }
+		FexExtended *fexE = IsBuiltIn ? (FexExtended *)bidi->ExtendedHeader : (FexExtended *)((uintptr_t)fex + EXTENDED_SECTION_ADDRESS);
+
+		debug("Starting driver %s", fexE->Driver.Name);
+
+		switch (fexE->Driver.Type)
+		{
+		case FexDriverType::FexDriverType_Generic:
+		case FexDriverType::FexDriverType_Display:
+		case FexDriverType::FexDriverType_Network:
+		case FexDriverType::FexDriverType_Storage:
+		case FexDriverType::FexDriverType_FileSystem:
+		case FexDriverType::FexDriverType_Input:
+		case FexDriverType::FexDriverType_Audio:
+		{
+			FexExtended *DriverExtendedHeader = (FexExtended *)mem->RequestPages(TO_PAGES(sizeof(FexExtended) + 1));
+			memcpy(DriverExtendedHeader, fexE, sizeof(FexExtended));
+
+			DriverFile DrvFile = {
+				.Enabled = true,
+				.BuiltIn = IsBuiltIn,
+				.DriverUID = this->DriverUIDs - 1,
+				.Address = (void *)fex,
+				.ExtendedHeaderAddress = (void *)DriverExtendedHeader,
+				.InterruptCallback = (void *)((uintptr_t)fex + (uintptr_t)fexE->Driver.InterruptCallback),
+				.MemTrk = mem,
+			};
+
+			if (fexE->Driver.InterruptCallback)
+			{
+				for (uint16_t i = 0; i < sizeof(fexE->Driver.Bind.Interrupt.Vector) / sizeof(fexE->Driver.Bind.Interrupt.Vector[0]); i++)
+				{
+					if (fexE->Driver.Bind.Interrupt.Vector[i] == 0)
+						break;
+					DrvFile.InterruptHook[i] = new DriverInterruptHook(fexE->Driver.Bind.Interrupt.Vector[i], DrvFile);
+				}
+			}
+
+			KernelCallback KCallback{};
+			KCallback.RawPtr = nullptr;
+			KCallback.Reason = CallbackReason::ConfigurationReason;
+			DriverCode CallbackRet = ((DriverCode(*)(KernelCallback *))((uintptr_t)fexE->Driver.Callback + (uintptr_t)fex))(&KCallback);
+
+			if (CallbackRet != DriverCode::OK)
+			{
+				error("Driver %s returned error %d", fexE->Driver.Name, CallbackRet);
+				delete mem;
+				return CallbackRet;
+			}
+
+			Drivers.push_back(DrvFile);
+			return DriverCode::OK;
+		}
+		default:
+		{
+			warn("Unknown driver type: %d", fexE->Driver.Type);
+			delete mem;
+			return DriverCode::UNKNOWN_DRIVER_TYPE;
+		}
+		}
+	}
 }
