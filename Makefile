@@ -1,6 +1,5 @@
 build:
 	mkdir -p out
-	mkdir -p out/modules
 	make -C Input build
 	make -C Storage build
 	make -C Audio build

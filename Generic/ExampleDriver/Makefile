@@ -70,7 +70,7 @@ else ifeq ($(OSARCH), i386)
 else ifeq ($(OSARCH), aarch64)
 
 endif
-	mv $(FILENAME) ../../out/modules/$(FILENAME)
+	mv $(FILENAME) ../../out/$(FILENAME)
 
 $(FILENAME): $(OBJ)
 	$(info Linking $@)
