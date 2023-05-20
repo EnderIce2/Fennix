@@ -55,7 +55,6 @@ extern KernelConfig Config;
 extern Tasking::Task *TaskManager;
 extern Time::time *TimeManager;
 extern VirtualFileSystem::Virtual *vfs;
-extern VirtualFileSystem::Virtual *bootanim_vfs;
 extern Driver::Driver *DriverManager;
 extern Disk::Manager *DiskManager;
 extern NetworkInterfaceManager::NetworkInterface *NIManager;

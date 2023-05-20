@@ -258,9 +258,9 @@ void TestSyscallsKernel()
 Execute::SpawnData SpawnInit()
 {
 	const char *envp[5] = {
-		"PATH=/system:/system/bin",
+		"PATH=/bin:/usr/bin",
 		"TERM=tty",
-		"HOME=/",
+		"HOME=/root",
 		"USER=root",
 		nullptr};
 
@@ -283,11 +283,11 @@ void BootLogoAnimationThread()
 	char BootAnimPath[16];
 	while (FrameCount < 27)
 	{
-		sprintf(BootAnimPath, "%ld.tga", FrameCount);
-		File ba = bootanim_vfs->Open(BootAnimPath);
+		sprintf(BootAnimPath, "/etc/boot/%ld.tga", FrameCount);
+		File ba = vfs->Open(BootAnimPath);
 		if (!ba.IsOK())
 		{
-			bootanim_vfs->Close(ba);
+			vfs->Close(ba);
 			debug("Failed to load boot animation frame %s", BootAnimPath);
 			break;
 		}
@@ -295,7 +295,7 @@ void BootLogoAnimationThread()
 		FrameSizes[FrameCount] = s_cst(uint32_t, ba.node->Length);
 		Frames[FrameCount] = new uint8_t[ba.node->Length];
 		memcpy((void *)Frames[FrameCount], (void *)ba.node->Address, ba.node->Length);
-		bootanim_vfs->Close(ba);
+		vfs->Close(ba);
 		FrameCount++;
 	}
 
@@ -436,7 +436,7 @@ void KernelMainThread()
 	KPrint("Initializing Disk Manager...");
 	DiskManager = new Disk::Manager;
 
-	KPrint("Loading Drivers...");
+	KPrint("Loading Modules...");
 	DriverManager = new Driver::Driver;
 	DriverManager->LoadDrivers();
 

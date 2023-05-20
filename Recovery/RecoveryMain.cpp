@@ -47,7 +47,7 @@ namespace Recovery
 	WidgetCollection *wdgDbgWin = nullptr;
 	Window *DbgWin = nullptr;
 
-	char *AudioFile = (char *)"/home/default/Music/Ludwig van Beethoven - Fur Elise.mp3";
+	char *AudioFile = (char *)"none";
 
 	void PlayAudio()
 	{
@@ -184,13 +184,6 @@ namespace Recovery
 	void BufBight80() { Display->SetBrightness(80, 200); }
 	void BufBight90() { Display->SetBrightness(90, 200); }
 	void BufBight100() { Display->SetBrightness(100, 200); }
-
-	// void audio_dev_connected() { AudioFile = (char *)"/system/config/audio/media/dev_connected.mp3"; }
-	// void audio_dev_disconnected() { AudioFile = (char *)"/system/config/audio/media/dev_disconnected.mp3"; }
-	// void audio_dev_error() { AudioFile = (char *)"/system/config/audio/media/dev_error.mp3"; }
-	// void audio_error() { AudioFile = (char *)"/system/config/audio/media/error.mp3"; }
-	// void audio_notification() { AudioFile = (char *)"/system/config/audio/media/notification.mp3"; }
-	// void audio_warning() { AudioFile = (char *)"/system/config/audio/media/warning.mp3"; }
 
 	void KernelRecovery::RecoveryThread()
 	{

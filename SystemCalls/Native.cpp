@@ -149,13 +149,13 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
             switch (retries)
             {
             case 0:
-                FullPath = "/system/lib/";
+                FullPath = "/lib/";
                 break;
             case 1:
-                FullPath = "/system/lib64/";
+                FullPath = "/usr/lib/";
                 break;
             case 2:
-                FullPath = "/system/";
+                FullPath = "/";
                 break;
             case 3:
             {

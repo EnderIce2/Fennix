@@ -24,7 +24,7 @@
 
 namespace VirtualFileSystem
 {
-    /* Manage /system/dev */
+    /* Manage /dev */
     class Device
     {
     public:
@@ -33,7 +33,7 @@ namespace VirtualFileSystem
         ~Device();
     };
 
-    /* Manage /system/mnt */
+    /* Manage /mnt */
     class Mount
     {
     public:
@@ -43,7 +43,7 @@ namespace VirtualFileSystem
         ~Mount();
     };
 
-    /* Manage /system/prc */
+    /* Manage /prc */
     class Process
     {
     public:
@@ -51,7 +51,7 @@ namespace VirtualFileSystem
         ~Process();
     };
 
-    /* Manage /system/drv */
+    /* Manage /drv */
     class Driver
     {
     public:
@@ -60,7 +60,7 @@ namespace VirtualFileSystem
         ~Driver();
     };
 
-    /* Manage /system/net */
+    /* Manage /net */
     class Network
     {
     public:
@@ -69,7 +69,7 @@ namespace VirtualFileSystem
         ~Network();
     };
 
-    /* Manage /system/dev/serialX */
+    /* Manage /dev/serialX */
     class Serial
     {
     public:
@@ -77,7 +77,7 @@ namespace VirtualFileSystem
         ~Serial();
     };
 
-    /* Manage /system/dev/random */
+    /* Manage /dev/random */
     class Random
     {
     public:
@@ -85,7 +85,7 @@ namespace VirtualFileSystem
         ~Random();
     };
 
-    /* Manage /system/dev/null */
+    /* Manage /dev/null */
     class Null
     {
     public:
@@ -93,7 +93,7 @@ namespace VirtualFileSystem
         ~Null();
     };
 
-    /* Manage /system/dev/zero */
+    /* Manage /dev/zero */
     class Zero
     {
     public:
@@ -101,7 +101,7 @@ namespace VirtualFileSystem
         ~Zero();
     };
 
-    /* Manage /system/dev/fbX */
+    /* Manage /dev/fbX */
     class FB
     {
     public:

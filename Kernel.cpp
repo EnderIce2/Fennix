@@ -205,7 +205,6 @@ PCI::PCI *PCIManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 Time::time *TimeManager = nullptr;
 VirtualFileSystem::Virtual *vfs = nullptr;
-VirtualFileSystem::Virtual *bootanim_vfs = nullptr;
 
 KernelConfig Config = {
 	.AllocatorType = Memory::MemoryAllocatorType::XallocV1,
@@ -403,9 +402,6 @@ EXTERNC NIF void Main()
 	KPrint("Initializing Filesystem...");
 	vfs = new VirtualFileSystem::Virtual;
 
-	if (Config.BootAnimation)
-		bootanim_vfs = new VirtualFileSystem::Virtual;
-
 	for (size_t i = 0; i < MAX_MODULES; i++)
 	{
 		if (!bInfo.Modules[i].Address)
@@ -418,13 +414,6 @@ EXTERNC NIF void Main()
 			if (!initrd++)
 				new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, vfs);
 		}
-		if (strcmp(bInfo.Modules[i].CommandLine, "bootanim") == 0 && Config.BootAnimation)
-		{
-			debug("Found bootanim at %p", bInfo.Modules[i].Address);
-			static char bootanim = 0;
-			if (!bootanim++)
-				new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, bootanim_vfs);
-		}
 	}
 
 	if (vfs->GetRootNode()->Children.size() == 0)
@@ -436,45 +425,42 @@ EXTERNC NIF void Main()
 		vfs->CreateRoot("/", &null_op);
 	}
 
-	if (!vfs->PathExists("/system"))
-		vfs->Create("/system", NodeFlags::DIRECTORY);
-
-	if (!vfs->PathExists("/system/dev"))
-		DevFS = vfs->Create("/system/dev", NodeFlags::DIRECTORY);
+	if (!vfs->PathExists("/dev"))
+		DevFS = vfs->Create("/dev", NodeFlags::DIRECTORY);
 	else
 	{
-		File dev = vfs->Open("/system/dev");
+		File dev = vfs->Open("/dev");
 		if (dev.node->Flags != NodeFlags::DIRECTORY)
 		{
-			KPrint("\eE85230/system/dev is not a directory! Halting...");
+			KPrint("\eE85230/dev is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(dev);
 		DevFS = dev.node;
 	}
 
-	if (!vfs->PathExists("/system/mnt"))
-		MntFS = vfs->Create("/system/mnt", NodeFlags::DIRECTORY);
+	if (!vfs->PathExists("/mnt"))
+		MntFS = vfs->Create("/mnt", NodeFlags::DIRECTORY);
 	else
 	{
-		File mnt = vfs->Open("/system/mnt");
+		File mnt = vfs->Open("/mnt");
 		if (mnt.node->Flags != NodeFlags::DIRECTORY)
 		{
-			KPrint("\eE85230/system/mnt is not a directory! Halting...");
+			KPrint("\eE85230/mnt is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(mnt);
 		MntFS = mnt.node;
 	}
 
-	if (!vfs->PathExists("/system/proc"))
-		ProcFS = vfs->Create("/system/proc", NodeFlags::DIRECTORY);
+	if (!vfs->PathExists("/proc"))
+		ProcFS = vfs->Create("/proc", NodeFlags::DIRECTORY);
 	else
 	{
-		File proc = vfs->Open("/system/proc", nullptr);
+		File proc = vfs->Open("/proc", nullptr);
 		if (proc.node->Flags != NodeFlags::DIRECTORY)
 		{
-			KPrint("\eE85230/system/proc is not a directory! Halting...");
+			KPrint("\eE85230/proc is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(proc);
@@ -570,9 +556,6 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 
 	if (vfs)
 		delete vfs, vfs = nullptr;
-
-	if (bootanim_vfs)
-		delete bootanim_vfs, bootanim_vfs = nullptr;
 
 	if (TimeManager)
 		delete TimeManager, TimeManager = nullptr;
