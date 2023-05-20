@@ -10,75 +10,83 @@ int InterruptCallback(CPURegisters *Registers);
  *              *                   *              *             */
 HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
-// Ignore the warning about missing field initializers
+/* Ignore the warning about missing field initializers. */
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
-// Extended header which is used to give additional information to the kernel
+/* Extended header which is used to give additional information to the kernel. */
 __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
-    .Driver = {
-        .Name = "Example Driver",
-        .Type = FexDriverType_Generic,
-        .Callback = CallbackHandler,
-        .InterruptCallback = InterruptCallback,
-        .Bind = {
-            .Type = BIND_INTERRUPT,
-            .Interrupt = {
-                .Vector = {222}, // IRQ222
-            }}}};
+	.Driver = {
+		.Name = "Example Driver",
+		.Type = FexDriverType_Generic,
+		.Callback = CallbackHandler,
+		.InterruptCallback = InterruptCallback,
+		.Bind = {
+			.Type = BIND_INTERRUPT,
+			.Interrupt = {
+				.Vector = {222}, /* IRQ222 */
+			}}}};
 
-// Global variable that holds the kernel API
-KernelAPI *KAPI;
+#pragma GCC diagnostic pop
 
-// Macro that prints a message to UART
-#define print(msg) KAPI->Util.DebugPrint((char *)(msg), KAPI->Info.DriverUID)
+/* Global structure that holds the kernel API. */
+KernelAPI KAPI{};
+
+/* Macro that prints a message to the kernel debugger. */
+#define print(msg) KAPI.Util.DebugPrint((char *)(msg), KAPI.Info.DriverUID)
 
 /* --------------------------------------------------------------------------------------------------------- */
 
-// Driver entry point. This is called at initialization. "Data" argument points to the kernel API structure.
+/* Driver entry point. This is called at initialization.
+   "Data" argument points to the kernel API structure. */
 int DriverEntry(void *Data)
 {
-    // Check if kernel API is valid
-    if (!Data)
-        return INVALID_KERNEL_API;
+	/* Check if kernel API is valid */
+	if (!Data)
+		return INVALID_KERNEL_API;
 
-    // Set the global variable to the kernel API
-    KAPI = (KernelAPI *)Data;
+	/* Set the global structure to the kernel API. */
+	KAPI = *(KernelAPI *)Data;
 
-    // Check if kernel API version is valid. this is important because the kernel API may change in the future.
-    if (KAPI->Version.Major < 0 || KAPI->Version.Minor < 0 || KAPI->Version.Patch < 0)
-        return KERNEL_API_VERSION_NOT_SUPPORTED;
+	/* Check if kernel API version is valid.
+	   This is important because the kernel
+	   API may change in the future. */
+	if (KAPI.Version.Major < 0 || KAPI.Version.Minor < 0 || KAPI.Version.Patch < 0)
+		return KERNEL_API_VERSION_NOT_SUPPORTED;
 
-    // We print "Hello World!" to UART.
-    print("Hello World!");
-    return OK;
+	/* We print "Hello World!" to the kernel debugger. */
+	print("Hello World!");
+	return OK;
 }
 
-// This is called when the driver is bound to an interrupt, process, or PCI device or when the kernel wants to send a message to the driver.
+/* This is called when the driver is bound to an interrupt, process,
+   or PCI device or when the kernel wants to send a message to the driver. */
 int CallbackHandler(KernelCallback *Data)
 {
-    switch (Data->Reason)
-    {
-    case AcknowledgeReason:
-    {
-        print("Kernel acknowledged the driver.");
-        break;
-    }
-    case StopReason:
-    {
-        print("Driver stopped.");
-        break;
-    }
-    default:
-    {
-        print("Unknown reason.");
-        break;
-    }
-    }
-    return OK;
+	switch (Data->Reason)
+	{
+	case AcknowledgeReason:
+	{
+		print("Kernel acknowledged the driver.");
+		break;
+	}
+	case StopReason:
+	{
+		print("Driver stopped.");
+		break;
+	}
+	default:
+	{
+		print("Unknown reason.");
+		break;
+	}
+	}
+	return OK;
 }
 
+/* Interrupt handler. */
 int InterruptCallback(CPURegisters *)
 {
-    print("Interrupt received.");
-    return OK;
+	print("Interrupt received.");
+	return OK;
 }
