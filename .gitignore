@@ -1,7 +1,6 @@
 *.o
 efi-loader.bin
 loader.bin
-FLDR.elf
 UEFI/gnu-efi
 UEFI/include
 UEFI/BOOTX64.EFI
