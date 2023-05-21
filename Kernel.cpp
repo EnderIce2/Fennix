@@ -85,7 +85,7 @@ LockClass mExtTrkLock;
  * - [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
  * - [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
  * - [ ] CPU usage is not working properly.
- * - [ ] fork() syscall is not working.
+ * - [x] fork() syscall is not working.
  *
  * CREDITS AND REFERENCES:
  * - General:
