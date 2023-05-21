@@ -5,15 +5,15 @@
             "name": "Attach to a running VM instance",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/kernel.fsys",
-            "cwd": "${workspaceRoot}",
+            "program": "${workspaceFolder}/kernel.fsys",
+            "cwd": "${workspaceFolder}",
             "args": [],
             "targetArchitecture": "x64",
             "MIMode": "gdb",
             "miDebuggerPath": "/usr/bin/gdb",
             "miDebuggerArgs": "",
             "externalConsole": false,
-            "additionalSOLibSearchPath": "${workspaceRoot}",
+            "additionalSOLibSearchPath": "${workspaceFolder}",
             "customLaunchSetupCommands": [
                 {
                     "text": "target remote localhost:1234",
@@ -31,7 +31,7 @@
                     "description": "Make breakpoint pending on future shared library load."
                 },
                 {
-                    "text": "file ${workspaceRoot}/kernel.fsys",
+                    "text": "file ${workspaceFolder}/kernel.fsys",
                     "description": "Load binary."
                 },
             ]
