@@ -76,15 +76,29 @@ namespace VirtualFileSystem
         .Seek = USTAR_Seek,
     };
 
-    USTAR::USTAR(uintptr_t Address, Virtual *vfs_ctx)
+    bool USTAR::TestArchive(uintptr_t Address)
     {
-        trace("Initializing USTAR with address %#llx", Address);
+        if (!Memory::Virtual().Check((void *)Address))
+        {
+            error("Address %#lx is not mapped!", Address);
+            return false;
+        }
 
         if (memcmp(((FileHeader *)(uintptr_t)Address)->signature, "ustar", 5) != 0)
         {
             error("ustar signature invalid!");
-            return;
+            return false;
         }
+        return true;
+    }
+
+    void USTAR::ReadArchive(uintptr_t Address, Virtual *vfs_ctx)
+    {
+        trace("Initializing USTAR with address %#llx", Address);
+
+        if (!this->TestArchive(Address))
+            return; /* Check whether the archive is deflated */
+
         debug("USTAR signature valid! Name:%s Signature:%s Mode:%c Size:%lu",
               ((FileHeader *)Address)->name,
               ((FileHeader *)Address)->signature,
@@ -168,5 +182,7 @@ namespace VirtualFileSystem
         }
     }
 
-    USTAR::~USTAR() { warn("Destroyed"); }
+    USTAR::USTAR() {}
+
+    USTAR::~USTAR() {}
 }

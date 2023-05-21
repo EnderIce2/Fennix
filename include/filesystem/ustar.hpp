@@ -80,7 +80,9 @@ namespace VirtualFileSystem
         }
 
     public:
-        USTAR(uintptr_t Address, Virtual *vfs_ctx);
+        bool TestArchive(uintptr_t Address);
+        void ReadArchive(uintptr_t Address, Virtual *vfs_ctx);
+        USTAR();
         ~USTAR();
     };
 }

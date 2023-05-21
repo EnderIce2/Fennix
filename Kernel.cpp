@@ -412,7 +412,11 @@ EXTERNC NIF void Main()
 			debug("Found initrd at %p", bInfo.Modules[i].Address);
 			static char initrd = 0;
 			if (!initrd++)
-				new VirtualFileSystem::USTAR((uintptr_t)bInfo.Modules[i].Address, vfs);
+			{
+				uintptr_t initrdAddress = (uintptr_t)bInfo.Modules[i].Address;
+				VirtualFileSystem::USTAR *ustar = new VirtualFileSystem::USTAR;
+				ustar->ReadArchive(initrdAddress, vfs);
+			}
 		}
 	}
 
