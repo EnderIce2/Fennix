@@ -197,13 +197,6 @@ namespace Driver
 		DriverConfigFile << "/config.ini";
 		fixme("Loading driver config file: %s", DriverConfigFile.c_str());
 
-		VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
-		if (!DriverDirectory.IsOK())
-		{
-			KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
-			vfs->Close(DriverDirectory);
-		}
-
 		debug("Loading built-in drivers");
 		StartAHCI();
 		StartVMwareMouse();
@@ -213,6 +206,14 @@ namespace Driver
 		StartRTL8139();
 		StartPCNET();
 		StartGigabit();
+
+		VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
+		if (!DriverDirectory.IsOK())
+		{
+			KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
+			vfs->Close(DriverDirectory);
+			return;
+		}
 
 		debug("Loading drivers from %s", Config.DriverDirectory);
 		foreach (auto DrvFile in DriverDirectory.node->Children)
