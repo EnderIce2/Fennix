@@ -25,7 +25,6 @@ NewLock(SyscallsLock);
 
 extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
-    CPU::Interrupts(CPU::Enable);
     SmartLock(SyscallsLock); /* TODO: This should be replaced or moved somewhere else. */
 
     Tasking::TaskInfo *Ptinfo = &TaskManager->GetCurrentProcess()->Info;

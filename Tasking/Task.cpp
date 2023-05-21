@@ -48,16 +48,6 @@ NewLock(TaskingLock);
 
 namespace Tasking
 {
-    void Task::Schedule()
-    {
-        if (!StopScheduler)
-            TaskingScheduler_OneShot(1);
-        // APIC::InterruptCommandRegisterLow icr;
-        // icr.Vector = CPU::x86::IRQ16;
-        // icr.Level = APIC::APICLevel::Assert;
-        // ((APIC::APIC *)Interrupts::apic[0])->IPI(GetCurrentCPU()->ID, icr);
-    }
-
 #if defined(a86)
     __naked __used __no_stack_protector NIF void IdleProcessLoop()
     {

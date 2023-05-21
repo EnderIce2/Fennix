@@ -40,7 +40,6 @@ using Tasking::TTL::Untrusted;
 
 static inline bool CheckTrust(int TrustLevel)
 {
-    // SmartTimeoutLock(SyscallsLock, 10000); - This is already done in the caller
     Token token = TaskManager->GetCurrentThread()->Security.UniqueToken;
     if (TaskManager->GetSecurityManager()->IsTokenTrusted(token, TrustLevel))
         return true;
@@ -340,16 +339,11 @@ static int sys_sleep(SyscallsFrame *Frame, uint64_t Milliseconds)
     return 0;
 }
 
-static int _ChildPID = 0;
-
 static int sys_fork(SyscallsFrame *Frame)
 {
     UNUSED(Frame);
     if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
         return SYSCALL_ACCESS_DENIED;
-
-    fixme("sys_fork: %#lx", Frame);
-    return SYSCALL_NOT_IMPLEMENTED;
 
     Tasking::PCB *Parent = TaskManager->GetCurrentThread()->Parent;
     Tasking::TCB *Thread = TaskManager->GetCurrentThread();
@@ -378,34 +372,19 @@ static int sys_fork(SyscallsFrame *Frame)
                                                         Thread->Info.Compatibility,
                                                         true);
 
+    strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
+
     if (!NewThread)
     {
         error("Failed to create thread for fork");
         return SYSCALL_ERROR;
     }
-    _ChildPID = (int)NewThread->ID;
 
-    memcpy(NewThread->FPU, Thread->FPU, sizeof(CPU::x64::FXState));
-    NewThread->Stack->Fork(Thread->Stack);
-
-    strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
-    NewThread->Info = Thread->Info;
-#ifdef a86
-    NewThread->ShadowGSBase = Thread->ShadowGSBase;
-    NewThread->GSBase = Thread->GSBase;
-    NewThread->FSBase = Thread->FSBase;
-#endif
-
-    CPU::Interrupts(CPU::Disable);
     static int RetChild = 0;
     static uint64_t ReturnAddress = 0;
     static uint64_t ChildStackPointer = 0;
 
-#if defined(a86)
-    asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
-#elif defined(aa64)
-    asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
-#endif
+    TaskManager->Schedule();
 
     if (RetChild--)
     {
@@ -413,28 +392,41 @@ static int sys_fork(SyscallsFrame *Frame)
         asmv("movq %0, %%rcx\n"
              :
              : "r"(ReturnAddress));
-        asmv("movq $0, %rax\n"); // Return 0 to the child
         asmv("mov %0, %%rsp\n"
              :
              : "r"(ChildStackPointer));
         asmv("mov %0, %%rbp\n"
              :
              : "r"(ChildStackPointer));
-        asmv("swapgs\n");  // Swap GS back to the user GS
-        asmv("sti\n");     // Enable interrupts
-        asmv("sysretq\n"); // Return to rcx address in user mode
+        asmv("movq $0, %rax\n"); // Return 0 to the child
+        asmv("swapgs\n");         // Swap GS back to the user GS
+        asmv("sti\n");             // Enable interrupts
+        asmv("sysretq\n");         // Return to rcx address in user mode
     }
     RetChild = 1;
     ReturnAddress = Frame->ReturnAddress;
     ChildStackPointer = Frame->StackPointer;
 
+    memcpy(NewThread->FPU, Thread->FPU, sizeof(CPU::x64::FXState));
+    NewThread->Stack->Fork(Thread->Stack);
+    NewThread->Info = Thread->Info;
     NewThread->Registers = Thread->Registers;
+
+    if (Thread->Security.IsCritical)
+        NewThread->SetCritical(true);
+    TaskManager->GetSecurityManager()->TrustToken(NewProcess->Security.UniqueToken,
+                                                  (Tasking::TTL)TaskManager->GetSecurityManager()->GetTokenTrustLevel(Parent->Security.UniqueToken));
+    TaskManager->GetSecurityManager()->TrustToken(NewThread->Security.UniqueToken,
+                                                  (Tasking::TTL)TaskManager->GetSecurityManager()->GetTokenTrustLevel(Thread->Security.UniqueToken));
+
+#ifdef a86
+    NewThread->ShadowGSBase = Thread->ShadowGSBase;
+    NewThread->GSBase = Thread->GSBase;
+    NewThread->FSBase = Thread->FSBase;
+#endif
 
     debug("Forked thread \"%s\"(%d) to \"%s\"(%d)", Thread->Name, Thread->ID, NewThread->Name, NewThread->ID);
     NewThread->Status = Tasking::TaskStatus::Ready;
-
-    if (_ChildPID == (int)TaskManager->GetCurrentThread()->ID)
-        return 0;
     return (int)NewThread->ID;
 }
 

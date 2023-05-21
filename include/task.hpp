@@ -289,7 +289,14 @@ namespace Tasking
 		Security *GetSecurityManager() { return &SecurityManager; }
 		void CleanupProcessesThread();
 		void Panic() { StopScheduler = true; }
-		void Schedule();
+		__always_inline inline void Schedule()
+		{
+#if defined(a86)
+			asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#elif defined(aa64)
+			asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
+#endif
+		}
 		void SignalShutdown();
 		void RevertProcessCreation(PCB *Process);
 		void RevertThreadCreation(TCB *Thread);
