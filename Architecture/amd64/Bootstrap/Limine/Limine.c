@@ -132,13 +132,6 @@ SafeFunction NIF void InitLimineAfterStack()
         inf_loop asmv("hlt");
     }
 
-    if (ModuleResponse == NULL || ModuleResponse->module_count < 1)
-    {
-        error("No module information available [%#lx;%ld]", ModuleResponse,
-              (ModuleResponse == NULL) ? 0 : ModuleResponse->module_count);
-        inf_loop asmv("hlt");
-    }
-
     /* Actual parsing starts here */
 
     for (uint64_t i = 0; i < FrameBufferResponse->framebuffer_count; i++)
@@ -255,31 +248,34 @@ SafeFunction NIF void InitLimineAfterStack()
         }
     }
 
-    for (uint64_t i = 0; i < ModuleResponse->module_count; i++)
+    if (ModuleResponse != NULL && ModuleResponse->module_count > 0)
     {
-        if (i > MAX_MODULES)
+        for (uint64_t i = 0; i < ModuleResponse->module_count; i++)
         {
-            warn("Too many modules, skipping the rest...");
-            break;
+            if (i > MAX_MODULES)
+            {
+                warn("Too many modules, skipping the rest...");
+                break;
+            }
+
+            binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xFFFF800000000000);
+            binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
+
+            strncpy(binfo.Modules[i].Path,
+                    ModuleResponse->modules[i]->path,
+                    strlen(ModuleResponse->modules[i]->path) + 1);
+
+            strncpy(binfo.Modules[i].CommandLine,
+                    ModuleResponse->modules[i]->cmdline,
+                    strlen(ModuleResponse->modules[i]->cmdline) + 1);
+
+            debug("Module %d:\nAddress: %#lx\nPath: \"%s\"\nCommand Line: \"%s\"\nSize: %ld",
+                  i,
+                  binfo.Modules[i].Address,
+                  binfo.Modules[i].Path,
+                  binfo.Modules[i].CommandLine,
+                  binfo.Modules[i].Size);
         }
-
-        binfo.Modules[i].Address = (void *)((uint64_t)ModuleResponse->modules[i]->address - 0xFFFF800000000000);
-        binfo.Modules[i].Size = ModuleResponse->modules[i]->size;
-
-        strncpy(binfo.Modules[i].Path,
-                ModuleResponse->modules[i]->path,
-                strlen(ModuleResponse->modules[i]->path) + 1);
-
-        strncpy(binfo.Modules[i].CommandLine,
-                ModuleResponse->modules[i]->cmdline,
-                strlen(ModuleResponse->modules[i]->cmdline) + 1);
-
-        debug("Module %d:\nAddress: %#lx\nPath: \"%s\"\nCommand Line: \"%s\"\nSize: %ld",
-              i,
-              binfo.Modules[i].Address,
-              binfo.Modules[i].Path,
-              binfo.Modules[i].CommandLine,
-              binfo.Modules[i].Size);
     }
 
     binfo.RSDP = (struct RSDPInfo *)((uintptr_t)RsdpResponse->address - 0xFFFF800000000000);
