@@ -16,6 +16,7 @@
 */
 
 #include <recovery.hpp>
+#include <kshell.hpp>
 #include <task.hpp>
 #include <lock.hpp>
 #include <gui.hpp>
@@ -308,6 +309,12 @@ namespace Recovery
 
 	void RebootCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)RebootCommandThread); }
 	void ShutdownCommandWrapper() { TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (IP)ShutdownCommandThread); }
+	void ShellCommandWrapper()
+	{
+		delete RecoveryScreen, RecoveryScreen = nullptr;
+		StartKernelShell();
+		inf_loop;
+	}
 
 	GraphicalUserInterface::GUI *gui = nullptr;
 	void GUIWrapper() { gui->Loop(); }
@@ -335,6 +342,7 @@ namespace Recovery
 		wdgRecWin->CreateLabel({10, 40, 0, 0}, "All you can do is shutdown/reboot the system.");
 		wdgRecWin->CreateButton({10, 70, 90, 20}, "Reboot", (uintptr_t)RebootCommandWrapper);
 		wdgRecWin->CreateButton({110, 70, 90, 20}, "Shutdown", (uintptr_t)ShutdownCommandWrapper);
+		wdgRecWin->CreateButton({210, 70, 90, 20}, "Shell", (uintptr_t)ShellCommandWrapper);
 		RecWin->AddWidget(wdgRecWin);
 
 		Rect DebugWindow;
