@@ -15,7 +15,7 @@
                 "a64",
                 "DEBUG=\"1\""
             ],
-            "compilerPath": "${workspaceFolder}/../tools/cross/bin/amd64-elf-gcc",
+            "compilerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gcc",
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x64",
