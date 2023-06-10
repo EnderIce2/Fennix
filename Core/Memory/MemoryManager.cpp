@@ -60,6 +60,7 @@ namespace Memory
 
     uint64_t MemMgr::GetAllocatedMemorySize()
     {
+        SmartLock(MgrLock);
         uint64_t Size = 0;
         foreach (auto ap in AllocatedPagesList)
             Size += ap.PageCount;
@@ -68,6 +69,7 @@ namespace Memory
 
     bool MemMgr::Add(void *Address, size_t Count)
     {
+        SmartLock(MgrLock);
         if (Address == nullptr)
         {
             error("Address is null!");
@@ -124,6 +126,7 @@ namespace Memory
 
     void *MemMgr::RequestPages(size_t Count, bool User)
     {
+        SmartLock(MgrLock);
         void *Address = KernelAllocator.RequestPages(Count);
         for (size_t i = 0; i < Count; i++)
         {
@@ -162,6 +165,7 @@ namespace Memory
 
     void MemMgr::FreePages(void *Address, size_t Count)
     {
+        SmartLock(MgrLock);
         for (size_t i = 0; i < AllocatedPagesList.size(); i++)
         {
             if (AllocatedPagesList[i].Address == Address)
@@ -205,6 +209,7 @@ namespace Memory
 
     void MemMgr::DetachAddress(void *Address)
     {
+        SmartLock(MgrLock);
         for (size_t i = 0; i < AllocatedPagesList.size(); i++)
         {
             if (AllocatedPagesList[i].Address == Address)
@@ -226,6 +231,7 @@ namespace Memory
 
     MemMgr::MemMgr(PageTable *Table, VirtualFileSystem::Node *Directory)
     {
+        SmartLock(MgrLock);
         if (Table)
             this->Table = Table;
         else
@@ -243,6 +249,7 @@ namespace Memory
 
     MemMgr::~MemMgr()
     {
+        SmartLock(MgrLock);
         foreach (auto ap in AllocatedPagesList)
         {
             KernelAllocator.FreePages(ap.Address, ap.PageCount);

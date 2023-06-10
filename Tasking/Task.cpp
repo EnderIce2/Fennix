@@ -248,17 +248,24 @@ namespace Tasking
             CPU::Pause();
     }
 
-    void Task::Sleep(uint64_t Milliseconds)
+    void Task::Sleep(uint64_t Milliseconds, bool NoSwitch)
     {
-        SmartLock(TaskingLock);
         TCB *thread = this->GetCurrentThread();
+        PCB *process = this->GetCurrentProcess();
+
         thread->Status = TaskStatus::Sleeping;
-        if (thread->Parent->Threads.size() == 1)
-            thread->Parent->Status = TaskStatus::Sleeping;
-        thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds, Time::Units::Milliseconds);
-        tskdbg("Thread \"%s\"(%d) is going to sleep until %llu", thread->Name, thread->ID, thread->Info.SleepUntil);
-        TaskingLock.Unlock();
-        this->Schedule();
+        if (process->Threads.size() == 1)
+            process->Status = TaskStatus::Sleeping;
+
+        thread->Info.SleepUntil =
+            TimeManager->CalculateTarget(Milliseconds,
+                                         Time::Units::Milliseconds);
+
+        debug("Thread \"%s\"(%d) is going to sleep until %llu",
+              thread->Name, thread->ID, thread->Info.SleepUntil);
+
+        if (!NoSwitch)
+            this->Schedule();
     }
 
     void Task::SignalShutdown()
@@ -410,6 +417,8 @@ namespace Tasking
         {
             Thread->Security.IsCritical = true;
             Thread->Stack = new Memory::StackGuard(false, Parent->PageTable);
+            Thread->SyscallStack = __UINTPTR_MAX__;
+            Thread->TempStack = __UINTPTR_MAX__;
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::TrustedByKernel);
             Thread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
@@ -430,9 +439,11 @@ namespace Tasking
         case TaskTrustLevel::User:
         {
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
+            Thread->SyscallStack = (uintptr_t)Thread->Memory->RequestPages(TO_PAGES(STACK_SIZE)) + STACK_SIZE;
+            Thread->TempStack = 0x0;
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::Untrusted);
-            Thread->ShadowGSBase = (uint64_t)GetCurrentCPU();
+            Thread->ShadowGSBase = (uintptr_t)Thread;
             Thread->GSBase = 0;
             Thread->FSBase = 0;
             Thread->Registers.cs = GDT_USER_CODE;
@@ -742,7 +753,6 @@ namespace Tasking
 
     Task::Task(const IP EntryPoint) : Interrupts::Handler(16) /* IRQ16 */
     {
-        SmartLock(TaskingLock);
 #if defined(a64)
         // Map the IRQ16 to the first CPU.
         ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
@@ -750,7 +760,6 @@ namespace Tasking
 #elif defined(aa64)
 #endif
         KPrint("Starting Tasking With Instruction Pointer: %p (\e666666%s\eCCCCCC)", EntryPoint, KernelSymbolTable->GetSymbolFromAddress(EntryPoint));
-        TaskingLock.Unlock();
 
 #if defined(a64)
         TaskArchitecture Arch = TaskArchitecture::x64;
@@ -765,7 +774,6 @@ namespace Tasking
         TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
-        TaskingLock.Lock(__FUNCTION__);
 
         bool MONITORSupported = false;
         if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
@@ -792,7 +800,6 @@ namespace Tasking
             CPU::Interrupts(CPU::Enable);
         }
 
-        TaskingLock.Unlock();
         IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskTrustLevel::Kernel);
         IdleProcess->ELFSymbolTable = KernelSymbolTable;
         for (int i = 0; i < SMP::CPUCores; i++)

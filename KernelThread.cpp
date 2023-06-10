@@ -497,21 +497,20 @@ void KernelMainThread()
 	TaskManager->WaitForThread(ret.Thread);
 	ExitCode = ret.Thread->GetExitCode();
 Exit:
-	if (ExitCode != 0)
-	{
-		KPrint("\eE85230Userspace process exited with code %d (%#x)", ExitCode,
-			   ExitCode < 0 ? ExitCode * -1 : ExitCode);
-		KPrint("Dropping to recovery screen...");
-		TaskManager->Sleep(2500);
-		TaskManager->WaitForThread(blaThread);
-		RecoveryScreen = new Recovery::KernelRecovery;
-	}
-	else
+	if (ExitCode == 0)
 	{
 		KPrint("\eFF7900%s process exited with code %d and it didn't invoked the shutdown function.",
 			   Config.InitPath, ExitCode);
 		KPrint("System Halted");
+		CPU::Halt(true);
 	}
+
+	KPrint("\eE85230Userspace process exited with code %d (%#x)", ExitCode,
+		   ExitCode < 0 ? -ExitCode : ExitCode);
+	KPrint("Dropping to recovery screen...");
+	TaskManager->Sleep(2500);
+	TaskManager->WaitForThread(blaThread);
+	RecoveryScreen = new Recovery::KernelRecovery;
 	CPU::Halt(true);
 }
 

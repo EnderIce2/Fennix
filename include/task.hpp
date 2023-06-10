@@ -122,6 +122,12 @@ namespace Tasking
 
 	struct TCB
 	{
+		/** @brief Used by syscall handler */
+		uintptr_t SyscallStack; /* gs+0x0 */
+
+		/** @brief Used by syscall handler */
+		uintptr_t TempStack; /* gs+0x8 */
+
 		TID ID;
 		char Name[256];
 		struct PCB *Parent;
@@ -132,12 +138,12 @@ namespace Tasking
 		TaskStatus Status;
 #if defined(a64)
 		CPU::x64::TrapFrame Registers;
-		uint64_t ShadowGSBase, GSBase, FSBase;
+		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(a32)
 		CPU::x32::TrapFrame Registers; // TODO
-		uint64_t ShadowGSBase, GSBase, FSBase;
+		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(aa64)
-		uint64_t Registers; // TODO
+		uintptr_t Registers; // TODO
 #endif
 		uintptr_t IPHistory[128];
 		TaskSecurity Security;
@@ -244,7 +250,8 @@ namespace Tasking
 		Untrusted = 0b0010,
 		Trusted = 0b0100,
 		TrustedByKernel = 0b1000,
-		FullTrust = Trusted | TrustedByKernel
+		FullTrust = Trusted | TrustedByKernel,
+		AllFlags = 0b1111
 	};
 
 	class Security
@@ -379,7 +386,7 @@ namespace Tasking
 		 *
 		 * @param Milliseconds Amount of milliseconds to sleep
 		 */
-		void Sleep(uint64_t Milliseconds);
+		void Sleep(uint64_t Milliseconds, bool NoSwitch = false);
 
 		PCB *CreateProcess(PCB *Parent,
 						   const char *Name,

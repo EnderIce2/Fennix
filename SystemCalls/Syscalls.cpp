@@ -21,12 +21,8 @@
 
 #include "../kernel.h"
 
-NewLock(SyscallsLock);
-
 extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
-    SmartLock(SyscallsLock); /* TODO: This should be replaced or moved somewhere else. */
-
     Tasking::TaskInfo *Ptinfo = &TaskManager->GetCurrentProcess()->Info;
     Tasking::TaskInfo *Ttinfo = &TaskManager->GetCurrentThread()->Info;
     uint64_t TempTimeCalc = TimeManager->GetCounter();

@@ -67,7 +67,6 @@ namespace Interrupts
         CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
         CoreData->ID = Core;
         CoreData->IsActive = true;
-        CoreData->SystemCallStack = (uint8_t *)((uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE);
         CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE;
         if (CoreData->Checksum != CPU_DATA_CHECKSUM)
         {
@@ -85,7 +84,6 @@ namespace Interrupts
         CPU::x32::wrmsr(CPU::x32::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
         CoreData->ID = Core;
         CoreData->IsActive = true;
-        CoreData->SystemCallStack = (uint8_t *)((uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE);
         CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE;
         if (CoreData->Checksum != CPU_DATA_CHECKSUM)
         {

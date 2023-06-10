@@ -41,14 +41,8 @@ struct CPUArchData
 
 struct CPUData
 {
-    /** @brief Used by syscall handler */
-    uint8_t *SystemCallStack; /* gs+0x0 */
-
-    /** @brief Used by syscall handler */
-    uintptr_t TempStack; /* gs+0x8 */
-
     /** @brief Used by CPU */
-    uintptr_t Stack; /* gs+0x10 */
+    uintptr_t Stack;
 
     /** @brief CPU ID. */
     int ID;

@@ -31,64 +31,69 @@ extern "C" void SystemCallHandlerStub();
 
 extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHandlerStub()
 {
-    asmv("swapgs\n");            /* Swap GS to get the CPUData */
-    asmv("mov %rsp, %gs:0x8\n"); /* We save the current rsp to CPUData->TempStack */
-    asmv("mov %gs:0x0, %rsp\n"); /* Get CPUData->SystemCallStack and set it as rsp */
-    asmv("push $0x1b\n");        /* Push user data segment for SyscallsFrame */
-    asmv("push %gs:0x8\n");      /* Push CPUData->TempStack (old rsp) for SyscallsFrame */
-    asmv("push %r11\n");         /* Push the flags for SyscallsFrame */
-    asmv("push $0x23\n");        /* Push user code segment for SyscallsFrame */
-    asmv("push %rcx\n");         /* Push the return address for SyscallsFrame + sysretq (https://www.felixcloutier.com/x86/sysret) */
+	asmv("swapgs\n");			 /* Swap GS to get the TCB */
+	asmv("mov %rsp, %gs:0x8\n"); /* We save the current rsp to TCB->TempStack */
+	asmv("mov %gs:0x0, %rsp\n"); /* Get TCB->SystemCallStack and set it as rsp */
+	asmv("push $0x1b\n");		 /* Push user data segment for SyscallsFrame */
+	asmv("push %gs:0x8\n");		 /* Push TCB->TempStack (old rsp) for SyscallsFrame */
+	asmv("push %r11\n");		 /* Push the flags for SyscallsFrame */
+	asmv("push $0x23\n");		 /* Push user code segment for SyscallsFrame */
+	asmv("push %rcx\n");		 /* Push the return address for SyscallsFrame + sysretq (https://www.felixcloutier.com/x86/sysret) */
 
-    asmv("push %rax\n" /* Push registers */
-         "push %rbx\n"
-         "push %rcx\n"
-         "push %rdx\n"
-         "push %rsi\n"
-         "push %rdi\n"
-         "push %rbp\n"
-         "push %r8\n"
-         "push %r9\n"
-         "push %r10\n"
-         "push %r11\n"
-         "push %r12\n"
-         "push %r13\n"
-         "push %r14\n"
-         "push %r15\n");
+	/* Push registers */
+	asmv("push %rax\n"
+		 "push %rbx\n"
+		 "push %rcx\n"
+		 "push %rdx\n"
+		 "push %rsi\n"
+		 "push %rdi\n"
+		 "push %rbp\n"
+		 "push %r8\n"
+		 "push %r9\n"
+		 "push %r10\n"
+		 "push %r11\n"
+		 "push %r12\n"
+		 "push %r13\n"
+		 "push %r14\n"
+		 "push %r15\n");
 
-    asmv("mov %rsp, %rdi\n"); /* Set the first argument to the SyscallsFrame pointer */
-    asmv("mov $0, %rbp\n");
-    asmv("call SystemCallsHandler\n");
+	/* Set the first argument to the SyscallsFrame pointer */
+	asmv("mov %rsp, %rdi\n");
+	asmv("mov $0, %rbp\n");
+	asmv("call SystemCallsHandler\n");
 
-    asmv("pop %r15\n" /* Pop registers except rax */
-         "pop %r14\n"
-         "pop %r13\n"
-         "pop %r12\n"
-         "pop %r11\n"
-         "pop %r10\n"
-         "pop %r9\n"
-         "pop %r8\n"
-         "pop %rbp\n"
-         "pop %rdi\n"
-         "pop %rsi\n"
-         "pop %rdx\n"
-         "pop %rcx\n"
-         "pop %rbx\n");
+	/* Pop registers except rax */
+	asmv("pop %r15\n"
+		 "pop %r14\n"
+		 "pop %r13\n"
+		 "pop %r12\n"
+		 "pop %r11\n"
+		 "pop %r10\n"
+		 "pop %r9\n"
+		 "pop %r8\n"
+		 "pop %rbp\n"
+		 "pop %rdi\n"
+		 "pop %rsi\n"
+		 "pop %rdx\n"
+		 "pop %rcx\n"
+		 "pop %rbx\n");
 
-    asmv("mov %gs:0x8, %rsp\n"); // Restore rsp from CPUData->TempStack
+	/* Restore rsp from TCB->TempStack */
+	asmv("mov %gs:0x8, %rsp\n");
 #ifdef DEBUG
-    asmv("movq $0, %gs:0x8\n"); // Easier to debug stacks // FIXME: Can't use xor
+	/* Easier to debug stacks */
+	asmv("movq $0, %gs:0x8\n");
 #endif
 
-    asmv("swapgs\n");  // Swap GS back to the user GS
-    asmv("sti\n");     // Enable interrupts
-    asmv("sysretq\n"); // Return to rcx address in user mode
+	asmv("swapgs\n");  /* Swap GS back to the user GS */
+	asmv("sti\n");	   /* Enable interrupts */
+	asmv("sysretq\n"); /* Return to rcx address in user mode */
 }
 
 void InitializeSystemCalls()
 {
-    wrmsr(MSR_EFER, rdmsr(MSR_EFER) | 1);
-    wrmsr(MSR_STAR, ((uint64_t)(GDT_KERNEL_CODE) << 32) | ((uint64_t)(GDT_KERNEL_DATA | 3) << 48));
-    wrmsr(MSR_LSTAR, (uint64_t)SystemCallHandlerStub);
-    wrmsr(MSR_SYSCALL_MASK, (uint64_t)(1 << 9));
+	wrmsr(MSR_EFER, rdmsr(MSR_EFER) | 1);
+	wrmsr(MSR_STAR, ((uint64_t)(GDT_KERNEL_CODE) << 32) | ((uint64_t)(GDT_KERNEL_DATA | 3) << 48));
+	wrmsr(MSR_LSTAR, (uint64_t)SystemCallHandlerStub);
+	wrmsr(MSR_SYSCALL_MASK, (uint64_t)(1 << 9));
 }

@@ -60,8 +60,9 @@ EXTERNC __weak __noreturn __no_stack_protector void __stack_chk_fail(void)
     debug("Current stack check guard value: %#lx", __stack_chk_guard);
     KPrint("\eFF0000Stack smashing detected!");
 
-#if defined(a86)
     void *Stack = nullptr;
+#if defined(a86)
+
 #if defined(a64)
     asmv("movq %%rsp, %0"
          : "=r"(Stack));
@@ -69,13 +70,22 @@ EXTERNC __weak __noreturn __no_stack_protector void __stack_chk_fail(void)
     asmv("movl %%esp, %0"
          : "=r"(Stack));
 #endif
+
+#elif defined(aa64)
+
+    asmv("mov %%sp, %0"
+         : "=r"(Stack));
+
+#endif
     error("Stack address: %#lx", Stack);
 
-    while (1)
-        asmv("cli; hlt");
+    if (DebuggerIsAttached)
+#ifdef a86
+        asmv("int $0x3");
 #elif defined(aa64)
-    asmv("wfe");
+        asmv("brk #0");
 #endif
+
     CPU::Stop();
 }
 

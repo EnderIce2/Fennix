@@ -1076,6 +1076,7 @@ namespace Memory
         ~MemMgr();
 
     private:
+        NewLock(MgrLock);
         Bitmap PageBitmap;
         PageTable *Table;
         VirtualFileSystem::Node *Directory;

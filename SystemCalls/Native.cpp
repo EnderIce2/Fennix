@@ -16,105 +16,75 @@
 */
 
 #include <syscalls.hpp>
+
 #include <memory.hpp>
 #include <lock.hpp>
 #include <exec.hpp>
 #include <errno.h>
-
 #include <debug.h>
 
 #include "../syscalls.h"
 #include "../kernel.h"
-
 #include "../ipc.h"
+
+#define SysFrm SyscallsFrame
 
 using InterProcessCommunication::IPC;
 using InterProcessCommunication::IPCID;
 using Tasking::Token;
 using Tasking::TTL;
+using Tasking::TaskStatus::Ready;
+using Tasking::TaskStatus::Terminated;
 using Tasking::TTL::Trusted;
 using Tasking::TTL::TrustedByKernel;
 using Tasking::TTL::UnknownTrustLevel;
 using Tasking::TTL::Untrusted;
 
-static inline bool CheckTrust(int TrustLevel)
+__noreturn static void sys_exit(SysFrm *, int code)
 {
-	Token token = TaskManager->GetCurrentThread()->Security.UniqueToken;
-	if (likely(TaskManager->GetSecurityManager()->IsTokenTrusted(token, TrustLevel)))
-		return true;
+	trace("Userspace thread %s(%d) exited with code %d (%#x)",
+		  TaskManager->GetCurrentThread()->Name,
+		  TaskManager->GetCurrentThread()->ID, code,
+		  code < 0 ? -code : code);
 
-	warn("Thread %s(%lld) tried to access a system call \"%s\" with insufficient trust level",
-		 TaskManager->GetCurrentThread()->Name, TaskManager->GetCurrentThread()->ID,
-		 KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_extract_return_addr(__builtin_return_address(0))));
-	debug("token=%#lx, trust=%d", token, TaskManager->GetSecurityManager()->GetTokenTrustLevel(token));
-	return false;
-}
-
-static int sys_exit(SyscallsFrame *Frame, int code)
-{
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted | UnknownTrustLevel))
-		return SYSCALL_ACCESS_DENIED;
-
-	trace("Userspace thread %s(%lld) exited with code %#llx", TaskManager->GetCurrentThread()->Name, TaskManager->GetCurrentThread()->ID, code);
 	TaskManager->GetCurrentThread()->ExitCode = code;
-	TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+	TaskManager->GetCurrentThread()->Status = Terminated;
 	TaskManager->Schedule();
-
-	UNUSED(Frame);
-	return SYSCALL_OK;
+	__builtin_unreachable();
 }
 
-static int sys_print(SyscallsFrame *Frame, char Char, int Index)
+static int sys_print(SysFrm *, char Char, int Index)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	char ret = Display->Print(Char, Index, true);
 	if (!Config.BootAnimation && Index == 0)
-#ifdef DEBUG
 		Display->SetBuffer(Index);
-#else
-		if (Char == '\n')
-			Display->SetBuffer(Index);
-#endif
-	UNUSED(Frame);
 	return ret;
 }
 
-static uintptr_t sys_request_pages(SyscallsFrame *Frame, size_t Count)
+static uintptr_t sys_request_pages(SysFrm *, size_t Count)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	UNUSED(Frame);
-	return (uintptr_t)TaskManager->GetCurrentThread()->Memory->RequestPages(Count + 1, true);
+	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	return (uintptr_t)MemMgr->RequestPages(Count + 1, true);
 }
 
-static int sys_free_pages(SyscallsFrame *Frame, uintptr_t Address, size_t Count)
+static int sys_free_pages(SysFrm *, uintptr_t Address, size_t Count)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	TaskManager->GetCurrentThread()->Memory->FreePages((void *)Address, Count + 1);
-	UNUSED(Frame);
+	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	MemMgr->FreePages((void *)Address, Count + 1);
 	return SYSCALL_OK;
 }
 
-static int sys_detach_address(SyscallsFrame *Frame, uintptr_t Address)
+static int sys_detach_address(SysFrm *, uintptr_t Address)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	TaskManager->GetCurrentThread()->Memory->DetachAddress((void *)Address);
-	UNUSED(Frame);
+	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	MemMgr->DetachAddress((void *)Address);
 	return SYSCALL_OK;
 }
 
-static int sys_memory_map(SyscallsFrame *Frame, uintptr_t VirtualAddress, uintptr_t PhysicalAddress, size_t Size, enum MemoryMapFlags Flags)
+static int sys_memory_map(SysFrm *, uintptr_t VirtualAddress,
+						  uintptr_t PhysicalAddress, size_t Size,
+						  enum MemoryMapFlags Flags)
 {
-	if (!CheckTrust(TrustedByKernel))
-		return SYSCALL_ACCESS_DENIED;
-
 	if (Flags > 7) /* (MAP_PRESENT | MAP_WRITABLE | MAP_USER) */
 		return SYSCALL_INVALID_ARGUMENT;
 
@@ -126,15 +96,12 @@ static int sys_memory_map(SyscallsFrame *Frame, uintptr_t VirtualAddress, uintpt
 				Size, Flags);
 	}
 
-	UNUSED(Frame);
 	return SYSCALL_OK;
 }
 
-static int sys_memory_unmap(SyscallsFrame *Frame, uintptr_t VirtualAddress, size_t Size)
+static int sys_memory_unmap(SysFrm *, uintptr_t VirtualAddress,
+							size_t Size)
 {
-	if (!CheckTrust(TrustedByKernel))
-		return SYSCALL_ACCESS_DENIED;
-
 	Memory::PageTable *PageTable = TaskManager->GetCurrentProcess()->PageTable;
 	{
 		Memory::Virtual vmm = Memory::Virtual(PageTable);
@@ -142,19 +109,18 @@ static int sys_memory_unmap(SyscallsFrame *Frame, uintptr_t VirtualAddress, size
 				  Size);
 	}
 
-	UNUSED(Frame);
 	return SYSCALL_OK;
 }
 
-static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
+static uintptr_t sys_kernelctl(SysFrm *,
+							   enum KCtl Command,
+							   uint64_t Arg1, uint64_t Arg2,
+							   uint64_t Arg3, uint64_t Arg4)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	switch (Command)
 	{
 	case KCTL_GET_PID:
-		return TaskManager->GetCurrentThread()->Parent->ID;
+		return TaskManager->GetCurrentProcess()->ID;
 	case KCTL_GET_TID:
 		return TaskManager->GetCurrentThread()->ID;
 	case KCTL_GET_PAGE_SIZE:
@@ -163,9 +129,6 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 		return TaskManager->GetCurrentThread()->Security.IsCritical;
 	case KCTL_REGISTER_ELF_LIB:
 	{
-		if (!CheckTrust(TrustedByKernel | Trusted))
-			return SYSCALL_ACCESS_DENIED;
-
 		char *Identifier = (char *)Arg1;
 		const char *Path = (const char *)Arg2;
 
@@ -175,7 +138,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 		std::string FullPath = Path;
 		int retries = 0;
 	RetryReadPath:
-		debug("KCTL_REGISTER_ELF_LIB: Trying to open %s", FullPath.c_str());
+		debug("KCTL_REGISTER_ELF_LIB: Trying to open %s",
+			  FullPath.c_str());
 		VirtualFileSystem::File f = vfs->Open(FullPath.c_str());
 
 		if (!f.IsOK())
@@ -194,7 +158,8 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 				break;
 			case 3:
 			{
-				VirtualFileSystem::Node *cwd = TaskManager->GetCurrentProcess()->CurrentWorkingDirectory;
+				VirtualFileSystem::Node *cwd =
+					TaskManager->GetCurrentProcess()->CurrentWorkingDirectory;
 				FullPath = vfs->GetPathFromNode(cwd).get();
 				break;
 			}
@@ -223,9 +188,6 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 	}
 	case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
 	{
-		if (!CheckTrust(TrustedByKernel | Trusted))
-			return SYSCALL_ACCESS_DENIED;
-
 		char *Identifier = (char *)Arg1;
 		if (!Identifier)
 			return 0;
@@ -234,17 +196,16 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 
 		if (!lib.MemoryImage)
 		{
-			debug("Failed to get library memory image %#lx", (uintptr_t)lib.MemoryImage);
+			debug("Failed to get library memory image %#lx",
+				  (uintptr_t)lib.MemoryImage);
 		}
 
-		debug("Returning memory image %#lx (%s)", (uintptr_t)lib.MemoryImage, Identifier);
+		debug("Returning memory image %#lx (%s)",
+			  (uintptr_t)lib.MemoryImage, Identifier);
 		return (uintptr_t)lib.MemoryImage;
 	}
 	case KCTL_GET_ABSOLUTE_PATH:
 	{
-		if (!CheckTrust(TrustedByKernel | Trusted))
-			return SYSCALL_ACCESS_DENIED;
-
 		char *Identifier = (char *)Arg1;
 		void *Buffer = (void *)Arg2;
 		size_t BufferSize = Arg3;
@@ -274,15 +235,11 @@ static uintptr_t sys_kernelctl(SyscallsFrame *Frame, enum KCtl Command, uint64_t
 	UNUSED(Arg2);
 	UNUSED(Arg3);
 	UNUSED(Arg4);
-	UNUSED(Frame);
 }
 
-static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t Flags)
+static uint64_t sys_file_open(SysFrm *, const char *Path, uint64_t Flags)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	debug("(Path: %s, Flags: %#lx)", Path, Flags);
+	function("%s, %#lx", Path, Flags);
 	VirtualFileSystem::Node *cwd = nullptr;
 	if (vfs->PathIsRelative(Path))
 		cwd = TaskManager->GetCurrentProcess()->CurrentWorkingDirectory;
@@ -297,118 +254,111 @@ static uint64_t sys_file_open(SyscallsFrame *Frame, const char *Path, uint64_t F
 		return SYSCALL_INTERNAL_ERROR;
 	}
 
-	VirtualFileSystem::File *KernelPrivate = (VirtualFileSystem::File *)TaskManager->GetCurrentThread()->Memory->RequestPages(TO_PAGES(sizeof(VirtualFileSystem::File)));
+	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+
+	constexpr size_t FileStructPages =
+		TO_PAGES(sizeof(VirtualFileSystem::File));
+
+	VirtualFileSystem::File *KernelPrivate =
+		(VirtualFileSystem::File *)MemMgr->RequestPages(FileStructPages);
 	*KernelPrivate = KPObj;
 	debug("Opened file %s (%d)", KPObj.Name, KPObj.Status);
 	return (uint64_t)KernelPrivate;
-	UNUSED(Frame);
 	UNUSED(Flags);
 }
 
-static int sys_file_close(SyscallsFrame *Frame, void *KernelPrivate)
+static int sys_file_close(SysFrm *, void *KernelPrivate)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	debug("(KernelPrivate: %#lx)", KernelPrivate);
+	function("%#lx", KernelPrivate);
 
 	if (KernelPrivate)
 	{
 		VirtualFileSystem::File KPObj = *(VirtualFileSystem::File *)KernelPrivate;
 		debug("Closed file %s (%d)", KPObj.Name, KPObj.Status);
 		vfs->Close(KPObj);
-		TaskManager->GetCurrentThread()->Memory->FreePages(KernelPrivate, TO_PAGES(sizeof(VirtualFileSystem::File)));
+		Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+		MemMgr->FreePages(KernelPrivate,
+						  TO_PAGES(sizeof(VirtualFileSystem::File)));
 		return SYSCALL_OK;
 	}
 	return SYSCALL_INVALID_ARGUMENT;
-	UNUSED(Frame);
 }
 
-static uint64_t sys_file_read(SyscallsFrame *Frame, void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
+static uint64_t sys_file_read(SysFrm *, void *KernelPrivate,
+							  uint8_t *Buffer, uint64_t Size)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	if (KernelPrivate == nullptr)
 		return 0;
 
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Buffer, Size);
-	return vfs->Read(*(VirtualFileSystem::File *)KernelPrivate, Buffer, (size_t)Size);
-	UNUSED(Frame);
-}
+	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)",
+		  KernelPrivate, Buffer, Size);
 
-static uint64_t sys_file_write(SyscallsFrame *Frame, void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
-{
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	if (KernelPrivate == nullptr)
-		return 0;
-
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)", KernelPrivate, Buffer, Size);
-	return vfs->Write(*(VirtualFileSystem::File *)KernelPrivate, Buffer, (size_t)Size);
-	UNUSED(Frame);
-}
-
-static off_t sys_file_seek(SyscallsFrame *Frame, void *KernelPrivate, off_t Offset, int Whence)
-{
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	if (KernelPrivate == nullptr)
-		return 0;
-
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %d)", KernelPrivate, Offset, Whence);
 	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
+	return vfs->Read(*KPObj, Buffer, (size_t)Size);
+}
 
+static uint64_t sys_file_write(SysFrm *, void *KernelPrivate,
+							   uint8_t *Buffer, uint64_t Size)
+{
+	if (KernelPrivate == nullptr)
+		return 0;
+
+	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)",
+		  KernelPrivate, Buffer, Size);
+
+	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
+	return vfs->Write(*KPObj, Buffer, (size_t)Size);
+}
+
+static off_t sys_file_seek(SysFrm *, void *KernelPrivate,
+						   off_t Offset, int Whence)
+{
+	if (KernelPrivate == nullptr)
+		return 0;
+
+	debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %d)",
+		  KernelPrivate, Offset, Whence);
+
+	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
 	off_t ret = vfs->Seek(*KPObj, (off_t)Offset, (uint8_t)Whence);
 	debug("Seek %s %ld", KPObj->Name, ret);
 	return ret;
-	UNUSED(Frame);
 }
 
-static int sys_file_status(SyscallsFrame *Frame)
+static int sys_file_status(SysFrm *)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	fixme("sys_file_status: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_ipc(SyscallsFrame *Frame, enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
+static int sys_ipc(SysFrm *, enum IPCCommand Command,
+				   enum IPCType Type, int ID, int Flags,
+				   void *Buffer, size_t Size)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	UNUSED(Frame);
-	return TaskManager->GetCurrentProcess()->IPC->HandleSyscall(Command, Type, ID, Flags, Buffer, Size);
+	InterProcessCommunication::IPC *ipc = TaskManager->GetCurrentProcess()->IPC;
+	return ipc->HandleSyscall(Command, Type, ID, Flags, Buffer, Size);
 }
 
-static int sys_sleep(SyscallsFrame *Frame, uint64_t Milliseconds)
+static int sys_sleep(SysFrm *, uint64_t Milliseconds)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
-	UNUSED(Frame);
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-	TaskManager->Sleep(Milliseconds);
+	TaskManager->Sleep(Milliseconds, true);
 	return 0;
 }
 
-static int sys_fork(SyscallsFrame *Frame)
+static int sys_fork(SysFrm *Frame)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	Tasking::PCB *Parent = TaskManager->GetCurrentThread()->Parent;
 	Tasking::TCB *Thread = TaskManager->GetCurrentThread();
 
-	Tasking::PCB *NewProcess = TaskManager->CreateProcess(Parent,
-														  Parent->Name,
-														  Parent->Security.TrustLevel,
-														  Parent->ELFSymbolTable ? Parent->ELFSymbolTable->GetImage() : nullptr);
+	void *ProcSymTable = nullptr;
+	if (Parent->ELFSymbolTable)
+		ProcSymTable = Parent->ELFSymbolTable->GetImage();
+
+	Tasking::PCB *NewProcess =
+		TaskManager->CreateProcess(Parent,
+								   Parent->Name,
+								   Parent->Security.TrustLevel,
+								   ProcSymTable);
 
 	if (!NewProcess)
 	{
@@ -419,14 +369,15 @@ static int sys_fork(SyscallsFrame *Frame)
 	strncpy(NewProcess->Name, Parent->Name, sizeof(NewProcess->Name));
 	NewProcess->IPC->Fork(Parent->IPC);
 
-	Tasking::TCB *NewThread = TaskManager->CreateThread(NewProcess,
-														0,
-														nullptr,
-														nullptr,
-														std::vector<AuxiliaryVector>(),
-														Thread->Info.Architecture,
-														Thread->Info.Compatibility,
-														true);
+	Tasking::TCB *NewThread =
+		TaskManager->CreateThread(NewProcess,
+								  0,
+								  nullptr,
+								  nullptr,
+								  std::vector<AuxiliaryVector>(),
+								  Thread->Info.Architecture,
+								  Thread->Info.Compatibility,
+								  true);
 
 	strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
 
@@ -444,7 +395,9 @@ static int sys_fork(SyscallsFrame *Frame)
 
 	if (RetChild--)
 	{
-		/* We can't just return 0; because the CPUData->SystemCallStack is no longer valid */
+		/* We can't just return 0; because the
+			CPUData->SystemCallStack is no
+			longer valid */
 		asmv("movq %0, %%rcx\n"
 			 :
 			 : "r"(ReturnAddress));
@@ -454,10 +407,10 @@ static int sys_fork(SyscallsFrame *Frame)
 		asmv("mov %0, %%rbp\n"
 			 :
 			 : "r"(ChildStackPointer));
-		asmv("movq $0, %rax\n"); // Return 0 to the child
-		asmv("swapgs\n");		 // Swap GS back to the user GS
-		asmv("sti\n");			 // Enable interrupts
-		asmv("sysretq\n");		 // Return to rcx address in user mode
+		asmv("movq $0, %rax\n"); /* Return 0 to the child */
+		asmv("swapgs\n");		 /* Swap GS back to the user GS */
+		asmv("sti\n");			 /* Enable interrupts */
+		asmv("sysretq\n");		 /* Return to rcx address in user mode */
 	}
 	RetChild = 1;
 	ReturnAddress = Frame->ReturnAddress;
@@ -470,10 +423,12 @@ static int sys_fork(SyscallsFrame *Frame)
 
 	if (Thread->Security.IsCritical)
 		NewThread->SetCritical(true);
-	TaskManager->GetSecurityManager()->TrustToken(NewProcess->Security.UniqueToken,
-												  (Tasking::TTL)TaskManager->GetSecurityManager()->GetTokenTrustLevel(Parent->Security.UniqueToken));
-	TaskManager->GetSecurityManager()->TrustToken(NewThread->Security.UniqueToken,
-												  (Tasking::TTL)TaskManager->GetSecurityManager()->GetTokenTrustLevel(Thread->Security.UniqueToken));
+
+	Tasking::Security *Sec = TaskManager->GetSecurityManager();
+	Sec->TrustToken(NewProcess->Security.UniqueToken,
+					(TTL)Sec->GetTokenTrustLevel(Parent->Security.UniqueToken));
+	Sec->TrustToken(NewThread->Security.UniqueToken,
+					(TTL)Sec->GetTokenTrustLevel(Thread->Security.UniqueToken));
 
 #ifdef a86
 	NewThread->ShadowGSBase = Thread->ShadowGSBase;
@@ -482,180 +437,358 @@ static int sys_fork(SyscallsFrame *Frame)
 #endif
 
 	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)", Thread->Name, Thread->ID, NewThread->Name, NewThread->ID);
-	NewThread->Status = Tasking::TaskStatus::Ready;
+	NewThread->Status = Ready;
 	return (int)NewThread->ID;
-	UNUSED(Frame);
 }
 
-static int sys_wait(SyscallsFrame *Frame)
+static int sys_wait(SysFrm *)
 {
-	fixme("sys_wait: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_kill(SyscallsFrame *Frame)
+static int sys_kill(SysFrm *)
 {
-	fixme("sys_kill: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_spawn(SyscallsFrame *Frame)
+static int sys_spawn(SysFrm *)
 {
-	fixme("sys_spawn: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_spawn_thread(SyscallsFrame *Frame, uint64_t InstructionPointer)
+static int sys_spawn_thread(SysFrm *, uint64_t InstructionPointer)
 {
-	Tasking::TCB *thread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)InstructionPointer);
+	Tasking::TCB *thread =
+		TaskManager->CreateThread(TaskManager->GetCurrentProcess(),
+								  (Tasking::IP)InstructionPointer);
 	if (thread)
 		return (int)thread->ID;
 	return SYSCALL_ERROR;
 }
 
-static int sys_get_thread_list_of_process(SyscallsFrame *Frame)
+static int sys_get_thread_list_of_process(SysFrm *)
 {
-	fixme("sys_get_thread_list_of_process: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_get_current_process(SyscallsFrame *Frame)
+static int sys_get_current_process(SysFrm *)
 {
-	fixme("sys_get_current_process: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_get_current_thread(SyscallsFrame *Frame)
+static int sys_get_current_thread(SysFrm *)
 {
-	fixme("sys_get_current_thread: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_get_current_process_id(SyscallsFrame *Frame)
+static int sys_get_current_process_id(SysFrm *)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	return (int)TaskManager->GetCurrentProcess()->ID;
 }
 
-static int sys_get_current_thread_id(SyscallsFrame *Frame)
+static int sys_get_current_thread_id(SysFrm *)
 {
-	if (!CheckTrust(TrustedByKernel | Trusted | Untrusted))
-		return SYSCALL_ACCESS_DENIED;
-
 	return (int)TaskManager->GetCurrentThread()->ID;
 }
 
-static int sys_get_process_by_pid(SyscallsFrame *Frame)
+static int sys_get_process_by_pid(SysFrm *)
 {
-	fixme("sys_get_process_by_pid: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_get_thread_by_tid(SyscallsFrame *Frame)
+static int sys_get_thread_by_tid(SysFrm *)
 {
-	fixme("sys_get_thread_by_tid: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_kill_process(SyscallsFrame *Frame)
+static int sys_kill_process(SysFrm *)
 {
-	fixme("sys_kill_process: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_kill_thread(SyscallsFrame *Frame)
+static int sys_kill_thread(SysFrm *)
 {
-	fixme("sys_kill_thread: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_sys_reserved_create_process(SyscallsFrame *Frame)
+static int sys_sys_reserved_create_process(SysFrm *)
 {
-	fixme("sys_sys_reserved_create_process: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static int sys_sys_reserved_create_thread(SyscallsFrame *Frame)
+static int sys_sys_reserved_create_thread(SysFrm *)
 {
-	fixme("sys_sys_reserved_create_thread: %#lx", Frame);
+	stub;
 	return SYSCALL_NOT_IMPLEMENTED;
 }
 
-static void *NativeSyscallsTable[_MaxSyscall] = {
-	[_Exit] = (void *)sys_exit,
-	[_Print] = (void *)sys_print,
-
-	[_RequestPages] = (void *)sys_request_pages,
-	[_FreePages] = (void *)sys_free_pages,
-	[_DetachAddress] = (void *)sys_detach_address,
-	[_MemoryMap] = (void *)sys_memory_map,
-	[_MemoryUnmap] = (void *)sys_memory_unmap,
-
-	[_KernelCTL] = (void *)sys_kernelctl,
-
-	[_FileOpen] = (void *)sys_file_open,
-	[_FileClose] = (void *)sys_file_close,
-	[_FileRead] = (void *)sys_file_read,
-	[_FileWrite] = (void *)sys_file_write,
-	[_FileSeek] = (void *)sys_file_seek,
-	[_FileStatus] = (void *)sys_file_status,
-
-	[_IPC] = (void *)sys_ipc,
-	[_Sleep] = (void *)sys_sleep,
-	[_Fork] = (void *)sys_fork,
-	[_Wait] = (void *)sys_wait,
-	[_Kill] = (void *)sys_kill,
-	[_Spawn] = (void *)sys_spawn,
-	[_SpawnThread] = (void *)sys_spawn_thread,
-	[_GetThreadListOfProcess] = (void *)sys_get_thread_list_of_process,
-	[_GetCurrentProcess] = (void *)sys_get_current_process,
-	[_GetCurrentThread] = (void *)sys_get_current_thread,
-	[_GetCurrentProcessID] = (void *)sys_get_current_process_id,
-	[_GetCurrentThreadID] = (void *)sys_get_current_thread_id,
-	[_GetProcessByPID] = (void *)sys_get_process_by_pid,
-	[_GetThreadByTID] = (void *)sys_get_thread_by_tid,
-	[_KillProcess] = (void *)sys_kill_process,
-	[_KillThread] = (void *)sys_kill_thread,
-	[_SysReservedCreateProcess] = (void *)sys_sys_reserved_create_process,
-	[_SysReservedCreateThread] = (void *)sys_sys_reserved_create_thread,
+struct SyscallData
+{
+	const char *Name;
+	void *Handler;
+	int TrustLevel;
 };
 
-uintptr_t HandleNativeSyscalls(SyscallsFrame *Frame)
+static SyscallData NativeSyscallsTable[_MaxSyscall] = {
+	/**
+	 *
+	 * Basic syscalls
+	 *
+	 */
+
+	[_Exit] = {
+		"Exit",
+		(void *)sys_exit,
+		TrustedByKernel | Trusted | Untrusted | UnknownTrustLevel,
+	},
+	[_Print] = {
+		"Print",
+		(void *)sys_print,
+		TrustedByKernel | Trusted,
+	},
+
+	/**
+	 *
+	 * Memory syscalls
+	 *
+	 */
+
+	[_RequestPages] = {
+		"RequestPages",
+		(void *)sys_request_pages,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FreePages] = {
+		"FreePages",
+		(void *)sys_free_pages,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_DetachAddress] = {
+		"DetachAddress",
+		(void *)sys_detach_address,
+		TrustedByKernel | Trusted,
+	},
+	[_MemoryMap] = {
+		"MemoryMap",
+		(void *)sys_memory_map,
+		TrustedByKernel,
+	},
+	[_MemoryUnmap] = {
+		"MemoryUnmap",
+		(void *)sys_memory_unmap,
+		TrustedByKernel,
+	},
+
+	/**
+	 *
+	 * Kernel Control syscalls
+	 *
+	 */
+
+	[_KernelCTL] = {
+		"KernelCTL",
+		(void *)sys_kernelctl,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+
+	/**
+	 *
+	 * File syscalls
+	 *
+	 */
+
+	[_FileOpen] = {
+		"FileOpen",
+		(void *)sys_file_open,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FileClose] = {
+		"FileClose",
+		(void *)sys_file_close,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FileRead] = {
+		"FileRead",
+		(void *)sys_file_read,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FileWrite] = {
+		"FileWrite",
+		(void *)sys_file_write,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FileSeek] = {
+		"FileSeek",
+		(void *)sys_file_seek,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_FileStatus] = {
+		"FileStatus",
+		(void *)sys_file_status,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+
+	/**
+	 *
+	 * Process syscalls
+	 *
+	 */
+
+	[_IPC] = {
+		"IPC",
+		(void *)sys_ipc,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_Sleep] = {
+		"Sleep",
+		(void *)sys_sleep,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_Fork] = {
+		"Fork",
+		(void *)sys_fork,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_Wait] = {
+		"Wait",
+		(void *)sys_wait,
+		0,
+	},
+	[_Kill] = {
+		"Kill",
+		(void *)sys_kill,
+		0,
+	},
+	[_Spawn] = {
+		"Spawn",
+		(void *)sys_spawn,
+		0,
+	},
+	[_SpawnThread] = {
+		"SpawnThread",
+		(void *)sys_spawn_thread,
+		0,
+	},
+	[_GetThreadListOfProcess] = {
+		"GetThreadListOfProcess",
+		(void *)sys_get_thread_list_of_process,
+		0,
+	},
+	[_GetCurrentProcess] = {
+		"GetCurrentProcess",
+		(void *)sys_get_current_process,
+		0,
+	},
+	[_GetCurrentThread] = {
+		"GetCurrentThread",
+		(void *)sys_get_current_thread,
+		0,
+	},
+	[_GetCurrentProcessID] = {
+		"GetCurrentProcessID",
+		(void *)sys_get_current_process_id,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_GetCurrentThreadID] = {
+		"GetCurrentThreadID",
+		(void *)sys_get_current_thread_id,
+		TrustedByKernel | Trusted | Untrusted,
+	},
+	[_GetProcessByPID] = {
+		"GetProcessByPID",
+		(void *)sys_get_process_by_pid,
+		0,
+	},
+	[_GetThreadByTID] = {
+		"GetThreadByTID",
+		(void *)sys_get_thread_by_tid,
+		0,
+	},
+	[_KillProcess] = {
+		"KillProcess",
+		(void *)sys_kill_process,
+		0,
+	},
+	[_KillThread] = {
+		"KillThread",
+		(void *)sys_kill_thread,
+		0,
+	},
+	[_SysReservedCreateProcess] = {
+		"SysReservedCreateProcess",
+		(void *)sys_sys_reserved_create_process,
+		0,
+	},
+	[_SysReservedCreateThread] = {
+		"SysReservedCreateThread",
+		(void *)sys_sys_reserved_create_thread,
+		0,
+	},
+};
+
+uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 {
 #if defined(a64)
-	if (Frame->rax > sizeof(NativeSyscallsTable))
+	if (unlikely(Frame->rax > _MaxSyscall))
 	{
-		fixme("Syscall %ld not implemented", Frame->rax);
+		fixme("Syscall %ld not implemented.", Frame->rax);
 		return SYSCALL_NOT_IMPLEMENTED;
 	}
 
-	uintptr_t (*call)(uintptr_t, ...) = reinterpret_cast<uintptr_t (*)(uintptr_t, ...)>(NativeSyscallsTable[Frame->rax]);
-	if (!call)
+	SyscallData Syscall = NativeSyscallsTable[Frame->rax];
+
+	uintptr_t (*call)(SysFrm *, uintptr_t, ...) =
+		r_cst(uintptr_t(*)(SysFrm *, uintptr_t, ...),
+			  Syscall.Handler);
+
+	if (unlikely(!call))
 	{
-		error("Syscall %#lx failed.", Frame->rax);
-		return SYSCALL_INTERNAL_ERROR;
+		error("Syscall %#lx not implemented.", Frame->rax);
+		return SYSCALL_NOT_IMPLEMENTED;
 	}
 
-	debug("[%#lx]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
-		  Frame->rax,
-		  Frame->rdi, Frame->rsi, Frame->rdx, Frame->rcx, Frame->r8, Frame->r9);
+	Token token = TaskManager->GetCurrentThread()->Security.UniqueToken;
+	Tasking::Security *Sec = TaskManager->GetSecurityManager();
+	if (unlikely(!Sec->IsTokenTrusted(token, Syscall.TrustLevel)))
+	{
+		warn("Thread %s(%d) tried to access a system call \"%s\" with insufficient trust level",
+			 TaskManager->GetCurrentThread()->Name,
+			 TaskManager->GetCurrentThread()->ID,
+			 Syscall.Name);
 
-	uintptr_t ret = call((uintptr_t)Frame, Frame->rdi, Frame->rsi, Frame->rdx, Frame->r10, Frame->r8, Frame->r9);
-	Frame->rax = ret;
-	return ret;
+#ifdef DEBUG
+		int TknTl = Sec->GetTokenTrustLevel(token);
+		debug("token=%#lx, trust=%d%d%d%d",token,
+		TknTl & TrustedByKernel ? 1 : 0,
+		TknTl & Trusted ? 1 : 0,
+		TknTl & Untrusted ? 1 : 0,
+		TknTl & UnknownTrustLevel ? 1 : 0);
+#endif
+		return SYSCALL_ACCESS_DENIED;
+	}
+
+	debug("[%d:\"%s\"]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
+		  Frame->rax, Syscall.Name,
+		  Frame->rdi, Frame->rsi, Frame->rdx,
+		  Frame->r10, Frame->r8, Frame->r9);
+
+	return call(Frame,
+				Frame->rdi, Frame->rsi, Frame->rdx,
+				Frame->r10, Frame->r8, Frame->r9);
 #elif defined(a32)
-	if (Frame->eax > sizeof(NativeSyscallsTable))
-	{
-		fixme("Syscall %ld not implemented", Frame->eax);
-		return SYSCALL_NOT_IMPLEMENTED;
-	}
-
-	/* ... */
-
-	return SYSCALL_INTERNAL_ERROR;
+	return SYSCALL_NOT_IMPLEMENTED;
 #elif defined(aa64)
-	return SYSCALL_INTERNAL_ERROR;
+	return SYSCALL_NOT_IMPLEMENTED;
 #endif
 }
