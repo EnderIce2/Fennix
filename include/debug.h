@@ -60,21 +60,21 @@ namespace SysDbg
 #define fixme(Format, ...) SysDbg::WriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define stub SysDbg::WriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
 
-#define locked_error(Format, ...) SysDbg::LockedWriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_warn(Format, ...) SysDbg::LockedWriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_info(Format, ...) SysDbg::LockedWriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_error(Format, ...) SysDbg::LockedWriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_warn(Format, ...) SysDbg::LockedWriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_info(Format, ...) SysDbg::LockedWriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #ifdef DEBUG
-#define locked_debug(Format, ...) SysDbg::LockedWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_ubsan(Format, ...) SysDbg::LockedWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_function(Format, ...) SysDbg::LockedWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_debug(Format, ...) SysDbg::LockedWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_ubsan(Format, ...) SysDbg::LockedWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_function(Format, ...) SysDbg::LockedWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #else
-#define locked_debug(Format, ...)
-#define locked_ubsan(Format, ...)
-#define locked_function(Format, ...)
+#define l_debug(Format, ...)
+#define l_ubsan(Format, ...)
+#define l_function(Format, ...)
 #endif
-#define locked_trace(Format, ...) SysDbg::LockedWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_fixme(Format, ...) SysDbg::LockedWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_stub SysDbg::LockedWriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
+#define l_trace(Format, ...) SysDbg::LockedWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_fixme(Format, ...) SysDbg::LockedWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_stub SysDbg::LockedWriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
 
 #else
 
@@ -99,21 +99,21 @@ void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, co
 #define fixme(Format, ...) SysDbgWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define stub SysDbgWriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
 
-#define locked_error(Format, ...) SysDbgLockedWriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_warn(Format, ...) SysDbgLockedWriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_info(Format, ...) SysDbgLockedWriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_error(Format, ...) SysDbgLockedWriteLine(DebugLevelError, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_warn(Format, ...) SysDbgLockedWriteLine(DebugLevelWarning, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_info(Format, ...) SysDbgLockedWriteLine(DebugLevelInfo, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #ifdef DEBUG
-#define locked_debug(Format, ...) SysDbgLockedWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_ubsan(Format, ...) SysDbgLockedWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_function(Format, ...) SysDbgLockedWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_debug(Format, ...) SysDbgLockedWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_ubsan(Format, ...) SysDbgLockedWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_function(Format, ...) SysDbgLockedWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #else
-#define locked_debug(Format, ...)
-#define locked_ubsan(Format, ...)
-#define locked_function(Format, ...)
+#define l_debug(Format, ...)
+#define l_ubsan(Format, ...)
+#define l_function(Format, ...)
 #endif
-#define locked_trace(Format, ...) SysDbgLockedWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_fixme(Format, ...) SysDbgLockedWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define locked_stub SysDbgLockedWriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
+#define l_trace(Format, ...) SysDbgLockedWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_fixme(Format, ...) SysDbgLockedWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define l_stub SysDbgLockedWriteLine(DebugLevelStub, __FILE__, __LINE__, __FUNCTION__, "stub")
 
 #endif // __cplusplus
 
