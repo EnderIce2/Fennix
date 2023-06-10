@@ -19,6 +19,7 @@
 #define __FENNIX_KERNEL_SMP_H__
 
 #include <task.hpp>
+#include <cxxabi.h>
 #include <types.h>
 #include <atomic>
 
@@ -60,6 +61,9 @@ struct CPUData
 
     /** @brief Current running thread */
     std::atomic<Tasking::TCB *> CurrentThread;
+
+    /** @brief Unwind data */
+    __cxa_eh_globals EHGlobals;
 
     /** @brief Architecture-specific data. */
     CPUArchData Data;

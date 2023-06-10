@@ -1,40 +1,87 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Attach to a running VM instance",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/kernel.fsys",
-            "cwd": "${workspaceFolder}",
-            "args": [],
-            "targetArchitecture": "x64",
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "miDebuggerArgs": "",
-            "externalConsole": false,
-            "additionalSOLibSearchPath": "${workspaceFolder}",
-            "customLaunchSetupCommands": [
-                {
-                    "text": "target remote localhost:1234",
-                    "description": "Connect to QEMU remote debugger"
-                }
-            ],
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "text": "set breakpoint pending on",
-                    "description": "Make breakpoint pending on future shared library load."
-                },
-                {
-                    "text": "file ${workspaceFolder}/kernel.fsys",
-                    "description": "Load binary."
-                },
-            ]
-        }
-    ]
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Attach to a running VM instance",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/kernel.fsys",
+			"cwd": "${workspaceFolder}",
+			"args": [],
+			"targetArchitecture": "x64",
+			"MIMode": "gdb",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
+			"miDebuggerArgs": "",
+			"externalConsole": false,
+			"additionalSOLibSearchPath": "${workspaceFolder}",
+			"customLaunchSetupCommands": [
+				{
+					"text": "target remote localhost:1234",
+					"description": "Connect to QEMU remote debugger"
+				}
+			],
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
+				},
+				{
+					"text": "file ${workspaceFolder}/kernel.fsys",
+					"description": "Load binary."
+				}
+			]
+		},
+		{
+			"name": "Attach to VM w/userspace binaries",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/kernel.fsys",
+			"cwd": "${workspaceFolder}",
+			"args": [],
+			"targetArchitecture": "x64",
+			"MIMode": "gdb",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
+			"miDebuggerArgs": "",
+			"externalConsole": false,
+			"additionalSOLibSearchPath": "${workspaceFolder}",
+			"customLaunchSetupCommands": [
+				{
+					"text": "target remote localhost:1234",
+					"description": "Connect to QEMU remote debugger"
+				}
+			],
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
+				},
+				{
+					"text": "file ${workspaceFolder}/kernel.fsys",
+					"description": "Load binary."
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/init",
+					"description": "Load /bin/init."
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/lib/ld.so",
+					"description": "Load /lib/ld.so."
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/usr/bin/doom",
+					"description": "Load /usr/bin/doom."
+				},
+			],
+		}
+	]
 }

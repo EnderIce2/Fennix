@@ -51,6 +51,7 @@ Recovery::KernelRecovery *RecoveryScreen = nullptr;
 VirtualFileSystem::Node *DevFS = nullptr;
 VirtualFileSystem::Node *MntFS = nullptr;
 VirtualFileSystem::Node *ProcFS = nullptr;
+VirtualFileSystem::Node *VarLogFS = nullptr;
 
 NewLock(ShutdownLock);
 
@@ -226,27 +227,26 @@ void TestSyscallsKernel()
 																 nullptr,
 																 nullptr,
 																 std::vector<AuxiliaryVector>(),
-																 0,
 																 Tasking::TaskArchitecture::x64,
 																 Tasking::TaskCompatibility::Native,
 																 true);
 	SyscallsTestThread->SetCritical(true);
 	TaskManager->GetSecurityManager()->TrustToken(SyscallsTestThread->Security.UniqueToken, Tasking::TTL::FullTrust);
 
-	Memory::Virtual va = Memory::Virtual(SyscallsTestProcess->PageTable);
+	Memory::Virtual vmm = Memory::Virtual(SyscallsTestProcess->PageTable);
 
-	// va.Remap((void *)TestSyscalls, va.GetPhysical((void *)TestSyscalls), Memory::P | Memory::RW | Memory::US);
+	// vmm.Remap((void *)TestSyscalls, vmm.GetPhysical((void *)TestSyscalls), Memory::P | Memory::RW | Memory::US);
 
 	// for (uintptr_t k = (uintptr_t)&_kernel_start; k < (uintptr_t)&_kernel_end; k += PAGE_SIZE)
 	// {
-	//     va.Remap((void *)k, (void *)va.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
-	//     debug("Remapped %#lx %#lx", k, va.GetPhysical((void *)k));
+	//     vmm.Remap((void *)k, (void *)vmm.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
+	//     debug("Remapped %#lx %#lx", k, vmm.GetPhysical((void *)k));
 	// }
 
 	for (uintptr_t k = (uintptr_t)TestSyscalls - PAGE_SIZE; k < (uintptr_t)TestSyscalls + FROM_PAGES(5); k += PAGE_SIZE)
 	{
-		va.Remap((void *)k, (void *)va.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
-		debug("Remapped %#lx %#lx", k, va.GetPhysical((void *)k));
+		vmm.Remap((void *)k, (void *)vmm.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
+		debug("Remapped %#lx %#lx", k, vmm.GetPhysical((void *)k));
 	}
 
 	SyscallsTestThread->Status = Tasking::TaskStatus::Ready;
@@ -274,7 +274,7 @@ Execute::SpawnData SpawnInit()
 }
 
 /* Files: 0.tga 1.tga ... 26.tga */
-void *Frames[27];
+uint8_t *Frames[27];
 uint32_t FrameSizes[27];
 size_t FrameCount = 1;
 
@@ -292,9 +292,9 @@ void BootLogoAnimationThread()
 			break;
 		}
 
-		FrameSizes[FrameCount] = s_cst(uint32_t, ba.node->Length);
-		Frames[FrameCount] = new uint8_t[ba.node->Length];
-		memcpy((void *)Frames[FrameCount], (void *)ba.node->Address, ba.node->Length);
+		FrameSizes[FrameCount] = s_cst(uint32_t, ba.GetLength());
+		Frames[FrameCount] = new uint8_t[ba.GetLength()];
+		vfs->Read(ba, Frames[FrameCount], ba.GetLength());
 		vfs->Close(ba);
 		FrameCount++;
 	}
@@ -425,7 +425,7 @@ void KernelMainThread()
 	}
 
 #ifdef DEBUG
-	Tasking::TCB *tskMgr = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
+	TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
 	TreeFS(vfs->GetRootNode(), 0);
 	TestSyscallsKernel();
 #endif
@@ -462,7 +462,7 @@ void KernelMainThread()
 	Execute::SpawnData ret = {Execute::ExStatus::Unknown, nullptr, nullptr};
 	Tasking::TCB *ExecuteThread = nullptr;
 	int ExitCode = -1;
-	ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::StartExecuteService);
+	ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::LibraryManagerService);
 	ExecuteThread->Rename("Library Manager");
 	ExecuteThread->SetCritical(true);
 	ExecuteThread->SetPriority(Tasking::Idle);
@@ -499,7 +499,8 @@ void KernelMainThread()
 Exit:
 	if (ExitCode != 0)
 	{
-		KPrint("\eE85230Userspace process exited with code %d", ExitCode);
+		KPrint("\eE85230Userspace process exited with code %d (%#x)", ExitCode,
+			   ExitCode < 0 ? ExitCode * -1 : ExitCode);
 		KPrint("Dropping to recovery screen...");
 		TaskManager->Sleep(2500);
 		TaskManager->WaitForThread(blaThread);

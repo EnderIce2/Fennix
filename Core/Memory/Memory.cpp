@@ -441,7 +441,10 @@ void *malloc(size_t Size)
         break;
     }
     default:
-        throw;
+    {
+        error("Unknown allocator type %d", AllocatorType);
+        CPU::Stop();
+    }
     }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
@@ -494,7 +497,10 @@ void *calloc(size_t n, size_t Size)
         return ret;
     }
     default:
-        throw;
+    {
+        error("Unknown allocator type %d", AllocatorType);
+        CPU::Stop();
+    }
     }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
@@ -547,7 +553,10 @@ void *realloc(void *Address, size_t Size)
         return ret;
     }
     default:
-        throw;
+    {
+        error("Unknown allocator type %d", AllocatorType);
+        CPU::Stop();
+    }
     }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)
@@ -598,7 +607,10 @@ void free(void *Address)
         break;
     }
     default:
-        throw;
+    {
+        error("Unknown allocator type %d", AllocatorType);
+        CPU::Stop();
+    }
     }
 #ifdef DEBUG
     if (EnableExternalMemoryTracer)

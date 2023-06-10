@@ -77,6 +77,8 @@ LockClass mExtTrkLock;
  * - [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
  * - [ ] Bootstrap should have a separate bss section + PHDR.
  * - [ ] Reimplement the driver conflict detection.
+ * - [ ] Elf loader shouldn't create a full copy of the elf binary. Copy only the needed sections.
+ * - [ ] Use NX-bit.
  *
  * ISSUES:
  * - [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
@@ -167,6 +169,19 @@ LockClass mExtTrkLock;
  *
  * - Atomic operations:
  *    https://en.cppreference.com/w/cpp/atomic/atomic
+ *
+ * - ELF:
+ *    https://www.sco.com/developers/gabi/latest/ch4.eheader.html
+ *    https://refspecs.linuxfoundation.org/elf/elf.pdf
+ *    https://docs.oracle.com/cd/E19683-01/817-3677/chapter6-42444/index.html
+ *    https://docs.oracle.com/cd/E19683-01/816-1386/chapter6-83432/index.html
+ *    https://www.youtube.com/watch?v=nC1U1LJQL8o
+ *    https://stevens.netmeister.org/631/elf.html
+ *    https://github.com/torvalds/linux/blob/master/include/uapi/linux/elf.h
+ *
+ * - C++ ABI:
+ *    https://github.com/gcc-mirror/gcc/tree/master/libstdc%2B%2B-v3
+ *    https://itanium-cxx-abi.github.io/cxx-abi/abi.html
  *
  */
 
@@ -259,8 +274,12 @@ EXTERNC void KPrint(const char *Format, ...)
 EXTERNC NIF void Main()
 {
 	Display = new Video::Display(bInfo.Framebuffer[0]);
-	KPrint("%s - %s [\e058C19%s\eFFFFFF]", KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
-	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
+
+	KPrint("%s - %s [\e058C19%s\eFFFFFF]",
+		   KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
+	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s",
+		   CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
+
 	if (DebuggerIsAttached)
 		KPrint("\eFFA500Kernel debugger detected.");
 
@@ -293,7 +312,8 @@ EXTERNC NIF void Main()
 		Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
 		Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
 		PutCharBufferIndex = 1;
-		printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n", KERNEL_VERSION, GIT_COMMIT_SHORT);
+		printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n",
+			   KERNEL_VERSION, GIT_COMMIT_SHORT);
 		Display->SetBuffer(1);
 		PutCharBufferIndex = 0;
 	}
@@ -434,13 +454,13 @@ EXTERNC NIF void Main()
 	else
 	{
 		File dev = vfs->Open("/dev");
-		if (dev.node->Flags != NodeFlags::DIRECTORY)
+		if (dev.GetFlags() != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/dev is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(dev);
-		DevFS = dev.node;
+		DevFS = dev.GetNode();
 	}
 
 	if (!vfs->PathExists("/mnt"))
@@ -448,13 +468,13 @@ EXTERNC NIF void Main()
 	else
 	{
 		File mnt = vfs->Open("/mnt");
-		if (mnt.node->Flags != NodeFlags::DIRECTORY)
+		if (mnt.GetFlags() != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/mnt is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(mnt);
-		MntFS = mnt.node;
+		MntFS = mnt.GetNode();
 	}
 
 	if (!vfs->PathExists("/proc"))
@@ -462,13 +482,41 @@ EXTERNC NIF void Main()
 	else
 	{
 		File proc = vfs->Open("/proc", nullptr);
-		if (proc.node->Flags != NodeFlags::DIRECTORY)
+		if (proc.GetFlags() != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/proc is not a directory! Halting...");
 			CPU::Stop();
 		}
 		vfs->Close(proc);
-		ProcFS = proc.node;
+		ProcFS = proc.GetNode();
+	}
+
+	if (!vfs->PathExists("/var"))
+		VarLogFS = vfs->Create("/var", NodeFlags::DIRECTORY);
+	else
+	{
+		File var = vfs->Open("/var", nullptr);
+		if (var.GetFlags() != NodeFlags::DIRECTORY)
+		{
+			KPrint("\eE85230/var is not a directory! Halting...");
+			CPU::Stop();
+		}
+		vfs->Close(var);
+		VarLogFS = var.GetNode();
+
+		if (!vfs->PathExists("/var/log"))
+			VarLogFS = vfs->Create("/var/log", NodeFlags::DIRECTORY);
+		else
+		{
+			File var_log = vfs->Open("/var/log", nullptr);
+			if (var_log.GetFlags() != NodeFlags::DIRECTORY)
+			{
+				KPrint("\eE85230/var/log is not a directory! Halting...");
+				CPU::Stop();
+			}
+			vfs->Close(var_log);
+			VarLogFS = var_log.GetNode();
+		}
 	}
 
 	KPrint("\e058C19################################");
@@ -552,7 +600,7 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 	if (DriverManager)
 		delete DriverManager, DriverManager = nullptr;
 
-	if (TaskManager)
+	if (TaskManager && !TaskManager->IsPanic())
 	{
 		TaskManager->SignalShutdown();
 		delete TaskManager, TaskManager = nullptr;

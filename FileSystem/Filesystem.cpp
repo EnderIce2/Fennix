@@ -46,7 +46,6 @@ namespace VirtualFileSystem
         size_t Size = 1;
         size_t PathSize = 0;
 
-        // Traverse the filesystem tree and build the path by adding each parent's Name field to the Path array
         while (Parent != FileSystemRoot && Parent != nullptr)
         {
             bool Found = false;
@@ -82,36 +81,26 @@ namespace VirtualFileSystem
             Parent = Parent->Parent;
         }
 
-        // Calculate the total size of the final path string
         for (size_t i = 0; i < PathSize; i++)
-        {
             Size += strlen(Path[i]);
-        }
 
-        // Allocate a new string for the final path
         std::shared_ptr<char> FinalPath;
         FinalPath.reset(new char[Size]);
 
         size_t Offset = 0;
 
-        // Concatenate the elements of the Path array into the FinalPath string
         for (size_t i = PathSize - 1; i < PathSize; i--)
         {
             if (Path[i] == nullptr)
-            {
                 continue;
-            }
+
             size_t ElementSize = strlen(Path[i]);
             memcpy(FinalPath.get() + Offset, Path[i], ElementSize);
             Offset += ElementSize;
         }
 
-        // Add a null terminator to the final path string
         FinalPath.get()[Size - 1] = '\0';
-
-        // Deallocate the Path array
         delete[] Path, Path = nullptr;
-
         vfsdbg("GetPathFromNode()->\"%s\"", FinalPath.get());
         return FinalPath;
     }
@@ -498,7 +487,7 @@ namespace VirtualFileSystem
         return FileStatus::OK;
     }
 
-    size_t Virtual::Read(File &File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Read(File &File, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File.node))
@@ -516,10 +505,10 @@ namespace VirtualFileSystem
         File.Status = FileStatus::OK;
 
         vfsdbg("Reading %s out->%016x", File.Name, Buffer);
-        return File.node->Operator->Read(File.node, Offset, Size, Buffer);
+        return File.node->Operator->Read(File.node, Size, Buffer);
     }
 
-    size_t Virtual::Write(File &File, size_t Offset, uint8_t *Buffer, size_t Size)
+    size_t Virtual::Write(File &File, uint8_t *Buffer, size_t Size)
     {
         SmartLock(VFSLock);
         if (unlikely(!File.node))
@@ -537,7 +526,72 @@ namespace VirtualFileSystem
         File.Status = FileStatus::OK;
 
         vfsdbg("Writing %s out->%016x", File.Name, Buffer);
-        return File.node->Operator->Write(File.node, Offset, Size, Buffer);
+        return File.node->Operator->Write(File.node, Size, Buffer);
+    }
+
+    off_t Virtual::Seek(File &File, off_t Offset, uint8_t Whence)
+    {
+        SmartLock(VFSLock);
+        Node *node = File.node;
+        File.Status = FileStatus::OK;
+
+        if (unlikely(!node))
+        {
+            File.Status = FileStatus::InvalidNode;
+            return -1;
+        }
+
+        if (unlikely(!node->Operator))
+        {
+            File.Status = FileStatus::InvalidOperator;
+            return -1;
+        }
+
+        if (unlikely(node->Operator->Seek))
+        {
+            node->Offset = File.ContextOffset;
+            File.ContextOffset = node->Operator->Seek(node, Offset, Whence);
+            return File.ContextOffset;
+        }
+
+        switch (Whence)
+        {
+        case SEEK_SET:
+        {
+            if ((size_t)Offset > node->Length)
+                return -1;
+
+            File.ContextOffset = node->Offset = Offset;
+            break;
+        }
+        case SEEK_CUR:
+        {
+            off_t NewOffset = File.ContextOffset + Offset;
+            if ((size_t)NewOffset > node->Length ||
+                NewOffset < 0)
+                return -1;
+
+            File.ContextOffset = node->Offset = NewOffset;
+            break;
+        }
+        case SEEK_END:
+        {
+            off_t NewOffset = node->Length + Offset;
+            if ((size_t)NewOffset > node->Length ||
+                NewOffset < 0)
+                return -1;
+
+            File.ContextOffset = node->Offset = NewOffset;
+            break;
+        }
+        default:
+        {
+            error("Invalid whence!");
+            return -1;
+        }
+        }
+
+        return File.ContextOffset;
     }
 
     /* TODO: CHECK Open */
@@ -551,6 +605,7 @@ namespace VirtualFileSystem
         {
             File file{};
             file.node = FileSystemRoot;
+
             strcpy(file.Name, "/");
             return file;
         }
@@ -559,8 +614,10 @@ namespace VirtualFileSystem
         {
             File file{};
             file.node = Parent;
+
             if (unlikely(!file.node))
                 file.Status = FileStatus::NotFound;
+
             cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
             strcpy(file.Name, basename);
             return file;
@@ -575,6 +632,7 @@ namespace VirtualFileSystem
 
             if (!file.node)
                 file.Status = FileStatus::NotFound;
+
             cwk_path_get_basename(GetPathFromNode(Parent).get(), &basename, nullptr);
             strcpy(file.Name, basename);
             return file;
@@ -631,6 +689,8 @@ namespace VirtualFileSystem
         if (unlikely(!File.node))
             return FileStatus::InvalidHandle;
         vfsdbg("Closing %s", File.Name);
+
+        File.node->Offset = 0;
         return FileStatus::OK;
     }
 

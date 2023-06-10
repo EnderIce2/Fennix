@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-// some of the code is from: https://github.com/dotnet/llilc/blob/main/include/clr/ntimage.h
+/* Some of the code is from: https://github.com/dotnet/llilc/blob/main/include/clr/ntimage.h */
 
 #define near /* __near */
 #define far  /* __far */
@@ -110,61 +110,61 @@ typedef double DOUBLE;
 #define IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT 13
 #define IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR 14
 
-typedef struct _IMAGE_DOS_HEADER // DOS .EXE header
+typedef struct _IMAGE_DOS_HEADER /* DOS .EXE header */
 {
-    USHORT e_magic;    // Magic number
-    USHORT e_cblp;     // Bytes on last page of file
-    USHORT e_cp;       // Pages in file
-    USHORT e_crlc;     // Relocations
-    USHORT e_cparhdr;  // Size of header in paragraphs
-    USHORT e_minalloc; // Minimum extra paragraphs needed
-    USHORT e_maxalloc; // Maximum extra paragraphs needed
-    USHORT e_ss;       // Initial (relative) SS value
-    USHORT e_sp;       // Initial SP value
-    USHORT e_csum;     // Checksum
-    USHORT e_ip;       // Initial IP value
-    USHORT e_cs;       // Initial (relative) CS value
-    USHORT e_lfarlc;   // File address of relocation table
-    USHORT e_ovno;     // Overlay number
-    USHORT e_res[4];   // Reserved words
-    USHORT e_oemid;    // OEM identifier (for e_oeminfo)
-    USHORT e_oeminfo;  // OEM information; e_oemid specific
-    USHORT e_res2[10]; // Reserved words
-    USHORT e_lfanew;   // File address of new exe header
+    USHORT e_magic;    /* Magic number */
+    USHORT e_cblp;     /* Bytes on last page of file */
+    USHORT e_cp;       /* Pages in file */
+    USHORT e_crlc;     /* Relocations */
+    USHORT e_cparhdr;  /* Size of header in paragraphs */
+    USHORT e_minalloc; /* Minimum extra paragraphs needed */
+    USHORT e_maxalloc; /* Maximum extra paragraphs needed */
+    USHORT e_ss;       /* Initial (relative) SS value */
+    USHORT e_sp;       /* Initial SP value */
+    USHORT e_csum;     /* Checksum */
+    USHORT e_ip;       /* Initial IP value */
+    USHORT e_cs;       /* Initial (relative) CS value */
+    USHORT e_lfarlc;   /* File address of relocation table */
+    USHORT e_ovno;     /* Overlay number */
+    USHORT e_res[4];   /* Reserved words */
+    USHORT e_oemid;    /* OEM identifier (for e_oeminfo) */
+    USHORT e_oeminfo;  /* OEM information; e_oemid specific */
+    USHORT e_res2[10]; /* Reserved words */
+    USHORT e_lfanew;   /* File address of new exe header */
 } IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
 
-typedef struct _IMAGE_OS2_HEADER // OS/2 .EXE header
+typedef struct _IMAGE_OS2_HEADER /* OS/2 .EXE header */
 {
-    USHORT ne_magic;        // Magic number
-    UCHAR ne_ver;           // Version number
-    UCHAR ne_rev;           // Revision number
-    USHORT ne_enttab;       // Offset of Entry Table
-    USHORT ne_cbenttab;     // Number of bytes in Entry Table
-    UINT ne_crc;            // Checksum of whole file
-    USHORT ne_flags;        // Flag word
-    USHORT ne_autodata;     // Automatic data segment number
-    USHORT ne_heap;         // Initial heap allocation
-    USHORT ne_stack;        // Initial stack allocation
-    UINT ne_csip;           // Initial CS:IP setting
-    UINT ne_sssp;           // Initial SS:SP setting
-    USHORT ne_cseg;         // Count of file segments
-    USHORT ne_cmod;         // Entries in Module Reference Table
-    USHORT ne_cbnrestab;    // Size of non-resident name table
-    USHORT ne_segtab;       // Offset of Segment Table
-    USHORT ne_rsrctab;      // Offset of Resource Table
-    USHORT ne_restab;       // Offset of resident name table
-    USHORT ne_modtab;       // Offset of Module Reference Table
-    USHORT ne_imptab;       // Offset of Imported Names Table
-    UINT ne_nrestab;        // Offset of Non-resident Names Table
-    USHORT ne_cmovent;      // Count of movable entries
-    USHORT ne_align;        // Segment alignment shift count
-    USHORT ne_cres;         // Count of resource segments
-    UCHAR ne_exetyp;        // Target Operating system
-    UCHAR ne_flagsothers;   // Other .EXE flags
-    USHORT ne_pretthunks;   // offset to return thunks
-    USHORT ne_psegrefbytes; // offset to segment ref. bytes
-    USHORT ne_swaparea;     // Minimum code swap area size
-    USHORT ne_expver;       // Expected Windows version number
+    USHORT ne_magic;        /* Magic number */
+    UCHAR ne_ver;           /* Version number */
+    UCHAR ne_rev;           /* Revision number */
+    USHORT ne_enttab;       /* Offset of Entry Table */
+    USHORT ne_cbenttab;     /* Number of bytes in Entry Table */
+    UINT ne_crc;            /* Checksum of whole file */
+    USHORT ne_flags;        /* Flag word */
+    USHORT ne_autodata;     /* Automatic data segment number */
+    USHORT ne_heap;         /* Initial heap allocation */
+    USHORT ne_stack;        /* Initial stack allocation */
+    UINT ne_csip;           /* Initial CS:IP setting */
+    UINT ne_sssp;           /* Initial SS:SP setting */
+    USHORT ne_cseg;         /* Count of file segments */
+    USHORT ne_cmod;         /* Entries in Module Reference Table */
+    USHORT ne_cbnrestab;    /* Size of non-resident name table */
+    USHORT ne_segtab;       /* Offset of Segment Table */
+    USHORT ne_rsrctab;      /* Offset of Resource Table */
+    USHORT ne_restab;       /* Offset of resident name table */
+    USHORT ne_modtab;       /* Offset of Module Reference Table */
+    USHORT ne_imptab;       /* Offset of Imported Names Table */
+    UINT ne_nrestab;        /* Offset of Non-resident Names Table */
+    USHORT ne_cmovent;      /* Count of movable entries */
+    USHORT ne_align;        /* Segment alignment shift count */
+    USHORT ne_cres;         /* Count of resource segments */
+    UCHAR ne_exetyp;        /* Target Operating system */
+    UCHAR ne_flagsothers;   /* Other .EXE flags */
+    USHORT ne_pretthunks;   /* offset to return thunks */
+    USHORT ne_psegrefbytes; /* offset to segment ref. bytes */
+    USHORT ne_swaparea;     /* Minimum code swap area size */
+    USHORT ne_expver;       /* Expected Windows version number */
 } IMAGE_OS2_HEADER, *PIMAGE_OS2_HEADER;
 
 typedef struct _IMAGE_SECTION_HEADER

@@ -250,22 +250,22 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #ifdef DEBUG
         if (CurCPU)
         {
-            Memory::Virtual vma = Memory::Virtual(CurCPU->CurrentProcess->PageTable);
-            bool PageAvailable = vma.Check((void *)CheckPageFaultAddress);
+            Memory::Virtual vmm = Memory::Virtual(CurCPU->CurrentProcess->PageTable);
+            bool PageAvailable = vmm.Check((void *)CheckPageFaultAddress);
             debug("Page available (Check(...)): %s. %s",
                   PageAvailable ? "Yes" : "No",
                   (params.P && !PageAvailable) ? "CR2 == Present; Check() != Present??????" : "CR2 confirms Check() result.");
 
             if (PageAvailable)
             {
-                bool Present = vma.Check((void *)CheckPageFaultAddress);
-                bool ReadWrite = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::RW);
-                bool User = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::US);
-                bool WriteThrough = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PWT);
-                bool CacheDisabled = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PCD);
-                bool Accessed = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::A);
-                bool Dirty = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::D);
-                bool Global = vma.Check((void *)CheckPageFaultAddress, Memory::PTFlag::G);
+                bool Present = vmm.Check((void *)CheckPageFaultAddress);
+                bool ReadWrite = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::RW);
+                bool User = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::US);
+                bool WriteThrough = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PWT);
+                bool CacheDisabled = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::PCD);
+                bool Accessed = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::A);
+                bool Dirty = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::D);
+                bool Global = vmm.Check((void *)CheckPageFaultAddress, Memory::PTFlag::G);
                 /* ... */
 
                 debug("Page available: %s", Present ? "Yes" : "No");

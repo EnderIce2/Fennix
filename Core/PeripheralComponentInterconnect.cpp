@@ -957,11 +957,11 @@ namespace PCI
 	{
 #if defined(a64)
 		int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
-		Memory::Virtual vma = Memory::Virtual(KernelPageTable);
+		Memory::Virtual vmm = Memory::Virtual(KernelPageTable);
 		for (int t = 0; t < Entries; t++)
 		{
 			DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
-			vma.Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
+			vmm.Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
 			debug("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
 				  NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
 			for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)

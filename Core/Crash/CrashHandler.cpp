@@ -708,12 +708,12 @@ namespace CrashHandler
             uint64_t TotalMemLength = KernelAllocator.GetTotalMemory();
             uint64_t ProgressLength = TotalMemLength;
             UniversalAsynchronousReceiverTransmitter::UART uart(port);
-            Memory::Virtual vma;
+            Memory::Virtual vmm;
             uint8_t *Address = reinterpret_cast<uint8_t *>(0x0);
             int Progress = 0;
             for (size_t i = 0; i < TotalMemLength; i++)
             {
-                if (vma.Check(Address))
+                if (vmm.Check(Address))
                     uart.Write(*Address);
                 else if (cBoolSkip[0] == '0')
                     uart.Write((uint8_t)0);
@@ -988,9 +988,9 @@ namespace CrashHandler
         asmv("movq %%dr3, %0"
              : "=r"(crashdata.dr3));
         asmv("movq %%dr6, %0"
-             : "=r"(crashdata.dr6));
+             : "=r"(crashdata.dr6.raw));
         asmv("movq %%dr7, %0"
-             : "=r"(crashdata.dr7));
+             : "=r"(crashdata.dr7.raw));
 
         CPUData *cpudata = GetCurrentCPU();
 
@@ -1041,7 +1041,7 @@ namespace CrashHandler
             error("RSI=%#llx  RDI=%#llx  RBP=%#llx  RSP=%#llx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
             error("RIP=%#llx  RFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, crashdata.efer.raw);
             error("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx", crashdata.cr0.raw, crashdata.cr2.raw, crashdata.cr3.raw, crashdata.cr4.raw, crashdata.cr8.raw);
-            error("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx", crashdata.dr0, crashdata.dr1, crashdata.dr2, crashdata.dr3, crashdata.dr6, crashdata.dr7.raw);
+            error("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx", crashdata.dr0, crashdata.dr1, crashdata.dr2, crashdata.dr3, crashdata.dr6.raw, crashdata.dr7.raw);
 
             error("CR0: PE:%s     MP:%s     EM:%s     TS:%s     ET:%s     NE:%s     WP:%s     AM:%s     NW:%s     CD:%s     PG:%s     R0:%#x R1:%#x R2:%#x",
                   crashdata.cr0.PE ? "True " : "False", crashdata.cr0.MP ? "True " : "False", crashdata.cr0.EM ? "True " : "False", crashdata.cr0.TS ? "True " : "False",
@@ -1073,12 +1073,16 @@ namespace CrashHandler
                   Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
                   Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
 
-            error("DR7: LDR0:%s     GDR0:%s     LDR1:%s     GDR1:%s     LDR2:%s     GDR2:%s     LDR3:%s     GDR3:%s     CDR0:%s     SDR0:%s     CDR1:%s     SDR1:%s     CDR2:%s     SDR2:%s     CDR3:%s     SDR3:%s     R:%#x",
-                  crashdata.dr7.LocalDR0 ? "True " : "False", crashdata.dr7.GlobalDR0 ? "True " : "False", crashdata.dr7.LocalDR1 ? "True " : "False", crashdata.dr7.GlobalDR1 ? "True " : "False",
-                  crashdata.dr7.LocalDR2 ? "True " : "False", crashdata.dr7.GlobalDR2 ? "True " : "False", crashdata.dr7.LocalDR3 ? "True " : "False", crashdata.dr7.GlobalDR3 ? "True " : "False",
-                  crashdata.dr7.ConditionsDR0 ? "True " : "False", crashdata.dr7.SizeDR0 ? "True " : "False", crashdata.dr7.ConditionsDR1 ? "True " : "False", crashdata.dr7.SizeDR1 ? "True " : "False",
-                  crashdata.dr7.ConditionsDR2 ? "True " : "False", crashdata.dr7.SizeDR2 ? "True " : "False", crashdata.dr7.ConditionsDR3 ? "True " : "False", crashdata.dr7.SizeDR3 ? "True " : "False",
-                  crashdata.dr7.Reserved);
+            error("DR6: B0:%s     B1:%s     B2:%s     B3:%s     BD:%s     BS:%s     BT:%s",
+                  crashdata.dr6.B0 ? "True " : "False", crashdata.dr6.B1 ? "True " : "False", crashdata.dr6.B2 ? "True " : "False", crashdata.dr6.B3 ? "True " : "False",
+                  crashdata.dr6.BD ? "True " : "False", crashdata.dr6.BS ? "True " : "False", crashdata.dr6.BT ? "True " : "False");
+
+            error("DR7: L0:%s     G0:%s     L1:%s     G1:%s     L2:%s     G2:%s     L3:%s     G3:%s     LE:%s     GE:%s     GD:%s     R/W0:%s     LEN0:%s     R/W1:%s     LEN1:%s     R/W2:%s     LEN2:%s     R/W3:%s     LEN3:%s",
+                  crashdata.dr7.L0 ? "True " : "False", crashdata.dr7.G0 ? "True " : "False", crashdata.dr7.L1 ? "True " : "False", crashdata.dr7.G1 ? "True " : "False",
+                  crashdata.dr7.L2 ? "True " : "False", crashdata.dr7.G2 ? "True " : "False", crashdata.dr7.L3 ? "True " : "False", crashdata.dr7.G3 ? "True " : "False",
+                  crashdata.dr7.LE ? "True " : "False", crashdata.dr7.GE ? "True " : "False", crashdata.dr7.GD ? "True " : "False", crashdata.dr7.RW0 ? "True " : "False",
+                  crashdata.dr7.LEN0 ? "True " : "False", crashdata.dr7.RW1 ? "True " : "False", crashdata.dr7.LEN1 ? "True " : "False", crashdata.dr7.RW2 ? "True " : "False",
+                  crashdata.dr7.LEN2 ? "True " : "False", crashdata.dr7.RW3 ? "True " : "False", crashdata.dr7.LEN3 ? "True " : "False");
 
             error("EFER: SCE:%s      LME:%s      LMA:%s      NXE:%s     SVME:%s    LMSLE:%s    FFXSR:%s      TCE:%s     R0:%#x R1:%#x R2:%#x",
                   crashdata.efer.SCE ? "True " : "False", crashdata.efer.LME ? "True " : "False", crashdata.efer.LMA ? "True " : "False", crashdata.efer.NXE ? "True " : "False",

@@ -120,6 +120,13 @@ namespace Memory
             return (void *)(PageBitmapIndex * PAGE_SIZE);
         }
 
+        if (TaskManager && !TaskManager->IsPanic())
+        {
+            error("Out of memory! Killing current process...");
+            TaskManager->KillProcess(TaskManager->GetCurrentProcess(), Tasking::KILL_OOM);
+            TaskManager->Schedule();
+        }
+
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));
         CPU::Stop();
         __builtin_unreachable();
@@ -178,6 +185,13 @@ namespace Memory
         {
             this->LockPages((void *)(PageBitmapIndex * PAGE_SIZE), Count);
             return (void *)(PageBitmapIndex * PAGE_SIZE);
+        }
+
+        if (TaskManager && !TaskManager->IsPanic())
+        {
+            error("Out of memory! Killing current process...");
+            TaskManager->KillProcess(TaskManager->GetCurrentProcess(), Tasking::KILL_OOM);
+            TaskManager->Schedule();
         }
 
         error("Out of memory! (Free: %ldMB; Used: %ldMB; Reserved: %ldMB)", TO_MB(FreeMemory), TO_MB(UsedMemory), TO_MB(ReservedMemory));

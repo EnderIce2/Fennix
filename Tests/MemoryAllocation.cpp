@@ -178,7 +178,7 @@ void TestMemoryAllocation()
             uintptr_t prq2 = (uintptr_t)kmalloc(0x1000);
             kfree((void *)prq2);
 
-            debug(" Result:\t1-[%#lx]; 2-[%#lx]\n", (void *)prq1, (void *)prq2);
+            debug(" Result:\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
             assert(prq1 == prq2);
         }
 

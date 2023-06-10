@@ -29,15 +29,15 @@ namespace Memory
         Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry PDE = this->Table->Entries[Index.PDEIndex];
+        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
         PageTableEntryPtr *PTE = nullptr;
 
-        if ((PDE.raw & Flag) > 0)
+        if ((PDE->raw & Flag) > 0)
         {
-            if (Type == MapType::FourMB && PDE.PageSize)
+            if (Type == MapType::FourMB && PDE->PageSize)
                 return true;
 
-            PTE = (PageTableEntryPtr *)((uintptr_t)PDE.GetAddress() << 12);
+            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
             if (PTE)
             {
                 if ((PTE->Entries[Index.PTEIndex].Present))
@@ -54,21 +54,76 @@ namespace Memory
         Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry PDE = this->Table->Entries[Index.PDEIndex];
+        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
         PageTableEntryPtr *PTE = nullptr;
 
-        if (PDE.Present)
+        if (PDE->Present)
         {
-            if (PDE.PageSize)
-                return (void *)((uintptr_t)PDE.GetAddress() << 12);
+            if (PDE->PageSize)
+                return (void *)((uintptr_t)PDE->GetAddress() << 12);
 
-            PTE = (PageTableEntryPtr *)((uintptr_t)PDE.GetAddress() << 12);
+            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
             if (PTE)
             {
                 if (PTE->Entries[Index.PTEIndex].Present)
                     return (void *)((uintptr_t)PTE->Entries[Index.PTEIndex].GetAddress() << 12);
             }
         }
+        return nullptr;
+    }
+
+    Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
+    {
+        // 0x1000 aligned
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+
+        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+        PageTableEntryPtr *PTE = nullptr;
+
+        if (PDE->Present)
+        {
+            if (PDE->PageSize)
+                return MapType::FourMB;
+
+            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
+            if (PTE)
+            {
+                if (PTE->Entries[Index.PTEIndex].Present)
+                    return MapType::FourKB;
+            }
+        }
+        return MapType::NoMapType;
+    }
+
+    PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+        if (PDE->Present)
+            return PDE;
+        return nullptr;
+    }
+
+    PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+        if (!PDE->Present)
+            return nullptr;
+
+        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+        PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
+        if (PTE->Present)
+            return PTE;
         return nullptr;
     }
 
@@ -159,7 +214,7 @@ namespace Memory
         PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
         if (!PDE->Present)
         {
-            error("Page %#lx not present", PDE->GetAddress());
+            warn("Page %#lx not present", PDE->GetAddress());
             return;
         }
 
@@ -173,7 +228,7 @@ namespace Memory
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)
         {
-            error("Page %#lx not present", PTE.GetAddress());
+            warn("Page %#lx not present", PTE.GetAddress());
             return;
         }
 

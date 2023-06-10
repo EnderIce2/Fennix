@@ -168,26 +168,6 @@ namespace NetworkInterfaceManager
 		fixme("Stop network stack");
 	}
 
-	ReadFSFunction(NetRead)
-	{
-		UNUSED(node);
-		UNUSED(Offset);
-		UNUSED(Size);
-		UNUSED(Buffer);
-		fixme("Not implemented.");
-		return Size;
-	}
-
-	WriteFSFunction(NetWrite)
-	{
-		UNUSED(node);
-		UNUSED(Offset);
-		UNUSED(Size);
-		UNUSED(Buffer);
-		fixme("Not implemented.");
-		return Size;
-	}
-
 	void CallStartNetworkStackWrapper() { NIManager->StartNetworkStack(); }
 
 	void NetworkInterface::StartService()

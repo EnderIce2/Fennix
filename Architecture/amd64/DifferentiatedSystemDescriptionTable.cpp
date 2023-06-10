@@ -78,7 +78,7 @@ namespace ACPI
         }
         else if (Event & ACPI_POWER_BUTTON)
         {
-            if (TaskManager)
+            if (TaskManager && !TaskManager->IsPanic())
             {
                 TaskManager->CreateThread(TaskManager->CreateProcess(nullptr,
                                                                      "Shutdown",

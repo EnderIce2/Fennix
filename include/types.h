@@ -78,8 +78,19 @@ typedef __builtin_va_list va_list;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MAX(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a > _b ? _a : _b;      \
+    })
+
+#define MIN(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a < _b ? _a : _b;      \
+    })
 
 #define ROUND_UP(x, y) (((x) + (y)-1) & ~((y)-1))
 #define ROUND_DOWN(x, y) ((x) & ~((y)-1))
@@ -182,6 +193,9 @@ typedef __WINT_TYPE__ wint_t;
 typedef __SIG_ATOMIC_TYPE__ sig_atomic_t;
 // TODO: ssize_t
 typedef intptr_t ssize_t;
+
+typedef long off_t;
+typedef long long off64_t;
 
 #define INT8_MAX __INT8_MAX__
 #define INT8_MIN (-INT8_MAX - 1)
@@ -358,6 +372,9 @@ typedef uint48_t uint_fast48_t;
 
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
+
+#define PUBLIC __visibility("default")
+#define PRIVATE __visibility("hidden")
 
 #define SafeFunction __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
 

@@ -62,6 +62,7 @@ extern Recovery::KernelRecovery *RecoveryScreen;
 extern VirtualFileSystem::Node *DevFS;
 extern VirtualFileSystem::Node *MntFS;
 extern VirtualFileSystem::Node *ProcFS;
+extern VirtualFileSystem::Node *VarLogFS;
 
 #endif // __cplusplus
 

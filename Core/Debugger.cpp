@@ -31,7 +31,7 @@ static inline NIF void uart_wrapper(char c, void *unused)
     UNUSED(unused);
 }
 
-static inline NIF void WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function)
+static inline NIF bool WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, va_list args)
 {
     const char *DbgLvlString;
     switch (Level)
@@ -54,35 +54,52 @@ static inline NIF void WritePrefix(DebugLevel Level, const char *File, int Line,
     case DebugLevelFixme:
         DbgLvlString = "FIXME";
         break;
+    case DebugLevelStub:
+        fctprintf(uart_wrapper, nullptr, "STUB | %s>%s() is stub\n", File, Function);
+        return false;
+    case DebugLevelFunction:
+        fctprintf(uart_wrapper, nullptr, "FUNC | %s>%s( ", File, Function);
+        vfctprintf(uart_wrapper, nullptr, Format, args);
+        fctprintf(uart_wrapper, nullptr, " )\n");
+        return false;
     case DebugLevelUbsan:
     {
         DbgLvlString = "UBSAN";
         fctprintf(uart_wrapper, nullptr, "%s| ", DbgLvlString);
-        return;
+        return true;
     }
     default:
         DbgLvlString = "UNKNW";
         break;
     }
-    fctprintf(uart_wrapper, nullptr, "%s|%s->%s:%d: ", DbgLvlString, File, Function, Line);
+    fctprintf(uart_wrapper, nullptr, "%s| %s>%s:%d: ", DbgLvlString, File, Function, Line);
+    return true;
 }
 
 namespace SysDbg
 {
     NIF void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
-        WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);
+        if (!WritePrefix(Level, File, Line, Function, Format, args))
+        {
+            va_end(args);
+            return;
+        }
         vfctprintf(uart_wrapper, nullptr, Format, args);
         va_end(args);
     }
 
     NIF void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
-        WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);
+        if (!WritePrefix(Level, File, Line, Function, Format, args))
+        {
+            va_end(args);
+            return;
+        }
         vfctprintf(uart_wrapper, nullptr, Format, args);
         va_end(args);
         uart_wrapper('\n', nullptr);
@@ -91,9 +108,13 @@ namespace SysDbg
     NIF void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         SmartTimeoutLock(DebuggerLock, 1000);
-        WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);
+        if (!WritePrefix(Level, File, Line, Function, Format, args))
+        {
+            va_end(args);
+            return;
+        }
         vfctprintf(uart_wrapper, nullptr, Format, args);
         va_end(args);
     }
@@ -101,9 +122,13 @@ namespace SysDbg
     NIF void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
     {
         SmartTimeoutLock(DebuggerLock, 1000);
-        WritePrefix(Level, File, Line, Function);
         va_list args;
         va_start(args, Format);
+        if (!WritePrefix(Level, File, Line, Function, Format, args))
+        {
+            va_end(args);
+            return;
+        }
         vfctprintf(uart_wrapper, nullptr, Format, args);
         va_end(args);
         uart_wrapper('\n', nullptr);
@@ -113,9 +138,13 @@ namespace SysDbg
 // C compatibility
 extern "C" NIF void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
-    WritePrefix(Level, File, Line, Function);
     va_list args;
     va_start(args, Format);
+    if (!WritePrefix(Level, File, Line, Function, Format, args))
+    {
+        va_end(args);
+        return;
+    }
     vfctprintf(uart_wrapper, nullptr, Format, args);
     va_end(args);
 }
@@ -123,9 +152,13 @@ extern "C" NIF void SysDbgWrite(enum DebugLevel Level, const char *File, int Lin
 // C compatibility
 extern "C" NIF void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
-    WritePrefix(Level, File, Line, Function);
     va_list args;
     va_start(args, Format);
+    if (!WritePrefix(Level, File, Line, Function, Format, args))
+    {
+        va_end(args);
+        return;
+    }
     vfctprintf(uart_wrapper, nullptr, Format, args);
     va_end(args);
     uart_wrapper('\n', nullptr);
@@ -135,9 +168,13 @@ extern "C" NIF void SysDbgWriteLine(enum DebugLevel Level, const char *File, int
 extern "C" NIF void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     SmartTimeoutLock(DebuggerLock, 1000);
-    WritePrefix(Level, File, Line, Function);
     va_list args;
     va_start(args, Format);
+    if (!WritePrefix(Level, File, Line, Function, Format, args))
+    {
+        va_end(args);
+        return;
+    }
     vfctprintf(uart_wrapper, nullptr, Format, args);
     va_end(args);
 }
@@ -146,9 +183,13 @@ extern "C" NIF void SysDbgLockedWrite(enum DebugLevel Level, const char *File, i
 extern "C" NIF void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
     SmartTimeoutLock(DebuggerLock, 1000);
-    WritePrefix(Level, File, Line, Function);
     va_list args;
     va_start(args, Format);
+    if (!WritePrefix(Level, File, Line, Function, Format, args))
+    {
+        va_end(args);
+        return;
+    }
     vfctprintf(uart_wrapper, nullptr, Format, args);
     va_end(args);
     uart_wrapper('\n', nullptr);

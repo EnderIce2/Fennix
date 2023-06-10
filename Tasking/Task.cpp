@@ -187,7 +187,7 @@ namespace Tasking
     PCB *Task::GetCurrentProcess() { return GetCurrentCPU()->CurrentProcess.load(); }
     TCB *Task::GetCurrentThread() { return GetCurrentCPU()->CurrentThread.load(); }
 
-    PCB *Task::GetProcessByID(UPID ID)
+    PCB *Task::GetProcessByID(TID ID)
     {
         for (size_t i = 0; i < ProcessList.size(); i++)
             if (ProcessList[i]->ID == ID)
@@ -195,7 +195,7 @@ namespace Tasking
         return nullptr;
     }
 
-    TCB *Task::GetThreadByID(UTID ID)
+    TCB *Task::GetThreadByID(TID ID)
     {
         for (size_t i = 0; i < ProcessList.size(); i++)
             for (size_t j = 0; j < ProcessList[i]->Threads.size(); j++)
@@ -257,14 +257,8 @@ namespace Tasking
             thread->Parent->Status = TaskStatus::Sleeping;
         thread->Info.SleepUntil = TimeManager->CalculateTarget(Milliseconds, Time::Units::Milliseconds);
         tskdbg("Thread \"%s\"(%d) is going to sleep until %llu", thread->Name, thread->ID, thread->Info.SleepUntil);
-        // TaskingScheduler_OneShot(1);
-        // IRQ16
         TaskingLock.Unlock();
-#if defined(a86)
-        asmv("int $0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
-#elif defined(aa64)
-        asmv("svc #0x30"); /* This will trigger the IRQ16 instantly so we won't execute the next instruction */
-#endif
+        this->Schedule();
     }
 
     void Task::SignalShutdown()
@@ -313,7 +307,7 @@ namespace Tasking
                 delete Process->ELFSymbolTable, Process->ELFSymbolTable = nullptr;
                 delete Process, Process = nullptr;
                 ProcessList.remove(i);
-                NextPID--;
+                this->NextPID--;
                 break;
             }
         }
@@ -334,18 +328,17 @@ namespace Tasking
         delete Thread->Memory, Thread->Memory = nullptr;
         SecurityManager.DestroyToken(Thread->Security.UniqueToken);
         delete Thread, Thread = nullptr;
-        NextTID--;
+        this->NextTID--;
     }
 
     __no_sanitize("undefined") TCB *Task::CreateThread(PCB *Parent,
-                                                         IP EntryPoint,
-                                                         const char **argv,
-                                                         const char **envp,
-                                                         const std::vector<AuxiliaryVector> &auxv,
-                                                         IPOffset Offset,
-                                                         TaskArchitecture Architecture,
-                                                         TaskCompatibility Compatibility,
-                                                         bool ThreadNotReady)
+                                                       IP EntryPoint,
+                                                       const char **argv,
+                                                       const char **envp,
+                                                       const std::vector<AuxiliaryVector> &auxv,
+                                                       TaskArchitecture Architecture,
+                                                       TaskCompatibility Compatibility,
+                                                       bool ThreadNotReady)
     {
         SmartLock(TaskingLock);
         TCB *Thread = new TCB;
@@ -372,7 +365,6 @@ namespace Tasking
         Thread->ID = this->NextTID++;
         strcpy(Thread->Name, Parent->Name);
         Thread->EntryPoint = EntryPoint;
-        Thread->Offset = Offset;
         Thread->ExitCode = 0xdead;
         if (ThreadNotReady)
             Thread->Status = TaskStatus::Waiting;
@@ -405,7 +397,7 @@ namespace Tasking
 
 #if defined(a64)
         memset(&Thread->Registers, 0, sizeof(CPU::x64::TrapFrame)); // Just in case
-        Thread->Registers.rip = (EntryPoint + Offset);
+        Thread->Registers.rip = EntryPoint;
 #elif defined(a32)
 #elif defined(aa64)
 #endif
@@ -440,7 +432,7 @@ namespace Tasking
             Thread->Stack = new Memory::StackGuard(true, Parent->PageTable);
 #if defined(a64)
             SecurityManager.TrustToken(Thread->Security.UniqueToken, TTL::Untrusted);
-            Thread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
+            Thread->ShadowGSBase = (uint64_t)GetCurrentCPU();
             Thread->GSBase = 0;
             Thread->FSBase = 0;
             Thread->Registers.cs = GDT_USER_CODE;
@@ -625,13 +617,13 @@ namespace Tasking
 
 #ifdef DEBUG
 #ifdef a64
-        debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.rip);
+        debug("Thread EntryPoint: %#lx => RIP: %#lx", Thread->EntryPoint, Thread->Registers.rip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
         else
             debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.rsp);
 #elif defined(a32)
-        debug("Thread offset is %#lx (EntryPoint: %#lx) => RIP: %#lx", Thread->Offset, Thread->EntryPoint, Thread->Registers.eip);
+        debug("Thread EntryPoint: %#lx => RIP: %#lx", Thread->EntryPoint, Thread->Registers.eip);
         if (Parent->Security.TrustLevel == TaskTrustLevel::User)
             debug("Thread stack region is %#lx-%#lx (U) and rsp is %#lx", Thread->Stack->GetStackBottom(), Thread->Stack->GetStackTop(), Thread->Registers.esp);
         else
@@ -654,7 +646,7 @@ namespace Tasking
     {
         SmartLock(TaskingLock);
         PCB *Process = new PCB;
-        Process->ID = this->NextPID++;
+        Process->ID = NextPID++;
         strcpy(Process->Name, Name);
         if (Parent == nullptr)
             Process->Parent = this->GetCurrentProcess();
@@ -667,7 +659,7 @@ namespace Tasking
         Process->Security.UniqueToken = SecurityManager.CreateToken();
 
         char ProcFSName[16];
-        sprintf(ProcFSName, "%ld", Process->ID);
+        sprintf(ProcFSName, "%d", Process->ID);
         Process->ProcessDirectory = vfs->Create(ProcFSName, VirtualFileSystem::NodeFlags::DIRECTORY, ProcFS);
         Process->memDirectory = vfs->Create("mem", VirtualFileSystem::NodeFlags::DIRECTORY, Process->ProcessDirectory);
         Process->IPC = new InterProcessCommunication::IPC((void *)Process);
@@ -706,7 +698,7 @@ namespace Tasking
         default:
         {
             error("Unknown elevation.");
-            this->NextPID--;
+            NextPID--;
             delete Process;
             return nullptr;
         }
@@ -767,9 +759,10 @@ namespace Tasking
 #elif defined(aa64)
     TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
+
         PCB *kproc = CreateProcess(nullptr, "Kernel", TaskTrustLevel::Kernel);
         kproc->ELFSymbolTable = KernelSymbolTable;
-        TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), 0, Arch);
+        TCB *kthrd = CreateThread(kproc, EntryPoint, nullptr, nullptr, std::vector<AuxiliaryVector>(), Arch);
         kthrd->Rename("Main Thread");
         debug("Created Kernel Process: %s and Thread: %s", kproc->Name, kthrd->Name);
         TaskingLock.Lock(__FUNCTION__);
@@ -843,12 +836,12 @@ namespace Tasking
                     if (Thread == GetCurrentCPU()->CurrentThread.load() ||
                         Thread == CleanupThread)
                         continue;
-                    this->KillThread(Thread, 0xFFFF);
+                    this->KillThread(Thread, KILL_SCHEDULER_DESTRUCTION);
                 }
 
                 if (Process == GetCurrentCPU()->CurrentProcess.load())
                     continue;
-                this->KillProcess(Process, 0xFFFF);
+                this->KillProcess(Process, KILL_SCHEDULER_DESTRUCTION);
             }
         }
 

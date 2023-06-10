@@ -216,7 +216,7 @@ namespace Driver
 		}
 
 		debug("Loading drivers from %s", Config.DriverDirectory);
-		foreach (auto DrvFile in DriverDirectory.node->Children)
+		foreach (auto DrvFile in DriverDirectory.GetChildren())
 		{
 			if (DrvFile->Flags != VirtualFileSystem::NodeFlags::FILE)
 				continue;

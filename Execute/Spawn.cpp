@@ -31,79 +31,69 @@ using namespace Tasking;
 
 namespace Execute
 {
-    SpawnData Spawn(char *Path, const char **argv, const char **envp)
-    {
-        SpawnData ret = {.Status = ExStatus::Unknown,
-                         .Process = nullptr,
-                         .Thread = nullptr};
+	SpawnData Spawn(char *Path, const char **argv, const char **envp)
+	{
+		SpawnData ret = {.Status = ExStatus::Unknown,
+						 .Process = nullptr,
+						 .Thread = nullptr};
 
-        VirtualFileSystem::File ExFile = vfs->Open(Path);
+		VirtualFileSystem::File ExFile = vfs->Open(Path);
 
-        if (ExFile.IsOK())
-        {
-            if (ExFile.node->Flags != VirtualFileSystem::NodeFlags::FILE)
-            {
-                ret.Status = ExStatus::InvalidFilePath;
-                goto Exit;
-            }
+		if (!ExFile.IsOK())
+		{
+			if (ExFile.Status == VirtualFileSystem::FileStatus::NotFound)
+			{
+				ret.Status = ExStatus::InvalidFilePath;
+				goto Exit;
+			}
+			else
+			{
+				ret.Status = ExStatus::InvalidFile;
+				goto Exit;
+			}
 
-            switch (GetBinaryType(Path))
-            {
-            case BinaryType::BinTypeFex:
-            {
-                Fex *FexHdr = (Fex *)ExFile.node->Address;
-                if (FexHdr->Type == FexFormatType::FexFormatType_Executable)
-                {
-                    const char *BaseName;
-                    cwk_path_get_basename(Path, &BaseName, nullptr);
-                    PCB *Process = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(), BaseName, TaskTrustLevel::User);
+			if (ExFile.GetFlags() != VirtualFileSystem::NodeFlags::FILE)
+			{
+				ret.Status = ExStatus::InvalidFilePath;
+				goto Exit;
+			}
+		}
 
-                    void *BaseImage = KernelAllocator.RequestPages(TO_PAGES(ExFile.node->Length + 1));
-                    memcpy(BaseImage, (void *)ExFile.node->Address, ExFile.node->Length);
+		switch (GetBinaryType(Path))
+		{
+		case BinaryType::BinTypeFex:
+		{
+			Fex FexHdr;
+			vfs->Read(ExFile, (uint8_t *)&FexHdr, sizeof(Fex));
+			if (FexHdr.Type == FexFormatType::FexFormatType_Executable)
+			{
+				stub;
+				assert(false);
+			}
 
-                    Memory::Virtual(Process->PageTable).Map((void *)BaseImage, (void *)BaseImage, ExFile.node->Length, Memory::PTFlag::RW | Memory::PTFlag::US);
+			ret.Status = ExStatus::InvalidFileHeader;
+			break;
+		}
+		case BinaryType::BinTypeELF:
+		{
+			ELFBaseLoad bl = ELFLoad(Path, argv, envp);
+			if (!bl.Success)
+			{
+				ret.Status = ExStatus::LoadingProcedureFailed;
+				break;
+			}
+			ret = bl.sd;
+			break;
+		}
+		default:
+		{
+			ret.Status = ExStatus::Unsupported;
+			break;
+		}
+		}
 
-                    std::vector<AuxiliaryVector> auxv; // TODO!
-
-                    TCB *Thread = TaskManager->CreateThread(Process,
-                                                            (IP)FexHdr->EntryPoint,
-                                                            argv, envp, auxv,
-                                                            (IPOffset)BaseImage,
-                                                            TaskArchitecture::x64,
-                                                            TaskCompatibility::Native);
-                    ret.Process = Process;
-                    ret.Thread = Thread;
-                    ret.Status = ExStatus::OK;
-                }
-
-                ret.Status = ExStatus::InvalidFileHeader;
-                goto Exit;
-            }
-            case BinaryType::BinTypeELF:
-            {
-                ELFBaseLoad bl = ELFLoad(Path, argv, envp);
-                if (!bl.Success)
-                {
-                    ret.Status = ExStatus::GenericError;
-                    goto Exit;
-                }
-                ret = bl.sd;
-                goto Exit;
-            }
-            default:
-            {
-                ret.Status = ExStatus::Unsupported;
-                goto Exit;
-            }
-            }
-        }
-        else if (ExFile.Status == VirtualFileSystem::FileStatus::NotFound)
-            ret.Status = ExStatus::InvalidFilePath;
-        else
-            ret.Status = ExStatus::InvalidFile;
-
-    Exit:
-        vfs->Close(ExFile);
-        return ret;
-    }
+	Exit:
+		vfs->Close(ExFile);
+		return ret;
+	}
 }

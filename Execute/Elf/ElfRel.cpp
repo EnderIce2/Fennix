@@ -27,11 +27,11 @@ namespace Execute
     /* Originally from https://wiki.osdev.org/ELF_Tutorial */
 
     ELFBaseLoad ELFLoadRel(void *BaseImage,
-                           VirtualFileSystem::File &ExFile,
+                           const char *Name,
                            Tasking::PCB *Process)
     {
 #if defined(a64)
-        UNUSED(ExFile);
+        UNUSED(Name);
         debug("Relocatable");
         /* TODO: I have to fully implement this, but for now I will leave it as it is now. */
         warn("Relocatable ELF is not fully supported yet");

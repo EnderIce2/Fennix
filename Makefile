@@ -27,29 +27,26 @@ S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i386/
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
-RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), i386)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
-RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
 ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
-RS_SOURCES = $(shell find ./ -type f -name '*.rs' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 endif
 HEADERS = $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
-OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(RS_SOURCES:.rs=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(s_SOURCES:.s=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
+OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(s_SOURCES:.s=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
 INCLUDE_DIR = -I./include -I./include_std
 
-LDFLAGS := -Wl,-Map kernel.map -shared -nostdlib -nodefaultlibs -nolibc
+LDFLAGS := -Wl,-Map kernel.map -static -nostdlib -nodefaultlibs -nolibc
 
 # Disable all warnings by adding "-w" in WARNCFLAG and if you want to treat the warnings as errors, add "-Werror"
 WARNCFLAG = -Wall -Wextra \
@@ -76,9 +73,8 @@ CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 	-fno-pic -fno-pie 						\
 	-Wl,-static,--no-dynamic-linker,-ztext 	\
-	-nostdlib -nodefaultlibs -nolibc  		\
 	-zmax-page-size=0x1000					\
-	-Wl,-Map kernel.map -shared
+	-Wl,-Map kernel.map
 
 else ifeq ($(OSARCH), i386)
 
@@ -89,9 +85,8 @@ CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/i386/linker.ld 	\
 	-fno-pic -fno-pie 						\
 	-Wl,-static,--no-dynamic-linker,-ztext 	\
-	-nostdlib -nodefaultlibs -nolibc  		\
 	-zmax-page-size=0x1000					\
-	-Wl,-Map kernel.map -shared
+	-Wl,-Map kernel.map
 
 else ifeq ($(OSARCH), aarch64)
 
@@ -99,9 +94,8 @@ CFLAGS += -pipe -fno-builtin -Wstack-protector -Daa64 -fPIC -mno-outline-atomics
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC -pie \
 	-Wl,-static,--no-dynamic-linker,-ztext \
-	-nostdlib -nodefaultlibs -nolibc \
 	-zmax-page-size=0x1000 \
-	-Wl,-Map kernel.map -static
+	-Wl,-Map kernel.map
 
 endif
 
@@ -158,11 +152,7 @@ $(KERNEL_FILENAME): $(OBJ)
 # https://gcc.gnu.org/projects/cxx-status.html
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@ -fno-rtti
-
-%.o: %.rs $(HEADERS) $(RUST_TARGET_PATH)
-	$(info Compiling $<)
-	$(RUSTC) $< -C panic=abort -C soft-float --emit=obj -o $@
+	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-exceptions -fno-rtti
 
 %.o: %.asm
 ifeq ($(OSARCH), aarch64)

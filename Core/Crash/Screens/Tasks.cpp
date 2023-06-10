@@ -56,10 +56,10 @@ namespace CrashHandler
             "Terminated", // Terminated
         };
 
-        std::vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
-
         if (TaskManager)
         {
+            std::vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
+
             if (data.Thread)
 #if defined(a64)
                 EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);

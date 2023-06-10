@@ -15,24 +15,27 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <exec.hpp>
-
-#include <memory.hpp>
-#include <lock.hpp>
-#include <msexec.h>
-#include <cwalk.h>
-#include <elf.h>
-#include <abi.h>
+#include <unwind.h>
+#include <cxxabi.h>
+#include <debug.h>
+#include <cpu.hpp>
+#include <smp.hpp>
 
 #include "../../kernel.h"
-#include "../../Fex.hpp"
 
-using namespace Tasking;
+using namespace __cxxabiv1;
 
-namespace Execute
+#if (1) /* Stubs if libgcc is not present */
+extern "C" _Unwind_Reason_Code _Unwind_RaiseException(_Unwind_Exception *Exception)
 {
-    void FEXLoad()
-    {
-        
-    }
+	fixme("_Unwind_RaiseException( %p ) called.", Exception);
+	error("Unhandled exception.");
+	return _URC_FATAL_PHASE1_ERROR;
+	// return _URC_NO_REASON;
 }
+
+extern "C" void _Unwind_Resume(struct _Unwind_Exception *Exception)
+{
+	fixme("_Unwind_Resume( %p ) called.", Exception);
+}
+#endif

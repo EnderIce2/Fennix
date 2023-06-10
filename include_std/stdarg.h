@@ -15,30 +15,11 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <exec.hpp>
+#ifndef __FENNIX_KERNEL_STDARG_H__
+#define __FENNIX_KERNEL_STDARG_H__
 
-#include <memory.hpp>
-#include <lock.hpp>
-#include <msexec.h>
-#include <cwalk.h>
-#include <elf.h>
-#include <abi.h>
+#include <types.h>
 
-#include "../../kernel.h"
-#include "../../Fex.hpp"
 
-using namespace Tasking;
 
-namespace Execute
-{
-    ELFBaseLoad ELFLoadDyn(void *BaseImage,
-                           VirtualFileSystem::File &ExFile,
-                           Tasking::PCB *Process)
-    {
-        UNUSED(BaseImage);
-        UNUSED(ExFile);
-        UNUSED(Process);
-        fixme("Not implemented");
-        return {};
-    }
-}
+#endif // !__FENNIX_KERNEL_STDARG_H__

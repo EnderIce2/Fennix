@@ -35,12 +35,75 @@
 
 #include <stddef.h>
 
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#endif
+
+#ifndef SEEK_CUR
+#define SEEK_CUR 1
+#endif
+
+#ifndef SEEK_END
+#define SEEK_END 2
+#endif
+
+enum MemoryMapFlags
+{
+    MAP_PRESENT = 1 << 0,
+    MAP_WRITABLE = 1 << 1,
+    MAP_USER = 1 << 2,
+};
+
+enum KCtl
+{
+    KCTL_NULL,
+
+    KCTL_GET_PID,
+    KCTL_GET_TID,
+    KCTL_GET_UID,
+    KCTL_GET_GID,
+
+    /**
+     * @brief Get the page size
+     */
+    KCTL_GET_PAGE_SIZE,
+
+    /**
+     * @brief Check whether the current thread is critical
+     */
+    KCTL_IS_CRITICAL,
+
+    /**
+     * @brief Register an ELF library
+     * @fn int RegisterELFLib(char *Identifier, char *Path)
+     */
+    KCTL_REGISTER_ELF_LIB,
+
+    /**
+     * @brief Get an ELF library
+     * @fn uintptr_t GetELFLib(char *Identifier);
+     */
+    KCTL_GET_ELF_LIB_MEMORY_IMAGE,
+
+    /**
+     * @brief Get the absolute path of a library file
+     * @fn int GetAbsolutePath(char *Identifier, char *Buffer, size_t BufferSize)
+     */
+    KCTL_GET_ABSOLUTE_PATH,
+};
+
 /**
  * @enum NativeSyscalls
  * Enumeration of all the native syscalls available in the kernel
  */
 enum NativeSyscalls
 {
+    /**
+     *
+     * Basic syscalls
+     *
+     */
+
     /** @brief Exit the process.
      * @fn int Exit(int Code)
      * This syscall is used to exit the current process with the provided exit code.
@@ -52,6 +115,12 @@ enum NativeSyscalls
      * This syscall is used to print a message to the kernel console.
      */
     _Print,
+
+    /**
+     *
+     * Memory syscalls
+     *
+     */
 
     /** @brief Request pages of memory
      * @fn uintptr_t RequestPages(size_t Count)
@@ -71,6 +140,29 @@ enum NativeSyscalls
      */
     _DetachAddress,
 
+    /**
+     * @brief Map memory address
+     * @fn int MapAddress(uintptr_t VirtualAddress, uintptr_t PhysicalAddress, size_t Size, enum MemoryMapFlags Flags)
+     * This syscall is used to map a specific memory address to the current process.
+     *
+     * @param Size The size of the memory region to map. Not pages.
+     */
+    _MemoryMap,
+
+    /** @brief Unmap memory address
+     * @fn int UnmapAddress(uintptr_t VirtualAddress, size_t Size)
+     * This syscall is used to unmap a specific memory address from the current process.
+     *
+     * @param Size The size of the memory region to unmap. Not pages.
+     */
+    _MemoryUnmap,
+
+    /**
+     *
+     * Kernel Control syscalls
+     *
+     */
+
     /** @brief Kernel Control
      * @fn uintptr_t KernelCTL(enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
      * This syscall is used to control certain aspects of the kernel or get information about it.
@@ -78,11 +170,10 @@ enum NativeSyscalls
     _KernelCTL,
 
     /**
-     * @brief Creates/Reads/Writes/Deletes an IPC Pipe/Shared Memory/Message Queue/etc.
-     * @fn int IPC(enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
-     * This syscall is used to create, read, write or delete an IPC Pipe/Shared Memory/Message Queue/etc.
+     *
+     * File syscalls
+     *
      */
-    _IPC,
 
     /** @brief Open a file
      * @fn void *FileOpen(const char *Path, uint64_t Flags)
@@ -97,19 +188,19 @@ enum NativeSyscalls
     _FileClose,
 
     /** @brief Read from a file
-     * @fn uint64_t FileRead(void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
+     * @fn uint64_t FileRead(void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
      * This syscall is used to read a specific number of bytes from a file at a specific offset.
      */
     _FileRead,
 
     /** @brief Write to a file
-     * @fn uint64_t FileWrite(void *KernelPrivate, uint64_t Offset, uint8_t *Buffer, uint64_t Size)
+     * @fn uint64_t FileWrite(void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
      * This syscall is used to write a specific number of bytes to a file at a specific offset.
      */
     _FileWrite,
 
     /** @brief Seek in a file
-     * @fn uint64_t FileSeek(void *KernelPrivate, uint64_t Offset, int Whence)
+     * @fn off_t FileSeek(void *KernelPrivate, off_t Offset, int Whence)
      * This syscall is used to change the current offset in a file.
      */
     _FileSeek,
@@ -119,6 +210,19 @@ enum NativeSyscalls
      * This syscall is used to retrieve information about a file such as its size, permissions, etc.
      */
     _FileStatus,
+
+    /**
+     *
+     * Process syscalls
+     *
+     */
+
+    /**
+     * @brief Creates/Reads/Writes/Deletes an IPC Pipe/Shared Memory/Message Queue/etc.
+     * @fn int IPC(enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
+     * This syscall is used to create, read, write or delete an IPC Pipe/Shared Memory/Message Queue/etc.
+     */
+    _IPC,
 
     /** @brief Sleep for a specific amount of time
      * @fn int Sleep(uint64_t Milliseconds)
@@ -215,6 +319,9 @@ enum NativeSyscalls
 
     /** @brief Reserved syscall */
     _SysReservedCreateThread,
+
+    /** @brief Not a real syscall */
+    _MaxSyscall
 };
 
 /**

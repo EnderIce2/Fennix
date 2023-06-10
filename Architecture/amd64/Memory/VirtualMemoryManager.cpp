@@ -29,15 +29,15 @@ namespace Memory
         Address &= 0xFFFFFFFFFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
-        PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
 
         PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
         PageDirectoryEntryPtr *PDE = nullptr;
         PageTableEntryPtr *PTE = nullptr;
 
-        if ((PML4.raw & Flag) > 0)
+        if ((PML4->raw & Flag) > 0)
         {
-            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
+            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->GetAddress() << 12);
             if (PDPTE)
             {
                 if ((PDPTE->Entries[Index.PDPTEIndex].Present))
@@ -74,15 +74,15 @@ namespace Memory
         Address &= 0xFFFFFFFFFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
-        PageMapLevel4 PML4 = this->Table->Entries[Index.PMLIndex];
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
 
         PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
         PageDirectoryEntryPtr *PDE = nullptr;
         PageTableEntryPtr *PTE = nullptr;
 
-        if (PML4.Present)
+        if (PML4->Present)
         {
-            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4.GetAddress() << 12);
+            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->GetAddress() << 12);
             if (PDPTE)
             {
                 if (PDPTE->Entries[Index.PDPTEIndex].Present)
@@ -109,6 +109,135 @@ namespace Memory
                 }
             }
         }
+        return nullptr;
+    }
+
+    Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
+    {
+        // 0x1000 aligned
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+
+        PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
+        PageDirectoryEntryPtr *PDE = nullptr;
+        PageTableEntryPtr *PTE = nullptr;
+
+        if (PML4->Present)
+        {
+            PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->GetAddress() << 12);
+            if (PDPTE)
+            {
+                if (PDPTE->Entries[Index.PDPTEIndex].Present)
+                {
+                    if (PDPTE->Entries[Index.PDPTEIndex].PageSize)
+                        return MapType::OneGB;
+
+                    PDE = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
+                    if (PDE)
+                    {
+                        if (PDE->Entries[Index.PDEIndex].Present)
+                        {
+                            if (PDE->Entries[Index.PDEIndex].PageSize)
+                                return MapType::TwoMB;
+
+                            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
+                            if (PTE)
+                            {
+                                if (PTE->Entries[Index.PTEIndex].Present)
+                                    return MapType::FourKB;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return MapType::NoMapType;
+    }
+
+    PageMapLevel5 *Virtual::GetPML5(void *VirtualAddress, MapType Type)
+    {
+        stub; /* TODO */
+        return nullptr;
+    }
+
+    PageMapLevel4 *Virtual::GetPML4(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+        if (PML4->Present)
+            return PML4;
+        return nullptr;
+    }
+
+    PageDirectoryPointerTableEntry *Virtual::GetPDPTE(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+        if (!PML4->Present)
+            return nullptr;
+
+        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
+        PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
+        if (PDPTE->Present)
+            return PDPTE;
+        return nullptr;
+    }
+
+    PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+        if (!PML4->Present)
+            return nullptr;
+
+        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
+        PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
+        if (!PDPTE->Present)
+            return nullptr;
+
+        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)(PDPTE->GetAddress() << 12);
+        PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
+        if (PDE->Present)
+            return PDE;
+        return nullptr;
+    }
+
+    PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
+    {
+        uintptr_t Address = (uintptr_t)VirtualAddress;
+        Address &= 0xFFFFFFFFFFFFF000;
+
+        PageMapIndexer Index = PageMapIndexer(Address);
+        PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+        if (!PML4->Present)
+            return nullptr;
+
+        PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
+        PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
+        if (!PDPTE->Present)
+            return nullptr;
+
+        PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)(PDPTE->GetAddress() << 12);
+        PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
+        if (!PDE->Present)
+            return nullptr;
+
+        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+        PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
+        if (PTE->Present)
+            return PTE;
         return nullptr;
     }
 
@@ -234,7 +363,7 @@ namespace Memory
         PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
         if (!PML4->Present)
         {
-            error("Page %#lx not present", PML4->GetAddress());
+            warn("Page %#lx not present", PML4->GetAddress());
             return;
         }
 
@@ -242,7 +371,7 @@ namespace Memory
         PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
         if (!PDPTE->Present)
         {
-            error("Page %#lx not present", PDPTE->GetAddress());
+            warn("Page %#lx not present", PDPTE->GetAddress());
             return;
         }
 
@@ -256,7 +385,7 @@ namespace Memory
         PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
         if (!PDE->Present)
         {
-            error("Page %#lx not present", PDE->GetAddress());
+            warn("Page %#lx not present", PDE->GetAddress());
             return;
         }
 
@@ -270,7 +399,7 @@ namespace Memory
         PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
         if (!PTE.Present)
         {
-            error("Page %#lx not present", PTE.GetAddress());
+            warn("Page %#lx not present", PTE.GetAddress());
             return;
         }
 

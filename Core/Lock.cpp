@@ -116,7 +116,7 @@ void LockClass::DeadLock(SpinLockData Lock)
         this->Unlock();
     }
 
-    if (TaskManager)
+    if (TaskManager && !TaskManager->IsPanic())
         TaskManager->Schedule();
 }
 
@@ -128,7 +128,13 @@ int LockClass::Lock(const char *FunctionName)
 Retry:
     int i = 0;
     while (IsLocked.exchange(true, std::memory_order_acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
+    {
+        /* FIXME */
+        // if (TaskManager && !TaskManager->IsPanic())
+        //     TaskManager->Schedule();
+        // else
         CPU::Pause();
+    }
 
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {
@@ -187,7 +193,7 @@ void LockClass::TimeoutDeadLock(SpinLockData Lock, uint64_t Timeout)
         this->Unlock();
     }
 
-    if (TaskManager)
+    if (TaskManager && !TaskManager->IsPanic())
         TaskManager->Schedule();
 }
 
@@ -203,7 +209,13 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 Retry:
     int i = 0;
     while (IsLocked.exchange(true, std::memory_order_acquire) && ++i < (DebuggerIsAttached ? 0x100000 : 0x10000000))
+    {
+        /* FIXME */
+        // if (TaskManager && !TaskManager->IsPanic())
+        //     TaskManager->Schedule();
+        // else
         CPU::Pause();
+    }
 
     if (i >= (DebuggerIsAttached ? 0x100000 : 0x10000000))
     {

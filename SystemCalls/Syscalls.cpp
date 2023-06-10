@@ -55,7 +55,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
     default:
     {
         error("Unknown compatibility mode! Killing thread...");
-        TaskManager->KillThread(TaskManager->GetCurrentThread(), -0xCA11);
+        TaskManager->KillThread(TaskManager->GetCurrentThread(), Tasking::KILL_SYSCALL);
         break;
     }
     }

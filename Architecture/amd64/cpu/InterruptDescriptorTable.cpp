@@ -475,50 +475,46 @@ namespace InterruptDescriptorTable
             outb(0xA1, 0xff);
         }
 
-        /* ISR */
+        bool EnableISRs = true;
+#ifdef DEBUG
+        EnableISRs = !DebuggerIsAttached;
+        if (!EnableISRs)
+            KPrint("\eFFA500The debugger is attached, disabling all ISRs.");
+#endif
 
-#ifdef DEBUG
-        // if (!DebuggerIsAttached)
-        if (true)
-        {
-#endif
-            SetEntry(0x0, InterruptHandler_0x0, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1, InterruptHandler_0x1, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x2, InterruptHandler_0x2, IST2, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x3, InterruptHandler_0x3, IST1, TRAP_32BIT, RING3, (!DebuggerIsAttached), GDT_KERNEL_CODE); /* Do not handle breakpoints if we are debugging the kernel. */
-            SetEntry(0x4, InterruptHandler_0x4, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x5, InterruptHandler_0x5, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x6, InterruptHandler_0x6, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x7, InterruptHandler_0x7, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x8, InterruptHandler_0x8, IST3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x9, InterruptHandler_0x9, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xa, InterruptHandler_0xa, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xb, InterruptHandler_0xb, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xc, InterruptHandler_0xc, IST3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xd, InterruptHandler_0xd, IST3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xe, InterruptHandler_0xe, IST3, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0xf, InterruptHandler_0xf, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x10, InterruptHandler_0x10, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x11, InterruptHandler_0x11, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x12, InterruptHandler_0x12, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x13, InterruptHandler_0x13, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x14, InterruptHandler_0x14, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x15, InterruptHandler_0x15, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x16, InterruptHandler_0x16, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x17, InterruptHandler_0x17, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x18, InterruptHandler_0x18, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x19, InterruptHandler_0x19, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1a, InterruptHandler_0x1a, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1b, InterruptHandler_0x1b, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1c, InterruptHandler_0x1c, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1d, InterruptHandler_0x1d, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1e, InterruptHandler_0x1e, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-            SetEntry(0x1f, InterruptHandler_0x1f, IST1, TRAP_32BIT, RING0, true, GDT_KERNEL_CODE);
-#ifdef DEBUG
-        }
-        else
-            KPrint("\eFFA500The debugger is attached, not setting up the ISR.");
-#endif
+        /* ISR */
+        SetEntry(0x0, InterruptHandler_0x0, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1, InterruptHandler_0x1, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x2, InterruptHandler_0x2, IST2, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x3, InterruptHandler_0x3, IST1, TRAP_32BIT, RING3, (!DebuggerIsAttached), GDT_KERNEL_CODE); /* Do not handle breakpoints if we are debugging the kernel. */
+        SetEntry(0x4, InterruptHandler_0x4, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x5, InterruptHandler_0x5, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x6, InterruptHandler_0x6, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x7, InterruptHandler_0x7, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x8, InterruptHandler_0x8, IST3, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x9, InterruptHandler_0x9, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0xa, InterruptHandler_0xa, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0xb, InterruptHandler_0xb, IST1, TRAP_32BIT, RING0, (!DebuggerIsAttached), GDT_KERNEL_CODE);
+        SetEntry(0xc, InterruptHandler_0xc, IST3, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0xd, InterruptHandler_0xd, IST3, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0xe, InterruptHandler_0xe, IST3, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0xf, InterruptHandler_0xf, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x10, InterruptHandler_0x10, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x11, InterruptHandler_0x11, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x12, InterruptHandler_0x12, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x13, InterruptHandler_0x13, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x14, InterruptHandler_0x14, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x15, InterruptHandler_0x15, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x16, InterruptHandler_0x16, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x17, InterruptHandler_0x17, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x18, InterruptHandler_0x18, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x19, InterruptHandler_0x19, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1a, InterruptHandler_0x1a, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1b, InterruptHandler_0x1b, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1c, InterruptHandler_0x1c, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1d, InterruptHandler_0x1d, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1e, InterruptHandler_0x1e, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+        SetEntry(0x1f, InterruptHandler_0x1f, IST1, TRAP_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 
         /* IRQ */
 

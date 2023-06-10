@@ -32,10 +32,13 @@
 
 namespace Tasking
 {
-	typedef unsigned long IP;
-	typedef __UINTPTR_TYPE__ IPOffset;
-	typedef unsigned long UPID;
-	typedef unsigned long UTID;
+	/** @brief Instruction Pointer */
+	typedef __UINTPTR_TYPE__ IP;
+	/** @brief Process ID */
+	typedef int PID;
+	/** @brief Thread ID */
+	typedef int TID;
+	/* @brief Token */
 	typedef __UINTPTR_TYPE__ Token;
 
 	enum TaskArchitecture
@@ -84,6 +87,16 @@ namespace Tasking
 		Critical = 10
 	};
 
+	enum KillErrorCodes : int
+	{
+		KILL_SCHEDULER_DESTRUCTION = -0xFFFF,
+		KILL_CXXABI_EXCEPTION = -0xECE97,
+		KILL_SYSCALL = -0xCA11,
+		KILL_OOM = -0x1008,
+		KILL_ERROR = -0x1,
+		KILL_SUCCESS = 0,
+	};
+
 	struct TaskSecurity
 	{
 		TaskTrustLevel TrustLevel;
@@ -109,11 +122,10 @@ namespace Tasking
 
 	struct TCB
 	{
-		UTID ID;
+		TID ID;
 		char Name[256];
 		struct PCB *Parent;
 		IP EntryPoint;
-		IPOffset Offset;
 		int ExitCode;
 		Memory::StackGuard *Stack;
 		Memory::MemMgr *Memory;
@@ -174,11 +186,34 @@ namespace Tasking
 			trace("Setting kernel debug mode of thread %s to %s", Name, Enable ? "true" : "false");
 			Security.IsKernelDebugEnabled = Enable;
 		}
+
+		void SYSV_ABI_Call(uintptr_t Arg1 = 0,
+						   uintptr_t Arg2 = 0,
+						   uintptr_t Arg3 = 0,
+						   uintptr_t Arg4 = 0,
+						   uintptr_t Arg5 = 0,
+						   uintptr_t Arg6 = 0,
+						   void *Function = nullptr)
+		{
+			CriticalSection cs;
+#if defined(a64)
+			this->Registers.rdi = Arg1;
+			this->Registers.rsi = Arg2;
+			this->Registers.rdx = Arg3;
+			this->Registers.rcx = Arg4;
+			this->Registers.r8 = Arg5;
+			this->Registers.r9 = Arg6;
+			if (Function != nullptr)
+				this->Registers.rip = (uint64_t)Function;
+#else
+#warning "SYSV ABI not implemented for this architecture"
+#endif
+		}
 	};
 
 	struct PCB
 	{
-		UPID ID;
+		PID ID;
 		char Name[256];
 		PCB *Parent;
 		int ExitCode;
@@ -243,8 +278,8 @@ namespace Tasking
 	{
 	private:
 		Security SecurityManager;
-		UPID NextPID = 0;
-		UTID NextTID = 0;
+		PID NextPID = 0;
+		TID NextTID = 0;
 
 		std::vector<PCB *> ProcessList;
 		PCB *IdleProcess = nullptr;
@@ -289,6 +324,7 @@ namespace Tasking
 		Security *GetSecurityManager() { return &SecurityManager; }
 		void CleanupProcessesThread();
 		void Panic() { StopScheduler = true; }
+		bool IsPanic() { return StopScheduler; }
 		__always_inline inline void Schedule()
 		{
 #if defined(a86)
@@ -301,16 +337,16 @@ namespace Tasking
 		void RevertProcessCreation(PCB *Process);
 		void RevertThreadCreation(TCB *Thread);
 
-		void KillThread(TCB *tcb, int Code)
+		void KillThread(TCB *tcb, enum KillErrorCodes Code)
 		{
 			tcb->Status = TaskStatus::Terminated;
-			tcb->ExitCode = Code;
+			tcb->ExitCode = (int)Code;
 		}
 
-		void KillProcess(PCB *pcb, int Code)
+		void KillProcess(PCB *pcb, enum KillErrorCodes Code)
 		{
 			pcb->Status = TaskStatus::Terminated;
-			pcb->ExitCode = Code;
+			pcb->ExitCode = (int)Code;
 		}
 
 		/**
@@ -325,9 +361,9 @@ namespace Tasking
 		 */
 		TCB *GetCurrentThread();
 
-		PCB *GetProcessByID(UPID ID);
+		PCB *GetProcessByID(PID ID);
 
-		TCB *GetThreadByID(UTID ID);
+		TCB *GetThreadByID(TID ID);
 
 		/** @brief Wait for process to terminate */
 		void WaitForProcess(PCB *pcb);
@@ -356,7 +392,6 @@ namespace Tasking
 						  const char **argv = nullptr,
 						  const char **envp = nullptr,
 						  const std::vector<AuxiliaryVector> &auxv = std::vector<AuxiliaryVector>(),
-						  IPOffset Offset = 0,
 						  TaskArchitecture Architecture = TaskArchitecture::x64,
 						  TaskCompatibility Compatibility = TaskCompatibility::Native,
 						  bool ThreadNotReady = false);

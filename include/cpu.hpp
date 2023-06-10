@@ -289,45 +289,82 @@ namespace CPU
             uint32_t ss; // Stack Segment
         } TrapFrame;
 
-        // ! TODO: UNTESTED!
+        typedef union DR6
+        {
+            struct
+            {
+                /** @brief Breakpoint #0 Condition Detected */
+                uint64_t B0 : 1;
+                /** @brief Breakpoint #1 Condition Detected */
+                uint64_t B1 : 1;
+                /** @brief Breakpoint #2 Condition Detected */
+                uint64_t B2 : 1;
+                /** @brief Breakpoint #3 Condition Detected */
+                uint64_t B3 : 1;
+                /** @brief Reserved */
+                uint64_t Reserved0 : 8;
+                /** @brief Reserved */
+                uint64_t Reserved1 : 1;
+                /** @brief Breakpoint Debug Access Detected */
+                uint64_t BD : 1;
+                /** @brief Breakpoint Single Step */
+                uint64_t BS : 1;
+                /** @brief Breakpoint Task Switch */
+                uint64_t BT : 1;
+                /** @brief Reserved */
+                uint64_t Reserved2 : 15;
+            };
+            uint64_t raw;
+        } DR6;
+
         typedef union DR7
         {
             struct
             {
-                /** @brief Local DR0 Breakpoint (0) */
-                uint32_t LocalDR0 : 1;
-                /** @brief Global DR0 Breakpoint (1) */
-                uint32_t GlobalDR0 : 1;
-                /** @brief Local DR1 Breakpoint (2) */
-                uint32_t LocalDR1 : 1;
-                /** @brief Global DR1 Breakpoint (3) */
-                uint32_t GlobalDR1 : 1;
-                /** @brief Local DR2 Breakpoint (4) */
-                uint32_t LocalDR2 : 1;
-                /** @brief Global DR2 Breakpoint (5) */
-                uint32_t GlobalDR2 : 1;
-                /** @brief Local DR3 Breakpoint (6) */
-                uint32_t LocalDR3 : 1;
-                /** @brief Global DR3 Breakpoint (7) */
-                uint32_t GlobalDR3 : 1;
-                /** @brief Reserved [7 - (16-17)] */
-                uint32_t Reserved : 9;
-                /** @brief Conditions for DR0 (16-17) */
-                uint32_t ConditionsDR0 : 1;
-                /** @brief Size of DR0 Breakpoint (18-19) */
-                uint32_t SizeDR0 : 1;
-                /** @brief Conditions for DR1 (20-21) */
-                uint32_t ConditionsDR1 : 1;
-                /** @brief Size of DR1 Breakpoint (22-23) */
-                uint32_t SizeDR1 : 1;
-                /** @brief Conditions for DR2 (24-25) */
-                uint32_t ConditionsDR2 : 1;
-                /** @brief Size of DR2 Breakpoint (26-27) */
-                uint32_t SizeDR2 : 1;
-                /** @brief Conditions for DR3 (28-29) */
-                uint32_t ConditionsDR3 : 1;
-                /** @brief Size of DR3 Breakpoint (30-31) */
-                uint32_t SizeDR3 : 1;
+                /** @brief Local Exact Breakpoint #0 Enabled */
+                uint32_t L0 : 1;
+                /** @brief Global Exact Breakpoint #0 Enabled */
+                uint32_t G0 : 1;
+                /** @brief Local Exact Breakpoint #1 Enabled */
+                uint32_t L1 : 1;
+                /** @brief Global Exact Breakpoint #1 Enabled */
+                uint32_t G1 : 1;
+                /** @brief Local Exact Breakpoint #2 Enabled */
+                uint32_t L2 : 1;
+                /** @brief Global Exact Breakpoint #2 Enabled */
+                uint32_t G2 : 1;
+                /** @brief Local Exact Breakpoint #3 Enabled */
+                uint32_t L3 : 1;
+                /** @brief Global Exact Breakpoint #3 Enabled */
+                uint32_t G3 : 1;
+                /** @brief Local Exact Breakpoint Enabled */
+                uint32_t LE : 1;
+                /** @brief Global Exact Breakpoint Enabled */
+                uint32_t GE : 1;
+                /** @brief Reserved */
+                uint32_t Reserved0 : 1;
+                /** @brief Reserved */
+                uint32_t Reserved1 : 2;
+                /** @brief General Detect Enabled */
+                uint32_t GD : 1;
+                /** @brief Reserved */
+                uint32_t Reserved2 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint32_t RW0 : 2;
+                /** @brief Length of Breakpoint #0 */
+                uint32_t LEN0 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint32_t RW1 : 2;
+                /** @brief Length of Breakpoint #1 */
+                uint32_t LEN1 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint32_t RW2 : 2;
+                /** @brief Length of Breakpoint #2 */
+                uint32_t LEN2 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint32_t RW3 : 2;
+                /** @brief Length of Breakpoint #3 */
+                uint32_t LEN3 : 2;
             };
             uint32_t raw;
         } DR7;
@@ -590,45 +627,86 @@ namespace CPU
             uint64_t raw;
         } __packed EFER;
 
-        // ! TODO: UNTESTED!
+        typedef union DR6
+        {
+            struct
+            {
+                /** @brief Breakpoint #0 Condition Detected */
+                uint64_t B0 : 1;
+                /** @brief Breakpoint #1 Condition Detected */
+                uint64_t B1 : 1;
+                /** @brief Breakpoint #2 Condition Detected */
+                uint64_t B2 : 1;
+                /** @brief Breakpoint #3 Condition Detected */
+                uint64_t B3 : 1;
+                /** @brief Reserved */
+                uint64_t Reserved0 : 8;
+                /** @brief Reserved */
+                uint64_t Reserved1 : 1;
+                /** @brief Breakpoint Debug Access Detected */
+                uint64_t BD : 1;
+                /** @brief Breakpoint Single Step */
+                uint64_t BS : 1;
+                /** @brief Breakpoint Task Switch */
+                uint64_t BT : 1;
+                /** @brief Reserved */
+                uint64_t Reserved2 : 15;
+                /** @brief Reserved */
+                uint64_t Reserved3 : 32;
+            };
+            uint64_t raw;
+        } DR6;
+
         typedef union DR7
         {
             struct
             {
-                /** @brief Local DR0 Breakpoint (0) */
-                uint64_t LocalDR0 : 1;
-                /** @brief Global DR0 Breakpoint (1) */
-                uint64_t GlobalDR0 : 1;
-                /** @brief Local DR1 Breakpoint (2) */
-                uint64_t LocalDR1 : 1;
-                /** @brief Global DR1 Breakpoint (3) */
-                uint64_t GlobalDR1 : 1;
-                /** @brief Local DR2 Breakpoint (4) */
-                uint64_t LocalDR2 : 1;
-                /** @brief Global DR2 Breakpoint (5) */
-                uint64_t GlobalDR2 : 1;
-                /** @brief Local DR3 Breakpoint (6) */
-                uint64_t LocalDR3 : 1;
-                /** @brief Global DR3 Breakpoint (7) */
-                uint64_t GlobalDR3 : 1;
-                /** @brief Reserved [7 - (16-17)] */
-                uint64_t Reserved : 9;
-                /** @brief Conditions for DR0 (16-17) */
-                uint64_t ConditionsDR0 : 1;
-                /** @brief Size of DR0 Breakpoint (18-19) */
-                uint64_t SizeDR0 : 1;
-                /** @brief Conditions for DR1 (20-21) */
-                uint64_t ConditionsDR1 : 1;
-                /** @brief Size of DR1 Breakpoint (22-23) */
-                uint64_t SizeDR1 : 1;
-                /** @brief Conditions for DR2 (24-25) */
-                uint64_t ConditionsDR2 : 1;
-                /** @brief Size of DR2 Breakpoint (26-27) */
-                uint64_t SizeDR2 : 1;
-                /** @brief Conditions for DR3 (28-29) */
-                uint64_t ConditionsDR3 : 1;
-                /** @brief Size of DR3 Breakpoint (30-31) */
-                uint64_t SizeDR3 : 1;
+                /** @brief Local Exact Breakpoint #0 Enabled */
+                uint64_t L0 : 1;
+                /** @brief Global Exact Breakpoint #0 Enabled */
+                uint64_t G0 : 1;
+                /** @brief Local Exact Breakpoint #1 Enabled */
+                uint64_t L1 : 1;
+                /** @brief Global Exact Breakpoint #1 Enabled */
+                uint64_t G1 : 1;
+                /** @brief Local Exact Breakpoint #2 Enabled */
+                uint64_t L2 : 1;
+                /** @brief Global Exact Breakpoint #2 Enabled */
+                uint64_t G2 : 1;
+                /** @brief Local Exact Breakpoint #3 Enabled */
+                uint64_t L3 : 1;
+                /** @brief Global Exact Breakpoint #3 Enabled */
+                uint64_t G3 : 1;
+                /** @brief Local Exact Breakpoint Enabled */
+                uint64_t LE : 1;
+                /** @brief Global Exact Breakpoint Enabled */
+                uint64_t GE : 1;
+                /** @brief Reserved */
+                uint64_t Reserved0 : 1;
+                /** @brief Reserved */
+                uint64_t Reserved1 : 2;
+                /** @brief General Detect Enabled */
+                uint64_t GD : 1;
+                /** @brief Reserved */
+                uint64_t Reserved2 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint64_t RW0 : 2;
+                /** @brief Length of Breakpoint #0 */
+                uint64_t LEN0 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint64_t RW1 : 2;
+                /** @brief Length of Breakpoint #1 */
+                uint64_t LEN1 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint64_t RW2 : 2;
+                /** @brief Length of Breakpoint #2 */
+                uint64_t LEN2 : 2;
+                /** @brief Type of Transaction(s) to Trap */
+                uint64_t RW3 : 2;
+                /** @brief Length of Breakpoint #3 */
+                uint64_t LEN3 : 2;
+                /** @brief Reserved */
+                uint64_t Reserved3 : 32;
             };
             uint64_t raw;
         } DR7;

@@ -18,18 +18,4 @@
 #ifndef _STDLIB_H
 #define _STDLIB_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-   void *malloc(__SIZE_TYPE__ Size);
-   void *calloc(__SIZE_TYPE__ n, __SIZE_TYPE__ Size);
-   void *realloc(void *Address, __SIZE_TYPE__ Size);
-   void free(void *Address);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif // !_STDLIB_H

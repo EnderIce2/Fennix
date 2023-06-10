@@ -26,11 +26,14 @@ namespace Memory
     {
         if (!Size)
             Size = node->Length;
-        if (Offset > node->Length)
+
+        if ((size_t)node->Offset > node->Length)
             return 0;
-        if (Offset + Size > node->Length)
-            Size = node->Length - Offset;
-        memcpy(Buffer, (uint8_t *)(node->Address + Offset), Size);
+
+        if (node->Offset + Size > node->Length)
+            Size = node->Length - node->Offset;
+
+        memcpy(Buffer, (uint8_t *)(node->Address + node->Offset), Size);
         return Size;
     }
 
@@ -38,53 +41,21 @@ namespace Memory
     {
         if (!Size)
             Size = node->Length;
-        if (Offset > node->Length)
+
+        if ((size_t)node->Offset > node->Length)
             return 0;
-        if (Offset + Size > node->Length)
-            Size = node->Length - Offset;
-        memcpy((uint8_t *)(node->Address + Offset), Buffer, Size);
+
+        if (node->Offset + Size > node->Length)
+            Size = node->Length - node->Offset;
+
+        memcpy((uint8_t *)(node->Address + node->Offset), Buffer, Size);
         return Size;
-    }
-
-    SeekFSFunction(MEM_Seek)
-    {
-        long NewOffset;
-
-        if (Whence == SEEK_SET)
-        {
-            if (Offset > node->Length)
-                return -1;
-            node->Offset = Offset;
-            NewOffset = (long)node->Offset;
-        }
-        else if (Whence == SEEK_CUR)
-        {
-            NewOffset = (long)(node->Offset + Offset);
-            if ((size_t)NewOffset > node->Length || NewOffset < 0)
-                return -1;
-            node->Offset = NewOffset;
-        }
-        else if (Whence == SEEK_END)
-        {
-            NewOffset = node->Length + Offset;
-            if (NewOffset < 0)
-                return -1;
-            node->Offset = NewOffset;
-        }
-        else
-        {
-            error("Invalid whence!");
-            return -1;
-        }
-
-        return NewOffset;
     }
 
     VirtualFileSystem::FileSystemOperations mem_op = {
         .Name = "mem",
         .Read = MEM_Read,
         .Write = MEM_Write,
-        .Seek = MEM_Seek,
     };
 
     uint64_t MemMgr::GetAllocatedMemorySize()
@@ -160,7 +131,10 @@ namespace Memory
             if (User)
                 Flags |= Memory::PTFlag::US;
 
-            Memory::Virtual(this->Table).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Flags);
+            void *AddressToMap = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
+
+            Memory::Virtual vmm = Memory::Virtual(this->Table);
+            vmm.Remap(AddressToMap, AddressToMap, Flags);
         }
 
         if (this->Directory)
@@ -206,10 +180,12 @@ namespace Memory
 
                 KernelAllocator.FreePages(Address, Count);
 
+                Memory::Virtual vmm = Memory::Virtual(this->Table);
                 for (size_t i = 0; i < Count; i++)
                 {
-                    Memory::Virtual(this->Table).Remap((void *)((uintptr_t)Address + (i * PAGE_SIZE)), (void *)((uint64_t)Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
-                    // Memory::Virtual(this->Table).Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
+                    void *AddressToMap = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
+                    vmm.Remap(AddressToMap, AddressToMap, Memory::PTFlag::RW);
+                    // vmm.Unmap((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
                 }
 
                 if (this->Directory)
@@ -270,8 +246,11 @@ namespace Memory
         foreach (auto ap in AllocatedPagesList)
         {
             KernelAllocator.FreePages(ap.Address, ap.PageCount);
+            Memory::Virtual vmm = Memory::Virtual(this->Table);
             for (size_t i = 0; i < ap.PageCount; i++)
-                Memory::Virtual(this->Table).Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)), Memory::PTFlag::RW);
+                vmm.Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),
+                          (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),
+                          Memory::PTFlag::RW);
         }
 
         if (this->Directory)

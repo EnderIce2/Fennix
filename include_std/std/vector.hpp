@@ -123,7 +123,7 @@ namespace std
 
         NIF T &null_elem()
         {
-            static T null_elem;
+            static T null_elem{};
             return null_elem;
         }
 

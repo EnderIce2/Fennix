@@ -79,18 +79,18 @@ namespace Recovery
 			return;
 		}
 
-		void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm.node->Length + 1));
-		memcpy(PCMRaw, (void *)pcm.node->Address, pcm.node->Length);
+		void *PCMRaw = KernelAllocator.RequestPages(TO_PAGES(pcm.GetLength() + 1));
+		vfs->Read(pcm, (uint8_t *)PCMRaw, pcm.GetLength());
 
 		KernelCallback callback{};
 		callback.Reason = SendReason;
 		callback.AudioCallback.Send.Data = (uint8_t *)PCMRaw;
-		callback.AudioCallback.Send.Length = pcm.node->Length;
+		callback.AudioCallback.Send.Length = pcm.GetLength();
 		debug("Playing audio...");
 		int status = DriverManager->IOCB(AudioDrv.DriverUID, &callback);
 		UNUSED(status);
 		debug("Audio played! %d", status);
-		KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm.node->Length + 1));
+		KernelAllocator.FreePages((void *)PCMRaw, TO_PAGES(pcm.GetLength() + 1));
 		vfs->Close(pcm);
 		TEXIT(0);
 	}
@@ -364,8 +364,8 @@ namespace Recovery
 	KernelRecovery::~KernelRecovery()
 	{
 		debug("Destructor called");
-		TaskManager->KillThread(guiThread, 0);
-		TaskManager->KillThread(recoveryThread, 0);
+		TaskManager->KillThread(guiThread, Tasking::KILL_SUCCESS);
+		TaskManager->KillThread(recoveryThread, Tasking::KILL_SUCCESS);
 		delete gui, gui = nullptr;
 	}
 }

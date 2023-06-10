@@ -28,52 +28,20 @@ namespace VirtualFileSystem
     {
         if (!Size)
             Size = node->Length;
-        if (Offset > node->Length)
+
+        if ((size_t)node->Offset > node->Length)
             return 0;
-        if (Offset + Size > node->Length)
-            Size = node->Length - Offset;
-        memcpy(Buffer, (uint8_t *)(node->Address + Offset), Size);
+
+        if (node->Offset + Size > node->Length)
+            Size = node->Length - node->Offset;
+
+        memcpy(Buffer, (uint8_t *)(node->Address + node->Offset), Size);
         return Size;
-    }
-
-    SeekFSFunction(USTAR_Seek)
-    {
-        long NewOffset;
-
-        if (Whence == SEEK_SET)
-        {
-            if (Offset > node->Length)
-                return -1;
-            node->Offset = Offset;
-            NewOffset = node->Offset;
-        }
-        else if (Whence == SEEK_CUR)
-        {
-            NewOffset = node->Offset + Offset;
-            if ((size_t)NewOffset > node->Length || NewOffset < 0)
-                return -1;
-            node->Offset = NewOffset;
-        }
-        else if (Whence == SEEK_END)
-        {
-            NewOffset = node->Length + Offset;
-            if (NewOffset < 0)
-                return -1;
-            node->Offset = NewOffset;
-        }
-        else
-        {
-            error("Invalid whence!");
-            return -1;
-        }
-
-        return NewOffset;
     }
 
     FileSystemOperations ustar_op = {
         .Name = "ustar",
         .Read = USTAR_Read,
-        .Seek = USTAR_Seek,
     };
 
     bool USTAR::TestArchive(uintptr_t Address)

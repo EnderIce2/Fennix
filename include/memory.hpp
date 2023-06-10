@@ -192,9 +192,17 @@ namespace Memory
             uintptr_t Dirty : 1;              // 6
             uintptr_t PageAttributeTable : 1; // 7
             uintptr_t Global : 1;             // 8
-            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Available0 : 1;         // 9
+            uintptr_t Available1 : 1;         // 10
+            uintptr_t Available2 : 1;         // 11
             uintptr_t Address : 40;           // 12-51
-            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t Available3 : 1;         // 52
+            uintptr_t Available4 : 1;         // 53
+            uintptr_t Available5 : 1;         // 54
+            uintptr_t Available6 : 1;         // 55
+            uintptr_t Available7 : 1;         // 56
+            uintptr_t Available8 : 1;         // 57
+            uintptr_t Available9 : 1;         // 58
             uintptr_t ProtectionKey : 4;      // 59-62
             uintptr_t ExecuteDisable : 1;     // 63
 #elif defined(a32)
@@ -207,7 +215,9 @@ namespace Memory
             uintptr_t Dirty : 1;              // 6
             uintptr_t PageAttributeTable : 1; // 7
             uintptr_t Global : 1;             // 8
-            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Available0 : 1;         // 9
+            uintptr_t Available1 : 1;         // 10
+            uintptr_t Available2 : 1;         // 11
             uintptr_t Address : 20;           // 12-31
 #elif defined(aa64)
 #endif
@@ -285,11 +295,19 @@ namespace Memory
             uintptr_t Dirty : 1;              // 6
             uintptr_t PageSize : 1;           // 7
             uintptr_t Global : 1;             // 8
-            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Available0 : 1;         // 9
+            uintptr_t Available1 : 1;         // 10
+            uintptr_t Available2 : 1;         // 11
             uintptr_t PageAttributeTable : 1; // 12
             uintptr_t Reserved0 : 8;          // 13-20
             uintptr_t Address : 31;           // 21-51
-            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t Available3 : 1;         // 52
+            uintptr_t Available4 : 1;         // 53
+            uintptr_t Available5 : 1;         // 54
+            uintptr_t Available6 : 1;         // 55
+            uintptr_t Available7 : 1;         // 56
+            uintptr_t Available8 : 1;         // 57
+            uintptr_t Available9 : 1;         // 58
             uintptr_t ProtectionKey : 4;      // 59-62
             uintptr_t ExecuteDisable : 1;     // 63
         } TwoMB;
@@ -319,7 +337,9 @@ namespace Memory
             uintptr_t Dirty : 1;              // 6
             uintptr_t PageSize : 1;           // 7
             uintptr_t Global : 1;             // 8
-            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Available0 : 1;         // 9
+            uintptr_t Available1 : 1;         // 10
+            uintptr_t Available2 : 1;         // 11
             uintptr_t PageAttributeTable : 1; // 12
             uintptr_t Address0 : 8;           // 13-20
             uintptr_t Reserved0 : 1;          // 21
@@ -395,11 +415,19 @@ namespace Memory
             uintptr_t Dirty : 1;              // 6
             uintptr_t PageSize : 1;           // 7
             uintptr_t Global : 1;             // 8
-            uintptr_t Available0 : 3;         // 9-11
+            uintptr_t Available0 : 1;         // 9
+            uintptr_t Available1 : 1;         // 10
+            uintptr_t Available2 : 1;         // 11
             uintptr_t PageAttributeTable : 1; // 12
             uintptr_t Reserved0 : 17;         // 13-29
             uintptr_t Address : 22;           // 30-51
-            uintptr_t Available1 : 7;         // 52-58
+            uintptr_t Available3 : 1;         // 52
+            uintptr_t Available4 : 1;         // 53
+            uintptr_t Available5 : 1;         // 54
+            uintptr_t Available6 : 1;         // 55
+            uintptr_t Available7 : 1;         // 56
+            uintptr_t Available8 : 1;         // 57
+            uintptr_t Available9 : 1;         // 58
             uintptr_t ProtectionKey : 4;      // 59-62
             uintptr_t ExecuteDisable : 1;     // 63
         } OneGB;
@@ -753,6 +781,21 @@ namespace Memory
          * @return Physical address of the page.
          */
         void *GetPhysical(void *VirtualAddress);
+
+        /**
+         * @brief Get map type of the page.
+         * @param VirtualAddress Virtual address of the page.
+         * @return Map type of the page.
+         */
+        MapType GetMapType(void *VirtualAddress);
+
+#ifdef a64
+        PageMapLevel5 *GetPML5(void *VirtualAddress, MapType Type = MapType::FourKB);
+        PageMapLevel4 *GetPML4(void *VirtualAddress, MapType Type = MapType::FourKB);
+        PageDirectoryPointerTableEntry *GetPDPTE(void *VirtualAddress, MapType Type = MapType::FourKB);
+#endif /* a64 */
+        PageDirectoryEntry *GetPDE(void *VirtualAddress, MapType Type = MapType::FourKB);
+        PageTableEntry *GetPTE(void *VirtualAddress, MapType Type = MapType::FourKB);
 
         /**
          * @brief Map page.

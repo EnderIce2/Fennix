@@ -37,7 +37,8 @@ struct CRData
     CPU::x64::CR4 cr4;
     CPU::x64::CR8 cr8;
     CPU::x64::EFER efer;
-    uintptr_t dr0, dr1, dr2, dr3, dr6;
+    uintptr_t dr0, dr1, dr2, dr3;
+    CPU::x64::DR6 dr6;
     CPU::x64::DR7 dr7;
 
     long ID;
@@ -58,7 +59,8 @@ struct CRData
     CPU::x32::CR3 cr3;
     CPU::x32::CR4 cr4;
     CPU::x32::CR8 cr8;
-    uintptr_t dr0, dr1, dr2, dr3, dr6;
+    uintptr_t dr0, dr1, dr2, dr3;
+    CPU::x32::DR6 dr6;
     CPU::x32::DR7 dr7;
 
     long ID;

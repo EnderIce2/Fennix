@@ -34,8 +34,8 @@ namespace VirtualFileSystem
 
     typedef size_t (*OperationMount)(const char *, unsigned long, const void *);
     typedef size_t (*OperationUmount)(int);
-    typedef size_t (*OperationRead)(Node *node, size_t Offset, size_t Size, uint8_t *Buffer);
-    typedef size_t (*OperationWrite)(Node *node, size_t Offset, size_t Size, uint8_t *Buffer);
+    typedef size_t (*OperationRead)(Node *node, size_t Size, uint8_t *Buffer);
+    typedef size_t (*OperationWrite)(Node *node, size_t Size, uint8_t *Buffer);
     typedef void (*OperationOpen)(Node *node, uint8_t Mode, uint8_t Flags);
     typedef void (*OperationClose)(Node *node);
     typedef size_t (*OperationSync)(void);
@@ -46,14 +46,14 @@ namespace VirtualFileSystem
 #define MountFSFunction(name) size_t name(const char *unknown0, unsigned long unknown1, const uint8_t *unknown2)
 #define UMountFSFunction(name) size_t name(int unknown0)
 
-#define ReadFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Offset, size_t Size, uint8_t *Buffer)
-#define WriteFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Offset, size_t Size, uint8_t *Buffer)
+#define ReadFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Size, uint8_t *Buffer)
+#define WriteFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Size, uint8_t *Buffer)
 #define OpenFSFunction(name) void name(VirtualFileSystem::Node *node, uint8_t Mode, uint8_t Flags)
 #define CloseFSFunction(name) void name(VirtualFileSystem::Node *node)
 #define SyncFSFunction(name) size_t name(void)
 #define CreateFSFunction(name) void name(VirtualFileSystem::Node *node, char *Name, uint16_t NameLength)
 #define MkdirFSFunction(name) void name(VirtualFileSystem::Node *node, char *Name, uint16_t NameLength)
-#define SeekFSFunction(name) size_t name(VirtualFileSystem::Node *node, size_t Offset, uint8_t Whence)
+#define SeekFSFunction(name) off_t name(VirtualFileSystem::Node *node, off_t Offset, uint8_t Whence)
 
     enum FileStatus
     {
@@ -120,7 +120,7 @@ namespace VirtualFileSystem
         uint64_t UserIdentifier = 0, GroupIdentifier = 0;
         uintptr_t Address = 0;
         size_t Length = 0;
-        size_t Offset = 0;
+        off_t Offset = 0;
         Node *Parent = nullptr;
         FileSystemOperations *Operator = nullptr;
         /* For root node:
@@ -135,9 +135,37 @@ namespace VirtualFileSystem
     {
         char Name[FILENAME_LENGTH];
         FileStatus Status;
-        Node *node;
+        bool IsOK()
+        {
+            return Status == FileStatus::OK;
+        }
 
-        bool IsOK() { return Status == FileStatus::OK; }
+        size_t GetLength()
+        {
+            return node->Length;
+        }
+
+        std::vector<Node *> GetChildren()
+        {
+            return node->Children;
+        }
+
+        NodeFlags GetFlags()
+        {
+            return node->Flags;
+        }
+
+        /** @brief Special cases only. */
+        Node *GetNode()
+        {
+            return node;
+        }
+
+    private:
+        Node *node;
+        off_t ContextOffset;
+
+        friend class Virtual;
     };
 
     /* Manage / etc.. */
@@ -178,8 +206,9 @@ namespace VirtualFileSystem
         File Mount(const char *Path, FileSystemOperations *Operator);
         FileStatus Unmount(File &File);
 
-        size_t Read(File &File, size_t Offset, uint8_t *Buffer, size_t Size);
-        size_t Write(File &File, size_t Offset, uint8_t *Buffer, size_t Size);
+        size_t Read(File &File, uint8_t *Buffer, size_t Size);
+        size_t Write(File &File, uint8_t *Buffer, size_t Size);
+        off_t Seek(File &File, off_t Offset, uint8_t Whence);
 
         File Open(const char *Path, Node *Parent = nullptr);
         FileStatus Close(File &File);
