@@ -20,6 +20,6 @@
 
 #include <types.h>
 
-void StartKernelShell();
+void KShellThread();
 
 #endif // !__FENNIX_KERNEL_KERNEL_SHELL_H__

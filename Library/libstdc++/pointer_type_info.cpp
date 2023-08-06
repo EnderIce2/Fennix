@@ -28,6 +28,9 @@ namespace __cxxabiv1
 											  unsigned Outer) const
 	{
 #ifndef __GXX_RTTI
+		UNUSED(ThrownType);
+		UNUSED(ThrowObject);
+		UNUSED(Outer);
 		return false;
 #else
 		if (Outer < 2 && *this->Pointee == typeid(void))

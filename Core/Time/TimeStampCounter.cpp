@@ -34,31 +34,31 @@ namespace Time
 	bool TimeStampCounter::Sleep(size_t Duration, Units Unit)
 	{
 #if defined(a86)
-		size_t Target = this->GetCounter() + (Duration * ConvertUnit(Unit)) / this->clk;
+		uint64_t Target = this->GetCounter() + (Duration * ConvertUnit(Unit)) / this->clk;
 		while (this->GetCounter() < Target)
 			CPU::Pause();
 		return true;
 #endif
 	}
 
-	size_t TimeStampCounter::GetCounter()
+	uint64_t TimeStampCounter::GetCounter()
 	{
 #if defined(a86)
 		return CPU::Counter();
 #endif
 	}
 
-	size_t TimeStampCounter::CalculateTarget(size_t Target, Units Unit)
+	uint64_t TimeStampCounter::CalculateTarget(uint64_t Target, Units Unit)
 	{
 #if defined(a86)
-		return this->GetCounter() + (Target * ConvertUnit(Unit)) / this->clk;
+		return uint64_t((this->GetCounter() + (Target * ConvertUnit(Unit))) / this->clk);
 #endif
 	}
 
-	size_t TimeStampCounter::GetNanosecondsSinceClassCreation()
+	uint64_t TimeStampCounter::GetNanosecondsSinceClassCreation()
 	{
 #if defined(a86)
-		return (this->GetCounter() - this->ClassCreationTime) / this->clk;
+		return uint64_t((this->GetCounter() - this->ClassCreationTime) / this->clk);
 #endif
 	}
 

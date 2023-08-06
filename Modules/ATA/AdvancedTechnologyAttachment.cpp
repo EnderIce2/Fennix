@@ -52,7 +52,7 @@ namespace AdvancedTechnologyAttachment
 			debug("Driver received configuration data.");
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			break;
 		}

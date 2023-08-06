@@ -63,7 +63,6 @@ namespace Power
 
         void InitDSDT();
         Power();
-        ~Power();
     };
 }
 

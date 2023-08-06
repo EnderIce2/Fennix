@@ -35,68 +35,58 @@
 
 #include <stddef.h>
 
-#ifndef SEEK_SET
-#define SEEK_SET 0
-#endif
+#define LTS_SET_GS 0x1
+#define LTS_SET_FS 0x2
+#define LTS_GET_FS 0x3
+#define LTS_GET_GS 0x4
+#define LTS_SET_CPUID 0x5
+#define LTS_GET_CPUID 0x6
 
-#ifndef SEEK_CUR
-#define SEEK_CUR 1
-#endif
-
-#ifndef SEEK_END
-#define SEEK_END 2
-#endif
-
-enum MemoryMapFlags
+typedef enum
 {
 	MAP_PRESENT = 1 << 0,
 	MAP_WRITABLE = 1 << 1,
 	MAP_USER = 1 << 2,
-};
+} MemoryMapFlags;
 
-enum KCtl
+typedef enum
 {
-	KCTL_NULL,
+	SYSCALL_SEEK_SET = 0,
+	SYSCALL_SEEK_CUR = 1,
+	SYSCALL_SEEK_END = 2
+} FileSeekMode;
 
-	KCTL_GET_PID,
-	KCTL_GET_TID,
-	KCTL_GET_UID,
-	KCTL_GET_GID,
+typedef enum
+{
+	/**
+	 * Print a string to the screen using KPrint
+	 *
+	 * The uptime is prepended to the
+	 * string before printing.
+	 *
+	 * Arguments:
+	 * Arg1 - String to print
+	 * Arg2 - Length of string
+	 */
+	KCTL_PRINT = 0,
 
 	/**
-	 * @brief Get the page size
+	 * Get the page size
 	 */
 	KCTL_GET_PAGE_SIZE,
 
 	/**
-	 * @brief Check whether the current thread is critical
+	 * Check whether the current
+	 * thread is critical
 	 */
 	KCTL_IS_CRITICAL,
-
-	/**
-	 * @brief Register an ELF library
-	 * @fn int RegisterELFLib(char *Identifier, char *Path)
-	 */
-	KCTL_REGISTER_ELF_LIB,
-
-	/**
-	 * @brief Get an ELF library
-	 * @fn uintptr_t GetELFLib(char *Identifier);
-	 */
-	KCTL_GET_ELF_LIB_MEMORY_IMAGE,
-
-	/**
-	 * @brief Get the absolute path of a library file
-	 * @fn int GetAbsolutePath(char *Identifier, char *Buffer, size_t BufferSize)
-	 */
-	KCTL_GET_ABSOLUTE_PATH,
-};
+} KCtl;
 
 /**
- * @enum NativeSyscalls
- * Enumeration of all the native syscalls available in the kernel
+ * Enumeration of all the native syscalls
+ * available in the kernel
  */
-enum NativeSyscalls
+typedef enum
 {
 	/**
 	 *
@@ -104,17 +94,17 @@ enum NativeSyscalls
 	 *
 	 */
 
-	/** @brief Exit the process.
-	 * @fn int Exit(int Code)
-	 * This syscall is used to exit the current process with the provided exit code.
+	/**
+	 * This syscall is used to exit the current
+	 * process with the provided exit code.
+	 *
+	 * @param Code The exit code
+	 * @return This syscall does not return
+	 *
+	 * @note No permissions are required to call
+	 * this syscall
 	 */
-	_Exit = 0,
-
-	/** @brief Print a message to the kernel console
-	 * @fn int Print(char Char, int Index)
-	 * This syscall is used to print a message to the kernel console.
-	 */
-	_Print,
+	sys_Exit = 0,
 
 	/**
 	 *
@@ -122,40 +112,81 @@ enum NativeSyscalls
 	 *
 	 */
 
-	/** @brief Request pages of memory
-	 * @fn uintptr_t RequestPages(size_t Count)
-	 * This syscall is used to request a specific number of pages of memory from the kernel.
+	/**
+	 * This syscall is used to request a specific
+	 * number of pages of memory from the kernel.
+	 *
+	 * @param Count The number of pages to request
+	 * @return The address of the first page of
+	 * memory that was requested
+	 *
+	 * @note No permissions are required to call
+	 * this syscall
 	 */
-	_RequestPages,
-
-	/** @brief Free pages of memory
-	 * @fn int FreePages(uintptr_t Address, size_t Count)
-	 * This syscall is used to free a specific number of pages of memory that were previously requested.
-	 */
-	_FreePages,
-
-	/** @brief Detach memory address
-	 * @fn int DetachAddress(uintptr_t Address)
-	 * This syscall is used to detach a specific memory address from the current process.
-	 */
-	_DetachAddress,
+	sys_RequestPages,
 
 	/**
-	 * @brief Map memory address
-	 * @fn int MapAddress(uintptr_t VirtualAddress, uintptr_t PhysicalAddress, size_t Size, enum MemoryMapFlags Flags)
-	 * This syscall is used to map a specific memory address to the current process.
+	 * This syscall is used to free a specific
+	 * number of pages of memory that were
+	 * previously requested.
 	 *
-	 * @param Size The size of the memory region to map. Not pages.
+	 * @param Address The address of the first
+	 * page of memory to free
+	 * @param Count The number of pages to free
+	 * @return 0 on success, errno on failure
+	 *
+	 * @note No permissions are required to call
+	 * this syscall
 	 */
-	_MemoryMap,
+	sys_FreePages,
 
-	/** @brief Unmap memory address
-	 * @fn int UnmapAddress(uintptr_t VirtualAddress, size_t Size)
-	 * This syscall is used to unmap a specific memory address from the current process.
+	/**
+	 * This syscall is used to detach a specific
+	 * memory address from the current process.
+	 * This means that the address will no longer
+	 * be freed when the process exits.
 	 *
-	 * @param Size The size of the memory region to unmap. Not pages.
+	 * @param Address The address to detach
+	 * @return 0 on success, errno on failure
+	 *
+	 * @note The process must be trusted by the
+	 * kernel to call this syscall
 	 */
-	_MemoryUnmap,
+	sys_DetachAddress,
+
+	/**
+	 * This syscall is used to map a specific
+	 * memory address to the current process.
+	 *
+	 * @param VirtualAddress The virtual address
+	 * to map
+	 * @param PhysicalAddress The physical address
+	 * to map
+	 * @param Size The size of the memory region
+	 * to map
+	 * @param Flags The flags to use when mapping
+	 * the memory region (see MemoryMapFlags)
+	 * @return 0 on success, errno on failure
+	 *
+	 * @note The process must be trusted by the
+	 * kernel to call this syscall
+	 */
+	sys_MemoryMap,
+
+	/**
+	 * This syscall is used to unmap a specific
+	 * memory address from the current process.
+	 *
+	 * @param VirtualAddress The virtual address
+	 * to unmap
+	 * @param Size The size of the memory region
+	 * to unmap
+	 * @return 0 on success, errno on failure
+	 *
+	 * @note The process must be trusted by the
+	 * kernel to call this syscall
+	 */
+	sys_MemoryUnmap,
 
 	/**
 	 *
@@ -163,11 +194,25 @@ enum NativeSyscalls
 	 *
 	 */
 
-	/** @brief Kernel Control
-	 * @fn uintptr_t KernelCTL(enum KCtl Command, uint64_t Arg1, uint64_t Arg2, uint64_t Arg3, uint64_t Arg4)
-	 * This syscall is used to control certain aspects of the kernel or get information about it.
+	/**
+	 * Kernel Control
+	 *
+	 * This syscall is used to control certain
+	 * aspects of the kernel or get information
+	 * about it.
+	 *
+	 * @param Command The command to execute
+	 * @param Arg1 The first argument
+	 * @param Arg2 The second argument
+	 * @param Arg3 The third argument
+	 * @param Arg4 The fourth argument
+	 * @return The result of the command, or
+	 * errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_KernelCTL,
+	sys_KernelCTL,
 
 	/**
 	 *
@@ -175,41 +220,100 @@ enum NativeSyscalls
 	 *
 	 */
 
-	/** @brief Open a file
-	 * @fn void *FileOpen(const char *Path, uint64_t Flags)
-	 * This syscall is used to open a file with the provided path and flags.
+	/**
+	 * This syscall is used to open a file with
+	 * the provided path and flags.
+	 *
+	 * @param Path The path to the file to open
+	 * @param Flags The flags to use when opening
+	 * the file
+	 * @param Mode The mode to use when opening
+	 * the file
+	 * @return The file descriptor of the opened
+	 * file, or errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileOpen,
+	sys_FileOpen,
 
-	/** @brief Close a file
-	 * @fn int FileClose(void *KernelPrivate)
-	 * This syscall is used to close a file that was previously opened.
+	/**
+	 * This syscall is used to close a file
+	 * that was previously opened.
+	 *
+	 * @param FileDescriptor The file descriptor
+	 * of the file to close
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileClose,
+	sys_FileClose,
 
-	/** @brief Read from a file
-	 * @fn uint64_t FileRead(void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
-	 * This syscall is used to read a specific number of bytes from a file at a specific offset.
+	/**
+	 * This syscall is used to read a specific
+	 * number of bytes from a file at a specific
+	 * offset.
+	 *
+	 * @param FileDescriptor The file descriptor
+	 * of the file to read from
+	 * @param Buffer The buffer to read into
+	 * @param Count The number of bytes to read
+	 * @return The number of bytes read, or
+	 * errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileRead,
+	sys_FileRead,
 
-	/** @brief Write to a file
-	 * @fn uint64_t FileWrite(void *KernelPrivate, uint8_t *Buffer, uint64_t Size)
-	 * This syscall is used to write a specific number of bytes to a file at a specific offset.
+	/**
+	 * This syscall is used to write a specific
+	 * number of bytes to a file at a specific
+	 * offset.
+	 *
+	 * @param FileDescriptor The file descriptor
+	 * of the file to write to
+	 * @param Buffer The buffer to write from
+	 * @param Count The number of bytes to write
+	 * @return The number of bytes written, or
+	 * errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileWrite,
+	sys_FileWrite,
 
-	/** @brief Seek in a file
-	 * @fn off_t FileSeek(void *KernelPrivate, off_t Offset, int Whence)
-	 * This syscall is used to change the current offset in a file.
+	/**
+	 * This syscall is used to change the current
+	 * offset in a file.
+	 *
+	 * @param FileDescriptor The file descriptor
+	 * of the file to seek in
+	 * @param Offset The offset to seek to
+	 * @param Whence The seek mode
+	 * (see FileSeekMode)
+	 * @return The new offset, or errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileSeek,
+	sys_FileSeek,
 
-	/** @brief Get file status
-	 * @fn
-	 * This syscall is used to retrieve information about a file such as its size, permissions, etc.
+	/**
+	 * This syscall is used to retrieve information
+	 * about a file such as its size, permissions,
+	 * etc.
+	 *
+	 * @param FileDescriptor The file descriptor
+	 * of the file to get information about
+	 * @param StatBuffer The buffer to store the
+	 * information in
+	 * @return 0 on success, errno on failure
+	 *
+	 * @note No permissions are required to
+	 * call this syscall
 	 */
-	_FileStatus,
+	sys_FileStatus,
 
 	/**
 	 *
@@ -218,160 +322,156 @@ enum NativeSyscalls
 	 */
 
 	/**
-	 * @brief Creates/Reads/Writes/Deletes an IPC Pipe/Shared Memory/Message Queue/etc.
+	 * Creates/Reads/Writes/Deletes an IPC Pipe/Shared Memory/Message Queue/etc.
+	 *
 	 * @fn int IPC(enum IPCCommand Command, enum IPCType Type, int ID, int Flags, void *Buffer, size_t Size)
 	 * This syscall is used to create, read, write or delete an IPC Pipe/Shared Memory/Message Queue/etc.
 	 */
-	_IPC,
+	sys_IPC,
 
-	/** @brief Sleep for a specific amount of time
+	/**
+	 * Get/Set the local thread state
+	 *
+	 * @fn int LocalThreadStorage(int Code, unsigned long Address)
+	 * This syscall is used to get or set the local thread state.
+	 */
+	sys_LocalThreadState,
+
+	/**
+	 * Sleep for a specific amount of time
+	 *
 	 * @fn int Sleep(uint64_t Milliseconds)
 	 * This syscall is used to sleep the current thread for a specific amount of time.
 	 */
-	_Sleep,
+	sys_Sleep,
 
-	/** @brief Fork the current process
+	/**
+	 * Fork the current process
+	 *
 	 * @fn int Fork()
 	 * This syscall is used to create a new process that is a copy of the current process.
 	 */
-	_Fork,
+	sys_Fork,
 
-	/** @brief Wait for a process or a thread
+	/**
+	 * Wait for a process or a thread
+	 *
 	 * @fn
 	 * This syscall is used to wait for a specific process or thread to terminate. It returns the exit code of the process or thread.
 	 */
-	_Wait,
+	sys_Wait,
 
-	/** @brief Kill a process or a thread
+	/**
+	 * Kill a process or a thread
+	 *
 	 * @fn
 	 * This syscall is used to send a termination signal to a specific process or thread
 	 */
-	_Kill,
+	sys_Kill,
 
-	/** @brief Spawn a new process
+	/**
+	 * Spawn a new process
+	 *
 	 * @fn
 	 * This syscall is used to create a new process with the provided path and arguments.
 	 */
-	_Spawn,
+	sys_Spawn,
 
-	/** @brief Spawn a new thread
+	/**
+	 * Spawn a new thread
+	 *
 	 * @fn int SpawnThread(uint64_t InstructionPointer)
 	 * This syscall is used to create a new thread within the current process with the provided function and arguments.
 	 */
-	_SpawnThread,
+	sys_SpawnThread,
 
-	/** @brief Get thread list of a process
+	/**
+	 * Get thread list of a process
+	 *
 	 * @fn
 	 * This syscall is used to retrieve a list of all the threads within a specific process.
 	 */
-	_GetThreadListOfProcess,
+	sys_GetThreadListOfProcess,
 
-	/** @brief Get current process
+	/**
+	 * Get current process
+	 *
 	 * @fn
 	 * This syscall is used to retrieve information about the current process.
 	 */
-	_GetCurrentProcess,
+	sys_GetCurrentProcess,
 
-	/** @brief Get current thread
+	/**
+	 * Get current thread
+	 *
 	 * @fn
 	 * This syscall is used to retrieve information about the current thread.
 	 */
-	_GetCurrentThread,
+	sys_GetCurrentThread,
 
-	/** @brief Get current process ID
+	/**
+	 * Get current process ID
+	 *
 	 * @fn int GetCurrentProcessID()
 	 * This syscall is used to retrieve information about the current process.
 	 */
-	_GetCurrentProcessID,
+	sys_GetCurrentProcessID,
 
-	/** @brief Get current thread ID
+	/**
+	 * Get current thread ID
+	 *
 	 * @fn int GetCurrentThreadID()
 	 * This syscall is used to retrieve information about the current thread.
 	 */
-	_GetCurrentThreadID,
+	sys_GetCurrentThreadID,
 
-	/** @brief Get process by PID
+	/**
+	 * Get process by PID
+	 *
 	 * @fn
 	 * This syscall is used to retrieve information about a specific process by its PID.
 	 */
-	_GetProcessByPID,
+	sys_GetProcessByPID,
 
-	/** @brief Get thread by TID
+	/**
+	 * Get thread by TID
+	 *
 	 * @fn
 	 * This syscall is used to retrieve information about a specific thread by its TID.
 	 */
-	_GetThreadByTID,
+	sys_GetThreadByTID,
 
-	/** @brief Kill a process
+	/**
+	 * Kill a process
+	 *
 	 * @fn
 	 * This syscall is used to send a termination signal to a specific process.
 	 */
-	_KillProcess,
+	sys_KillProcess,
 
-	/** @brief Kill a thread
+	/**
+	 * Kill a thread
+	 *
 	 * @fn
 	 * This syscall is used to send a termination signal to a specific thread.
 	 */
-	_KillThread,
+	sys_KillThread,
 
-	/** @brief Reserved syscall */
-	_SysReservedCreateProcess,
+	/**
+	 * Reserved syscall */
 
-	/** @brief Reserved syscall */
-	_SysReservedCreateThread,
+	sys_SysReservedCreateProcess,
 
-	/** @brief Not a real syscall */
-	_MaxSyscall
-};
+	/**
+	 * Reserved syscall */
 
-/**
- * @enum SyscallsErrorCodes
- * Enumeration of all the error codes that can be returned by a syscall
- */
-enum SyscallsErrorCodes
-{
-	/**
-	 * @brief Access denied
-	 * This error code is returned when the current thread does not have the required permissions to perform the requested operation.
-	 */
-	SYSCALL_ACCESS_DENIED = -0xDEADACC,
-	/**
-	 * @brief Invalid argument
-	 * This error code is returned when an invalid argument is passed to a syscall.
-	 */
-	SYSCALL_INVALID_ARGUMENT = -0xBADAEE,
-	/**
-	 * @brief Invalid syscall
-	 * This error code is returned when an invalid syscall number is passed to the syscall handler.
-	 */
-	SYSCALL_INVALID_SYSCALL = -0xBAD55CA,
-	/**
-	 * @brief Internal error
-	 * This error code is returned when an internal error occurs in the syscall handler.
-	 */
-	SYSCALL_INTERNAL_ERROR = -0xBADBAD5,
-	/**
-	 * @brief Not implemented
-	 * This error code is returned when a syscall is not implemented.
-	 */
-	SYSCALL_NOT_IMPLEMENTED = -0xBAD5EED,
-	/**
-	 * @brief Generic error
-	 * This error code is returned when a syscall fails for an unknown reason.
-	 */
-	SYSCALL_ERROR = -1,
-	/**
-	 * @brief Success
-	 * This error code is returned when a syscall succeeds.
-	 */
-	SYSCALL_OK = 0,
-};
+	sys_SysReservedCreateThread,
 
-static inline bool IsSyscallError(long ret)
-{
-	return ret < 0;
-}
+	/** Not a real syscall */
+	sys_MaxSyscall
+} NativeSyscalls;
 
+#ifndef syscall0
 static inline long syscall0(long syscall)
 {
 	long ret;
@@ -381,7 +481,9 @@ static inline long syscall0(long syscall)
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall1
 static inline long syscall1(long syscall, long arg1)
 {
 	long ret;
@@ -391,7 +493,9 @@ static inline long syscall1(long syscall, long arg1)
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall2
 static inline long syscall2(long syscall, long arg1, long arg2)
 {
 	long ret;
@@ -401,7 +505,9 @@ static inline long syscall2(long syscall, long arg1, long arg2)
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall3
 static inline long syscall3(long syscall, long arg1, long arg2, long arg3)
 {
 	long ret;
@@ -411,7 +517,9 @@ static inline long syscall3(long syscall, long arg1, long arg2, long arg3)
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall4
 static inline long syscall4(long syscall, long arg1, long arg2, long arg3, long arg4)
 {
 	long ret;
@@ -422,7 +530,9 @@ static inline long syscall4(long syscall, long arg1, long arg2, long arg3, long 
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall5
 static inline long syscall5(long syscall, long arg1, long arg2, long arg3, long arg4, long arg5)
 {
 	long ret;
@@ -434,7 +544,9 @@ static inline long syscall5(long syscall, long arg1, long arg2, long arg3, long 
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
+#ifndef syscall6
 static inline long syscall6(long syscall, long arg1, long arg2, long arg3, long arg4, long arg5, long arg6)
 {
 	long ret;
@@ -447,5 +559,6 @@ static inline long syscall6(long syscall, long arg1, long arg2, long arg3, long 
 						 : "rcx", "r11", "memory");
 	return ret;
 }
+#endif
 
 #endif // !__FENNIX_KERNEL_SYSCALLS_LIST_H__

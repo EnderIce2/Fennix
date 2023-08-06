@@ -21,111 +21,111 @@
 #include <types.h>
 #include <std/functional.hpp>
 #include <std/utility.hpp>
-#include <std/vector.hpp>
 #include <std/list.hpp>
+#include <vector>
 
 namespace std
 {
-    template <typename key_type, typename value_type>
-    class unordered_map
-    {
-    public:
-        typedef std::pair<key_type, value_type> key_value_pair;
-        typedef std::list<key_value_pair> bucket;
-        typedef typename std::vector<bucket>::iterator iterator;
-        typedef typename std::vector<bucket>::const_iterator const_iterator;
+	template <typename key_type, typename value_type>
+	class unordered_map
+	{
+	public:
+		typedef std::pair<key_type, value_type> key_value_pair;
+		typedef std::list<key_value_pair> bucket;
+		typedef typename std::vector<bucket>::iterator iterator;
+		typedef typename std::vector<bucket>::const_iterator const_iterator;
 
-    private:
-        static const size_t DEFAULT_NUM_BUCKETS = 10;
-        std::vector<bucket> bkts;
+	private:
+		static const size_t DEFAULT_NUM_BUCKETS = 10;
+		std::vector<bucket> bkts;
 
-        size_t hash(const key_type &key) const
-        {
-            std::hash<key_type> hash_function;
-            return hash_function(key) % this->bkts.size();
-        }
+		size_t hash(const key_type &key) const
+		{
+			std::hash<key_type> hash_function;
+			return hash_function(key) % this->bkts.size();
+		}
 
-    public:
-        unordered_map() : bkts(DEFAULT_NUM_BUCKETS) {}
-        unordered_map(size_t num_buckets) : bkts(num_buckets) {}
+	public:
+		unordered_map() : bkts(DEFAULT_NUM_BUCKETS) {}
+		unordered_map(size_t num_buckets) : bkts(num_buckets) {}
 
-        void insert(const key_value_pair &pair)
-        {
-            size_t bucket_index = hash(pair.first);
-            bucket &bkt = this->bkts[bucket_index];
-            for (auto it = bkt.begin(); it != bkt.end(); ++it)
-            {
-                if (it->first == pair.first)
-                {
-                    it->second = pair.second;
-                    return;
-                }
-            }
-            bkt.push_back(pair);
-        }
+		void insert(const key_value_pair &pair)
+		{
+			size_t bucket_index = hash(pair.first);
+			bucket &bkt = this->bkts[bucket_index];
+			for (auto it = bkt.begin(); it != bkt.end(); ++it)
+			{
+				if (it->first == pair.first)
+				{
+					it->second = pair.second;
+					return;
+				}
+			}
+			bkt.push_back(pair);
+		}
 
-        bool contains(const key_type &key) const
-        {
-            size_t bucket_index = hash(key);
-            const bucket &bkt = this->bkts[bucket_index];
-            for (auto it = bkt.begin(); it != bkt.end(); ++it)
-            {
-                if (it->first == key)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+		bool contains(const key_type &key) const
+		{
+			size_t bucket_index = hash(key);
+			const bucket &bkt = this->bkts[bucket_index];
+			for (auto it = bkt.begin(); it != bkt.end(); ++it)
+			{
+				if (it->first == key)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 
-        iterator find(const key_type &k)
-        {
-            size_t bucket_index = hash(k);
-            bucket &bkt = this->bkts[bucket_index];
-            for (auto it = bkt.begin(); it != bkt.end(); ++it)
-            {
-                if (it->first == k)
-                    return it;
-            }
-            return bkt.end();
-        }
+		iterator find(const key_type &k)
+		{
+			size_t bucket_index = hash(k);
+			bucket &bkt = this->bkts[bucket_index];
+			for (auto it = bkt.begin(); it != bkt.end(); ++it)
+			{
+				if (it->first == k)
+					return it;
+			}
+			return bkt.end();
+		}
 
-        const_iterator find(const key_type &k) const
-        {
-            size_t bucket_index = hash(k);
-            const bucket &bkt = this->bkts[bucket_index];
-            for (auto it = bkt.begin(); it != bkt.end(); ++it)
-            {
-                if (it->first == k)
-                    return it;
-            }
-            return bkt.end();
-        }
+		const_iterator find(const key_type &k) const
+		{
+			size_t bucket_index = hash(k);
+			const bucket &bkt = this->bkts[bucket_index];
+			for (auto it = bkt.begin(); it != bkt.end(); ++it)
+			{
+				if (it->first == k)
+					return it;
+			}
+			return bkt.end();
+		}
 
-        iterator end() noexcept { return this->bkts.end(); }
+		iterator end() { return this->bkts.end(); }
 
-        size_t size() const
-        {
-            size_t count = 0;
-            foreach (const auto &bkt in this->bkts)
-                count += bkt.size();
+		size_t size() const
+		{
+			size_t count = 0;
+			foreach (const auto &bkt in this->bkts)
+				count += bkt.size();
 
-            return count;
-        }
+			return count;
+		}
 
-        value_type &operator[](const key_type &key)
-        {
-            size_t bucket_index = hash(key);
-            bucket &bkt = this->bkts[bucket_index];
-            for (auto it = bkt.begin(); it != bkt.end(); ++it)
-            {
-                if (it->first == key)
-                    return it->second;
-            }
-            bkt.emplace_back(key, value_type());
-            return bkt.back().second;
-        }
-    };
+		value_type &operator[](const key_type &key)
+		{
+			size_t bucket_index = hash(key);
+			bucket &bkt = this->bkts[bucket_index];
+			for (auto it = bkt.begin(); it != bkt.end(); ++it)
+			{
+				if (it->first == key)
+					return it->second;
+			}
+			bkt.emplace_back(key, value_type());
+			return bkt.back().second;
+		}
+	};
 }
 
 #endif // !__FENNIX_KERNEL_STD_UNORDERED_MAP_H__

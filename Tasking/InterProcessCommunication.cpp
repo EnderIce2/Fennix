@@ -40,6 +40,7 @@ namespace InterProcessCommunication
 
     IPCHandle *IPC::Create(IPCType Type, char UniqueToken[16])
     {
+        UNUSED(Type);
         SmartLock(this->IPCLock);
         IPCHandle *Hnd = (IPCHandle *)mem->RequestPages(TO_PAGES(sizeof(IPCHandle) + 1));
 
@@ -57,17 +58,18 @@ namespace InterProcessCommunication
     IPCErrorCode IPC::Destroy(IPCID ID)
     {
         SmartLock(this->IPCLock);
-        for (size_t i = 0; i < Handles.size(); i++)
+        forItr(itr, Handles)
         {
-            if (Handles[i]->ID == ID)
+            if ((*itr)->ID == ID)
             {
-                vfs->Delete(Handles[i]->Node);
-                mem->FreePages(Handles[i], TO_PAGES(sizeof(IPCHandle) + 1));
-                Handles.remove(i);
+                vfs->Delete((*itr)->Node);
+                mem->FreePages((*itr), TO_PAGES(sizeof(IPCHandle) + 1));
+                Handles.erase(itr);
                 debug("Destroyed IPC with ID %d", ID);
                 return IPCSuccess;
             }
         }
+
         debug("Failed to destroy IPC with ID %d", ID);
         return IPCIDNotFound;
     }
@@ -201,7 +203,7 @@ namespace InterProcessCommunication
                     warn("Interrupts are disabled. This may cause a kernel hang.");
                 debug("Waiting for IPC %d (now %s)", ID, Hnd->Listening ? "listening" : "ready");
                 while (Hnd->Listening)
-                    TaskManager->Schedule();
+                    TaskManager->Yield();
                 debug("IPC %d is ready", ID);
                 return IPCSuccess;
             }

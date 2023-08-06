@@ -52,9 +52,11 @@ namespace CrashHandler
         if (cpu)
         {
             EHPrint("\eE46CEBCPU Data Address: %#lx\n", cpu);
-            EHPrint("Core Stack: %#lx, Core ID: %ld, Error Code: %ld\n", cpu->Stack, cpu->ID, cpu->ErrorCode);
+            EHPrint("Core Stack: %#lx, Core ID: %ld, Error Code: %ld\n",
+                    cpu->Stack, cpu->ID, cpu->ErrorCode);
             EHPrint("Is Active: %s\n", cpu->IsActive ? "true" : "false");
-            EHPrint("Current Process: %#lx, Current Thread: %#lx\n", cpu->CurrentProcess, cpu->CurrentThread);
+            EHPrint("Current Process: %#lx, Current Thread: %#lx\n",
+                    cpu->CurrentProcess.load(), cpu->CurrentThread.load());
             EHPrint("Arch Specific Data: %#lx\n", cpu->Data);
             EHPrint("Checksum: 0x%X\n", cpu->Checksum);
         }
@@ -128,11 +130,11 @@ namespace CrashHandler
 #endif
 
 #if defined(a86)
-        EHPrint("\eA0A0A0DR6: B0:%s     B1:%s     B2:%s     B3:%s     BD:%s     BS:%s     BT:%s\n",
+        EHPrint("\eA0A0A0DR6: B0:%s     B1:%s     B2:%s     B3:%s\n     BD:%s     BS:%s     BT:%s\n",
                 data.dr6.B0 ? "True " : "False", data.dr6.B1 ? "True " : "False", data.dr6.B2 ? "True " : "False", data.dr6.B3 ? "True " : "False",
                 data.dr6.BD ? "True " : "False", data.dr6.BS ? "True " : "False", data.dr6.BT ? "True " : "False");
 
-        EHPrint("\eA0F0F0DR7: L0:%s     G0:%s     L1:%s     G1:%s\n     L2:%s     G2:%s     L3:%s     G3:%s\n     LE:%s     GE:%s     GD:%s\n     R/W0:%s     LEN0:%s     R/W1:%s     LEN1:%s\n     R/W2:%s     LEN2:%s     R/W3:%s     LEN3:%s\n",
+        EHPrint("\eA0F0F0DR7: L0:%s     G0:%s     L1:%s     G1:%s\n     L2:%s     G2:%s     L3:%s     G3:%s\n     LE:%s     GE:%s     GD:%s\n     R/W0:%s LEN0:%s   R/W1:%s   LEN1:%s\n     R/W2:%s LEN2:%s   R/W3:%s   LEN3:%s\n",
                 data.dr7.L0 ? "True " : "False", data.dr7.G0 ? "True " : "False", data.dr7.L1 ? "True " : "False", data.dr7.G1 ? "True " : "False",
                 data.dr7.L2 ? "True " : "False", data.dr7.G2 ? "True " : "False", data.dr7.L3 ? "True " : "False", data.dr7.G3 ? "True " : "False",
                 data.dr7.LE ? "True " : "False", data.dr7.GE ? "True " : "False", data.dr7.GD ? "True " : "False", data.dr7.RW0 ? "True " : "False",

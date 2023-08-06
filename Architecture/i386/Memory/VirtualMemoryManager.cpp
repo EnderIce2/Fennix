@@ -34,7 +34,7 @@ namespace Memory
 
         if ((PDE->raw & Flag) > 0)
         {
-            if (Type == MapType::FourMB && PDE->PageSize)
+            if (Type == MapType::FourMiB && PDE->PageSize)
                 return true;
 
             PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
@@ -86,13 +86,13 @@ namespace Memory
         if (PDE->Present)
         {
             if (PDE->PageSize)
-                return MapType::FourMB;
+                return MapType::FourMiB;
 
             PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
             if (PTE)
             {
                 if (PTE->Entries[Index.PTEIndex].Present)
-                    return MapType::FourKB;
+                    return MapType::FourKiB;
             }
         }
         return MapType::NoMapType;
@@ -143,7 +143,7 @@ namespace Memory
         uint64_t DirectoryFlags = Flags & 0x3F;
 
         PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        if (Type == MapType::FourMB)
+        if (Type == MapType::FourMiB)
         {
             PDE->raw |= (uintptr_t)Flags;
             PDE->PageSize = true;
@@ -218,7 +218,7 @@ namespace Memory
             return;
         }
 
-        if (Type == MapType::FourMB && PDE->PageSize)
+        if (Type == MapType::FourMiB && PDE->PageSize)
         {
             PDE->Present = false;
             return;

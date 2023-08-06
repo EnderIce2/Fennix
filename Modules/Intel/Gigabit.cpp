@@ -203,7 +203,9 @@ namespace Gigabit
 				if (!GetMAC().Valid())
 					return NOT_AVAILABLE;
 				else
+				{
 					debug("MAC address found.");
+				}
 				MAC = GetMAC();
 
 				// Start link
@@ -244,7 +246,9 @@ namespace Gigabit
 				if (!GetMAC().Valid())
 					return NOT_AVAILABLE;
 				else
+				{
 					debug("MAC address found.");
+				}
 				MAC = GetMAC();
 
 				return NOT_IMPLEMENTED;
@@ -273,7 +277,9 @@ namespace Gigabit
 				if (!GetMAC().Valid())
 					return NOT_AVAILABLE;
 				else
+				{
 					debug("MAC address found.");
+				}
 				MAC = GetMAC();
 
 				return NOT_IMPLEMENTED;
@@ -296,7 +302,7 @@ namespace Gigabit
 			}
 			return ERROR;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			memcpy(Data->NetworkCallback.Fetch.Name, (void *)"Intel Gigabit Ethernet Controller", 34);
 			Data->NetworkCallback.Fetch.MAC = MAC.ToHex();

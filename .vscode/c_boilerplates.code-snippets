@@ -42,6 +42,18 @@
 		],
 		"description": "Create kernel documentation brief."
 	},
+	"For Iteratoion": {
+		"prefix": [
+			"foritr",
+		],
+		"body": [
+			"forItr(${1:itr}, ${2:container})",
+			"{",
+			"\t$0",
+			"}"
+		],
+		"description": "Create for loop with iterator."
+	},
 	"License": {
 		"prefix": [
 			"license",

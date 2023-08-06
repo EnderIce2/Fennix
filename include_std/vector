@@ -16,4 +16,288 @@
 */
 
 #pragma once
-#include <std/vector.hpp>
+
+#include <types.h>
+
+#include <type_trails>
+#include <functional>
+#include <algorithm>
+#include <assert.h>
+#include <cstring>
+#include <utility>
+
+// #define DEBUG_VECTOR_MESSAGES 1
+
+#ifdef DEBUG_VECTOR_MESSAGES
+#define vDebug(m, ...) debug(m, ##__VA_ARGS__)
+#else
+#define vDebug(m, ...)
+#endif
+
+namespace std
+{
+	template <class T>
+	class vector
+	{
+	private:
+		size_t VectorSize = 0;
+		size_t VectorCapacity = 0;
+		T *VectorBuffer = nullptr;
+
+	public:
+		typedef T *iterator;
+		typedef const T *const_iterator;
+
+		vector() { vDebug("%#lx: ( empty init )", this); }
+
+		vector(size_t Size)
+			: VectorSize(Size),
+			  VectorCapacity(Size),
+			  VectorBuffer(new T[Size])
+		{
+			vDebug("%#lx: ( init w/size: %lld )", this, Size);
+		}
+
+		vector(size_t Size, const T &Initial)
+			: VectorSize(Size),
+			  VectorCapacity(Size),
+			  VectorBuffer(new T[Size])
+		{
+			vDebug("%#lx: ( init w/size: %lld, initial vector: %llx )", this,
+				   Size, Initial);
+
+			assert(Size > 0);
+			for (size_t i = 0; i < Size; i++)
+				VectorBuffer[i] = Initial;
+		}
+
+		vector(const vector<T> &v)
+			: VectorSize(v.VectorSize),
+			  VectorCapacity(v.VectorCapacity),
+			  VectorBuffer(nullptr)
+		{
+			vDebug("%#lx: ( vector copy: %#lx )", this, &v);
+
+			if (!v.VectorBuffer || VectorSize <= 0)
+				return;
+
+			VectorBuffer = new T[VectorSize];
+			std::copy(v.VectorBuffer, v.VectorBuffer + VectorSize, VectorBuffer);
+		}
+
+		~vector()
+		{
+			vDebug("%#lx: ( deinit )", this);
+
+			VectorSize = 0;
+			VectorCapacity = 0;
+			if (VectorBuffer != nullptr)
+			{
+				delete[] VectorBuffer;
+				VectorBuffer = nullptr;
+			}
+		}
+
+		void erase(iterator Position)
+		{
+			vDebug("%#lx: Erasing element at position %lld (v. size: %lld)", this,
+				   Position - this->VectorBuffer, this->VectorSize);
+
+			if (Position == this->end())
+			{
+				warn("%#lx: Cannot erase element at end of vector", this);
+				return;
+			}
+
+			assert(Position >= this->VectorBuffer);
+			assert(Position < this->VectorBuffer + this->VectorSize);
+
+			size_t index = Position - this->VectorBuffer;
+
+			if (std::is_trivially_copyable<T>::value)
+			{
+				this->VectorBuffer[index] = T();
+				vDebug("%#lx: %#lx is trivially copyable", this,
+					   &this->VectorBuffer[index]);
+			}
+			else
+			{
+				this->VectorBuffer[index].~T();
+				vDebug("%#lx: %#lx is not trivially copyable", this,
+					   &this->VectorBuffer[index]);
+			}
+
+			for (size_t i = index; i < this->VectorSize - 1; ++i)
+			{
+				this->VectorBuffer[i] = std::move(this->VectorBuffer[i + 1]);
+			}
+			this->VectorSize--;
+		}
+
+		T &next(size_t Position)
+		{
+			if (Position + 1 < this->VectorSize)
+				return this->VectorBuffer[Position + 1];
+
+			warn("%#lx: next( %lld ) is null (requested by %#lx)", this,
+				 Position, __builtin_return_address(0));
+
+			return {};
+		}
+
+		T &prev(size_t Position)
+		{
+			if (Position > 0)
+				return this->VectorBuffer[Position - 1];
+
+			warn("%#lx: prev( %lld ) is null (requested by %#lx)", this,
+				 Position, __builtin_return_address(0));
+
+			return {};
+		}
+
+		T &next(const T &Value)
+		{
+			for (size_t i = 0; i < this->VectorSize; i++)
+			{
+				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
+				{
+					if (i + 1 < this->VectorSize)
+						return this->VectorBuffer[i + 1];
+					else
+						break;
+				}
+			}
+
+			warn("%#lx: next( %#lx ) is null (requested by %#lx)", this,
+				 Value, __builtin_return_address(0));
+
+			return {};
+		}
+
+		T &prev(const T &Value)
+		{
+			for (size_t i = 0; i < this->VectorSize; i++)
+			{
+				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
+				{
+					if (i > 0)
+						return this->VectorBuffer[i - 1];
+					else
+						break;
+				}
+			}
+
+			warn("%#lx: prev( %#lx ) is null (requested by %#lx)", this,
+				 Value, __builtin_return_address(0));
+
+			return {};
+		}
+
+		void push_back(const T &Value)
+		{
+			vDebug("%#lx: push_back( %#lx )", this, Value);
+
+			if (this->VectorSize >= this->VectorCapacity)
+			{
+				size_t newCapacity = this->VectorCapacity == 0
+										 ? 1
+										 : this->VectorCapacity * 2;
+				reserve(newCapacity);
+			}
+
+			this->VectorBuffer[this->VectorSize++] = Value;
+		}
+
+		void reverse()
+		{
+			if (this->VectorSize <= 1)
+				return;
+
+			for (size_t i = 0, j = this->VectorSize - 1; i < j; i++, j--)
+			{
+				T &elem1 = this->VectorBuffer[i];
+				T &elem2 = this->VectorBuffer[j];
+				std::swap(elem1, elem2);
+			}
+		}
+
+		void reserve(size_t Capacity)
+		{
+			assert(!(Capacity <= VectorCapacity));
+
+			T *NewBuffer = new T[Capacity];
+			size_t Size = std::min(Capacity, this->VectorSize);
+			for (size_t i = 0; i < Size; i++)
+				NewBuffer[i] = std::move(this->VectorBuffer[i]);
+
+			vDebug("%#lx: reserve( %lld )->Buffer:~%#lx", this,
+				   Capacity, this->VectorBuffer);
+
+			delete[] this->VectorBuffer;
+			this->VectorBuffer = NewBuffer;
+			this->VectorCapacity = Capacity;
+		}
+
+		void resize(size_t Size)
+		{
+			reserve(Size);
+			this->VectorSize = Size;
+		}
+
+		void clear()
+		{
+			this->VectorCapacity = 0;
+			this->VectorSize = 0;
+			if (VectorBuffer != nullptr)
+			{
+				delete[] this->VectorBuffer;
+				this->VectorBuffer = nullptr;
+			}
+		}
+
+		T &operator[](size_t Index)
+		{
+			if (Index >= this->VectorSize || !this->VectorBuffer)
+			{
+				warn("%#lx: operator[]( %lld ) is null (requested by %#lx)", this,
+					 Index, __builtin_return_address(0));
+
+				static T null_elem{};
+				return null_elem;
+			}
+			return this->VectorBuffer[Index];
+		}
+
+		vector<T> &operator=(const vector<T> &v)
+		{
+			if (this == &v)
+				return *this;
+
+			delete[] this->VectorBuffer;
+			this->VectorSize = v.VectorSize;
+			this->VectorCapacity = v.VectorCapacity;
+
+			vDebug("%#lx: operator=( <vector> )->Size:%lld", this,
+				   this->VectorSize);
+
+			this->VectorBuffer = new T[this->VectorSize];
+			for (size_t i = 0; i < this->VectorSize; i++)
+				this->VectorBuffer[i] = v.VectorBuffer[i];
+
+			return *this;
+		}
+
+		void pop_back() { this->VectorSize--; }
+		T &front() { return this->VectorBuffer[0]; }
+		T &back() { return this->VectorBuffer[this->VectorSize - 1]; }
+		T *data() { return this->VectorBuffer; }
+		bool empty() const { return this->VectorSize == 0; }
+		size_t capacity() const { return this->VectorCapacity; }
+		size_t size() const { return this->VectorSize; }
+		iterator begin() { return this->VectorBuffer; }
+		iterator end() { return this->VectorBuffer + size(); }
+		const_iterator begin() const { return this->VectorBuffer; }
+		const_iterator end() const { return this->VectorBuffer + size(); }
+	};
+}

@@ -61,90 +61,90 @@ namespace Time
 		}
 	}
 
-	size_t time::GetCounter()
+	uint64_t time::GetCounter()
 	{
 		switch (ActiveTimer)
 		{
 		case NONE:
 			error("No timer is active");
-			return false;
+			return 0;
 		case RTC:
 			fixme("RTC sleep not implemented");
-			return false;
+			return 0;
 		case PIT:
 			fixme("PIT sleep not implemented");
-			return false;
+			return 0;
 		case HPET:
 			return this->hpet->GetCounter();
 		case ACPI:
 			fixme("ACPI sleep not implemented");
-			return false;
+			return 0;
 		case APIC:
 			fixme("APIC sleep not implemented");
-			return false;
+			return 0;
 		case TSC:
 			return this->tsc->GetCounter();
 		default:
 			error("Unknown timer");
-			return false;
+			return 0;
 		}
 	}
 
-	size_t time::CalculateTarget(size_t Target, Units Unit)
+	uint64_t time::CalculateTarget(uint64_t Target, Units Unit)
 	{
 		switch (ActiveTimer)
 		{
 		case NONE:
 			error("No timer is active");
-			return false;
+			return 0;
 		case RTC:
 			fixme("RTC sleep not implemented");
-			return false;
+			return 0;
 		case PIT:
 			fixme("PIT sleep not implemented");
-			return false;
+			return 0;
 		case HPET:
 			return this->hpet->CalculateTarget(Target, Unit);
 		case ACPI:
 			fixme("ACPI sleep not implemented");
-			return false;
+			return 0;
 		case APIC:
 			fixme("APIC sleep not implemented");
-			return false;
+			return 0;
 		case TSC:
 			return this->tsc->CalculateTarget(Target, Unit);
 		default:
 			error("Unknown timer");
-			return false;
+			return 0;
 		}
 	}
 
-	size_t time::GetNanosecondsSinceClassCreation()
+	uint64_t time::GetNanosecondsSinceClassCreation()
 	{
 		switch (ActiveTimer)
 		{
 		case NONE:
 			error("No timer is active");
-			return false;
+			return 0;
 		case RTC:
 			fixme("RTC sleep not implemented");
-			return false;
+			return 0;
 		case PIT:
 			fixme("PIT sleep not implemented");
-			return false;
+			return 0;
 		case HPET:
 			return this->hpet->GetNanosecondsSinceClassCreation();
 		case ACPI:
 			fixme("ACPI sleep not implemented");
-			return false;
+			return 0;
 		case APIC:
 			fixme("APIC sleep not implemented");
-			return false;
+			return 0;
 		case TSC:
 			return this->tsc->GetNanosecondsSinceClassCreation();
 		default:
 			error("Unknown timer");
-			return false;
+			return 0;
 		}
 	}
 

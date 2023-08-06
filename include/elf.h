@@ -230,7 +230,9 @@ enum SegmentTypes
 	PT_SUNWSTACK = 0x6ffffffa,
 	PT_HISUNW = 0x6fffffff,
 	PT_LOPROC = 0x70000000,
-	PT_HIPROC = 0x7fffffff
+	PT_HIPROC = 0x7fffffff,
+	PT_GNU_EH_FRAME = 0x6474e550,
+	PT_GNU_STACK = 0x6474e551,
 };
 
 enum DynamicArrayTags
@@ -720,9 +722,46 @@ struct Elf64_Dyn
 
 typedef struct
 {
+	Elf32_Addr r_offset;
+	Elf32_Word r_info;
+	Elf32_Sword r_addend;
+} Elf32_Rela;
+
+typedef struct
+{
 	Elf64_Addr r_offset;
 	Elf64_Xword r_info;
 	Elf64_Sxword r_addend;
 } Elf64_Rela;
+
+#if defined(a64) || defined(aa64)
+typedef Elf64_Addr Elf_Addr;
+typedef Elf64_Half Elf_Half;
+typedef Elf64_Off Elf_Off;
+typedef Elf64_Sword Elf_Sword;
+typedef Elf64_Word Elf_Word;
+
+typedef Elf64_Ehdr Elf_Ehdr;
+typedef Elf64_Shdr Elf_Shdr;
+typedef Elf64_Phdr Elf_Phdr;
+typedef Elf64_Rel Elf_Rel;
+typedef Elf64_Sym Elf_Sym;
+typedef Elf64_Dyn Elf_Dyn;
+typedef Elf64_Rela Elf_Rela;
+#elif defined(a32)
+typedef Elf32_Addr Elf_Addr;
+typedef Elf32_Half Elf_Half;
+typedef Elf32_Off Elf_Off;
+typedef Elf32_Sword Elf_Sword;
+typedef Elf32_Word Elf_Word;
+
+typedef Elf32_Ehdr Elf_Ehdr;
+typedef Elf32_Shdr Elf_Shdr;
+typedef Elf32_Phdr Elf_Phdr;
+typedef Elf32_Rel Elf_Rel;
+typedef Elf32_Sym Elf_Sym;
+typedef Elf32_Dyn Elf_Dyn;
+typedef Elf32_Rela Elf_Rela;
+#endif
 
 #endif // !__FENNIX_KERNEL_ELF_H__

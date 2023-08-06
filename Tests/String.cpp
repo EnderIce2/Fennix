@@ -18,102 +18,136 @@
 #ifdef DEBUG
 
 #include <std/string.hpp>
+#include <memory.hpp>
 #include <debug.h>
 
 void TestString()
 {
-    std::string hw("Hello, world!");
-    debug("String length: %d", hw.length());
-    debug("String capacity: %d", hw.capacity());
-    debug("String data: %s", hw.c_str());
-    if (hw == "Hello, world!" && hw != "World, hello!")
-        debug("String comparison works!");
-    else
-    {
-        error("String comparison doesn't work! \"%s\"", hw.c_str());
-        inf_loop;
-    }
+	char *sanity_alloc = (char *)kmalloc(1024);
+	for (int i = 0; i < 1024; i++)
+		sanity_alloc[i] = 'A';
+	std::string hw("Hello, world!");
 
-    std::string hi("Hi");
-    char chi[3];
-    chi[0] = hi[0];
-    chi[1] = hi[1];
-    chi[2] = '\0';
-    if (strcmp(chi, "Hi") == 0)
-        debug("String indexing works!");
-    else
-    {
-        error("String indexing doesn't work! \"%s\" \"%s\"", chi, hi.c_str());
-        inf_loop;
-    }
+	for (int i = 0; i < 1024; i++)
+		if (sanity_alloc[i] != 'A')
+		{
+			error("Sanity check failed! %d", i);
+			inf_loop;
+		}
 
-    hi << " there!";
-    if (hi == "Hi there!")
-        debug("String concatenation works!");
-    else
-    {
-        error("String concatenation doesn't work! \"%s\"", hi.c_str());
-        inf_loop;
-    }
+	debug("String length: %d", hw.length());
+	debug("String capacity: %d", hw.capacity());
+	debug("String data: %s", hw.c_str());
+	if (hw == "Hello, world!" && hw != "World, hello!")
+		debug("String comparison works!");
+	else
+	{
+		error("String comparison doesn't work! \"%s\"", hw.c_str());
+		inf_loop;
+	}
 
-    hi << " " << hw;
-    if (hi == "Hi there! Hello, world!")
-        debug("String concatenation works!");
-    else
-    {
-        error("String concatenation doesn't work! \"%s\"", hi.c_str());
-        inf_loop;
-    }
+	for (int i = 0; i < 1024; i++)
+		if (sanity_alloc[i] != 'A')
+		{
+			error("Sanity check failed! %d", i);
+			inf_loop;
+		}
 
-    std::string eq0("Hello, world!");
-    std::string eq1("Hello, world!");
-    std::string eq2("World, hello!");
+	kfree(sanity_alloc);
 
-    if (eq0 == eq1)
-        debug("String equality works!");
-    else
-    {
-        error("String equality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq1.c_str());
-        inf_loop;
-    }
+	std::string hi("Hi");
+	char chi[3];
+	chi[0] = hi[0];
+	chi[1] = hi[1];
+	chi[2] = '\0';
+	if (strcmp(chi, "Hi") == 0)
+		debug("String indexing works!");
+	else
+	{
+		error("String indexing doesn't work! \"%s\" \"%s\"", chi, hi.c_str());
+		inf_loop;
+	}
 
-    if (eq0 != eq2)
-        debug("String inequality works!");
-    else
-    {
-        error("String inequality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq2.c_str());
-        inf_loop;
-    }
+	sanity_alloc = (char *)kmalloc(1024);
+	for (int i = 0; i < 1024; i++)
+		sanity_alloc[i] = 'A';
 
-    char chw[14];
-    int i = 0;
-    foreach (auto c in hw)
-    {
-        chw[i] = c;
-        i++;
-    }
-    chw[i] = '\0';
+	hi << " there!";
+	if (hi == "Hi there!")
+		debug("String concatenation works!");
+	else
+	{
+		error("String concatenation doesn't work! \"%s\"", hi.c_str());
+		inf_loop;
+	}
 
-    if (strcmp(chw, "Hello, world!") == 0)
-        debug("String iteration works!");
-    else
-    {
-        error("String iteration doesn't work! \"%s\" \"%s\" %d", chw, hw.c_str(), i);
-        inf_loop;
-    }
+	hi << " " << hw;
+	if (hi == "Hi there! Hello, world!")
+		debug("String concatenation works!");
+	else
+	{
+		error("String concatenation doesn't work! \"%s\"", hi.c_str());
+		inf_loop;
+	}
 
-    std::string a("Hello");
-    std::string b("World");
-    std::string c;
-    c = a + ", " + b + "!";
+	std::string eq0("Hello, world!");
+	std::string eq1("Hello, world!");
+	std::string eq2("World, hello!");
 
-    if (c == "Hello, World!")
-        debug("String addition works!");
-    else
-    {
-        error("String addition doesn't work! \"%s\"", c.c_str());
-        inf_loop;
-    }
+	if (eq0 == eq1)
+		debug("String equality works!");
+	else
+	{
+		error("String equality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq1.c_str());
+		inf_loop;
+	}
+
+	if (eq0 != eq2)
+		debug("String inequality works!");
+	else
+	{
+		error("String inequality doesn't work! \"%s\" \"%s\"", eq0.c_str(), eq2.c_str());
+		inf_loop;
+	}
+
+	char chw[14];
+	int i = 0;
+	foreach (auto c in hw)
+	{
+		chw[i] = c;
+		i++;
+	}
+	chw[i] = '\0';
+
+	if (strcmp(chw, "Hello, world!") == 0)
+		debug("String iteration works!");
+	else
+	{
+		error("String iteration doesn't work! \"%s\" \"%s\" %d", chw, hw.c_str(), i);
+		inf_loop;
+	}
+
+	std::string a("Hello");
+	std::string b("World");
+	std::string c;
+	c = a + ", " + b + "!";
+
+	if (c == "Hello, World!")
+		debug("String addition works!");
+	else
+	{
+		error("String addition doesn't work! \"%s\"", c.c_str());
+		inf_loop;
+	}
+
+	for (int i = 0; i < 1024; i++)
+		if (sanity_alloc[i] != 'A')
+		{
+			error("Sanity check failed! %d", i);
+			inf_loop;
+		}
+
+	kfree(sanity_alloc);
 }
 
 #endif // DEBUG

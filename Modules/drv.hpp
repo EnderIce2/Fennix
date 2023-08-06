@@ -23,6 +23,7 @@
 bool StartAHCI();
 bool StartVMwareMouse();
 bool StartPS2Mouse();
+bool StartPS2Keyboard();
 bool StartATA();
 bool StartAC97();
 bool StartRTL8139();

@@ -22,8 +22,8 @@
 #include <types.h>
 
 void TestString();
+void Test_std();
 void TestMemoryAllocation();
-EXTERNC void TestSyscalls();
 
 #endif // DEBUG
 #endif // !__FENNIX_KERNEL_non_constructor_tests_H__

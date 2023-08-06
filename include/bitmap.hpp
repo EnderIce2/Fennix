@@ -23,11 +23,12 @@
 class Bitmap
 {
 public:
-    size_t Size;
-    uint8_t *Buffer;
-    bool operator[](uint64_t index);
-    bool Set(uint64_t index, bool value);
-    bool Get(uint64_t index);
+	size_t Size;
+	uint8_t *Buffer;
+	bool Set(uint64_t index, bool value);
+	bool Get(uint64_t index);
+
+	bool operator[](uint64_t index);
 };
 
 #endif // !__FENNIX_KERNEL_BITMAP_H__

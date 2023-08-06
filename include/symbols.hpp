@@ -17,29 +17,31 @@
 
 #pragma once
 #include <types.h>
+#include <vector>
 
 namespace SymbolResolver
 {
-    class Symbols
-    {
-    private:
-        struct SymbolTable
-        {
-            uintptr_t Address;
-            char *FunctionName;
-        };
+	class Symbols
+	{
+	private:
+		struct SymbolTable
+		{
+			uintptr_t Address = 0;
+			char *FunctionName = (char *)"<unknown>";
+		};
 
-        SymbolTable SymTable[0x10000];
-        int64_t TotalEntries = 0;
-        void *Image;
+		std::vector<SymbolTable> SymTable;
+		void *Image;
+		bool SymbolTableExists = false;
 
-    public:
-        int64_t GetTotalEntries() { return this->TotalEntries; }
-        void *GetImage() { return this->Image; }
-        const char *GetSymbolFromAddress(uintptr_t Address);
-        void AddSymbol(uintptr_t Address, const char *Name);
-        void AddBySymbolInfo(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections);
-        Symbols(uintptr_t ImageAddress);
-        ~Symbols();
-    };
+	public:
+		decltype(SymbolTableExists) &SymTableExists = this->SymbolTableExists;
+		void *GetImage() { return this->Image; }
+		const char *GetSymbolFromAddress(uintptr_t Address);
+		void AddSymbol(uintptr_t Address, const char *Name);
+		void AddSymbolInfoFromGRUB(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections);
+		void AppendSymbols(uintptr_t ImageAddress, uintptr_t BaseAddress = 0);
+		Symbols(uintptr_t ImageAddress);
+		~Symbols();
+	};
 }

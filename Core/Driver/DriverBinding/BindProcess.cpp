@@ -34,6 +34,9 @@ namespace Driver
 	DriverCode Driver::DriverLoadBindProcess(uintptr_t DriverAddress, size_t Size, bool IsBuiltIn)
 	{
 		stub;
+      UNUSED(DriverAddress);
+      UNUSED(Size);
+      UNUSED(IsBuiltIn);
 		return DriverCode::NOT_IMPLEMENTED;
 	}
 }

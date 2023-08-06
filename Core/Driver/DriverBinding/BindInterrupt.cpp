@@ -33,7 +33,7 @@ namespace Driver
 {
 	DriverCode Driver::DriverLoadBindInterrupt(uintptr_t DriverAddress, size_t Size, bool IsBuiltIn)
 	{
-		Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
+		Memory::MemMgr *mem = new Memory::MemMgr(nullptr, thisProcess->memDirectory);
 
 		BuiltInDriverInfo *bidi = (BuiltInDriverInfo *)DriverAddress;
 		Fex *fex = nullptr;

@@ -23,15 +23,19 @@
 
 extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
-    Tasking::TaskInfo *Ptinfo = &TaskManager->GetCurrentProcess()->Info;
-    Tasking::TaskInfo *Ttinfo = &TaskManager->GetCurrentThread()->Info;
+    Tasking::TaskInfo *Ptinfo = &thisProcess->Info;
+    Tasking::TaskInfo *Ttinfo = &thisThread->Info;
     uint64_t TempTimeCalc = TimeManager->GetCounter();
 
     switch (Ttinfo->Compatibility)
     {
     case Tasking::TaskCompatibility::Native:
     {
-        uintptr_t ret = HandleNativeSyscalls(Frame);
+        uintptr_t ret = 0;
+        if (Config.UseLinuxSyscalls)
+            ret = HandleLinuxSyscalls(Frame);
+        else
+            ret = HandleNativeSyscalls(Frame);
         Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
         Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
         return ret;
@@ -51,7 +55,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
     default:
     {
         error("Unknown compatibility mode! Killing thread...");
-        TaskManager->KillThread(TaskManager->GetCurrentThread(), Tasking::KILL_SYSCALL);
+        TaskManager->KillThread(thisThread, Tasking::KILL_SYSCALL);
         break;
     }
     }

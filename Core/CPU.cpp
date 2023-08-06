@@ -28,7 +28,7 @@ namespace CPU
 {
 	static bool SSEEnabled = false;
 
-	char *Vendor()
+	const char *Vendor()
 	{
 		static char Vendor[13] = {0};
 		if (Vendor[0] != 0)
@@ -52,7 +52,7 @@ namespace CPU
 		return Vendor;
 	}
 
-	char *Name()
+	const char *Name()
 	{
 		static char Name[49] = {0};
 		if (Name[0] != 0)
@@ -98,7 +98,7 @@ namespace CPU
 		return Name;
 	}
 
-	char *Hypervisor()
+	const char *Hypervisor()
 	{
 		static char Hypervisor[13] = {0};
 		if (Hypervisor[0] != 0)
@@ -255,8 +255,7 @@ namespace CPU
 		bool SSEEnableAfter = false;
 
 		/* Not sure if my code is not working properly or something else is the issue. */
-		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0 &&
-			 strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
+		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
 			SSESupport)
 		{
 			debug("Enabling SSE support...");
@@ -438,16 +437,16 @@ namespace CPU
 #endif
 	}
 
-	uintptr_t Counter()
+	uint64_t Counter()
 	{
 		// TODO: Get the counter from the x2APIC or any other timer that is available. (TSC is not available on all CPUs)
-		uintptr_t Counter;
-#if defined(a64)
+		uint64_t Counter;
+#if defined(a86)
+		uint32_t eax, edx;
 		asmv("rdtsc"
-			 : "=A"(Counter));
-#elif defined(a32)
-		asmv("rdtsc"
-			 : "=A"(Counter));
+			 : "=a"(eax),
+			   "=d"(edx));
+		Counter = ((uint64_t)eax) | (((uint64_t)edx) << 32);
 #elif defined(aa64)
 		asmv("mrs %0, cntvct_el0"
 			 : "=r"(Counter));

@@ -273,7 +273,7 @@ namespace AdvancedHostControllerInterface
 				Ports[i]->Configure();
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			Data->DiskCallback.Fetch.Ports = PortCount;
 			Data->DiskCallback.Fetch.BytesPerSector = 512;

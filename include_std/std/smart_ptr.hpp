@@ -20,6 +20,7 @@
 
 #include <types.h>
 
+#include <type_trails>
 #include <debug.h>
 
 // show debug messages
@@ -247,24 +248,6 @@ namespace std
             Other.RealPointer = tempRealPointer;
             Other.ReferenceCounter = tempReferenceCounter;
         }
-    };
-
-    template <typename T>
-    struct remove_reference
-    {
-        typedef T type;
-    };
-
-    template <typename T>
-    struct remove_reference<T &>
-    {
-        typedef T type;
-    };
-
-    template <typename T>
-    struct remove_reference<T &&>
-    {
-        typedef T type;
     };
 
     template <typename T>

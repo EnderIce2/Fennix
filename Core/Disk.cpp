@@ -29,7 +29,7 @@ namespace Disk
     void Manager::FetchDisks(unsigned long DriverUID)
     {
         KernelCallback callback{};
-        callback.Reason = FetchReason;
+        callback.Reason = QueryReason;
         DriverManager->IOCB(DriverUID, &callback);
         this->AvailablePorts = callback.DiskCallback.Fetch.Ports;
         this->BytesPerSector = callback.DiskCallback.Fetch.BytesPerSector;

@@ -65,9 +65,9 @@ namespace Time
 
 		uint32_t clk = 0;
 		HPET *hpet = nullptr;
-		size_t ClassCreationTime = 0;
+		uint64_t ClassCreationTime = 0;
 
-		inline size_t ConvertUnit(Units Unit)
+		inline uint64_t ConvertUnit(Units Unit)
 		{
 			switch (Unit)
 			{
@@ -101,9 +101,9 @@ namespace Time
 
 	public:
 		bool Sleep(size_t Duration, Units Unit);
-		size_t GetCounter();
-		size_t CalculateTarget(size_t Target, Units Unit);
-		size_t GetNanosecondsSinceClassCreation();
+		uint64_t GetCounter();
+		uint64_t CalculateTarget(uint64_t Target, Units Unit);
+		uint64_t GetNanosecondsSinceClassCreation();
 
 		HighPrecisionEventTimer(void *hpet);
 		~HighPrecisionEventTimer();
@@ -112,10 +112,10 @@ namespace Time
 	class TimeStampCounter
 	{
 	private:
-		size_t clk = 0;
-		size_t ClassCreationTime = 0;
+		uint64_t clk = 0;
+		uint64_t ClassCreationTime = 0;
 
-		inline size_t ConvertUnit(Units Unit)
+		inline uint64_t ConvertUnit(Units Unit)
 		{
 			switch (Unit)
 			{
@@ -149,9 +149,9 @@ namespace Time
 
 	public:
 		bool Sleep(size_t Duration, Units Unit);
-		size_t GetCounter();
-		size_t CalculateTarget(size_t Target, Units Unit);
-		size_t GetNanosecondsSinceClassCreation();
+		uint64_t GetCounter();
+		uint64_t CalculateTarget(uint64_t Target, Units Unit);
+		uint64_t GetNanosecondsSinceClassCreation();
 
 		TimeStampCounter();
 		~TimeStampCounter();
@@ -190,9 +190,9 @@ namespace Time
 		}
 
 		bool Sleep(size_t Duration, Units Unit);
-		size_t GetCounter();
-		size_t CalculateTarget(size_t Target, Units Unit);
-		size_t GetNanosecondsSinceClassCreation();
+		uint64_t GetCounter();
+		uint64_t CalculateTarget(uint64_t Target, Units Unit);
+		uint64_t GetNanosecondsSinceClassCreation();
 		void FindTimers(void *acpi);
 		time();
 		~time();

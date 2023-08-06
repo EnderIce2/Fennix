@@ -27,6 +27,9 @@ namespace std
 							   unsigned Outer) const
 	{
 		stub;
+		UNUSED(ThrowType);
+		UNUSED(ThrowObject);
+		UNUSED(Outer);
 		return false;
 	}
 
@@ -34,6 +37,8 @@ namespace std
 								void **ObjectPointer) const
 	{
 		stub;
+		UNUSED(Target);
+		UNUSED(ObjectPointer);
 		return false;
 	}
 }

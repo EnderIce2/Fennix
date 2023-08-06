@@ -83,29 +83,29 @@ namespace Driver
 	{
 		debug("Searching for driver %ld", DUID);
 
-		foreach (auto Drv in Drivers)
+		forItr(Drv, Drivers)
 		{
-			if (Drv.DriverUID != DUID)
+			if (Drv->DriverUID != DUID)
 				continue;
 
 			KernelCallback callback{};
 			callback.Reason = StopReason;
-			debug("Stopping & unloading driver %ld [%#lx]", Drv.DriverUID, Drv.Address);
-			this->IOCB(Drv.DriverUID, &callback);
+			debug("Stopping & unloading driver %ld [%#lx]", Drv->DriverUID, Drv->Address);
+			this->IOCB(Drv->DriverUID, &callback);
 
-			for (size_t j = 0; j < sizeof(Drv.InterruptHook) / sizeof(Drv.InterruptHook[0]); j++)
+			for (size_t j = 0; j < sizeof(Drv->InterruptHook) / sizeof(Drv->InterruptHook[0]); j++)
 			{
-				if (!Drv.InterruptHook[j])
+				if (!Drv->InterruptHook[j])
 					continue;
 
-				debug("Interrupt hook %#lx", Drv.InterruptHook[j]);
-				delete Drv.InterruptHook[j], Drv.InterruptHook[j] = nullptr;
+				debug("Interrupt hook %#lx", Drv->InterruptHook[j]);
+				delete Drv->InterruptHook[j], Drv->InterruptHook[j] = nullptr;
 			}
 
-			if (Drv.MemTrk)
-				delete Drv.MemTrk, Drv.MemTrk = nullptr;
+			if (Drv->MemTrk)
+				delete Drv->MemTrk, Drv->MemTrk = nullptr;
 
-			Drivers.remove(Drv);
+			Drivers.erase(Drv);
 			return true;
 		}
 		return false;
@@ -157,7 +157,7 @@ namespace Driver
 		return DriverCode::OK;
 	}
 
-	DriverCode Driver::LoadDriver(uintptr_t DriverAddress, uintptr_t Size)
+	DriverCode Driver::LoadDriver(uintptr_t DriverAddress, size_t Size)
 	{
 		Fex *DrvHdr = (Fex *)DriverAddress;
 		if (DrvHdr->Magic[0] != 'F' || DrvHdr->Magic[1] != 'E' || DrvHdr->Magic[2] != 'X' || DrvHdr->Magic[3] != '\0')
@@ -201,22 +201,23 @@ namespace Driver
 		StartAHCI();
 		StartVMwareMouse();
 		StartPS2Mouse();
+		StartPS2Keyboard();
 		StartATA();
 		StartAC97();
 		StartRTL8139();
 		StartPCNET();
 		StartGigabit();
 
-		VirtualFileSystem::File DriverDirectory = vfs->Open(Config.DriverDirectory);
-		if (!DriverDirectory.IsOK())
+		RefNode *DriverDirectory = vfs->Open(Config.DriverDirectory);
+		if (!DriverDirectory)
 		{
-			KPrint("\eE85230Failed to open driver directory: %s! (Status: %#lx)", Config.DriverDirectory, DriverDirectory.Status);
-			vfs->Close(DriverDirectory);
+			KPrint("\eE85230Failed to open %s: %d)",
+				   Config.DriverDirectory, errno);
 			return;
 		}
 
 		debug("Loading drivers from %s", Config.DriverDirectory);
-		foreach (auto DrvFile in DriverDirectory.GetChildren())
+		foreach (auto DrvFile in DriverDirectory->GetNode()->Children)
 		{
 			if (DrvFile->Flags != VirtualFileSystem::NodeFlags::FILE)
 				continue;
@@ -241,7 +242,7 @@ namespace Driver
 				}
 			}
 		}
-		vfs->Close(DriverDirectory);
+		delete DriverDirectory;
 	}
 
 	Driver::Driver() {}

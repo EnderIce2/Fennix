@@ -1,0 +1,66 @@
+/*
+   This file is part of Fennix Kernel.
+
+   Fennix Kernel is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   Fennix Kernel is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <types.h>
+
+#include <task.hpp>
+#include <atomic>
+#include <vector>
+
+namespace std
+{
+	/**
+	 * A mutex implementation.
+	 *
+	 * @note The TaskManager must be
+	 * initialized before using this class.
+	 */
+	class mutex
+	{
+	private:
+		atomic_bool Locked = false;
+		vector<Tasking::TCB *> Waiting;
+		Tasking::TCB *Holder = nullptr;
+
+	public:
+		void lock();
+		bool try_lock();
+		void unlock();
+
+		mutex() = default;
+		mutex(const mutex &) = delete;
+		~mutex() = default;
+	};
+
+	template <class Mutex>
+	class lock_guard
+	{
+	private:
+		Mutex &m;
+
+	public:
+		explicit lock_guard(Mutex &mutex)
+			: m(mutex) { m.lock(); }
+
+		~lock_guard() { m.unlock(); }
+
+		lock_guard(const lock_guard &) = delete;
+		lock_guard &operator=(const lock_guard &) = delete;
+	};
+}

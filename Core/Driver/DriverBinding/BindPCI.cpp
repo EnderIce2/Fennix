@@ -61,7 +61,7 @@ namespace Driver
 					debug("[%ld] VendorID: %#x; DeviceID: %#x",
 						  devices.size(), PCIDevice->VendorID, PCIDevice->DeviceID);
 
-					Memory::MemMgr *mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
+					Memory::MemMgr *mem = new Memory::MemMgr(nullptr, thisProcess->memDirectory);
 
 					BuiltInDriverInfo *bidi = (BuiltInDriverInfo *)DriverAddress;
 					Fex *fex = nullptr;

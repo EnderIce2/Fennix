@@ -18,6 +18,7 @@
 #include <memory.hpp>
 
 #include <debug.h>
+#include <elf.h>
 #ifdef DEBUG
 #include <uart.hpp>
 #endif
@@ -44,7 +45,13 @@ namespace Memory
 		for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
 		{
 			if (bInfo.Memory.Entry[i].Type == Usable)
-				this->UnreservePages(bInfo.Memory.Entry[i].BaseAddress, TO_PAGES(bInfo.Memory.Entry[i].Length));
+			{
+				if (uintptr_t(bInfo.Memory.Entry[i].BaseAddress) <= 0xFFFFF)
+					continue;
+
+				this->UnreservePages(bInfo.Memory.Entry[i].BaseAddress,
+									 TO_PAGES(bInfo.Memory.Entry[i].Length));
+			}
 		}
 
 		debug("Reserving 0x0-0xFFFFF range...");
@@ -57,18 +64,72 @@ namespace Memory
 		*/
 		this->ReservePages((void *)0x0, TO_PAGES(0xFFFFF));
 
-		debug("Reserving bitmap region %#lx-%#lx...", PageBitmap.Buffer, (void *)((uintptr_t)PageBitmap.Buffer + PageBitmap.Size));
+		debug("Reserving bitmap region %#lx-%#lx...",
+			  PageBitmap.Buffer,
+			  (void *)((uintptr_t)PageBitmap.Buffer + PageBitmap.Size));
+
 		this->ReservePages(PageBitmap.Buffer, TO_PAGES(PageBitmap.Size));
 
-		debug("Reserving kernel physical region %#lx-%#lx...", bInfo.Kernel.PhysicalBase, (void *)((uintptr_t)bInfo.Kernel.PhysicalBase + bInfo.Kernel.Size));
+		debug("Reserving kernel physical region %#lx-%#lx...",
+			  bInfo.Kernel.PhysicalBase,
+			  (void *)((uintptr_t)bInfo.Kernel.PhysicalBase + bInfo.Kernel.Size));
+
 		this->ReservePages(bInfo.Kernel.PhysicalBase, TO_PAGES(bInfo.Kernel.Size));
 
 		debug("Reserving kernel file and symbols...");
 		if (bInfo.Kernel.FileBase)
 			this->ReservePages(bInfo.Kernel.FileBase, TO_PAGES(bInfo.Kernel.Size));
 
-		if (bInfo.Kernel.Symbols.Num && bInfo.Kernel.Symbols.EntSize && bInfo.Kernel.Symbols.Shndx)
-			this->ReservePages((void *)bInfo.Kernel.Symbols.Sections, TO_PAGES(bInfo.Kernel.Symbols.Num * bInfo.Kernel.Symbols.EntSize));
+		if (bInfo.Kernel.Symbols.Num &&
+			bInfo.Kernel.Symbols.EntSize &&
+			bInfo.Kernel.Symbols.Shndx)
+		{
+			char *sections = reinterpret_cast<char *>(bInfo.Kernel.Symbols.Sections);
+			uint8_t *StringAddress = nullptr;
+
+			Elf_Sym *Symbols = nullptr;
+
+#if defined(a64) || defined(aa64)
+			Elf64_Xword SymbolSize = 0;
+			Elf64_Xword StringSize = 0;
+#elif defined(a32)
+			Elf32_Word SymbolSize = 0;
+			Elf32_Word StringSize = 0;
+#endif
+
+			for (size_t i = 0; i < bInfo.Kernel.Symbols.Num; ++i)
+			{
+				Elf_Shdr *sym = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize * i];
+				Elf_Shdr *str = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize *
+													  sym->sh_link];
+
+				if (sym->sh_type == SHT_SYMTAB &&
+					str->sh_type == SHT_STRTAB)
+				{
+					Symbols = (Elf_Sym *)sym->sh_addr;
+					StringAddress = (uint8_t *)str->sh_addr;
+					SymbolSize = (int)sym->sh_size;
+					StringSize = (int)str->sh_size;
+					debug("Symbol table found, %d entries",
+						  SymbolSize / sym->sh_entsize);
+					break;
+				}
+			}
+
+			if (Symbols)
+			{
+				debug("Reserving symbol table region %#lx-%#lx...",
+					  Symbols, (void *)((uintptr_t)Symbols + SymbolSize));
+				this->ReservePages(Symbols, TO_PAGES(SymbolSize));
+			}
+
+			if (StringAddress)
+			{
+				debug("Reserving string table region %#lx-%#lx...",
+					  StringAddress, (void *)((uintptr_t)StringAddress + StringSize));
+				this->ReservePages(StringAddress, TO_PAGES(StringSize));
+			}
+		}
 
 		debug("Reserving kernel modules...");
 
@@ -78,13 +139,17 @@ namespace Memory
 				continue;
 
 			debug("Reserving module %s (%#lx-%#lx)...", bInfo.Modules[i].CommandLine,
-				  bInfo.Modules[i].Address, (void *)((uintptr_t)bInfo.Modules[i].Address + bInfo.Modules[i].Size));
+				  bInfo.Modules[i].Address,
+				  (void *)((uintptr_t)bInfo.Modules[i].Address + bInfo.Modules[i].Size));
 
-			this->ReservePages((void *)bInfo.Modules[i].Address, TO_PAGES(bInfo.Modules[i].Size));
+			this->ReservePages((void *)bInfo.Modules[i].Address,
+							   TO_PAGES(bInfo.Modules[i].Size));
 		}
 
 #if defined(a86)
-		debug("Reserving RSDT region %#lx-%#lx...", bInfo.RSDP, (void *)((uintptr_t)bInfo.RSDP + sizeof(BootInfo::RSDPInfo)));
+		debug("Reserving RSDT region %#lx-%#lx...", bInfo.RSDP,
+			  (void *)((uintptr_t)bInfo.RSDP + sizeof(BootInfo::RSDPInfo)));
+
 		this->ReservePages(bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
 
 		ACPI::ACPI::ACPIHeader *ACPIPtr = nullptr;
@@ -115,23 +180,27 @@ namespace Memory
 		}
 #endif
 
-		size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) / (XSDT ? 8 : 4));
+		size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
+							(XSDT ? 8 : 4));
 		debug("Reserving %d ACPI tables...", TableSize);
 
 		for (size_t t = 0; t < TableSize; t++)
 		{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-
 			// TODO: Should I be concerned about unaligned memory access?
 			ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
 			if (XSDT)
-				SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 8)));
+				SDTHdr =
+					(ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr +
+															 sizeof(ACPI::ACPI::ACPIHeader) +
+															 (t * 8)));
 			else
-				SDTHdr = (ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr + sizeof(ACPI::ACPI::ACPIHeader) + (t * 4)));
-
+				SDTHdr =
+					(ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr +
+															 sizeof(ACPI::ACPI::ACPIHeader) +
+															 (t * 4)));
 #pragma GCC diagnostic pop
-
 			this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
 		}
 

@@ -11,6 +11,7 @@
 			"defines": [
 				"__debug_vscode__",
 				"KERNEL_NAME=\"Fennix\"",
+				"KERNEL_ARCH=\"amd64\"",
 				"KERNEL_VERSION=\"1.0\"",
 				"GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
 				"GIT_COMMIT_SHORT=\"0000000\"",
@@ -84,6 +85,7 @@
 			"defines": [
 				"__debug_vscode__",
 				"KERNEL_NAME=\"Fennix\"",
+				"KERNEL_ARCH=\"i386\"",
 				"KERNEL_VERSION=\"1.0\"",
 				"GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
 				"GIT_COMMIT_SHORT=\"0000000\"",
@@ -160,6 +162,7 @@
 			"defines": [
 				"__debug_vscode__",
 				"KERNEL_NAME=\"Fennix\"",
+				"KERNEL_ARCH=\"aarch64\"",
 				"KERNEL_VERSION=\"1.0\"",
 				"GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
 				"GIT_COMMIT_SHORT=\"0000000\"",

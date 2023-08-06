@@ -82,7 +82,7 @@ namespace PCNET
 				return DEVICE_NOT_SUPPORTED;
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			memcpy(Data->NetworkCallback.Fetch.Name, (void *)"AMD PCNET", 10);
 			Data->NetworkCallback.Fetch.MAC = MAC.ToHex();

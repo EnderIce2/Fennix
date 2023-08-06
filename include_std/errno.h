@@ -18,135 +18,392 @@
 #ifndef _ERRNO_H
 #define _ERRNO_H
 
-#define EPERM 1             /* Operation not permitted */
-#define ENOENT 2            /* No such file or directory */
-#define ESRCH 3             /* No such process */
-#define EINTR 4             /* Interrupted system call */
-#define EIO 5               /* I/O error */
-#define ENXIO 6             /* No such device or address */
-#define E2BIG 7             /* Argument list too long */
-#define ENOEXEC 8           /* Exec format error */
-#define EBADF 9             /* Bad file number */
-#define ECHILD 10           /* No child processes */
-#define EAGAIN 11           /* Try again */
-#define ENOMEM 12           /* Out of memory */
-#define EACCES 13           /* Permission denied */
-#define EFAULT 14           /* Bad address */
-#define ENOTBLK 15          /* Block device required */
-#define EBUSY 16            /* Device or resource busy */
-#define EEXIST 17           /* File exists */
-#define EXDEV 18            /* Cross-device link */
-#define ENODEV 19           /* No such device */
-#define ENOTDIR 20          /* Not a directory */
-#define EISDIR 21           /* Is a directory */
-#define EINVAL 22           /* Invalid argument */
-#define ENFILE 23           /* File table overflow */
-#define EMFILE 24           /* Too many open files */
-#define ENOTTY 25           /* Not a typewriter */
-#define ETXTBSY 26          /* Text file busy */
-#define EFBIG 27            /* File too large */
-#define ENOSPC 28           /* No space left on device */
-#define ESPIPE 29           /* Illegal seek */
-#define EROFS 30            /* Read-only file system */
-#define EMLINK 31           /* Too many links */
-#define EPIPE 32            /* Broken pipe */
-#define EDOM 33             /* Math argument out of domain of func */
-#define ERANGE 34           /* Math result not representable */
-#define EDEADLK 35          /* Resource deadlock would occur */
-#define ENAMETOOLONG 36     /* File name too long */
-#define ENOLCK 37           /* No record locks available */
-#define ENOSYS 38           /* Function not implemented */
-#define ENOTEMPTY 39        /* Directory not empty */
-#define ELOOP 40            /* Too many symbolic links encountered */
-#define ENOMSG 42           /* No message of desired type */
-#define EIDRM 43            /* Identifier removed */
-#define ECHRNG 44           /* Channel number out of range */
-#define EL2NSYNC 45         /* Level 2 not synchronized */
-#define EL3HLT 46           /* Level 3 halted */
-#define EL3RST 47           /* Level 3 reset */
-#define ELNRNG 48           /* Link number out of range */
-#define EUNATCH 49          /* Protocol driver not attached */
-#define ENOCSI 50           /* No CSI structure available */
-#define EL2HLT 51           /* Level 2 halted */
-#define EBADE 52            /* Invalid exchange */
-#define EBADR 53            /* Invalid request descriptor */
-#define EXFULL 54           /* Exchange full */
-#define ENOANO 55           /* No anode */
-#define EBADRQC 56          /* Invalid request code */
-#define EBADSLT 57          /* Invalid slot */
-#define EBFONT 59           /* Bad font file format */
-#define ENOSTR 60           /* Device not a stream */
-#define ENODATA 61          /* No data available */
-#define ETIME 62            /* Timer expired */
-#define ENOSR 63            /* Out of streams resources */
-#define ENONET 64           /* Machine is not on the network */
-#define ENOPKG 65           /* Package not installed */
-#define EREMOTE 66          /* Object is remote */
-#define ENOLINK 67          /* Link has been severed */
-#define EADV 68             /* Advertise error */
-#define ESRMNT 69           /* Srmount error */
-#define ECOMM 70            /* Communication error on send */
-#define EPROTO 71           /* Protocol error */
-#define EMULTIHOP 72        /* Multihop attempted */
-#define EDOTDOT 73          /* RFS specific error */
-#define EBADMSG 74          /* Not a data message */
-#define EOVERFLOW 75        /* Value too large for defined data type */
-#define ENOTUNIQ 76         /* Name not unique on network */
-#define EBADFD 77           /* File descriptor in bad state */
-#define EREMCHG 78          /* Remote address changed */
-#define ELIBACC 79          /* Can not access a needed shared library */
-#define ELIBBAD 80          /* Accessing a corrupted shared library */
-#define ELIBSCN 81          /* .lib section in a.out corrupted */
-#define ELIBMAX 82          /* Attempting to link in too many shared libraries */
-#define ELIBEXEC 83         /* Cannot exec a shared library directly */
-#define EILSEQ 84           /* Illegal byte sequence */
-#define ERESTART 85         /* Interrupted system call should be restarted */
-#define ESTRPIPE 86         /* Streams pipe error */
-#define EUSERS 87           /* Too many users */
-#define ENOTSOCK 88         /* Socket operation on non-socket */
-#define EDESTADDRREQ 89     /* Destination address required */
-#define EMSGSIZE 90         /* Message too long */
-#define EPROTOTYPE 91       /* Protocol wrong type for socket */
-#define ENOPROTOOPT 92      /* Protocol not available */
-#define EPROTONOSUPPORT 93  /* Protocol not supported */
-#define ESOCKTNOSUPPORT 94  /* Socket type not supported */
-#define EOPNOTSUPP 95       /* Operation not supported on transport endpoint */
-#define EPFNOSUPPORT 96     /* Protocol family not supported */
-#define EAFNOSUPPORT 97     /* Address family not supported by protocol */
-#define EADDRINUSE 98       /* Address already in use */
-#define EADDRNOTAVAIL 99    /* Cannot assign requested address */
-#define ENETDOWN 100        /* Network is down */
-#define ENETUNREACH 101     /* Network is unreachable */
-#define ENETRESET 102       /* Network dropped connection because of reset */
-#define ECONNABORTED 103    /* Software caused connection abort */
-#define ECONNRESET 104      /* Connection reset by peer */
-#define ENOBUFS 105         /* No buffer space available */
-#define EISCONN 106         /* Transport endpoint is already connected */
-#define ENOTCONN 107        /* Transport endpoint is not connected */
-#define ESHUTDOWN 108       /* Cannot send after transport endpoint shutdown */
-#define ETOOMANYREFS 109    /* Too many references: cannot splice */
-#define ETIMEDOUT 110       /* Connection timed out */
-#define ECONNREFUSED 111    /* Connection refused */
-#define EHOSTDOWN 112       /* Host is down */
-#define EHOSTUNREACH 113    /* No route to host */
-#define EALREADY 114        /* Operation already in progress */
-#define EINPROGRESS 115     /* Operation now in progress */
-#define ESTALE 116          /* Stale NFS file handle */
-#define EUCLEAN 117         /* Structure needs cleaning */
-#define ENOTNAM 118         /* Not a XENIX named type file */
-#define ENAVAIL 119         /* No XENIX semaphores available */
-#define EISNAM 120          /* Is a named type file */
-#define EREMOTEIO 121       /* Remote I/O error */
-#define EDQUOT 122          /* Quota exceeded */
-#define ENOMEDIUM 123       /* No medium found */
-#define EMEDIUMTYPE 124     /* Wrong medium type */
-#define ECANCELED 125       /* Operation Canceled */
-#define ENOKEY 126          /* Required key not available */
-#define EKEYEXPIRED 127     /* Key has expired */
-#define EKEYREVOKED 128     /* Key has been revoked */
-#define EKEYREJECTED 129    /* Key was rejected by service */
-#define EOWNERDEAD 130      /* Owner died */
-#define ENOTRECOVERABLE 131 /* State not recoverable */
+/** @brief Operation not permitted */
+#define EPERM 1
+
+/** @brief No such file or directory */
+#define ENOENT 2
+
+/** @brief No such process */
+#define ESRCH 3
+
+/** @brief Interrupted system call */
+#define EINTR 4
+
+/** @brief I/O error */
+#define EIO 5
+
+/** @brief No such device or address */
+#define ENXIO 6
+
+/** @brief Argument list too long */
+#define E2BIG 7
+
+/** @brief Exec format error */
+#define ENOEXEC 8
+
+/** @brief Bad file number */
+#define EBADF 9
+
+/** @brief No child processes */
+#define ECHILD 10
+
+/** @brief Try again */
+#define EAGAIN 11
+
+/** @brief Out of memory */
+#define ENOMEM 12
+
+/** @brief Permission denied */
+#define EACCES 13
+
+/** @brief Bad address */
+#define EFAULT 14
+
+/** @brief Block device required */
+#define ENOTBLK 15
+
+/** @brief Device or resource busy */
+#define EBUSY 16
+
+/** @brief File exists */
+#define EEXIST 17
+
+/** @brief Cross-device link */
+#define EXDEV 18
+
+/** @brief No such device */
+#define ENODEV 19
+
+/** @brief Not a directory */
+#define ENOTDIR 20
+
+/** @brief Is a directory */
+#define EISDIR 21
+
+/** @brief Invalid argument */
+#define EINVAL 22
+
+/** @brief File table overflow */
+#define ENFILE 23
+
+/** @brief Too many open files */
+#define EMFILE 24
+
+/** @brief Not a typewriter */
+#define ENOTTY 25
+
+/** @brief Text file busy */
+#define ETXTBSY 26
+
+/** @brief File too large */
+#define EFBIG 27
+
+/** @brief No space left on device */
+#define ENOSPC 28
+
+/** @brief Illegal seek */
+#define ESPIPE 29
+
+/** @brief Read-only file system */
+#define EROFS 30
+
+/** @brief Too many links */
+#define EMLINK 31
+
+/** @brief Broken pipe */
+#define EPIPE 32
+
+/** @brief Math argument out of domain of func */
+#define EDOM 33
+
+/** @brief Math result not representable */
+#define ERANGE 34
+
+/** @brief Resource deadlock would occur */
+#define EDEADLK 35
+
+/** @brief File name too long */
+#define ENAMETOOLONG 36
+
+/** @brief No record locks available */
+#define ENOLCK 37
+
+/** @brief Function not implemented */
+#define ENOSYS 38
+
+/** @brief Directory not empty */
+#define ENOTEMPTY 39
+
+/** @brief Too many symbolic links encountered */
+#define ELOOP 40
+
+/** @brief No message of desired type */
+#define ENOMSG 42
+
+/** @brief Identifier removed */
+#define EIDRM 43
+
+/** @brief Channel number out of range */
+#define ECHRNG 44
+
+/** @brief Level 2 not synchronized */
+#define EL2NSYNC 45
+
+/** @brief Level 3 halted */
+#define EL3HLT 46
+
+/** @brief Level 3 reset */
+#define EL3RST 47
+
+/** @brief Link number out of range */
+#define ELNRNG 48
+
+/** @brief Protocol driver not attached */
+#define EUNATCH 49
+
+/** @brief No CSI structure available */
+#define ENOCSI 50
+
+/** @brief Level 2 halted */
+#define EL2HLT 51
+
+/** @brief Invalid exchange */
+#define EBADE 52
+
+/** @brief Invalid request descriptor */
+#define EBADR 53
+
+/** @brief Exchange full */
+#define EXFULL 54
+
+/** @brief No anode */
+#define ENOANO 55
+
+/** @brief Invalid request code */
+#define EBADRQC 56
+
+/** @brief Invalid slot */
+#define EBADSLT 57
+
+/** @brief Bad font file format */
+#define EBFONT 59
+
+/** @brief Device not a stream */
+#define ENOSTR 60
+
+/** @brief No data available */
+#define ENODATA 61
+
+/** @brief Timer expired */
+#define ETIME 62
+
+/** @brief Out of streams resources */
+#define ENOSR 63
+
+/** @brief Machine is not on the network */
+#define ENONET 64
+
+/** @brief Package not installed */
+#define ENOPKG 65
+
+/** @brief Object is remote */
+#define EREMOTE 66
+
+/** @brief Link has been severed */
+#define ENOLINK 67
+
+/** @brief Advertise error */
+#define EADV 68
+
+/** @brief Srmount error */
+#define ESRMNT 69
+
+/** @brief Communication error on send */
+#define ECOMM 70
+
+/** @brief Protocol error */
+#define EPROTO 71
+
+/** @brief Multihop attempted */
+#define EMULTIHOP 72
+
+/** @brief RFS specific error */
+#define EDOTDOT 73
+
+/** @brief Not a data message */
+#define EBADMSG 74
+
+/** @brief Value too large for defined data type */
+#define EOVERFLOW 75
+
+/** @brief Name not unique on network */
+#define ENOTUNIQ 76
+
+/** @brief File descriptor in bad state */
+#define EBADFD 77
+
+/** @brief Remote address changed */
+#define EREMCHG 78
+
+/** @brief Can not access a needed shared library */
+#define ELIBACC 79
+
+/** @brief Accessing a corrupted shared library */
+#define ELIBBAD 80
+
+/** @brief .lib section in a.out corrupted */
+#define ELIBSCN 81
+
+/** @brief Attempting to link in too many shared libraries */
+#define ELIBMAX 82
+
+/** @brief Cannot exec a shared library directly */
+#define ELIBEXEC 83
+
+/** @brief Illegal byte sequence */
+#define EILSEQ 84
+
+/** @brief Interrupted system call should be restarted */
+#define ERESTART 85
+
+/** @brief Streams pipe error */
+#define ESTRPIPE 86
+
+/** @brief Too many users */
+#define EUSERS 87
+
+/** @brief Socket operation on non-socket */
+#define ENOTSOCK 88
+
+/** @brief Destination address required */
+#define EDESTADDRREQ 89
+
+/** @brief Message too long */
+#define EMSGSIZE 90
+
+/** @brief Protocol wrong type for socket */
+#define EPROTOTYPE 91
+
+/** @brief Protocol not available */
+#define ENOPROTOOPT 92
+
+/** @brief Protocol not supported */
+#define EPROTONOSUPPORT 93
+
+/** @brief Socket type not supported */
+#define ESOCKTNOSUPPORT 94
+
+/** @brief Operation not supported on transport endpoint */
+#define EOPNOTSUPP 95
+
+/** @brief Protocol family not supported */
+#define EPFNOSUPPORT 96
+
+/** @brief Address family not supported by protocol */
+#define EAFNOSUPPORT 97
+
+/** @brief Address already in use */
+#define EADDRINUSE 98
+
+/** @brief Cannot assign requested address */
+#define EADDRNOTAVAIL 99
+
+/** @brief Network is down */
+#define ENETDOWN 100
+
+/** @brief Network is unreachable */
+#define ENETUNREACH 101
+
+/** @brief Network dropped connection because of reset */
+#define ENETRESET 102
+
+/** @brief Software caused connection abort */
+#define ECONNABORTED 103
+
+/** @brief Connection reset by peer */
+#define ECONNRESET 104
+
+/** @brief No buffer space available */
+#define ENOBUFS 105
+
+/** @brief Transport endpoint is already connected */
+#define EISCONN 106
+
+/** @brief Transport endpoint is not connected */
+#define ENOTCONN 107
+
+/** @brief Cannot send after transport endpoint shutdown */
+#define ESHUTDOWN 108
+
+/** @brief Too many references: cannot splice */
+#define ETOOMANYREFS 109
+
+/** @brief Connection timed out */
+#define ETIMEDOUT 110
+
+/** @brief Connection refused */
+#define ECONNREFUSED 111
+
+/** @brief Host is down */
+#define EHOSTDOWN 112
+
+/** @brief No route to host */
+#define EHOSTUNREACH 113
+
+/** @brief Operation already in progress */
+#define EALREADY 114
+
+/** @brief Operation now in progress */
+#define EINPROGRESS 115
+
+/** @brief Stale NFS file handle */
+#define ESTALE 116
+
+/** @brief Structure needs cleaning */
+#define EUCLEAN 117
+
+/** @brief Not a XENIX named type file */
+#define ENOTNAM 118
+
+/** @brief No XENIX semaphores available */
+#define ENAVAIL 119
+
+/** @brief Is a named type file */
+#define EISNAM 120
+
+/** @brief Remote I/O error */
+#define EREMOTEIO 121
+
+/** @brief Quota exceeded */
+#define EDQUOT 122
+
+/** @brief No medium found */
+#define ENOMEDIUM 123
+
+/** @brief Wrong medium type */
+#define EMEDIUMTYPE 124
+
+/** @brief Operation Canceled */
+#define ECANCELED 125
+
+/** @brief Required key not available */
+#define ENOKEY 126
+
+/** @brief Key has expired */
+#define EKEYEXPIRED 127
+
+/** @brief Key has been revoked */
+#define EKEYREVOKED 128
+
+/** @brief Key was rejected by service */
+#define EKEYREJECTED 129
+
+/** @brief Owner died */
+#define EOWNERDEAD 130
+
+/** @brief State not recoverable */
+#define ENOTRECOVERABLE 131
 
 extern int *__errno_location(void) __attribute__((const));
 #define errno (*__errno_location())

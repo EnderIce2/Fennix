@@ -21,12 +21,19 @@
 #include <types.h>
 #include <memory.hpp>
 
+enum KCSchedType
+{
+    Mono = 0,
+    Multi = 1,
+};
+
 struct KernelConfig
 {
     Memory::MemoryAllocatorType AllocatorType;
     bool SchedulerType;
     char DriverDirectory[256];
     char InitPath[256];
+    bool UseLinuxSyscalls;
     bool InterruptsOnCrash;
     int Cores;
     int IOAPICInterruptCore;

@@ -23,7 +23,6 @@
 #include <boot/binfo.h>
 #ifdef __cplusplus
 #include <filesystem.hpp>
-#include <recovery.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
 #include <kconfig.hpp>
@@ -58,7 +57,6 @@ extern VirtualFileSystem::Virtual *vfs;
 extern Driver::Driver *DriverManager;
 extern Disk::Manager *DiskManager;
 extern NetworkInterfaceManager::NetworkInterface *NIManager;
-extern Recovery::KernelRecovery *RecoveryScreen;
 extern VirtualFileSystem::Node *DevFS;
 extern VirtualFileSystem::Node *MntFS;
 extern VirtualFileSystem::Node *ProcFS;

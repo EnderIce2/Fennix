@@ -127,12 +127,14 @@ namespace NetworkIPv4
 
     IPv4Events::~IPv4Events()
     {
-        for (size_t i = 0; i < RegisteredEvents.size(); i++)
-            if (RegisteredEvents[i] == this)
+        forItr(itr, RegisteredEvents)
+        {
+            if (*itr == this)
             {
-                RegisteredEvents.remove(i);
+                RegisteredEvents.erase(itr);
                 break;
             }
+        }
     }
 }
 

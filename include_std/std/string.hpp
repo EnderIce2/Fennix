@@ -24,11 +24,18 @@
 
 // show debug messages
 // #define DEBUG_CPP_STRING 1
+// #define DEBUG_CPP_STRING_VERBOSE 1
 
 #ifdef DEBUG_CPP_STRING
 #define strdbg(m, ...) debug(m, ##__VA_ARGS__)
 #else
 #define strdbg(m, ...)
+#endif
+
+#ifdef DEBUG_CPP_STRING_VERBOSE
+#define v_strdbg(m, ...) debug(m, ##__VA_ARGS__)
+#else
+#define v_strdbg(m, ...)
 #endif
 
 // TODO: Somewhere the delete is called twice, causing a double free error.
@@ -55,51 +62,65 @@ namespace std
 			this->Capacity = this->Length + 1;
 			this->Data = new char[this->Capacity];
 			strcpy(this->Data, Str);
-			strdbg("New string created: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("New string created: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		~string()
 		{
-			strdbg("String deleted: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String deleted: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			delete[] this->Data, this->Data = nullptr;
 		}
 
 		size_t length() const
 		{
-			strdbg("String length: %d", this->Length);
+			v_strdbg("String length: %d",
+					 this->Length);
 			return this->Length;
 		}
 
 		size_t capacity() const
 		{
-			strdbg("String capacity: %d", this->Capacity);
+			v_strdbg("String capacity: %d",
+					 this->Capacity);
 			return this->Capacity;
 		}
 
 		const char *c_str() const
 		{
-			strdbg("String data: \"%s\"", this->Data);
+			v_strdbg("String data: \"%s\"",
+					 this->Data);
 			return this->Data;
 		}
 
 		void resize(size_t NewLength)
 		{
 			strdbg("String resize: %d", NewLength);
-			if (NewLength > this->Capacity)
+			if (NewLength < this->Capacity)
 			{
-				size_t newCapacity = NewLength + 1;
-				char *newData = new char[newCapacity];
+				this->Length = NewLength;
+				this->Data[this->Length] = '\0';
 
-				strcpy(newData, this->Data);
-
-				strdbg("old: %#lx, new: %#lx", this->Data, newData);
-				delete[] this->Data;
-				this->Data = newData;
-				this->Capacity = newCapacity;
+				strdbg("String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+					   this->Data, this->Data, this->Length, this->Capacity);
+				return;
 			}
+
+			size_t newCapacity = NewLength + 1;
+			char *newData = new char[newCapacity];
+			strcpy(newData, this->Data);
+
+			strdbg("old: %#lx, new: %#lx",
+				   this->Data, newData);
+
+			delete[] this->Data;
+			this->Data = newData;
 			this->Length = NewLength;
-			this->Data[this->Length] = '\0';
-			strdbg("String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			this->Capacity = newCapacity;
+
+			strdbg("String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		void concat(const string &Other)
@@ -108,7 +129,8 @@ namespace std
 			this->resize(NewLength);
 
 			strcat(this->Data, Other.Data);
-			strdbg("String concatenated: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String concatenated: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		bool empty() const
@@ -392,14 +414,26 @@ namespace std
 			for (size_t i = 0; i < Str.Length; i++)
 				this->Data[Pos + i] = Str.Data[i];
 
-			strdbg("String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
+		}
+
+		void pop_back()
+		{
+			strdbg("String pop_back");
+			if (this->Length > 0)
+			{
+				this->Data[this->Length - 1] = '\0';
+				this->Length--;
+			}
 		}
 
 		string operator+(const string &Other) const
 		{
 			string result = *this;
 			result.concat(Other);
-			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)", result.Data, result.Data, result.Length, result.Capacity);
+			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   result.Data, result.Data, result.Length, result.Capacity);
 			return result;
 		}
 
@@ -407,21 +441,33 @@ namespace std
 		{
 			string result = *this;
 			result.concat(Other);
-			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)", result.Data, result.Data, result.Length, result.Capacity);
+			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   result.Data, result.Data, result.Length, result.Capacity);
 			return result;
 		}
 
 		string &operator+=(const string &Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator+=(const char *Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
+			return *this;
+		}
+
+		string &operator+=(char Other)
+		{
+			const char str[2] = {Other, '\0'};
+			this->concat(str);
+			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
@@ -430,15 +476,16 @@ namespace std
 
 		// string &operator=(const string &Other)
 		// {
-		//     if (this != &Other)
-		//     {
-		//         delete[] this->Data;
-		//         this->Data = Other.Data;
-		//         this->Length = Other.Length;
-		//         this->Capacity = Other.Capacity;
-		//         strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
-		//     }
-		//     return *this;
+		// 	if (this != &Other)
+		// 	{
+		// 		delete[] this->Data;
+		// 		this->Data = Other.Data;
+		// 		this->Length = Other.Length;
+		// 		this->Capacity = Other.Capacity;
+		// 		strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+		// 			   this->Data, this->Data, this->Length, this->Capacity);
+		// 	}
+		// 	return *this;
 		// }
 
 		string &operator=(const char *Other)
@@ -448,21 +495,24 @@ namespace std
 			delete[] this->Data;
 			this->Data = new char[this->Capacity];
 			strcpy(this->Data, Other);
-			strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator<<(const string &Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator<<(const char *Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
@@ -473,6 +523,18 @@ namespace std
 		}
 
 		const char &operator[](int Index) const
+		{
+			strdbg("String index: %d", Index);
+			return this->Data[Index];
+		}
+
+		char &operator[](size_t Index)
+		{
+			strdbg("String index: %d", Index);
+			return this->Data[Index];
+		}
+
+		const char &operator[](size_t Index) const
 		{
 			strdbg("String index: %d", Index);
 			return this->Data[Index];
@@ -513,25 +575,29 @@ namespace std
 			iterator &operator++()
 			{
 				++this->Pointer;
-				strdbg("String iterator incremented: %#lx", this->Pointer);
+				strdbg("String iterator incremented: %#lx",
+					   this->Pointer);
 				return *this;
 			}
 
 			char &operator*()
 			{
-				strdbg("String iterator dereferenced: %#lx", this->Pointer);
+				strdbg("String iterator dereferenced: %#lx",
+					   this->Pointer);
 				return *this->Pointer;
 			}
 
 			bool operator!=(const iterator &Other) const
 			{
-				strdbg("String iterator compared: %#lx != %#lx", this->Pointer, Other.Pointer);
+				strdbg("String iterator compared: %#lx != %#lx",
+					   this->Pointer, Other.Pointer);
 				return this->Pointer != Other.Pointer;
 			}
 
 			bool operator==(const iterator &Other) const
 			{
-				strdbg("String iterator compared: %#lx == %#lx", this->Pointer, Other.Pointer);
+				strdbg("String iterator compared: %#lx == %#lx",
+					   this->Pointer, Other.Pointer);
 				return this->Pointer == Other.Pointer;
 			}
 		};

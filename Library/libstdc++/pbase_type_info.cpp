@@ -26,6 +26,9 @@ namespace __cxxabiv1
 									   unsigned outer) const
 	{
 #ifndef __GXX_RTTI
+		UNUSED(ThrowType);
+		UNUSED(ThrowObject);
+		UNUSED(outer);
 		return false;
 #else
 		if (*this == *ThrowType)

@@ -36,9 +36,11 @@ namespace Video
             PSF2_HEADER *font2 = (PSF2_HEADER *)KernelAllocator.RequestPages(TO_PAGES(FontDataLength + 1));
             memcpy((void *)font2, Start, FontDataLength);
 
-            Memory::Virtual().Map((void *)font2, (void *)font2, FontDataLength, Memory::PTFlag::RW);
+            Memory::Virtual().Map((void *)font2, (void *)font2,
+                                  FontDataLength, Memory::PTFlag::RW);
 
-            if (font2->magic[0] != PSF2_MAGIC0 || font2->magic[1] != PSF2_MAGIC1 || font2->magic[2] != PSF2_MAGIC2 || font2->magic[3] != PSF2_MAGIC3)
+            if (font2->magic[0] != PSF2_MAGIC0 || font2->magic[1] != PSF2_MAGIC1 ||
+                font2->magic[2] != PSF2_MAGIC2 || font2->magic[3] != PSF2_MAGIC3)
             {
                 error("Font2 magic mismatch.");
                 KernelAllocator.FreePages((void *)font2, TO_PAGES(FontDataLength + 1));
@@ -46,7 +48,8 @@ namespace Video
             }
 
             this->Info.PSF2Font->Header = font2;
-            this->Info.PSF2Font->GlyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF2_HEADER));
+            this->Info.PSF2Font->GlyphBuffer =
+                r_cst(void *, r_cst(uintptr_t, Start) + sizeof(PSF2_HEADER));
             this->Info.Width = font2->width;
             this->Info.Height = font2->height;
         }
@@ -59,7 +62,8 @@ namespace Video
             uint32_t glyphBufferSize = font1->charsize * 256;
             if (font1->mode == 1) // 512 glyph mode
                 glyphBufferSize = font1->charsize * 512;
-            void *glyphBuffer = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF1_HEADER));
+            void *glyphBuffer =
+                r_cst(void *, r_cst(uintptr_t, Start) + sizeof(PSF1_HEADER));
             this->Info.PSF1Font->Header = font1;
             this->Info.PSF1Font->GlyphBuffer = glyphBuffer;
             UNUSED(glyphBufferSize); // TODO: Use this in the future?

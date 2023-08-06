@@ -82,8 +82,8 @@ namespace ACPI
             {
                 TaskManager->CreateThread(TaskManager->CreateProcess(nullptr,
                                                                      "Shutdown",
-                                                                     Tasking::TaskTrustLevel::Kernel),
-                                          (Tasking::IP)KST_Shutdown);
+                                                                     Tasking::TaskExecutionMode::Kernel),
+                                          Tasking::IP(KST_Shutdown));
             }
             else
                 KernelShutdownThread(false);

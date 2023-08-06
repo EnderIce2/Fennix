@@ -52,12 +52,13 @@ LDFLAGS := -Wl,-Map kernel.map -static -nostdlib -nodefaultlibs -nolibc
 WARNCFLAG = -Wall -Wextra \
 			-Wfloat-equal -Wpointer-arith -Wcast-align \
 			-Wredundant-decls -Winit-self -Wswitch-default \
-			-Wstrict-overflow=5 -Wconversion
+			-Wstrict-overflow=5 -Wconversion -Wno-error=cpp -Werror
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
 	$(INCLUDE_DIR)								\
 	-DKERNEL_NAME='"$(OSNAME)"' 				\
+	-DKERNEL_ARCH='"$(OSARCH)"' 				\
 	-DKERNEL_VERSION='"$(KERNEL_VERSION)"'		\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\
 	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"'
@@ -66,9 +67,8 @@ SIMD_FLAGS := -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mavx51
 
 ifeq ($(OSARCH), amd64)
 
-CFLAGS += -fno-pic -fno-pie					\
-		  -mno-red-zone -march=core2 -pipe	\
-		  -mcmodel=kernel -fno-builtin -Da64 -Da86
+CFLAGS += -fno-pic -fno-pie -mno-red-zone -march=core2	\
+		  -mcmodel=kernel -fno-builtin -Da64 -Da86 -m64
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 	-fno-pic -fno-pie 						\
@@ -78,9 +78,8 @@ LDFLAGS += -TArchitecture/amd64/linker.ld 	\
 
 else ifeq ($(OSARCH), i386)
 
-CFLAGS += -fno-pic -fno-pie -mno-80387 -mno-mmx -mno-3dnow	\
-		  -mno-red-zone -march=pentium -pipe -fno-builtin	\
-		  -Da32 -Da86
+CFLAGS += -fno-pic -fno-pie -mno-red-zone -march=pentium \
+		  -fno-builtin -Da32 -Da86 -m32
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/i386/linker.ld 	\
 	-fno-pic -fno-pie 						\
@@ -90,7 +89,7 @@ LDFLAGS += -TArchitecture/i386/linker.ld 	\
 
 else ifeq ($(OSARCH), aarch64)
 
-CFLAGS += -pipe -fno-builtin -Wstack-protector -Daa64 -fPIC -mno-outline-atomics
+CFLAGS += -fno-builtin -Wstack-protector -Daa64 -fPIC -mno-outline-atomics
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC -pie \
 	-Wl,-static,--no-dynamic-linker,-ztext \
@@ -112,7 +111,10 @@ ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
 #	CFLAGS += -pg
 #	CFLAGS += -finstrument-functions
-	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm -fstack-usage -fsanitize=undefined
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage -fsanitize=undefined
+ifeq ($(OSARCH), amd64)
+	CFLAGS += -fverbose-asm
+endif
 ifneq ($(OSARCH), aarch64)
 	CFLAGS += -fstack-check
 endif

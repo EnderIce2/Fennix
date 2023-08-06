@@ -41,8 +41,8 @@ namespace CrashHandler
             "AAFF00", // Ready
             "00AA00", // Running
             "FFAA00", // Sleeping
-            "FFAA00", // Waiting
-            "FF0088", // Stopped
+            "FFAA00", // Blocked
+            "FF0088", // Zombie
             "FF0000", // Terminated
         };
 
@@ -51,8 +51,8 @@ namespace CrashHandler
             "Ready",      // Ready
             "Running",    // Running
             "Sleeping",   // Sleeping
-            "Waiting",    // Waiting
-            "Stopped",    // Stopped
+            "Blocked",    // Blocked
+            "Zombie",     // Zombie
             "Terminated", // Terminated
         };
 
@@ -62,9 +62,11 @@ namespace CrashHandler
 
             if (data.Thread)
 #if defined(a64)
-                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->rip);
+                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n",
+                        data.Thread->Name, data.Thread->ID, data.Frame->rip);
 #elif defined(a32)
-                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n", data.Thread->Name, data.Thread->ID, data.Frame->eip);
+                EHPrint("\eFAFAFACrash occurred in thread \eAA0F0F%s\eFAFAFA(%ld) at \e00AAAA%#lx\n",
+                        data.Thread->Name, data.Thread->ID, data.Frame->eip);
 #elif defined(aa64)
 #endif
 
@@ -72,12 +74,14 @@ namespace CrashHandler
             foreach (auto Process in Plist)
             {
                 EHPrint("\e%s-> \eFAFAFA%s\eCCCCCC(%ld) \e00AAAA%s\eFAFAFA PT:\e00AAAA%#lx\n",
-                        StatusColor[Process->Status], Process->Name, Process->ID, StatusString[Process->Status],
+                        StatusColor[Process->Status.load()], Process->Name,
+                        Process->ID, StatusString[Process->Status.load()],
                         Process->PageTable);
 
                 foreach (auto Thread in Process->Threads)
                     EHPrint("\e%s  -> \eFAFAFA%s\eCCCCCC(%ld) \e00AAAA%s\eFAFAFA Stack:\e00AAAA%#lx\n",
-                            StatusColor[Thread->Status], Thread->Name, Thread->ID, StatusString[Thread->Status],
+                            StatusColor[Thread->Status.load()], Thread->Name,
+                            Thread->ID, StatusString[Thread->Status.load()],
                             Thread->Stack);
             }
         }

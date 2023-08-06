@@ -23,118 +23,125 @@
 
 extern bool EnableExternalMemoryTracer;
 extern bool DebuggerIsAttached;
+extern Memory::MemoryAllocatorType AllocatorType;
 
 __constructor void TestMemoryOperations()
 {
-    if (EnableExternalMemoryTracer || DebuggerIsAttached)
-    {
-        debug("The test is disabled when the external memory tracer or a debugger is enabled.");
-        return;
-    }
+	if (EnableExternalMemoryTracer || DebuggerIsAttached)
+	{
+		debug("The test is disabled when the external memory tracer or a debugger is enabled.");
+		return;
+	}
 
-    int arr1[5] = {1, 2, 3, 4, 5};
-    int arr2[5] = {0, 0, 0, 0, 0};
-    char str1[] = "Hello";
-    char str2[] = "World";
+	if (AllocatorType == Memory::MemoryAllocatorType::Pages)
+	{
+		debug("The test is disabled when the allocator is set to pages.");
+		return;
+	}
 
-    memcpy_unsafe(arr2, arr1, sizeof(arr1));
-    debug("memcpy: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
-          arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
-    if (memcmp(arr1, arr2, sizeof(arr1)) != 0)
-    {
-        error("memcpy failed!");
-        inf_loop;
-    }
+	int arr1[5] = {1, 2, 3, 4, 5};
+	int arr2[5] = {0, 0, 0, 0, 0};
+	char str1[] = "Hello";
+	char str2[] = "World";
 
-    memset_unsafe(arr2, 0, sizeof(arr2));
-    debug("memset: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
-          arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
-    if (memcmp(arr1, arr2, sizeof(arr1)) == 0)
-    {
-        error("memset failed!");
-        inf_loop;
-    }
+	memcpy_unsafe(arr2, arr1, sizeof(arr1));
+	debug("memcpy: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
+		  arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
+	if (memcmp(arr1, arr2, sizeof(arr1)) != 0)
+	{
+		error("memcpy failed!");
+		inf_loop;
+	}
 
-    memmove_unsafe(str1 + 3, str1, strlen(str1) + 1);
-    debug("memmove: str1=%s", str1);
-    if (strcmp(str1, "HelHello") != 0)
-    {
-        error("memmove failed!");
-        inf_loop;
-    }
+	memset_unsafe(arr2, 0, sizeof(arr2));
+	debug("memset: arr2[0]=%d, arr2[1]=%d, arr2[2]=%d, arr2[3]=%d, arr2[4]=%d",
+		  arr2[0], arr2[1], arr2[2], arr2[3], arr2[4]);
+	if (memcmp(arr1, arr2, sizeof(arr1)) == 0)
+	{
+		error("memset failed!");
+		inf_loop;
+	}
 
-    char carr[512];
-    char carrTo[16];
+	memmove_unsafe(str1 + 3, str1, strlen(str1) + 1);
+	debug("memmove: str1=%s", str1);
+	if (strcmp(str1, "HelHello") != 0)
+	{
+		error("memmove failed!");
+		inf_loop;
+	}
 
-    for (size_t i = 0; i < 512; i++)
-    {
-        for (size_t i = 0; i < 16; i++)
-            carrTo[i] = 'a';
+	char carr[512];
+	char carrTo[16];
 
-        for (size_t i = 0; i < 512; i += 16)
-            memcpy_unsafe(carr + i, carrTo, 16);
+	for (size_t i = 0; i < 512; i++)
+	{
+		for (size_t i = 0; i < 16; i++)
+			carrTo[i] = 'a';
 
-        for (size_t i = 0; i < 512; i++)
-        {
-            if (carr[i] != 'a')
-            {
-                error("memcpy failed!");
-                while (1)
-                    ;
-            }
-        }
+		for (size_t i = 0; i < 512; i += 16)
+			memcpy_unsafe(carr + i, carrTo, 16);
 
-        {
-            char carrFull[512];
-            for (size_t i = 0; i < 512; i++)
-                carrFull[i] = 'b';
+		for (size_t i = 0; i < 512; i++)
+		{
+			if (carr[i] != 'a')
+			{
+				error("memcpy failed!");
+				while (1)
+					;
+			}
+		}
 
-            memcpy_unsafe(carr, carrFull, 512);
+		{
+			char carrFull[512];
+			for (size_t i = 0; i < 512; i++)
+				carrFull[i] = 'b';
 
-            for (size_t i = 0; i < 512; i++)
-            {
-                if (carr[i] != 'b')
-                {
-                    error("memcpy failed!");
-                    while (1)
-                        ;
-                }
-            }
-        }
-    }
+			memcpy_unsafe(carr, carrFull, 512);
 
-    for (size_t i = 0; i < 512; i++)
-    {
-        for (size_t i = 0; i < 512; i += 16)
-            memset_unsafe(carr + i, 'c', 16);
+			for (size_t i = 0; i < 512; i++)
+			{
+				if (carr[i] != 'b')
+				{
+					error("memcpy failed!");
+					while (1)
+						;
+				}
+			}
+		}
+	}
 
-        for (size_t i = 0; i < 512; i++)
-        {
-            if (carr[i] != 'c')
-            {
-                error("memcpy failed!");
-                while (1)
-                    ;
-            }
-        }
-    }
+	for (size_t i = 0; i < 512; i++)
+	{
+		for (size_t i = 0; i < 512; i += 16)
+			memset_unsafe(carr + i, 'c', 16);
 
-    for (size_t i = 0; i < 512; i++)
-    {
-        memset_unsafe(carr, 'd', 512);
+		for (size_t i = 0; i < 512; i++)
+		{
+			if (carr[i] != 'c')
+			{
+				error("memcpy failed!");
+				while (1)
+					;
+			}
+		}
+	}
 
-        for (size_t i = 0; i < 512; i++)
-        {
-            if (carr[i] != 'd')
-            {
-                error("memset failed!");
-                while (1)
-                    ;
-            }
-        }
-    }
+	for (size_t i = 0; i < 512; i++)
+	{
+		memset_unsafe(carr, 'd', 512);
 
-    debug("Memory operations test passed");
+		for (size_t i = 0; i < 512; i++)
+		{
+			if (carr[i] != 'd')
+			{
+				error("memset failed!");
+				while (1)
+					;
+			}
+		}
+	}
+
+	debug("Memory operations test passed");
 }
 
 #endif

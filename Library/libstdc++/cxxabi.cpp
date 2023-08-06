@@ -37,10 +37,25 @@ namespace __cxxabiv1
 		return &GetCurrentCPU()->EHGlobals;
 	}
 
+	/**
+	 * @param f The destructor
+	 * @param objptr The object to be destructed
+	 * @param dso The DSO from which the object was obtained (unused in our case)
+	 * @return Zero on success, non-zero on failure
+	 */
 	extern "C" int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
 	{
-		debug("Registering atexit function %p( %p, %p )",
-			  f, objptr, dso);
+		if (KernelSymbolTable)
+		{
+			debug("Registering atexit function for \"%s\" with destructor \"%s\"",
+				  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)objptr),
+				  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)f));
+		}
+		else
+		{
+			debug("Registering atexit function for %p with destructor %p",
+				  objptr, f);
+		}
 
 		if (__atexit_func_count >= ATEXIT_MAX_FUNCS)
 			return -1;
@@ -53,23 +68,38 @@ namespace __cxxabiv1
 
 	extern "C" void __cxa_finalize(void *f)
 	{
-		fixme("__cxa_finalize( %p ) called.", f);
+		function("%p", f);
 		uarch_t i = __atexit_func_count;
-		if (!f)
+		if (f == nullptr)
 		{
 			while (i--)
+			{
 				if (__atexit_funcs[i].destructor_func)
+				{
+					if (KernelSymbolTable)
+					{
+						debug("Calling atexit function \"%s\"",
+							  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__atexit_funcs[i].destructor_func));
+					}
+					else
+					{
+						debug("Calling atexit function %p",
+							  __atexit_funcs[i].destructor_func);
+					}
 					(*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
-
+				}
+			}
 			return;
 		}
 
 		while (i--)
+		{
 			if (__atexit_funcs[i].destructor_func == f)
 			{
 				(*__atexit_funcs[i].destructor_func)(__atexit_funcs[i].obj_ptr);
 				__atexit_funcs[i].destructor_func = 0;
 			}
+		}
 	}
 
 	extern "C" _Unwind_Reason_Code __gxx_personality_v0(int version, _Unwind_Action actions, _Unwind_Exception_Class exception_class, _Unwind_Exception *ue_header, _Unwind_Context *context)
@@ -122,8 +152,8 @@ namespace __cxxabiv1
 	{
 		if (TaskManager && !TaskManager->IsPanic())
 		{
-			TaskManager->KillThread(TaskManager->GetCurrentThread(), Tasking::KILL_CXXABI_EXCEPTION);
-			TaskManager->Schedule();
+			TaskManager->KillThread(thisThread, Tasking::KILL_CXXABI_EXCEPTION);
+			TaskManager->Yield();
 		}
 
 		error("No task manager to kill thread!");

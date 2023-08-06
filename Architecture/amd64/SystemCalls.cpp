@@ -31,11 +31,11 @@ extern "C" void SystemCallHandlerStub();
 
 extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHandlerStub()
 {
-	asmv("swapgs\n");			 /* Swap GS to get the TCB */
-	asmv("mov %rsp, %gs:0x8\n"); /* We save the current rsp to TCB->TempStack */
-	asmv("mov %gs:0x0, %rsp\n"); /* Get TCB->SystemCallStack and set it as rsp */
+	asmv("swapgs\n");			 /* Swap GS to get the gsTCB */
+	asmv("mov %rsp, %gs:0x8\n"); /* We save the current rsp to gsTCB->TempStack */
+	asmv("mov %gs:0x0, %rsp\n"); /* Get gsTCB->SystemCallStack and set it as rsp */
 	asmv("push $0x1b\n");		 /* Push user data segment for SyscallsFrame */
-	asmv("push %gs:0x8\n");		 /* Push TCB->TempStack (old rsp) for SyscallsFrame */
+	asmv("push %gs:0x8\n");		 /* Push gsTCB->TempStack (old rsp) for SyscallsFrame */
 	asmv("push %r11\n");		 /* Push the flags for SyscallsFrame */
 	asmv("push $0x23\n");		 /* Push user code segment for SyscallsFrame */
 	asmv("push %rcx\n");		 /* Push the return address for SyscallsFrame + sysretq (https://www.felixcloutier.com/x86/sysret) */
@@ -78,7 +78,7 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
 		 "pop %rcx\n"
 		 "pop %rbx\n");
 
-	/* Restore rsp from TCB->TempStack */
+	/* Restore rsp from gsTCB->TempStack */
 	asmv("mov %gs:0x8, %rsp\n");
 #ifdef DEBUG
 	/* Easier to debug stacks */

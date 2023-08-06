@@ -22,7 +22,7 @@ Xalloc_def;
 #define XALLOC_CONCAT(x, y) x##y
 #define XStoP(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
 #define XPtoS(d) ((d)*PAGE_SIZE)
-#define Xalloc_BlockChecksum 0xA110C
+#define Xalloc_BlockSanityKey 0xA110C
 
 extern "C" void *Xalloc_REQUEST_PAGES(Xsize_t Pages);
 extern "C" void Xalloc_FREE_PAGES(void *Address, Xsize_t Pages);
@@ -55,7 +55,7 @@ namespace Xalloc
     public:
         void *Address = nullptr;
 
-        int Checksum = Xalloc_BlockChecksum;
+        int Sanity = Xalloc_BlockSanityKey;
         Xsize_t Size = 0;
         Block *Next = nullptr;
         Block *Last = nullptr;
@@ -63,7 +63,7 @@ namespace Xalloc
 
         bool Check()
         {
-            if (this->Checksum != Xalloc_BlockChecksum)
+            if (this->Sanity != Xalloc_BlockSanityKey)
                 return false;
             return true;
         }
@@ -168,8 +168,8 @@ namespace Xalloc
         {
             if (!CurrentBlock->Check())
             {
-                Xalloc_err("Block %#lx has an invalid checksum! (%#x != %#x)",
-                           (Xuint64_t)CurrentBlock, CurrentBlock->Checksum, Xalloc_BlockChecksum);
+                Xalloc_err("Block %#lx has an invalid sanity key! (%#x != %#x)",
+                           (Xuint64_t)CurrentBlock, CurrentBlock->Sanity, Xalloc_BlockSanityKey);
                 while (Xalloc_StopOnFail)
                     ;
             }
@@ -210,8 +210,8 @@ namespace Xalloc
         {
             if (!CurrentBlock->Check())
             {
-                Xalloc_err("Block %#lx has an invalid checksum! (%#x != %#x)",
-                           (Xuint64_t)CurrentBlock, CurrentBlock->Checksum, Xalloc_BlockChecksum);
+                Xalloc_err("Block %#lx has an invalid sanity key! (%#x != %#x)",
+                           (Xuint64_t)CurrentBlock, CurrentBlock->Sanity, Xalloc_BlockSanityKey);
                 while (Xalloc_StopOnFail)
                     ;
             }

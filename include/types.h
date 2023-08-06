@@ -51,6 +51,10 @@
 #define foreach for
 #define in :
 
+#define forItr(itr, container)         \
+    for (auto itr = container.begin(); \
+         itr != container.end(); ++itr)
+
 #define r_cst(t, v) reinterpret_cast<t>(v)
 #define c_cst(t, v) const_cast<t>(v)
 #define s_cst(t, v) static_cast<t>(v)
@@ -194,8 +198,35 @@ typedef __SIG_ATOMIC_TYPE__ sig_atomic_t;
 // TODO: ssize_t
 typedef intptr_t ssize_t;
 
-typedef long off_t;
+#if defined(a64) || defined(aa64)
+typedef int64_t off_t;
 typedef long long off64_t;
+typedef __INT32_TYPE__ mode_t;
+typedef int64_t dev_t;
+typedef int64_t ino64_t;
+typedef int64_t ino_t;
+typedef unsigned int nlink_t;
+typedef int blksize_t;
+typedef int64_t blkcnt_t;
+typedef int64_t blkcnt64_t;
+typedef int64_t time_t;
+typedef unsigned uid_t;
+typedef unsigned gid_t;
+#elif defined(a32)
+typedef int32_t off_t;
+typedef long long off64_t;
+typedef __INT32_TYPE__ mode_t;
+typedef int32_t dev_t;
+typedef int32_t ino64_t;
+typedef int32_t ino_t;
+typedef unsigned int nlink_t;
+typedef int blksize_t;
+typedef int32_t blkcnt_t;
+typedef int32_t blkcnt64_t;
+typedef int32_t time_t;
+typedef unsigned uid_t;
+typedef unsigned gid_t;
+#endif
 
 #define INT8_MAX __INT8_MAX__
 #define INT8_MIN (-INT8_MAX - 1)

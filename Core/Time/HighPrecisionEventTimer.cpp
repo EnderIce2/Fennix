@@ -32,52 +32,52 @@
 
 namespace Time
 {
-    bool HighPrecisionEventTimer::Sleep(size_t Duration, Units Unit)
-    {
+	bool HighPrecisionEventTimer::Sleep(size_t Duration, Units Unit)
+	{
 #if defined(a64)
-	size_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
+	uint64_t Target = mminq(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
 	while (mminq(&((HPET *)hpet)->MainCounterValue) < Target)
-	    CPU::Pause();
+		CPU::Pause();
 	return true;
 #elif defined(a32)
-	size_t Target = mminl(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
+	uint64_t Target = mminl(&((HPET *)hpet)->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
 	while (mminl(&((HPET *)hpet)->MainCounterValue) < Target)
-	    CPU::Pause();
+		CPU::Pause();
 	return true;
 #endif
 return false;
-    }
+	}
 
-    size_t HighPrecisionEventTimer::GetCounter()
-    {
+	uint64_t HighPrecisionEventTimer::GetCounter()
+	{
 #if defined(a64)
 	return mminq(&((HPET *)hpet)->MainCounterValue);
 #elif defined(a32)
 	return mminl(&((HPET *)hpet)->MainCounterValue);
 #endif
-    }
+	}
 
-    size_t HighPrecisionEventTimer::CalculateTarget(size_t Target, Units Unit)
-    {
+	uint64_t HighPrecisionEventTimer::CalculateTarget(uint64_t Target, Units Unit)
+	{
 #if defined(a64)
 	return mminq(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #elif defined(a32)
 	return mminl(&((HPET *)hpet)->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #endif
-    }
+	}
 
-    size_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
-    {
+	uint64_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
+	{
 #if defined(a86)
-	size_t Subtraction = this->GetCounter() - this->ClassCreationTime;
+	uint64_t Subtraction = this->GetCounter() - this->ClassCreationTime;
 	if (Subtraction <= 0 || this->clk <= 0)
-	    return 0;
-	return Subtraction / (this->clk / ConvertUnit(Units::Nanoseconds));
+		return 0;
+	return uint64_t(Subtraction / (this->clk / ConvertUnit(Units::Nanoseconds)));
 #endif
-    }
+	}
 
-    HighPrecisionEventTimer::HighPrecisionEventTimer(void *hpet)
-    {
+	HighPrecisionEventTimer::HighPrecisionEventTimer(void *hpet)
+	{
 #if defined(a86)
 	ACPI::ACPI::HPETHeader *HPET_HDR = (ACPI::ACPI::HPETHeader *)hpet;
 	Memory::Virtual().Remap((void *)HPET_HDR->Address.Address,
@@ -86,6 +86,7 @@ return false;
 	this->hpet = (HPET *)HPET_HDR->Address.Address;
 	trace("%s timer is at address %016p", HPET_HDR->Header.OEMID, (void *)HPET_HDR->Address.Address);
 	clk = s_cst(uint32_t, (uint64_t)this->hpet->GeneralCapabilities >> 32);
+	debug("HPET clock is %u Hz", clk);
 #ifdef a64
 	mmoutq(&this->hpet->GeneralConfiguration, 0);
 	mmoutq(&this->hpet->MainCounterValue, 0);
@@ -97,9 +98,9 @@ return false;
 #endif
 	ClassCreationTime = this->GetCounter();
 #endif
-    }
+	}
 
-    HighPrecisionEventTimer::~HighPrecisionEventTimer()
-    {
-    }
+	HighPrecisionEventTimer::~HighPrecisionEventTimer()
+	{
+	}
 }

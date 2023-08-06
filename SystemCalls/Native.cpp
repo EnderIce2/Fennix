@@ -27,316 +27,239 @@
 #include "../kernel.h"
 #include "../ipc.h"
 
-#define SysFrm SyscallsFrame
+#if defined(a64) || defined(aa64)
+static ssize_t ConvertErrno(ssize_t r)
+{
+	if (r >= 0)
+		return r;
+	return -errno;
+}
+#endif
+
+static int ConvertErrno(int r)
+{
+	if (r >= 0)
+		return r;
+	return -errno;
+}
+
+struct SyscallData
+{
+	const char *Name;
+	void *Handler;
+	int RequiredID;
+};
 
 using InterProcessCommunication::IPC;
 using InterProcessCommunication::IPCID;
-using Tasking::Token;
-using Tasking::TTL;
+using Tasking::PCB;
+using Tasking::TCB;
 using Tasking::TaskStatus::Ready;
 using Tasking::TaskStatus::Terminated;
-using Tasking::TTL::Trusted;
-using Tasking::TTL::TrustedByKernel;
-using Tasking::TTL::UnknownTrustLevel;
-using Tasking::TTL::Untrusted;
+using namespace Memory;
 
-__noreturn static void sys_exit(SysFrm *, int code)
+#define SysFrm SyscallsFrame
+
+#if defined(a64)
+typedef long arch_t;
+#elif defined(a32)
+typedef int arch_t;
+#endif
+
+__noreturn static void sys_exit(SysFrm *, int Code)
 {
 	trace("Userspace thread %s(%d) exited with code %d (%#x)",
-		  TaskManager->GetCurrentThread()->Name,
-		  TaskManager->GetCurrentThread()->ID, code,
-		  code < 0 ? -code : code);
+		  thisThread->Name,
+		  thisThread->ID, Code,
+		  Code < 0 ? -Code : Code);
 
-	TaskManager->GetCurrentThread()->ExitCode = code;
-	TaskManager->GetCurrentThread()->Status = Terminated;
-	TaskManager->Schedule();
+	thisThread->ExitCode = Code;
+	thisThread->Status = Terminated;
+	TaskManager->Yield();
 	__builtin_unreachable();
-}
-
-static int sys_print(SysFrm *, char Char, int Index)
-{
-	char ret = Display->Print(Char, Index, true);
-	if (!Config.BootAnimation && Index == 0)
-		Display->SetBuffer(Index);
-	return ret;
 }
 
 static uintptr_t sys_request_pages(SysFrm *, size_t Count)
 {
-	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	MemMgr *MemMgr = thisThread->Memory;
 	return (uintptr_t)MemMgr->RequestPages(Count + 1, true);
 }
 
-static int sys_free_pages(SysFrm *, uintptr_t Address, size_t Count)
+static int sys_free_pages(SysFrm *, uintptr_t Address,
+						  size_t Count)
 {
-	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	MemMgr *MemMgr = thisThread->Memory;
 	MemMgr->FreePages((void *)Address, Count + 1);
-	return SYSCALL_OK;
+	return 0;
 }
 
 static int sys_detach_address(SysFrm *, uintptr_t Address)
 {
-	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
+	MemMgr *MemMgr = thisThread->Memory;
 	MemMgr->DetachAddress((void *)Address);
-	return SYSCALL_OK;
+	return 0;
 }
 
 static int sys_memory_map(SysFrm *, uintptr_t VirtualAddress,
 						  uintptr_t PhysicalAddress, size_t Size,
-						  enum MemoryMapFlags Flags)
+						  int Flags)
 {
 	if (Flags > 7) /* (MAP_PRESENT | MAP_WRITABLE | MAP_USER) */
-		return SYSCALL_INVALID_ARGUMENT;
+		return -EINVAL;
 
-	Memory::PageTable *PageTable = TaskManager->GetCurrentProcess()->PageTable;
+	PageTable *PageTable = thisProcess->PageTable;
 	{
-		Memory::Virtual vmm = Memory::Virtual(PageTable);
+		Virtual vmm = Virtual(PageTable);
 		vmm.Map((void *)VirtualAddress,
 				(void *)PhysicalAddress,
 				Size, Flags);
 	}
 
-	return SYSCALL_OK;
+	return 0;
 }
 
 static int sys_memory_unmap(SysFrm *, uintptr_t VirtualAddress,
 							size_t Size)
 {
-	Memory::PageTable *PageTable = TaskManager->GetCurrentProcess()->PageTable;
+	PageTable *PageTable = thisProcess->PageTable;
 	{
-		Memory::Virtual vmm = Memory::Virtual(PageTable);
+		Virtual vmm = Virtual(PageTable);
 		vmm.Unmap((void *)VirtualAddress,
 				  Size);
 	}
 
-	return SYSCALL_OK;
+	return 0;
 }
 
-static uintptr_t sys_kernelctl(SysFrm *,
-							   enum KCtl Command,
-							   uint64_t Arg1, uint64_t Arg2,
-							   uint64_t Arg3, uint64_t Arg4)
+static arch_t sys_kernelctl(SysFrm *, KCtl Command,
+							arch_t Arg1, arch_t Arg2,
+							arch_t Arg3, arch_t Arg4)
 {
-	switch (Command)
-	{
-	case KCTL_GET_PID:
-		return TaskManager->GetCurrentProcess()->ID;
-	case KCTL_GET_TID:
-		return TaskManager->GetCurrentThread()->ID;
-	case KCTL_GET_PAGE_SIZE:
-		return PAGE_SIZE;
-	case KCTL_IS_CRITICAL:
-		return TaskManager->GetCurrentThread()->Security.IsCritical;
-	case KCTL_REGISTER_ELF_LIB:
-	{
-		char *Identifier = (char *)Arg1;
-		const char *Path = (const char *)Arg2;
-
-		if (!Identifier || !Path)
-			return SYSCALL_INVALID_ARGUMENT;
-
-		std::string FullPath = Path;
-		int retries = 0;
-	RetryReadPath:
-		debug("KCTL_REGISTER_ELF_LIB: Trying to open %s",
-			  FullPath.c_str());
-		VirtualFileSystem::File f = vfs->Open(FullPath.c_str());
-
-		if (!f.IsOK())
-		{
-			FullPath.clear();
-			switch (retries)
-			{
-			case 0:
-				FullPath = "/lib/";
-				break;
-			case 1:
-				FullPath = "/usr/lib/";
-				break;
-			case 2:
-				FullPath = "/";
-				break;
-			case 3:
-			{
-				VirtualFileSystem::Node *cwd =
-					TaskManager->GetCurrentProcess()->CurrentWorkingDirectory;
-				FullPath = vfs->GetPathFromNode(cwd).get();
-				break;
-			}
-			default:
-			{
-				vfs->Close(f);
-				return SYSCALL_INVALID_ARGUMENT;
-			}
-			}
-			FullPath += Path;
-			vfs->Close(f);
-			retries++;
-			goto RetryReadPath;
-		}
-
-		if (Execute::AddLibrary(Identifier, f))
-		{
-			vfs->Close(f);
-			return SYSCALL_OK;
-		}
-		else
-		{
-			vfs->Close(f);
-			return SYSCALL_INTERNAL_ERROR;
-		}
-	}
-	case KCTL_GET_ELF_LIB_MEMORY_IMAGE:
-	{
-		char *Identifier = (char *)Arg1;
-		if (!Identifier)
-			return 0;
-
-		Execute::SharedLibrary lib = Execute::GetLibrary(Identifier);
-
-		if (!lib.MemoryImage)
-		{
-			debug("Failed to get library memory image %#lx",
-				  (uintptr_t)lib.MemoryImage);
-		}
-
-		debug("Returning memory image %#lx (%s)",
-			  (uintptr_t)lib.MemoryImage, Identifier);
-		return (uintptr_t)lib.MemoryImage;
-	}
-	case KCTL_GET_ABSOLUTE_PATH:
-	{
-		char *Identifier = (char *)Arg1;
-		void *Buffer = (void *)Arg2;
-		size_t BufferSize = Arg3;
-
-		if (!Identifier || !Buffer || !BufferSize)
-			return SYSCALL_INVALID_ARGUMENT;
-
-		Execute::SharedLibrary lib = Execute::GetLibrary(Identifier);
-
-		if (!lib.MemoryImage)
-			return SYSCALL_INTERNAL_ERROR;
-
-		if (BufferSize < sizeof(lib.Path))
-			return SYSCALL_INVALID_ARGUMENT;
-
-		memcpy(Buffer, lib.Path, sizeof(lib.Path));
-		return SYSCALL_OK;
-	}
-	default:
-	{
-		warn("KernelCTL: Unknown command: %lld", Command);
-		return SYSCALL_INVALID_ARGUMENT;
-	}
-	}
-
-	UNUSED(Arg1);
 	UNUSED(Arg2);
 	UNUSED(Arg3);
 	UNUSED(Arg4);
-}
 
-static uint64_t sys_file_open(SysFrm *, const char *Path, uint64_t Flags)
-{
-	function("%s, %#lx", Path, Flags);
-	VirtualFileSystem::Node *cwd = nullptr;
-	if (vfs->PathIsRelative(Path))
-		cwd = TaskManager->GetCurrentProcess()->CurrentWorkingDirectory;
-	else
-		cwd = vfs->GetRootNode();
-
-	VirtualFileSystem::File KPObj = vfs->Open(Path, cwd);
-	if (!KPObj.IsOK())
+	switch (Command)
 	{
-		debug("Failed to open file %s (%d)", Path, KPObj.Status);
-		vfs->Close(KPObj);
-		return SYSCALL_INTERNAL_ERROR;
-	}
-
-	Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
-
-	constexpr size_t FileStructPages =
-		TO_PAGES(sizeof(VirtualFileSystem::File));
-
-	VirtualFileSystem::File *KernelPrivate =
-		(VirtualFileSystem::File *)MemMgr->RequestPages(FileStructPages);
-	*KernelPrivate = KPObj;
-	debug("Opened file %s (%d)", KPObj.Name, KPObj.Status);
-	return (uint64_t)KernelPrivate;
-	UNUSED(Flags);
-}
-
-static int sys_file_close(SysFrm *, void *KernelPrivate)
-{
-	function("%#lx", KernelPrivate);
-
-	if (KernelPrivate)
+	case KCTL_PRINT:
 	{
-		VirtualFileSystem::File KPObj = *(VirtualFileSystem::File *)KernelPrivate;
-		debug("Closed file %s (%d)", KPObj.Name, KPObj.Status);
-		vfs->Close(KPObj);
-		Memory::MemMgr *MemMgr = TaskManager->GetCurrentThread()->Memory;
-		MemMgr->FreePages(KernelPrivate,
-						  TO_PAGES(sizeof(VirtualFileSystem::File)));
-		return SYSCALL_OK;
+		SmartHeap sh(strlen((const char *)Arg1) + 1);
+		sh = Arg1;
+		KPrint(sh);
+		return 0;
 	}
-	return SYSCALL_INVALID_ARGUMENT;
+	case KCTL_GET_PAGE_SIZE:
+		return PAGE_SIZE;
+	case KCTL_IS_CRITICAL:
+		return thisThread->Security.IsCritical;
+	default:
+	{
+		warn("KernelCTL: Unknown command: %d", Command);
+		return -EINVAL;
+	}
+	}
 }
 
-static uint64_t sys_file_read(SysFrm *, void *KernelPrivate,
-							  uint8_t *Buffer, uint64_t Size)
+static int sys_file_open(SysFrm *, const char *Path,
+						 int Flags, mode_t Mode)
 {
-	if (KernelPrivate == nullptr)
-		return 0;
-
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)",
-		  KernelPrivate, Buffer, Size);
-
-	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
-	return vfs->Read(*KPObj, Buffer, (size_t)Size);
+	function("%s, %d, %d", Path, Flags, Mode);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_open(Path, Flags, Mode));
 }
 
-static uint64_t sys_file_write(SysFrm *, void *KernelPrivate,
-							   uint8_t *Buffer, uint64_t Size)
+static int sys_file_close(SysFrm *, int FileDescriptor)
 {
-	if (KernelPrivate == nullptr)
-		return 0;
-
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Buffer: %#lx, Size: %#lx)",
-		  KernelPrivate, Buffer, Size);
-
-	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
-	return vfs->Write(*KPObj, Buffer, (size_t)Size);
+	function("%d", FileDescriptor);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_close(FileDescriptor));
 }
 
-static off_t sys_file_seek(SysFrm *, void *KernelPrivate,
+static uint64_t sys_file_read(SysFrm *, int FileDescriptor,
+							  void *Buffer, size_t Count)
+{
+	function("%d, %p, %d", FileDescriptor, Buffer, Count);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_read(FileDescriptor, Buffer, Count));
+}
+
+static uint64_t sys_file_write(SysFrm *, int FileDescriptor,
+							   const void *Buffer, size_t Count)
+{
+	function("%d, %p, %d", FileDescriptor, Buffer, Count);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_write(FileDescriptor, Buffer, Count));
+}
+
+static off_t sys_file_seek(SysFrm *, int FileDescriptor,
 						   off_t Offset, int Whence)
 {
-	if (KernelPrivate == nullptr)
-		return 0;
-
-	debug("(KernelPrivate: %#lx, Offset: %#lx, Whence: %d)",
-		  KernelPrivate, Offset, Whence);
-
-	VirtualFileSystem::File *KPObj = (VirtualFileSystem::File *)KernelPrivate;
-	off_t ret = vfs->Seek(*KPObj, (off_t)Offset, (uint8_t)Whence);
-	debug("Seek %s %ld", KPObj->Name, ret);
-	return ret;
+	function("%d, %d, %d", FileDescriptor, Offset, Whence);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_lseek(FileDescriptor, Offset, Whence));
 }
 
-static int sys_file_status(SysFrm *)
+static int sys_file_status(SysFrm *, int FileDescriptor,
+						   struct stat *StatBuffer)
 {
-	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	function("%d", FileDescriptor);
+	PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_fstat(FileDescriptor, StatBuffer));
 }
 
 static int sys_ipc(SysFrm *, enum IPCCommand Command,
 				   enum IPCType Type, int ID, int Flags,
 				   void *Buffer, size_t Size)
 {
-	InterProcessCommunication::IPC *ipc = TaskManager->GetCurrentProcess()->IPC;
+	InterProcessCommunication::IPC *ipc = thisProcess->IPC;
 	return ipc->HandleSyscall(Command, Type, ID, Flags, Buffer, Size);
+}
+
+static long sys_local_thread_state(SysFrm *, int Code,
+								   unsigned long Address)
+{
+#if defined(a64) || defined(aa64)
+	switch (Code)
+	{
+	case LTS_SET_GS:
+	{
+		wrmsr(CPU::x64::MSR_GS_BASE, Address);
+		return 0;
+	}
+	case LTS_GET_GS:
+	{
+		return rdmsr(CPU::x64::MSR_GS_BASE);
+	}
+	case LTS_SET_FS:
+	{
+		wrmsr(CPU::x64::MSR_FS_BASE, Address);
+		return 0;
+	}
+	case LTS_GET_FS:
+	{
+		return rdmsr(CPU::x64::MSR_FS_BASE);
+	}
+	case LTS_SET_CPUID:
+	{
+		fixme("TLS_SET_CPUID");
+		return -ENOSYS;
+	}
+	case LTS_GET_CPUID:
+	{
+		fixme("TLS_GET_CPUID");
+		return -ENOSYS;
+	}
+	default:
+		return -EINVAL;
+	}
+#endif
+	return -ENOSYS;
 }
 
 static int sys_sleep(SysFrm *, uint64_t Milliseconds)
@@ -347,29 +270,31 @@ static int sys_sleep(SysFrm *, uint64_t Milliseconds)
 
 static int sys_fork(SysFrm *Frame)
 {
-	Tasking::PCB *Parent = TaskManager->GetCurrentThread()->Parent;
-	Tasking::TCB *Thread = TaskManager->GetCurrentThread();
+#ifdef a32
+	return -ENOSYS;
+#endif
+	PCB *Parent = thisThread->Parent;
+	TCB *Thread = thisThread;
 
 	void *ProcSymTable = nullptr;
 	if (Parent->ELFSymbolTable)
 		ProcSymTable = Parent->ELFSymbolTable->GetImage();
 
-	Tasking::PCB *NewProcess =
+	PCB *NewProcess =
 		TaskManager->CreateProcess(Parent,
 								   Parent->Name,
-								   Parent->Security.TrustLevel,
+								   Parent->Security.ExecutionMode,
 								   ProcSymTable);
 
 	if (!NewProcess)
 	{
 		error("Failed to create process for fork");
-		return SYSCALL_ERROR;
+		return -EAGAIN;
 	}
 
-	strncpy(NewProcess->Name, Parent->Name, sizeof(NewProcess->Name));
 	NewProcess->IPC->Fork(Parent->IPC);
 
-	Tasking::TCB *NewThread =
+	TCB *NewThread =
 		TaskManager->CreateThread(NewProcess,
 								  0,
 								  nullptr,
@@ -379,25 +304,26 @@ static int sys_fork(SysFrm *Frame)
 								  Thread->Info.Compatibility,
 								  true);
 
-	strncpy(NewThread->Name, Thread->Name, sizeof(Thread->Name));
+	NewThread->Rename(Thread->Name);
 
 	if (!NewThread)
 	{
 		error("Failed to create thread for fork");
-		return SYSCALL_ERROR;
+		return -EAGAIN;
 	}
 
 	static int RetChild = 0;
 	static uint64_t ReturnAddress = 0;
 	static uint64_t ChildStackPointer = 0;
 
-	TaskManager->Schedule();
+	TaskManager->UpdateFrame();
 
 	if (RetChild--)
 	{
 		/* We can't just return 0; because the
 			CPUData->SystemCallStack is no
 			longer valid */
+#if defined(a64) || defined(aa64)
 		asmv("movq %0, %%rcx\n"
 			 :
 			 : "r"(ReturnAddress));
@@ -411,6 +337,10 @@ static int sys_fork(SysFrm *Frame)
 		asmv("swapgs\n");		 /* Swap GS back to the user GS */
 		asmv("sti\n");			 /* Enable interrupts */
 		asmv("sysretq\n");		 /* Return to rcx address in user mode */
+#elif defined(a32)
+		UNUSED(ReturnAddress);
+		UNUSED(ChildStackPointer);
+#endif
 	}
 	RetChild = 1;
 	ReturnAddress = Frame->ReturnAddress;
@@ -424,19 +354,15 @@ static int sys_fork(SysFrm *Frame)
 	if (Thread->Security.IsCritical)
 		NewThread->SetCritical(true);
 
-	Tasking::Security *Sec = TaskManager->GetSecurityManager();
-	Sec->TrustToken(NewProcess->Security.UniqueToken,
-					(TTL)Sec->GetTokenTrustLevel(Parent->Security.UniqueToken));
-	Sec->TrustToken(NewThread->Security.UniqueToken,
-					(TTL)Sec->GetTokenTrustLevel(Thread->Security.UniqueToken));
-
 #ifdef a86
 	NewThread->ShadowGSBase = Thread->ShadowGSBase;
 	NewThread->GSBase = Thread->GSBase;
 	NewThread->FSBase = Thread->FSBase;
 #endif
 
-	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)", Thread->Name, Thread->ID, NewThread->Name, NewThread->ID);
+	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)",
+		  Thread->Name, Thread->ID,
+		  NewThread->Name, NewThread->ID);
 	NewThread->Status = Ready;
 	return (int)NewThread->ID;
 }
@@ -444,118 +370,106 @@ static int sys_fork(SysFrm *Frame)
 static int sys_wait(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_kill(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_spawn(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_spawn_thread(SysFrm *, uint64_t InstructionPointer)
 {
-	Tasking::TCB *thread =
-		TaskManager->CreateThread(TaskManager->GetCurrentProcess(),
-								  (Tasking::IP)InstructionPointer);
+	TCB *thread =
+		TaskManager->CreateThread(thisProcess,
+								  Tasking::IP(InstructionPointer));
 	if (thread)
 		return (int)thread->ID;
-	return SYSCALL_ERROR;
+	return -EAGAIN;
 }
 
 static int sys_get_thread_list_of_process(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_get_current_process(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_get_current_thread(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_get_current_process_id(SysFrm *)
 {
-	return (int)TaskManager->GetCurrentProcess()->ID;
+	return (int)thisProcess->ID;
 }
 
 static int sys_get_current_thread_id(SysFrm *)
 {
-	return (int)TaskManager->GetCurrentThread()->ID;
+	return (int)thisThread->ID;
 }
 
 static int sys_get_process_by_pid(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_get_thread_by_tid(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_kill_process(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_kill_thread(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_sys_reserved_create_process(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
 static int sys_sys_reserved_create_thread(SysFrm *)
 {
 	stub;
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 }
 
-struct SyscallData
-{
-	const char *Name;
-	void *Handler;
-	int TrustLevel;
-};
-
-static SyscallData NativeSyscallsTable[_MaxSyscall] = {
+static SyscallData NativeSyscallsTable[sys_MaxSyscall] = {
 	/**
 	 *
 	 * Basic syscalls
 	 *
 	 */
 
-	[_Exit] = {
+	[sys_Exit] = {
 		"Exit",
 		(void *)sys_exit,
-		TrustedByKernel | Trusted | Untrusted | UnknownTrustLevel,
-	},
-	[_Print] = {
-		"Print",
-		(void *)sys_print,
-		TrustedByKernel | Trusted,
+		UINT16_MAX,
 	},
 
 	/**
@@ -564,30 +478,30 @@ static SyscallData NativeSyscallsTable[_MaxSyscall] = {
 	 *
 	 */
 
-	[_RequestPages] = {
+	[sys_RequestPages] = {
 		"RequestPages",
 		(void *)sys_request_pages,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FreePages] = {
+	[sys_FreePages] = {
 		"FreePages",
 		(void *)sys_free_pages,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_DetachAddress] = {
+	[sys_DetachAddress] = {
 		"DetachAddress",
 		(void *)sys_detach_address,
-		TrustedByKernel | Trusted,
+		99,
 	},
-	[_MemoryMap] = {
+	[sys_MemoryMap] = {
 		"MemoryMap",
 		(void *)sys_memory_map,
-		TrustedByKernel,
+		99,
 	},
-	[_MemoryUnmap] = {
+	[sys_MemoryUnmap] = {
 		"MemoryUnmap",
 		(void *)sys_memory_unmap,
-		TrustedByKernel,
+		99,
 	},
 
 	/**
@@ -596,10 +510,10 @@ static SyscallData NativeSyscallsTable[_MaxSyscall] = {
 	 *
 	 */
 
-	[_KernelCTL] = {
+	[sys_KernelCTL] = {
 		"KernelCTL",
 		(void *)sys_kernelctl,
-		TrustedByKernel | Trusted | Untrusted,
+		99,
 	},
 
 	/**
@@ -608,35 +522,35 @@ static SyscallData NativeSyscallsTable[_MaxSyscall] = {
 	 *
 	 */
 
-	[_FileOpen] = {
+	[sys_FileOpen] = {
 		"FileOpen",
 		(void *)sys_file_open,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FileClose] = {
+	[sys_FileClose] = {
 		"FileClose",
 		(void *)sys_file_close,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FileRead] = {
+	[sys_FileRead] = {
 		"FileRead",
 		(void *)sys_file_read,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FileWrite] = {
+	[sys_FileWrite] = {
 		"FileWrite",
 		(void *)sys_file_write,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FileSeek] = {
+	[sys_FileSeek] = {
 		"FileSeek",
 		(void *)sys_file_seek,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_FileStatus] = {
+	[sys_FileStatus] = {
 		"FileStatus",
 		(void *)sys_file_status,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
 
 	/**
@@ -645,92 +559,97 @@ static SyscallData NativeSyscallsTable[_MaxSyscall] = {
 	 *
 	 */
 
-	[_IPC] = {
+	[sys_IPC] = {
 		"IPC",
 		(void *)sys_ipc,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_Sleep] = {
+	[sys_LocalThreadState] = {
+		"LocalThreadState",
+		(void *)sys_local_thread_state,
+		UINT16_MAX,
+	},
+	[sys_Sleep] = {
 		"Sleep",
 		(void *)sys_sleep,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_Fork] = {
+	[sys_Fork] = {
 		"Fork",
 		(void *)sys_fork,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_Wait] = {
+	[sys_Wait] = {
 		"Wait",
 		(void *)sys_wait,
 		0,
 	},
-	[_Kill] = {
+	[sys_Kill] = {
 		"Kill",
 		(void *)sys_kill,
 		0,
 	},
-	[_Spawn] = {
+	[sys_Spawn] = {
 		"Spawn",
 		(void *)sys_spawn,
 		0,
 	},
-	[_SpawnThread] = {
+	[sys_SpawnThread] = {
 		"SpawnThread",
 		(void *)sys_spawn_thread,
 		0,
 	},
-	[_GetThreadListOfProcess] = {
+	[sys_GetThreadListOfProcess] = {
 		"GetThreadListOfProcess",
 		(void *)sys_get_thread_list_of_process,
 		0,
 	},
-	[_GetCurrentProcess] = {
+	[sys_GetCurrentProcess] = {
 		"GetCurrentProcess",
 		(void *)sys_get_current_process,
 		0,
 	},
-	[_GetCurrentThread] = {
+	[sys_GetCurrentThread] = {
 		"GetCurrentThread",
 		(void *)sys_get_current_thread,
 		0,
 	},
-	[_GetCurrentProcessID] = {
+	[sys_GetCurrentProcessID] = {
 		"GetCurrentProcessID",
 		(void *)sys_get_current_process_id,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_GetCurrentThreadID] = {
+	[sys_GetCurrentThreadID] = {
 		"GetCurrentThreadID",
 		(void *)sys_get_current_thread_id,
-		TrustedByKernel | Trusted | Untrusted,
+		UINT16_MAX,
 	},
-	[_GetProcessByPID] = {
+	[sys_GetProcessByPID] = {
 		"GetProcessByPID",
 		(void *)sys_get_process_by_pid,
 		0,
 	},
-	[_GetThreadByTID] = {
+	[sys_GetThreadByTID] = {
 		"GetThreadByTID",
 		(void *)sys_get_thread_by_tid,
 		0,
 	},
-	[_KillProcess] = {
+	[sys_KillProcess] = {
 		"KillProcess",
 		(void *)sys_kill_process,
 		0,
 	},
-	[_KillThread] = {
+	[sys_KillThread] = {
 		"KillThread",
 		(void *)sys_kill_thread,
 		0,
 	},
-	[_SysReservedCreateProcess] = {
+	[sys_SysReservedCreateProcess] = {
 		"SysReservedCreateProcess",
 		(void *)sys_sys_reserved_create_process,
 		0,
 	},
-	[_SysReservedCreateThread] = {
+	[sys_SysReservedCreateThread] = {
 		"SysReservedCreateThread",
 		(void *)sys_sys_reserved_create_thread,
 		0,
@@ -740,10 +659,10 @@ static SyscallData NativeSyscallsTable[_MaxSyscall] = {
 uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 {
 #if defined(a64)
-	if (unlikely(Frame->rax > _MaxSyscall))
+	if (unlikely(Frame->rax > sys_MaxSyscall))
 	{
 		fixme("Syscall %ld not implemented.", Frame->rax);
-		return SYSCALL_NOT_IMPLEMENTED;
+		return -ENOSYS;
 	}
 
 	SyscallData Syscall = NativeSyscallsTable[Frame->rax];
@@ -754,28 +673,20 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 
 	if (unlikely(!call))
 	{
-		error("Syscall %#lx not implemented.", Frame->rax);
-		return SYSCALL_NOT_IMPLEMENTED;
+		error("Syscall %s(%d) not implemented.",
+			  Syscall.Name, Frame->rax);
+		return -ENOSYS;
 	}
 
-	Token token = TaskManager->GetCurrentThread()->Security.UniqueToken;
-	Tasking::Security *Sec = TaskManager->GetSecurityManager();
-	if (unlikely(!Sec->IsTokenTrusted(token, Syscall.TrustLevel)))
+	int euid = thisProcess->Security.Effective.UserID;
+	int egid = thisProcess->Security.Effective.GroupID;
+	int reqID = Syscall.RequiredID;
+	if (euid > reqID || egid > reqID)
 	{
-		warn("Thread %s(%d) tried to access a system call \"%s\" with insufficient trust level",
-			 TaskManager->GetCurrentThread()->Name,
-			 TaskManager->GetCurrentThread()->ID,
-			 Syscall.Name);
-
-#ifdef DEBUG
-		int TknTl = Sec->GetTokenTrustLevel(token);
-		debug("token=%#lx, trust=%d%d%d%d",token,
-		TknTl & TrustedByKernel ? 1 : 0,
-		TknTl & Trusted ? 1 : 0,
-		TknTl & Untrusted ? 1 : 0,
-		TknTl & UnknownTrustLevel ? 1 : 0);
-#endif
-		return SYSCALL_ACCESS_DENIED;
+		warn("Process %s(%d) tried to access a system call \"%s\" with insufficient privileges.",
+			 thisProcess->Name, thisProcess->ID, Syscall.Name);
+		debug("Required: %d; Effective u:%d, g:%d", reqID, euid, egid);
+		return -EPERM;
 	}
 
 	debug("[%d:\"%s\"]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
@@ -787,8 +698,8 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 				Frame->rdi, Frame->rsi, Frame->rdx,
 				Frame->r10, Frame->r8, Frame->r9);
 #elif defined(a32)
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 #elif defined(aa64)
-	return SYSCALL_NOT_IMPLEMENTED;
+	return -ENOSYS;
 #endif
 }

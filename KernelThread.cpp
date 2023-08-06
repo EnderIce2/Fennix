@@ -21,13 +21,14 @@
 #endif
 
 #include <filesystem/ustar.hpp>
+#include <kshell.hpp>
 #include <power.hpp>
 #include <lock.hpp>
 #include <printf.h>
 #include <exec.hpp>
 #include <cwalk.h>
+#include <vm.hpp>
 #include <vector>
-
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #define STBI_NO_LINEAR
@@ -39,21 +40,16 @@
 #include "DAPI.hpp"
 #include "Fex.hpp"
 
-using VirtualFileSystem::File;
-using VirtualFileSystem::FileStatus;
 using VirtualFileSystem::Node;
 using VirtualFileSystem::NodeFlags;
 
 Driver::Driver *DriverManager = nullptr;
 Disk::Manager *DiskManager = nullptr;
 NetworkInterfaceManager::NetworkInterface *NIManager = nullptr;
-Recovery::KernelRecovery *RecoveryScreen = nullptr;
 VirtualFileSystem::Node *DevFS = nullptr;
 VirtualFileSystem::Node *MntFS = nullptr;
 VirtualFileSystem::Node *ProcFS = nullptr;
 VirtualFileSystem::Node *VarLogFS = nullptr;
-
-NewLock(ShutdownLock);
 
 #ifdef DEBUG
 void TreeFS(Node *node, int Depth)
@@ -62,6 +58,7 @@ void TreeFS(Node *node, int Depth)
 	foreach (auto Chld in node->Children)
 	{
 		printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
+
 		if (!Config.BootAnimation)
 			Display->SetBuffer(0);
 		TaskManager->Sleep(100);
@@ -74,8 +71,8 @@ const char *Statuses[] = {
 	"AAFF00", /* Ready */
 	"00AA00", /* Running */
 	"FFAA00", /* Sleeping */
-	"FFAA00", /* Waiting */
-	"FF0088", /* Stopped */
+	"FFAA00", /* Blocked */
+	"FF0088", /* Zombie */
 	"FF0000", /* Terminated */
 };
 
@@ -135,14 +132,16 @@ static int ShowTaskManager = 0;
 
 void TaskMgr()
 {
-	TaskManager->GetCurrentThread()->Rename("Debug Task Manager");
-	TaskManager->GetCurrentThread()->SetPriority(Tasking::Low);
+	thisThread->Rename("Debug Task Manager");
+	thisThread->SetPriority(Tasking::Idle);
 
 	while (ShowTaskManager == 0)
 		CPU::Pause();
 
-	TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy100Usage)->Rename("Dummy 100% Usage");
-	TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr_Dummy0Usage)->Rename("Dummy 0% Usage");
+	thisThread->SetPriority(Tasking::Idle);
+
+	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr_Dummy100Usage))->Rename("Dummy 100% Usage");
+	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr_Dummy0Usage))->Rename("Dummy 0% Usage");
 
 	while (true)
 	{
@@ -169,7 +168,7 @@ void TaskMgr()
 		{
 			if (!Proc)
 				continue;
-			int Status = Proc->Status;
+			int Status = Proc->Status.load();
 			uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
 			printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
 				   Statuses[Status], Proc->Name, StatusesSign[Status], ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
@@ -178,7 +177,7 @@ void TaskMgr()
 			{
 				if (!Thd)
 					continue;
-				Status = Thd->Status;
+				Status = Thd->Status.load();
 				uint64_t ThreadCpuUsage = GetUsage(OldSystemTime, &Thd->Info);
 #if defined(a64)
 				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
@@ -213,49 +212,87 @@ void TaskMgr()
 	}
 }
 
-void TestSyscallsKernel()
+static int ShowOpenFiles = 0;
+
+void lsof()
 {
-	return;
-	KPrint("Testing syscalls...");
-	Tasking::PCB *SyscallsTestProcess = TaskManager->CreateProcess(TaskManager->GetCurrentProcess(),
-																   "Syscalls Test",
-																   Tasking::TaskTrustLevel::User,
-																   KernelSymbolTable);
+	thisThread->Rename("Debug File List");
+	thisThread->SetPriority(Tasking::Idle);
 
-	Tasking::TCB *SyscallsTestThread = TaskManager->CreateThread(SyscallsTestProcess,
-																 (Tasking::IP)TestSyscalls,
-																 nullptr,
-																 nullptr,
-																 std::vector<AuxiliaryVector>(),
-																 Tasking::TaskArchitecture::x64,
-																 Tasking::TaskCompatibility::Native,
-																 true);
-	SyscallsTestThread->SetCritical(true);
-	TaskManager->GetSecurityManager()->TrustToken(SyscallsTestThread->Security.UniqueToken, Tasking::TTL::FullTrust);
+	while (ShowOpenFiles == 0)
+		CPU::Pause();
 
-	Memory::Virtual vmm = Memory::Virtual(SyscallsTestProcess->PageTable);
+	thisThread->SetPriority(Tasking::High);
 
-	// vmm.Remap((void *)TestSyscalls, vmm.GetPhysical((void *)TestSyscalls), Memory::P | Memory::RW | Memory::US);
+	vfs->Create("/dummy_lsof_file", NodeFlags::FILE);
+	fopen("/dummy_lsof_file", "r");
 
-	// for (uintptr_t k = (uintptr_t)&_kernel_start; k < (uintptr_t)&_kernel_end; k += PAGE_SIZE)
-	// {
-	//     vmm.Remap((void *)k, (void *)vmm.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
-	//     debug("Remapped %#lx %#lx", k, vmm.GetPhysical((void *)k));
-	// }
-
-	for (uintptr_t k = (uintptr_t)TestSyscalls - PAGE_SIZE; k < (uintptr_t)TestSyscalls + FROM_PAGES(5); k += PAGE_SIZE)
+	while (true)
 	{
-		vmm.Remap((void *)k, (void *)vmm.GetPhysical((void *)k), Memory::P | Memory::RW | Memory::US);
-		debug("Remapped %#lx %#lx", k, vmm.GetPhysical((void *)k));
-	}
+		while (ShowOpenFiles == 0)
+			CPU::Pause();
 
-	SyscallsTestThread->Status = Tasking::TaskStatus::Ready;
-	TaskManager->WaitForThread(SyscallsTestThread);
-	KPrint("Test complete");
+		Video::ScreenBuffer *sb = Display->GetBuffer(0);
+		for (short i = 0; i < 500; i++)
+		{
+			for (short j = 0; j < 500; j++)
+			{
+				uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
+				*Pixel = 0x222222;
+			}
+		}
+
+		uint32_t tmpX, tmpY;
+		Display->GetBufferCursor(0, &tmpX, &tmpY);
+		Display->SetBufferCursor(0, 0, 0);
+		printf("\eF02C21Open Files (%ld):\e00AAAA\n",
+			   TaskManager->GetProcessList().size());
+		foreach (auto Proc in TaskManager->GetProcessList())
+		{
+			if (!Proc)
+				continue;
+
+			printf("%s:\n", Proc->Name);
+
+			std::vector<VirtualFileSystem::FileDescriptorTable::FileDescriptor> fds_array = Proc->FileDescriptors->GetFileDescriptors();
+			foreach (auto fd in fds_array)
+				printf("  %d: %s\n", fd.Descriptor, fd.Handle->AbsolutePath.c_str());
+		}
+		Display->SetBufferCursor(0, tmpX, tmpY);
+		if (!Config.BootAnimation)
+			Display->SetBuffer(0);
+	}
+}
+
+#include <mutex>
+std::mutex test_mutex;
+
+void mutex_test_long()
+{
+	while (true)
+	{
+		test_mutex.lock();
+		debug("Long Thread %d got mutex",
+			  thisThread->ID);
+		// TaskManager->Sleep(2000);
+		test_mutex.unlock();
+	}
+}
+
+void mutex_test()
+{
+	while (true)
+	{
+		test_mutex.lock();
+		debug("Thread %d got mutex",
+			  thisThread->ID);
+		// TaskManager->Sleep(200);
+		test_mutex.unlock();
+	}
 }
 #endif
 
-Execute::SpawnData SpawnInit()
+int SpawnInit()
 {
 	const char *envp[5] = {
 		"PATH=/bin:/usr/bin",
@@ -284,18 +321,17 @@ void BootLogoAnimationThread()
 	while (FrameCount < 27)
 	{
 		sprintf(BootAnimPath, "/etc/boot/%ld.tga", FrameCount);
-		File ba = vfs->Open(BootAnimPath);
-		if (!ba.IsOK())
+		RefNode *frame = vfs->Open(BootAnimPath);
+		if (!frame)
 		{
-			vfs->Close(ba);
 			debug("Failed to load boot animation frame %s", BootAnimPath);
 			break;
 		}
 
-		FrameSizes[FrameCount] = s_cst(uint32_t, ba.GetLength());
-		Frames[FrameCount] = new uint8_t[ba.GetLength()];
-		vfs->Read(ba, Frames[FrameCount], ba.GetLength());
-		vfs->Close(ba);
+		FrameSizes[FrameCount] = s_cst(uint32_t, frame->Length);
+		Frames[FrameCount] = new uint8_t[frame->Length];
+		frame->Read(Frames[FrameCount], frame->Length);
+		delete frame;
 		FrameCount++;
 	}
 
@@ -306,10 +342,13 @@ void BootLogoAnimationThread()
 	{
 		int x, y, channels;
 
-		if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
+		if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i],
+								   &x, &y, &channels))
 			continue;
 
-		uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, STBI_rgb_alpha);
+		uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i],
+											 FrameSizes[i], &x, &y,
+											 &channels, STBI_rgb_alpha);
 
 		if (img == NULL)
 			continue;
@@ -332,7 +371,8 @@ void BootLogoAnimationThread()
 				b = (b * a) / 0xFF;
 			}
 
-			Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
+			Display->SetPixel((i % x) + offsetX, (i / x) + offsetY,
+							  (r << 16) | (g << 8) | (b << 0), 1);
 		}
 
 		free(img);
@@ -359,14 +399,17 @@ void ExitLogoAnimationThread()
 	uint32_t DispX = Display->GetBuffer(1)->Width;
 	uint32_t DispY = Display->GetBuffer(1)->Height;
 
-	for (size_t i = 40; i > 25; i--)
+	for (size_t i = FrameCount - 1; i > 0; i--)
 	{
 		int x, y, channels;
 
-		if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels))
+		if (!stbi_info_from_memory((uint8_t *)Frames[i], FrameSizes[i],
+								   &x, &y, &channels))
 			continue;
 
-		uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i], FrameSizes[i], &x, &y, &channels, STBI_rgb_alpha);
+		uint8_t *img = stbi_load_from_memory((uint8_t *)Frames[i],
+											 FrameSizes[i], &x, &y,
+											 &channels, STBI_rgb_alpha);
 
 		if (img == NULL)
 			continue;
@@ -389,7 +432,8 @@ void ExitLogoAnimationThread()
 				b = (b * a) / 0xFF;
 			}
 
-			Display->SetPixel((i % x) + offsetX, (i / x) + offsetY, (r << 16) | (g << 8) | (b << 0), 1);
+			Display->SetPixel((i % x) + offsetX, (i / x) + offsetY,
+							  (r << 16) | (g << 8) | (b << 0), 1);
 		}
 
 		free(img);
@@ -411,27 +455,48 @@ void CleanupProcessesThreadWrapper() { TaskManager->CleanupProcessesThread(); }
 
 void KernelMainThread()
 {
-	Tasking::TCB *clnThd = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CleanupProcessesThreadWrapper);
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test_long));
+	// TaskManager->Yield();
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// TaskManager->CreateThread(thisProcess, Tasking::IP(mutex_test));
+	// ilp;
+
+	Tasking::TCB *clnThd =
+		TaskManager->CreateThread(thisProcess,
+								  Tasking::IP(CleanupProcessesThreadWrapper));
 	clnThd->SetPriority(Tasking::Idle);
 	TaskManager->SetCleanupThread(clnThd);
-	TaskManager->GetCurrentThread()->SetPriority(Tasking::Critical);
+	thisThread->SetPriority(Tasking::Critical);
 
 	Tasking::TCB *blaThread = nullptr;
 
 	if (Config.BootAnimation)
 	{
-		blaThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)BootLogoAnimationThread);
+		blaThread =
+			TaskManager->CreateThread(thisProcess,
+									  Tasking::IP(BootLogoAnimationThread));
 		blaThread->Rename("Logo Animation");
 	}
 
 #ifdef DEBUG
-	TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)TaskMgr);
+	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr));
+	TaskManager->CreateThread(thisProcess, Tasking::IP(lsof));
 	TreeFS(vfs->GetRootNode(), 0);
-	TestSyscallsKernel();
 #endif
 
-	KPrint("Kernel Compiled at: %s %s with C++ Standard: %d", __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
+	KPrint("Kernel Compiled at: %s %s with C++ Standard: %d",
+		   __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
 	KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
+
+	if (IsVirtualizedEnvironment())
+		KPrint("Running in Virtualized Environment");
 
 	KPrint("Initializing Disk Manager...");
 	DiskManager = new Disk::Manager;
@@ -455,47 +520,23 @@ void KernelMainThread()
 	KPrint("Starting Network Interface Manager...");
 	NIManager->StartService();
 
-	printf("\eCCCCCC[\e00AEFFKernel Thread\eCCCCCC] Setting up userspace");
-	if (!Config.BootAnimation)
-		Display->SetBuffer(0);
-
-	Execute::SpawnData ret = {Execute::ExStatus::Unknown, nullptr, nullptr};
-	Tasking::TCB *ExecuteThread = nullptr;
+	KPrint("Setting up userspace");
 	int ExitCode = -1;
-	ExecuteThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)Execute::LibraryManagerService);
-	ExecuteThread->Rename("Library Manager");
-	ExecuteThread->SetCritical(true);
-	ExecuteThread->SetPriority(Tasking::Idle);
-
-	Display->Print('.', 0);
-	if (!Config.BootAnimation)
-		Display->SetBuffer(0);
-
-	ret = SpawnInit();
-
-	Display->Print('.', 0);
-	if (!Config.BootAnimation)
-		Display->SetBuffer(0);
-
-	if (ret.Status != Execute::ExStatus::OK)
+	Tasking::TCB *initThread = nullptr;
+	int tid = SpawnInit();
+	if (tid < 0)
 	{
-		KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, ret.Status);
+		KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, tid);
 		goto Exit;
 	}
-	ret.Thread->SetCritical(true);
-	TaskManager->GetSecurityManager()->TrustToken(ret.Process->Security.UniqueToken, Tasking::TTL::FullTrust);
-	TaskManager->GetSecurityManager()->TrustToken(ret.Thread->Security.UniqueToken, Tasking::TTL::FullTrust);
 
-	Display->Print('.', 0);
-	Display->Print('\n', 0);
-	if (!Config.BootAnimation)
-		Display->SetBuffer(0);
-
+	initThread = TaskManager->GetThreadByID(tid);
+	initThread->SetCritical(true);
 	KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
-	TaskManager->GetCurrentThread()->SetPriority(Tasking::Idle);
+	thisThread->SetPriority(Tasking::Idle);
 
-	TaskManager->WaitForThread(ret.Thread);
-	ExitCode = ret.Thread->GetExitCode();
+	TaskManager->WaitForThread(initThread);
+	ExitCode = initThread->GetExitCode();
 Exit:
 	if (ExitCode == 0)
 	{
@@ -505,25 +546,27 @@ Exit:
 		CPU::Halt(true);
 	}
 
-	KPrint("\eE85230Userspace process exited with code %d (%#x)", ExitCode,
-		   ExitCode < 0 ? -ExitCode : ExitCode);
-	KPrint("Dropping to recovery screen...");
-	TaskManager->Sleep(2500);
+	KPrint("\eE85230Userspace process exited with code %d (%#x)",
+		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
+	KPrint("Dropping to kernel shell...");
+	TaskManager->Sleep(1000);
 	TaskManager->WaitForThread(blaThread);
-	RecoveryScreen = new Recovery::KernelRecovery;
+	TaskManager->CreateThread(thisProcess,
+							  Tasking::IP(KShellThread))
+		->Rename("Kernel Shell");
 	CPU::Halt(true);
 }
 
+NewLock(ShutdownLock);
 void __no_stack_protector KernelShutdownThread(bool Reboot)
 {
 	SmartLock(ShutdownLock);
 	debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");
 	if (Config.BootAnimation && TaskManager)
 	{
-		if (RecoveryScreen)
-			delete RecoveryScreen, RecoveryScreen = nullptr;
-
-		Tasking::TCB *elaThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)ExitLogoAnimationThread);
+		Tasking::TCB *elaThread =
+			TaskManager->CreateThread(thisProcess,
+									  Tasking::IP(ExitLogoAnimationThread));
 		elaThread->Rename("Logo Animation");
 		TaskManager->WaitForThread(elaThread);
 	}

@@ -18,6 +18,7 @@
 #include <types.h>
 
 #include <memory.hpp>
+#include <elf.h>
 #include <io.h>
 
 #include "multiboot2.h"
@@ -50,7 +51,6 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 		if (tmp != (tmp | 3))
 			outb(0x61, tmp | 3);
 
-		int pos = 0;
 		auto InfoAddress = Info;
 		for (auto Tag = (struct multiboot_tag *)((uint8_t *)InfoAddress + 8);
 			 ;
@@ -220,7 +220,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 				mb2binfo.Kernel.Symbols.Num = elf->num;
 				mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
 				mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
-				mb2binfo.Kernel.Symbols.Sections = (uintptr_t)&elf->sections;
+				mb2binfo.Kernel.Symbols.Sections = r_cst(uintptr_t, elf->sections);
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_APM:

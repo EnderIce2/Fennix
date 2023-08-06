@@ -29,111 +29,102 @@
 
 namespace Power
 {
-    void Power::Reboot()
-    {
-        if (((ACPI::ACPI *)this->acpi)->FADT)
-            if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
-                ((ACPI::DSDT *)this->dsdt)->Reboot();
+	void Power::Reboot()
+	{
+		if (((ACPI::ACPI *)this->acpi)->FADT)
+			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
+				((ACPI::DSDT *)this->dsdt)->Reboot();
 
-        uint8_t val = 0x02;
-        while (val & 0x02)
-            val = inb(0x64);
-        outb(0x64, 0xFE);
+		uint8_t val = 0x02;
+		while (val & 0x02)
+			val = inb(0x64);
+		outb(0x64, 0xFE);
 
-        warn("Executing the second attempt to reboot...");
+		warn("Executing the second attempt to reboot...");
 
-        // second attempt to reboot
-        // https://wiki.osdev.org/Reboot
-        uint8_t temp;
-        asmv("cli");
-        do
-        {
-            temp = inb(0x64);
-            if (((temp) & (1 << (0))) != 0)
-                inb(0x60);
-        } while (((temp) & (1 << (1))) != 0);
-        outb(0x64, 0xFE);
+		// https://wiki.osdev.org/Reboot
+		/* Second attempt to reboot */
+		asmv("cli");
+		uint8_t temp;
+		do
+		{
+			temp = inb(0x64);
+			if (((temp) & (1 << (0))) != 0)
+				inb(0x60);
+		} while (((temp) & (1 << (1))) != 0);
+		outb(0x64, 0xFE);
 
-        CPU::Stop();
-    }
+		CPU::Stop();
+	}
 
-    void Power::Shutdown()
-    {
-        if (((ACPI::ACPI *)this->acpi)->FADT)
-            if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
-                ((ACPI::DSDT *)this->dsdt)->Shutdown();
+	void Power::Shutdown()
+	{
+		if (((ACPI::ACPI *)this->acpi)->FADT)
+			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
+				((ACPI::DSDT *)this->dsdt)->Shutdown();
+				/* TODO: If no ACPI, display "It is now safe to turn off your computer" */
 
-        outl(0xB004, 0x2000); // for qemu
-        outl(0x604, 0x2000);  // if qemu not working, bochs and older versions of qemu
-        outl(0x4004, 0x3400); // virtual box
-        CPU::Stop();
-    }
+				/* FIXME: Detect emulators and use their shutdown methods */
+#ifdef DEBUG
+		outl(0xB004, 0x2000); // for qemu
+		outl(0x604, 0x2000);  // if qemu not working, bochs and older versions of qemu
+		outl(0x4004, 0x3400); // virtual box
+#endif
+		CPU::Stop();
+	}
 
-    void Power::InitDSDT()
-    {
-        if (((ACPI::ACPI *)this->acpi)->FADT)
-            this->dsdt = new ACPI::DSDT((ACPI::ACPI *)acpi);
-    }
+	void Power::InitDSDT()
+	{
+		if (((ACPI::ACPI *)this->acpi)->FADT)
+			this->dsdt = new ACPI::DSDT((ACPI::ACPI *)acpi);
+	}
 
-    Power::Power()
-    {
-        this->acpi = new ACPI::ACPI;
-        this->madt = new ACPI::MADT(((ACPI::ACPI *)acpi)->MADT);
-        trace("Power manager initialized");
-    }
-
-    Power::~Power()
-    {
-        debug("Destructor called");
-    }
+	Power::Power()
+	{
+		this->acpi = new ACPI::ACPI;
+		this->madt = new ACPI::MADT(((ACPI::ACPI *)acpi)->MADT);
+		trace("Power manager initialized");
+	}
 }
 
 #elif defined(a32)
 
 namespace Power
 {
-    void Power::Reboot()
-    {
-        warn("Reboot not implemented for i386");
-    }
+	void Power::Reboot()
+	{
+		warn("Reboot not implemented for i386");
+	}
 
-    void Power::Shutdown()
-    {
-        warn("Shutdown not implemented for i386");
-    }
+	void Power::Shutdown()
+	{
+		warn("Shutdown not implemented for i386");
+	}
 
-    Power::Power()
-    {
-        error("Power not implemented for i386");
-    }
-
-    Power::~Power()
-    {
-    }
+	Power::Power()
+	{
+		error("Power not implemented for i386");
+	}
 }
 
 #elif defined(aa64)
 
 namespace Power
 {
-    void Power::Reboot()
-    {
-        warn("Reboot not implemented for aarch64");
-    }
+	void Power::Reboot()
+	{
+		warn("Reboot not implemented for aarch64");
+	}
 
-    void Power::Shutdown()
-    {
-        warn("Shutdown not implemented for aarch64");
-    }
+	void Power::Shutdown()
+	{
+		warn("Shutdown not implemented for aarch64");
+	}
 
-    Power::Power()
-    {
-        error("Power not implemented for aarch64");
-    }
-
-    Power::~Power()
-    {
-    }
+	Power::Power()
+	{
+		error("Power not implemented for aarch64");
+	}
 }
 
 #endif

@@ -20,31 +20,31 @@
 
 #include <debug.h>
 
-#define assert(x)                                                                                                    \
-    do                                                                                                               \
-    {                                                                                                                \
-        if (!(x))                                                                                                    \
-        {                                                                                                            \
-            void *CallerAddress = __builtin_extract_return_addr(__builtin_return_address(0));                        \
-            error("Assertion failed! [%s] [%#lx => %s:%s:%d]", #x, CallerAddress, __FILE__, __FUNCTION__, __LINE__); \
-            while (1)                                                                                                \
-                ;                                                                                                    \
-        }                                                                                                            \
-    } while (0)
+#define assert(x)                                        \
+	do                                                   \
+	{                                                    \
+		if (!(x))                                        \
+		{                                                \
+			error("Assertion failed! [%s] [%s:%s:%d]",   \
+				  #x, __FILE__, __FUNCTION__, __LINE__); \
+			int3;                                        \
+			while (true)                                 \
+				;                                        \
+		}                                                \
+	} while (0)
 
-#define assert_allow_continue(x)                                                                                     \
-    do                                                                                                               \
-    {                                                                                                                \
-        if (!(x))                                                                                                    \
-        {                                                                                                            \
-            void *CallerAddress = __builtin_extract_return_addr(__builtin_return_address(0));                        \
-            error("Assertion failed! [%s] [%#lx => %s:%s:%d]", #x, CallerAddress, __FILE__, __FUNCTION__, __LINE__); \
-        }                                                                                                            \
-    } while (0)
+#define assert_allow_continue(x)                         \
+	do                                                   \
+	{                                                    \
+		if (!(x))                                        \
+		{                                                \
+			error("Assertion failed! [%s] [%s:%s:%d]",   \
+				  #x, __FILE__, __FUNCTION__, __LINE__); \
+		}                                                \
+	} while (0)
 
-#define static_assert(x) \
-    switch (x)           \
-    case 0:              \
-    case (x):
+#if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
+#define static_assert _Static_assert
+#endif
 
 #endif // !__FENNIX_KERNEL_ASSERT_H__

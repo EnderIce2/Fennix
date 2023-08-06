@@ -212,7 +212,7 @@ namespace AudioCodec97
 			}
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			Data->AudioCallback.Fetch.Volume = (unsigned char)((inw(BAR.MixerAddress + NAM_MasterVolume) & 0x3F) * 100 / 0x3F);
 			Data->AudioCallback.Fetch.Encoding = Encoding; /* FIXME */

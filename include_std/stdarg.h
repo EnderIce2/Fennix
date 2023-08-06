@@ -20,6 +20,4 @@
 
 #include <types.h>
 
-
-
 #endif // !__FENNIX_KERNEL_STDARG_H__

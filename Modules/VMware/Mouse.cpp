@@ -5,6 +5,7 @@
 
 #include "../../DAPI.hpp"
 #include "../drv.hpp"
+#include "../../kernel.h"
 
 /* https://wiki.osdev.org/VMware_tools */
 
@@ -129,6 +130,8 @@ namespace VMwareMouse
 	int MouseX = 0, MouseY = 0, MouseZ = 0;
 	int MouseButton = 0;
 
+	bool InputReceived = false;
+
 	int CallbackHandler(KernelCallback *Data)
 	{
 		switch (Data->Reason)
@@ -156,8 +159,22 @@ namespace VMwareMouse
 			trace("VMware mouse configured.");
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
+			Data->InputCallback.Mouse.X = (MouseX * KAPI.Display.GetWidth()) / 0xFFFF;
+			Data->InputCallback.Mouse.Y = (MouseY * KAPI.Display.GetHeight()) / 0xFFFF;
+			Data->InputCallback.Mouse.Z = MouseZ;
+			Data->InputCallback.Mouse.Buttons.Left = MouseButton & 0x20;
+			Data->InputCallback.Mouse.Buttons.Right = MouseButton & 0x10;
+			Data->InputCallback.Mouse.Buttons.Middle = MouseButton & 0x08;
+			break;
+		}
+		case PollWaitReason:
+		{
+			while (!InputReceived)
+				TaskManager->Yield();
+			InputReceived = false;
+
 			Data->InputCallback.Mouse.X = (MouseX * KAPI.Display.GetWidth()) / 0xFFFF;
 			Data->InputCallback.Mouse.Y = (MouseY * KAPI.Display.GetHeight()) / 0xFFFF;
 			Data->InputCallback.Mouse.Z = MouseZ;
@@ -220,6 +237,7 @@ namespace VMwareMouse
 		MouseX = cmd.bx;                 /* Both X and Y are scaled from 0 to 0xFFFF */
 		MouseY = cmd.cx;                 /* You should map these somewhere to the actual resolution. */
 		MouseZ = (int8_t)cmd.dx;         /* Z is a single signed byte indicating scroll direction. */
+		InputReceived = true;
 		return OK;
 	}
 }

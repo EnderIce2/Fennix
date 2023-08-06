@@ -38,7 +38,7 @@ namespace NetworkInterfaceManager
 
 	NetworkInterface::NetworkInterface()
 	{
-		mem = new Memory::MemMgr(nullptr, TaskManager->GetCurrentProcess()->memDirectory);
+		mem = new Memory::MemMgr(nullptr, thisProcess->memDirectory);
 		if (DriverManager->GetDrivers().size() > 0)
 		{
 			foreach (auto Driver in DriverManager->GetDrivers())
@@ -61,14 +61,8 @@ namespace NetworkInterfaceManager
 		// Unregister all events
 		RegisteredEvents.clear();
 
-		foreach (auto inf in Interfaces)
-		{
-			if (inf)
-			{
-				Interfaces.remove(inf);
-				delete inf, inf = nullptr;
-			}
-		}
+		forItr(itr, Interfaces) delete *itr;
+		Interfaces.clear();
 
 		// Delete all interfaces and their callbacks and free the memory
 		delete mem, mem = nullptr;
@@ -77,7 +71,7 @@ namespace NetworkInterfaceManager
 	void NetworkInterface::FetchNetworkCards(unsigned long DriverUID)
 	{
 		KernelCallback cb{};
-		cb.Reason = FetchReason;
+		cb.Reason = QueryReason;
 		DriverManager->IOCB(DriverUID, &cb);
 
 		DeviceInterface *Iface = (DeviceInterface *)mem->RequestPages(TO_PAGES(sizeof(DeviceInterface) + 1));
@@ -101,7 +95,7 @@ namespace NetworkInterfaceManager
 
 	void NetworkInterface::StartNetworkStack()
 	{
-		TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Critical);
+		thisThread->SetPriority(Tasking::TaskPriority::Critical);
 		DeviceInterface *DefaultDevice = nullptr;
 		foreach (auto inf in Interfaces)
 			if (inf)
@@ -121,7 +115,8 @@ namespace NetworkInterfaceManager
 			NetworkUDP::UDP *udp = new NetworkUDP::UDP(ipv4, DefaultDevice);
 			NetworkUDP::Socket *DHCP_Socket = udp->Connect(InternetProtocol() /* Default value is 255.255.255.255 */, 67);
 			NetworkDHCP::DHCP *dhcp = new NetworkDHCP::DHCP(DHCP_Socket, DefaultDevice);
-			debug("eth: %p; arp: %p; ipv4: %p; udp: %p; dhcp: %p", eth, arp, ipv4, udp, dhcp);
+			debug("eth: %p; arp: %p; ipv4: %p; udp: %p; dhcp: %p",
+				  eth, arp, ipv4, udp, dhcp);
 			udp->Bind(DHCP_Socket, dhcp);
 			dhcp->Request();
 
@@ -159,7 +154,7 @@ namespace NetworkInterfaceManager
 			/* TODO: Store everything in an vector and initialize all network cards */
 		}
 
-		TaskManager->GetCurrentThread()->SetPriority(Tasking::TaskPriority::Idle);
+		thisThread->SetPriority(Tasking::TaskPriority::Idle);
 		CPU::Halt(true);
 	}
 
@@ -172,7 +167,7 @@ namespace NetworkInterfaceManager
 
 	void NetworkInterface::StartService()
 	{
-		this->NetSvcThread = TaskManager->CreateThread(TaskManager->GetCurrentProcess(), (Tasking::IP)CallStartNetworkStackWrapper);
+		this->NetSvcThread = TaskManager->CreateThread(thisProcess, Tasking::IP(CallStartNetworkStackWrapper));
 		this->NetSvcThread->Rename("Network Service");
 	}
 
@@ -220,11 +215,13 @@ namespace NetworkInterfaceManager
 
 	Events::~Events()
 	{
-		for (size_t i = 0; i < RegisteredEvents.size(); i++)
-			if (RegisteredEvents[i] == this)
+		forItr(itr, RegisteredEvents)
+		{
+			if (*itr == this)
 			{
-				RegisteredEvents.remove(i);
-				return;
+				RegisteredEvents.erase(itr);
+				break;
 			}
+		}
 	}
 }

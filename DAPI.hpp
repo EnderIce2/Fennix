@@ -34,7 +34,7 @@
 #define __FENNIX_DRIVER_API_H__
 
 /**
- * @brief The driver API is a set of functions that the kernel provides to the drivers.
+ * The driver API is a set of functions that the kernel provides to the drivers.
  *
  * - The driver is responsible for the memory management.
  * - The kernel will NOT free any memory allocated by the driver. On @see StopReason the driver must free all the memory it allocated and disable the hardware it uses.
@@ -115,14 +115,14 @@ struct KernelAPI
 
 	struct KAPIDriverTalk
 	{
-		/** @brief Connects to the network manager */
+		/** Connects to the network manager */
 		struct
 		{
 			void (*SendPacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
 			void (*ReceivePacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
 		} Network;
 
-		/** @brief Connects to the disk manager */
+		/** Connects to the disk manager */
 		struct
 		{
 			struct
@@ -144,24 +144,24 @@ struct KernelAPI
 enum CallbackReason
 {
 	/**
-	 * @brief This is used to detect memory corruption, not used.
+	 * This is used to detect memory corruption, not used.
 	 */
 	UnknownReason,
 
 	/**
-	 * @brief This is called once the kernel is ready to use the driver and call @see ConfigurationReason .
+	 * This is called once the kernel is ready to use the driver and call @see ConfigurationReason .
 	 */
 	AcknowledgeReason,
 
 	/**
-	 * @brief This is used after the driver is loaded and the kernel is ready to use the driver.
+	 * This is used after the driver is loaded and the kernel is ready to use the driver.
 	 *
 	 * For PCI drivers, @see RawPtr will be the PCI device address.
 	 */
 	ConfigurationReason,
 
 	/**
-	 * @brief This is used when the kernel wants to stop the driver.
+	 * This is used when the kernel wants to stop the driver.
 	 *
 	 * The memory allocated by the driver will be freed automatically.
 	 */
@@ -175,7 +175,7 @@ enum CallbackReason
 	/* Driver callbacks for basic usage. */
 
 	/**
-	 * @brief This is used when the kernel sends data.
+	 * This is used when the kernel sends data.
 	 *
 	 * - Network
 	 *   - Packet
@@ -185,13 +185,13 @@ enum CallbackReason
 	SendReason,
 
 	/**
-	 * @brief This is used when the kernel wants to receive data.
+	 * This is used when the kernel wants to receive data.
 	 * Currently not used.
 	 */
 	ReceiveReason,
 
 	/**
-	 * @brief This is used to adjust driver settings.
+	 * This is used to adjust driver settings.
 	 *
 	 * - Audio
 	 *   - Volume
@@ -200,7 +200,7 @@ enum CallbackReason
 	AdjustReason,
 
 	/**
-	 * @brief This is used when the kernel wants to fetch information about the driver.
+	 * This is used when the kernel wants to query information about the driver.
 	 *
 	 * - Input
 	 *   - Mouse
@@ -209,7 +209,19 @@ enum CallbackReason
 	 *   - Keyboard
 	 *     - Key
 	 */
-	FetchReason,
+	QueryReason,
+
+	/**
+	 * This is used when the kernel wants to wait for an event.
+	 *
+	 * - Input
+	 *   - Mouse
+	 *     - Position
+	 *     - Buttons
+	 *   - Keyboard
+	 *     - Key
+	 */
+	PollWaitReason,
 };
 
 union KernelCallback
@@ -220,7 +232,7 @@ union KernelCallback
 		void *RawPtr;
 		unsigned long RawData;
 
-		/** @brief When the kernel wants to send a packet. */
+		/** When the kernel wants to send a packet. */
 		struct
 		{
 			struct
@@ -236,7 +248,7 @@ union KernelCallback
 			} Fetch;
 		} NetworkCallback;
 
-		/** @brief When the kernel wants to write to disk. */
+		/** When the kernel wants to write to disk. */
 		struct
 		{
 			struct
@@ -255,7 +267,7 @@ union KernelCallback
 			} Fetch;
 		} DiskCallback;
 
-		/** @brief When the kernel wants to get mouse position / keyboard key */
+		/** When the kernel wants to get mouse position / keyboard key */
 		struct
 		{
 			struct
@@ -270,6 +282,16 @@ union KernelCallback
 					bool Middle;
 				} Buttons;
 			} Mouse;
+
+			struct
+			{
+				/**
+				 * The key.
+				 * 
+				 * @note This is a scancode, not a character.
+				 */
+				unsigned char Key;
+			} Keyboard;
 		} InputCallback;
 
 		struct
@@ -282,14 +304,14 @@ union KernelCallback
 				bool _Channels;
 
 				/**
-				 * @brief Adjust the volume.
+				 * Adjust the volume.
 				 *
 				 * 0 - 100
 				 */
 				unsigned char Volume;
 
 				/**
-				 * @brief Adjust the encoding.
+				 * Adjust the encoding.
 				 *
 				 * 0 - None, use default
 				 *
@@ -330,7 +352,7 @@ union KernelCallback
 				unsigned short Encoding;
 
 				/**
-				 * @brief Adjust the sample rate.
+				 * Adjust the sample rate.
 				 *
 				 * 0 - 8000 Hz
 				 * 1 - 11025 Hz
@@ -345,7 +367,7 @@ union KernelCallback
 				unsigned char SampleRate;
 
 				/**
-				 * @brief Adjust the channels.
+				 * Adjust the channels.
 				 *
 				 * 0 - Mono
 				 * 1 - Stereo

@@ -22,6 +22,16 @@
 #include <assert.h>
 #include <debug.h>
 
+#include <filesystem.hpp>
+#include "../syscalls.h"
+
+void TestSeekMacros() /* static assert, no constructor needed */
+{
+    static_assert(SYSCALL_SEEK_SET == SEEK_SET);
+    static_assert(SYSCALL_SEEK_CUR == SEEK_CUR);
+    static_assert(SYSCALL_SEEK_END == SEEK_END);
+}
+
 __constructor void TestMacros()
 {
     {

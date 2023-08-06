@@ -19,9 +19,15 @@
 
 #include <types.h>
 #include <debug.h>
+#include <atomic>
+
+#include "../../kernel.h"
+
+__aligned(16) static int errno_value = 0;
 
 int *__errno_location(void)
 {
-    fixme("errno_location() is not implemented yet!");
-    return nullptr;
+	if (unlikely(!TaskManager || !thisThread))
+		return &errno_value;
+	return &thisThread->ErrorNumber;
 }

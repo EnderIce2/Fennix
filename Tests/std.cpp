@@ -19,18 +19,51 @@
 
 #include <std.hpp>
 #include <assert.h>
+#include <vector>
 
-__constructor void Test_std()
+void Test_std()
 {
-    std::atomic_int a = 0;
-    a++;
-    assert(a == 1);
+	std::atomic_int a = 0;
+	a++;
+	assert(a == 1);
 
-    int b = a.exchange(2);
-    assert(b == 1);
-    assert(a == 2);
+	int b = a.exchange(2);
+	assert(b == 1);
+	assert(a == 2);
 
-    debug("std: OK");
+	/* ---------------------------- */
+
+	std::vector<int> intVector;
+	intVector.push_back(10);
+	intVector.push_back(20);
+	intVector.push_back(30);
+	assert(intVector.size() == 3);
+
+	assert(intVector[0] == 10);
+	assert(intVector[1] == 20);
+	assert(intVector[2] == 30);
+
+	intVector.pop_back();
+	assert(intVector.size() == 2);
+
+	intVector.clear();
+	assert(intVector.empty());
+
+	intVector.push_back(1);
+	intVector.push_back(1);
+	intVector.push_back(1);
+	intVector.push_back(1);
+	intVector.push_back(1);
+
+	intVector.erase(intVector.end() - 1);
+	assert(intVector.size() == 4);
+	debug("0: %#lx", intVector[0]);
+	debug("1: %#lx", intVector[1]);
+	debug("2: %#lx", intVector[2]);
+	debug("3: %#lx", intVector[3]);
+	debug("4: %#lx", intVector[4]);
+
+	debug("std: OK");
 }
 
 #endif // DEBUG

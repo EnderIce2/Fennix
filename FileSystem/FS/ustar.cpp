@@ -29,13 +29,13 @@ namespace VirtualFileSystem
         if (!Size)
             Size = node->Length;
 
-        if ((size_t)node->Offset > node->Length)
+        if (RefOffset > node->Length)
             return 0;
 
-        if (node->Offset + Size > node->Length)
-            Size = node->Length - node->Offset;
+        if (RefOffset + (off_t)Size > node->Length)
+            Size = node->Length - RefOffset;
 
-        memcpy(Buffer, (uint8_t *)(node->Address + node->Offset), Size);
+        memcpy(Buffer, (uint8_t *)(node->Address + RefOffset), Size);
         return Size;
     }
 
@@ -113,7 +113,7 @@ namespace VirtualFileSystem
             }
             else
             {
-                trace("%s %dKB Type:%c", header->name, TO_KB(size), header->typeflag[0]);
+                debug("%s %d KiB, Type:%c", header->name, TO_KiB(size), header->typeflag[0]);
                 node->Mode = string2int(header->mode);
                 node->Address = (Address + 512);
                 node->Length = size;
@@ -128,6 +128,8 @@ namespace VirtualFileSystem
                     break;
                 case SYMLINK:
                     node->Flags = NodeFlags::SYMLINK;
+                    node->Symlink = new char[strlen(header->link) + 1];
+                    strncpy((char *)node->Symlink, header->link, strlen(header->link));
                     break;
                 case DIRECTORY:
                     node->Flags = NodeFlags::DIRECTORY;

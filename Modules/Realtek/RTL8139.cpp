@@ -141,7 +141,7 @@ namespace RTL8139
 				return DEVICE_NOT_SUPPORTED;
 			break;
 		}
-		case FetchReason:
+		case QueryReason:
 		{
 			memcpy(Data->NetworkCallback.Fetch.Name, (void *)"RTL-8139", 9);
 			Data->NetworkCallback.Fetch.MAC = MAC.ToHex();

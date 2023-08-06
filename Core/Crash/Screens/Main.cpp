@@ -311,7 +311,7 @@ namespace CrashHandler
         case CPU::x86::PageFault:
         {
             EHPrint("Exception: Page Fault\n");
-            EHPrint("The processor attempted to access a page that is not present.\n");
+            EHPrint("The processor attempted to access a page that is not present/accessible.\n");
 
             CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(a64)

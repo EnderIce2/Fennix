@@ -47,7 +47,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     CriticalSection cs;
     debug("Interrupts? %s.", cs.IsInterruptsEnabled() ? "Yes" : "No");
     fixme("Handling user mode exception");
-    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Stopped;
+    thisThread->Status = Tasking::TaskStatus::Zombie;
     CPUData *CurCPU = GetCurrentCPU();
 
     {
@@ -354,7 +354,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
             if (CurCPU->CurrentThread->Stack->Expand(CrashHandler::PageFaultAddress))
             {
                 debug("Stack expanded");
-                TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Ready;
+                thisThread->Status = Tasking::TaskStatus::Ready;
                 return;
             }
         break;
@@ -389,7 +389,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
     }
     }
 
-    TaskManager->GetCurrentThread()->Status = Tasking::TaskStatus::Terminated;
+    thisThread->Status = Tasking::TaskStatus::Terminated;
     __sync;
     error("End of report.");
     CPU::Interrupts(CPU::Enable);

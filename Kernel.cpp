@@ -67,12 +67,11 @@ LockClass mExtTrkLock;
  * - [x] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
  * - [ ] Implement a better Display::SetBrightness() function.
  * - [ ] Fix memcpy, memset and memcmp functions (they are not working properly with SIMD).
- * - [ ] Support Aarch64.
  * - [ ] Fully support i386.
+ * - [ ] Support Aarch64.
  * - [ ] SMP trampoline shouldn't be hardcoded at 0x2000.
  * - [ ] Rework the stack guard.
- * - [ ] Mutex implementation.
- * - [ ] Vector should have a mutex.
+ * - [x] Mutex implementation.
  * - [ ] Update SMBIOS functions to support newer versions and actually use it.
  * - [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
  * - [ ] Bootstrap should have a separate bss section + PHDR.
@@ -183,6 +182,10 @@ LockClass mExtTrkLock;
  *    https://github.com/gcc-mirror/gcc/tree/master/libstdc%2B%2B-v3
  *    https://itanium-cxx-abi.github.io/cxx-abi/abi.html
  *
+ * - Keyboard:
+ *    https://www.win.tue.nl/~aeb/linux/kbd/scancodes-11.html
+ *    https://wiki.osdev.org/PS/2_Keyboard
+ *
  */
 
 #ifdef a64
@@ -207,8 +210,6 @@ NewLock(KernelLock);
 
 #include <intrin.hpp>
 
-using VirtualFileSystem::File;
-using VirtualFileSystem::FileStatus;
 using VirtualFileSystem::Node;
 using VirtualFileSystem::NodeFlags;
 
@@ -223,9 +224,10 @@ VirtualFileSystem::Virtual *vfs = nullptr;
 
 KernelConfig Config = {
 	.AllocatorType = Memory::MemoryAllocatorType::XallocV1,
-	.SchedulerType = 1,
-	.DriverDirectory = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
-	.InitPath = {'/', 's', 'y', 's', 't', 'e', 'm', '/', 'i', 'n', 'i', 't', '\0'},
+	.SchedulerType = Multi,
+	.DriverDirectory = {'/', 'm', 'o', 'd', 'u', 'l', 'e', 's', '\0'},
+	.InitPath = {'/', 'b', 'i', 'n', '/', 'i', 'n', 'i', 't', '\0'},
+	.UseLinuxSyscalls = false,
 	.InterruptsOnCrash = true,
 	.Cores = 0,
 	.IOAPICInterruptCore = 0,
@@ -280,6 +282,9 @@ EXTERNC NIF void Main()
 	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s",
 		   CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
+	debug("CPU: %s %s %s",
+		  CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
+
 	if (DebuggerIsAttached)
 		KPrint("\eFFA500Kernel debugger detected.");
 
@@ -291,14 +296,11 @@ EXTERNC NIF void Main()
 	KPrint("Loading Kernel Symbols");
 	KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
-	if (KernelSymbolTable->GetTotalEntries() == 0 &&
-		bInfo.Kernel.Symbols.Num &&
-		bInfo.Kernel.Symbols.EntSize &&
-		bInfo.Kernel.Symbols.Shndx)
-		KernelSymbolTable->AddBySymbolInfo(bInfo.Kernel.Symbols.Num,
-										   bInfo.Kernel.Symbols.EntSize,
-										   bInfo.Kernel.Symbols.Shndx,
-										   bInfo.Kernel.Symbols.Sections);
+	if (!KernelSymbolTable->SymTableExists)
+		KernelSymbolTable->AddSymbolInfoFromGRUB(bInfo.Kernel.Symbols.Num,
+												 bInfo.Kernel.Symbols.EntSize,
+												 bInfo.Kernel.Symbols.Shndx,
+												 bInfo.Kernel.Symbols.Sections);
 
 	KPrint("Reading Kernel Parameters");
 	ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
@@ -453,74 +455,74 @@ EXTERNC NIF void Main()
 		DevFS = vfs->Create("/dev", NodeFlags::DIRECTORY);
 	else
 	{
-		File dev = vfs->Open("/dev");
-		if (dev.GetFlags() != NodeFlags::DIRECTORY)
+		RefNode *dev = vfs->Open("/dev");
+		if (dev->GetNode()->Flags != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/dev is not a directory! Halting...");
 			CPU::Stop();
 		}
-		vfs->Close(dev);
-		DevFS = dev.GetNode();
+		DevFS = dev->GetNode();
+		delete dev;
 	}
 
 	if (!vfs->PathExists("/mnt"))
 		MntFS = vfs->Create("/mnt", NodeFlags::DIRECTORY);
 	else
 	{
-		File mnt = vfs->Open("/mnt");
-		if (mnt.GetFlags() != NodeFlags::DIRECTORY)
+		RefNode *mnt = vfs->Open("/mnt");
+		if (mnt->GetNode()->Flags != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/mnt is not a directory! Halting...");
 			CPU::Stop();
 		}
-		vfs->Close(mnt);
-		MntFS = mnt.GetNode();
+		MntFS = mnt->GetNode();
+		delete mnt;
 	}
 
 	if (!vfs->PathExists("/proc"))
 		ProcFS = vfs->Create("/proc", NodeFlags::DIRECTORY);
 	else
 	{
-		File proc = vfs->Open("/proc", nullptr);
-		if (proc.GetFlags() != NodeFlags::DIRECTORY)
+		RefNode *proc = vfs->Open("/proc", nullptr);
+		if (proc->GetNode()->Flags != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/proc is not a directory! Halting...");
 			CPU::Stop();
 		}
-		vfs->Close(proc);
-		ProcFS = proc.GetNode();
+		ProcFS = proc->GetNode();
+		delete proc;
 	}
 
 	if (!vfs->PathExists("/var"))
 		VarLogFS = vfs->Create("/var", NodeFlags::DIRECTORY);
 	else
 	{
-		File var = vfs->Open("/var", nullptr);
-		if (var.GetFlags() != NodeFlags::DIRECTORY)
+		RefNode *var = vfs->Open("/var", nullptr);
+		if (var->GetNode()->Flags != NodeFlags::DIRECTORY)
 		{
 			KPrint("\eE85230/var is not a directory! Halting...");
 			CPU::Stop();
 		}
-		vfs->Close(var);
-		VarLogFS = var.GetNode();
+		VarLogFS = var->GetNode();
+		delete var;
 
 		if (!vfs->PathExists("/var/log"))
 			VarLogFS = vfs->Create("/var/log", NodeFlags::DIRECTORY);
 		else
 		{
-			File var_log = vfs->Open("/var/log", nullptr);
-			if (var_log.GetFlags() != NodeFlags::DIRECTORY)
+			RefNode *var_log = vfs->Open("/var/log", nullptr);
+			if (var_log->GetNode()->Flags != NodeFlags::DIRECTORY)
 			{
 				KPrint("\eE85230/var/log is not a directory! Halting...");
 				CPU::Stop();
 			}
-			vfs->Close(var_log);
-			VarLogFS = var_log.GetNode();
+			VarLogFS = var_log->GetNode();
+			delete var_log;
 		}
 	}
 
 	KPrint("\e058C19################################");
-	TaskManager = new Tasking::Task((Tasking::IP)KernelMainThread);
+	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
 	CPU::Halt(true);
 }
 
@@ -573,23 +575,22 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	 * memory management to be initialized first.
 	 */
 	TestString();
+	Test_std();
 	TestMemoryAllocation();
 #endif
 	EnableProfiler = true;
 	Main();
 }
 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
-
+extern "C" void __cxa_finalize(void *);
 EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 {
 	UNUSED(Reboot);
 	/* TODO: Announce shutdown */
 
 	trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
-
-	if (RecoveryScreen)
-		delete RecoveryScreen, RecoveryScreen = nullptr;
 
 	if (NIManager)
 		delete NIManager, NIManager = nullptr;
@@ -620,8 +621,10 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 	debug("Calling destructors...");
 	for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
 		(*func)();
+	__cxa_finalize(nullptr);
 	debug("Done.");
 }
+#pragma GCC diagnostic pop
 
 EXTERNC void TaskingPanic()
 {
