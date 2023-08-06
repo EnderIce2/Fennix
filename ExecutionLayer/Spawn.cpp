@@ -117,7 +117,10 @@ namespace Execute
 			debug("Loaded elf %s at %#lx with the length of %ld",
 				  Path, ElfFile, statbuf.st_size);
 
-			PCB *Process = TaskManager->CreateProcess(thisProcess,
+			if (Parent == nullptr)
+				Parent = thisProcess;
+
+			PCB *Process = TaskManager->CreateProcess(Parent,
 													  BaseName,
 													  TaskExecutionMode::User,
 													  ElfFile, false,

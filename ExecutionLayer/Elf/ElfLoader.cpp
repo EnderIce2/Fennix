@@ -188,9 +188,9 @@ namespace Execute
 		// AT_RANDOM 25
 		// AT_SECURE 23
 		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
 		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
 		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
 		// AT_FLAGS 8
 		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
@@ -392,22 +392,34 @@ namespace Execute
 		std::size_t PltGotSize = PltGot.size();
 
 		if (JmpRelSize < 1)
+		{
 			debug("No DT_JMPREL");
+		}
 
 		if (SymTabSize < 1)
+		{
 			debug("No DT_SYMTAB");
+		}
 
 		if (StrTabSize < 1)
+		{
 			debug("No DT_STRTAB");
+		}
 
 		if (RelaDynSize_v < 1)
+		{
 			debug("No DT_RELA");
+		}
 
 		if (RelaDynSize[0].d_un.d_val < 1)
+		{
 			debug("DT_RELASZ is < 1");
+		}
 
 		if (PltGotSize < 1)
+		{
 			debug("No DT_PLTGOT");
+		}
 
 		if (JmpRelSize > 0 && SymTabSize > 0 && StrTabSize > 0)
 		{
@@ -585,9 +597,9 @@ namespace Execute
 		// AT_RANDOM 25
 		// AT_SECURE 23
 		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
 		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
 		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
 		// AT_FLAGS 8
 		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
