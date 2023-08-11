@@ -15,49 +15,48 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code64
 .section .bootstrap.data
 
 /* Access bits */
-.equ A, 1 << 0
-.equ RW, 1 << 1
-.equ DC, 1 << 2
-.equ E, 1 << 3
-.equ S, 1 << 4
-.equ DPL0, 0 << 5
-.equ DPL1, 1 << 5
-.equ P, 1 << 7
+A = 0x1
+RW = 0x2
+DC = 0x4
+E = 0x8
+S = 0x10
+DPL0 = 0x0 /* 0 << 5 ???? */
+DPL1 = 0x20
+P = 0x80
 
 /* Flags bits */
-.equ LONG_MODE, 1 << 5
-.equ SZ_32, 1 << 6
-.equ GRAN_4K, 1 << 7
+LONG_MODE = 0x20
+SZ_32 = 0x40
+GRAN_4K = 0x80
 
 .global GDT64.Null
 .global GDT64.Code
 .global GDT64.Data
 .global GDT64.Tss
 .global GDT64.Ptr
+
 GDT64:
-.equ GDT64.Null, $ - GDT64
+GDT64.Null = . - GDT64
 	.quad 0
-.equ GDT64.Code, $ - GDT64
+GDT64.Code = . - GDT64
 	.long 0xFFFF
 	.byte 0
 	.byte P | S | E | RW
 	.byte GRAN_4K | LONG_MODE | 0xF
 	.byte 0
-.equ GDT64.Data, $ - GDT64
+GDT64.Data = . - GDT64
 	.long 0xFFFF
 	.byte 0
 	.byte P | S | RW
 	.byte GRAN_4K | SZ_32 | 0xF
 	.byte 0
-.equ GDT64.Tss, $ - GDT64
+GDT64.Tss = . - GDT64
 	.long 0x00000068
 	.long 0x00CF8900
 GDT64.Ptr:
-	.word $ - GDT64 - 1
+	.word . - GDT64 - 1
 	.quad GDT64

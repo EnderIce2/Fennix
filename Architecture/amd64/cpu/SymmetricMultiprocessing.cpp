@@ -32,13 +32,13 @@ extern "C" uint64_t _trampoline_start, _trampoline_end;
 /* https://wiki.osdev.org/Memory_Map_(x86) */
 enum SMPTrampolineAddress
 {
-    PAGE_TABLE = 0x500,
-    START_ADDR = 0x520,
-    STACK = 0x570,
-    GDT = 0x580,
-    IDT = 0x590,
-    CORE = 0x600,
-    TRAMPOLINE_START = 0x2000
+	PAGE_TABLE = 0x500,
+	START_ADDR = 0x520,
+	STACK = 0x570,
+	GDT = 0x580,
+	IDT = 0x590,
+	CORE = 0x600,
+	TRAMPOLINE_START = 0x2000
 };
 
 std::atomic_bool CPUEnabled = false;
@@ -50,92 +50,106 @@ SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
 
 SafeFunction CPUData *GetCurrentCPU()
 {
-    if (unlikely(!Interrupts::apic[0]))
-        return &CPUs[0]; /* No APIC means we are on the BSP. */
+	if (unlikely(!Interrupts::apic[0]))
+		return &CPUs[0]; /* No APIC means we are on the BSP. */
 
-    int CoreID = ((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24;
+	int CoreID = ((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24;
 
-    if (unlikely((&CPUs[CoreID])->IsActive != true))
-    {
-        error("CPU %d is not active!", CoreID);
-        assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
-        return &CPUs[0];
-    }
+	if (unlikely((&CPUs[CoreID])->IsActive != true))
+	{
+		error("CPU %d is not active!", CoreID);
+		assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
+		return &CPUs[0];
+	}
 
-    assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
-    return &CPUs[CoreID];
+	assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
+	return &CPUs[CoreID];
 }
 
 extern "C" void StartCPU()
 {
-    CPU::Interrupts(CPU::Disable);
-    int CoreID = (int)*reinterpret_cast<int *>(CORE);
-    CPU::InitializeFeatures(CoreID);
-    // Initialize GDT and IDT
-    Interrupts::Initialize(CoreID);
-    Interrupts::Enable(CoreID);
-    Interrupts::InitializeTimer(CoreID);
-    asmv("mov %0, %%rsp" ::"r"((&CPUs[CoreID])->Stack));
+	CPU::Interrupts(CPU::Disable);
+	int CoreID = (int)*reinterpret_cast<int *>(CORE);
+	CPU::InitializeFeatures(CoreID);
+	// Initialize GDT and IDT
+	Interrupts::Initialize(CoreID);
+	Interrupts::Enable(CoreID);
+	Interrupts::InitializeTimer(CoreID);
+	asmv("mov %0, %%rsp" ::"r"((&CPUs[CoreID])->Stack));
 
-    CPU::Interrupts(CPU::Enable);
-    KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
-    CPUEnabled.store(true, std::memory_order_release);
-    CPU::Halt(true);
+	CPU::Interrupts(CPU::Enable);
+	KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
+	CPUEnabled.store(true, std::memory_order_release);
+	CPU::Halt(true);
 }
 
 namespace SMP
 {
-    int CPUCores = 0;
+	int CPUCores = 0;
 
-    void Initialize(void *madt)
-    {
-        int Cores = ((ACPI::MADT *)madt)->CPUCores + 1;
+	void Initialize(void *_madt)
+	{
+		ACPI::MADT *madt = (ACPI::MADT *)_madt;
 
-        if (Config.Cores > ((ACPI::MADT *)madt)->CPUCores + 1)
-            KPrint("More cores requested than available. Using %d cores", ((ACPI::MADT *)madt)->CPUCores + 1);
-        else if (Config.Cores != 0)
-            Cores = Config.Cores;
+		int Cores = madt->CPUCores + 1;
 
-        CPUCores = Cores;
+		if (Config.Cores > madt->CPUCores + 1)
+			KPrint("More cores requested than available. Using %d cores", madt->CPUCores + 1);
+		else if (Config.Cores != 0)
+			Cores = Config.Cores;
 
-        uint64_t TrampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
-        Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW);
-        /* We reserved the TRAMPOLINE_START address inside Physical class. */
-        Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START, TrampolineLength, Memory::PTFlag::RW);
-        memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
-        debug("Trampoline address: %#lx-%#lx", TRAMPOLINE_START, TRAMPOLINE_START + TrampolineLength);
+		CPUCores = Cores;
 
-        void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
-        asmv("sgdt [0x580]\n"
-             "sidt [0x590]\n");
-        VPOKE(uintptr_t, STACK) = (uintptr_t)CPUTmpStack + STACK_SIZE;
-        VPOKE(uintptr_t, PAGE_TABLE) = (uintptr_t)KernelPageTable;
-        VPOKE(uint64_t, START_ADDR) = (uintptr_t)&StartCPU;
+		uint64_t TrampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
+		Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW);
+		/* We reserved the TRAMPOLINE_START address inside Physical class. */
+		Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START, TrampolineLength, Memory::PTFlag::RW);
+		memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
+		debug("Trampoline address: %#lx-%#lx", TRAMPOLINE_START, TRAMPOLINE_START + TrampolineLength);
 
-        for (int i = 0; i < Cores; i++)
-        {
-            debug("Initializing CPU %d", i);
-            if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != ((ACPI::MADT *)madt)->lapic[i]->ACPIProcessorId)
-            {
-                VPOKE(int, CORE) = i;
+		void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+		asmv("sgdt [0x580]");
+		asmv("sidt [0x590]");
+		VPOKE(uintptr_t, STACK) = (uintptr_t)CPUTmpStack + STACK_SIZE;
+		VPOKE(uintptr_t, PAGE_TABLE) = (uintptr_t)KernelPageTable;
+		VPOKE(uintptr_t, START_ADDR) = (uintptr_t)&StartCPU;
 
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (((ACPI::MADT *)madt)->lapic[i]->APICId << 24));
-                ((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
+		for (int i = 0; i < Cores; i++)
+		{
+			ACPI::MADT::LocalAPIC *lapic = madt->lapic[i];
+			debug("Initializing CPU %d", lapic->APICId);
+			if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != lapic->APICId)
+			{
+				VPOKE(int, CORE) = i;
 
-                ((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(((ACPI::MADT *)madt)->lapic[i]->APICId);
-                ((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(((ACPI::MADT *)madt)->lapic[i]->APICId, TRAMPOLINE_START);
+				((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (lapic->APICId << 24));
+				((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
 
-                while (!CPUEnabled.load(std::memory_order_acquire))
-                    CPU::Pause();
-                CPUEnabled.store(false, std::memory_order_release);
-                trace("CPU %d loaded.", ((ACPI::MADT *)madt)->lapic[i]->APICId);
-            }
-            else
-                KPrint("\e058C19CPU \e8888FF%d \e058C19is the BSP", ((ACPI::MADT *)madt)->lapic[i]->APICId);
-        }
+				((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(lapic->APICId);
+				TimeManager->Sleep(5, Time::Units::Milliseconds);
+				((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
 
-        KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE + 1));
-        /* We are going to unmap the page after we are done with it. */
-        Memory::Virtual().Unmap(0x0);
-    }
+				debug("Waiting for CPU %d to load...", lapic->APICId);
+				uint64_t Timeout = TimeManager->CalculateTarget(2, Time::Units::Seconds);
+				while (CPUEnabled.load(std::memory_order_acquire) == false)
+				{
+					if (TimeManager->GetCounter() > Timeout)
+					{
+						error("CPU %d failed to load!", lapic->APICId);
+						KPrint("\eFF8C19CPU \e8888FF%d \eFF8C19failed to load!", lapic->APICId);
+						break;
+					}
+					CPU::Pause();
+				}
+				trace("CPU %d loaded.", lapic->APICId);
+				CPUEnabled.store(false, std::memory_order_release);
+			}
+			else
+				KPrint("\e058C19CPU \e8888FF%d \e058C19is the BSP", lapic->APICId);
+		}
+
+		KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE + 1));
+		/* We are going to unmap the page after we are done with it. */
+		Memory::Virtual().Unmap(0x0);
+	}
 }

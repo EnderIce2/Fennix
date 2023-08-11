@@ -15,8 +15,6 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
 .extern Multiboot2_start
 
@@ -91,3 +89,4 @@ EndTag_Start:
 	.long EndTag_End - EndTag_Start
 EndTag_End:
 MULTIBOOT2_HEADER_END:
+	nop

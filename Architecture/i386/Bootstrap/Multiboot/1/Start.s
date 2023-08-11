@@ -15,6 +15,9 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
+.section .bootstrap.text
+
+.global Multiboot1_start
+Multiboot1_start:
+	jmp .

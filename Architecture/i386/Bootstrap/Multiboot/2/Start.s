@@ -15,22 +15,14 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
-.equ KERNEL_STACK_SIZE, 0x4000 /* 16KB */
+KERNEL_STACK_SIZE = 0x4000 /* 16KB */
 
 .extern DetectCPUID
-.extern Detect64Bit
 .extern DetectPSE
-.extern DetectPAE
 .extern multiboot_main
 .extern LoadGDT32
 .extern BootPageTable
-.extern UpdatePageTable
-.extern GDT64.Ptr
-.extern GDT64.Code
-.extern GDT64.Data
 
 .section .bootstrap.data
 MB_HeaderMagic:
@@ -45,67 +37,37 @@ MB_HeaderInfo:
 Multiboot2_start:
 	cli
 
-	mov [MB_HeaderMagic], eax
-	mov [MB_HeaderInfo], ebx
+	mov %eax, [MB_HeaderMagic]
+	mov %ebx, [MB_HeaderInfo]
 
 	call DetectCPUID
-	cmp eax, 0
-	je $
-
-	call Detect64Bit
-	cmp eax, 0
-	je $
+	cmp $0, %eax
+	je .
 
 	call DetectPSE
-	cmp eax, 0
-	je $
+	cmp $0, %eax
+	je .
 
-	call DetectPAE
-	cmp eax, 0
-	je $
-
-	mov ecx, cr4
-	or ecx, 0x00000010 /* Set PSE in CR4 */
-	or ecx, 0x00000020 /* Set PAE in CR4 */
-	mov cr4, ecx
+	mov %cr4, %ecx
+	or $0x00000010, %ecx /* PSE */
+	mov %ecx, %cr4
 
 	call LoadGDT32
-	call UpdatePageTable
 
-	mov ecx, BootPageTable
-	mov cr3, ecx
+	mov $BootPageTable, %ecx
+	mov %ecx, %cr3
 
-	mov ecx, 0xC0000080 /* EFER */
-	rdmsr
-	or eax, 0x800 | 0x100 | 0x1 /* Set LME, LMA, SCE */
-	wrmsr
+	mov %cr0, %ecx
+	or $0x80000000, %ecx /* PG */
+	mov %ecx, %cr0
 
-	mov ecx, cr0
-	or ecx, 0x80000001 /* Set PG and PE in CR0 */
-	mov cr0, ecx
+	mov $(KernelStack + KERNEL_STACK_SIZE), %esp
+	mov $0x0, %ebp
 
-	lgdt [GDT64.Ptr]
-	jmp GDT64.Code:HigherHalfStart
-
-.extern UpdatePageTable64
-
-.code64
-HigherHalfStart:
-	mov ax, GDT64.Data
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-
-	call UpdatePageTable64
-
-	mov rsp, KernelStack + KERNEL_STACK_SIZE
-	mov rbp, 0
-	mov rdi, [MB_HeaderMagic]
-	mov rsi, [MB_HeaderInfo]
-	push rsi
-	push rdi
+	mov [MB_HeaderMagic], %eax
+	mov [MB_HeaderInfo], %ebx
+	push %ebx
+	push %eax
 	call multiboot_main
 .Hang:
 	hlt

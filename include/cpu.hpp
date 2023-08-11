@@ -139,7 +139,7 @@ namespace CPU
 	/**
 	 * @brief Pause the CPU
 	 */
-	SafeFunction static inline void Pause(bool Loop = false)
+	SafeFunction static __always_inline inline void Pause(bool Loop = false)
 	{
 		do
 		{
@@ -166,15 +166,15 @@ namespace CPU
 	{
 		asmv("CPUStopLoop:\n"
 			 "msr daifset, #2\n" // Disable IRQs (bit 1 of the DAIF register)
-			 "wfi\n"             // Wait for Interrupt (puts the processor in low-power state until an interrupt occurs)
-			 "b CPUStopLoop");   // Branch to the beginning of the loop
+			 "wfi\n"			 // Wait for Interrupt (puts the processor in low-power state until an interrupt occurs)
+			 "b CPUStopLoop");	 // Branch to the beginning of the loop
 #endif
 	}
 
 	/**
 	 * @brief Halt the CPU
 	 */
-	SafeFunction static inline void Halt(bool Loop = false)
+	SafeFunction static __always_inline inline void Halt(bool Loop = false)
 	{
 		do
 		{
@@ -206,7 +206,7 @@ namespace CPU
 	void InitializeFeatures(long Core);
 
 	/** @brief Get CPU counter value. */
-	uintptr_t Counter();
+	uint64_t Counter();
 
 	namespace x32
 	{
@@ -280,7 +280,7 @@ namespace CPU
 			uint32_t eax; // Accumulator
 
 			uint32_t InterruptNumber; // Interrupt Number
-			uint32_t ErrorCode;       // Error code
+			uint32_t ErrorCode;		  // Error code
 
 			uint32_t eip;  // Instruction Pointer
 			uint32_t cs;   // Code Segment
@@ -598,7 +598,7 @@ namespace CPU
 			uint64_t rax; // Accumulator
 
 			uint64_t InterruptNumber; // Interrupt Number
-			uint64_t ErrorCode;       // Error code
+			uint64_t ErrorCode;		  // Error code
 
 			uint64_t rip;  // Instruction Pointer
 			uint64_t cs;   // Code Segment
@@ -911,9 +911,9 @@ namespace CPU
 			uint64_t x29; // Frame pointer
 			uint64_t x30; // Program counter
 
-			uint64_t sp_el0;                  // Stack pointer
-			uint64_t elr_el1;                 // Exception Link Register
-			uint64_t spsr_el1;                // Saved Program Status Register
+			uint64_t sp_el0;				  // Stack pointer
+			uint64_t elr_el1;				  // Exception Link Register
+			uint64_t spsr_el1;				  // Saved Program Status Register
 			uint64_t ErrorCode /* esr_el1 */; // Exception Syndrome Register
 
 			uint64_t InterruptNumber /* iar_el1 */; // Interrupt Acknowledge Register

@@ -11,8 +11,6 @@ NM = ../$(COMPILER_PATH)/$(COMPILER_ARCH)nm
 OBJCOPY = ../$(COMPILER_PATH)/$(COMPILER_ARCH)objcopy
 OBJDUMP = ../$(COMPILER_PATH)/$(COMPILER_ARCH)objdump
 GDB = ../$(COMPILER_PATH)/$(COMPILER_ARCH)gdb
-RUSTC = /usr/bin/rustc
-NASM = /usr/bin/nasm
 
 RUST_TARGET_PATH = Architecture/$(OSARCH)/rust-target.json
 
@@ -22,19 +20,16 @@ GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
 BMP_SOURCES = $(shell find ./ -type f -name '*.bmp')
 PSF_SOURCES = $(shell find ./ -type f -name '*.psf')
 ifeq ($(OSARCH), amd64)
-ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/i386/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), i386)
-ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./Architecture/amd64/*" -not -path "./Architecture/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
-ASM_SOURCES = $(shell find ./ -type f -name '*.asm' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./Architecture/amd64/*" -not -path "./Architecture/i386/*")
@@ -98,14 +93,6 @@ LDFLAGS += -TArchitecture/aarch64/linker.ld -fPIC -pie \
 
 endif
 
-ifeq ($(OSARCH), amd64)
-NASMFLAGS := -f elf64
-else ifeq ($(OSARCH), i386)
-NASMFLAGS := -f elf32
-else ifeq ($(OSARCH), aarch64)
-NASMFLAGS :=
-endif
-
 # -finstrument-functions for __cyg_profile_func_enter & __cyg_profile_func_exit. Used for profiling and debugging.
 ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
@@ -119,11 +106,8 @@ ifneq ($(OSARCH), aarch64)
 	CFLAGS += -fstack-check
 endif
 	LDFLAGS += -ggdb3 -O0
-	NASMFLAGS += -F dwarf -g
+	ASFLAGS += -g --gstabs --gdwarf-5 -D
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
-ifeq ($(TESTING), 1)
-	CFLAGS += -DTESTING
-endif
 endif
 
 default:
@@ -156,20 +140,13 @@ $(KERNEL_FILENAME): $(OBJ)
 	$(info Compiling $<)
 	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-exceptions -fno-rtti
 
-%.o: %.asm
-ifeq ($(OSARCH), aarch64)
-	$(error aarch64 does not support NASM)
-endif
-	$(info Compiling $<)
-	$(NASM) $< $(NASMFLAGS) -o $@
-
 %.o: %.S
 	$(info Compiling $<)
-	$(AS) -c $< -o $@
+	$(AS) $(ASFLAGS) -c $< -o $@
 
 %.o: %.s
 	$(info Compiling $<)
-	$(AS) -c $< -o $@
+	$(AS) $(ASFLAGS) -c $< -o $@
 
 %.o: %.psf
 ifeq ($(OSARCH), amd64)

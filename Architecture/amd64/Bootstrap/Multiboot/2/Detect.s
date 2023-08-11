@@ -25,7 +25,7 @@ DetectCPUID:
 	pushfd
 	pop eax
 	mov ecx, eax
-	xor eax, 1 << 21
+	xor eax, 0x200000
 	push eax
 	popfd
 	pushfd
@@ -34,7 +34,7 @@ DetectCPUID:
 	popfd
 	xor eax, ecx
 	jz .NoCPUID
-	mov eax, 1
+	mov eax, 0x1
 	ret
 .NoCPUID:
 	xor eax, eax
@@ -48,9 +48,9 @@ Detect64Bit:
 	jb .NoLongMode
 	mov eax, 0x80000001
 	cpuid
-	test edx, 1 << 29
+	test edx, 0x20000000
 	jz .NoLongMode
-	mov eax, 1
+	mov eax, 0x1
 	ret
 .NoLongMode:
 	xor eax, eax
@@ -58,11 +58,11 @@ Detect64Bit:
 
 .global DetectPSE
 DetectPSE:
-	mov eax,  0x00000001
+	mov eax, 0x00000001
 	cpuid
 	test edx, 0x00000008
 	jz .NoPSE
-	mov eax, 1
+	mov eax, 0x1
 	ret
 .NoPSE:
 	xor eax, eax
@@ -70,11 +70,11 @@ DetectPSE:
 
 .global DetectPAE
 DetectPAE:
-	mov eax,  0x00000001
+	mov eax, 0x00000001
 	cpuid
 	test edx, 0x00000040
 	jz .NoPAE
-	mov eax, 1
+	mov eax, 0x1
 	ret
 .NoPAE:
 	xor eax, eax
