@@ -55,16 +55,19 @@ namespace Tasking
 		assert(name != nullptr);
 		assert(strlen(name) > 0);
 
-		trace("Renaming thread %s to %s", this->Name, name);
+		trace("Renaming thread %s to %s",
+			  this->Name, name);
+
 		if (this->Name)
 			delete[] this->Name;
+
 		this->Name = new char[strlen(name) + 1];
 		strcpy((char *)this->Name, name);
 	}
 
 	void PCB::SetWorkingDirectory(VirtualFileSystem::Node *node)
 	{
-		debug("Setting working directory of process %s to %#lx (%s)",
+		trace("Setting working directory of process %s to %#lx (%s)",
 			  this->Name, node, node->Name);
 		CurrentWorkingDirectory = node;
 	}
@@ -75,94 +78,89 @@ namespace Tasking
 			 uint16_t UserID, uint16_t GroupID)
 	{
 		assert(ctx != nullptr);
+		assert(Name != nullptr);
+		assert(strlen(Name) > 0);
 		assert(ExecutionMode >= _ExecuteModeMin);
 		assert(ExecutionMode <= _ExecuteModeMax);
 
 		this->ctx = ctx;
 		this->ID = ctx->NextPID++;
-		if (this->Name)
+
+		if (this->Name) /* Prevent memory leak */
 			delete[] this->Name;
+
 		this->Name = new char[strlen(Name) + 1];
 		strcpy((char *)this->Name, Name);
 		this->ExitCode = KILL_CRASH;
-		this->Security.ExecutionMode = ExecutionMode;
 
+		/* Check parent */
 		if (Parent == nullptr)
 			this->Parent = ctx->GetCurrentProcess();
 		else
 			this->Parent = Parent;
 
+		/* Set uid & gid */
 		if (this->Parent &&
 			UserID == UINT16_MAX &&
 			GroupID == UINT16_MAX)
 		{
 			UserID = this->Parent->Security.Real.UserID;
 			GroupID = this->Parent->Security.Real.GroupID;
+			debug("Inherited uid & gid from parent process %s(%d) with uid %d and gid %d",
+				  this->Parent->Name, this->Parent->ID, UserID, GroupID);
 		}
 
 		this->Security.Real.UserID = UserID;
 		this->Security.Real.GroupID = GroupID;
 		this->Security.Effective.UserID = UserID;
 		this->Security.Effective.GroupID = GroupID;
+		this->Security.ExecutionMode = ExecutionMode;
 
-		char ProcFSName[16];
+		switch (ExecutionMode)
+		{
+		case TaskExecutionMode::System:
+			fixme("Mode not supported.");
+			[[fallthrough]];
+		case TaskExecutionMode::Kernel:
+		{
+			this->Security.IsCritical = true;
+			break;
+		}
+		case TaskExecutionMode::User:
+		{
+			break;
+		}
+		default:
+			assert(false);
+		}
+
+		char ProcFSName[12];
 		sprintf(ProcFSName, "%d", this->ID);
 		this->ProcessDirectory = vfs->Create(ProcFSName, DIRECTORY, ProcFS);
 		this->memDirectory = vfs->Create("mem", DIRECTORY, this->ProcessDirectory);
-		this->FileDescriptors = new FileDescriptorTable(this);
-		this->IPC = new class IPC((void *)this);
 
-		if (!DoNotCreatePageTable)
+		this->FileDescriptors = new FileDescriptorTable(this);
+
+		/* If create page table */
+		if (DoNotCreatePageTable == false)
 		{
 			OwnPageTable = true;
-			switch (ExecutionMode)
-			{
-			case TaskExecutionMode::System:
-				fixme("Mode not supported.");
-				[[fallthrough]];
-			case TaskExecutionMode::Kernel:
-			{
-				this->Security.IsCritical = true;
-#if defined(a64)
-				this->PageTable = (Memory::PageTable *)CPU::x64::readcr3().raw;
-#elif defined(a32)
-				this->PageTable = (Memory::PageTable *)CPU::x32::readcr3().raw;
-#elif defined(aa64)
-#endif
-				debug("Process %s(%d) has page table at %#lx",
-					  this->Name, this->ID, this->PageTable);
-				break;
-			}
-			case TaskExecutionMode::User:
-			{
-#if defined(a64)
-				this->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(TO_PAGES(sizeof(Memory::PageTable) + 1));
-				memcpy(this->PageTable,
-					   KernelPageTable,
-					   sizeof(Memory::PageTable));
-#elif defined(a32)
-#elif defined(aa64)
-#endif
-				debug("Process %s(%d) has page table at %#lx",
-					  this->Name, this->ID, this->PageTable);
-				break;
-			}
-			default:
-				assert(false);
-			}
+
+			size_t PTPgs = TO_PAGES(sizeof(Memory::PageTable) + 1);
+			this->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(PTPgs);
+			memcpy(this->PageTable, KernelPageTable, sizeof(Memory::PageTable));
+
+			debug("Process %s(%d) has page table at %#lx",
+				  this->Name, this->ID, this->PageTable);
 		}
 
 		this->Memory = new Memory::MemMgr(this->PageTable, this->memDirectory);
+		this->ProgramBreak = new Memory::ProgramBreak(this->PageTable, this->Memory);
+
+		this->IPC = new class IPC((void *)this);
 
 		if (Image)
-		{
 			this->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)Image);
-		}
-		else
-		{
-			debug("No image provided for process \"%s\"(%d)",
-				  this->Name, this->ID);
-		}
 
 		if (Parent)
 			Parent->Children.push_back(this);
@@ -182,32 +180,51 @@ namespace Tasking
 		debug("Destroying process \"%s\"(%d)",
 			  this->Name, this->ID);
 
+		/* Remove us from the process list so we
+			don't get scheduled anymore */
 		ctx->ProcessList.erase(std::find(ctx->ProcessList.begin(),
 										 ctx->ProcessList.end(),
 										 this));
 
+		/* If we have a symbol table allocated,
+			we need to free it */
 		if (this->ELFSymbolTable)
 			delete this->ELFSymbolTable;
 
+		/* Free IPC */
 		delete this->IPC;
-		delete this->FileDescriptors;
+
+		/* Free all allocated memory */
+		delete this->ProgramBreak;
 		delete this->Memory;
+
+		/* Closing all open files */
+		delete this->FileDescriptors;
+
+		/* Free Name */
 		delete[] this->Name;
 
+		/* If we own the pointer to the
+			PageTable, we need to free it */
 		if (this->PageTable && OwnPageTable)
 		{
 			size_t PTPgs = TO_PAGES(sizeof(Memory::PageTable) + 1);
 			KernelAllocator.FreePages(this->PageTable, PTPgs);
 		}
 
+		/* Exit all children processes */
 		foreach (auto pcb in this->Children)
 			delete pcb;
 
+		/* Exit all threads */
 		foreach (auto tcb in this->Threads)
 			delete tcb;
 
+		/* Delete /proc/{pid} directory */
 		vfs->Delete(this->ProcessDirectory, true);
 
+		/* If we have a Parent, remove us from
+			their children list */
 		if (this->Parent)
 		{
 			std::vector<Tasking::PCB *> &pChild = this->Parent->Children;

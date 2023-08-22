@@ -40,6 +40,27 @@ using Tasking::TaskStatus::Terminated;
 #define ARCH_GET_FS 0x1003
 #define ARCH_GET_GS 0x1004
 
+#define ARCH_GET_CPUID 0x1011
+#define ARCH_SET_CPUID 0x1012
+
+#define ARCH_GET_XCOMP_SUPP 0x1021
+#define ARCH_GET_XCOMP_PERM 0x1022
+#define ARCH_REQ_XCOMP_PERM 0x1023
+#define ARCH_GET_XCOMP_GUEST_PERM 0x1024
+#define ARCH_REQ_XCOMP_GUEST_PERM 0x1025
+
+#define ARCH_XCOMP_TILECFG 17
+#define ARCH_XCOMP_TILEDATA 18
+
+#define ARCH_MAP_VDSO_X32 0x2001
+#define ARCH_MAP_VDSO_32 0x2002
+#define ARCH_MAP_VDSO_64 0x2003
+
+#define ARCH_GET_UNTAG_MASK 0x4001
+#define ARCH_ENABLE_TAGGED_ADDR 0x4002
+#define ARCH_GET_MAX_TAG_BITS 0x4003
+#define ARCH_FORCE_TAGGED_SVA 0x4004
+
 #define PROT_NONE 0
 #define PROT_READ 1
 #define PROT_WRITE 2
@@ -47,16 +68,14 @@ using Tasking::TaskStatus::Terminated;
 #define PROT_GROWSDOWN 0x01000000
 #define PROT_GROWSUP 0x02000000
 
-#define MAP_FAILED ((void *)-1)
+#define MAP_TYPE 0x0f
 
 #define MAP_FILE 0
 #define MAP_SHARED 0x01
 #define MAP_PRIVATE 0x02
 #define MAP_SHARED_VALIDATE 0x03
-#define MAP_TYPE 0x0f
 #define MAP_FIXED 0x10
-#define MAP_ANON 0x20
-#define MAP_ANONYMOUS MAP_ANON
+#define MAP_ANONYMOUS 0x20
 #define MAP_NORESERVE 0x4000
 #define MAP_GROWSDOWN 0x0100
 #define MAP_DENYWRITE 0x0800
@@ -96,17 +115,41 @@ static int ConvertErrno(int r)
 /* https://man7.org/linux/man-pages/man2/read.2.html */
 static ssize_t sys_read(int fd, void *buf, size_t count)
 {
+	debug("Reading %d bytes from fd %d", count, fd);
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_read(fd, buf, count));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check(buf, Memory::US))
+	{
+		warn("Invalid address %#lx", buf);
+		return -EFAULT;
+	}
+	auto pBuf = pcb->PageTable->Get(buf);
+
+	ssize_t ret = ConvertErrno(fdt->_read(fd, pBuf, count));
+	debug("Read %d bytes from fd %d, got %d", count, fd, ret);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/write.2.html */
 static ssize_t sys_write(int fd, const void *buf, size_t count)
 {
+	debug("Writing %d bytes to fd %d", count, fd);
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_write(fd, buf, count));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)buf, Memory::US))
+	{
+		warn("Invalid address %#lx", buf);
+		return -EFAULT;
+	}
+	auto pBuf = pcb->PageTable->Get(buf);
+
+	ssize_t ret = ConvertErrno(fdt->_write(fd, pBuf, count));
+	debug("Wrote %d bytes to fd %d, got %d", count, fd, ret);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/open.2.html */
@@ -114,7 +157,19 @@ static int sys_open(const char *pathname, int flags, mode_t mode)
 {
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_open(pathname, flags, mode));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)pathname, Memory::US))
+	{
+		warn("Invalid address %#lx", pathname);
+		return -EFAULT;
+	}
+	auto pPathname = pcb->PageTable->Get(pathname);
+
+	int ret = ConvertErrno(fdt->_open(pPathname, flags, mode));
+	debug("Opened %s with flags %d and mode %d, got fd %d",
+		  pPathname, flags, mode, ret);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/close.2.html */
@@ -122,7 +177,9 @@ static int sys_close(int fd)
 {
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_close(fd));
+	int ret = ConvertErrno(fdt->_close(fd));
+	debug("Closed fd %d, got %d", fd, ret);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man3/stat.3p.html */
@@ -130,7 +187,16 @@ static int sys_stat(const char *pathname, struct stat *statbuf)
 {
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_stat(pathname, statbuf));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)pathname, Memory::US))
+	{
+		warn("Invalid address %#lx", pathname);
+		return -EFAULT;
+	}
+	auto pPathname = pcb->PageTable->Get(pathname);
+
+	return ConvertErrno(fdt->_stat(pPathname, statbuf));
 }
 
 /* https://man7.org/linux/man-pages/man3/fstat.3p.html */
@@ -139,7 +205,16 @@ static int sys_fstat(int fd, struct stat *statbuf)
 #undef fstat
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_fstat(fd, statbuf));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)statbuf, Memory::US))
+	{
+		warn("Invalid address %#lx", statbuf);
+		return -EFAULT;
+	}
+	auto pStatbuf = pcb->PageTable->Get(statbuf);
+
+	return ConvertErrno(fdt->_fstat(fd, pStatbuf));
 }
 
 /* https://man7.org/linux/man-pages/man2/lstat.2.html */
@@ -148,7 +223,24 @@ static int sys_lstat(const char *pathname, struct stat *statbuf)
 #undef lstat
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_lstat(pathname, statbuf));
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)pathname, Memory::US))
+	{
+		warn("Invalid address %#lx", pathname);
+		return -EFAULT;
+	}
+
+	if (!vmm.Check((void *)statbuf, Memory::US))
+	{
+		warn("Invalid address %#lx", statbuf);
+		return -EFAULT;
+	}
+
+	auto pPathname = pcb->PageTable->Get(pathname);
+	auto pStatbuf = pcb->PageTable->Get(statbuf);
+
+	return ConvertErrno(fdt->_lstat(pPathname, pStatbuf));
 }
 
 /* https://man7.org/linux/man-pages/man2/lseek.2.html */
@@ -156,7 +248,10 @@ static off_t sys_lseek(int fd, off_t offset, int whence)
 {
 	Tasking::PCB *pcb = thisProcess;
 	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return ConvertErrno(fdt->_lseek(fd, offset, whence));
+
+	off_t ret = ConvertErrno(fdt->_lseek(fd, offset, whence));
+	debug("(%d, %d, %d) = %d", fd, offset, whence, ret);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man3/mmap.3p.html */
@@ -165,49 +260,66 @@ static void *sys_mmap(void *addr, size_t length, int prot,
 {
 	UNUSED(offset); /* FIXME */
 	Tasking::PCB *pcb = thisProcess;
-	Memory::MemMgr *mgr = pcb->Memory;
+	Memory::MemMgr *mm = pcb->Memory;
 
-	if (!addr)
+	void *newPages = mm->RequestPages(TO_PAGES(length));
+	if (newPages == nullptr)
+		return (void *)-ENOMEM;
+
+	bool MustUseAddr = (flags & MAP_FIXED) != 0;
+	if (addr == NULL && !MustUseAddr)
+		addr = newPages;
+
+	if (MustUseAddr)
 	{
-		void *newPages = mgr->RequestPages(TO_PAGES(length));
-		if (newPages == nullptr)
-			return MAP_FAILED;
-
-		Memory::Virtual vma = Memory::Virtual(pcb->PageTable);
-
-		if (prot & PROT_READ)
-			vma.Map(newPages, newPages, length, Memory::P | Memory::US, Memory::Virtual::FourKiB);
-		if (prot & PROT_WRITE)
-			vma.Map(newPages, newPages, length, Memory::RW, Memory::Virtual::FourKiB);
-		if (prot & PROT_EXEC)
-			fixme("PROT_EXEC not implemented");
-
-		if (flags & MAP_FILE)
-			fixme("MAP_FILE not implemented");
-		if (flags & MAP_SHARED)
-			fixme("MAP_SHARED not implemented");
-		if (flags & MAP_PRIVATE)
-			fixme("MAP_PRIVATE not implemented");
-		if (flags & MAP_SHARED_VALIDATE)
-			fixme("MAP_SHARED_VALIDATE not implemented");
-		if (flags & MAP_TYPE)
-			fixme("MAP_TYPE not implemented");
-		if (flags & MAP_FIXED)
-			fixme("MAP_FIXED not implemented");
-		if (flags & MAP_ANONYMOUS)
-			fixme("MAP_ANONYMOUS not implemented");
-
-		if (fildes != -1)
-		{
-			fixme("File mapping not implemented");
-			return MAP_FAILED;
-		}
-
-		return newPages;
+		debug("Using fixed address %#lx", addr);
 	}
 
-	stub;
-	return MAP_FAILED;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	uint64_t MapFlags = Memory::P;
+	if (prot & PROT_READ)
+		MapFlags |= Memory::US;
+	if (prot & PROT_WRITE)
+		MapFlags |= Memory::RW;
+	if (prot & PROT_EXEC)
+		debug("PROT_EXEC ignored"); /* MapFlags |= Memory::XD; */
+
+	switch (flags & MAP_TYPE)
+	{
+	case MAP_FILE:
+		debug("MAP_FILE ignored");
+		[[fallthrough]];
+	case MAP_SHARED:
+		fixme("MAP_SHARED not implemented");
+		[[fallthrough]];
+	case MAP_SHARED_VALIDATE:
+		fixme("MAP_SHARED_VALIDATE not implemented");
+		[[fallthrough]];
+	case MAP_PRIVATE:
+		debug("MAP_PRIVATE ignored");
+		[[fallthrough]];
+	case MAP_ANONYMOUS:
+		fixme("MAP_ANONYMOUS not implemented");
+		[[fallthrough]];
+	default:
+	{
+		debug("mmap flags %#x", flags);
+		break;
+	}
+	}
+
+	vmm.Map(addr, newPages, length, MapFlags, Memory::Virtual::FourKiB);
+	debug("Mapped %#lx to %#lx (%d pages)", addr, newPages, TO_PAGES(length));
+
+	if (fildes != -1)
+	{
+		fixme("File mapping not implemented");
+		mm->FreePages(newPages, TO_PAGES(length));
+		return (void *)-ENOSYS;
+	}
+
+	return addr;
 }
 
 /* https://man7.org/linux/man-pages/man3/mprotect.3p.html */
@@ -215,37 +327,58 @@ static int sys_mprotect(void *addr, size_t len, int prot)
 {
 	Tasking::PCB *pcb = thisProcess;
 
-	Memory::Virtual vma = Memory::Virtual(pcb->PageTable);
-	vma.Map(addr, addr, len, Memory::P, Memory::Virtual::FourKiB);
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	vmm.Map(addr, addr, len, Memory::P, Memory::Virtual::FourKiB);
 
 	if (prot & PROT_READ)
-		vma.Map(addr, addr, len, Memory::P | Memory::US, Memory::Virtual::FourKiB);
+		vmm.Map(addr, addr, len, Memory::P | Memory::US, Memory::Virtual::FourKiB);
 	if (prot & PROT_WRITE)
-		vma.Map(addr, addr, len, Memory::RW, Memory::Virtual::FourKiB);
+		vmm.Map(addr, addr, len, Memory::RW, Memory::Virtual::FourKiB);
 	if (prot & PROT_EXEC)
-		fixme("PROT_EXEC not implemented");
+		debug("PROT_EXEC ignored"); /* MapFlags |= Memory::XD; */
+
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man3/munmap.3p.html */
+static int sys_munmap(void *addr, size_t length)
+{
+	Tasking::PCB *pcb = thisProcess;
+	Memory::MemMgr *mm = pcb->Memory;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	mm->FreePages(addr, TO_PAGES(length));
+	vmm.Unmap(addr, length, Memory::Virtual::FourKiB);
 
 	return 0;
 }
 
 /* https://man7.org/linux/man-pages/man2/brk.2.html */
-static void *sys_brk(intptr_t increment)
+static void *sys_brk(void *addr)
 {
-	Tasking::PCB *pcb = thisProcess;
-	Memory::MemMgr *mgr = pcb->Memory;
-
-	stub;
-	size_t PagesToAllocate = increment ? TO_PAGES(increment) : 1;
-	return (void *)mgr->RequestPages(PagesToAllocate, true);
+	trace("Ignoring brk syscall...");
+	return (void *)-ENOSYS;
+	// Tasking::PCB *pcb = thisProcess;
+	// void *ret = pcb->ProgramBreak->brk(addr);
+	// debug("brk(%#lx) = %#lx", addr, ret);
+	// return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/ioctl.2.html */
 static int sys_ioctl(int fd, unsigned long request, void *argp)
 {
-	UNUSED(fd);
-	UNUSED(request);
-	UNUSED(argp);
-	return -ENOSYS;
+	Tasking::PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)argp, Memory::US))
+	{
+		warn("Invalid address %#lx", argp);
+		return -EFAULT;
+	}
+	auto pArgp = pcb->PageTable->Get(argp);
+
+	return ConvertErrno(fdt->_ioctl(fd, request, pArgp));
 }
 
 /* https://man7.org/linux/man-pages/man3/readv.3p.html */
@@ -254,14 +387,20 @@ static ssize_t sys_readv(int fildes, const struct iovec *iov, int iovcnt)
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
 	{
+		debug("%d: iov[%d]: %p %d", fildes, i, iov[i].iov_base, iov[i].iov_len);
 		ssize_t n = sys_read(fildes, iov[i].iov_base, iov[i].iov_len);
 		if (n < 0)
 			return n;
+		debug("n: %d", n);
 
 		Total += n;
 		if (n < (ssize_t)iov[i].iov_len)
+		{
+			debug("break");
 			break;
+		}
 	}
+	debug("readv: %d", Total);
 	return Total;
 }
 
@@ -271,15 +410,37 @@ static ssize_t sys_writev(int fildes, const struct iovec *iov, int iovcnt)
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
 	{
+		debug("%d: iov[%d]: %p %d", fildes, i, iov[i].iov_base, iov[i].iov_len);
 		ssize_t n = sys_write(fildes, iov[i].iov_base, iov[i].iov_len);
 		if (n < 0)
 			return n;
+		debug("n: %d", n);
 
 		Total += n;
 		if (n < (ssize_t)iov[i].iov_len)
+		{
+			debug("break");
 			break;
+		}
 	}
+	debug("writev: %d", Total);
 	return Total;
+}
+
+/* https://man7.org/linux/man-pages/man2/dup.2.html */
+static int sys_dup(int oldfd)
+{
+	Tasking::PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_dup(oldfd));
+}
+
+/* https://man7.org/linux/man-pages/man2/dup.2.html */
+static int sys_dup2(int oldfd, int newfd)
+{
+	Tasking::PCB *pcb = thisProcess;
+	VirtualFileSystem::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return ConvertErrno(fdt->_dup2(oldfd, newfd));
 }
 
 /* https://man7.org/linux/man-pages/man3/exit.3.html */
@@ -307,9 +468,24 @@ static int sys_creat(const char *pathname, mode_t mode)
 /* https://man7.org/linux/man-pages/man2/arch_prctl.2.html */
 static int sys_arch_prctl(int code, unsigned long addr)
 {
+	Tasking::PCB *pcb = thisProcess;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (!vmm.Check((void *)addr))
+	{
+		warn("Invalid address %#lx", addr);
+		return -EFAULT;
+	}
+
+	if (!vmm.Check((void *)addr, Memory::US))
+	{
+		warn("Address %#lx is not user accessible", addr);
+		return -EPERM;
+	}
+
 	switch (code)
 	{
-	case 0x1001: // ARCH_SET_GS
+	case ARCH_SET_GS:
 	{
 #if defined(a64)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, addr);
@@ -318,7 +494,7 @@ static int sys_arch_prctl(int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case 0x1002: // ARCH_SET_FS
+	case ARCH_SET_FS:
 	{
 #if defined(a64)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, addr);
@@ -327,7 +503,7 @@ static int sys_arch_prctl(int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case 0x1003: // ARCH_GET_FS
+	case ARCH_GET_FS:
 	{
 #if defined(a64)
 		*r_cst(uint64_t *, addr) =
@@ -338,7 +514,7 @@ static int sys_arch_prctl(int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case 0x1004: // ARCH_GET_GS
+	case ARCH_GET_GS:
 	{
 #if defined(a64)
 		*r_cst(uint64_t *, addr) =
@@ -349,17 +525,43 @@ static int sys_arch_prctl(int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	default:
-		fixme("code=%d", code);
+	case ARCH_GET_CPUID:
+	case ARCH_SET_CPUID:
+	case ARCH_GET_XCOMP_SUPP:
+	case ARCH_GET_XCOMP_PERM:
+	case ARCH_REQ_XCOMP_PERM:
+	case ARCH_GET_XCOMP_GUEST_PERM:
+	case ARCH_REQ_XCOMP_GUEST_PERM:
+	case ARCH_XCOMP_TILECFG:
+	case ARCH_XCOMP_TILEDATA:
+	case ARCH_MAP_VDSO_X32:
+	case ARCH_MAP_VDSO_32:
+	case ARCH_MAP_VDSO_64:
+	case ARCH_GET_UNTAG_MASK:
+	case ARCH_ENABLE_TAGGED_ADDR:
+	case ARCH_GET_MAX_TAG_BITS:
+	case ARCH_FORCE_TAGGED_SVA:
+	{
+		fixme("Code %#lx not implemented", code);
 		return -ENOSYS;
+	}
+	default:
+	{
+		warn("Invalid code %#lx", code);
+		return -EINVAL;
+	}
 	}
 }
 
 /* https://man7.org/linux/man-pages/man2/set_tid_address.2.html */
 static pid_t sys_set_tid_address(int *tidptr)
 {
+	if (tidptr == nullptr)
+		return -EINVAL;
+
 	Tasking::TCB *tcb = thisThread;
-	*tidptr = tcb->ID;
+
+	tcb->Linux.clear_child_tid = tidptr;
 	return tcb->ID;
 }
 
@@ -382,7 +584,7 @@ static SyscallData LinuxSyscallsTable[] = {
 	[__NR_lseek] = {"lseek", (void *)sys_lseek},
 	[__NR_mmap] = {"mmap", (void *)sys_mmap},
 	[__NR_mprotect] = {"mprotect", (void *)sys_mprotect},
-	[__NR_munmap] = {"munmap", (void *)nullptr},
+	[__NR_munmap] = {"munmap", (void *)sys_munmap},
 	[__NR_brk] = {"brk", (void *)sys_brk},
 	[__NR_rt_sigaction] = {"rt_sigaction", (void *)nullptr},
 	[__NR_rt_sigprocmask] = {"rt_sigprocmask", (void *)nullptr},
@@ -403,8 +605,8 @@ static SyscallData LinuxSyscallsTable[] = {
 	[__NR_shmget] = {"shmget", (void *)nullptr},
 	[__NR_shmat] = {"shmat", (void *)nullptr},
 	[__NR_shmctl] = {"shmctl", (void *)nullptr},
-	[__NR_dup] = {"dup", (void *)nullptr},
-	[__NR_dup2] = {"dup2", (void *)nullptr},
+	[__NR_dup] = {"dup", (void *)sys_dup},
+	[__NR_dup2] = {"dup2", (void *)sys_dup2},
 	[__NR_pause] = {"pause", (void *)nullptr},
 	[__NR_nanosleep] = {"nanosleep", (void *)nullptr},
 	[__NR_getitimer] = {"getitimer", (void *)nullptr},
@@ -837,7 +1039,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	if (unlikely(!call))
 	{
-		error("Syscall %s(%d) not implemented.",
+		fixme("Syscall %s(%d) not implemented.",
 			  Syscall.Name, Frame->rax);
 		return -ENOSYS;
 	}

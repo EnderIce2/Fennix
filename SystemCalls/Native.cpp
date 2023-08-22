@@ -224,6 +224,9 @@ static int sys_ipc(SysFrm *, enum IPCCommand Command,
 static long sys_local_thread_state(SysFrm *, int Code,
 								   unsigned long Address)
 {
+	/* TODO: return EFAULT if Address is not mapped */
+	/* TODO: return EINVAL if Code is invalid */
+	/* TODO: return EPERM if Address is outside of process address space */
 #if defined(a64) || defined(aa64)
 	switch (Code)
 	{

@@ -66,9 +66,9 @@ namespace Time
 	{
 #if defined(a86)
 		fixme(""); // FIXME: This is not a good way to measure the clock speed
-		size_t Start = CPU::Counter();
+		uint64_t Start = CPU::Counter();
 		TimeManager->Sleep(1, Units::Milliseconds);
-		size_t End = CPU::Counter();
+		uint64_t End = CPU::Counter();
 
 		this->clk = End - Start;
 		this->ClassCreationTime = this->GetCounter();

@@ -39,13 +39,6 @@ extern struct BootInfo bInfo;
 extern bool DebuggerIsAttached;
 #ifdef __cplusplus
 
-#ifdef DEBUG
-#define MEM_TRK_MAX_SIZE 0x100
-extern bool EnableExternalMemoryTracer;
-extern char mExtTrkLog[];
-extern LockClass mExtTrkLock;
-#endif
-
 extern Video::Display *Display;
 extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;

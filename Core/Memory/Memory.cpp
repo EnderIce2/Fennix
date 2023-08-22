@@ -25,10 +25,9 @@
 #endif
 
 #include "HeapAllocators/Xalloc/Xalloc.hpp"
-#include "../Library/liballoc_1_1.h"
+#include "HeapAllocators/liballoc_1_1/liballoc_1_1.h"
 #include "../../kernel.h"
 
-// #define DEBUG_ALLOCATIONS_SL 1
 // #define DEBUG_ALLOCATIONS 1
 
 #ifdef DEBUG_ALLOCATIONS
@@ -37,11 +36,6 @@
 	__sync
 #else
 #define memdbg(m, ...)
-#endif
-
-#ifdef DEBUG_ALLOCATIONS_SL
-NewLock(AllocatorLock);
-NewLock(OperatorAllocatorLock);
 #endif
 
 using namespace Memory;
@@ -53,6 +47,7 @@ bool PSESupport = false;
 
 MemoryAllocatorType AllocatorType = MemoryAllocatorType::Pages;
 Xalloc::V1 *XallocV1Allocator = nullptr;
+Xalloc::V2 *XallocV2Allocator = nullptr;
 
 #ifdef DEBUG
 NIF void tracepagetable(PageTable *pt)
@@ -119,27 +114,6 @@ NIF void MapFramebuffer(PageTable *PT)
 						(size_t)(bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height),
 						PTFlag::RW | PTFlag::US | PTFlag::G);
 		itrfb++;
-
-#ifdef DEBUG
-		if (EnableExternalMemoryTracer)
-		{
-			char LockTmpStr[64];
-			strcpy_unsafe(LockTmpStr, __FUNCTION__);
-			strcat_unsafe(LockTmpStr, "_memTrk");
-			mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-			sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-					bInfo.Framebuffer[itrfb].BaseAddress,
-					(bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height) + PAGE_SIZE);
-			UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-			for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-			{
-				if (mExtTrkLog[i] == '\r')
-					break;
-				mTrkUART.Write(mExtTrkLog[i]);
-			}
-			mExtTrkLock.Unlock();
-		}
-#endif
 	}
 }
 
@@ -253,37 +227,6 @@ NIF void MapKernel(PageTable *PT)
 			KernelAllocator.ReservePage((void *)k);
 		}
 	}
-
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-				bInfo.Kernel.PhysicalBase,
-				bInfo.Kernel.Size);
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-
-		sprintf(mExtTrkLog, "Rsrv( %p %ld )\n\r",
-				bInfo.Kernel.VirtualBase,
-				bInfo.Kernel.Size);
-		mExtTrkLock.Unlock();
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-	}
-#endif
 }
 
 NIF void InitializeMemoryManagement()
@@ -404,20 +347,22 @@ NIF void InitializeMemoryManagement()
 	CPU::PageTable(KernelPageTable);
 	debug("Page table updated.");
 
-	/* FIXME: Read kernel config */
 	XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
-	AllocatorType = MemoryAllocatorType::XallocV1;
-	trace("XallocV1 Allocator initialized (%p)", XallocV1Allocator);
+	XallocV2Allocator = new Xalloc::V2((void *)KERNEL_HEAP_BASE);
+	trace("XallocV1 Allocator initialized at %#lx", XallocV1Allocator);
+	trace("XallocV2 Allocator initialized at %#lx", XallocV2Allocator);
+
+	/* FIXME: Read kernel config */
+	AllocatorType = MemoryAllocatorType::liballoc11;
 }
 
 void *malloc(size_t Size)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("malloc(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("malloc(%d)->[%s]", Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	void *ret = nullptr;
 	switch (AllocatorType)
@@ -425,7 +370,6 @@ void *malloc(size_t Size)
 	case MemoryAllocatorType::Pages:
 	{
 		ret = KernelAllocator.RequestPages(TO_PAGES(Size + 1));
-		memset(ret, 0, Size);
 		break;
 	}
 	case MemoryAllocatorType::XallocV1:
@@ -433,10 +377,14 @@ void *malloc(size_t Size)
 		ret = XallocV1Allocator->malloc(Size);
 		break;
 	}
+	case MemoryAllocatorType::XallocV2:
+	{
+		ret = XallocV2Allocator->malloc(Size);
+		break;
+	}
 	case MemoryAllocatorType::liballoc11:
 	{
 		ret = PREFIX(malloc)(Size);
-		memset(ret, 0, Size);
 		break;
 	}
 	default:
@@ -445,26 +393,8 @@ void *malloc(size_t Size)
 		CPU::Stop();
 	}
 	}
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "malloc( %ld )=%p~%p\n\r",
-				Size,
-				ret, __builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
+
+	memset(ret, 0, Size);
 	return ret;
 }
 
@@ -472,10 +402,9 @@ void *calloc(size_t n, size_t Size)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("calloc(%d, %d)->[%s]", n, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("calloc(%d, %d)->[%s]", n, Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	void *ret = nullptr;
 	switch (AllocatorType)
@@ -483,7 +412,6 @@ void *calloc(size_t n, size_t Size)
 	case MemoryAllocatorType::Pages:
 	{
 		ret = KernelAllocator.RequestPages(TO_PAGES(n * Size + 1));
-		memset(ret, 0, n * Size);
 		break;
 	}
 	case MemoryAllocatorType::XallocV1:
@@ -491,10 +419,14 @@ void *calloc(size_t n, size_t Size)
 		ret = XallocV1Allocator->calloc(n, Size);
 		break;
 	}
+	case MemoryAllocatorType::XallocV2:
+	{
+		ret = XallocV2Allocator->calloc(n, Size);
+		break;
+	}
 	case MemoryAllocatorType::liballoc11:
 	{
 		void *ret = PREFIX(calloc)(n, Size);
-		memset(ret, 0, Size);
 		return ret;
 	}
 	default:
@@ -503,26 +435,8 @@ void *calloc(size_t n, size_t Size)
 		CPU::Stop();
 	}
 	}
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "calloc( %ld %ld )=%p~%p\n\r",
-				n, Size,
-				ret, __builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
+
+	memset(ret, 0, n * Size);
 	return ret;
 }
 
@@ -530,10 +444,9 @@ void *realloc(void *Address, size_t Size)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("realloc(%#lx, %d)->[%s]", Address, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("realloc(%#lx, %d)->[%s]", Address, Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	void *ret = nullptr;
 	switch (AllocatorType)
@@ -541,7 +454,6 @@ void *realloc(void *Address, size_t Size)
 	case unlikely(MemoryAllocatorType::Pages):
 	{
 		ret = KernelAllocator.RequestPages(TO_PAGES(Size + 1)); // WARNING: Potential memory leak
-		memset(ret, 0, Size);
 		break;
 	}
 	case MemoryAllocatorType::XallocV1:
@@ -549,10 +461,14 @@ void *realloc(void *Address, size_t Size)
 		ret = XallocV1Allocator->realloc(Address, Size);
 		break;
 	}
+	case MemoryAllocatorType::XallocV2:
+	{
+		ret = XallocV2Allocator->realloc(Address, Size);
+		break;
+	}
 	case MemoryAllocatorType::liballoc11:
 	{
 		void *ret = PREFIX(realloc)(Address, Size);
-		memset(ret, 0, Size);
 		return ret;
 	}
 	default:
@@ -561,26 +477,8 @@ void *realloc(void *Address, size_t Size)
 		CPU::Stop();
 	}
 	}
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "realloc( %p %ld )=%p~%p\n\r",
-				Address, Size,
-				ret, __builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
+
+	memset(ret, 0, Size);
 	return ret;
 }
 
@@ -588,10 +486,9 @@ void free(void *Address)
 {
 	assert(Address != nullptr);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(AllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("free(%#lx)->[%s]", Address, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("free(%#lx)->[%s]", Address,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	switch (AllocatorType)
 	{
@@ -603,6 +500,11 @@ void free(void *Address)
 	case MemoryAllocatorType::XallocV1:
 	{
 		XallocV1Allocator->free(Address);
+		break;
+	}
+	case MemoryAllocatorType::XallocV2:
+	{
+		XallocV2Allocator->free(Address);
 		break;
 	}
 	case MemoryAllocatorType::liballoc11:
@@ -617,58 +519,17 @@ void free(void *Address)
 		CPU::Stop();
 	}
 	}
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "free( %p )~%p\n\r",
-				Address,
-				__builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 }
 
 void *operator new(std::size_t Size)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("new(%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("new(%d)->[%s]", Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	void *ret = malloc(Size);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "new( %ld )=%p~%p\n\r",
-				Size,
-				ret, __builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 	return ret;
 }
 
@@ -676,32 +537,11 @@ void *operator new[](std::size_t Size)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("new[](%d)->[%s]", Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("new[](%d)->[%s]", Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	void *ret = malloc(Size);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "new[]( %ld )=%p~%p\n\r",
-				Size,
-				ret, __builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 	return ret;
 }
 
@@ -709,39 +549,14 @@ void *operator new(std::size_t Size, std::align_val_t Alignment)
 {
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("new(%d, %d)->[%s]", Size, Alignment, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
-	fixme("operator new with alignment(%#lx) is not implemented", Alignment);
+	memdbg("new(%d, %d)->[%s]", Size, Alignment,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
+
+	fixme("operator new with alignment(%#lx) is not implemented",
+		  Alignment);
 
 	void *ret = malloc(Size);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-#if defined(a64) || defined(aa64)
-		sprintf(mExtTrkLog, "new( %ld %#lx )=%p~%p\n\r",
-				Size, (uintptr_t)Alignment,
-				ret, __builtin_return_address(0));
-#elif defined(a32)
-		sprintf(mExtTrkLog, "new( %ld %#x )=%p~%p\n\r",
-				Size, (uintptr_t)Alignment,
-				ret, __builtin_return_address(0));
-#endif
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 	return ret;
 }
 
@@ -749,64 +564,22 @@ void operator delete(void *Pointer)
 {
 	assert(Pointer != nullptr);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("delete(%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("delete(%#lx)->[%s]", Pointer,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	free(Pointer);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "delete( %p )~%p\n\r",
-				Pointer,
-				__builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 }
 
 void operator delete[](void *Pointer)
 {
 	assert(Pointer != nullptr);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("delete[](%#lx)->[%s]", Pointer, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("delete[](%#lx)->[%s]", Pointer,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	free(Pointer);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "delete[]( %p )~%p\n\r",
-				Pointer,
-				__builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 }
 
 void operator delete(void *Pointer, long unsigned int Size)
@@ -814,32 +587,12 @@ void operator delete(void *Pointer, long unsigned int Size)
 	assert(Pointer != nullptr);
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("delete(%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("delete(%#lx, %d)->[%s]",
+		   Pointer, Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	free(Pointer);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "delete( %p %ld )~%p\n\r",
-				Pointer, Size,
-				__builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 }
 
 void operator delete[](void *Pointer, long unsigned int Size)
@@ -847,30 +600,10 @@ void operator delete[](void *Pointer, long unsigned int Size)
 	assert(Pointer != nullptr);
 	assert(Size > 0);
 
-#ifdef DEBUG_ALLOCATIONS_SL
-	SmartLockClass lock___COUNTER__(OperatorAllocatorLock, (KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown"));
-#endif
-	memdbg("delete[](%#lx, %d)->[%s]", Pointer, Size, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "Unknown");
+	memdbg("delete[](%#lx, %d)->[%s]",
+		   Pointer, Size,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
 
 	free(Pointer);
-#ifdef DEBUG
-	if (EnableExternalMemoryTracer)
-	{
-		char LockTmpStr[64];
-		strcpy_unsafe(LockTmpStr, __FUNCTION__);
-		strcat_unsafe(LockTmpStr, "_memTrk");
-		mExtTrkLock.TimeoutLock(LockTmpStr, 10000);
-		sprintf(mExtTrkLog, "delete[]( %p %ld )~%p\n\r",
-				Pointer, Size,
-				__builtin_return_address(0));
-		UniversalAsynchronousReceiverTransmitter::UART mTrkUART = UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM3);
-		for (short i = 0; i < MEM_TRK_MAX_SIZE; i++)
-		{
-			if (mExtTrkLog[i] == '\r')
-				break;
-			mTrkUART.Write(mExtTrkLog[i]);
-		}
-		mExtTrkLock.Unlock();
-	}
-#endif
 }

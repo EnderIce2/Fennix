@@ -17,6 +17,13 @@
 
 #include <filesystem.hpp>
 
+#ifdef DEBUG
+const char *SeekStrings[] =
+	{"SEEK_SET",
+	 "SEEK_CUR",
+	 "SEEK_END"};
+#endif
+
 namespace VirtualFileSystem
 {
 	ReferenceNode *Node::CreateReference()
@@ -83,10 +90,10 @@ namespace VirtualFileSystem
 		return -1;
 	}
 
-	off_t ReferenceNode::Seek(off_t Offset, int Whence)
+	off_t ReferenceNode::Seek(off_t _Offset, int Whence)
 	{
 		if (this->SymlinkTo)
-			return this->SymlinkTo->Seek(Offset, Whence);
+			return this->SymlinkTo->Seek(_Offset, Whence);
 
 		if (!this->node->Operator)
 		{
@@ -99,25 +106,40 @@ namespace VirtualFileSystem
 		if (this->node->Operator->Seek)
 		{
 			off_t RefOffset = off_t(this->Offset.load());
-			return this->node->Operator->Seek(this->node, Offset, Whence, RefOffset);
+			debug("The node has a seek function");
+			return this->node->Operator->Seek(this->node, _Offset, Whence, RefOffset);
 		}
 
+		debug("Current offset is %d", this->Offset.load());
 		switch (Whence)
 		{
 		case SEEK_SET:
 		{
-			if (Offset > this->node->Length)
+			if (_Offset > this->node->Length)
 			{
 				errno = EINVAL;
 				return -1;
 			}
 
-			this->Offset.store(Offset);
+			if (_Offset < 0)
+			{
+				fixme("Negative offset %d is not implemented", _Offset);
+				_Offset = 0;
+			}
+
+			if (_Offset > this->node->Length)
+			{
+				fixme("Offset %d is bigger than file size %d",
+					  _Offset, this->node->Length);
+				_Offset = this->node->Length;
+			}
+
+			this->Offset.store(_Offset);
 			break;
 		}
 		case SEEK_CUR:
 		{
-			off_t NewOffset = off_t(this->Offset.load()) + Offset;
+			off_t NewOffset = off_t(this->Offset.load()) + _Offset;
 			if (NewOffset > this->node->Length ||
 				NewOffset < 0)
 			{
@@ -130,7 +152,7 @@ namespace VirtualFileSystem
 		}
 		case SEEK_END:
 		{
-			off_t NewOffset = this->node->Length + Offset;
+			off_t NewOffset = this->node->Length + _Offset;
 			if (NewOffset > this->node->Length ||
 				NewOffset < 0)
 			{
@@ -149,7 +171,12 @@ namespace VirtualFileSystem
 		}
 		}
 
-		return (off_t)this->Offset.load();
+		off_t RetOffset = off_t(this->Offset.load());
+		debug("( %d %ld %s[%d] ) -> %d",
+			  _Offset, this->Offset.load(),
+			  SeekStrings[Whence], Whence,
+			  RetOffset);
+		return RetOffset;
 	}
 
 	ReferenceNode::ReferenceNode(Node *node)

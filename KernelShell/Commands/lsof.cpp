@@ -27,7 +27,8 @@ void cmd_lsof(const char *)
 		if (!Proc)
 			continue;
 
-		std::vector<VirtualFileSystem::FileDescriptorTable::FileDescriptor> fds_array = Proc->FileDescriptors->GetFileDescriptors();
+		std::vector<VirtualFileSystem::FileDescriptorTable::Fildes> fds_array =
+			Proc->FileDescriptors->GetFileDescriptors();
 		foreach (auto fd in fds_array)
 			printf("%s %d: %s\n", Proc->Name, fd.Descriptor,
 				   fd.Handle->AbsolutePath.c_str());

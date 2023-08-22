@@ -23,7 +23,11 @@
 #include "../kernel.h"
 
 #ifdef DEBUG
-#define PRINT_BACKTRACE
+/* This might end up in a deadlock in the deadlock handler.
+	Nobody can escape the deadlock, not even the
+	deadlock handler itself. */
+
+// #define PRINT_BACKTRACE
 #endif
 
 #ifdef PRINT_BACKTRACE

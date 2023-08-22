@@ -254,7 +254,8 @@ void lsof()
 
 			printf("%s:\n", Proc->Name);
 
-			std::vector<VirtualFileSystem::FileDescriptorTable::FileDescriptor> fds_array = Proc->FileDescriptors->GetFileDescriptors();
+			std::vector<VirtualFileSystem::FileDescriptorTable::Fildes> fds_array =
+				Proc->FileDescriptors->GetFileDescriptors();
 			foreach (auto fd in fds_array)
 				printf("  %d: %s\n", fd.Descriptor, fd.Handle->AbsolutePath.c_str());
 		}
@@ -307,7 +308,10 @@ int SpawnInit()
 		"--critical",
 		nullptr};
 
-	return Execute::Spawn(Config.InitPath, argv, envp);
+	return Execute::Spawn(Config.InitPath, argv, envp,
+						  nullptr,
+						  Tasking::TaskCompatibility::Native,
+						  true);
 }
 
 /* Files: 0.tga 1.tga ... 26.tga */
@@ -451,7 +455,10 @@ void ExitLogoAnimationThread()
 	}
 }
 
-void CleanupProcessesThreadWrapper() { TaskManager->CleanupProcessesThread(); }
+void CleanupProcessesThreadWrapper()
+{
+	TaskManager->CleanupProcessesThread();
+}
 
 void KernelMainThread()
 {
@@ -530,11 +537,10 @@ void KernelMainThread()
 		goto Exit;
 	}
 
-	initThread = TaskManager->GetThreadByID(tid);
-	initThread->SetCritical(true);
 	KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
 	thisThread->SetPriority(Tasking::Idle);
 
+	initThread = TaskManager->GetThreadByID(tid);
 	TaskManager->WaitForThread(initThread);
 	ExitCode = initThread->GetExitCode();
 Exit:

@@ -44,6 +44,7 @@
 #define tskdbg(m, ...)
 #endif
 
+/* For kernel threads only */
 void ThreadDoExit()
 {
 	CPUData *CPUData = GetCurrentCPU();
@@ -64,9 +65,12 @@ namespace Tasking
 		assert(name != nullptr);
 		assert(strlen(name) > 0);
 
-		trace("Renaming thread %s to %s", this->Name, name);
+		trace("Renaming thread %s to %s",
+			  this->Name, name);
+
 		if (this->Name)
 			delete[] this->Name;
+
 		this->Name = new char[strlen(name) + 1];
 		strcpy((char *)this->Name, name);
 	}
@@ -120,18 +124,182 @@ namespace Tasking
 		this->Registers.r9 = Arg6;
 		if (Function != nullptr)
 			this->Registers.rip = (uint64_t)Function;
+#elif defined(a32)
+		this->Registers.eax = Arg1;
+		this->Registers.ebx = Arg2;
+		this->Registers.ecx = Arg3;
+		this->Registers.edx = Arg4;
+		this->Registers.esi = Arg5;
+		this->Registers.edi = Arg6;
+		if (Function != nullptr)
+			this->Registers.eip = (uint32_t)Function;
 #else
 #warning "SYSV ABI not implemented for this architecture"
 #endif
 	}
 
-	__no_sanitize("undefined")
-		TCB::TCB(Task *ctx, PCB *Parent, IP EntryPoint,
-				 const char **argv, const char **envp,
-				 const std::vector<AuxiliaryVector> &auxv,
-				 TaskArchitecture Architecture,
-				 TaskCompatibility Compatibility,
-				 bool ThreadNotReady)
+	__no_sanitize("undefined") void TCB::SetupUserStack_x86_64(const char **argv,
+															   const char **envp,
+															   const std::vector<AuxiliaryVector> &auxv)
+	{
+		size_t ArgvSize = 0;
+		if (argv)
+			while (argv[ArgvSize] != nullptr)
+				ArgvSize++;
+
+		size_t EnvpSize = 0;
+		if (envp)
+			while (envp[EnvpSize] != nullptr)
+				EnvpSize++;
+
+		debug("ArgvSize: %d", ArgvSize);
+		debug("EnvpSize: %d", EnvpSize);
+
+		/* https://articles.manugarg.com/aboutelfauxiliaryvectors.html */
+		/* https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9 */
+		// rsp is the top of the stack
+		char *Stack = (char *)this->Stack->GetStackPhysicalTop();
+		// Temporary stack pointer for strings
+		char *StackStrings = (char *)Stack;
+		char *StackStringsVirtual = (char *)this->Stack->GetStackTop();
+
+		// Store string pointers for later
+		uintptr_t *ArgvStrings = nullptr;
+		uintptr_t *EnvpStrings = nullptr;
+		if (ArgvSize > 0)
+			ArgvStrings = new uintptr_t[ArgvSize];
+		if (EnvpSize > 0)
+			EnvpStrings = new uintptr_t[EnvpSize];
+
+		for (size_t i = 0; i < ArgvSize; i++)
+		{
+			// Subtract the length of the string and the null terminator
+			StackStrings -= strlen(argv[i]) + 1;
+			StackStringsVirtual -= strlen(argv[i]) + 1;
+			// Store the pointer to the string
+			ArgvStrings[i] = (uintptr_t)StackStringsVirtual;
+			// Copy the string to the stack
+			strcpy(StackStrings, argv[i]);
+			debug("argv[%d]: %s", i, argv[i]);
+		}
+
+		for (size_t i = 0; i < EnvpSize; i++)
+		{
+			// Subtract the length of the string and the null terminator
+			StackStrings -= strlen(envp[i]) + 1;
+			StackStringsVirtual -= strlen(envp[i]) + 1;
+			// Store the pointer to the string
+			EnvpStrings[i] = (uintptr_t)StackStringsVirtual;
+			// Copy the string to the stack
+			strcpy(StackStrings, envp[i]);
+			debug("envp[%d]: %s", i, envp[i]);
+		}
+
+		// Align the stack to 16 bytes
+		StackStrings -= (uintptr_t)StackStrings & 0xF;
+		// Set "Stack" to the new stack pointer
+		Stack = (char *)StackStrings;
+		// If argv and envp sizes are odd then we need to align the stack
+		Stack -= (ArgvSize + EnvpSize) % 2;
+
+		// We need 8 bit pointers for the stack from here
+		uintptr_t *Stack64 = (uintptr_t *)Stack;
+
+		// Store the null terminator
+		Stack64--;
+		*Stack64 = AT_NULL;
+
+		// auxv_array is initialized with auxv elements. If the array is empty then we add a null terminator
+		std::vector<AuxiliaryVector> auxv_array = auxv;
+		if (auxv_array.size() == 0)
+			auxv_array.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
+
+		// Store auxillary vector
+		foreach (AuxiliaryVector var in auxv_array)
+		{
+			// Subtract the size of the auxillary vector
+			Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uintptr_t);
+			// Store the auxillary vector
+			POKE(Elf64_auxv_t, Stack64) = var.archaux;
+			// TODO: Store strings to the stack
+		}
+
+		// Store the null terminator
+		Stack64--;
+		*Stack64 = AT_NULL;
+
+		// Store EnvpStrings[] to the stack
+		Stack64 -= EnvpSize; // (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize)
+		for (size_t i = 0; i < EnvpSize; i++)
+		{
+			*(Stack64 + i) = (uintptr_t)EnvpStrings[i];
+			debug("EnvpStrings[%d]: %#lx",
+				  i, EnvpStrings[i]);
+		}
+
+		// Store the null terminator
+		Stack64--;
+		*Stack64 = AT_NULL;
+
+		// Store ArgvStrings[] to the stack
+		Stack64 -= ArgvSize; // (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize)
+		for (size_t i = 0; i < ArgvSize; i++)
+		{
+			*(Stack64 + i) = (uintptr_t)ArgvStrings[i];
+			debug("ArgvStrings[%d]: %#lx",
+				  i, ArgvStrings[i]);
+		}
+
+		// Store the argc
+		Stack64--;
+		*Stack64 = ArgvSize;
+
+		// Set "Stack" to the new stack pointer
+		Stack = (char *)Stack64;
+
+		/* We need the virtual address but because we are in the kernel we can't use the process page table.
+			So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
+		uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)Stack;
+		debug("SubtractStack: %#lx", SubtractStack);
+
+		// Set the stack pointer to the new stack
+		this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
+
+		if (ArgvSize > 0)
+			delete[] ArgvStrings;
+		if (EnvpSize > 0)
+			delete[] EnvpStrings;
+
+#ifdef DEBUG
+		DumpData("Stack Data", (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
+#endif
+
+		this->Registers.rdi = (uintptr_t)ArgvSize;										 // argc
+		this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						 // argv
+		this->Registers.rcx = (uintptr_t)EnvpSize;										 // envc
+		this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
+	}
+
+	void TCB::SetupUserStack_x86_32(const char **argv,
+									const char **envp,
+									const std::vector<AuxiliaryVector> &auxv)
+	{
+		fixme("Not implemented");
+	}
+
+	void TCB::SetupUserStack_aarch64(const char **argv,
+									 const char **envp,
+									 const std::vector<AuxiliaryVector> &auxv)
+	{
+		fixme("Not implemented");
+	}
+
+	TCB::TCB(Task *ctx, PCB *Parent, IP EntryPoint,
+			 const char **argv, const char **envp,
+			 const std::vector<AuxiliaryVector> &auxv,
+			 TaskArchitecture Architecture,
+			 TaskCompatibility Compatibility,
+			 bool ThreadNotReady)
 	{
 		assert(ctx != nullptr);
 		assert(Architecture >= _ArchitectureMin);
@@ -152,42 +320,20 @@ namespace Tasking
 
 		if (this->Name)
 			delete[] this->Name;
+
 		this->Name = new char[strlen(this->Parent->Name) + 1];
 		strcpy((char *)this->Name, this->Parent->Name);
 
 		this->EntryPoint = EntryPoint;
 		this->ExitCode = KILL_CRASH;
-		this->Info.Architecture = Architecture;
-		this->Info.Compatibility = Compatibility;
-		this->Security.ExecutionMode =
-			this->Parent->Security.ExecutionMode;
+
 		if (ThreadNotReady)
 			this->Status = TaskStatus::Zombie;
 		else
 			this->Status = TaskStatus::Ready;
+
 		this->Memory = new Memory::MemMgr(this->Parent->PageTable,
 										  this->Parent->memDirectory);
-		std::size_t FXPgs = TO_PAGES(sizeof(CPU::x64::FXState) + 1);
-		this->FPU = (CPU::x64::FXState *)this->Memory->RequestPages(FXPgs);
-		memset(this->FPU, 0, sizeof(CPU::x64::FXState));
-
-		// TODO: Is really a good idea to use the FPU in kernel mode?
-		this->FPU->mxcsr = 0b0001111110000000;
-		this->FPU->mxcsrmask = 0b1111111110111111;
-		this->FPU->fcw = 0b0000001100111111;
-
-		// CPU::x64::fxrstor(this->FPU);
-		// uint16_t FCW = 0b1100111111;
-		// asmv("fldcw %0"
-		//      :
-		//      : "m"(FCW)
-		//      : "memory");
-		// uint32_t MXCSR = 0b1111110000000;
-		// asmv("ldmxcsr %0"
-		//      :
-		//      : "m"(MXCSR)
-		//      : "memory");
-		// CPU::x64::fxsave(this->FPU);
 
 #if defined(a64)
 		this->Registers.rip = EntryPoint;
@@ -221,7 +367,17 @@ namespace Tasking
 			this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.rsp) = (uintptr_t)ThreadDoExit;
 #elif defined(a32)
+			this->Registers.cs = GDT_KERNEL_CODE;
+			this->Registers.ss = GDT_KERNEL_DATA;
+			this->Registers.eflags.AlwaysOne = 1;
+			this->Registers.eflags.IF = 1;
+			this->Registers.eflags.ID = 1;
+			this->Registers.esp = ((uintptr_t)this->Stack->GetStackTop());
+			POKE(uintptr_t, this->Registers.esp) = (uintptr_t)ThreadDoExit;
 #elif defined(aa64)
+			this->Registers.pc = EntryPoint;
+			this->Registers.sp = ((uintptr_t)this->Stack->GetStackTop());
+			POKE(uintptr_t, this->Registers.sp) = (uintptr_t)ThreadDoExit;
 #endif
 			break;
 		}
@@ -250,150 +406,23 @@ namespace Tasking
 			/* We need to leave the libc's crt
 			   to make a syscall when the Thread
 			   is exited or we are going to get
-			   GPF or PF exception. */
+			   an exception. */
 
-#pragma region
-			size_t ArgvSize = 0;
-			if (argv)
-				while (argv[ArgvSize] != nullptr)
-					ArgvSize++;
-
-			size_t EnvpSize = 0;
-			if (envp)
-				while (envp[EnvpSize] != nullptr)
-					EnvpSize++;
-
-			debug("ArgvSize: %d", ArgvSize);
-			debug("EnvpSize: %d", EnvpSize);
-
-			/* https://articles.manugarg.com/aboutelfauxiliaryvectors.html */
-			/* https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9 */
-			// rsp is the top of the stack
-			char *Stack = (char *)this->Stack->GetStackPhysicalTop();
-			// Temporary stack pointer for strings
-			char *StackStrings = (char *)Stack;
-			char *StackStringsVirtual = (char *)this->Stack->GetStackTop();
-
-			// Store string pointers for later
-			uintptr_t *ArgvStrings = nullptr;
-			uintptr_t *EnvpStrings = nullptr;
-			if (ArgvSize > 0)
-				ArgvStrings = new uintptr_t[ArgvSize];
-			if (EnvpSize > 0)
-				EnvpStrings = new uintptr_t[EnvpSize];
-
-			for (size_t i = 0; i < ArgvSize; i++)
-			{
-				// Subtract the length of the string and the null terminator
-				StackStrings -= strlen(argv[i]) + 1;
-				StackStringsVirtual -= strlen(argv[i]) + 1;
-				// Store the pointer to the string
-				ArgvStrings[i] = (uintptr_t)StackStringsVirtual;
-				// Copy the string to the stack
-				strcpy(StackStrings, argv[i]);
-				debug("argv[%d]: %s", i, argv[i]);
-			}
-
-			for (size_t i = 0; i < EnvpSize; i++)
-			{
-				// Subtract the length of the string and the null terminator
-				StackStrings -= strlen(envp[i]) + 1;
-				StackStringsVirtual -= strlen(envp[i]) + 1;
-				// Store the pointer to the string
-				EnvpStrings[i] = (uintptr_t)StackStringsVirtual;
-				// Copy the string to the stack
-				strcpy(StackStrings, envp[i]);
-				debug("envp[%d]: %s", i, envp[i]);
-			}
-
-			// Align the stack to 16 bytes
-			StackStrings -= (uintptr_t)StackStrings & 0xF;
-			// Set "Stack" to the new stack pointer
-			Stack = (char *)StackStrings;
-			// If argv and envp sizes are odd then we need to align the stack
-			Stack -= (ArgvSize + EnvpSize) % 2;
-
-			// We need 8 bit pointers for the stack from here
-			uintptr_t *Stack64 = (uintptr_t *)Stack;
-
-			// Store the null terminator
-			Stack64--;
-			*Stack64 = AT_NULL;
-
-			// auxv_array is initialized with auxv elements. If the array is empty then we add a null terminator
-			std::vector<AuxiliaryVector> auxv_array = auxv;
-			if (auxv_array.size() == 0)
-				auxv_array.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-
-			// Store auxillary vector
-			foreach (AuxiliaryVector var in auxv_array)
-			{
-				// Subtract the size of the auxillary vector
-				Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uintptr_t);
-				// Store the auxillary vector
-				POKE(Elf64_auxv_t, Stack64) = var.archaux;
-				// TODO: Store strings to the stack
-			}
-
-			// Store the null terminator
-			Stack64--;
-			*Stack64 = AT_NULL;
-
-			// Store EnvpStrings[] to the stack
-			Stack64 -= EnvpSize; // (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize)
-			for (size_t i = 0; i < EnvpSize; i++)
-			{
-				*(Stack64 + i) = (uintptr_t)EnvpStrings[i];
-				debug("EnvpStrings[%d]: %#lx",
-					  i, EnvpStrings[i]);
-			}
-
-			// Store the null terminator
-			Stack64--;
-			*Stack64 = AT_NULL;
-
-			// Store ArgvStrings[] to the stack
-			Stack64 -= ArgvSize; // (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize)
-			for (size_t i = 0; i < ArgvSize; i++)
-			{
-				*(Stack64 + i) = (uintptr_t)ArgvStrings[i];
-				debug("ArgvStrings[%d]: %#lx",
-					  i, ArgvStrings[i]);
-			}
-
-			// Store the argc
-			Stack64--;
-			*Stack64 = ArgvSize;
-
-			// Set "Stack" to the new stack pointer
-			Stack = (char *)Stack64;
-
-			/* We need the virtual address but because we are in the kernel we can't use the process page table.
-				So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
-			uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)Stack;
-			debug("SubtractStack: %#lx", SubtractStack);
-
-			// Set the stack pointer to the new stack
-			this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
-
-			if (ArgvSize > 0)
-				delete[] ArgvStrings;
-			if (EnvpSize > 0)
-				delete[] EnvpStrings;
-
-#ifdef DEBUG
-			DumpData("Stack Data", (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
-#endif
-
-			this->Registers.rdi = (uintptr_t)ArgvSize;										 // argc
-			this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						 // argv
-			this->Registers.rcx = (uintptr_t)EnvpSize;										 // envc
-			this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
-
-#pragma endregion
-
+			this->SetupUserStack_x86_64(argv, envp, auxv);
 #elif defined(a32)
+			this->Registers.cs = GDT_USER_CODE;
+			this->Registers.ss = GDT_USER_DATA;
+			this->Registers.eflags.AlwaysOne = 1;
+			this->Registers.eflags.IF = 1;
+			this->Registers.eflags.ID = 1;
+			/* We need to leave the libc's crt
+			   to make a syscall when the Thread
+			   is exited or we are going to get
+			   an exception. */
+
+			this->SetupUserStack_x86_32(argv, envp, auxv);
 #elif defined(aa64)
+			this->SetupUserStack_aarch64(argv, envp, auxv);
 #endif
 #ifdef DEBUG_TASKING
 			DumpData(this->Name, this->Stack, STACK_SIZE);
@@ -404,7 +433,32 @@ namespace Tasking
 			assert(false);
 		}
 
-		this->Info.SpawnTime = TimeManager->GetCounter();
+		this->Info.Architecture = Architecture;
+		this->Info.Compatibility = Compatibility;
+		this->Security.ExecutionMode =
+			this->Parent->Security.ExecutionMode;
+
+		std::size_t FXPgs = TO_PAGES(sizeof(CPU::x64::FXState) + 1);
+		this->FPU = (CPU::x64::FXState *)this->Memory->RequestPages(FXPgs);
+		memset(this->FPU, 0, sizeof(CPU::x64::FXState));
+
+		// TODO: Is really a good idea to use the FPU in kernel mode?
+		this->FPU->mxcsr = 0b0001111110000000;
+		this->FPU->mxcsrmask = 0b1111111110111111;
+		this->FPU->fcw = 0b0000001100111111;
+
+		// CPU::x64::fxrstor(this->FPU);
+		// uint16_t FCW = 0b1100111111;
+		// asmv("fldcw %0"
+		//      :
+		//      : "m"(FCW)
+		//      : "memory");
+		// uint32_t MXCSR = 0b1111110000000;
+		// asmv("ldmxcsr %0"
+		//      :
+		//      : "m"(MXCSR)
+		//      : "memory");
+		// CPU::x64::fxsave(this->FPU);
 
 #ifdef DEBUG
 #ifdef a64
@@ -436,6 +490,8 @@ namespace Tasking
 			  this->Parent->ID);
 #endif
 
+		this->Info.SpawnTime = TimeManager->GetCounter();
+
 		this->Parent->Threads.push_back(this);
 
 		if (this->Parent->Threads.size() == 1 &&
@@ -448,13 +504,20 @@ namespace Tasking
 
 	TCB::~TCB()
 	{
+		/* Remove us from the process list so we
+			don't get scheduled anymore */
 		std::vector<Tasking::TCB *> &Threads = this->Parent->Threads;
 		Threads.erase(std::find(Threads.begin(),
 								Threads.end(),
 								this));
 
+		/* Free Name */
 		delete[] this->Name;
+
+		/* Free CPU Stack */
 		delete this->Stack;
+
+		/* Free all allocated memory */
 		delete this->Memory;
 	}
 }

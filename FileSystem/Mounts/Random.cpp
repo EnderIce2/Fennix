@@ -15,16 +15,38 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_FILESYSTEM_DEV_H__
-#define __FENNIX_KERNEL_FILESYSTEM_DEV_H__
-
-#include <types.h>
-
 #include <filesystem.hpp>
+#include <rand.hpp>
+#include <errno.h>
 
-void Init_Null(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Random(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Teletype(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Zero(VirtualFileSystem::Virtual *vfs_ctx);
+#include "../../kernel.h"
 
-#endif // !__FENNIX_KERNEL_FILESYSTEM_DEV_H__
+using namespace VirtualFileSystem;
+
+ReadFSFunction(Random_Read)
+{
+	if (Size <= 0)
+		return 0;
+
+	uint64_t *buf = (uint64_t *)Buffer;
+	for (size_t i = 0; i < Size / sizeof(uint64_t); i++)
+		buf[i] = Random::rand64();
+	return Size;
+}
+
+ReadFSFunction(Random_Write)
+{
+	return Size;
+}
+
+FileSystemOperations random_op = {
+	.Name = "Random",
+	.Read = Random_Read,
+	.Write = Random_Write,
+};
+
+void Init_Random(Virtual *vfs_ctx)
+{
+	Node *n = vfs_ctx->Create("random", CHARDEVICE, DevFS);
+	n->Operator = &random_op;
+}

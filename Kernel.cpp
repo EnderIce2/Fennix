@@ -17,10 +17,11 @@
 
 #include "kernel.h"
 
+#include <filesystem/mounts.hpp>
 #include <filesystem/ustar.hpp>
-#include <ints.hpp>
 #include <memory.hpp>
 #include <convert.h>
+#include <ints.hpp>
 #include <printf.h>
 #include <lock.hpp>
 #include <uart.hpp>
@@ -33,12 +34,6 @@
 #include "Tests/t.h"
 
 bool DebuggerIsAttached = false;
-
-#ifdef DEBUG
-bool EnableExternalMemoryTracer = false; /* This can be modified while we are debugging with GDB. */
-char mExtTrkLog[MEM_TRK_MAX_SIZE];
-LockClass mExtTrkLock;
-#endif
 
 /**
  * Fennix Kernel
@@ -223,7 +218,7 @@ Time::time *TimeManager = nullptr;
 VirtualFileSystem::Virtual *vfs = nullptr;
 
 KernelConfig Config = {
-	.AllocatorType = Memory::MemoryAllocatorType::XallocV1,
+	.AllocatorType = Memory::MemoryAllocatorType::liballoc11,
 	.SchedulerType = Multi,
 	.DriverDirectory = {'/', 'm', 'o', 'd', 'u', 'l', 'e', 's', '\0'},
 	.InitPath = {'/', 'b', 'i', 'n', '/', 'i', 'n', 'i', 't', '\0'},
@@ -521,6 +516,11 @@ EXTERNC NIF void Main()
 		}
 	}
 
+	Init_Null(vfs);
+	Init_Random(vfs);
+	Init_Teletype(vfs);
+	Init_Zero(vfs);
+
 	KPrint("\e058C19################################");
 	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
 	CPU::Halt(true);
@@ -574,9 +574,9 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	 * is a global constructor but we need
 	 * memory management to be initialized first.
 	 */
+	TestMemoryAllocation();
 	TestString();
 	Test_std();
-	TestMemoryAllocation();
 #endif
 	EnableProfiler = true;
 	Main();

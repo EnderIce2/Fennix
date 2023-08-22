@@ -159,17 +159,35 @@ namespace Tasking
 	private:
 		class Task *ctx = nullptr;
 
+		void SetupUserStack_x86_64(const char **argv,
+								   const char **envp,
+								   const std::vector<AuxiliaryVector> &auxv);
+
+		void SetupUserStack_x86_32(const char **argv,
+								   const char **envp,
+								   const std::vector<AuxiliaryVector> &auxv);
+
+		void SetupUserStack_aarch64(const char **argv,
+									const char **envp,
+									const std::vector<AuxiliaryVector> &auxv);
+
 	public:
+		/* Basic info */
 		TID ID = -1;
-		const char * Name = nullptr;
+		const char *Name = nullptr;
 		class PCB *Parent = nullptr;
 		IP EntryPoint = 0;
 
+		/* Statuses */
 		std::atomic_int ExitCode;
-		std::atomic<TaskStatus> Status = TaskStatus::UnknownStatus;
-		Memory::StackGuard *Stack;
-		Memory::MemMgr *Memory;
+		std::atomic<TaskStatus> Status = TaskStatus::Zombie;
 		int ErrorNumber;
+
+		/* Memory */
+		Memory::MemMgr *Memory;
+		Memory::StackGuard *Stack;
+
+		/* CPU state */
 #if defined(a64)
 		CPU::x64::TrapFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
@@ -180,6 +198,9 @@ namespace Tasking
 		uintptr_t Registers; // TODO
 #endif
 		uintptr_t IPHistory[128];
+		CPU::x64::FXState *FPU;
+
+		/* Info & Security info */
 		struct
 		{
 			TaskExecutionMode ExecutionMode = UnknownExecutionMode;
@@ -188,7 +209,13 @@ namespace Tasking
 			bool IsKernelDebugEnabled = false;
 		} Security{};
 		TaskInfo Info{};
-		CPU::x64::FXState *FPU;
+
+		/* Compatibility structures */
+		struct
+		{
+			int *set_child_tid{};
+			int *clear_child_tid{};
+		} Linux{};
 
 		void Rename(const char *name);
 		void SetPriority(TaskPriority priority);
@@ -228,11 +255,16 @@ namespace Tasking
 		bool OwnPageTable = false;
 
 	public:
+		/* Basic info */
 		PID ID = -1;
-		const char * Name = nullptr;
+		const char *Name = nullptr;
 		PCB *Parent = nullptr;
+
+		/* Statuses */
 		std::atomic_int ExitCode;
 		std::atomic<TaskStatus> Status = Zombie;
+
+		/* Info & Security info */
 		struct
 		{
 			TaskExecutionMode ExecutionMode = UnknownExecutionMode;
@@ -246,16 +278,25 @@ namespace Tasking
 			} Real, Effective;
 		} Security{};
 		TaskInfo Info{};
-		std::vector<TCB *> Threads;
-		std::vector<PCB *> Children;
-		InterProcessCommunication::IPC *IPC;
-		Memory::PageTable *PageTable;
-		SymbolResolver::Symbols *ELFSymbolTable;
+
+		/* Filesystem */
 		Node *CurrentWorkingDirectory;
 		Node *ProcessDirectory;
 		Node *memDirectory;
-		Memory::MemMgr *Memory;
 		FileDescriptorTable *FileDescriptors;
+
+		/* Memory */
+		Memory::PageTable *PageTable;
+		Memory::MemMgr *Memory;
+		Memory::ProgramBreak *ProgramBreak;
+
+		/* Other */
+		InterProcessCommunication::IPC *IPC;
+		SymbolResolver::Symbols *ELFSymbolTable;
+
+		/* Threads & Children */
+		std::vector<TCB *> Threads;
+		std::vector<PCB *> Children;
 
 	public:
 		void Rename(const char *name);

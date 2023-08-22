@@ -66,16 +66,12 @@ extern uintptr_t _kernel_bss_start, _kernel_bss_end;
 #define FROM_PAGES(d) ((d)*PAGE_SIZE)
 
 #if defined(a64) || defined(aa64)
-#define NORMAL_VMA_OFFSET 0xFFFF800000000000
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
-#define KERNEL_HEAP_BASE 0xFFFFA00000000000
-#define USER_HEAP_BASE 0xFFFFB00000000000
+#define KERNEL_HEAP_BASE 0xFFFFFF0000000000
 #define USER_STACK_BASE 0xFFFFEFFFFFFF0000
 #elif defined(a32)
-#define NORMAL_VMA_OFFSET 0x80000000
 #define KERNEL_VMA_OFFSET 0xC0000000
 #define KERNEL_HEAP_BASE 0xA0000000
-#define USER_HEAP_BASE 0xB0000000
 #define USER_STACK_BASE 0xEFFFFFFF
 #endif
 
@@ -86,6 +82,7 @@ namespace Memory
 		None,
 		Pages,
 		XallocV1,
+		XallocV2,
 		liballoc11
 	};
 
@@ -584,7 +581,34 @@ namespace Memory
 		 * @return A new PageTable with the same content
 		 */
 		PageTable Fork();
+
+		template <typename T>
+		T Get(T Address);
 	} __aligned(0x1000);
+
+	class TempSwitchPT
+	{
+	private:
+		PageTable *Replace = nullptr;
+		PageTable *Restore = nullptr;
+
+	public:
+		TempSwitchPT(PageTable *ReplaceWith,
+					 PageTable *RestoreWith = nullptr)
+			: Replace(ReplaceWith)
+		{
+			extern PageTable *KernelPageTable;
+
+			if (RestoreWith)
+				Restore = RestoreWith;
+			else
+				Restore = KernelPageTable;
+
+			Replace->Update();
+		}
+
+		~TempSwitchPT() { Restore->Update(); }
+	};
 
 	class Physical
 	{
@@ -1075,6 +1099,30 @@ namespace Memory
 		VirtualFileSystem::Node *Directory;
 
 		std::vector<AllocatedPages> AllocatedPagesList;
+	};
+
+	class ProgramBreak
+	{
+	private:
+		PageTable *Table = nullptr;
+		MemMgr *mm = nullptr;
+
+		uintptr_t HeapStart = 0x0;
+		uintptr_t Break = 0x0;
+
+	public:
+		/* Directly to syscall */
+		void *brk(void *Address);
+
+		void InitBrk(uintptr_t Address)
+		{
+			function("%#lx", Address);
+			HeapStart = Address;
+			Break = Address;
+		}
+
+		ProgramBreak(PageTable *Table, MemMgr *mm);
+		~ProgramBreak();
 	};
 
 	class SmartHeap

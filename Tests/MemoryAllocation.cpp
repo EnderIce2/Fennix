@@ -44,7 +44,6 @@ test_mem_new_delete::~test_mem_new_delete()
 		;
 }
 
-extern bool EnableExternalMemoryTracer;
 extern bool DebuggerIsAttached;
 
 void TestMemoryAllocation()
@@ -52,9 +51,9 @@ void TestMemoryAllocation()
 #ifdef a32
 	return; /* Not ready for now. */
 #endif
-	if (EnableExternalMemoryTracer || DebuggerIsAttached)
+	if (DebuggerIsAttached)
 	{
-		debug("The test is disabled when the external memory tracer or a debugger is enabled.");
+		debug("The test is disabled when the debugger is enabled.");
 		return;
 	}
 
@@ -68,13 +67,13 @@ void TestMemoryAllocation()
 
 		debug("Single Page Request Test");
 		{
-			uint64_t prq1 = (uint64_t)KernelAllocator.RequestPage();
+			uintptr_t prq1 = (uintptr_t)KernelAllocator.RequestPage();
 			KernelAllocator.FreePage((void *)prq1);
 
 			for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
 				KernelAllocator.FreePage(KernelAllocator.RequestPage());
 
-			uint64_t prq2 = (uint64_t)KernelAllocator.RequestPage();
+			uintptr_t prq2 = (uintptr_t)KernelAllocator.RequestPage();
 			KernelAllocator.FreePage((void *)prq2);
 
 			debug(" Result:\t\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);
@@ -83,13 +82,13 @@ void TestMemoryAllocation()
 
 		debug("Multiple Page Request Test");
 		{
-			uint64_t prq1 = (uint64_t)KernelAllocator.RequestPages(10);
+			uintptr_t prq1 = (uintptr_t)KernelAllocator.RequestPages(10);
 			KernelAllocator.FreePages((void *)prq1, 10);
 
 			for (size_t i = 0; i < MEMTEST_ITERATIONS; i++)
 				KernelAllocator.FreePages(KernelAllocator.RequestPages(20), 20);
 
-			uint64_t prq2 = (uint64_t)KernelAllocator.RequestPages(10);
+			uintptr_t prq2 = (uintptr_t)KernelAllocator.RequestPages(10);
 			KernelAllocator.FreePages((void *)prq2, 10);
 
 			debug(" Result:\t\t1-[%#lx]; 2-[%#lx]", (void *)prq1, (void *)prq2);

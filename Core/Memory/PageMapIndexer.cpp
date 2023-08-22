@@ -19,25 +19,36 @@
 
 namespace Memory
 {
-    Virtual::PageMapIndexer::PageMapIndexer(uintptr_t VirtualAddress)
-    {
+	Virtual::PageMapIndexer::PageMapIndexer(uintptr_t VirtualAddress)
+	{
+		uintptr_t Address = VirtualAddress;
 #if defined(a64)
-        uintptr_t Address = VirtualAddress;
-        Address >>= 12;
-        this->PTEIndex = Address & 0x1FF;
-        Address >>= 9;
-        this->PDEIndex = Address & 0x1FF;
-        Address >>= 9;
-        this->PDPTEIndex = Address & 0x1FF;
-        Address >>= 9;
-        this->PMLIndex = Address & 0x1FF;
+		Address >>= 12;
+		this->PTEIndex = Address & 0x1FF;
+		Address >>= 9;
+		this->PDEIndex = Address & 0x1FF;
+		Address >>= 9;
+		this->PDPTEIndex = Address & 0x1FF;
+		Address >>= 9;
+		this->PMLIndex = Address & 0x1FF;
 #elif defined(a32)
-        uintptr_t Address = VirtualAddress;
-        Address >>= 12;
-        this->PTEIndex = Address & 0x3FF;
-        Address >>= 10;
-        this->PDEIndex = Address & 0x3FF;
+		Address >>= 12;
+		this->PTEIndex = Address & 0x3FF;
+		Address >>= 10;
+		this->PDEIndex = Address & 0x3FF;
 #elif defined(aa64)
 #endif
-    }
+
+		if (VirtualAddress > PAGE_SIZE)
+		{
+			assert(
+				this->PTEIndex != 0 ||
+				this->PDEIndex != 0
+#if defined(a64)
+				|| this->PDPTEIndex != 0 ||
+				this->PMLIndex != 0
+#endif
+			);
+		}
+	}
 }

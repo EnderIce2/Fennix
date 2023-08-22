@@ -19,6 +19,7 @@
 
 #include <smart_ptr.hpp>
 #include <convert.h>
+#include <stropts.h>
 #include <task.hpp>
 #include <printf.h>
 #include <lock.hpp>
@@ -30,7 +31,7 @@ namespace VirtualFileSystem
 {
 	ReadFSFunction(fd_Read)
 	{
-		if (!Size)
+		if (Size <= 0)
 			Size = node->Length;
 
 		if (RefOffset > node->Length)
@@ -45,7 +46,7 @@ namespace VirtualFileSystem
 
 	WriteFSFunction(fd_Write)
 	{
-		if (!Size)
+		if (Size <= 0)
 			Size = node->Length;
 
 		if (RefOffset > node->Length)
@@ -64,15 +65,32 @@ namespace VirtualFileSystem
 		// .Write = fd_Write,
 	};
 
-	FileDescriptorTable::FileDescriptor
+	FileDescriptorTable::Fildes
 	FileDescriptorTable::GetFileDescriptor(int FileDescriptor)
 	{
 		foreach (auto fd in FileDescriptors)
 		{
 			if (fd.Descriptor == FileDescriptor)
+			{
+				debug("Found file descriptor %d", FileDescriptor);
 				return fd;
+			}
 		}
-		return {.Descriptor = -1};
+		return {};
+	}
+
+	FileDescriptorTable::DupFildes
+	FileDescriptorTable::GetDupFildes(int FileDescriptor)
+	{
+		foreach (auto fd in FildesDuplicates)
+		{
+			if (fd.Descriptor == FileDescriptor)
+			{
+				debug("Found duplicated file descriptor %d", FileDescriptor);
+				return fd;
+			}
+		}
+		return {};
 	}
 
 	int FileDescriptorTable::ProbeMode(mode_t Mode, int Flags)
@@ -118,9 +136,8 @@ namespace VirtualFileSystem
 
 			if (!n)
 			{
-				error("Failed to create file %s: %d",
-					  AbsolutePath, errno);
-				return -1;
+				debug("%s: File already exists, continuing...",
+					  AbsolutePath);
 			}
 		}
 
@@ -132,23 +149,25 @@ namespace VirtualFileSystem
 			if (!File)
 			{
 				errno = EEXIST;
+				error("Failed to open file %s: %d",
+					  AbsolutePath, errno);
 				return -1;
 			}
 		}
 
 		if (Flags & O_TRUNC)
 		{
-			fixme("Implement O_TRUNC");
+			fixme("O_TRUNC");
 		}
 
 		if (Flags & O_APPEND)
 		{
-			fixme("Implement O_APPEND");
+			fixme("O_APPEND");
 		}
 
 		if (Flags & O_CLOEXEC)
 		{
-			fixme("Implement O_CLOEXEC");
+			fixme("O_CLOEXEC");
 		}
 
 		RefNode *File = vfs->Open(AbsolutePath,
@@ -161,8 +180,7 @@ namespace VirtualFileSystem
 			return -1;
 		}
 
-		FileDescriptorTable::FileDescriptor fd;
-		fd.Descriptor = GetFreeFileDescriptor();
+		Fildes fd = {.Descriptor = GetFreeFileDescriptor()};
 
 		if (fd.Descriptor < 0)
 		{
@@ -205,6 +223,19 @@ namespace VirtualFileSystem
 			}
 		}
 
+		forItr(itr, FildesDuplicates)
+		{
+			if (itr->Descriptor == FileDescriptor)
+			{
+				FildesDuplicates.erase(itr);
+
+				char FileName[64];
+				sprintf(FileName, "%d", FileDescriptor);
+				vfs->Delete(FileName, false, this->fdDir);
+				return 0;
+			}
+		}
+
 		errno = EBADF;
 		return -1;
 	}
@@ -223,6 +254,19 @@ namespace VirtualFileSystem
 					break;
 				}
 			}
+
+			if (!Found)
+			{
+				foreach (auto fd in FildesDuplicates)
+				{
+					if (fd.Descriptor == i)
+					{
+						Found = true;
+						break;
+					}
+				}
+			}
+
 			if (!Found)
 				return i;
 			i++;
@@ -234,12 +278,20 @@ namespace VirtualFileSystem
 
 	std::string FileDescriptorTable::GetAbsolutePath(int FileDescriptor)
 	{
-		FileDescriptorTable::FileDescriptor fd =
-			this->GetFileDescriptor(FileDescriptor);
-		if (fd.Descriptor == -1)
+		Fildes fd = this->GetFileDescriptor(FileDescriptor);
+		DupFildes dfd = this->GetDupFildes(FileDescriptor);
+
+		if (fd.Descriptor == -1 &&
+			dfd.Descriptor == -1)
 			return "";
 
-		Node *node = fd.Handle->node;
+		RefNode *hnd = nullptr;
+		if (fd.Descriptor != -1)
+			hnd = fd.Handle;
+		else
+			hnd = dfd.Handle;
+
+		Node *node = hnd->node;
 		std::string absolutePath = vfs->GetPathFromNode(node);
 		std::string path = absolutePath.c_str();
 		return path;
@@ -264,36 +316,52 @@ namespace VirtualFileSystem
 
 	ssize_t FileDescriptorTable::_read(int fd, void *buf, size_t count)
 	{
-		FileDescriptor fdesc;
-		fdesc = this->GetFileDescriptor(fd);
-
-		if (fdesc.Descriptor < 0)
+		Fildes fdesc = this->GetFileDescriptor(fd);
+		DupFildes dfdesc = this->GetDupFildes(fd);
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
 		{
 			errno = EBADF;
 			return -1;
 		}
 
-		return fdesc.Handle->Read((uint8_t *)buf, count);
+		RefNode *hnd = nullptr;
+		if (fdesc.Descriptor != -1)
+			hnd = fdesc.Handle;
+		else
+			hnd = dfdesc.Handle;
+
+		return hnd->Read((uint8_t *)buf, count);
 	}
 
 	ssize_t FileDescriptorTable::_write(int fd, const void *buf,
 										size_t count)
 	{
-		FileDescriptor fdesc;
-		fdesc = this->GetFileDescriptor(fd);
-
-		if (fdesc.Descriptor < 0)
+		Fildes fdesc = this->GetFileDescriptor(fd);
+		DupFildes dfdesc = this->GetDupFildes(fd);
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
+		{
+			errno = EBADF;
 			return -1;
+		}
 
-		return fdesc.Handle->Write((uint8_t *)buf, count);
+		RefNode *hnd = nullptr;
+		if (fdesc.Descriptor != -1)
+			hnd = fdesc.Handle;
+		else
+			hnd = dfdesc.Handle;
+
+		return hnd->Write((uint8_t *)buf, count);
 	}
 
 	int FileDescriptorTable::_close(int fd)
 	{
-		FileDescriptor fdesc;
-		fdesc = this->GetFileDescriptor(fd);
+		Fildes fdesc = this->GetFileDescriptor(fd);
+		DupFildes dfdesc = this->GetDupFildes(fd);
 
-		if (fdesc.Descriptor < 0)
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
 		{
 			errno = EBADF;
 			return -1;
@@ -305,22 +373,61 @@ namespace VirtualFileSystem
 			return -1;
 		}
 
-		delete fdesc.Handle;
+		/* If the file descriptor is a duplicate,
+			we don't need to close the handle,
+			because it's a duplicate of another
+			file descriptor. */
+
+		bool Found = false;
+		RefNode *hnd = nullptr;
+
+		if (fdesc.Descriptor != -1)
+			hnd = fdesc.Handle;
+		else
+			hnd = dfdesc.Handle;
+
+		foreach (auto dfd in FileDescriptors)
+		{
+			if (dfd.Handle == hnd)
+			{
+				Found = true;
+				break;
+			}
+		}
+
+		foreach (auto dfd in FildesDuplicates)
+		{
+			if (dfd.Handle == hnd)
+			{
+				Found = true;
+				break;
+			}
+		}
+
+		if (!Found)
+			delete hnd;
 		return 0;
 	}
 
 	off_t FileDescriptorTable::_lseek(int fd, off_t offset, int whence)
 	{
-		FileDescriptor fdesc;
-		fdesc = this->GetFileDescriptor(fd);
+		Fildes fdesc = this->GetFileDescriptor(fd);
+		DupFildes dfdesc = this->GetDupFildes(fd);
 
-		if (fdesc.Descriptor < 0)
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
 		{
 			errno = EBADF;
 			return -1;
 		}
 
-		return fdesc.Handle->Seek(offset, whence);
+		RefNode *hnd = nullptr;
+		if (fdesc.Descriptor != -1)
+			hnd = fdesc.Handle;
+		else
+			hnd = dfdesc.Handle;
+
+		return hnd->Seek(offset, whence);
 	}
 
 	int FileDescriptorTable::_stat(const char *pathname,
@@ -353,22 +460,29 @@ namespace VirtualFileSystem
 		statbuf->st_size = node->Length;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
-		statbuf->st_attr = 0; /* FIXME: stub */
+		statbuf->st_attr = 0;	 /* FIXME: stub */
 		return 0;
 	}
 
 	int FileDescriptorTable::_fstat(int fd, struct stat *statbuf)
 	{
-		FileDescriptor fdesc;
-		fdesc = this->GetFileDescriptor(fd);
+		Fildes fdesc = this->GetFileDescriptor(fd);
+		DupFildes dfdesc = this->GetDupFildes(fd);
 
-		if (fdesc.Descriptor < 0)
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
 		{
 			errno = EBADF;
 			return -1;
 		}
 
-		Node *node = fdesc.Handle->node;
+		RefNode *hnd = nullptr;
+		if (fdesc.Descriptor != -1)
+			hnd = fdesc.Handle;
+		else
+			hnd = dfdesc.Handle;
+
+		Node *node = hnd->node;
 		statbuf->st_dev = 0; /* FIXME: stub */
 		statbuf->st_ino = node->IndexNode;
 		statbuf->st_mode = node->Flags | node->Mode;
@@ -379,7 +493,7 @@ namespace VirtualFileSystem
 		statbuf->st_size = node->Length;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
-		statbuf->st_attr = 0; /* FIXME: stub */
+		statbuf->st_attr = 0;	 /* FIXME: stub */
 		return 0;
 	}
 
@@ -413,7 +527,112 @@ namespace VirtualFileSystem
 		statbuf->st_size = node->Length;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
-		statbuf->st_attr = 0; /* FIXME: stub */
+		statbuf->st_attr = 0;	 /* FIXME: stub */
+		return 0;
+	}
+
+	int FileDescriptorTable::_dup(int oldfd)
+	{
+		Fildes fdesc = this->GetFileDescriptor(oldfd);
+		DupFildes dfdesc = this->GetDupFildes(oldfd);
+
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
+		{
+			errno = EBADF;
+			return -1;
+		}
+
+		int newfd = this->GetFreeFileDescriptor();
+		if (newfd < 0)
+		{
+			errno = EMFILE;
+			return -1;
+		}
+
+		DupFildes new_dfd{};
+		if (fdesc.Descriptor != -1)
+		{
+			new_dfd.Handle = fdesc.Handle;
+			new_dfd.Mode = fdesc.Mode;
+		}
+		else
+		{
+			new_dfd.Handle = dfdesc.Handle;
+			new_dfd.Mode = dfdesc.Mode;
+		}
+
+		new_dfd.Descriptor = newfd;
+		this->FildesDuplicates.push_back(new_dfd);
+		debug("Duplicated file descriptor %d to %d",
+			  oldfd, newfd);
+		return newfd;
+	}
+
+	int FileDescriptorTable::_dup2(int oldfd, int newfd)
+	{
+		Fildes fdesc = this->GetFileDescriptor(oldfd);
+		DupFildes dfdesc = this->GetDupFildes(oldfd);
+
+		if (fdesc.Descriptor < 0 &&
+			dfdesc.Descriptor < 0)
+		{
+			errno = EBADF;
+			return -1;
+		}
+
+		if (newfd < 0)
+		{
+			errno = EBADF;
+			return -1;
+		}
+
+		if (newfd == oldfd)
+			return newfd;
+
+		/* Even if it's not valid
+			we ignore it. */
+		this->_close(newfd);
+
+		DupFildes new_dfd{};
+		if (fdesc.Descriptor != -1)
+		{
+			new_dfd.Handle = fdesc.Handle;
+			new_dfd.Mode = fdesc.Mode;
+		}
+		else
+		{
+			new_dfd.Handle = dfdesc.Handle;
+			new_dfd.Mode = dfdesc.Mode;
+		}
+
+		new_dfd.Descriptor = newfd;
+		this->FildesDuplicates.push_back(new_dfd);
+		debug("Duplicated file descriptor %d to %d",
+			  oldfd, newfd);
+		return newfd;
+	}
+
+	int FileDescriptorTable::_ioctl(int fd, unsigned long request, void *argp)
+	{
+		struct winsize *ws = (struct winsize *)argp;
+		Video::ScreenBuffer *sb = Display->GetBuffer(0);
+		Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
+
+		switch (request)
+		{
+		case TIOCGWINSZ:
+			fixme("TIOCGWINSZ: stub");
+			ws->ws_xpixel = uint16_t(sb->Width);
+			ws->ws_ypixel = uint16_t(sb->Height);
+			ws->ws_col = uint16_t(sb->Width / fi.Width);
+			ws->ws_row = uint16_t(sb->Height / fi.Height);
+			break;
+		default:
+			fixme("Unknown request %#lx", request);
+			errno = ENOSYS;
+			return -1;
+		}
 		return 0;
 	}
 

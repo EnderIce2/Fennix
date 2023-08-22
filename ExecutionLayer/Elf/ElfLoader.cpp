@@ -20,6 +20,7 @@
 #include <memory.hpp>
 #include <lock.hpp>
 #include <msexec.h>
+#include <rand.hpp>
 #include <cwalk.h>
 #include <elf.h>
 #include <abi.h>
@@ -32,6 +33,57 @@ using namespace VirtualFileSystem;
 
 namespace Execute
 {
+	void ELFObject::GenerateAuxiliaryVector_x86_32(Memory::MemMgr *mm,
+												   int fd,
+												   Elf32_Ehdr ELFHeader,
+												   uint32_t EntryPoint,
+												   uint32_t BaseAddress)
+	{
+	}
+
+	void ELFObject::GenerateAuxiliaryVector_x86_64(Memory::MemMgr *mm,
+												   int fd,
+												   Elf64_Ehdr ELFHeader,
+												   uint64_t EntryPoint,
+												   uint64_t BaseAddress)
+	{
+		char *aux_platform = (char *)mm->RequestPages(1, true); /* TODO: 4KiB is too much for this */
+		strcpy(aux_platform, "x86_64");
+
+		std::string execfn = thisProcess->FileDescriptors->GetAbsolutePath(fd);
+		void *execfn_str = mm->RequestPages(TO_PAGES(execfn.size() + 1), true);
+		strcpy((char *)execfn_str, execfn.c_str());
+		void *at_random = mm->RequestPages(1, true);
+		*(uint64_t *)at_random = Random::rand16();
+
+		// prep. for AT_PHDR
+		void *phdr_array = mm->RequestPages(TO_PAGES(ELFHeader.e_phnum * sizeof(Elf64_Phdr)), true);
+		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
+		fread(fd, (uint8_t *)phdr_array, ELFHeader.e_phnum * sizeof(Elf64_Phdr));
+
+		Elfauxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)execfn_str}}});
+		// AT_HWCAP2 26
+		Elfauxv.push_back({.archaux = {.a_type = AT_RANDOM, .a_un = {.a_val = (uint64_t)at_random}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_SECURE, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}});   /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	   /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}});   /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	   /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
+		// AT_FLAGS 8
+		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)phdr_array}}});
+		// AT_CLKTCK 17
+		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
+		// AT_HWCAP 16
+		// AT_MINSIGSTKSZ 51
+		// AT_SYSINFO_EHDR 33
+	}
+
 	void ELFObject::LoadExec_x86_32(int fd, PCB *TargetProcess)
 	{
 		stub;
@@ -104,10 +156,10 @@ namespace Execute
 
 		Memory::Virtual vmm = Memory::Virtual(TargetProcess->PageTable);
 		Memory::MemMgr *mm = TargetProcess->Memory;
-		uint64_t BaseAddress = 0;
 
 		/* Copy segments into memory */
 		{
+			Elf64_Phdr ProgramBreakHeader{};
 			Elf64_Phdr ProgramHeader;
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
@@ -129,9 +181,6 @@ namespace Execute
 
 					debug("Mapped %#lx to %#lx", SegmentDestination, pAddr);
 
-					if (BaseAddress == 0)
-						BaseAddress = (uintptr_t)SegmentDestination;
-
 					debug("Copying segment to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
 						  pAddr, uintptr_t(pAddr) + ProgramHeader.p_memsz,
 						  SegmentDestination, uintptr_t(SegmentDestination) + ProgramHeader.p_memsz,
@@ -148,6 +197,7 @@ namespace Execute
 						void *zAddr = (void *)(uintptr_t(pAddr) + ProgramHeader.p_filesz);
 						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
 					}
+					ProgramBreakHeader = ProgramHeader;
 					break;
 				}
 				default:
@@ -158,6 +208,13 @@ namespace Execute
 				}
 				}
 			}
+
+			/* Set program break */
+			uintptr_t ProgramBreak = ROUND_UP(ProgramBreakHeader.p_vaddr +
+												  ProgramBreakHeader.p_memsz,
+											  PAGE_SIZE);
+
+			TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
 		}
 
 		struct stat statbuf;
@@ -169,39 +226,8 @@ namespace Execute
 
 		debug("Entry Point: %#lx", EntryPoint);
 
-		char *aux_platform = (char *)mm->RequestPages(1, true); /* TODO: 4KiB is too much for this */
-		strcpy(aux_platform, "x86_64");
-
-		std::string execfn = thisProcess->FileDescriptors->GetAbsolutePath(fd);
-		void *execfn_str = mm->RequestPages(TO_PAGES(execfn.size() + 1), true);
-		strcpy((char *)execfn_str, execfn.c_str());
-
-		// prep. for AT_PHDR
-		void *phdr_array = mm->RequestPages(TO_PAGES(ELFHeader.e_phnum * sizeof(Elf64_Phdr)), true);
-		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
-		fread(fd, (uint8_t *)phdr_array, ELFHeader.e_phnum * sizeof(Elf64_Phdr));
-
-		Elfauxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)execfn_str}}});
-		// AT_HWCAP2 26
-		// AT_RANDOM 25
-		// AT_SECURE 23
-		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
-		// AT_FLAGS 8
-		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)phdr_array}}});
-		// AT_CLKTCK 17
-		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
-		// AT_HWCAP 16
-		// AT_MINSIGSTKSZ 51
-		// AT_SYSINFO_EHDR 33
+		this->GenerateAuxiliaryVector_x86_64(mm, fd, ELFHeader,
+											 EntryPoint, 0);
 
 		this->ip = EntryPoint;
 		this->IsElfValid = true;
@@ -282,6 +308,7 @@ namespace Execute
 
 		/* Copy segments into memory */
 		{
+			Elf64_Phdr ProgramBreakHeader{};
 			Elf64_Phdr ProgramHeader;
 			std::size_t SegmentsSize = 0;
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
@@ -336,6 +363,7 @@ namespace Execute
 						void *zAddr = (void *)(SegmentDestination + ProgramHeader.p_filesz);
 						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
 					}
+					ProgramBreakHeader = ProgramHeader;
 					break;
 				}
 				case PT_DYNAMIC:
@@ -373,6 +401,14 @@ namespace Execute
 				}
 				}
 			}
+
+			/* Set program break */
+			uintptr_t ProgramBreak = ROUND_UP(BaseAddress +
+												  ProgramBreakHeader.p_vaddr +
+												  ProgramBreakHeader.p_memsz,
+											  PAGE_SIZE);
+
+			TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
 		}
 
 		EntryPoint += BaseAddress;
@@ -578,39 +614,8 @@ namespace Execute
 
 		debug("Entry Point: %#lx", EntryPoint);
 
-		char *aux_platform = (char *)mm->RequestPages(1, true); /* TODO: 4KiB is too much for this */
-		strcpy(aux_platform, "x86_64");
-
-		std::string execfn = thisProcess->FileDescriptors->GetAbsolutePath(fd);
-		void *execfn_str = mm->RequestPages(TO_PAGES(execfn.size() + 1), true);
-		strcpy((char *)execfn_str, execfn.c_str());
-
-		// prep. for AT_PHDR
-		void *phdr_array = mm->RequestPages(TO_PAGES(ELFHeader.e_phnum * sizeof(Elf64_Phdr)), true);
-		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
-		fread(fd, (uint8_t *)phdr_array, ELFHeader.e_phnum * sizeof(Elf64_Phdr));
-
-		Elfauxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)execfn_str}}});
-		// AT_HWCAP2 26
-		// AT_RANDOM 25
-		// AT_SECURE 23
-		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	 /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
-		// AT_FLAGS 8
-		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)phdr_array}}});
-		// AT_CLKTCK 17
-		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
-		// AT_HWCAP 16
-		// AT_MINSIGSTKSZ 51
-		// AT_SYSINFO_EHDR 33
+		this->GenerateAuxiliaryVector_x86_64(mm, fd, ELFHeader,
+											 EntryPoint, BaseAddress);
 
 		this->ip = EntryPoint;
 		this->IsElfValid = true;

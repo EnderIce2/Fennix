@@ -162,6 +162,11 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 				KPrint("\eAAFFAAUsing XallocV1 as memory allocator");
 				ModConfig->AllocatorType = Memory::MemoryAllocatorType::XallocV1;
 			}
+			else if (strcmp(value, "xallocv2") == 0)
+			{
+				KPrint("\eAAFFAAUsing XallocV2 as memory allocator");
+				ModConfig->AllocatorType = Memory::MemoryAllocatorType::XallocV2;
+			}
 			else if (strcmp(value, "liballoc11") == 0)
 			{
 				KPrint("\eAAFFAAUsing Liballoc11 as memory allocator");

@@ -24,7 +24,7 @@ namespace Memory
 {
 	ReadFSFunction(MEM_Read)
 	{
-		if (!Size)
+		if (Size <= 0)
 			Size = node->Length;
 
 		if (RefOffset > node->Length)
@@ -39,7 +39,7 @@ namespace Memory
 
 	WriteFSFunction(MEM_Write)
 	{
-		if (!Size)
+		if (Size <= 0)
 			Size = node->Length;
 
 		if (RefOffset > node->Length)

@@ -26,7 +26,7 @@ namespace VirtualFileSystem
 {
     ReadFSFunction(USTAR_Read)
     {
-        if (!Size)
+        if (Size <= 0)
             Size = node->Length;
 
         if (RefOffset > node->Length)

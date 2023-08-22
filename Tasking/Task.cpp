@@ -49,15 +49,15 @@ namespace Tasking
 #if defined(a86)
 	__naked __used __no_stack_protector void IdleProcessLoop()
 	{
-		asmv("IdleLoop:\n"
-			 "hlt\n"
-			 "jmp IdleLoop\n");
+		asmv("IdleLoop:");
+		asmv("hlt");
+		asmv("jmp IdleLoop");
 #elif defined(aa64)
 	__used __no_stack_protector void IdleProcessLoop()
 	{
-		asmv("IdleLoop:\n"
-			 "wfe\n"
-			 "b IdleLoop\n");
+		asmv("IdleLoop:");
+		asmv("wfe");
+		asmv("b IdleLoop");
 #endif
 	}
 

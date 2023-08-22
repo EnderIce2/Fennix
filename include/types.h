@@ -21,10 +21,10 @@
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #define START_EXTERNC \
-    EXTERNC           \
-    {
+	EXTERNC           \
+	{
 #define END_EXTERNC \
-    }
+	}
 #else // __cplusplus
 #define EXTERNC
 #define START_EXTERNC
@@ -52,8 +52,8 @@
 #define in :
 
 #define forItr(itr, container)         \
-    for (auto itr = container.begin(); \
-         itr != container.end(); ++itr)
+	for (auto itr = container.begin(); \
+		 itr != container.end(); ++itr)
 
 #define r_cst(t, v) reinterpret_cast<t>(v)
 #define c_cst(t, v) const_cast<t>(v)
@@ -83,18 +83,18 @@ typedef __builtin_va_list va_list;
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
 #define MAX(a, b)               \
-    ({                          \
-        __typeof__(a) _a = (a); \
-        __typeof__(b) _b = (b); \
-        _a > _b ? _a : _b;      \
-    })
+	({                          \
+		__typeof__(a) _a = (a); \
+		__typeof__(b) _b = (b); \
+		_a > _b ? _a : _b;      \
+	})
 
 #define MIN(a, b)               \
-    ({                          \
-        __typeof__(a) _a = (a); \
-        __typeof__(b) _b = (b); \
-        _a < _b ? _a : _b;      \
-    })
+	({                          \
+		__typeof__(a) _a = (a); \
+		__typeof__(b) _b = (b); \
+		_a < _b ? _a : _b;      \
+	})
 
 #define ROUND_UP(x, y) (((x) + (y)-1) & ~((y)-1))
 #define ROUND_DOWN(x, y) ((x) & ~((y)-1))
@@ -291,19 +291,19 @@ typedef unsigned gid_t;
 
 #if defined(a64)
 #define BREAK __asm__ __volatile__("int $0x3" \
-                                   :          \
-                                   :          \
-                                   : "memory");
+								   :          \
+								   :          \
+								   : "memory");
 #elif defined(a32)
 #define BREAK __asm__ __volatile__("int $0x3" \
-                                   :          \
-                                   :          \
-                                   : "memory");
+								   :          \
+								   :          \
+								   : "memory");
 #elif defined(aa64)
 #define BREAK __asm__ __volatile__("brk #0" \
-                                   :        \
-                                   :        \
-                                   : "memory");
+								   :        \
+								   :        \
+								   : "memory");
 #endif
 
 #ifdef __INT48_TYPE__
@@ -327,11 +327,11 @@ typedef uint48_t uint_fast48_t;
 #define b16(x) __builtin_bswap16(x)
 #define b32(x) __builtin_bswap32(x)
 #define b48(x) (((((x)&0x0000000000ff) << 40) | \
-                 (((x)&0x00000000ff00) << 24) | \
-                 (((x)&0x000000ff0000) << 8) |  \
-                 (((x)&0x0000ff000000) >> 8) |  \
-                 (((x)&0x00ff00000000) >> 24) | \
-                 (((x)&0xff0000000000) >> 40)))
+				 (((x)&0x00000000ff00) << 24) | \
+				 (((x)&0x000000ff0000) << 8) |  \
+				 (((x)&0x0000ff000000) >> 8) |  \
+				 (((x)&0x00ff00000000) >> 24) | \
+				 (((x)&0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
 /* https://gcc.gnu.org/onlinedocs/gcc-9.5.0/gnat_ugn/Optimization-Levels.html */
@@ -411,16 +411,10 @@ typedef uint48_t uint_fast48_t;
 
 #define NIF __no_instrument_function
 
-#define int1                        \
-    __asm__ __volatile__("int $0x1" \
-                         :          \
-                         :          \
-                         : "memory")
-
 #define int3                    \
-    __asm__ __volatile__("int3" \
-                         :      \
-                         :      \
-                         : "memory")
+	__asm__ __volatile__("int3" \
+						 :      \
+						 :      \
+						 : "memory")
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

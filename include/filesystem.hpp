@@ -357,7 +357,23 @@ namespace VirtualFileSystem
 	class FileDescriptorTable
 	{
 	public:
-		struct FileDescriptor
+		struct winsize
+		{
+			unsigned short ws_row;
+			unsigned short ws_col;
+			unsigned short ws_xpixel;
+			unsigned short ws_ypixel;
+		};
+
+		struct Fildes
+		{
+			RefNode *Handle{};
+			mode_t Mode = 0;
+			int Flags = 0;
+			int Descriptor = -1;
+		};
+
+		struct DupFildes
 		{
 			RefNode *Handle{};
 			mode_t Mode = 0;
@@ -366,10 +382,13 @@ namespace VirtualFileSystem
 		};
 
 	private:
-		std::vector<FileDescriptor> FileDescriptors;
+		std::vector<Fildes> FileDescriptors;
+		std::vector<DupFildes> FildesDuplicates;
 		VirtualFileSystem::Node *fdDir = nullptr;
 
-		FileDescriptor GetFileDescriptor(int FileDescriptor);
+		Fildes GetFileDescriptor(int FileDescriptor);
+		FileDescriptorTable::DupFildes GetDupFildes(int FileDescriptor);
+
 		int ProbeMode(mode_t Mode, int Flags);
 		int AddFileDescriptor(const char *AbsolutePath, mode_t Mode, int Flags);
 		int RemoveFileDescriptor(int FileDescriptor);
@@ -377,7 +396,7 @@ namespace VirtualFileSystem
 
 	public:
 		std::string GetAbsolutePath(int FileDescriptor);
-		std::vector<FileDescriptor> &GetFileDescriptors() { return FileDescriptors; }
+		std::vector<Fildes> &GetFileDescriptors() { return FileDescriptors; }
 
 		int _open(const char *pathname, int flags, mode_t mode);
 		int _creat(const char *pathname, mode_t mode);
@@ -388,6 +407,9 @@ namespace VirtualFileSystem
 		int _stat(const char *pathname, struct stat *statbuf);
 		int _fstat(int fd, struct stat *statbuf);
 		int _lstat(const char *pathname, struct stat *statbuf);
+		int _dup(int oldfd);
+		int _dup2(int oldfd, int newfd);
+		int _ioctl(int fd, unsigned long request, void *argp);
 
 		FileDescriptorTable(void *Owner);
 		~FileDescriptorTable();

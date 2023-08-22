@@ -22,7 +22,7 @@
 #include <convert.h>
 #include <debug.h>
 
-// show debug messages
+// Show debug messages
 // #define DEBUG_CPP_STRING 1
 // #define DEBUG_CPP_STRING_VERBOSE 1
 
@@ -62,48 +62,49 @@ namespace std
 			this->Capacity = this->Length + 1;
 			this->Data = new char[this->Capacity];
 			strcpy(this->Data, Str);
-			strdbg("New string created: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: New string created: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		~string()
 		{
-			strdbg("String deleted: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String deleted: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			delete[] this->Data, this->Data = nullptr;
 		}
 
 		size_t length() const
 		{
-			v_strdbg("String length: %d",
-					 this->Length);
+			v_strdbg("%#lx: String length: %d",
+					 this, this->Length);
 			return this->Length;
 		}
 
 		size_t capacity() const
 		{
-			v_strdbg("String capacity: %d",
-					 this->Capacity);
+			v_strdbg("%#lx: String capacity: %d",
+					 this, this->Capacity);
 			return this->Capacity;
 		}
 
 		const char *c_str() const
 		{
-			v_strdbg("String data: \"%s\"",
-					 this->Data);
+			v_strdbg("%#lx: String data: \"%s\"",
+					 this, this->Data);
 			return this->Data;
 		}
 
 		void resize(size_t NewLength)
 		{
-			strdbg("String resize: %d", NewLength);
+			strdbg("%#lx: String resize: %d",
+				   this, NewLength);
 			if (NewLength < this->Capacity)
 			{
 				this->Length = NewLength;
 				this->Data[this->Length] = '\0';
 
-				strdbg("String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-					   this->Data, this->Data, this->Length, this->Capacity);
+				strdbg("%#lx: String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+					   this, this->Data, this->Data, this->Length, this->Capacity);
 				return;
 			}
 
@@ -111,16 +112,16 @@ namespace std
 			char *newData = new char[newCapacity];
 			strcpy(newData, this->Data);
 
-			strdbg("old: %#lx, new: %#lx",
-				   this->Data, newData);
+			strdbg("%#lx: old: %#lx, new: %#lx",
+				   this, this->Data, newData);
 
 			delete[] this->Data;
 			this->Data = newData;
 			this->Length = NewLength;
 			this->Capacity = newCapacity;
 
-			strdbg("String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String resized: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		void concat(const string &Other)
@@ -129,31 +130,34 @@ namespace std
 			this->resize(NewLength);
 
 			strcat(this->Data, Other.Data);
-			strdbg("String concatenated: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String concatenated: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		bool empty() const
 		{
-			strdbg("String empty: %d", this->Length == 0);
+			strdbg("%#lx: String empty: %d",
+				   this, this->Length == 0);
 			return this->Length == 0;
 		}
 
 		size_t size() const
 		{
-			strdbg("String size: %d", this->Length);
+			strdbg("%#lx: String size: %d",
+				   this, this->Length);
 			return this->Length;
 		}
 
 		void clear()
 		{
-			strdbg("String clear");
+			strdbg("%#lx: String clear", this);
 			this->resize(0);
 		}
 
 		size_t find(const char *Str, size_t Pos = 0) const
 		{
-			strdbg("String find: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String find: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos >= this->Length)
 				return npos;
 
@@ -176,13 +180,15 @@ namespace std
 
 		size_t find(const string &Str, size_t Pos = 0) const
 		{
-			strdbg("String find: \"%s\", %d", Str.c_str(), Pos);
+			strdbg("%#lx: String find: \"%s\", %d",
+				   this, Str.c_str(), Pos);
 			return this->find(Str.c_str(), Pos);
 		}
 
 		void erase(int Index, int Count = 1)
 		{
-			strdbg("String erase: %d, %d", Index, Count);
+			strdbg("%#lx: String erase: %d, %d",
+				   this, Index, Count);
 			if (Index < 0 || (size_t)Index >= this->Length)
 				return;
 
@@ -197,12 +203,14 @@ namespace std
 
 			this->Length -= Count;
 			this->Data[this->Length] = '\0';
-			strdbg("String erased: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String erased: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		size_t find_last_not_of(const char *Str, size_t Pos = npos) const
 		{
-			strdbg("String find_last_not_of: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String find_last_not_of: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos == npos)
 				Pos = this->Length - 1;
 
@@ -225,7 +233,8 @@ namespace std
 
 		size_t find_first_not_of(const char *Str, size_t Pos = 0) const
 		{
-			strdbg("String find_first_not_of: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String find_first_not_of: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos >= this->Length)
 				return npos;
 
@@ -248,7 +257,8 @@ namespace std
 
 		size_t find_first_of(const char *Str, size_t Pos = 0) const
 		{
-			strdbg("String find_first_of: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String find_first_of: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos >= this->Length)
 				return npos;
 
@@ -271,7 +281,8 @@ namespace std
 
 		size_t find_last_of(const char *Str, size_t Pos = npos) const
 		{
-			strdbg("String find_last_of: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String find_last_of: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos == npos)
 				Pos = this->Length - 1;
 
@@ -294,7 +305,8 @@ namespace std
 
 		size_t find_first_of(char C, size_t Pos = 0) const
 		{
-			strdbg("String find_first_of: '%c', %d", C, Pos);
+			strdbg("%#lx: String find_first_of: '%c', %d",
+				   this, C, Pos);
 			if (Pos >= this->Length)
 				return npos;
 
@@ -308,7 +320,8 @@ namespace std
 
 		size_t find_last_of(char C, size_t Pos = npos) const
 		{
-			strdbg("String find_last_of: '%c', %d", C, Pos);
+			strdbg("%#lx: String find_last_of: '%c', %d",
+				   this, C, Pos);
 			if (Pos == npos)
 				Pos = this->Length - 1;
 
@@ -322,7 +335,8 @@ namespace std
 
 		size_t substr(const char *Str, size_t Pos = 0) const
 		{
-			strdbg("String substr: \"%s\", %d", Str, Pos);
+			strdbg("%#lx: String substr: \"%s\", %d",
+				   this, Str, Pos);
 			if (Pos >= this->Length)
 				return npos;
 
@@ -345,13 +359,15 @@ namespace std
 
 		size_t substr(const string &Str, size_t Pos = 0) const
 		{
-			strdbg("String substr: \"%s\", %d", Str.c_str(), Pos);
+			strdbg("%#lx: String substr: \"%s\", %d",
+				   this, Str.c_str(), Pos);
 			return this->substr(Str.c_str(), Pos);
 		}
 
 		string substr(size_t Pos = 0, size_t Count = npos) const
 		{
-			strdbg("String substr: %d, %d", Pos, Count);
+			strdbg("%#lx: String substr: %d, %d",
+				   this, Pos, Count);
 			if (Pos >= this->Length)
 				return string();
 
@@ -371,7 +387,8 @@ namespace std
 
 		void replace(size_t Pos, size_t Count, const char *Str)
 		{
-			strdbg("String replace: %d, %d, \"%s\"", Pos, Count, Str);
+			strdbg("%#lx: String replace: %d, %d, \"%s\"",
+				   this, Pos, Count, Str);
 			if (Pos >= this->Length)
 				return;
 
@@ -390,12 +407,14 @@ namespace std
 			for (unsigned long i = 0; i < strlen(Str); i++)
 				this->Data[Pos + i] = Str[i];
 
-			strdbg("String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)", this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		void replace(size_t Pos, size_t Count, const string &Str)
 		{
-			strdbg("String replace: %d, %d, \"%s\"", Pos, Count, Str.Data);
+			strdbg("%#lx: String replace: %d, %d, \"%s\"",
+				   this, Pos, Count, Str.Data);
 			if (Pos >= this->Length)
 				return;
 
@@ -414,13 +433,13 @@ namespace std
 			for (size_t i = 0; i < Str.Length; i++)
 				this->Data[Pos + i] = Str.Data[i];
 
-			strdbg("String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String replaced: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
 		void pop_back()
 		{
-			strdbg("String pop_back");
+			strdbg("%#lx: String pop_back", this);
 			if (this->Length > 0)
 			{
 				this->Data[this->Length - 1] = '\0';
@@ -432,8 +451,8 @@ namespace std
 		{
 			string result = *this;
 			result.concat(Other);
-			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   result.Data, result.Data, result.Length, result.Capacity);
+			strdbg("%#lx: String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, result.Data, result.Data, result.Length, result.Capacity);
 			return result;
 		}
 
@@ -441,24 +460,24 @@ namespace std
 		{
 			string result = *this;
 			result.concat(Other);
-			strdbg("String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   result.Data, result.Data, result.Length, result.Capacity);
+			strdbg("%#lx: String added: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, result.Data, result.Data, result.Length, result.Capacity);
 			return result;
 		}
 
 		string &operator+=(const string &Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator+=(const char *Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
@@ -466,8 +485,8 @@ namespace std
 		{
 			const char str[2] = {Other, '\0'};
 			this->concat(str);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
@@ -482,8 +501,8 @@ namespace std
 		// 		this->Data = Other.Data;
 		// 		this->Length = Other.Length;
 		// 		this->Capacity = Other.Capacity;
-		// 		strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-		// 			   this->Data, this->Data, this->Length, this->Capacity);
+		// 		strdbg("%#lx: String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+		// 			   this, this->Data, this->Data, this->Length, this->Capacity);
 		// 	}
 		// 	return *this;
 		// }
@@ -495,72 +514,76 @@ namespace std
 			delete[] this->Data;
 			this->Data = new char[this->Capacity];
 			strcpy(this->Data, Other);
-			strdbg("String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String assigned: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator<<(const string &Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		string &operator<<(const char *Other)
 		{
 			this->concat(Other);
-			strdbg("String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
-				   this->Data, this->Data, this->Length, this->Capacity);
+			strdbg("%#lx: String appended: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
 			return *this;
 		}
 
 		char &operator[](int Index)
 		{
-			strdbg("String index: %d", Index);
+			strdbg("%#lx: String index: %d", this, Index);
 			return this->Data[Index];
 		}
 
 		const char &operator[](int Index) const
 		{
-			strdbg("String index: %d", Index);
+			strdbg("%#lx: String index: %d", this, Index);
 			return this->Data[Index];
 		}
 
 		char &operator[](size_t Index)
 		{
-			strdbg("String index: %d", Index);
+			strdbg("%#lx: String index: %d", this, Index);
 			return this->Data[Index];
 		}
 
 		const char &operator[](size_t Index) const
 		{
-			strdbg("String index: %d", Index);
+			strdbg("%#lx: String index: %d", this, Index);
 			return this->Data[Index];
 		}
 
 		bool operator==(const string &Other) const
 		{
-			strdbg("String compared: \"%s\" == \"%s\"", this->Data, Other.Data);
+			strdbg("%#lx: String compared: \"%s\" == \"%s\"",
+				   this, this->Data, Other.Data);
 			return strcmp(this->Data, Other.Data) == 0;
 		}
 
 		bool operator!=(const char *Other) const
 		{
-			strdbg("String compared: \"%s\" != \"%s\"", this->Data, Other);
+			strdbg("%#lx: String compared: \"%s\" != \"%s\"",
+				   this, this->Data, Other);
 			return strcmp(this->Data, Other) != 0;
 		}
 
 		bool operator!=(const string &Other) const
 		{
-			strdbg("String compared: \"%s\" != \"%s\"", this->Data, Other.Data);
+			strdbg("%#lx: String compared: \"%s\" != \"%s\"",
+				   this, this->Data, Other.Data);
 			return strcmp(this->Data, Other.Data) != 0;
 		}
 
 		bool operator==(const char *Other) const
 		{
-			strdbg("String compared: \"%s\" == \"%s\"", this->Data, Other);
+			strdbg("%#lx: String compared: \"%s\" == \"%s\"",
+				   this, this->Data, Other);
 			return strcmp(this->Data, Other) == 0;
 		}
 
@@ -575,42 +598,44 @@ namespace std
 			iterator &operator++()
 			{
 				++this->Pointer;
-				strdbg("String iterator incremented: %#lx",
-					   this->Pointer);
+				strdbg("%#lx: String iterator incremented: %#lx",
+					   this, this->Pointer);
 				return *this;
 			}
 
 			char &operator*()
 			{
-				strdbg("String iterator dereferenced: %#lx",
-					   this->Pointer);
+				strdbg("%#lx: String iterator dereferenced: %#lx",
+					   this, this->Pointer);
 				return *this->Pointer;
 			}
 
 			bool operator!=(const iterator &Other) const
 			{
-				strdbg("String iterator compared: %#lx != %#lx",
-					   this->Pointer, Other.Pointer);
+				strdbg("%#lx: String iterator compared: %#lx != %#lx",
+					   this, this->Pointer, Other.Pointer);
 				return this->Pointer != Other.Pointer;
 			}
 
 			bool operator==(const iterator &Other) const
 			{
-				strdbg("String iterator compared: %#lx == %#lx",
-					   this->Pointer, Other.Pointer);
+				strdbg("%#lx: String iterator compared: %#lx == %#lx",
+					   this, this->Pointer, Other.Pointer);
 				return this->Pointer == Other.Pointer;
 			}
 		};
 
 		iterator begin()
 		{
-			strdbg("String iterator begin: %#lx", this->Data);
+			strdbg("%#lx: String iterator begin: %#lx",
+				   this, this->Data);
 			return iterator(this->Data);
 		}
 
 		iterator end()
 		{
-			strdbg("String iterator end: %#lx", this->Data + this->Length);
+			strdbg("%#lx: String iterator end: %#lx",
+				   this, this->Data + this->Length);
 			return iterator(this->Data + this->Length);
 		}
 	};

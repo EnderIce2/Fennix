@@ -33,7 +33,8 @@ namespace Execute
 {
 	int Spawn(char *Path, const char **argv, const char **envp,
 			  Tasking::PCB *Parent,
-			  Tasking::TaskCompatibility Compatibility)
+			  Tasking::TaskCompatibility Compatibility,
+			  bool Critical)
 	{
 		int fd = fopen(Path, "r");
 		if (fd < 0)
@@ -141,11 +142,16 @@ namespace Execute
 				return -ENOEXEC;
 			}
 
-			TCB *Thread = TaskManager->CreateThread(Process,
-													obj->InstructionPointer,
-													obj->argv, obj->envp, obj->auxv,
-													Arch,
-													Compatibility);
+			TCB *Thread = nullptr;
+			{
+				CriticalSection cs;
+				Thread = TaskManager->CreateThread(Process,
+												   obj->InstructionPointer,
+												   obj->argv, obj->envp, obj->auxv,
+												   Arch,
+												   Compatibility);
+				Thread->SetCritical(true);
+			}
 			fclose(fd);
 			return Thread->ID;
 		}

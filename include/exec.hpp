@@ -66,6 +66,18 @@ namespace Execute
 		std::vector<AuxiliaryVector> Elfauxv;
 		Tasking::IP ip;
 
+		void GenerateAuxiliaryVector_x86_32(Memory::MemMgr *mm,
+											int fd,
+											Elf32_Ehdr ELFHeader,
+											uint32_t EntryPoint,
+											uint32_t BaseAddress);
+
+		void GenerateAuxiliaryVector_x86_64(Memory::MemMgr *mm,
+											int fd,
+											Elf64_Ehdr ELFHeader,
+											uint64_t EntryPoint,
+											uint64_t BaseAddress);
+
 		void LoadExec_x86_32(int fd,
 							 Tasking::PCB *TargetProcess);
 
@@ -99,7 +111,8 @@ namespace Execute
 
 	int Spawn(char *Path, const char **argv, const char **envp,
 			  Tasking::PCB *Parent = nullptr,
-			  Tasking::TaskCompatibility Compatibility = Tasking::TaskCompatibility::Native);
+			  Tasking::TaskCompatibility Compatibility = Tasking::TaskCompatibility::Native,
+			  bool Critical = false);
 
 	bool ELFIs64(void *Header);
 	Elf64_Shdr *GetELFSheader(Elf64_Ehdr *Header);

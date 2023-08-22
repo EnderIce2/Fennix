@@ -21,15 +21,15 @@
 #include <memory.hpp>
 #include <convert.h>
 
-extern bool EnableExternalMemoryTracer;
+
 extern bool DebuggerIsAttached;
 extern Memory::MemoryAllocatorType AllocatorType;
 
 __constructor void TestMemoryOperations()
 {
-	if (EnableExternalMemoryTracer || DebuggerIsAttached)
+	if (DebuggerIsAttached)
 	{
-		debug("The test is disabled when the external memory tracer or a debugger is enabled.");
+		debug("The test is disabled when the debugger is enabled.");
 		return;
 	}
 

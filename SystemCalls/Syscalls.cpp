@@ -21,44 +21,76 @@
 
 #include "../kernel.h"
 
+class AutoSwitchPageTable
+{
+private:
+	uintptr_t Original;
+
+public:
+	AutoSwitchPageTable()
+	{
+#if defined(a86)
+		asmv("mov %%cr3, %0"
+			 : "=r"(Original));
+
+		asmv("mov %0, %%cr3"
+			 :
+			 : "r"(KernelPageTable));
+#endif
+	}
+
+	~AutoSwitchPageTable()
+	{
+#if defined(a86)
+		asmv("mov %0, %%cr3"
+			 :
+			 : "r"(Original));
+#endif
+	}
+};
+
 extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 {
-    Tasking::TaskInfo *Ptinfo = &thisProcess->Info;
-    Tasking::TaskInfo *Ttinfo = &thisThread->Info;
-    uint64_t TempTimeCalc = TimeManager->GetCounter();
+	/* Automatically switch to kernel page table
+		and switch back when this function returns. */
+	AutoSwitchPageTable PageSwitcher;
 
-    switch (Ttinfo->Compatibility)
-    {
-    case Tasking::TaskCompatibility::Native:
-    {
-        uintptr_t ret = 0;
-        if (Config.UseLinuxSyscalls)
-            ret = HandleLinuxSyscalls(Frame);
-        else
-            ret = HandleNativeSyscalls(Frame);
-        Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
-        Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
-        return ret;
-    }
-    case Tasking::TaskCompatibility::Linux:
-    {
-        uintptr_t ret = HandleLinuxSyscalls(Frame);
-        Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
-        Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
-        return ret;
-    }
-    case Tasking::TaskCompatibility::Windows:
-    {
-        error("Windows compatibility not implemented yet.");
-        break;
-    }
-    default:
-    {
-        error("Unknown compatibility mode! Killing thread...");
-        TaskManager->KillThread(thisThread, Tasking::KILL_SYSCALL);
-        break;
-    }
-    }
-    assert(false); /* Should never reach here. */
-    return 0;
+	uint64_t TempTimeCalc = TimeManager->GetCounter();
+	Tasking::TaskInfo *Ptinfo = &thisProcess->Info;
+	Tasking::TaskInfo *Ttinfo = &thisThread->Info;
+
+	switch (Ttinfo->Compatibility)
+	{
+	case Tasking::TaskCompatibility::Native:
+	{
+		uintptr_t ret = 0;
+		if (Config.UseLinuxSyscalls)
+			ret = HandleLinuxSyscalls(Frame);
+		else
+			ret = HandleNativeSyscalls(Frame);
+		Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+		Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+		return ret;
+	}
+	case Tasking::TaskCompatibility::Linux:
+	{
+		uintptr_t ret = HandleLinuxSyscalls(Frame);
+		Ptinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+		Ttinfo->KernelTime += TimeManager->GetCounter() - TempTimeCalc;
+		return ret;
+	}
+	case Tasking::TaskCompatibility::Windows:
+	{
+		error("Windows compatibility not implemented yet.");
+		break;
+	}
+	default:
+	{
+		error("Unknown compatibility mode! Killing thread...");
+		TaskManager->KillThread(thisThread, Tasking::KILL_SYSCALL);
+		break;
+	}
+	}
+	assert(false); /* Should never reach here. */
+	return 0;
 }

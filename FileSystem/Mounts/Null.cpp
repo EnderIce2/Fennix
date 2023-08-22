@@ -15,16 +15,35 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_FILESYSTEM_DEV_H__
-#define __FENNIX_KERNEL_FILESYSTEM_DEV_H__
-
-#include <types.h>
-
 #include <filesystem.hpp>
+#include <errno.h>
 
-void Init_Null(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Random(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Teletype(VirtualFileSystem::Virtual *vfs_ctx);
-void Init_Zero(VirtualFileSystem::Virtual *vfs_ctx);
+#include "../../kernel.h"
 
-#endif // !__FENNIX_KERNEL_FILESYSTEM_DEV_H__
+using namespace VirtualFileSystem;
+
+ReadFSFunction(Null_Read)
+{
+	if (Size <= 0)
+		return 0;
+
+	memset(Buffer, 0, Size);
+	return Size;
+}
+
+ReadFSFunction(Null_Write)
+{
+	return Size;
+}
+
+FileSystemOperations null_op = {
+	.Name = "Null",
+	.Read = Null_Read,
+	.Write = Null_Write,
+};
+
+void Init_Null(Virtual *vfs_ctx)
+{
+	Node *n = vfs_ctx->Create("null", CHARDEVICE, DevFS);
+	n->Operator = &null_op;
+}
