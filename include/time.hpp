@@ -52,15 +52,15 @@ namespace Time
 	private:
 		struct HPET
 		{
-			uintptr_t GeneralCapabilities;
-			uintptr_t Reserved0;
-			uintptr_t GeneralConfiguration;
-			uintptr_t Reserved1;
-			uintptr_t GeneralIntStatus;
-			uintptr_t Reserved2;
-			uintptr_t Reserved3[24];
-			uintptr_t MainCounterValue;
-			uintptr_t Reserved4;
+			uint64_t GeneralCapabilities;
+			uint64_t Reserved0;
+			uint64_t GeneralConfiguration;
+			uint64_t Reserved1;
+			uint64_t GeneralIntStatus;
+			uint64_t Reserved2;
+			uint64_t Reserved3[24];
+			uint64_t MainCounterValue;
+			uint64_t Reserved4;
 		};
 
 		uint32_t clk = 0;

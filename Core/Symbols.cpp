@@ -53,10 +53,6 @@ namespace SymbolResolver
 																   __unused uint64_t Shndx,
 																   uintptr_t Sections)
 	{
-#ifdef a32
-		fixme("Function not working on 32-bit");
-		return;
-#endif
 		char *sections = reinterpret_cast<char *>(Sections);
 
 		Elf_Sym *Symbols = nullptr;

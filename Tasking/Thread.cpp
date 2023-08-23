@@ -31,6 +31,7 @@
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(a32)
 #include "../Architecture/i386/cpu/apic.hpp"
+#include "../Architecture/i386/cpu/gdt.hpp"
 #elif defined(aa64)
 #endif
 
@@ -218,9 +219,9 @@ namespace Tasking
 		foreach (AuxiliaryVector var in auxv_array)
 		{
 			// Subtract the size of the auxillary vector
-			Stack64 -= sizeof(Elf64_auxv_t) / sizeof(uintptr_t);
+			Stack64 -= sizeof(Elf_auxv_t) / sizeof(uintptr_t);
 			// Store the auxillary vector
-			POKE(Elf64_auxv_t, Stack64) = var.archaux;
+			POKE(Elf_auxv_t, Stack64) = var.archaux;
 			// TODO: Store strings to the stack
 		}
 
@@ -263,7 +264,14 @@ namespace Tasking
 		debug("SubtractStack: %#lx", SubtractStack);
 
 		// Set the stack pointer to the new stack
-		this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
+		uintptr_t StackPointerReg = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
+#if defined(a64)
+		this->Registers.rsp = StackPointerReg;
+#elif defined(a32)
+		this->Registers.esp = StackPointerReg;
+#elif defined(aa64)
+		this->Registers.sp = StackPointerReg;
+#endif
 
 		if (ArgvSize > 0)
 			delete[] ArgvStrings;
@@ -274,10 +282,22 @@ namespace Tasking
 		DumpData("Stack Data", (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
 #endif
 
+#if defined(a64)
 		this->Registers.rdi = (uintptr_t)ArgvSize;										 // argc
 		this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						 // argv
 		this->Registers.rcx = (uintptr_t)EnvpSize;										 // envc
 		this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
+#elif defined(a32)
+		this->Registers.eax = (uintptr_t)ArgvSize;										 // argc
+		this->Registers.ebx = (uintptr_t)(this->Registers.esp + 4);						 // argv
+		this->Registers.ecx = (uintptr_t)EnvpSize;										 // envc
+		this->Registers.edx = (uintptr_t)(this->Registers.esp + 4 + (4 * ArgvSize) + 4); // envp
+#elif defined(aa64)
+		this->Registers.x0 = (uintptr_t)ArgvSize;									   // argc
+		this->Registers.x1 = (uintptr_t)(this->Registers.sp + 8);					   // argv
+		this->Registers.x2 = (uintptr_t)EnvpSize;									   // envc
+		this->Registers.x3 = (uintptr_t)(this->Registers.sp + 8 + (8 * ArgvSize) + 8); // envp
+#endif
 	}
 
 	void TCB::SetupUserStack_x86_32(const char **argv,

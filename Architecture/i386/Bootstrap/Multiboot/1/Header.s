@@ -18,7 +18,7 @@
 .intel_syntax noprefix
 
 .code32
-.section .multiboot
+.section .multiboot, "a"
 .align 4
 
 MULTIBOOT_HEADER:

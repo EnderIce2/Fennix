@@ -16,7 +16,7 @@
 */
 
 .code32
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 
 .global Multiboot1_start
 Multiboot1_start:

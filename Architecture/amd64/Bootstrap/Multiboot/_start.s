@@ -21,7 +21,7 @@
 .extern Multiboot2_start
 
 .code32
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 
 .global _start
 _start:

@@ -72,7 +72,7 @@ namespace AdvancedHostControllerInterface
 		this->AHCIPortType = Type;
 		this->HBAPortPtr = PortPtr;
 		this->Buffer = static_cast<uint8_t *>(KAPI.Memory.RequestPage(1));
-		memset(this->Buffer, 0, KAPI.Memory.PageSize);
+		memset(this->Buffer, 0, size_t(KAPI.Memory.PageSize));
 		this->PortNumber = PortNumber;
 	}
 

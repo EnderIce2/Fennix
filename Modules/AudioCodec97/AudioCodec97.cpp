@@ -283,7 +283,8 @@ namespace AudioCodec97
 
 					do
 					{
-						size_t Wrote = (KAPI.Memory.PageSize > Length) ? Length : KAPI.Memory.PageSize;
+						size_t Wrote = (KAPI.Memory.PageSize > Length) ? size_t(Length)
+																	   : size_t(KAPI.Memory.PageSize);
 
 						if (Wrote == 0)
 							break;

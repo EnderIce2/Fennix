@@ -213,7 +213,7 @@ namespace PCI
 
 	struct DeviceConfig
 	{
-		uintptr_t BaseAddress;
+		uint64_t BaseAddress;
 		uint16_t PCISegGroup;
 		uint8_t StartBus;
 		uint8_t EndBus;
@@ -228,9 +228,9 @@ namespace PCI
 	public:
 		std::vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
 		void MapPCIAddresses(PCIDeviceHeader *PCIDevice, Memory::PageTable *Table = nullptr);
-		void EnumerateFunction(uintptr_t DeviceAddress, uintptr_t Function);
-		void EnumerateDevice(uintptr_t BusAddress, uintptr_t Device);
-		void EnumerateBus(uintptr_t BaseAddress, uintptr_t Bus);
+		void EnumerateFunction(uint64_t DeviceAddress, uintptr_t Function);
+		void EnumerateDevice(uint64_t BusAddress, uintptr_t Device);
+		void EnumerateBus(uint64_t BaseAddress, uintptr_t Bus);
 		std::vector<PCIDeviceHeader *> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
 		std::vector<PCIDeviceHeader *> FindPCIDevice(int VendorID, int DeviceID);
 

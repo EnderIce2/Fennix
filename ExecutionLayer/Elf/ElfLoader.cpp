@@ -47,6 +47,7 @@ namespace Execute
 												   uint64_t EntryPoint,
 												   uint64_t BaseAddress)
 	{
+#if defined(a64)
 		char *aux_platform = (char *)mm->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
 
@@ -79,9 +80,10 @@ namespace Execute
 		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)phdr_array}}});
 		// AT_CLKTCK 17
 		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
-		// AT_HWCAP 16
-		// AT_MINSIGSTKSZ 51
-		// AT_SYSINFO_EHDR 33
+// AT_HWCAP 16
+// AT_MINSIGSTKSZ 51
+// AT_SYSINFO_EHDR 33
+#endif
 	}
 
 	void ELFObject::LoadExec_x86_32(int fd, PCB *TargetProcess)
@@ -93,6 +95,7 @@ namespace Execute
 
 	void ELFObject::LoadExec_x86_64(int fd, PCB *TargetProcess)
 	{
+#if defined(a64)
 		std::string InterpreterPath;
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
@@ -121,19 +124,7 @@ namespace Execute
 
 				if (LoadInterpreter(ifd, TargetProcess))
 				{
-					/* ba deci de aici trb sa fac
-					sa se incarce interperter-ul
-					argv[1] ar trb sa fie locatia pt intrep */
-
-					// modific argv-ul
-
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
+					/* FIXME: specify argv[1] as the location for the interpreter */
 
 					debug("Interpreter loaded successfully");
 					fclose(ifd);
@@ -231,6 +222,7 @@ namespace Execute
 
 		this->ip = EntryPoint;
 		this->IsElfValid = true;
+#endif
 	}
 
 	void ELFObject::LoadDyn_x86_32(int fd, PCB *TargetProcess)
@@ -242,6 +234,7 @@ namespace Execute
 
 	void ELFObject::LoadDyn_x86_64(int fd, PCB *TargetProcess)
 	{
+#if defined(a64)
 		std::string InterpreterPath;
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
@@ -270,18 +263,7 @@ namespace Execute
 
 				if (LoadInterpreter(ifd, TargetProcess))
 				{
-					/* ba deci de aici trb sa fac
-					sa se incarce interperter-ul
-					argv[1] ar trb sa fie locatia pt intrep */
-
-					// modific argv-ul
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
-					// TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME
+					/* FIXME: specify argv[1] as the location for the interpreter */
 
 					debug("Interpreter loaded successfully");
 					fclose(ifd);
@@ -619,6 +601,7 @@ namespace Execute
 
 		this->ip = EntryPoint;
 		this->IsElfValid = true;
+#endif
 	}
 
 	bool ELFObject::LoadInterpreter(int fd, PCB *TargetProcess)

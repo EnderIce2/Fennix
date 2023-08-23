@@ -170,8 +170,14 @@ void TaskMgr()
 				continue;
 			int Status = Proc->Status.load();
 			uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
+#if defined(a64)
 			printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
 				   Statuses[Status], Proc->Name, StatusesSign[Status], ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
+#elif defined(a32)
+			printf("\e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld)\n",
+				   Statuses[Status], Proc->Name, StatusesSign[Status], ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
+#elif defined(aa64)
+#endif
 
 			foreach (auto Thd in Proc->Threads)
 			{
@@ -185,7 +191,7 @@ void TaskMgr()
 					   Thd->Info.UserTime, Thd->Registers.rip,
 					   Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.rip) : "unknown");
 #elif defined(a32)
-				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
+				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld, IP: \e24FF2B%#x \eEDFF24%s\e00AAAA)\n\eAABBCC",
 					   Statuses[Status], Thd->Name, StatusesSign[Status], ThreadCpuUsage, Thd->Info.KernelTime,
 					   Thd->Info.UserTime, Thd->Registers.eip,
 					   Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbolFromAddress(Thd->Registers.eip) : "unknown");
@@ -196,12 +202,14 @@ void TaskMgr()
 		OldSystemTime = TimeManager->GetCounter();
 #if defined(a64)
 		register uintptr_t CurrentStackAddress asm("rsp");
+		printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
 #elif defined(a32)
 		register uintptr_t CurrentStackAddress asm("esp");
+		printf("Sanity: %d, Stack: %#x", sanity++, CurrentStackAddress);
 #elif defined(aa64)
 		register uintptr_t CurrentStackAddress asm("sp");
-#endif
 		printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
+#endif
 		if (sanity > 1000)
 			sanity = 0;
 		Display->SetBufferCursor(0, tmpX, tmpY);

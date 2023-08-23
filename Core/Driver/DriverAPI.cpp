@@ -35,74 +35,92 @@
 
 NewLock(DriverDisplayPrintLock);
 
-void DriverDebugPrint(char *String, unsigned long DriverUID) { trace("[%ld] %s", DriverUID, String); }
+void DriverDebugPrint(char *String, __UINT64_TYPE__ DriverUID)
+{
+	trace("[%ld] %s", DriverUID, String);
+}
 
 void DriverDisplayPrint(char *String)
 {
 	SmartLock(DriverDisplayPrintLock);
-	for (unsigned long i = 0; i < strlen(String); i++)
+	for (__UINT64_TYPE__ i = 0; i < strlen(String); i++)
 		Display->Print(String[i], 0, true);
 }
 
-void *RequestPage(unsigned long Size)
+void *RequestPage(__UINT64_TYPE__ Size)
 {
-	void *ret = KernelAllocator.RequestPages(Size + 1);
-	drvdbg("Allocated %ld pages (%#lx-%#lx)", Size, (unsigned long)ret, (unsigned long)ret + FROM_PAGES(Size));
+	void *ret = KernelAllocator.RequestPages(size_t(Size + 1));
+	drvdbg("Allocated %ld pages (%#lx-%#lx)",
+		   Size, (__UINT64_TYPE__)ret,
+		   (__UINT64_TYPE__)ret + FROM_PAGES(Size));
 	return ret;
 }
 
-void FreePage(void *Page, unsigned long Size)
+void FreePage(void *Page, __UINT64_TYPE__ Size)
 {
-	drvdbg("Freeing %ld pages (%#lx-%#lx)", Size, (unsigned long)Page, (unsigned long)Page + FROM_PAGES(Size));
-	KernelAllocator.FreePages(Page, Size + 1);
+	drvdbg("Freeing %ld pages (%#lx-%#lx)",
+		   Size, (__UINT64_TYPE__)Page,
+		   (__UINT64_TYPE__)Page + FROM_PAGES(Size));
+	KernelAllocator.FreePages(Page, size_t(Size + 1));
 }
 
-void MapMemory(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags)
+void MapMemory(void *VirtualAddress, void *PhysicalAddress, __UINT64_TYPE__ Flags)
 {
 	SmartLock(DriverDisplayPrintLock);
-	drvdbg("Mapping %#lx to %#lx with flags %#lx...", (unsigned long)VirtualAddress, (unsigned long)PhysicalAddress, Flags);
+	drvdbg("Mapping %#lx to %#lx with flags %#lx...",
+		   (__UINT64_TYPE__)VirtualAddress,
+		   (__UINT64_TYPE__)PhysicalAddress, Flags);
 	Memory::Virtual(KernelPageTable).Map(VirtualAddress, PhysicalAddress, Flags);
 }
 
 void UnmapMemory(void *VirtualAddress)
 {
 	SmartLock(DriverDisplayPrintLock);
-	drvdbg("Unmapping %#lx...", (unsigned long)VirtualAddress);
+	drvdbg("Unmapping %#lx...",
+		   (__UINT64_TYPE__)VirtualAddress);
 	Memory::Virtual(KernelPageTable).Unmap(VirtualAddress);
 }
 
-void *Drivermemcpy(void *Destination, void *Source, unsigned long Size)
+void *Drivermemcpy(void *Destination, void *Source, __UINT64_TYPE__ Size)
 {
 	SmartLock(DriverDisplayPrintLock);
 	drvdbg("Copying %ld bytes from %#lx-%#lx to %#lx-%#lx...", Size,
-		   (unsigned long)Source, (unsigned long)Source + Size,
-		   (unsigned long)Destination, (unsigned long)Destination + Size);
-	return memcpy(Destination, Source, Size);
+		   (__UINT64_TYPE__)Source, (__UINT64_TYPE__)Source + Size,
+		   (__UINT64_TYPE__)Destination, (__UINT64_TYPE__)Destination + Size);
+	return memcpy(Destination, Source, size_t(Size));
 }
 
-void *Drivermemset(void *Destination, int Value, unsigned long Size)
+void *Drivermemset(void *Destination, int Value, __UINT64_TYPE__ Size)
 {
 	SmartLock(DriverDisplayPrintLock);
 	drvdbg("Setting value %#x at %#lx-%#lx (%ld bytes)...", Value,
-		   (unsigned long)Destination, (unsigned long)Destination + Size,
-		   Size);
-	return memset(Destination, Value, Size);
+		   (__UINT64_TYPE__)Destination,
+		   (__UINT64_TYPE__)Destination + Size, Size);
+	return memset(Destination, Value, size_t(Size));
 }
 
-void DriverNetSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
+void DriverNetSend(__UINT32_TYPE__ DriverID,
+				   __UINT8_TYPE__ *Data,
+				   __UINT16_TYPE__ Size)
 {
 	// This is useless I guess...
 	if (NIManager)
 		NIManager->DrvSend(DriverID, Data, Size);
 }
 
-void DriverNetReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
+void DriverNetReceive(__UINT32_TYPE__ DriverID,
+					  __UINT8_TYPE__ *Data,
+					  __UINT16_TYPE__ Size)
 {
 	if (NIManager)
 		NIManager->DrvReceive(DriverID, Data, Size);
 }
 
-void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
+void DriverAHCIDiskRead(__UINT32_TYPE__ DriverID,
+						__UINT64_TYPE__ Sector,
+						__UINT8_TYPE__ *Data,
+						__UINT32_TYPE__ SectorCount,
+						__UINT8_TYPE__ Port)
 {
 	DumpData("DriverDiskRead", Data, SectorCount * 512);
 	UNUSED(DriverID);
@@ -110,41 +128,50 @@ void DriverAHCIDiskRead(unsigned int DriverID, unsigned long Sector, unsigned ch
 	UNUSED(Port);
 }
 
-void DriverAHCIDiskWrite(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port)
+void DriverAHCIDiskWrite(__UINT32_TYPE__ DriverID,
+						 __UINT64_TYPE__ Sector,
+						 __UINT8_TYPE__ *Data,
+						 __UINT32_TYPE__ SectorCount,
+						 __UINT8_TYPE__ Port)
 {
-	DumpData("DriverDiskWrite", Data, SectorCount * 512);
+	DumpData("DriverDiskWrite",
+			 Data, SectorCount * 512);
 	UNUSED(DriverID);
 	UNUSED(Sector);
 	UNUSED(Port);
 }
 
-char *DriverPCIGetDeviceName(unsigned int VendorID, unsigned int DeviceID)
+char *DriverPCIGetDeviceName(__UINT32_TYPE__ VendorID,
+							 __UINT32_TYPE__ DeviceID)
 {
 	UNUSED(VendorID);
 	UNUSED(DeviceID);
 	return (char *)"Unknown";
 }
 
-unsigned int DriverGetWidth()
+__UINT32_TYPE__ DriverGetWidth()
 {
-	/* TODO: We won't rely only on display buffers, what about graphics drivers and changing resolutions? */
+	/* TODO: We won't rely only on display buffers,
+		what about graphics drivers and changing resolutions? */
 	return Display->GetBuffer(0)->Width;
 }
 
-unsigned int DriverGetHeight()
+__UINT32_TYPE__ DriverGetHeight()
 {
-	/* TODO: We won't rely only on display buffers, what about graphics drivers and changing resolutions? */
+	/* TODO: We won't rely only on display buffers,
+		what about graphics drivers and changing resolutions? */
 	return Display->GetBuffer(0)->Height;
 }
 
-void DriverSleep(unsigned long Milliseconds)
+void DriverSleep(__UINT64_TYPE__ Milliseconds)
 {
 	SmartLock(DriverDisplayPrintLock);
 	drvdbg("Sleeping for %ld milliseconds...", Milliseconds);
 	if (TaskManager)
 		TaskManager->Sleep(Milliseconds);
 	else
-		TimeManager->Sleep(Milliseconds, Time::Units::Milliseconds);
+		TimeManager->Sleep(size_t(Milliseconds),
+						   Time::Units::Milliseconds);
 }
 
 int Driversprintf(char *Buffer, const char *Format, ...)

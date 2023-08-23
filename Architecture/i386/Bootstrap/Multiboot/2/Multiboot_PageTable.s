@@ -19,7 +19,7 @@
 KERNEL_VIRTUAL_BASE = 0xC0000000 /* 3GB */
 KERNEL_PAGE_NUMBER = 768 /* KERNEL_VIRTUAL_BASE >> 22 */
 
-.section .bootstrap.data
+.section .bootstrap.data, "a"
 .align 0x1000
 .global BootPageTable
 BootPageTable:

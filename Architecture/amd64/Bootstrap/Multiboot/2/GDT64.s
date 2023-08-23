@@ -16,7 +16,7 @@
 */
 
 .code64
-.section .bootstrap.data
+.section .bootstrap.data, "a"
 
 /* Access bits */
 A = 0x1

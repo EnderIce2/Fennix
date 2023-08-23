@@ -30,14 +30,14 @@ KERNEL_STACK_SIZE = 0x4000 /* 16KB */
 .extern GDT64.Code
 .extern GDT64.Data
 
-.section .bootstrap.data
+.section .bootstrap.data, "a"
 MB_HeaderMagic:
 	.quad 0
 
 MB_HeaderInfo:
 	.quad 0
 
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 
 .global Multiboot2_start
 Multiboot2_start:
@@ -113,7 +113,7 @@ HigherHalfStart:
 	hlt
 	jmp .Hang
 
-.section .bootstrap.bss
+.section .bootstrap.bss, "a"
 .align 16
 KernelStack:
 	.space KERNEL_STACK_SIZE

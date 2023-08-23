@@ -95,6 +95,7 @@ namespace Execute
 
 	Elf64_Sym ELFLookupSymbol(int fd, const char *Name)
 	{
+#if defined(a64)
 		off_t OldOffset = lseek(fd, 0, SEEK_CUR);
 
 		Elf64_Ehdr Header;
@@ -152,6 +153,7 @@ namespace Execute
 		}
 		error("Symbol not found.");
 		lseek(fd, OldOffset, SEEK_SET);
+#endif
 		return {};
 	}
 
@@ -198,6 +200,8 @@ namespace Execute
 			Elf64_Shdr *Target = GetELFSection(Header, Symbol->st_shndx);
 			return (uintptr_t)Header + Symbol->st_value + Target->sh_offset;
 		}
+#elif defined(a32)
+		return 0xdead;
 #endif
 	}
 }

@@ -1,7 +1,7 @@
 /* Based on this tutorial:
    https://github.com/s-matyukevich/raspberry-pi-os */
 
-.section ".text.boot"
+.section ".text.boot", "a"
 
 .extern _bss_start
 .extern _bss_end

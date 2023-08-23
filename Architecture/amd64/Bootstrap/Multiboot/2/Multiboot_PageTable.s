@@ -18,13 +18,13 @@
 PAGE_TABLE_SIZE = 0x4
 
 .code32
-.section .bootstrap.data
+.section .bootstrap.data, "a"
 .align 0x1000
 .global BootPageTable
 BootPageTable:
 	.space 0x10000 /* 0x4000 bytes will be used in UpdatePageTable */
 
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 .global UpdatePageTable
 UpdatePageTable:
 	mov $(BootPageTable + 0x0000), %edi /* First PML4E */

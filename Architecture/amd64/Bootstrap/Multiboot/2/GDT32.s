@@ -16,7 +16,7 @@
 */
 
 .code32
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 
 .align 32
 .global gdtr

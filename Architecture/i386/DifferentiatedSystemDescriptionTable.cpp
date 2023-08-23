@@ -48,7 +48,7 @@ namespace ACPI
 #define ACPI_GAS_IO 1
 #define ACPI_GAS_PCI 2
 
-	void DSDT::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+	void DSDT::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
 	{
 		debug("SCI Handle Triggered");
 		uint16_t Event = 0;
@@ -222,7 +222,7 @@ namespace ACPI
 			{
 				uint16_t a = s_cst(uint16_t, acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2));
 				uint16_t b = s_cst(uint16_t, acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2));
-				debug("SCI Event: %#llx [a:%#x b:%#x]", value, a, b);
+				debug("SCI Event: %#lx [a:%#x b:%#x]", value, a, b);
 				if (acpi->FADT->PM1aEventBlock)
 					outw(a, value);
 				if (acpi->FADT->PM1bEventBlock)

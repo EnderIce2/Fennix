@@ -113,8 +113,13 @@ namespace Gigabit
 			RX[i]->Status = 0;
 		}
 
+#pragma diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+
 		WriteCMD(REG::TXDESCLO, (uint32_t)(Ptr >> 32));
 		WriteCMD(REG::TXDESCHI, (uint32_t)(Ptr & 0xFFFFFFFF));
+
+#pragma diagnostic pop
 
 		WriteCMD(REG::RXDESCLO, (uint32_t)Ptr);
 		WriteCMD(REG::RXDESCHI, 0);

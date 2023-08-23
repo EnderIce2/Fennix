@@ -30,6 +30,8 @@
 #elif defined(a32)
 #include "../Architecture/i386/cpu/gdt.hpp"
 #include "../Architecture/i386/cpu/idt.hpp"
+#include "../Architecture/i386/acpi.hpp"
+#include "../Architecture/i386/cpu/apic.hpp"
 #elif defined(aa64)
 #endif
 
@@ -47,11 +49,9 @@ namespace Interrupts
 	};
 	std::vector<Event> RegisteredEvents;
 
-#if defined(a64)
+#if defined(a86)
 	/* APIC::APIC */ void *apic[MAX_CPU];
 	/* APIC::Timer */ void *apicTimer[MAX_CPU];
-#elif defined(a32)
-	/* APIC::APIC */ void *apic[MAX_CPU];
 #elif defined(aa64)
 #endif
 	void *InterruptFrames[INT_FRAMES_MAX];
@@ -89,10 +89,12 @@ namespace Interrupts
 		CoreData->Stack = (uintptr_t)KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1)) + STACK_SIZE;
 		if (CoreData->Checksum != CPU_DATA_CHECKSUM)
 		{
-			KPrint("CPU %d checksum mismatch! %x != %x", Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
+			KPrint("CPU %d checksum mismatch! %x != %x",
+				   Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
 			CPU::Stop();
 		}
-		debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
+		debug("Stack for core %d is %#lx (Address: %#lx)",
+			  Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
 #elif defined(aa64)
 		warn("aarch64 is not supported yet");
 #endif
@@ -100,7 +102,7 @@ namespace Interrupts
 
 	void Enable(int Core)
 	{
-#if defined(a64)
+#if defined(a86)
 		if (((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress != nullptr)
 		{
 			// TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
@@ -113,8 +115,6 @@ namespace Interrupts
 			error("LAPIC not found");
 			// TODO: PIC
 		}
-#elif defined(a32)
-		warn("i386 is not supported yet");
 #elif defined(aa64)
 		warn("aarch64 is not supported yet");
 #endif
@@ -123,15 +123,13 @@ namespace Interrupts
 	void InitializeTimer(int Core)
 	{
 		// TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
-#if defined(a64)
+#if defined(a86)
 		if (apic[Core] != nullptr)
 			apicTimer[Core] = new APIC::Timer((APIC::APIC *)apic[Core]);
 		else
 		{
 			fixme("apic not found");
 		}
-#elif defined(a32)
-		warn("i386 is not supported yet");
 #elif defined(aa64)
 		warn("aarch64 is not supported yet");
 #endif

@@ -21,6 +21,7 @@
 #if defined(a64)
 #include "../Architecture/amd64/acpi.hpp"
 #elif defined(a32)
+#include "../Architecture/i386/acpi.hpp"
 #elif defined(aa64)
 #endif
 
@@ -883,10 +884,10 @@ namespace PCI
 		}
 	}
 
-	void PCI::EnumerateFunction(uintptr_t DeviceAddress, uintptr_t Function)
+	void PCI::EnumerateFunction(uint64_t DeviceAddress, uintptr_t Function)
 	{
 		uintptr_t Offset = Function << 12;
-		uintptr_t FunctionAddress = DeviceAddress + Offset;
+		uint64_t FunctionAddress = DeviceAddress + Offset;
 		Memory::Virtual(KernelPageTable).Map((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)FunctionAddress;
 		if (PCIDeviceHdr->DeviceID == 0)
@@ -899,10 +900,10 @@ namespace PCI
 #endif
 	}
 
-	void PCI::EnumerateDevice(uintptr_t BusAddress, uintptr_t Device)
+	void PCI::EnumerateDevice(uint64_t BusAddress, uintptr_t Device)
 	{
 		uintptr_t Offset = Device << 15;
-		uintptr_t DeviceAddress = BusAddress + Offset;
+		uint64_t DeviceAddress = BusAddress + Offset;
 		Memory::Virtual(KernelPageTable).Map((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)DeviceAddress;
 		if (PCIDeviceHdr->DeviceID == 0)
@@ -913,10 +914,10 @@ namespace PCI
 			EnumerateFunction(DeviceAddress, Function);
 	}
 
-	void PCI::EnumerateBus(uintptr_t BaseAddress, uintptr_t Bus)
+	void PCI::EnumerateBus(uint64_t BaseAddress, uintptr_t Bus)
 	{
 		uintptr_t Offset = Bus << 20;
-		uintptr_t BusAddress = BaseAddress + Offset;
+		uint64_t BusAddress = BaseAddress + Offset;
 		Memory::Virtual(KernelPageTable).Map((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)BusAddress;
 		if (Bus != 0) // TODO: VirtualBox workaround (UNTESTED ON REAL HARDWARE!)
@@ -955,20 +956,18 @@ namespace PCI
 
 	PCI::PCI()
 	{
-#if defined(a64)
+#if defined(a86)
 		int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
 		Memory::Virtual vmm = Memory::Virtual(KernelPageTable);
 		for (int t = 0; t < Entries; t++)
 		{
 			DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
 			vmm.Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
-			debug("PCI Entry %d Address:%#llx BUS:%#llx-%#llx", t, NewDeviceConfig->BaseAddress,
+			debug("PCI Entry %d Address:%p BUS:%#x-%#x", t, NewDeviceConfig->BaseAddress,
 				  NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
 			for (uintptr_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
 				EnumerateBus(NewDeviceConfig->BaseAddress, Bus);
 		}
-#elif defined(a32)
-		error("PCI not implemented on i386");
 #elif defined(aa64)
 		error("PCI not implemented on aarch64");
 #endif

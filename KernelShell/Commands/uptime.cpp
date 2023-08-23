@@ -27,12 +27,12 @@ void cmd_uptime(const char *)
 {
 	if (TimeManager)
 	{
-		size_t Nanoseconds =
+		uint64_t Nanoseconds =
 			TimeManager->GetNanosecondsSinceClassCreation();
-		size_t Seconds = Nanoseconds / 10000000;
-		size_t Minutes = Seconds / 60;
-		size_t Hours = Minutes / 60;
-		size_t Days = Hours / 24;
+		uint64_t Seconds = Nanoseconds / 10000000;
+		uint64_t Minutes = Seconds / 60;
+		uint64_t Hours = Minutes / 60;
+		uint64_t Days = Hours / 24;
 
 		debug("Nanoseconds: %ld", Nanoseconds);
 
@@ -40,9 +40,15 @@ void cmd_uptime(const char *)
 		Minutes %= 60;
 		Hours %= 24;
 
+#if defined(a64)
 		printf("%ld days, %ld hours, %ld minutes, %ld %s\n",
 			   Days, Hours, Minutes, Seconds,
 			   Seconds == 1 ? "second" : "seconds");
+#elif defined(a32)
+		printf("%lld days, %lld hours, %lld minutes, %lld %s\n",
+			   Days, Hours, Minutes, Seconds,
+			   Seconds == 1 ? "second" : "seconds");
+#endif
 	}
 	else
 	{

@@ -21,7 +21,7 @@
 .extern Multiboot2_start
 
 /* https://www.gnu.org/software/grub/manual/multiboot2/multiboot.html */
-.section .multiboot2
+.section .multiboot2, "a"
 .align 0x1000
 MULTIBOOT2_HEADER_START:
 	.long 0xE85250D6

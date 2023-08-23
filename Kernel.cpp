@@ -252,9 +252,16 @@ EXTERNC void KPrint(const char *Format, ...)
 		uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
 		if (Nanoseconds != 0)
 		{
+#if defined(a64)
 			printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
-				   Nanoseconds / 10000000,
-				   Nanoseconds % 10000000);
+				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+#elif defined(a32)
+			printf("\eCCCCCC[\e00AEFF%llu.%07llu\eCCCCCC] ",
+				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+#elif defined(aa64)
+			printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+#endif
 		}
 	}
 
@@ -324,10 +331,8 @@ EXTERNC NIF void Main()
 	KPrint("Enabling Interrupts on Bootstrap Processor");
 	Interrupts::Enable(0);
 
-#if defined(a64)
+#if defined(a86)
 	PowerManager->InitDSDT();
-#elif defined(a32)
-	// FIXME: Add ACPI support for i386
 #elif defined(aa64)
 #endif
 

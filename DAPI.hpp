@@ -84,32 +84,32 @@ struct KernelAPI
 
 	struct KAPIInfo
 	{
-		unsigned long Offset;
-		unsigned int DriverUID;
+		__UINT64_TYPE__ Offset;
+		__UINT32_TYPE__ DriverUID;
 		char KernelDebug;
 	} Info;
 
 	struct KAPIMemory
 	{
-		unsigned long PageSize;
-		void *(*RequestPage)(unsigned long Size);
-		void (*FreePage)(void *Page, unsigned long Size);
-		void (*Map)(void *VirtualAddress, void *PhysicalAddress, unsigned long Flags);
+		__UINT64_TYPE__ PageSize;
+		void *(*RequestPage)(__UINT64_TYPE__ Size);
+		void (*FreePage)(void *Page, __UINT64_TYPE__ Size);
+		void (*Map)(void *VirtualAddress, void *PhysicalAddress, __UINT64_TYPE__ Flags);
 		void (*Unmap)(void *VirtualAddress);
 	} Memory;
 
 	struct KAPIPCI
 	{
-		char *(*GetDeviceName)(unsigned int VendorID, unsigned int DeviceID);
+		char *(*GetDeviceName)(__UINT32_TYPE__ VendorID, __UINT32_TYPE__ DeviceID);
 	} PCI;
 
 	struct KAPIUtilities
 	{
-		void (*DebugPrint)(char *String, unsigned long DriverUID);
+		void (*DebugPrint)(char *String, __UINT64_TYPE__ DriverUID);
 		void (*DisplayPrint)(char *Value);
-		void *(*memcpy)(void *Destination, void *Source, unsigned long Size);
-		void *(*memset)(void *Destination, int Value, unsigned long Size);
-		void (*Sleep)(unsigned long Milliseconds);
+		void *(*memcpy)(void *Destination, void *Source, __UINT64_TYPE__ Size);
+		void *(*memset)(void *Destination, int Value, __UINT64_TYPE__ Size);
+		void (*Sleep)(__UINT64_TYPE__ Milliseconds);
 		int (*sprintf)(char *Buffer, const char *Format, ...);
 	} Util;
 
@@ -118,8 +118,8 @@ struct KernelAPI
 		/** Connects to the network manager */
 		struct
 		{
-			void (*SendPacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
-			void (*ReceivePacket)(unsigned int DriverID, unsigned char *Data, unsigned short Size);
+			void (*SendPacket)(__UINT32_TYPE__ DriverID, __UINT8_TYPE__ *Data, __UINT16_TYPE__ Size);
+			void (*ReceivePacket)(__UINT32_TYPE__ DriverID, __UINT8_TYPE__ *Data, __UINT16_TYPE__ Size);
 		} Network;
 
 		/** Connects to the disk manager */
@@ -127,16 +127,16 @@ struct KernelAPI
 		{
 			struct
 			{
-				void (*ReadSector)(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port);
-				void (*WriteSector)(unsigned int DriverID, unsigned long Sector, unsigned char *Data, unsigned int SectorCount, unsigned char Port);
+				void (*ReadSector)(__UINT32_TYPE__ DriverID, __UINT64_TYPE__ Sector, __UINT8_TYPE__ *Data, __UINT32_TYPE__ SectorCount, __UINT8_TYPE__ Port);
+				void (*WriteSector)(__UINT32_TYPE__ DriverID, __UINT64_TYPE__ Sector, __UINT8_TYPE__ *Data, __UINT32_TYPE__ SectorCount, __UINT8_TYPE__ Port);
 			} AHCI;
 		} Disk;
 	} Command;
 
 	struct KAPIDisplay
 	{
-		unsigned int (*GetWidth)(void);
-		unsigned int (*GetHeight)(void);
+		__UINT32_TYPE__ (*GetWidth)(void);
+		__UINT32_TYPE__ (*GetHeight)(void);
 		/* TODO: Add more */
 	} Display;
 } __attribute__((packed));
@@ -230,21 +230,21 @@ union KernelCallback
 	{
 		CallbackReason Reason;
 		void *RawPtr;
-		unsigned long RawData;
+		__UINT64_TYPE__ RawData;
 
 		/** When the kernel wants to send a packet. */
 		struct
 		{
 			struct
 			{
-				unsigned char *Data;
-				unsigned long Length;
+				__UINT8_TYPE__ *Data;
+				__UINT64_TYPE__ Length;
 			} Send;
 
 			struct
 			{
 				char Name[128];
-				unsigned long MAC;
+				__UINT64_TYPE__ MAC;
 			} Fetch;
 		} NetworkCallback;
 
@@ -253,16 +253,16 @@ union KernelCallback
 		{
 			struct
 			{
-				unsigned long Sector;
-				unsigned long SectorCount;
-				unsigned char Port;
-				unsigned char *Buffer;
+				__UINT64_TYPE__ Sector;
+				__UINT64_TYPE__ SectorCount;
+				__UINT8_TYPE__ Port;
+				__UINT8_TYPE__ *Buffer;
 				bool Write;
 			} RW;
 
 			struct
 			{
-				unsigned char Ports;
+				__UINT8_TYPE__ Ports;
 				int BytesPerSector;
 			} Fetch;
 		} DiskCallback;
@@ -272,9 +272,9 @@ union KernelCallback
 		{
 			struct
 			{
-				unsigned long X;
-				unsigned long Y;
-				unsigned long Z;
+				__UINT64_TYPE__ X;
+				__UINT64_TYPE__ Y;
+				__UINT64_TYPE__ Z;
 				struct
 				{
 					bool Left;
@@ -287,10 +287,10 @@ union KernelCallback
 			{
 				/**
 				 * The key.
-				 * 
+				 *
 				 * @note This is a scancode, not a character.
 				 */
-				unsigned char Key;
+				__UINT8_TYPE__ Key;
 			} Keyboard;
 		} InputCallback;
 
@@ -308,7 +308,7 @@ union KernelCallback
 				 *
 				 * 0 - 100
 				 */
-				unsigned char Volume;
+				__UINT8_TYPE__ Volume;
 
 				/**
 				 * Adjust the encoding.
@@ -349,7 +349,7 @@ union KernelCallback
 				 *
 				 * ... - More
 				 */
-				unsigned short Encoding;
+				__UINT16_TYPE__ Encoding;
 
 				/**
 				 * Adjust the sample rate.
@@ -364,7 +364,7 @@ union KernelCallback
 				 * 7 - 88200 Hz
 				 * 8 - 96000 Hz
 				 */
-				unsigned char SampleRate;
+				__UINT8_TYPE__ SampleRate;
 
 				/**
 				 * Adjust the channels.
@@ -372,30 +372,30 @@ union KernelCallback
 				 * 0 - Mono
 				 * 1 - Stereo
 				 */
-				unsigned char Channels;
+				__UINT8_TYPE__ Channels;
 			} Adjust;
 
 			struct
 			{
-				unsigned char *Data;
-				unsigned long Length;
+				__UINT8_TYPE__ *Data;
+				__UINT64_TYPE__ Length;
 			} Send;
 
 			struct
 			{
-				unsigned char Volume;
-				unsigned short Encoding;
-				unsigned char SampleRate;
-				unsigned char Channels;
+				__UINT8_TYPE__ Volume;
+				__UINT16_TYPE__ Encoding;
+				__UINT8_TYPE__ SampleRate;
+				__UINT8_TYPE__ Channels;
 			} Fetch;
 		} AudioCallback;
 
 		struct
 		{
-			unsigned char Vector;
+			__UINT8_TYPE__ Vector;
 		} InterruptInfo;
 	};
-	unsigned long raw;
+	__UINT64_TYPE__ raw;
 } __attribute__((packed));
 
 union CPURegisters
@@ -403,51 +403,51 @@ union CPURegisters
 	struct
 	{
 #if defined(__x86_64__) || defined(__amd64__)
-		unsigned long r15;
-		unsigned long r14;
-		unsigned long r13;
-		unsigned long r12;
-		unsigned long r11;
-		unsigned long r10;
-		unsigned long r9;
-		unsigned long r8;
+		__UINT64_TYPE__ r15;
+		__UINT64_TYPE__ r14;
+		__UINT64_TYPE__ r13;
+		__UINT64_TYPE__ r12;
+		__UINT64_TYPE__ r11;
+		__UINT64_TYPE__ r10;
+		__UINT64_TYPE__ r9;
+		__UINT64_TYPE__ r8;
 
-		unsigned long rbp;
-		unsigned long rdi;
-		unsigned long rsi;
-		unsigned long rdx;
-		unsigned long rcx;
-		unsigned long rbx;
-		unsigned long rax;
+		__UINT64_TYPE__ rbp;
+		__UINT64_TYPE__ rdi;
+		__UINT64_TYPE__ rsi;
+		__UINT64_TYPE__ rdx;
+		__UINT64_TYPE__ rcx;
+		__UINT64_TYPE__ rbx;
+		__UINT64_TYPE__ rax;
 
-		unsigned long InterruptNumber;
-		unsigned long ErrorCode;
-		unsigned long rip;
-		unsigned long cs;
-		unsigned long rflags;
-		unsigned long rsp;
-		unsigned long ss;
+		__UINT64_TYPE__ InterruptNumber;
+		__UINT64_TYPE__ ErrorCode;
+		__UINT64_TYPE__ rip;
+		__UINT64_TYPE__ cs;
+		__UINT64_TYPE__ rflags;
+		__UINT64_TYPE__ rsp;
+		__UINT64_TYPE__ ss;
 #elif defined(__i386__)
-		unsigned int ebp;
-		unsigned int edi;
-		unsigned int esi;
-		unsigned int edx;
-		unsigned int ecx;
-		unsigned int ebx;
-		unsigned int eax;
+		__UINT32_TYPE__ ebp;
+		__UINT32_TYPE__ edi;
+		__UINT32_TYPE__ esi;
+		__UINT32_TYPE__ edx;
+		__UINT32_TYPE__ ecx;
+		__UINT32_TYPE__ ebx;
+		__UINT32_TYPE__ eax;
 
-		unsigned int InterruptNumber;
-		unsigned int ErrorCode;
-		unsigned int eip;
-		unsigned int cs;
-		unsigned int eflags;
-		unsigned int esp;
-		unsigned int ss;
+		__UINT32_TYPE__ InterruptNumber;
+		__UINT32_TYPE__ ErrorCode;
+		__UINT32_TYPE__ eip;
+		__UINT32_TYPE__ cs;
+		__UINT32_TYPE__ eflags;
+		__UINT32_TYPE__ esp;
+		__UINT32_TYPE__ ss;
 #else
 #warning "Unsupported architecture"
 #endif
 	};
-	unsigned long raw;
+	__UINT64_TYPE__ raw;
 } __attribute__((packed));
 
 #endif // !__FENNIX_DRIVER_API_H__

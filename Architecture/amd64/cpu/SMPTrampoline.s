@@ -24,7 +24,7 @@ TRAMPOLINE_IDT = 0x590
 TRAMPOLINE_CORE = 0x600
 TRAMPOLINE_START = 0x2000
 
-.section .text
+.section .text, "a"
 
 /* ========== 16-bit ========== */
 

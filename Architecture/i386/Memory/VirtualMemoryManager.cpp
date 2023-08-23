@@ -76,7 +76,7 @@ namespace Memory
     {
         // 0x1000 aligned
         uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFFFFFFFFFF000;
+        Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
 
@@ -101,7 +101,7 @@ namespace Memory
     PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
     {
         uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFFFFFFFFFF000;
+        Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
         PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
@@ -113,7 +113,7 @@ namespace Memory
     PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
     {
         uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFFFFFFFFFF000;
+        Address &= 0xFFFFF000;
 
         PageMapIndexer Index = PageMapIndexer(Address);
         PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];

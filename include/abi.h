@@ -77,15 +77,17 @@ typedef struct
     } a_un;
 } Elf64_auxv_t;
 
+#if defined(a64)
+typedef Elf64_auxv_t Elf_auxv_t;
+#elif defined(a32)
+typedef Elf64_auxv_t Elf_auxv_t;
+#elif defined(aa64)
+typedef Elf64_auxv_t Elf_auxv_t;
+#endif
+
 typedef struct
 {
-#if defined(a64)
-    Elf64_auxv_t archaux;
-#elif defined(a32)
-    Elf32_auxv_t archaux;
-#elif defined(aa64)
-    Elf64_auxv_t archaux;
-#endif
+    Elf_auxv_t archaux;
 } AuxiliaryVector;
 
 #endif // !__FENNIX_KERNEL_ABI_H__

@@ -19,13 +19,16 @@
 
 #include <memory.hpp>
 #include <debug.h>
+#include <io.h>
 
 #include "../kernel.h"
 
 #if defined(a64)
-#include <io.h>
-
 #include "../Architecture/amd64/acpi.hpp"
+#elif defined(a32)
+#include "../Architecture/i386/acpi.hpp"
+#elif defined(aa64)
+#endif
 
 namespace Power
 {
@@ -86,45 +89,3 @@ namespace Power
 		trace("Power manager initialized");
 	}
 }
-
-#elif defined(a32)
-
-namespace Power
-{
-	void Power::Reboot()
-	{
-		warn("Reboot not implemented for i386");
-	}
-
-	void Power::Shutdown()
-	{
-		warn("Shutdown not implemented for i386");
-	}
-
-	Power::Power()
-	{
-		error("Power not implemented for i386");
-	}
-}
-
-#elif defined(aa64)
-
-namespace Power
-{
-	void Power::Reboot()
-	{
-		warn("Reboot not implemented for aarch64");
-	}
-
-	void Power::Shutdown()
-	{
-		warn("Shutdown not implemented for aarch64");
-	}
-
-	Power::Power()
-	{
-		error("Power not implemented for aarch64");
-	}
-}
-
-#endif

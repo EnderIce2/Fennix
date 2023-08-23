@@ -18,7 +18,7 @@
 .intel_syntax noprefix
 
 .code32
-.section .bootstrap.text
+.section .bootstrap.text, "a"
 
 .global DetectCPUID
 DetectCPUID:
