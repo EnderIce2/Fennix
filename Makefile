@@ -47,7 +47,8 @@ LDFLAGS := -Wl,-Map kernel.map -static -nostdlib -nodefaultlibs -nolibc
 WARNCFLAG = -Wall -Wextra \
 			-Wfloat-equal -Wpointer-arith -Wcast-align \
 			-Wredundant-decls -Winit-self -Wswitch-default \
-			-Wstrict-overflow=5 -Wconversion -Wno-error=cpp -Werror
+			-Wstrict-overflow=5 -Wconversion -Wno-error=cpp -Werror \
+			-Wno-unused-parameter
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
