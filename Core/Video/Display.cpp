@@ -167,7 +167,7 @@ namespace Video
 		*Y = this->Buffers[Index].CursorY;
 	}
 
-	void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
+	__no_sanitize("undefined") void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
 	{
 		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
 		{

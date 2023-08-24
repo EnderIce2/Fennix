@@ -115,7 +115,7 @@ namespace CrashHandler
 		return str;
 	}
 
-	CRData crashdata = {};
+	CRData crashdata{};
 
 	SafeFunction void DisplayTopOverlay()
 	{
@@ -813,15 +813,9 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction void Handle(void *Data)
+	SafeFunction inline void Handle_x86_64(CHArchTrapFrame *Frame)
 	{
-		// TODO: SUPPORT SMP
-		CPU::Interrupts(CPU::Disable);
-		CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
-		SBIdx = 255;
-#if defined(a64)
-		debug("-----------------------------------------------------------------------------------");
-		error("Exception: %#llx", Frame->InterruptNumber);
+#ifdef a64
 		for (size_t i = 0; i < INT_FRAMES_MAX; i++)
 			EHIntFrames[i] = Interrupts::InterruptFrames[i];
 		PageFaultAddress = CPU::x64::readcr2().PFLA;
@@ -862,12 +856,16 @@ namespace CrashHandler
 			if (PageFaultAddress)
 			{
 				debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
-					  Frame->rip, PageFaultAddress, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+					  Frame->rip, PageFaultAddress,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip)
+										: "No symbol");
 			}
 			else
 			{
 				debug("Exception in user mode (ip: %#lx (%s))",
-					  Frame->rip, KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip) : "No symbol");
+					  Frame->rip,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip)
+										: "No symbol");
 			}
 			CPUData *data = GetCurrentCPU();
 			if (!data)
@@ -902,62 +900,260 @@ namespace CrashHandler
 				}
 			}
 		}
+#endif
+	}
+
+	SafeFunction inline void Handle_x86_32(CHArchTrapFrame *Frame)
+	{
+#ifdef a32
+		for (size_t i = 0; i < INT_FRAMES_MAX; i++)
+			EHIntFrames[i] = Interrupts::InterruptFrames[i];
+		PageFaultAddress = CPU::x32::readcr2().PFLA;
+
+		if (Frame->cs != GDT_USER_CODE && Frame->cs != GDT_USER_DATA)
+		{
+			if (PageFaultAddress)
+			{
+				debug("Exception in kernel mode (ip: %#lx cr2: %#lx (%s))",
+					  Frame->eip, PageFaultAddress,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+										: "No symbol");
+			}
+			else
+			{
+				debug("Exception in kernel mode (ip: %#lx (%s))",
+					  Frame->eip,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+										: "No symbol");
+			}
+
+			CPUData *data = GetCurrentCPU();
+			if (data)
+			{
+				if (data->CurrentThread)
+				{
+					if (!data->CurrentThread->Security.IsCritical)
+					{
+						fixme("Exception in non-critical thread (kernel mode)");
+					}
+				}
+			}
+
+			if (TaskManager)
+				TaskManager->Panic();
+			ForceUnlock = true;
+			Display->CreateBuffer(0, 0, SBIdx);
+			StopAllCores();
+		}
+		else
+		{
+			if (PageFaultAddress)
+			{
+				debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
+					  Frame->eip, PageFaultAddress,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+										: "No symbol");
+			}
+			else
+			{
+				debug("Exception in user mode (ip: %#lx (%s))",
+					  Frame->eip,
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+										: "No symbol");
+			}
+			CPUData *data = GetCurrentCPU();
+			if (!data)
+			{
+				ForceUnlock = true;
+				Display->CreateBuffer(0, 0, SBIdx);
+				StopAllCores();
+				EHPrint("\eFF0000Cannot get CPU data! This results in a kernel crash!");
+				error("Cannot get CPU data! This results in a kernel crash!");
+				error("This should never happen!");
+			}
+			else
+			{
+				debug("CPU %ld data is valid", data->ID);
+				if (data->CurrentThread->Security.IsCritical)
+				{
+					debug("Critical thread \"%s\"(%d) died",
+						  data->CurrentThread->Name,
+						  data->CurrentThread->ID);
+					if (TaskManager)
+						TaskManager->Panic();
+					ForceUnlock = true;
+					Display->CreateBuffer(0, 0, SBIdx);
+					StopAllCores();
+				}
+				else
+				{
+					debug("Current thread is valid %#lx",
+						  data->CurrentThread.load());
+					UserModeExceptionHandler(Frame);
+					return;
+				}
+			}
+		}
+#endif
+	}
+
+	SafeFunction inline void Print_x86_64(CHArchTrapFrame *Frame)
+	{
+#ifdef a64
+		CPU::x64::CR0 cr0 = CPU::x64::readcr0();
+		CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = PageFaultAddress};
+		CPU::x64::CR3 cr3 = CPU::x64::readcr3();
+		CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+		CPU::x64::CR8 cr8 = CPU::x64::readcr8();
+		CPU::x64::EFER efer;
+		efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
+		uintptr_t ds;
+		asmv("mov %%ds, %0"
+			 : "=r"(ds));
+
+		EHPrint("\eFF2525FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx\n",
+				CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE),
+				CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
+				Frame->ss, Frame->cs, ds);
+
+		EHPrint("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx\n",
+				Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+
+		EHPrint("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx\n",
+				Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+
+		EHPrint("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx\n",
+				Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+
+		EHPrint("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx\n",
+				Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+
+		EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n",
+				Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+
+		EHPrint("CR0=%#lx  CR2=%#lx  CR3=%#lx  CR4=%#lx  CR8=%#lx\n",
+				cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
+
+		EHPrint("CR0: PE:%s     MP:%s     EM:%s     TS:%s\n     ET:%s     NE:%s     WP:%s     AM:%s\n     NW:%s     CD:%s     PG:%s\n     R0:%#x R1:%#x R2:%#x\n",
+				cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
+				cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
+				cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
+				cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
+
+		EHPrint("CR2: PFLA: %#lx\n",
+				cr2.PFLA);
+
+		EHPrint("CR3: PWT:%s     PCD:%s    PDBR:%#lx\n",
+				cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
+		EHPrint("CR4: VME:%s     PVI:%s     TSD:%s      DE:%s\n     PSE:%s     PAE:%s     MCE:%s     PGE:%s\n     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s\n    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s\n OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s\n     R0:%#x R1:%#x R2:%#x\n",
+				cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
+				cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
+				cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
+				cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
+				cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
+				cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
+
+		EHPrint("CR8: TPL:%d\n", cr8.TPL);
+
+		EHPrint("RFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x R3:%#x\n",
+				Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
+				Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
+				Frame->rflags.OF ? "True " : "False", Frame->rflags.IOPL ? "True " : "False", Frame->rflags.NT ? "True " : "False", Frame->rflags.RF ? "True " : "False",
+				Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
+				Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
+				Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
+
+		EHPrint("EFER: SCE:%s      LME:%s      LMA:%s      NXE:%s\n     SVME:%s    LMSLE:%s    FFXSR:%s      TCE:%s\n     R0:%#x R1:%#x R2:%#x\n",
+				efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
+				efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",
+				efer.Reserved0, efer.Reserved1, efer.Reserved2);
+#endif
+	}
+
+	SafeFunction inline void Print_x86_32(CHArchTrapFrame *Frame)
+	{
+#ifdef a32
+		CPU::x32::CR0 cr0 = CPU::x32::readcr0();
+		CPU::x32::CR2 cr2 = CPU::x32::CR2{.PFLA = PageFaultAddress};
+		CPU::x32::CR3 cr3 = CPU::x32::readcr3();
+		CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+		CPU::x32::CR8 cr8 = CPU::x32::readcr8();
+		uintptr_t ds;
+		asmv("mov %%ds, %0"
+			 : "=r"(ds));
+
+		EHPrint("\eFF2525FS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x\n",
+				CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE),
+				CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
+				Frame->ss, Frame->cs, ds);
+
+		EHPrint("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x\n",
+				Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
+
+		EHPrint("ESI=%#x  EDI=%#x  EBP=%#x  ESP=%#x\n",
+				Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
+
+		EHPrint("EIP=%#x  EFL=%#x  INT=%#x  ERR=%#x\n",
+				Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
+
+		EHPrint("CR0=%#x  CR2=%#x  CR3=%#x  CR4=%#x  CR8=%#x\n",
+				cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
+
+		EHPrint("CR0: PE:%s     MP:%s     EM:%s     TS:%s\n     ET:%s     NE:%s     WP:%s     AM:%s\n     NW:%s     CD:%s     PG:%s\n     R0:%#x R1:%#x R2:%#x\n",
+				cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
+				cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
+				cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
+				cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
+
+		EHPrint("CR2: PFLA: %#x\n",
+				cr2.PFLA);
+
+		EHPrint("CR3: PWT:%s     PCD:%s    PDBR:%#x\n",
+				cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
+		EHPrint("CR4: VME:%s     PVI:%s     TSD:%s      DE:%s\n     PSE:%s     PAE:%s     MCE:%s     PGE:%s\n     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s\n    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s\n OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s\n     R0:%#x R1:%#x\n",
+				cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
+				cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
+				cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
+				cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
+				cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
+				cr4.Reserved0, cr4.Reserved1);
+
+		EHPrint("CR8: TPL:%d\n", cr8.TPL);
+
+		EHPrint("RFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x\n",
+				Frame->eflags.CF ? "True " : "False", Frame->eflags.PF ? "True " : "False", Frame->eflags.AF ? "True " : "False", Frame->eflags.ZF ? "True " : "False",
+				Frame->eflags.SF ? "True " : "False", Frame->eflags.TF ? "True " : "False", Frame->eflags.IF ? "True " : "False", Frame->eflags.DF ? "True " : "False",
+				Frame->eflags.OF ? "True " : "False", Frame->eflags.IOPL ? "True " : "False", Frame->eflags.NT ? "True " : "False", Frame->eflags.RF ? "True " : "False",
+				Frame->eflags.VM ? "True " : "False", Frame->eflags.AC ? "True " : "False", Frame->eflags.VIF ? "True " : "False", Frame->eflags.VIP ? "True " : "False",
+				Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
+				Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
+#endif
+	}
+
+	SafeFunction void Handle(void *Data)
+	{
+		// TODO: SUPPORT SMP
+		CPU::Interrupts(CPU::Disable);
+		CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
+		SBIdx = 255;
+		debug("-----------------------------------------------------------------------------------");
+		error("Exception: %#x", Frame->InterruptNumber);
+#if defined(a64)
+		Handle_x86_64(Frame);
+#elif defined(a32)
+		Handle_x86_32(Frame);
+#endif
 
 		if (ExceptionOccurred)
 		{
 			SBIdx = 255;
 			Display->ClearBuffer(SBIdx);
 			Display->SetBufferCursor(SBIdx, 0, 0);
-
-			CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-			CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = PageFaultAddress};
-			CPU::x64::CR3 cr3 = CPU::x64::readcr3();
-			CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-			CPU::x64::CR8 cr8 = CPU::x64::readcr8();
-			CPU::x64::EFER efer;
-			efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
-			uintptr_t ds;
-			asmv("mov %%ds, %0"
-				 : "=r"(ds));
-
-			EHPrint("\eFF2525FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
-					CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-					Frame->ss, Frame->cs, ds);
-			EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-			EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-			EHPrint("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx\n", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-			EHPrint("RSI=%#llx  RDI=%#llx  RBP=%#llx  RSP=%#llx\n", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-			EHPrint("RIP=%#llx  RFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
-			EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
-			EHPrint("CR0: PE:%s     MP:%s     EM:%s     TS:%s\n     ET:%s     NE:%s     WP:%s     AM:%s\n     NW:%s     CD:%s     PG:%s\n     R0:%#x R1:%#x R2:%#x\n",
-					cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
-					cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
-					cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
-					cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
-			EHPrint("CR2: PFLA: %#llx\n",
-					cr2.PFLA);
-			EHPrint("CR3: PWT:%s     PCD:%s    PDBR:%#llx\n",
-					cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
-			EHPrint("CR4: VME:%s     PVI:%s     TSD:%s      DE:%s\n     PSE:%s     PAE:%s     MCE:%s     PGE:%s\n     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s\n    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s\n OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s\n     R0:%#x R1:%#x R2:%#x\n",
-					cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
-					cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
-					cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
-					cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
-					cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
-					cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
-			EHPrint("CR8: TPL:%d\n", cr8.TPL);
-			EHPrint("RFL: CF:%s     PF:%s     AF:%s     ZF:%s\n     SF:%s     TF:%s     IF:%s     DF:%s\n     OF:%s   IOPL:%s     NT:%s     RF:%s\n     VM:%s     AC:%s    VIF:%s    VIP:%s\n     ID:%s     AlwaysOne:%d\n     R0:%#x R1:%#x R2:%#x R3:%#x\n",
-					Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
-					Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
-					Frame->rflags.OF ? "True " : "False", Frame->rflags.IOPL ? "True " : "False", Frame->rflags.NT ? "True " : "False", Frame->rflags.RF ? "True " : "False",
-					Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
-					Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
-					Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
-			EHPrint("EFER: SCE:%s      LME:%s      LMA:%s      NXE:%s\n     SVME:%s    LMSLE:%s    FFXSR:%s      TCE:%s\n     R0:%#x R1:%#x R2:%#x\n",
-					efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
-					efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",
-					efer.Reserved0, efer.Reserved1, efer.Reserved2);
-
+#if defined(a64)
+			Print_x86_64(Frame);
+#elif defined(a32)
+			Print_x86_32(Frame);
+#endif
 			EHPrint("\nException occurred while handling exception! HALTED!");
 			Display->SetBuffer(SBIdx);
 			Interrupts::RemoveAll();
@@ -971,17 +1167,26 @@ namespace CrashHandler
 
 		debug("Reading control registers...");
 		crashdata.Frame = Frame;
+#if defined(a64)
 		crashdata.cr0 = CPU::x64::readcr0();
 		crashdata.cr2 = CPU::x64::CR2{.PFLA = PageFaultAddress};
 		crashdata.cr3 = CPU::x64::readcr3();
 		crashdata.cr4 = CPU::x64::readcr4();
 		crashdata.cr8 = CPU::x64::readcr8();
 		crashdata.efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
+#elif defined(a32)
+		crashdata.cr0 = CPU::x32::readcr0();
+		crashdata.cr2 = CPU::x32::CR2{.PFLA = PageFaultAddress};
+		crashdata.cr3 = CPU::x32::readcr3();
+		crashdata.cr4 = CPU::x32::readcr4();
+		crashdata.cr8 = CPU::x32::readcr8();
+#endif
 		uintptr_t ds;
 		asmv("mov %%ds, %0"
 			 : "=r"(ds));
 
-		// Get debug registers
+// Get debug registers
+#ifdef a64
 		asmv("movq %%dr0, %0"
 			 : "=r"(crashdata.dr0));
 		asmv("movq %%dr1, %0"
@@ -994,6 +1199,7 @@ namespace CrashHandler
 			 : "=r"(crashdata.dr6.raw));
 		asmv("movq %%dr7, %0"
 			 : "=r"(crashdata.dr7.raw));
+#endif
 
 		CPUData *cpudata = GetCurrentCPU();
 
@@ -1018,7 +1224,7 @@ namespace CrashHandler
 		{
 			crashdata.ID = cpudata->ID;
 			crashdata.CPUData = cpudata;
-			error("Technical Informations on CPU %lld:", cpudata->ID);
+			error("Technical Informations on CPU %d:", cpudata->ID);
 		}
 
 		if (TaskManager && cpudata != nullptr)
@@ -1035,9 +1241,11 @@ namespace CrashHandler
 		}
 
 		{
+#if defined(a64)
 			error("FS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx",
 				  CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
 				  Frame->ss, Frame->cs, ds);
+
 			error("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
 			error("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
 			error("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
@@ -1091,16 +1299,74 @@ namespace CrashHandler
 				  crashdata.efer.SCE ? "True " : "False", crashdata.efer.LME ? "True " : "False", crashdata.efer.LMA ? "True " : "False", crashdata.efer.NXE ? "True " : "False",
 				  crashdata.efer.SVME ? "True " : "False", crashdata.efer.LMSLE ? "True " : "False", crashdata.efer.FFXSR ? "True " : "False", crashdata.efer.TCE ? "True " : "False",
 				  crashdata.efer.Reserved0, crashdata.efer.Reserved1, crashdata.efer.Reserved2);
-		}
-		goto CrashEnd;
-
 #elif defined(a32)
-		goto CrashEnd;
-#elif defined(aa64)
-		goto CrashEnd;
-#endif
+			error("FS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x",
+				  CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
+				  Frame->ss, Frame->cs, ds);
 
-	CrashEnd:
+			error("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x",
+				  Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
+
+			error("ESI=%#x  EDI=%#x  EBP=%#x  ESP=%#x",
+				  Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
+
+			error("EIP=%#x  EFL=%#x  INT=%#x  ERR=%#x",
+				  Frame->eip, Frame->eflags.raw, Frame->InterruptNumber,
+				  Frame->ErrorCode);
+
+			error("CR0=%#x  CR2=%#x  CR3=%#x  CR4=%#x  CR8=%#x",
+				  crashdata.cr0.raw, crashdata.cr2.raw, crashdata.cr3.raw,
+				  crashdata.cr4.raw, crashdata.cr8.raw);
+
+			error("DR0=%#x  DR1=%#x  DR2=%#x  DR3=%#x  DR6=%#x  DR7=%#x",
+				  crashdata.dr0, crashdata.dr1, crashdata.dr2, crashdata.dr3,
+				  crashdata.dr6.raw, crashdata.dr7.raw);
+
+			error("CR0: PE:%s     MP:%s     EM:%s     TS:%s     ET:%s     NE:%s     WP:%s     AM:%s     NW:%s     CD:%s     PG:%s     R0:%#x R1:%#x R2:%#x",
+				  crashdata.cr0.PE ? "True " : "False", crashdata.cr0.MP ? "True " : "False", crashdata.cr0.EM ? "True " : "False", crashdata.cr0.TS ? "True " : "False",
+				  crashdata.cr0.ET ? "True " : "False", crashdata.cr0.NE ? "True " : "False", crashdata.cr0.WP ? "True " : "False", crashdata.cr0.AM ? "True " : "False",
+				  crashdata.cr0.NW ? "True " : "False", crashdata.cr0.CD ? "True " : "False", crashdata.cr0.PG ? "True " : "False",
+				  crashdata.cr0.Reserved0, crashdata.cr0.Reserved1, crashdata.cr0.Reserved2);
+
+			error("CR2: PFLA: %#x",
+				  crashdata.cr2.PFLA);
+
+			error("CR3: PWT:%s     PCD:%s    PDBR:%#x",
+				  crashdata.cr3.PWT ? "True " : "False", crashdata.cr3.PCD ? "True " : "False", crashdata.cr3.PDBR);
+
+			error("CR4: VME:%s     PVI:%s     TSD:%s      DE:%s     PSE:%s     PAE:%s     MCE:%s     PGE:%s     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s     R0:%#x R1:%#x",
+				  crashdata.cr4.VME ? "True " : "False", crashdata.cr4.PVI ? "True " : "False", crashdata.cr4.TSD ? "True " : "False", crashdata.cr4.DE ? "True " : "False",
+				  crashdata.cr4.PSE ? "True " : "False", crashdata.cr4.PAE ? "True " : "False", crashdata.cr4.MCE ? "True " : "False", crashdata.cr4.PGE ? "True " : "False",
+				  crashdata.cr4.PCE ? "True " : "False", crashdata.cr4.UMIP ? "True " : "False", crashdata.cr4.OSFXSR ? "True " : "False", crashdata.cr4.OSXMMEXCPT ? "True " : "False",
+				  crashdata.cr4.LA57 ? "True " : "False", crashdata.cr4.VMXE ? "True " : "False", crashdata.cr4.SMXE ? "True " : "False", crashdata.cr4.PCIDE ? "True " : "False",
+				  crashdata.cr4.OSXSAVE ? "True " : "False", crashdata.cr4.SMEP ? "True " : "False", crashdata.cr4.SMAP ? "True " : "False", crashdata.cr4.PKE ? "True " : "False",
+				  crashdata.cr4.Reserved0, crashdata.cr4.Reserved1);
+
+			error("CR8: TPL:%d", crashdata.cr8.TPL);
+
+			error("RFL: CF:%s     PF:%s     AF:%s     ZF:%s     SF:%s     TF:%s     IF:%s     DF:%s     OF:%s   IOPL:%s     NT:%s     RF:%s     VM:%s     AC:%s    VIF:%s    VIP:%s     ID:%s     AlwaysOne:%d     R0:%#x R1:%#x R2:%#x",
+				  Frame->eflags.CF ? "True " : "False", Frame->eflags.PF ? "True " : "False", Frame->eflags.AF ? "True " : "False", Frame->eflags.ZF ? "True " : "False",
+				  Frame->eflags.SF ? "True " : "False", Frame->eflags.TF ? "True " : "False", Frame->eflags.IF ? "True " : "False", Frame->eflags.DF ? "True " : "False",
+				  Frame->eflags.OF ? "True " : "False", Frame->eflags.IOPL ? "True " : "False", Frame->eflags.NT ? "True " : "False", Frame->eflags.RF ? "True " : "False",
+				  Frame->eflags.VM ? "True " : "False", Frame->eflags.AC ? "True " : "False", Frame->eflags.VIF ? "True " : "False", Frame->eflags.VIP ? "True " : "False",
+				  Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
+				  Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
+
+			error("DR6: B0:%s     B1:%s     B2:%s     B3:%s     BD:%s     BS:%s     BT:%s",
+				  crashdata.dr6.B0 ? "True " : "False", crashdata.dr6.B1 ? "True " : "False",
+				  crashdata.dr6.B2 ? "True " : "False", crashdata.dr6.B3 ? "True " : "False",
+				  crashdata.dr6.BD ? "True " : "False", crashdata.dr6.BS ? "True " : "False",
+				  crashdata.dr6.BT ? "True " : "False");
+
+			error("DR7: L0:%s     G0:%s     L1:%s     G1:%s     L2:%s     G2:%s     L3:%s     G3:%s     LE:%s     GE:%s     GD:%s     R/W0:%s     LEN0:%s     R/W1:%s     LEN1:%s     R/W2:%s     LEN2:%s     R/W3:%s     LEN3:%s",
+				  crashdata.dr7.L0 ? "True " : "False", crashdata.dr7.G0 ? "True " : "False", crashdata.dr7.L1 ? "True " : "False", crashdata.dr7.G1 ? "True " : "False",
+				  crashdata.dr7.L2 ? "True " : "False", crashdata.dr7.G2 ? "True " : "False", crashdata.dr7.L3 ? "True " : "False", crashdata.dr7.G3 ? "True " : "False",
+				  crashdata.dr7.LE ? "True " : "False", crashdata.dr7.GE ? "True " : "False", crashdata.dr7.GD ? "True " : "False", crashdata.dr7.RW0 ? "True " : "False",
+				  crashdata.dr7.LEN0 ? "True " : "False", crashdata.dr7.RW1 ? "True " : "False", crashdata.dr7.LEN1 ? "True " : "False", crashdata.dr7.RW2 ? "True " : "False",
+				  crashdata.dr7.LEN2 ? "True " : "False", crashdata.dr7.RW3 ? "True " : "False", crashdata.dr7.LEN3 ? "True " : "False");
+#endif
+		}
+
 		if (Config.InterruptsOnCrash)
 		{
 			// 255 // Main
@@ -1114,8 +1380,6 @@ namespace CrashHandler
 			DisplayMainScreen(crashdata);
 			DisplayBottomOverlay();
 			Display->SetBuffer(255);
-			debug("Interrupts are enabled, waiting for user input");
-			CPU::Interrupts(CPU::Enable);
 			HookKeyboard();
 		}
 		else

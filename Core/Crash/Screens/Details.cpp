@@ -70,37 +70,37 @@ namespace CrashHandler
 #endif
 
 #if defined(a64)
-        EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
+        EHPrint("\e7981FCFS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx\n",
                 CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
                 data.Frame->ss, data.Frame->cs, ds);
-        EHPrint("R8=%#llx  R9=%#llx  R10=%#llx  R11=%#llx\n", data.Frame->r8, data.Frame->r9, data.Frame->r10, data.Frame->r11);
-        EHPrint("R12=%#llx  R13=%#llx  R14=%#llx  R15=%#llx\n", data.Frame->r12, data.Frame->r13, data.Frame->r14, data.Frame->r15);
-        EHPrint("RAX=%#llx  RBX=%#llx  RCX=%#llx  RDX=%#llx\n", data.Frame->rax, data.Frame->rbx, data.Frame->rcx, data.Frame->rdx);
-        EHPrint("RSI=%#llx  RDI=%#llx  RBP=%#llx  RSP=%#llx\n", data.Frame->rsi, data.Frame->rdi, data.Frame->rbp, data.Frame->rsp);
-        EHPrint("RIP=%#llx  RFL=%#llx  INT=%#llx  ERR=%#llx  EFER=%#llx\n", data.Frame->rip, data.Frame->rflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
+        EHPrint("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx\n", data.Frame->r8, data.Frame->r9, data.Frame->r10, data.Frame->r11);
+        EHPrint("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx\n", data.Frame->r12, data.Frame->r13, data.Frame->r14, data.Frame->r15);
+        EHPrint("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx\n", data.Frame->rax, data.Frame->rbx, data.Frame->rcx, data.Frame->rdx);
+        EHPrint("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx\n", data.Frame->rsi, data.Frame->rdi, data.Frame->rbp, data.Frame->rsp);
+        EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n", data.Frame->rip, data.Frame->rflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
 #elif defined(a32)
-        EHPrint("\e7981FCFS=%#llx  GS=%#llx  SS=%#llx  CS=%#llx  DS=%#llx\n",
+        EHPrint("\e7981FCFS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x\n",
                 CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
                 data.Frame->ss, data.Frame->cs, ds);
-        EHPrint("EAX=%#llx  EBX=%#llx  ECX=%#llx  EDX=%#llx\n", data.Frame->eax, data.Frame->ebx, data.Frame->ecx, data.Frame->edx);
-        EHPrint("ESI=%#llx  EDI=%#llx  EBP=%#llx  ESP=%#llx\n", data.Frame->esi, data.Frame->edi, data.Frame->ebp, data.Frame->esp);
-        EHPrint("EIP=%#llx  EFL=%#llx  INT=%#llx  ERR=%#llx\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode);
+        EHPrint("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x\n", data.Frame->eax, data.Frame->ebx, data.Frame->ecx, data.Frame->edx);
+        EHPrint("ESI=%#x  EDI=%#x  EBP=%#x  ESP=%#x\n", data.Frame->esi, data.Frame->edi, data.Frame->ebp, data.Frame->esp);
+        EHPrint("EIP=%#x  EFL=%#x  INT=%#x  ERR=%#x\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode);
 #elif defined(aa64)
 #endif
 
 #if defined(a86)
-        EHPrint("CR0=%#llx  CR2=%#llx  CR3=%#llx  CR4=%#llx  CR8=%#llx\n", data.cr0.raw, data.cr2.raw, data.cr3.raw, data.cr4.raw, data.cr8.raw);
-        EHPrint("DR0=%#llx  DR1=%#llx  DR2=%#llx  DR3=%#llx  DR6=%#llx  DR7=%#llx\n", data.dr0, data.dr1, data.dr2, data.dr3, data.dr6, data.dr7.raw);
+        EHPrint("CR0=%#lx  CR2=%#lx  CR3=%#lx  CR4=%#lx  CR8=%#lx\n", data.cr0.raw, data.cr2.raw, data.cr3.raw, data.cr4.raw, data.cr8.raw);
+        EHPrint("DR0=%#lx  DR1=%#lx  DR2=%#lx  DR3=%#lx  DR6=%#lx  DR7=%#lx\n", data.dr0, data.dr1, data.dr2, data.dr3, data.dr6, data.dr7.raw);
 
         EHPrint("\eFC797BCR0: PE:%s     MP:%s     EM:%s     TS:%s\n     ET:%s     NE:%s     WP:%s     AM:%s\n     NW:%s     CD:%s     PG:%s\n",
                 data.cr0.PE ? "True " : "False", data.cr0.MP ? "True " : "False", data.cr0.EM ? "True " : "False", data.cr0.TS ? "True " : "False",
                 data.cr0.ET ? "True " : "False", data.cr0.NE ? "True " : "False", data.cr0.WP ? "True " : "False", data.cr0.AM ? "True " : "False",
                 data.cr0.NW ? "True " : "False", data.cr0.CD ? "True " : "False", data.cr0.PG ? "True " : "False");
 
-        EHPrint("\eFCBD79CR2: PFLA: %#llx\n",
+        EHPrint("\eFCBD79CR2: PFLA: %#lx\n",
                 data.cr2.PFLA);
 
-        EHPrint("\e79FC84CR3: PWT:%s     PCD:%s    PDBR:%#llx\n",
+        EHPrint("\e79FC84CR3: PWT:%s     PCD:%s    PDBR:%#lx\n",
                 data.cr3.PWT ? "True " : "False", data.cr3.PCD ? "True " : "False", data.cr3.PDBR);
 
         EHPrint("\eBD79FCCR4: VME:%s     PVI:%s     TSD:%s      DE:%s\n     PSE:%s     PAE:%s     MCE:%s     PGE:%s\n     PCE:%s    UMIP:%s  OSFXSR:%s OSXMMEXCPT:%s\n    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s\n OSXSAVE:%s    SMEP:%s    SMAP:%s     PKE:%s\n",

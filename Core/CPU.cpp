@@ -379,16 +379,17 @@ namespace CPU
 			bool FPU = false;
 			{
 				x32::CR0 _cr0;
-				__asm__ __volatile__(
-					"mov %%cr0, %0\n\t"
-					"and $0xfffffff8, %0\n\t"
-					"mov %0, %%cr0\n\t"
-					"fninit\n\t"
-					"fwait\n\t"
-					"mov %%cr0, %0\n\t"
-					: "=r"(_cr0.raw)
-					:
-					: "memory");
+				// __asm__ __volatile__(
+				// 	"mov %%cr0, %0\n"
+				// 	"and $0xfffffff8, %0\n"
+				// 	"mov %0, %%cr0\n"
+				// 	"fninit\n"
+				// 	"fwait\n"
+				// 	"mov %%cr0, %0\n"
+				// 	: "=r"(_cr0.raw)
+				// 	:
+				// 	: "memory");
+				_cr0 = x32::readcr0();
 				if ((_cr0.EM) == 0)
 				{
 					FPU = true;

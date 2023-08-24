@@ -33,6 +33,7 @@
 				"-pipe",
 				"-mcmodel=kernel",
 				"-fno-builtin",
+				"-m64",
 
 				// Warnings
 				"-Wall",
@@ -110,6 +111,7 @@
 				"-pipe",
 				"-msoft-float",
 				"-fno-builtin",
+				"-m32",
 
 				// Warnings
 				"-Wall",

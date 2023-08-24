@@ -183,6 +183,8 @@ namespace CrashHandler
 
 	SafeFunction void HookKeyboard()
 	{
+		CPU::Interrupts(CPU::Enable);
+		debug("Interrupts are enabled, waiting for user input");
 		CrashKeyboardDriver kbd; /* We don't want to allocate memory. */
 		CPU::Halt(true);
 	}

@@ -395,13 +395,14 @@ void __ubsan_handle_type_mismatch_v1(struct type_mismatch_v1_data *type_mismatch
     else if (type_mismatch->alignment != 0 && is_aligned(pointer, type_mismatch->alignment))
     {
         ubsan("\t\tIn File: %s:%i:%i", location->file, location->line, location->column);
-        ubsan("Unaligned memory access %#llx.", pointer);
+        ubsan("Unaligned memory access %#lx.", pointer);
     }
     else
     {
         ubsan("\t\tIn File: %s:%i:%i", location->file, location->line, location->column);
-        ubsan("%s address %#llx with insufficient space for object of type %s",
-              Type_Check_Kinds[type_mismatch->type_check_kind], (void *)pointer, type_mismatch->type->name);
+        ubsan("%s address %#lx with insufficient space for object of type %s",
+              Type_Check_Kinds[type_mismatch->type_check_kind],
+              (void *)pointer, type_mismatch->type->name);
     }
 }
 

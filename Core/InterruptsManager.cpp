@@ -38,7 +38,10 @@
 #include "crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" SafeFunction void ExceptionHandler(void *Data) { CrashHandler::Handle(Data); }
+extern "C" SafeFunction void ExceptionHandler(void *Data)
+{
+	CrashHandler::Handle(Data);
+}
 
 namespace Interrupts
 {
@@ -144,10 +147,21 @@ namespace Interrupts
 	{
 #if defined(a64)
 		CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
+#elif defined(a32)
+		CPU::x32::TrapFrame *Frame = (CPU::x32::TrapFrame *)Data;
+#elif defined(aa64)
+		CPU::aarch64::TrapFrame *Frame = (CPU::aarch64::TrapFrame *)Data;
+#endif
 		// debug("IRQ%ld", Frame->InterruptNumber - 32);
 
 		memmove(InterruptFrames + 1, InterruptFrames, sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
+#if defined(a64)
 		InterruptFrames[0] = (void *)Frame->rip;
+#elif defined(a32)
+		InterruptFrames[0] = (void *)Frame->eip;
+#elif defined(aa64)
+		InterruptFrames[0] = (void *)Frame->elr_el1;
+#endif
 
 		CPUData *CoreData = GetCurrentCPU();
 		int Core = 0;
@@ -178,7 +192,7 @@ namespace Interrupts
 
 			if (!InterruptHandled)
 			{
-				error("IRQ%ld is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
+				error("IRQ%d is unhandled on CPU %d.", Frame->InterruptNumber - 32, Core);
 				if (Frame->InterruptNumber == CPU::x86::IRQ1)
 				{
 					uint8_t scancode = inb(0x60);
@@ -192,14 +206,18 @@ namespace Interrupts
 				// TODO: Handle PIC too
 				return;
 			}
+			else
+				fixme("APIC not found for core %d", Core);
 			// TODO: PIC
 		}
-#elif defined(a32)
-		void *Frame = Data;
-#elif defined(aa64)
-		CPU::aarch64::TrapFrame *Frame = (CPU::aarch64::TrapFrame *)Data;
-#endif
-		error("HALT HALT HALT HALT HALT HALT HALT HALT HALT");
+		else
+		{
+			error("Interrupt number %d is out of range.",
+				  Frame->InterruptNumber);
+		}
+
+		error("HALT HALT HALT HALT HALT HALT HALT HALT HALT [IRQ%d]",
+			  Frame->InterruptNumber - 32);
 		CPU::Stop();
 	}
 

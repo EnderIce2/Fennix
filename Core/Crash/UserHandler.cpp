@@ -79,26 +79,26 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 #endif
 
 #if defined(a64)
-        error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
+        error("FS=%#lx GS=%#lx SS=%#lx CS=%#lx DS=%#lx",
               CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
               Frame->ss, Frame->cs, ds);
-        error("R8=%#llx R9=%#llx R10=%#llx R11=%#llx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-        error("R12=%#llx R13=%#llx R14=%#llx R15=%#llx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-        error("RAX=%#llx RBX=%#llx RCX=%#llx RDX=%#llx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-        error("RSI=%#llx RDI=%#llx RBP=%#llx RSP=%#llx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-        error("RIP=%#llx RFL=%#llx INT=%#llx ERR=%#llx EFER=%#llx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+        error("R8=%#lx R9=%#lx R10=%#lx R11=%#lx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
+        error("R12=%#lx R13=%#lx R14=%#lx R15=%#lx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
+        error("RAX=%#lx RBX=%#lx RCX=%#lx RDX=%#lx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
+        error("RSI=%#lx RDI=%#lx RBP=%#lx RSP=%#lx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
+        error("RIP=%#lx RFL=%#lx INT=%#lx ERR=%#lx EFER=%#lx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
 #elif defined(a32)
-        error("FS=%#llx GS=%#llx SS=%#llx CS=%#llx DS=%#llx",
+        error("FS=%#x GS=%#x SS=%#x CS=%#x DS=%#x",
               CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
               Frame->ss, Frame->cs, ds);
-        error("EAX=%#llx EBX=%#llx ECX=%#llx EDX=%#llx", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
-        error("ESI=%#llx EDI=%#llx EBP=%#llx ESP=%#llx", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
-        error("EIP=%#llx EFL=%#llx INT=%#llx ERR=%#llx", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
+        error("EAX=%#x EBX=%#x ECX=%#x EDX=%#x", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
+        error("ESI=%#x EDI=%#x EBP=%#x ESP=%#x", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
+        error("EIP=%#x EFL=%#x INT=%#x ERR=%#x", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
 #elif defined(aa64)
 #endif
 
 #if defined(a86)
-        error("CR0=%#llx CR2=%#llx CR3=%#llx CR4=%#llx CR8=%#llx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
+        error("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
 
         error("CR0: PE:%s MP:%s EM:%s TS:%s ET:%s NE:%s WP:%s AM:%s NW:%s CD:%s PG:%s R0:%#x R1:%#x R2:%#x",
               cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
@@ -106,7 +106,7 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
               cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
               cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
 
-        error("CR2: PFLA: %#llx",
+        error("CR2: PFLA: %#lx",
               cr2.PFLA);
 
         error("CR3: PWT:%s PCD:%s PDBR:%#llx",
