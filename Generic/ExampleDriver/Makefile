@@ -34,7 +34,7 @@ LDFLAGS := 															\
 	-Wl,-static,--no-dynamic-linker,-ztext,--no-warn-rwx-segment 	\
 	-nostdlib -nodefaultlibs -nolibc  								\
 	-zmax-page-size=0x1000											\
-	-Wl,-Map file.map -static -Tlinker.ld
+	-Wl,-Map file.map -static
 
 WARNCFLAG = -Wall -Wextra
 
@@ -45,6 +45,8 @@ CFLAGS :=										\
 
 ifeq ($(OSARCH), amd64)
 
+LDFLAGS += -Tlinker_amd64.ld
+
 CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
 		  -mno-red-zone -mno-sse -mno-sse2					\
 		  -march=x86-64 -pipe -ffunction-sections			\
@@ -52,11 +54,15 @@ CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
 
 else ifeq ($(OSARCH), i386)
 
+LDFLAGS += -Tlinker_i386.ld
+
 CFLAGS += -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow		\
 		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections	\
 		  -march=i386 -pipe -msoft-float -fno-builtin
 
 else ifeq ($(OSARCH), aarch64)
+
+LDFLAGS += -Tlinker_aarch64.ld
 
 CFLAGS += -pipe -fno-builtin -fPIC
 
@@ -66,9 +72,9 @@ build: $(FILENAME)
 ifeq ($(OSARCH), amd64)
 	$(OBJDUMP) -b binary -D -m i386:x86-64 -d $(FILENAME) > file_dump.map
 else ifeq ($(OSARCH), i386)
-
+	$(OBJDUMP) -b binary -D -m i386 -d $(FILENAME) > file_dump.map
 else ifeq ($(OSARCH), aarch64)
-
+	$(OBJDUMP) -b binary -D -m aarch64 -d $(FILENAME) > file_dump.map
 endif
 	mv $(FILENAME) ../../out/$(FILENAME)
 
