@@ -25,117 +25,84 @@
 namespace GlobalDescriptorTable
 {
 	static GlobalDescriptorTableEntries GDTEntriesTemplate = {
-		.Null = {
-			.Limit0 = 0x0,
-			.BaseLow = 0x0,
-			.BaseMiddle = 0x0,
-			.Access = {.Raw = 0x0},
-			// .Limit1 = 0x0,
-			.Flags = {.Raw = 0x0},
-			.BaseHigh = 0x0,
-		},
-
+		.Null = 0,
 		.Code = {
-			.Limit0 = 0xFFFF,
-			.BaseLow = 0x0,
-			.BaseMiddle = 0x0,
-			.Access = {
-				.A = 0,
-				.RW = 1,
-				.DC = 0,
-				.E = 1,
-				.S = 1,
-				.DPL = 0,
-				.P = 1,
-			},
-			// .Limit1 = 0xF,
-			.Flags = {
-				.Reserved = 0xF, /* Workaround for Limit1 */
-
-				.AVL = 0,
-				.L = 1,
-				.DB = 0,
-				.G = 1,
-			},
-			.BaseHigh = 0x0,
+			.SegmentLimitLow = 0xFFFF,
+			.BaseAddressLow = 0x0,
+			.BaseAddressHigh = 0x0,
+			.Accessed = 0,
+			.Readable = 1,
+			.Conforming = 0,
+			.Executable = 1,
+			.Type = 1,
+			.DescriptorPrivilegeLevel = 0,
+			.Present = 1,
+			.SegmentLimitHigh = 0xF,
+			.Available = 0,
+			.Long = 1,
+			.Default = 0,
+			.Granularity = 1,
+			.BaseAddressHigher = 0x0,
 		},
 
 		.Data = {
-			.Limit0 = 0xFFFF,
-			.BaseLow = 0x0,
-			.BaseMiddle = 0x0,
-			.Access = {
-				.A = 0,
-				.RW = 1,
-				.DC = 0,
-				.E = 0,
-				.S = 1,
-				.DPL = 0,
-				.P = 1,
-			},
-			// .Limit1 = 0xF,
-			.Flags = {
-				.Reserved = 0xF, /* Workaround for Limit1 */
-
-				.AVL = 0,
-				.L = 0,
-				.DB = 1,
-				.G = 1,
-			},
-			.BaseHigh = 0x0,
+			.SegmentLimitLow = 0xFFFF,
+			.BaseAddressLow = 0x0,
+			.BaseAddressHigh = 0x0,
+			.Accessed = 0,
+			.Writable = 1,
+			.ExpandDown = 0,
+			.Executable = 0,
+			.Type = 1,
+			.DescriptorPrivilegeLevel = 0,
+			.Present = 1,
+			.SegmentLimitHigh = 0xF,
+			.Available = 0,
+			.Reserved = 0,
+			.Default = 0,
+			.Granularity = 1,
+			.BaseAddressHigher = 0x0,
 		},
 
 		.UserData = {
-			.Limit0 = 0xFFFF,
-			.BaseLow = 0x0,
-			.BaseMiddle = 0x0,
-			.Access = {
-				.A = 0,
-				.RW = 1,
-				.DC = 0,
-				.E = 0,
-				.S = 1,
-				.DPL = 3,
-				.P = 1,
-			},
-			// .Limit1 = 0xF,
-			.Flags = {
-				.Reserved = 0xF, /* Workaround for Limit1 */
-
-				.AVL = 0,
-				.L = 0,
-				.DB = 1,
-				.G = 1,
-			},
-			.BaseHigh = 0x0,
+			.SegmentLimitLow = 0xFFFF,
+			.BaseAddressLow = 0x0,
+			.BaseAddressHigh = 0x0,
+			.Accessed = 0,
+			.Writable = 1,
+			.ExpandDown = 1,
+			.Executable = 0,
+			.Type = 1,
+			.DescriptorPrivilegeLevel = 3,
+			.Present = 1,
+			.SegmentLimitHigh = 0xF,
+			.Available = 0,
+			.Reserved = 0,
+			.Default = 0,
+			.Granularity = 1,
+			.BaseAddressHigher = 0x0,
 		},
 
 		.UserCode = {
-			.Limit0 = 0xFFFF,
-			.BaseLow = 0x0,
-			.BaseMiddle = 0x0,
-			.Access = {
-				.A = 0,
-				.RW = 1,
-				.DC = 0,
-				.E = 1,
-				.S = 1,
-				.DPL = 3,
-				.P = 1,
-			},
-			// .Limit1 = 0xF,
-			.Flags = {
-				.Reserved = 0xF, /* Workaround for Limit1 */
-
-				.AVL = 0,
-				.L = 1,
-				.DB = 0,
-				.G = 1,
-			},
-			.BaseHigh = 0x0,
+			.SegmentLimitLow = 0xFFFF,
+			.BaseAddressLow = 0x0,
+			.BaseAddressHigh = 0x0,
+			.Accessed = 0,
+			.Readable = 1,
+			.Conforming = 0,
+			.Executable = 1,
+			.Type = 1,
+			.DescriptorPrivilegeLevel = 3,
+			.Present = 1,
+			.SegmentLimitHigh = 0xF,
+			.Available = 0,
+			.Long = 1,
+			.Default = 0,
+			.Granularity = 1,
+			.BaseAddressHigher = 0x0,
 		},
 
-		.TaskStateSegment = {},
+		.TaskStateSegment{},
 	};
 
 	GlobalDescriptorTableEntries GDTEntries[MAX_CPU] __aligned(16);
@@ -156,48 +123,18 @@ namespace GlobalDescriptorTable
 	SafeFunction void Init(int Core)
 	{
 		memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
-		gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
+		gdt[Core] =
+			{
+				.Limit = sizeof(GlobalDescriptorTableEntries) - 1,
+				.BaseAddress = &GDTEntries[Core],
+			};
 
 		debug("GDT: %#lx", &gdt[Core]);
-		debug("GDT KERNEL: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
-			  GDT_KERNEL_CODE,
-			  GDTEntries[Core].Code.Limit0,
-			  GDTEntries[Core].Code.BaseLow,
-			  GDTEntries[Core].Code.BaseMiddle,
-			  GDTEntries[Core].Code.Access.Raw,
-			  GDTEntries[Core].Code.Flags.Reserved,
-			  GDTEntries[Core].Code.Flags.Raw & ~0xF,
-			  GDTEntries[Core].Code.BaseHigh);
-
-		debug("GDT KERNEL: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
-			  GDT_KERNEL_DATA,
-			  GDTEntries[Core].Data.Limit0,
-			  GDTEntries[Core].Data.BaseLow,
-			  GDTEntries[Core].Data.BaseMiddle,
-			  GDTEntries[Core].Data.Access.Raw,
-			  GDTEntries[Core].Data.Flags.Reserved,
-			  GDTEntries[Core].Data.Flags.Raw & ~0xF,
-			  GDTEntries[Core].Data.BaseHigh);
-
-		debug("GDT USER: CODE %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
-			  GDT_USER_CODE,
-			  GDTEntries[Core].UserCode.Limit0,
-			  GDTEntries[Core].UserCode.BaseLow,
-			  GDTEntries[Core].UserCode.BaseMiddle,
-			  GDTEntries[Core].UserCode.Access.Raw,
-			  GDTEntries[Core].UserCode.Flags.Reserved,
-			  GDTEntries[Core].UserCode.Flags.Raw & ~0xF,
-			  GDTEntries[Core].UserCode.BaseHigh);
-
-		debug("GDT USER: DATA %#lx: Limit0: 0x%X, BaseLow: 0x%X, BaseMiddle: 0x%X, Access: 0x%X, Limit1: 0x%X, Flags: 0x%X, BaseHigh: 0x%X",
-			  GDT_USER_DATA,
-			  GDTEntries[Core].UserData.Limit0,
-			  GDTEntries[Core].UserData.BaseLow,
-			  GDTEntries[Core].UserData.BaseMiddle,
-			  GDTEntries[Core].UserData.Access.Raw,
-			  GDTEntries[Core].UserData.Flags.Reserved,
-			  GDTEntries[Core].UserData.Flags.Raw & ~0xF,
-			  GDTEntries[Core].UserData.BaseHigh);
+		debug("GDT KERNEL CODE %#lx", GDT_KERNEL_CODE);
+		debug("GDT KERNEL DATA %#lx", GDT_KERNEL_DATA);
+		debug("GDT  USER  CODE %#lx", GDT_USER_CODE);
+		debug("GDT  USER  DATA %#lx", GDT_USER_DATA);
+		debug("GDT     TSS     %#lx", GDT_TSS);
 
 		CPU::x64::lgdt(&gdt[Core]);
 
@@ -222,13 +159,22 @@ namespace GlobalDescriptorTable
 
 		uintptr_t Base = (uintptr_t)&tss[Core];
 		size_t Limit = Base + sizeof(TaskStateSegment);
-		gdt[Core].Entries->TaskStateSegment.Limit = Limit & 0xFFFF;
-		gdt[Core].Entries->TaskStateSegment.BaseLow = Base & 0xFFFF;
-		gdt[Core].Entries->TaskStateSegment.BaseMiddle = (Base >> 16) & 0xFF;
-		gdt[Core].Entries->TaskStateSegment.BaseHigh = (Base >> 24) & 0xFF;
-		gdt[Core].Entries->TaskStateSegment.BaseUpper = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
-		gdt[Core].Entries->TaskStateSegment.Access = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
-		gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);
+		SystemSegmentDescriptor *tssDesc = &gdt[Core].BaseAddress->TaskStateSegment;
+		tssDesc->SegmentLimitLow = Limit & 0xFFFF;
+		tssDesc->BaseAddressLow = Base & 0xFFFF;
+		tssDesc->BaseAddressMiddle = (Base >> 16) & 0xFF;
+		tssDesc->Type = AVAILABLE_64BIT_TSS;
+		tssDesc->Zero0 = 0;
+		tssDesc->DescriptorPrivilegeLevel = 0;
+		tssDesc->Present = 1;
+		tssDesc->Available = 0;
+		tssDesc->Reserved0 = 0;
+		tssDesc->Granularity = 0;
+		tssDesc->BaseAddressHigh = (Base >> 24) & 0xFF;
+		tssDesc->BaseAddressHigher = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
+		tssDesc->Reserved1 = 0;
+		tssDesc->Zero1 = 0;
+		tssDesc->Reserved2 = 0;
 
 		tss[Core].IOMapBaseAddressOffset = sizeof(TaskStateSegment);
 		tss[Core].StackPointer[0] = (uint64_t)CPUStackPointer[Core] + STACK_SIZE;
