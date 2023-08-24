@@ -18,13 +18,13 @@
 #include <smp.hpp>
 
 #include <memory.hpp>
+#include <acpi.hpp>
 #include <ints.hpp>
 #include <assert.h>
 #include <cpu.hpp>
 #include <atomic>
 
 #include "../../../kernel.h"
-#include "../acpi.hpp"
 #include "apic.hpp"
 
 extern "C" uint64_t _trampoline_start, _trampoline_end;

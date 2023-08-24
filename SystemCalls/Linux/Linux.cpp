@@ -283,7 +283,9 @@ static void *sys_mmap(void *addr, size_t length, int prot,
 	if (prot & PROT_WRITE)
 		MapFlags |= Memory::RW;
 	if (prot & PROT_EXEC)
+	{
 		debug("PROT_EXEC ignored"); /* MapFlags |= Memory::XD; */
+	}
 
 	switch (flags & MAP_TYPE)
 	{
@@ -335,7 +337,9 @@ static int sys_mprotect(void *addr, size_t len, int prot)
 	if (prot & PROT_WRITE)
 		vmm.Map(addr, addr, len, Memory::RW, Memory::Virtual::FourKiB);
 	if (prot & PROT_EXEC)
+	{
 		debug("PROT_EXEC ignored"); /* MapFlags |= Memory::XD; */
+	}
 
 	return 0;
 }

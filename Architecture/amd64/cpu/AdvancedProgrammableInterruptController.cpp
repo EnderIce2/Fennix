@@ -18,6 +18,7 @@
 #include "apic.hpp"
 
 #include <memory.hpp>
+#include <acpi.hpp>
 #include <uart.hpp>
 #include <lock.hpp>
 #include <cpu.hpp>
@@ -25,7 +26,6 @@
 #include <io.h>
 
 #include "../../../kernel.h"
-#include "../acpi.hpp"
 
 NewLock(APICLock);
 

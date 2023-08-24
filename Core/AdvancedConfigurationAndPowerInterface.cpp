@@ -15,12 +15,12 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "acpi.hpp"
+#include <acpi.hpp>
 
 #include <debug.h>
 #include <io.h>
 
-#include "../../kernel.h"
+#include "../kernel.h"
 
 namespace ACPI
 {
@@ -40,7 +40,7 @@ namespace ACPI
 
 #pragma GCC diagnostic pop
 
-			for (int i = 0; i < 4; i++)
+			for (short i = 0; i < 4; i++)
 			{
 				if (SDTHdr->Signature[i] != Signature[i])
 					break;
@@ -140,6 +140,14 @@ namespace ACPI
 		{
 			debug("RSDT supported");
 			XSDT = (ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
+		}
+
+		if (!Memory::Virtual().Check(XSDT))
+		{
+			warn("%s is not mapped!",
+				 XSDTSupported ? "XSDT" : "RSDT");
+			debug("XSDT: %p", XSDT);
+			Memory::Virtual().Map(XSDT, XSDT, Memory::RW);
 		}
 
 		this->SearchTables(XSDT);

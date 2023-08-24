@@ -20,12 +20,12 @@
 #include <memory.hpp>
 #include <uart.hpp>
 #include <lock.hpp>
+#include <acpi.hpp>
 #include <cpu.hpp>
 #include <smp.hpp>
 #include <io.h>
 
 #include "../../../kernel.h"
-#include "../acpi.hpp"
 
 NewLock(APICLock);
 

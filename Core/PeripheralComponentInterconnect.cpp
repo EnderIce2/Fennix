@@ -18,12 +18,7 @@
 #include <pci.hpp>
 
 #include <power.hpp>
-#if defined(a64)
-#include "../Architecture/amd64/acpi.hpp"
-#elif defined(a32)
-#include "../Architecture/i386/acpi.hpp"
-#elif defined(aa64)
-#endif
+#include <acpi.hpp>
 
 #include "../kernel.h"
 
@@ -927,7 +922,7 @@ namespace PCI
 			if (PCIDeviceHdr->DeviceID == 0xFFFF)
 				return;
 		}
-		debug("PCI Bus DeviceID:%#llx VendorID:%#llx BIST:%#llx Cache:%#llx Class:%#llx Cmd:%#llx HdrType:%#llx LatencyTimer:%#llx ProgIF:%#llx RevID:%#llx Status:%#llx SubClass:%#llx ",
+		debug("PCI Bus DeviceID:%#x VendorID:%#x BIST:%#x Cache:%#x Class:%#x Cmd:%#x HdrType:%#x LatencyTimer:%#x ProgIF:%#x RevID:%#x Status:%#x SubClass:%#x ",
 			  PCIDeviceHdr->DeviceID, PCIDeviceHdr->VendorID, PCIDeviceHdr->BIST,
 			  PCIDeviceHdr->CacheLineSize, PCIDeviceHdr->Class, PCIDeviceHdr->Command,
 			  PCIDeviceHdr->HeaderType, PCIDeviceHdr->LatencyTimer, PCIDeviceHdr->ProgIF,

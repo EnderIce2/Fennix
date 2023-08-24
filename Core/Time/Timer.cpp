@@ -18,15 +18,10 @@
 #include <time.hpp>
 
 #include <memory.hpp>
+#include <acpi.hpp>
 #include <debug.h>
 #include <io.h>
 
-#if defined(a64)
-#include "../../Architecture/amd64/acpi.hpp"
-#elif defined(a32)
-#include "../../Architecture/i386/acpi.hpp"
-#elif defined(aa64)
-#endif
 
 #include "../../kernel.h"
 

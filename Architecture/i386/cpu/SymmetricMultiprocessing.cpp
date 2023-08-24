@@ -18,21 +18,13 @@
 #include <smp.hpp>
 
 #include <memory.hpp>
-#include <ints.hpp>
-#include <assert.h>
-#include <cpu.hpp>
-#include <atomic>
-
-#include <smp.hpp>
-
-#include <memory.hpp>
+#include <acpi.hpp>
 #include <ints.hpp>
 #include <assert.h>
 #include <cpu.hpp>
 #include <atomic>
 
 #include "../../../kernel.h"
-#include "../acpi.hpp"
 #include "apic.hpp"
 
 enum SMPTrampolineAddress

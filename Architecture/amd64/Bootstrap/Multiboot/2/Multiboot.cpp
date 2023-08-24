@@ -18,8 +18,6 @@
 #include <types.h>
 
 #include <memory.hpp>
-#include <elf.h>
-#include <io.h>
 
 #include "multiboot2.h"
 #include "../../../../../kernel.h"
@@ -43,14 +41,6 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 	BootInfo mb2binfo{};
 
 	{
-		uint64_t div = 1193180 / 1000;
-		outb(0x43, 0xB6);
-		outb(0x42, (uint8_t)div);
-		outb(0x42, (uint8_t)(div >> 8));
-		uint8_t tmp = inb(0x61);
-		if (tmp != (tmp | 3))
-			outb(0x61, tmp | 3);
-
 		auto InfoAddress = Info;
 		for (auto Tag = (struct multiboot_tag *)((uint8_t *)InfoAddress + 8);
 			 ;
@@ -306,9 +296,6 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 			}
 			}
 		}
-
-		tmp = inb(0x61) & 0xFC;
-		outb(0x61, tmp);
 	}
 
 	Entry(&mb2binfo);

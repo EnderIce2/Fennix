@@ -18,20 +18,19 @@
 #include <ints.hpp>
 
 #include <syscalls.hpp>
+#include <acpi.hpp>
 #include <smp.hpp>
 #include <vector>
 #include <io.h>
 
 #if defined(a64)
+#include "../Architecture/amd64/cpu/apic.hpp"
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #include "../Architecture/amd64/cpu/idt.hpp"
-#include "../Architecture/amd64/acpi.hpp"
-#include "../Architecture/amd64/cpu/apic.hpp"
 #elif defined(a32)
+#include "../Architecture/i386/cpu/apic.hpp"
 #include "../Architecture/i386/cpu/gdt.hpp"
 #include "../Architecture/i386/cpu/idt.hpp"
-#include "../Architecture/i386/acpi.hpp"
-#include "../Architecture/i386/cpu/apic.hpp"
 #elif defined(aa64)
 #endif
 

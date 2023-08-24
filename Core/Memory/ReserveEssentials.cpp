@@ -17,17 +17,11 @@
 
 #include <memory.hpp>
 
+#include <acpi.hpp>
 #include <debug.h>
 #include <elf.h>
 #ifdef DEBUG
 #include <uart.hpp>
-#endif
-
-#if defined(a64)
-#include "../../Architecture/amd64/acpi.hpp"
-#elif defined(a32)
-#include "../../Architecture/i386/acpi.hpp"
-#elif defined(aa64)
 #endif
 
 #include "../../kernel.h"

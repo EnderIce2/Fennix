@@ -15,15 +15,19 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "acpi.hpp"
+#include <acpi.hpp>
 
 #include <time.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <io.h>
 
-#include "cpu/apic.hpp"
-#include "../../kernel.h"
+#if defined(a64)
+#include "../Architecture/amd64/cpu/apic.hpp"
+#elif defined(a32)
+#include "../Architecture/i386/cpu/apic.hpp"
+#endif
+#include "../kernel.h"
 
 #define ACPI_TIMER 0x0001
 #define ACPI_BUSMASTER 0x0010
@@ -38,7 +42,9 @@ namespace ACPI
 {
 	__always_inline inline bool IsCanonical(uint64_t Address)
 	{
-		return ((Address <= 0x00007FFFFFFFFFFF) || ((Address >= 0xFFFF800000000000) && (Address <= 0xFFFFFFFFFFFFFFFF)));
+		return ((Address <= 0x00007FFFFFFFFFFF) ||
+				((Address >= 0xFFFF800000000000) &&
+				 (Address <= 0xFFFFFFFFFFFFFFFF)));
 	}
 
 #define ACPI_ENABLED 0x0001
@@ -48,7 +54,11 @@ namespace ACPI
 #define ACPI_GAS_IO 1
 #define ACPI_GAS_PCI 2
 
-	void DSDT::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+#if defined(a64)
+	void DSDT::OnInterruptReceived(CPU::x64::TrapFrame *)
+#elif defined(a32)
+	void DSDT::OnInterruptReceived(CPU::x32::TrapFrame *)
+#endif
 	{
 		debug("SCI Handle Triggered");
 		uint16_t Event = 0;
@@ -113,7 +123,6 @@ namespace ACPI
 			error("ACPI unknown event %#lx on CPU %d", Event, GetCurrentCPU()->ID);
 			CPU::Stop();
 		}
-		UNUSED(Frame);
 	}
 
 	void DSDT::Shutdown()
@@ -184,18 +193,29 @@ namespace ACPI
 		uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);
 		uint8_t *S5Address = (uint8_t *)(Address) + 36;
 		ACPI::ACPI::ACPIHeader *Header = (ACPI::ACPI::ACPIHeader *)Address;
+		if (!Memory::Virtual().Check(Header))
+		{
+			warn("DSDT is not mapped");
+			debug("DSDT: %#lx", Address);
+			Memory::Virtual().Map(Header, Header, Memory::RW);
+		}
+
 		size_t Length = Header->Length;
+		Memory::Virtual().Map(Header, Header, Length, Memory::RW);
+
 		while (Length-- > 0)
 		{
 			if (!memcmp(S5Address, "_S5_", 4))
 				break;
 			S5Address++;
 		}
+
 		if (Length <= 0)
 		{
 			warn("_S5 not present in ACPI");
 			return;
 		}
+
 		if ((*(S5Address - 1) == 0x08 || (*(S5Address - 2) == 0x08 && *(S5Address - 1) == '\\')) && *(S5Address + 4) == 0x12)
 		{
 			S5Address += 5;
@@ -218,11 +238,11 @@ namespace ACPI
 			trace("ACPI Shutdown is supported");
 			ACPIShutdownSupported = true;
 
-			uint16_t value = ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_WAKE;
 			{
+				uint16_t value = ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_WAKE;
 				uint16_t a = s_cst(uint16_t, acpi->FADT->PM1aEventBlock + (acpi->FADT->PM1EventLength / 2));
 				uint16_t b = s_cst(uint16_t, acpi->FADT->PM1bEventBlock + (acpi->FADT->PM1EventLength / 2));
-				debug("SCI Event: %#llx [a:%#x b:%#x]", value, a, b);
+				debug("SCI Event: %#x [a:%#x b:%#x]", value, a, b);
 				if (acpi->FADT->PM1aEventBlock)
 					outw(a, value);
 				if (acpi->FADT->PM1bEventBlock)
@@ -242,6 +262,7 @@ namespace ACPI
 					outw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock), b);
 				}
 			}
+
 			((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);
 			return;
 		}
