@@ -22,24 +22,32 @@
 
 namespace InterruptDescriptorTable
 {
-	typedef enum _InterruptGateType
+	/**
+	 * Manual: AMD Architecture Programmer's Manual Volume 2: System Programming
+	 * Subsection: 4.8.3 System Descriptors
+	 * Table: 4-6
+	 *
+	 * @note Reserved values are not listed in the table.
+	 */
+	enum GateType
 	{
-		TASK = 0b101,
-		INT_16BIT = 0b110,
-		TRAP_16BIT = 0b111,
-		INT_32BIT = 0b1110,
-		TRAP_32BIT = 0b1111,
-	} InterruptGateType;
+		LDT_64BIT = 0b0010,
+		AVAILABLE_64BIT_TSS = 0b1001,
+		BUSY_64BIT_TSS = 0b1011,
+		CALL_GATE_64BIT = 0b1100,
+		INTERRUPT_GATE_64BIT = 0b1110,
+		TRAP_GATE_64BIT = 0b1111,
+	};
 
-	typedef enum _InterruptRingType
+	enum PrivilegeLevelType
 	{
 		RING0 = 0b0,
 		RING1 = 0b1,
 		RING2 = 0b10,
 		RING3 = 0b11,
-	} InterruptRingType;
+	};
 
-	typedef enum _InterruptStackTableType
+	enum InterruptStackTableType
 	{
 		IST0 = 0b0,
 		IST1 = 0b1,
@@ -48,33 +56,91 @@ namespace InterruptDescriptorTable
 		IST4 = 0b100,
 		IST5 = 0b101,
 		IST6 = 0b110,
-	} InterruptStackTableType;
+	};
 
-	typedef struct _InterruptDescriptorTableEntry
+	struct InterruptGate
 	{
-		uint64_t BaseLow : 16;
-		uint64_t SegmentSelector : 16;
+		/* +0 */
+		uint64_t TargetOffsetLow : 16;
+		uint64_t TargetSelector : 16;
+		/* +4 */
 		uint64_t InterruptStackTable : 3;
-		uint64_t Reserved1 : 5;
-		uint64_t Flags : 4;
-		uint64_t Reserved2 : 1;
-		uint64_t Ring : 2;
+		uint64_t Reserved0 : 5;
+		uint64_t Type : 4;
+		uint64_t Zero : 1;
+		uint64_t DescriptorPrivilegeLevel : 2;
 		uint64_t Present : 1;
-		uint64_t BaseHigh : 48;
-		uint64_t Reserved3 : 32;
-	} __packed InterruptDescriptorTableEntry;
+		uint64_t TargetOffsetMiddle : 16;
+		/* +8 */
+		uint64_t TargetOffsetHigh : 32;
+		/* +12 */
+		uint64_t Reserved1 : 32;
+	} __packed;
 
-	typedef struct _InterruptDescriptorTableDescriptor
+	typedef InterruptGate TrapGate;
+
+	struct CallGate
 	{
-		uint16_t Length;
-		InterruptDescriptorTableEntry *Entries;
-	} __packed InterruptDescriptorTableDescriptor;
+		/* +0 */
+		uint64_t TargetOffsetLow : 16;
+		uint64_t TargetSelector : 16;
+		/* +4 */
+		uint64_t Reserved0 : 8;
+		uint64_t Type : 4;
+		uint64_t Zero0 : 1;
+		uint64_t DescriptorPrivilegeLevel : 2;
+		uint64_t Present : 1;
+		uint64_t TargetOffsetMiddle : 16;
+		/* +8 */
+		uint64_t TargetOffsetHigh : 32;
+		/* +12 */
+		uint64_t Reserved1 : 8;
+		uint64_t Zero1 : 5;
+		uint64_t Reserved2 : 19;
+	} __packed;
+
+	struct SystemSegmentDescriptor
+	{
+		/* +0 */
+		uint64_t SegmentLimitLow : 16;
+		uint64_t BaseAddressLow : 16;
+		/* +4 */
+		uint64_t BaseAddressMiddle : 8;
+		uint64_t Type : 4;
+		uint64_t Zero0 : 1;
+		uint64_t DescriptorPrivilegeLevel : 2;
+		uint64_t Present : 1;
+		uint64_t SegmentLimitMiddle : 4;
+		uint64_t Available : 1;
+		uint64_t Reserved0 : 2;
+		uint64_t Granularity : 1;
+		uint64_t BaseAddressHigh : 8;
+		/* +8 */
+		uint64_t BaseAddressHigher : 32;
+		/* +12 */
+		uint64_t Reserved1 : 8;
+		uint64_t Zero1 : 5;
+		uint64_t Reserved2 : 19;
+	} __packed;
+
+	union IDTGateDescriptor
+	{
+		InterruptGate Interrupt;
+		TrapGate Trap;
+		CallGate Call;
+	};
+
+	struct IDTRegister
+	{
+		uint16_t Limit;
+		IDTGateDescriptor *BaseAddress;
+	} __packed;
 
 	void SetEntry(uint8_t Index,
 				  void (*Base)(),
 				  InterruptStackTableType InterruptStackTable,
-				  InterruptGateType Gate,
-				  InterruptRingType Ring,
+				  GateType Gate,
+				  PrivilegeLevelType Ring,
 				  bool Present,
 				  uint16_t SegmentSelector);
 
