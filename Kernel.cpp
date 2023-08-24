@@ -290,6 +290,38 @@ EXTERNC NIF void Main()
 	if (DebuggerIsAttached)
 		KPrint("\eFFA500Kernel debugger detected.");
 
+#if defined(a86) && defined(DEBUG)
+	uint8_t lpt1 = inb(0x378);
+	uint8_t lpt2 = inb(0x278);
+	uint8_t lpt3 = inb(0x3BC);
+
+	uint8_t com1 = inb(0x3F8);
+	uint8_t com2 = inb(0x2F8);
+	uint8_t com3 = inb(0x3E8);
+	uint8_t com4 = inb(0x2E8);
+
+	if (lpt1 != 0xFF)
+		KPrint("LPT1 is present.");
+
+	if (lpt2 != 0xFF)
+		KPrint("LPT2 is present.");
+
+	if (lpt3 != 0xFF)
+		KPrint("LPT3 is present.");
+
+	if (com1 != 0xFF)
+		KPrint("COM1 is present.");
+
+	if (com2 != 0xFF)
+		KPrint("COM2 is present.");
+
+	if (com3 != 0xFF)
+		KPrint("COM3 is present.");
+
+	if (com4 != 0xFF)
+		KPrint("COM4 is present.");
+#endif
+
 	/**************************************************************************************/
 
 	KPrint("Initializing GDT and IDT");
