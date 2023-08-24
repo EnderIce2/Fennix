@@ -41,7 +41,6 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 	BootInfo mb2binfo{};
 
 	{
-		int pos = 0;
 		auto InfoAddress = Info;
 		for (auto Tag = (struct multiboot_tag *)((uint8_t *)InfoAddress + 8);
 			 ;

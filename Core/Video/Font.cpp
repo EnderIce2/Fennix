@@ -23,7 +23,7 @@ namespace Video
 {
     Font::Font(uintptr_t *Start, uintptr_t *End, FontType Type)
     {
-        trace("Initializing font with start %#llx and end %#llx Type: %d", Start, End, Type);
+        trace("Initializing font with start %#lx and end %#lx Type: %d", Start, End, Type);
         this->Info.StartAddress = Start;
         this->Info.EndAddress = End;
         this->Info.Type = Type;

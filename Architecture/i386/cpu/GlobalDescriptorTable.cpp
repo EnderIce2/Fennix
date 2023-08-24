@@ -229,12 +229,8 @@ namespace GlobalDescriptorTable
 		gdt[Core].Entries->TaskStateSegment.BaseMiddle = uint8_t((Base >> 16) & 0xFF);
 		gdt[Core].Entries->TaskStateSegment.BaseHigh = uint8_t((Base >> 24) & 0xFF);
 
-#pragma diagnostic push
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
-
 		gdt[Core].Entries->TaskStateSegment.BaseUpper = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
-
-#pragma diagnostic pop
 
 		gdt[Core].Entries->TaskStateSegment.Access = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
 		gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);
@@ -259,7 +255,7 @@ namespace GlobalDescriptorTable
 
 	SafeFunction void SetKernelStack(void *Stack)
 	{
-		long CPUID = GetCurrentCPU()->ID;
+		stub;
 	}
 
 	void *GetKernelStack() { return (void *)nullptr; }

@@ -1056,7 +1056,32 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	return call(Frame->rdi, Frame->rsi, Frame->rdx,
 				Frame->r10, Frame->r8, Frame->r9);
 #elif defined(a32)
-	return 0;
+	if (Frame->eax > sizeof(LinuxSyscallsTable) / sizeof(SyscallData))
+	{
+		fixme("Syscall %d not implemented",
+			  Frame->eax);
+		return -ENOSYS;
+	}
+
+	SyscallData Syscall = LinuxSyscallsTable[Frame->eax];
+
+	long (*call)(long, ...) = r_cst(long (*)(long, ...),
+									Syscall.Handler);
+
+	if (unlikely(!call))
+	{
+		fixme("Syscall %s(%d) not implemented.",
+			  Syscall.Name, Frame->eax);
+		return -ENOSYS;
+	}
+
+	debug("[%d:\"%s\"]->( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
+		  Frame->eax, Syscall.Name,
+		  Frame->ebx, Frame->ecx, Frame->edx,
+		  Frame->esi, Frame->edi, Frame->ebp);
+
+	return call(Frame->ebx, Frame->ecx, Frame->edx,
+				Frame->esi, Frame->edi, Frame->ebp);
 #elif defined(aa64)
 	return 0;
 #endif

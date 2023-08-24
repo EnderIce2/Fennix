@@ -65,7 +65,7 @@ namespace SymbolResolver
 		Elf32_Word SymbolSize = 0;
 		// Elf32_Word StringSize = 0;
 #endif
-		int64_t TotalEntries = 0;
+		size_t TotalEntries = 0;
 
 		for (size_t i = 0; i < Num; ++i)
 		{
@@ -81,7 +81,7 @@ namespace SymbolResolver
 				// StringSize = (int)str->sh_size;
 				// TotalEntries = Section.sh_size / sizeof(Elf64_Sym)
 				TotalEntries = sym->sh_size / sym->sh_entsize;
-				debug("Symbol table found, %d entries",
+				trace("Symbol table found, %d entries",
 					  SymbolSize / sym->sh_entsize);
 				UNUSED(SymbolSize);
 				break;
@@ -90,8 +90,8 @@ namespace SymbolResolver
 
 		if (Symbols != nullptr && StringAddress != nullptr)
 		{
-			int64_t Index, MinimumIndex;
-			for (int64_t i = 0; i < TotalEntries - 1; i++)
+			size_t Index, MinimumIndex;
+			for (size_t i = 0; i < TotalEntries - 1; i++)
 			{
 				MinimumIndex = i;
 				for (Index = i + 1; Index < TotalEntries; Index++)
@@ -116,11 +116,11 @@ namespace SymbolResolver
 				return;
 			}
 
-			debug("Symbol table loaded, %d entries (%ld KiB)",
+			trace("Symbol table loaded, %d entries (%ld KiB)",
 				  TotalEntries, TO_KiB(TotalEntries * sizeof(SymbolTable)));
 			Elf_Sym *sym = nullptr;
 			const char *name = nullptr;
-			for (int64_t i = 0, g = TotalEntries; i < g; i++)
+			for (size_t i = 0, g = TotalEntries; i < g; i++)
 			{
 				sym = &Symbols[i];
 				name = (const char *)&StringAddress[Symbols[i].st_name];
@@ -168,7 +168,7 @@ namespace SymbolResolver
 		Elf_Shdr *ElfSections = (Elf_Shdr *)(ImageAddress + Header->e_shoff);
 		Elf_Sym *ElfSymbols = nullptr;
 		char *strtab = nullptr;
-		int64_t TotalEntries = 0;
+		size_t TotalEntries = 0;
 
 		for (uint16_t i = 0; i < Header->e_shnum; i++)
 		{
@@ -197,8 +197,8 @@ namespace SymbolResolver
 
 		if (ElfSymbols != nullptr && strtab != nullptr)
 		{
-			int64_t Index, MinimumIndex;
-			for (int64_t i = 0; i < TotalEntries - 1; i++)
+			size_t Index, MinimumIndex;
+			for (size_t i = 0; i < TotalEntries - 1; i++)
 			{
 				MinimumIndex = i;
 				for (Index = i + 1; Index < TotalEntries; Index++)
@@ -221,7 +221,7 @@ namespace SymbolResolver
 			/* TODO: maybe a checker for duplicated addresses? */
 			Elf_Sym *sym = nullptr;
 			const char *name = nullptr;
-			for (int64_t i = 0, g = TotalEntries; i < g; i++)
+			for (size_t i = 0, g = TotalEntries; i < g; i++)
 			{
 				sym = &ElfSymbols[i];
 				name = &strtab[ElfSymbols[i].st_name];

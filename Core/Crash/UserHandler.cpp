@@ -231,6 +231,10 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
 
         error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->rip);
 #elif defined(a32)
+        CheckPageFaultAddress = CrashHandler::PageFaultAddress;
+        if (CheckPageFaultAddress == 0)
+            CheckPageFaultAddress = Frame->eip;
+
         error("An exception occurred at %#lx by %#lx", CrashHandler::PageFaultAddress, Frame->eip);
 #elif defined(aa64)
 #endif

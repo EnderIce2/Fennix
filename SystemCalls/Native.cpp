@@ -701,7 +701,44 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 				Frame->rdi, Frame->rsi, Frame->rdx,
 				Frame->r10, Frame->r8, Frame->r9);
 #elif defined(a32)
-	return -ENOSYS;
+	if (unlikely(Frame->eax > sys_MaxSyscall))
+	{
+		fixme("Syscall %ld not implemented.", Frame->eax);
+		return -ENOSYS;
+	}
+
+	SyscallData Syscall = NativeSyscallsTable[Frame->eax];
+
+	uintptr_t (*call)(SysFrm *, uintptr_t, ...) =
+		r_cst(uintptr_t(*)(SysFrm *, uintptr_t, ...),
+			  Syscall.Handler);
+
+	if (unlikely(!call))
+	{
+		error("Syscall %s(%d) not implemented.",
+			  Syscall.Name, Frame->eax);
+		return -ENOSYS;
+	}
+
+	int euid = thisProcess->Security.Effective.UserID;
+	int egid = thisProcess->Security.Effective.GroupID;
+	int reqID = Syscall.RequiredID;
+	if (euid > reqID || egid > reqID)
+	{
+		warn("Process %s(%d) tried to access a system call \"%s\" with insufficient privileges.",
+			 thisProcess->Name, thisProcess->ID, Syscall.Name);
+		debug("Required: %d; Effective u:%d, g:%d", reqID, euid, egid);
+		return -EPERM;
+	}
+
+	debug("[%d:\"%s\"]->( %#x  %#x  %#x  %#x  %#x  %#x )",
+		  Frame->eax, Syscall.Name,
+		  Frame->ebx, Frame->ecx, Frame->edx,
+		  Frame->esi, Frame->edi, Frame->ebp);
+
+	return call(Frame,
+				Frame->ebx, Frame->ecx, Frame->edx,
+				Frame->esi, Frame->edi, Frame->ebp);
 #elif defined(aa64)
 	return -ENOSYS;
 #endif

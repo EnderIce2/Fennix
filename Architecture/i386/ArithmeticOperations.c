@@ -298,23 +298,25 @@ typedef struct
 	uint64_t value;
 } atomic_uint64_t;
 
-uint64_t __atomic_load_8(const atomic_uint64_t *p)
-{
-	uint64_t value;
-	__asm__ volatile("lock cmpxchg8b %1"
-					 : "=A"(value)
-					 : "m"(*p)
-					 : "memory");
-	return value;
-}
+/* No longer needed? */
 
-void __atomic_store_8(atomic_uint64_t *p, uint64_t value)
-{
-	__asm__ volatile("lock cmpxchg8b %0"
-					 : "=m"(p->value)
-					 : "a"((uint32_t)value), "d"((uint32_t)(value >> 32)), "m"(*p)
-					 : "memory");
-}
+// uint64_t __atomic_load_8(const atomic_uint64_t *p)
+// {
+// 	uint64_t value;
+// 	__asm__ volatile("lock cmpxchg8b %1"
+// 					 : "=A"(value)
+// 					 : "m"(*p)
+// 					 : "memory");
+// 	return value;
+// }
+
+// void __atomic_store_8(atomic_uint64_t *p, uint64_t value)
+// {
+// 	__asm__ volatile("lock cmpxchg8b %0"
+// 					 : "=m"(p->value)
+// 					 : "a"((uint32_t)value), "d"((uint32_t)(value >> 32)), "m"(*p)
+// 					 : "memory");
+// }
 
 int __fixsfsi(float a)
 {
