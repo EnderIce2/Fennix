@@ -349,7 +349,7 @@ static int sys_fork(SysFrm *Frame)
 	ReturnAddress = Frame->ReturnAddress;
 	ChildStackPointer = Frame->StackPointer;
 
-	memcpy(NewThread->FPU, Thread->FPU, sizeof(CPU::x64::FXState));
+	memcpy(&NewThread->FPU, &Thread->FPU, sizeof(CPU::x64::FXState));
 	NewThread->Stack->Fork(Thread->Stack);
 	NewThread->Info = Thread->Info;
 	NewThread->Registers = Thread->Registers;

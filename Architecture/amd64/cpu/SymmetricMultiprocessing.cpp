@@ -53,7 +53,15 @@ SafeFunction CPUData *GetCurrentCPU()
 	if (unlikely(!Interrupts::apic[0]))
 		return &CPUs[0]; /* No APIC means we are on the BSP. */
 
-	int CoreID = ((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24;
+	APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
+	int CoreID = 0;
+	if (CPUEnabled.load(std::memory_order_acquire) == true)
+	{
+		if (apic->x2APIC)
+			CoreID = int(CPU::x64::rdmsr(CPU::x64::MSR_X2APIC_APICID));
+		else
+			CoreID = apic->Read(APIC::APIC_ID) >> 24;
+	}
 
 	if (unlikely((&CPUs[CoreID])->IsActive != true))
 	{
@@ -94,18 +102,23 @@ namespace SMP
 		int Cores = madt->CPUCores + 1;
 
 		if (Config.Cores > madt->CPUCores + 1)
-			KPrint("More cores requested than available. Using %d cores", madt->CPUCores + 1);
+			KPrint("More cores requested than available. Using %d cores",
+				   madt->CPUCores + 1);
 		else if (Config.Cores != 0)
 			Cores = Config.Cores;
 
 		CPUCores = Cores;
 
-		uint64_t TrampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
+		uint64_t TrampolineLength = (uintptr_t)&_trampoline_end -
+									(uintptr_t)&_trampoline_start;
 		Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW);
 		/* We reserved the TRAMPOLINE_START address inside Physical class. */
-		Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START, TrampolineLength, Memory::PTFlag::RW);
+		Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START,
+							  TrampolineLength, Memory::PTFlag::RW);
 		memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
-		debug("Trampoline address: %#lx-%#lx", TRAMPOLINE_START, TRAMPOLINE_START + TrampolineLength);
+		debug("Trampoline address: %#lx-%#lx",
+			  TRAMPOLINE_START,
+			  TRAMPOLINE_START + TrampolineLength);
 
 		void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
 		asmv("sgdt [0x580]");
@@ -117,26 +130,39 @@ namespace SMP
 		for (int i = 0; i < Cores; i++)
 		{
 			ACPI::MADT::LocalAPIC *lapic = madt->lapic[i];
+			APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
+
 			debug("Initializing CPU %d", lapic->APICId);
-			if ((((APIC::APIC *)Interrupts::apic[0])->Read(APIC::APIC_ID) >> 24) != lapic->APICId)
+			uint8_t APIC_ID = 0;
+			if (apic->x2APIC)
+				APIC_ID = uint8_t(CPU::x64::rdmsr(CPU::x64::MSR_X2APIC_APICID));
+			else
+				APIC_ID = uint8_t(apic->Read(APIC::APIC_ID) >> 24);
+
+			if (APIC_ID != lapic->APICId)
 			{
 				VPOKE(int, CORE) = i;
+				if (!apic->x2APIC)
+				{
+					APIC::InterruptCommandRegister icr{};
+					icr.MT = APIC::INIT;
+					icr.DES = lapic->APICId;
+					apic->ICR(icr);
+				}
 
-				((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRHI, (lapic->APICId << 24));
-				((APIC::APIC *)Interrupts::apic[0])->Write(APIC::APIC_ICRLO, 0x500);
-
-				((APIC::APIC *)Interrupts::apic[0])->SendInitIPI(lapic->APICId);
-				TimeManager->Sleep(5, Time::Units::Milliseconds);
-				((APIC::APIC *)Interrupts::apic[0])->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
-
+				apic->SendInitIPI(lapic->APICId);
+				TimeManager->Sleep(20, Time::Units::Milliseconds);
+				apic->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
 				debug("Waiting for CPU %d to load...", lapic->APICId);
+
 				uint64_t Timeout = TimeManager->CalculateTarget(2, Time::Units::Seconds);
 				while (CPUEnabled.load(std::memory_order_acquire) == false)
 				{
 					if (TimeManager->GetCounter() > Timeout)
 					{
 						error("CPU %d failed to load!", lapic->APICId);
-						KPrint("\eFF8C19CPU \e8888FF%d \eFF8C19failed to load!", lapic->APICId);
+						KPrint("\eFF8C19CPU \e8888FF%d \eFF8C19failed to load!",
+							   lapic->APICId);
 						break;
 					}
 					CPU::Pause();

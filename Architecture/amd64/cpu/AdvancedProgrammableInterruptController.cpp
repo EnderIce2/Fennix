@@ -52,22 +52,16 @@ namespace APIC
 		if (Register != APIC_ICRLO &&
 			Register != APIC_ICRHI &&
 			Register != APIC_ID)
-			debug("APIC::Read(%#lx) [x2=%d]", Register, x2APICSupported ? 1 : 0);
+			debug("APIC::Read(%#lx) [x2=%d]",
+				  Register, x2APICSupported ? 1 : 0);
 #endif
 		if (x2APICSupported)
-		{
-			if (Register != APIC_ICRHI)
-				return s_cst(uint32_t, rdmsr((Register >> 4) + 0x800));
-			else
-				return s_cst(uint32_t, rdmsr(0x30 + 0x800));
-		}
-		else
-		{
-			CPU::MemBar::Barrier();
-			uint32_t ret = *((volatile uint32_t *)((uintptr_t)APICBaseAddress + Register));
-			CPU::MemBar::Barrier();
-			return ret;
-		}
+			assert(false);
+
+		CPU::MemBar::Barrier();
+		uint32_t ret = *((volatile uint32_t *)((uintptr_t)APICBaseAddress + Register));
+		CPU::MemBar::Barrier();
+		return ret;
 	}
 
 	void APIC::Write(uint32_t Register, uint32_t Value)
@@ -79,21 +73,15 @@ namespace APIC
 			Register != APIC_TICR &&
 			Register != APIC_ICRLO &&
 			Register != APIC_ICRHI)
-			debug("APIC::Write(%#lx, %#lx) [x2=%d]", Register, Value, x2APICSupported ? 1 : 0);
+			debug("APIC::Write(%#lx, %#lx) [x2=%d]",
+				  Register, Value, x2APICSupported ? 1 : 0);
 #endif
 		if (x2APICSupported)
-		{
-			if (Register != APIC_ICRHI)
-				wrmsr((Register >> 4) + 0x800, Value);
-			else
-				wrmsr(MSR_X2APIC_ICR, Value);
-		}
-		else
-		{
-			CPU::MemBar::Barrier();
-			*((volatile uint32_t *)(((uintptr_t)APICBaseAddress) + Register)) = Value;
-			CPU::MemBar::Barrier();
-		}
+			assert(false);
+
+		CPU::MemBar::Barrier();
+		*((volatile uint32_t *)(((uintptr_t)APICBaseAddress) + Register)) = Value;
+		CPU::MemBar::Barrier();
 	}
 
 	void APIC::IOWrite(uint64_t Base, uint32_t Register, uint32_t Value)
@@ -117,30 +105,50 @@ namespace APIC
 		return ret;
 	}
 
-	void APIC::EOI() { this->Write(APIC_EOI, 0); }
+	void APIC::EOI()
+	{
+		if (this->x2APICSupported)
+			wrmsr(MSR_X2APIC_EOI, 0);
+		else
+			this->Write(APIC_EOI, 0);
+	}
 
 	void APIC::WaitForIPI()
 	{
-		InterruptCommandRegisterLow icr = {.raw = 0};
-		do
+		if (this->x2APICSupported)
 		{
-			icr.raw = this->Read(APIC_ICRLO);
-			CPU::Pause();
-		} while (icr.DeliveryStatus != Idle);
+			ErrorStatusRegister esr{};
+			esr.raw = uint32_t(rdmsr(MSR_X2APIC_ESR));
+			UNUSED(esr);
+			/* FIXME: Not sure if this is required or
+				how to implement it. */
+		}
+		else
+		{
+			InterruptCommandRegister icr{};
+			do
+			{
+				icr.split.Low = this->Read(APIC_ICRLO);
+				CPU::Pause();
+			} while (icr.DS != Idle);
+		}
 	}
 
-	void APIC::IPI(int CPU, InterruptCommandRegisterLow icr)
+	void APIC::ICR(InterruptCommandRegister icr)
 	{
 		SmartCriticalSection(APICLock);
 		if (x2APICSupported)
 		{
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			assert(icr.MT != LowestPriority);
+			assert(icr.MT != DeliveryMode);
+			assert(icr.MT != ExtINT);
+			wrmsr(MSR_X2APIC_ICR, icr.raw);
 			this->WaitForIPI();
 		}
 		else
 		{
-			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			this->Write(APIC_ICRHI, icr.split.High);
+			this->Write(APIC_ICRLO, icr.split.Low);
 			this->WaitForIPI();
 		}
 	}
@@ -148,21 +156,25 @@ namespace APIC
 	void APIC::SendInitIPI(int CPU)
 	{
 		SmartCriticalSection(APICLock);
+		InterruptCommandRegister icr{};
+
 		if (x2APICSupported)
 		{
-			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.DeliveryMode = INIT;
-			icr.Level = Assert;
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			icr.x2.MT = INIT;
+			icr.x2.L = Assert;
+			icr.x2.DES = uint8_t(CPU);
+
+			wrmsr(MSR_X2APIC_ICR, icr.raw);
 			this->WaitForIPI();
 		}
 		else
 		{
-			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.DeliveryMode = INIT;
-			icr.Level = Assert;
-			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			icr.MT = INIT;
+			icr.L = Assert;
+			icr.DES = uint8_t(CPU);
+
+			this->Write(APIC_ICRHI, icr.split.High);
+			this->Write(APIC_ICRLO, icr.split.Low);
 			this->WaitForIPI();
 		}
 	}
@@ -170,45 +182,54 @@ namespace APIC
 	void APIC::SendStartupIPI(int CPU, uint64_t StartupAddress)
 	{
 		SmartCriticalSection(APICLock);
+		InterruptCommandRegister icr{};
+
 		if (x2APICSupported)
 		{
-			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.Vector = s_cst(uint8_t, StartupAddress >> 12);
-			icr.DeliveryMode = Startup;
-			icr.Level = Assert;
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			icr.x2.VEC = s_cst(uint8_t, StartupAddress >> 12);
+			icr.x2.MT = Startup;
+			icr.x2.L = Assert;
+			icr.x2.DES = uint8_t(CPU);
+
+			wrmsr(MSR_X2APIC_ICR, icr.raw);
 			this->WaitForIPI();
 		}
 		else
 		{
-			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.Vector = s_cst(uint8_t, StartupAddress >> 12);
-			icr.DeliveryMode = Startup;
-			icr.Level = Assert;
-			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			icr.VEC = s_cst(uint8_t, StartupAddress >> 12);
+			icr.MT = Startup;
+			icr.L = Assert;
+			icr.DES = uint8_t(CPU);
+
+			this->Write(APIC_ICRHI, icr.split.High);
+			this->Write(APIC_ICRLO, icr.split.Low);
 			this->WaitForIPI();
 		}
 	}
 
 	uint32_t APIC::IOGetMaxRedirect(uint32_t APICID)
 	{
-		uint32_t TableAddress = (this->IORead((((ACPI::MADT *)PowerManager->GetMADT())->ioapic[APICID]->Address), GetIOAPICVersion));
-		return ((IOAPICVersion *)&TableAddress)->MaximumRedirectionEntry;
+		ACPI::MADT::MADTIOApic *ioapic = ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[APICID];
+		uint32_t TableAddress = (this->IORead(ioapic->Address, GetIOAPICVersion));
+		IOAPICVersion ver = {.raw = TableAddress};
+		return ver.MLE + 1;
 	}
 
-	void APIC::RawRedirectIRQ(uint16_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status)
+	void APIC::RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, uint8_t CPU, int Status)
 	{
-		uint64_t Value = Vector;
-
 		int64_t IOAPICTarget = -1;
-		for (uint64_t i = 0; ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[i] != 0; i++)
-			if (((ACPI::MADT *)PowerManager->GetMADT())->ioapic[i]->GSIBase <= GSI)
-				if (((ACPI::MADT *)PowerManager->GetMADT())->ioapic[i]->GSIBase + IOGetMaxRedirect(s_cst(uint32_t, i)) > GSI)
+		ACPI::MADT *madt = (ACPI::MADT *)PowerManager->GetMADT();
+		for (size_t i = 0; i < madt->ioapic.size(); i++)
+		{
+			if (madt->ioapic[i]->GSIBase <= GSI)
+			{
+				if (madt->ioapic[i]->GSIBase + IOGetMaxRedirect(uint32_t(i)) > GSI)
 				{
 					IOAPICTarget = i;
 					break;
 				}
+			}
+		}
 
 		if (IOAPICTarget == -1)
 		{
@@ -216,40 +237,46 @@ namespace APIC
 			return;
 		}
 
-		// TODO: IOAPICRedirectEntry Entry = {.raw = 0};
+		IOAPICRedirectEntry Entry{};
+		Entry.VEC = Vector;
+		Entry.DES = CPU;
 
 		if (Flags & ActiveHighLow)
-			Value |= (1 << 13);
+			Entry.IPP = 1;
 
 		if (Flags & EdgeLevel)
-			Value |= (1 << 15);
+			Entry.TGM = 1;
 
 		if (!Status)
-			Value |= (1 << 16);
+			Entry.M = 1;
 
-		Value |= (((uintptr_t)CPU) << 56);
-		uint32_t IORegister = (GSI - ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->GSIBase) * 2 + 16;
-
-		this->IOWrite(((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->Address, IORegister, (uint32_t)Value);
-		this->IOWrite(((ACPI::MADT *)PowerManager->GetMADT())->ioapic[IOAPICTarget]->Address, IORegister + 1, (uint32_t)(Value >> 32));
+		uint32_t IORegister = (GSI - madt->ioapic[IOAPICTarget]->GSIBase) * 2 + 16;
+		this->IOWrite(madt->ioapic[IOAPICTarget]->Address,
+					  IORegister, Entry.split.Low);
+		this->IOWrite(madt->ioapic[IOAPICTarget]->Address,
+					  IORegister + 1, Entry.split.High);
 	}
 
-	void APIC::RedirectIRQ(int CPU, uint16_t IRQ, int Status)
+	void APIC::RedirectIRQ(uint8_t CPU, uint8_t IRQ, int Status)
 	{
-		for (uint64_t i = 0; i < ((ACPI::MADT *)PowerManager->GetMADT())->iso.size(); i++)
-			if (((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->IRQSource == IRQ)
+		ACPI::MADT *madt = (ACPI::MADT *)PowerManager->GetMADT();
+		for (uint64_t i = 0; i < madt->iso.size(); i++)
+			if (madt->iso[i]->IRQSource == IRQ)
 			{
 				debug("[ISO %d] Mapping to source IRQ%#d GSI:%#lx on CPU %d",
-					  i, ((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->IRQSource, ((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->GSI, CPU);
+					  i, madt->iso[i]->IRQSource, madt->iso[i]->GSI, CPU);
 
-				this->RawRedirectIRQ(((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->IRQSource + 0x20, ((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->GSI, ((ACPI::MADT *)PowerManager->GetMADT())->iso[i]->Flags, CPU, Status);
+				this->RawRedirectIRQ(madt->iso[i]->IRQSource + 0x20,
+									 madt->iso[i]->GSI,
+									 madt->iso[i]->Flags,
+									 CPU, Status);
 				return;
 			}
 		debug("Mapping IRQ%d on CPU %d", IRQ, CPU);
 		this->RawRedirectIRQ(IRQ + 0x20, IRQ, 0, CPU, Status);
 	}
 
-	void APIC::RedirectIRQs(int CPU)
+	void APIC::RedirectIRQs(uint8_t CPU)
 	{
 		SmartCriticalSection(APICLock);
 		debug("Redirecting IRQs...");
@@ -262,21 +289,22 @@ namespace APIC
 	{
 		SmartCriticalSection(APICLock);
 		APIC_BASE BaseStruct = {.raw = rdmsr(MSR_APIC_BASE)};
-		uint64_t BaseLow = BaseStruct.ApicBaseLo;
-		uint64_t BaseHigh = BaseStruct.ApicBaseHi;
+		uint64_t BaseLow = BaseStruct.ABALow;
+		uint64_t BaseHigh = BaseStruct.ABAHigh;
 		this->APICBaseAddress = BaseLow << 12u | BaseHigh << 32u;
 		trace("APIC Address: %#lx", this->APICBaseAddress);
-		Memory::Virtual().Map((void *)this->APICBaseAddress, (void *)this->APICBaseAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD);
+		Memory::Virtual().Map((void *)this->APICBaseAddress,
+							  (void *)this->APICBaseAddress,
+							  Memory::RW | Memory::PCD);
 
-		bool x2APICSupported = false;
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
 			cpuid.Get();
 			if (cpuid.ECX.x2APIC)
 			{
-				// x2APICSupported = cpuid.ECX.x2APIC;
-				fixme("x2APIC is supported");
+				this->x2APICSupported = cpuid.ECX.x2APIC;
+				debug("x2APIC is supported");
 			}
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
@@ -285,39 +313,38 @@ namespace APIC
 			cpuid.Get();
 			if (cpuid.ECX.x2APIC)
 			{
-				// x2APICSupported = cpuid.ECX.x2APIC;
-				fixme("x2APIC is supported");
+				this->x2APICSupported = cpuid.ECX.x2APIC;
+				debug("x2APIC is supported");
 			}
 		}
 
-		if (x2APICSupported)
-		{
-			this->x2APICSupported = true;
-			wrmsr(MSR_APIC_BASE, (rdmsr(MSR_APIC_BASE) | (1 << 11)) & ~(1 << 10));
-			BaseStruct.EN = 1;
-			wrmsr(MSR_APIC_BASE, BaseStruct.raw);
-		}
-		else
-		{
-			BaseStruct.EN = 1;
-			wrmsr(MSR_APIC_BASE, BaseStruct.raw);
-		}
+		BaseStruct.AE = 1;
+		wrmsr(MSR_APIC_BASE, BaseStruct.raw);
 
-		this->Write(APIC_TPR, 0x0);
-		// this->Write(APIC_SVR, this->Read(APIC_SVR) | 0x100); // 0x1FF or 0x100 ? on https://wiki.osdev.org/APIC is 0x100
+		if (this->x2APICSupported)
+		{
+			BaseStruct.EXTD = 1;
+			wrmsr(MSR_APIC_BASE, BaseStruct.raw);
+		}
 
 		if (!this->x2APICSupported)
 		{
+			this->Write(APIC_TPR, 0x0);
 			this->Write(APIC_DFR, 0xF0000000);
 			this->Write(APIC_LDR, this->Read(APIC_ID));
+		}
+		else
+		{
+			wrmsr(MSR_X2APIC_TPR, 0x0);
 		}
 
 		ACPI::MADT *madt = (ACPI::MADT *)PowerManager->GetMADT();
 
 		for (size_t i = 0; i < madt->nmi.size(); i++)
 		{
-			if (madt->nmi[i]->processor != 0xFF && Core != madt->nmi[i]->processor)
-				return;
+			if (madt->nmi[i]->processor != 0xFF &&
+				Core != madt->nmi[i]->processor)
+				break;
 
 			uint32_t nmi = 0x402;
 			if (madt->nmi[i]->flags & 2)
@@ -325,16 +352,34 @@ namespace APIC
 			if (madt->nmi[i]->flags & 8)
 				nmi |= 1 << 15;
 			if (madt->nmi[i]->lint == 0)
-				this->Write(APIC_LINT0, nmi);
+			{
+				if (this->x2APICSupported)
+					wrmsr(MSR_X2APIC_LVT_LINT0, nmi);
+				else
+					this->Write(APIC_LINT0, nmi);
+			}
 			else if (madt->nmi[i]->lint == 1)
-				this->Write(APIC_LINT1, nmi);
+			{
+				if (this->x2APICSupported)
+					wrmsr(MSR_X2APIC_LVT_LINT1, nmi);
+				else
+					this->Write(APIC_LINT1, nmi);
+			}
 		}
 
-		// Setup the spurrious interrupt vector
-		Spurious Spurious = {.raw = this->Read(APIC_SVR)};
-		Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
-		Spurious.Software = 1;
-		this->Write(APIC_SVR, s_cst(uint32_t, Spurious.raw));
+		/* Setup the spurious interrupt vector */
+		Spurious svr{};
+		if (this->x2APICSupported)
+			svr.raw = uint32_t(rdmsr(MSR_X2APIC_SIVR));
+		else
+			svr.raw = this->Read(APIC_SVR);
+
+		svr.VEC = IRQ223;
+		svr.ASE = 1;
+		if (this->x2APICSupported)
+			wrmsr(MSR_X2APIC_SIVR, svr.raw);
+		else
+			this->Write(APIC_SVR, svr.raw);
 
 		static int once = 0;
 		if (!once++)
@@ -356,45 +401,85 @@ namespace APIC
 	void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
 	{
 		SmartCriticalSection(APICLock);
-		LVTTimer timer = {.raw = 0};
-		timer.Vector = s_cst(uint8_t, Vector);
-		timer.TimerMode = 0;
-		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
-			this->lapic->Write(APIC_TDCR, DivideBy128);
+		LVTTimer timer{};
+		timer.VEC = uint8_t(Vector);
+		timer.TMM = LVTTimerMode::OneShot;
+
+		LVTTimerDivide Divider = DivideBy8;
+
+		if (unlikely(strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0))
+			Divider = DivideBy128;
+
+		if (this->lapic->x2APIC)
+		{
+			wrmsr(MSR_X2APIC_DIV_CONF, Divider);
+			wrmsr(MSR_X2APIC_INIT_COUNT, uint32_t(Ticks * Miliseconds));
+			wrmsr(MSR_X2APIC_LVT_TIMER, uint32_t(timer.raw));
+		}
 		else
-			this->lapic->Write(APIC_TDCR, DivideBy16);
-		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks * Miliseconds));
-		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
+		{
+			this->lapic->Write(APIC_TDCR, Divider);
+			this->lapic->Write(APIC_TICR, uint32_t(Ticks * Miliseconds));
+			this->lapic->Write(APIC_TIMER, uint32_t(timer.raw));
+		}
 	}
 
 	Timer::Timer(APIC *apic) : Interrupts::Handler(0) /* IRQ0 */
 	{
 		SmartCriticalSection(APICLock);
 		this->lapic = apic;
-		LVTTimerDivide Divider = DivideBy16;
+		LVTTimerDivide Divider = DivideBy8;
 
-		trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
+		trace("Initializing APIC timer on CPU %d",
+			  GetCurrentCPU()->ID);
 
-		this->lapic->Write(APIC_TDCR, Divider);
-		this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
+		if (this->lapic->x2APIC)
+		{
+			wrmsr(MSR_X2APIC_DIV_CONF, Divider);
+			wrmsr(MSR_X2APIC_INIT_COUNT, 0xFFFFFFFF);
+		}
+		else
+		{
+			this->lapic->Write(APIC_TDCR, Divider);
+			this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
+		}
 
 		TimeManager->Sleep(1, Time::Units::Milliseconds);
 
 		// Mask the timer
-		this->lapic->Write(APIC_TIMER, 0x10000 /* LVTTimer.Mask flag */);
-		Ticks = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
+		if (this->lapic->x2APIC)
+		{
+			wrmsr(MSR_X2APIC_LVT_TIMER, 0x10000 /* LVTTimer.Mask flag */);
+			Ticks = 0xFFFFFFFF - rdmsr(MSR_X2APIC_CUR_COUNT);
+		}
+		else
+		{
+			this->lapic->Write(APIC_TIMER, 0x10000 /* LVTTimer.Mask flag */);
+			Ticks = 0xFFFFFFFF - this->lapic->Read(APIC_TCCR);
+		}
 
 		// Config for IRQ0 timer
-		LVTTimer timer = {.raw = 0};
-		timer.Vector = IRQ0;
-		timer.Mask = Unmasked;
-		timer.TimerMode = LVTTimerMode::OneShot;
+		LVTTimer timer{};
+		timer.VEC = IRQ0;
+		timer.M = Unmasked;
+		timer.TMM = LVTTimerMode::OneShot;
 
 		// Initialize APIC timer
-		this->lapic->Write(APIC_TDCR, Divider);
-		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks));
-		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
-		trace("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);
+		if (this->lapic->x2APIC)
+		{
+			wrmsr(MSR_X2APIC_DIV_CONF, Divider);
+			wrmsr(MSR_X2APIC_INIT_COUNT, Ticks);
+			wrmsr(MSR_X2APIC_LVT_TIMER, timer.raw);
+		}
+		else
+		{
+			this->lapic->Write(APIC_TDCR, Divider);
+			this->lapic->Write(APIC_TICR, uint32_t(Ticks));
+			this->lapic->Write(APIC_TIMER, uint32_t(timer.raw));
+		}
+
+		trace("%d APIC Timer %d ticks in.",
+			  GetCurrentCPU()->ID, Ticks);
 		KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks.", Ticks);
 	}
 

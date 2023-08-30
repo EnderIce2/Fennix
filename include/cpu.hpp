@@ -534,26 +534,35 @@ namespace CPU
 		{
 			struct
 			{
-				/** @brief Reserved */
-				uint32_t Reserved0 : 8;
-				/**
-				 * @brief BSP Flag
-				 * @details If the BSP flag is set to 1, the processor is the bootstrap processor.
-				 */
-				uint32_t BSP : 1;
-				/** @brief Reserved */
-				uint32_t Reserved1 : 1;
-				/** @brief Enable x2APIC mode */
-				uint32_t EXTD : 1;
-				/** @brief APIC Global Enable */
-				uint32_t EN : 1;
+				/** Reserved */
+				uint64_t Reserved0 : 8;
+				/** Boot Strap CPU Core */
+				uint64_t BSC : 1;
+				/** Reserved */
+				uint64_t Reserved1 : 1;
+				/** x2APIC Mode Enable */
+				uint64_t EXTD : 1;
+				/** APIC Enable */
+				uint64_t AE : 1;
 				/** @brief APIC Base Low Address */
-				uint32_t ApicBaseLo : 20;
+				uint64_t ABALow : 20;
 				/** @brief APIC Base High Address */
-				uint32_t ApicBaseHi : 32;
+				uint64_t ABAHigh : 32;
+				/** Reserved */
+				uint64_t Reserved2 : 12;
 			};
 			uint64_t raw;
 		} __packed APIC_BASE;
+
+		typedef union
+		{
+			struct
+			{
+				uint64_t Reserved : 24;
+				uint64_t AID : 8;
+			};
+			uint32_t raw;
+		} __packed APIC_ID;
 
 		typedef union
 		{

@@ -30,43 +30,41 @@
 struct CPUArchData
 {
 #if defined(a64)
-    CPU::x64::FXState *FPU;
-    /* TODO */
+	__aligned(16) CPU::x64::FXState FPU{};
 #elif defined(a32)
-    CPU::x32::FXState *FPU;
-    /* TODO */
+	__aligned(16) CPU::x32::FXState FPU{};
 #elif defined(aa64)
 #endif
 };
 
 struct CPUData
 {
-    /** @brief Used by CPU */
-    uintptr_t Stack;
+	/** @brief Used by CPU */
+	uintptr_t Stack;
 
-    /** @brief CPU ID. */
-    int ID;
+	/** @brief CPU ID. */
+	int ID;
 
-    /** @brief Local CPU error code. */
-    long ErrorCode;
+	/** @brief Local CPU error code. */
+	long ErrorCode;
 
-    /** @brief Current running process */
-    std::atomic<Tasking::PCB *> CurrentProcess;
+	/** @brief Current running process */
+	std::atomic<Tasking::PCB *> CurrentProcess;
 
-    /** @brief Current running thread */
-    std::atomic<Tasking::TCB *> CurrentThread;
+	/** @brief Current running thread */
+	std::atomic<Tasking::TCB *> CurrentThread;
 
-    /** @brief Unwind data */
-    __cxa_eh_globals EHGlobals;
+	/** @brief Unwind data */
+	__cxa_eh_globals EHGlobals;
 
-    /** @brief Architecture-specific data. */
-    CPUArchData Data;
+	/** @brief Architecture-specific data. */
+	CPUArchData Data;
 
-    /** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
-    int Checksum;
+	/** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
+	int Checksum;
 
-    /** @brief Is CPU online? */
-    bool IsActive;
+	/** @brief Is CPU online? */
+	bool IsActive;
 } __aligned(16);
 
 CPUData *GetCurrentCPU();
@@ -74,8 +72,8 @@ CPUData *GetCPU(long ID);
 
 namespace SMP
 {
-    extern int CPUCores;
-    void Initialize(void *madt);
+	extern int CPUCores;
+	void Initialize(void *madt);
 }
 
 #endif // !__FENNIX_KERNEL_SMP_H__

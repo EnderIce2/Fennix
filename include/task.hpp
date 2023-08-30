@@ -198,7 +198,7 @@ namespace Tasking
 		uintptr_t Registers; // TODO
 #endif
 		uintptr_t IPHistory[128];
-		CPU::x64::FXState *FPU;
+		__aligned(16) CPU::x64::FXState FPU;
 
 		/* Info & Security info */
 		struct

@@ -263,7 +263,7 @@ namespace ACPI
 				}
 			}
 
-			((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, acpi->FADT->SCI_Interrupt, 1);
+			((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, uint8_t(acpi->FADT->SCI_Interrupt), 1);
 			return;
 		}
 		warn("Failed to parse _S5 in ACPI");

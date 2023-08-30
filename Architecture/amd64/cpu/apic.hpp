@@ -27,32 +27,66 @@ namespace APIC
 {
 	enum APICRegisters
 	{
-		// source from: https://github.com/pdoane/osdev/blob/master/intr/local_apic.c
-		APIC_ID = 0x20,       // Local APIC ID
-		APIC_VER = 0x30,      // Local APIC Version
-		APIC_TPR = 0x80,      // Task Priority
-		APIC_APR = 0x90,      // Arbitration Priority
-		APIC_PPR = 0xA0,      // Processor Priority
-		APIC_EOI = 0xB0,      // EOI
-		APIC_RRD = 0xC0,      // Remote Read
-		APIC_LDR = 0xD0,      // Logical Destination
-		APIC_DFR = 0xE0,      // Destination Format
-		APIC_SVR = 0xF0,      // Spurious Interrupt Vector
-		APIC_ISR = 0x100,     // In-Service (8 registers)
-		APIC_TMR = 0x180,     // Trigger Mode (8 registers)
-		APIC_IRR = 0x200,     // Interrupt Request (8 registers)
-		APIC_ESR = 0x280,     // Error Status
-		APIC_ICRLO = 0x300,   // Interrupt Command
-		APIC_ICRHI = 0x310,   // Interrupt Command [63:32]
-		APIC_TIMER = 0x320,   // LVT Timer
-		APIC_THERMAL = 0x330, // LVT Thermal Sensor
-		APIC_PERF = 0x340,    // LVT Performance Counter
-		APIC_LINT0 = 0x350,   // LVT LINT0
-		APIC_LINT1 = 0x360,   // LVT LINT1
-		APIC_ERROR = 0x370,   // LVT Error
-		APIC_TICR = 0x380,    // Initial Count (for Timer)
-		APIC_TCCR = 0x390,    // Current Count (for Timer)
-		APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
+		/* APIC ID Register */
+		APIC_ID = 0x20,
+		/* APIC Version Register */
+		APIC_VER = 0x30,
+		/* Task Priority Register (TPR) */
+		APIC_TPR = 0x80,
+		/* Arbitration Priority Register (APR) */
+		APIC_APR = 0x90,
+		/* Processor Priority Register (PPR) */
+		APIC_PPR = 0xA0,
+		/* End of Interrupt Register (EOI) */
+		APIC_EOI = 0xB0,
+		/* Remote Read Register */
+		APIC_RRD = 0xC0,
+		/* Logical Destination Register (LDR) */
+		APIC_LDR = 0xD0,
+		/* Destination Format Register (DFR) */
+		APIC_DFR = 0xE0,
+		/* Spurious Interrupt Vector Register */
+		APIC_SVR = 0xF0,
+		/* In-Service Register (ISR) */
+		APIC_ISR = 0x100,
+		/* Trigger Mode Register (TMR) */
+		APIC_TMR = 0x180,
+		/* Interrupt Request Register (IRR) */
+		APIC_IRR = 0x200,
+		/* Error Status Register (ESR) */
+		APIC_ESR = 0x280,
+		/* Interrupt Command Register Low (bits 31:0) */
+		APIC_ICRLO = 0x300,
+		/* Interrupt Command Register High (bits 63:32) */
+		APIC_ICRHI = 0x310,
+		/* Timer Local Vector Table Entry */
+		APIC_TIMER = 0x320,
+		/* Thermal Local Vector Table Entry */
+		APIC_THERMAL = 0x330,
+		/* Performance Counter Local Vector Table Entry */
+		APIC_PERF = 0x340,
+		/* Local Interrupt 0 Vector Table Entry */
+		APIC_LINT0 = 0x350,
+		/* Local Interrupt 1 Vector Table Entry */
+		APIC_LINT1 = 0x360,
+		/* Error Vector Table Entry */
+		APIC_ERROR = 0x370,
+		/* Timer Initial Count Register */
+		APIC_TICR = 0x380,
+		/* Timer Current Count Register */
+		APIC_TCCR = 0x390,
+		/* Timer Divide Configuration Register */
+		APIC_TDCR = 0x3E0,
+		/* Extended APIC Feature Register */
+		APIC_EFR = 0x400,
+		/* Extended APIC Control Register */
+		APIC_ECR = 0x410,
+		/* Specific End of Interrupt Register (SEOI) */
+		APIC_SEOI = 0x420,
+		/* Interrupt Enable Registers (IER) */
+		APIC_IER0 = 0x480,
+		/* Extended Interrupt [3:0] Local Vector Table Registers */
+		APIC_EILVT0 = 0x500,
 	};
 
 	enum IOAPICRegisters
@@ -66,12 +100,12 @@ namespace APIC
 		EdgeLevel = 8
 	};
 
-	enum APICDeliveryMode
+	enum APICMessageType
 	{
 		Fixed = 0b000,
 		LowestPriority = 0b001, /* Reserved */
 		SMI = 0b010,
-		APIC_DELIVERY_MODE_RESERVED0 = 0b011, /* Reserved */
+		DeliveryMode = 0b011, /* Reserved */
 		NMI = 0b100,
 		INIT = 0b101,
 		Startup = 0b110,
@@ -139,163 +173,153 @@ namespace APIC
 	{
 		struct
 		{
-			/** @brief Interrupt Vector */
-			uint64_t Vector : 8;
-			/** @brief Reserved */
+			/** Vector */
+			uint64_t VEC : 8;
+			/** Reserved */
 			uint64_t Reserved0 : 4;
-			/**
-			 * @brief Delivery Status
-			 *
-			 * 0: Idle
-			 * 1: Send Pending
-			 */
-			uint64_t DeliveryStatus : 1;
-			/** @brief Reserved */
+			/** Delivery Status */
+			uint64_t DS : 1;
+			/** Reserved */
 			uint64_t Reserved1 : 3;
-			/**
-			 * @brief Mask
-			 *
-			 * 0: Not masked
-			 * 1: Masked
-			 */
-			uint64_t Mask : 1;
-			/** @brief Timer Mode
-			 *
-			 * 0: One-shot
-			 * 1: Periodic
-			 * 2: TSC-Deadline
-			 */
-			uint64_t TimerMode : 1;
-			/** @brief Reserved */
+			/** Mask */
+			uint64_t M : 1;
+			/** Timer Mode */
+			uint64_t TMM : 1;
+			/** Reserved */
 			uint64_t Reserved2 : 14;
 		};
-		uint64_t raw;
+		uint32_t raw;
 	} __packed LVTTimer;
 
 	typedef union
 	{
 		struct
 		{
-			/** @brief Spurious Vector */
-			uint64_t Vector : 8;
-			/** @brief Enable or disable APIC software */
-			uint64_t Software : 1;
-			/** @brief Focus Processor Checking */
-			uint64_t FocusProcessorChecking : 1;
-			/** @brief Reserved */
-			uint64_t Reserved : 2;
-			/** @brief Disable EOI Broadcast */
-			uint64_t DisableEOIBroadcast : 1;
-			/** @brief Reserved */
-			uint64_t Reserved1 : 19;
+			/** Vector */
+			uint64_t VEC : 8;
+			/** APIC Software Enable */
+			uint64_t ASE : 1;
+			/** Focus CPU Core Checking */
+			uint64_t FCC : 1;
+			/** Reserved */
+			uint64_t Reserved0 : 22;
 		};
-		uint64_t raw;
+		uint32_t raw;
 	} __packed Spurious;
 
 	typedef union
 	{
 		struct
 		{
-			/** @brief Interrupt Vector */
-			uint64_t Vector : 8;
-			/** @brief Delivery Mode */
-			uint64_t DeliveryMode : 3;
-			/** @brief Destination Mode
-			 *
-			 * 0: Physical
-			 * 1: Logical
-			 */
-			uint64_t DestinationMode : 1;
-			/** @brief Delivery Status
-			 *
-			 * @note Reserved when in x2APIC mode
-			 */
-			uint64_t DeliveryStatus : 1;
-			/** @brief Reserved */
+			/** Vector */
+			uint64_t VEC : 8;
+			/** Message Type */
+			uint64_t MT : 3;
+			/** Destination Mode */
+			uint64_t DM : 1;
+			/** Delivery Status */
+			uint64_t DS : 1;
+			/** Reserved */
 			uint64_t Reserved0 : 1;
-			/** @brief Level
-			 *
-			 * 0: Deassert
-			 * 1: Assert
-			 */
-			uint64_t Level : 1;
-			/** @brief Trigger Mode
-			 *
-			 * 0: Edge
-			 * 1: Level
-			 */
-			uint64_t TriggerMode : 1;
-			/** @brief Reserved */
+			/** Level */
+			uint64_t L : 1;
+			/** Trigger Mode */
+			uint64_t TGM : 1;
+			/** Remote Read Status */
+			uint64_t RSS : 2;
+			/** Destination Shorthand */
+			uint64_t DSH : 2;
+			/** Reserved */
+			uint64_t Reserved2 : 36;
+			/** Destination */
+			uint64_t DES : 8;
+		};
+		struct
+		{
+			/** Vector */
+			uint64_t VEC : 8;
+			/** Message Type */
+			uint64_t MT : 3;
+			/** Destination Mode */
+			uint64_t DM : 1;
+			/** Reserved */
+			uint64_t Reserved0 : 2;
+			/** Level */
+			uint64_t L : 1;
+			/** Trigger Mode */
+			uint64_t TGM : 1;
+			/** Reserved */
 			uint64_t Reserved1 : 2;
-			/** @brief Destination Shorthand
-			 *
-			 * 0: No shorthand
-			 * 1: Self
-			 * 2: All including self
-			 * 3: All excluding self
-			 */
-			uint64_t DestinationShorthand : 2;
-			/** @brief Reserved */
+			/** Destination Shorthand */
+			uint64_t DSH : 2;
+			/** Reserved */
 			uint64_t Reserved2 : 12;
-		};
+			/** Destination */
+			uint64_t DES : 32;
+		} x2;
+		struct
+		{
+			uint32_t Low;
+			uint32_t High;
+		} split;
 		uint64_t raw;
-	} __packed InterruptCommandRegisterLow;
+	} __packed InterruptCommandRegister;
 
 	typedef union
 	{
 		struct
 		{
-			/** @brief Reserved */
-			uint64_t Reserved0 : 24;
-			/** @brief Destination */
-			uint64_t Destination : 8;
+			/** Reserved */
+			uint64_t Reserved0 : 2;
+			/** Sent Accept Error */
+			uint64_t SAE : 1;
+			/** Receive Accept Error */
+			uint64_t RAE : 1;
+			/** Reserved */
+			uint64_t Reserved1 : 1;
+			/** Sent Illegal Vector */
+			uint64_t SIV : 1;
+			/** Received Illegal Vector */
+			uint64_t RIV : 1;
+			/** Illegal Register Address */
+			uint64_t IRA : 1;
+			/** Reserved */
+			uint64_t Reserved2 : 24;
 		};
-		uint64_t raw;
-	} __packed InterruptCommandRegisterHigh;
+		uint32_t raw;
+	} ErrorStatusRegister;
 
 	typedef union
 	{
 		struct
 		{
-			/** @brief Interrupt Vector */
-			uint64_t Vector : 8;
-			/** @brief Delivery Mode */
-			uint64_t DeliveryMode : 3;
-			/** @brief Destination Mode
-			 *
-			 * 0: Physical
-			 * 1: Logical
-			 */
-			uint64_t DestinationMode : 1;
-			/** @brief Delivery Status */
-			uint64_t DeliveryStatus : 1;
-			/** @brief Interrupt Input Pin Polarity
-			 *
-			 * 0: Active High
-			 * 1: Active Low
-			 */
-			uint64_t Polarity : 1;
-			/** @brief Remote IRR */
-			uint64_t RemoteIRR : 1;
-			/** @brief Trigger Mode
-			 *
-			 * 0: Edge
-			 * 1: Level
-			 */
-			uint64_t TriggerMode : 1;
-			/** @brief Mask */
-			uint64_t Mask : 1;
-			/** @brief Reserved */
+			/** Interrupt Vector */
+			uint64_t VEC : 8;
+			/** Delivery Mode */
+			uint64_t MT : 3;
+			/** Destination Mode */
+			uint64_t DM : 1;
+			/** Delivery Status */
+			uint64_t DS : 1;
+			/** Interrupt Input Pin Polarity */
+			uint64_t IPP : 1;
+			/** Remote IRR */
+			uint64_t RIR : 1;
+			/** Trigger Mode */
+			uint64_t TGM : 1;
+			/** Mask */
+			uint64_t M : 1;
+			/** Reserved */
 			uint64_t Reserved0 : 15;
-			/** @brief Reserved */
+			/** Reserved */
 			uint64_t Reserved1 : 24;
-			/** @brief Destination */
-			uint64_t DestinationID : 8;
+			/** Destination */
+			uint64_t DES : 8;
 		};
 		struct
 		{
-			uint64_t Low;
-			uint64_t High;
+			uint32_t Low;
+			uint32_t High;
 		} split;
 		uint64_t raw;
 	} __packed IOAPICRedirectEntry;
@@ -304,12 +328,18 @@ namespace APIC
 	{
 		struct
 		{
-			uint64_t Version : 8;
-			uint64_t Reserved : 8;
-			uint64_t MaximumRedirectionEntry : 8;
-			uint64_t Reserved2 : 8;
+			/** Version */
+			uint64_t VER : 8;
+			/** Reserved */
+			uint64_t Reserved0 : 8;
+			/** Max LVT Entries */
+			uint64_t MLE : 8;
+			/** Reserved */
+			uint64_t Reserved1 : 7;
+			/** Extended APIC Register Space Present */
+			uint64_t EAS : 1;
 		};
-		uint64_t raw;
+		uint32_t raw;
 	} __packed IOAPICVersion;
 
 	class APIC
@@ -319,19 +349,21 @@ namespace APIC
 		uint64_t APICBaseAddress = 0;
 
 	public:
+		decltype(x2APICSupported) &x2APIC = x2APICSupported;
+
 		uint32_t Read(uint32_t Register);
 		void Write(uint32_t Register, uint32_t Value);
 		void IOWrite(uint64_t Base, uint32_t Register, uint32_t Value);
 		uint32_t IORead(uint64_t Base, uint32_t Register);
 		void EOI();
-		void RedirectIRQs(int CPU = 0);
+		void RedirectIRQs(uint8_t CPU = 0);
 		void WaitForIPI();
-		void IPI(int CPU, InterruptCommandRegisterLow icr);
+		void ICR(InterruptCommandRegister icr);
 		void SendInitIPI(int CPU);
 		void SendStartupIPI(int CPU, uint64_t StartupAddress);
 		uint32_t IOGetMaxRedirect(uint32_t APICID);
-		void RawRedirectIRQ(uint16_t Vector, uint32_t GSI, uint16_t Flags, int CPU, int Status);
-		void RedirectIRQ(int CPU, uint16_t IRQ, int Status);
+		void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, uint8_t CPU, int Status);
+		void RedirectIRQ(uint8_t CPU, uint8_t IRQ, int Status);
 		APIC(int Core);
 		~APIC();
 	};

@@ -458,27 +458,10 @@ namespace Tasking
 		this->Security.ExecutionMode =
 			this->Parent->Security.ExecutionMode;
 
-		std::size_t FXPgs = TO_PAGES(sizeof(CPU::x64::FXState) + 1);
-		this->FPU = (CPU::x64::FXState *)this->Memory->RequestPages(FXPgs);
-		memset(this->FPU, 0, sizeof(CPU::x64::FXState));
-
 		// TODO: Is really a good idea to use the FPU in kernel mode?
-		this->FPU->mxcsr = 0b0001111110000000;
-		this->FPU->mxcsrmask = 0b1111111110111111;
-		this->FPU->fcw = 0b0000001100111111;
-
-		// CPU::x64::fxrstor(this->FPU);
-		// uint16_t FCW = 0b1100111111;
-		// asmv("fldcw %0"
-		//      :
-		//      : "m"(FCW)
-		//      : "memory");
-		// uint32_t MXCSR = 0b1111110000000;
-		// asmv("ldmxcsr %0"
-		//      :
-		//      : "m"(MXCSR)
-		//      : "memory");
-		// CPU::x64::fxsave(this->FPU);
+		this->FPU.mxcsr = 0b0001111110000000;
+		this->FPU.mxcsrmask = 0b1111111110111111;
+		this->FPU.fcw = 0b0000001100111111;
 
 #ifdef DEBUG
 #ifdef a64

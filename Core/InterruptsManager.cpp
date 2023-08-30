@@ -110,7 +110,7 @@ namespace Interrupts
 			// TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
 			apic[Core] = new APIC::APIC(Core);
 			if (Core == Config.IOAPICInterruptCore) // Redirect IRQs to the specified core.
-				((APIC::APIC *)apic[Core])->RedirectIRQs(Core);
+				((APIC::APIC *)apic[Core])->RedirectIRQs(uint8_t(Core));
 		}
 		else
 		{
@@ -168,7 +168,8 @@ namespace Interrupts
 			Core = CoreData->ID;
 
 		/* If this is false, we have a big problem. */
-		if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 && Frame->InterruptNumber > CPU::x86::ISR0))
+		if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 &&
+				   Frame->InterruptNumber > CPU::x86::ISR0))
 		{
 			/* Halt core interrupt */
 			if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ29))
@@ -201,7 +202,8 @@ namespace Interrupts
 
 			if (likely(apic[Core]))
 			{
-				((APIC::APIC *)Interrupts::apic[Core])->EOI();
+				APIC::APIC *this_apic = (APIC::APIC *)apic[Core];
+				this_apic->EOI();
 				// TODO: Handle PIC too
 				return;
 			}
