@@ -115,6 +115,7 @@ namespace Video
         int ColorPickerIteration = 0;
 
     public:
+        BootInfo::FramebufferInfo GetFramebufferStruct() { return framebuffer; }
         Font *GetCurrentFont();
         void SetCurrentFont(Font *Font);
         uint16_t GetBitsPerPixel();
