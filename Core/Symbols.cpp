@@ -43,7 +43,8 @@ namespace SymbolResolver
 	{
 		SymbolTable tbl{};
 		tbl.Address = Address;
-		tbl.FunctionName = (char *)Name;
+		tbl.FunctionName = new char[strlen(Name) + 1];
+		strcpy(tbl.FunctionName, Name);
 		this->SymTable.push_back(tbl);
 		this->SymbolTableExists = true;
 	}
@@ -128,7 +129,8 @@ namespace SymbolResolver
 					continue;
 				SymbolTable tbl{};
 				tbl.Address = sym->st_value;
-				tbl.FunctionName = (char *)name;
+				tbl.FunctionName = new char[strlen(name) + 1];
+				strcpy(tbl.FunctionName, name);
 				this->SymTable.push_back(tbl);
 				this->SymbolTableExists = true;
 
@@ -227,7 +229,8 @@ namespace SymbolResolver
 				name = &strtab[ElfSymbols[i].st_name];
 				SymbolTable tbl{};
 				tbl.Address = sym->st_value + BaseAddress;
-				tbl.FunctionName = (char *)name;
+				tbl.FunctionName = new char[strlen(name) + 1];
+				strcpy(tbl.FunctionName, name);
 				this->SymTable.push_back(tbl);
 				this->SymbolTableExists = true;
 
@@ -244,5 +247,9 @@ namespace SymbolResolver
 		this->AppendSymbols(ImageAddress);
 	}
 
-	Symbols::~Symbols() {}
+	Symbols::~Symbols()
+	{
+		for (auto tbl : this->SymTable)
+			delete[] tbl.FunctionName;
+	}
 }
