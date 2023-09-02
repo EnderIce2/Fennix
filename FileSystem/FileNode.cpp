@@ -110,7 +110,7 @@ namespace VirtualFileSystem
 			return this->node->Operator->Seek(this->node, _Offset, Whence, RefOffset);
 		}
 
-		debug("Current offset is %d", this->Offset.load());
+		// debug("Current offset is %d", this->Offset.load());
 		switch (Whence)
 		{
 		case SEEK_SET:
@@ -172,10 +172,10 @@ namespace VirtualFileSystem
 		}
 
 		off_t RetOffset = off_t(this->Offset.load());
-		debug("( %d %ld %s[%d] ) -> %d",
-			  _Offset, this->Offset.load(),
-			  SeekStrings[Whence], Whence,
-			  RetOffset);
+		// debug("( %d %ld %s[%d] ) -> %d",
+		// 	  _Offset, this->Offset.load(),
+		// 	  SeekStrings[Whence], Whence,
+		// 	  RetOffset);
 		return RetOffset;
 	}
 

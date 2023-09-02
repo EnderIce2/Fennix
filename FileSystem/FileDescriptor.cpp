@@ -72,7 +72,7 @@ namespace VirtualFileSystem
 		{
 			if (fd.Descriptor == FileDescriptor)
 			{
-				debug("Found file descriptor %d", FileDescriptor);
+				// debug("Found file descriptor %d", FileDescriptor);
 				return fd;
 			}
 		}
