@@ -66,6 +66,18 @@ namespace Execute
 		std::vector<AuxiliaryVector> Elfauxv;
 		Tasking::IP ip;
 
+		void *ELFProgramHeaders;
+
+		void LoadPhdrs_x86_32(int fd,
+							  Elf64_Ehdr ELFHeader,
+							  Memory::MemMgr *mm,
+							  Tasking::PCB *TargetProcess);
+
+		void LoadPhdrs_x86_64(int fd,
+							  Elf64_Ehdr ELFHeader,
+							  Memory::MemMgr *mm,
+							  Tasking::PCB *TargetProcess);
+
 		void GenerateAuxiliaryVector_x86_32(Memory::MemMgr *mm,
 											int fd,
 											Elf32_Ehdr ELFHeader,

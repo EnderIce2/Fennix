@@ -33,6 +33,36 @@ using namespace VirtualFileSystem;
 
 namespace Execute
 {
+	void ELFObject::LoadPhdrs_x86_32(int fd,
+									 Elf64_Ehdr ELFHeader,
+									 Memory::MemMgr *mm,
+									 PCB *TargetProcess)
+	{
+		stub;
+		UNUSED(fd);
+		UNUSED(ELFHeader);
+		UNUSED(TargetProcess);
+	}
+
+	void ELFObject::LoadPhdrs_x86_64(int fd,
+									 Elf64_Ehdr ELFHeader,
+									 Memory::MemMgr *mm,
+									 PCB *TargetProcess)
+	{
+#if defined(a64)
+		// assert(ELFHeader.e_phentsize == sizeof(Elf64_Phdr));
+
+		size_t size = ELFHeader.e_phnum * sizeof(Elf64_Phdr);
+		assert(size > 0);
+		assert(size < 65536);
+		assert(size < PAGE_SIZE);
+
+		ELFProgramHeaders = mm->RequestPages(TO_PAGES(size), true);
+		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
+		fread(fd, (uint8_t *)ELFProgramHeaders, size);
+#endif
+	}
+
 	void ELFObject::GenerateAuxiliaryVector_x86_32(Memory::MemMgr *mm,
 												   int fd,
 												   Elf32_Ehdr ELFHeader,
@@ -57,11 +87,6 @@ namespace Execute
 		void *at_random = mm->RequestPages(1, true);
 		*(uint64_t *)at_random = Random::rand16();
 
-		// prep. for AT_PHDR
-		void *phdr_array = mm->RequestPages(TO_PAGES(ELFHeader.e_phnum * sizeof(Elf64_Phdr)), true);
-		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
-		fread(fd, (uint8_t *)phdr_array, ELFHeader.e_phnum * sizeof(Elf64_Phdr));
-
 		Elfauxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
 		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
 		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)execfn_str}}});
@@ -77,7 +102,7 @@ namespace Execute
 		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
 		Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
 		Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)phdr_array}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFProgramHeaders}}});
 		// AT_CLKTCK 17
 		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
 // AT_HWCAP 16
@@ -137,13 +162,6 @@ namespace Execute
 		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
-
-		debug("Solving symbols");
-		std::vector<Elf64_Shdr> DynamicString = ELFGetSections_x86_64(fd, ".dynstr");
-		std::vector<Elf64_Shdr> StringTable = ELFGetSections_x86_64(fd, ".strtab");
-
-		if (DynamicString.size() < 1) /* TODO: check if this is required */
-			DynamicString = StringTable;
 
 		Memory::Virtual vmm = Memory::Virtual(TargetProcess->PageTable);
 		Memory::MemMgr *mm = TargetProcess->Memory;
@@ -277,22 +295,18 @@ namespace Execute
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
 
-		debug("Solving symbols");
-		std::vector<Elf64_Shdr> DynamicString = ELFGetSections_x86_64(fd, ".dynstr");
-		std::vector<Elf64_Shdr> StringTable = ELFGetSections_x86_64(fd, ".strtab");
-
-		if (DynamicString.size() < 1) /* TODO: check if this is required */
-			DynamicString = StringTable;
-
 		Memory::Virtual vmm = Memory::Virtual(TargetProcess->PageTable);
 		Memory::MemMgr *mm = TargetProcess->Memory;
 		uintptr_t BaseAddress = 0;
+
+		LoadPhdrs_x86_64(fd, ELFHeader, mm, TargetProcess);
 
 		/* Copy segments into memory */
 		{
 			Elf64_Phdr ProgramBreakHeader{};
 			Elf64_Phdr ProgramHeader;
-			std::size_t SegmentsSize = 0;
+
+			size_t SegmentsSize = 0;
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
 				lseek(fd, ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
@@ -300,15 +314,23 @@ namespace Execute
 
 				if (ProgramHeader.p_type == PT_LOAD ||
 					ProgramHeader.p_type == PT_DYNAMIC)
-					SegmentsSize += ProgramHeader.p_memsz;
+				{
+					if (SegmentsSize < ProgramHeader.p_vaddr + ProgramHeader.p_memsz)
+					{
+						SegmentsSize = ProgramHeader.p_vaddr + ProgramHeader.p_memsz;
+						ProgramBreakHeader = ProgramHeader;
+					}
+				}
 			}
+			debug("SegmentsSize: %#lx", SegmentsSize);
 
 			/* TODO: Check if this is correct and/or it needs more
 				complex calculations & allocations */
 			void *SegmentsAddress = mm->RequestPages(TO_PAGES(SegmentsSize) + 1, true);
 			BaseAddress = (uintptr_t)SegmentsAddress;
-			debug("BaseAddress: %#lx, End: %#lx", BaseAddress,
-				  BaseAddress + FROM_PAGES(TO_PAGES(SegmentsSize)));
+			debug("BaseAddress: %#lx, End: %#lx (%#lx)", BaseAddress,
+				  BaseAddress + FROM_PAGES(TO_PAGES(SegmentsSize)),
+				  SegmentsSize);
 
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
@@ -326,11 +348,7 @@ namespace Execute
 					if (ProgramHeader.p_memsz == 0)
 						continue;
 
-					debug("PIC: %#lx + %#lx",
-						  BaseAddress,
-						  ProgramHeader.p_vaddr);
-
-					debug("Copying segment to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
+					debug("Copying PT_LOAD    to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
 						  SegmentDestination, SegmentDestination + ProgramHeader.p_memsz,
 						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
 
@@ -345,7 +363,6 @@ namespace Execute
 						void *zAddr = (void *)(SegmentDestination + ProgramHeader.p_filesz);
 						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
 					}
-					ProgramBreakHeader = ProgramHeader;
 					break;
 				}
 				case PT_DYNAMIC:
@@ -358,7 +375,7 @@ namespace Execute
 					if (ProgramHeader.p_memsz == 0)
 						continue;
 
-					debug("Copying PT_DYNAMIC segment to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
+					debug("Copying PT_DYNAMIC to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
 						  DynamicSegmentDestination, DynamicSegmentDestination + ProgramHeader.p_memsz,
 						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
 
@@ -401,13 +418,11 @@ namespace Execute
 		std::vector<Elf64_Dyn> StrTab = ELFGetDynamicTag_x86_64(fd, DT_STRTAB);
 		std::vector<Elf64_Dyn> RelaDyn = ELFGetDynamicTag_x86_64(fd, DT_RELA);
 		std::vector<Elf64_Dyn> RelaDynSize = ELFGetDynamicTag_x86_64(fd, DT_RELASZ);
-		std::vector<Elf64_Dyn> PltGot = ELFGetDynamicTag_x86_64(fd, DT_PLTGOT);
 
-		std::size_t JmpRelSize = JmpRel.size();
-		std::size_t SymTabSize = SymTab.size();
-		std::size_t StrTabSize = StrTab.size();
-		std::size_t RelaDynSize_v = RelaDyn.size();
-		std::size_t PltGotSize = PltGot.size();
+		size_t JmpRelSize = JmpRel.size();
+		size_t SymTabSize = SymTab.size();
+		size_t StrTabSize = StrTab.size();
+		size_t RelaDynSize_v = RelaDyn.size();
 
 		if (JmpRelSize < 1)
 		{
@@ -434,90 +449,82 @@ namespace Execute
 			debug("DT_RELASZ is < 1");
 		}
 
-		if (PltGotSize < 1)
-		{
-			debug("No DT_PLTGOT");
-		}
-
 		if (JmpRelSize > 0 && SymTabSize > 0 && StrTabSize > 0)
 		{
 			debug("JmpRel: %#lx, SymTab: %#lx, StrTab: %#lx",
-				  JmpRel[0].d_un.d_ptr, SymTab[0].d_un.d_ptr, StrTab[0].d_un.d_ptr);
+				  JmpRel[0].d_un.d_ptr, SymTab[0].d_un.d_ptr,
+				  StrTab[0].d_un.d_ptr);
 
 			Elf64_Rela *_JmpRel = (Elf64_Rela *)((uintptr_t)BaseAddress + JmpRel[0].d_un.d_ptr);
 			Elf64_Sym *_SymTab = (Elf64_Sym *)((uintptr_t)BaseAddress + SymTab[0].d_un.d_ptr);
 			char *_DynStr = (char *)((uintptr_t)BaseAddress + StrTab[0].d_un.d_ptr);
 			Elf64_Rela *_RelaDyn = (Elf64_Rela *)((uintptr_t)BaseAddress + RelaDyn[0].d_un.d_ptr);
 
-			Elf64_Shdr *gotSection = nullptr;
 			Elf64_Shdr shdr;
 			for (Elf64_Half i = 0; i < ELFHeader.e_shnum; i++)
 			{
 				lseek(fd, ELFHeader.e_shoff + i * sizeof(Elf64_Shdr), SEEK_SET);
 				fread(fd, (uint8_t *)&shdr, sizeof(Elf64_Shdr));
-				if (shdr.sh_type == SHT_PROGBITS &&
-					(shdr.sh_flags & SHF_WRITE) &&
-					(shdr.sh_flags & SHF_ALLOC))
+
+				char sectionName[32];
+				Elf64_Shdr n_shdr;
+				lseek(fd, ELFHeader.e_shoff + ELFHeader.e_shstrndx * sizeof(Elf64_Shdr), SEEK_SET);
+				fread(fd, (uint8_t *)&n_shdr, sizeof(Elf64_Shdr));
+				lseek(fd, n_shdr.sh_offset + shdr.sh_name, SEEK_SET);
+				fread(fd, (uint8_t *)sectionName, 32);
+				debug("shdr: %s", sectionName);
+
+				if (strcmp(sectionName, ".rela.plt") == 0)
 				{
-					gotSection = new Elf64_Shdr;
-					*gotSection = shdr;
-					debug("Found GOT section");
-					break;
-				}
-			}
-
-			if (gotSection)
-			{
-				// .rela.plt
-				// R_X86_64_JUMP_SLOT
-				Elf64_Xword numEntries = gotSection->sh_size / sizeof(Elf64_Addr);
-				for (Elf64_Xword i = 0; i < numEntries; i++)
-				{
-					Elf64_Addr *GOTEntry = (Elf64_Addr *)(gotSection->sh_addr + BaseAddress + i * sizeof(Elf64_Addr));
-					Elf64_Addr GOTEntryValue = *GOTEntry;
-
-					if (GOTEntryValue == 0)
-						continue;
-
-					Elf64_Rela *Rel = _JmpRel + i;
-					Elf64_Xword RelType = ELF64_R_TYPE(Rel->r_info);
-
-					switch (RelType)
+					// .rela.plt
+					// R_X86_64_JUMP_SLOT
+					Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
+					for (Elf64_Xword i = 0; i < numEntries; i++)
 					{
-					case R_X86_64_JUMP_SLOT:
-					{
-						Elf64_Xword SymIndex = ELF64_R_SYM(Rel->r_info);
-						Elf64_Sym *Sym = _SymTab + SymIndex;
+						Elf64_Addr *GOTEntry = (Elf64_Addr *)(shdr.sh_addr +
+															  BaseAddress +
+															  i * sizeof(Elf64_Addr));
+						Elf64_Rela *Rel = _JmpRel + i;
+						Elf64_Xword RelType = ELF64_R_TYPE(Rel->r_info);
 
-						if (Sym->st_name)
+						switch (RelType)
 						{
-							char *SymName = _DynStr + Sym->st_name;
-							debug("SymName: %s", SymName);
+						case R_X86_64_JUMP_SLOT:
+						{
+							Elf64_Xword SymIndex = ELF64_R_SYM(Rel->r_info);
+							Elf64_Sym *Sym = _SymTab + SymIndex;
 
-							Elf64_Sym LibSym = ELFLookupSymbol(fd, SymName);
-							if (LibSym.st_value)
+							if (Sym->st_name)
 							{
-								*GOTEntry = (Elf64_Addr)(BaseAddress + LibSym.st_value);
-								debug("GOT[%ld](%#lx): %#lx",
-									  i, uintptr_t(GOTEntry) - BaseAddress,
-									  *GOTEntry);
+								char *SymName = _DynStr + Sym->st_name;
+								debug("SymName: %s", SymName);
+
+								Elf64_Sym LibSym = ELFLookupSymbol(fd, SymName);
+								if (LibSym.st_value)
+								{
+									*GOTEntry = (Elf64_Addr)(BaseAddress + LibSym.st_value);
+									debug("GOT[%ld](%#lx): %#lx",
+										  i, uintptr_t(GOTEntry) - BaseAddress,
+										  *GOTEntry);
+								}
 							}
+							continue;
 						}
-						continue;
-					}
-					default:
-					{
-						fixme("Unhandled relocation type: %#lx", RelType);
-						break;
-					}
+						default:
+						{
+							fixme("Unhandled relocation type: %#lx", RelType);
+							break;
+						}
+						}
 					}
 				}
-
-				// .rela.dyn
-				// R_X86_64_RELATIVE
-				// R_X86_64_GLOB_DAT
-				if (RelaDynSize_v > 0 && RelaDynSize[0].d_un.d_val > 0)
+				else if (strcmp(sectionName, ".rela.dyn") == 0)
 				{
+					// .rela.dyn
+					// R_X86_64_RELATIVE
+					// R_X86_64_GLOB_DAT
+					if (RelaDynSize_v < 1 || RelaDynSize[0].d_un.d_val < 1)
+						continue;
 					Elf64_Xword numRelaDynEntries = RelaDynSize[0].d_un.d_val / sizeof(Elf64_Rela);
 					for (Elf64_Xword i = 0; i < numRelaDynEntries; i++)
 					{
@@ -564,24 +571,80 @@ namespace Execute
 						}
 					}
 				}
-
-				// _GLOBAL_OFFSET_TABLE_
-				if (PltGotSize > 0)
+				else if (strcmp(sectionName, ".dynsym") == 0)
 				{
-					Elf64_Dyn got = PltGot[0];
-					Elf64_Addr *GOTEntry = (Elf64_Addr *)(got.d_un.d_ptr + BaseAddress);
-					// *GOTEntry = (Elf64_Addr)(BaseAddress + PltGot[0].d_un.d_val);
+					// .dynsym
+					// STT_OBJECT
 
-					std::vector<Elf64_Phdr> DYNAMICPhdrs = ELFGetSymbolType_x86_64(fd, PT_DYNAMIC);
-					if (DYNAMICPhdrs.size() > 0)
-						*GOTEntry = (Elf64_Addr)(BaseAddress + DYNAMICPhdrs[0].p_vaddr);
+					Elf64_Sym *SymArray = (Elf64_Sym *)(shdr.sh_addr + BaseAddress);
+					Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
+					debug("start %#lx (off %#lx), entries %ld",
+						  SymArray, shdr.sh_addr, numEntries);
+					for (Elf64_Xword j = 0; j < numEntries; j++)
+					{
+						Elf64_Sym Sym = SymArray[j];
+
+						if (Sym.st_shndx == SHN_UNDEF)
+							continue;
+
+						if (Sym.st_value == 0)
+							continue;
+
+						unsigned char SymType = ELF64_ST_TYPE(Sym.st_info);
+
+						if (SymType == STT_OBJECT)
+						{
+							Elf64_Addr *GOTEntry = (Elf64_Addr *)(Sym.st_value + BaseAddress);
+							*GOTEntry = (Elf64_Addr)(BaseAddress + Sym.st_value);
+
+							debug("%ld: \"%s\" %#lx -> %#lx", j,
+								  _DynStr + Sym.st_name,
+								  uintptr_t(GOTEntry) - BaseAddress,
+								  *GOTEntry);
+						}
+					}
+				}
+				else if (strcmp(sectionName, ".symtab") == 0)
+				{
+					// .symtab
+					// STT_OBJECT
+
+					Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
+					Elf64_Sym *SymArray = new Elf64_Sym[numEntries];
+					lseek(fd, shdr.sh_offset, SEEK_SET);
+					fread(fd, (uint8_t *)SymArray, shdr.sh_size);
+
+					debug("start %#lx (off %#lx), entries %ld",
+						  SymArray, shdr.sh_addr, numEntries);
+					for (Elf64_Xword j = 0; j < numEntries; j++)
+					{
+						Elf64_Sym Sym = SymArray[j];
+
+						if (Sym.st_shndx == SHN_UNDEF)
+							continue;
+
+						if (Sym.st_value == 0)
+							continue;
+
+						unsigned char SymType = ELF64_ST_TYPE(Sym.st_info);
+
+						if (SymType == STT_OBJECT)
+						{
+							Elf64_Addr *GOTEntry = (Elf64_Addr *)(Sym.st_value + BaseAddress);
+							*GOTEntry = (Elf64_Addr)(BaseAddress + Sym.st_value);
+
+							debug("%ld: \"<fixme>\" %#lx -> %#lx", j,
+								  /*_DynStr + Sym.st_name,*/
+								  uintptr_t(GOTEntry) - BaseAddress,
+								  *GOTEntry);
+						}
+					}
+					delete[] SymArray;
 				}
 
-				delete gotSection;
-			}
-			else
-			{
-				debug("GOT section not found");
+				// if (shdr.sh_type == SHT_PROGBITS &&
+				// 	(shdr.sh_flags & SHF_WRITE) &&
+				// 	(shdr.sh_flags & SHF_ALLOC))
 			}
 		}
 
@@ -702,17 +765,25 @@ namespace Execute
 			envc++;
 
 		// ELFargv = new const char *[argc + 2];
-		std::size_t argv_size = TO_PAGES(argc + 2 * sizeof(char *));
+		size_t argv_size = TO_PAGES(argc + 2 * sizeof(char *));
 		ELFargv = (const char **)TargetProcess->Memory->RequestPages(argv_size);
 		for (int i = 0; i < argc; i++)
-			ELFargv[i] = argv[i];
+		{
+			size_t arg_size = TO_PAGES(strlen(argv[i]) + 1);
+			ELFargv[i] = (const char *)TargetProcess->Memory->RequestPages(arg_size);
+			strcpy((char *)ELFargv[i], argv[i]);
+		}
 		ELFargv[argc] = nullptr;
 
 		// ELFenvp = new const char *[envc + 1];
-		std::size_t envp_size = TO_PAGES(envc + 1 * sizeof(char *));
+		size_t envp_size = TO_PAGES(envc + 1 * sizeof(char *));
 		ELFenvp = (const char **)TargetProcess->Memory->RequestPages(envp_size);
 		for (int i = 0; i < envc; i++)
-			ELFenvp[i] = envp[i];
+		{
+			size_t env_size = TO_PAGES(strlen(envp[i]) + 1);
+			ELFenvp[i] = (const char *)TargetProcess->Memory->RequestPages(env_size);
+			strcpy((char *)ELFenvp[i], envp[i]);
+		}
 		ELFenvp[envc] = nullptr;
 
 		Elf32_Ehdr ELFHeader;
