@@ -407,12 +407,10 @@ namespace CPU
 			cr4.OSXMMEXCPT = 1;
 
 			CPUData *CoreData = GetCPU(Core);
-			CoreData->Data.FPU = (CPU::x32::FXState *)KernelAllocator.RequestPages(TO_PAGES(sizeof(CPU::x32::FXState) + 1));
-			memset(CoreData->Data.FPU, 0, FROM_PAGES(TO_PAGES(sizeof(CPU::x32::FXState))));
-			CoreData->Data.FPU->mxcsr = 0b0001111110000000;
-			CoreData->Data.FPU->mxcsrmask = 0b1111111110111111;
-			CoreData->Data.FPU->fcw = 0b0000001100111111;
-			CPU::x32::fxrstor(CoreData->Data.FPU);
+			CoreData->Data.FPU.mxcsr = 0b0001111110000000;
+			CoreData->Data.FPU.mxcsrmask = 0b1111111110111111;
+			CoreData->Data.FPU.fcw = 0b0000001100111111;
+			CPU::x64::fxrstor(&CoreData->Data.FPU);
 
 			SSEEnableAfter = true;
 		}
