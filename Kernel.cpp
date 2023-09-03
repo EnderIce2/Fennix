@@ -324,6 +324,9 @@ EXTERNC NIF void Main()
 
 	/**************************************************************************************/
 
+	KPrint("Initializing CPU Features");
+	CPU::InitializeFeatures(0);
+
 	KPrint("Initializing GDT and IDT");
 	Interrupts::Initialize(0);
 
@@ -353,9 +356,6 @@ EXTERNC NIF void Main()
 		Display->SetBuffer(1);
 		PutCharBufferIndex = 0;
 	}
-
-	KPrint("Initializing CPU Features");
-	CPU::InitializeFeatures(0);
 
 	KPrint("Initializing Power Manager");
 	PowerManager = new Power::Power;
