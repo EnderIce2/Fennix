@@ -63,7 +63,7 @@ extern uintptr_t _kernel_bss_start, _kernel_bss_end;
 // To pages
 #define TO_PAGES(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
 // From pages
-#define FROM_PAGES(d) ((d)*PAGE_SIZE)
+#define FROM_PAGES(d) ((d) * PAGE_SIZE)
 
 #if defined(a64) || defined(aa64)
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
@@ -790,7 +790,9 @@ namespace Memory
 		 * @return true if page has the specified flag.
 		 * @return false if page is has the specified flag.
 		 */
-		bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P, MapType Type = MapType::FourKiB);
+		bool Check(void *VirtualAddress,
+				   PTFlag Flag = PTFlag::P,
+				   MapType Type = MapType::FourKiB);
 
 		/**
 		 * @brief Get physical address of the page.
@@ -822,7 +824,10 @@ namespace Memory
 		 * @param Flags Flags of the page. Check PTFlag enum.
 		 * @param Type Type of the page. Check MapType enum.
 		 */
-		void Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flag = PTFlag::P, MapType Type = MapType::FourKiB);
+		void Map(void *VirtualAddress,
+				 void *PhysicalAddress,
+				 uint64_t Flag = PTFlag::P,
+				 MapType Type = MapType::FourKiB);
 
 		/**
 		 * @brief Map multiple pages.
@@ -833,7 +838,11 @@ namespace Memory
 		 * @param Flags Flags of the page. Check PTFlag enum.
 		 * @param Type Type of the page. Check MapType enum.
 		 */
-		__always_inline inline void Map(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, MapType Type = MapType::FourKiB)
+		__always_inline inline void Map(void *VirtualAddress,
+										void *PhysicalAddress,
+										size_t Length,
+										uint64_t Flags,
+										MapType Type = MapType::FourKiB)
 		{
 			int PageSize = PAGE_SIZE_4K;
 
@@ -845,7 +854,11 @@ namespace Memory
 				PageSize = PAGE_SIZE_1G;
 
 			for (uintptr_t i = 0; i < Length; i += PageSize)
-				this->Map((void *)((uintptr_t)VirtualAddress + i), (void *)((uintptr_t)PhysicalAddress + i), Flags, Type);
+			{
+				this->Map((void *)((uintptr_t)VirtualAddress + i),
+						  (void *)((uintptr_t)PhysicalAddress + i),
+						  Flags, Type);
+			}
 		}
 
 		/**
@@ -863,7 +876,12 @@ namespace Memory
 		 * @param FailOnModulo If true, the function will return NoMapType if the length is not a multiple of the page size.
 		 * @return The best page size to map the pages.
 		 */
-		__always_inline inline MapType OptimizedMap(void *VirtualAddress, void *PhysicalAddress, size_t Length, uint64_t Flags, bool Fit = false, bool FailOnModulo = false)
+		__always_inline inline MapType OptimizedMap(void *VirtualAddress,
+													void *PhysicalAddress,
+													size_t Length,
+													uint64_t Flags,
+													bool Fit = false,
+													bool FailOnModulo = false)
 		{
 			if (unlikely(Fit))
 			{

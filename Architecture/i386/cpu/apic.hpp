@@ -319,6 +319,8 @@ namespace APIC
 		uint64_t APICBaseAddress = 0;
 
 	public:
+		decltype(x2APICSupported) &x2APIC = x2APICSupported;
+
 		uint32_t Read(uint32_t Register);
 		void Write(uint32_t Register, uint32_t Value);
 		void IOWrite(uint64_t Base, uint32_t Register, uint32_t Value);

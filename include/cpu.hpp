@@ -203,7 +203,7 @@ namespace CPU
 	void *PageTable(void *PT = nullptr);
 
 	/** @brief To be used only once. */
-	void InitializeFeatures(long Core);
+	void InitializeFeatures(int Core);
 
 	/** @brief Get CPU counter value. */
 	uint64_t Counter();

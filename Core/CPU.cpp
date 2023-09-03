@@ -24,6 +24,13 @@
 
 #include "../kernel.h"
 
+#if defined(a64)
+using namespace CPU::x64;
+#elif defined(a32)
+using namespace CPU::x32;
+#elif defined(aa64)
+#endif
+
 namespace CPU
 {
 	static bool SSEEnabled = false;
@@ -199,18 +206,19 @@ namespace CPU
 		return PT;
 	}
 
-	void InitializeFeatures(long Core)
+	struct SupportedFeat
 	{
-		static int BSP = 0;
-		bool PGESupport = false;
-		bool SSESupport = false;
-#if defined(a64)
-		bool UMIPSupport = false;
-		bool SMEPSupport = false;
-		bool SMAPSupport = false;
+		bool PGE = false;
+		bool SSE = false;
+		bool UMIP = false;
+		bool SMEP = false;
+		bool SMAP = false;
+		bool FSGSBASE = false;
+	};
 
-		x64::CR0 cr0 = x64::readcr0();
-		x64::CR4 cr4 = x64::readcr4();
+	SupportedFeat GetCPUFeat()
+	{
+		SupportedFeat feat{};
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
@@ -219,11 +227,12 @@ namespace CPU
 			cpuid1.Get();
 			cpuid7.Get();
 
-			PGESupport = cpuid1.EDX.PGE;
-			SSESupport = cpuid1.EDX.SSE;
-			SMEPSupport = cpuid7.EBX.SMEP;
-			SMAPSupport = cpuid7.EBX.SMAP;
-			UMIPSupport = cpuid7.ECX.UMIP;
+			feat.PGE = cpuid1.EDX.PGE;
+			feat.SSE = cpuid1.EDX.SSE;
+			feat.SMEP = cpuid7.EBX.SMEP;
+			feat.SMAP = cpuid7.EBX.SMAP;
+			feat.UMIP = cpuid7.ECX.UMIP;
+			feat.FSGSBASE = cpuid7.EBX.FSGSBASE;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
@@ -231,83 +240,94 @@ namespace CPU
 			CPU::x86::Intel::CPUID0x00000007_0 cpuid7_0;
 			cpuid1.Get();
 			cpuid7_0.Get();
-			PGESupport = cpuid1.EDX.PGE;
-			SSESupport = cpuid1.EDX.SSE;
-			SMEPSupport = cpuid7_0.EBX.SMEP;
-			SMAPSupport = cpuid7_0.EBX.SMAP;
-			UMIPSupport = cpuid7_0.ECX.UMIP;
+			feat.PGE = cpuid1.EDX.PGE;
+			feat.SSE = cpuid1.EDX.SSE;
+			feat.SMEP = cpuid7_0.EBX.SMEP;
+			feat.SMAP = cpuid7_0.EBX.SMAP;
+			feat.UMIP = cpuid7_0.ECX.UMIP;
+			feat.FSGSBASE = cpuid7_0.EBX.FSGSBase;
 		}
+
+		return feat;
+	}
+
+	void InitializeFeatures(int Core)
+	{
+		static int BSP = 0;
+		SupportedFeat feat = GetCPUFeat();
+
+		CR0 cr0 = readcr0();
+		CR4 cr4 = readcr4();
 
 		if (Config.SIMD == false)
 		{
 			debug("Disabling SSE support...");
-			SSESupport = false;
+			feat.SSE = false;
 		}
 
-		if (PGESupport)
+		if (feat.PGE)
 		{
 			debug("Enabling global pages support...");
 			if (!BSP)
 				KPrint("Global Pages is supported.");
-			cr4.PGE = 1;
+			cr4.PGE = true;
 		}
 
 		bool SSEEnableAfter = false;
 
 		/* Not sure if my code is not working properly or something else is the issue. */
 		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
-			SSESupport)
+			feat.SSE)
 		{
 			debug("Enabling SSE support...");
 			if (!BSP)
 				KPrint("SSE is supported.");
-			cr0.EM = 0;
-			cr0.MP = 1;
-			cr4.OSFXSR = 1;
-			cr4.OSXMMEXCPT = 1;
+			cr0.EM = false;
+			cr0.MP = true;
+			cr4.OSFXSR = true;
+			cr4.OSXMMEXCPT = true;
 
 			CPUData *CoreData = GetCPU(Core);
 			CoreData->Data.FPU.mxcsr = 0b0001111110000000;
 			CoreData->Data.FPU.mxcsrmask = 0b1111111110111111;
 			CoreData->Data.FPU.fcw = 0b0000001100111111;
-			CPU::x64::fxrstor(&CoreData->Data.FPU);
+			fxrstor(&CoreData->Data.FPU);
 
 			SSEEnableAfter = true;
 		}
 
-		cr0.NW = 0;
-		cr0.CD = 0;
-		cr0.WP = 1;
+		cr0.NW = false;
+		cr0.CD = false;
+		cr0.WP = true;
 
-		x64::writecr0(cr0);
+		writecr0(cr0);
 
 		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
 			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 		{
-			// FIXME: I don't think this is reporting correctly. This has to be fixed asap.
 			debug("Enabling UMIP, SMEP & SMAP support...");
-			if (UMIPSupport)
+			if (feat.UMIP)
 			{
 				if (!BSP)
 					KPrint("UMIP is supported.");
-				debug("UMIP is supported.");
-				// cr4.UMIP = 1;
+				fixme("UMIP is supported.");
+				// cr4.UMIP = true;
 			}
 
-			if (SMEPSupport)
+			if (feat.SMEP)
 			{
 				if (!BSP)
 					KPrint("SMEP is supported.");
-				debug("SMEP is supported.");
-				// cr4.SMEP = 1;
+				fixme("SMEP is supported.");
+				// cr4.SMEP = true;
 			}
 
-			if (SMAPSupport)
+			if (feat.SMAP)
 			{
 				if (!BSP)
 					KPrint("SMAP is supported.");
-				debug("SMAP is supported.");
-				// cr4.SMAP = 1;
+				fixme("SMAP is supported.");
+				// cr4.SMAP = true;
 			}
 		}
 		else
@@ -321,117 +341,24 @@ namespace CPU
 			}
 		}
 
+		if (feat.FSGSBASE)
+		{
+			if (!BSP)
+				KPrint("FSGSBASE is supported.");
+			fixme("FSGSBASE is supported.");
+			cr4.FSGSBASE = true;
+		}
+
 		debug("Writing CR4...");
-		x64::writecr4(cr4);
+		writecr4(cr4);
 		debug("Wrote CR4.");
 
 		debug("Enabling PAT support...");
-		x64::wrmsr(x64::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
+		wrmsr(MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)
 			trace("Features for BSP initialized.");
 		if (SSEEnableAfter)
 			SSEEnabled = true;
-#elif defined(a32)
-
-		x32::CR0 cr0 = x32::readcr0();
-		x32::CR4 cr4 = x32::readcr4();
-
-		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-		{
-			CPU::x86::AMD::CPUID0x00000001 cpuid1;
-			cpuid1.Get();
-
-			PGESupport = cpuid1.EDX.PGE;
-			SSESupport = cpuid1.EDX.SSE;
-		}
-		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-		{
-			CPU::x86::Intel::CPUID0x00000001 cpuid1;
-			cpuid1.Get();
-			PGESupport = cpuid1.EDX.PGE;
-			SSESupport = cpuid1.EDX.SSE;
-		}
-
-		if (Config.SIMD == false)
-		{
-			debug("Disabling SSE support...");
-			SSESupport = false;
-		}
-
-		if (PGESupport)
-		{
-			debug("Enabling global pages support...");
-			if (!BSP)
-				KPrint("Global Pages is supported.");
-			cr4.PGE = 1;
-		}
-
-		bool SSEEnableAfter = false;
-
-		/* Not sure if my code is not working properly or something else is the issue. */
-		if ((strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0 &&
-			 strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0) &&
-			SSESupport)
-		{
-			debug("Enabling FPU...");
-			bool FPU = false;
-			{
-				x32::CR0 _cr0;
-				// __asm__ __volatile__(
-				// 	"mov %%cr0, %0\n"
-				// 	"and $0xfffffff8, %0\n"
-				// 	"mov %0, %%cr0\n"
-				// 	"fninit\n"
-				// 	"fwait\n"
-				// 	"mov %%cr0, %0\n"
-				// 	: "=r"(_cr0.raw)
-				// 	:
-				// 	: "memory");
-				_cr0 = x32::readcr0();
-				if ((_cr0.EM) == 0)
-				{
-					FPU = true;
-					debug("FPU is supported");
-				}
-			}
-
-			if (FPU)
-				KPrint("FPU is supported.");
-
-			debug("Enabling SSE support...");
-			if (!BSP)
-				KPrint("SSE is supported.");
-			cr0.EM = 0;
-			cr0.MP = 1;
-			cr4.OSFXSR = 1;
-			cr4.OSXMMEXCPT = 1;
-
-			CPUData *CoreData = GetCPU(Core);
-			CoreData->Data.FPU.mxcsr = 0b0001111110000000;
-			CoreData->Data.FPU.mxcsrmask = 0b1111111110111111;
-			CoreData->Data.FPU.fcw = 0b0000001100111111;
-			CPU::x64::fxrstor(&CoreData->Data.FPU);
-
-			SSEEnableAfter = true;
-		}
-
-		cr0.NW = 0;
-		cr0.CD = 0;
-		cr0.WP = 1;
-
-		x32::writecr0(cr0);
-		debug("Writing CR4...");
-		x32::writecr4(cr4);
-		debug("Wrote CR4.");
-
-		debug("Enabling PAT support...");
-		x32::wrmsr(x32::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
-		if (!BSP++)
-			trace("Features for BSP initialized.");
-		if (SSEEnableAfter)
-			SSEEnabled = true;
-#elif defined(aa64)
-#endif
 	}
 
 	uint64_t Counter()

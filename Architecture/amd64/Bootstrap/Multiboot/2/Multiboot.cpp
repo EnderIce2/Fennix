@@ -197,7 +197,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 				}
 				}
 				debug("Framebuffer %d: %dx%d %d bpp", fb_count, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
-				debug("More info:\nAddress: %p\nPitch: %lld\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d",
+				debug("More info:\nAddress: %p\nPitch: %d\nMemoryModel: %d\nRedMaskSize: %d\nRedMaskShift: %d\nGreenMaskSize: %d\nGreenMaskShift: %d\nBlueMaskSize: %d\nBlueMaskShift: %d",
 					  fb->common.framebuffer_addr, fb->common.framebuffer_pitch, fb->common.framebuffer_type,
 					  fb->framebuffer_red_mask_size, fb->framebuffer_red_field_position, fb->framebuffer_green_mask_size,
 					  fb->framebuffer_green_field_position, fb->framebuffer_blue_mask_size, fb->framebuffer_blue_field_position);

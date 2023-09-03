@@ -41,20 +41,34 @@ enum SMPTrampolineAddress
 std::atomic_bool CPUEnabled = false;
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-static __aligned(0x1000) CPUData CPUs[MAX_CPU] = {0};
+static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
 
 SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
 
 SafeFunction CPUData *GetCurrentCPU()
 {
-	uint64_t ret = 0;
-	if (!(&CPUs[ret])->IsActive)
+	if (unlikely(!Interrupts::apic[0]))
+		return &CPUs[0]; /* No APIC means we are on the BSP. */
+
+	APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
+	int CoreID = 0;
+	if (CPUEnabled.load(std::memory_order_acquire) == true)
 	{
-		// error("CPU %d is not active!", ret); FIXME
+		if (apic->x2APIC)
+			CoreID = int(CPU::x32::rdmsr(CPU::x32::MSR_X2APIC_APICID));
+		else
+			CoreID = apic->Read(APIC::APIC_ID) >> 24;
+	}
+
+	if (unlikely((&CPUs[CoreID])->IsActive != true))
+	{
+		error("CPU %d is not active!", CoreID);
+		assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
 		return &CPUs[0];
 	}
-	assert((&CPUs[ret])->Checksum == CPU_DATA_CHECKSUM);
-	return &CPUs[ret];
+
+	assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
+	return &CPUs[CoreID];
 }
 
 namespace SMP

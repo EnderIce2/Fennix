@@ -99,7 +99,7 @@ NIF void MapFromZero(PageTable *PT)
 	va.Unmap((void *)0);
 }
 
-NIF void MapFramebuffer(PageTable *PT)
+NIF void MapFramebuffer(PageTable *PT, bool PSE, bool OneGB)
 {
 	debug("Mapping Framebuffer");
 	Virtual va = Virtual(PT);
@@ -109,10 +109,20 @@ NIF void MapFramebuffer(PageTable *PT)
 		if (!bInfo.Framebuffer[itrfb].BaseAddress)
 			break;
 
-		va.OptimizedMap((void *)bInfo.Framebuffer[itrfb].BaseAddress,
-						(void *)bInfo.Framebuffer[itrfb].BaseAddress,
-						(size_t)(bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height),
-						PTFlag::RW | PTFlag::US | PTFlag::G);
+		size_t fbSize = bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height;
+
+		if (PSE && OneGB)
+		{
+			va.OptimizedMap(bInfo.Framebuffer[itrfb].BaseAddress,
+							bInfo.Framebuffer[itrfb].BaseAddress,
+							fbSize, PTFlag::RW | PTFlag::US | PTFlag::G);
+		}
+		else
+		{
+			va.Map(bInfo.Framebuffer[itrfb].BaseAddress,
+				   bInfo.Framebuffer[itrfb].BaseAddress,
+				   fbSize, PTFlag::RW | PTFlag::US | PTFlag::G);
+		}
 		itrfb++;
 	}
 }
@@ -337,7 +347,7 @@ NIF void InitializeMemoryManagement()
 #endif
 
 	MapFromZero(KernelPageTable);
-	MapFramebuffer(KernelPageTable);
+	MapFramebuffer(KernelPageTable, PSESupport, Page1GBSupport);
 	MapKernel(KernelPageTable);
 
 	trace("Applying new page table from address %#lx", KernelPageTable);
