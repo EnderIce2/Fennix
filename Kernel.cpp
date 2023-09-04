@@ -284,6 +284,9 @@ EXTERNC NIF void Main()
 	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s",
 		   CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
+	if (Display->GetFramebufferStruct().BitsPerPixel != 32)
+		KPrint("\eFF5500Framebuffer is not 32 bpp. This may cause issues.");
+
 	debug("CPU: %s %s %s",
 		  CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
@@ -320,6 +323,17 @@ EXTERNC NIF void Main()
 
 	if (com4 != 0xFF)
 		KPrint("COM4 is present.");
+
+	KPrint("Display: %dx%d %d bpp \eFF0000R:%d %d \e00FF00G: %d %d \e0000FFB: %d %d",
+		   Display->GetFramebufferStruct().Width,
+		   Display->GetFramebufferStruct().Height,
+		   Display->GetFramebufferStruct().BitsPerPixel,
+		   Display->GetFramebufferStruct().RedMaskSize,
+		   Display->GetFramebufferStruct().RedMaskShift,
+		   Display->GetFramebufferStruct().GreenMaskSize,
+		   Display->GetFramebufferStruct().GreenMaskShift,
+		   Display->GetFramebufferStruct().BlueMaskSize,
+		   Display->GetFramebufferStruct().BlueMaskShift);
 #endif
 
 	/**************************************************************************************/
