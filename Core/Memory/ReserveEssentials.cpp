@@ -162,19 +162,11 @@ namespace Memory
 			debug("Reserving RSDT...");
 			this->ReservePages((void *)bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
 
-#if defined(a64)
-			if ((uintptr_t)ACPIPtr > 0x7FE00000) /* FIXME */
+			if (!Memory::Virtual().Check(ACPIPtr))
 			{
-				error("ACPI table is located above 0x7FE00000, which is not mapped.");
+				error("ACPI table is located in an unmapped region.");
 				return;
 			}
-#elif defined(a32)
-			if ((uintptr_t)ACPIPtr > 0x2800000) /* FIXME */
-			{
-				error("ACPI table is located above 0x2800000, which is not mapped.");
-				return;
-			}
-#endif
 
 			size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
 								(XSDT ? 8 : 4));

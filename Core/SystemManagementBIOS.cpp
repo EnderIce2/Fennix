@@ -23,63 +23,64 @@
 
 namespace SMBIOS
 {
-    bool CheckSMBIOS()
-    {
-        if (bInfo.SMBIOSPtr != nullptr && bInfo.SMBIOSPtr < (void *)0xFFFFFFFFFFFF0000)
-        {
-            debug("SMBIOS is available (%#lx).", bInfo.SMBIOSPtr);
-            return true;
-        }
-        debug("SMBIOS is not available. (%#lx)", bInfo.SMBIOSPtr);
-        return false;
-    }
+	bool CheckSMBIOS()
+	{
+		if (bInfo.SMBIOSPtr != nullptr && bInfo.SMBIOSPtr < (void *)0xFFFFFFFFFFFF0000)
+		{
+			debug("SMBIOS is available (%#lx).", bInfo.SMBIOSPtr);
+			return true;
+		}
 
-    SMBIOSEntryPoint *GetSMBIOSEntryPoint() { return (SMBIOSEntryPoint *)bInfo.SMBIOSPtr; }
+		debug("SMBIOS is not available. (%#lx)", bInfo.SMBIOSPtr);
+		return false;
+	}
 
-    __no_sanitize("alignment") static inline int SMBIOSTableLength(SMBIOSHeader *Hdr)
-    {
-        int i;
-        const char *strtab = (char *)Hdr + Hdr->Length;
-        for (i = 1; strtab[i - 1] != '\0' || strtab[i] != '\0'; i++)
-            ;
-        return Hdr->Length + i + 1;
-    }
+	SMBIOSEntryPoint *GetSMBIOSEntryPoint() { return (SMBIOSEntryPoint *)bInfo.SMBIOSPtr; }
 
-    __no_sanitize("alignment") void *GetSMBIOSHeader(SMBIOSType Type)
-    {
-        if (!CheckSMBIOS())
-            return nullptr;
+	__no_sanitize("alignment") static inline int SMBIOSTableLength(SMBIOSHeader *Hdr)
+	{
+		int i;
+		const char *strtab = (char *)Hdr + Hdr->Length;
+		for (i = 1; strtab[i - 1] != '\0' || strtab[i] != '\0'; i++)
+			;
+		return Hdr->Length + i + 1;
+	}
 
-        SMBIOSEntryPoint *Header = (SMBIOSEntryPoint *)bInfo.SMBIOSPtr;
-        debug("Getting SMBIOS header for type %d", Type);
+	__no_sanitize("alignment") void *GetSMBIOSHeader(SMBIOSType Type)
+	{
+		if (!CheckSMBIOS())
+			return nullptr;
 
-        struct SMBIOSHeader *hdr = (SMBIOSHeader *)(uintptr_t)Header->TableAddress;
-        for (int i = 0; i <= 11; i++)
-        {
-            if (hdr < (void *)(uintptr_t)(Header->TableAddress + Header->TableLength))
-                if (hdr->Type == Type)
-                {
-                    debug("Found SMBIOS header for type %d at %#lx", Type, hdr);
-                    return hdr;
-                }
-            hdr = (struct SMBIOSHeader *)((uintptr_t)hdr + SMBIOSTableLength(hdr));
-        }
-        return nullptr;
-    }
+		SMBIOSEntryPoint *Header = (SMBIOSEntryPoint *)bInfo.SMBIOSPtr;
+		debug("Getting SMBIOS header for type %d", Type);
 
-    SMBIOSBIOSInformation *GetBIOSInformation() { return (SMBIOSBIOSInformation *)GetSMBIOSHeader(SMBIOSTypeBIOSInformation); }
+		struct SMBIOSHeader *hdr = (SMBIOSHeader *)(uintptr_t)Header->TableAddress;
+		for (int i = 0; i <= 11; i++)
+		{
+			if (hdr < (void *)(uintptr_t)(Header->TableAddress + Header->TableLength))
+				if (hdr->Type == Type)
+				{
+					debug("Found SMBIOS header for type %d at %#lx", Type, hdr);
+					return hdr;
+				}
+			hdr = (struct SMBIOSHeader *)((uintptr_t)hdr + SMBIOSTableLength(hdr));
+		}
+		return nullptr;
+	}
 
-    SMBIOSSystemInformation *GetSystemInformation() { return (SMBIOSSystemInformation *)GetSMBIOSHeader(SMBIOSTypeSystemInformation); }
+	SMBIOSBIOSInformation *GetBIOSInformation() { return (SMBIOSBIOSInformation *)GetSMBIOSHeader(SMBIOSTypeBIOSInformation); }
 
-    SMBIOSBaseBoardInformation *GetBaseBoardInformation() { return (SMBIOSBaseBoardInformation *)GetSMBIOSHeader(SMBIOSTypeBaseBoardInformation); }
+	SMBIOSSystemInformation *GetSystemInformation() { return (SMBIOSSystemInformation *)GetSMBIOSHeader(SMBIOSTypeSystemInformation); }
 
-    SMBIOSProcessorInformation *GetProcessorInformation() { return (SMBIOSProcessorInformation *)GetSMBIOSHeader(SMBIOSTypeProcessorInformation); }
+	SMBIOSBaseBoardInformation *GetBaseBoardInformation() { return (SMBIOSBaseBoardInformation *)GetSMBIOSHeader(SMBIOSTypeBaseBoardInformation); }
 
-    SMBIOSMemoryArray *GetMemoryArray() { return (SMBIOSMemoryArray *)GetSMBIOSHeader(SMBIOSTypePhysicalMemoryArray); }
+	SMBIOSProcessorInformation *GetProcessorInformation() { return (SMBIOSProcessorInformation *)GetSMBIOSHeader(SMBIOSTypeProcessorInformation); }
 
-    SMBIOSMemoryDevice *GetMemoryDevice() { return (SMBIOSMemoryDevice *)GetSMBIOSHeader(SMBIOSTypeMemoryDevice); }
+	SMBIOSMemoryArray *GetMemoryArray() { return (SMBIOSMemoryArray *)GetSMBIOSHeader(SMBIOSTypePhysicalMemoryArray); }
 
-    SMBIOSMemoryArrayMappedAddress *GetMemoryArrayMappedAddress() { return (SMBIOSMemoryArrayMappedAddress *)GetSMBIOSHeader(SMBIOSTypeMemoryArrayMappedAddress); }
+	SMBIOSMemoryDevice *GetMemoryDevice() { return (SMBIOSMemoryDevice *)GetSMBIOSHeader(SMBIOSTypeMemoryDevice); }
 
-    SMBIOSMemoryDeviceMappedAddress *GetMemoryDeviceMappedAddress() { return (SMBIOSMemoryDeviceMappedAddress *)GetSMBIOSHeader(SMBIOSTypeMemoryDeviceMappedAddress); }
+	SMBIOSMemoryArrayMappedAddress *GetMemoryArrayMappedAddress() { return (SMBIOSMemoryArrayMappedAddress *)GetSMBIOSHeader(SMBIOSTypeMemoryArrayMappedAddress); }
+
+	SMBIOSMemoryDeviceMappedAddress *GetMemoryDeviceMappedAddress() { return (SMBIOSMemoryDeviceMappedAddress *)GetSMBIOSHeader(SMBIOSTypeMemoryDeviceMappedAddress); }
 }

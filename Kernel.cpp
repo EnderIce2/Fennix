@@ -155,6 +155,10 @@ bool DebuggerIsAttached = false;
  * - SMBIOS:
  *    https://www.dmtf.org/dsp/DSP0134
  *    https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_3.6.0.pdf
+ *    https://wiki.osdev.org/System_Management_BIOS
+ *
+ * - EDBA:
+ *    https://wiki.osdev.org/Memory_Map_(x86)
  *
  * - UMIP, SMAP and SMEP:
  *    https://en.wikipedia.org/wiki/Control_register
@@ -598,6 +602,58 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	trace("There are %d constructors to call", __init_array_end - __init_array_start);
 	for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
 		(*func)();
+
+#ifdef a86
+	if (!bInfo.SMBIOSPtr)
+	{
+		trace("SMBIOS was not provided by the bootloader. Trying to find it manually.");
+		for (uintptr_t i = 0xF0000; i < 0x100000; i += 16)
+		{
+			if (memcmp((void *)i, "_SM_", 4) == 0 || memcmp((void *)i, "_SM3_", 5) == 0)
+			{
+				bInfo.SMBIOSPtr = (void *)i;
+				trace("Found SMBIOS at %#lx", i);
+			}
+		}
+	}
+
+	if (!bInfo.RSDP)
+	{
+		trace("RSDP was not provided by the bootloader. Trying to find it manually.");
+		/* FIXME: Not always shifting by 4 will work. */
+		uintptr_t EBDABase = (uintptr_t)mminw((void *)0x40E) << 4;
+
+		for (uintptr_t ptr = EBDABase;
+			 ptr < 0x100000; /* 1MB */
+			 ptr += 16)
+		{
+			if (unlikely(ptr == EBDABase + 0x400))
+			{
+				trace("EBDA is full. Trying to find RSDP in the BIOS area.");
+				break;
+			}
+
+			BootInfo::RSDPInfo *rsdp = (BootInfo::RSDPInfo *)ptr;
+			if (memcmp(rsdp->Signature, "RSD PTR ", 8) == 0)
+			{
+				bInfo.RSDP = (BootInfo::RSDPInfo *)rsdp;
+				trace("Found RSDP at %#lx", rsdp);
+			}
+		}
+
+		for (uintptr_t ptr = 0xE0000;
+			 ptr < 0x100000; /* 1MB */
+			 ptr += 16)
+		{
+			BootInfo::RSDPInfo *rsdp = (BootInfo::RSDPInfo *)ptr;
+			if (memcmp(rsdp->Signature, "RSD PTR ", 8) == 0)
+			{
+				bInfo.RSDP = (BootInfo::RSDPInfo *)rsdp;
+				trace("Found RSDP at %#lx", rsdp);
+			}
+		}
+	}
+#endif
 
 	InitializeMemoryManagement();
 
