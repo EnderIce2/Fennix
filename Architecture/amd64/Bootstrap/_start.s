@@ -15,26 +15,24 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
-.extern Multiboot1_start
-.extern Multiboot2_start
-
 .code32
+.extern Multiboot_start
+
 .section .bootstrap.text, "a"
 
 .global _start
 _start:
-	cmp eax, 0x36D76289
-	je .Multiboot2
-	cmp eax, 0x1BADB002
-	je .Multiboot1
-	int3
+	/* Check for multiboot */
+	cmp $0x2BADB002, %eax
+	je .Multiboot
 
-.Multiboot1:
-	call Multiboot1_start
-	jmp .
+	/* Unkown bootloader */
+	.Hang:
+		cli
+		hlt
+		jmp .Hang
 
-.Multiboot2:
-	call Multiboot2_start
-	jmp .
+	/* Multiboot */
+	.Multiboot:
+		call Multiboot_start
+		jmp .Hang

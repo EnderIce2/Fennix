@@ -97,7 +97,19 @@ namespace SMP
 
 	void Initialize(void *_madt)
 	{
+		if (!_madt)
+		{
+			error("MADT is NULL");
+			return;
+		}
+
 		ACPI::MADT *madt = (ACPI::MADT *)_madt;
+
+		if (madt->lapic.size() < 1)
+		{
+			error("No CPUs found!");
+			return;
+		}
 
 		int Cores = madt->CPUCores + 1;
 

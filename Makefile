@@ -107,7 +107,7 @@ ifneq ($(OSARCH), aarch64)
 	CFLAGS += -fstack-check
 endif
 	LDFLAGS += -ggdb3 -O0
-	ASFLAGS += -g --gstabs --gdwarf-5 -D
+	ASFLAGS += -g --gstabs+ --gdwarf-5 -D
 	WARNCFLAG += -Wno-unused-function -Wno-maybe-uninitialized -Wno-builtin-declaration-mismatch -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-variable
 endif
 

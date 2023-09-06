@@ -952,6 +952,18 @@ namespace PCI
 	PCI::PCI()
 	{
 #if defined(a86)
+		if (!PowerManager->GetACPI())
+		{
+			error("ACPI not found");
+			return;
+		}
+
+		if (!((ACPI::ACPI *)PowerManager->GetACPI())->MCFG)
+		{
+			error("MCFG not found");
+			return;
+		}
+
 		int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
 		Memory::Virtual vmm = Memory::Virtual(KernelPageTable);
 		for (int t = 0; t < Entries; t++)

@@ -141,63 +141,65 @@ namespace Memory
 		}
 
 #if defined(a86)
-		debug("Reserving RSDT region %#lx-%#lx...", bInfo.RSDP,
-			  (void *)((uintptr_t)bInfo.RSDP + sizeof(BootInfo::RSDPInfo)));
-
-		this->ReservePages(bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
-
-		ACPI::ACPI::ACPIHeader *ACPIPtr = nullptr;
-		bool XSDT = false;
-
-		if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
+		if (bInfo.RSDP)
 		{
-			ACPIPtr = (ACPI::ACPI::ACPIHeader *)(bInfo.RSDP->XSDTAddress);
-			XSDT = true;
-		}
-		else
-			ACPIPtr = (ACPI::ACPI::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
+			debug("Reserving RSDT region %#lx-%#lx...", bInfo.RSDP,
+				  (void *)((uintptr_t)bInfo.RSDP + sizeof(BootInfo::RSDPInfo)));
 
-		debug("Reserving RSDT...");
-		this->ReservePages((void *)bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
+			this->ReservePages(bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
+
+			ACPI::ACPI::ACPIHeader *ACPIPtr = nullptr;
+			bool XSDT = false;
+
+			if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
+			{
+				ACPIPtr = (ACPI::ACPI::ACPIHeader *)(bInfo.RSDP->XSDTAddress);
+				XSDT = true;
+			}
+			else
+				ACPIPtr = (ACPI::ACPI::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
+
+			debug("Reserving RSDT...");
+			this->ReservePages((void *)bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
 
 #if defined(a64)
-		if ((uintptr_t)ACPIPtr > 0x7FE00000) /* FIXME */
-		{
-			error("ACPI table is located above 0x7FE00000, which is not mapped.");
-			return;
-		}
+			if ((uintptr_t)ACPIPtr > 0x7FE00000) /* FIXME */
+			{
+				error("ACPI table is located above 0x7FE00000, which is not mapped.");
+				return;
+			}
 #elif defined(a32)
-		if ((uintptr_t)ACPIPtr > 0x2800000) /* FIXME */
-		{
-			error("ACPI table is located above 0x2800000, which is not mapped.");
-			return;
-		}
+			if ((uintptr_t)ACPIPtr > 0x2800000) /* FIXME */
+			{
+				error("ACPI table is located above 0x2800000, which is not mapped.");
+				return;
+			}
 #endif
 
-		size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
-							(XSDT ? 8 : 4));
-		debug("Reserving %d ACPI tables...", TableSize);
+			size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
+								(XSDT ? 8 : 4));
+			debug("Reserving %d ACPI tables...", TableSize);
 
-		for (size_t t = 0; t < TableSize; t++)
-		{
+			for (size_t t = 0; t < TableSize; t++)
+			{
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-			// TODO: Should I be concerned about unaligned memory access?
-			ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
-			if (XSDT)
-				SDTHdr =
-					(ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr +
-															 sizeof(ACPI::ACPI::ACPIHeader) +
-															 (t * 8)));
-			else
-				SDTHdr =
-					(ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr +
-															 sizeof(ACPI::ACPI::ACPIHeader) +
-															 (t * 4)));
+				// TODO: Should I be concerned about unaligned memory access?
+				ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
+				if (XSDT)
+					SDTHdr =
+						(ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr +
+																 sizeof(ACPI::ACPI::ACPIHeader) +
+																 (t * 8)));
+				else
+					SDTHdr =
+						(ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr +
+																 sizeof(ACPI::ACPI::ACPIHeader) +
+																 (t * 4)));
 #pragma GCC diagnostic pop
-			this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
+				this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
+			}
 		}
-
 #elif defined(aa64)
 #endif
 	}

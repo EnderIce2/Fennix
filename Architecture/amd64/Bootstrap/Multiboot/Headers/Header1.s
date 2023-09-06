@@ -15,13 +15,24 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
+.extern Multiboot_start
+
 .section .multiboot, "a"
 .align 4
 
 MULTIBOOT_HEADER:
 	.long 0x1BADB002
-	.long 1 << 0 | 1 << 1
-	.long -(0x1BADB002 + (1 << 0 | 1 << 1))
+	.long 0x1 | 0x2 | 0x4
+	.long -(0x1BADB002 + (0x1 | 0x2 | 0x4))
+	/* KLUDGE */
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	/* VIDEO MODE */
+	.long 0
+	.long 0
+	.long 0
+	.long 0

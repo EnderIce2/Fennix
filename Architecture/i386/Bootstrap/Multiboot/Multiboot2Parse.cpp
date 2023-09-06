@@ -19,10 +19,10 @@
 
 #include <memory.hpp>
 
-#include "multiboot2.h"
-#include "../../../../../kernel.h"
+#include <boot/protocol/multiboot2.h>
+#include "../../../../kernel.h"
 
-EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
+void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 {
 	if (Info == NULL || Magic == NULL)
 	{
@@ -37,8 +37,6 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 		error("Multiboot magic is invalid (%#x != %#x)", Magic, MULTIBOOT2_BOOTLOADER_MAGIC);
 		CPU::Stop();
 	}
-
-	BootInfo mb2binfo{};
 
 	{
 		auto InfoAddress = Info;
@@ -74,7 +72,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 			{
 				multiboot_tag_module *module = (multiboot_tag_module *)Tag;
 				static int module_count = 0;
-				mb2binfo.Modules[module_count].Address = (void *)(uint64_t)module->mod_start;
+				mb2binfo.Modules[module_count].Address = (void *)(uint32_t)module->mod_start;
 				mb2binfo.Modules[module_count].Size = module->mod_end - module->mod_start;
 				strncpy(mb2binfo.Modules[module_count].Path, "(null)", 6);
 				strncpy(mb2binfo.Modules[module_count].CommandLine, module->cmdline,
@@ -110,37 +108,37 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 						break;
 					}
 					multiboot_mmap_entry entry = mmap->entries[i];
-					mb2binfo.Memory.Size += entry.len;
+					mb2binfo.Memory.Size += (size_t)entry.len;
 					switch (entry.type)
 					{
 					case MULTIBOOT_MEMORY_AVAILABLE:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = Usable;
 						break;
 					case MULTIBOOT_MEMORY_RESERVED:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = Reserved;
 						break;
 					case MULTIBOOT_MEMORY_ACPI_RECLAIMABLE:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = ACPIReclaimable;
 						break;
 					case MULTIBOOT_MEMORY_NVS:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = ACPINVS;
 						break;
 					case MULTIBOOT_MEMORY_BADRAM:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = BadMemory;
 						break;
 					default:
 						mb2binfo.Memory.Entry[i].BaseAddress = (void *)entry.addr;
-						mb2binfo.Memory.Entry[i].Length = entry.len;
+						mb2binfo.Memory.Entry[i].Length = (size_t)entry.len;
 						mb2binfo.Memory.Entry[i].Type = Unknown;
 						break;
 					}
@@ -210,7 +208,7 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 				mb2binfo.Kernel.Symbols.Num = elf->num;
 				mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
 				mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
-				mb2binfo.Kernel.Symbols.Sections = r_cst(uintptr_t, elf->sections);
+				mb2binfo.Kernel.Symbols.Sections = (uintptr_t)&elf->sections;
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_APM:
@@ -283,9 +281,9 @@ EXTERNC void multiboot_main(uintptr_t Magic, uintptr_t Info)
 			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
 			{
 				multiboot_tag_load_base_addr *load_base_addr = (multiboot_tag_load_base_addr *)Tag;
-				mb2binfo.Kernel.PhysicalBase = (void *)(uint64_t)load_base_addr->load_base_addr;
-				mb2binfo.Kernel.VirtualBase = (void *)(uint64_t)(load_base_addr->load_base_addr + 0xFFFFFFFF80000000);
-				mb2binfo.Kernel.Size = ((uint64_t)&_kernel_end - (uint64_t)&_kernel_start) + ((uint64_t)&_bootstrap_end - (uint64_t)&_bootstrap_start);
+				mb2binfo.Kernel.PhysicalBase = (void *)(uint32_t)load_base_addr->load_base_addr;
+				mb2binfo.Kernel.VirtualBase = (void *)(uint32_t)(load_base_addr->load_base_addr + 0xC0000000);
+				mb2binfo.Kernel.Size = (size_t)(((uint32_t)&_kernel_end - (uint32_t)&_kernel_start) + ((uint32_t)&_bootstrap_end - (uint32_t)&_bootstrap_start));
 				debug("Kernel base: %p (physical) %p (virtual)", mb2binfo.Kernel.PhysicalBase, mb2binfo.Kernel.VirtualBase);
 				break;
 			}

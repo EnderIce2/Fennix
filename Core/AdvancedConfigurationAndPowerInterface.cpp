@@ -130,6 +130,12 @@ namespace ACPI
 	ACPI::ACPI()
 	{
 		trace("Initializing ACPI");
+		if (!bInfo.RSDP)
+		{
+			error("RSDP not found!");
+			return;
+		}
+
 		if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
 		{
 			debug("XSDT supported");

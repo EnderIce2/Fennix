@@ -33,8 +33,8 @@ MB_HeaderInfo:
 
 .section .bootstrap.text, "a"
 
-.global Multiboot2_start
-Multiboot2_start:
+.global Multiboot_start
+Multiboot_start:
 	cli
 
 	mov %eax, [MB_HeaderMagic]

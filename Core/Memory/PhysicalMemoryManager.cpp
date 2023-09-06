@@ -188,7 +188,6 @@ namespace Memory
 			if (PageBitmapIndex > Index)
 				PageBitmapIndex = Index;
 		}
-
 	}
 
 	void Physical::FreePages(void *Address, size_t Count)

@@ -388,17 +388,20 @@ namespace Tasking
 		}
 		debug("Tasking Started");
 #if defined(a64)
-		((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
+		if (Interrupts::apicTimer[0])
+		{
+			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
 
-		/* FIXME: The kernel is not ready for multi-core tasking. */
-		// for (int i = 1; i < SMP::CPUCores; i++)
-		// {
-		//     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x86::IRQ16, 100);
-		//     APIC::InterruptCommandRegisterLow icr;
-		//     icr.Vector = CPU::x86::IRQ16;
-		//     icr.Level = APIC::APICLevel::Assert;
-		//     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
-		// }
+			/* FIXME: The kernel is not ready for multi-core tasking. */
+			// for (int i = 1; i < SMP::CPUCores; i++)
+			// {
+			//     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x86::IRQ16, 100);
+			//     APIC::InterruptCommandRegisterLow icr;
+			//     icr.Vector = CPU::x86::IRQ16;
+			//     icr.Level = APIC::APICLevel::Assert;
+			//     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
+			// }
+		}
 #elif defined(a32)
 #elif defined(aa64)
 #endif

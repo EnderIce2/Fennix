@@ -15,8 +15,6 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
 .section .bootstrap.text, "a"
 
@@ -48,19 +46,19 @@ GDT32:
 	.word 0x4092
 	.byte 0x00
 GDT32_END:
+	nop
 
 .global LoadGDT32
 LoadGDT32:
 	lgdt [gdtr]
+	ljmp $0x8, $ActivateGDT
 
-	jmp 0x8:ActivateGDT
-	ActivateGDT:
-		mov cx, 0x10
-		mov ss, cx
-		mov ds, cx
-		mov es, cx
-		mov fs, cx
-		mov cx, 0x18
-		mov gs, cx
-
+ActivateGDT:
+	mov $0x10, %cx
+	mov %cx, %ss
+	mov %cx, %ds
+	mov %cx, %es
+	mov %cx, %fs
+	mov $0x18, %cx
+	mov %cx, %gs
 	ret

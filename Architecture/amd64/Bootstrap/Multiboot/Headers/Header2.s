@@ -15,10 +15,8 @@
    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.intel_syntax noprefix
-
 .code32
-.extern Multiboot2_start
+.extern Multiboot_start
 
 /* https://www.gnu.org/software/grub/manual/multiboot2/multiboot.html */
 .section .multiboot2, "a"
@@ -82,7 +80,7 @@ EntryAddressTag_Start:
 	.word 3
 	.word 0
 	.long EntryAddressTag_End - EntryAddressTag_Start
-	.long Multiboot2_start
+	.long Multiboot_start
 EntryAddressTag_End:
 .align 8
 EndTag_Start:
@@ -91,3 +89,4 @@ EndTag_Start:
 	.long EndTag_End - EndTag_Start
 EndTag_End:
 MULTIBOOT2_HEADER_END:
+	nop

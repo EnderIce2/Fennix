@@ -39,8 +39,13 @@ MB_HeaderInfo:
 
 .section .bootstrap.text, "a"
 
-.global Multiboot2_start
-Multiboot2_start:
+x32Hang:
+	cli
+	hlt
+	jmp x32Hang
+
+.global Multiboot_start
+Multiboot_start:
 	cli
 
 	mov %eax, [MB_HeaderMagic]
@@ -48,19 +53,19 @@ Multiboot2_start:
 
 	call DetectCPUID
 	cmp $0, %eax
-	je .
+	je x32Hang
 
 	call Detect64Bit
 	cmp $0, %eax
-	je .
+	je x32Hang
 
 	call DetectPSE
 	cmp $0, %eax
-	je .
+	je x32Hang
 
 	call DetectPAE
 	cmp $0, %eax
-	je .
+	je x32Hang
 
 	mov %cr4, %ecx
 	or $0x00000010, %ecx /* PSE */
@@ -92,7 +97,7 @@ Multiboot2_start:
 
 .code64
 HigherHalfStart:
-	mov GDT64.Data, %ax
+	mov $GDT64.Data, %ax
 	mov %ax, %ds
 	mov %ax, %es
 	mov %ax, %fs
@@ -109,9 +114,9 @@ HigherHalfStart:
 	push %rsi
 	push %rdi
 	call multiboot_main
-.Hang:
-	hlt
-	jmp .Hang
+	.Hang:
+		hlt
+		jmp .Hang
 
 .section .bootstrap.bss, "a"
 .align 16

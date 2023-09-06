@@ -27,6 +27,12 @@ namespace ACPI
 	MADT::MADT(ACPI::MADTHeader *madt)
 	{
 		trace("Initializing MADT");
+		if (!madt)
+		{
+			error("MADT is NULL");
+			return;
+		}
+
 		CPUCores = 0;
 		LAPICAddress = (LAPIC *)(uintptr_t)madt->LocalControllerAddress;
 		for (uint8_t *ptr = (uint8_t *)(madt->Entries);
