@@ -135,8 +135,10 @@ struct KernelAPI
 
 	struct KAPIDisplay
 	{
-		__UINT32_TYPE__ (*GetWidth)(void);
-		__UINT32_TYPE__ (*GetHeight)(void);
+		__UINT32_TYPE__ (*GetWidth)
+		(void);
+		__UINT32_TYPE__ (*GetHeight)
+		(void);
 		/* TODO: Add more */
 	} Display;
 } __attribute__((packed));
@@ -428,21 +430,23 @@ union CPURegisters
 		__UINT64_TYPE__ rsp;
 		__UINT64_TYPE__ ss;
 #elif defined(__i386__)
-		__UINT32_TYPE__ ebp;
 		__UINT32_TYPE__ edi;
 		__UINT32_TYPE__ esi;
+		__UINT32_TYPE__ ebp;
+		__UINT32_TYPE__ esp;
+		__UINT32_TYPE__ ebx;
 		__UINT32_TYPE__ edx;
 		__UINT32_TYPE__ ecx;
-		__UINT32_TYPE__ ebx;
 		__UINT32_TYPE__ eax;
 
 		__UINT32_TYPE__ InterruptNumber;
 		__UINT32_TYPE__ ErrorCode;
+
 		__UINT32_TYPE__ eip;
 		__UINT32_TYPE__ cs;
 		__UINT32_TYPE__ eflags;
-		__UINT32_TYPE__ esp;
-		__UINT32_TYPE__ ss;
+		__UINT32_TYPE__ r3_esp;
+		__UINT32_TYPE__ r3_ss;
 #else
 #warning "Unsupported architecture"
 #endif

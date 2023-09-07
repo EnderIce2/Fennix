@@ -102,26 +102,13 @@ namespace InterruptDescriptorTable
 		asm("cld\n"
 			"cli\n"
 
-			// "push %eax\n"
-			// "push %ebx\n"
-			// "push %ecx\n"
-			// "push %edx\n"
-			// "push %esi\n"
-			// "push %edi\n"
-			// "push %ebp\n"
 			"pusha\n"
 
 			"push %esp\n"
 			"call ExceptionHandler\n"
+			"pop %esp\n"
 
 			"popa\n"
-			// "pop %ebp\n"
-			// "pop %edi\n"
-			// "pop %esi\n"
-			// "pop %edx\n"
-			// "pop %ecx\n"
-			// "pop %ebx\n"
-			// "pop %eax\n"
 
 			"add $8, %esp\n"
 
@@ -133,26 +120,13 @@ namespace InterruptDescriptorTable
 		asm("cld\n"
 			"cli\n"
 
-			// "push %eax\n"
-			// "push %ebx\n"
-			// "push %ecx\n"
-			// "push %edx\n"
-			// "push %esi\n"
-			// "push %edi\n"
-			// "push %ebp\n"
 			"pusha\n"
 
 			"push %esp\n"
 			"call MainInterruptHandler\n"
+			"pop %esp\n"
 
 			"popa\n"
-			// "pop %ebp\n"
-			// "pop %edi\n"
-			// "pop %esi\n"
-			// "pop %edx\n"
-			// "pop %ecx\n"
-			// "pop %ebx\n"
-			// "pop %eax\n"
 
 			"add $8, %esp\n"
 

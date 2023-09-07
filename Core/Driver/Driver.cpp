@@ -305,12 +305,13 @@ namespace Driver
 		regs.rsp = Frame->rsp;
 		regs.ss = Frame->ss;
 #elif defined(a32)
-		regs.ebp = Frame->ebp;
 		regs.edi = Frame->edi;
 		regs.esi = Frame->esi;
+		regs.ebp = Frame->ebp;
+		regs.esp = Frame->esp;
+		regs.ebx = Frame->ebx;
 		regs.edx = Frame->edx;
 		regs.ecx = Frame->ecx;
-		regs.ebx = Frame->ebx;
 		regs.eax = Frame->eax;
 
 		regs.InterruptNumber = Frame->InterruptNumber;
@@ -318,8 +319,8 @@ namespace Driver
 		regs.eip = Frame->eip;
 		regs.cs = Frame->cs;
 		regs.eflags = Frame->eflags.raw;
-		regs.esp = Frame->esp;
-		regs.ss = Frame->ss;
+		regs.r3_esp = Frame->r3_esp;
+		regs.r3_ss = Frame->r3_ss;
 #elif defined(aa64)
 #endif
 		((int (*)(void *))(Handle.InterruptCallback))(&regs);

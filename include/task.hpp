@@ -391,7 +391,7 @@ namespace Tasking
 		/**
 		 * @note This function is NOT thread safe
 		 */
-		void Schedule(void *Frame);
+		void Schedule(CPU::x32::TrapFrame *Frame);
 
 		void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
 #elif defined(aa64)

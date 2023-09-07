@@ -88,9 +88,9 @@ SafeFunction void UserModeExceptionHandler(CHArchTrapFrame *Frame)
         error("RSI=%#lx RDI=%#lx RBP=%#lx RSP=%#lx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
         error("RIP=%#lx RFL=%#lx INT=%#lx ERR=%#lx EFER=%#lx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
 #elif defined(a32)
-        error("FS=%#x GS=%#x SS=%#x CS=%#x DS=%#x",
+        error("FS=%#x GS=%#x CS=%#x DS=%#x",
               CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
-              Frame->ss, Frame->cs, ds);
+              Frame->cs, ds);
         error("EAX=%#x EBX=%#x ECX=%#x EDX=%#x", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
         error("ESI=%#x EDI=%#x EBP=%#x ESP=%#x", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
         error("EIP=%#x EFL=%#x INT=%#x ERR=%#x", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);

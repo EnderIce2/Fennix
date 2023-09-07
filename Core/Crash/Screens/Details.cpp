@@ -79,9 +79,9 @@ namespace CrashHandler
         EHPrint("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx\n", data.Frame->rsi, data.Frame->rdi, data.Frame->rbp, data.Frame->rsp);
         EHPrint("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx  EFER=%#lx\n", data.Frame->rip, data.Frame->rflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode, data.efer.raw);
 #elif defined(a32)
-        EHPrint("\e7981FCFS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x\n",
+        EHPrint("\e7981FCFS=%#x  GS=%#x  CS=%#x  DS=%#x\n",
                 CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
-                data.Frame->ss, data.Frame->cs, ds);
+                data.Frame->cs, ds);
         EHPrint("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x\n", data.Frame->eax, data.Frame->ebx, data.Frame->ecx, data.Frame->edx);
         EHPrint("ESI=%#x  EDI=%#x  EBP=%#x  ESP=%#x\n", data.Frame->esi, data.Frame->edi, data.Frame->ebp, data.Frame->esp);
         EHPrint("EIP=%#x  EFL=%#x  INT=%#x  ERR=%#x\n", data.Frame->eip, data.Frame->eflags.raw, data.Frame->InterruptNumber, data.Frame->ErrorCode);

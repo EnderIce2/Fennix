@@ -388,7 +388,7 @@ namespace Tasking
 			POKE(uintptr_t, this->Registers.rsp) = (uintptr_t)ThreadDoExit;
 #elif defined(a32)
 			this->Registers.cs = GDT_KERNEL_CODE;
-			this->Registers.ss = GDT_KERNEL_DATA;
+			this->Registers.r3_ss = GDT_KERNEL_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;
@@ -431,7 +431,7 @@ namespace Tasking
 			this->SetupUserStack_x86_64(argv, envp, auxv);
 #elif defined(a32)
 			this->Registers.cs = GDT_USER_CODE;
-			this->Registers.ss = GDT_USER_DATA;
+			this->Registers.r3_ss = GDT_USER_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;

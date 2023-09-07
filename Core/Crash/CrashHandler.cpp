@@ -1082,10 +1082,10 @@ namespace CrashHandler
 		asmv("mov %%ds, %0"
 			 : "=r"(ds));
 
-		EHPrint("\eFF2525FS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x\n",
+		EHPrint("\eFF2525FS=%#x  GS=%#x  CS=%#x  DS=%#x\n",
 				CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE),
 				CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
-				Frame->ss, Frame->cs, ds);
+				Frame->cs, ds);
 
 		EHPrint("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x\n",
 				Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
@@ -1300,9 +1300,9 @@ namespace CrashHandler
 				  crashdata.efer.SVME ? "True " : "False", crashdata.efer.LMSLE ? "True " : "False", crashdata.efer.FFXSR ? "True " : "False", crashdata.efer.TCE ? "True " : "False",
 				  crashdata.efer.Reserved0, crashdata.efer.Reserved1, crashdata.efer.Reserved2);
 #elif defined(a32)
-			error("FS=%#x  GS=%#x  SS=%#x  CS=%#x  DS=%#x",
+			error("FS=%#x  GS=%#x  CS=%#x  DS=%#x",
 				  CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
-				  Frame->ss, Frame->cs, ds);
+				   Frame->cs, ds);
 
 			error("EAX=%#x  EBX=%#x  ECX=%#x  EDX=%#x",
 				  Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);

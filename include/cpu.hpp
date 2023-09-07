@@ -291,14 +291,6 @@ namespace CPU
 
 		typedef struct TrapFrame
 		{
-			// uint32_t ebp; // Base Pointer (meant for stack frames)
-			// uint32_t edi; // Destination index for string operations
-			// uint32_t esi; // Source index for string operations
-			// uint32_t edx; // Data (commonly extends the A register)
-			// uint32_t ecx; // Counter
-			// uint32_t ebx; // Base
-			// uint32_t eax; // Accumulator
-
 			uint32_t edi; // Destination index for string operations
 			uint32_t esi; // Source index for string operations
 			uint32_t ebp; // Base Pointer (meant for stack frames)
@@ -314,8 +306,9 @@ namespace CPU
 			uint32_t eip;  // Instruction Pointer
 			uint32_t cs;   // Code Segment
 			EFLAGS eflags; // Register Flags
-			// uint32_t esp;  // Stack Pointer
-			uint32_t ss; // Stack Segment
+
+			uint32_t r3_esp; // Stack Pointer
+			uint32_t r3_ss;	 // Stack Segment
 		} TrapFrame;
 
 		typedef union DR6

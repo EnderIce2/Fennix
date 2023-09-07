@@ -31,6 +31,7 @@
 #include "../Architecture/amd64/cpu/gdt.hpp"
 #elif defined(a32)
 #include "../Architecture/i386/cpu/apic.hpp"
+#include "../Architecture/i386/cpu/gdt.hpp"
 #elif defined(aa64)
 #endif
 
@@ -109,16 +110,15 @@ extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
 {
 	if (TimeSlice == 0)
 		TimeSlice = Tasking::TaskPriority::Normal;
-#if defined(a64)
+#if defined(a86)
 	((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
-#elif defined(a32)
 #elif defined(aa64)
 #endif
 }
 
 namespace Tasking
 {
-#if defined(a64)
+#if defined(a86)
 	SafeFunction NIF bool Task::FindNewProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
@@ -473,7 +473,11 @@ namespace Tasking
 	}
 #endif
 
+#ifdef a64
 	SafeFunction NIF void Task::Schedule(CPU::x64::TrapFrame *Frame)
+#else
+	SafeFunction NIF void Task::Schedule(CPU::x32::TrapFrame *Frame)
+#endif
 	{
 		if (StopScheduler)
 		{
@@ -481,9 +485,14 @@ namespace Tasking
 			return;
 		}
 		bool ProcessNotChanged = false;
-		CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable}); /* Restore kernel page table for safety reasons. */
+/* Restore kernel page table for safety reasons. */
+#ifdef a64
+		CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable});
+#else
+		CPU::x32::writecr3({.raw = (uint32_t)KernelPageTable});
+#endif
 		uint64_t SchedTmpTicks = TimeManager->GetCounter();
-		this->LastTaskTicks.store(SchedTmpTicks - this->SchedulerTicks.load());
+		this->LastTaskTicks.store(size_t(SchedTmpTicks - this->SchedulerTicks.load()));
 		CPUData *CurrentCPU = GetCurrentCPU();
 		this->LastCore.store(CurrentCPU->ID);
 		schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
@@ -526,9 +535,15 @@ namespace Tasking
 		{
 			CurrentCPU->CurrentThread->Registers = *Frame;
 			CPU::x64::fxsave(&CurrentCPU->CurrentThread->FPU);
+#ifdef a64
 			CurrentCPU->CurrentThread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSR_SHADOW_GS_BASE);
 			CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
 			CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
+#else
+			CurrentCPU->CurrentThread->ShadowGSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_SHADOW_GS_BASE));
+			CurrentCPU->CurrentThread->GSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE));
+			CurrentCPU->CurrentThread->FSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE));
+#endif
 
 			if (CurrentCPU->CurrentProcess->Status.load() == TaskStatus::Running)
 				CurrentCPU->CurrentProcess->Status.store(TaskStatus::Ready);
@@ -609,6 +624,7 @@ namespace Tasking
 		for (size_t i = 0; i < (sizeof(CurrentCPU->CurrentThread->IPHistory) / sizeof(CurrentCPU->CurrentThread->IPHistory[0])) - 1; i++)
 			CurrentCPU->CurrentThread->IPHistory[i + 1] = CurrentCPU->CurrentThread->IPHistory[i];
 
+#ifdef a64
 		CurrentCPU->CurrentThread->IPHistory[0] = Frame->rip;
 
 		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
@@ -620,6 +636,19 @@ namespace Tasking
 		CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
 		CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
 		CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
+#else
+		CurrentCPU->CurrentThread->IPHistory[0] = Frame->eip;
+
+		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
+		CPU::x32::writecr3({.raw = (uint32_t)CurrentCPU->CurrentProcess->PageTable});
+		/* Not sure if this is needed, but it's better to be safe than sorry. */
+		asmv("movl %cr3, %eax");
+		asmv("movl %eax, %cr3");
+		CPU::x32::fxrstor(&CurrentCPU->CurrentThread->FPU);
+		CPU::x32::wrmsr(CPU::x32::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
+		CPU::x32::wrmsr(CPU::x32::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
+		CPU::x32::wrmsr(CPU::x32::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
+#endif
 
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
 		OnScreenTaskManagerUpdate();
@@ -646,16 +675,26 @@ namespace Tasking
 		TaskingScheduler_OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
 		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled && CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
+		{
+#ifdef a64
 			trace("%s[%ld]: RIP=%#lx  RBP=%#lx  RSP=%#lx",
 				  CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
 				  CurrentCPU->CurrentThread->Registers.rip,
 				  CurrentCPU->CurrentThread->Registers.rbp,
 				  CurrentCPU->CurrentThread->Registers.rsp);
+#else
+			trace("%s[%ld]: EIP=%#lx  EBP=%#lx  ESP=%#lx",
+				  CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
+				  CurrentCPU->CurrentThread->Registers.eip,
+				  CurrentCPU->CurrentThread->Registers.ebp,
+				  CurrentCPU->CurrentThread->Registers.esp);
+#endif
+		}
 
 		schedbg("================================================================");
 		schedbg("Technical Informations on Thread %s[%ld]:",
 				CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-		uint64_t ds;
+		uintptr_t ds;
 		asmv("mov %%ds, %0"
 			 : "=r"(ds));
 		schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
@@ -674,45 +713,18 @@ namespace Tasking
 		schedbg("================================================================");
 
 	End:
-		this->SchedulerTicks.store(TimeManager->GetCounter() - SchedTmpTicks);
+		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
 	}
 
+#ifdef a64
 	SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+#else
+	SafeFunction NIF void Task::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
+#endif
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);
 	}
-#elif defined(a32)
-	SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-		return false;
-	}
-
-	SafeFunction bool Task::GetNextAvailableThread(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-		return false;
-	}
-
-	SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-		return false;
-	}
-
-	SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-		return false;
-	}
-
-	SafeFunction void Task::Schedule(void *Frame)
-	{
-		fixme("unimplemented");
-	}
-
-	SafeFunction void Task::OnInterruptReceived(CPU::x32::TrapFrame *Frame) { this->Schedule(Frame); }
 #elif defined(aa64)
 	SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
 	{

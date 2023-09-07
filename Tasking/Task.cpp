@@ -377,7 +377,7 @@ namespace Tasking
 		IdleProcess->ELFSymbolTable = KernelSymbolTable;
 		for (int i = 0; i < SMP::CPUCores; i++)
 		{
-			IdleThread = CreateThread(IdleProcess, reinterpret_cast<uintptr_t>(IdleProcessLoop));
+			IdleThread = CreateThread(IdleProcess, IP(IdleProcessLoop));
 			char IdleName[16];
 			sprintf(IdleName, "Idle Thread %d", i);
 			IdleThread->Rename(IdleName);
@@ -387,7 +387,7 @@ namespace Tasking
 			IdleThread->Info.Affinity[i] = true;
 		}
 		debug("Tasking Started");
-#if defined(a64)
+#if defined(a86)
 		if (Interrupts::apicTimer[0])
 		{
 			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
@@ -402,7 +402,6 @@ namespace Tasking
 			//     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
 			// }
 		}
-#elif defined(a32)
 #elif defined(aa64)
 #endif
 	}
