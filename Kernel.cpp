@@ -342,6 +342,9 @@ EXTERNC NIF void Main()
 
 	/**************************************************************************************/
 
+	KPrint("Reading Kernel Parameters");
+	ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
+
 	KPrint("Initializing CPU Features");
 	CPU::InitializeFeatures(0);
 
@@ -356,9 +359,6 @@ EXTERNC NIF void Main()
 												 bInfo.Kernel.Symbols.EntSize,
 												 bInfo.Kernel.Symbols.Shndx,
 												 bInfo.Kernel.Symbols.Sections);
-
-	KPrint("Reading Kernel Parameters");
-	ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
 
 	if (Config.BootAnimation)
 	{
