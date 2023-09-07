@@ -346,7 +346,7 @@ namespace CPU
 			if (!BSP)
 				KPrint("FSGSBASE is supported.");
 			fixme("FSGSBASE is supported.");
-			cr4.FSGSBASE = true;
+			// cr4.FSGSBASE = true;
 		}
 
 		debug("Writing CR4...");
