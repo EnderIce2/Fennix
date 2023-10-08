@@ -1,0 +1,7 @@
+- [x] Kernel stack is smashed when an interrupt occurs. (this bug it occurs when an interrupt like IRQ1 or IRQ12 occurs)
+- [x] After setting the new stack pointer, the kernel crashes with an invalid opcode.
+- [ ] Somewhere in the kernel, the memory is wrongly freed or memcpy/memset.
+- [ ] GlobalDescriptorTable::SetKernelStack() is not working properly.
+- [ ] Sometimes while the kernel is inside BeforeShutdown(), we end up in a deadlock.
+- [ ] CPU usage is not working properly.
+- [x] fork() syscall is not working.

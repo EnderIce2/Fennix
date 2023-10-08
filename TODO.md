@@ -1,0 +1,28 @@
+- [x] Optimize SMP.
+- [ ] Support IPv6.
+- [ ] Endianess of the network stack (currently: [HOST](LSB)<=>[NETWORK](MSB)). Not sure if this is a standard or not.
+- [ ] Support 32-bit applications (ELF, PE, etc).
+- [ ] Do not map the entire memory. Map only the needed memory address at allocation time.
+- [ ] Implementation of logging (beside serial) with log rotation.
+- [x] Implement a better task manager. (replace struct P/TCB with classes)
+- [ ] Rewrite virtual file system. (it's very bad, I don't know how I wrote it this bad)
+- [ ] Colors in crash screen are not following the kernel color scheme.
+- [x] Find a way to add intrinsics.
+- [ ] Rework PSF1 font loader.
+- [x] The cleanup should be done by a thread (tasking). This is done to avoid a deadlock.
+- [ ] Implement a better Display::SetBrightness() function.
+- [ ] Fix memcpy, memset and memcmp functions (they are not working properly with SIMD).
+- [x] Fully support i386.
+- [ ] Support Aarch64.
+- [ ] SMP trampoline shouldn't be hardcoded at 0x2000.
+- [ ] Rework the stack guard.
+- [x] Mutex implementation.
+- [ ] Update SMBIOS functions to support newer versions and actually use it.
+- [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
+- [ ] Implement lazy allocation. (page faults)
+- [ ] Bootstrap should have a separate bss section + PHDR.
+- [ ] Reimplement the driver conflict detection.
+- [ ] Elf loader shouldn't create a full copy of the elf binary. Copy only the needed sections.
+- [ ] Use NX-bit.
+- [ ] Fix std::string
+- [ ] Rewrite PS/2 drivers.

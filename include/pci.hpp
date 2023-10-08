@@ -1,18 +1,18 @@
 /*
-   This file is part of Fennix Kernel.
+	This file is part of Fennix Kernel.
 
-   Fennix Kernel is free software: you can redistribute it and/or
-   modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation, either version 3 of
-   the License, or (at your option) any later version.
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
 
-   Fennix Kernel is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   GNU General Public License for more details.
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef __FENNIX_KERNEL_PCI_H__
@@ -220,19 +220,28 @@ namespace PCI
 		uint32_t Reserved;
 	} __packed;
 
+	struct PCIDevice
+	{
+		PCIDeviceHeader *Header;
+		DeviceConfig *Config;
+		uint32_t Bus;
+		uint32_t Device;
+		uint32_t Function;
+	};
+
 	class PCI
 	{
 	private:
-		std::vector<PCIDeviceHeader *> Devices;
+		std::vector<PCIDevice> Devices;
 
 	public:
-		std::vector<PCIDeviceHeader *> &GetDevices() { return Devices; }
-		void MapPCIAddresses(PCIDeviceHeader *PCIDevice, Memory::PageTable *Table = nullptr);
-		void EnumerateFunction(uint64_t DeviceAddress, uintptr_t Function);
-		void EnumerateDevice(uint64_t BusAddress, uintptr_t Device);
-		void EnumerateBus(uint64_t BaseAddress, uintptr_t Bus);
-		std::vector<PCIDeviceHeader *> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
-		std::vector<PCIDeviceHeader *> FindPCIDevice(int VendorID, int DeviceID);
+		std::vector<PCIDevice> &GetDevices() { return Devices; }
+		void MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table = nullptr);
+		void EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev);
+		void EnumerateDevice(uint64_t BusAddress, uint32_t Device, PCIDevice dev);
+		void EnumerateBus(uint64_t BaseAddress, uint32_t Bus, PCIDevice dev);
+		std::vector<PCIDevice> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
+		std::vector<PCIDevice> FindPCIDevice(int VendorID, int DeviceID);
 
 		PCI();
 		~PCI();

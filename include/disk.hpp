@@ -1,18 +1,18 @@
 /*
-   This file is part of Fennix Kernel.
+    This file is part of Fennix Kernel.
 
-   Fennix Kernel is free software: you can redistribute it and/or
-   modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation, either version 3 of
-   the License, or (at your option) any later version.
+    Fennix Kernel is free software: you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
 
-   Fennix Kernel is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   GNU General Public License for more details.
+    Fennix Kernel is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef __FENNIX_KERNEL_DISK_H__
@@ -111,6 +111,7 @@ namespace Disk
 
         size_t Read(size_t Offset, size_t Count, uint8_t *Buffer)
         {
+            fixme("Read from partition %s", Label);
             return 0;
             UNUSED(Offset);
             UNUSED(Count);
@@ -119,6 +120,7 @@ namespace Disk
 
         size_t Write(size_t Offset, size_t Count, uint8_t *Buffer)
         {
+            fixme("Read from partition %s", Label);
             return 0;
             UNUSED(Offset);
             UNUSED(Count);
@@ -136,12 +138,13 @@ namespace Disk
         uint8_t *Buffer = nullptr;
         PartitionTable Table;
         PartitionStyle Style = PartitionStyle::Unknown;
-        std::vector<Partition> Partitions;
+        std::vector<Partition *> Partitions;
         bool MechanicalDisk = false;
         size_t UniqueIdentifier = 0xdeadbeef;
 
         size_t Read(size_t Offset, size_t Count, uint8_t *Buffer)
         {
+            fixme("Read from disk %s", Name);
             return 0;
             UNUSED(Offset);
             UNUSED(Count);
@@ -150,6 +153,7 @@ namespace Disk
 
         size_t Write(size_t Offset, size_t Count, uint8_t *Buffer)
         {
+            fixme("Read from disk %s", Name);
             return 0;
             UNUSED(Offset);
             UNUSED(Count);
@@ -168,10 +172,10 @@ namespace Disk
         unsigned char AvailablePorts = 0;
         int BytesPerSector = 0;
 
-        std::vector<Drive> drives;
+        std::vector<Drive *> drives;
 
     public:
-        void FetchDisks(unsigned long DriverUID);
+        void FetchDisks(unsigned long modUniqueID);
         Manager();
         ~Manager();
     };

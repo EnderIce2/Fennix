@@ -52,7 +52,7 @@
 				"-fno-exceptions",
 
 				// Linker flags
-				"-T${workspaceFolder}/Architecture/amd64/linker.ld",
+				"-T${workspaceFolder}/arch/amd64/linker.ld",
 				"-Wl,-static,--no-dynamic-linker,-ztext",
 				"-nostdlib",
 				"-nodefaultlibs",
@@ -130,7 +130,7 @@
 				"-fno-exceptions",
 
 				// Linker flags
-				"-T${workspaceFolder}/Architecture/i386/linker.ld",
+				"-T${workspaceFolder}/arch/i386/linker.ld",
 				"-Wl,-static,--no-dynamic-linker,-ztext",
 				"-nostdlib",
 				"-nodefaultlibs",
@@ -201,7 +201,7 @@
 				"-fno-exceptions",
 
 				// Linker flags
-				"-T${workspaceFolder}/Architecture/aarch64/linker.ld",
+				"-T${workspaceFolder}/arch/aarch64/linker.ld",
 				"-fPIC",
 
 				// Debug flags

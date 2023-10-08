@@ -1,18 +1,18 @@
 /*
-   This file is part of Fennix Kernel.
+	This file is part of Fennix Kernel.
 
-   Fennix Kernel is free software: you can redistribute it and/or
-   modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation, either version 3 of
-   the License, or (at your option) any later version.
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
 
-   Fennix Kernel is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-   GNU General Public License for more details.
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #ifndef __FENNIX_KERNEL_TASKING_H__
@@ -26,14 +26,15 @@
 #include <ints.hpp>
 #include <ipc.hpp>
 #include <debug.h>
+#include <cwalk.h>
 #include <vector>
 #include <atomic>
 #include <abi.h>
 
 namespace Tasking
 {
-	using VirtualFileSystem::FileDescriptorTable;
-	using VirtualFileSystem::Node;
+	using vfs::FileDescriptorTable;
+	using vfs::Node;
 
 	/** Instruction Pointer */
 	typedef __UINTPTR_TYPE__ IP;
@@ -76,14 +77,71 @@ namespace Tasking
 		_ExecuteModeMax = User
 	};
 
-	enum TaskStatus : int
+	enum TaskState : int
 	{
 		UnknownStatus,
+
+		/**
+		 * Task ready to be scheduled
+		 */
 		Ready,
+
+		/**
+		 * Task is the current running task
+		 */
 		Running,
+
+		/**
+		 * Task is sleeping
+		 * 
+		 * Used when the task is waiting for
+		 * a specific amount of time to pass
+		 */
 		Sleeping,
+
+		/**
+		 * Task is blocked
+		 * 
+		 * Used when the task is waiting for
+		 * another task to finish or for an
+		 * event to occur
+		 */
 		Blocked,
+
+		/**
+		 * Task is stopped
+		 * 
+		 * Used when the task is stopped
+		 * by the debugger or by the user
+		 */
+		Stopped,
+
+		/**
+		 * Task is waiting
+		 * 
+		 * Used when the task is not ready
+		 * to be scheduled by implementation
+		 * e.g. Creating a separate page table
+		 * or waiting for a thread to be created
+		 */
+		Waiting,
+
+		/**
+		 * Task is a zombie
+		 * 
+		 * Used when the task is waiting
+		 * for the parent to read the exit
+		 * code
+		 */
 		Zombie,
+
+		/**
+		 * Task is terminated
+		 * 
+		 * Used when the task is terminated
+		 * and is waiting to be cleaned up
+		 * by the scheduler
+		 */
 		Terminated,
 
 		_StatusMin = UnknownStatus,
@@ -127,6 +185,7 @@ namespace Tasking
 		TaskPriority Priority = TaskPriority::Normal;
 		TaskArchitecture Architecture = TaskArchitecture::UnknownArchitecture;
 		TaskCompatibility Compatibility = TaskCompatibility::UnknownPlatform;
+		cwk_path_style PathStyle = CWK_STYLE_UNIX;
 	};
 
 	/**
@@ -139,14 +198,18 @@ namespace Tasking
 		 *
 		 * gs+0x0
 		 */
-		uintptr_t SyscallStack = __UINTPTR_MAX__;
+		uintptr_t SyscallStack;
 
 		/**
 		 * Used by syscall handler
 		 *
 		 * gs+0x8
 		 */
-		uintptr_t TempStack = __UINTPTR_MAX__;
+		uintptr_t TempStack;
+
+		/* For future use */
+		void *SyscallStackBase;
+		int ScPages;
 
 		/**
 		 * The current thread class
@@ -158,6 +221,18 @@ namespace Tasking
 	{
 	private:
 		class Task *ctx = nullptr;
+
+		/**
+		 * This variable is used to
+		 * store the amount of allocated
+		 * memory for the process. This
+		 * includes the memory allocated
+		 * for the class itself, etc...
+		 *
+		 * @note Allocated memory is
+		 * not the same as used memory.
+		 */
+		size_t AllocatedMemory = 0;
 
 		void SetupUserStack_x86_64(const char **argv,
 								   const char **envp,
@@ -172,6 +247,8 @@ namespace Tasking
 									const std::vector<AuxiliaryVector> &auxv);
 
 	public:
+		class Task *GetContext() { return ctx; }
+
 		/* Basic info */
 		TID ID = -1;
 		const char *Name = nullptr;
@@ -180,11 +257,13 @@ namespace Tasking
 
 		/* Statuses */
 		std::atomic_int ExitCode;
-		std::atomic<TaskStatus> Status = TaskStatus::Zombie;
+		std::atomic<TaskState> State = TaskState::Waiting;
+		std::atomic_bool KeepInMemory = false;
+		std::atomic_size_t KeepTime = 0;
 		int ErrorNumber;
 
 		/* Memory */
-		Memory::MemMgr *Memory;
+		Memory::VirtualMemoryArea *vma;
 		Memory::StackGuard *Stack;
 
 		/* CPU state */
@@ -223,9 +302,10 @@ namespace Tasking
 		void SetCritical(bool Critical);
 		void SetDebugMode(bool Enable);
 		void SetKernelDebugMode(bool Enable);
+		size_t GetSize();
 
-		void Block() { Status.store(TaskStatus::Blocked); }
-		void Unblock() { Status.store(TaskStatus::Ready); }
+		void Block() { State.store(TaskState::Blocked); }
+		void Unblock() { State.store(TaskState::Ready); }
 
 		void SYSV_ABI_Call(uintptr_t Arg1 = 0,
 						   uintptr_t Arg2 = 0,
@@ -254,6 +334,18 @@ namespace Tasking
 		class Task *ctx = nullptr;
 		bool OwnPageTable = false;
 
+		/**
+		 * This variable is used to
+		 * store the amount of allocated
+		 * memory for the process. This
+		 * includes the memory allocated
+		 * for the class itself, etc...
+		 *
+		 * @note Allocated memory is
+		 * not the same as used memory.
+		 */
+		size_t AllocatedMemory = 0;
+
 	public:
 		/* Basic info */
 		PID ID = -1;
@@ -262,7 +354,9 @@ namespace Tasking
 
 		/* Statuses */
 		std::atomic_int ExitCode;
-		std::atomic<TaskStatus> Status = Zombie;
+		std::atomic<TaskState> State = Waiting;
+		std::atomic_bool KeepInMemory = false;
+		std::atomic_size_t KeepTime = 0;
 
 		/* Info & Security info */
 		struct
@@ -282,12 +376,11 @@ namespace Tasking
 		/* Filesystem */
 		Node *CurrentWorkingDirectory;
 		Node *ProcessDirectory;
-		Node *memDirectory;
 		FileDescriptorTable *FileDescriptors;
 
 		/* Memory */
 		Memory::PageTable *PageTable;
-		Memory::MemMgr *Memory;
+		Memory::VirtualMemoryArea *vma;
 		Memory::ProgramBreak *ProgramBreak;
 
 		/* Other */
@@ -299,8 +392,11 @@ namespace Tasking
 		std::vector<PCB *> Children;
 
 	public:
+		class Task *GetContext() { return ctx; }
+
 		void Rename(const char *name);
 		void SetWorkingDirectory(Node *node);
+		size_t GetSize();
 
 		PCB(class Task *ctx,
 			PCB *Parent,
@@ -337,14 +433,19 @@ namespace Tasking
 		bool InvalidTCB(TCB *tcb);
 
 		/**
+		 * Remove a thread from the scheduler
+		 *
 		 * @note This function is NOT thread safe
+		 * @note This function does not check if
+		 * the thread is valid nor if it has
+		 * Terminated status
 		 */
-		void RemoveThread(TCB *tcb);
+		bool RemoveThread(TCB *tcb);
 
 		/**
 		 * @note This function is NOT thread safe
 		 */
-		void RemoveProcess(PCB *pcb);
+		bool RemoveProcess(PCB *pcb);
 
 		void UpdateUsage(TaskInfo *Info,
 						 TaskExecutionMode Mode,
@@ -373,7 +474,7 @@ namespace Tasking
 		/**
 		 * @note This function is NOT thread safe
 		 */
-		void UpdateProcessStatus();
+		void UpdateProcessState();
 
 		/**
 		 * @note This function is NOT thread safe
@@ -443,7 +544,7 @@ namespace Tasking
 
 		void KillThread(TCB *tcb, enum KillErrorCodes Code)
 		{
-			tcb->Status = TaskStatus::Terminated;
+			tcb->State = TaskState::Terminated;
 			tcb->ExitCode = (int)Code;
 			debug("Killing thread %s(%d) with exit code %d",
 				  tcb->Name, tcb->ID, Code);
@@ -451,7 +552,7 @@ namespace Tasking
 
 		void KillProcess(PCB *pcb, enum KillErrorCodes Code)
 		{
-			pcb->Status = TaskStatus::Terminated;
+			pcb->State = TaskState::Terminated;
 			pcb->ExitCode = (int)Code;
 			debug("Killing process %s(%d) with exit code %d",
 				  pcb->Name, pcb->ID, Code);
@@ -479,8 +580,8 @@ namespace Tasking
 		/** Wait for thread to terminate */
 		void WaitForThread(TCB *tcb);
 
-		void WaitForProcessStatus(PCB *pcb, TaskStatus Status);
-		void WaitForThreadStatus(TCB *tcb, TaskStatus Status);
+		void WaitForProcessStatus(PCB *pcb, TaskState State);
+		void WaitForThreadStatus(TCB *tcb, TaskState State);
 
 		/**
 		 * Sleep for a given amount of milliseconds
