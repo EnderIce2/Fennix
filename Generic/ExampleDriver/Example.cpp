@@ -1,14 +1,14 @@
-#include "../../../Kernel/DAPI.hpp"
+#include "../../../Kernel/mapi.hpp"
 #include "../../../Kernel/Fex.hpp"
 
-extern "C" int DriverEntry(void *Data);
+extern "C" int ModuleEntry(void *Data);
 int CallbackHandler(KernelCallback *Data);
 int InterruptCallback(CPURegisters *Registers);
 
-/*                           The driver is
- *       This is a driver     for Fennix     Driver Entry Extended Header
+/*                           The module is
+ *       This is a module     for Fennix     Module Entry Extended Header
  *              *                   *              *             */
-HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
+HEAD(FexFormatType_Module, FexOSType_Fennix, ModuleEntry);
 
 /* Ignore the warning about missing field initializers. */
 #pragma GCC diagnostic push
@@ -16,9 +16,9 @@ HEAD(FexFormatType_Driver, FexOSType_Fennix, DriverEntry);
 
 /* Extended header which is used to give additional information to the kernel. */
 __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
-	.Driver = {
-		.Name = "Example Driver",
-		.Type = FexDriverType_Generic,
+	.Module = {
+		.Name = "Example Module",
+		.Type = FexModuleType_Generic,
 		.Callback = CallbackHandler,
 		.InterruptCallback = InterruptCallback,
 		.Bind = {
@@ -33,13 +33,13 @@ __attribute__((section(".extended"))) FexExtended ExtendedHeader = {
 KernelAPI KAPI{};
 
 /* Macro that prints a message to the kernel debugger. */
-#define print(msg) KAPI.Util.DebugPrint((char *)(msg), KAPI.Info.DriverUID)
+#define print(msg) KAPI.Util.DebugPrint((char *)(msg), KAPI.Info.modUniqueID)
 
 /* --------------------------------------------------------------------------------------------------------- */
 
-/* Driver entry point. This is called at initialization.
+/* Module entry point. This is called at initialization.
    "Data" argument points to the kernel API structure. */
-int DriverEntry(void *Data)
+int ModuleEntry(void *Data)
 {
 	/* Check if kernel API is valid */
 	if (!Data)
@@ -59,20 +59,20 @@ int DriverEntry(void *Data)
 	return OK;
 }
 
-/* This is called when the driver is bound to an interrupt, process,
-   or PCI device or when the kernel wants to send a message to the driver. */
+/* This is called when the module is bound to an interrupt, process,
+   or PCI device or when the kernel wants to send a message to the module. */
 int CallbackHandler(KernelCallback *Data)
 {
 	switch (Data->Reason)
 	{
 	case AcknowledgeReason:
 	{
-		print("Kernel acknowledged the driver.");
+		print("Kernel acknowledged the module.");
 		break;
 	}
 	case StopReason:
 	{
-		print("Driver stopped.");
+		print("Module stopped.");
 		break;
 	}
 	default:
