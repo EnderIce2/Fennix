@@ -183,28 +183,32 @@ namespace Execute
 						continue;
 
 					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz), true);
-					void *SegmentDestination = (void *)ProgramHeader.p_vaddr;
+					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
+					uintptr_t SegDestOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
 
-					vmm.Map(SegmentDestination, pAddr,
+					vmm.Map(vAddr, pAddr,
 							ProgramHeader.p_memsz,
 							Memory::P | Memory::RW | Memory::US);
 
-					debug("Mapped %#lx to %#lx", SegmentDestination, pAddr);
+					debug("Mapped %#lx to %#lx", vAddr, pAddr);
+					debug("Segment Offset is %#lx", SegDestOffset);
 
 					debug("Copying segment to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
-						  pAddr, uintptr_t(pAddr) + ProgramHeader.p_memsz,
-						  SegmentDestination, uintptr_t(SegmentDestination) + ProgramHeader.p_memsz,
+						  uintptr_t(pAddr) + SegDestOffset,
+						  uintptr_t(pAddr) + SegDestOffset + ProgramHeader.p_memsz,
+						  ProgramHeader.p_vaddr,
+						  ProgramHeader.p_vaddr + ProgramHeader.p_memsz,
 						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
 
 					if (ProgramHeader.p_filesz > 0)
 					{
 						lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-						fread(fd, (uint8_t *)pAddr, ProgramHeader.p_filesz);
+						fread(fd, (uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
 					{
-						void *zAddr = (void *)(uintptr_t(pAddr) + ProgramHeader.p_filesz);
+						void *zAddr = (void *)(uintptr_t(pAddr) + SegDestOffset + ProgramHeader.p_filesz);
 						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
 					}
 					ProgramBreakHeader = ProgramHeader;
