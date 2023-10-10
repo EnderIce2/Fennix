@@ -21,8 +21,8 @@
 #include <types.h>
 #include <std/functional.hpp>
 #include <std/utility.hpp>
-#include <std/list.hpp>
 #include <vector>
+#include <list>
 
 namespace std
 {

@@ -22,13 +22,13 @@
 #define __FENNIX_KERNEL_STD_H__
 
 #include <types.h>
+#include <stdexcept>
 #include <atomic>
 #include <vector>
+#include <string>
+#include <list>
 #include <std/functional.hpp>
-#include <std/list.hpp>
 #include <std/smart_ptr.hpp>
-#include <std/stdexcept.hpp>
-#include <std/string.hpp>
 #include <std/unordered_map.hpp>
 #include <std/utility.hpp>
 

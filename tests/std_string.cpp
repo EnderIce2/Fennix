@@ -17,9 +17,9 @@
 
 #ifdef DEBUG
 
-#include <std/string.hpp>
 #include <memory.hpp>
 #include <debug.h>
+#include <string>
 
 void TestString()
 {
