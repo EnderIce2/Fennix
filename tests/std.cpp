@@ -17,9 +17,9 @@
 
 #ifdef DEBUG
 
-#include <std.hpp>
 #include <assert.h>
 #include <vector>
+#include <atomic>
 
 void Test_std()
 {
