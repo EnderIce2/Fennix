@@ -74,13 +74,17 @@
 					"description": "Load /bin/init."
 				},
 				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest."
+				},
+				{
 					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/usr/bin/doom",
 					"description": "Load /usr/bin/doom."
 				},
 			],
 		},
 		{
-			"name": "Attach to VM w/init",
+			"name": "Attach to VM w/utest",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/kernel.fsys",
@@ -113,8 +117,8 @@
 					"description": "Load binary."
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/init",
-					"description": "Load /bin/init."
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest."
 				},
 			],
 		},
