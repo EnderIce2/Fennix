@@ -189,5 +189,6 @@ namespace SMP
 		KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE + 1));
 		/* We are going to unmap the page after we are done with it. */
 		Memory::Virtual().Unmap(0x0);
+		CPUEnabled.store(true, std::memory_order_release);
 	}
 }
