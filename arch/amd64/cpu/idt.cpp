@@ -540,7 +540,7 @@ namespace InterruptDescriptorTable
 
 		/* ISR */
 		SetEntry(0x0, InterruptHandler_0x0, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
-		SetEntry(0x1, InterruptHandler_0x1, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+		SetEntry(0x1, InterruptHandler_0x1, IST1, TRAP_GATE_64BIT, RING3, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x2, InterruptHandler_0x2, IST2, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x3, InterruptHandler_0x3, IST1, TRAP_GATE_64BIT, RING3, (!DebuggerIsAttached), GDT_KERNEL_CODE); /* Do not handle breakpoints if we are debugging the kernel. */
 		SetEntry(0x4, InterruptHandler_0x4, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
