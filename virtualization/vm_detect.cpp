@@ -147,7 +147,7 @@ bool DetectByCPUID()
 
 bool DetectByHPET()
 {
-	assert(PowerManager == nullptr);
+	assert(PowerManager != nullptr);
 
 	void *acpi = PowerManager->GetACPI();
 	if (!acpi)
@@ -179,8 +179,8 @@ bool IsVirtualizedEnvironment()
 {
 	static bool IsVM = false;
 
-	static int _check = 0;
-	if (!_check++)
+	static int vm_check = 0;
+	if (vm_check++)
 	{
 		debug("Virtualized environment: %s",
 			  IsVM ? "Yes" : "No");
