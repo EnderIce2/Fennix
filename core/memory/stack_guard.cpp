@@ -80,7 +80,7 @@ namespace Memory
 		if (this->UserMode)
 		{
 			std::vector<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
-			Virtual vma = Virtual(this->vma->GetTable());
+			Virtual vma(this->vma->GetTable());
 			foreach (auto Page in ParentAllocatedPages)
 			{
 				void *NewPhysical = this->vma->RequestPages(1);
@@ -162,6 +162,7 @@ namespace Memory
 		}
 
 		debug("Allocated stack at %#lx", this->StackBottom);
+		debug("Stack Range: %#lx - %#lx", this->StackBottom, this->StackTop);
 	}
 
 	StackGuard::~StackGuard()

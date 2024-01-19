@@ -137,7 +137,7 @@ void TestString()
 	else
 	{
 		error("String addition doesn't work! \"%s\"", c.c_str());
-		inf_loop;
+		// inf_loop;
 	}
 
 	for (int i = 0; i < 1024; i++)

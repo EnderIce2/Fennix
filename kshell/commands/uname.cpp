@@ -27,29 +27,29 @@ void cmd_uname(const char *args)
 {
 	if (args)
 	{
-		if (strcmp(args, "-a") == 0)
+		if (IF_ARG("-a") || IF_ARG("--all"))
 		{
 			printf("Fennix Kernel %s %s %s %s\n",
 				   KERNEL_VERSION, KERNEL_NAME, __DATE__,
 				   KERNEL_ARCH);
 		}
-		else if (strcmp(args, "-s") == 0)
+		else if (IF_ARG("-s") || IF_ARG("--kernel-name"))
 		{
 			printf("%s\n", KERNEL_NAME);
 		}
-		else if (strcmp(args, "-v") == 0)
+		else if (IF_ARG("-v") || IF_ARG("--kernel-version"))
 		{
 			printf("%s\n", KERNEL_VERSION);
 		}
-		else if (strcmp(args, "-n") == 0)
+		else if (IF_ARG("-n") || IF_ARG("--nodename"))
 		{
 			printf("unknown\n");
 		}
-		else if (strcmp(args, "-r") == 0)
+		else if (IF_ARG("-r") || IF_ARG("--kernel-release"))
 		{
 			printf("%s\n", KERNEL_NAME);
 		}
-		else if (strcmp(args, "-m") == 0)
+		else if (IF_ARG("-m") || IF_ARG("--machine"))
 		{
 			printf("%s\n", KERNEL_ARCH);
 		}

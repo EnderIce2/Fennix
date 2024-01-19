@@ -1,7 +1,7 @@
 # Config file
 include ../Makefile.conf
 
-KERNEL_FILENAME = kernel.fsys
+KERNEL_FILENAME = fennix.elf
 
 CC = ../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../$(COMPILER_PATH)/$(COMPILER_ARCH)g++

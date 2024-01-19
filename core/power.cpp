@@ -32,15 +32,6 @@ namespace Power
 			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
 				((ACPI::DSDT *)this->dsdt)->Reboot();
 
-		uint8_t val = 0x02;
-		while (val & 0x02)
-			val = inb(0x64);
-		outb(0x64, 0xFE);
-
-		warn("Executing the second attempt to reboot...");
-
-		// https://wiki.osdev.org/Reboot
-		/* Second attempt to reboot */
 		asmv("cli");
 		uint8_t temp;
 		do
@@ -50,24 +41,24 @@ namespace Power
 				inb(0x60);
 		} while (((temp) & (1 << (1))) != 0);
 		outb(0x64, 0xFE);
-
-		CPU::Stop();
 	}
 
 	void Power::Shutdown()
 	{
 		if (((ACPI::ACPI *)this->acpi)->FADT)
+		{
 			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
 				((ACPI::DSDT *)this->dsdt)->Shutdown();
-				/* TODO: If no ACPI, display "It is now safe to turn off your computer" */
-
-				/* FIXME: Detect emulators and use their shutdown methods */
+			else
+				KPrint("Shutdown not supported");
+			/* TODO: If no ACPI, display "It is now safe to turn off your computer"? */
+		}
+		/* FIXME: Detect emulators and use their shutdown methods */
 #ifdef DEBUG
 		outl(0xB004, 0x2000); // for qemu
 		outl(0x604, 0x2000);  // if qemu not working, bochs and older versions of qemu
 		outl(0x4004, 0x3400); // virtual box
 #endif
-		CPU::Stop();
 	}
 
 	void Power::InitDSDT()

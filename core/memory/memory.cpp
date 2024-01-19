@@ -26,6 +26,7 @@
 
 #include "heap_allocators/Xalloc/Xalloc.hpp"
 #include "heap_allocators/liballoc_1_1/liballoc_1_1.h"
+#include "heap_allocators/rpmalloc/rpmalloc.h"
 #include "../../kernel.h"
 
 // #define DEBUG_ALLOCATIONS 1
@@ -72,7 +73,7 @@ NIF void tracepagetable(PageTable *pt)
 NIF void MapFromZero(PageTable *PT)
 {
 	debug("Mapping from 0x0 to %#llx", bInfo.Memory.Size);
-	Virtual va = Virtual(PT);
+	Virtual vmm = Virtual(PT);
 	size_t MemSize = bInfo.Memory.Size;
 
 	if (Page1GBSupport && PSESupport)
@@ -80,29 +81,29 @@ NIF void MapFromZero(PageTable *PT)
 		/* Map the first 100MB of memory as 4KB pages */
 
 		// uintptr_t Physical4KBSectionStart = 0x10000000;
-		// va.Map((void *)0,
+		// vmm.Map((void *)0,
 		//        (void *)0,
 		//        Physical4KBSectionStart,
-		//        PTFlag::RW);
+		//        RW);
 
-		// va.Map((void *)Physical4KBSectionStart,
+		// vmm.Map((void *)Physical4KBSectionStart,
 		//        (void *)Physical4KBSectionStart,
 		//        MemSize - Physical4KBSectionStart,
-		//        PTFlag::RW,
+		//        RW,
 		//        Virtual::MapType::OneGiB);
 
-		va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
+		vmm.Map((void *)0, (void *)0, MemSize, RW);
 	}
 	else
-		va.Map((void *)0, (void *)0, MemSize, PTFlag::RW);
+		vmm.Map((void *)0, (void *)0, MemSize, RW);
 
-	va.Unmap((void *)0);
+	vmm.Unmap((void *)0);
 }
 
-NIF void MapFramebuffer(PageTable *PT, bool PSE, bool OneGB)
+NIF void MapFramebuffer(PageTable *PT)
 {
 	debug("Mapping Framebuffer");
-	Virtual va = Virtual(PT);
+	Virtual vmm = Virtual(PT);
 	int itrfb = 0;
 	while (1)
 	{
@@ -111,17 +112,17 @@ NIF void MapFramebuffer(PageTable *PT, bool PSE, bool OneGB)
 
 		size_t fbSize = bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height;
 
-		if (PSE && OneGB)
+		if (PSESupport && Page1GBSupport)
 		{
-			va.OptimizedMap(bInfo.Framebuffer[itrfb].BaseAddress,
-							bInfo.Framebuffer[itrfb].BaseAddress,
-							fbSize, PTFlag::RW | PTFlag::US | PTFlag::G);
+			vmm.OptimizedMap(bInfo.Framebuffer[itrfb].BaseAddress,
+							 bInfo.Framebuffer[itrfb].BaseAddress,
+							 fbSize, RW | US | G);
 		}
 		else
 		{
-			va.Map(bInfo.Framebuffer[itrfb].BaseAddress,
-				   bInfo.Framebuffer[itrfb].BaseAddress,
-				   fbSize, PTFlag::RW | PTFlag::US | PTFlag::G);
+			vmm.Map(bInfo.Framebuffer[itrfb].BaseAddress,
+					bInfo.Framebuffer[itrfb].BaseAddress,
+					fbSize, RW | US | G);
 		}
 		itrfb++;
 	}
@@ -176,14 +177,14 @@ NIF void MapKernel(PageTable *PT)
 	uintptr_t BaseKernelMapAddress = (uintptr_t)bInfo.Kernel.PhysicalBase;
 	debug("Base kernel map address: %#lx", BaseKernelMapAddress);
 	uintptr_t k;
-	Virtual va = Virtual(PT);
+	Virtual vmm = Virtual(PT);
 
 	/* Bootstrap section */
 	if (BaseKernelMapAddress == BootstrapStart)
 	{
 		for (k = BootstrapStart; k < BootstrapEnd; k += PAGE_SIZE)
 		{
-			va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+			vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
 			KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 			BaseKernelMapAddress += PAGE_SIZE;
 		}
@@ -197,7 +198,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Text section */
 	for (k = KernelTextStart; k < KernelTextEnd; k += PAGE_SIZE)
 	{
-		va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -205,7 +206,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Data section */
 	for (k = KernelDataStart; k < KernelDataEnd; k += PAGE_SIZE)
 	{
-		va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -213,7 +214,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Read only data section */
 	for (k = KernelRoDataStart; k < KernelRoDataEnd; k += PAGE_SIZE)
 	{
-		va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, G);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -221,7 +222,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Block starting symbol section */
 	for (k = KernelBssStart; k < KernelBssEnd; k += PAGE_SIZE)
 	{
-		va.Map((void *)k, (void *)BaseKernelMapAddress, PTFlag::RW | PTFlag::G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -233,10 +234,63 @@ NIF void MapKernel(PageTable *PT)
 	{
 		for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
 		{
-			va.Map((void *)k, (void *)k, PTFlag::G);
+			vmm.Map((void *)k, (void *)k, G);
 			KernelAllocator.ReservePage((void *)k);
 		}
 	}
+	else
+		info("Cannot determine kernel file address. Ignoring.");
+}
+
+NIF void CreatePageTable(PageTable *pt)
+{
+	static int check_cpuid = 0;
+
+	if (!check_cpuid++)
+	{
+		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+		{
+			CPU::x86::AMD::CPUID0x80000001 cpuid;
+			cpuid.Get();
+			PSESupport = cpuid.EDX.PSE;
+			Page1GBSupport = cpuid.EDX.Page1GB;
+		}
+		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+		{
+			CPU::x86::Intel::CPUID0x00000001 cpuid;
+			cpuid.Get();
+			PSESupport = cpuid.EDX.PSE;
+		}
+
+		if (PSESupport)
+		{
+#if defined(a64)
+			CPU::x64::CR4 cr4 = CPU::x64::readcr4();
+			cr4.PSE = 1;
+			CPU::x64::writecr4(cr4);
+#elif defined(a32)
+			CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+			cr4.PSE = 1;
+			CPU::x32::writecr4(cr4);
+#elif defined(aa64)
+#endif
+			trace("PSE Support Enabled");
+		}
+
+#ifdef DEBUG
+		if (Page1GBSupport)
+			debug("1GB Page Support Enabled");
+#endif
+	}
+
+	/* TODO: Map faster */
+	MapFromZero(pt);
+	MapFramebuffer(pt);
+	MapKernel(pt);
+
+#ifdef DEBUG
+	tracepagetable(pt);
+#endif
 }
 
 NIF void InitializeMemoryManagement()
@@ -312,58 +366,59 @@ NIF void InitializeMemoryManagement()
 	KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(PAGE_SIZE + 1));
 	memset(KernelPageTable, 0, PAGE_SIZE);
 
-	if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
-	{
-		CPU::x86::AMD::CPUID0x80000001 cpuid;
-		cpuid.Get();
-		PSESupport = cpuid.EDX.PSE;
-		Page1GBSupport = cpuid.EDX.Page1GB;
-	}
-	else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
-	{
-		CPU::x86::Intel::CPUID0x00000001 cpuid;
-		cpuid.Get();
-		PSESupport = cpuid.EDX.PSE;
-	}
+	CreatePageTable(KernelPageTable);
 
-	if (PSESupport)
-	{
-#if defined(a64)
-		CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-		cr4.PSE = 1;
-		CPU::x64::writecr4(cr4);
-#elif defined(a32)
-		CPU::x32::CR4 cr4 = CPU::x32::readcr4();
-		cr4.PSE = 1;
-		CPU::x32::writecr4(cr4);
-#elif defined(aa64)
-#endif
-		trace("PSE Support Enabled");
-	}
-
-#ifdef DEBUG
-	if (Page1GBSupport)
-		debug("1GB Page Support Enabled");
-#endif
-
-	MapFromZero(KernelPageTable);
-	MapFramebuffer(KernelPageTable, PSESupport, Page1GBSupport);
-	MapKernel(KernelPageTable);
-
-	trace("Applying new page table from address %#lx", KernelPageTable);
-#ifdef DEBUG
-	tracepagetable(KernelPageTable);
-#endif
+	trace("Applying new page table from address %#lx",
+		  KernelPageTable);
 	CPU::PageTable(KernelPageTable);
 	debug("Page table updated.");
 
-	XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
-	XallocV2Allocator = new Xalloc::V2((void *)KERNEL_HEAP_BASE);
-	trace("XallocV1 Allocator initialized at %#lx", XallocV1Allocator);
-	trace("XallocV2 Allocator initialized at %#lx", XallocV2Allocator);
+	/* FIXME: Read kernel params */
+	AllocatorType = Config.AllocatorType;
 
-	/* FIXME: Read kernel config */
-	AllocatorType = MemoryAllocatorType::liballoc11;
+	switch (AllocatorType)
+	{
+	case MemoryAllocatorType::Pages:
+		break;
+	case MemoryAllocatorType::XallocV1:
+	{
+		XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
+		trace("XallocV1 Allocator initialized at %#lx", XallocV1Allocator);
+		break;
+	}
+	case MemoryAllocatorType::XallocV2:
+	{
+		XallocV2Allocator = new Xalloc::V2((void *)KERNEL_HEAP_BASE);
+		trace("XallocV2 Allocator initialized at %#lx", XallocV2Allocator);
+		break;
+	}
+	case MemoryAllocatorType::liballoc11:
+		break;
+	case MemoryAllocatorType::rpmalloc_:
+	{
+		trace("Using rpmalloc allocator");
+		rpmalloc_initialize();
+		break;
+		rpmalloc_config_t config = {
+			.memory_map = nullptr,
+			.memory_unmap = nullptr,
+			.error_callback = nullptr,
+			.map_fail_callback = nullptr,
+			.page_size = PAGE_SIZE,
+			.span_size = 4 * 1024, /* 4 KiB */
+			.span_map_count = 1,
+			.enable_huge_pages = 0,
+			.page_name = nullptr,
+			.huge_page_name = nullptr};
+		rpmalloc_initialize_config(&config);
+		break;
+	}
+	default:
+	{
+		error("Unknown allocator type %d", AllocatorType);
+		CPU::Stop();
+	}
+	}
 }
 
 void *malloc(size_t Size)
@@ -371,7 +426,7 @@ void *malloc(size_t Size)
 	assert(Size > 0);
 
 	memdbg("malloc(%d)->[%s]", Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	void *ret = nullptr;
@@ -397,6 +452,11 @@ void *malloc(size_t Size)
 		ret = PREFIX(malloc)(Size);
 		break;
 	}
+	case MemoryAllocatorType::rpmalloc_:
+	{
+		ret = rpmalloc(Size);
+		break;
+	}
 	default:
 	{
 		error("Unknown allocator type %d", AllocatorType);
@@ -413,7 +473,7 @@ void *calloc(size_t n, size_t Size)
 	assert(Size > 0);
 
 	memdbg("calloc(%d, %d)->[%s]", n, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	void *ret = nullptr;
@@ -439,6 +499,11 @@ void *calloc(size_t n, size_t Size)
 		void *ret = PREFIX(calloc)(n, Size);
 		return ret;
 	}
+	case MemoryAllocatorType::rpmalloc_:
+	{
+		ret = rpcalloc(n, Size);
+		break;
+	}
 	default:
 	{
 		error("Unknown allocator type %d", AllocatorType);
@@ -455,7 +520,7 @@ void *realloc(void *Address, size_t Size)
 	assert(Size > 0);
 
 	memdbg("realloc(%#lx, %d)->[%s]", Address, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	void *ret = nullptr;
@@ -481,6 +546,11 @@ void *realloc(void *Address, size_t Size)
 		void *ret = PREFIX(realloc)(Address, Size);
 		return ret;
 	}
+	case MemoryAllocatorType::rpmalloc_:
+	{
+		ret = rprealloc(Address, Size);
+		break;
+	}
 	default:
 	{
 		error("Unknown allocator type %d", AllocatorType);
@@ -497,7 +567,7 @@ void free(void *Address)
 	assert(Address != nullptr);
 
 	memdbg("free(%#lx)->[%s]", Address,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	switch (AllocatorType)
@@ -523,6 +593,11 @@ void free(void *Address)
 		(Address);
 		break;
 	}
+	case MemoryAllocatorType::rpmalloc_:
+	{
+		rpfree(Address);
+		break;
+	}
 	default:
 	{
 		error("Unknown allocator type %d", AllocatorType);
@@ -536,7 +611,7 @@ void *operator new(std::size_t Size)
 	assert(Size > 0);
 
 	memdbg("new(%d)->[%s]", Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	void *ret = malloc(Size);
@@ -548,7 +623,7 @@ void *operator new[](std::size_t Size)
 	assert(Size > 0);
 
 	memdbg("new[](%d)->[%s]", Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	void *ret = malloc(Size);
@@ -560,7 +635,7 @@ void *operator new(std::size_t Size, std::align_val_t Alignment)
 	assert(Size > 0);
 
 	memdbg("new(%d, %d)->[%s]", Size, Alignment,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	fixme("operator new with alignment(%#lx) is not implemented",
@@ -575,7 +650,7 @@ void operator delete(void *Pointer)
 	assert(Pointer != nullptr);
 
 	memdbg("delete(%#lx)->[%s]", Pointer,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	free(Pointer);
@@ -586,7 +661,7 @@ void operator delete[](void *Pointer)
 	assert(Pointer != nullptr);
 
 	memdbg("delete[](%#lx)->[%s]", Pointer,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	free(Pointer);
@@ -599,7 +674,7 @@ void operator delete(void *Pointer, long unsigned int Size)
 
 	memdbg("delete(%#lx, %d)->[%s]",
 		   Pointer, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	free(Pointer);
@@ -612,7 +687,7 @@ void operator delete[](void *Pointer, long unsigned int Size)
 
 	memdbg("delete[](%#lx, %d)->[%s]",
 		   Pointer, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
 	free(Pointer);

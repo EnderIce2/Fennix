@@ -27,90 +27,90 @@
 
 namespace NetworkInterfaceManager
 {
-    struct DeviceInterface
-    {
-        /** @brief Device interface name */
-        char Name[128];
+	struct DeviceInterface
+	{
+		/** @brief Device interface name */
+		char Name[128];
 
-        /** @brief Device interface index */
-        uint64_t ID;
+		/** @brief Device interface index */
+		uint64_t ID;
 
-        /** @brief Device interface MAC address (Big-endian) */
-        MediaAccessControl MAC;
+		/** @brief Device interface MAC address (Big-endian) */
+		MediaAccessControl MAC;
 
-        /** @brief Device interface IP address (Big-endian) */
-        InternetProtocol IP;
+		/** @brief Device interface IP address (Big-endian) */
+		InternetProtocol IP;
 
-        /** @brief Reserved */
-        unsigned long DriverID;
-    };
+		/** @brief Reserved */
+		unsigned long DriverID;
+	};
 
-    class Events
-    {
-    protected:
-        Events(DeviceInterface *Interface);
-        ~Events();
+	class Events
+	{
+	protected:
+		Events(DeviceInterface *Interface);
+		~Events();
 
-    public:
-        virtual void OnInterfaceAdded(DeviceInterface *Interface)
-        {
-            UNUSED(Interface);
-            netdbg("Event for %s not handled.", Interface->Name);
-        }
+	public:
+		virtual void OnInterfaceAdded(DeviceInterface *Interface)
+		{
+			UNUSED(Interface);
+			netdbg("Event for %s not handled.", Interface->Name);
+		}
 
-        virtual void OnInterfaceRemoved(DeviceInterface *Interface)
-        {
-            UNUSED(Interface);
-            netdbg("Event for %s not handled.", Interface->Name);
-        }
+		virtual void OnInterfaceRemoved(DeviceInterface *Interface)
+		{
+			UNUSED(Interface);
+			netdbg("Event for %s not handled.", Interface->Name);
+		}
 
-        virtual void OnInterfaceChanged(DeviceInterface *Interface)
-        {
-            UNUSED(Interface);
-            netdbg("Event for %s not handled.", Interface->Name);
-        }
+		virtual void OnInterfaceChanged(DeviceInterface *Interface)
+		{
+			UNUSED(Interface);
+			netdbg("Event for %s not handled.", Interface->Name);
+		}
 
-        virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, size_t Length)
-        {
-            UNUSED(Interface);
-            UNUSED(Data);
-            UNUSED(Length);
-            netdbg("Event for %s not handled.", Interface->Name);
-        }
+		virtual void OnInterfaceReceived(DeviceInterface *Interface, uint8_t *Data, size_t Length)
+		{
+			UNUSED(Interface);
+			UNUSED(Data);
+			UNUSED(Length);
+			netdbg("Event for %s not handled.", Interface->Name);
+		}
 
-        virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, size_t Length)
-        {
-            UNUSED(Interface);
-            UNUSED(Data);
-            UNUSED(Length);
-            netdbg("Event for %s not handled.", Interface->Name);
-        }
-    };
+		virtual void OnInterfaceSent(DeviceInterface *Interface, uint8_t *Data, size_t Length)
+		{
+			UNUSED(Interface);
+			UNUSED(Data);
+			UNUSED(Length);
+			netdbg("Event for %s not handled.", Interface->Name);
+		}
+	};
 
-    class NetworkInterface
-    {
-    private:
-        Memory::VirtualMemoryArea *vma;
-        int CardIDs = 0;
-        std::vector<DeviceInterface *> Interfaces;
+	class NetworkInterface
+	{
+	private:
+		Memory::VirtualMemoryArea *vma;
+		int CardIDs = 0;
+		std::vector<DeviceInterface *> Interfaces;
 
-        Tasking::TCB *NetSvcThread;
-        void StopNetworkStack();
-        void FetchNetworkCards(unsigned long modUniqueID);
+		Tasking::TCB *NetSvcThread;
+		void StopNetworkStack();
+		void FetchNetworkCards(unsigned long modUniqueID);
 
-    public:
-        NetworkInterface();
-        ~NetworkInterface();
+	public:
+		NetworkInterface();
+		~NetworkInterface();
 
-        void StartService();
+		void StartService();
 
-        void Send(DeviceInterface *Interface, uint8_t *Data, size_t Length);
-        void Receive(DeviceInterface *Interface, uint8_t *Data, size_t Length);
+		void Send(DeviceInterface *Interface, uint8_t *Data, size_t Length);
+		void Receive(DeviceInterface *Interface, uint8_t *Data, size_t Length);
 
-        void DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size);
-        void DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size);
-        void StartNetworkStack();
-    };
+		void DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size);
+		void DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size);
+		void StartNetworkStack();
+	};
 }
 
 #endif // !__FENNIX_KERNEL_NETWORK_CONTROLLER_H__

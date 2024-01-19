@@ -113,14 +113,14 @@ namespace std
 			delete[] this->Data, this->Data = nullptr;
 		}
 
-		size_t length() const
+		size_t length()
 		{
 			v_strdbg("%#lx: String length: %d",
 					 this, this->Length);
 			return this->Length;
 		}
 
-		size_t capacity() const
+		size_t capacity()
 		{
 			v_strdbg("%#lx: String capacity: %d",
 					 this, this->Capacity);
@@ -174,14 +174,14 @@ namespace std
 				   this, this->Data, this->Data, this->Length, this->Capacity);
 		}
 
-		bool empty() const
+		bool empty()
 		{
 			strdbg("%#lx: String empty: %d",
 				   this, this->Length == 0);
 			return this->Length == 0;
 		}
 
-		size_t size() const
+		size_t size()
 		{
 			strdbg("%#lx: String size: %d",
 				   this, this->Length);
@@ -530,7 +530,7 @@ namespace std
 			return *this;
 		}
 
-		/* warning: implicitly-declared ‘constexpr String::String(const String&)’ is deprecated [-Wdeprecated-copy] */
+		/* warning: implicitly-declared 'constexpr String::String(const String&)' is deprecated [-Wdeprecated-copy] */
 		string &operator=(const string &Other) = default;
 
 		// string &operator=(const string &Other)

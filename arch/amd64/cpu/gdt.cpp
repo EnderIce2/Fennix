@@ -122,7 +122,7 @@ namespace GlobalDescriptorTable
 
 	SafeFunction void Init(int Core)
 	{
-		memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
+		GDTEntries[Core] = GDTEntriesTemplate;
 		gdt[Core] =
 			{
 				.Limit = sizeof(GlobalDescriptorTableEntries) - 1,

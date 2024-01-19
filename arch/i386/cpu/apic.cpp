@@ -33,7 +33,7 @@ using namespace CPU::x32;
 using namespace CPU::x86;
 
 /*
-In constructor ‘APIC::APIC::APIC(int)’:
+In constructor 'APIC::APIC::APIC(int)':
 warning: left shift count >= width of type
 |         APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
 |                                                          ~~~~~~~~~~~~~~~~~~~~~~^~~~~~
@@ -358,7 +358,7 @@ namespace APIC
 
 	APIC::~APIC() {}
 
-	void Timer::OnInterruptReceived(TrapFrame *Frame) { UNUSED(Frame); }
+	void Timer::OnInterruptReceived(CPU::TrapFrame *Frame) { UNUSED(Frame); }
 
 	void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
 	{

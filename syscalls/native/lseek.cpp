@@ -25,23 +25,8 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
-using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/lseek.html */
 off_t sys_lseek(SysFrm *, int fildes,

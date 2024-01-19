@@ -25,82 +25,82 @@
 
 namespace NetworkARP
 {
-    enum ARPOperation
-    {
-        REQUEST = 0x1,
-        REPLY = 0x2
-    };
+	enum ARPOperation
+	{
+		REQUEST = 0x1,
+		REPLY = 0x2
+	};
 
-    enum ARPHardwareType
-    {
-        HTYPE_ETHERNET = 1,
-        HTYPE_802_3 = 6,
-        HTYPE_ARCNET = 7,
-        HTYPE_FRAME_RELAY = 15,
-        HTYPE_ATM = 16,
-        HTYPE_HDLC = 17,
-        HTYPE_FIBRE_CHANNEL = 18,
-        HTYPE_ATM_2 = 19,
-        HTYPE_SERIAL_LINE = 20
-    };
+	enum ARPHardwareType
+	{
+		HTYPE_ETHERNET = 1,
+		HTYPE_802_3 = 6,
+		HTYPE_ARCNET = 7,
+		HTYPE_FRAME_RELAY = 15,
+		HTYPE_ATM = 16,
+		HTYPE_HDLC = 17,
+		HTYPE_FIBRE_CHANNEL = 18,
+		HTYPE_ATM_2 = 19,
+		HTYPE_SERIAL_LINE = 20
+	};
 
-    struct ARPHeader
-    {
-        uint16_t HardwareType;
-        uint16_t ProtocolType;
-        uint8_t HardwareSize;
-        uint8_t ProtocolSize;
-        uint16_t Operation;
-        uint48_t SenderMAC : 48;
-        uint32_t SenderIP;
-        uint48_t TargetMAC : 48;
-        uint32_t TargetIP;
-    } __packed;
+	struct ARPHeader
+	{
+		uint16_t HardwareType;
+		uint16_t ProtocolType;
+		uint8_t HardwareSize;
+		uint8_t ProtocolSize;
+		uint16_t Operation;
+		uint48_t SenderMAC : 48;
+		uint32_t SenderIP;
+		uint48_t TargetMAC : 48;
+		uint32_t TargetIP;
+	} __packed;
 
-    struct DiscoveredAddress
-    {
-        MediaAccessControl MAC;
-        InternetProtocol IP;
-    };
+	struct DiscoveredAddress
+	{
+		MediaAccessControl MAC;
+		InternetProtocol IP;
+	};
 
-    class ARP : public NetworkEthernet::EthernetEvents
-    {
-    private:
-        NetworkEthernet::Ethernet *Ethernet;
+	class ARP : public NetworkEthernet::EthernetEvents
+	{
+	private:
+		NetworkEthernet::Ethernet *Ethernet;
 
-        enum DAType
-        {
-            DA_ADD = 1,
-            DA_DEL = 2,
-            DA_SEARCH = 3,
-            DA_UPDATE = 4
-        };
+		enum DAType
+		{
+			DA_ADD = 1,
+			DA_DEL = 2,
+			DA_SEARCH = 3,
+			DA_UPDATE = 4
+		};
 
-        std::vector<NetworkARP::DiscoveredAddress *> DiscoveredAddresses;
-        DiscoveredAddress *ManageDiscoveredAddresses(DAType Type, InternetProtocol IP, MediaAccessControl MAC);
-        DiscoveredAddress *Search(InternetProtocol TargetIP);
-        DiscoveredAddress *Update(InternetProtocol TargetIP, MediaAccessControl TargetMAC);
-        bool OnEthernetPacketReceived(uint8_t *Data, size_t Length);
+		std::vector<NetworkARP::DiscoveredAddress *> DiscoveredAddresses;
+		DiscoveredAddress *ManageDiscoveredAddresses(DAType Type, InternetProtocol IP, MediaAccessControl MAC);
+		DiscoveredAddress *Search(InternetProtocol TargetIP);
+		DiscoveredAddress *Update(InternetProtocol TargetIP, MediaAccessControl TargetMAC);
+		bool OnEthernetPacketReceived(uint8_t *Data, size_t Length);
 
-    public:
-        ARP(NetworkEthernet::Ethernet *Ethernet);
-        ~ARP();
+	public:
+		ARP(NetworkEthernet::Ethernet *Ethernet);
+		~ARP();
 
-        /**
-         * @brief Resolve an IP address to a MAC address.
-         *
-         * @param IP The IP address to resolve. (Little-endian)
-         * @return uint48_t The MAC address of the IP address.
-         */
-        uint48_t Resolve(InternetProtocol IP);
+		/**
+		 * @brief Resolve an IP address to a MAC address.
+		 *
+		 * @param IP The IP address to resolve. (Little-endian)
+		 * @return uint48_t The MAC address of the IP address.
+		 */
+		uint48_t Resolve(InternetProtocol IP);
 
-        /**
-         * @brief Broadcast an ARP packet.
-         *
-         * @param IP The IP address to broadcast.
-         */
-        void Broadcast(InternetProtocol IP);
-    };
+		/**
+		 * @brief Broadcast an ARP packet.
+		 *
+		 * @param IP The IP address to broadcast.
+		 */
+		void Broadcast(InternetProtocol IP);
+	};
 }
 
 #endif // !__FENNIX_KERNEL_NETWORK_ARP_H__

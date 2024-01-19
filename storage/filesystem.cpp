@@ -282,23 +282,20 @@ namespace vfs
 				}
 			}
 
-			if (GetChild(SegmentName, CurrentParent) == nullptr)
-			{
-				Node *NewNode = new Node(CurrentParent,
-										 SegmentName,
-										 NodeType::DIRECTORY);
-
-				CurrentParent = NewNode;
-				CurrentParent->Type = Type;
-				CurrentParent->FullPath = CleanPath;
-			}
+			if (GetChild(SegmentName, CurrentParent) != nullptr)
+				CurrentParent = GetChild(SegmentName, CurrentParent);
 			else
 			{
-				CurrentParent = GetChild(SegmentName, CurrentParent);
+				CurrentParent = new Node(CurrentParent,
+										 SegmentName,
+										 NodeType::DIRECTORY);
 			}
 
 			delete[] SegmentName;
 		} while (cwk_path_get_next_segment(&segment));
+
+		CurrentParent->Type = Type;
+		// CurrentParent->FullPath = CleanPath;
 
 		vfsdbg("Virtual::Create()->\"%s\"", CurrentParent->Name);
 #ifdef DEBUG
@@ -312,6 +309,25 @@ namespace vfs
 	CreatePathError:
 		delete[] CleanPath;
 		vfsdbg("Virtual::Create()->nullptr");
+		return nullptr;
+	}
+
+	Node *Virtual::CreateLink(const char *Path, const char *Target, Node *Parent)
+	{
+		Node *node = this->Create(Path, NodeType::SYMLINK, Parent);
+		if (node)
+		{
+			node->Symlink = new char[strlen(Target) + 1];
+			strncpy((char *)node->Symlink,
+					Target,
+					strlen(Target));
+
+			node->SymlinkTarget = node->vFS->GetNodeFromPath(node->Symlink);
+			return node;
+		}
+
+		error("Failed to create link \"%s\" -> \"%s\"",
+			  Path, Target);
 		return nullptr;
 	}
 
@@ -337,8 +353,14 @@ namespace vfs
 		}
 
 		Node *NodeToDelete = GetNodeFromPath(CleanPath, Parent);
+
+		if (!NodeToDelete->References.empty())
+			fixme("Path \"%s\" is referenced by %d objects.",
+				  CleanPath, NodeToDelete->References.size());
+
 		delete[] CleanPath;
-		return NodeToDelete->Delete(Recursive);
+		delete NodeToDelete;
+		return 0;
 	}
 
 	int Virtual::Delete(Node *Path, bool Recursive, Node *Parent)
@@ -383,6 +405,14 @@ namespace vfs
 		}
 
 		return nullptr;
+	}
+
+	Node *Virtual::CreateIfNotExists(const char *Path, NodeType Type, Node *Parent)
+	{
+		Node *node = GetNodeFromPath(Path, Parent);
+		if (node)
+			return node;
+		return Create(Path, Type, Parent);
 	}
 
 	Virtual::Virtual()

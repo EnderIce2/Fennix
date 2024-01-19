@@ -22,14 +22,14 @@
 
 namespace NetworkDNS
 {
-    DNS::DNS(NetworkUDP::Socket *Socket) : NetworkUDP::UDPEvents()
-    {
-        debug("DNS interface %#lx created.", this);
-        this->UDPSocket = Socket;
-    }
+	DNS::DNS(NetworkUDP::Socket *Socket) : NetworkUDP::UDPEvents()
+	{
+		debug("DNS interface %#lx created.", this);
+		this->UDPSocket = Socket;
+	}
 
-    DNS::~DNS()
-    {
-        debug("DNS interface %#lx destroyed.", this);
-    }
+	DNS::~DNS()
+	{
+		debug("DNS interface %#lx destroyed.", this);
+	}
 }

@@ -44,12 +44,29 @@
 #define tskdbg(m, ...)
 #endif
 
-using namespace InterProcessCommunication;
 using namespace vfs;
-using vfs::NodeType;
 
 namespace Tasking
 {
+	int PCB::SendSignal(int sig)
+	{
+		return this->Signals->SendSignal(sig);
+	}
+
+	void PCB::SetState(TaskState state)
+	{
+		this->State.store(state);
+		if (this->Threads.size() == 1)
+			this->Threads.front()->State.store(state);
+	}
+
+	void PCB::SetExitCode(int code)
+	{
+		this->ExitCode.store(code);
+		if (this->Threads.size() == 1)
+			this->Threads.front()->ExitCode.store(code);
+	}
+
 	void PCB::Rename(const char *name)
 	{
 		assert(name != nullptr);
@@ -74,6 +91,25 @@ namespace Tasking
 		trace("Setting working directory of process %s to %#lx (%s)",
 			  this->Name, node, node->Name);
 		CurrentWorkingDirectory = node;
+		Node *cwd = fs->GetNodeFromPath("cwd", this);
+		if (cwd)
+			delete cwd;
+		cwd = fs->CreateLink("cwd", node->FullPath, this);
+		if (cwd == nullptr)
+			error("Failed to create cwd link");
+	}
+
+	void PCB::SetExe(const char *path)
+	{
+		trace("Setting exe %s to %s",
+			  this->Name, path);
+		Executable = fs->GetNodeFromPath(path);
+		Node *exe = fs->GetNodeFromPath("exe", this);
+		if (exe)
+			delete exe;
+		exe = fs->CreateLink("exe", Executable->FullPath, this);
+		if (exe == nullptr)
+			error("Failed to create exe link");
 	}
 
 	size_t PCB::GetSize()
@@ -92,11 +128,12 @@ namespace Tasking
 
 	PCB::PCB(Task *ctx, PCB *Parent, const char *Name,
 			 TaskExecutionMode ExecutionMode, void *Image,
-			 bool DoNotCreatePageTable,
+			 bool UseKernelPageTable,
 			 uint16_t UserID, uint16_t GroupID)
+		: Node(ProcFS, std::to_string(ctx->NextPID), NodeType::DIRECTORY)
 	{
 		debug("+ %#lx", this);
-		
+
 		assert(ctx != nullptr);
 		assert(Name != nullptr);
 		assert(strlen(Name) > 0);
@@ -154,36 +191,25 @@ namespace Tasking
 			assert(false);
 		}
 
-		char ProcFSName[12];
-		sprintf(ProcFSName, "%d", this->ID);
-		this->ProcessDirectory = fs->Create(ProcFSName, DIRECTORY, ProcFS);
 		this->FileDescriptors = new FileDescriptorTable(this);
 
 		/* If create page table */
-		if (DoNotCreatePageTable == false)
+		if (UseKernelPageTable == false)
 		{
 			OwnPageTable = true;
-
-			size_t PTPgs = TO_PAGES(sizeof(Memory::PageTable) + 1);
-			this->PageTable = (Memory::PageTable *)KernelAllocator.RequestPages(PTPgs);
-			memcpy(this->PageTable, KernelPageTable, sizeof(Memory::PageTable));
-
+			this->PageTable = KernelPageTable->Fork();
 			debug("Process %s(%d) has page table at %#lx",
 				  this->Name, this->ID, this->PageTable);
 		}
+		else
+			this->PageTable = KernelPageTable;
 
 		this->vma = new Memory::VirtualMemoryArea(this->PageTable);
 		this->ProgramBreak = new Memory::ProgramBreak(this->PageTable, this->vma);
-		this->IPC = new class IPC((void *)this);
+		this->Signals = new Signal(this);
 
 		if (Image)
-		{
 			this->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)Image);
-			this->AllocatedMemory += sizeof(SymbolResolver::Symbols);
-		}
-
-		if (Parent)
-			Parent->Children.push_back(this);
 
 		debug("Process page table: %#lx", this->PageTable);
 		debug("Created %s process \"%s\"(%d). Parent \"%s\"(%d)",
@@ -198,9 +224,13 @@ namespace Tasking
 		this->AllocatedMemory += FROM_PAGES(TO_PAGES(sizeof(Memory::PageTable) + 1));
 		this->AllocatedMemory += sizeof(Memory::VirtualMemoryArea);
 		this->AllocatedMemory += sizeof(Memory::ProgramBreak);
-		this->AllocatedMemory += sizeof(class IPC);
+		this->AllocatedMemory += sizeof(SymbolResolver::Symbols);
+		this->AllocatedMemory += sizeof(Signal);
 
 		this->Info.SpawnTime = TimeManager->GetCounter();
+
+		if (Parent)
+			Parent->Children.push_back(this);
 		ctx->ProcessList.push_back(this);
 	}
 
@@ -221,8 +251,8 @@ namespace Tasking
 		if (this->ELFSymbolTable)
 			delete this->ELFSymbolTable;
 
-		debug("Freeing IPC");
-		delete this->IPC;
+		debug("Freeing signals");
+		delete this->Signals;
 
 		debug("Freeing allocated memory");
 		delete this->ProgramBreak;
@@ -242,14 +272,31 @@ namespace Tasking
 
 		/* Exit all children processes */
 		foreach (auto pcb in this->Children)
+		{
+			if (pcb == nullptr)
+			{
+				warn("Process is null? Kernel bug");
+				continue;
+			}
+
+			debug("Destroying child process \"%s\"(%d)",
+				  pcb->Name, pcb->ID);
 			delete pcb;
+		}
 
 		/* Exit all threads */
 		foreach (auto tcb in this->Threads)
-			delete tcb;
+		{
+			if (tcb == nullptr)
+			{
+				warn("Thread is null? Kernel bug");
+				continue;
+			}
 
-		debug("Removing /proc/%d", this->ID);
-		fs->Delete(this->ProcessDirectory, true);
+			debug("Destroying thread \"%s\"(%d)",
+				  tcb->Name, tcb->ID);
+			delete tcb;
+		}
 
 		/* Free Name */
 		delete[] this->Name;
@@ -257,11 +304,14 @@ namespace Tasking
 		debug("Removing from parent process");
 		if (this->Parent)
 		{
-			std::vector<Tasking::PCB *> &pChild = this->Parent->Children;
+			std::list<Tasking::PCB *> &pChild = this->Parent->Children;
 
 			pChild.erase(std::find(pChild.begin(),
 								   pChild.end(),
 								   this));
 		}
+
+		debug("Process \"%s\"(%d) destroyed",
+			  this->Name, this->ID);
 	}
 }

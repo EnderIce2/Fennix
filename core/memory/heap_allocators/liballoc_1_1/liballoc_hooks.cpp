@@ -16,11 +16,14 @@ EXTERNC int liballoc_unlock()
 
 EXTERNC void *liballoc_alloc(size_t Pages)
 {
-    return KernelAllocator.RequestPages(Pages);
+    void *ret = KernelAllocator.RequestPages(Pages);
+    debug("(%d) = %#lx", Pages, ret);
+    return ret;
 }
 
 EXTERNC int liballoc_free(void *Address, size_t Pages)
 {
+    debug("(%#lx, %d)", Address, Pages);
     KernelAllocator.FreePages(Address, Pages);
     return 0;
 }

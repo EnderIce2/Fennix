@@ -20,7 +20,7 @@
 
 #include "../kernel.h"
 
-/* conversion from ‘uint48_t’ {aka ‘long unsigned int’} to ‘long unsigned int:48’ may change value */
+/* conversion from 'uint48_t' {aka 'long unsigned int'} to 'long unsigned int:48' may change value */
 #pragma GCC diagnostic ignored "-Wconversion"
 
 namespace NetworkEthernet
@@ -77,7 +77,7 @@ namespace NetworkEthernet
 
 		/*                 Byte-swapped               little-endian                   */
 		if (b48(Packet->Header.DestinationMAC) == 0xFFFFFFFFFFFF ||
-			/*                 Byte-swapped           Module interface has little-endian order */
+			/*                 Byte-swapped           Driver interface has little-endian order */
 			b48(Packet->Header.DestinationMAC) == this->Interface->MAC.ToHex())
 		/* This is true only if the packet is for us (Interface MAC or broadcast) */
 		{

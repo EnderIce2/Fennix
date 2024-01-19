@@ -48,8 +48,8 @@ namespace __cxxabiv1
 		if (KernelSymbolTable)
 		{
 			debug("Registering atexit function for \"%s\" with destructor \"%s\"",
-				  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)objptr),
-				  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)f));
+				  KernelSymbolTable->GetSymbol((uintptr_t)objptr),
+				  KernelSymbolTable->GetSymbol((uintptr_t)f));
 		}
 		else
 		{
@@ -79,7 +79,7 @@ namespace __cxxabiv1
 					if (KernelSymbolTable)
 					{
 						debug("Calling atexit function \"%s\"",
-							  KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__atexit_funcs[i].destructor_func));
+							  KernelSymbolTable->GetSymbol((uintptr_t)__atexit_funcs[i].destructor_func));
 					}
 					else
 					{

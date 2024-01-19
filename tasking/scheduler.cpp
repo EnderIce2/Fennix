@@ -110,6 +110,12 @@ extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
 {
 	if (TimeSlice == 0)
 		TimeSlice = Tasking::TaskPriority::Normal;
+
+#ifdef DEBUG
+	if (DebuggerIsAttached)
+		TimeSlice += 10;
+#endif
+
 #if defined(a86)
 	((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
 #elif defined(aa64)
@@ -348,13 +354,16 @@ namespace Tasking
 
 			if (process->Threads.size() == 1)
 			{
-				process->State.exchange(process->Threads[0]->State.load());
+				process->State.exchange(process->Threads.front()->State.load());
 				continue;
 			}
 
 			bool AllThreadsSleeping = true;
 			foreach (auto thread in process->Threads)
 			{
+				if (thread->State.load() == TaskState::Terminated)
+					continue;
+
 				if (thread->State.load() != TaskState::Sleeping)
 				{
 					AllThreadsSleeping = false;
@@ -409,6 +418,24 @@ namespace Tasking
 		}
 	}
 
+	SafeFunction NIF void Task::CleanupTerminated()
+	{
+		foreach (auto pcb in ProcessList)
+		{
+			if (pcb->State.load() == TaskState::Terminated)
+			{
+				delete pcb;
+				continue;
+			}
+
+			foreach (TCB *tcb in pcb->Threads)
+			{
+				if (tcb->State == Terminated)
+					delete tcb;
+			}
+		}
+	}
+
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
 	int SuccessSource = 0;
 	int sanity;
@@ -434,6 +461,7 @@ namespace Tasking
 		"Block",
 		"Wait",
 
+		"Core",
 		"Zombie",
 		"Terminated",
 	};
@@ -485,11 +513,7 @@ namespace Tasking
 	}
 #endif
 
-#ifdef a64
-	SafeFunction NIF void Task::Schedule(CPU::x64::TrapFrame *Frame)
-#else
-	SafeFunction NIF void Task::Schedule(CPU::x32::TrapFrame *Frame)
-#endif
+	SafeFunction NIF void Task::Schedule(CPU::TrapFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -497,42 +521,14 @@ namespace Tasking
 			return;
 		}
 		bool ProcessNotChanged = false;
-/* Restore kernel page table for safety reasons. */
-#ifdef a64
-		CPU::x64::writecr3({.raw = (uint64_t)KernelPageTable});
-#else
-		CPU::x32::writecr3({.raw = (uint32_t)KernelPageTable});
-#endif
+		/* Restore kernel page table for safety reasons. */
+		if (!SchedulerUpdateTrapFrame)
+			KernelPageTable->Update();
 		uint64_t SchedTmpTicks = TimeManager->GetCounter();
 		this->LastTaskTicks.store(size_t(SchedTmpTicks - this->SchedulerTicks.load()));
 		CPUData *CurrentCPU = GetCurrentCPU();
 		this->LastCore.store(CurrentCPU->ID);
 		schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
-
-#ifdef DEBUG_SCHEDULER
-		{
-			schedbg("================================================================");
-			schedbg("State: 0-ukn | 1-rdy | 2-run | 3-wait | 4-term");
-			schedbg("Technical Informations on regs %#lx", Frame->InterruptNumber);
-			size_t ds;
-			asmv("mov %%ds, %0"
-				 : "=r"(ds));
-			schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
-					CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-					Frame->ss, Frame->cs, ds);
-			schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
-					Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-			schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
-					Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-			schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
-					Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-			schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
-					Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-			schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
-					Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
-			schedbg("================================================================");
-		}
-#endif
 
 		if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.load()) ||
 					 InvalidTCB(CurrentCPU->CurrentThread.load())))
@@ -563,6 +559,9 @@ namespace Tasking
 			if (CurrentCPU->CurrentThread->State.load() == TaskState::Running)
 				CurrentCPU->CurrentThread->State.store(TaskState::Ready);
 
+			this->CleanupTerminated();
+			schedbg("Passed CleanupTerminated");
+
 			this->UpdateProcessState();
 			schedbg("Passed UpdateProcessState");
 
@@ -571,8 +570,13 @@ namespace Tasking
 
 			if (this->SchedulerUpdateTrapFrame)
 			{
+				debug("Updating trap frame");
 				this->SchedulerUpdateTrapFrame = false;
-				goto Success;
+				CurrentCPU->CurrentProcess->State.store(TaskState::Running);
+				CurrentCPU->CurrentThread->State.store(TaskState::Running);
+				*Frame = CurrentCPU->CurrentThread->Registers;
+				this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
+				return;
 			}
 
 			if (this->GetNextAvailableThread(CurrentCPU))
@@ -637,26 +641,21 @@ namespace Tasking
 
 		*Frame = CurrentCPU->CurrentThread->Registers;
 
-		for (size_t i = 0; i < (sizeof(CurrentCPU->CurrentThread->IPHistory) / sizeof(CurrentCPU->CurrentThread->IPHistory[0])) - 1; i++)
-			CurrentCPU->CurrentThread->IPHistory[i + 1] = CurrentCPU->CurrentThread->IPHistory[i];
-
 #ifdef a64
-		CurrentCPU->CurrentThread->IPHistory[0] = Frame->rip;
-
 		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
 		CPU::x64::fxrstor(&CurrentCPU->CurrentThread->FPU);
 		CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
 		CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
 		CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 #else
-		CurrentCPU->CurrentThread->IPHistory[0] = Frame->eip;
-
 		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
 		CPU::x32::fxrstor(&CurrentCPU->CurrentThread->FPU);
 		CPU::x32::wrmsr(CPU::x32::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
 		CPU::x32::wrmsr(CPU::x32::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
 		CPU::x32::wrmsr(CPU::x32::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 #endif
+
+		CurrentCPU->CurrentProcess->Signals->HandleSignal(Frame);
 
 #ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
 		OnScreenTaskManagerUpdate();
@@ -682,7 +681,8 @@ namespace Tasking
 		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetCounter();
 		TaskingScheduler_OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
-		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled && CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
+		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled &&
+			CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
 		{
 #ifdef a64
 			trace("%s[%ld]: RIP=%#lx  RBP=%#lx  RSP=%#lx",
@@ -722,18 +722,10 @@ namespace Tasking
 
 	End:
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
-#ifdef a64
-		CPU::x64::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
-#else
-		CPU::x32::writecr3({.raw = (uint64_t)CurrentCPU->CurrentProcess->PageTable});
-#endif
+		CurrentCPU->CurrentProcess->PageTable->Update();
 	}
 
-#ifdef a64
-	SafeFunction NIF void Task::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-#else
-	SafeFunction NIF void Task::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
-#endif
+	SafeFunction NIF void Task::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);
@@ -759,11 +751,11 @@ namespace Tasking
 		fixme("unimplemented");
 	}
 
-	SafeFunction void Task::Schedule(CPU::aarch64::TrapFrame *Frame)
+	SafeFunction void Task::Schedule(CPU::TrapFrame *Frame)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction void Task::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame) { this->Schedule(Frame); }
+	SafeFunction void Task::OnInterruptReceived(CPU::TrapFrame *Frame) { this->Schedule(Frame); }
 #endif
 }

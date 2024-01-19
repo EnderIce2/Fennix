@@ -36,6 +36,9 @@ namespace Memory
 		uintptr_t Break = 0x0;
 
 	public:
+		/* fork() */
+		void SetTable(PageTable *Table) { this->Table = Table; }
+
 		/* Directly to syscall */
 		void *brk(void *Address);
 

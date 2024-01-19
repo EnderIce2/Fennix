@@ -40,13 +40,23 @@ namespace ACPI
 
 #pragma GCC diagnostic pop
 
-			for (short i = 0; i < 4; i++)
+			size_t signLength = strlen(Signature);
+			for (size_t i = 0; i < signLength; i++)
 			{
 				if (SDTHdr->Signature[i] != Signature[i])
 					break;
 				if (i == 3)
 				{
-					trace("%s found at address %p", Signature, (uintptr_t)SDTHdr);
+#ifdef DEBUG
+					KPrint("ACPI: %s [%s:%s] found at address %#lx",
+						   Signature,
+						   SDTHdr->OEMID,
+						   SDTHdr->OEMTableID,
+						   (uintptr_t)SDTHdr);
+#endif
+					trace("%s found at address %#lx", Signature, (uintptr_t)SDTHdr);
+
+					Tables[Signature] = SDTHdr;
 					return SDTHdr;
 				}
 			}
@@ -70,6 +80,9 @@ namespace ACPI
 		WAET = (WAETHeader *)FindTable(Header, (char *)"WAET");
 		MADT = (MADTHeader *)FindTable(Header, (char *)"APIC");
 		HEST = (HESTHeader *)FindTable(Header, (char *)"HEST");
+		SSDT = (SSDTHeader *)FindTable(Header, (char *)"SSDT");
+		DBGP = (DBGPHeader *)FindTable(Header, (char *)"DBGP");
+		DBG2 = (DBG2Header *)FindTable(Header, (char *)"DBG2");
 		FindTable(Header, (char *)"BERT");
 		FindTable(Header, (char *)"CPEP");
 		FindTable(Header, (char *)"DSDT");
@@ -86,7 +99,6 @@ namespace ACPI
 		FindTable(Header, (char *)"RSDT");
 		FindTable(Header, (char *)"SBST");
 		FindTable(Header, (char *)"SLIT");
-		FindTable(Header, (char *)"SSDT");
 		FindTable(Header, (char *)"XSDT");
 		FindTable(Header, (char *)"DRTM");
 		FindTable(Header, (char *)"FPDT");
@@ -102,8 +114,8 @@ namespace ACPI
 		FindTable(Header, (char *)"ASF!");
 		FindTable(Header, (char *)"BOOT");
 		FindTable(Header, (char *)"CSRT");
-		FindTable(Header, (char *)"DBG2");
-		FindTable(Header, (char *)"DBGP");
+		FindTable(Header, (char *)"BDAT");
+		FindTable(Header, (char *)"CDAT");
 		FindTable(Header, (char *)"DMAR");
 		FindTable(Header, (char *)"IBFT");
 		FindTable(Header, (char *)"IORT");
@@ -125,6 +137,28 @@ namespace ACPI
 		FindTable(Header, (char *)"HMAT");
 		FindTable(Header, (char *)"CEDT");
 		FindTable(Header, (char *)"AEST");
+		FindTable(Header, (char *)"AGDI");
+		FindTable(Header, (char *)"APMT");
+		FindTable(Header, (char *)"ETDT");
+		FindTable(Header, (char *)"MPAM");
+		FindTable(Header, (char *)"PDTT");
+		FindTable(Header, (char *)"PPTT");
+		FindTable(Header, (char *)"RAS2");
+		FindTable(Header, (char *)"SDEI");
+		FindTable(Header, (char *)"STAO");
+		FindTable(Header, (char *)"XENV");
+		FindTable(Header, (char *)"PHAT");
+		FindTable(Header, (char *)"SVKL");
+		FindTable(Header, (char *)"UUID");
+		FindTable(Header, (char *)"CCEL");
+		FindTable(Header, (char *)"WSMT");
+		FindTable(Header, (char *)"PRMT");
+		FindTable(Header, (char *)"NBFT");
+		FindTable(Header, (char *)"RSD PTR");
+		FindTable(Header, (char *)"TDX");
+		FindTable(Header, (char *)"CXL");
+		FindTable(Header, (char *)"DSD");
+		FindTable(Header, (char *)"BSA");
 	}
 
 	ACPI::ACPI()
@@ -161,8 +195,9 @@ namespace ACPI
 		if (FADT)
 		{
 			outb(s_cst(uint16_t, FADT->SMI_CommandPort), FADT->AcpiEnable);
+			/* TODO: Sleep for ~5 seconds before polling PM1a CB? */
 			while (!(inw(s_cst(uint16_t, FADT->PM1aControlBlock)) & 1))
-				;
+				CPU::Pause();
 		}
 	}
 

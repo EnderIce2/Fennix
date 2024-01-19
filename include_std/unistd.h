@@ -18,4 +18,9 @@
 #ifndef _UNISTD_H
 #define _UNISTD_H
 
+#include <types.h>
+
+#define _SC_PAGESIZE 30
+#define _SC_PAGE_SIZE _SC_PAGESIZE
+
 #endif // !_UNISTD_H

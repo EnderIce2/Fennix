@@ -68,10 +68,10 @@ namespace vfs
 	// 	// .Write = fd_Write,
 	// };
 
-	FileDescriptorTable::Fildes
+	FileDescriptorTable::Fildes &
 	FileDescriptorTable::GetFileDescriptor(int FileDescriptor)
 	{
-		foreach (auto fd in FileDescriptors)
+		foreach (auto &fd in FileDescriptors)
 		{
 			if (fd.Descriptor == FileDescriptor)
 			{
@@ -79,13 +79,13 @@ namespace vfs
 				return fd;
 			}
 		}
-		return {};
+		return nullfd;
 	}
 
-	FileDescriptorTable::DupFildes
+	FileDescriptorTable::Fildes &
 	FileDescriptorTable::GetDupFildes(int FileDescriptor)
 	{
-		foreach (auto fd in FildesDuplicates)
+		foreach (auto &fd in FildesDuplicates)
 		{
 			if (fd.Descriptor == FileDescriptor)
 			{
@@ -93,7 +93,48 @@ namespace vfs
 				return fd;
 			}
 		}
-		return {};
+		return nullfd;
+	}
+
+	FileDescriptorTable::Fildes &
+	FileDescriptorTable::GetDescriptor(int FileDescriptor)
+	{
+		Fildes &fd = this->GetFileDescriptor(FileDescriptor);
+		Fildes &dfd = this->GetDupFildes(FileDescriptor);
+
+		if (fd.Descriptor == -1 &&
+			dfd.Descriptor == -1)
+			return nullfd;
+
+		if (fd.Descriptor != -1)
+			return fd;
+		else
+			return dfd;
+	}
+
+	int FileDescriptorTable::GetFlags(int FileDescriptor)
+	{
+		Fildes &fd = this->GetDescriptor(FileDescriptor);
+		if (fd == nullfd)
+		{
+			debug("invalid fd %d", FileDescriptor);
+			return -EBADF;
+		}
+
+		return fd.Flags;
+	}
+
+	int FileDescriptorTable::SetFlags(int FileDescriptor, int Flags)
+	{
+		Fildes &fd = this->GetDescriptor(FileDescriptor);
+		if (fd == nullfd)
+		{
+			debug("invalid fd %d", FileDescriptor);
+			return -EBADF;
+		}
+
+		fd.Flags = Flags;
+		return 0;
 	}
 
 	int FileDescriptorTable::ProbeMode(mode_t Mode, int Flags)
@@ -143,12 +184,12 @@ namespace vfs
 		if (Flags & O_CREAT)
 		{
 			int ret;
-			Node *n = new Node(pcb->CurrentWorkingDirectory,
-							   AbsolutePath,
-							   NodeType::FILE,
-							   cwk_path_is_absolute(AbsolutePath),
-							   fs,
-							   &ret);
+			new Node(pcb->CurrentWorkingDirectory,
+					 AbsolutePath,
+					 NodeType::FILE,
+					 cwk_path_is_absolute(AbsolutePath),
+					 fs,
+					 &ret);
 
 			if (ret == -EEXIST)
 			{
@@ -159,7 +200,7 @@ namespace vfs
 			{
 				error("Failed to create file %s: %d",
 					  AbsolutePath, ret);
-				assert(false);
+				assert(ret < 0);
 			}
 		}
 
@@ -174,6 +215,7 @@ namespace vfs
 					  AbsolutePath);
 				return -EIO;
 			}
+			delete File;
 		}
 
 		if (Flags & O_TRUNC)
@@ -213,15 +255,14 @@ namespace vfs
 		FileDescriptors.push_back(fd);
 
 		char FileName[64];
-		sprintf(FileName, "%d", fd.Descriptor);
-		vfs::Node *n = fs->Create(FileName, vfs::NodeType::FILE, this->fdDir);
-		if (n)
-		{
-			/* FIXME: Implement proper file descriptors */
-			n->Size = File->FileSize;
-		}
+		itoa(fd.Descriptor, FileName, 10);
+		assert(fs->CreateLink(FileName, AbsolutePath, this->fdDir) != nullptr);
 
-		return fd.Descriptor;
+		int rfd = File->node->open(Flags, Mode);
+		if (rfd <= 0)
+			return fd.Descriptor;
+		else
+			return rfd;
 	}
 
 	int FileDescriptorTable::RemoveFileDescriptor(int FileDescriptor)
@@ -233,7 +274,7 @@ namespace vfs
 				FileDescriptors.erase(itr);
 
 				char FileName[64];
-				sprintf(FileName, "%d", FileDescriptor);
+				itoa(FileDescriptor, FileName, 10);
 				fs->Delete(FileName, false, this->fdDir);
 				return 0;
 			}
@@ -246,7 +287,7 @@ namespace vfs
 				FildesDuplicates.erase(itr);
 
 				char FileName[64];
-				sprintf(FileName, "%d", FileDescriptor);
+				itoa(FileDescriptor, FileName, 10);
 				fs->Delete(FileName, false, this->fdDir);
 				return 0;
 			}
@@ -292,23 +333,56 @@ namespace vfs
 
 	const char *FileDescriptorTable::GetAbsolutePath(int FileDescriptor)
 	{
-		Fildes fd = this->GetFileDescriptor(FileDescriptor);
-		DupFildes dfd = this->GetDupFildes(FileDescriptor);
-
-		if (fd.Descriptor == -1 &&
-			dfd.Descriptor == -1)
+		Fildes &fd = this->GetDescriptor(FileDescriptor);
+		if (fd == nullfd)
 			return "";
 
-		RefNode *hnd = nullptr;
-		if (fd.Descriptor != -1)
-			hnd = fd.Handle;
-		else
-			hnd = dfd.Handle;
-
-		Node *node = hnd->node;
+		Node *node = fd.Handle->node;
 		const char *path = new char[strlen(node->FullPath) + 1];
 		strcpy((char *)path, node->FullPath);
 		return path;
+	}
+
+	RefNode *FileDescriptorTable::GetRefNode(int FileDescriptor)
+	{
+		Fildes &fd = this->GetDescriptor(FileDescriptor);
+		if (fd == nullfd)
+			return nullptr;
+
+		return fd.Handle;
+	}
+
+	void FileDescriptorTable::Fork(FileDescriptorTable *Parent)
+	{
+		foreach (auto &fd in Parent->FileDescriptors)
+		{
+			debug("Forking fd: %d", fd.Descriptor);
+			RefNode *node = fs->Open(fd.Handle->node->FullPath,
+									 thisProcess->CurrentWorkingDirectory);
+			assert(node != nullptr);
+
+			Fildes new_fd;
+			new_fd.Descriptor = fd.Descriptor;
+			new_fd.Flags = fd.Flags;
+			new_fd.Mode = fd.Mode;
+			new_fd.Handle = node;
+			this->FileDescriptors.push_back(new_fd);
+		}
+
+		foreach (auto &fd in Parent->FildesDuplicates)
+		{
+			debug("Forking duplicated fd: %d", fd.Descriptor);
+			RefNode *node = fs->Open(fd.Handle->node->FullPath,
+									 thisProcess->CurrentWorkingDirectory);
+			assert(node != nullptr);
+
+			Fildes new_fd;
+			new_fd.Descriptor = fd.Descriptor;
+			new_fd.Flags = fd.Flags;
+			new_fd.Mode = fd.Mode;
+			new_fd.Handle = node;
+			this->FildesDuplicates.push_back(new_fd);
+		}
 	}
 
 	int FileDescriptorTable::_open(const char *pathname, int flags,
@@ -325,84 +399,50 @@ namespace vfs
 		return _open(pathname, O_WRONLY | O_CREAT | O_TRUNC, mode);
 	}
 
-	ssize_t FileDescriptorTable::_read(int fd, void *buf, size_t count)
+	ssize_t FileDescriptorTable::_read(int _fd, void *buf, size_t count)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		RefNode *hnd = nullptr;
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
-		return hnd->read((uint8_t *)buf, count);
+		return fd.Handle->read((uint8_t *)buf, count);
 	}
 
-	ssize_t FileDescriptorTable::_write(int fd, const void *buf,
+	ssize_t FileDescriptorTable::_write(int _fd, const void *buf,
 										size_t count)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		RefNode *hnd = nullptr;
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
-		return hnd->write((uint8_t *)buf, count);
+		return fd.Handle->write((uint8_t *)buf, count);
 	}
 
-	int FileDescriptorTable::_close(int fd)
+	int FileDescriptorTable::_close(int _fd)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		if (RemoveFileDescriptor(fd) < 0)
+		if (RemoveFileDescriptor(_fd) < 0)
+		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
-
-		/* If the file descriptor is a duplicate,
-			we don't need to close the handle,
-			because it's a duplicate of another
-			file descriptor. */
+		}
 
 		bool Found = false;
-		RefNode *hnd = nullptr;
-
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
 		foreach (auto dfd in FileDescriptors)
 		{
-			if (dfd.Handle == hnd)
-			{
-				Found = true;
-				break;
-			}
-		}
-
-		foreach (auto dfd in FildesDuplicates)
-		{
-			if (dfd.Handle == hnd)
+			if (dfd.Handle == fd.Handle)
 			{
 				Found = true;
 				break;
@@ -410,28 +450,34 @@ namespace vfs
 		}
 
 		if (!Found)
-			delete hnd;
+			foreach (auto dfd in FildesDuplicates)
+			{
+				if (dfd.Handle == fd.Handle)
+				{
+					Found = true;
+					break;
+				}
+			}
+
+		/* If the file descriptor is a duplicate,
+			we don't need to close the handle,
+			because it's a duplicate of another
+			file descriptor. */
+		if (!Found)
+			delete fd.Handle;
 		return 0;
 	}
 
-	off_t FileDescriptorTable::_lseek(int fd, off_t offset, int whence)
+	off_t FileDescriptorTable::_lseek(int _fd, off_t offset, int whence)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		RefNode *hnd = nullptr;
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
-		return hnd->seek(offset, whence);
+		return fd.Handle->seek(offset, whence);
 	}
 
 	int FileDescriptorTable::_stat(const char *pathname,
@@ -465,24 +511,16 @@ namespace vfs
 		return 0;
 	}
 
-	int FileDescriptorTable::_fstat(int fd, struct stat *statbuf)
+	int FileDescriptorTable::_fstat(int _fd, struct stat *statbuf)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		RefNode *hnd = nullptr;
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
-		Node *node = hnd->node;
+		Node *node = fd.Handle->node;
 		statbuf->st_dev = 0; /* FIXME: stub */
 		statbuf->st_ino = node->IndexNode;
 		statbuf->st_mode = node->Type | node->Mode;
@@ -530,12 +568,10 @@ namespace vfs
 
 	int FileDescriptorTable::_dup(int oldfd)
 	{
-		Fildes fdesc = this->GetFileDescriptor(oldfd);
-		DupFildes dfdesc = this->GetDupFildes(oldfd);
-
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(oldfd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", oldfd);
 			return -EBADF;
 		}
 
@@ -543,17 +579,9 @@ namespace vfs
 		if (newfd < 0)
 			return -EMFILE;
 
-		DupFildes new_dfd{};
-		if (fdesc.Descriptor != -1)
-		{
-			new_dfd.Handle = fdesc.Handle;
-			new_dfd.Mode = fdesc.Mode;
-		}
-		else
-		{
-			new_dfd.Handle = dfdesc.Handle;
-			new_dfd.Mode = dfdesc.Mode;
-		}
+		Fildes new_dfd{};
+		new_dfd.Handle = fd.Handle;
+		new_dfd.Mode = fd.Mode;
 
 		new_dfd.Descriptor = newfd;
 		this->FildesDuplicates.push_back(new_dfd);
@@ -564,17 +592,18 @@ namespace vfs
 
 	int FileDescriptorTable::_dup2(int oldfd, int newfd)
 	{
-		Fildes fdesc = this->GetFileDescriptor(oldfd);
-		DupFildes dfdesc = this->GetDupFildes(oldfd);
-
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(oldfd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", oldfd);
 			return -EBADF;
 		}
 
 		if (newfd < 0)
+		{
+			debug("invalid fd %d", newfd);
 			return -EBADF;
+		}
 
 		if (newfd == oldfd)
 			return newfd;
@@ -583,17 +612,9 @@ namespace vfs
 			we ignore it. */
 		this->_close(newfd);
 
-		DupFildes new_dfd{};
-		if (fdesc.Descriptor != -1)
-		{
-			new_dfd.Handle = fdesc.Handle;
-			new_dfd.Mode = fdesc.Mode;
-		}
-		else
-		{
-			new_dfd.Handle = dfdesc.Handle;
-			new_dfd.Mode = dfdesc.Mode;
-		}
+		Fildes new_dfd{};
+		new_dfd.Handle = fd.Handle;
+		new_dfd.Mode = fd.Mode;
 
 		new_dfd.Descriptor = newfd;
 		this->FildesDuplicates.push_back(new_dfd);
@@ -602,39 +623,31 @@ namespace vfs
 		return newfd;
 	}
 
-	int FileDescriptorTable::_ioctl(int fd, unsigned long request, void *argp)
+	int FileDescriptorTable::_ioctl(int _fd, unsigned long request, void *argp)
 	{
-		Fildes fdesc = this->GetFileDescriptor(fd);
-		DupFildes dfdesc = this->GetDupFildes(fd);
-		if (fdesc.Descriptor < 0 &&
-			dfdesc.Descriptor < 0)
+		Fildes &fd = this->GetDescriptor(_fd);
+		if (fd == nullfd)
 		{
+			debug("invalid fd %d", _fd);
 			return -EBADF;
 		}
 
-		RefNode *hnd = nullptr;
-		if (fdesc.Descriptor != -1)
-			hnd = fdesc.Handle;
-		else
-			hnd = dfdesc.Handle;
-
-		return hnd->ioctl(request, argp);
+		return fd.Handle->ioctl(request, argp);
 	}
 
 	FileDescriptorTable::FileDescriptorTable(void *Owner)
 	{
 		debug("+ %#lx", this);
 		this->fdDir = fs->Create("fd", vfs::NodeType::DIRECTORY,
-								 ((Tasking::PCB *)Owner)->ProcessDirectory);
+								 ((Tasking::PCB *)Owner));
 	}
 
 	FileDescriptorTable::~FileDescriptorTable()
 	{
 		debug("- %#lx", this);
-		foreach (auto fd in FileDescriptors)
+		foreach (auto &fd in FileDescriptors)
 		{
-			debug("Removing fd: %d(%#lx)",
-				  fd.Descriptor, fd);
+			debug("Removing fd: %d", fd.Descriptor);
 			this->RemoveFileDescriptor(fd.Descriptor);
 			delete fd.Handle;
 		}

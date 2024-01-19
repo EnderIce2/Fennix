@@ -20,7 +20,12 @@
 
 #include <types.h>
 
+#include <filesystem/termios.hpp>
 #include <filesystem.hpp>
+#include <bitmap.hpp>
+#include <task.hpp>
+#include <lock.hpp>
+#include <vector>
 
 namespace vfs
 {
@@ -34,12 +39,12 @@ namespace vfs
 	class NullDevice : public Node
 	{
 	public:
-		virtual size_t read(uint8_t *Buffer,
-							size_t Size,
-							off_t Offset);
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset) final;
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
 
 		NullDevice();
 		~NullDevice();
@@ -48,12 +53,12 @@ namespace vfs
 	class RandomDevice : public Node
 	{
 	public:
-		virtual size_t read(uint8_t *Buffer,
-							size_t Size,
-							off_t Offset);
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset) final;
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
 
 		RandomDevice();
 		~RandomDevice();
@@ -62,42 +67,137 @@ namespace vfs
 	class ZeroDevice : public Node
 	{
 	public:
-		virtual size_t read(uint8_t *Buffer,
-							size_t Size,
-							off_t Offset);
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset) final;
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
 
 		ZeroDevice();
 		~ZeroDevice();
 	};
 
+	class KConDevice : public Node
+	{
+	public:
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset) final;
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
+		int ioctl(unsigned long Request,
+				  void *Argp) final;
+
+		termios term{};
+		winsize termSize{};
+
+		KConDevice();
+		~KConDevice();
+	};
+
 	class TTYDevice : public Node
 	{
 	public:
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
-		virtual int ioctl(unsigned long Request,
-						  void *Argp);
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
+		int ioctl(unsigned long Request,
+				  void *Argp) final;
 
 		TTYDevice();
 		~TTYDevice();
 	};
 
+	class MasterPTY
+	{
+		NewLock(PTYLock);
+
+	public:
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset);
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset);
+
+		MasterPTY();
+		~MasterPTY();
+	};
+
+	class SlavePTY
+	{
+		NewLock(PTYLock);
+
+	public:
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset);
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset);
+
+		SlavePTY();
+		~SlavePTY();
+	};
+
+	class PTYDevice : public Node
+	{
+	private:
+		Node *pts;
+		int id;
+		int fildes;
+		bool isMaster;
+		termios term{};
+		winsize termSize{};
+
+		MasterPTY *MasterDev;
+		SlavePTY *SlaveDev;
+
+	public:
+		decltype(id) &ptyId = id;
+		decltype(fildes) &fd = fildes;
+
+		int open(int Flags, mode_t Mode) final;
+		int close() final;
+		size_t read(uint8_t *Buffer,
+					size_t Size,
+					off_t Offset) final;
+		size_t write(uint8_t *Buffer,
+					 size_t Size,
+					 off_t Offset) final;
+		int ioctl(unsigned long Request,
+				  void *Argp) final;
+
+		int OpenMaster(int Flags, mode_t Mode);
+
+		PTYDevice(Node *pts, int id);
+		~PTYDevice();
+	};
+
 	class PTMXDevice : public Node
 	{
 	private:
-		Node *pts = nullptr;
+		NewLock(PTMXLock);
+		Node *pts;
+		Bitmap ptysId;
+		std::vector<PTYDevice *> ptysList;
 
 	public:
-		virtual size_t read(uint8_t *Buffer,
-							size_t Size,
-							off_t Offset);
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
+		int open(int Flags, mode_t Mode) final;
+
+		/**
+		 * Remove a PTY from the list
+		 *
+		 * @param fd The file descriptor of the PTY
+		 * @param pcb The process that owns the PTY
+		 *
+		 * @note if pcb is nullptr, the current process
+		 * will be used.
+		 *
+		 */
+		void RemovePTY(int fd, Tasking::PCB *pcb = nullptr);
 
 		PTMXDevice();
 		~PTMXDevice();

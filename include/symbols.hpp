@@ -31,17 +31,20 @@ namespace SymbolResolver
 		};
 
 		std::vector<SymbolTable> SymTable;
-		void *Image;
+		void *Image = nullptr;
 		bool SymbolTableExists = false;
 
 	public:
 		decltype(SymbolTableExists) &SymTableExists = this->SymbolTableExists;
+		std::vector<SymbolTable> &GetSymTable() { return this->SymTable; }
 		void *GetImage() { return this->Image; }
-		const char *GetSymbolFromAddress(uintptr_t Address);
+		const char *GetSymbol(uintptr_t Address);
+		uintptr_t GetSymbol(const char *Name);
 		void AddSymbol(uintptr_t Address, const char *Name);
 		void AddSymbolInfoFromGRUB(uint64_t Num, uint64_t EntSize, uint64_t Shndx, uintptr_t Sections);
 		void AppendSymbols(uintptr_t ImageAddress, uintptr_t BaseAddress = 0);
 		Symbols(uintptr_t ImageAddress);
+		Symbols() {}
 		~Symbols();
 	};
 }

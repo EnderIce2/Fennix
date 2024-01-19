@@ -25,23 +25,26 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
 using Tasking::TCB;
 using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
 
-#define SysFrm SyscallsFrame
-
+void sys_fork_return()
+{
 #if defined(a64)
-typedef long arch_t;
+	asmv("movq $0, %rax\n");  /* Return 0 */
+	asmv("movq %r8, %rsp\n"); /* Restore stack pointer */
+	asmv("movq %r8, %rbp\n"); /* Restore base pointer */
+	asmv("swapgs\n");		  /* Swap GS back to the user GS */
+	asmv("sti\n");			  /* Enable interrupts */
+	asmv("sysretq\n");		  /* Return to rcx address in user mode */
 #elif defined(a32)
-typedef int arch_t;
+#warning "sys_fork not implemented for i386"
 #endif
+	__builtin_unreachable();
+}
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/fork.html */
 int sys_fork(SysFrm *Frame)
@@ -54,15 +57,11 @@ int sys_fork(SysFrm *Frame)
 	PCB *Parent = thisThread->Parent;
 	TCB *Thread = thisThread;
 
-	void *ProcSymTable = nullptr;
-	if (Parent->ELFSymbolTable)
-		ProcSymTable = Parent->ELFSymbolTable->GetImage();
-
 	PCB *NewProcess =
 		TaskManager->CreateProcess(Parent,
 								   Parent->Name,
 								   Parent->Security.ExecutionMode,
-								   ProcSymTable);
+								   nullptr, true);
 
 	if (!NewProcess)
 	{
@@ -70,7 +69,18 @@ int sys_fork(SysFrm *Frame)
 		return -EAGAIN;
 	}
 
-	NewProcess->IPC->Fork(Parent->IPC);
+	if (Parent->ELFSymbolTable &&
+		Parent->ELFSymbolTable->SymTableExists)
+	{
+		NewProcess->ELFSymbolTable = new SymbolResolver::Symbols(0);
+		foreach (auto sym in Parent->ELFSymbolTable->GetSymTable())
+		{
+			NewProcess->ELFSymbolTable->AddSymbol(sym.Address,
+												  sym.FunctionName);
+		}
+	}
+
+	NewProcess->PageTable = Parent->PageTable->Fork();
 
 	TCB *NewThread =
 		TaskManager->CreateThread(NewProcess,
@@ -92,40 +102,18 @@ int sys_fork(SysFrm *Frame)
 
 	TaskManager->UpdateFrame();
 
-	/* This if statement will overwrite
-		most of the registers except rcx
-		and r8-r15 */
-	if (thisThread->ID == NewThread->ID)
-	{
-		/* We can't just return 0; because the
-			gsTCB->SyscallStack is no
-			longer valid */
-#if defined(a64)
-		asmv("movq $0, %rax\n");  /* Return 0 */
-		asmv("movq %r8, %rsp\n"); /* Restore stack pointer */
-		asmv("movq %r8, %rbp\n"); /* Restore base pointer */
-		asmv("swapgs\n");		  /* Swap GS back to the user GS */
-		asmv("sti\n");			  /* Enable interrupts */
-		asmv("sysretq\n");		  /* Return to rcx address in user mode */
-#elif defined(a32)
-#warning "sys_fork not implemented for i386"
-#endif
-		__builtin_unreachable();
-	}
-
-	memcpy(&NewThread->FPU, &Thread->FPU, sizeof(CPU::x64::FXState));
+	NewThread->FPU = Thread->FPU;
 	NewThread->Stack->Fork(Thread->Stack);
 	NewThread->Info.Architecture = Thread->Info.Architecture;
 	NewThread->Info.Compatibility = Thread->Info.Compatibility;
+	NewThread->Security.IsCritical = Thread->Security.IsCritical;
 	NewThread->Registers = Thread->Registers;
 #if defined(a64)
+	NewThread->Registers.rip = (uintptr_t)sys_fork_return;
 	/* For sysretq */
 	NewThread->Registers.rcx = Frame->ReturnAddress;
 	NewThread->Registers.r8 = Frame->StackPointer;
 #endif
-
-	if (Thread->Security.IsCritical)
-		NewThread->SetCritical(true);
 
 #ifdef a86
 	NewThread->GSBase = NewThread->ShadowGSBase;
@@ -133,9 +121,11 @@ int sys_fork(SysFrm *Frame)
 	NewThread->FSBase = Thread->FSBase;
 #endif
 
+	debug("ret addr: %#lx, stack: %#lx ip: %#lx", Frame->ReturnAddress,
+		  Frame->StackPointer, (uintptr_t)sys_fork_return);
 	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)",
 		  Thread->Name, Thread->ID,
 		  NewThread->Name, NewThread->ID);
-	NewThread->State = Ready;
+	NewThread->SetState(Ready);
 	return (int)NewProcess->ID;
 }

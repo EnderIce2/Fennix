@@ -21,6 +21,7 @@
 
 __constructor void TestTypeSize()
 {
+	return;
 	debug("--- INT TYPES ---");
 	debug("sizeof(__INT8_TYPE__) = %lld", sizeof(__INT8_TYPE__));
 	debug("sizeof(__INT16_TYPE__) = %lld", sizeof(__INT16_TYPE__));

@@ -23,23 +23,23 @@
 
 enum KCSchedType
 {
-    Mono = 0,
-    Multi = 1,
+	Mono = 0,
+	Multi = 1,
 };
 
 struct KernelConfig
 {
-    Memory::MemoryAllocatorType AllocatorType;
-    bool SchedulerType;
-    char ModuleDirectory[256];
-    char InitPath[256];
-    bool UseLinuxSyscalls;
-    bool InterruptsOnCrash;
-    int Cores;
-    int IOAPICInterruptCore;
-    bool UnlockDeadLock;
-    bool SIMD;
-    bool BootAnimation;
+	Memory::MemoryAllocatorType AllocatorType;
+	bool SchedulerType;
+	char DriverDirectory[256];
+	char InitPath[256];
+	bool UseLinuxSyscalls;
+	bool InterruptsOnCrash;
+	int Cores;
+	int IOAPICInterruptCore;
+	bool UnlockDeadLock;
+	bool SIMD;
+	bool Quiet;
 };
 
 void ParseConfig(char *ConfigString, KernelConfig *ModConfig);

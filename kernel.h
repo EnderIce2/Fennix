@@ -22,51 +22,54 @@
 
 #include <boot/binfo.h>
 #ifdef __cplusplus
+#include <filesystem/mounts.hpp>
 #include <filesystem.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
 #include <kconfig.hpp>
 #include <net/nc.hpp>
-#include <module.hpp>
+#include <driver.hpp>
 #include <power.hpp>
 #include <task.hpp>
 #include <time.hpp>
 #include <disk.hpp>
 #include <pci.hpp>
+#include <smp.hpp>
 #endif
 
 extern struct BootInfo bInfo;
 extern struct KernelConfig Config;
 extern bool DebuggerIsAttached;
+
 #ifdef __cplusplus
 
 extern Video::Display *Display;
 extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;
 extern Time::time *TimeManager;
-extern PCI::PCI *PCIManager;
+extern PCI::Manager *PCIManager;
 extern vfs::Virtual *fs;
 extern vfs::Node *DevFS;
 extern vfs::Node *MntFS;
 extern vfs::Node *ProcFS;
 extern vfs::Node *VarLogFS;
+extern vfs::PTMXDevice *ptmx;
 extern Tasking::Task *TaskManager;
 
 extern Disk::Manager *DiskManager;
-extern Module::Module *ModuleManager;
+extern Driver::Manager *DriverManager;
 extern NetworkInterfaceManager::NetworkInterface *NIManager;
 
 #endif // __cplusplus
 
 EXTERNC void putchar(char c);
-EXTERNC void KPrint(const char *format, ...);
+EXTERNC void _KPrint(const char *Format, va_list Args);
+EXTERNC void KPrint(const char *Format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
 EXTERNC void BeforeShutdown(bool Reboot);
 EXTERNC void TaskingPanic();
 
-EXTERNC void BootLogoAnimationThread();
-EXTERNC void ExitLogoAnimationThread();
-
+EXTERNC void KernelVFS();
 EXTERNC void KernelMainThread();
 EXTERNC void KernelShutdownThread(bool Reboot);
 EXTERNC void KST_Reboot();

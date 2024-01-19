@@ -60,7 +60,7 @@ namespace Time
 	TimeStampCounter::TimeStampCounter()
 	{
 #if defined(a86)
-		fixme(""); // FIXME: This is not a good way to measure the clock speed
+		stub; // FIXME: This is not a good way to measure the clock speed
 		uint64_t Start = CPU::Counter();
 		TimeManager->Sleep(1, Units::Milliseconds);
 		uint64_t End = CPU::Counter();

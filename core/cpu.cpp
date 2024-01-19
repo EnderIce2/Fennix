@@ -167,9 +167,9 @@ namespace CPU
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
 #elif defined(aa64)
-			asmv("mrs %0, daif"
+			asmv("mrs %0, cpsr"
 				 : "=r"(Flags));
-			return !(Flags & (1 << 2));
+			return !(Flags & (1 << 7));
 #endif
 		}
 		case Enable:
@@ -177,7 +177,7 @@ namespace CPU
 #if defined(a86)
 			asmv("sti");
 #elif defined(aa64)
-			asmv("msr daifclr, #2");
+			asmv("cpsie i");
 #endif
 			return true;
 		}
@@ -186,7 +186,7 @@ namespace CPU
 #if defined(a86)
 			asmv("cli");
 #elif defined(aa64)
-			asmv("msr daifset, #2");
+			asmv("cpsid i");
 #endif
 			return true;
 		}
@@ -198,32 +198,39 @@ namespace CPU
 
 	void *PageTable(void *PT)
 	{
+		void *ret;
 #if defined(a64)
+		asmv("movq %%cr3, %0"
+			 : "=r"(ret));
+
 		if (PT)
+		{
 			asmv("movq %0, %%cr3"
 				 :
 				 : "r"(PT));
-		else
-			asmv("movq %%cr3, %0"
-				 : "=r"(PT));
+		}
 #elif defined(a32)
+		asmv("movl %%cr3, %0"
+			 : "=r"(ret));
+
 		if (PT)
+		{
 			asmv("movl %0, %%cr3"
 				 :
 				 : "r"(PT));
-		else
-			asmv("movl %%cr3, %0"
-				 : "=r"(PT));
+		}
 #elif defined(aa64)
+		asmv("mrs %0, ttbr0_el1"
+			 : "=r"(ret));
+
 		if (PT)
+		{
 			asmv("msr ttbr0_el1, %0"
 				 :
 				 : "r"(PT));
-		else
-			asmv("mrs %0, ttbr0_el1"
-				 : "=r"(PT));
+		}
 #endif
-		return PT;
+		return ret;
 	}
 
 	struct SupportedFeat
@@ -378,7 +385,10 @@ namespace CPU
 		if (!BSP++)
 			trace("Features for BSP initialized.");
 		if (SSEEnableAfter)
+		{
 			SSEEnabled = true;
+			debug("SSE support enabled.");
+		}
 	}
 
 	uint64_t Counter()
@@ -403,7 +413,8 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return SIMD_NONE;
 
-			// return SIMD_SSE;
+#warning "TODO: Proper SIMD support"
+		return SIMD_NONE;
 
 #if defined(a86)
 		static uint64_t SIMDType = SIMD_NONE;
@@ -415,13 +426,16 @@ namespace CPU
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
 			asmv("cpuid"
-				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
+				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw),
+				   "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
 				 : "a"(0x1));
 
 			if (cpuid.ECX.SSE42)
 				SIMDType |= SIMD_SSE42;
 			else if (cpuid.ECX.SSE41)
 				SIMDType |= SIMD_SSE41;
+			else if (cpuid.ECX.SSSE3)
+				SIMDType |= SIMD_SSSE3;
 			else if (cpuid.ECX.SSE3)
 				SIMDType |= SIMD_SSE3;
 			else if (cpuid.EDX.SSE2)
@@ -434,6 +448,8 @@ namespace CPU
 				debug("SSE4.2 is supported.");
 			if (cpuid.ECX.SSE41)
 				debug("SSE4.1 is supported.");
+			if (cpuid.ECX.SSSE3)
+				debug("SSSE3 is supported.");
 			if (cpuid.ECX.SSE3)
 				debug("SSE3 is supported.");
 			if (cpuid.EDX.SSE2)
@@ -455,6 +471,8 @@ namespace CPU
 				SIMDType |= SIMD_SSE42;
 			else if (cpuid.ECX.SSE4_1)
 				SIMDType |= SIMD_SSE41;
+			else if (cpuid.ECX.SSSE3)
+				SIMDType |= SIMD_SSSE3;
 			else if (cpuid.ECX.SSE3)
 				SIMDType |= SIMD_SSE3;
 			else if (cpuid.EDX.SSE2)
@@ -467,6 +485,8 @@ namespace CPU
 				debug("SSE4.2 is supported.");
 			if (cpuid.ECX.SSE4_1)
 				debug("SSE4.1 is supported.");
+			if (cpuid.ECX.SSSE3)
+				debug("SSSE3 is supported.");
 			if (cpuid.ECX.SSE3)
 				debug("SSE3 is supported.");
 			if (cpuid.EDX.SSE2)
@@ -499,6 +519,8 @@ namespace CPU
 				return cpuid.ECX.SSE42;
 			else if (Type == SIMD_SSE41)
 				return cpuid.ECX.SSE41;
+			else if (Type == SIMD_SSSE3)
+				return cpuid.ECX.SSSE3;
 			else if (Type == SIMD_SSE3)
 				return cpuid.ECX.SSE3;
 			else if (Type == SIMD_SSE2)
@@ -517,6 +539,8 @@ namespace CPU
 				return cpuid.ECX.SSE4_2;
 			else if (Type == SIMD_SSE41)
 				return cpuid.ECX.SSE4_1;
+			else if (Type == SIMD_SSSE3)
+				return cpuid.ECX.SSSE3;
 			else if (Type == SIMD_SSE3)
 				return cpuid.ECX.SSE3;
 			else if (Type == SIMD_SSE2)

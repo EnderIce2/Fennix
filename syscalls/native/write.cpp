@@ -25,34 +25,20 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/write.html */
 ssize_t sys_write(SysFrm *, int fildes,
 				  const void *buf, size_t nbyte)
 {
 	const void *safe_buf = nullptr;
-	Tasking::PCB *pcb = thisProcess;
-	Memory::SmartHeap sh(nbyte, pcb->vma);
+	PCB *pcb = thisProcess;
+	SmartHeap sh(nbyte, pcb->vma);
 	safe_buf = sh.Get();
 	{
-		Memory::SwapPT swap(pcb->PageTable);
+		SwapPT swap(pcb->PageTable);
 		memcpy((void *)safe_buf, buf, nbyte);
 	}
 

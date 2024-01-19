@@ -24,7 +24,7 @@
 class AutoSwitchPageTable
 {
 private:
-	uintptr_t Original;
+	void *Original;
 
 public:
 	AutoSwitchPageTable()
@@ -37,10 +37,14 @@ public:
 			 :
 			 : "r"(KernelPageTable));
 #endif
+		debug(" +    %#lx %s(%d)", Original,
+			  thisProcess->Name, thisProcess->ID);
 	}
 
 	~AutoSwitchPageTable()
 	{
+		debug("-    %#lx %s(%d)", Original,
+			  thisProcess->Name, thisProcess->ID);
 #if defined(a86)
 		asmv("mov %0, %%cr3"
 			 :

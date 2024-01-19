@@ -43,10 +43,20 @@ namespace Memory
 	enum MemoryAllocatorType
 	{
 		None,
+
+		/** Allocate memory by pages. */
 		Pages,
+
 		XallocV1,
 		XallocV2,
-		liballoc11
+		liballoc11,
+
+		/**
+		 * @warning Not working as expected.
+		 * 
+		 * FIXME: This allocator is not working as expected.
+		 */
+		rpmalloc_,
 	};
 }
 
@@ -61,6 +71,7 @@ namespace Memory
 #include <memory/brk.hpp>
 
 void InitializeMemoryManagement();
+void CreatePageTable(Memory::PageTable *pt);
 
 void *operator new(std::size_t Size);
 void *operator new[](std::size_t Size);

@@ -73,7 +73,7 @@ void lsof()
 					   fd.Handle->node->FullPath);
 		}
 		Display->SetBufferCursor(0, tmpX, tmpY);
-		if (!Config.BootAnimation)
+		if (!Config.Quiet)
 			Display->SetBuffer(0);
 	}
 }

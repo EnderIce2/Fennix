@@ -29,7 +29,7 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 
 		PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
 		PageDirectoryEntryPtr *PDE = nullptr;
@@ -74,7 +74,7 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 
 		PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
 		PageDirectoryEntryPtr *PDE = nullptr;
@@ -119,7 +119,7 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 
 		PageDirectoryPointerTableEntryPtr *PDPTE = nullptr;
 		PageDirectoryEntryPtr *PDE = nullptr;
@@ -172,9 +172,11 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (PML4->Present)
 			return PML4;
+		
+		debug("PML4 not present for %#lx", VirtualAddress);
 		return nullptr;
 	}
 
@@ -185,14 +187,19 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
+		{
+			debug("PML4 not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (PDPTE->Present)
 			return PDPTE;
+
+		debug("PDPTE not present for %#lx", VirtualAddress);
 		return nullptr;
 	}
 
@@ -203,19 +210,27 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
+		{
+			debug("PML4 not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (!PDPTE->Present)
+		{
+			debug("PDPTE not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)(PDPTE->GetAddress() << 12);
 		PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
 		if (PDE->Present)
 			return PDE;
+		
+		debug("PDE not present for %#lx", VirtualAddress);
 		return nullptr;
 	}
 
@@ -226,31 +241,42 @@ namespace Memory
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
+		{
+			debug("PML4 not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (!PDPTE->Present)
+		{
+			debug("PDPTE not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)(PDPTE->GetAddress() << 12);
 		PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
 		if (!PDE->Present)
+		{
+			debug("PDE not present for %#lx", VirtualAddress);
 			return nullptr;
+		}
 
 		PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
 		PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
 		if (PTE->Present)
 			return PTE;
+		
+		debug("PTE not present for %#lx", VirtualAddress);
 		return nullptr;
 	}
 
 	void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
-		if (unlikely(!this->Table))
+		if (unlikely(!this->pTable))
 		{
 			error("No page table");
 			return;
@@ -262,7 +288,7 @@ namespace Memory
 		// Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
 		uint64_t DirectoryFlags = Flags & 0x3F;
 
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		PageDirectoryPointerTableEntryPtr *PDPTEPtr = nullptr;
 		if (!PML4->Present)
 		{
@@ -323,7 +349,7 @@ namespace Memory
 		PTE->Present = true;
 		PTE->raw |= Flags;
 		PTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-		CPU::x32::invlpg(VirtualAddress);
+		CPU::x64::invlpg(VirtualAddress);
 
 #ifdef DEBUG
 /* https://stackoverflow.com/a/3208376/9352057 */
@@ -346,14 +372,14 @@ namespace Memory
 	void Virtual::Unmap(void *VirtualAddress, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
-		if (!this->Table)
+		if (!this->pTable)
 		{
 			error("No page table");
 			return;
 		}
 
 		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
-		PageMapLevel4 *PML4 = &this->Table->Entries[Index.PMLIndex];
+		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
 		{
 			warn("Page %#lx not present", PML4->GetAddress());
@@ -398,6 +424,6 @@ namespace Memory
 
 		PTE.Present = false;
 		PTEPtr->Entries[Index.PTEIndex] = PTE;
-		CPU::x32::invlpg(VirtualAddress);
+		CPU::x64::invlpg(VirtualAddress);
 	}
 }

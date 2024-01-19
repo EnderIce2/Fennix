@@ -23,29 +23,29 @@ KERNEL_PAGE_NUMBER = 768 /* KERNEL_VIRTUAL_BASE >> 22 */
 .align 0x1000
 .global BootPageTable
 BootPageTable:
-    .long 0x00000083
-    .long 0x00400083
-    .long 0x00800083
-    .long 0x00C00083
-    .long 0x01000083
-    .long 0x01400083
-    .long 0x01800083
-    .long 0x01C00083
-    .long 0x02000083
-    .long 0x02400083
+	.long 0x00000083
+	.long 0x00400083
+	.long 0x00800083
+	.long 0x00C00083
+	.long 0x01000083
+	.long 0x01400083
+	.long 0x01800083
+	.long 0x01C00083
+	.long 0x02000083
+	.long 0x02400083
 	.rept (KERNEL_PAGE_NUMBER - 10)
 		.long 0
 	.endr
-    .long 0x00000083
-    .long 0x00400083
-    .long 0x00800083
-    .long 0x00C00083
-    .long 0x01000083
-    .long 0x01400083
-    .long 0x01800083
-    .long 0x01C00083
-    .long 0x02000083
-    .long 0x02400083
+	.long 0x00000083
+	.long 0x00400083
+	.long 0x00800083
+	.long 0x00C00083
+	.long 0x01000083
+	.long 0x01400083
+	.long 0x01800083
+	.long 0x01C00083
+	.long 0x02000083
+	.long 0x02400083
 	.rept (1024 - KERNEL_PAGE_NUMBER - 10)
 		.long 0
 	.endr

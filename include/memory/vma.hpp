@@ -56,6 +56,7 @@ namespace Memory
 
 	public:
 		PageTable *GetTable() { return Table; }
+		void SetTable(PageTable *Table) { this->Table = Table; }
 
 		std::vector<AllocatedPages> GetAllocatedPagesList()
 		{
@@ -93,6 +94,10 @@ namespace Memory
 							  bool Fixed, bool Shared);
 
 		bool HandleCoW(uintptr_t PFA);
+
+		void FreeAllPages();
+
+		void Fork(VirtualMemoryArea *Parent);
 
 		VirtualMemoryArea(PageTable *Table = nullptr);
 		~VirtualMemoryArea();

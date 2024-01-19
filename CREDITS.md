@@ -8,6 +8,9 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [OSDev Wiki](https://wiki.osdev.org/Main_Page)
 - [GCC x86 Built-in Functions](https://gcc.gnu.org/onlinedocs/gcc/x86-Built-in-Functions.html#x86-Built-in-Functions)
 - [GCC Common Function Attributes](https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#Common-Function-Attributes)
+- [LemonOS Project](https://github.com/LemonOSProject/LemonOS)
+- [ToaruOS](https://github.com/klange/toaruos)
+- [Various SIMD functions](https://wiki.osdev.org/User:01000101/optlib/)
 
 ## Font
 - [Tamsyn Font](http://www.fial.com/~scott/tamsyn-font/)
@@ -56,7 +59,6 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 ## Audio
 - [FFmpeg Audio Types](https://trac.ffmpeg.org/wiki/audio%20types)
 - [AC97 on OSDev](https://wiki.osdev.org/AC97)
-- [LemonOS Project](https://github.com/LemonOSProject/LemonOS)
 - [AC97 Revision 2.3 Specification](https://inst.eecs.berkeley.edu//~cs150/Documents/ac97_r23.pdf)
 
 ## Intrinsics (x86)
@@ -96,13 +98,18 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [GCC libstdc++ Source](https://github.com/gcc-mirror/gcc/tree/master/libstdc%2B%2B-v3)
 - [Itanium C++ ABI](https://itanium-cxx-abi.github.io/cxx-abi/abi.html)
 
-## Keyboard
-- [Scan Codes](https://www.win.tue.nl/~aeb/linux/kbd/scancodes-11.html)
-- [PS/2 Keyboard on OSDev](https://wiki.osdev.org/PS/2_Keyboard)
-
 ## signal.h
 - [POSIX signal.h](https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html)
 - [Linux signal(7) Manual](https://man7.org/linux/man-pages/man7/signal.7.html)
+
+## PS/2
+- [Scan Codes](https://www.win.tue.nl/~aeb/linux/kbd/scancodes-11.html)
+- [PS/2 Keyboard on OSDev](https://wiki.osdev.org/PS2_Keyboard)
+- [PS/2 Mouse on OSDev](https://wiki.osdev.org/PS2_Mouse)
+- [Mouse Input on OSDev](https://wiki.osdev.org/Mouse_Input)
+- [I/O Ports on OSDev](https://wiki.osdev.org/I/O_ports)
+- [PS/2 Controller on OSDev](https://wiki.osdev.org/%228042%22_PS/2_Controller)
+- [AIP on OSDev](https://wiki.osdev.org/Advanced_Integrated_Peripheral)
 
 ---
 

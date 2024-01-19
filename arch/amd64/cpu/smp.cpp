@@ -57,6 +57,9 @@ SafeFunction CPUData *GetCurrentCPU()
 	int CoreID = 0;
 	if (CPUEnabled.load(std::memory_order_acquire) == true)
 	{
+		Memory::SwapPT swap =
+			Memory::SwapPT(KernelPageTable, thisPageTable);
+
 		if (apic->x2APIC)
 			CoreID = int(CPU::x64::rdmsr(CPU::x64::MSR_X2APIC_APICID));
 		else
@@ -125,7 +128,8 @@ namespace SMP
 									(uintptr_t)&_trampoline_start;
 		Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW);
 		/* We reserved the TRAMPOLINE_START address inside Physical class. */
-		Memory::Virtual().Map((void *)TRAMPOLINE_START, (void *)TRAMPOLINE_START,
+		Memory::Virtual().Map((void *)TRAMPOLINE_START,
+							  (void *)TRAMPOLINE_START,
 							  TrampolineLength, Memory::PTFlag::RW);
 		memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
 		debug("Trampoline address: %#lx-%#lx",

@@ -20,6 +20,7 @@
 
 #include <types.h>
 #include <debug.h>
+#include <cassert>
 
 namespace Time
 {
@@ -47,6 +48,38 @@ namespace Time
 		Years
 	};
 
+	/** @deprecated this shouldn't be used */
+	inline uint64_t ConvertUnit(const Units Unit)
+	{
+		switch (Unit)
+		{
+		case Femtoseconds:
+			return 1;
+		case Picoseconds:
+			return 1000;
+		case Nanoseconds:
+			return 1000000;
+		case Microseconds:
+			return 1000000000;
+		case Milliseconds:
+			return 1000000000000;
+		case Seconds:
+			return 1000000000000000;
+		case Minutes:
+			return 1000000000000000000;
+		// case Hours:
+		//     return 1000000000000000000000;
+		// case Days:
+		//     return 1000000000000000000000000;
+		// case Months:
+		//     return 1000000000000000000000000000;
+		// case Years:
+		//     return 1000000000000000000000000000000;
+		default:
+			assert(!"Invalid time unit");
+		}
+	}
+
 	class HighPrecisionEventTimer
 	{
 	private:
@@ -67,38 +100,6 @@ namespace Time
 		HPET *hpet = nullptr;
 		uint64_t ClassCreationTime = 0;
 
-		inline uint64_t ConvertUnit(Units Unit)
-		{
-			switch (Unit)
-			{
-			case Femtoseconds:
-				return 1;
-			case Picoseconds:
-				return 1000;
-			case Nanoseconds:
-				return 1000000;
-			case Microseconds:
-				return 1000000000;
-			case Milliseconds:
-				return 1000000000000;
-			case Seconds:
-				return 1000000000000000;
-			case Minutes:
-				return 1000000000000000000;
-			// case Hours:
-			//     return 1000000000000000000000;
-			// case Days:
-			//     return 1000000000000000000000000;
-			// case Months:
-			//     return 1000000000000000000000000000;
-			// case Years:
-			//     return 1000000000000000000000000000000;
-			default:
-				error("Invalid time unit %d", Unit);
-				return 1;
-			}
-		}
-
 	public:
 		bool Sleep(size_t Duration, Units Unit);
 		uint64_t GetCounter();
@@ -114,38 +115,6 @@ namespace Time
 	private:
 		uint64_t clk = 0;
 		uint64_t ClassCreationTime = 0;
-
-		inline uint64_t ConvertUnit(Units Unit)
-		{
-			switch (Unit)
-			{
-			case Femtoseconds:
-				return 1;
-			case Picoseconds:
-				return 1000;
-			case Nanoseconds:
-				return 1000000;
-			case Microseconds:
-				return 1000000000;
-			case Milliseconds:
-				return 1000000000000;
-			case Seconds:
-				return 1000000000000000;
-			case Minutes:
-				return 1000000000000000000;
-			// case Hours:
-			//     return 1000000000000000000000;
-			// case Days:
-			//     return 1000000000000000000000000;
-			// case Months:
-			//     return 1000000000000000000000000000;
-			// case Years:
-			//     return 1000000000000000000000000000000;
-			default:
-				error("Invalid time unit %d", Unit);
-				return 1;
-			}
-		}
 
 	public:
 		bool Sleep(size_t Duration, Units Unit);
@@ -198,5 +167,5 @@ namespace Time
 		~time();
 	};
 }
- 
+
 #endif // !__FENNIX_KERNEL_TIME_H__

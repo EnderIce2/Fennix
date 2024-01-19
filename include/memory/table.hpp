@@ -148,7 +148,7 @@ namespace Memory
 #elif defined(aa64)
 #endif
 		};
-		uintptr_t raw;
+		uintptr_t raw = 0;
 
 		/** @brief Set Address */
 		void SetAddress(uintptr_t _Address)
@@ -273,7 +273,7 @@ namespace Memory
 		} FourMiB;
 #elif defined(aa64)
 #endif
-		uintptr_t raw;
+		uintptr_t raw = 0;
 
 		/** @brief Set PageTableEntryPtr address */
 		void SetAddress(uintptr_t _Address)
@@ -359,7 +359,7 @@ namespace Memory
 		} OneGiB;
 #elif defined(aa64)
 #endif
-		uintptr_t raw;
+		uintptr_t raw = 0;
 
 		/** @brief Set PageDirectoryEntryPtr address */
 		void SetAddress(uintptr_t _Address)
@@ -413,7 +413,7 @@ namespace Memory
 		};
 #elif defined(aa64)
 #endif
-		uintptr_t raw;
+		uintptr_t raw = 0;
 
 		/** @brief Set PageDirectoryPointerTableEntryPtr address */
 		void SetAddress(uintptr_t _Address)
@@ -467,7 +467,7 @@ namespace Memory
 		};
 #elif defined(aa64)
 #endif
-		uintptr_t raw;
+		uintptr_t raw = 0;
 
 		/** @brief Set PageMapLevel4Ptr address */
 		void SetAddress(uintptr_t _Address)
@@ -516,10 +516,34 @@ namespace Memory
 		 *
 		 * @return A new PageTable with the same content
 		 */
-		PageTable Fork();
+		PageTable *Fork();
 
+		void *__getPhysical(void *Address);
+
+		/**
+		 * @brief Get the Physical Address of a virtual address
+		 *
+		 * This function will return the physical address
+		 * of a virtual address and not the virtual address
+		 * of the current page table. This is intentional because
+		 * the kernel page table has 1:1 mapping for the free
+		 * memory.
+		 *
+		 * @tparam T
+		 * @param Address The virtual address
+		 * @return The physical address
+		 */
 		template <typename T>
-		T Get(T Address);
+		T Get(T Address)
+		{
+			void *PhysAddr = __getPhysical((void *)Address);
+			if (PhysAddr == nullptr)
+				return {};
+			uintptr_t Diff = uintptr_t(Address);
+			Diff &= 0xFFF;
+			Diff = uintptr_t(PhysAddr) + Diff;
+			return (T)Diff;
+		}
 	} __aligned(0x1000);
 }
 

@@ -22,31 +22,51 @@ namespace vfs
 {
 	int Node::open(int Flags, mode_t Mode)
 	{
-		debug("Operation not handled");
-		return -ENXIO;
+		if (likely(open_ptr))
+			return open_ptr(Flags, Mode);
+
+		debug("Operation not handled for %s(%#lx)",
+			  this->FullPath, this);
+		return -ENODEV;
 	}
 
 	int Node::close()
 	{
-		debug("Operation not handled");
-		return -ENXIO;
+		if (likely(close_ptr))
+			return close_ptr();
+
+		debug("Operation not handled for %s(%#lx)",
+			  this->FullPath, this);
+		return -ENODEV;
 	}
 
 	size_t Node::read(uint8_t *Buffer, size_t Size, off_t Offset)
 	{
-		debug("Operation not handled");
-		return -ENXIO;
+		if (likely(read_ptr))
+			return read_ptr(Buffer, Size, Offset);
+
+		debug("Operation not handled for %s(%#lx)",
+			  this->FullPath, this);
+		return -ENODEV;
 	}
 
 	size_t Node::write(uint8_t *Buffer, size_t Size, off_t Offset)
 	{
-		debug("Operation not handled");
-		return -ENXIO;
+		if (likely(write_ptr))
+			return write_ptr(Buffer, Size, Offset);
+
+		debug("Operation not handled for %s(%#lx)",
+			  this->FullPath, this);
+		return -ENODEV;
 	}
 
 	int Node::ioctl(unsigned long Request, void *Argp)
 	{
-		debug("Operation not handled");
+		if (likely(ioctl_ptr))
+			return ioctl_ptr(Request, Argp);
+
+		debug("Operation not handled for %s(%#lx)",
+			  this->FullPath, this);
 		return -ENODEV;
 	}
 
@@ -55,7 +75,8 @@ namespace vfs
 		SmartLock(NodeLock);
 		RefNode *ref = new RefNode(this);
 		References.push_back(ref);
-		debug("Created reference %#lx for node %#lx", ref, this);
+		debug("Created reference %#lx for node %#lx(%s)",
+			  ref, this, this->Name);
 		return ref;
 	}
 
@@ -199,56 +220,24 @@ namespace vfs
 			trace("Node %s(%#lx) has no parent",
 				  this->Name, this);
 		}
-	}
 
-	int Node::Delete(bool Recursive)
-	{
-		if (this->References.size() != 0)
-		{
-			debug("Node %s(%#lx) has %ld references",
-				  this->FullPath, this,
-				  this->References.size());
-			return -EBUSY;
-		}
-
-		if (this->Type == MOUNTPOINT ||
-			this->Type == DIRECTORY)
-		{
-			if (this->Children.size() != 0)
-			{
-				if (!Recursive)
-				{
-					debug("Node %s(%#lx) has %ld children",
-						  this->FullPath, this,
-						  this->Children.size());
-					return -ENOTEMPTY;
-				}
-
-				for (auto Child : this->Children)
-				{
-					int ret = Child->Delete(Recursive);
-
-					if (ret < 0)
-					{
-						debug("Failed to delete child %s(%#lx)",
-							  Child->FullPath, Child);
-						return ret;
-					}
-				}
-			}
-		}
-
-		delete this;
-		return 0;
+		debug("Created node %s(%#lx)", this->FullPath, this);
 	}
 
 	Node::~Node()
 	{
-		debug("Destroyed node %#lx", this);
-		assert(this->Children.size() == 0);
+		debug("Destroyed node %s(%#lx)", this->FullPath, this);
+		// assert(this->Children.size() == 0);
+
+		foreach (auto Child in this->Children)
+			delete Child;
 
 		if (this->Parent)
 		{
+			debug("Removing node %s(%#lx) from parent %s(%#lx)",
+				  this->FullPath, this,
+				  this->Parent->FullPath, this->Parent);
+
 			this->Parent->Children.erase(std::find(this->Parent->Children.begin(),
 												   this->Parent->Children.end(),
 												   this));

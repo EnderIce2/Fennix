@@ -70,7 +70,7 @@ static struct cag_option ConfigOptions[] = {
 	 .access_letters = "dD",
 	 .access_name = "drvdir",
 	 .value_name = "PATH",
-	 .description = "Directory to load modules from"},
+	 .description = "Directory to load drivers from"},
 
 	{.identifier = 'i',
 	 .access_letters = "iI",
@@ -104,9 +104,9 @@ static struct cag_option ConfigOptions[] = {
 
 	{.identifier = 'b',
 	 .access_letters = NULL,
-	 .access_name = "bootanim",
+	 .access_name = "quiet",
 	 .value_name = "BOOL",
-	 .description = "Enable boot animation"},
+	 .description = "Enable quiet boot"},
 
 	{.identifier = 'h',
 	 .access_letters = "h",
@@ -218,7 +218,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		case 'd':
 		{
 			value = cag_option_get_value(&context);
-			strncpy(ModConfig->ModuleDirectory, value, strlen(value));
+			strncpy(ModConfig->DriverDirectory, value, strlen(value));
 			KPrint("\eAAFFAAUsing %s as module directory", value);
 			break;
 		}
@@ -267,14 +267,14 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		case 'b':
 		{
 			value = cag_option_get_value(&context);
-			strcmp(value, "true") == 0 ? ModConfig->BootAnimation = true
-									   : ModConfig->BootAnimation = false;
-			KPrint("\eAAFFAABoot animation: %s", value);
+			strcmp(value, "true") == 0 ? ModConfig->Quiet = true
+									   : ModConfig->Quiet = false;
+			KPrint("\eAAFFAAQuiet boot: %s", value);
 			break;
 		}
 		case 'h':
 		{
-			KPrint("\n---------------------------------------------------------------------------\nUsage: kernel.fsys [OPTION]...\nKernel configuration.");
+			KPrint("\n---------------------------------------------------------------------------\nUsage: fennix.elf [OPTION]...\nKernel configuration.");
 			cag_option_print(ConfigOptions, CAG_ARRAY_SIZE(ConfigOptions),
 							 nullptr);
 			KPrint("\eFF2200System Halted.");

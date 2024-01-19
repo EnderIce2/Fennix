@@ -20,27 +20,24 @@
 
 #include <debug.h>
 
-#define assert(x)                                        \
-	do                                                   \
-	{                                                    \
-		if (!(x))                                        \
-		{                                                \
-			error("Assertion failed! [%s] [%s:%s:%d]",   \
-				  #x, __FILE__, __FUNCTION__, __LINE__); \
-			int3;                                        \
-			while (true)                                 \
-				;                                        \
-		}                                                \
+#define assert(x)                                \
+	do                                           \
+	{                                            \
+		if (__builtin_expect(!!(!(x)), 0))       \
+		{                                        \
+			error("Assertion failed! [%s]", #x); \
+			int3;                                \
+			__builtin_unreachable();             \
+		}                                        \
 	} while (0)
 
-#define assert_allow_continue(x)                         \
-	do                                                   \
-	{                                                    \
-		if (!(x))                                        \
-		{                                                \
-			error("Assertion failed! [%s] [%s:%s:%d]",   \
-				  #x, __FILE__, __FUNCTION__, __LINE__); \
-		}                                                \
+#define assert_allow_continue(x)                 \
+	do                                           \
+	{                                            \
+		if (__builtin_expect(!!(!(x)), 0))       \
+		{                                        \
+			error("Assertion failed! [%s]", #x); \
+		}                                        \
 	} while (0)
 
 #if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)

@@ -25,7 +25,7 @@
 #include "gdt.hpp"
 #include "../../../kernel.h"
 
-/* conversion from ‘uint64_t’ {aka ‘long unsigned int’} to ‘unsigned char:2’ may change value */
+/* conversion from 'uint64_t' {aka 'long unsigned int'} to 'unsigned char:2' may change value */
 #pragma GCC diagnostic ignored "-Wconversion"
 
 extern "C" void MainInterruptHandler(void *Data);
@@ -532,11 +532,11 @@ namespace InterruptDescriptorTable
 		}
 
 		bool EnableISRs = true;
-#ifdef DEBUG
+// #ifdef DEBUG
 		EnableISRs = !DebuggerIsAttached;
 		if (!EnableISRs)
 			KPrint("\eFFA500The debugger is attached, disabling all ISRs.");
-#endif
+// #endif
 
 		/* ISR */
 		SetEntry(0x0, InterruptHandler_0x0, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
@@ -553,7 +553,7 @@ namespace InterruptDescriptorTable
 		SetEntry(0xb, InterruptHandler_0xb, IST1, TRAP_GATE_64BIT, RING0, (!DebuggerIsAttached), GDT_KERNEL_CODE);
 		SetEntry(0xc, InterruptHandler_0xc, IST3, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0xd, InterruptHandler_0xd, IST3, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
-		SetEntry(0xe, InterruptHandler_0xe, IST3, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
+		SetEntry(0xe, InterruptHandler_0xe, IST3, TRAP_GATE_64BIT, RING0, EnableISRs /* FIXME: CoW? */, GDT_KERNEL_CODE);
 		SetEntry(0xf, InterruptHandler_0xf, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x10, InterruptHandler_0x10, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x11, InterruptHandler_0x11, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);

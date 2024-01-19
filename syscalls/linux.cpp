@@ -15,13 +15,29 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <syscall/linux/syscalls_amd64.hpp>
+#include <syscall/linux/syscalls_i386.hpp>
+#include <syscall/linux/signals.hpp>
+#include <syscall/linux/defs.hpp>
 #include <syscalls.hpp>
 
+#include <signal.hpp>
+#include <utsname.h>
+#include <rand.hpp>
+#include <limits.h>
+#include <exec.hpp>
 #include <debug.h>
 #include <cpu.hpp>
+#include <time.h>
+
+#include <memory.hpp>
+#define INI_IMPLEMENTATION
+#include <ini.h>
 
 #include "../kernel.h"
-#include "linux_syscalls.hpp"
+
+using Tasking::PCB;
+using Tasking::TCB;
 
 struct SyscallData
 {
@@ -29,185 +45,96 @@ struct SyscallData
 	void *Handler;
 };
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
-
-#define ARCH_SET_GS 0x1001
-#define ARCH_SET_FS 0x1002
-#define ARCH_GET_FS 0x1003
-#define ARCH_GET_GS 0x1004
-
-#define ARCH_GET_CPUID 0x1011
-#define ARCH_SET_CPUID 0x1012
-
-#define ARCH_GET_XCOMP_SUPP 0x1021
-#define ARCH_GET_XCOMP_PERM 0x1022
-#define ARCH_REQ_XCOMP_PERM 0x1023
-#define ARCH_GET_XCOMP_GUEST_PERM 0x1024
-#define ARCH_REQ_XCOMP_GUEST_PERM 0x1025
-
-#define ARCH_XCOMP_TILECFG 17
-#define ARCH_XCOMP_TILEDATA 18
-
-#define ARCH_MAP_VDSO_X32 0x2001
-#define ARCH_MAP_VDSO_32 0x2002
-#define ARCH_MAP_VDSO_64 0x2003
-
-#define ARCH_GET_UNTAG_MASK 0x4001
-#define ARCH_ENABLE_TAGGED_ADDR 0x4002
-#define ARCH_GET_MAX_TAG_BITS 0x4003
-#define ARCH_FORCE_TAGGED_SVA 0x4004
-
-#define PROT_NONE 0
-#define PROT_READ 1
-#define PROT_WRITE 2
-#define PROT_EXEC 4
-#define PROT_GROWSDOWN 0x01000000
-#define PROT_GROWSUP 0x02000000
-
-#define MAP_TYPE 0x0f
-
-#define MAP_FILE 0
-#define MAP_SHARED 0x01
-#define MAP_PRIVATE 0x02
-#define MAP_SHARED_VALIDATE 0x03
-#define MAP_FIXED 0x10
-#define MAP_ANONYMOUS 0x20
-#define MAP_NORESERVE 0x4000
-#define MAP_GROWSDOWN 0x0100
-#define MAP_DENYWRITE 0x0800
-#define MAP_EXECUTABLE 0x1000
-#define MAP_LOCKED 0x2000
-#define MAP_POPULATE 0x8000
-#define MAP_NONBLOCK 0x10000
-#define MAP_STACK 0x20000
-#define MAP_HUGETLB 0x40000
-#define MAP_SYNC 0x80000
-#define MAP_FIXED_NOREPLACE 0x100000
-
-#define linux_SIGHUP 1
-#define linux_SIGINT 2
-#define linux_SIGQUIT 3
-#define linux_SIGILL 4
-#define linux_SIGTRAP 5
-#define linux_SIGABRT 6
-#define linux_SIGIOT linux_SIGABRT
-#define linux_SIGBUS 7
-#define linux_SIGFPE 8
-#define linux_SIGKILL 9
-#define linux_SIGUSR1 10
-#define linux_SIGSEGV 11
-#define linux_SIGUSR2 12
-#define linux_SIGPIPE 13
-#define linux_SIGALRM 14
-#define linux_SIGTERM 15
-#define linux_SIGSTKFLT 16
-#define linux_SIGCHLD 17
-#define linux_SIGCONT 18
-#define linux_SIGSTOP 19
-#define linux_SIGTSTP 20
-#define linux_SIGTTIN 21
-#define linux_SIGTTOU 22
-#define linux_SIGURG 23
-#define linux_SIGXCPU 24
-#define linux_SIGXFSZ 25
-#define linux_SIGVTALRM 26
-#define linux_SIGPROF 27
-#define linux_SIGWINCH 28
-#define linux_SIGIO 29
-#define linux_SIGPOLL 29
-#define linux_SIGPWR 30
-#define linux_SIGSYS 31
-#define linux_SIGUNUSED linux_SIGSYS
-
-typedef int pid_t;
-
-struct iovec
+void linux_fork_return(void *tableAddr)
 {
-	void *iov_base;
-	size_t iov_len;
-};
-
-typedef long __kernel_old_time_t;
-typedef long __kernel_suseconds_t;
-
-struct timeval
-{
-	__kernel_old_time_t tv_sec;
-	__kernel_suseconds_t tv_usec;
-};
-
-struct rusage
-{
-	struct timeval ru_utime;
-	struct timeval ru_stime;
-	long ru_maxrss;
-	long ru_ixrss;
-	long ru_idrss;
-	long ru_isrss;
-	long ru_minflt;
-	long ru_majflt;
-	long ru_nswap;
-	long ru_inblock;
-	long ru_oublock;
-	long ru_msgsnd;
-	long ru_msgrcv;
-	long ru_nsignals;
-	long ru_nvcsw;
-	long ru_nivcsw;
-};
-
-/* From native functions */
-#define SysFrm SyscallsFrame
-SysFrm *thisFrame;
-ssize_t sys_read(SysFrm *, int, void *, size_t);
-ssize_t sys_write(SysFrm *, int, const void *, size_t);
-int sys_open(SysFrm *, const char *, int, mode_t);
-int sys_close(SysFrm *, int);
-off_t sys_lseek(SysFrm *, int, off_t, int);
-void *sys_mmap(SysFrm *, void *, size_t, int, int, int, off_t);
-int sys_mprotect(SysFrm *, void *, size_t, int);
-int sys_munmap(SysFrm *, void *, size_t);
-int sys_fork(SysFrm *);
-int sys_execve(SysFrm *, const char *, char *const[], char *const[]);
-__noreturn void sys_exit(SysFrm *, int);
+#if defined(a64)
+	asmv("movq %0, %%cr3" ::"r"(tableAddr)); /* Load process page table */
+	asmv("movq $0, %rax\n");				 /* Return 0 */
+	asmv("movq %r8, %rsp\n");				 /* Restore stack pointer */
+	asmv("movq %r8, %rbp\n");				 /* Restore base pointer */
+	asmv("swapgs\n");						 /* Swap GS back to the user GS */
+	asmv("sti\n");							 /* Enable interrupts */
+	asmv("sysretq\n");						 /* Return to rcx address in user mode */
+#elif defined(a32)
+#warning "linux_fork_return not implemented for i386"
+#endif
+	__builtin_unreachable();
+}
 
 /* https://man7.org/linux/man-pages/man2/read.2.html */
-static ssize_t linux_read(int fd, void *buf, size_t count)
+static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 {
-	return sys_read(thisFrame, fd, buf, count);
+	PCB *pcb = thisProcess;
+	void *pBuf = pcb->PageTable->Get(buf);
+
+	function("%d, %p, %d", fd, buf, count);
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	ssize_t ret = fdt->_read(fd, pBuf, count);
+	if (ret >= 0)
+		fdt->_lseek(fd, ret, SEEK_CUR);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/write.2.html */
-static ssize_t linux_write(int fd, const void *buf, size_t count)
+static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 {
-	return sys_write(thisFrame, fd, buf, count);
+	PCB *pcb = thisProcess;
+	const void *pBuf = pcb->PageTable->Get((void *)buf);
+
+	function("%d, %p, %d", fd, buf, count);
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	ssize_t ret = fdt->_write(fd, pBuf, count);
+	if (ret)
+		fdt->_lseek(fd, ret, SEEK_CUR);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/open.2.html */
-static int linux_open(const char *pathname, int flags, mode_t mode)
+static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 {
-	return sys_open(thisFrame, pathname, flags, mode);
+	PCB *pcb = thisProcess;
+	const char *pPathname = pcb->PageTable->Get(pathname);
+
+	function("%s, %d, %d", pPathname, flags, mode);
+
+	if (flags & 0200000 /* O_DIRECTORY */)
+	{
+		vfs::Node *node = fs->GetNodeFromPath(pPathname);
+		if (!node)
+		{
+			debug("Couldn't find %s", pPathname);
+			return -ENOENT;
+		}
+
+		if (node->Type != vfs::NodeType::DIRECTORY)
+		{
+			debug("%s is not a directory", pPathname);
+			return -ENOTDIR;
+		}
+	}
+
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return fdt->_open(pPathname, flags, mode);
 }
 
 /* https://man7.org/linux/man-pages/man2/close.2.html */
-static int linux_close(int fd)
+static int linux_close(SysFrm *, int fd)
 {
-	return sys_close(thisFrame, fd);
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return fdt->_close(fd);
 }
 
 /* https://man7.org/linux/man-pages/man2/stat.2.html */
-static int linux_stat(const char *pathname, struct stat *statbuf)
+static int linux_stat(SysFrm *, const char *pathname, struct stat *statbuf)
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check((void *)pathname, Memory::US))
 	{
-		warn("Invalid address %#lx", pathname);
+		debug("Invalid address %#lx", pathname);
 		return -EFAULT;
 	}
 	auto pPathname = pcb->PageTable->Get(pathname);
@@ -216,16 +143,16 @@ static int linux_stat(const char *pathname, struct stat *statbuf)
 }
 
 /* https://man7.org/linux/man-pages/man2/fstat.2.html */
-static int linux_fstat(int fd, struct stat *statbuf)
+static int linux_fstat(SysFrm *, int fd, struct stat *statbuf)
 {
 #undef fstat
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check((void *)statbuf, Memory::US))
 	{
-		warn("Invalid address %#lx", statbuf);
+		debug("Invalid address %#lx", statbuf);
 		return -EFAULT;
 	}
 	auto pStatbuf = pcb->PageTable->Get(statbuf);
@@ -234,22 +161,22 @@ static int linux_fstat(int fd, struct stat *statbuf)
 }
 
 /* https://man7.org/linux/man-pages/man2/lstat.2.html */
-static int linux_lstat(const char *pathname, struct stat *statbuf)
+static int linux_lstat(SysFrm *, const char *pathname, struct stat *statbuf)
 {
 #undef lstat
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check((void *)pathname, Memory::US))
 	{
-		warn("Invalid address %#lx", pathname);
+		debug("Invalid address %#lx", pathname);
 		return -EFAULT;
 	}
 
 	if (!vmm.Check((void *)statbuf, Memory::US))
 	{
-		warn("Invalid address %#lx", statbuf);
+		debug("Invalid address %#lx", statbuf);
 		return -EFAULT;
 	}
 
@@ -261,21 +188,19 @@ static int linux_lstat(const char *pathname, struct stat *statbuf)
 
 #include "../syscalls.h"
 /* https://man7.org/linux/man-pages/man2/lseek.2.html */
-static off_t linux_lseek(int fd, off_t offset, int whence)
+static off_t linux_lseek(SysFrm *, int fd, off_t offset, int whence)
 {
-	int new_whence = 0;
-	if (whence == SEEK_SET)
-		new_whence = sc_SEEK_SET;
-	else if (whence == SEEK_CUR)
-		new_whence = sc_SEEK_CUR;
-	else if (whence == SEEK_END)
-		new_whence = sc_SEEK_END;
+	static_assert(SEEK_SET == sc_SEEK_SET);
+	static_assert(SEEK_CUR == sc_SEEK_CUR);
+	static_assert(SEEK_END == sc_SEEK_END);
 
-	return sys_lseek(thisFrame, fd, offset, new_whence);
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	return fdt->_lseek(fd, offset, whence);
 }
 
 /* https://man7.org/linux/man-pages/man2/mmap.2.html */
-static void *linux_mmap(void *addr, size_t length, int prot,
+static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 						int flags, int fildes, off_t offset)
 {
 	static_assert(PROT_NONE == sc_PROT_NONE);
@@ -306,43 +231,199 @@ static void *linux_mmap(void *addr, size_t length, int prot,
 	}
 	if (flags)
 		fixme("unhandled flags: %#x", flags);
+	flags = new_flags;
 
-	return sys_mmap(thisFrame, addr, length, prot,
-					new_flags, fildes, offset);
+	if (length == 0)
+		return (void *)-EINVAL;
+
+	if (fildes != -1)
+		return (void *)-ENOSYS;
+
+	bool p_None = prot & sc_PROT_NONE;
+	bool p_Read = prot & sc_PROT_READ;
+	bool p_Write = prot & sc_PROT_WRITE;
+	bool p_Exec = prot & sc_PROT_EXEC;
+
+	bool m_Shared = flags & sc_MAP_SHARED;
+	bool m_Private = flags & sc_MAP_PRIVATE;
+	bool m_Fixed = flags & sc_MAP_FIXED;
+	bool m_Anon = flags & sc_MAP_ANONYMOUS;
+
+	UNUSED(p_None);
+	UNUSED(m_Anon);
+
+	debug("N:%d R:%d W:%d E:%d",
+		  p_None, p_Read, p_Write,
+		  p_Exec);
+
+	debug("S:%d P:%d F:%d A:%d",
+		  m_Shared, m_Private,
+		  m_Fixed, m_Anon);
+
+	int UnknownFlags = flags & ~(sc_MAP_SHARED |
+								 sc_MAP_PRIVATE |
+								 sc_MAP_FIXED |
+								 sc_MAP_ANONYMOUS);
+
+	if (UnknownFlags)
+	{
+		debug("Unknown flags: %x", UnknownFlags);
+		return (void *)-EINVAL;
+	}
+
+	if (length > PAGE_SIZE_2M)
+		fixme("large page 2 MiB (requested %d)",
+			  TO_MiB(length));
+	else if (length > PAGE_SIZE_1G)
+		fixme("huge page 1 GiB (requested %d)",
+			  TO_GiB(length));
+
+	if (offset % PAGE_SIZE)
+		return (void *)-EINVAL;
+
+	if (uintptr_t(addr) % PAGE_SIZE && m_Fixed)
+		return (void *)-EINVAL;
+
+	if ((m_Shared && m_Private) ||
+		(!m_Shared && !m_Private))
+		return (void *)-EINVAL;
+
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+	intptr_t ret = (intptr_t)vma->CreateCoWRegion(addr, length,
+												  p_Read, p_Write, p_Exec,
+												  m_Fixed, m_Shared);
+
+	return (void *)ret;
 }
 #undef __FENNIX_KERNEL_SYSCALLS_LIST_H__
 
 /* https://man7.org/linux/man-pages/man2/mprotect.2.html */
-static int linux_mprotect(void *addr, size_t len, int prot)
+static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 {
-	return sys_mprotect(thisFrame, addr, len, prot);
+	if (len == 0)
+		return -EINVAL;
+
+	if (uintptr_t(addr) % PAGE_SIZE)
+		return -EINVAL;
+
+	// bool p_None = prot & sc_PROT_NONE;
+	bool p_Read = prot & sc_PROT_READ;
+	bool p_Write = prot & sc_PROT_WRITE;
+	// bool p_Exec = prot & sc_PROT_EXEC;
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	for (uintptr_t i = uintptr_t(addr);
+		 i < uintptr_t(addr) + len;
+		 i += PAGE_SIZE)
+	{
+		if (likely(!vmm.Check((void *)i, Memory::G)))
+		{
+			Memory::PageTableEntry *pte = vmm.GetPTE(addr);
+			if (pte == nullptr)
+			{
+				debug("Page %#lx is not mapped inside %#lx",
+					  (void *)i, pcb->PageTable);
+				fixme("Page %#lx is not mapped", (void *)i);
+				continue;
+				return -ENOMEM;
+			}
+
+			if (!pte->Present ||
+				(!pte->UserSupervisor && p_Read) ||
+				(!pte->ReadWrite && p_Write))
+			{
+				debug("Page %p is not mapped with the correct permissions",
+					  (void *)i);
+				return -EACCES;
+			}
+
+			// pte->Present = !p_None;
+			pte->UserSupervisor = p_Read;
+			pte->ReadWrite = p_Write;
+			// pte->ExecuteDisable = p_Exec;
+
+			debug("Changed permissions of page %#lx to %s %s %s %s",
+				  (void *)i,
+				  (prot & sc_PROT_NONE) ? "None" : "",
+				  p_Read ? "Read" : "",
+				  p_Write ? "Write" : "",
+				  (prot & sc_PROT_EXEC) ? "Exec" : "");
+
+#if defined(a64)
+			CPU::x64::invlpg(addr);
+#elif defined(a32)
+			CPU::x32::invlpg(addr);
+#elif defined(aa64)
+			asmv("dsb sy");
+			asmv("tlbi vae1is, %0"
+				 :
+				 : "r"(addr)
+				 : "memory");
+			asmv("dsb sy");
+			asmv("isb");
+#endif
+		}
+		else
+		{
+			warn("%p is a global page", (void *)i);
+			return -ENOMEM;
+		}
+	}
+
+	return 0;
 }
 
 /* https://man7.org/linux/man-pages/man2/munmap.2.html */
-static int linux_munmap(void *addr, size_t length)
+static int linux_munmap(SysFrm *, void *addr, size_t length)
 {
-	return sys_munmap(thisFrame, addr, length);
+	if (uintptr_t(addr) % PAGE_SIZE)
+		return -EINVAL;
+
+	if (length == 0)
+		return -EINVAL;
+
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	for (uintptr_t i = uintptr_t(addr);
+		 i < uintptr_t(addr) + length;
+		 i += PAGE_SIZE)
+	{
+		if (likely(!vmm.Check((void *)i, Memory::G)))
+			vmm.Remap((void *)i, (void *)i, Memory::P | Memory::RW);
+		else
+			warn("%p is a global page", (void *)i);
+	}
+
+	/* TODO: Check if the page is allocated
+				and not only mapped */
+	vma->FreePages((void *)addr, TO_PAGES(length) + 1);
+	return 0;
 }
 
 /* https://man7.org/linux/man-pages/man2/brk.2.html */
-static void *linux_brk(void *addr)
+static void *linux_brk(SysFrm *, void *addr)
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	void *ret = pcb->ProgramBreak->brk(addr);
 	debug("brk(%#lx) = %#lx", addr, ret);
 	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/ioctl.2.html */
-static int linux_ioctl(int fd, unsigned long request, void *argp)
+static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check((void *)argp, Memory::US))
 	{
-		warn("Invalid address %#lx", argp);
+		debug("Invalid address %#lx", argp);
 		return -EFAULT;
 	}
 	auto pArgp = pcb->PageTable->Get(argp);
@@ -351,28 +432,35 @@ static int linux_ioctl(int fd, unsigned long request, void *argp)
 }
 
 /* https://man7.org/linux/man-pages/man2/readv.2.html */
-static ssize_t linux_readv(int fildes, const struct iovec *iov, int iovcnt)
+static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
-	size_t iovec_size = sizeof(struct iovec) * iovcnt;
-	Tasking::PCB *pcb = thisProcess;
-	Memory::SmartHeap sh(iovec_size, pcb->vma);
-	{
-		Memory::SwapPT swap(pcb->PageTable);
-		memcpy(sh, iov, iovec_size);
-	}
-	iov = (struct iovec *)sh.Get();
+	PCB *pcb = thisProcess;
+	const struct iovec *pIov = pcb->PageTable->Get(iov);
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
 	{
-		debug("%d: iov[%d]: %p %d", fildes, i, iov[i].iov_base, iov[i].iov_len);
-		ssize_t n = linux_read(fildes, iov[i].iov_base, iov[i].iov_len);
+		debug("%d: iov[%d]: %p %d", fildes, i, pIov[i].iov_base, pIov[i].iov_len);
+
+		if (!pIov[i].iov_base)
+		{
+			debug("invalid iov_base");
+			return -EFAULT;
+		}
+
+		if (pIov[i].iov_len == 0)
+		{
+			debug("invalid iov_len");
+			continue;
+		}
+
+		ssize_t n = linux_read(sf, fildes, pIov[i].iov_base, pIov[i].iov_len);
 		if (n < 0)
 			return n;
 		debug("n: %d", n);
 
 		Total += n;
-		if (n < (ssize_t)iov[i].iov_len)
+		if (n < (ssize_t)pIov[i].iov_len)
 		{
 			debug("break");
 			break;
@@ -383,28 +471,35 @@ static ssize_t linux_readv(int fildes, const struct iovec *iov, int iovcnt)
 }
 
 /* https://man7.org/linux/man-pages/man2/writev.2.html */
-static ssize_t linux_writev(int fildes, const struct iovec *iov, int iovcnt)
+static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
-	size_t iovec_size = sizeof(struct iovec) * iovcnt;
-	Tasking::PCB *pcb = thisProcess;
-	Memory::SmartHeap sh(iovec_size, pcb->vma);
-	{
-		Memory::SwapPT swap(pcb->PageTable);
-		memcpy(sh, iov, iovec_size);
-	}
-	iov = (struct iovec *)sh.Get();
+	PCB *pcb = thisProcess;
+	const struct iovec *pIov = pcb->PageTable->Get(iov);
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
 	{
-		debug("%d: iov[%d]: %p %d", fildes, i, iov[i].iov_base, iov[i].iov_len);
-		ssize_t n = linux_write(fildes, iov[i].iov_base, iov[i].iov_len);
+		debug("%d: iov[%d]: %p %d", fildes, i, pIov[i].iov_base, pIov[i].iov_len);
+
+		if (!pIov[i].iov_base)
+		{
+			debug("invalid iov_base");
+			return -EFAULT;
+		}
+
+		if (pIov[i].iov_len == 0)
+		{
+			debug("invalid iov_len");
+			continue;
+		}
+
+		ssize_t n = linux_write(sf, fildes, pIov[i].iov_base, pIov[i].iov_len);
 		if (n < 0)
 			return n;
 		debug("n: %d", n);
 
 		Total += n;
-		if (n < (ssize_t)iov[i].iov_len)
+		if (n < (ssize_t)pIov[i].iov_len)
 		{
 			debug("break");
 			break;
@@ -414,80 +509,593 @@ static ssize_t linux_writev(int fildes, const struct iovec *iov, int iovcnt)
 	return Total;
 }
 
-/* https://man7.org/linux/man-pages/man2/dup.2.html */
-static int linux_dup(int oldfd)
+/* https://man7.org/linux/man-pages/man2/pipe.2.html */
+static int linux_pipe(SysFrm *, int pipefd[2])
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
+	int *pPipefd = pcb->PageTable->Get(pipefd);
+	debug("pipefd=%#lx", pPipefd);
+	fixme("pipefd=[%d, %d]", pPipefd[0], pPipefd[1]);
+	return -ENOSYS;
+}
+
+/* https://man7.org/linux/man-pages/man2/dup.2.html */
+static int linux_dup(SysFrm *, int oldfd)
+{
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	return fdt->_dup(oldfd);
 }
 
 /* https://man7.org/linux/man-pages/man2/dup.2.html */
-static int linux_dup2(int oldfd, int newfd)
+static int linux_dup2(SysFrm *, int oldfd, int newfd)
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	return fdt->_dup2(oldfd, newfd);
 }
 
-/* https://man7.org/linux/man-pages/man2/fork.2.html */
-static pid_t linux_fork()
+/* https://man7.org/linux/man-pages/man2/pause.2.html */
+static int linux_pause(SysFrm *)
 {
-	return sys_fork(thisFrame);
+	PCB *pcb = thisProcess;
+	return pcb->Signals->WaitAnySignal();
+}
+
+/* https://man7.org/linux/man-pages/man2/nanosleep.2.html */
+static int linux_nanosleep(SysFrm *,
+						   const struct timespec *req,
+						   struct timespec *rem)
+{
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (!vmm.Check((void *)req, Memory::US))
+	{
+		debug("Invalid address %#lx", req);
+		return -EFAULT;
+	}
+
+	if (rem && !vmm.Check((void *)rem, Memory::US))
+	{
+		debug("Invalid address %#lx", rem);
+		return -EFAULT;
+	}
+
+	auto pReq = pcb->PageTable->Get(req);
+	auto pRem = rem ? pcb->PageTable->Get(rem) : 0;
+
+	if (pReq->tv_nsec < 0 || pReq->tv_nsec > 999999999)
+	{
+		debug("Invalid tv_nsec %ld", pReq->tv_nsec);
+		return -EINVAL;
+	}
+
+	if (pReq->tv_sec < 0)
+	{
+		debug("Invalid tv_sec %ld", pReq->tv_sec);
+		return -EINVAL;
+	}
+
+	debug("tv_nsec=%ld tv_sec=%ld",
+		  pReq->tv_nsec, pReq->tv_sec);
+
+	uint64_t nanoTime = pReq->tv_nsec;
+	uint64_t secTime = pReq->tv_sec * 1000000000; /* Nano */
+
+	uint64_t time = TimeManager->GetCounter();
+	uint64_t sleepTime = TimeManager->CalculateTarget(nanoTime + secTime, Time::Nanoseconds);
+
+	debug("time=%ld secTime=%ld nanoTime=%ld sleepTime=%ld",
+		  time, secTime, nanoTime, sleepTime);
+
+	while (time < sleepTime)
+	{
+		pcb->GetContext()->Yield();
+		/* TODO: sleep should be interrupted by
+			the signal and return errno EINTR */
+		time = TimeManager->GetCounter();
+	}
+	debug("time=     %ld", time);
+	debug("sleepTime=%ld", sleepTime);
+
+	if (rem)
+	{
+		pRem->tv_sec = 0;
+		pRem->tv_nsec = 0;
+	}
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/getpid.2.html */
+static pid_t linux_getpid(SysFrm *)
+{
+	return thisProcess->ID;
+}
+
+/* https://man7.org/linux/man-pages/man2/shutdown.2.html */
+static int linux_shutdown(SysFrm *, int sockfd, int how)
+{
+	stub;
+	return -ENOSYS;
+}
+
+/* https://man7.org/linux/man-pages/man2/fork.2.html */
+static pid_t linux_fork(SysFrm *sf)
+{
+	TCB *Thread = thisThread;
+	PCB *Parent = Thread->Parent;
+
+	PCB *NewProcess =
+		TaskManager->CreateProcess(Parent,
+								   Parent->Name,
+								   Parent->Security.ExecutionMode,
+								   nullptr, true);
+	if (unlikely(!NewProcess))
+	{
+		error("Failed to create process for fork");
+		return -EAGAIN;
+	}
+
+	NewProcess->PageTable = Parent->PageTable->Fork();
+	NewProcess->vma->SetTable(NewProcess->PageTable);
+	NewProcess->vma->Fork(Parent->vma);
+	NewProcess->ProgramBreak->SetTable(NewProcess->PageTable);
+	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
+
+	if (Parent->ELFSymbolTable &&
+		Parent->ELFSymbolTable->SymTableExists)
+	{
+		NewProcess->ELFSymbolTable = new SymbolResolver::Symbols(0);
+		foreach (auto sym in Parent->ELFSymbolTable->GetSymTable())
+		{
+			NewProcess->ELFSymbolTable->AddSymbol(sym.Address,
+												  sym.FunctionName);
+		}
+	}
+
+	TCB *NewThread =
+		TaskManager->CreateThread(NewProcess,
+								  0,
+								  nullptr,
+								  nullptr,
+								  std::vector<AuxiliaryVector>(),
+								  Thread->Info.Architecture,
+								  Thread->Info.Compatibility,
+								  true);
+	if (!NewThread)
+	{
+		error("Failed to create thread for fork");
+		delete NewProcess;
+		return -EAGAIN;
+	}
+	NewThread->Rename(Thread->Name);
+
+	TaskManager->UpdateFrame();
+
+	NewThread->FPU = Thread->FPU;
+	NewThread->Stack->Fork(Thread->Stack);
+	NewThread->Info.Architecture = Thread->Info.Architecture;
+	NewThread->Info.Compatibility = Thread->Info.Compatibility;
+	NewThread->Security.IsCritical = Thread->Security.IsCritical;
+	NewThread->Registers = Thread->Registers;
+#if defined(a64)
+	NewThread->Registers.rip = (uintptr_t)linux_fork_return;
+	/* For sysretq */
+	NewThread->Registers.rdi = (uintptr_t)NewProcess->PageTable;
+	NewThread->Registers.rcx = sf->ReturnAddress;
+	NewThread->Registers.r8 = sf->StackPointer;
+#else
+#warning "sys_fork not implemented for other platforms"
+#endif
+
+#ifdef a86
+	NewThread->GSBase = NewThread->ShadowGSBase;
+	NewThread->ShadowGSBase = Thread->ShadowGSBase;
+	NewThread->FSBase = Thread->FSBase;
+#endif
+
+	debug("ret addr: %#lx, stack: %#lx ip: %#lx", sf->ReturnAddress,
+		  sf->StackPointer, (uintptr_t)linux_fork_return);
+	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)",
+		  Thread->Name, Thread->ID,
+		  NewThread->Name, NewThread->ID);
+	NewThread->SetState(Tasking::Ready);
+
+	// Parent->GetContext()->Yield();
+	return (int)NewProcess->ID;
 }
 
 /* https://man7.org/linux/man-pages/man2/execve.2.html */
-static int linux_execve(const char *pathname, char *const argv[],
+static int linux_execve(SysFrm *sf, const char *pathname,
+						char *const argv[],
 						char *const envp[])
 {
-	return sys_execve(thisFrame, pathname, argv, envp);
+	/* FIXME: exec doesn't follow the UNIX standard
+		The pid, open files, etc. should be preserved */
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+
+	if (pathname == nullptr ||
+		!vmm.Check((void *)pathname, Memory::US) ||
+		!vmm.Check((void *)argv, Memory::US) ||
+		!vmm.Check((void *)envp, Memory::US))
+		return -ENOENT;
+
+	const char *safe_path;
+	char **safe_argv;
+	char **safe_envp;
+	safe_path = (const char *)pcb->vma->RequestPages(1);
+	safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
+	safe_envp = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
+	{
+		Memory::SwapPT swap(pcb->PageTable);
+		size_t len = strlen(pathname);
+		memset((void *)safe_path, 0, PAGE_SIZE);
+		memcpy((void *)safe_path, pathname, len);
+
+		const char *arg;
+		char *n_arg;
+		for (int i = 0; argv[i] != nullptr; i++)
+		{
+			arg = argv[i];
+			size_t len = strlen(arg);
+
+			n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+			memcpy((void *)n_arg, arg, len);
+			n_arg[len] = '\0';
+
+			safe_argv[i] = n_arg;
+
+			if (likely(i < MAX_ARG - 1))
+				safe_argv[i + 1] = nullptr;
+		}
+
+		for (int i = 0; envp[i] != nullptr; i++)
+		{
+			arg = envp[i];
+			size_t len = strlen(arg);
+
+			n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+			memcpy((void *)n_arg, arg, len);
+			n_arg[len] = '\0';
+
+			safe_envp[i] = n_arg;
+
+			if (likely(i < MAX_ARG - 1))
+				safe_envp[i + 1] = nullptr;
+		}
+	}
+
+	function("%s %#lx %#lx", safe_path, safe_argv, safe_envp);
+
+#ifdef DEBUG
+	for (int i = 0; safe_argv[i] != nullptr; i++)
+		debug("safe_argv[%d]: %s", i, safe_argv[i]);
+
+	for (int i = 0; safe_envp[i] != nullptr; i++)
+		debug("safe_envp[%d]: %s", i, safe_envp[i]);
+#endif
+
+	vfs::RefNode *File = fs->Open(safe_path,
+								  pcb->CurrentWorkingDirectory);
+
+	if (!File)
+	{
+		error("File not found");
+		return -ENOENT;
+	}
+
+	char shebang_magic[2];
+	File->read((uint8_t *)shebang_magic, 2);
+
+	if (shebang_magic[0] == '#' && shebang_magic[1] == '!')
+	{
+		char *orig_path = (char *)pcb->vma->RequestPages(TO_PAGES(strlen(pathname) + 1));
+		memcpy(orig_path, pathname, strlen(pathname) + 1);
+
+		char *shebang = (char *)safe_path;
+		size_t shebang_len = 0;
+		constexpr int shebang_len_max = 255;
+		File->seek(2, SEEK_SET);
+		off_t shebang_off = 2;
+		while (true)
+		{
+			char c;
+			if (File->node->read((uint8_t *)&c, 1, shebang_off) == 0)
+				break;
+			if (c == '\n' || shebang_len == shebang_len_max)
+				break;
+			shebang[shebang_len++] = c;
+			shebang_off++;
+		}
+		shebang[shebang_len] = '\0';
+		debug("Shebang: %s", shebang);
+
+		char **c_safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
+		int i = 0;
+		for (; safe_argv[i] != nullptr; i++)
+		{
+			size_t arg_len = strlen(safe_argv[i]);
+			char *c_arg = (char *)pcb->vma->RequestPages(TO_PAGES(arg_len));
+			memcpy((void *)c_arg, safe_argv[i], arg_len);
+			c_arg[arg_len] = '\0';
+
+			c_safe_argv[i] = c_arg;
+			debug("c_safe_argv[%d]: %s", i, c_safe_argv[i]);
+		}
+		c_safe_argv[i] = nullptr;
+
+		char *token = strtok(shebang, " ");
+		i = 0;
+		while (token != nullptr)
+		{
+			size_t len = strlen(token);
+			char *t_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+			memcpy((void *)t_arg, token, len);
+			t_arg[len] = '\0';
+
+			safe_argv[i++] = t_arg;
+			token = strtok(nullptr, " ");
+		}
+
+		safe_argv[i++] = orig_path;
+		for (int j = 1; c_safe_argv[j] != nullptr; j++)
+		{
+			safe_argv[i++] = c_safe_argv[j];
+			debug("clone: safe_argv[%d]: %s",
+				  i, safe_argv[i - 1]);
+		}
+		safe_argv[i] = nullptr;
+
+		delete File;
+		return linux_execve(sf, safe_argv[0],
+							(char *const *)safe_argv,
+							(char *const *)safe_envp);
+	}
+
+	int ret = Execute::Spawn((char *)safe_path,
+							 (const char **)safe_argv,
+							 (const char **)safe_envp,
+							 pcb, true,
+							 pcb->Info.Compatibility);
+
+	if (ret < 0)
+	{
+		error("Failed to spawn");
+		delete File;
+		return ret;
+	}
+
+	delete File;
+	Tasking::Task *ctx = pcb->GetContext();
+	// ctx->Sleep(1000);
+	// pcb->SetState(Tasking::Zombie);
+	// pcb->SetExitCode(0); /* FIXME: get process exit code */
+	while (true)
+		ctx->Yield();
+	__builtin_unreachable();
 }
 
 /* https://man7.org/linux/man-pages/man2/exit.2.html */
-static __noreturn void linux_exit(int status)
+static __noreturn void linux_exit(SysFrm *, int status)
 {
-	sys_exit(thisFrame, status);
+	TCB *t = thisThread;
+
+	trace("Userspace thread %s(%d) exited with code %d (%#x)",
+		  t->Name,
+		  t->ID, status,
+		  status < 0 ? -status : status);
+
+	t->SetState(Tasking::Zombie);
+	t->SetExitCode(status);
+	while (true)
+		t->GetContext()->Yield();
+	__builtin_unreachable();
 }
 
 /* https://man7.org/linux/man-pages/man2/wait4.2.html */
-static pid_t linux_wait4(pid_t pid, int *wstatus, int options, struct rusage *rusage)
+static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
+						 int options, struct rusage *rusage)
 {
 	static_assert(sizeof(struct rusage) < PAGE_SIZE);
+	/* FIXME: this function is very poorly implemented, the way
+		it handles the zombie & coredump processes is very
+		inefficient and should be rewritten */
 
-	Tasking::PCB *pcb = thisProcess;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check(rusage, Memory::US) && rusage != nullptr)
 	{
-		warn("Invalid address %#lx", rusage);
+		debug("Invalid address %#lx", rusage);
 		return -EFAULT;
 	}
 
 	if (pid == -1)
-		pid = pcb->ID + 1; /* TODO: Wait for any child process */
+	{
+		if (pcb->Children.empty())
+		{
+			debug("No children");
+			return -ECHILD;
+		}
 
-	Tasking::PCB *tPcb = pcb->GetContext()->GetProcessByID(pid);
+		std::vector<PCB *> wChilds;
+		for (auto child : pcb->Children)
+		{
+			if (child->State == Tasking::Zombie)
+			{
+				if (wstatus != nullptr)
+				{
+					int *pWstatus = pcb->PageTable->Get(wstatus);
+					*pWstatus = 0;
 
+					bool ProcessExited = true;
+					int ExitStatus = child->ExitCode.load();
+
+					debug("Process returned %d", ExitStatus);
+
+					if (ProcessExited)
+						*pWstatus |= ExitStatus << 8;
+				}
+
+				if (rusage != nullptr)
+				{
+					size_t kTime = child->Info.KernelTime;
+					size_t uTime = child->Info.UserTime;
+					size_t _maxrss = child->GetSize();
+
+					struct rusage *pRusage = pcb->PageTable->Get(rusage);
+
+					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
+
+					pRusage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+					pRusage->ru_stime.tv_usec = kTime / 1000000000;		 /* Microseconds */
+
+					pRusage->ru_maxrss = _maxrss;
+				}
+
+				child->SetState(Tasking::Terminated);
+				return child->ID;
+			}
+
+			if (child->State == Tasking::CoreDump)
+			{
+				if (wstatus != nullptr)
+				{
+					int *pWstatus = pcb->PageTable->Get(wstatus);
+					*pWstatus = 0;
+
+					bool ProcessExited = true;
+					int ExitStatus = child->ExitCode.load();
+					bool ProcessSignaled = true;
+					bool CoreDumped = true;
+					int TermSignal = child->Signals->GetLastSignal();
+
+					debug("Process returned %d", ExitStatus);
+
+					if (ProcessExited)
+						*pWstatus |= ExitStatus << 8;
+
+					if (ProcessSignaled)
+						*pWstatus |= TermSignal;
+
+					if (CoreDumped)
+						*pWstatus |= 0x80;
+				}
+
+				if (rusage != nullptr)
+				{
+					size_t kTime = child->Info.KernelTime;
+					size_t uTime = child->Info.UserTime;
+					size_t _maxrss = child->GetSize();
+
+					struct rusage *pRusage = pcb->PageTable->Get(rusage);
+
+					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
+
+					pRusage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+					pRusage->ru_stime.tv_usec = kTime / 1000000000;		 /* Microseconds */
+
+					pRusage->ru_maxrss = _maxrss;
+				}
+
+				child->SetState(Tasking::Terminated);
+				return child->ID;
+			}
+
+			if (child->State != Tasking::Terminated)
+				wChilds.push_back(child);
+		}
+
+		if (wChilds.empty())
+		{
+			debug("No children");
+			return -ECHILD;
+		}
+
+		fixme("Waiting for %d children", wChilds.size());
+		pid = wChilds.front()->ID;
+	}
+
+	if (pid == 0)
+	{
+		fixme("Waiting for any child process whose process group ID is equal to that of the calling process");
+		return -ENOSYS;
+	}
+
+	if (pid < -1)
+	{
+		fixme("Waiting for any child process whose process group ID is equal to the absolute value of pid");
+		return -ENOSYS;
+	}
+
+	/* Wait for a child process, or any process? */
+	PCB *tPcb = pcb->GetContext()->GetProcessByID(pid);
 	if (!tPcb)
 	{
 		warn("Invalid PID %d", pid);
 		return -ECHILD;
 	}
 
-	tPcb->KeepInMemory = true;
-
-	Tasking::TaskState state = tPcb->State;
-	debug("Waiting for %d(%#lx) state %d", pid, tPcb, state);
-	while (tPcb->State == state)
-		pcb->GetContext()->Yield();
-	debug("Waited for %d(%#lx) state %d", pid, tPcb, state);
-
-	if (wstatus)
+	if (options)
 	{
-		int status = tPcb->ExitCode.load();
+#define WCONTINUED 1
+#define WNOHANG 2
+#define WUNTRACED 4
+#define WEXITED 8
+#define WNOWAIT 16
+#define WSTOPPED 32
+		fixme("options=%#x", options);
+	}
 
-		Memory::SwapPT swap(pcb->PageTable);
-		*wstatus = status;
+#ifdef DEBUG
+	foreach (auto child in pcb->Children)
+		debug("Child: %s(%d)", child->Name, child->ID);
+#endif
+
+	debug("Waiting for %d(%#lx) state %d", pid, tPcb, tPcb->State);
+	while (tPcb->State != Tasking::Zombie &&
+		   tPcb->State != Tasking::CoreDump &&
+		   tPcb->State != Tasking::Terminated)
+		pcb->GetContext()->Yield();
+	debug("Waited for %d(%#lx) state %d", pid, tPcb, tPcb->State);
+
+	if (wstatus != nullptr)
+	{
+		int *pWstatus = pcb->PageTable->Get(wstatus);
+		*pWstatus = 0;
+
+		bool ProcessExited = true;
+		int ExitStatus = tPcb->ExitCode.load();
+		bool ProcessSignaled = false;
+		bool CoreDumped = false;
+		bool ProcessStopped = false;
+		bool ProcessContinued = false;
+		int TermSignal = 0;
+
+		debug("Process returned %d", ExitStatus);
+
+		if (ProcessExited)
+			*pWstatus |= ExitStatus << 8;
+
+		if (ProcessSignaled)
+			*pWstatus |= TermSignal;
+
+		if (CoreDumped)
+			*pWstatus |= 0x80;
+
+		/* FIXME: Untested */
+
+		if (ProcessStopped)
+			*pWstatus |= 0x7F;
+
+		if (ProcessContinued)
+			*pWstatus = 0xFFFF;
+
+		debug("wstatus=%#x", *pWstatus);
 	}
 
 	if (rusage != nullptr)
@@ -496,48 +1104,267 @@ static pid_t linux_wait4(pid_t pid, int *wstatus, int options, struct rusage *ru
 		size_t uTime = tPcb->Info.UserTime;
 		size_t _maxrss = tPcb->GetSize();
 
-		{
-			Memory::SwapPT swap(pcb->PageTable);
+		struct rusage *pRusage = pcb->PageTable->Get(rusage);
 
-			rusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
-			rusage->ru_utime.tv_usec = uTime / 1000000000;		/* Microseconds */
+		pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+		pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
 
-			rusage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
-			rusage->ru_stime.tv_usec = kTime / 1000000000;		/* Microseconds */
+		pRusage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+		pRusage->ru_stime.tv_usec = kTime / 1000000000;		 /* Microseconds */
 
-			rusage->ru_maxrss = _maxrss;
-			/* TODO: The rest of the fields */
-		}
+		pRusage->ru_maxrss = _maxrss;
+		/* TODO: The rest of the fields */
 	}
 
-	tPcb->KeepInMemory = false;
-	debug("%d", pid);
 	return pid;
 }
 
-/* https://man7.org/linux/man-pages/man2/creat.2.html */
-static int linux_creat(const char *pathname, mode_t mode)
+/* https://man7.org/linux/man-pages/man2/kill.2.html */
+static int linux_kill(SysFrm *, pid_t pid, int sig)
 {
-	Tasking::PCB *pcb = thisProcess;
+	PCB *target = thisProcess->GetContext()->GetProcessByID(pid);
+	if (!target)
+		return -ESRCH;
+
+	/* TODO: Check permissions */
+
+	if (sig == 0)
+		return 0;
+
+	if (pid == 0)
+	{
+		fixme("Sending signal %d to all processes", sig);
+		return -ENOSYS;
+	}
+
+	if (pid == -1)
+	{
+		fixme("Sending signal %d to all processes except init", sig);
+		return -ENOSYS;
+	}
+
+	if (pid < -1)
+	{
+		fixme("Sending signal %d to process group %d", sig, pid);
+		return -ENOSYS;
+	}
+
+	return target->Signals->SendSignal(sig);
+}
+
+/* https://man7.org/linux/man-pages/man2/uname.2.html */
+static int linux_uname(SysFrm *, struct utsname *buf)
+{
+	assert(sizeof(struct utsname) < PAGE_SIZE);
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (!vmm.Check(buf, Memory::US))
+	{
+		debug("Invalid address %#lx", buf);
+		return -EFAULT;
+	}
+
+	auto pBuf = pcb->PageTable->Get(buf);
+
+	struct utsname uname =
+	{
+		/* TODO: This shouldn't be hardcoded */
+		.sysname = KERNEL_NAME,
+		.nodename = "fennix",
+		.release = KERNEL_VERSION,
+		.version = KERNEL_VERSION,
+#if defined(a64)
+		.machine = "x86_64",
+#elif defined(a32)
+		.machine = "i386",
+#elif defined(aa64)
+		.machine = "arm64",
+#elif defined(aa32)
+		.machine = "arm",
+#endif
+	};
+
+	vfs::RefNode *rn = fs->Open("/etc/cross/linux");
+	if (rn)
+	{
+		Memory::SmartHeap sh(rn->Size);
+		rn->read(sh, rn->Size);
+		delete rn;
+
+		ini_t *ini = ini_load(sh, NULL);
+		int section = ini_find_section(ini, "uname", NULL);
+		int sysIdx = ini_find_property(ini, section, "sysname", NULL);
+		int nodIdx = ini_find_property(ini, section, "nodename", NULL);
+		int relIdx = ini_find_property(ini, section, "release", NULL);
+		int verIdx = ini_find_property(ini, section, "version", NULL);
+		int macIdx = ini_find_property(ini, section, "machine", NULL);
+		const char *uSys = ini_property_value(ini, section, sysIdx);
+		const char *uNod = ini_property_value(ini, section, nodIdx);
+		const char *uRel = ini_property_value(ini, section, relIdx);
+		const char *uVer = ini_property_value(ini, section, verIdx);
+		const char *uMac = ini_property_value(ini, section, macIdx);
+		debug("sysname=%s", uSys);
+		debug("nodename=%s", uNod);
+		debug("release=%s", uRel);
+		debug("version=%s", uVer);
+		debug("machine=%s", uMac);
+
+		if (uSys && strcmp(uSys, "auto") != 0)
+			strncpy(uname.sysname, uSys, sizeof(uname.sysname));
+		if (uNod && strcmp(uNod, "auto") != 0)
+			strncpy(uname.nodename, uNod, sizeof(uname.nodename));
+		if (uRel && strcmp(uRel, "auto") != 0)
+			strncpy(uname.release, uRel, sizeof(uname.release));
+		if (uVer && strcmp(uVer, "auto") != 0)
+			strncpy(uname.version, uVer, sizeof(uname.version));
+		if (uMac && strcmp(uMac, "auto") != 0)
+			strncpy(uname.machine, uMac, sizeof(uname.machine));
+		ini_destroy(ini);
+	}
+	else
+		warn("Couldn't open /etc/cross/linux");
+
+	memcpy(pBuf, &uname, sizeof(struct utsname));
+	return 0;
+}
+
+static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
+{
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	switch (cmd)
+	{
+	case F_DUPFD:
+		return fdt->_dup2(fd, s_cst(int, (uintptr_t)arg));
+	case F_GETFD:
+		return fdt->GetFlags(fd);
+	case F_SETFD:
+		return fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg));
+	case F_GETFL:
+	case F_SETFL:
+	case F_SETOWN:
+	case F_GETOWN:
+	case F_SETSIG:
+	case F_GETSIG:
+	case F_GETLK:
+	case F_SETLK:
+	case F_SETLKW:
+	case F_SETOWN_EX:
+	case F_GETOWN_EX:
+	{
+		fixme("cmd %d not implemented", cmd);
+		return -ENOSYS;
+	}
+	default:
+	{
+		debug("Invalid cmd %#x", cmd);
+		return -EINVAL;
+	}
+	}
+}
+
+/* https://man7.org/linux/man-pages/man2/creat.2.html */
+static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
+{
+	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	return fdt->_creat(pathname, mode);
 }
 
-/* https://man7.org/linux/man-pages/man2/arch_prctl.2.html */
-static int linux_arch_prctl(int code, unsigned long addr)
+/* https://man7.org/linux/man-pages/man2/mkdir.2.html */
+static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 {
-	Tasking::PCB *pcb = thisProcess;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	PCB *pcb = thisProcess;
+	fixme("semi-stub");
+
+	const char *pPathname = pcb->PageTable->Get(pathname);
+	vfs::Node *n = fs->Create(pPathname, vfs::DIRECTORY, pcb->CurrentWorkingDirectory);
+	if (!n)
+		return -EEXIST;
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/readlink.2.html */
+static ssize_t linux_readlink(SysFrm *, const char *pathname,
+							  char *buf, size_t bufsiz)
+{
+	if (!pathname || !buf)
+		return -EINVAL;
+
+	if (bufsiz > PAGE_SIZE)
+	{
+		warn("bufsiz is too large: %ld", bufsiz);
+		return -EINVAL;
+	}
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+	if (!vmm.Check((void *)buf, Memory::US))
+	{
+		warn("Invalid address %#lx", buf);
+		return -EFAULT;
+	}
+
+	const char *pPath = pcb->PageTable->Get(pathname);
+	char *pBuf = pcb->PageTable->Get(buf);
+	function("%s %#lx %ld", pPath, buf, bufsiz);
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	int fd = fdt->_open(pPath, O_RDONLY, 0);
+	if (fd < 0)
+		return -ENOENT;
+
+	vfs::FileDescriptorTable::Fildes fildes = fdt->GetDescriptor(fd);
+	vfs::Node *node = fildes.Handle->node;
+	fdt->_close(fd);
+
+	if (node->Type != vfs::NodeType::SYMLINK)
+		return -EINVAL;
+
+	if (!node->Symlink)
+	{
+		warn("Symlink null for \"%s\"?", pPath);
+		return -EINVAL;
+	}
+
+	size_t len = strlen(node->Symlink);
+	if (len > bufsiz)
+		len = bufsiz;
+
+	strncpy(pBuf, node->Symlink, len);
+	return len;
+}
+
+/* https://man7.org/linux/man-pages/man2/getuid.2.html */
+static uid_t linux_getuid(SysFrm *)
+{
+	return thisProcess->Security.Real.UserID;
+}
+
+/* https://man7.org/linux/man-pages/man2/getpid.2.html */
+static pid_t linux_getppid(SysFrm *)
+{
+	return thisProcess->Parent->ID;
+}
+
+/* https://man7.org/linux/man-pages/man2/arch_prctl.2.html */
+static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
+{
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
 
 	if (!vmm.Check((void *)addr))
 	{
-		warn("Invalid address %#lx", addr);
+		debug("Invalid address %#lx", addr);
 		return -EFAULT;
 	}
 
 	if (!vmm.Check((void *)addr, Memory::US))
 	{
-		warn("Address %#lx is not user accessible", addr);
+		debug("Address %#lx is not user accessible", addr);
 		return -EPERM;
 	}
 
@@ -605,20 +1432,194 @@ static int linux_arch_prctl(int code, unsigned long addr)
 	}
 	default:
 	{
-		warn("Invalid code %#lx", code);
+		debug("Invalid code %#lx", code);
 		return -EINVAL;
 	}
 	}
 }
 
+/* https://man7.org/linux/man-pages/man2/reboot.2.html */
+static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
+{
+	if (magic != LINUX_REBOOT_MAGIC1 ||
+		(magic2 != LINUX_REBOOT_MAGIC2 &&
+		 magic2 != LINUX_REBOOT_MAGIC2A &&
+		 magic2 != LINUX_REBOOT_MAGIC2B &&
+		 magic2 != LINUX_REBOOT_MAGIC2C))
+	{
+		warn("Invalid magic %#x %#x", magic, magic2);
+		return -EINVAL;
+	}
+
+	PCB *pcb = thisProcess;
+
+	debug("cmd=%#x arg=%#lx", cmd, arg);
+	switch ((unsigned int)cmd)
+	{
+	case LINUX_REBOOT_CMD_RESTART:
+	{
+		KPrint("Restarting system.");
+
+		Tasking::Task *ctx = pcb->GetContext();
+		ctx->CreateThread(ctx->GetKernelProcess(),
+						  Tasking::IP(KST_Reboot))
+			->Rename("Restart");
+		return 0;
+	}
+	case LINUX_REBOOT_CMD_HALT:
+	{
+		KPrint("System halted.");
+
+		pcb->GetContext()->Panic();
+		CPU::Stop();
+	}
+	case LINUX_REBOOT_CMD_POWER_OFF:
+	{
+		KPrint("Power down.");
+
+		Tasking::Task *ctx = pcb->GetContext();
+		ctx->CreateThread(ctx->GetKernelProcess(),
+						  Tasking::IP(KST_Shutdown))
+			->Rename("Shutdown");
+		return 0;
+	}
+	case LINUX_REBOOT_CMD_RESTART2:
+	{
+		Memory::Virtual vmm(pcb->PageTable);
+		if (!vmm.Check(arg, Memory::US))
+		{
+			debug("Invalid address %#lx", arg);
+			return -EFAULT;
+		}
+
+		void *pArg = pcb->PageTable->Get(arg);
+		KPrint("Restarting system with command '%s'",
+			   (const char *)pArg);
+
+		Tasking::Task *ctx = pcb->GetContext();
+		ctx->CreateThread(ctx->GetKernelProcess(),
+						  Tasking::IP(KST_Reboot))
+			->Rename("Restart");
+		break;
+	}
+	case LINUX_REBOOT_CMD_CAD_ON:
+	case LINUX_REBOOT_CMD_CAD_OFF:
+	case LINUX_REBOOT_CMD_SW_SUSPEND:
+	case LINUX_REBOOT_CMD_KEXEC:
+	{
+		fixme("cmd %#x not implemented", cmd);
+		return -ENOSYS;
+	}
+	default:
+	{
+		debug("Invalid cmd %#x", cmd);
+		return -EINVAL;
+	}
+	}
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/sigaction.2.html */
+static int linux_sigaction(SysFrm *, int signum,
+						   const struct sigaction *act,
+						   struct sigaction *oldact)
+{
+	if (signum == linux_SIGKILL || signum == linux_SIGSTOP)
+	{
+		debug("Invalid signal %d", signum);
+		return -EINVAL;
+	}
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (oldact && !vmm.Check(oldact, Memory::US))
+	{
+		debug("Invalid address %#lx", oldact);
+		return -EFAULT;
+	}
+
+	if (act && !vmm.Check((void *)act, Memory::US))
+	{
+		debug("Invalid address %#lx", act);
+		return -EFAULT;
+	}
+
+	debug("signum=%d act=%#lx oldact=%#lx", signum, act, oldact);
+
+	auto pOldact = pcb->PageTable->Get(oldact);
+	auto pAct = pcb->PageTable->Get(act);
+	int ret = 0;
+
+	if (pOldact)
+		ret = pcb->Signals->GetAction(signum, pOldact);
+
+	if (unlikely(ret < 0))
+		return ret;
+
+	if (pAct)
+		ret = pcb->Signals->SetAction(signum, *pAct);
+
+	return ret;
+}
+
+/* https://man7.org/linux/man-pages/man2/sigprocmask.2.html */
+static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
+							 sigset_t *oldset, size_t sigsetsize)
+{
+	static_assert(sizeof(sigset_t) < PAGE_SIZE);
+
+	if (sigsetsize != sizeof(sigset_t))
+	{
+		warn("Unsupported sigsetsize %d!", sigsetsize);
+		return -EINVAL;
+	}
+
+	PCB *pcb = thisProcess;
+	const sigset_t *pSet = (const sigset_t *)pcb->PageTable->Get((void *)set);
+	sigset_t *pOldset = (sigset_t *)pcb->PageTable->Get(oldset);
+
+	debug("how=%#x set=%#lx oldset=%#lx",
+		  how, pSet ? *pSet : 0, pOldset ? *pOldset : 0);
+
+	if (pOldset)
+		*pOldset = pcb->Signals->GetMask();
+
+	if (!pSet)
+		return 0;
+
+	switch (how)
+	{
+	case SIG_BLOCK:
+		pcb->Signals->Block(*pSet);
+		break;
+	case SIG_UNBLOCK:
+		pcb->Signals->Unblock(*pSet);
+		break;
+	case SIG_SETMASK:
+		pcb->Signals->SetMask(*pSet);
+		break;
+	default:
+		warn("Invalid how %#x", how);
+		return -EINVAL;
+	}
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/sigreturn.2.html */
+static void linux_sigreturn(SysFrm *sf)
+{
+	thisProcess->Signals->RestoreHandleSignal(sf);
+}
+
 /* https://man7.org/linux/man-pages/man2/gettid.2.html */
-static pid_t linux_gettid()
+static pid_t linux_gettid(SysFrm *)
 {
 	return thisThread->ID;
 }
 
 /* https://man7.org/linux/man-pages/man2/set_tid_address.2.html */
-static pid_t linux_set_tid_address(int *tidptr)
+static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 {
 	if (tidptr == nullptr)
 		return -EINVAL;
@@ -629,349 +1630,615 @@ static pid_t linux_set_tid_address(int *tidptr)
 	return tcb->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/exit_group.2.html */
-static __noreturn void linux_exit_group(int status)
+/* https://man7.org/linux/man-pages/man2/getdents.2.html */
+static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
+								size_t count)
 {
-	fixme("status=%d", status);
-	linux_exit(status);
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+
+	if (count < sizeof(struct linux_dirent64))
+	{
+		debug("Invalid count %d", count);
+		return -EINVAL;
+	}
+
+	vfs::FileDescriptorTable::Fildes &
+		fildes = fdt->GetDescriptor(fd);
+	if (!fildes.Handle)
+	{
+		debug("Invalid fd %d", fd);
+		return -EBADF;
+	}
+
+	if (fildes.Handle->node->Type != vfs::NodeType::DIRECTORY)
+	{
+		debug("Invalid node type %d",
+			  fildes.Handle->node->Type);
+		return -ENOTDIR;
+	}
+
+	auto pDirp = pcb->PageTable->Get(dirp);
+	UNUSED(pDirp);
+	stub;
+	return -ENOSYS;
 }
 
-static SyscallData LinuxSyscallsTable[] = {
-	[__NR_read] = {"read", (void *)linux_read},
-	[__NR_write] = {"write", (void *)linux_write},
-	[__NR_open] = {"open", (void *)linux_open},
-	[__NR_close] = {"close", (void *)linux_close},
-	[__NR_stat] = {"stat", (void *)linux_stat},
-	[__NR_fstat] = {"fstat", (void *)linux_fstat},
-	[__NR_lstat] = {"lstat", (void *)linux_lstat},
-	[__NR_poll] = {"poll", (void *)nullptr},
-	[__NR_lseek] = {"lseek", (void *)linux_lseek},
-	[__NR_mmap] = {"mmap", (void *)linux_mmap},
-	[__NR_mprotect] = {"mprotect", (void *)linux_mprotect},
-	[__NR_munmap] = {"munmap", (void *)linux_munmap},
-	[__NR_brk] = {"brk", (void *)linux_brk},
-	[__NR_rt_sigaction] = {"rt_sigaction", (void *)nullptr},
-	[__NR_rt_sigprocmask] = {"rt_sigprocmask", (void *)nullptr},
-	[__NR_rt_sigreturn] = {"rt_sigreturn", (void *)nullptr},
-	[__NR_ioctl] = {"ioctl", (void *)linux_ioctl},
-	[__NR_pread64] = {"pread64", (void *)nullptr},
-	[__NR_pwrite64] = {"pwrite64", (void *)nullptr},
-	[__NR_readv] = {"readv", (void *)linux_readv},
-	[__NR_writev] = {"writev", (void *)linux_writev},
-	[__NR_access] = {"access", (void *)nullptr},
-	[__NR_pipe] = {"pipe", (void *)nullptr},
-	[__NR_select] = {"select", (void *)nullptr},
-	[__NR_sched_yield] = {"sched_yield", (void *)nullptr},
-	[__NR_mremap] = {"mremap", (void *)nullptr},
-	[__NR_msync] = {"msync", (void *)nullptr},
-	[__NR_mincore] = {"mincore", (void *)nullptr},
-	[__NR_madvise] = {"madvise", (void *)nullptr},
-	[__NR_shmget] = {"shmget", (void *)nullptr},
-	[__NR_shmat] = {"shmat", (void *)nullptr},
-	[__NR_shmctl] = {"shmctl", (void *)nullptr},
-	[__NR_dup] = {"dup", (void *)linux_dup},
-	[__NR_dup2] = {"dup2", (void *)linux_dup2},
-	[__NR_pause] = {"pause", (void *)nullptr},
-	[__NR_nanosleep] = {"nanosleep", (void *)nullptr},
-	[__NR_getitimer] = {"getitimer", (void *)nullptr},
-	[__NR_alarm] = {"alarm", (void *)nullptr},
-	[__NR_setitimer] = {"setitimer", (void *)nullptr},
-	[__NR_getpid] = {"getpid", (void *)nullptr},
-	[__NR_sendfile] = {"sendfile", (void *)nullptr},
-	[__NR_socket] = {"socket", (void *)nullptr},
-	[__NR_connect] = {"connect", (void *)nullptr},
-	[__NR_accept] = {"accept", (void *)nullptr},
-	[__NR_sendto] = {"sendto", (void *)nullptr},
-	[__NR_recvfrom] = {"recvfrom", (void *)nullptr},
-	[__NR_sendmsg] = {"sendmsg", (void *)nullptr},
-	[__NR_recvmsg] = {"recvmsg", (void *)nullptr},
-	[__NR_shutdown] = {"shutdown", (void *)nullptr},
-	[__NR_bind] = {"bind", (void *)nullptr},
-	[__NR_listen] = {"listen", (void *)nullptr},
-	[__NR_getsockname] = {"getsockname", (void *)nullptr},
-	[__NR_getpeername] = {"getpeername", (void *)nullptr},
-	[__NR_socketpair] = {"socketpair", (void *)nullptr},
-	[__NR_setsockopt] = {"setsockopt", (void *)nullptr},
-	[__NR_getsockopt] = {"getsockopt", (void *)nullptr},
-	[__NR_clone] = {"clone", (void *)nullptr},
-	[__NR_fork] = {"fork", (void *)linux_fork},
-	[__NR_vfork] = {"vfork", (void *)nullptr},
-	[__NR_execve] = {"execve", (void *)linux_execve},
-	[__NR_exit] = {"exit", (void *)linux_exit},
-	[__NR_wait4] = {"wait4", (void *)linux_wait4},
-	[__NR_kill] = {"kill", (void *)nullptr},
-	[__NR_uname] = {"uname", (void *)nullptr},
-	[__NR_semget] = {"semget", (void *)nullptr},
-	[__NR_semop] = {"semop", (void *)nullptr},
-	[__NR_semctl] = {"semctl", (void *)nullptr},
-	[__NR_shmdt] = {"shmdt", (void *)nullptr},
-	[__NR_msgget] = {"msgget", (void *)nullptr},
-	[__NR_msgsnd] = {"msgsnd", (void *)nullptr},
-	[__NR_msgrcv] = {"msgrcv", (void *)nullptr},
-	[__NR_msgctl] = {"msgctl", (void *)nullptr},
-	[__NR_fcntl] = {"fcntl", (void *)nullptr},
-	[__NR_flock] = {"flock", (void *)nullptr},
-	[__NR_fsync] = {"fsync", (void *)nullptr},
-	[__NR_fdatasync] = {"fdatasync", (void *)nullptr},
-	[__NR_truncate] = {"truncate", (void *)nullptr},
-	[__NR_ftruncate] = {"ftruncate", (void *)nullptr},
-	[__NR_getdents] = {"getdents", (void *)nullptr},
-	[__NR_getcwd] = {"getcwd", (void *)nullptr},
-	[__NR_chdir] = {"chdir", (void *)nullptr},
-	[__NR_fchdir] = {"fchdir", (void *)nullptr},
-	[__NR_rename] = {"rename", (void *)nullptr},
-	[__NR_mkdir] = {"mkdir", (void *)nullptr},
-	[__NR_rmdir] = {"rmdir", (void *)nullptr},
-	[__NR_creat] = {"creat", (void *)linux_creat},
-	[__NR_link] = {"link", (void *)nullptr},
-	[__NR_unlink] = {"unlink", (void *)nullptr},
-	[__NR_symlink] = {"symlink", (void *)nullptr},
-	[__NR_readlink] = {"readlink", (void *)nullptr},
-	[__NR_chmod] = {"chmod", (void *)nullptr},
-	[__NR_fchmod] = {"fchmod", (void *)nullptr},
-	[__NR_chown] = {"chown", (void *)nullptr},
-	[__NR_fchown] = {"fchown", (void *)nullptr},
-	[__NR_lchown] = {"lchown", (void *)nullptr},
-	[__NR_umask] = {"umask", (void *)nullptr},
-	[__NR_gettimeofday] = {"gettimeofday", (void *)nullptr},
-	[__NR_getrlimit] = {"getrlimit", (void *)nullptr},
-	[__NR_getrusage] = {"getrusage", (void *)nullptr},
-	[__NR_sysinfo] = {"sysinfo", (void *)nullptr},
-	[__NR_times] = {"times", (void *)nullptr},
-	[__NR_ptrace] = {"ptrace", (void *)nullptr},
-	[__NR_getuid] = {"getuid", (void *)nullptr},
-	[__NR_syslog] = {"syslog", (void *)nullptr},
-	[__NR_getgid] = {"getgid", (void *)nullptr},
-	[__NR_setuid] = {"setuid", (void *)nullptr},
-	[__NR_setgid] = {"setgid", (void *)nullptr},
-	[__NR_geteuid] = {"geteuid", (void *)nullptr},
-	[__NR_getegid] = {"getegid", (void *)nullptr},
-	[__NR_setpgid] = {"setpgid", (void *)nullptr},
-	[__NR_getppid] = {"getppid", (void *)nullptr},
-	[__NR_getpgrp] = {"getpgrp", (void *)nullptr},
-	[__NR_setsid] = {"setsid", (void *)nullptr},
-	[__NR_setreuid] = {"setreuid", (void *)nullptr},
-	[__NR_setregid] = {"setregid", (void *)nullptr},
-	[__NR_getgroups] = {"getgroups", (void *)nullptr},
-	[__NR_setgroups] = {"setgroups", (void *)nullptr},
-	[__NR_setresuid] = {"setresuid", (void *)nullptr},
-	[__NR_getresuid] = {"getresuid", (void *)nullptr},
-	[__NR_setresgid] = {"setresgid", (void *)nullptr},
-	[__NR_getresgid] = {"getresgid", (void *)nullptr},
-	[__NR_getpgid] = {"getpgid", (void *)nullptr},
-	[__NR_setfsuid] = {"setfsuid", (void *)nullptr},
-	[__NR_setfsgid] = {"setfsgid", (void *)nullptr},
-	[__NR_getsid] = {"getsid", (void *)nullptr},
-	[__NR_capget] = {"capget", (void *)nullptr},
-	[__NR_capset] = {"capset", (void *)nullptr},
-	[__NR_rt_sigpending] = {"rt_sigpending", (void *)nullptr},
-	[__NR_rt_sigtimedwait] = {"rt_sigtimedwait", (void *)nullptr},
-	[__NR_rt_sigqueueinfo] = {"rt_sigqueueinfo", (void *)nullptr},
-	[__NR_rt_sigsuspend] = {"rt_sigsuspend", (void *)nullptr},
-	[__NR_sigaltstack] = {"sigaltstack", (void *)nullptr},
-	[__NR_utime] = {"utime", (void *)nullptr},
-	[__NR_mknod] = {"mknod", (void *)nullptr},
-	[__NR_uselib] = {"uselib", (void *)nullptr},
-	[__NR_personality] = {"personality", (void *)nullptr},
-	[__NR_ustat] = {"ustat", (void *)nullptr},
-	[__NR_statfs] = {"statfs", (void *)nullptr},
-	[__NR_fstatfs] = {"fstatfs", (void *)nullptr},
-	[__NR_sysfs] = {"sysfs", (void *)nullptr},
-	[__NR_getpriority] = {"getpriority", (void *)nullptr},
-	[__NR_setpriority] = {"setpriority", (void *)nullptr},
-	[__NR_sched_setparam] = {"sched_setparam", (void *)nullptr},
-	[__NR_sched_getparam] = {"sched_getparam", (void *)nullptr},
-	[__NR_sched_setscheduler] = {"sched_setscheduler", (void *)nullptr},
-	[__NR_sched_getscheduler] = {"sched_getscheduler", (void *)nullptr},
-	[__NR_sched_get_priority_max] = {"sched_get_priority_max", (void *)nullptr},
-	[__NR_sched_get_priority_min] = {"sched_get_priority_min", (void *)nullptr},
-	[__NR_sched_rr_get_interval] = {"sched_rr_get_interval", (void *)nullptr},
-	[__NR_mlock] = {"mlock", (void *)nullptr},
-	[__NR_munlock] = {"munlock", (void *)nullptr},
-	[__NR_mlockall] = {"mlockall", (void *)nullptr},
-	[__NR_munlockall] = {"munlockall", (void *)nullptr},
-	[__NR_vhangup] = {"vhangup", (void *)nullptr},
-	[__NR_modify_ldt] = {"modify_ldt", (void *)nullptr},
-	[__NR_pivot_root] = {"pivot_root", (void *)nullptr},
-	[__NR__sysctl] = {"_sysctl", (void *)nullptr},
-	[__NR_prctl] = {"prctl", (void *)nullptr},
-	[__NR_arch_prctl] = {"arch_prctl", (void *)linux_arch_prctl},
-	[__NR_adjtimex] = {"adjtimex", (void *)nullptr},
-	[__NR_setrlimit] = {"setrlimit", (void *)nullptr},
-	[__NR_chroot] = {"chroot", (void *)nullptr},
-	[__NR_sync] = {"sync", (void *)nullptr},
-	[__NR_acct] = {"acct", (void *)nullptr},
-	[__NR_settimeofday] = {"settimeofday", (void *)nullptr},
-	[__NR_mount] = {"mount", (void *)nullptr},
-	[__NR_umount2] = {"umount2", (void *)nullptr},
-	[__NR_swapon] = {"swapon", (void *)nullptr},
-	[__NR_swapoff] = {"swapoff", (void *)nullptr},
-	[__NR_reboot] = {"reboot", (void *)nullptr},
-	[__NR_sethostname] = {"sethostname", (void *)nullptr},
-	[__NR_setdomainname] = {"setdomainname", (void *)nullptr},
-	[__NR_iopl] = {"iopl", (void *)nullptr},
-	[__NR_ioperm] = {"ioperm", (void *)nullptr},
-	[__NR_create_module] = {"create_module", (void *)nullptr},
-	[__NR_init_module] = {"init_module", (void *)nullptr},
-	[__NR_delete_module] = {"delete_module", (void *)nullptr},
-	[__NR_get_kernel_syms] = {"get_kernel_syms", (void *)nullptr},
-	[__NR_query_module] = {"query_module", (void *)nullptr},
-	[__NR_quotactl] = {"quotactl", (void *)nullptr},
-	[__NR_nfsservctl] = {"nfsservctl", (void *)nullptr},
-	[__NR_getpmsg] = {"getpmsg", (void *)nullptr},
-	[__NR_putpmsg] = {"putpmsg", (void *)nullptr},
-	[__NR_afs_syscall] = {"afs_syscall", (void *)nullptr},
-	[__NR_tuxcall] = {"tuxcall", (void *)nullptr},
-	[__NR_security] = {"security", (void *)nullptr},
-	[__NR_gettid] = {"gettid", (void *)linux_gettid},
-	[__NR_readahead] = {"readahead", (void *)nullptr},
-	[__NR_setxattr] = {"setxattr", (void *)nullptr},
-	[__NR_lsetxattr] = {"lsetxattr", (void *)nullptr},
-	[__NR_fsetxattr] = {"fsetxattr", (void *)nullptr},
-	[__NR_getxattr] = {"getxattr", (void *)nullptr},
-	[__NR_lgetxattr] = {"lgetxattr", (void *)nullptr},
-	[__NR_fgetxattr] = {"fgetxattr", (void *)nullptr},
-	[__NR_listxattr] = {"listxattr", (void *)nullptr},
-	[__NR_llistxattr] = {"llistxattr", (void *)nullptr},
-	[__NR_flistxattr] = {"flistxattr", (void *)nullptr},
-	[__NR_removexattr] = {"removexattr", (void *)nullptr},
-	[__NR_lremovexattr] = {"lremovexattr", (void *)nullptr},
-	[__NR_fremovexattr] = {"fremovexattr", (void *)nullptr},
-	[__NR_tkill] = {"tkill", (void *)nullptr},
-	[__NR_time] = {"time", (void *)nullptr},
-	[__NR_futex] = {"futex", (void *)nullptr},
-	[__NR_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
-	[__NR_sched_getaffinity] = {"sched_getaffinity", (void *)nullptr},
-	[__NR_set_thread_area] = {"set_thread_area", (void *)nullptr},
-	[__NR_io_setup] = {"io_setup", (void *)nullptr},
-	[__NR_io_destroy] = {"io_destroy", (void *)nullptr},
-	[__NR_io_getevents] = {"io_getevents", (void *)nullptr},
-	[__NR_io_submit] = {"io_submit", (void *)nullptr},
-	[__NR_io_cancel] = {"io_cancel", (void *)nullptr},
-	[__NR_get_thread_area] = {"get_thread_area", (void *)nullptr},
-	[__NR_lookup_dcookie] = {"lookup_dcookie", (void *)nullptr},
-	[__NR_epoll_create] = {"epoll_create", (void *)nullptr},
-	[__NR_epoll_ctl_old] = {"epoll_ctl_old", (void *)nullptr},
-	[__NR_epoll_wait_old] = {"epoll_wait_old", (void *)nullptr},
-	[__NR_remap_file_pages] = {"remap_file_pages", (void *)nullptr},
-	[__NR_getdents64] = {"getdents64", (void *)nullptr},
-	[__NR_set_tid_address] = {"set_tid_address", (void *)linux_set_tid_address},
-	[__NR_restart_syscall] = {"restart_syscall", (void *)nullptr},
-	[__NR_semtimedop] = {"semtimedop", (void *)nullptr},
-	[__NR_fadvise64] = {"fadvise64", (void *)nullptr},
-	[__NR_timer_create] = {"timer_create", (void *)nullptr},
-	[__NR_timer_settime] = {"timer_settime", (void *)nullptr},
-	[__NR_timer_gettime] = {"timer_gettime", (void *)nullptr},
-	[__NR_timer_getoverrun] = {"timer_getoverrun", (void *)nullptr},
-	[__NR_timer_delete] = {"timer_delete", (void *)nullptr},
-	[__NR_clock_settime] = {"clock_settime", (void *)nullptr},
-	[__NR_clock_gettime] = {"clock_gettime", (void *)nullptr},
-	[__NR_clock_getres] = {"clock_getres", (void *)nullptr},
-	[__NR_clock_nanosleep] = {"clock_nanosleep", (void *)nullptr},
-	[__NR_exit_group] = {"exit_group", (void *)linux_exit_group},
-	[__NR_epoll_wait] = {"epoll_wait", (void *)nullptr},
-	[__NR_epoll_ctl] = {"epoll_ctl", (void *)nullptr},
-	[__NR_tgkill] = {"tgkill", (void *)nullptr},
-	[__NR_utimes] = {"utimes", (void *)nullptr},
-	[__NR_vserver] = {"vserver", (void *)nullptr},
-	[__NR_mbind] = {"mbind", (void *)nullptr},
-	[__NR_set_mempolicy] = {"set_mempolicy", (void *)nullptr},
-	[__NR_get_mempolicy] = {"get_mempolicy", (void *)nullptr},
-	[__NR_mq_open] = {"mq_open", (void *)nullptr},
-	[__NR_mq_unlink] = {"mq_unlink", (void *)nullptr},
-	[__NR_mq_timedsend] = {"mq_timedsend", (void *)nullptr},
-	[__NR_mq_timedreceive] = {"mq_timedreceive", (void *)nullptr},
-	[__NR_mq_notify] = {"mq_notify", (void *)nullptr},
-	[__NR_mq_getsetattr] = {"mq_getsetattr", (void *)nullptr},
-	[__NR_kexec_load] = {"kexec_load", (void *)nullptr},
-	[__NR_waitid] = {"waitid", (void *)nullptr},
-	[__NR_add_key] = {"add_key", (void *)nullptr},
-	[__NR_request_key] = {"request_key", (void *)nullptr},
-	[__NR_keyctl] = {"keyctl", (void *)nullptr},
-	[__NR_ioprio_set] = {"ioprio_set", (void *)nullptr},
-	[__NR_ioprio_get] = {"ioprio_get", (void *)nullptr},
-	[__NR_inotify_init] = {"inotify_init", (void *)nullptr},
-	[__NR_inotify_add_watch] = {"inotify_add_watch", (void *)nullptr},
-	[__NR_inotify_rm_watch] = {"inotify_rm_watch", (void *)nullptr},
-	[__NR_migrate_pages] = {"migrate_pages", (void *)nullptr},
-	[__NR_openat] = {"openat", (void *)nullptr},
-	[__NR_mkdirat] = {"mkdirat", (void *)nullptr},
-	[__NR_mknodat] = {"mknodat", (void *)nullptr},
-	[__NR_fchownat] = {"fchownat", (void *)nullptr},
-	[__NR_futimesat] = {"futimesat", (void *)nullptr},
-	[__NR_newfstatat] = {"newfstatat", (void *)nullptr},
-	[__NR_unlinkat] = {"unlinkat", (void *)nullptr},
-	[__NR_renameat] = {"renameat", (void *)nullptr},
-	[__NR_linkat] = {"linkat", (void *)nullptr},
-	[__NR_symlinkat] = {"symlinkat", (void *)nullptr},
-	[__NR_readlinkat] = {"readlinkat", (void *)nullptr},
-	[__NR_fchmodat] = {"fchmodat", (void *)nullptr},
-	[__NR_faccessat] = {"faccessat", (void *)nullptr},
-	[__NR_pselect6] = {"pselect6", (void *)nullptr},
-	[__NR_ppoll] = {"ppoll", (void *)nullptr},
-	[__NR_unshare] = {"unshare", (void *)nullptr},
-	[__NR_set_robust_list] = {"set_robust_list", (void *)nullptr},
-	[__NR_get_robust_list] = {"get_robust_list", (void *)nullptr},
-	[__NR_splice] = {"splice", (void *)nullptr},
-	[__NR_tee] = {"tee", (void *)nullptr},
-	[__NR_sync_file_range] = {"sync_file_range", (void *)nullptr},
-	[__NR_vmsplice] = {"vmsplice", (void *)nullptr},
-	[__NR_move_pages] = {"move_pages", (void *)nullptr},
-	[__NR_utimensat] = {"utimensat", (void *)nullptr},
-	[__NR_epoll_pwait] = {"epoll_pwait", (void *)nullptr},
-	[__NR_signalfd] = {"signalfd", (void *)nullptr},
-	[__NR_timerfd_create] = {"timerfd_create", (void *)nullptr},
-	[__NR_eventfd] = {"eventfd", (void *)nullptr},
-	[__NR_fallocate] = {"fallocate", (void *)nullptr},
-	[__NR_timerfd_settime] = {"timerfd_settime", (void *)nullptr},
-	[__NR_timerfd_gettime] = {"timerfd_gettime", (void *)nullptr},
-	[__NR_accept4] = {"accept4", (void *)nullptr},
-	[__NR_signalfd4] = {"signalfd4", (void *)nullptr},
-	[__NR_eventfd2] = {"eventfd2", (void *)nullptr},
-	[__NR_epoll_create1] = {"epoll_create1", (void *)nullptr},
-	[__NR_dup3] = {"dup3", (void *)nullptr},
-	[__NR_pipe2] = {"pipe2", (void *)nullptr},
-	[__NR_inotify_init1] = {"inotify_init1", (void *)nullptr},
-	[__NR_preadv] = {"preadv", (void *)nullptr},
-	[__NR_pwritev] = {"pwritev", (void *)nullptr},
-	[__NR_rt_tgsigqueueinfo] = {"rt_tgsigqueueinfo", (void *)nullptr},
-	[__NR_perf_event_open] = {"perf_event_open", (void *)nullptr},
-	[__NR_recvmmsg] = {"recvmmsg", (void *)nullptr},
-	[__NR_fanotify_init] = {"fanotify_init", (void *)nullptr},
-	[__NR_fanotify_mark] = {"fanotify_mark", (void *)nullptr},
-	[__NR_prlimit64] = {"prlimit64", (void *)nullptr},
-	[__NR_name_to_handle_at] = {"name_to_handle_at", (void *)nullptr},
-	[__NR_open_by_handle_at] = {"open_by_handle_at", (void *)nullptr},
-	[__NR_clock_adjtime] = {"clock_adjtime", (void *)nullptr},
-	[__NR_syncfs] = {"syncfs", (void *)nullptr},
-	[__NR_sendmmsg] = {"sendmmsg", (void *)nullptr},
-	[__NR_setns] = {"setns", (void *)nullptr},
-	[__NR_getcpu] = {"getcpu", (void *)nullptr},
-	[__NR_process_vm_readv] = {"process_vm_readv", (void *)nullptr},
-	[__NR_process_vm_writev] = {"process_vm_writev", (void *)nullptr},
-	[__NR_kcmp] = {"kcmp", (void *)nullptr},
-	[__NR_finit_module] = {"finit_module", (void *)nullptr},
-	[__NR_sched_setattr] = {"sched_setattr", (void *)nullptr},
-	[__NR_sched_getattr] = {"sched_getattr", (void *)nullptr},
-	[__NR_renameat2] = {"renameat2", (void *)nullptr},
-	[__NR_seccomp] = {"seccomp", (void *)nullptr},
-	[__NR_getrandom] = {"getrandom", (void *)nullptr},
-	[__NR_memfd_create] = {"memfd_create", (void *)nullptr},
-	[__NR_kexec_file_load] = {"kexec_file_load", (void *)nullptr},
-	[__NR_bpf] = {"bpf", (void *)nullptr},
-	[__NR_execveat] = {"execveat", (void *)nullptr},
-	[__NR_userfaultfd] = {"userfaultfd", (void *)nullptr},
-	[__NR_membarrier] = {"membarrier", (void *)nullptr},
-	[__NR_mlock2] = {"mlock2", (void *)nullptr},
-	[__NR_copy_file_range] = {"copy_file_range", (void *)nullptr},
-	[__NR_preadv2] = {"preadv2", (void *)nullptr},
-	[__NR_pwritev2] = {"pwritev2", (void *)nullptr},
-	[__NR_pkey_mprotect] = {"pkey_mprotect", (void *)nullptr},
-	[__NR_pkey_alloc] = {"pkey_alloc", (void *)nullptr},
-	[__NR_pkey_free] = {"pkey_free", (void *)nullptr},
-	[__NR_statx] = {"statx", (void *)nullptr},
-	[__NR_io_pgetevents] = {"io_pgetevents", (void *)nullptr},
-	[__NR_rseq] = {"rseq", (void *)nullptr},
+/* https://man7.org/linux/man-pages/man3/clock_gettime.3.html */
+static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
+{
+	static_assert(sizeof(struct timespec) < PAGE_SIZE);
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (!vmm.Check(tp, Memory::US))
+	{
+		debug("Invalid address %#lx", tp);
+		return -EFAULT;
+	}
+
+	timespec *pTp = pcb->PageTable->Get(tp);
+
+	/* FIXME: This is not correct? */
+	switch (clockid)
+	{
+	case CLOCK_REALTIME:
+	{
+		uint64_t time = TimeManager->GetCounter();
+		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
+		pTp->tv_nsec = time / Time::ConvertUnit(Time::Nanoseconds);
+		debug("time=%ld sec=%ld nsec=%ld",
+			  time, pTp->tv_sec, pTp->tv_nsec);
+		break;
+	}
+	case CLOCK_MONOTONIC:
+	{
+		uint64_t time = TimeManager->GetCounter();
+		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
+		pTp->tv_nsec = time / Time::ConvertUnit(Time::Nanoseconds);
+		debug("time=%ld sec=%ld nsec=%ld",
+			  time, pTp->tv_sec, pTp->tv_nsec);
+		break;
+	}
+	case CLOCK_PROCESS_CPUTIME_ID:
+	case CLOCK_THREAD_CPUTIME_ID:
+	case CLOCK_MONOTONIC_RAW:
+	case CLOCK_REALTIME_COARSE:
+	case CLOCK_MONOTONIC_COARSE:
+	case CLOCK_BOOTTIME:
+	case CLOCK_REALTIME_ALARM:
+	case CLOCK_BOOTTIME_ALARM:
+	case CLOCK_SGI_CYCLE:
+	case CLOCK_TAI:
+	{
+		fixme("clockid %d is stub", clockid);
+		return -ENOSYS;
+	}
+	default:
+	{
+		warn("Invalid clockid %#lx", clockid);
+		return -EINVAL;
+	}
+	}
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/exit_group.2.html */
+static __noreturn void linux_exit_group(SysFrm *sf, int status)
+{
+	fixme("status=%d", status);
+	linux_exit(sf, status);
+}
+
+/* https://man7.org/linux/man-pages/man2/tgkill.2.html */
+static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
+{
+	Tasking::TCB *target = thisProcess->GetContext()->GetThreadByID(tid);
+	if (!target)
+		return -ESRCH;
+
+	fixme("semi-stub: %d %d %d", tgid, tid, sig);
+	return target->Parent->Signals->SendSignal(sig);
+}
+
+/* Undocumented? */
+static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
+							 struct stat *statbuf, int flag)
+{
+	/* FIXME: This function is not working at all? */
+
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (flag)
+		fixme("flag %#x is stub", flag);
+
+	if (!filename)
+	{
+		debug("Invalid filename %#lx", filename);
+		return -EFAULT;
+	}
+
+	if (!statbuf)
+	{
+		debug("Invalid statbuf %#lx", statbuf);
+		return -EFAULT;
+	}
+
+	if (dfd == AT_FDCWD)
+	{
+		fixme("dfd AT_FDCWD is stub");
+		return -ENOSYS;
+	}
+
+	vfs::FileDescriptorTable::Fildes &
+		fildes = fdt->GetDescriptor(dfd);
+	if (!fildes.Handle)
+	{
+		debug("Invalid fd %d", dfd);
+		return -EBADF;
+	}
+
+	const char *pFilename = pcb->PageTable->Get(filename);
+	struct stat *pStatbuf = pcb->PageTable->Get(statbuf);
+
+	debug("%s %#lx %#lx", pFilename, filename, statbuf);
+	return fdt->_stat(pFilename, pStatbuf);
+}
+
+/* https://man7.org/linux/man-pages/man2/pipe2.2.html */
+static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
+{
+	if (flags == 0)
+		return linux_pipe(sf, pipefd);
+
+	PCB *pcb = thisProcess;
+	int *pPipefd = pcb->PageTable->Get(pipefd);
+	debug("pipefd=%#lx", pPipefd);
+	fixme("pipefd=[%d, %d] flags=%#x", pPipefd[0], pPipefd[1], flags);
+	return -ENOSYS;
+}
+
+/* https://man7.org/linux/man-pages/man2/getrlimit.2.html */
+static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
+						   const struct rlimit *new_limit,
+						   struct rlimit *old_limit)
+{
+	static_assert(sizeof(struct rlimit) < PAGE_SIZE);
+
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (old_limit && !vmm.Check(old_limit, Memory::US))
+	{
+		debug("Invalid address %#lx", old_limit);
+		return -EFAULT;
+	}
+
+	if (new_limit && !vmm.Check((void *)new_limit, Memory::US))
+	{
+		debug("Invalid address %#lx", new_limit);
+		return -EFAULT;
+	}
+
+	auto pOldLimit = pcb->PageTable->Get(old_limit);
+	auto pNewLimit = pcb->PageTable->Get(new_limit);
+
+	UNUSED(pOldLimit);
+	UNUSED(pNewLimit);
+
+	switch (resource)
+	{
+	case RLIMIT_CPU:
+	case RLIMIT_FSIZE:
+	case RLIMIT_DATA:
+	case RLIMIT_STACK:
+	case RLIMIT_CORE:
+	case RLIMIT_RSS:
+	case RLIMIT_NPROC:
+	case RLIMIT_NOFILE:
+	case RLIMIT_MEMLOCK:
+	case RLIMIT_AS:
+	case RLIMIT_LOCKS:
+	case RLIMIT_SIGPENDING:
+	case RLIMIT_MSGQUEUE:
+	case RLIMIT_NICE:
+	case RLIMIT_RTPRIO:
+	case RLIMIT_RTTIME:
+	case RLIMIT_NLIMITS:
+	{
+		fixme("resource %d is stub", resource);
+		return -ENOSYS;
+	}
+	default:
+	{
+		debug("Invalid resource %d", resource);
+		return -EINVAL;
+	}
+	}
+
+	return 0;
+}
+
+/* https://man7.org/linux/man-pages/man2/getrandom.2.html */
+static ssize_t linux_getrandom(SysFrm *, void *buf,
+							   size_t buflen, unsigned int flags)
+{
+	PCB *pcb = thisProcess;
+	Memory::Virtual vmm(pcb->PageTable);
+
+	if (!vmm.Check(buf, Memory::US))
+	{
+		debug("Invalid address %#lx", buf);
+		return -EFAULT;
+	}
+
+	if (flags & GRND_NONBLOCK)
+		fixme("GRND_NONBLOCK not implemented");
+
+	if (flags & ~(GRND_NONBLOCK |
+				  GRND_RANDOM |
+				  GRND_INSECURE))
+	{
+		warn("Invalid flags %#x", flags);
+		return -EINVAL;
+	}
+
+	if (flags & GRND_RANDOM)
+	{
+		uint16_t random;
+		for (size_t i = 0; i < buflen; i++)
+		{
+			random = Random::rand16();
+			{
+				Memory::SwapPT swap(pcb->PageTable);
+				((uint8_t *)buf)[i] = uint8_t(random & 0xFF);
+			}
+		}
+		return buflen;
+	}
+
+	return 0;
+}
+
+static SyscallData LinuxSyscallsTableAMD64[] = {
+	[__NR_amd64_read] = {"read", (void *)linux_read},
+	[__NR_amd64_write] = {"write", (void *)linux_write},
+	[__NR_amd64_open] = {"open", (void *)linux_open},
+	[__NR_amd64_close] = {"close", (void *)linux_close},
+	[__NR_amd64_stat] = {"stat", (void *)linux_stat},
+	[__NR_amd64_fstat] = {"fstat", (void *)linux_fstat},
+	[__NR_amd64_lstat] = {"lstat", (void *)linux_lstat},
+	[__NR_amd64_poll] = {"poll", (void *)nullptr},
+	[__NR_amd64_lseek] = {"lseek", (void *)linux_lseek},
+	[__NR_amd64_mmap] = {"mmap", (void *)linux_mmap},
+	[__NR_amd64_mprotect] = {"mprotect", (void *)linux_mprotect},
+	[__NR_amd64_munmap] = {"munmap", (void *)linux_munmap},
+	[__NR_amd64_brk] = {"brk", (void *)linux_brk},
+	[__NR_amd64_rt_sigaction] = {"rt_sigaction", (void *)linux_sigaction},
+	[__NR_amd64_rt_sigprocmask] = {"rt_sigprocmask", (void *)linux_sigprocmask},
+	[__NR_amd64_rt_sigreturn] = {"rt_sigreturn", (void *)linux_sigreturn},
+	[__NR_amd64_ioctl] = {"ioctl", (void *)linux_ioctl},
+	[__NR_amd64_pread64] = {"pread64", (void *)nullptr},
+	[__NR_amd64_pwrite64] = {"pwrite64", (void *)nullptr},
+	[__NR_amd64_readv] = {"readv", (void *)linux_readv},
+	[__NR_amd64_writev] = {"writev", (void *)linux_writev},
+	[__NR_amd64_access] = {"access", (void *)nullptr},
+	[__NR_amd64_pipe] = {"pipe", (void *)linux_pipe},
+	[__NR_amd64_select] = {"select", (void *)nullptr},
+	[__NR_amd64_sched_yield] = {"sched_yield", (void *)nullptr},
+	[__NR_amd64_mremap] = {"mremap", (void *)nullptr},
+	[__NR_amd64_msync] = {"msync", (void *)nullptr},
+	[__NR_amd64_mincore] = {"mincore", (void *)nullptr},
+	[__NR_amd64_madvise] = {"madvise", (void *)nullptr},
+	[__NR_amd64_shmget] = {"shmget", (void *)nullptr},
+	[__NR_amd64_shmat] = {"shmat", (void *)nullptr},
+	[__NR_amd64_shmctl] = {"shmctl", (void *)nullptr},
+	[__NR_amd64_dup] = {"dup", (void *)linux_dup},
+	[__NR_amd64_dup2] = {"dup2", (void *)linux_dup2},
+	[__NR_amd64_pause] = {"pause", (void *)linux_pause},
+	[__NR_amd64_nanosleep] = {"nanosleep", (void *)linux_nanosleep},
+	[__NR_amd64_getitimer] = {"getitimer", (void *)nullptr},
+	[__NR_amd64_alarm] = {"alarm", (void *)nullptr},
+	[__NR_amd64_setitimer] = {"setitimer", (void *)nullptr},
+	[__NR_amd64_getpid] = {"getpid", (void *)linux_getpid},
+	[__NR_amd64_sendfile] = {"sendfile", (void *)nullptr},
+	[__NR_amd64_socket] = {"socket", (void *)nullptr},
+	[__NR_amd64_connect] = {"connect", (void *)nullptr},
+	[__NR_amd64_accept] = {"accept", (void *)nullptr},
+	[__NR_amd64_sendto] = {"sendto", (void *)nullptr},
+	[__NR_amd64_recvfrom] = {"recvfrom", (void *)nullptr},
+	[__NR_amd64_sendmsg] = {"sendmsg", (void *)nullptr},
+	[__NR_amd64_recvmsg] = {"recvmsg", (void *)nullptr},
+	[__NR_amd64_shutdown] = {"shutdown", (void *)linux_shutdown},
+	[__NR_amd64_bind] = {"bind", (void *)nullptr},
+	[__NR_amd64_listen] = {"listen", (void *)nullptr},
+	[__NR_amd64_getsockname] = {"getsockname", (void *)nullptr},
+	[__NR_amd64_getpeername] = {"getpeername", (void *)nullptr},
+	[__NR_amd64_socketpair] = {"socketpair", (void *)nullptr},
+	[__NR_amd64_setsockopt] = {"setsockopt", (void *)nullptr},
+	[__NR_amd64_getsockopt] = {"getsockopt", (void *)nullptr},
+	[__NR_amd64_clone] = {"clone", (void *)nullptr},
+	[__NR_amd64_fork] = {"fork", (void *)linux_fork},
+	[__NR_amd64_vfork] = {"vfork", (void *)nullptr},
+	[__NR_amd64_execve] = {"execve", (void *)linux_execve},
+	[__NR_amd64_exit] = {"exit", (void *)linux_exit},
+	[__NR_amd64_wait4] = {"wait4", (void *)linux_wait4},
+	[__NR_amd64_kill] = {"kill", (void *)linux_kill},
+	[__NR_amd64_uname] = {"uname", (void *)linux_uname},
+	[__NR_amd64_semget] = {"semget", (void *)nullptr},
+	[__NR_amd64_semop] = {"semop", (void *)nullptr},
+	[__NR_amd64_semctl] = {"semctl", (void *)nullptr},
+	[__NR_amd64_shmdt] = {"shmdt", (void *)nullptr},
+	[__NR_amd64_msgget] = {"msgget", (void *)nullptr},
+	[__NR_amd64_msgsnd] = {"msgsnd", (void *)nullptr},
+	[__NR_amd64_msgrcv] = {"msgrcv", (void *)nullptr},
+	[__NR_amd64_msgctl] = {"msgctl", (void *)nullptr},
+	[__NR_amd64_fcntl] = {"fcntl", (void *)linux_fcntl},
+	[__NR_amd64_flock] = {"flock", (void *)nullptr},
+	[__NR_amd64_fsync] = {"fsync", (void *)nullptr},
+	[__NR_amd64_fdatasync] = {"fdatasync", (void *)nullptr},
+	[__NR_amd64_truncate] = {"truncate", (void *)nullptr},
+	[__NR_amd64_ftruncate] = {"ftruncate", (void *)nullptr},
+	[__NR_amd64_getdents] = {"getdents", (void *)nullptr},
+	[__NR_amd64_getcwd] = {"getcwd", (void *)nullptr},
+	[__NR_amd64_chdir] = {"chdir", (void *)nullptr},
+	[__NR_amd64_fchdir] = {"fchdir", (void *)nullptr},
+	[__NR_amd64_rename] = {"rename", (void *)nullptr},
+	[__NR_amd64_mkdir] = {"mkdir", (void *)linux_mkdir},
+	[__NR_amd64_rmdir] = {"rmdir", (void *)nullptr},
+	[__NR_amd64_creat] = {"creat", (void *)linux_creat},
+	[__NR_amd64_link] = {"link", (void *)nullptr},
+	[__NR_amd64_unlink] = {"unlink", (void *)nullptr},
+	[__NR_amd64_symlink] = {"symlink", (void *)nullptr},
+	[__NR_amd64_readlink] = {"readlink", (void *)linux_readlink},
+	[__NR_amd64_chmod] = {"chmod", (void *)nullptr},
+	[__NR_amd64_fchmod] = {"fchmod", (void *)nullptr},
+	[__NR_amd64_chown] = {"chown", (void *)nullptr},
+	[__NR_amd64_fchown] = {"fchown", (void *)nullptr},
+	[__NR_amd64_lchown] = {"lchown", (void *)nullptr},
+	[__NR_amd64_umask] = {"umask", (void *)nullptr},
+	[__NR_amd64_gettimeofday] = {"gettimeofday", (void *)nullptr},
+	[__NR_amd64_getrlimit] = {"getrlimit", (void *)nullptr},
+	[__NR_amd64_getrusage] = {"getrusage", (void *)nullptr},
+	[__NR_amd64_sysinfo] = {"sysinfo", (void *)nullptr},
+	[__NR_amd64_times] = {"times", (void *)nullptr},
+	[__NR_amd64_ptrace] = {"ptrace", (void *)nullptr},
+	[__NR_amd64_getuid] = {"getuid", (void *)linux_getuid},
+	[__NR_amd64_syslog] = {"syslog", (void *)nullptr},
+	[__NR_amd64_getgid] = {"getgid", (void *)nullptr},
+	[__NR_amd64_setuid] = {"setuid", (void *)nullptr},
+	[__NR_amd64_setgid] = {"setgid", (void *)nullptr},
+	[__NR_amd64_geteuid] = {"geteuid", (void *)nullptr},
+	[__NR_amd64_getegid] = {"getegid", (void *)nullptr},
+	[__NR_amd64_setpgid] = {"setpgid", (void *)nullptr},
+	[__NR_amd64_getppid] = {"getppid", (void *)linux_getppid},
+	[__NR_amd64_getpgrp] = {"getpgrp", (void *)nullptr},
+	[__NR_amd64_setsid] = {"setsid", (void *)nullptr},
+	[__NR_amd64_setreuid] = {"setreuid", (void *)nullptr},
+	[__NR_amd64_setregid] = {"setregid", (void *)nullptr},
+	[__NR_amd64_getgroups] = {"getgroups", (void *)nullptr},
+	[__NR_amd64_setgroups] = {"setgroups", (void *)nullptr},
+	[__NR_amd64_setresuid] = {"setresuid", (void *)nullptr},
+	[__NR_amd64_getresuid] = {"getresuid", (void *)nullptr},
+	[__NR_amd64_setresgid] = {"setresgid", (void *)nullptr},
+	[__NR_amd64_getresgid] = {"getresgid", (void *)nullptr},
+	[__NR_amd64_getpgid] = {"getpgid", (void *)nullptr},
+	[__NR_amd64_setfsuid] = {"setfsuid", (void *)nullptr},
+	[__NR_amd64_setfsgid] = {"setfsgid", (void *)nullptr},
+	[__NR_amd64_getsid] = {"getsid", (void *)nullptr},
+	[__NR_amd64_capget] = {"capget", (void *)nullptr},
+	[__NR_amd64_capset] = {"capset", (void *)nullptr},
+	[__NR_amd64_rt_sigpending] = {"rt_sigpending", (void *)nullptr},
+	[__NR_amd64_rt_sigtimedwait] = {"rt_sigtimedwait", (void *)nullptr},
+	[__NR_amd64_rt_sigqueueinfo] = {"rt_sigqueueinfo", (void *)nullptr},
+	[__NR_amd64_rt_sigsuspend] = {"rt_sigsuspend", (void *)nullptr},
+	[__NR_amd64_sigaltstack] = {"sigaltstack", (void *)nullptr},
+	[__NR_amd64_utime] = {"utime", (void *)nullptr},
+	[__NR_amd64_mknod] = {"mknod", (void *)nullptr},
+	[__NR_amd64_uselib] = {"uselib", (void *)nullptr},
+	[__NR_amd64_personality] = {"personality", (void *)nullptr},
+	[__NR_amd64_ustat] = {"ustat", (void *)nullptr},
+	[__NR_amd64_statfs] = {"statfs", (void *)nullptr},
+	[__NR_amd64_fstatfs] = {"fstatfs", (void *)nullptr},
+	[__NR_amd64_sysfs] = {"sysfs", (void *)nullptr},
+	[__NR_amd64_getpriority] = {"getpriority", (void *)nullptr},
+	[__NR_amd64_setpriority] = {"setpriority", (void *)nullptr},
+	[__NR_amd64_sched_setparam] = {"sched_setparam", (void *)nullptr},
+	[__NR_amd64_sched_getparam] = {"sched_getparam", (void *)nullptr},
+	[__NR_amd64_sched_setscheduler] = {"sched_setscheduler", (void *)nullptr},
+	[__NR_amd64_sched_getscheduler] = {"sched_getscheduler", (void *)nullptr},
+	[__NR_amd64_sched_get_priority_max] = {"sched_get_priority_max", (void *)nullptr},
+	[__NR_amd64_sched_get_priority_min] = {"sched_get_priority_min", (void *)nullptr},
+	[__NR_amd64_sched_rr_get_interval] = {"sched_rr_get_interval", (void *)nullptr},
+	[__NR_amd64_mlock] = {"mlock", (void *)nullptr},
+	[__NR_amd64_munlock] = {"munlock", (void *)nullptr},
+	[__NR_amd64_mlockall] = {"mlockall", (void *)nullptr},
+	[__NR_amd64_munlockall] = {"munlockall", (void *)nullptr},
+	[__NR_amd64_vhangup] = {"vhangup", (void *)nullptr},
+	[__NR_amd64_modify_ldt] = {"modify_ldt", (void *)nullptr},
+	[__NR_amd64_pivot_root] = {"pivot_root", (void *)nullptr},
+	[__NR_amd64__sysctl] = {"_sysctl", (void *)nullptr},
+	[__NR_amd64_prctl] = {"prctl", (void *)nullptr},
+	[__NR_amd64_arch_prctl] = {"arch_prctl", (void *)linux_arch_prctl},
+	[__NR_amd64_adjtimex] = {"adjtimex", (void *)nullptr},
+	[__NR_amd64_setrlimit] = {"setrlimit", (void *)nullptr},
+	[__NR_amd64_chroot] = {"chroot", (void *)nullptr},
+	[__NR_amd64_sync] = {"sync", (void *)nullptr},
+	[__NR_amd64_acct] = {"acct", (void *)nullptr},
+	[__NR_amd64_settimeofday] = {"settimeofday", (void *)nullptr},
+	[__NR_amd64_mount] = {"mount", (void *)nullptr},
+	[__NR_amd64_umount2] = {"umount2", (void *)nullptr},
+	[__NR_amd64_swapon] = {"swapon", (void *)nullptr},
+	[__NR_amd64_swapoff] = {"swapoff", (void *)nullptr},
+	[__NR_amd64_reboot] = {"reboot", (void *)linux_reboot},
+	[__NR_amd64_sethostname] = {"sethostname", (void *)nullptr},
+	[__NR_amd64_setdomainname] = {"setdomainname", (void *)nullptr},
+	[__NR_amd64_iopl] = {"iopl", (void *)nullptr},
+	[__NR_amd64_ioperm] = {"ioperm", (void *)nullptr},
+	[__NR_amd64_create_module] = {"create_module", (void *)nullptr},
+	[__NR_amd64_init_module] = {"init_module", (void *)nullptr},
+	[__NR_amd64_delete_module] = {"delete_module", (void *)nullptr},
+	[__NR_amd64_get_kernel_syms] = {"get_kernel_syms", (void *)nullptr},
+	[__NR_amd64_query_module] = {"query_module", (void *)nullptr},
+	[__NR_amd64_quotactl] = {"quotactl", (void *)nullptr},
+	[__NR_amd64_nfsservctl] = {"nfsservctl", (void *)nullptr},
+	[__NR_amd64_getpmsg] = {"getpmsg", (void *)nullptr},
+	[__NR_amd64_putpmsg] = {"putpmsg", (void *)nullptr},
+	[__NR_amd64_afs_syscall] = {"afs_syscall", (void *)nullptr},
+	[__NR_amd64_tuxcall] = {"tuxcall", (void *)nullptr},
+	[__NR_amd64_security] = {"security", (void *)nullptr},
+	[__NR_amd64_gettid] = {"gettid", (void *)linux_gettid},
+	[__NR_amd64_readahead] = {"readahead", (void *)nullptr},
+	[__NR_amd64_setxattr] = {"setxattr", (void *)nullptr},
+	[__NR_amd64_lsetxattr] = {"lsetxattr", (void *)nullptr},
+	[__NR_amd64_fsetxattr] = {"fsetxattr", (void *)nullptr},
+	[__NR_amd64_getxattr] = {"getxattr", (void *)nullptr},
+	[__NR_amd64_lgetxattr] = {"lgetxattr", (void *)nullptr},
+	[__NR_amd64_fgetxattr] = {"fgetxattr", (void *)nullptr},
+	[__NR_amd64_listxattr] = {"listxattr", (void *)nullptr},
+	[__NR_amd64_llistxattr] = {"llistxattr", (void *)nullptr},
+	[__NR_amd64_flistxattr] = {"flistxattr", (void *)nullptr},
+	[__NR_amd64_removexattr] = {"removexattr", (void *)nullptr},
+	[__NR_amd64_lremovexattr] = {"lremovexattr", (void *)nullptr},
+	[__NR_amd64_fremovexattr] = {"fremovexattr", (void *)nullptr},
+	[__NR_amd64_tkill] = {"tkill", (void *)nullptr},
+	[__NR_amd64_time] = {"time", (void *)nullptr},
+	[__NR_amd64_futex] = {"futex", (void *)nullptr},
+	[__NR_amd64_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
+	[__NR_amd64_sched_getaffinity] = {"sched_getaffinity", (void *)nullptr},
+	[__NR_amd64_set_thread_area] = {"set_thread_area", (void *)nullptr},
+	[__NR_amd64_io_setup] = {"io_setup", (void *)nullptr},
+	[__NR_amd64_io_destroy] = {"io_destroy", (void *)nullptr},
+	[__NR_amd64_io_getevents] = {"io_getevents", (void *)nullptr},
+	[__NR_amd64_io_submit] = {"io_submit", (void *)nullptr},
+	[__NR_amd64_io_cancel] = {"io_cancel", (void *)nullptr},
+	[__NR_amd64_get_thread_area] = {"get_thread_area", (void *)nullptr},
+	[__NR_amd64_lookup_dcookie] = {"lookup_dcookie", (void *)nullptr},
+	[__NR_amd64_epoll_create] = {"epoll_create", (void *)nullptr},
+	[__NR_amd64_epoll_ctl_old] = {"epoll_ctl_old", (void *)nullptr},
+	[__NR_amd64_epoll_wait_old] = {"epoll_wait_old", (void *)nullptr},
+	[__NR_amd64_remap_file_pages] = {"remap_file_pages", (void *)nullptr},
+	[__NR_amd64_getdents64] = {"getdents64", (void *)linux_getdents64},
+	[__NR_amd64_set_tid_address] = {"set_tid_address", (void *)linux_set_tid_address},
+	[__NR_amd64_restart_syscall] = {"restart_syscall", (void *)nullptr},
+	[__NR_amd64_semtimedop] = {"semtimedop", (void *)nullptr},
+	[__NR_amd64_fadvise64] = {"fadvise64", (void *)nullptr},
+	[__NR_amd64_timer_create] = {"timer_create", (void *)nullptr},
+	[__NR_amd64_timer_settime] = {"timer_settime", (void *)nullptr},
+	[__NR_amd64_timer_gettime] = {"timer_gettime", (void *)nullptr},
+	[__NR_amd64_timer_getoverrun] = {"timer_getoverrun", (void *)nullptr},
+	[__NR_amd64_timer_delete] = {"timer_delete", (void *)nullptr},
+	[__NR_amd64_clock_settime] = {"clock_settime", (void *)nullptr},
+	[__NR_amd64_clock_gettime] = {"clock_gettime", (void *)linux_clock_gettime},
+	[__NR_amd64_clock_getres] = {"clock_getres", (void *)nullptr},
+	[__NR_amd64_clock_nanosleep] = {"clock_nanosleep", (void *)nullptr},
+	[__NR_amd64_exit_group] = {"exit_group", (void *)linux_exit_group},
+	[__NR_amd64_epoll_wait] = {"epoll_wait", (void *)nullptr},
+	[__NR_amd64_epoll_ctl] = {"epoll_ctl", (void *)nullptr},
+	[__NR_amd64_tgkill] = {"tgkill", (void *)linux_tgkill},
+	[__NR_amd64_utimes] = {"utimes", (void *)nullptr},
+	[__NR_amd64_vserver] = {"vserver", (void *)nullptr},
+	[__NR_amd64_mbind] = {"mbind", (void *)nullptr},
+	[__NR_amd64_set_mempolicy] = {"set_mempolicy", (void *)nullptr},
+	[__NR_amd64_get_mempolicy] = {"get_mempolicy", (void *)nullptr},
+	[__NR_amd64_mq_open] = {"mq_open", (void *)nullptr},
+	[__NR_amd64_mq_unlink] = {"mq_unlink", (void *)nullptr},
+	[__NR_amd64_mq_timedsend] = {"mq_timedsend", (void *)nullptr},
+	[__NR_amd64_mq_timedreceive] = {"mq_timedreceive", (void *)nullptr},
+	[__NR_amd64_mq_notify] = {"mq_notify", (void *)nullptr},
+	[__NR_amd64_mq_getsetattr] = {"mq_getsetattr", (void *)nullptr},
+	[__NR_amd64_kexec_load] = {"kexec_load", (void *)nullptr},
+	[__NR_amd64_waitid] = {"waitid", (void *)nullptr},
+	[__NR_amd64_add_key] = {"add_key", (void *)nullptr},
+	[__NR_amd64_request_key] = {"request_key", (void *)nullptr},
+	[__NR_amd64_keyctl] = {"keyctl", (void *)nullptr},
+	[__NR_amd64_ioprio_set] = {"ioprio_set", (void *)nullptr},
+	[__NR_amd64_ioprio_get] = {"ioprio_get", (void *)nullptr},
+	[__NR_amd64_inotify_init] = {"inotify_init", (void *)nullptr},
+	[__NR_amd64_inotify_add_watch] = {"inotify_add_watch", (void *)nullptr},
+	[__NR_amd64_inotify_rm_watch] = {"inotify_rm_watch", (void *)nullptr},
+	[__NR_amd64_migrate_pages] = {"migrate_pages", (void *)nullptr},
+	[__NR_amd64_openat] = {"openat", (void *)nullptr},
+	[__NR_amd64_mkdirat] = {"mkdirat", (void *)nullptr},
+	[__NR_amd64_mknodat] = {"mknodat", (void *)nullptr},
+	[__NR_amd64_fchownat] = {"fchownat", (void *)nullptr},
+	[__NR_amd64_futimesat] = {"futimesat", (void *)nullptr},
+	[__NR_amd64_newfstatat] = {"newfstatat", (void *)linux_newfstatat},
+	[__NR_amd64_unlinkat] = {"unlinkat", (void *)nullptr},
+	[__NR_amd64_renameat] = {"renameat", (void *)nullptr},
+	[__NR_amd64_linkat] = {"linkat", (void *)nullptr},
+	[__NR_amd64_symlinkat] = {"symlinkat", (void *)nullptr},
+	[__NR_amd64_readlinkat] = {"readlinkat", (void *)nullptr},
+	[__NR_amd64_fchmodat] = {"fchmodat", (void *)nullptr},
+	[__NR_amd64_faccessat] = {"faccessat", (void *)nullptr},
+	[__NR_amd64_pselect6] = {"pselect6", (void *)nullptr},
+	[__NR_amd64_ppoll] = {"ppoll", (void *)nullptr},
+	[__NR_amd64_unshare] = {"unshare", (void *)nullptr},
+	[__NR_amd64_set_robust_list] = {"set_robust_list", (void *)nullptr},
+	[__NR_amd64_get_robust_list] = {"get_robust_list", (void *)nullptr},
+	[__NR_amd64_splice] = {"splice", (void *)nullptr},
+	[__NR_amd64_tee] = {"tee", (void *)nullptr},
+	[__NR_amd64_sync_file_range] = {"sync_file_range", (void *)nullptr},
+	[__NR_amd64_vmsplice] = {"vmsplice", (void *)nullptr},
+	[__NR_amd64_move_pages] = {"move_pages", (void *)nullptr},
+	[__NR_amd64_utimensat] = {"utimensat", (void *)nullptr},
+	[__NR_amd64_epoll_pwait] = {"epoll_pwait", (void *)nullptr},
+	[__NR_amd64_signalfd] = {"signalfd", (void *)nullptr},
+	[__NR_amd64_timerfd_create] = {"timerfd_create", (void *)nullptr},
+	[__NR_amd64_eventfd] = {"eventfd", (void *)nullptr},
+	[__NR_amd64_fallocate] = {"fallocate", (void *)nullptr},
+	[__NR_amd64_timerfd_settime] = {"timerfd_settime", (void *)nullptr},
+	[__NR_amd64_timerfd_gettime] = {"timerfd_gettime", (void *)nullptr},
+	[__NR_amd64_accept4] = {"accept4", (void *)nullptr},
+	[__NR_amd64_signalfd4] = {"signalfd4", (void *)nullptr},
+	[__NR_amd64_eventfd2] = {"eventfd2", (void *)nullptr},
+	[__NR_amd64_epoll_create1] = {"epoll_create1", (void *)nullptr},
+	[__NR_amd64_dup3] = {"dup3", (void *)nullptr},
+	[__NR_amd64_pipe2] = {"pipe2", (void *)linux_pipe2},
+	[__NR_amd64_inotify_init1] = {"inotify_init1", (void *)nullptr},
+	[__NR_amd64_preadv] = {"preadv", (void *)nullptr},
+	[__NR_amd64_pwritev] = {"pwritev", (void *)nullptr},
+	[__NR_amd64_rt_tgsigqueueinfo] = {"rt_tgsigqueueinfo", (void *)nullptr},
+	[__NR_amd64_perf_event_open] = {"perf_event_open", (void *)nullptr},
+	[__NR_amd64_recvmmsg] = {"recvmmsg", (void *)nullptr},
+	[__NR_amd64_fanotify_init] = {"fanotify_init", (void *)nullptr},
+	[__NR_amd64_fanotify_mark] = {"fanotify_mark", (void *)nullptr},
+	[__NR_amd64_prlimit64] = {"prlimit64", (void *)linux_prlimit64},
+	[__NR_amd64_name_to_handle_at] = {"name_to_handle_at", (void *)nullptr},
+	[__NR_amd64_open_by_handle_at] = {"open_by_handle_at", (void *)nullptr},
+	[__NR_amd64_clock_adjtime] = {"clock_adjtime", (void *)nullptr},
+	[__NR_amd64_syncfs] = {"syncfs", (void *)nullptr},
+	[__NR_amd64_sendmmsg] = {"sendmmsg", (void *)nullptr},
+	[__NR_amd64_setns] = {"setns", (void *)nullptr},
+	[__NR_amd64_getcpu] = {"getcpu", (void *)nullptr},
+	[__NR_amd64_process_vm_readv] = {"process_vm_readv", (void *)nullptr},
+	[__NR_amd64_process_vm_writev] = {"process_vm_writev", (void *)nullptr},
+	[__NR_amd64_kcmp] = {"kcmp", (void *)nullptr},
+	[__NR_amd64_finit_module] = {"finit_module", (void *)nullptr},
+	[__NR_amd64_sched_setattr] = {"sched_setattr", (void *)nullptr},
+	[__NR_amd64_sched_getattr] = {"sched_getattr", (void *)nullptr},
+	[__NR_amd64_renameat2] = {"renameat2", (void *)nullptr},
+	[__NR_amd64_seccomp] = {"seccomp", (void *)nullptr},
+	[__NR_amd64_getrandom] = {"getrandom", (void *)linux_getrandom},
+	[__NR_amd64_memfd_create] = {"memfd_create", (void *)nullptr},
+	[__NR_amd64_kexec_file_load] = {"kexec_file_load", (void *)nullptr},
+	[__NR_amd64_bpf] = {"bpf", (void *)nullptr},
+	[__NR_amd64_execveat] = {"execveat", (void *)nullptr},
+	[__NR_amd64_userfaultfd] = {"userfaultfd", (void *)nullptr},
+	[__NR_amd64_membarrier] = {"membarrier", (void *)nullptr},
+	[__NR_amd64_mlock2] = {"mlock2", (void *)nullptr},
+	[__NR_amd64_copy_file_range] = {"copy_file_range", (void *)nullptr},
+	[__NR_amd64_preadv2] = {"preadv2", (void *)nullptr},
+	[__NR_amd64_pwritev2] = {"pwritev2", (void *)nullptr},
+	[__NR_amd64_pkey_mprotect] = {"pkey_mprotect", (void *)nullptr},
+	[__NR_amd64_pkey_alloc] = {"pkey_alloc", (void *)nullptr},
+	[__NR_amd64_pkey_free] = {"pkey_free", (void *)nullptr},
+	[__NR_amd64_statx] = {"statx", (void *)nullptr},
+	[__NR_amd64_io_pgetevents] = {"io_pgetevents", (void *)nullptr},
+	[__NR_amd64_rseq] = {"rseq", (void *)nullptr},
 	[335] = {"reserved", (void *)nullptr},
 	[336] = {"reserved", (void *)nullptr},
 	[337] = {"reserved", (void *)nullptr},
@@ -1061,46 +2328,495 @@ static SyscallData LinuxSyscallsTable[] = {
 	[421] = {"reserved", (void *)nullptr},
 	[422] = {"reserved", (void *)nullptr},
 	[423] = {"reserved", (void *)nullptr},
-	[__NR_pidfd_send_signal] = {"pidfd_send_signal", (void *)nullptr},
-	[__NR_io_uring_setup] = {"io_uring_setup", (void *)nullptr},
-	[__NR_io_uring_enter] = {"io_uring_enter", (void *)nullptr},
-	[__NR_io_uring_register] = {"io_uring_register", (void *)nullptr},
-	[__NR_open_tree] = {"open_tree", (void *)nullptr},
-	[__NR_move_mount] = {"move_mount", (void *)nullptr},
-	[__NR_fsopen] = {"fsopen", (void *)nullptr},
-	[__NR_fsconfig] = {"fsconfig", (void *)nullptr},
-	[__NR_fsmount] = {"fsmount", (void *)nullptr},
-	[__NR_fspick] = {"fspick", (void *)nullptr},
-	[__NR_pidfd_open] = {"pidfd_open", (void *)nullptr},
-	[__NR_clone3] = {"clone3", (void *)nullptr},
-	[__NR_close_range] = {"close_range", (void *)nullptr},
-	[__NR_openat2] = {"openat2", (void *)nullptr},
-	[__NR_pidfd_getfd] = {"pidfd_getfd", (void *)nullptr},
-	[__NR_faccessat2] = {"faccessat2", (void *)nullptr},
-	[__NR_process_madvise] = {"process_madvise", (void *)nullptr},
-	[__NR_epoll_pwait2] = {"epoll_pwait2", (void *)nullptr},
-	[__NR_mount_setattr] = {"mount_setattr", (void *)nullptr},
+	[__NR_amd64_pidfd_send_signal] = {"pidfd_send_signal", (void *)nullptr},
+	[__NR_amd64_io_uring_setup] = {"io_uring_setup", (void *)nullptr},
+	[__NR_amd64_io_uring_enter] = {"io_uring_enter", (void *)nullptr},
+	[__NR_amd64_io_uring_register] = {"io_uring_register", (void *)nullptr},
+	[__NR_amd64_open_tree] = {"open_tree", (void *)nullptr},
+	[__NR_amd64_move_mount] = {"move_mount", (void *)nullptr},
+	[__NR_amd64_fsopen] = {"fsopen", (void *)nullptr},
+	[__NR_amd64_fsconfig] = {"fsconfig", (void *)nullptr},
+	[__NR_amd64_fsmount] = {"fsmount", (void *)nullptr},
+	[__NR_amd64_fspick] = {"fspick", (void *)nullptr},
+	[__NR_amd64_pidfd_open] = {"pidfd_open", (void *)nullptr},
+	[__NR_amd64_clone3] = {"clone3", (void *)nullptr},
+	[__NR_amd64_close_range] = {"close_range", (void *)nullptr},
+	[__NR_amd64_openat2] = {"openat2", (void *)nullptr},
+	[__NR_amd64_pidfd_getfd] = {"pidfd_getfd", (void *)nullptr},
+	[__NR_amd64_faccessat2] = {"faccessat2", (void *)nullptr},
+	[__NR_amd64_process_madvise] = {"process_madvise", (void *)nullptr},
+	[__NR_amd64_epoll_pwait2] = {"epoll_pwait2", (void *)nullptr},
+	[__NR_amd64_mount_setattr] = {"mount_setattr", (void *)nullptr},
 	[443] = {"reserved", (void *)nullptr},
-	[__NR_landlock_create_ruleset] = {"landlock_create_ruleset", (void *)nullptr},
-	[__NR_landlock_add_rule] = {"landlock_add_rule", (void *)nullptr},
-	[__NR_landlock_restrict_self] = {"landlock_restrict_self", (void *)nullptr},
+	[__NR_amd64_landlock_create_ruleset] = {"landlock_create_ruleset", (void *)nullptr},
+	[__NR_amd64_landlock_add_rule] = {"landlock_add_rule", (void *)nullptr},
+	[__NR_amd64_landlock_restrict_self] = {"landlock_restrict_self", (void *)nullptr},
+};
+
+static SyscallData LinuxSyscallsTableI386[] = {
+	[__NR_i386_restart_syscall] = {"restart_syscall", (void *)nullptr},
+	[__NR_i386_exit] = {"exit", (void *)linux_exit},
+	[__NR_i386_fork] = {"fork", (void *)linux_fork},
+	[__NR_i386_read] = {"read", (void *)linux_read},
+	[__NR_i386_write] = {"write", (void *)linux_write},
+	[__NR_i386_open] = {"open", (void *)linux_open},
+	[__NR_i386_close] = {"close", (void *)linux_close},
+	[__NR_i386_waitpid] = {"waitpid", (void *)nullptr},
+	[__NR_i386_creat] = {"creat", (void *)linux_creat},
+	[__NR_i386_link] = {"link", (void *)nullptr},
+	[__NR_i386_unlink] = {"unlink", (void *)nullptr},
+	[__NR_i386_execve] = {"execve", (void *)linux_execve},
+	[__NR_i386_chdir] = {"chdir", (void *)nullptr},
+	[__NR_i386_time] = {"time", (void *)nullptr},
+	[__NR_i386_mknod] = {"mknod", (void *)nullptr},
+	[__NR_i386_chmod] = {"chmod", (void *)nullptr},
+	[__NR_i386_lchown] = {"lchown", (void *)nullptr},
+	[__NR_i386_break] = {"break", (void *)nullptr},
+	[__NR_i386_oldstat] = {"oldstat", (void *)nullptr},
+	[__NR_i386_lseek] = {"lseek", (void *)linux_lseek},
+	[__NR_i386_getpid] = {"getpid", (void *)linux_getpid},
+	[__NR_i386_mount] = {"mount", (void *)nullptr},
+	[__NR_i386_umount] = {"umount", (void *)nullptr},
+	[__NR_i386_setuid] = {"setuid", (void *)nullptr},
+	[__NR_i386_getuid] = {"getuid", (void *)nullptr},
+	[__NR_i386_stime] = {"stime", (void *)nullptr},
+	[__NR_i386_ptrace] = {"ptrace", (void *)nullptr},
+	[__NR_i386_alarm] = {"alarm", (void *)nullptr},
+	[__NR_i386_oldfstat] = {"oldfstat", (void *)nullptr},
+	[__NR_i386_pause] = {"pause", (void *)nullptr},
+	[__NR_i386_utime] = {"utime", (void *)nullptr},
+	[__NR_i386_stty] = {"stty", (void *)nullptr},
+	[__NR_i386_gtty] = {"gtty", (void *)nullptr},
+	[__NR_i386_access] = {"access", (void *)nullptr},
+	[__NR_i386_nice] = {"nice", (void *)nullptr},
+	[__NR_i386_ftime] = {"ftime", (void *)nullptr},
+	[__NR_i386_sync] = {"sync", (void *)nullptr},
+	[__NR_i386_kill] = {"kill", (void *)linux_kill},
+	[__NR_i386_rename] = {"rename", (void *)nullptr},
+	[__NR_i386_mkdir] = {"mkdir", (void *)linux_mkdir},
+	[__NR_i386_rmdir] = {"rmdir", (void *)nullptr},
+	[__NR_i386_dup] = {"dup", (void *)linux_dup},
+	[__NR_i386_pipe] = {"pipe", (void *)nullptr},
+	[__NR_i386_times] = {"times", (void *)nullptr},
+	[__NR_i386_prof] = {"prof", (void *)nullptr},
+	[__NR_i386_brk] = {"brk", (void *)linux_brk},
+	[__NR_i386_setgid] = {"setgid", (void *)nullptr},
+	[__NR_i386_getgid] = {"getgid", (void *)nullptr},
+	[__NR_i386_signal] = {"signal", (void *)nullptr},
+	[__NR_i386_geteuid] = {"geteuid", (void *)nullptr},
+	[__NR_i386_getegid] = {"getegid", (void *)nullptr},
+	[__NR_i386_acct] = {"acct", (void *)nullptr},
+	[__NR_i386_umount2] = {"umount2", (void *)nullptr},
+	[__NR_i386_lock] = {"lock", (void *)nullptr},
+	[__NR_i386_ioctl] = {"ioctl", (void *)linux_ioctl},
+	[__NR_i386_fcntl] = {"fcntl", (void *)linux_fcntl},
+	[__NR_i386_mpx] = {"mpx", (void *)nullptr},
+	[__NR_i386_setpgid] = {"setpgid", (void *)nullptr},
+	[__NR_i386_ulimit] = {"ulimit", (void *)nullptr},
+	[__NR_i386_oldolduname] = {"oldolduname", (void *)nullptr},
+	[__NR_i386_umask] = {"umask", (void *)nullptr},
+	[__NR_i386_chroot] = {"chroot", (void *)nullptr},
+	[__NR_i386_ustat] = {"ustat", (void *)nullptr},
+	[__NR_i386_dup2] = {"dup2", (void *)linux_dup2},
+	[__NR_i386_getppid] = {"getppid", (void *)linux_getppid},
+	[__NR_i386_getpgrp] = {"getpgrp", (void *)nullptr},
+	[__NR_i386_setsid] = {"setsid", (void *)nullptr},
+	[__NR_i386_sigaction] = {"sigaction", (void *)nullptr},
+	[__NR_i386_sgetmask] = {"sgetmask", (void *)nullptr},
+	[__NR_i386_ssetmask] = {"ssetmask", (void *)nullptr},
+	[__NR_i386_setreuid] = {"setreuid", (void *)nullptr},
+	[__NR_i386_setregid] = {"setregid", (void *)nullptr},
+	[__NR_i386_sigsuspend] = {"sigsuspend", (void *)nullptr},
+	[__NR_i386_sigpending] = {"sigpending", (void *)nullptr},
+	[__NR_i386_sethostname] = {"sethostname", (void *)nullptr},
+	[__NR_i386_setrlimit] = {"setrlimit", (void *)nullptr},
+	[__NR_i386_getrlimit] = {"getrlimit", (void *)nullptr},
+	[__NR_i386_getrusage] = {"getrusage", (void *)nullptr},
+	[__NR_i386_gettimeofday_time32] = {"gettimeofday_time32", (void *)nullptr},
+	[__NR_i386_settimeofday_time32] = {"settimeofday_time32", (void *)nullptr},
+	[__NR_i386_getgroups] = {"getgroups", (void *)nullptr},
+	[__NR_i386_setgroups] = {"setgroups", (void *)nullptr},
+	[__NR_i386_select] = {"select", (void *)nullptr},
+	[__NR_i386_symlink] = {"symlink", (void *)nullptr},
+	[__NR_i386_oldlstat] = {"oldlstat", (void *)nullptr},
+	[__NR_i386_readlink] = {"readlink", (void *)linux_readlink},
+	[__NR_i386_uselib] = {"uselib", (void *)nullptr},
+	[__NR_i386_swapon] = {"swapon", (void *)nullptr},
+	[__NR_i386_reboot] = {"reboot", (void *)linux_reboot},
+	[__NR_i386_readdir] = {"readdir", (void *)nullptr},
+	[__NR_i386_mmap] = {"mmap", (void *)linux_mmap},
+	[__NR_i386_munmap] = {"munmap", (void *)linux_munmap},
+	[__NR_i386_truncate] = {"truncate", (void *)nullptr},
+	[__NR_i386_ftruncate] = {"ftruncate", (void *)nullptr},
+	[__NR_i386_fchmod] = {"fchmod", (void *)nullptr},
+	[__NR_i386_fchown] = {"fchown", (void *)nullptr},
+	[__NR_i386_getpriority] = {"getpriority", (void *)nullptr},
+	[__NR_i386_setpriority] = {"setpriority", (void *)nullptr},
+	[__NR_i386_profil] = {"profil", (void *)nullptr},
+	[__NR_i386_statfs] = {"statfs", (void *)nullptr},
+	[__NR_i386_fstatfs] = {"fstatfs", (void *)nullptr},
+	[__NR_i386_ioperm] = {"ioperm", (void *)nullptr},
+	[__NR_i386_socketcall] = {"socketcall", (void *)nullptr},
+	[__NR_i386_syslog] = {"syslog", (void *)nullptr},
+	[__NR_i386_setitimer] = {"setitimer", (void *)nullptr},
+	[__NR_i386_getitimer] = {"getitimer", (void *)nullptr},
+	[__NR_i386_stat] = {"stat", (void *)linux_stat},
+	[__NR_i386_lstat] = {"lstat", (void *)linux_lstat},
+	[__NR_i386_fstat] = {"fstat", (void *)linux_fstat},
+	[__NR_i386_olduname] = {"olduname", (void *)nullptr},
+	[__NR_i386_iopl] = {"iopl", (void *)nullptr},
+	[__NR_i386_vhangup] = {"vhangup", (void *)nullptr},
+	[__NR_i386_idle] = {"idle", (void *)nullptr},
+	[__NR_i386_vm86old] = {"vm86old", (void *)nullptr},
+	[__NR_i386_wait4] = {"wait4", (void *)linux_wait4},
+	[__NR_i386_swapoff] = {"swapoff", (void *)nullptr},
+	[__NR_i386_sysinfo] = {"sysinfo", (void *)nullptr},
+	[__NR_i386_ipc] = {"ipc", (void *)nullptr},
+	[__NR_i386_fsync] = {"fsync", (void *)nullptr},
+	[__NR_i386_sigreturn] = {"sigreturn", (void *)nullptr},
+	[__NR_i386_clone] = {"clone", (void *)nullptr},
+	[__NR_i386_setdomainname] = {"setdomainname", (void *)nullptr},
+	[__NR_i386_uname] = {"uname", (void *)linux_uname},
+	[__NR_i386_modify_ldt] = {"modify_ldt", (void *)nullptr},
+	[__NR_i386_adjtimex] = {"adjtimex", (void *)nullptr},
+	[__NR_i386_mprotect] = {"mprotect", (void *)linux_mprotect},
+	[__NR_i386_sigprocmask] = {"sigprocmask", (void *)nullptr},
+	[__NR_i386_create_module] = {"create_module", (void *)nullptr},
+	[__NR_i386_init_module] = {"init_module", (void *)nullptr},
+	[__NR_i386_delete_module] = {"delete_module", (void *)nullptr},
+	[__NR_i386_get_kernel_syms] = {"get_kernel_syms", (void *)nullptr},
+	[__NR_i386_quotactl] = {"quotactl", (void *)nullptr},
+	[__NR_i386_getpgid] = {"getpgid", (void *)nullptr},
+	[__NR_i386_fchdir] = {"fchdir", (void *)nullptr},
+	[__NR_i386_bdflush] = {"bdflush", (void *)nullptr},
+	[__NR_i386_sysfs] = {"sysfs", (void *)nullptr},
+	[__NR_i386_personality] = {"personality", (void *)nullptr},
+	[__NR_i386_afs_syscall] = {"afs_syscall", (void *)nullptr},
+	[__NR_i386_setfsuid] = {"setfsuid", (void *)nullptr},
+	[__NR_i386_setfsgid] = {"setfsgid", (void *)nullptr},
+	[__NR_i386__llseek] = {"_llseek", (void *)nullptr},
+	[__NR_i386_getdents] = {"getdents", (void *)nullptr},
+	[__NR_i386__newselect] = {"_newselect", (void *)nullptr},
+	[__NR_i386_flock] = {"flock", (void *)nullptr},
+	[__NR_i386_msync] = {"msync", (void *)nullptr},
+	[__NR_i386_readv] = {"readv", (void *)linux_readv},
+	[__NR_i386_writev] = {"writev", (void *)linux_writev},
+	[__NR_i386_getsid] = {"getsid", (void *)nullptr},
+	[__NR_i386_fdatasync] = {"fdatasync", (void *)nullptr},
+	[__NR_i386__sysctl] = {"_sysctl", (void *)nullptr},
+	[__NR_i386_mlock] = {"mlock", (void *)nullptr},
+	[__NR_i386_munlock] = {"munlock", (void *)nullptr},
+	[__NR_i386_mlockall] = {"mlockall", (void *)nullptr},
+	[__NR_i386_munlockall] = {"munlockall", (void *)nullptr},
+	[__NR_i386_sched_setparam] = {"sched_setparam", (void *)nullptr},
+	[__NR_i386_sched_getparam] = {"sched_getparam", (void *)nullptr},
+	[__NR_i386_sched_setscheduler] = {"sched_setscheduler", (void *)nullptr},
+	[__NR_i386_sched_getscheduler] = {"sched_getscheduler", (void *)nullptr},
+	[__NR_i386_sched_yield] = {"sched_yield", (void *)nullptr},
+	[__NR_i386_sched_get_priority_max] = {"sched_get_priority_max", (void *)nullptr},
+	[__NR_i386_sched_get_priority_min] = {"sched_get_priority_min", (void *)nullptr},
+	[__NR_i386_sched_rr_get_interval] = {"sched_rr_get_interval", (void *)nullptr},
+	[__NR_i386_nanosleep] = {"nanosleep", (void *)nullptr},
+	[__NR_i386_mremap] = {"mremap", (void *)nullptr},
+	[__NR_i386_setresuid] = {"setresuid", (void *)nullptr},
+	[__NR_i386_getresuid] = {"getresuid", (void *)nullptr},
+	[__NR_i386_vm86] = {"vm86", (void *)nullptr},
+	[__NR_i386_query_module] = {"query_module", (void *)nullptr},
+	[__NR_i386_poll] = {"poll", (void *)nullptr},
+	[__NR_i386_nfsservctl] = {"nfsservctl", (void *)nullptr},
+	[__NR_i386_setresgid] = {"setresgid", (void *)nullptr},
+	[__NR_i386_getresgid] = {"getresgid", (void *)nullptr},
+	[__NR_i386_prctl] = {"prctl", (void *)nullptr},
+	[__NR_i386_rt_sigreturn] = {"rt_sigreturn", (void *)linux_sigreturn},
+	[__NR_i386_rt_sigaction] = {"rt_sigaction", (void *)nullptr},
+	[__NR_i386_rt_sigprocmask] = {"rt_sigprocmask", (void *)linux_sigprocmask},
+	[__NR_i386_rt_sigpending] = {"rt_sigpending", (void *)nullptr},
+	[__NR_i386_rt_sigtimedwait] = {"rt_sigtimedwait", (void *)nullptr},
+	[__NR_i386_rt_sigqueueinfo] = {"rt_sigqueueinfo", (void *)nullptr},
+	[__NR_i386_rt_sigsuspend] = {"rt_sigsuspend", (void *)nullptr},
+	[__NR_i386_pread64] = {"pread64", (void *)nullptr},
+	[__NR_i386_pwrite64] = {"pwrite64", (void *)nullptr},
+	[__NR_i386_chown] = {"chown", (void *)nullptr},
+	[__NR_i386_getcwd] = {"getcwd", (void *)nullptr},
+	[__NR_i386_capget] = {"capget", (void *)nullptr},
+	[__NR_i386_capset] = {"capset", (void *)nullptr},
+	[__NR_i386_sigaltstack] = {"sigaltstack", (void *)nullptr},
+	[__NR_i386_sendfile] = {"sendfile", (void *)nullptr},
+	[__NR_i386_getpmsg] = {"getpmsg", (void *)nullptr},
+	[__NR_i386_putpmsg] = {"putpmsg", (void *)nullptr},
+	[__NR_i386_vfork] = {"vfork", (void *)nullptr},
+	[__NR_i386_ugetrlimit] = {"ugetrlimit", (void *)nullptr},
+	[__NR_i386_mmap2] = {"mmap2", (void *)nullptr},
+	[__NR_i386_truncate64] = {"truncate64", (void *)nullptr},
+	[__NR_i386_ftruncate64] = {"ftruncate64", (void *)nullptr},
+	[__NR_i386_stat64] = {"stat64", (void *)nullptr},
+	[__NR_i386_lstat64] = {"lstat64", (void *)nullptr},
+	[__NR_i386_fstat64] = {"fstat64", (void *)nullptr},
+	[__NR_i386_lchown32] = {"lchown32", (void *)nullptr},
+	[__NR_i386_getuid32] = {"getuid32", (void *)nullptr},
+	[__NR_i386_getgid32] = {"getgid32", (void *)nullptr},
+	[__NR_i386_geteuid32] = {"geteuid32", (void *)nullptr},
+	[__NR_i386_getegid32] = {"getegid32", (void *)nullptr},
+	[__NR_i386_setreuid32] = {"setreuid32", (void *)nullptr},
+	[__NR_i386_setregid32] = {"setregid32", (void *)nullptr},
+	[__NR_i386_getgroups32] = {"getgroups32", (void *)nullptr},
+	[__NR_i386_setgroups32] = {"setgroups32", (void *)nullptr},
+	[__NR_i386_fchown32] = {"fchown32", (void *)nullptr},
+	[__NR_i386_setresuid32] = {"setresuid32", (void *)nullptr},
+	[__NR_i386_getresuid32] = {"getresuid32", (void *)nullptr},
+	[__NR_i386_setresgid32] = {"setresgid32", (void *)nullptr},
+	[__NR_i386_getresgid32] = {"getresgid32", (void *)nullptr},
+	[__NR_i386_chown32] = {"chown32", (void *)nullptr},
+	[__NR_i386_setuid32] = {"setuid32", (void *)nullptr},
+	[__NR_i386_setgid32] = {"setgid32", (void *)nullptr},
+	[__NR_i386_setfsuid32] = {"setfsuid32", (void *)nullptr},
+	[__NR_i386_setfsgid32] = {"setfsgid32", (void *)nullptr},
+	[__NR_i386_pivot_root] = {"pivot_root", (void *)nullptr},
+	[__NR_i386_mincore] = {"mincore", (void *)nullptr},
+	[__NR_i386_madvise] = {"madvise", (void *)nullptr},
+	[__NR_i386_getdents64] = {"getdents64", (void *)linux_getdents64},
+	[__NR_i386_fcntl64] = {"fcntl64", (void *)nullptr},
+	[222] = {"reserved", (void *)nullptr},
+	[223] = {"reserved", (void *)nullptr},
+	[__NR_i386_gettid] = {"gettid", (void *)linux_gettid},
+	[__NR_i386_readahead] = {"readahead", (void *)nullptr},
+	[__NR_i386_setxattr] = {"setxattr", (void *)nullptr},
+	[__NR_i386_lsetxattr] = {"lsetxattr", (void *)nullptr},
+	[__NR_i386_fsetxattr] = {"fsetxattr", (void *)nullptr},
+	[__NR_i386_getxattr] = {"getxattr", (void *)nullptr},
+	[__NR_i386_lgetxattr] = {"lgetxattr", (void *)nullptr},
+	[__NR_i386_fgetxattr] = {"fgetxattr", (void *)nullptr},
+	[__NR_i386_listxattr] = {"listxattr", (void *)nullptr},
+	[__NR_i386_llistxattr] = {"llistxattr", (void *)nullptr},
+	[__NR_i386_flistxattr] = {"flistxattr", (void *)nullptr},
+	[__NR_i386_removexattr] = {"removexattr", (void *)nullptr},
+	[__NR_i386_lremovexattr] = {"lremovexattr", (void *)nullptr},
+	[__NR_i386_fremovexattr] = {"fremovexattr", (void *)nullptr},
+	[__NR_i386_tkill] = {"tkill", (void *)nullptr},
+	[__NR_i386_sendfile64] = {"sendfile64", (void *)nullptr},
+	[__NR_i386_futex] = {"futex", (void *)nullptr},
+	[__NR_i386_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
+	[__NR_i386_sched_getaffinity] = {"sched_getaffinity", (void *)nullptr},
+	[__NR_i386_set_thread_area] = {"set_thread_area", (void *)nullptr},
+	[__NR_i386_get_thread_area] = {"get_thread_area", (void *)nullptr},
+	[__NR_i386_io_setup] = {"io_setup", (void *)nullptr},
+	[__NR_i386_io_destroy] = {"io_destroy", (void *)nullptr},
+	[__NR_i386_io_getevents] = {"io_getevents", (void *)nullptr},
+	[__NR_i386_io_submit] = {"io_submit", (void *)nullptr},
+	[__NR_i386_io_cancel] = {"io_cancel", (void *)nullptr},
+	[__NR_i386_fadvise64] = {"fadvise64", (void *)nullptr},
+	[__NR_i386_set_zone_reclaim] = {"set_zone_reclaim", (void *)nullptr},
+	[__NR_i386_exit_group] = {"exit_group", (void *)linux_exit_group},
+	[__NR_i386_lookup_dcookie] = {"lookup_dcookie", (void *)nullptr},
+	[__NR_i386_epoll_create] = {"epoll_create", (void *)nullptr},
+	[__NR_i386_epoll_ctl] = {"epoll_ctl", (void *)nullptr},
+	[__NR_i386_epoll_wait] = {"epoll_wait", (void *)nullptr},
+	[__NR_i386_remap_file_pages] = {"remap_file_pages", (void *)nullptr},
+	[__NR_i386_set_tid_address] = {"set_tid_address", (void *)linux_set_tid_address},
+	[__NR_i386_timer_create] = {"timer_create", (void *)nullptr},
+	[__NR_i386_timer_settime32] = {"timer_settime32", (void *)nullptr},
+	[__NR_i386_timer_gettime32] = {"timer_gettime32", (void *)nullptr},
+	[__NR_i386_timer_getoverrun] = {"timer_getoverrun", (void *)nullptr},
+	[__NR_i386_timer_delete] = {"timer_delete", (void *)nullptr},
+	[__NR_i386_clock_settime32] = {"clock_settime32", (void *)nullptr},
+	[__NR_i386_clock_gettime32] = {"clock_gettime32", (void *)nullptr},
+	[__NR_i386_clock_getres_time32] = {"clock_getres_time32", (void *)nullptr},
+	[__NR_i386_clock_nanosleep_time32] = {"clock_nanosleep_time32", (void *)nullptr},
+	[__NR_i386_statfs64] = {"statfs64", (void *)nullptr},
+	[__NR_i386_fstatfs64] = {"fstatfs64", (void *)nullptr},
+	[__NR_i386_tgkill] = {"tgkill", (void *)linux_tgkill},
+	[__NR_i386_utimes] = {"utimes", (void *)nullptr},
+	[__NR_i386_fadvise64_64] = {"fadvise64_64", (void *)nullptr},
+	[__NR_i386_vserver] = {"vserver", (void *)nullptr},
+	[__NR_i386_mbind] = {"mbind", (void *)nullptr},
+	[__NR_i386_get_mempolicy] = {"get_mempolicy", (void *)nullptr},
+	[__NR_i386_set_mempolicy] = {"set_mempolicy", (void *)nullptr},
+	[__NR_i386_mq_open] = {"mq_open", (void *)nullptr},
+	[__NR_i386_mq_unlink] = {"mq_unlink", (void *)nullptr},
+	[__NR_i386_mq_timedsend] = {"mq_timedsend", (void *)nullptr},
+	[__NR_i386_mq_timedreceive] = {"mq_timedreceive", (void *)nullptr},
+	[__NR_i386_mq_notify] = {"mq_notify", (void *)nullptr},
+	[__NR_i386_mq_getsetattr] = {"mq_getsetattr", (void *)nullptr},
+	[__NR_i386_kexec_load] = {"kexec_load", (void *)nullptr},
+	[__NR_i386_waitid] = {"waitid", (void *)nullptr},
+	[__NR_i386_sys_setaltroot] = {"sys_setaltroot", (void *)nullptr},
+	[__NR_i386_add_key] = {"add_key", (void *)nullptr},
+	[__NR_i386_request_key] = {"request_key", (void *)nullptr},
+	[__NR_i386_keyctl] = {"keyctl", (void *)nullptr},
+	[__NR_i386_ioprio_set] = {"ioprio_set", (void *)nullptr},
+	[__NR_i386_ioprio_get] = {"ioprio_get", (void *)nullptr},
+	[__NR_i386_inotify_init] = {"inotify_init", (void *)nullptr},
+	[__NR_i386_inotify_add_watch] = {"inotify_add_watch", (void *)nullptr},
+	[__NR_i386_inotify_rm_watch] = {"inotify_rm_watch", (void *)nullptr},
+	[__NR_i386_migrate_pages] = {"migrate_pages", (void *)nullptr},
+	[__NR_i386_openat] = {"openat", (void *)nullptr},
+	[__NR_i386_mkdirat] = {"mkdirat", (void *)nullptr},
+	[__NR_i386_mknodat] = {"mknodat", (void *)nullptr},
+	[__NR_i386_fchownat] = {"fchownat", (void *)nullptr},
+	[__NR_i386_futimesat] = {"futimesat", (void *)nullptr},
+	[__NR_i386_fstatat64] = {"fstatat64", (void *)nullptr},
+	[__NR_i386_unlinkat] = {"unlinkat", (void *)nullptr},
+	[__NR_i386_renameat] = {"renameat", (void *)nullptr},
+	[__NR_i386_linkat] = {"linkat", (void *)nullptr},
+	[__NR_i386_symlinkat] = {"symlinkat", (void *)nullptr},
+	[__NR_i386_readlinkat] = {"readlinkat", (void *)nullptr},
+	[__NR_i386_fchmodat] = {"fchmodat", (void *)nullptr},
+	[__NR_i386_faccessat] = {"faccessat", (void *)nullptr},
+	[__NR_i386_pselect6] = {"pselect6", (void *)nullptr},
+	[__NR_i386_ppoll] = {"ppoll", (void *)nullptr},
+	[__NR_i386_unshare] = {"unshare", (void *)nullptr},
+	[__NR_i386_set_robust_list] = {"set_robust_list", (void *)nullptr},
+	[__NR_i386_get_robust_list] = {"get_robust_list", (void *)nullptr},
+	[__NR_i386_splice] = {"splice", (void *)nullptr},
+	[__NR_i386_sync_file_range] = {"sync_file_range", (void *)nullptr},
+	[__NR_i386_tee] = {"tee", (void *)nullptr},
+	[__NR_i386_vmsplice] = {"vmsplice", (void *)nullptr},
+	[__NR_i386_move_pages] = {"move_pages", (void *)nullptr},
+	[__NR_i386_getcpu] = {"getcpu", (void *)nullptr},
+	[__NR_i386_epoll_pwait] = {"epoll_pwait", (void *)nullptr},
+	[__NR_i386_utimensat] = {"utimensat", (void *)nullptr},
+	[__NR_i386_signalfd] = {"signalfd", (void *)nullptr},
+	[__NR_i386_timerfd_create] = {"timerfd_create", (void *)nullptr},
+	[__NR_i386_eventfd] = {"eventfd", (void *)nullptr},
+	[__NR_i386_fallocate] = {"fallocate", (void *)nullptr},
+	[__NR_i386_timerfd_settime32] = {"timerfd_settime32", (void *)nullptr},
+	[__NR_i386_timerfd_gettime32] = {"timerfd_gettime32", (void *)nullptr},
+	[__NR_i386_signalfd4] = {"signalfd4", (void *)nullptr},
+	[__NR_i386_eventfd2] = {"eventfd2", (void *)nullptr},
+	[__NR_i386_epoll_create1] = {"epoll_create1", (void *)nullptr},
+	[__NR_i386_dup3] = {"dup3", (void *)nullptr},
+	[__NR_i386_pipe2] = {"pipe2", (void *)nullptr},
+	[__NR_i386_inotify_init1] = {"inotify_init1", (void *)nullptr},
+	[__NR_i386_preadv] = {"preadv", (void *)nullptr},
+	[__NR_i386_pwritev] = {"pwritev", (void *)nullptr},
+	[__NR_i386_rt_tgsigqueueinfo] = {"rt_tgsigqueueinfo", (void *)nullptr},
+	[__NR_i386_perf_event_open] = {"perf_event_open", (void *)nullptr},
+	[__NR_i386_recvmmsg] = {"recvmmsg", (void *)nullptr},
+	[__NR_i386_fanotify_init] = {"fanotify_init", (void *)nullptr},
+	[__NR_i386_fanotify_mark] = {"fanotify_mark", (void *)nullptr},
+	[__NR_i386_prlimit64] = {"prlimit64", (void *)nullptr},
+	[__NR_i386_name_to_handle_at] = {"name_to_handle_at", (void *)nullptr},
+	[__NR_i386_open_by_handle_at] = {"open_by_handle_at", (void *)nullptr},
+	[__NR_i386_clock_adjtime] = {"clock_adjtime", (void *)nullptr},
+	[__NR_i386_syncfs] = {"syncfs", (void *)nullptr},
+	[__NR_i386_sendmmsg] = {"sendmmsg", (void *)nullptr},
+	[__NR_i386_setns] = {"setns", (void *)nullptr},
+	[__NR_i386_process_vm_readv] = {"process_vm_readv", (void *)nullptr},
+	[__NR_i386_process_vm_writev] = {"process_vm_writev", (void *)nullptr},
+	[__NR_i386_kcmp] = {"kcmp", (void *)nullptr},
+	[__NR_i386_finit_module] = {"finit_module", (void *)nullptr},
+	[__NR_i386_sched_setattr] = {"sched_setattr", (void *)nullptr},
+	[__NR_i386_sched_getattr] = {"sched_getattr", (void *)nullptr},
+	[__NR_i386_renameat2] = {"renameat2", (void *)nullptr},
+	[__NR_i386_seccomp] = {"seccomp", (void *)nullptr},
+	[__NR_i386_getrandom] = {"getrandom", (void *)linux_getrandom},
+	[__NR_i386_memfd_create] = {"memfd_create", (void *)nullptr},
+	[__NR_i386_bpf] = {"bpf", (void *)nullptr},
+	[__NR_i386_execveat] = {"execveat", (void *)nullptr},
+	[__NR_i386_socket] = {"socket", (void *)nullptr},
+	[__NR_i386_socketpair] = {"socketpair", (void *)nullptr},
+	[__NR_i386_bind] = {"bind", (void *)nullptr},
+	[__NR_i386_connect] = {"connect", (void *)nullptr},
+	[__NR_i386_listen] = {"listen", (void *)nullptr},
+	[__NR_i386_accept4] = {"accept4", (void *)nullptr},
+	[__NR_i386_getsockopt] = {"getsockopt", (void *)nullptr},
+	[__NR_i386_setsockopt] = {"setsockopt", (void *)nullptr},
+	[__NR_i386_getsockname] = {"getsockname", (void *)nullptr},
+	[__NR_i386_getpeername] = {"getpeername", (void *)nullptr},
+	[__NR_i386_sendto] = {"sendto", (void *)nullptr},
+	[__NR_i386_sendmsg] = {"sendmsg", (void *)nullptr},
+	[__NR_i386_recvfrom] = {"recvfrom", (void *)nullptr},
+	[__NR_i386_recvmsg] = {"recvmsg", (void *)nullptr},
+	[__NR_i386_shutdown] = {"shutdown", (void *)linux_shutdown},
+	[__NR_i386_userfaultfd] = {"userfaultfd", (void *)nullptr},
+	[__NR_i386_membarrier] = {"membarrier", (void *)nullptr},
+	[__NR_i386_mlock2] = {"mlock2", (void *)nullptr},
+	[__NR_i386_copy_file_range] = {"copy_file_range", (void *)nullptr},
+	[__NR_i386_preadv2] = {"preadv2", (void *)nullptr},
+	[__NR_i386_pwritev2] = {"pwritev2", (void *)nullptr},
+	[__NR_i386_pkey_mprotect] = {"pkey_mprotect", (void *)nullptr},
+	[__NR_i386_pkey_alloc] = {"pkey_alloc", (void *)nullptr},
+	[__NR_i386_pkey_free] = {"pkey_free", (void *)nullptr},
+	[__NR_i386_statx] = {"statx", (void *)nullptr},
+	[__NR_i386_arch_prctl] = {"arch_prctl", (void *)linux_arch_prctl},
+	[__NR_i386_io_pgetevents] = {"io_pgetevents", (void *)nullptr},
+	[__NR_i386_rseq] = {"rseq", (void *)nullptr},
+	[387] = {"reserved", (void *)nullptr},
+	[388] = {"reserved", (void *)nullptr},
+	[389] = {"reserved", (void *)nullptr},
+	[390] = {"reserved", (void *)nullptr},
+	[391] = {"reserved", (void *)nullptr},
+	[392] = {"reserved", (void *)nullptr},
+	[__NR_i386_semget] = {"semget", (void *)nullptr},
+	[__NR_i386_semctl] = {"semctl", (void *)nullptr},
+	[__NR_i386_shmget] = {"shmget", (void *)nullptr},
+	[__NR_i386_shmctl] = {"shmctl", (void *)nullptr},
+	[__NR_i386_shmat] = {"shmat", (void *)nullptr},
+	[__NR_i386_shmdt] = {"shmdt", (void *)nullptr},
+	[__NR_i386_msgget] = {"msgget", (void *)nullptr},
+	[__NR_i386_msgsnd] = {"msgsnd", (void *)nullptr},
+	[__NR_i386_msgrcv] = {"msgrcv", (void *)nullptr},
+	[__NR_i386_msgctl] = {"msgctl", (void *)nullptr},
+	[__NR_i386_clock_gettime64] = {"clock_gettime64", (void *)nullptr},
+	[__NR_i386_clock_settime64] = {"clock_settime64", (void *)nullptr},
+	[__NR_i386_clock_adjtime64] = {"clock_adjtime64", (void *)nullptr},
+	[__NR_i386_clock_getres_time64] = {"clock_getres_time64", (void *)nullptr},
+	[__NR_i386_clock_nanosleep_time64] = {"clock_nanosleep_time64", (void *)nullptr},
+	[__NR_i386_timer_gettime64] = {"timer_gettime64", (void *)nullptr},
+	[__NR_i386_timer_settime64] = {"timer_settime64", (void *)nullptr},
+	[__NR_i386_timerfd_gettime64] = {"timerfd_gettime64", (void *)nullptr},
+	[__NR_i386_timerfd_settime64] = {"timerfd_settime64", (void *)nullptr},
+	[__NR_i386_utimensat_time64] = {"utimensat_time64", (void *)nullptr},
+	[__NR_i386_pselect6_time64] = {"pselect6_time64", (void *)nullptr},
+	[__NR_i386_ppoll_time64] = {"ppoll_time64", (void *)nullptr},
+	[415] = {"reserved", (void *)nullptr},
+	[__NR_i386_io_pgetevents_time64] = {"io_pgetevents_time64", (void *)nullptr},
+	[__NR_i386_recvmmsg_time64] = {"recvmmsg_time64", (void *)nullptr},
+	[__NR_i386_mq_timedsend_time64] = {"mq_timedsend_time64", (void *)nullptr},
+	[__NR_i386_mq_timedreceive_time64] = {"mq_timedreceive_time64", (void *)nullptr},
+	[__NR_i386_semtimedop_time64] = {"semtimedop_time64", (void *)nullptr},
+	[__NR_i386_rt_sigtimedwait_time64] = {"rt_sigtimedwait_time64", (void *)nullptr},
+	[__NR_i386_futex_time64] = {"futex_time64", (void *)nullptr},
+	[__NR_i386_sched_rr_get_interval_time64] = {"sched_rr_get_interval_time64", (void *)nullptr},
+	[__NR_i386_pidfd_send_signal] = {"pidfd_send_signal", (void *)nullptr},
+	[__NR_i386_io_uring_setup] = {"io_uring_setup", (void *)nullptr},
+	[__NR_i386_io_uring_enter] = {"io_uring_enter", (void *)nullptr},
+	[__NR_i386_io_uring_register] = {"io_uring_register", (void *)nullptr},
+	[__NR_i386_open_tree] = {"open_tree", (void *)nullptr},
+	[__NR_i386_move_mount] = {"move_mount", (void *)nullptr},
+	[__NR_i386_fsopen] = {"fsopen", (void *)nullptr},
+	[__NR_i386_fsconfig] = {"fsconfig", (void *)nullptr},
+	[__NR_i386_fsmount] = {"fsmount", (void *)nullptr},
+	[__NR_i386_fspick] = {"fspick", (void *)nullptr},
+	[__NR_i386_pidfd_open] = {"pidfd_open", (void *)nullptr},
+	[__NR_i386_clone3] = {"clone3", (void *)nullptr},
+	[__NR_i386_close_range] = {"close_range", (void *)nullptr},
+	[__NR_i386_openat2] = {"openat2", (void *)nullptr},
+	[__NR_i386_pidfd_getfd] = {"pidfd_getfd", (void *)nullptr},
+	[__NR_i386_faccessat2] = {"faccessat2", (void *)nullptr},
+	[__NR_i386_process_madvise] = {"process_madvise", (void *)nullptr},
+	[__NR_i386_epoll_pwait2] = {"epoll_pwait2", (void *)nullptr},
+	[__NR_i386_mount_setattr] = {"mount_setattr", (void *)nullptr},
+	[443] = {"reserved", (void *)nullptr},
+	[__NR_i386_landlock_create_ruleset] = {"landlock_create_ruleset", (void *)nullptr},
+	[__NR_i386_landlock_add_rule] = {"landlock_add_rule", (void *)nullptr},
+	[__NR_i386_landlock_restrict_self] = {"landlock_restrict_self", (void *)nullptr},
 };
 
 uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
-	thisFrame = Frame;
 #if defined(a64)
-	if (Frame->rax > sizeof(LinuxSyscallsTable) / sizeof(SyscallData))
+	if (Frame->rax > sizeof(LinuxSyscallsTableAMD64) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
 			  Frame->rax);
 		return -ENOSYS;
 	}
 
-	SyscallData Syscall = LinuxSyscallsTable[Frame->rax];
+	SyscallData Syscall = LinuxSyscallsTableAMD64[Frame->rax];
 
-	long (*call)(long, ...) = r_cst(long (*)(long, ...),
-									Syscall.Handler);
+	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
+											  Syscall.Handler);
 
 	if (unlikely(!call))
 	{
@@ -1114,23 +2830,24 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 		  Frame->rdi, Frame->rsi, Frame->rdx,
 		  Frame->r10, Frame->r8, Frame->r9);
 
-	long sc_ret = call(Frame->rdi, Frame->rsi, Frame->rdx,
+	long sc_ret = call(Frame,
+					   Frame->rdi, Frame->rsi, Frame->rdx,
 					   Frame->r10, Frame->r8, Frame->r9);
 
 	debug("< [%d:\"%s\"] = %d", Frame->rax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(a32)
-	if (Frame->eax > sizeof(LinuxSyscallsTable) / sizeof(SyscallData))
+	if (Frame->eax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
 			  Frame->eax);
 		return -ENOSYS;
 	}
 
-	SyscallData Syscall = LinuxSyscallsTable[Frame->eax];
+	SyscallData Syscall = LinuxSyscallsTableI386[Frame->eax];
 
-	long (*call)(long, ...) = r_cst(long (*)(long, ...),
-									Syscall.Handler);
+	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
+											  Syscall.Handler);
 
 	if (unlikely(!call))
 	{
@@ -1144,12 +2861,19 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 		  Frame->ebx, Frame->ecx, Frame->edx,
 		  Frame->esi, Frame->edi, Frame->ebp);
 
-	int sc_ret = call(Frame->ebx, Frame->ecx, Frame->edx,
+	int sc_ret = call(Frame,
+					  Frame->ebx, Frame->ecx, Frame->edx,
 					  Frame->esi, Frame->edi, Frame->ebp);
 
 	debug("< [%d:\"%s\"] = %d", Frame->eax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(aa64)
 	return -ENOSYS;
+#endif
+
+#if defined(a64)
+	UNUSED(LinuxSyscallsTableI386);
+#elif defined(a32)
+	UNUSED(LinuxSyscallsTableAMD64);
 #endif
 }

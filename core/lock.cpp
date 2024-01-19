@@ -22,76 +22,71 @@
 
 #include "../kernel.h"
 
-#ifdef DEBUG
 /* This might end up in a deadlock in the deadlock handler.
 	Nobody can escape the deadlock, not even the
 	deadlock handler itself. */
-
-// #define PRINT_BACKTRACE
-#endif
+// #define PRINT_BACKTRACE 1
 
 #ifdef PRINT_BACKTRACE
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wframe-address"
 
 void PrintStacktrace(LockClass::SpinLockData *Lock)
 {
-	if (KernelSymbolTable)
+	if (!KernelSymbolTable)
 	{
-		struct StackFrame
-		{
-			uintptr_t BasePointer;
-			uintptr_t ReturnAddress;
-		};
-
-		// char DbgAttempt[1024] = "\0";
-		// char DbgHolder[1024] = "\0";
-
-		std::string DbgAttempt = "\0";
-		std::string DbgHolder = "\0";
-
-		StackFrame *FrameAttempt = (StackFrame *)Lock->StackPointerAttempt.load();
-		StackFrame *FrameHolder = (StackFrame *)Lock->StackPointerHolder.load();
-
-		while (Memory::Virtual().Check(FrameAttempt))
-		{
-			DbgAttempt.concat(KernelSymbolTable->GetSymbolFromAddress(FrameAttempt->ReturnAddress));
-			DbgAttempt.concat("<-");
-			FrameAttempt = (StackFrame *)FrameAttempt->BasePointer;
-		}
-		debug("Attempt: %s", DbgAttempt.c_str());
-
-		while (Memory::Virtual().Check(FrameHolder))
-		{
-			DbgHolder.concat(KernelSymbolTable->GetSymbolFromAddress(FrameHolder->ReturnAddress));
-			DbgHolder.concat("<-");
-			FrameHolder = (StackFrame *)FrameHolder->BasePointer;
-		}
-
-		debug("Holder: %s", DbgHolder.c_str());
-
-		// debug("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(1)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(2)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(3)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(4)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(5)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(6)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(7)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(8)),
-		//       KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(9)));
+		warn("Symbol table not available.");
+		return;
 	}
+
+	struct StackFrame
+	{
+		uintptr_t BasePointer;
+		uintptr_t ReturnAddress;
+	};
+
+	// char DbgAttempt[1024] = "\0";
+	// char DbgHolder[1024] = "\0";
+	std::string DbgAttempt = "\0";
+	std::string DbgHolder = "\0";
+
+	StackFrame *FrameAttempt = (StackFrame *)Lock->StackPointerAttempt.load();
+	StackFrame *FrameHolder = (StackFrame *)Lock->StackPointerHolder.load();
+
+	while (Memory::Virtual().Check(FrameAttempt))
+	{
+		DbgAttempt.concat(KernelSymbolTable->GetSymbol(FrameAttempt->ReturnAddress));
+		DbgAttempt.concat("<-");
+		FrameAttempt = (StackFrame *)FrameAttempt->BasePointer;
+	}
+	warn("Attempt: %s", DbgAttempt.c_str());
+
+	while (Memory::Virtual().Check(FrameHolder))
+	{
+		DbgHolder.concat(KernelSymbolTable->GetSymbol(FrameHolder->ReturnAddress));
+		DbgHolder.concat("<-");
+		FrameHolder = (StackFrame *)FrameHolder->BasePointer;
+	}
+
+	warn("Holder: %s", DbgHolder.c_str());
+
+	// warn("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(1)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(2)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(3)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(4)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(5)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(6)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(7)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(8)),
+	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(9)));
 }
-#pragma GCC diagnostic pop
 #endif
 
 #ifdef DEBUG
-#define DEADLOCK_TIMEOUT 0x100000
-#define DEADLOCK_TIMEOUT_DEBUGGER 0x1000
+#define DEADLOCK_TIMEOUT 0x1000
 #else
 #define DEADLOCK_TIMEOUT 0x10000000
-#define DEADLOCK_TIMEOUT_DEBUGGER 0x100000
 #endif
 
 bool ForceUnlock = false;
@@ -159,26 +154,26 @@ int LockClass::Lock(const char *FunctionName)
 Retry:
 	int i = 0;
 	while (IsLocked.exchange(true, std::memory_order_acquire) &&
-		   ++i < (DebuggerIsAttached ? DEADLOCK_TIMEOUT_DEBUGGER : DEADLOCK_TIMEOUT))
+		   ++i < DEADLOCK_TIMEOUT)
 	{
 		this->Yield();
 	}
 
-	if (i >= (DebuggerIsAttached ? DEADLOCK_TIMEOUT_DEBUGGER : DEADLOCK_TIMEOUT))
+	if (i >= DEADLOCK_TIMEOUT)
 	{
 		DeadLock(LockData);
 		goto Retry;
 	}
 
-	LockData.Count++;
-	LockData.CurrentHolder = FunctionName;
-	LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
+	LockData.Count.fetch_add(1);
+	LockData.CurrentHolder.store(FunctionName);
+	LockData.StackPointerHolder.store((uintptr_t)__builtin_frame_address(0));
 
 	CPUData *CoreData = GetCurrentCPU();
 	if (CoreData != nullptr)
-		LockData.Core = CoreData->ID;
+		LockData.Core.store(CoreData->ID);
 
-	LocksCount++;
+	LocksCount.fetch_add(1);
 
 	__sync;
 	return 0;
@@ -189,8 +184,8 @@ int LockClass::Unlock()
 	__sync;
 
 	IsLocked.store(false, std::memory_order_release);
-	LockData.Count--;
-	LocksCount--;
+	LockData.Count.fetch_sub(1);
+	LocksCount.fetch_sub(1);
 
 	return 0;
 }
@@ -230,19 +225,19 @@ int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 	if (!TimeManager)
 		return Lock(FunctionName);
 
-	LockData.AttemptingToGet = FunctionName;
-	LockData.StackPointerAttempt = (uintptr_t)__builtin_frame_address(0);
+	LockData.AttemptingToGet.store(FunctionName);
+	LockData.StackPointerAttempt.store((uintptr_t)__builtin_frame_address(0));
 
 	std::atomic_uint64_t Target = 0;
 Retry:
 	int i = 0;
 	while (IsLocked.exchange(true, std::memory_order_acquire) &&
-		   ++i < (DebuggerIsAttached ? DEADLOCK_TIMEOUT_DEBUGGER : DEADLOCK_TIMEOUT))
+		   ++i < DEADLOCK_TIMEOUT)
 	{
 		this->Yield();
 	}
 
-	if (i >= (DebuggerIsAttached ? DEADLOCK_TIMEOUT_DEBUGGER : DEADLOCK_TIMEOUT))
+	if (i >= DEADLOCK_TIMEOUT)
 	{
 		if (Target.load() == 0)
 			Target.store(TimeManager->CalculateTarget(Timeout,
@@ -251,15 +246,15 @@ Retry:
 		goto Retry;
 	}
 
-	LockData.Count++;
-	LockData.CurrentHolder = FunctionName;
-	LockData.StackPointerHolder = (uintptr_t)__builtin_frame_address(0);
+	LockData.Count.fetch_add(1);
+	LockData.CurrentHolder.store(FunctionName);
+	LockData.StackPointerHolder.store((uintptr_t)__builtin_frame_address(0));
 
 	CPUData *CoreData = GetCurrentCPU();
 	if (CoreData != nullptr)
-		LockData.Core = CoreData->ID;
+		LockData.Core.store(CoreData->ID);
 
-	LocksCount++;
+	LocksCount.fetch_add(1);
 
 	__sync;
 	return 0;

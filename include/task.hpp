@@ -23,13 +23,14 @@
 #include <filesystem.hpp>
 #include <symbols.hpp>
 #include <memory.hpp>
+#include <signal.hpp>
 #include <ints.hpp>
-#include <ipc.hpp>
 #include <debug.h>
 #include <cwalk.h>
 #include <vector>
 #include <atomic>
 #include <abi.h>
+#include <list>
 
 namespace Tasking
 {
@@ -39,9 +40,9 @@ namespace Tasking
 	/** Instruction Pointer */
 	typedef __UINTPTR_TYPE__ IP;
 	/** Process ID */
-	typedef int PID;
+	typedef pid_t PID;
 	/** Thread ID */
-	typedef int TID;
+	typedef pid_t TID;
 
 	enum TaskArchitecture
 	{
@@ -77,48 +78,54 @@ namespace Tasking
 		_ExecuteModeMax = User
 	};
 
-	enum TaskState : int
+	enum TaskState : short
 	{
 		UnknownStatus,
 
 		/**
-		 * Task ready to be scheduled
+		 * Ready
+		 *
+		 * Used when the task is ready
+		 * to be scheduled
 		 */
 		Ready,
 
 		/**
-		 * Task is the current running task
+		 * Running
+		 *
+		 * Used when the task is running
+		 * on the CPU
 		 */
 		Running,
 
 		/**
-		 * Task is sleeping
-		 * 
-		 * Used when the task is waiting for
-		 * a specific amount of time to pass
+		 * Sleeping
+		 *
+		 * Used when the task is sleeping
+		 * for a given amount of time
 		 */
 		Sleeping,
 
 		/**
-		 * Task is blocked
-		 * 
-		 * Used when the task is waiting for
-		 * another task to finish or for an
-		 * event to occur
+		 * Blocked
+		 *
+		 * Used when the task is blocked
+		 * by another task or until an
+		 * event occurs
 		 */
 		Blocked,
 
 		/**
-		 * Task is stopped
-		 * 
+		 * Stopped
+		 *
 		 * Used when the task is stopped
-		 * by the debugger or by the user
+		 * by the user
 		 */
 		Stopped,
 
 		/**
-		 * Task is waiting
-		 * 
+		 * Waiting
+		 *
 		 * Used when the task is not ready
 		 * to be scheduled by implementation
 		 * e.g. Creating a separate page table
@@ -127,8 +134,8 @@ namespace Tasking
 		Waiting,
 
 		/**
-		 * Task is a zombie
-		 * 
+		 * Zombie
+		 *
 		 * Used when the task is waiting
 		 * for the parent to read the exit
 		 * code
@@ -136,8 +143,17 @@ namespace Tasking
 		Zombie,
 
 		/**
-		 * Task is terminated
-		 * 
+		 * Core Dump
+		 *
+		 * Used when the task is waiting
+		 * for the parent to read the core
+		 * dump
+		 */
+		CoreDump,
+
+		/**
+		 * Terminated
+		 *
 		 * Used when the task is terminated
 		 * and is waiting to be cleaned up
 		 * by the scheduler
@@ -161,7 +177,7 @@ namespace Tasking
 		_PriorityMax = Critical
 	};
 
-	enum KillErrorCodes : int
+	enum KillCode : int
 	{
 		KILL_SCHEDULER_DESTRUCTION = -0xFFFF,
 		KILL_CXXABI_EXCEPTION = -0xECE97,
@@ -186,6 +202,36 @@ namespace Tasking
 		TaskArchitecture Architecture = TaskArchitecture::UnknownArchitecture;
 		TaskCompatibility Compatibility = TaskCompatibility::UnknownPlatform;
 		cwk_path_style PathStyle = CWK_STYLE_UNIX;
+	};
+
+	struct ThreadLocalStorage
+	{
+		/**
+		 * Physical base address of the
+		 * TLS segment with the data
+		 */
+		uintptr_t pBase;
+
+		/**
+		 * Virtual base where the TLS
+		 * segment should be mapped
+		 */
+		uintptr_t vBase;
+
+		/**
+		 * Alignment of the TLS segment
+		 */
+		uintptr_t Align;
+
+		/**
+		 * Size of the TLS segment
+		 */
+		uintptr_t Size;
+
+		/**
+		 * File size of the TLS segment
+		 */
+		uintptr_t fSize;
 	};
 
 	/**
@@ -246,6 +292,12 @@ namespace Tasking
 									const char **envp,
 									const std::vector<AuxiliaryVector> &auxv);
 
+		/**
+		 * This function should be called after
+		 * GS and FS are set up
+		 */
+		void SetupThreadLocalStorage();
+
 	public:
 		class Task *GetContext() { return ctx; }
 
@@ -258,8 +310,6 @@ namespace Tasking
 		/* Statuses */
 		std::atomic_int ExitCode;
 		std::atomic<TaskState> State = TaskState::Waiting;
-		std::atomic_bool KeepInMemory = false;
-		std::atomic_size_t KeepTime = 0;
 		int ErrorNumber;
 
 		/* Memory */
@@ -271,12 +321,11 @@ namespace Tasking
 		CPU::x64::TrapFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(a32)
-		CPU::x32::TrapFrame Registers; // TODO
+		CPU::x32::TrapFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(aa64)
 		uintptr_t Registers; // TODO
 #endif
-		uintptr_t IPHistory[128];
 		__aligned(16) CPU::x64::FXState FPU;
 
 		/* Info & Security info */
@@ -288,6 +337,7 @@ namespace Tasking
 			bool IsKernelDebugEnabled = false;
 		} Security{};
 		TaskInfo Info{};
+		ThreadLocalStorage TLS{};
 
 		/* Compatibility structures */
 		struct
@@ -296,6 +346,9 @@ namespace Tasking
 			int *clear_child_tid{};
 		} Linux{};
 
+		int SendSignal(int sig);
+		void SetState(TaskState state);
+		void SetExitCode(int code);
 		void Rename(const char *name);
 		void SetPriority(TaskPriority priority);
 		int GetExitCode() { return ExitCode.load(); }
@@ -303,7 +356,6 @@ namespace Tasking
 		void SetDebugMode(bool Enable);
 		void SetKernelDebugMode(bool Enable);
 		size_t GetSize();
-
 		void Block() { State.store(TaskState::Blocked); }
 		void Unblock() { State.store(TaskState::Ready); }
 
@@ -328,7 +380,7 @@ namespace Tasking
 		~TCB();
 	};
 
-	class PCB
+	class PCB : public vfs::Node
 	{
 	private:
 		class Task *ctx = nullptr;
@@ -355,8 +407,6 @@ namespace Tasking
 		/* Statuses */
 		std::atomic_int ExitCode;
 		std::atomic<TaskState> State = Waiting;
-		std::atomic_bool KeepInMemory = false;
-		std::atomic_size_t KeepTime = 0;
 
 		/* Info & Security info */
 		struct
@@ -372,11 +422,17 @@ namespace Tasking
 			} Real, Effective;
 		} Security{};
 		TaskInfo Info{};
+		ThreadLocalStorage TLS{};
 
 		/* Filesystem */
 		Node *CurrentWorkingDirectory;
-		Node *ProcessDirectory;
+		Node *Executable;
 		FileDescriptorTable *FileDescriptors;
+
+		/* stdio */
+		Node *stdin;
+		Node *stdout;
+		Node *stderr;
 
 		/* Memory */
 		Memory::PageTable *PageTable;
@@ -384,18 +440,22 @@ namespace Tasking
 		Memory::ProgramBreak *ProgramBreak;
 
 		/* Other */
-		InterProcessCommunication::IPC *IPC;
+		Signal *Signals;
 		SymbolResolver::Symbols *ELFSymbolTable;
 
 		/* Threads & Children */
-		std::vector<TCB *> Threads;
-		std::vector<PCB *> Children;
+		std::list<TCB *> Threads;
+		std::list<PCB *> Children;
 
 	public:
 		class Task *GetContext() { return ctx; }
 
+		int SendSignal(int sig);
+		void SetState(TaskState state);
+		void SetExitCode(int code);
 		void Rename(const char *name);
 		void SetWorkingDirectory(Node *node);
+		void SetExe(const char *path);
 		size_t GetSize();
 
 		PCB(class Task *ctx,
@@ -403,7 +463,7 @@ namespace Tasking
 			const char *Name,
 			TaskExecutionMode ExecutionMode,
 			void *Image = nullptr,
-			bool DoNotCreatePageTable = false,
+			bool UseKernelPageTable = false,
 			uint16_t UserID = -1,
 			uint16_t GroupID = -1);
 
@@ -419,10 +479,10 @@ namespace Tasking
 		PID NextPID = 0;
 		TID NextTID = 0;
 
-		std::vector<PCB *> ProcessList;
+		std::list<PCB *> ProcessList;
+		PCB *KernelProcess = nullptr;
 		PCB *IdleProcess = nullptr;
 		TCB *IdleThread = nullptr;
-		TCB *CleanupThread = nullptr;
 		std::atomic_size_t SchedulerTicks = 0;
 		std::atomic_size_t LastTaskTicks = 0;
 		std::atomic_int LastCore = 0;
@@ -481,36 +541,24 @@ namespace Tasking
 		 */
 		void WakeUpThreads();
 
-#if defined(a64)
 		/**
 		 * @note This function is NOT thread safe
 		 */
-		void Schedule(CPU::x64::TrapFrame *Frame);
+		void CleanupTerminated();
 
-		void OnInterruptReceived(CPU::x64::TrapFrame *Frame);
-#elif defined(a32)
 		/**
 		 * @note This function is NOT thread safe
 		 */
-		void Schedule(CPU::x32::TrapFrame *Frame);
+		void Schedule(CPU::TrapFrame *Frame);
 
-		void OnInterruptReceived(CPU::x32::TrapFrame *Frame);
-#elif defined(aa64)
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		void Schedule(CPU::aarch64::TrapFrame *Frame);
-
-		void OnInterruptReceived(CPU::aarch64::TrapFrame *Frame);
-#endif
+		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
 
 	public:
-		void SetCleanupThread(TCB *Thread) { CleanupThread = Thread; }
+		PCB *GetKernelProcess() { return KernelProcess; }
 		size_t GetSchedulerTicks() { return SchedulerTicks.load(); }
 		size_t GetLastTaskTicks() { return LastTaskTicks.load(); }
 		int GetLastCore() { return LastCore.load(); }
-		std::vector<PCB *> GetProcessList() { return ProcessList; }
-		void CleanupProcessesThread();
+		std::list<PCB *> GetProcessList() { return ProcessList; }
 		void Panic() { StopScheduler = true; }
 		bool IsPanic() { return StopScheduler; }
 
@@ -542,18 +590,18 @@ namespace Tasking
 
 		void SignalShutdown();
 
-		void KillThread(TCB *tcb, enum KillErrorCodes Code)
+		void KillThread(TCB *tcb, enum KillCode Code)
 		{
-			tcb->State = TaskState::Terminated;
-			tcb->ExitCode = (int)Code;
+			tcb->SetState(TaskState::Terminated);
+			tcb->SetExitCode(Code);
 			debug("Killing thread %s(%d) with exit code %d",
 				  tcb->Name, tcb->ID, Code);
 		}
 
-		void KillProcess(PCB *pcb, enum KillErrorCodes Code)
+		void KillProcess(PCB *pcb, enum KillCode Code)
 		{
-			pcb->State = TaskState::Terminated;
-			pcb->ExitCode = (int)Code;
+			pcb->SetState(TaskState::Terminated);
+			pcb->SetExitCode(Code);
 			debug("Killing process %s(%d) with exit code %d",
 				  pcb->Name, pcb->ID, Code);
 		}
@@ -594,7 +642,7 @@ namespace Tasking
 						   const char *Name,
 						   TaskExecutionMode TrustLevel,
 						   void *Image = nullptr,
-						   bool DoNotCreatePageTable = false,
+						   bool UseKernelPageTable = false,
 						   uint16_t UserID = UINT16_MAX,
 						   uint16_t GroupID = UINT16_MAX);
 
@@ -607,6 +655,7 @@ namespace Tasking
 						  TaskCompatibility Compatibility = TaskCompatibility::Native,
 						  bool ThreadNotReady = false);
 
+		void StartScheduler();
 		Task(const IP EntryPoint);
 		~Task();
 
@@ -615,11 +664,15 @@ namespace Tasking
 	};
 }
 
-#define thisProcess TaskManager->GetCurrentProcess()
-#define thisThread TaskManager->GetCurrentThread()
+/*
+	If these macros are used,
+	you have to add:
+	"#include <smp.hpp>" too
+	if necessary.
+*/
 
-#define PEXIT(Code) thisProcess->ExitCode = Code
-#define TEXIT(Code) thisThread->ExitCode = Code
+#define thisProcess GetCurrentCPU()->CurrentProcess.load()
+#define thisThread GetCurrentCPU()->CurrentThread.load()
 
 extern "C" void TaskingScheduler_OneShot(int TimeSlice);
 

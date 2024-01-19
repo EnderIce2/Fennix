@@ -161,7 +161,7 @@ namespace CPU
 			 "cli\n"
 			 "hlt\n"
 			 "jmp CPUStopLoop");
-#elif defined(aa64) // annoying warning: "‘noreturn’ function does return" and "‘naked’ attribute directive ignored"
+#elif defined(aa64) // annoying warning: "'noreturn' function does return" and "'naked' attribute directive ignored"
 	SafeFunction __used inline void Stop()
 	{
 		asmv("CPUStopLoop:\n"
@@ -198,9 +198,12 @@ namespace CPU
 	 * @brief Get/Set the CPU's page table
 	 *
 	 * @param PT The new page table, if empty, the current page table will be returned
-	 * @return void* The current page table
+	 * @return Get: The current page table
+	 * @return Set: The old page table
 	 */
 	void *PageTable(void *PT = nullptr);
+
+#define thisPageTable (Memory::PageTable *)CPU::PageTable()
 
 	/** @brief To be used only once. */
 	void InitializeFeatures(int Core);
@@ -826,7 +829,7 @@ namespace CPU
 			uint8_t st[8][16];
 			/** @brief XMM registers */
 			uint8_t xmm[16][16];
-		} __packed;
+		} __packed __aligned(16);
 
 		SafeFunction static inline void lgdt(void *gdt)
 		{
@@ -950,6 +953,29 @@ namespace CPU
 			uint64_t InterruptNumber /* iar_el1 */; // Interrupt Acknowledge Register
 		} TrapFrame;
 	}
+
+#if defined(a64)
+	/**
+	 * CPU trap frame for the current architecture
+	 *
+	 * @note This is for x86_64
+	 */
+	typedef x64::TrapFrame TrapFrame;
+#elif defined(a32)
+	/**
+	 * CPU trap frame for the current architecture
+	 *
+	 * @note This is for x86_32
+	 */
+	typedef x32::TrapFrame TrapFrame;
+#elif defined(aa64)
+/**
+ * CPU trap frame for the current architecture
+ *
+ * @note This is for aarch64
+ */
+typedef aarch64::TrapFrame TrapFrame;
+#endif
 }
 
 #endif // !__FENNIX_KERNEL_CPU_H__

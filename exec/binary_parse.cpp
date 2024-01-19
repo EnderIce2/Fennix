@@ -19,52 +19,34 @@
 
 #include <msexec.h>
 
-#include "../kernel.h"
-#include "../Fex.hpp"
-
 namespace Execute
 {
 	BinaryType GetBinaryType(const char *Path)
 	{
+		debug("Checking binary type of %s(ptr: %#lx)",
+			  Path, Path);
 		BinaryType Type;
 		int fd = fopen(Path, "r");
 
 		if (fd < 0)
+		{
+			debug("Failed to open file %s: %s",
+				  Path, strerror(fd));
 			return (BinaryType)fd;
+		}
 
 		debug("File opened: %s, descriptor %d", Path, fd);
 		Memory::SmartHeap sh = Memory::SmartHeap(1024);
 		fread(fd, sh, 128);
 
-		Fex *FexHdr = (Fex *)sh.Get();
 		Elf32_Ehdr *ELFHeader = (Elf32_Ehdr *)sh.Get();
 		IMAGE_DOS_HEADER *MZHeader = (IMAGE_DOS_HEADER *)sh.Get();
 
-		/* Check Fex header. */
-		if (FexHdr->Magic[0] == 'F' &&
-			FexHdr->Magic[1] == 'E' &&
-			FexHdr->Magic[2] == 'X' &&
-			FexHdr->Magic[3] == '\0')
-		{
-			/* If the fex type is driver, we shouldn't return as Fex. */
-			if (FexHdr->Type == FexFormatType_Executable)
-			{
-				debug("Image - Fex");
-				Type = BinaryType::BinTypeFex;
-				goto Success;
-			}
-			else if (FexHdr->Type == FexFormatType_Module)
-			{
-				fixme("Fex Module is not supposed to be executed.");
-				/* TODO: Module installation pop-up. */
-			}
-		}
-
 		/* Check ELF header. */
-		else if (ELFHeader->e_ident[EI_MAG0] == ELFMAG0 &&
-				 ELFHeader->e_ident[EI_MAG1] == ELFMAG1 &&
-				 ELFHeader->e_ident[EI_MAG2] == ELFMAG2 &&
-				 ELFHeader->e_ident[EI_MAG3] == ELFMAG3)
+		if (ELFHeader->e_ident[EI_MAG0] == ELFMAG0 &&
+			ELFHeader->e_ident[EI_MAG1] == ELFMAG1 &&
+			ELFHeader->e_ident[EI_MAG2] == ELFMAG2 &&
+			ELFHeader->e_ident[EI_MAG3] == ELFMAG3)
 		{
 			debug("Image - ELF");
 			Type = BinaryType::BinTypeELF;

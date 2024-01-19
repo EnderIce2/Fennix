@@ -21,18 +21,17 @@
 #include <printf.h>
 
 #include "../kernel.h"
-#include "../mapi.hpp"
-#include "../Fex.hpp"
 
 namespace Disk
 {
 	void Manager::FetchDisks(unsigned long modUniqueID)
 	{
-		KernelCallback callback{};
-		callback.Reason = QueryReason;
-		ModuleManager->IOCB(modUniqueID, &callback);
-		this->AvailablePorts = callback.DiskCallback.Fetch.Ports;
-		this->BytesPerSector = callback.DiskCallback.Fetch.BytesPerSector;
+		/* KernelCallback */
+		// KernelCallback callback{};
+		// callback.Reason = QueryReason;
+		// DriverManager->IOCB(modUniqueID, &callback);
+		// this->AvailablePorts = callback.DiskCallback.Fetch.Ports;
+		// this->BytesPerSector = callback.DiskCallback.Fetch.BytesPerSector;
 		debug("AvailablePorts:%ld BytesPerSector:%ld", this->AvailablePorts, this->BytesPerSector);
 
 		if (this->AvailablePorts <= 0)
@@ -49,15 +48,16 @@ namespace Disk
 			drive->MechanicalDisk = true;
 
 			memset(RWBuffer, 0, this->BytesPerSector);
-			callback.Reason = ReceiveReason;
-			callback.DiskCallback.RW = {
-				.Sector = 0,
-				.SectorCount = 2,
-				.Port = ItrPort,
-				.Buffer = RWBuffer,
-				.Write = false,
-			};
-			ModuleManager->IOCB(modUniqueID, &callback);
+			/* KernelCallback */
+			// callback.Reason = ReceiveReason;
+			// callback.DiskCallback.RW = {
+			// 	.Sector = 0,
+			// 	.SectorCount = 2,
+			// 	.Port = ItrPort,
+			// 	.Buffer = RWBuffer,
+			// 	.Write = false,
+			// };
+			// DriverManager->IOCB(modUniqueID, &callback);
 			memcpy(&drive->Table, RWBuffer, sizeof(PartitionTable));
 
 			/*
@@ -72,15 +72,16 @@ namespace Disk
 				for (uint32_t Block = 0; Block < Sectors; Block++)
 				{
 					memset(RWBuffer, 0, this->BytesPerSector);
-					callback.Reason = ReceiveReason;
-					callback.DiskCallback.RW = {
-						.Sector = 2 + Block,
-						.SectorCount = 1,
-						.Port = ItrPort,
-						.Buffer = RWBuffer,
-						.Write = false,
-					};
-					ModuleManager->IOCB(modUniqueID, &callback);
+					/* KernelCallback */
+					// callback.Reason = ReceiveReason;
+					// callback.DiskCallback.RW = {
+					// 	.Sector = 2 + Block,
+					// 	.SectorCount = 1,
+					// 	.Port = ItrPort,
+					// 	.Buffer = RWBuffer,
+					// 	.Write = false,
+					// };
+					// DriverManager->IOCB(modUniqueID, &callback);
 
 					for (uint32_t e = 0; e < Entries; e++)
 					{

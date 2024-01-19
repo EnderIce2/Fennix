@@ -19,12 +19,43 @@
 
 namespace std
 {
-    template <typename T>
-    struct equal_to
-    {
-        bool operator()(const T &lhs, const T &rhs) const
-        {
-            return lhs == rhs;
-        }
-    };
+	template <typename T>
+	struct equal_to
+	{
+		bool operator()(const T &lhs, const T &rhs) const
+		{
+			return lhs == rhs;
+		}
+	};
+
+	template <typename Key>
+	struct hash
+	{
+		size_t operator()(const Key &key) const
+		{
+#if defined(a64)
+			static_assert(sizeof(uintptr_t) == sizeof(uint64_t));
+			const uint64_t FNV_OFFSET_BASIS = 14695981039346656037ull;
+			const uint64_t FNV_PRIME = 1099511628211ull;
+#elif defined(a32)
+			static_assert(sizeof(uintptr_t) == sizeof(uint32_t));
+			const uint32_t FNV_OFFSET_BASIS = 2166136261u;
+			const uint32_t FNV_PRIME = 16777619u;
+#else
+#error "Unsupported architecture"
+#endif
+
+			const uint8_t *data = reinterpret_cast<const uint8_t *>(&key);
+			const size_t size = sizeof(Key);
+			uintptr_t hash = FNV_OFFSET_BASIS;
+
+			for (size_t i = 0; i < size; ++i)
+			{
+				hash ^= static_cast<uintptr_t>(data[i]);
+				hash *= FNV_PRIME;
+			}
+
+			return static_cast<size_t>(hash);
+		}
+	};
 }

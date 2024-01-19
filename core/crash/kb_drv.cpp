@@ -120,125 +120,109 @@ namespace CrashHandler
 #define WaitWrite PS2Wait(false)
 		CPU::Interrupts(CPU::Disable);
 #if defined(a86)
-		// Disable devices
+
+		/* Disable Port 1 */
 		WaitWrite;
 		outb(0x64, 0xAD);
+
+		/* Disable Port 2 */
 		WaitWrite;
 		outb(0x64, 0xA7);
 
-		// Flush buffer
+		/* Flush */
 		WaitRead;
 		inb(0x60);
 
-		// outb(0x64, 0xAE);
-
-		// Configure devices
-		WaitWrite;
-		outb(0x64, 0x20);
-		WaitRead;
-		uint8_t cfg = inb(0x60);
-		bool DualChannel = cfg & 0b00100000;
-		if (DualChannel)
-			trace("Dual channel PS/2 controller detected.");
-		cfg |= 0b01000011;
-		WaitWrite;
-		outb(0x64, 0x60);
-		WaitWrite;
-		outb(0x60, cfg);
-
+		/* Test PS/2 controller */
 		WaitWrite;
 		outb(0x64, 0xAA);
 		WaitRead;
 		uint8_t test = inb(0x60);
 		if (test != 0x55)
 		{
-			error("PS/2 controller self test failed! (%#x)", test);
-			printf("PS/2 controller self test failed! (%#x)\n", test);
-			CPU::Stop();
+			if (test == 0xFA)
+				warn("PS/2 controller acknowledged? (expected TEST_PASSED = 0x55)");
+			else
+			{
+				error("PS/2 controller self test failed (%#x)", test);
+				// CPU::Stop();
+			}
 		}
 
+		/* Enable Port 1 */
+		WaitWrite;
+		outb(0x64, 0xAE);
+
+		/* Reset Port 1 */
+		WaitWrite;
+		outb(0x64, 0xFF); /* This may break some keyboards? */
+
+		/* Test Port 1 */
+		WaitWrite;
+		outb(0x64, 0xAB);
+		WaitRead;
+		test = inb(0x60);
+
+		if (test != 0x00)
+		{
+			if (test == 0xFA)
+				warn("PS/2 keyboard acknowledged? (expected TEST_PASSED = 0x00)");
+			else
+			{
+				error("PS/2 keyboard self test failed (%#x)", test);
+				// CPU::Stop();
+			}
+		}
+
+		/* Disable Port 1 */
+		WaitWrite;
+		outb(0x64, 0xAD);
+
+		/* Disable Port 2 */
+		WaitWrite;
+		outb(0x64, 0xA7);
+
+		/* Flush Port 1 */
+		WaitRead;
+		inb(0x60);
+
+		/* Read Controller Configuration */
+		WaitWrite;
+		outb(0x64, 0x20);
+		WaitRead;
+		uint8_t cfg = inb(0x60);
+
+		/* Enable Port 1 & Port 1 translation */
+		cfg |= 0b01000001;
+
+		/* Write Controller Configuration */
 		WaitWrite;
 		outb(0x64, 0x60);
 		WaitWrite;
 		outb(0x60, cfg);
 
-		bool DCExists = false;
-		if (DualChannel)
-		{
-			WaitWrite;
-			outb(0x64, 0xAE);
-			WaitWrite;
-			outb(0x64, 0x20);
-			WaitRead;
-			cfg = inb(0x60);
-			DCExists = !(cfg & 0b00100000);
-			WaitWrite;
-			outb(0x64, 0xAD);
-			debug("DCExists: %d", DCExists);
-		}
-
-		WaitWrite;
-		outb(0x64, 0xAB);
-		WaitRead;
-		test = inb(0x60);
-		if (test != 0x00)
-		{
-			error("PS/2 keyboard self test failed! (%#x)", test);
-			printf("PS/2 keyboard self test failed! (%#x)\n", test);
-			CPU::Stop();
-		}
-
-		if (DCExists)
-		{
-			WaitWrite;
-			outb(0x64, 0xA9);
-			WaitRead;
-			test = inb(0x60);
-			if (test != 0x00)
-			{
-				error("PS/2 mouse self test failed! (%#x)", test);
-				printf("PS/2 mouse self test failed! (%#x)\n", test);
-				CPU::Stop();
-			}
-		}
-
-		WaitWrite;
+		/* Enable Port 1 */
 		outb(0x64, 0xAE);
 
-		if (DCExists)
-		{
-			WaitWrite;
-			outb(0x64, 0xA8);
-		}
-
+		/* Set scan code set 1 */
 		WaitWrite;
-		outb(0x60, 0xFF);
+		outb(0x60, 0xF0);
+		WaitWrite;
+		outb(0x60, 0x02);
+
+		/* Check if we have scan code set 1 */
+		WaitWrite;
+		outb(0x60, 0xF0);
+		WaitWrite;
+		outb(0x60, 0x00);
+
+		/* Read scan code set */
 		WaitRead;
-		test = inb(0x60);
-		if (test == 0xFC)
+		uint8_t scs = inb(0x60);
+		if (scs != 0x41)
 		{
-			error("PS/2 keyboard reset failed! (%#x)", test);
-			printf("PS/2 keyboard reset failed! (%#x)\n", test);
-			CPU::Stop();
+			warn("PS/2 keyboard scan code set 1 not supported (%#x)", scs);
 		}
-
-		WaitWrite;
-		outb(0x60, 0xD4);
-		WaitWrite;
-		outb(0x60, 0xFF);
-		WaitRead;
-		test = inb(0x60);
-		if (test == 0xFC)
-		{
-			error("PS/2 mouse reset failed! (%#x)", test);
-			printf("PS/2 mouse reset failed! (%#x)\n", test);
-			CPU::Stop();
-		}
-
-		// outb(0x60, 0xF4);
-
-		// outb(0x21, 0xFD);
-		// outb(0xA1, 0xFF);
 #endif // defined(a86)
 
 		CPU::Interrupts(CPU::Enable);
@@ -246,19 +230,13 @@ namespace CrashHandler
 
 	CrashKeyboardDriver::~CrashKeyboardDriver()
 	{
-		error("CrashKeyboardDriver::~CrashKeyboardDriver() called!");
+		error("CrashKeyboardDriver::~CrashKeyboardDriver() called");
 	}
 
 	int BackSpaceLimit = 0;
 	static char UserInputBuffer[1024];
 
-#if defined(a64)
-	SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
-#elif defined(a32)
-	SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
-#elif defined(aa64)
-	SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
-#endif
+	SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 #if defined(a86)
 		UNUSED(Frame);

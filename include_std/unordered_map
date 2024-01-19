@@ -1,0 +1,282 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <lock.hpp>
+#include <utility>
+#include <vector>
+#include <list>
+
+#define DEBUG_UMAP_MESSAGES 1
+
+#ifdef DEBUG_UMAP_MESSAGES
+#define umDebug(m, ...) debug("%#lx: " m, this, ##__VA_ARGS__)
+#else
+#define umDebug(m, ...)
+#endif
+
+namespace std
+{
+	template <typename Key, typename T>
+	class unordered_map
+	{
+	public:
+		typedef std::pair<Key, T> pair_t;
+		typedef std::list<pair_t> bucket_t;
+
+	private:
+		NewLock(lock);
+		std::vector<bucket_t> Buckets;
+
+		size_t hash(const Key &key) const
+		{
+			size_t ret = std::hash<Key>()(key) % this->Buckets.size();
+			// debug("Hashed %#lx to %d", key, ret);
+			return ret;
+		}
+
+	public:
+		unordered_map()
+			: Buckets(16)
+		{
+			umDebug("Created unordered_map with 16 buckets (default)");
+		}
+
+		unordered_map(size_t num)
+			: Buckets(num)
+		{
+			umDebug("Created unordered_map with %d buckets", num);
+		}
+
+		~unordered_map()
+		{
+			umDebug("Destroyed unordered_map");
+		}
+
+		void insert(const pair_t &p)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(p.first) % Buckets.size();
+			auto &bucket = Buckets[bucketIndex];
+
+			for (auto &element : bucket)
+			{
+				if (element.first == p.first)
+				{
+					element.second = p.second;
+					return;
+				}
+			}
+
+			bucket.push_back(p);
+		}
+
+		void erase(const Key &key)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(key) % Buckets.size();
+			auto &bucket = Buckets[bucketIndex];
+
+			bucket.remove_if([key](const pair_t &element)
+							 { return element.first == key; });
+		}
+
+		void clear()
+		{
+			SmartLock(this->lock);
+			for (auto &bucket : Buckets)
+			{
+				bucket.clear();
+			}
+		}
+
+		bool contains(const Key &key)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(key) % Buckets.size();
+			const auto &bucket = Buckets[bucketIndex];
+
+			for (const auto &element : bucket)
+			{
+				if (element.first == key)
+					return true;
+			}
+
+			return false;
+		}
+
+		size_t size()
+		{
+			SmartLock(this->lock);
+			size_t count = 0;
+			for (const auto &bucket : Buckets)
+			{
+				count += bucket.size();
+			}
+			return count;
+		}
+
+		bool empty() { return size() == 0; }
+
+		T &operator[](const Key &key)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(key) % Buckets.size();
+			auto &bucket = Buckets[bucketIndex];
+
+			for (auto &element : bucket)
+			{
+				if (element.first == key)
+					return element.second;
+			}
+
+			bucket.emplace_back(key, T{});
+			return bucket.back().second;
+		}
+
+		class iterator
+		{
+		private:
+			using BucketIterator = typename std::list<pair_t>::iterator;
+			size_t bucketIndex;
+			BucketIterator bucketIterator;
+			std::vector<std::list<pair_t>> *buckets;
+
+		public:
+			size_t GetBucketIndex() const { return bucketIndex; }
+			BucketIterator &GetBucketIterator() const { return bucketIterator; }
+
+			iterator(size_t index,
+					 BucketIterator it,
+					 std::vector<std::list<pair_t>> *buckets)
+				: bucketIndex(index),
+				  bucketIterator(it),
+				  buckets(buckets) {}
+
+			iterator &operator++()
+			{
+				++bucketIterator;
+
+				while (bucketIndex < buckets->size() &&
+					   bucketIterator == (*buckets)[bucketIndex].end())
+				{
+					++bucketIndex;
+					if (bucketIndex < buckets->size())
+					{
+						bucketIterator = (*buckets)[bucketIndex].begin();
+					}
+				}
+
+				return *this;
+			}
+
+			bool operator!=(const iterator &other) const
+			{
+				return bucketIndex != other.bucketIndex ||
+					   bucketIterator != other.bucketIterator;
+			}
+
+			pair_t &operator*()
+			{
+				return *bucketIterator;
+			}
+
+			pair_t *operator->()
+			{
+				return &(*bucketIterator);
+			}
+
+			operator bool() const
+			{
+				return bucketIndex < buckets->size();
+			}
+		};
+
+		iterator find(const Key &key)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(key) % Buckets.size();
+			auto &bucket = Buckets[bucketIndex];
+
+			auto it = std::find_if(bucket.begin(), bucket.end(),
+								   [key](const pair_t &element)
+								   { return element.first == key; });
+
+			if (it != bucket.end())
+			{
+				return iterator(bucketIndex,
+								it,
+								&Buckets);
+			}
+
+			return end();
+		}
+
+		iterator begin()
+		{
+			SmartLock(this->lock);
+			for (size_t i = 0; i < Buckets.size(); ++i)
+			{
+				if (!Buckets[i].empty())
+				{
+					return iterator(i,
+									Buckets[i].begin(),
+									&Buckets);
+				}
+			}
+
+			return end();
+		}
+
+		iterator end()
+		{
+			return iterator(Buckets.size(),
+							Buckets.back().end(),
+							&Buckets);
+		}
+
+		iterator insert(iterator pos, const pair_t &p)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = hash(p.first) % Buckets.size();
+			auto &bucket = Buckets[bucketIndex];
+
+			auto itr = std::find_if(bucket.begin(), bucket.end(),
+									[p](const pair_t &element)
+									{ return element.first == p.first; });
+
+			if (itr != bucket.end())
+				return end();
+
+			return iterator(bucketIndex,
+							bucket.insert(pos.bucketIterator, p),
+							&Buckets);
+		}
+
+		iterator erase(iterator pos)
+		{
+			SmartLock(this->lock);
+			size_t bucketIndex = pos.GetBucketIndex();
+			auto &bucket = Buckets[bucketIndex];
+
+			return iterator(bucketIndex,
+							bucket.erase(pos.GetBucketIterator()),
+							&Buckets);
+		}
+	};
+}

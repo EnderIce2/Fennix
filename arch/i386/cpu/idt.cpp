@@ -25,7 +25,7 @@
 #include "gdt.hpp"
 #include "../../../kernel.h"
 
-/* conversion from ‘uint64_t’ {aka ‘long unsigned int’} to ‘unsigned char:2’ may change value */
+/* conversion from 'uint64_t' {aka 'long unsigned int'} to 'unsigned char:2' may change value */
 #pragma GCC diagnostic ignored "-Wconversion"
 
 extern "C" void MainInterruptHandler(void *Data);
@@ -461,11 +461,11 @@ namespace InterruptDescriptorTable
 		/* ISR */
 
 		bool EnableISRs = true;
-#ifdef DEBUG
+// #ifdef DEBUG
 		EnableISRs = !DebuggerIsAttached;
 		if (!EnableISRs)
 			KPrint("\eFFA500The debugger is attached, disabling all ISRs.");
-#endif
+// #endif
 
 		SetEntry(0x0, InterruptHandler_0x0, TRAP_GATE_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x1, InterruptHandler_0x1, TRAP_GATE_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);

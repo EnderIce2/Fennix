@@ -19,6 +19,9 @@
 				"a86",
 				"DEBUG=\"1\""
 			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
+			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gcc",
 			"cStandard": "c17",
 			"cppStandard": "c++20",
@@ -34,7 +37,6 @@
 				"-mcmodel=kernel",
 				"-fno-builtin",
 				"-m64",
-
 				// Warnings
 				"-Wall",
 				"-Wextra",
@@ -46,11 +48,9 @@
 				"-Wswitch-default",
 				"-Wstrict-overflow=5",
 				"-Wconversion",
-
 				// C++ flags
 				"-fno-rtti",
 				"-fno-exceptions",
-
 				// Linker flags
 				"-T${workspaceFolder}/arch/amd64/linker.ld",
 				"-Wl,-static,--no-dynamic-linker,-ztext",
@@ -59,7 +59,6 @@
 				"-nolibc",
 				"-zmax-page-size=0x1000",
 				"-shared",
-
 				// Debug flags
 				"-ggdb3",
 				"-O0",
@@ -68,7 +67,6 @@
 				"-fstack-usage",
 				"-fstack-check",
 				"-fsanitize=undefined",
-
 				// VSCode flags
 				"-ffreestanding",
 				"-nostdinc",
@@ -112,7 +110,6 @@
 				"-msoft-float",
 				"-fno-builtin",
 				"-m32",
-
 				// Warnings
 				"-Wall",
 				"-Wextra",
@@ -124,11 +121,9 @@
 				"-Wswitch-default",
 				"-Wstrict-overflow=5",
 				"-Wconversion",
-
 				// C++ flags
 				"-fno-rtti",
 				"-fno-exceptions",
-
 				// Linker flags
 				"-T${workspaceFolder}/arch/i386/linker.ld",
 				"-Wl,-static,--no-dynamic-linker,-ztext",
@@ -137,7 +132,6 @@
 				"-nolibc",
 				"-zmax-page-size=0x1000",
 				"-shared",
-
 				// Debug flags
 				"-ggdb3",
 				"-O0",
@@ -146,7 +140,6 @@
 				"-fstack-usage",
 				"-fstack-check",
 				"-fsanitize=undefined",
-
 				// VSCode flags
 				"-ffreestanding",
 				"-nostdinc",
@@ -183,7 +176,6 @@
 				"-msoft-float",
 				"-fPIC",
 				"-Wstack-protector",
-
 				// Warnings
 				"-Wall",
 				"-Wextra",
@@ -195,15 +187,12 @@
 				"-Wswitch-default",
 				"-Wstrict-overflow=5",
 				"-Wconversion",
-
 				// C++ flags
 				"-fno-rtti",
 				"-fno-exceptions",
-
 				// Linker flags
 				"-T${workspaceFolder}/arch/aarch64/linker.ld",
 				"-fPIC",
-
 				// Debug flags
 				"-ggdb3",
 				"-O0",
@@ -212,7 +201,6 @@
 				"-fstack-usage",
 				"-fstack-check",
 				"-fsanitize=undefined",
-
 				// VSCode flags
 				"-ffreestanding",
 				"-nostdinc",

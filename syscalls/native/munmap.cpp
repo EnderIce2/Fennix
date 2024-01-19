@@ -25,23 +25,9 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/munmap.html */
 int sys_munmap(SysFrm *,
@@ -53,16 +39,16 @@ int sys_munmap(SysFrm *,
 	if (len == 0)
 		return -EINVAL;
 
-	Tasking::PCB *pcb = thisProcess;
-	Memory::VirtualMemoryArea *vma = pcb->vma;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	PCB *pcb = thisProcess;
+	VirtualMemoryArea *vma = pcb->vma;
+	Virtual vmm = Virtual(pcb->PageTable);
 
 	for (uintptr_t i = uintptr_t(addr);
 		 i < uintptr_t(addr) + len;
 		 i += PAGE_SIZE)
 	{
-		if (likely(!vmm.Check((void *)i, Memory::G)))
-			vmm.Remap((void *)i, (void *)i, Memory::P | Memory::RW);
+		if (likely(!vmm.Check((void *)i, G)))
+			vmm.Remap((void *)i, (void *)i, P | RW);
 		else
 			warn("%p is a global page", (void *)i);
 	}

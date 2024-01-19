@@ -21,8 +21,10 @@
 #include <types.h>
 
 void cmd_lsof(const char *args);
+void cmd_clear(const char *args);
 void cmd_echo(const char *args);
 void cmd_ls(const char *args);
+void cmd_tree(const char *args);
 void cmd_cd(const char *args);
 void cmd_cat(const char *args);
 void cmd_ps(const char *args);
@@ -37,5 +39,10 @@ void cmd_exit(const char *args);
 void cmd_shutdown(const char *args);
 void cmd_reboot(const char *args);
 void cmd_lspci(const char *args);
+void cmd_lsacpi(const char *args);
+void cmd_lsmod(const char *args);
+void cmd_modinfo(const char *args);
+
+#define IF_ARG(x) strcmp(args, x) == 0
 
 #endif // !__FENNIX_KERNEL_SHELL_CMDS_H__

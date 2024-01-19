@@ -25,6 +25,20 @@
 using namespace vfs;
 using namespace Tasking;
 
+const char *TaskStateStrings[] = {
+	"Unknown",	// Unknown
+	"Ready",	// Ready
+	"Running",	// Running
+	"Sleeping", // Sleeping
+	"Blocked",	// Blocked
+	"Stopped",	// Stopped
+	"Waiting",	// Waiting
+
+	"CoreDump",	  // Core dump
+	"Zombie",	  // Zombie
+	"Terminated", // Terminated
+};
+
 void cmd_top(const char *)
 {
 	printf("\e9400A1PID    \e9CA100Name                \e00A15BState    \eCCCCCCPriority    Memory Usage    CPU Usage\n");
@@ -32,12 +46,12 @@ void cmd_top(const char *)
 	{
 #if defined(a64)
 		printf("\e9400A1%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %ld KiB         %ld\n",
-			   Proc->ID, Proc->Name, Proc->State == Running ? "Running" : "Stopped",
+			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
 #elif defined(a32)
 		printf("\e9400A1%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %lld KiB         %lld\n",
-			   Proc->ID, Proc->Name, Proc->State == Running ? "Running" : "Stopped",
+			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
 #endif
@@ -46,12 +60,12 @@ void cmd_top(const char *)
 		{
 #if defined(a64)
 			printf(" \eA80011%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %ld KiB         %ld\n",
-				   Thrd->ID, Thrd->Name, Thrd->State == Running ? "Running" : "Stopped",
+				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);
 #elif defined(a32)
 			printf(" \eA80011%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %lld KiB         %lld\n",
-				   Thrd->ID, Thrd->Name, Thrd->State == Running ? "Running" : "Stopped",
+				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);
 #endif

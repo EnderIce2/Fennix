@@ -22,205 +22,205 @@
 
 namespace Memory
 {
-    bool Virtual::Check(void *VirtualAddress, PTFlag Flag, MapType Type)
-    {
-        // 0x1000 aligned
-        uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFF000;
+	bool Virtual::Check(void *VirtualAddress, PTFlag Flag, MapType Type)
+	{
+		// 0x1000 aligned
+		uintptr_t Address = (uintptr_t)VirtualAddress;
+		Address &= 0xFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        PageTableEntryPtr *PTE = nullptr;
+		PageMapIndexer Index = PageMapIndexer(Address);
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageTableEntryPtr *PTE = nullptr;
 
-        if ((PDE->raw & Flag) > 0)
-        {
-            if (Type == MapType::FourMiB && PDE->PageSize)
-                return true;
+		if ((PDE->raw & Flag) > 0)
+		{
+			if (Type == MapType::FourMiB && PDE->PageSize)
+				return true;
 
-            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
-            if (PTE)
-            {
-                if ((PTE->Entries[Index.PTEIndex].Present))
-                    return true;
-            }
-        }
-        return false;
-    }
+			PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
+			if (PTE)
+			{
+				if ((PTE->Entries[Index.PTEIndex].Present))
+					return true;
+			}
+		}
+		return false;
+	}
 
-    void *Virtual::GetPhysical(void *VirtualAddress)
-    {
-        // 0x1000 aligned
-        uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFF000;
+	void *Virtual::GetPhysical(void *VirtualAddress)
+	{
+		// 0x1000 aligned
+		uintptr_t Address = (uintptr_t)VirtualAddress;
+		Address &= 0xFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        PageTableEntryPtr *PTE = nullptr;
+		PageMapIndexer Index = PageMapIndexer(Address);
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageTableEntryPtr *PTE = nullptr;
 
-        if (PDE->Present)
-        {
-            if (PDE->PageSize)
-                return (void *)((uintptr_t)PDE->GetAddress() << 12);
+		if (PDE->Present)
+		{
+			if (PDE->PageSize)
+				return (void *)((uintptr_t)PDE->GetAddress() << 12);
 
-            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
-            if (PTE)
-            {
-                if (PTE->Entries[Index.PTEIndex].Present)
-                    return (void *)((uintptr_t)PTE->Entries[Index.PTEIndex].GetAddress() << 12);
-            }
-        }
-        return nullptr;
-    }
+			PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
+			if (PTE)
+			{
+				if (PTE->Entries[Index.PTEIndex].Present)
+					return (void *)((uintptr_t)PTE->Entries[Index.PTEIndex].GetAddress() << 12);
+			}
+		}
+		return nullptr;
+	}
 
-    Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
-    {
-        // 0x1000 aligned
-        uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFF000;
+	Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
+	{
+		// 0x1000 aligned
+		uintptr_t Address = (uintptr_t)VirtualAddress;
+		Address &= 0xFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer(Address);
+		PageMapIndexer Index = PageMapIndexer(Address);
 
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        PageTableEntryPtr *PTE = nullptr;
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageTableEntryPtr *PTE = nullptr;
 
-        if (PDE->Present)
-        {
-            if (PDE->PageSize)
-                return MapType::FourMiB;
+		if (PDE->Present)
+		{
+			if (PDE->PageSize)
+				return MapType::FourMiB;
 
-            PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
-            if (PTE)
-            {
-                if (PTE->Entries[Index.PTEIndex].Present)
-                    return MapType::FourKiB;
-            }
-        }
-        return MapType::NoMapType;
-    }
+			PTE = (PageTableEntryPtr *)((uintptr_t)PDE->GetAddress() << 12);
+			if (PTE)
+			{
+				if (PTE->Entries[Index.PTEIndex].Present)
+					return MapType::FourKiB;
+			}
+		}
+		return MapType::NoMapType;
+	}
 
-    PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
-    {
-        uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFF000;
+	PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
+	{
+		uintptr_t Address = (uintptr_t)VirtualAddress;
+		Address &= 0xFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        if (PDE->Present)
-            return PDE;
-        return nullptr;
-    }
+		PageMapIndexer Index = PageMapIndexer(Address);
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		if (PDE->Present)
+			return PDE;
+		return nullptr;
+	}
 
-    PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
-    {
-        uintptr_t Address = (uintptr_t)VirtualAddress;
-        Address &= 0xFFFFF000;
+	PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
+	{
+		uintptr_t Address = (uintptr_t)VirtualAddress;
+		Address &= 0xFFFFF000;
 
-        PageMapIndexer Index = PageMapIndexer(Address);
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        if (!PDE->Present)
-            return nullptr;
+		PageMapIndexer Index = PageMapIndexer(Address);
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		if (!PDE->Present)
+			return nullptr;
 
-        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
-        PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
-        if (PTE->Present)
-            return PTE;
-        return nullptr;
-    }
+		PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+		PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
+		if (PTE->Present)
+			return PTE;
+		return nullptr;
+	}
 
-    void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
-    {
-        SmartLock(this->MemoryLock);
-        if (unlikely(!this->Table))
-        {
-            error("No page table");
-            return;
-        }
+	void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	{
+		SmartLock(this->MemoryLock);
+		if (unlikely(!this->Table))
+		{
+			error("No page table");
+			return;
+		}
 
-        Flags |= PTFlag::P;
+		Flags |= PTFlag::P;
 
-        PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
-        // Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
-        uint64_t DirectoryFlags = Flags & 0x3F;
+		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
+		// Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
+		uint64_t DirectoryFlags = Flags & 0x3F;
 
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        if (Type == MapType::FourMiB)
-        {
-            PDE->raw |= (uintptr_t)Flags;
-            PDE->PageSize = true;
-            PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-            debug("Mapped 4MB page at %p to %p", VirtualAddress, PhysicalAddress);
-            return;
-        }
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		if (Type == MapType::FourMiB)
+		{
+			PDE->raw |= (uintptr_t)Flags;
+			PDE->PageSize = true;
+			PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
+			debug("Mapped 4MB page at %p to %p", VirtualAddress, PhysicalAddress);
+			return;
+		}
 
-        PageTableEntryPtr *PTEPtr = nullptr;
-        if (!PDE->Present)
-        {
-            PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTableEntryPtr) + 1));
-            memset(PTEPtr, 0, sizeof(PageTableEntryPtr));
-            PDE->Present = true;
-            PDE->SetAddress((uintptr_t)PTEPtr >> 12);
-        }
-        else
-            PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
-        PDE->raw |= (uintptr_t)DirectoryFlags;
+		PageTableEntryPtr *PTEPtr = nullptr;
+		if (!PDE->Present)
+		{
+			PTEPtr = (PageTableEntryPtr *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTableEntryPtr) + 1));
+			memset(PTEPtr, 0, sizeof(PageTableEntryPtr));
+			PDE->Present = true;
+			PDE->SetAddress((uintptr_t)PTEPtr >> 12);
+		}
+		else
+			PTEPtr = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+		PDE->raw |= (uintptr_t)DirectoryFlags;
 
-        PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
-        PTE->Present = true;
-        PTE->raw |= (uintptr_t)Flags;
-        PTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-        CPU::x32::invlpg(VirtualAddress);
+		PageTableEntry *PTE = &PTEPtr->Entries[Index.PTEIndex];
+		PTE->Present = true;
+		PTE->raw |= (uintptr_t)Flags;
+		PTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
+		CPU::x32::invlpg(VirtualAddress);
 
 #ifdef DEBUG
 /* https://stackoverflow.com/a/3208376/9352057 */
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)       \
-    (byte & 0x80 ? '1' : '0'),     \
-        (byte & 0x40 ? '1' : '0'), \
-        (byte & 0x20 ? '1' : '0'), \
-        (byte & 0x10 ? '1' : '0'), \
-        (byte & 0x08 ? '1' : '0'), \
-        (byte & 0x04 ? '1' : '0'), \
-        (byte & 0x02 ? '1' : '0'), \
-        (byte & 0x01 ? '1' : '0')
+	(byte & 0x80 ? '1' : '0'),     \
+		(byte & 0x40 ? '1' : '0'), \
+		(byte & 0x20 ? '1' : '0'), \
+		(byte & 0x10 ? '1' : '0'), \
+		(byte & 0x08 ? '1' : '0'), \
+		(byte & 0x04 ? '1' : '0'), \
+		(byte & 0x02 ? '1' : '0'), \
+		(byte & 0x01 ? '1' : '0')
 
-        if (!this->Check(VirtualAddress, (PTFlag)Flags, Type)) // quick workaround just to see where it fails
-            warn("Failed to map v:%#lx p:%#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
+		if (!this->Check(VirtualAddress, (PTFlag)Flags, Type)) // quick workaround just to see where it fails
+			warn("Failed to map v:%#lx p:%#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
 #endif
-    }
+	}
 
-    void Virtual::Unmap(void *VirtualAddress, MapType Type)
-    {
-        SmartLock(this->MemoryLock);
-        if (!this->Table)
-        {
-            error("No page table");
-            return;
-        }
+	void Virtual::Unmap(void *VirtualAddress, MapType Type)
+	{
+		SmartLock(this->MemoryLock);
+		if (!this->Table)
+		{
+			error("No page table");
+			return;
+		}
 
-        PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
-        PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
-        if (!PDE->Present)
-        {
-            warn("Page %#lx not present", PDE->GetAddress());
-            return;
-        }
+		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
+		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		if (!PDE->Present)
+		{
+			warn("Page %#lx not present", PDE->GetAddress());
+			return;
+		}
 
-        if (Type == MapType::FourMiB && PDE->PageSize)
-        {
-            PDE->Present = false;
-            return;
-        }
+		if (Type == MapType::FourMiB && PDE->PageSize)
+		{
+			PDE->Present = false;
+			return;
+		}
 
-        PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE->Address << 12);
-        PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
-        if (!PTE.Present)
-        {
-            warn("Page %#lx not present", PTE.GetAddress());
-            return;
-        }
+		PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE->Address << 12);
+		PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
+		if (!PTE.Present)
+		{
+			warn("Page %#lx not present", PTE.GetAddress());
+			return;
+		}
 
-        PTE.Present = false;
-        PTEPtr->Entries[Index.PTEIndex] = PTE;
-        CPU::x32::invlpg(VirtualAddress);
-    }
+		PTE.Present = false;
+		PTEPtr->Entries[Index.PTEIndex] = PTE;
+		CPU::x32::invlpg(VirtualAddress);
+	}
 }

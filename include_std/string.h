@@ -18,4 +18,6 @@
 #ifndef _STRING_H
 #define _STRING_H
 
+#include <convert.h>
+
 #endif // !_STRING_H

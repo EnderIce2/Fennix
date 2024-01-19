@@ -47,8 +47,11 @@ void cmd_cat(const char *args)
 	fstat(fd, &st);
 
 	char *buffer = new char[st.st_size + 1];
-	fread(fd, buffer, st.st_size);
-	printf("%s\n", buffer);
+	ssize_t rBytes = fread(fd, buffer, st.st_size);
+	if (rBytes > 0)
+		printf("%s\n", buffer);
+	else
+		printf("cat: %s: Could not read file\n", args);
 	delete[] buffer;
 	fclose(fd);
 }

@@ -33,7 +33,7 @@ using namespace CPU::x64;
 using namespace CPU::x86;
 
 /*
-In constructor ‘APIC::APIC::APIC(int)’:
+In constructor 'APIC::APIC::APIC(int)':
 warning: left shift count >= width of type
 |         APICBaseAddress = BaseStruct.ApicBaseLo << 12u | BaseStruct.ApicBaseHi << 32u;
 |                                                          ~~~~~~~~~~~~~~~~~~~~~~^~~~~~
@@ -55,8 +55,8 @@ namespace APIC
 			debug("APIC::Read(%#lx) [x2=%d]",
 				  Register, x2APICSupported ? 1 : 0);
 #endif
-		if (x2APICSupported)
-			assert(false);
+		if (unlikely(x2APICSupported))
+			assert(!"x2APIC is not supported");
 
 		CPU::MemBar::Barrier();
 		uint32_t ret = *((volatile uint32_t *)((uintptr_t)APICBaseAddress + Register));
@@ -76,8 +76,8 @@ namespace APIC
 			debug("APIC::Write(%#lx, %#lx) [x2=%d]",
 				  Register, Value, x2APICSupported ? 1 : 0);
 #endif
-		if (x2APICSupported)
-			assert(false);
+		if (unlikely(x2APICSupported))
+			assert(!"x2APIC is not supported");
 
 		CPU::MemBar::Barrier();
 		*((volatile uint32_t *)(((uintptr_t)APICBaseAddress) + Register)) = Value;
@@ -107,6 +107,8 @@ namespace APIC
 
 	void APIC::EOI()
 	{
+		Memory::SwapPT swap =
+			Memory::SwapPT(KernelPageTable, thisPageTable);
 		if (this->x2APICSupported)
 			wrmsr(MSR_X2APIC_EOI, 0);
 		else
@@ -396,20 +398,18 @@ namespace APIC
 
 	APIC::~APIC() {}
 
-	void Timer::OnInterruptReceived(TrapFrame *Frame) { UNUSED(Frame); }
+	void Timer::OnInterruptReceived(CPU::TrapFrame *Frame) { UNUSED(Frame); }
 
 	void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
 	{
-		SmartCriticalSection(APICLock);
+		/* FIXME: Sometimes APIC stops firing when debugging, why? */
 		LVTTimer timer{};
 		timer.VEC = uint8_t(Vector);
 		timer.TMM = LVTTimerMode::OneShot;
 
 		LVTTimerDivide Divider = DivideBy8;
 
-		if (unlikely(strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0))
-			Divider = DivideBy128;
-
+		SmartCriticalSection(APICLock);
 		if (this->lapic->x2APIC)
 		{
 			// wrmsr(MSR_X2APIC_DIV_CONF, Divider); <- gpf on real hardware

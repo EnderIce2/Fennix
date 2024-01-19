@@ -26,36 +26,22 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using vfs::RefNode;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/9699919799/functions/exec.html */
 int sys_execve(SysFrm *Frame, const char *path,
 			   char *const argv[], char *const envp[])
 {
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Virtual vmm = Virtual(pcb->PageTable);
 
 	if (path == nullptr ||
-		!vmm.Check((void *)path, Memory::US) ||
-		!vmm.Check((void *)argv, Memory::US) ||
-		!vmm.Check((void *)envp, Memory::US))
+		!vmm.Check((void *)path, US) ||
+		!vmm.Check((void *)argv, US) ||
+		!vmm.Check((void *)envp, US))
 		return -ENOENT;
 
 	const char *safe_path;
@@ -65,7 +51,7 @@ int sys_execve(SysFrm *Frame, const char *path,
 	safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
 	safe_envp = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
 	{
-		Memory::SwapPT swap(pcb->PageTable);
+		SwapPT swap(pcb->PageTable);
 		size_t len = strlen(path);
 		memset((void *)safe_path, 0, PAGE_SIZE);
 		memcpy((void *)safe_path, path, len);
@@ -114,7 +100,7 @@ int sys_execve(SysFrm *Frame, const char *path,
 #endif
 
 	RefNode *File = fs->Open(safe_path,
-							  pcb->CurrentWorkingDirectory);
+							 pcb->CurrentWorkingDirectory);
 
 	if (!File)
 	{
@@ -193,7 +179,8 @@ int sys_execve(SysFrm *Frame, const char *path,
 	int ret = Execute::Spawn((char *)safe_path,
 							 (const char **)safe_argv,
 							 (const char **)safe_envp,
-							 pcb->Parent, pcb->Info.Compatibility);
+							 pcb->Parent, true,
+							 pcb->Info.Compatibility);
 
 	if (ret < 0)
 	{
@@ -205,8 +192,8 @@ int sys_execve(SysFrm *Frame, const char *path,
 	delete File;
 	Tasking::Task *ctx = pcb->GetContext();
 	ctx->Sleep(1000);
-	pcb->State = Tasking::Zombie;
-	pcb->ExitCode = 0;
+	pcb->SetState(Tasking::Zombie);
+	pcb->SetExitCode(0); /* FIXME: get process exit code */
 	while (true)
 		ctx->Yield();
 	__builtin_unreachable();

@@ -18,6 +18,7 @@
 #ifdef DEBUG
 
 #include <types.h>
+#include <filesystem/ioctl.hpp>
 #include <memory/macro.hpp>
 #include <memory/vma.hpp>
 #include <assert.h>
@@ -46,12 +47,11 @@
 #endif // UINTPTR_MAX != UINT64_MAX
 #endif // aa64
 
-void TestSeekMacros()
-{
-	static_assert(sc_SEEK_SET == SEEK_SET);
-	static_assert(sc_SEEK_CUR == SEEK_CUR);
-	static_assert(sc_SEEK_END == SEEK_END);
-}
+static_assert(sc_SEEK_SET == SEEK_SET);
+static_assert(sc_SEEK_CUR == SEEK_CUR);
+static_assert(sc_SEEK_END == SEEK_END);
+static_assert(TIOCGPTN == 0x80045430);
+static_assert(TIOCSPTLCK == 0x40045431);
 
 __constructor void TestMacros()
 {
@@ -153,6 +153,17 @@ __constructor void TestMacros()
 			error("ERROR: ROUND_DOWN failed: %d != 0x100", result);
 			inf_loop;
 		}
+	}
+
+	{
+		constexpr int x = 5;
+		constexpr int y = 10;
+
+		constexpr int max_result = MAX(x, y);
+		constexpr int min_result = MIN(x, y);
+
+		static_assert(max_result == 10);
+		static_assert(min_result == 5);
 	}
 }
 

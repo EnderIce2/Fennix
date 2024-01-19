@@ -30,7 +30,7 @@ namespace Memory
 	{
 	private:
 		NewLock(MemoryLock);
-		PageTable *Table = nullptr;
+		PageTable *pTable = nullptr;
 
 	public:
 		enum MapType
@@ -60,8 +60,7 @@ namespace Memory
 		 * @param VirtualAddress Virtual address of the page
 		 * @param Flag Flag to check
 		 * @param Type Type of the page. Check MapType enum.
-		 * @return true if page has the specified flag.
-		 * @return false if page is has the specified flag.
+		 * @return true if page has the specified flag, false otherwise.
 		 */
 		bool Check(void *VirtualAddress,
 				   PTFlag Flag = PTFlag::P,

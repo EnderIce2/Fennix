@@ -26,6 +26,7 @@ typedef uint16_t Elf32_Half;
 typedef uint32_t Elf32_Off;
 typedef int32_t Elf32_Sword;
 typedef uint32_t Elf32_Word;
+typedef Elf32_Sword Elf32_pid_t;
 
 /* 64-bit ELF base types. */
 typedef uint64_t Elf64_Addr;
@@ -36,6 +37,11 @@ typedef int32_t Elf64_Sword;
 typedef uint32_t Elf64_Word;
 typedef uint64_t Elf64_Xword;
 typedef int64_t Elf64_Sxword;
+typedef Elf64_Sword Elf64_pid_t;
+
+#define ELF_NGREG 23
+typedef Elf32_Word Elf32_greg_t[ELF_NGREG];
+typedef Elf64_Xword Elf64_greg_t[ELF_NGREG];
 
 enum IdentificationIndex
 {
@@ -227,8 +233,6 @@ enum SegmentTypes
 	PT_TLS = 7,
 	PT_LOPROC = 0x70000000,
 	PT_HIPROC = 0x7fffffff,
-	PT_GNU_EH_FRAME = 0x6474e550,
-	PT_GNU_STACK = 0x6474e551,
 };
 
 enum DynamicArrayTags
@@ -305,15 +309,15 @@ enum DynamicArrayTags
 
 /* Used for Elf64_Sym st_info */
 #define ELF32_ST_BIND(info) ((info) >> 4)
-#define ELF32_ST_TYPE(info) ((info)&0xf)
-#define ELF32_ST_INFO(bind, type) (((bind) << 4) + ((type)&0xf))
+#define ELF32_ST_TYPE(info) ((info) & 0xf)
+#define ELF32_ST_INFO(bind, type) (((bind) << 4) + ((type) & 0xf))
 #define ELF64_ST_BIND(info) ((info) >> 4)
-#define ELF64_ST_TYPE(info) ((info)&0xf)
-#define ELF64_ST_INFO(bind, type) (((bind) << 4) + ((type)&0xf))
+#define ELF64_ST_TYPE(info) ((info) & 0xf)
+#define ELF64_ST_INFO(bind, type) (((bind) << 4) + ((type) & 0xf))
 
 /* Used for Elf64_Sym st_other */
-#define ELF32_ST_VISIBILITY(o) ((o)&0x3)
-#define ELF64_ST_VISIBILITY(o) ((o)&0x3)
+#define ELF32_ST_VISIBILITY(o) ((o) & 0x3)
+#define ELF64_ST_VISIBILITY(o) ((o) & 0x3)
 
 #define DO_386_32(S, A) ((S) + (A))
 #define DO_386_PC32(S, A, P) ((S) + (A) - (P))
@@ -326,8 +330,8 @@ enum DynamicArrayTags
 #define ELF32_R_INFO(s, t) (((s) << 8) + (unsigned char)(t))
 
 #define ELF64_R_SYM(i) ((i) >> 32)
-#define ELF64_R_TYPE(i) ((i)&0xffffffffL)
-#define ELF64_R_INFO(s, t) (((s) << 32) + ((t)&0xffffffffL))
+#define ELF64_R_TYPE(i) ((i) & 0xffffffffL)
+#define ELF64_R_INFO(s, t) (((s) << 32) + ((t) & 0xffffffffL))
 
 #define SHN_UNDEF 0
 #define SHN_ABS 0xfff1
@@ -576,6 +580,80 @@ enum SpecialSections
 	SHT_HIUSER = 0x8fffffff
 };
 
+#define NT_PRSTATUS 1
+#define NT_PRFPREG 2
+#define NT_FPREGSET 2
+#define NT_PRPSINFO 3
+#define NT_PRXREG 4
+#define NT_TASKSTRUCT 4
+#define NT_PLATFORM 5
+#define NT_AUXV 6
+#define NT_GWINDOWS 7
+#define NT_ASRS 8
+#define NT_PSTATUS 10
+#define NT_PSINFO 13
+#define NT_PRCRED 14
+#define NT_UTSNAME 15
+#define NT_LWPSTATUS 16
+#define NT_LWPSINFO 17
+#define NT_PRFPXREG 20
+#define NT_SIGINFO 0x53494749
+#define NT_FILE 0x46494c45
+#define NT_PRXFPREG 0x46e62b7f
+#define NT_PPC_VMX 0x100
+#define NT_PPC_SPE 0x101
+#define NT_PPC_VSX 0x102
+#define NT_PPC_TAR 0x103
+#define NT_PPC_PPR 0x104
+#define NT_PPC_DSCR 0x105
+#define NT_PPC_EBB 0x106
+#define NT_PPC_PMU 0x107
+#define NT_PPC_TM_CGPR 0x108
+#define NT_PPC_TM_CFPR 0x109
+#define NT_PPC_TM_CVMX 0x10a
+#define NT_PPC_TM_CVSX 0x10b
+#define NT_PPC_TM_SPR 0x10c
+#define NT_PPC_TM_CTAR 0x10d
+#define NT_PPC_TM_CPPR 0x10e
+#define NT_PPC_TM_CDSCR 0x10f
+#define NT_386_TLS 0x200
+#define NT_386_IOPERM 0x201
+#define NT_X86_XSTATE 0x202
+#define NT_S390_HIGH_GPRS 0x300
+#define NT_S390_TIMER 0x301
+#define NT_S390_TODCMP 0x302
+#define NT_S390_TODPREG 0x303
+#define NT_S390_CTRS 0x304
+#define NT_S390_PREFIX 0x305
+#define NT_S390_LAST_BREAK 0x306
+#define NT_S390_SYSTEM_CALL 0x307
+#define NT_S390_TDB 0x308
+#define NT_S390_VXRS_LOW 0x309
+#define NT_S390_VXRS_HIGH 0x30a
+#define NT_S390_GS_CB 0x30b
+#define NT_S390_GS_BC 0x30c
+#define NT_S390_RI_CB 0x30d
+#define NT_ARM_VFP 0x400
+#define NT_ARM_TLS 0x401
+#define NT_ARM_HW_BREAK 0x402
+#define NT_ARM_HW_WATCH 0x403
+#define NT_ARM_SYSTEM_CALL 0x404
+#define NT_ARM_SVE 0x405
+#define NT_ARM_PAC_MASK 0x406
+#define NT_ARM_PACA_KEYS 0x407
+#define NT_ARM_PACG_KEYS 0x408
+#define NT_ARM_TAGGED_ADDR_CTRL 0x409
+#define NT_ARM_PAC_ENABLED_KEYS 0x40a
+#define NT_METAG_CBUF 0x500
+#define NT_METAG_RPIPE 0x501
+#define NT_METAG_TLS 0x502
+#define NT_ARC_V2 0x600
+#define NT_VMCOREDD 0x700
+#define NT_MIPS_DSP 0x800
+#define NT_MIPS_FP_MODE 0x801
+#define NT_MIPS_MSA 0x802
+#define NT_VERSION 1
+
 typedef struct elf32_hdr
 {
 	unsigned char e_ident[EI_NIDENT];
@@ -729,6 +807,117 @@ typedef struct
 	Elf64_Xword r_info;
 	Elf64_Sxword r_addend;
 } Elf64_Rela;
+
+struct Elf32_Nhdr
+{
+	Elf32_Word n_namesz;
+	Elf32_Word n_descsz;
+	Elf32_Word n_type;
+};
+
+struct Elf64_Nhdr
+{
+	Elf64_Word n_namesz;
+	Elf64_Word n_descsz;
+	Elf64_Word n_type;
+};
+
+typedef struct
+{
+	Elf32_Sword si_signo;
+	Elf32_Sword si_code;
+	Elf32_Sword si_errno;
+} Elf32_Siginfo;
+
+typedef struct
+{
+	Elf64_Sword si_signo;
+	Elf64_Sword si_code;
+	Elf64_Sword si_errno;
+} Elf64_Siginfo;
+
+typedef struct
+{
+	Elf32_Sword tv_sec;
+	Elf32_Sword tv_usec;
+} Elf32_Prtimeval;
+
+typedef struct
+{
+	Elf64_Sxword tv_sec;
+	Elf64_Sxword tv_usec;
+} Elf64_Prtimeval;
+
+typedef struct
+{
+	Elf32_Siginfo pr_info;
+	Elf32_Half pr_cursig;
+	Elf32_Word pr_sigpend;
+	Elf32_Word pr_sighold;
+	Elf32_pid_t pr_pid;
+	Elf32_pid_t pr_ppid;
+	Elf32_pid_t pr_pgrp;
+	Elf32_pid_t pr_sid;
+	Elf32_Prtimeval pr_utime;
+	Elf32_Prtimeval pr_stime;
+	Elf32_Prtimeval pr_cutime;
+	Elf32_Prtimeval pr_cstime;
+	Elf32_greg_t pr_reg;
+	Elf32_Word pr_fpvalid;
+} Elf32_Prstatus;
+
+typedef struct
+{
+	Elf64_Siginfo pr_info;
+	Elf64_Half pr_cursig;
+	Elf64_Word pr_sigpend;
+	Elf64_Word pr_sighold;
+	Elf64_pid_t pr_pid;
+	Elf64_pid_t pr_ppid;
+	Elf64_pid_t pr_pgrp;
+	Elf64_pid_t pr_sid;
+	Elf64_Prtimeval pr_utime;
+	Elf64_Prtimeval pr_stime;
+	Elf64_Prtimeval pr_cutime;
+	Elf64_Prtimeval pr_cstime;
+	Elf64_greg_t pr_reg;
+	Elf64_Word pr_fpvalid;
+} Elf64_Prstatus;
+
+#define ELF_PRARGSZ 80
+typedef struct
+{
+	char pr_state;
+	char pr_sname;
+	char pr_zomb;
+	char pr_nice;
+	Elf32_Word pr_flag;
+	Elf32_Half pr_uid;
+	Elf32_Half pr_gid;
+	Elf32_pid_t pr_pid;
+	Elf32_pid_t pr_ppid;
+	Elf32_pid_t pr_pgrp;
+	Elf32_pid_t pr_sid;
+	char pr_fname[16];
+	char pr_psargs[ELF_PRARGSZ];
+} Elf32_Prpsinfo;
+
+typedef struct
+{
+	char pr_state;
+	char pr_sname;
+	char pr_zomb;
+	char pr_nice;
+	Elf64_Xword pr_flag;
+	Elf64_Half pr_uid;
+	Elf64_Half pr_gid;
+	Elf64_pid_t pr_pid;
+	Elf64_pid_t pr_ppid;
+	Elf64_pid_t pr_pgrp;
+	Elf64_pid_t pr_sid;
+	char pr_fname[16];
+	char pr_psargs[ELF_PRARGSZ];
+} Elf64_Prpsinfo;
 
 #if defined(a64) || defined(aa64)
 typedef Elf64_Addr Elf_Addr;

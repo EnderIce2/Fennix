@@ -45,7 +45,7 @@ __aligned(16) BootInfo bInfo{};
 struct KernelConfig Config = {
 	.AllocatorType = Memory::liballoc11,
 	.SchedulerType = Multi,
-	.ModuleDirectory = {'/', 'm', 'o', 'd', 'u', 'l', 'e', 's', '\0'},
+	.DriverDirectory = {'/', 'u', 's', 'r', '/', 'l', 'i', 'b', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
 	.InitPath = {'/', 'b', 'i', 'n', '/', 'i', 'n', 'i', 't', '\0'},
 	.UseLinuxSyscalls = false,
 	.InterruptsOnCrash = true,
@@ -53,20 +53,15 @@ struct KernelConfig Config = {
 	.IOAPICInterruptCore = 0,
 	.UnlockDeadLock = false,
 	.SIMD = false,
-	.BootAnimation = false,
+	.Quiet = false,
 };
 
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
 Time::time *TimeManager = nullptr;
-PCI::PCI *PCIManager = nullptr;
-vfs::Virtual *fs = nullptr;
-vfs::Node *DevFS = nullptr;
-vfs::Node *MntFS = nullptr;
-vfs::Node *ProcFS = nullptr;
-vfs::Node *VarLogFS = nullptr;
 Tasking::Task *TaskManager = nullptr;
+PCI::Manager *PCIManager = nullptr;
 
 // For the Display class. Printing on first buffer as default.
 int PutCharBufferIndex = 0;
@@ -78,7 +73,7 @@ EXTERNC void putchar(char c)
 		UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
 }
 
-EXTERNC void KPrint(const char *Format, ...)
+EXTERNC void _KPrint(const char *Format, va_list Args)
 {
 	SmartLock(KernelLock);
 
@@ -100,14 +95,29 @@ EXTERNC void KPrint(const char *Format, ...)
 		}
 	}
 
+	vprintf(Format, Args);
+	printf("\eCCCCCC\n");
+	if (!Config.Quiet && Display)
+		Display->SetBuffer(0);
+}
+
+EXTERNC void KPrint(const char *Format, ...)
+{
 	va_list args;
 	va_start(args, Format);
-	vprintf(Format, args);
+	_KPrint(Format, args);
 	va_end(args);
 
-	printf("\eCCCCCC\n");
-	if (!Config.BootAnimation && Display)
-		Display->SetBuffer(0);
+#ifdef DEBUG
+	va_start(args, Format);
+	vfctprintf(uart_wrapper, nullptr, "PRINT| ", args);
+	va_end(args);
+
+	va_start(args, Format);
+	vfctprintf(uart_wrapper, nullptr, Format, args);
+	va_end(args);
+	uart_wrapper('\n', nullptr);
+#endif
 }
 
 EXTERNC NIF void Main()
@@ -169,6 +179,11 @@ EXTERNC NIF void Main()
 		   Display->GetFramebufferStruct().GreenMaskShift,
 		   Display->GetFramebufferStruct().BlueMaskSize,
 		   Display->GetFramebufferStruct().BlueMaskShift);
+
+	KPrint("%lld MiB / %lld MiB (%lld MiB reserved)",
+		   TO_MiB(KernelAllocator.GetUsedMemory()),
+		   TO_MiB(KernelAllocator.GetTotalMemory()),
+		   TO_MiB(KernelAllocator.GetReservedMemory()));
 #endif
 
 	/**************************************************************************************/
@@ -192,7 +207,7 @@ EXTERNC NIF void Main()
 												 bInfo.Kernel.Symbols.Shndx,
 												 bInfo.Kernel.Symbols.Sections);
 
-	if (Config.BootAnimation)
+	if (Config.Quiet)
 	{
 		Display->CreateBuffer(0, 0, 1);
 
@@ -223,21 +238,7 @@ EXTERNC NIF void Main()
 	TimeManager->FindTimers(PowerManager->GetACPI());
 
 	KPrint("Initializing PCI Manager");
-	PCIManager = new PCI::PCI;
-
-	foreach (auto Device in PCIManager->GetDevices())
-	{
-		KPrint("PCI: \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s \eCCCCCC/ \e8888FF%s",
-			   PCI::Descriptors::GetVendorName(Device.Header->VendorID),
-			   PCI::Descriptors::GetDeviceName(Device.Header->VendorID,
-											   Device.Header->DeviceID),
-			   PCI::Descriptors::DeviceClasses[Device.Header->Class],
-			   PCI::Descriptors::GetSubclassName(Device.Header->Class,
-												 Device.Header->Subclass),
-			   PCI::Descriptors::GetProgIFName(Device.Header->Class,
-											   Device.Header->Subclass,
-											   Device.Header->ProgIF));
-	}
+	PCIManager = new PCI::Manager;
 
 	KPrint("Initializing Bootstrap Processor Timer");
 	Interrupts::InitializeTimer(0);
@@ -245,109 +246,12 @@ EXTERNC NIF void Main()
 	KPrint("Initializing SMP");
 	SMP::Initialize(PowerManager->GetMADT());
 
-	KPrint("Initializing Filesystem...");
-	fs = new vfs::Virtual;
-	vfs::Node *root = fs->GetRootNode();
-	if (root->Children.size() == 0)
-		fs->nRoot = new vfs::vfsRoot("/", fs);
-
-	for (size_t i = 0; i < MAX_MODULES; i++)
-	{
-		if (!bInfo.Modules[i].Address)
-			continue;
-
-		if (strcmp(bInfo.Modules[i].CommandLine, "initrd") == 0)
-		{
-			debug("Found initrd at %p", bInfo.Modules[i].Address);
-			static char initrd = 0;
-			if (!initrd++)
-			{
-				uintptr_t initrdAddress = (uintptr_t)bInfo.Modules[i].Address;
-				vfs::USTAR *ustar = new vfs::USTAR;
-				ustar->ReadArchive(initrdAddress, fs);
-			}
-		}
-	}
-
-	if (!fs->PathExists("/dev"))
-		DevFS = new vfs::Node(fs->nRoot, "dev", vfs::DIRECTORY);
-	else
-	{
-		vfs::RefNode *dev = fs->Open("/dev");
-		if (dev->node->Type != NodeType::DIRECTORY)
-		{
-			KPrint("\eE85230/dev is not a directory! Halting...");
-			CPU::Stop();
-		}
-		DevFS = dev->node;
-		delete dev;
-	}
-
-	new vfs::NullDevice();
-	new vfs::RandomDevice();
-	new vfs::ZeroDevice();
-
-	if (!fs->PathExists("/mnt"))
-		MntFS = new vfs::Node(fs->nRoot, "mnt", vfs::DIRECTORY);
-	else
-	{
-		vfs::RefNode *mnt = fs->Open("/mnt");
-		if (mnt->node->Type != NodeType::DIRECTORY)
-		{
-			KPrint("\eE85230/mnt is not a directory! Halting...");
-			CPU::Stop();
-		}
-		MntFS = mnt->node;
-		delete mnt;
-	}
-
-	if (!fs->PathExists("/proc"))
-		ProcFS = new vfs::Node(fs->nRoot, "proc", vfs::DIRECTORY);
-	else
-	{
-		vfs::RefNode *proc = fs->Open("/proc", nullptr);
-		if (proc->node->Type != NodeType::DIRECTORY)
-		{
-			KPrint("\eE85230/proc is not a directory! Halting...");
-			CPU::Stop();
-		}
-		ProcFS = proc->node;
-		delete proc;
-	}
-
-	if (!fs->PathExists("/var"))
-	{
-		vfs::Node *var = new vfs::Node(fs->nRoot, "var", vfs::DIRECTORY);
-		VarLogFS = new vfs::Node(var, "log", vfs::DIRECTORY);
-	}
-	else
-	{
-		vfs::RefNode *var = fs->Open("/var", nullptr);
-		if (var->node->Type != NodeType::DIRECTORY)
-		{
-			KPrint("\eE85230/var is not a directory! Halting...");
-			CPU::Stop();
-		}
-		VarLogFS = var->node;
-		delete var;
-
-		if (!fs->PathExists("/var/log"))
-			VarLogFS = new vfs::Node(VarLogFS, "log", vfs::DIRECTORY);
-		else
-		{
-			vfs::RefNode *var_log = fs->Open("/var/log", nullptr);
-			if (var_log->node->Type != NodeType::DIRECTORY)
-			{
-				KPrint("\eE85230/var/log is not a directory! Halting...");
-				CPU::Stop();
-			}
-			VarLogFS = var_log->node;
-			delete var_log;
-		}
-	}
+	KPrint("Initializing Filesystem");
+	KernelVFS();
 
 	KPrint("\e058C19################################");
 	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
+	TaskManager->StartScheduler();
 	CPU::Halt(true);
 }
 
@@ -361,7 +265,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 
 	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 	{
-		debug("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
+		info("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
 		DebuggerIsAttached = true;
 	}
 
@@ -472,33 +376,37 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 
 	KPrint("%s...", Reboot ? "Rebooting" : "Shutting down");
 
+	KPrint("Stopping network interfaces");
 	if (NIManager)
 		delete NIManager, NIManager = nullptr;
 
+	KPrint("Stopping disk manager");
 	if (DiskManager)
 		delete DiskManager, DiskManager = nullptr;
 
-	if (ModuleManager)
-		delete ModuleManager, ModuleManager = nullptr;
+	KPrint("Unloading all drivers");
+	if (DriverManager)
+		delete DriverManager, DriverManager = nullptr;
 
+	KPrint("Stopping scheduling");
 	if (TaskManager && !TaskManager->IsPanic())
 	{
 		TaskManager->SignalShutdown();
 		delete TaskManager, TaskManager = nullptr;
 	}
 
+	KPrint("Unloading filesystems");
 	if (fs)
 		delete fs, fs = nullptr;
 
+	KPrint("Stopping timers");
 	if (TimeManager)
 		delete TimeManager, TimeManager = nullptr;
 
-	// if (Display)
-	// 	delete Display, Display = nullptr;
 	// PowerManager should not be called
 
 	// https://wiki.osdev.org/Calling_Global_Constructors
-	debug("Calling destructors...");
+	KPrint("Calling destructors");
 	for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
 		(*func)();
 	__cxa_finalize(nullptr);

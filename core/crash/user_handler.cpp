@@ -34,8 +34,12 @@
 
 SafeFunction bool UserModeExceptionHandler(CHArchTrapFrame *Frame)
 {
-	thisThread->State = Tasking::TaskState::Waiting;
 	CPUData *CurCPU = GetCurrentCPU();
+	Tasking::PCB *CurProc = CurCPU->CurrentProcess;
+	Tasking::TCB *CurThread = CurCPU->CurrentThread;
+	debug("Current process %s(%d) and thread %s(%d)",
+		  CurProc->Name, CurProc->ID, CurThread->Name, CurThread->ID);
+	CurThread->SetState(Tasking::Waiting);
 
 #ifdef DEBUG
 	{
@@ -153,37 +157,59 @@ SafeFunction bool UserModeExceptionHandler(CHArchTrapFrame *Frame)
 	{
 		bool Handled = false;
 
-		Handled = CurCPU->CurrentProcess->vma->HandleCoW(CrashHandler::PageFaultAddress);
+		Handled = CurProc->vma->HandleCoW(CrashHandler::PageFaultAddress);
 		if (!Handled)
-			Handled = CurCPU->CurrentThread->Stack->Expand(CrashHandler::PageFaultAddress);
+			Handled = CurThread->Stack->Expand(CrashHandler::PageFaultAddress);
 
 		if (Handled)
 		{
 			debug("Page fault handled");
-			thisThread->State = Tasking::TaskState::Ready;
+			CurThread->SetState(Tasking::Ready);
 			return true;
 		}
 
+		CurProc->Signals->SendSignal(SIGSEGV,
+									 {Tasking::KILL_CRASH});
+		break;
+	}
+	case CPU::x86::Debug:
+	case CPU::x86::Breakpoint:
+	{
+		CurProc->Signals->SendSignal(SIGTRAP,
+									 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::DivideByZero:
-	case CPU::x86::Debug:
-	case CPU::x86::NonMaskableInterrupt:
-	case CPU::x86::Breakpoint:
 	case CPU::x86::Overflow:
 	case CPU::x86::BoundRange:
+	case CPU::x86::x87FloatingPoint:
+	case CPU::x86::SIMDFloatingPoint:
+	{
+		CurProc->Signals->SendSignal(SIGFPE,
+									 {Tasking::KILL_CRASH});
+		break;
+	}
 	case CPU::x86::InvalidOpcode:
+	case CPU::x86::GeneralProtectionFault:
+	{
+		CurProc->Signals->SendSignal(SIGILL,
+									 {Tasking::KILL_CRASH});
+		break;
+	}
 	case CPU::x86::DeviceNotAvailable:
+	{
+		CurProc->Signals->SendSignal(SIGBUS,
+									 {Tasking::KILL_CRASH});
+		break;
+	}
+	case CPU::x86::NonMaskableInterrupt:
 	case CPU::x86::DoubleFault:
 	case CPU::x86::CoprocessorSegmentOverrun:
 	case CPU::x86::InvalidTSS:
 	case CPU::x86::SegmentNotPresent:
 	case CPU::x86::StackSegmentFault:
-	case CPU::x86::GeneralProtectionFault:
-	case CPU::x86::x87FloatingPoint:
 	case CPU::x86::AlignmentCheck:
 	case CPU::x86::MachineCheck:
-	case CPU::x86::SIMDFloatingPoint:
 	case CPU::x86::Virtualization:
 	case CPU::x86::Security:
 	default:

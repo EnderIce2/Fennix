@@ -103,11 +103,6 @@ namespace Tasking
 
 	SafeFunction bool Task::RemoveThread(TCB *Thread)
 	{
-		if (Thread->KeepInMemory.load() == true)
-			return false;
-		if (Thread->KeepTime > TimeManager->GetCounter())
-			return false;
-
 		debug("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
 			  Thread->Name, Thread->ID, Thread->Parent->Name,
 			  Thread->Parent->ID);
@@ -123,11 +118,6 @@ namespace Tasking
 
 		if (Process->State == Terminated)
 		{
-			if (Process->KeepInMemory.load() == true)
-				return false;
-			if (Process->KeepTime > TimeManager->GetCounter())
-				return false;
-
 			delete Process;
 			return true;
 		}
@@ -201,7 +191,8 @@ namespace Tasking
 			  pcb->Name, pcb->ID);
 
 		while (pcb->State != TaskState::Terminated &&
-			   pcb->State != TaskState::Zombie)
+			   pcb->State != TaskState::Zombie &&
+			   pcb->State != TaskState::CoreDump)
 			this->Yield();
 	}
 
@@ -217,7 +208,8 @@ namespace Tasking
 			  tcb->Name, tcb->ID);
 
 		while (tcb->State != TaskState::Terminated &&
-			   tcb->State != TaskState::Zombie)
+			   tcb->State != TaskState::Zombie &&
+			   tcb->State != TaskState::CoreDump)
 			this->Yield();
 	}
 
@@ -254,14 +246,14 @@ namespace Tasking
 	void Task::Sleep(uint64_t Milliseconds, bool NoSwitch)
 	{
 		TCB *thread = this->GetCurrentThread();
-		PCB *process = this->GetCurrentProcess();
+		PCB *process = thread->Parent;
 
-		thread->State = TaskState::Sleeping;
+		thread->SetState(TaskState::Sleeping);
 
 		{
 			SmartLock(TaskingLock);
 			if (process->Threads.size() == 1)
-				process->State = TaskState::Sleeping;
+				process->SetState(TaskState::Sleeping);
 
 			thread->Info.SleepUntil =
 				TimeManager->CalculateTarget(Milliseconds,
@@ -281,28 +273,25 @@ namespace Tasking
 
 	void Task::SignalShutdown()
 	{
-		fixme("SignalShutdown()");
-		// TODO: Implement this
-		// This should hang until all processes are terminated
-	}
+		debug("Current process is %s(%d) and thread is %s(%d)",
+			  GetCurrentProcess()->Name, GetCurrentProcess()->ID,
+			  GetCurrentThread()->Name, GetCurrentThread()->ID);
 
-	void Task::CleanupProcessesThread()
-	{
-		thisThread->Rename("Tasking Cleanup");
-		while (true)
+		foreach (auto pcb in ProcessList)
 		{
-			this->Sleep(2000);
-			{
-				SmartLock(TaskingLock);
-				foreach (auto Process in ProcessList)
-				{
-					if (unlikely(InvalidPCB(Process)))
-						continue;
+			if (pcb->State == TaskState::Terminated ||
+				pcb->State == TaskState::Zombie)
+				continue;
 
-					RemoveProcess(Process);
-				}
-			}
+			if (pcb == GetCurrentProcess())
+				continue;
+
+			debug("Sending SIGTERM to process \"%s\"(%d)",
+				  pcb->Name, pcb->ID);
+			pcb->SendSignal(SIGTERM);
 		}
+
+		// TODO: wait for processes to terminate with timeout.
 	}
 
 	__no_sanitize("undefined")
@@ -325,14 +314,53 @@ namespace Tasking
 							 const char *Name,
 							 TaskExecutionMode ExecutionMode,
 							 void *Image,
-							 bool DoNotCreatePageTable,
+							 bool UseKernelPageTable,
 							 uint16_t UserID,
 							 uint16_t GroupID)
 	{
 		SmartLock(TaskingLock);
 		return new PCB(this, Parent, Name, ExecutionMode,
-					   Image, DoNotCreatePageTable,
+					   Image, UseKernelPageTable,
 					   UserID, GroupID);
+	}
+
+	void Task::StartScheduler()
+	{
+#if defined(a86)
+		if (Interrupts::apicTimer[0])
+		{
+			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
+
+			/* FIXME: The kernel is not ready for multi-core tasking. */
+			return;
+
+			APIC::InterruptCommandRegister icr{};
+			bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
+
+			if (likely(x2APIC))
+			{
+				icr.x2.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.x2.MT = APIC::Fixed;
+				icr.x2.L = APIC::Assert;
+				icr.x2.DES = 0xFFFFFFFF; /* Broadcast IPI to all local APICs. */
+				((APIC::APIC *)Interrupts::apic[0])->ICR(icr);
+			}
+			else
+			{
+				icr.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.MT = APIC::Fixed;
+				icr.L = APIC::Assert;
+
+				for (int i = 0; i < SMP::CPUCores; i++)
+				{
+					icr.DES = uint8_t(i);
+					((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+				}
+			}
+		}
+#elif defined(aa64)
+#endif
+		debug("Tasking Started");
 	}
 
 	Task::Task(const IP EntryPoint) : Interrupts::Handler(16) /* IRQ16 */
@@ -343,8 +371,8 @@ namespace Tasking
 #elif defined(a32)
 #elif defined(aa64)
 #endif
-		KPrint("Starting Tasking With Instruction Pointer: %p (\e666666%s\eCCCCCC)",
-			   EntryPoint, KernelSymbolTable->GetSymbolFromAddress(EntryPoint));
+		KPrint("Starting tasking instance %#lx with ip: %p (\e666666%s\eCCCCCC)",
+			   this, EntryPoint, KernelSymbolTable->GetSymbol(EntryPoint));
 
 #if defined(a64)
 		TaskArchitecture Arch = TaskArchitecture::x64;
@@ -354,14 +382,17 @@ namespace Tasking
 	TaskArchitecture Arch = TaskArchitecture::ARM64;
 #endif
 
-		PCB *kproc = CreateProcess(nullptr, "Kernel", TaskExecutionMode::Kernel);
-		kproc->ELFSymbolTable = KernelSymbolTable;
-		TCB *kthrd = CreateThread(kproc, EntryPoint,
+		KernelProcess = CreateProcess(nullptr, "Kernel",
+									  TaskExecutionMode::Kernel,
+									  nullptr, true);
+		KernelProcess->PageTable = KernelPageTable;
+		KernelProcess->ELFSymbolTable = KernelSymbolTable;
+		TCB *kthrd = CreateThread(KernelProcess, EntryPoint,
 								  nullptr, nullptr,
 								  std::vector<AuxiliaryVector>(), Arch);
 		kthrd->Rename("Main Thread");
 		debug("Created Kernel Process: %s and Thread: %s",
-			  kproc->Name, kthrd->Name);
+			  KernelProcess->Name, kthrd->Name);
 
 		bool MONITORSupported = false;
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
@@ -388,37 +419,25 @@ namespace Tasking
 			CPU::Interrupts(CPU::Enable);
 		}
 
-		IdleProcess = CreateProcess(nullptr, (char *)"Idle", TaskExecutionMode::Kernel);
+		IdleProcess = CreateProcess(nullptr, (char *)"Idle",
+									TaskExecutionMode::Kernel,
+									nullptr, true);
 		IdleProcess->ELFSymbolTable = KernelSymbolTable;
 		for (int i = 0; i < SMP::CPUCores; i++)
 		{
-			IdleThread = CreateThread(IdleProcess, IP(IdleProcessLoop));
+			TCB *thd = CreateThread(IdleProcess, IP(IdleProcessLoop));
 			char IdleName[16];
 			sprintf(IdleName, "Idle Thread %d", i);
-			IdleThread->Rename(IdleName);
-			IdleThread->SetPriority(Idle);
+			thd->Rename(IdleName);
+			thd->SetPriority(Idle);
 			for (int j = 0; j < MAX_CPU; j++)
-				IdleThread->Info.Affinity[j] = false;
-			IdleThread->Info.Affinity[i] = true;
-		}
-		debug("Tasking Started");
-#if defined(a86)
-		if (Interrupts::apicTimer[0])
-		{
-			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
+				thd->Info.Affinity[j] = false;
+			thd->Info.Affinity[i] = true;
 
-			/* FIXME: The kernel is not ready for multi-core tasking. */
-			// for (int i = 1; i < SMP::CPUCores; i++)
-			// {
-			//     ((APIC::Timer *)Interrupts::apicTimer[i])->OneShot(CPU::x86::IRQ16, 100);
-			//     APIC::InterruptCommandRegisterLow icr;
-			//     icr.Vector = CPU::x86::IRQ16;
-			//     icr.Level = APIC::APICLevel::Assert;
-			//     ((APIC::APIC *)Interrupts::apic[0])->IPI(i, icr);
-			// }
+			if (unlikely(i == 0))
+				IdleThread = thd;
 		}
-#elif defined(aa64)
-#endif
+		debug("Tasking is ready");
 	}
 
 	Task::~Task()
@@ -430,8 +449,7 @@ namespace Tasking
 			{
 				foreach (TCB *Thread in Process->Threads)
 				{
-					if (Thread == GetCurrentCPU()->CurrentThread.load() ||
-						Thread == CleanupThread)
+					if (Thread == GetCurrentCPU()->CurrentThread.load())
 						continue;
 					this->KillThread(Thread, KILL_SCHEDULER_DESTRUCTION);
 				}
@@ -442,20 +460,38 @@ namespace Tasking
 			}
 		}
 
+		debug("Waiting for processes to terminate");
+		uint64_t timeout = TimeManager->CalculateTarget(20, Time::Units::Seconds);
 		while (ProcessList.size() > 0)
 		{
 			trace("Waiting for %d processes to terminate", ProcessList.size());
 			int NotTerminated = 0;
 			foreach (PCB *Process in ProcessList)
 			{
-				debug("Process %s(%d) is still running (or waiting to be removed status %#lx)",
+				trace("Process %s(%d) is still running (or waiting to be removed state %#lx)",
 					  Process->Name, Process->ID, Process->State);
+
 				if (Process->State == TaskState::Terminated)
+				{
+					debug("Process %s(%d) terminated", Process->Name, Process->ID);
 					continue;
+				}
+
 				NotTerminated++;
 			}
 			if (NotTerminated == 1)
 				break;
+
+			this->Sleep(1000);
+			debug("Current working process is %s(%d)",
+				  GetCurrentProcess()->Name, GetCurrentProcess()->ID);
+
+			if (TimeManager->GetCounter() > timeout)
+			{
+				error("Timeout waiting for processes to terminate");
+				break;
+			}
+
 			TaskingScheduler_OneShot(100);
 		}
 

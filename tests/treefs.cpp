@@ -28,7 +28,7 @@ void TreeFS(vfs::Node *node, int Depth)
 	{
 		printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
 
-		if (!Config.BootAnimation)
+		if (!Config.Quiet)
 			Display->SetBuffer(0);
 		TaskManager->Sleep(100);
 		TreeFS(Chld, Depth + 1);

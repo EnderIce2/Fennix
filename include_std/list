@@ -18,6 +18,8 @@
 #pragma once
 
 #include <types.h>
+#include <assert.h>
+#include <lock.hpp>
 
 namespace std
 {
@@ -25,75 +27,77 @@ namespace std
 	class list
 	{
 	private:
-		struct lNode
+		NewLock(lock);
+
+		struct node
 		{
 			T value;
-			lNode *prev;
-			lNode *next;
+			node *prev;
+			node *next;
 
-			lNode(const T &v, lNode *p = nullptr, lNode *n = nullptr)
+			node(const T &v, node *p = nullptr, node *n = nullptr)
 				: value(v), prev(p), next(n) {}
 		};
 
-		lNode *head;
-		lNode *tail;
-		size_t size;
+		node *head = nullptr;
+		node *tail = nullptr;
+		std::atomic_size_t lSize = 0;
 
 	public:
-		list() : head(nullptr), tail(nullptr), size(0) {}
+		list() {}
 		~list() { clear(); }
-		list(const list &other) : head(nullptr), tail(nullptr), size(0) { *this = other; }
+		list(const list &other) { *this = other; }
 
 		void push_back(const T &value)
 		{
-			lNode *new_node = new lNode(value, tail, nullptr);
+			SmartLock(this->lock);
+
+			node *nNode = new node(value, tail);
 			if (empty())
-			{
-				head = tail = new_node;
-			}
+				head = tail = nNode;
 			else
 			{
-				tail->next = new_node;
-				tail = new_node;
+				tail->next = nNode;
+				tail = nNode;
 			}
-			++size;
+			++lSize;
 		}
 
 		void pop_back()
 		{
+			SmartLock(this->lock);
+
 			if (unlikely(empty()))
-			{
 				assert(!"list is empty");
-			}
 			else if (head == tail)
 			{
 				delete tail;
 				head = tail = nullptr;
-				--size;
+				--lSize;
 			}
 			else
 			{
-				lNode *old_tail = tail;
+				node *oldTail = tail;
 				tail = tail->prev;
 				tail->next = nullptr;
-				delete old_tail;
-				--size;
+				delete oldTail;
+				--lSize;
 			}
 		}
 
 		void push_front(const T &value)
 		{
-			lNode *new_node = new lNode(value, nullptr, head);
+			SmartLock(this->lock);
+
+			node *nNode = new node(value, nullptr, head);
 			if (empty())
-			{
-				head = tail = new_node;
-			}
+				head = tail = nNode;
 			else
 			{
-				head->prev = new_node;
-				head = new_node;
+				head->prev = nNode;
+				head = nNode;
 			}
-			++size;
+			++lSize;
 		}
 
 		void pop_front()
@@ -105,21 +109,84 @@ namespace std
 
 			if (head == tail)
 			{
+				SmartLock(this->lock);
 				delete head;
 				head = tail = nullptr;
-				--size;
+				--lSize;
 			}
 			else
 			{
-				lNode *old_head = head;
+				SmartLock(this->lock);
+				node *old_head = head;
 				head = head->next;
 				head->prev = nullptr;
 				delete old_head;
-				--size;
+				--lSize;
 			}
 		}
 
-		bool empty() const { return size == 0; }
+		template <class... Args>
+		void emplace_back(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			SmartLock(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), tail);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				tail->next = nNode;
+				tail = nNode;
+			}
+			++lSize;
+		}
+
+		template <class... Args>
+		void emplace_front(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			SmartLock(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), nullptr, head);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				head->prev = nNode;
+				head = nNode;
+			}
+			++lSize;
+		}
+
+		T &front()
+		{
+			SmartLock(this->lock);
+			return head->value;
+		}
+
+		const T &front() const
+		{
+			SmartLock(this->lock);
+			return head->value;
+		}
+
+		T &back()
+		{
+			SmartLock(this->lock);
+			return tail->value;
+		}
+
+		const T &back() const
+		{
+			SmartLock(this->lock);
+			return tail->value;
+		}
+
+		bool empty() const { return lSize.load() == 0; }
+		size_t size() const { return lSize; }
 
 		void clear()
 		{
@@ -127,39 +194,179 @@ namespace std
 				pop_back();
 		}
 
-		list &operator=(const list &other)
+		void merge(list &other)
 		{
-			if (this != &other)
+			if (this == &other)
+				return;
+
+			while (other.empty() == false)
 			{
-				clear();
-				for (const T &value : other)
+				T &fr = other.front();
+				push_back(fr);
+				other.pop_front();
+			}
+		}
+
+		void remove(const T &value)
+		{
+			SmartLock(this->lock);
+			node *p = head;
+			while (p != nullptr)
+			{
+				if (p->value == value)
 				{
-					push_back(value);
+					if (p->prev)
+						p->prev->next = p->next;
+					if (p->next)
+						p->next->prev = p->prev;
+					if (p == head)
+						head = p->next;
+					if (p == tail)
+						tail = p->prev;
+					delete p;
+					--lSize;
+					return;
+				}
+				p = p->next;
+			}
+		}
+
+		template <class UnaryPredicate>
+		void remove_if(UnaryPredicate p)
+		{
+			SmartLock(this->lock);
+			node *n = head;
+			while (n != nullptr)
+			{
+				if (p(n->value))
+				{
+					if (n->prev)
+						n->prev->next = n->next;
+					if (n->next)
+						n->next->prev = n->prev;
+					if (n == head)
+						head = n->next;
+					if (n == tail)
+						tail = n->prev;
+					delete n;
+					--lSize;
+					return;
+				}
+				n = n->next;
+			}
+		}
+
+		void reverse()
+		{
+			if (empty())
+				return;
+
+			SmartLock(this->lock);
+			node *p = head;
+			while (p != nullptr)
+			{
+				node *tmp = p->next;
+				p->next = p->prev;
+				p->prev = tmp;
+				p = tmp;
+			}
+			node *tmp = head;
+			head = tail;
+			tail = tmp;
+		}
+
+		void sort()
+		{
+			if (empty())
+				return;
+
+			SmartLock(this->lock);
+			bool swapped = true;
+			while (swapped)
+			{
+				swapped = false;
+				node *p = head;
+				while (p->next != nullptr)
+				{
+					if (p->value > p->next->value)
+					{
+						T tmp = p->value;
+						p->value = p->next->value;
+						p->next->value = tmp;
+						swapped = true;
+					}
+					p = p->next;
 				}
 			}
+		}
+
+		template <class Compare>
+		void sort(Compare comp)
+		{
+			if (empty())
+				return;
+
+			SmartLock(this->lock);
+			bool swapped = true;
+			while (swapped)
+			{
+				swapped = false;
+				node *p = head;
+				while (p->next != nullptr)
+				{
+					if (comp(p->value, p->next->value))
+					{
+						T tmp = p->value;
+						p->value = p->next->value;
+						p->next->value = tmp;
+						swapped = true;
+					}
+					p = p->next;
+				}
+			}
+		}
+
+		/* Non-STL function */
+		T &operator[](size_t Index)
+		{
+			SmartLock(this->lock);
+			node *p = head;
+			for (size_t i = 0; i < Index; ++i)
+				p = p->next;
+			return p->value;
+		}
+
+		list &operator=(const list &other)
+		{
+			if (this == &other)
+				return *this;
+
+			for (const T &value : other)
+				push_back(value);
+
 			return *this;
 		}
 
 		class iterator
 		{
 		private:
-			lNode *node;
+			node *_node;
 			friend class list;
 
 		public:
-			iterator(lNode *p = nullptr) : node(p) {}
-			T &operator*() const { return node->value; }
-			T *operator->() const { return &node->value; }
+			iterator(node *p = nullptr) : _node(p) {}
+			T &operator*() const { return _node->value; }
+			T *operator->() const { return &_node->value; }
 
 			iterator &operator++()
 			{
-				node = node->next;
+				_node = _node->next;
 				return *this;
 			}
 
 			iterator &operator--()
 			{
-				node = node->prev;
+				_node = _node->prev;
 				return *this;
 			}
 
@@ -177,12 +384,14 @@ namespace std
 				return tmp;
 			}
 
-			bool operator==(const iterator &rhs) const { return node == rhs.node; }
-			bool operator!=(const iterator &rhs) const { return node != rhs.node; }
+			bool operator==(const iterator &rhs) const { return _node == rhs._node; }
+			bool operator!=(const iterator &rhs) const { return _node != rhs._node; }
 		};
 
 		iterator begin() { return iterator(head); }
 		iterator end() { return iterator(nullptr); }
+		const iterator begin() const { return iterator(head); }
+		const iterator end() const { return iterator(nullptr); }
 
 		iterator insert(iterator pos, const T &value)
 		{
@@ -198,24 +407,46 @@ namespace std
 			}
 			else
 			{
-				lNode *p = pos.node;
-				lNode *new_node = new lNode(value, p->prev, p);
-				p->prev->next = new_node;
-				p->prev = new_node;
-				++size;
-				return iterator(new_node);
+				SmartLock(this->lock);
+				node *p = pos.node;
+				node *nNode = new node(value, p->prev, p);
+				p->prev->next = nNode;
+				p->prev = nNode;
+				++lSize;
+				return iterator(nNode);
 			}
 		}
 
 		iterator erase(iterator pos)
 		{
-			lNode *p = pos.node;
-			iterator next(p->next);
-			p->prev->next = p->next;
-			p->next->prev = p->prev;
-			delete p;
-			--size;
-			return next;
+			if (pos == end())
+				return end();
+			else if (pos == begin())
+			{
+				pop_front();
+				return begin();
+			}
+			else
+			{
+				SmartLock(this->lock);
+				node *p = pos._node;
+				if (p->prev)
+					p->prev->next = p->next;
+
+				if (p->next)
+					p->next->prev = p->prev;
+
+				if (head == p)
+					head = p->next;
+
+				if (tail == p)
+					tail = p->prev;
+
+				iterator ret(p->next);
+				delete p;
+				--lSize;
+				return ret;
+			}
 		}
 	};
 }

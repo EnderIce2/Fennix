@@ -1,4 +1,5 @@
 #include "liballoc_1_1.h"
+#include <convert.h>
 
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -104,6 +105,7 @@ static long long l_possibleOverruns = 0; ///< Number of possible overruns
 
 __no_sanitize("undefined") static void *liballoc_memset(void *s, int c, size_t n)
 {
+	return memset(s, c, n);
 	unsigned int i;
 	for (i = 0; i < n; i++)
 		((char *)s)[i] = c;
@@ -112,6 +114,7 @@ __no_sanitize("undefined") static void *liballoc_memset(void *s, int c, size_t n
 }
 __no_sanitize("undefined") static void *liballoc_memcpy(void *s1, const void *s2, size_t n)
 {
+	return memcpy(s1, s2, n);
 	char *cdest;
 	char *csrc;
 	unsigned int *ldest = (unsigned int *)s1;

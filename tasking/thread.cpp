@@ -51,7 +51,7 @@ void ThreadDoExit()
 {
 	CPUData *CPUData = GetCurrentCPU();
 	Tasking::TCB *CurrentThread = CPUData->CurrentThread.load();
-	CurrentThread->State = Tasking::TaskState::Terminated;
+	CurrentThread->SetState(Tasking::Terminated);
 
 	debug("\"%s\"(%d) exited with code: %#lx",
 		  CurrentThread->Name,
@@ -62,6 +62,25 @@ void ThreadDoExit()
 
 namespace Tasking
 {
+	int TCB::SendSignal(int sig)
+	{
+		return this->Parent->Signals->SendSignal(sig);
+	}
+
+	void TCB::SetState(TaskState state)
+	{
+		this->State.store(state);
+		if (this->Parent->Threads.size() == 1)
+			this->Parent->State.store(state);
+	}
+
+	void TCB::SetExitCode(int code)
+	{
+		this->ExitCode.store(code);
+		if (this->Parent->Threads.size() == 1)
+			this->Parent->ExitCode.store(code);
+	}
+
 	void TCB::Rename(const char *name)
 	{
 		assert(name != nullptr);
@@ -98,6 +117,9 @@ namespace Tasking
 			  this->Name, Critical ? "true" : "false");
 
 		Security.IsCritical = Critical;
+
+		if (this->Parent->Threads.size() == 1)
+			this->Parent->Security.IsCritical = Critical;
 	}
 
 	void TCB::SetDebugMode(bool Enable)
@@ -106,6 +128,9 @@ namespace Tasking
 			  this->Name, Enable ? "true" : "false");
 
 		Security.IsDebugEnabled = Enable;
+
+		if (this->Parent->Threads.size() == 1)
+			this->Parent->Security.IsDebugEnabled = Enable;
 	}
 
 	void TCB::SetKernelDebugMode(bool Enable)
@@ -114,6 +139,9 @@ namespace Tasking
 			  this->Name, Enable ? "true" : "false");
 
 		Security.IsKernelDebugEnabled = Enable;
+
+		if (this->Parent->Threads.size() == 1)
+			this->Parent->Security.IsKernelDebugEnabled = Enable;
 	}
 
 	size_t TCB::GetSize()
@@ -171,13 +199,13 @@ namespace Tasking
 
 		/* https://articles.manugarg.com/aboutelfauxiliaryvectors.html */
 		/* https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9 */
-		// rsp is the top of the stack
+		/* rsp is the top of the stack */
 		char *Stack = (char *)this->Stack->GetStackPhysicalTop();
-		// Temporary stack pointer for strings
+		/* Temporary stack pointer for strings */
 		char *StackStrings = (char *)Stack;
 		char *StackStringsVirtual = (char *)this->Stack->GetStackTop();
 
-		// Store string pointers for later
+		/* Store string pointers for later */
 		uintptr_t *ArgvStrings = nullptr;
 		uintptr_t *EnvpStrings = nullptr;
 		if (ArgvSize > 0)
@@ -187,63 +215,66 @@ namespace Tasking
 
 		for (size_t i = 0; i < ArgvSize; i++)
 		{
-			// Subtract the length of the string and the null terminator
+			/* Subtract the length of the string and the null terminator */
 			StackStrings -= strlen(argv[i]) + 1;
 			StackStringsVirtual -= strlen(argv[i]) + 1;
-			// Store the pointer to the string
+			/* Store the pointer to the string */
 			ArgvStrings[i] = (uintptr_t)StackStringsVirtual;
-			// Copy the string to the stack
+			/* Copy the string to the stack */
 			strcpy(StackStrings, argv[i]);
 			debug("argv[%d]: %s", i, argv[i]);
 		}
 
 		for (size_t i = 0; i < EnvpSize; i++)
 		{
-			// Subtract the length of the string and the null terminator
+			/* Subtract the length of the string and the null terminator */
 			StackStrings -= strlen(envp[i]) + 1;
 			StackStringsVirtual -= strlen(envp[i]) + 1;
-			// Store the pointer to the string
+			/* Store the pointer to the string */
 			EnvpStrings[i] = (uintptr_t)StackStringsVirtual;
-			// Copy the string to the stack
+			/* Copy the string to the stack */
 			strcpy(StackStrings, envp[i]);
 			debug("envp[%d]: %s", i, envp[i]);
 		}
 
-		// Align the stack to 16 bytes
+		/* Align the stack to 16 bytes */
 		StackStrings -= (uintptr_t)StackStrings & 0xF;
-		// Set "Stack" to the new stack pointer
+		/* Set "Stack" to the new stack pointer */
 		Stack = (char *)StackStrings;
-		// If argv and envp sizes are odd then we need to align the stack
+		/* If argv and envp sizes are odd then we need to align the stack */
 		Stack -= (ArgvSize + EnvpSize) % 2;
+		debug("odd align: %#lx | %#lx -> %#lx",
+			  (ArgvSize + EnvpSize) % 2,
+			  StackStrings, Stack);
 
-		// We need 8 bit pointers for the stack from here
+		/* We need 8 bit pointers for the stack from here */
 		uintptr_t *Stack64 = (uintptr_t *)Stack;
+		assert(Stack64 != nullptr);
 
-		// Store the null terminator
-		Stack64--;
-		*Stack64 = AT_NULL;
+		/* Store the null terminator */
+		StackPush(Stack64, uintptr_t, AT_NULL);
 
-		// auxv_array is initialized with auxv elements. If the array is empty then we add a null terminator
+		/* auxv_array is initialized with auxv elements.
+			If the array is empty then we add a null terminator */
 		std::vector<AuxiliaryVector> auxv_array = auxv;
 		if (auxv_array.size() == 0)
 			auxv_array.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
 
-		// Store auxillary vector
+		/* Store auxillary vector */
 		foreach (AuxiliaryVector av in auxv_array)
 		{
-			// Subtract the size of the auxillary vector
+			/* Subtract the size of the auxillary vector */
 			Stack64 -= sizeof(Elf_auxv_t) / sizeof(uintptr_t);
-			// Store the auxillary vector
+			/* Store the auxillary vector */
 			POKE(Elf_auxv_t, Stack64) = av.archaux;
-			// TODO: Store strings to the stack
+			/* TODO: Store strings to the stack */
 		}
 
-		// Store the null terminator
-		Stack64--;
-		*Stack64 = AT_NULL;
+		/* Store the null terminator */
+		StackPush(Stack64, uintptr_t, AT_NULL);
 
-		// Store EnvpStrings[] to the stack
-		Stack64 -= EnvpSize; // (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize)
+		/* Store EnvpStrings[] to the stack */
+		Stack64 -= EnvpSize; /* (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize) */
 		for (size_t i = 0; i < EnvpSize; i++)
 		{
 			*(Stack64 + i) = (uintptr_t)EnvpStrings[i];
@@ -251,12 +282,11 @@ namespace Tasking
 				  i, EnvpStrings[i]);
 		}
 
-		// Store the null terminator
-		Stack64--;
-		*Stack64 = AT_NULL;
+		/* Store the null terminator */
+		StackPush(Stack64, uintptr_t, AT_NULL);
 
-		// Store ArgvStrings[] to the stack
-		Stack64 -= ArgvSize; // (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize)
+		/* Store ArgvStrings[] to the stack */
+		Stack64 -= ArgvSize; /* (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize) */
 		for (size_t i = 0; i < ArgvSize; i++)
 		{
 			*(Stack64 + i) = (uintptr_t)ArgvStrings[i];
@@ -264,11 +294,10 @@ namespace Tasking
 				  i, ArgvStrings[i]);
 		}
 
-		// Store the argc
-		Stack64--;
-		*Stack64 = ArgvSize;
+		/* Store the argc */
+		StackPush(Stack64, uintptr_t, ArgvSize);
 
-		// Set "Stack" to the new stack pointer
+		/* Set "Stack" to the new stack pointer */
 		Stack = (char *)Stack64;
 
 		/* We need the virtual address but because we are in the kernel we can't use the process page table.
@@ -276,8 +305,10 @@ namespace Tasking
 		uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)Stack;
 		debug("SubtractStack: %#lx", SubtractStack);
 
-		// Set the stack pointer to the new stack
+		/* Set the stack pointer to the new stack */
 		uintptr_t StackPointerReg = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
+		// assert(!(StackPointerReg & 0xF));
+
 #if defined(a64)
 		this->Registers.rsp = StackPointerReg;
 #elif defined(a32)
@@ -292,7 +323,9 @@ namespace Tasking
 			delete[] EnvpStrings;
 
 #ifdef DEBUG
-		DumpData("Stack Data", (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack), SubtractStack);
+		DumpData("Stack Data",
+				 (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack),
+				 SubtractStack);
 #endif
 
 #if defined(a64)
@@ -325,6 +358,48 @@ namespace Tasking
 									 const std::vector<AuxiliaryVector> &auxv)
 	{
 		fixme("Not implemented");
+	}
+
+	void TCB::SetupThreadLocalStorage()
+	{
+		if (Parent->TLS.pBase == 0x0)
+			return;
+		this->TLS = Parent->TLS;
+
+		debug("msz: %ld fsz: %ld",
+			  this->TLS.Size, this->TLS.fSize);
+
+		// size_t pOffset = this->TLS.vBase - std::tolower(this->TLS.vBase);
+		size_t tlsFullSize = sizeof(uintptr_t) + this->TLS.Size;
+		/* 2 guard pages */
+		size_t tlsPages = 1 + TO_PAGES(tlsFullSize) + 1;
+
+		void *opTLS = this->vma->RequestPages(tlsPages);
+		void *pTLS = (void *)(PAGE_SIZE + uintptr_t(opTLS));
+		this->TLS.pBase = uintptr_t(pTLS);
+
+		memcpy(pTLS, (void *)this->TLS.pBase,
+			   this->TLS.Size);
+
+		size_t restBytes = this->TLS.Size - this->TLS.fSize;
+		if (restBytes)
+		{
+			memset((void *)(uintptr_t(pTLS) + this->TLS.Size),
+				   0, restBytes);
+		}
+
+		Memory::Virtual vmm(this->Parent->PageTable);
+		/* Map guard pages */
+		vmm.Remap((void *)(uintptr_t(pTLS) - PAGE_SIZE), opTLS, Memory::P);
+		vmm.Remap((void *)(uintptr_t(pTLS) + this->TLS.Size), opTLS, Memory::P);
+		/* Map TLS */
+		vmm.Map(pTLS, pTLS, this->TLS.Size, Memory::RW | Memory::US);
+
+		uintptr_t *pTLSPointer = (uintptr_t *)this->TLS.pBase + this->TLS.Size;
+		*pTLSPointer = this->TLS.pBase + this->TLS.Size;
+
+		this->GSBase = r_cst(uintptr_t, pTLSPointer);
+		this->FSBase = r_cst(uintptr_t, pTLSPointer);
 	}
 
 	TCB::TCB(Task *ctx, PCB *Parent, IP EntryPoint,
@@ -363,9 +438,9 @@ namespace Tasking
 		this->ExitCode = KILL_CRASH;
 
 		if (ThreadNotReady)
-			this->State = TaskState::Waiting;
+			this->SetState(Waiting);
 		else
-			this->State = TaskState::Ready;
+			this->SetState(Ready);
 
 		this->vma = new Memory::VirtualMemoryArea(this->Parent->PageTable);
 
@@ -467,10 +542,18 @@ namespace Tasking
 			assert(false);
 		}
 
+		SetupThreadLocalStorage();
+
 		this->Info.Architecture = Architecture;
 		this->Info.Compatibility = Compatibility;
 		this->Security.ExecutionMode =
 			this->Parent->Security.ExecutionMode;
+
+		if (this->Parent->Threads.size() == 0)
+		{
+			this->Parent->Info.Architecture = this->Info.Architecture;
+			this->Parent->Info.Compatibility = this->Info.Compatibility;
+		}
 
 		// TODO: Is really a good idea to use the FPU in kernel mode?
 		this->FPU.mxcsr = 0b0001111110000000;
@@ -519,7 +602,7 @@ namespace Tasking
 			this->Parent->State == Waiting &&
 			ThreadNotReady == false)
 		{
-			this->Parent->State = Ready;
+			this->Parent->SetState(Ready);
 			debug("Setting process \"%s\"(%d) to ready",
 				  this->Parent->Name, this->Parent->ID);
 		}
@@ -531,7 +614,7 @@ namespace Tasking
 
 		/* Remove us from the process list so we
 			don't get scheduled anymore */
-		std::vector<Tasking::TCB *> &Threads = this->Parent->Threads;
+		std::list<Tasking::TCB *> &Threads = this->Parent->Threads;
 		Threads.erase(std::find(Threads.begin(),
 								Threads.end(),
 								this));
@@ -544,5 +627,8 @@ namespace Tasking
 
 		/* Free Name */
 		delete[] this->Name;
+
+		debug("Thread \"%s\"(%d) destroyed",
+			  this->Name, this->ID);
 	}
 }

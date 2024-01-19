@@ -20,15 +20,25 @@
 #include <convert.h>
 #include <debug.h>
 
+#include "../../kernel.h"
+
 namespace Memory
 {
-    Virtual::Virtual(PageTable *Table)
-    {
-        if (Table)
-            this->Table = Table;
-        else
-            this->Table = (PageTable *)CPU::PageTable();
-    }
+	Virtual::Virtual(PageTable *Table)
+	{
+		if (Table)
+			this->pTable = Table;
+		else
+			this->pTable = thisPageTable;
 
-    Virtual::~Virtual() {}
+		// debug("+ %#lx (PT: %#lx) %s", this, this->pTable,
+		// 	  KernelSymbolTable
+		// 		  ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
+		// 		  : "Unknown");
+	}
+
+	Virtual::~Virtual()
+	{
+		// debug("- %#lx", this);
+	}
 }

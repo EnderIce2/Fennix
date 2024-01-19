@@ -250,15 +250,6 @@ namespace std
 		}
 	};
 
-	template <typename T>
-	using remove_reference_t = typename remove_reference<T>::type;
-
-	template <typename T>
-	T &&forward(remove_reference_t<T> &t) { return static_cast<T &&>(t); };
-
-	template <typename T>
-	T &&forward(remove_reference_t<T> &&t) { return static_cast<T &&>(t); };
-
 	template <typename T, typename... Args>
 	shared_ptr<T> make_shared(Args &&...args)
 	{

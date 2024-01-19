@@ -2,5 +2,5 @@
 *.su
 *.gcno
 *.map
-*.fsys
+fennix.elf
 *.log

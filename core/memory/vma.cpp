@@ -74,6 +74,8 @@ namespace Memory
 	bool VirtualMemoryArea::Add(void *Address, size_t Count)
 	{
 		SmartLock(MgrLock);
+		function("%#lx, %lld", Address, Count);
+
 		if (Address == nullptr)
 		{
 			error("Address is null!");
@@ -118,7 +120,10 @@ namespace Memory
 	void *VirtualMemoryArea::RequestPages(size_t Count, bool User)
 	{
 		SmartLock(MgrLock);
+		function("%lld, %s", Count, User ? "true" : "false");
+
 		void *Address = KernelAllocator.RequestPages(Count);
+		memset(Address, 0, Count * PAGE_SIZE);
 		for (size_t i = 0; i < Count; i++)
 		{
 			int Flags = Memory::PTFlag::RW;
@@ -127,23 +132,19 @@ namespace Memory
 
 			void *AddressToMap = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
 
-			Memory::Virtual vmm = Memory::Virtual(this->Table);
-			vmm.Remap(AddressToMap, AddressToMap, Flags);
+			Memory::Virtual vmm(this->Table);
+			vmm.Map(AddressToMap, AddressToMap, Flags);
 		}
 
 		AllocatedPagesList.push_back({Address, Count});
-
-		/* For security reasons, we clear the allocated page
-		   if it's a user page. */
-		if (User)
-			memset(Address, 0, Count * PAGE_SIZE);
-
 		return Address;
 	}
 
 	void VirtualMemoryArea::FreePages(void *Address, size_t Count)
 	{
 		SmartLock(MgrLock);
+		function("%#lx, %lld", Address, Count);
+
 		forItr(itr, AllocatedPagesList)
 		{
 			if (itr->Address == Address)
@@ -162,7 +163,7 @@ namespace Memory
 
 				KernelAllocator.FreePages(Address, Count);
 
-				Memory::Virtual vmm = Memory::Virtual(this->Table);
+				Memory::Virtual vmm(this->Table);
 				for (size_t i = 0; i < Count; i++)
 				{
 					void *AddressToMap = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
@@ -178,6 +179,8 @@ namespace Memory
 	void VirtualMemoryArea::DetachAddress(void *Address)
 	{
 		SmartLock(MgrLock);
+		function("%#lx", Address);
+
 		forItr(itr, AllocatedPagesList)
 		{
 			if (itr->Address == Address)
@@ -193,7 +196,14 @@ namespace Memory
 											 bool Read, bool Write, bool Exec,
 											 bool Fixed, bool Shared)
 	{
-		Memory::Virtual vmm = Memory::Virtual(this->Table);
+		function("%#lx, %lld, %s, %s, %s, %s, %s", Address, Length,
+				 Read ? "true" : "false",
+				 Write ? "true" : "false",
+				 Exec ? "true" : "false",
+				 Fixed ? "true" : "false",
+				 Shared ? "true" : "false");
+
+		Memory::Virtual vmm(this->Table);
 
 		// FIXME
 		// for (uintptr_t j = uintptr_t(Address);
@@ -209,20 +219,21 @@ namespace Memory
 		// }
 
 		bool AnyAddress = Address == nullptr;
+		debug("AnyAddress: %s", AnyAddress ? "true" : "false");
 
 		if (AnyAddress)
 		{
-			Address = this->RequestPages(1);
-			if (Address == nullptr)
-				return nullptr;
-			memset(Address, 0, PAGE_SIZE);
+			Address = this->RequestPages(TO_PAGES(Length), true);
+			debug("Allocated %#lx-%#lx for pt %#lx",
+				  Address, (uintptr_t)Address + Length, this->Table);
+			return Address;
 		}
 
+		SmartLock(MgrLock);
 		vmm.Unmap(Address, Length);
 		vmm.Map(Address, nullptr, Length, PTFlag::CoW);
-
-		if (AnyAddress)
-			vmm.Remap(Address, Address, PTFlag::RW | PTFlag::US);
+		debug("CoW region created at range %#lx-%#lx for pt %#lx",
+			  Address, (uintptr_t)Address + Length, this->Table);
 
 		SharedRegion sr{
 			.Address = Address,
@@ -235,13 +246,15 @@ namespace Memory
 			.ReferenceCount = 0,
 		};
 		SharedRegions.push_back(sr);
+		debug("CoW region created at %#lx for pt %#lx",
+			  Address, this->Table);
 		return Address;
 	}
 
 	bool VirtualMemoryArea::HandleCoW(uintptr_t PFA)
 	{
 		function("%#lx", PFA);
-		Memory::Virtual vmm = Memory::Virtual(this->Table);
+		Memory::Virtual vmm(this->Table);
 		Memory::PageTableEntry *pte = vmm.GetPTE((void *)PFA);
 
 		if (!pte)
@@ -260,6 +273,9 @@ namespace Memory
 
 				if (PFA >= Start && PFA < End)
 				{
+					debug("Start: %#lx, End: %#lx (PFA: %#lx)",
+						  Start, End, PFA);
+
 					if (sr.Shared)
 					{
 						fixme("Shared CoW");
@@ -272,30 +288,117 @@ namespace Memory
 							return false;
 						memset(pAddr, 0, PAGE_SIZE);
 
-						uint64_t Flags = 0;
-						if (sr.Read)
-							Flags |= PTFlag::US;
-						if (sr.Write)
-							Flags |= PTFlag::RW;
-						// if (sr.Exec)
-						// 	Flags |= PTFlag::XD;
+						assert(pte->Present == true);
+						pte->ReadWrite = sr.Write;
+						pte->UserSupervisor = sr.Read;
+						pte->ExecuteDisable = sr.Exec;
 
-						vmm.Remap((void *)PFA, pAddr, Flags);
 						pte->CopyOnWrite = false;
+						debug("PFA %#lx is CoW (pt %#lx, flags %#lx)",
+							  PFA, this->Table, pte->raw);
+#if defined(a64)
+						CPU::x64::invlpg((void *)PFA);
+#elif defined(a32)
+						CPU::x32::invlpg((void *)PFA);
+#endif
 						return true;
 					}
 				}
 			}
 		}
 
-		debug("PFA %#lx is not CoW", PFA);
+		debug("PFA %#lx is not CoW (pt %#lx)",
+			  PFA, this->Table);
 		return false;
+	}
+
+	void VirtualMemoryArea::FreeAllPages()
+	{
+		SmartLock(MgrLock);
+		foreach (auto ap in AllocatedPagesList)
+		{
+			KernelAllocator.FreePages(ap.Address, ap.PageCount);
+			Memory::Virtual vmm(this->Table);
+			for (size_t i = 0; i < ap.PageCount; i++)
+				vmm.Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),
+						  (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),
+						  Memory::PTFlag::RW);
+		}
+		AllocatedPagesList.clear();
+	}
+
+	void VirtualMemoryArea::Fork(VirtualMemoryArea *Parent)
+	{
+		function("%#lx", Parent);
+
+		if (Parent == nullptr)
+		{
+			error("Parent is null!");
+			return;
+		}
+
+		if (Parent->Table == nullptr)
+		{
+			error("Parent's table is null!");
+			return;
+		}
+
+		Memory::Virtual vmm(this->Table);
+		SmartLock(MgrLock);
+		foreach (auto ap in Parent->GetAllocatedPagesList())
+		{
+			MgrLock.Unlock();
+			void *Address = this->RequestPages(ap.PageCount);
+			MgrLock.Lock(__FUNCTION__);
+			if (Address == nullptr)
+				return;
+
+			memcpy(Address, ap.Address, ap.PageCount * PAGE_SIZE);
+
+			// map these new allocated pages to be the same as the parent
+			for (size_t i = 0; i < ap.PageCount; i++)
+			{
+				void *AddressToMap = (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE));
+				void *RealAddress = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
+
+#if defined(a86)
+				Memory::PageTableEntry *pte = vmm.GetPTE(AddressToMap);
+				uintptr_t Flags = 0;
+				Flags |= pte->Present ? 1UL : 0;
+				Flags |= pte->ReadWrite ? 2UL : 0;
+				Flags |= pte->UserSupervisor ? 4UL : 0;
+				Flags |= pte->CopyOnWrite ? 512UL : 0;
+
+				debug("Mapping %#lx to %#lx (flags %s/%s/%s/%s)",
+					  RealAddress, AddressToMap,
+					  Flags & PTFlag::P ? "P" : "-",
+					  Flags & PTFlag::RW ? "RW" : "-",
+					  Flags & PTFlag::US ? "US" : "-",
+					  Flags & PTFlag::CoW ? "CoW" : "-");
+				vmm.Map(AddressToMap, RealAddress, Flags);
+#else
+#warning "Not implemented"
+#endif
+			}
+		}
+
+		foreach (auto sr in Parent->GetSharedRegions())
+		{
+			MgrLock.Unlock();
+			void *Address = this->CreateCoWRegion(sr.Address, sr.Length,
+												 sr.Read, sr.Write, sr.Exec,
+												 sr.Fixed, sr.Shared);
+			MgrLock.Lock(__FUNCTION__);
+			if (Address == nullptr)
+				return;
+			memcpy(Address, sr.Address, sr.Length);
+		}
 	}
 
 	VirtualMemoryArea::VirtualMemoryArea(PageTable *Table)
 	{
 		debug("+ %#lx %s", this,
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "");
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0)) : "");
 
 		SmartLock(MgrLock);
 		if (Table)
@@ -316,12 +419,22 @@ namespace Memory
 	VirtualMemoryArea::~VirtualMemoryArea()
 	{
 		debug("- %#lx %s", this,
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0)) : "");
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0)) : "");
+
+#ifdef DEBUG
+		if (this->Table == KernelPageTable)
+			debug("Not remapping kernel page table allocated pages.");
+#endif
+
 		SmartLock(MgrLock);
+		Memory::Virtual vmm(this->Table);
 		foreach (auto ap in AllocatedPagesList)
 		{
 			KernelAllocator.FreePages(ap.Address, ap.PageCount);
-			Memory::Virtual vmm = Memory::Virtual(this->Table);
+
+			if (this->Table == KernelPageTable)
+				continue;
+
 			for (size_t i = 0; i < ap.PageCount; i++)
 				vmm.Remap((void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),
 						  (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE)),

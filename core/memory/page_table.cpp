@@ -1,6 +1,9 @@
 #include <memory.hpp>
 
 #include <filesystem.hpp>
+#include <signal.hpp>
+#include <utsname.h>
+#include <time.h>
 
 namespace Memory
 {
@@ -13,29 +16,75 @@ namespace Memory
 #endif
 	}
 
-	PageTable PageTable::Fork()
+	PageTable *PageTable::Fork()
 	{
-		PageTable NewTable;
-		memcpy(&NewTable, this, sizeof(PageTable));
+		PageTable *NewTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTable)));
+		// memset(NewTable, 0, sizeof(PageTable));
+		// CreatePageTable(NewTable);
+		memcpy(NewTable, this, sizeof(PageTable));
+
+		debug("Forking page table %#lx to %#lx", this, NewTable);
+#if defined(a64)
+		for (size_t i = 0; i < sizeof(Entries) / sizeof(Entries[0]); i++)
+		{
+			PageMapLevel4 *PML4 = &Entries[i];
+			PageMapLevel4 *NewPML4 = &NewTable->Entries[i];
+			if (!PML4->Present)
+				continue;
+
+			PageDirectoryPointerTableEntryPtr *ptrPDPT = (PageDirectoryPointerTableEntryPtr *)(PML4->GetAddress() << 12);
+			PageDirectoryPointerTableEntryPtr *ptrNewPDPT = (PageDirectoryPointerTableEntryPtr *)KernelAllocator.RequestPage();
+			NewPML4->SetAddress((uintptr_t)ptrNewPDPT >> 12);
+			for (size_t j = 0; j < sizeof(ptrPDPT->Entries) / sizeof(ptrPDPT->Entries[0]); j++)
+			{
+				PageDirectoryPointerTableEntry *PDPT = &ptrPDPT->Entries[j];
+				PageDirectoryPointerTableEntry *NewPDPT = &ptrNewPDPT->Entries[j];
+				*NewPDPT = *PDPT;
+
+				if (!PDPT->Present)
+					continue;
+				if (PDPT->PageSize)
+					continue;
+
+				PageDirectoryEntryPtr *ptrPDE = (PageDirectoryEntryPtr *)(PDPT->GetAddress() << 12);
+				PageDirectoryEntryPtr *ptrNewPDE = (PageDirectoryEntryPtr *)KernelAllocator.RequestPage();
+				NewPDPT->SetAddress((uintptr_t)ptrNewPDE >> 12);
+				for (size_t k = 0; k < sizeof(ptrPDE->Entries) / sizeof(ptrPDE->Entries[0]); k++)
+				{
+					PageDirectoryEntry *PDE = &ptrPDE->Entries[k];
+					PageDirectoryEntry *NewPDE = &ptrNewPDE->Entries[k];
+					*NewPDE = *PDE;
+
+					if (!PDE->Present)
+						continue;
+					if (PDE->PageSize)
+						continue;
+
+					PageTableEntryPtr *ptrPTE = (PageTableEntryPtr *)(PDE->GetAddress() << 12);
+					PageTableEntryPtr *ptrNewPTE = (PageTableEntryPtr *)KernelAllocator.RequestPage();
+					NewPDE->SetAddress((uintptr_t)ptrNewPTE >> 12);
+					for (size_t l = 0; l < sizeof(ptrPTE->Entries) / sizeof(ptrPTE->Entries[0]); l++)
+					{
+						PageTableEntry *PTE = &ptrPTE->Entries[l];
+						PageTableEntry *NewPTE = &ptrNewPTE->Entries[l];
+						*NewPTE = *PTE;
+					}
+				}
+			}
+		}
+#else
+#error "PageTable::Fork() not implemented for other architectures"
+#endif
+
+		debug("Forked page table %#lx to %#lx", this, NewTable);
 		return NewTable;
 	}
 
-	template <typename T>
-	T PageTable::Get(T Address)
+	/* We can't have Memory::Virtual in the header */
+	void *PageTable::__getPhysical(void *Address)
 	{
-		Virtual vmm = Virtual(this);
+		Virtual vmm(this);
 		void *PhysAddr = vmm.GetPhysical((void *)Address);
-		uintptr_t Diff = uintptr_t(Address);
-		Diff &= 0xFFF;
-		Diff = uintptr_t(PhysAddr) + Diff;
-		return (T)Diff;
+		return PhysAddr;
 	}
-
-	/* Templates */
-	template struct stat *PageTable::Get<struct stat *>(struct stat *);
-	template const char *PageTable::Get<const char *>(const char *);
-	template const void *PageTable::Get<const void *>(const void *);
-	template uintptr_t PageTable::Get<uintptr_t>(uintptr_t);
-	template void *PageTable::Get<void *>(void *);
-	/* ... */
 }

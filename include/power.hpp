@@ -22,48 +22,48 @@
 
 namespace Power
 {
-    class Power
-    {
-    private:
-        void *acpi = nullptr;
-        void *dsdt = nullptr;
-        void *madt = nullptr;
+	class Power
+	{
+	private:
+		void *acpi = nullptr;
+		void *dsdt = nullptr;
+		void *madt = nullptr;
 
-    public:
-        /**
-         * @brief Get Advanced Configuration and Power Interface. (Available only on x32 and x64)
-         *
-         * @return void* (ACPI::ACPI *)
-         */
-        void *GetACPI() { return this->acpi; }
+	public:
+		/**
+		 * @brief Get Advanced Configuration and Power Interface. (Available only on x32 and x64)
+		 *
+		 * @return void* (ACPI::ACPI *)
+		 */
+		void *GetACPI() { return this->acpi; }
 
-        /**
-         * @brief Get Differentiated System Description Table. (Available only on x32 and x64)
-         *
-         * @return void* (ACPI::DSDT *)
-         */
-        void *GetDSDT() { return this->dsdt; }
+		/**
+		 * @brief Get Differentiated System Description Table. (Available only on x32 and x64)
+		 *
+		 * @return void* (ACPI::DSDT *)
+		 */
+		void *GetDSDT() { return this->dsdt; }
 
-        /**
-         * @brief Get Multiple APIC Description Table. (Available only on x32 and x64)
-         *
-         * @return void* (ACPI::MADT *)
-         */
-        void *GetMADT() { return this->madt; }
+		/**
+		 * @brief Get Multiple APIC Description Table. (Available only on x32 and x64)
+		 *
+		 * @return void* (ACPI::MADT *)
+		 */
+		void *GetMADT() { return this->madt; }
 
-        /**
-         * @brief Reboot the system.
-         */
-        void Reboot();
+		/**
+		 * @brief Reboot the system.
+		 */
+		void Reboot();
 
-        /**
-         * @brief Shutdown the system.
-         */
-        void Shutdown();
+		/**
+		 * @brief Shutdown the system.
+		 */
+		void Shutdown();
 
-        void InitDSDT();
-        Power();
-    };
+		void InitDSDT();
+		Power();
+	};
 }
 
 #endif // !__FENNIX_KERNEL_POWER_H__

@@ -32,7 +32,6 @@ namespace Execute
 	enum BinaryType : int
 	{
 		BinTypeInvalid,
-		BinTypeFex,
 		BinTypeELF,
 		BinTypePE,
 		BinTypeNE,
@@ -122,7 +121,7 @@ namespace Execute
 	BinaryType GetBinaryType(const char *Path);
 
 	int Spawn(char *Path, const char **argv, const char **envp,
-			  Tasking::PCB *Parent = nullptr,
+			  Tasking::PCB *Parent = nullptr, bool Fork = false,
 			  Tasking::TaskCompatibility Compatibility = Tasking::TaskCompatibility::Native,
 			  bool Critical = false);
 

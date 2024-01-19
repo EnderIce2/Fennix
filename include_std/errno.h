@@ -405,7 +405,17 @@
 /** State not recoverable */
 #define ENOTRECOVERABLE 131
 
-extern int *__errno_location(void) __attribute__((const));
+#include <types.h>
+EXTERNC int *__errno_location(void) __attribute__((const));
 #define errno (*__errno_location())
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+	const char *strerror(int errnum);
+#ifdef __cplusplus
+}
+#endif
 
 #endif // !_ERRNO_H

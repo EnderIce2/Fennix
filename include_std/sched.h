@@ -15,7 +15,4 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _SCHED_H
-#define _SCHED_H
-
-#endif // !_SCHED_H
+#pragma once

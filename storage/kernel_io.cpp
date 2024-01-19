@@ -59,8 +59,8 @@ ssize_t fread(int fd, void *buf, size_t count)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t r = fdt->_read(fd, buf, count);
-	return r;
+	ssize_t ret = fdt->_read(fd, buf, count);
+	return ret;
 }
 
 ssize_t fwrite(int fd, const void *buf, size_t count)
@@ -70,8 +70,8 @@ ssize_t fwrite(int fd, const void *buf, size_t count)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t r = fdt->_write(fd, buf, count);
-	return r;
+	ssize_t ret = fdt->_write(fd, buf, count);
+	return ret;
 }
 
 int fclose(int fd)
@@ -81,8 +81,8 @@ int fclose(int fd)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	int r = fdt->_close(fd);
-	return r;
+	int ret = fdt->_close(fd);
+	return ret;
 }
 
 off_t lseek(int fd, off_t offset, int whence)
@@ -92,8 +92,8 @@ off_t lseek(int fd, off_t offset, int whence)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	off_t r = fdt->_lseek(fd, offset, whence);
-	return r;
+	off_t ret = fdt->_lseek(fd, offset, whence);
+	return ret;
 }
 
 int stat(const char *pathname, struct stat *statbuf)
@@ -103,8 +103,8 @@ int stat(const char *pathname, struct stat *statbuf)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	int r = fdt->_stat(pathname, statbuf);
-	return r;
+	int ret = fdt->_stat(pathname, statbuf);
+	return ret;
 }
 
 int fstat(int fd, struct stat *statbuf)
@@ -114,8 +114,8 @@ int fstat(int fd, struct stat *statbuf)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	int r = fdt->_fstat(fd, statbuf);
-	return r;
+	int ret = fdt->_fstat(fd, statbuf);
+	return ret;
 }
 
 int lstat(const char *pathname, struct stat *statbuf)
@@ -125,6 +125,6 @@ int lstat(const char *pathname, struct stat *statbuf)
 
 	PCB *pcb = thisProcess;
 	FileDescriptorTable *fdt = pcb->FileDescriptors;
-	int r = fdt->_lstat(pathname, statbuf);
-	return r;
+	int ret = fdt->_lstat(pathname, statbuf);
+	return ret;
 }

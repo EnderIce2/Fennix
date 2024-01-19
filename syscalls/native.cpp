@@ -25,7 +25,6 @@
 
 #include "../syscalls.h"
 #include "../kernel.h"
-#include "../ipc.h"
 
 struct SyscallData
 {
@@ -34,15 +33,7 @@ struct SyscallData
 	int RequiredID;
 };
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
-using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
 
 #if defined(a64)
 typedef long arch_t;

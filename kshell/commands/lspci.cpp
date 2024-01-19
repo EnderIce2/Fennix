@@ -23,8 +23,48 @@
 
 using namespace vfs;
 
-void cmd_lspci(const char *)
+void cmd_lspci(const char *args)
 {
+	if (args)
+	{
+		if (IF_ARG("-i") || IF_ARG("--info"))
+		{
+			foreach (auto Device in PCIManager->GetDevices())
+			{
+				const char *HdrType;
+				switch (Device.Header->HeaderType)
+				{
+				case 0:
+					HdrType = "Normal ";
+					break;
+				case 1:
+					HdrType = "PCI-PCI";
+					break;
+				case 2:
+					HdrType = "Cardbus";
+					break;
+				default:
+					HdrType = "Unknown";
+					break;
+				}
+
+				printf("%04x:%04x | %s:%03d | %02x:%02x.%d | %s:  %s  %s\n",
+					   Device.Header->VendorID,
+					   Device.Header->DeviceID,
+					   HdrType, Device.Header->HeaderType,
+					   Device.Bus,
+					   Device.Device,
+					   Device.Function,
+					   PCI::Descriptors::GetSubclassName(Device.Header->Class,
+														 Device.Header->Subclass),
+					   PCI::Descriptors::GetVendorName(Device.Header->VendorID),
+					   PCI::Descriptors::GetDeviceName(Device.Header->VendorID,
+													   Device.Header->DeviceID));
+			}
+			return;
+		}
+	}
+
 	foreach (auto Device in PCIManager->GetDevices())
 	{
 		printf("%02x:%02x.%d: %s:  %s  %s\n",

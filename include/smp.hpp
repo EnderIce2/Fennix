@@ -24,7 +24,7 @@
 #include <atomic>
 
 /** @brief Maximum supported number of CPU cores by the kernel */
-#define MAX_CPU 256
+#define MAX_CPU 255
 #define CPU_DATA_CHECKSUM 0xC0FFEE
 
 struct CPUArchData

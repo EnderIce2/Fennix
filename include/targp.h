@@ -23,7 +23,7 @@ extern "C"
 {
 #endif
 
-    void targp_parse(const char *cmd, char **argv, int *argc);
+	void targp_parse(const char *cmd, char **argv, int *argc);
 
 #ifdef __cplusplus
 }

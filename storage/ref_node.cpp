@@ -150,6 +150,7 @@ namespace vfs
 	{
 		if (this->SymlinkTo)
 			this->node->SymlinkTarget->RemoveReference(this);
+
 		this->node->RemoveReference(this);
 
 		debug("Destroyed reference node for %s [%#lx]",

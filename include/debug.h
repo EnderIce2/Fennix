@@ -117,4 +117,6 @@ void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, co
 
 #endif // __cplusplus
 
+EXTERNC void uart_wrapper(char c, void *unused);
+
 #endif // !__FENNIX_KERNEL_DEBUGGER_H__

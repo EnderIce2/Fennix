@@ -24,23 +24,9 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/mmap.html */
 void *sys_mmap(SysFrm *,
@@ -103,8 +89,8 @@ void *sys_mmap(SysFrm *,
 		(!m_Shared && !m_Private))
 		return (void *)-EINVAL;
 
-	Tasking::PCB *pcb = thisProcess;
-	Memory::VirtualMemoryArea *vma = pcb->vma;
+	PCB *pcb = thisProcess;
+	VirtualMemoryArea *vma = pcb->vma;
 	intptr_t ret = (intptr_t)vma->CreateCoWRegion(addr, len,
 												  p_Read, p_Write, p_Exec,
 												  m_Fixed, m_Shared);

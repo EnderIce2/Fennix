@@ -60,6 +60,7 @@ private:
 	void Yield();
 
 public:
+	bool Locked() { return IsLocked.load(); }
 	SpinLockData *GetLockData() { return &LockData; }
 	int Lock(const char *FunctionName);
 	int Unlock();
@@ -74,6 +75,11 @@ private:
 	LockClass *LockPointer = nullptr;
 
 public:
+	bool Locked()
+	{
+		return this->LockPointer->Locked();
+	}
+
 	SmartLockClass(LockClass &Lock, const char *FunctionName)
 	{
 		this->LockPointer = &Lock;
@@ -88,6 +94,11 @@ private:
 	LockClass *LockPointer = nullptr;
 
 public:
+	bool Locked()
+	{
+		return this->LockPointer->Locked();
+	}
+
 	SmartTimeoutLockClass(LockClass &Lock,
 						  const char *FunctionName,
 						  uint64_t Timeout)

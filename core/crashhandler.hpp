@@ -25,11 +25,11 @@
 
 namespace CrashHandler
 {
-    extern uintptr_t PageFaultAddress;
-    extern void *EHIntFrames[INT_FRAMES_MAX];
+	extern uintptr_t PageFaultAddress;
+	extern void *EHIntFrames[INT_FRAMES_MAX];
 
-    void EHPrint(const char *Format, ...);
-    void Handle(void *Data);
+	void EHPrint(const char *Format, ...);
+	void Handle(void *Data);
 }
 
 #endif // !__FENNIX_KERNEL_CRASH_HANDLER_H__

@@ -39,6 +39,16 @@ Make sure to read and comply with these licenses before using or redistributing 
 - **License:** Public Domain
 - **Location:** [https://raw.githubusercontent.com/blanham/liballoc/master/LICENSE](https://raw.githubusercontent.com/blanham/liballoc/master/LICENSE)
 
-...
+## rpmalloc
+
+- **License:** The MIT License (MIT) and Public Domain
+- **Location:** [https://raw.githubusercontent.com/mjansson/rpmalloc/develop/LICENSE](https://raw.githubusercontent.com/mjansson/rpmalloc/develop/LICENSE)
+
+## ini.h
+
+- **License:** The MIT License (MIT) and Public Domain
+- **Location:** [include/ini.h](include/ini.h)
+
+---
 
 Please refer to the respective license files for the full text of each license.

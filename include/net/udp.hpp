@@ -25,73 +25,73 @@
 
 namespace NetworkUDP
 {
-    struct UDPHeader
-    {
-        uint16_t SourcePort;
-        uint16_t DestinationPort;
-        uint16_t Length;
-        uint16_t Checksum;
-    } __packed;
+	struct UDPHeader
+	{
+		uint16_t SourcePort;
+		uint16_t DestinationPort;
+		uint16_t Length;
+		uint16_t Checksum;
+	} __packed;
 
-    struct UDPPacket
-    {
-        UDPHeader Header;
-        uint8_t Data[];
-    };
+	struct UDPPacket
+	{
+		UDPHeader Header;
+		uint8_t Data[];
+	};
 
-    class Socket;
+	class Socket;
 
-    class UDPEvents
-    {
-    protected:
-        UDPEvents();
-        ~UDPEvents();
+	class UDPEvents
+	{
+	protected:
+		UDPEvents();
+		~UDPEvents();
 
-    public:
-        virtual void OnUDPPacketReceived(Socket *Socket, uint8_t *Data, size_t Length)
-        {
-            UNUSED(Socket);
-            UNUSED(Data);
-            UNUSED(Length);
-            warn("Not implemented.");
-        }
-    };
+	public:
+		virtual void OnUDPPacketReceived(Socket *Socket, uint8_t *Data, size_t Length)
+		{
+			UNUSED(Socket);
+			UNUSED(Data);
+			UNUSED(Length);
+			warn("Not implemented.");
+		}
+	};
 
-    class UDP : public NetworkIPv4::IPv4Events
-    {
-    private:
-        NetworkIPv4::IPv4 *ipv4;
-        NetworkInterfaceManager::DeviceInterface *Interface;
+	class UDP : public NetworkIPv4::IPv4Events
+	{
+	private:
+		NetworkIPv4::IPv4 *ipv4;
+		NetworkInterfaceManager::DeviceInterface *Interface;
 
-    public:
-        NetworkInterfaceManager::DeviceInterface *GetInterface() { return this->Interface; }
+	public:
+		NetworkInterfaceManager::DeviceInterface *GetInterface() { return this->Interface; }
 
-        UDP(NetworkIPv4::IPv4 *ipv4, NetworkInterfaceManager::DeviceInterface *Interface);
-        ~UDP();
+		UDP(NetworkIPv4::IPv4 *ipv4, NetworkInterfaceManager::DeviceInterface *Interface);
+		~UDP();
 
-        virtual Socket *Connect(InternetProtocol IP, uint16_t Port);
-        virtual Socket *Listen(uint16_t Port);
-        virtual void Disconnect(Socket *Socket);
-        virtual void Send(Socket *Socket, uint8_t *Data, size_t Length);
-        virtual void Bind(Socket *Socket, UDPEvents *EventHandler);
+		virtual Socket *Connect(InternetProtocol IP, uint16_t Port);
+		virtual Socket *Listen(uint16_t Port);
+		virtual void Disconnect(Socket *Socket);
+		virtual void Send(Socket *Socket, uint8_t *Data, size_t Length);
+		virtual void Bind(Socket *Socket, UDPEvents *EventHandler);
 
-        virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, size_t Length);
-    };
+		virtual bool OnIPv4PacketReceived(InternetProtocol SourceIP, InternetProtocol DestinationIP, uint8_t *Data, size_t Length);
+	};
 
-    class Socket
-    {
-    public:
-        InternetProtocol LocalIP;
-        uint16_t LocalPort = 0;
-        InternetProtocol RemoteIP;
-        uint16_t RemotePort = 0;
-        bool Listening = false;
-        UDPEvents *EventHandler = nullptr;
-        UDP *SocketUDP = nullptr;
+	class Socket
+	{
+	public:
+		InternetProtocol LocalIP;
+		uint16_t LocalPort = 0;
+		InternetProtocol RemoteIP;
+		uint16_t RemotePort = 0;
+		bool Listening = false;
+		UDPEvents *EventHandler = nullptr;
+		UDP *SocketUDP = nullptr;
 
-        Socket(UDP *_UDP);
-        ~Socket();
-    };
+		Socket(UDP *_UDP);
+		~Socket();
+	};
 }
 
 #endif // !__FENNIX_KERNEL_UDP_H__

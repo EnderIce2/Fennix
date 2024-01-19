@@ -30,14 +30,11 @@
 #include <vm.hpp>
 #include <vector>
 
-#include "mapi.hpp"
-#include "Fex.hpp"
-
 using vfs::Node;
 using vfs::NodeType;
 
 Disk::Manager *DiskManager = nullptr;
-Module::Module *ModuleManager = nullptr;
+Driver::Manager *DriverManager = nullptr;
 NetworkInterfaceManager::NetworkInterface *NIManager = nullptr;
 
 int SpawnInit()
@@ -55,42 +52,27 @@ int SpawnInit()
 		"--critical",
 		nullptr};
 
-	return Execute::Spawn(Config.InitPath, argv, envp,
-						  nullptr,
-						  Tasking::TaskCompatibility::Native,
-						  true);
-}
+	Tasking::TaskCompatibility compat = Tasking::Native;
+	if (Config.UseLinuxSyscalls)
+		compat = Tasking::Linux;
 
-void CleanupProcessesThreadWrapper()
-{
-	TaskManager->CleanupProcessesThread();
+	return Execute::Spawn(Config.InitPath, argv, envp,
+						  nullptr, false,
+						  compat, true);
 }
 
 void KernelMainThread()
 {
-	Tasking::TCB *clnThd =
-		TaskManager->CreateThread(thisProcess,
-								  Tasking::IP(CleanupProcessesThreadWrapper));
-	clnThd->SetPriority(Tasking::Idle);
-	TaskManager->SetCleanupThread(clnThd);
 	thisThread->SetPriority(Tasking::Critical);
 
-	Tasking::TCB *blaThread = nullptr;
-
-	if (Config.BootAnimation)
-	{
-		blaThread =
-			TaskManager->CreateThread(thisProcess,
-									  Tasking::IP(BootLogoAnimationThread));
-		blaThread->Rename("Logo Animation");
-	}
-
 #ifdef DEBUG
+	StressKernel();
 	// TaskManager->CreateThread(thisProcess, Tasking::IP(tasking_test_fb));
 	// TaskManager->CreateThread(thisProcess, Tasking::IP(tasking_test_mutex));
 	// ilp;
 	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(lsof));
+	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskHeartbeat));
 	TreeFS(fs->GetRootNode(), 0);
 #endif
 
@@ -101,66 +83,62 @@ void KernelMainThread()
 	if (IsVirtualizedEnvironment())
 		KPrint("Running in a virtualized environment");
 
-	KPrint("Initializing Disk Manager...");
+	KPrint("Initializing Disk Manager");
 	DiskManager = new Disk::Manager;
 
-	KPrint("Loading Modules...");
-	ModuleManager = new Module::Module;
-	ModuleManager->LoadModules();
+	KPrint("Loading Drivers");
+	DriverManager = new Driver::Manager;
+	DriverManager->LoadAllDrivers();
 
-	KPrint("Fetching Disks...");
-	if (ModuleManager->GetModules().size() > 0)
-	{
-		foreach (auto mod in ModuleManager->GetModules())
-			if (((FexExtended *)mod.ExtendedHeaderAddress)->Module.Type == FexModuleType::FexModuleType_Storage)
-				DiskManager->FetchDisks(mod.modUniqueID);
-	}
-	else
-		KPrint("\eE85230No disk modules found! Cannot fetch disks!");
+	// KPrint("Fetching Disks");
+	/* KernelCallback */
+	// if (DriverManager->GetModules().size() > 0)
+	// {
+	// 	foreach (auto mod in DriverManager->GetModules())
+	// 		if (((FexExtended *)mod.ExtendedHeaderAddress)->Driver.Type == FexDriverType::FexDriverType_Storage)
+	// 			DiskManager->FetchDisks(mod.modUniqueID);
+	// }
+	// else
+	// 	KPrint("\eE85230No disk driver found! Cannot fetch disks!");
 
-	KPrint("Initializing Network Interface Manager...");
-	NIManager = new NetworkInterfaceManager::NetworkInterface;
-	KPrint("Starting Network Interface Manager...");
-	NIManager->StartService();
+	// KPrint("Initializing Network Interface Manager");
+	// NIManager = new NetworkInterfaceManager::NetworkInterface;
+	// KPrint("Starting Network Interface Manager");
+	// NIManager->StartService();
 
-	KPrint("Setting up userspace");
+#ifdef DEBUG
+	// TaskManager->CreateThread(thisProcess,
+	// 						  Tasking::IP(KShellThread))
+	// 	->Rename("Kernel Shell");
+#endif
+
+	KPrint("Executing %s", Config.InitPath);
 	int ExitCode = -1;
 	Tasking::TCB *initThread = nullptr;
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
-		KPrint("\eE85230Failed to start %s! Code: %d", Config.InitPath, tid);
+		KPrint("\eE85230Failed to start %s! Code: %d",
+			   Config.InitPath, tid);
 		goto Exit;
 	}
 
-	KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...", Config.InitPath);
+	KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...",
+		   Config.InitPath);
 	thisThread->SetPriority(Tasking::Idle);
 
 	initThread = TaskManager->GetThreadByID(tid);
-	initThread->KeepInMemory = true;
 	TaskManager->WaitForThread(initThread);
 	ExitCode = initThread->GetExitCode();
 Exit:
-	if (ExitCode == 0)
-	{
-		KPrint("\eFF7900%s process exited with code %d and it didn't invoked the shutdown function.",
-			   Config.InitPath, ExitCode);
-		KPrint("System Halted");
-		CPU::Halt(true);
-	}
-
 	KPrint("\eE85230Userspace process exited with code %d (%#x)",
 		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
 
-	KPrint("Dropping to kernel shell...");
+	KPrint("Dropping to kernel shell");
 	TaskManager->Sleep(1000);
-	TaskManager->WaitForThread(blaThread);
 	TaskManager->CreateThread(thisProcess,
 							  Tasking::IP(KShellThread))
 		->Rename("Kernel Shell");
-
-	if (initThread)
-		initThread->KeepInMemory = false;
 	CPU::Halt(true);
 }
 
@@ -169,22 +147,16 @@ void __no_stack_protector KernelShutdownThread(bool Reboot)
 {
 	SmartLock(ShutdownLock);
 	debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");
-	if (Config.BootAnimation && TaskManager)
-	{
-		Tasking::TCB *elaThread =
-			TaskManager->CreateThread(thisProcess,
-									  Tasking::IP(ExitLogoAnimationThread));
-		elaThread->Rename("Logo Animation");
-		TaskManager->WaitForThread(elaThread);
-	}
 
 	BeforeShutdown(Reboot);
 
 	trace("%s...", Reboot ? "Rebooting" : "Shutting down");
+	KPrint("Waiting for ACPI...");
 	if (Reboot)
 		PowerManager->Reboot();
 	else
 		PowerManager->Shutdown();
+	KPrint("CPU Halted");
 	CPU::Stop();
 }
 

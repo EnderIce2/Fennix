@@ -23,15 +23,15 @@
 
 namespace NetworkDNS
 {
-    class DNS : public NetworkUDP::UDPEvents
-    {
-    private:
-        NetworkUDP::Socket *UDPSocket;
+	class DNS : public NetworkUDP::UDPEvents
+	{
+	private:
+		NetworkUDP::Socket *UDPSocket;
 
-    public:
-        DNS(NetworkUDP::Socket *Socket);
-        ~DNS();
-    };
+	public:
+		DNS(NetworkUDP::Socket *Socket);
+		~DNS();
+	};
 }
 
 #endif // !__FENNIX_KERNEL_DNS_H__

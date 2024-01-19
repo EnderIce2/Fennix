@@ -25,23 +25,9 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
-using Tasking::PCB;
 using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
-using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
+using Tasking::TaskState::Zombie;
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/exit.html */
 __noreturn void sys_exit(SysFrm *, int status)
@@ -53,9 +39,8 @@ __noreturn void sys_exit(SysFrm *, int status)
 		  t->ID, status,
 		  status < 0 ? -status : status);
 
-	t->ExitCode = status;
-	t->KeepTime = TimeManager->CalculateTarget(10, Time::Seconds);
-	t->State = Terminated;
+	t->SetState(Zombie);
+	t->SetExitCode(status);
 	while (true)
 		t->GetContext()->Yield();
 	__builtin_unreachable();

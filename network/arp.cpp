@@ -21,7 +21,7 @@
 
 #include "../kernel.h"
 
-/* conversion from ‘uint48_t’ {aka ‘long unsigned int’} to ‘long unsigned int:48’ may change value */
+/* conversion from 'uint48_t' {aka 'long unsigned int'} to 'long unsigned int:48' may change value */
 #pragma GCC diagnostic ignored "-Wconversion"
 
 namespace NetworkARP

@@ -25,23 +25,9 @@
 
 #include "../../syscalls.h"
 #include "../../kernel.h"
-#include "../../ipc.h"
 
-using InterProcessCommunication::IPC;
-using InterProcessCommunication::IPCID;
 using Tasking::PCB;
-using Tasking::TCB;
-using Tasking::TaskState::Ready;
-using Tasking::TaskState::Terminated;
 using namespace Memory;
-
-#define SysFrm SyscallsFrame
-
-#if defined(a64)
-typedef long arch_t;
-#elif defined(a32)
-typedef int arch_t;
-#endif
 
 /* https://pubs.opengroup.org/onlinepubs/009604499/functions/open.html */
 int sys_open(SysFrm *,
@@ -49,13 +35,13 @@ int sys_open(SysFrm *,
 			 int oflag, mode_t mode)
 {
 	const char *safe_path = nullptr;
-	Tasking::PCB *pcb = thisProcess;
-	Memory::SmartHeap sh(512, pcb->vma);
+	PCB *pcb = thisProcess;
+	SmartHeap sh(512, pcb->vma);
 	safe_path = (const char *)sh.Get();
 	{
-		Memory::SwapPT swap(pcb->PageTable);
+		SwapPT swap(pcb->PageTable);
 		size_t len = strlen(path);
-		memcpy((void *)safe_path, path, len);
+		memcpy((void *)safe_path, path, MAX(len, size_t(511)));
 	}
 
 	function("%s, %d, %d", safe_path, oflag, mode);

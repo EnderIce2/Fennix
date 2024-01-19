@@ -40,7 +40,6 @@
 #endif
 
 #include "../../kernel.h"
-#include "../../mapi.hpp"
 
 NewLock(UserInputLock);
 
@@ -411,7 +410,7 @@ namespace CrashHandler
 #elif defined(aa64)
 						if ((uintptr_t)EHIntFrames[i] >= 0xFFFFFFFF80000000 && (uintptr_t)EHIntFrames[i] <= (uintptr_t)&_kernel_end)
 #endif
-							EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbolFromAddress((uintptr_t)EHIntFrames[i]));
+							EHPrint("\e25CCC9%s", KernelSymbolTable->GetSymbol((uintptr_t)EHIntFrames[i]));
 						else
 							EHPrint("\eFF4CA9Outside Kernel");
 #if defined(a86)
@@ -726,7 +725,7 @@ namespace CrashHandler
 			uint64_t ProgressLength = TotalMemLength;
 			UniversalAsynchronousReceiverTransmitter::UART uart(port);
 			Memory::Virtual vmm;
-			uint8_t *Address = reinterpret_cast<uint8_t *>(0x0);
+			uint8_t *Address = 0x0;
 			int Progress = 0;
 			for (size_t i = 0; i < TotalMemLength; i++)
 			{
@@ -806,33 +805,50 @@ namespace CrashHandler
 		 * Also it makes every core to stay at 100% usage for some reason.
 		 */
 
-		// if (SMP::CPUCores > 1)
-		// {
-		//     for (int i = 1; i < SMP::CPUCores; i++)
-		//     {
-		//         APIC::InterruptCommandRegisterLow icr;
-		//         icr.Vector = CPU::x86::IRQ29;
-		//         icr.Level = APIC::APICLevel::Assert;
-		//         ((APIC::APIC *)Interrupts::apic[i])->IPI(i, icr);
-		//         __sync;
-		//     }
-		// }
-		// APIC::InterruptCommandRegisterLow icr;
-		// icr.Vector = CPU::x86::IRQ29;
-		// icr.Level = APIC::APICLevel::Assert;
-		// icr.DestinationShorthand = APIC::APICDestinationShorthand::AllExcludingSelf;
-		// ((APIC::APIC *)Interrupts::apic[0])->IPI(0, icr);
-		// CPU::Interrupts(CPU::Enable);
-		__sync;
-		CPU::Interrupts(CPU::Disable);
-		// }
+		return;
+		if (SMP::CPUCores > 1)
+		{
+			APIC::InterruptCommandRegister icr{};
+			bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
+
+			if (likely(x2APIC))
+			{
+				icr.x2.VEC = s_cst(uint8_t, CPU::x86::IRQ31);
+				icr.x2.MT = APIC::Fixed;
+				icr.x2.L = APIC::Assert;
+
+				for (int i = 1; i < SMP::CPUCores; i++)
+				{
+					icr.x2.DES = uint8_t(i);
+					((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+				}
+			}
+			else
+			{
+				icr.VEC = s_cst(uint8_t, CPU::x86::IRQ31);
+				icr.MT = APIC::Fixed;
+				icr.L = APIC::Assert;
+
+				for (int i = 1; i < SMP::CPUCores; i++)
+				{
+					icr.DES = uint8_t(i);
+					((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+				}
+			}
+			CPU::Interrupts(CPU::Disable);
+		}
 #elif defined(aa64)
 #endif
 	}
 
-	SafeFunction inline void Handle_x86_64(CHArchTrapFrame *Frame)
+	SafeFunction inline bool Handle_x86_64(CHArchTrapFrame *Frame)
 	{
 #ifdef a64
+		trace("Exception at %s",
+			  KernelSymbolTable
+				  ? KernelSymbolTable->GetSymbol(Frame->rip)
+				  : "No symbol");
+
 		for (size_t i = 0; i < INT_FRAMES_MAX; i++)
 			EHIntFrames[i] = Interrupts::InterruptFrames[i];
 		PageFaultAddress = CPU::x64::readcr2().PFLA;
@@ -844,14 +860,14 @@ namespace CrashHandler
 			{
 				debug("Exception in kernel mode (ip: %#lx cr2: %#lx (%s))",
 					  Frame->rip, PageFaultAddress,
-					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip)
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbol(Frame->rip)
 										: "No symbol");
 			}
 			else
 			{
 				debug("Exception in kernel mode (ip: %#lx (%s))",
 					  Frame->rip,
-					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->rip)
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbol(Frame->rip)
 										: "No symbol");
 			}
 
@@ -881,7 +897,7 @@ namespace CrashHandler
 				debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
 					  Frame->rip, PageFaultAddress,
 					  data->CurrentProcess->ELFSymbolTable
-						  ? data->CurrentProcess->ELFSymbolTable->GetSymbolFromAddress(Frame->rip)
+						  ? data->CurrentProcess->ELFSymbolTable->GetSymbol(Frame->rip)
 						  : "No symbol");
 			}
 			else
@@ -889,16 +905,18 @@ namespace CrashHandler
 				debug("Exception in user mode (ip: %#lx (%s))",
 					  Frame->rip,
 					  data->CurrentProcess->ELFSymbolTable
-						  ? data->CurrentProcess->ELFSymbolTable->GetSymbolFromAddress(Frame->rip)
+						  ? data->CurrentProcess->ELFSymbolTable->GetSymbol(Frame->rip)
 						  : "No symbol");
 			}
 
 			if (UserModeExceptionHandler(Frame))
-				return;
+				return true;
+			else if (DebuggerIsAttached)
+				asmv("int $0x8");
 
 			if (unlikely(data->CurrentThread->Security.IsCritical))
 			{
-				debug("Critical thread \"%s\"(%d) died",
+				error("Critical thread \"%s\"(%d) died",
 					  data->CurrentThread->Name,
 					  data->CurrentThread->ID);
 				if (TaskManager)
@@ -906,26 +924,29 @@ namespace CrashHandler
 				ForceUnlock = true;
 				Display->CreateBuffer(0, 0, SBIdx);
 				StopAllCores();
-				return;
+				return false;
 			}
 
 			Tasking::TCB *tcb = data->CurrentThread;
-			Tasking::Task *ctx = tcb->GetContext();
-			tcb->State = Tasking::Terminated;
-			tcb->ExitCode = Tasking::KILL_CRASH;
 			CPU::Interrupts(CPU::Enable);
 			while (true)
 			{
-				ctx->Yield();
+				tcb->GetContext()->Yield();
 				CPU::Halt(TaskManager->IsPanic());
 			}
 		}
 #endif
+		return false;
 	}
 
-	SafeFunction inline void Handle_x86_32(CHArchTrapFrame *Frame)
+	SafeFunction inline bool Handle_x86_32(CHArchTrapFrame *Frame)
 	{
 #ifdef a32
+		trace("Exception at %s",
+			  KernelSymbolTable
+				  ? KernelSymbolTable->GetSymbol(Frame->eip)
+				  : "No symbol");
+
 		for (size_t i = 0; i < INT_FRAMES_MAX; i++)
 			EHIntFrames[i] = Interrupts::InterruptFrames[i];
 		PageFaultAddress = CPU::x32::readcr2().PFLA;
@@ -938,7 +959,7 @@ namespace CrashHandler
 				debug("Exception in kernel mode (ip: %#lx cr2: %#lx (%s))",
 					  Frame->eip, PageFaultAddress,
 					  data->CurrentProcess->ELFSymbolTable
-						  ? data->CurrentProcess->ELFSymbolTable->GetSymbolFromAddress(Frame->eip)
+						  ? data->CurrentProcess->ELFSymbolTable->GetSymbol(Frame->eip)
 						  : "No symbol");
 			}
 			else
@@ -946,12 +967,14 @@ namespace CrashHandler
 				debug("Exception in kernel mode (ip: %#lx (%s))",
 					  Frame->eip,
 					  data->CurrentProcess->ELFSymbolTable
-						  ? data->CurrentProcess->ELFSymbolTable->GetSymbolFromAddress(Frame->eip)
+						  ? data->CurrentProcess->ELFSymbolTable->GetSymbol(Frame->eip)
 						  : "No symbol");
 			}
 
 			if (UserModeExceptionHandler(Frame))
-				return;
+				return true;
+			else if (DebuggerIsAttached)
+				asmv("int $0x8");
 
 			if (data->CurrentThread)
 			{
@@ -974,23 +997,25 @@ namespace CrashHandler
 			{
 				debug("Exception in user mode (ip: %#lx cr2: %#lx (%s))",
 					  Frame->eip, PageFaultAddress,
-					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbol(Frame->eip)
 										: "No symbol");
 			}
 			else
 			{
 				debug("Exception in user mode (ip: %#lx (%s))",
 					  Frame->eip,
-					  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress(Frame->eip)
+					  KernelSymbolTable ? KernelSymbolTable->GetSymbol(Frame->eip)
 										: "No symbol");
 			}
 
 			if (UserModeExceptionHandler(Frame))
-				return;
+				return true;
+			else if (DebuggerIsAttached)
+				asmv("int $0x8");
 
 			if (unlikely(data->CurrentThread->Security.IsCritical))
 			{
-				debug("Critical thread \"%s\"(%d) died",
+				error("Critical thread \"%s\"(%d) died",
 					  data->CurrentThread->Name,
 					  data->CurrentThread->ID);
 				if (TaskManager)
@@ -998,21 +1023,19 @@ namespace CrashHandler
 				ForceUnlock = true;
 				Display->CreateBuffer(0, 0, SBIdx);
 				StopAllCores();
-				return;
+				return false;
 			}
 
 			Tasking::TCB *tcb = data->CurrentThread;
-			Tasking::Task *ctx = tcb->GetContext();
-			tcb->State = Tasking::Terminated;
-			tcb->ExitCode = Tasking::KILL_CRASH;
 			CPU::Interrupts(CPU::Enable);
 			while (true)
 			{
-				ctx->Yield();
+				tcb->GetContext()->Yield();
 				CPU::Halt(TaskManager->IsPanic());
 			}
 		}
 #endif
+		return false;
 	}
 
 	SafeFunction inline void Print_x86_64(CHArchTrapFrame *Frame)
@@ -1155,12 +1178,17 @@ namespace CrashHandler
 		CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
 		SBIdx = 255;
 		debug("-----------------------------------------------------------------------------------");
+		debug("%ld MiB / %ld MiB (%ld MiB Reserved)",
+			  TO_MiB(KernelAllocator.GetUsedMemory()),
+			  TO_MiB(KernelAllocator.GetTotalMemory()),
+			  TO_MiB(KernelAllocator.GetReservedMemory()));
 		error("Exception: %#x", Frame->InterruptNumber);
 #if defined(a64)
-		Handle_x86_64(Frame);
+		if (Handle_x86_64(Frame))
 #elif defined(a32)
-		Handle_x86_32(Frame);
+		if (Handle_x86_32(Frame))
 #endif
+			return;
 
 		if (ExceptionOccurred)
 		{
@@ -1180,8 +1208,8 @@ namespace CrashHandler
 
 		ExceptionOccurred = true;
 
-		if (ModuleManager)
-			ModuleManager->Panic();
+		if (DriverManager)
+			DriverManager->Panic();
 
 		debug("Reading control registers...");
 		crashdata.Frame = Frame;
@@ -1397,6 +1425,7 @@ namespace CrashHandler
 			DisplayTopOverlay();
 			DisplayMainScreen(crashdata);
 			Display->SetBuffer(255);
+			Interrupts::RemoveAll();
 			kbd = new CrashKeyboardDriver;
 			DisplayBottomOverlay();
 			Display->SetBuffer(255);

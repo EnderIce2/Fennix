@@ -21,11 +21,13 @@
 #include <lock.hpp>
 #include <io.h>
 
+#include "../kernel.h"
+
 NewLock(DebuggerLock);
 
 extern bool serialports[8];
 
-static inline NIF void uart_wrapper(char c, void *unused)
+EXTERNC NIF void uart_wrapper(char c, void *unused)
 {
 	static int once = 0;
 	if (unlikely(!once++))

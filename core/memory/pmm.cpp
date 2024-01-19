@@ -107,9 +107,11 @@ namespace Memory
 		}
 
 		error("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			  TO_MiB(FreeMemory), TO_MiB(UsedMemory), TO_MiB(ReservedMemory));
+			  TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
 		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			   TO_MiB(FreeMemory), TO_MiB(UsedMemory), TO_MiB(ReservedMemory));
+			   TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
+		debug("Raw values: free %#lx used %#lx reserved %#lx",
+			  FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Stop();
 		__builtin_unreachable();
 	}
@@ -157,9 +159,11 @@ namespace Memory
 		}
 
 		error("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			  TO_MiB(FreeMemory), TO_MiB(UsedMemory), TO_MiB(ReservedMemory));
+			  TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
 		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			   TO_MiB(FreeMemory), TO_MiB(UsedMemory), TO_MiB(ReservedMemory));
+			   TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
+		debug("Raw values: free %#lx used %#lx reserved %#lx",
+			  FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Halt(true);
 		__builtin_unreachable();
 	}
@@ -185,8 +189,8 @@ namespace Memory
 
 		if (PageBitmap.Set(Index, false))
 		{
-			FreeMemory += PAGE_SIZE;
-			UsedMemory -= PAGE_SIZE;
+			FreeMemory.fetch_add(PAGE_SIZE);
+			UsedMemory.fetch_sub(PAGE_SIZE);
 			if (PageBitmapIndex > Index)
 				PageBitmapIndex = Index;
 		}
@@ -215,8 +219,8 @@ namespace Memory
 
 		if (PageBitmap.Set(Index, true))
 		{
-			FreeMemory -= PAGE_SIZE;
-			UsedMemory += PAGE_SIZE;
+			FreeMemory.fetch_sub(PAGE_SIZE);
+			UsedMemory.fetch_add(PAGE_SIZE);
 		}
 	}
 
@@ -243,8 +247,8 @@ namespace Memory
 
 		if (PageBitmap.Set(Index, true))
 		{
-			FreeMemory -= PAGE_SIZE;
-			ReservedMemory += PAGE_SIZE;
+			FreeMemory.fetch_sub(PAGE_SIZE);
+			ReservedMemory.fetch_add(PAGE_SIZE);
 		}
 	}
 
@@ -264,8 +268,8 @@ namespace Memory
 
 			if (PageBitmap.Set(Index, true))
 			{
-				FreeMemory -= PAGE_SIZE;
-				ReservedMemory += PAGE_SIZE;
+				FreeMemory.fetch_sub(PAGE_SIZE);
+				ReservedMemory.fetch_add(PAGE_SIZE);
 			}
 		}
 	}
@@ -282,8 +286,8 @@ namespace Memory
 
 		if (PageBitmap.Set(Index, false))
 		{
-			FreeMemory += PAGE_SIZE;
-			ReservedMemory -= PAGE_SIZE;
+			FreeMemory.fetch_add(PAGE_SIZE);
+			ReservedMemory.fetch_sub(PAGE_SIZE);
 			if (PageBitmapIndex > Index)
 				PageBitmapIndex = Index;
 		}
@@ -305,8 +309,8 @@ namespace Memory
 
 			if (PageBitmap.Set(Index, false))
 			{
-				FreeMemory += PAGE_SIZE;
-				ReservedMemory -= PAGE_SIZE;
+				FreeMemory.fetch_add(PAGE_SIZE);
+				ReservedMemory.fetch_sub(PAGE_SIZE);
 				if (PageBitmapIndex > Index)
 					PageBitmapIndex = Index;
 			}
@@ -320,8 +324,8 @@ namespace Memory
 		uint64_t MemorySize = bInfo.Memory.Size;
 		debug("Memory size: %lld bytes (%ld pages)",
 			  MemorySize, TO_PAGES(MemorySize));
-		TotalMemory = MemorySize;
-		FreeMemory = MemorySize;
+		TotalMemory.store(MemorySize);
+		FreeMemory.store(MemorySize);
 
 		size_t BitmapSize = (size_t)(MemorySize / PAGE_SIZE) / 8 + 1;
 		uintptr_t BitmapAddress = 0x0;

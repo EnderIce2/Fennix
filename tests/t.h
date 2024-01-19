@@ -30,6 +30,8 @@ void tasking_test_mutex();
 void lsof();
 void TaskMgr();
 void TreeFS(vfs::Node *node, int Depth);
+void TaskHeartbeat();
+void StressKernel();
 
 #endif // DEBUG
 #endif // !__FENNIX_KERNEL_non_constructor_tests_H__

@@ -279,6 +279,10 @@ namespace PCI
 		{
 			switch (VendorID)
 			{
+			case 0x106B:
+				return "Apple Inc.";
+			case 0x104B:
+				return "Bus Logic";
 			case 0x1000:
 				return "Symbios Logic";
 			case 0x1B36:
@@ -317,12 +321,36 @@ namespace PCI
 		{
 			switch (VendorID)
 			{
+			case Apple:
+			{
+				switch (DeviceID)
+				{
+				case 0x3f:
+					return "KeyLargo/Intrepid USB";
+				default:
+					break;
+				}
+				break;
+			}
+			case BusLogic:
+			{
+				switch (DeviceID)
+				{
+				case 0x1040:
+					return "BT-946C (BA80C30) [MultiMaster 10]";
+				default:
+					break;
+				}
+				break;
+			}
 			case SymbiosLogic:
 			{
 				switch (DeviceID)
 				{
 				case 0x30:
 					return "53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI";
+				case 0x54:
+					return "SAS1068 PCI-X Fusion-MPT SAS";
 				case 0x1000:
 					return "63C815";
 				default:
@@ -420,6 +448,12 @@ namespace PCI
 					return "RTL-8029(AS)";
 				case 0x8139:
 					return "RTL-8139/8139C/8139C+ Ethernet Controller";
+				case 0x8161:
+					return "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller";
+				case 0x8168:
+					return "RTL8111/8168/8411 PCI Express Gigabit Ethernet Controller";
+				case 0xC821:
+					return "RTL8821CE 802.11ac PCIe Wireless Network Adapter";
 				default:
 					break;
 				}
@@ -503,6 +537,8 @@ namespace PCI
 					return "82557/8/9/0/1 Ethernet Pro 100";
 				case 0x1209:
 					return "8255xER/82551IT Fast Ethernet Controller";
+				case 0x1004:
+					return "82543GC Gigabit Ethernet Controller (Copper)";
 				case 0x100E:
 					return "82540EM Gigabit Ethernet Controller";
 				case 0x7190:
@@ -519,6 +555,10 @@ namespace PCI
 					return "7 Series/C210 Series Chipset Family USB xHCI Host Controller";
 				case 0x100F:
 					return "82545EM Gigabit Ethernet Controller (Copper)";
+				case 0x1903:
+					return "Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor Thermal Subsystem";
+				case 0x1911:
+					return "Xeon E3-1200 v5/v6 / E3-1500 v5 / 6th/7th Gen Core Processor Gaussian Mixture Model";
 				case 0x1371:
 					return "ES1371/ES1373 / Creative Labs CT2518";
 				case 0x27b9:
@@ -537,6 +577,8 @@ namespace PCI
 					return "82801I (ICH9 Family) USB UHCI Controller #1";
 				case 0x2668:
 					return "82801FB/FBM/FR/FW/FRW (ICH6 Family) High Definition Audio Controller";
+				case 0x265C:
+					return "82801FB/FBM/FR/FW/FRW (ICH6 Family) USB2 EHCI Controller";
 				case 0x2415:
 					return "82801AA AC'97 Audio Controller";
 				case 0x10D3:
@@ -551,6 +593,40 @@ namespace PCI
 					return "82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA Controller [AHCI mode]";
 				case 0x2930:
 					return "82801I (ICH9 Family) SMBus Controller";
+				case 0x269E:
+					return "631xESB/632xESB IDE Controller";
+				case 0x282A:
+					return "82801 Mobile SATA Controller [RAID mode]";
+				case 0x5914:
+					return "Xeon E3-1200 v6/7th Gen Core Processor Host Bridge/DRAM Registers";
+				case 0x5917:
+					return "UHD Graphics 620";
+				case 0x9D10:
+					return "Sunrise Point-LP PCI Express Root Port #1";
+				case 0x9D11:
+					return "Sunrise Point-LP PCI Express Root Port #2";
+				case 0x9D12:
+					return "Sunrise Point-LP PCI Express Root Port #1";
+				case 0x9D13:
+					return "Sunrise Point-LP PCI Express Root Port #1";
+				case 0x9D14:
+					return "Sunrise Point-LP PCI Express Root Port #5";
+				case 0x9D15:
+					return "Sunrise Point-LP PCI Express Root Port #6";
+				case 0x9D21:
+					return "Sunrise Point-LP PMC";
+				case 0x9D23:
+					return "Sunrise Point-LP SMBus";
+				case 0x9D2F:
+					return "Sunrise Point-LP USB 3.0 xHCI Controller";
+				case 0x9D31:
+					return "Sunrise Point-LP Thermal subsystem";
+				case 0x9D3A:
+					return "Sunrise Point-LP CSME HECI #1";
+				case 0x9D4E:
+					return "Intel(R) 100 Series Chipset Family LPC Controller/eSPI Controller - 9D4E";
+				case 0x9D71:
+					return "Sunrise Point-LP HD Audio";
 				default:
 					break;
 				}
@@ -567,8 +643,19 @@ namespace PCI
 				}
 				break;
 			}
+			case NVIDIACorporation:
+			{
+				switch (DeviceID)
+				{
+				case 0x174D:
+					return "GM108M [GeForce MX130]";
+				default:
+					break;
+				}
+				break;
 			default:
 				break;
+			}
 			}
 			fixme("Unknown device %04x:%04x", VendorID, DeviceID);
 			return u32ToHexString(DeviceID);
@@ -772,9 +859,12 @@ namespace PCI
 	}
 
 #ifdef DEBUG
-	void e(PCIDeviceHeader *hdr)
+	void e(PCIDevice dev)
 	{
-		debug("%#x:%#x\t\t%s / %s / %s / %s / %s",
+		PCIDeviceHeader *hdr = dev.Header;
+
+		debug("%02x.%02x.%02x - %#x:%#x\t\t%s / %s / %s / %s / %s",
+			  dev.Bus, dev.Device, dev.Function,
 			  hdr->VendorID, hdr->DeviceID,
 			  Descriptors::GetVendorName(hdr->VendorID),
 			  Descriptors::GetDeviceName(hdr->VendorID, hdr->DeviceID),
@@ -784,27 +874,31 @@ namespace PCI
 	}
 #endif
 
-	void PCI::MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table)
+	void Manager::MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table)
 	{
 		debug("Header Type: %d", Device.Header->HeaderType);
 		switch (Device.Header->HeaderType)
 		{
+		case 128:
+			warn("Unknown header type %d! Guessing PCI Header 0",
+				 Device.Header->HeaderType);
+			[[fallthrough]];
 		case 0: /* PCI Header 0 */
 		{
-			uint32_t BAR[6] = {0};
-			size_t BARsSize[6] = {0};
+			PCIHeader0 *hdr0 = (PCIHeader0 *)Device.Header;
 
-			BAR[0] = ((PCIHeader0 *)Device.Header)->BAR0;
-			BAR[1] = ((PCIHeader0 *)Device.Header)->BAR1;
-			BAR[2] = ((PCIHeader0 *)Device.Header)->BAR2;
-			BAR[3] = ((PCIHeader0 *)Device.Header)->BAR3;
-			BAR[4] = ((PCIHeader0 *)Device.Header)->BAR4;
-			BAR[5] = ((PCIHeader0 *)Device.Header)->BAR5;
+			uint32_t BAR[6];
+			size_t BARsSize[6];
+
+			BAR[0] = hdr0->BAR0;
+			BAR[1] = hdr0->BAR1;
+			BAR[2] = hdr0->BAR2;
+			BAR[3] = hdr0->BAR3;
+			BAR[4] = hdr0->BAR4;
+			BAR[5] = hdr0->BAR5;
 
 			debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx",
-				  BAR[0] & 1,
-				  BAR[1] & (~3),
-				  BAR[0] & (~15));
+				  BAR[0] & 1, BAR[1] & (~3), BAR[0] & (~15));
 
 			/* BARs Size */
 			for (short i = 0; i < 6; i++)
@@ -812,25 +906,28 @@ namespace PCI
 				if (BAR[i] == 0)
 					continue;
 
+				size_t size;
 				if ((BAR[i] & 1) == 0) /* Memory Base */
 				{
-					((PCIHeader0 *)Device.Header)->BAR0 = 0xFFFFFFFF;
-					size_t size = ((PCIHeader0 *)Device.Header)->BAR0;
-					((PCIHeader0 *)Device.Header)->BAR0 = BAR[i];
+					hdr0->BAR0 = 0xFFFFFFFF;
+					size = hdr0->BAR0;
+					hdr0->BAR0 = BAR[i];
 					BARsSize[i] = size & (~15);
 					BARsSize[i] = ~BARsSize[i] + 1;
 					BARsSize[i] = BARsSize[i] & 0xFFFFFFFF;
-					debug("BAR%d %#lx size: %d", i, BAR[i], BARsSize[i]);
+					debug("BAR%d %#lx size: %d",
+						  i, BAR[i], BARsSize[i]);
 				}
 				else if ((BAR[i] & 1) == 1) /* I/O Base */
 				{
-					((PCIHeader0 *)Device.Header)->BAR1 = 0xFFFFFFFF;
-					size_t size = ((PCIHeader0 *)Device.Header)->BAR1;
-					((PCIHeader0 *)Device.Header)->BAR1 = BAR[i];
+					hdr0->BAR1 = 0xFFFFFFFF;
+					size = hdr0->BAR1;
+					hdr0->BAR1 = BAR[i];
 					BARsSize[i] = size & (~3);
 					BARsSize[i] = ~BARsSize[i] + 1;
 					BARsSize[i] = BARsSize[i] & 0xFFFF;
-					debug("BAR%d %#lx size: %d", i, BAR[i], BARsSize[i]);
+					debug("BAR%d %#lx size: %d",
+						  i, BAR[i], BARsSize[i]);
 				}
 			}
 
@@ -845,18 +942,24 @@ namespace PCI
 					uintptr_t BARBase = BAR[i] & (~15);
 					size_t BARSize = BARsSize[i];
 
-					debug("Mapping BAR%d %#lx-%#lx", i, BARBase, BARBase + BARSize);
-					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase, BARSize,
-											   Memory::PTFlag::RW | Memory::PTFlag::PWT);
+					debug("Mapping BAR%d %#lx-%#lx",
+						  i, BARBase, BARBase + BARSize);
+
+					if (BARSize > 0)
+						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
+												   BARSize, Memory::RW | Memory::PWT);
 				}
 				else if ((BAR[i] & 1) == 1) /* I/O Base */
 				{
 					uintptr_t BARBase = BAR[i] & (~3);
 					size_t BARSize = BARsSize[i];
 
-					debug("Mapping BAR%d %#x-%#x", i, BARBase, BARBase + BARSize);
-					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase, BARSize,
-											   Memory::PTFlag::RW | Memory::PTFlag::PWT);
+					debug("Mapping BAR%d %#x-%#x",
+						  i, BARBase, BARBase + BARSize);
+
+					if (BARSize > 0)
+						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
+												   BARSize, Memory::RW | Memory::PWT);
 				}
 			}
 			break;
@@ -874,12 +977,12 @@ namespace PCI
 		default:
 		{
 			error("Unknown header type %d", Device.Header->HeaderType);
-			return;
+			break;
 		}
 		}
 	}
 
-	void PCI::EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev)
+	void Manager::EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev)
 	{
 		dev.Function = Function;
 
@@ -896,11 +999,11 @@ namespace PCI
 
 		Devices.push_back(dev);
 #ifdef DEBUG
-		e(PCIDeviceHdr);
+		e(dev);
 #endif
 	}
 
-	void PCI::EnumerateDevice(uint64_t BusAddress, uint32_t Device, PCIDevice dev)
+	void Manager::EnumerateDevice(uint64_t BusAddress, uint32_t Device, PCIDevice dev)
 	{
 		dev.Device = Device;
 
@@ -918,7 +1021,7 @@ namespace PCI
 			EnumerateFunction(DeviceAddress, Function, dev);
 	}
 
-	void PCI::EnumerateBus(uint64_t BaseAddress, uint32_t Bus, PCIDevice dev)
+	void Manager::EnumerateBus(uint64_t BaseAddress, uint32_t Bus, PCIDevice dev)
 	{
 		dev.Bus = Bus;
 
@@ -945,9 +1048,9 @@ namespace PCI
 			EnumerateDevice(BusAddress, Device, dev);
 	}
 
-	std::vector<PCIDevice> PCI::FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF)
+	std::list<PCIDevice> Manager::FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF)
 	{
-		std::vector<PCIDevice> DeviceFound;
+		std::list<PCIDevice> DeviceFound;
 		foreach (auto dev in Devices)
 		{
 			if (dev.Header->Class == Class &&
@@ -960,9 +1063,9 @@ namespace PCI
 		return DeviceFound;
 	}
 
-	std::vector<PCIDevice> PCI::FindPCIDevice(int VendorID, int DeviceID)
+	std::list<PCIDevice> Manager::FindPCIDevice(uint16_t VendorID, uint16_t DeviceID)
 	{
-		std::vector<PCIDevice> DeviceFound;
+		std::list<PCIDevice> DeviceFound;
 		foreach (auto dev in Devices)
 		{
 			if (dev.Header->VendorID == VendorID &&
@@ -974,7 +1077,28 @@ namespace PCI
 		return DeviceFound;
 	}
 
-	PCI::PCI()
+	std::list<PCIDevice> Manager::FindPCIDevice(std::list<uint16_t> VendorIDs,
+												std::list<uint16_t> DeviceIDs)
+	{
+		std::list<PCIDevice> DeviceFound;
+		foreach (auto dev in Devices)
+		{
+			foreach (auto VendorID in VendorIDs)
+			{
+				foreach (auto DeviceID in DeviceIDs)
+				{
+					if (dev.Header->VendorID == VendorID &&
+						dev.Header->DeviceID == DeviceID)
+					{
+						DeviceFound.push_back(dev);
+					}
+				}
+			}
+		}
+		return DeviceFound;
+	}
+
+	Manager::Manager()
 	{
 #if defined(a86)
 		if (!PowerManager->GetACPI())
@@ -990,7 +1114,7 @@ namespace PCI
 		}
 
 		int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
-		Memory::Virtual vmm = Memory::Virtual(KernelPageTable);
+		Memory::Virtual vmm(KernelPageTable);
 		for (int t = 0; t < Entries; t++)
 		{
 			DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
@@ -1008,5 +1132,5 @@ namespace PCI
 #endif
 	}
 
-	PCI::~PCI() {}
+	Manager::~Manager() {}
 }

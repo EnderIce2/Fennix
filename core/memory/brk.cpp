@@ -38,39 +38,45 @@ namespace Memory
 
 		/* Check if the address is valid. */
 		if ((uintptr_t)Address < HeapStart)
+		{
+			debug("Address %#lx is less than HeapStart %#lx", Address, HeapStart);
 			return (void *)-ENOMEM;
+		}
 
-		Virtual vmm = Virtual(this->Table);
+		Virtual vmm(this->Table);
 
 		if ((uintptr_t)Address > Break)
 		{
 			/* Allocate more memory. */
-			size_t Pages = TO_PAGES(uintptr_t(Address) - Break);
+			ssize_t Pages = TO_PAGES(uintptr_t(Address) - Break);
 			void *Allocated = vma->RequestPages(Pages);
 			if (Allocated == nullptr)
 				return (void *)-ENOMEM;
 
 			/* Map the allocated pages. */
-			for (size_t i = 0; i < Pages; i++)
+			for (ssize_t i = 0; i < Pages; i++)
 			{
 				void *VirtAddr = (void *)(Break + (i * PAGE_SIZE));
 				void *PhysAddr = (void *)(uintptr_t(Allocated) + (i * PAGE_SIZE));
+				debug("Mapping %#lx to %#lx", VirtAddr, PhysAddr);
 				vmm.Map(VirtAddr, PhysAddr, RW | US);
 			}
 
-			Break = (uint64_t)Address;
-			return (void *)Break;
+			Break = ROUND_UP(uintptr_t(Address), PAGE_SIZE);
+			debug("Round up %#lx to %#lx", Address, Break);
+			return Address;
 		}
 
 		/* Free memory. */
-		size_t Pages = TO_PAGES(uintptr_t(Address) - Break);
+		ssize_t Pages = TO_PAGES(Break - uintptr_t(Address));
 		vma->FreePages((void *)Break, Pages);
 
 		/* Unmap the freed pages. */
-		for (size_t i = 0; i < Pages; i++)
+		for (ssize_t i = 0; i < Pages; i++)
 		{
 			uint64_t Page = Break - (i * 0x1000);
-			vmm.Remap((void *)Page, (void *)Page, PTFlag::P | PTFlag::RW);
+			vmm.Remap((void *)Page, (void *)Page, RW);
+			debug("Unmapping %#lx", Page);
 		}
 
 		Break = (uint64_t)Address;
@@ -82,12 +88,16 @@ namespace Memory
 		assert(Table != nullptr);
 		assert(vma != nullptr);
 
+		debug("+ %#lx", this);
+
 		this->Table = Table;
 		this->vma = vma;
 	}
 
 	ProgramBreak::~ProgramBreak()
 	{
+		debug("- %#lx", this);
+
 		/* Do nothing because VirtualMemoryArea
 			will be destroyed later. */
 	}

@@ -84,40 +84,81 @@
 #define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)
 #define S_ISSOCK(mode) (((mode) & S_IFMT) == S_IFSOCK)
 
+/**
+ * @struct stat
+ * @brief Structure holding information about a file, as returned by the stat function.
+ *
+ * The 'stat' structure provides information about a file, including its size, ownership, permissions,
+ * and other attributes. It is used with the stat function to query file status.
+ */
 struct stat
 {
+	/** Device ID of the file. */
 	dev_t st_dev;
+	/** Inode number. */
 	ino_t st_ino;
+	/** File type and mode. */
 	mode_t st_mode;
+	/** Number of hard links. */
 	nlink_t st_nlink;
-
+	/** User ID of the file's owner. */
 	uid_t st_uid;
+	/** Group ID of the file's owner. */
 	gid_t st_gid;
+	/** Device ID for special files. */
 	dev_t st_rdev;
+	/** Size of the file in bytes. */
 	off_t st_size;
+	/** Time of last access. */
 	time_t st_atime;
+	/** Time of last modification. */
 	time_t st_mtime;
+	/** Time of last status change. */
 	time_t st_ctime;
+	/** Optimal I/O block size. */
 	blksize_t st_blksize;
+	/** Number of blocks allocated. */
 	blkcnt_t st_blocks;
+	/** Additional file attributes. */
 	mode_t st_attr;
 };
 
+/**
+ * @struct stat64
+ * @brief Extended structure for large file support, holding information about a file.
+ *
+ * The 'stat64' structure is similar to 'struct stat' but is extended to support large files on 32-bit systems.
+ * It is used with the stat64 function for large file support.
+ */
 struct stat64
 {
+	/** Device ID of the file. */
 	dev_t st_dev;
+	/** Inode number. */
 	ino64_t st_ino;
+	/** File type and mode. */
 	mode_t st_mode;
+	/** Number of hard links. */
 	nlink_t st_nlink;
+	/** User ID of the file's owner. */
 	uid_t st_uid;
+	/** Group ID of the file's owner. */
 	gid_t st_gid;
+	/** Device ID for special files. */
 	dev_t st_rdev;
+	/** Size of the file in bytes. */
 	off64_t st_size;
+	/** Time of last access. */
 	time_t st_atime;
+	/** Time of last modification. */
 	time_t st_mtime;
+	/** Time of last status change. */
 	time_t st_ctime;
+	/** Optimal I/O block size. */
 	blksize_t st_blksize;
+	/** Number of blocks allocated. */
 	blkcnt64_t st_blocks;
+	/** Additional file attributes. */
 	mode_t st_attr;
 };
 
@@ -165,6 +206,12 @@ namespace vfs
 	};
 
 	class RefNode;
+
+	/**
+	 * Virtual filesystem node
+	 *
+	 * @note https://isocpp.org/wiki/faq/freestore-mgmt#delete-this
+	 */
 	class Node
 	{
 	private:
@@ -173,15 +220,35 @@ namespace vfs
 	public:
 		virtual int open(int Flags, mode_t Mode);
 		virtual int close();
-		virtual size_t read(uint8_t *Buffer,
-							size_t Size,
-							off_t Offset);
-		virtual size_t write(uint8_t *Buffer,
-							 size_t Size,
-							 off_t Offset);
-		virtual int ioctl(unsigned long Request,
-						  void *Argp);
-		virtual ~Node();
+		virtual size_t read(uint8_t *Buffer, size_t Size, off_t Offset);
+		virtual size_t write(uint8_t *Buffer, size_t Size, off_t Offset);
+		virtual int ioctl(unsigned long Request, void *Argp);
+		// virtual int stat(struct stat *Stat);
+		// virtual int lstat(struct stat *Stat);
+		// virtual int fstat(struct stat *Stat);
+		// virtual int unlink();
+		// virtual int mkdir(mode_t Mode);
+		// virtual int rmdir();
+		// virtual int rename(const char *NewName);
+		// virtual int chmod(mode_t Mode);
+		// virtual int chown(uid_t User, gid_t Group);
+		// virtual int truncate(off_t Size);
+		// virtual int symlink(const char *Target);
+		// virtual int readlink(char *Buffer, size_t Size);
+		// virtual int mount(Node *Target);
+		// virtual int umount();
+
+		typedef int (*open_t)(int, mode_t);
+		typedef int (*close_t)();
+		typedef size_t (*read_t)(uint8_t *, size_t, off_t);
+		typedef size_t (*write_t)(uint8_t *, size_t, off_t);
+		typedef int (*ioctl_t)(unsigned long, void *);
+
+		open_t open_ptr = nullptr;
+		close_t close_ptr = nullptr;
+		read_t read_ptr = nullptr;
+		write_t write_ptr = nullptr;
+		ioctl_t ioctl_ptr = nullptr;
 
 		class Virtual *vFS = nullptr;
 		Node *Parent = nullptr;
@@ -212,20 +279,12 @@ namespace vfs
 		void RemoveReference(RefNode *Reference);
 
 		/**
-		 * Delete all children of this node
-		 *
-		 * @note The function will self-delete
-		 * if there are no errors.
-		 */
-		int Delete(bool Recursive = false);
-
-		/**
 		 * Create a new node
 		 *
 		 * @param Parent The parent node
 		 * @param Name The name of the node
 		 * @param Type The type of the node
-		 * @param NoParent If true, the @param Parent will
+		 * @param NoParent If true, the Parent will
 		 * be used as a hint for the parent node, but it
 		 * won't be set as the parent node.
 		 * @param fs The virtual filesystem (only if
@@ -239,6 +298,8 @@ namespace vfs
 			 bool NoParent = false,
 			 Virtual *fs = nullptr,
 			 int *Err = nullptr);
+
+		virtual ~Node();
 	};
 
 	class RefNode
@@ -250,6 +311,8 @@ namespace vfs
 		RefNode *SymlinkTo;
 
 	public:
+		void *SpecialData;
+
 		decltype(FileSize) &Size = FileSize;
 		decltype(n) &node = n;
 
@@ -287,6 +350,7 @@ namespace vfs
 		bool PathExists(const char *Path, Node *Parent = nullptr);
 
 		Node *Create(const char *Path, NodeType Type, Node *Parent = nullptr);
+		Node *CreateLink(const char *Path, const char *Target, Node *Parent);
 
 		int Delete(const char *Path, bool Recursive = false, Node *Parent = nullptr);
 		int Delete(Node *Path, bool Recursive = false, Node *Parent = nullptr);
@@ -299,6 +363,8 @@ namespace vfs
 		 */
 		RefNode *Open(const char *Path, Node *Parent = nullptr);
 
+		Node *CreateIfNotExists(const char *Path, NodeType Type, Node *Parent);
+
 		Virtual();
 		~Virtual();
 
@@ -310,27 +376,32 @@ namespace vfs
 	public:
 		struct Fildes
 		{
-			RefNode *Handle{};
+			RefNode *Handle = nullptr;
 			mode_t Mode = 0;
 			int Flags = 0;
 			int Descriptor = -1;
-		};
 
-		struct DupFildes
-		{
-			RefNode *Handle{};
-			mode_t Mode = 0;
-			int Flags = 0;
-			int Descriptor = -1;
-		};
+			int operator==(const Fildes &other)
+			{
+				return this->Handle == other.Handle &&
+					   this->Mode == other.Mode &&
+					   this->Flags == other.Flags &&
+					   this->Descriptor == other.Descriptor;
+			}
+
+			int operator!=(const Fildes &other)
+			{
+				return !(*this == other);
+			}
+		} __attribute__((packed)) nullfd;
 
 	private:
 		std::vector<Fildes> FileDescriptors;
-		std::vector<DupFildes> FildesDuplicates;
+		std::vector<Fildes> FildesDuplicates;
 		vfs::Node *fdDir = nullptr;
 
-		Fildes GetFileDescriptor(int FileDescriptor);
-		FileDescriptorTable::DupFildes GetDupFildes(int FileDescriptor);
+		Fildes &GetFileDescriptor(int FileDescriptor);
+		FileDescriptorTable::Fildes &GetDupFildes(int FileDescriptor);
 
 		int ProbeMode(mode_t Mode, int Flags);
 		int AddFileDescriptor(const char *AbsolutePath, mode_t Mode, int Flags);
@@ -338,8 +409,14 @@ namespace vfs
 		int GetFreeFileDescriptor();
 
 	public:
+		Fildes &GetDescriptor(int FileDescriptor);
 		const char *GetAbsolutePath(int FileDescriptor);
 		std::vector<Fildes> &GetFileDescriptors() { return FileDescriptors; }
+		std::vector<Fildes> &GetFileDescriptorsDuplicates() { return FildesDuplicates; }
+		RefNode *GetRefNode(int FileDescriptor);
+		int GetFlags(int FileDescriptor);
+		int SetFlags(int FileDescriptor, int Flags);
+		void Fork(FileDescriptorTable *Parent);
 
 		int _open(const char *pathname, int flags, mode_t mode);
 		int _creat(const char *pathname, mode_t mode);

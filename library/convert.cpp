@@ -63,11 +63,23 @@ EXTERNC int strncmp(const char *s1, const char *s2, size_t n)
 
 EXTERNC long unsigned strlen(const char s[])
 {
-	long unsigned i = 0;
-	if (s)
-		while (s[i] != '\0')
-			++i;
-	return i;
+	if (Config.SIMD)
+	{
+		uint64_t simd = CPU::CheckSIMD();
+		if (simd & CPU::x86SIMDType::SIMD_SSE42)
+			return strlen_sse4_2(s);
+		else if (simd & CPU::x86SIMDType::SIMD_SSE41)
+			return strlen_sse4_1(s);
+		else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
+			return strlen_ssse3(s);
+		else if (simd & CPU::x86SIMDType::SIMD_SSE3)
+			return strlen_sse3(s);
+		else if (simd & CPU::x86SIMDType::SIMD_SSE2)
+			return strlen_sse2(s);
+		else if (simd & CPU::x86SIMDType::SIMD_SSE)
+			return strlen_sse(s);
+	}
+	return __strlen(s);
 }
 
 EXTERNC char *strcat_unsafe(char *destination, const char *source)
@@ -128,6 +140,19 @@ EXTERNC int strcmp(const char *l, const char *r)
 	return *(unsigned char *)l - *(unsigned char *)r;
 }
 
+EXTERNC int strncasecmp(const char *string1, const char *string2, size_t count)
+{
+	int result = 0;
+	while (count--)
+	{
+		if ((result = std::tolower(*string1) - std::tolower(*string2)) != 0 || !*string1)
+			break;
+		string1++;
+		string2++;
+	}
+	return result;
+}
+
 EXTERNC char *strstr(const char *haystack, const char *needle)
 {
 	const char *a = haystack, *b = needle;
@@ -147,6 +172,8 @@ EXTERNC char *strstr(const char *haystack, const char *needle)
 
 EXTERNC char *strchr(const char *String, int Char)
 {
+	assert(String != NULL);
+
 	while (*String != (char)Char)
 	{
 		if (!*String++)
@@ -774,7 +801,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 	{
 		error("dest is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -783,7 +810,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 	{
 		error("src is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -792,7 +819,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 	{
 		error("len is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -801,7 +828,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 	{
 		error("slen is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -810,7 +837,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 		__chk_fail();
 
 	void *ret = nullptr;
-	if (0) /* FIXME */
+	if (Config.SIMD)
 	{
 		uint64_t simd = CPU::CheckSIMD();
 		if (simd & CPU::x86SIMDType::SIMD_SSE42)
@@ -847,7 +874,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 	{
 		error("dest is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -856,7 +883,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 	{
 		error("len is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -865,7 +892,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 	{
 		error("slen is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -874,7 +901,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 		__chk_fail();
 
 	void *ret = nullptr;
-	if (0) /* FIXME */
+	if (Config.SIMD)
 	{
 		uint64_t simd = CPU::CheckSIMD();
 		if (simd & CPU::x86SIMDType::SIMD_SSE42)
@@ -912,7 +939,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 	{
 		error("dest is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -921,7 +948,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 	{
 		error("src is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -930,7 +957,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 	{
 		error("len is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -939,7 +966,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 	{
 		error("slen is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -948,7 +975,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 		__chk_fail();
 
 	void *ret = nullptr;
-	if (0) /* FIXME */
+	if (Config.SIMD)
 	{
 		uint64_t simd = CPU::CheckSIMD();
 		if (simd & CPU::x86SIMDType::SIMD_SSE42)
@@ -986,7 +1013,7 @@ EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, siz
 	{
 		error("dest is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -995,7 +1022,7 @@ EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, siz
 	{
 		error("src is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -1004,7 +1031,7 @@ EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, siz
 	{
 		error("slen is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -1025,7 +1052,7 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 	{
 		error("dest is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -1034,7 +1061,7 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 	{
 		error("src is NULL (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}
@@ -1043,7 +1070,7 @@ EXTERNC __no_stack_protector char *__strcpy_chk(char *dest, const char *src, siz
 	{
 		error("slen is 0 (for %#lx %s)",
 			  __builtin_return_address(0),
-			  KernelSymbolTable ? KernelSymbolTable->GetSymbolFromAddress((uintptr_t)__builtin_return_address(0))
+			  KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 								: "Unknown");
 		__convert_chk_fail();
 	}

@@ -25,18 +25,67 @@
 
 namespace SymbolResolver
 {
-	const NIF char *Symbols::GetSymbolFromAddress(uintptr_t Address)
+	const NIF char *Symbols::GetSymbol(uintptr_t Address)
 	{
 		SymbolTable Result{};
-		foreach (auto tbl in this->SymTable)
+
+		if (this->SymbolTableExists == false)
 		{
-			if (tbl.Address <= Address &&
-				tbl.Address > Result.Address)
-				Result = tbl;
+			debug("Symbol table does not exist");
+			if (this->SymTable.size() > 0)
+			{
+				debug("SymbolTableExists is false but SymTable.size() is %d",
+					  this->SymTable.size());
+			}
+			return Result.FunctionName;
 		}
-		// debug("Address: %#lx, Function: %s",
-		// 	  Address, Result.FunctionName);
+
+		std::vector<SymbolTable> rSymTable = this->SymTable;
+		rSymTable.reverse();
+
+		foreach (auto st in rSymTable)
+		{
+			if (unlikely(st.Address <= Address &&
+						 st.Address > Result.Address))
+			{
+				Result = st;
+				break;
+			}
+		}
+
+		// debug("Symbol %#lx: %s", Result.Address, Result.FunctionName);
 		return Result.FunctionName;
+	}
+
+	uintptr_t Symbols::GetSymbol(const char *Name)
+	{
+		SymbolTable Result{};
+
+		if (this->SymbolTableExists == false)
+		{
+			debug("Symbol table does not exist");
+			if (this->SymTable.size() > 0)
+			{
+				debug("SymbolTableExists is false but SymTable.size() is %d",
+					  this->SymTable.size());
+			}
+			return Result.Address;
+		}
+
+		std::vector<SymbolTable> rSymTable = this->SymTable;
+		rSymTable.reverse();
+
+		foreach (auto st in rSymTable)
+		{
+			if (unlikely(strcmp(st.FunctionName, Name) == 0))
+			{
+				Result = st;
+				break;
+			}
+		}
+
+		// debug("Symbol %#lx: %s", Result.Address, Result.FunctionName);
+		return Result.Address;
 	}
 
 	void Symbols::AddSymbol(uintptr_t Address, const char *Name)
@@ -121,11 +170,11 @@ namespace SymbolResolver
 				  TotalEntries, TO_KiB(TotalEntries * sizeof(SymbolTable)));
 			Elf_Sym *sym;
 			const char *name;
-			Memory::Virtual vma = Memory::Virtual();
+			Memory::Virtual vmm;
 			for (size_t i = 0, g = TotalEntries; i < g; i++)
 			{
 				sym = &Symbols[i];
-				if (!vma.Check(sym))
+				if (!vmm.Check(sym))
 				{
 					error("Symbol %d has invalid address %#lx!",
 						  i, sym);
@@ -137,7 +186,7 @@ namespace SymbolResolver
 				}
 
 				name = (const char *)&StringAddress[Symbols[i].st_name];
-				if (!vma.Check((void *)name))
+				if (!vmm.Check((void *)name))
 				{
 					error("String %d has invalid address %#lx!",
 						  i, name);
@@ -168,7 +217,8 @@ namespace SymbolResolver
 	{
 		/* FIXME: Get only the required headers instead of the whole file */
 
-		if (ImageAddress == 0 || Memory::Virtual().Check((void *)ImageAddress) == false)
+		if (ImageAddress == 0 ||
+			Memory::Virtual().Check((void *)ImageAddress) == false)
 		{
 			error("Invalid image address %#lx", ImageAddress);
 			return;
@@ -261,17 +311,27 @@ namespace SymbolResolver
 				// 	  this->SymTable[i].FunctionName);
 			}
 		}
+
+		if (this->SymbolTableExists)
+		{
+			debug("Symbol table exists, %d entries (%ld KiB)",
+				  this->SymTable.size(), TO_KiB(this->SymTable.size() * sizeof(SymbolTable)));
+		}
 	}
 
 	Symbols::Symbols(uintptr_t ImageAddress)
 	{
+		debug("+ %#lx", this);
 		this->Image = (void *)ImageAddress;
 		this->AppendSymbols(ImageAddress);
 	}
 
 	Symbols::~Symbols()
 	{
-		for (auto tbl : this->SymTable)
+		debug("- %#lx", this);
+		debug("Freeing %d symbols",
+			  this->SymTable.size());
+		foreach (auto tbl in this->SymTable)
 			delete[] tbl.FunctionName;
 	}
 }

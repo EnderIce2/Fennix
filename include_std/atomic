@@ -68,12 +68,12 @@ namespace std
 	 */
 	enum class memory_order : int
 	{
-		relaxed,
-		consume,
-		acquire,
-		release,
-		acq_rel,
-		seq_cst
+		relaxed = __ATOMIC_RELAXED,
+		consume = __ATOMIC_CONSUME,
+		acquire = __ATOMIC_ACQUIRE,
+		release = __ATOMIC_RELEASE,
+		acq_rel = __ATOMIC_ACQ_REL,
+		seq_cst = __ATOMIC_SEQ_CST
 	};
 
 	/**
@@ -172,7 +172,7 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable
 		 */
-		T load(memory_order order = memory_order::seq_cst) const
+		inline __always_inline T load(memory_order order = memory_order::seq_cst) const
 		{
 			return builtin_atomic_n(load)(&this->value,
 										  static_cast<int>(order));
@@ -181,7 +181,7 @@ namespace std
 		/**
 		 * @copydoc load()
 		 */
-		T load(memory_order order = memory_order::seq_cst) const volatile
+		inline __always_inline T load(memory_order order = memory_order::seq_cst) const volatile
 		{
 			return builtin_atomic_n(load)(&this->value,
 										  static_cast<int>(order));
@@ -196,7 +196,7 @@ namespace std
 		 * @param desired The value to store
 		 * @param order Memory order constraint to use
 		 */
-		void store(T desired, memory_order order = memory_order::seq_cst)
+		inline __always_inline void store(T desired, memory_order order = memory_order::seq_cst)
 		{
 			builtin_atomic_n(store)(&this->value, desired,
 									static_cast<int>(order));
@@ -205,8 +205,8 @@ namespace std
 		/**
 		 * @copydoc store()
 		 */
-		void store(T desired,
-				   memory_order order = memory_order::seq_cst) volatile
+		inline __always_inline void store(T desired,
+										  memory_order order = memory_order::seq_cst) volatile
 		{
 			builtin_atomic_n(store)(&this->value, desired,
 									static_cast<int>(order));
@@ -219,7 +219,7 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the exchange
 		 */
-		T exchange(T desired, memory_order order = memory_order::seq_cst)
+		inline __always_inline T exchange(T desired, memory_order order = memory_order::seq_cst)
 		{
 			return builtin_atomic_n(exchange)(&this->value, desired,
 											  static_cast<int>(order));
@@ -228,8 +228,8 @@ namespace std
 		/**
 		 * @copydoc exchange()
 		 */
-		T exchange(T desired,
-				   memory_order order = memory_order::seq_cst) volatile
+		inline __always_inline T exchange(T desired,
+										  memory_order order = memory_order::seq_cst) volatile
 		{
 			return builtin_atomic_n(exchange)(&this->value, desired,
 											  static_cast<int>(order));
@@ -244,9 +244,9 @@ namespace std
 		 * @param failure Memory order constraint to use if the exchange fails
 		 * @return True if the exchange succeeded, false otherwise
 		 */
-		bool compare_exchange_weak(T &expected, T desired,
-								   memory_order success,
-								   memory_order failure)
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order success,
+														  memory_order failure)
 		{
 			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
 														 desired, false, success,
@@ -256,9 +256,9 @@ namespace std
 		/**
 		 * @copydoc compare_exchange_weak()
 		 */
-		bool compare_exchange_weak(T &expected, T desired,
-								   memory_order success,
-								   memory_order failure) volatile
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order success,
+														  memory_order failure) volatile
 		{
 			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
 														 desired, false, success,
@@ -273,9 +273,9 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return True if the exchange succeeded, false otherwise
 		 */
-		bool compare_exchange_weak(T &expected, T desired,
-								   memory_order order =
-									   memory_order_seq_cst)
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order order =
+															  memory_order_seq_cst)
 		{
 			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
 														 desired, false, order,
@@ -285,9 +285,9 @@ namespace std
 		/**
 		 * @copydoc compare_exchange_weak()
 		 */
-		bool compare_exchange_weak(T &expected, T desired,
-								   memory_order order =
-									   memory_order_seq_cst) volatile
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order order =
+															  memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
 														 desired, false, order,
@@ -303,9 +303,9 @@ namespace std
 		 * @param failure Memory order constraint to use if the exchange fails
 		 * @return True if the exchange succeeded, false otherwise
 		 */
-		bool compare_exchange_strong(T &expected, T desired,
-									 memory_order success,
-									 memory_order failure)
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order success,
+															memory_order failure)
 		{
 			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
 														   desired, true, success,
@@ -315,9 +315,9 @@ namespace std
 		/**
 		 * @copydoc compare_exchange_strong()
 		 */
-		bool compare_exchange_strong(T &expected, T desired,
-									 memory_order success,
-									 memory_order failure) volatile
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order success,
+															memory_order failure) volatile
 		{
 			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
 														   desired, true, success,
@@ -332,9 +332,9 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return True if the exchange succeeded, false otherwise
 		 */
-		bool compare_exchange_strong(T &expected, T desired,
-									 memory_order order =
-										 memory_order_seq_cst)
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order order =
+																memory_order_seq_cst)
 		{
 			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
 														   desired, true, order,
@@ -344,9 +344,9 @@ namespace std
 		/**
 		 * @copydoc compare_exchange_strong()
 		 */
-		bool compare_exchange_strong(T &expected, T desired,
-									 memory_order order =
-										 memory_order_seq_cst) volatile
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order order =
+																memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
 														   desired, true, order,
@@ -360,8 +360,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the addition
 		 */
-		T fetch_add(T arg, memory_order order =
-							   memory_order_seq_cst)
+		inline __always_inline T fetch_add(T arg, memory_order order =
+													  memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_add)(&this->value, arg,
 											 static_cast<int>(order));
@@ -370,8 +370,8 @@ namespace std
 		/**
 		 * @copydoc fetch_add()
 		 */
-		T fetch_add(T arg, memory_order order =
-							   memory_order_seq_cst) volatile
+		inline __always_inline T fetch_add(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_add)(&this->value, arg,
 											 static_cast<int>(order));
@@ -384,8 +384,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the subtraction
 		 */
-		T fetch_sub(T arg, memory_order order =
-							   memory_order_seq_cst)
+		inline __always_inline T fetch_sub(T arg, memory_order order =
+													  memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_sub)(&this->value, arg,
 											 static_cast<int>(order));
@@ -394,8 +394,8 @@ namespace std
 		/**
 		 * @copydoc fetch_sub()
 		 */
-		T fetch_sub(T arg, memory_order order =
-							   memory_order_seq_cst) volatile
+		inline __always_inline T fetch_sub(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_sub)(&this->value, arg,
 											 static_cast<int>(order));
@@ -408,8 +408,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the AND
 		 */
-		T fetch_and(T arg, memory_order order =
-							   memory_order_seq_cst)
+		inline __always_inline T fetch_and(T arg, memory_order order =
+													  memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_and)(&this->value, arg,
 											 static_cast<int>(order));
@@ -418,8 +418,8 @@ namespace std
 		/**
 		 * @copydoc fetch_and()
 		 */
-		T fetch_and(T arg, memory_order order =
-							   memory_order_seq_cst) volatile
+		inline __always_inline T fetch_and(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_and)(&this->value, arg,
 											 static_cast<int>(order));
@@ -432,8 +432,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the OR
 		 */
-		T fetch_or(T arg, memory_order order =
-							  memory_order_seq_cst)
+		inline __always_inline T fetch_or(T arg, memory_order order =
+													 memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_or)(&this->value, arg,
 											static_cast<int>(order));
@@ -442,8 +442,8 @@ namespace std
 		/**
 		 * @copydoc fetch_or()
 		 */
-		T fetch_or(T arg, memory_order order =
-							  memory_order_seq_cst) volatile
+		inline __always_inline T fetch_or(T arg, memory_order order =
+													 memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_or)(&this->value, arg,
 											static_cast<int>(order));
@@ -456,8 +456,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the XOR
 		 */
-		T fetch_xor(T arg, memory_order order =
-							   memory_order_seq_cst)
+		inline __always_inline T fetch_xor(T arg, memory_order order =
+													  memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_xor)(&this->value, arg,
 											 static_cast<int>(order));
@@ -466,8 +466,8 @@ namespace std
 		/**
 		 * @copydoc fetch_xor()
 		 */
-		T fetch_xor(T arg, memory_order order =
-							   memory_order_seq_cst) volatile
+		inline __always_inline T fetch_xor(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_xor)(&this->value, arg,
 											 static_cast<int>(order));
@@ -480,8 +480,8 @@ namespace std
 		 * @param order Memory order constraint to use
 		 * @return The value of the atomic variable before the NAND
 		 */
-		T fetch_nand(T arg, memory_order order =
-								memory_order_seq_cst)
+		inline __always_inline T fetch_nand(T arg, memory_order order =
+													   memory_order_seq_cst)
 		{
 			return builtin_atomic(fetch_nand)(&this->value, arg,
 											  static_cast<int>(order));
@@ -490,8 +490,8 @@ namespace std
 		/**
 		 * @copydoc fetch_nand()
 		 */
-		T fetch_nand(T arg, memory_order order =
-								memory_order_seq_cst) volatile
+		inline __always_inline T fetch_nand(T arg, memory_order order =
+													   memory_order_seq_cst) volatile
 		{
 			return builtin_atomic(fetch_nand)(&this->value, arg,
 											  static_cast<int>(order));

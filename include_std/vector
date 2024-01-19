@@ -23,13 +23,14 @@
 #include <functional>
 #include <algorithm>
 #include <assert.h>
+#include <lock.hpp>
 #include <cstring>
 #include <utility>
 
 // #define DEBUG_VECTOR_MESSAGES 1
 
 #ifdef DEBUG_VECTOR_MESSAGES
-#define vDebug(m, ...) debug(m, ##__VA_ARGS__)
+#define vDebug(m, ...) debug("%#lx: " m, this, ##__VA_ARGS__)
 #else
 #define vDebug(m, ...)
 #endif
@@ -40,22 +41,23 @@ namespace std
 	class vector
 	{
 	private:
-		size_t VectorSize = 0;
-		size_t VectorCapacity = 0;
+		NewLock(lock);
+		std::atomic_size_t VectorSize = 0;
+		std::atomic_size_t VectorCapacity = 0;
 		T *VectorBuffer = nullptr;
 
 	public:
 		typedef T *iterator;
 		typedef const T *const_iterator;
 
-		vector() { vDebug("%#lx: ( empty init )", this); }
+		vector() { vDebug("( empty init )"); }
 
 		vector(size_t Size)
 			: VectorSize(Size),
 			  VectorCapacity(Size),
 			  VectorBuffer(new T[Size])
 		{
-			vDebug("%#lx: ( init w/size: %lld )", this, Size);
+			vDebug("( init w/size: %lld )", Size);
 		}
 
 		vector(size_t Size, const T &Initial)
@@ -63,34 +65,40 @@ namespace std
 			  VectorCapacity(Size),
 			  VectorBuffer(new T[Size])
 		{
-			vDebug("%#lx: ( init w/size: %lld, initial vector: %llx )", this,
+			vDebug("( init w/size: %lld, initial vector: %llx )",
 				   Size, Initial);
 
 			assert(Size > 0);
+
+			SmartLock(this->lock);
 			for (size_t i = 0; i < Size; i++)
 				VectorBuffer[i] = Initial;
 		}
 
 		vector(const vector<T> &v)
-			: VectorSize(v.VectorSize),
-			  VectorCapacity(v.VectorCapacity),
+			: VectorSize(v.VectorSize.load()),
+			  VectorCapacity(v.VectorCapacity.load()),
 			  VectorBuffer(nullptr)
 		{
-			vDebug("%#lx: ( vector copy: %#lx )", this, &v);
+			vDebug("( vector copy: %#lx )", &v);
 
-			if (!v.VectorBuffer || VectorSize <= 0)
+			if (!v.VectorBuffer || VectorSize.load() <= 0)
 				return;
 
-			VectorBuffer = new T[VectorSize];
-			std::copy(v.VectorBuffer, v.VectorBuffer + VectorSize, VectorBuffer);
+			SmartLock(this->lock);
+			VectorBuffer = new T[VectorSize.load()];
+			std::copy(v.VectorBuffer, v.VectorBuffer + VectorSize.load(), VectorBuffer);
 		}
 
 		~vector()
 		{
-			vDebug("%#lx: ( deinit )", this);
+			vDebug("( deinit )");
 
-			VectorSize = 0;
-			VectorCapacity = 0;
+			VectorSize.store(0);
+			VectorCapacity.store(0);
+
+			SmartLock(this->lock);
+
 			if (VectorBuffer != nullptr)
 			{
 				delete[] VectorBuffer;
@@ -100,8 +108,8 @@ namespace std
 
 		void erase(iterator Position)
 		{
-			vDebug("%#lx: Erasing element at position %lld (v. size: %lld)", this,
-				   Position - this->VectorBuffer, this->VectorSize);
+			vDebug("Erasing element at position %lld (v. size: %lld)",
+				   Position - this->VectorBuffer, this->VectorSize.load());
 
 			if (Position == this->end())
 			{
@@ -112,24 +120,25 @@ namespace std
 
 			assert(Position <= this->end());
 			assert(Position >= this->VectorBuffer);
-			assert(Position < this->VectorBuffer + this->VectorSize);
+			assert(Position < this->VectorBuffer + this->VectorSize.load());
 
+			SmartLock(this->lock);
 			size_t index = Position - this->VectorBuffer;
 
 			if (std::is_trivially_copyable<T>::value)
 			{
 				this->VectorBuffer[index] = T();
-				vDebug("%#lx: %#lx is trivially copyable", this,
+				vDebug("%#lx is trivially copyable",
 					   &this->VectorBuffer[index]);
 			}
 			else
 			{
 				this->VectorBuffer[index].~T();
-				vDebug("%#lx: %#lx is not trivially copyable", this,
+				vDebug("%#lx is not trivially copyable",
 					   &this->VectorBuffer[index]);
 			}
 
-			for (size_t i = index; i < this->VectorSize - 1; ++i)
+			for (size_t i = index; i < this->VectorSize.load() - 1; ++i)
 			{
 				this->VectorBuffer[i] = std::move(this->VectorBuffer[i + 1]);
 			}
@@ -138,7 +147,9 @@ namespace std
 
 		T &next(size_t Position)
 		{
-			if (Position + 1 < this->VectorSize)
+			SmartLock(this->lock);
+
+			if (Position + 1 < this->VectorSize.load())
 				return this->VectorBuffer[Position + 1];
 
 			warn("%#lx: next( %lld ) is null (requested by %#lx)", this,
@@ -149,6 +160,8 @@ namespace std
 
 		T &prev(size_t Position)
 		{
+			SmartLock(this->lock);
+
 			if (Position > 0)
 				return this->VectorBuffer[Position - 1];
 
@@ -160,11 +173,13 @@ namespace std
 
 		T &next(const T &Value)
 		{
-			for (size_t i = 0; i < this->VectorSize; i++)
+			SmartLock(this->lock);
+
+			for (size_t i = 0; i < this->VectorSize.load(); i++)
 			{
 				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
 				{
-					if (i + 1 < this->VectorSize)
+					if (i + 1 < this->VectorSize.load())
 						return this->VectorBuffer[i + 1];
 					else
 						break;
@@ -179,7 +194,9 @@ namespace std
 
 		T &prev(const T &Value)
 		{
-			for (size_t i = 0; i < this->VectorSize; i++)
+			SmartLock(this->lock);
+
+			for (size_t i = 0; i < this->VectorSize.load(); i++)
 			{
 				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
 				{
@@ -198,25 +215,44 @@ namespace std
 
 		void push_back(const T &Value)
 		{
-			vDebug("%#lx: push_back( %#lx )", this, Value);
+			vDebug("push_back( %#lx )", Value);
 
-			if (this->VectorSize >= this->VectorCapacity)
+			if (this->VectorSize.load() >= this->VectorCapacity.load())
 			{
-				size_t newCapacity = this->VectorCapacity == 0
+				size_t newCapacity = this->VectorCapacity.load() == 0
 										 ? 1
-										 : this->VectorCapacity * 2;
+										 : this->VectorCapacity.load() * 2;
 				reserve(newCapacity);
 			}
 
+			SmartLock(this->lock);
 			this->VectorBuffer[this->VectorSize++] = Value;
+		}
+
+		template <class... Args>
+		void emplace_back(Args &&...args)
+		{
+			vDebug("emplace_back( %#lx )", args...);
+
+			if (this->VectorSize.load() >= this->VectorCapacity.load())
+			{
+				size_t newCapacity = this->VectorCapacity.load() == 0
+										 ? 1
+										 : this->VectorCapacity.load() * 2;
+				reserve(newCapacity);
+			}
+
+			SmartLock(this->lock);
+			this->VectorBuffer[this->VectorSize++] = T(std::forward<Args>(args)...);
 		}
 
 		void reverse()
 		{
-			if (this->VectorSize <= 1)
+			if (this->VectorSize.load() <= 1)
 				return;
 
-			for (size_t i = 0, j = this->VectorSize - 1; i < j; i++, j--)
+			SmartLock(this->lock);
+			for (size_t i = 0, j = this->VectorSize.load() - 1; i < j; i++, j--)
 			{
 				T &elem1 = this->VectorBuffer[i];
 				T &elem2 = this->VectorBuffer[j];
@@ -226,31 +262,35 @@ namespace std
 
 		void reserve(size_t Capacity)
 		{
-			assert(!(Capacity <= VectorCapacity));
+			assert(!(Capacity <= VectorCapacity.load()));
+
+			SmartLock(this->lock);
 
 			T *NewBuffer = new T[Capacity];
-			size_t Size = std::min(Capacity, this->VectorSize);
+			size_t Size = std::min(Capacity, this->VectorSize.load());
 			for (size_t i = 0; i < Size; i++)
 				NewBuffer[i] = std::move(this->VectorBuffer[i]);
 
-			vDebug("%#lx: reserve( %lld )->Buffer:~%#lx", this,
+			vDebug("reserve( %lld )->Buffer:~%#lx",
 				   Capacity, this->VectorBuffer);
 
 			delete[] this->VectorBuffer;
 			this->VectorBuffer = NewBuffer;
-			this->VectorCapacity = Capacity;
+			this->VectorCapacity.store(Capacity);
 		}
 
 		void resize(size_t Size)
 		{
 			reserve(Size);
-			this->VectorSize = Size;
+			this->VectorSize.store(Size);
 		}
 
 		void clear()
 		{
-			this->VectorCapacity = 0;
-			this->VectorSize = 0;
+			this->VectorCapacity.store(0);
+			this->VectorSize.store(0);
+
+			SmartLock(this->lock);
 			if (VectorBuffer != nullptr)
 			{
 				delete[] this->VectorBuffer;
@@ -260,7 +300,8 @@ namespace std
 
 		T &operator[](size_t Index)
 		{
-			if (Index >= this->VectorSize || !this->VectorBuffer)
+			SmartLock(this->lock);
+			if (Index >= this->VectorSize.load() || !this->VectorBuffer)
 			{
 				warn("%#lx: operator[]( %lld ) is null (requested by %#lx)", this,
 					 Index, __builtin_return_address(0));
@@ -273,33 +314,71 @@ namespace std
 
 		vector<T> &operator=(const vector<T> &v)
 		{
+			SmartLock(this->lock);
+
 			if (this == &v)
 				return *this;
 
 			delete[] this->VectorBuffer;
-			this->VectorSize = v.VectorSize;
-			this->VectorCapacity = v.VectorCapacity;
+			this->VectorSize.store(v.VectorSize.load());
+			this->VectorCapacity.store(v.VectorCapacity.load());
 
-			vDebug("%#lx: operator=( <vector> )->Size:%lld", this,
-				   this->VectorSize);
+			vDebug("operator=( <vector> )->Size:%lld",
+				   this->VectorSize.load());
 
-			this->VectorBuffer = new T[this->VectorSize];
-			for (size_t i = 0; i < this->VectorSize; i++)
+			this->VectorBuffer = new T[this->VectorSize.load()];
+			for (size_t i = 0; i < this->VectorSize.load(); i++)
 				this->VectorBuffer[i] = v.VectorBuffer[i];
 
 			return *this;
 		}
 
 		void pop_back() { this->VectorSize--; }
-		T &front() { return this->VectorBuffer[0]; }
-		T &back() { return this->VectorBuffer[this->VectorSize - 1]; }
-		T *data() { return this->VectorBuffer; }
-		bool empty() const { return this->VectorSize == 0; }
-		size_t capacity() const { return this->VectorCapacity; }
-		size_t size() const { return this->VectorSize; }
-		iterator begin() { return this->VectorBuffer; }
-		iterator end() { return this->VectorBuffer + size(); }
-		const_iterator begin() const { return this->VectorBuffer; }
-		const_iterator end() const { return this->VectorBuffer + size(); }
+
+		T &front()
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer[0];
+		}
+
+		T &back()
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer[this->VectorSize.load() - 1];
+		}
+
+		T *data()
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer;
+		}
+
+		bool empty() const { return this->VectorSize.load() == 0; }
+		size_t capacity() const { return this->VectorCapacity.load(); }
+		size_t size() const { return this->VectorSize.load(); }
+
+		iterator begin()
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer;
+		}
+
+		iterator end()
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer + size();
+		}
+
+		const_iterator begin() const
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer;
+		}
+
+		const_iterator end() const
+		{
+			SmartLock(this->lock);
+			return this->VectorBuffer + size();
+		}
 	};
 }

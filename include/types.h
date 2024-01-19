@@ -212,6 +212,8 @@ typedef int64_t blkcnt64_t;
 typedef int64_t time_t;
 typedef unsigned uid_t;
 typedef unsigned gid_t;
+typedef long clock_t;
+typedef int pid_t;
 #elif defined(a32)
 typedef int32_t off_t;
 typedef long long off64_t;
@@ -226,6 +228,8 @@ typedef int32_t blkcnt64_t;
 typedef int32_t time_t;
 typedef unsigned uid_t;
 typedef unsigned gid_t;
+typedef long clock_t;
+typedef int pid_t;
 #endif
 
 #define INT8_MAX __INT8_MAX__
@@ -323,15 +327,15 @@ typedef uint48_t uint_fast48_t;
 #endif // __INT48_TYPE__
 
 #define b4(x) ((x & 0x0F) << 4 | (x & 0xF0) >> 4)
-#define b8(x) ((x)&0xFF)
+#define b8(x) ((x) & 0xFF)
 #define b16(x) __builtin_bswap16(x)
 #define b32(x) __builtin_bswap32(x)
-#define b48(x) (((((x)&0x0000000000ff) << 40) | \
-				 (((x)&0x00000000ff00) << 24) | \
-				 (((x)&0x000000ff0000) << 8) |  \
-				 (((x)&0x0000ff000000) >> 8) |  \
-				 (((x)&0x00ff00000000) >> 24) | \
-				 (((x)&0xff0000000000) >> 40)))
+#define b48(x) (((((x) & 0x0000000000ff) << 40) | \
+				 (((x) & 0x00000000ff00) << 24) | \
+				 (((x) & 0x000000ff0000) << 8) |  \
+				 (((x) & 0x0000ff000000) >> 8) |  \
+				 (((x) & 0x00ff00000000) >> 24) | \
+				 (((x) & 0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
 /* https://gcc.gnu.org/onlinedocs/gcc-9.5.0/gnat_ugn/Optimization-Levels.html */
@@ -401,6 +405,8 @@ typedef uint48_t uint_fast48_t;
 #define __synchronize __sync_synchronize()
 #define __sync __synchronize
 
+#define __unreachable __builtin_unreachable()
+
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
@@ -416,5 +422,11 @@ typedef uint48_t uint_fast48_t;
 						 :      \
 						 :      \
 						 : "memory")
+
+#define StackPush(stack, type, value) \
+	*((type *)--stack) = value;
+
+#define StackPop(stack, type) \
+	*((type *)stack++)
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

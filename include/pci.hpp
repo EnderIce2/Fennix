@@ -22,7 +22,7 @@
 
 #include <memory.hpp>
 #include <debug.h>
-#include <vector>
+#include <list>
 
 namespace PCI
 {
@@ -30,6 +30,8 @@ namespace PCI
 	{
 		enum PCIVendors
 		{
+			Apple = 0x106B,
+			BusLogic = 0x104B,
 			SymbiosLogic = 0x1000,
 			RedHat = 0x1AF4,
 			REDHat2 = 0x1B36,
@@ -120,12 +122,9 @@ namespace PCI
 		uint8_t LatencyTimer;
 		uint8_t HeaderType;
 		uint8_t BIST;
-	};
+	} __packed;
 
-	/**
-	 * @brief PCI Header Type 0
-	 *
-	 */
+	/** PCI Header Type 0 */
 	struct PCIHeader0
 	{
 		PCIDeviceHeader Header;
@@ -147,11 +146,9 @@ namespace PCI
 		uint8_t InterruptPin;
 		uint8_t MinGrant;
 		uint8_t MaxLatency;
-	};
+	} __packed;
 
-	/**
-	 * @brief PCI Header Type 1 (PCI-to-PCI Bridge)
-	 */
+	/** PCI Header Type 1 (PCI-to-PCI Bridge) */
 	struct PCIHeader1
 	{
 		PCIDeviceHeader Header;
@@ -179,11 +176,9 @@ namespace PCI
 		uint8_t InterruptLine;
 		uint8_t InterruptPin;
 		uint16_t BridgeControl;
-	};
+	} __packed;
 
-	/**
-	 * @brief PCI Header Type 2 (PCI-to-CardBus Bridge)
-	 */
+	/** PCI Header Type 2 (PCI-to-CardBus Bridge) */
 	struct PCIHeader2
 	{
 		PCIDeviceHeader Header;
@@ -209,7 +204,7 @@ namespace PCI
 		uint16_t SubsystemVendorID;
 		uint16_t SubsystemID;
 		uint32_t LegacyBaseAddress;
-	};
+	} __packed;
 
 	struct DeviceConfig
 	{
@@ -227,24 +222,25 @@ namespace PCI
 		uint32_t Bus;
 		uint32_t Device;
 		uint32_t Function;
-	};
+	} __packed;
 
-	class PCI
+	class Manager
 	{
 	private:
-		std::vector<PCIDevice> Devices;
+		std::list<PCIDevice> Devices;
 
 	public:
-		std::vector<PCIDevice> &GetDevices() { return Devices; }
-		void MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table = nullptr);
+		std::list<PCIDevice> GetDevices() { return Devices; }
+		void MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table);
 		void EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev);
 		void EnumerateDevice(uint64_t BusAddress, uint32_t Device, PCIDevice dev);
 		void EnumerateBus(uint64_t BaseAddress, uint32_t Bus, PCIDevice dev);
-		std::vector<PCIDevice> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
-		std::vector<PCIDevice> FindPCIDevice(int VendorID, int DeviceID);
+		std::list<PCIDevice> FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF);
+		std::list<PCIDevice> FindPCIDevice(uint16_t VendorID, uint16_t DeviceID);
+		std::list<PCIDevice> FindPCIDevice(std::list<uint16_t> VendorIDs, std::list<uint16_t> DeviceIDs);
 
-		PCI();
-		~PCI();
+		Manager();
+		~Manager();
 	};
 }
 

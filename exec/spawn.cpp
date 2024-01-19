@@ -25,14 +25,13 @@
 #include <abi.h>
 
 #include "../kernel.h"
-#include "../Fex.hpp"
 
 using namespace Tasking;
 
 namespace Execute
 {
 	int Spawn(char *Path, const char **argv, const char **envp,
-			  Tasking::PCB *Parent,
+			  Tasking::PCB *Parent, bool Fork,
 			  Tasking::TaskCompatibility Compatibility,
 			  bool Critical)
 	{
@@ -50,19 +49,6 @@ namespace Execute
 
 		switch (GetBinaryType(Path))
 		{
-		case BinaryType::BinTypeFex:
-		{
-			Fex FexHdr;
-			fread(fd, (uint8_t *)&FexHdr, sizeof(Fex));
-			if (FexHdr.Type == FexFormatType::FexFormatType_Executable)
-			{
-				stub;
-				assert(false);
-			}
-
-			fclose(fd);
-			return -ENOEXEC;
-		}
 		case BinaryType::BinTypeELF:
 		{
 			TaskArchitecture Arch = TaskArchitecture::UnknownArchitecture;
@@ -118,20 +104,44 @@ namespace Execute
 			debug("Loaded elf %s at %#lx with the length of %ld",
 				  Path, ElfFile, statbuf.st_size);
 
-			if (Parent == nullptr)
-				Parent = thisProcess;
+			PCB *Process;
+			if (Fork)
+			{
+				assert(Parent != nullptr);
+				CriticalSection cs;
 
-			PCB *Process = TaskManager->CreateProcess(Parent,
-													  BaseName,
-													  TaskExecutionMode::User,
-													  ElfFile, false,
-													  0, 0);
+				Process = Parent;
+				foreach (auto tcb in Process->Threads)
+				{
+					debug("Deleting thread %d", tcb->ID);
+					// delete tcb;
+					tcb->SetState(Tasking::Terminated);
+				}
 
-			KernelAllocator.FreePages(ElfFile, TO_PAGES(statbuf.st_size + 1));
+				fixme("free allocated memory");
+				fixme("change symbol table");
+				// Process->vma->FreeAllPages();
+				delete Process->ELFSymbolTable;
+				Process->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)ElfFile);
+			}
+			else
+			{
+				if (Parent == nullptr)
+					Parent = thisProcess;
+
+				Process = TaskManager->CreateProcess(Parent,
+													 BaseName,
+													 TaskExecutionMode::User,
+													 ElfFile, false,
+													 0, 0);
+				Process->Info.Compatibility = Compatibility;
+				Process->Info.Architecture = Arch;
+			}
 
 			Process->SetWorkingDirectory(fs->GetNodeFromPath(Path)->Parent);
-			Process->Info.Compatibility = TaskCompatibility::Native;
-			Process->Info.Architecture = TaskArchitecture::x64;
+			Process->SetExe(Path);
+
+			KernelAllocator.FreePages(ElfFile, TO_PAGES(statbuf.st_size + 1));
 
 			ELFObject *obj = new ELFObject(Path, Process, argv, envp);
 			if (!obj->IsValid)
@@ -142,14 +152,40 @@ namespace Execute
 				return -ENOEXEC;
 			}
 
-			/* FIXME: implement stdio fildes */
+			vfs::FileDescriptorTable *pfdt = Parent->FileDescriptors;
 			vfs::FileDescriptorTable *fdt = Process->FileDescriptors;
-			// stdin
-			fdt->_open("/dev/tty", O_RDWR, 0666);
-			// stdout
-			fdt->_open("/dev/tty", O_RDWR, 0666);
-			// stderr
-			fdt->_open("/dev/tty", O_RDWR, 0666);
+
+			auto ForkStdio = [pfdt, fdt](Node *SearchNode)
+			{
+				if (unlikely(SearchNode == nullptr))
+					return false;
+
+				std::vector<FileDescriptorTable::Fildes>
+					pfds = pfdt->GetFileDescriptors();
+
+				foreach (auto ffd in pfds)
+				{
+					if (ffd.Flags & O_CLOEXEC)
+						continue;
+
+					if (ffd.Handle->node == SearchNode)
+					{
+						fdt->_open(ffd.Handle->node->FullPath,
+								   ffd.Flags, ffd.Mode);
+						return true;
+					}
+				}
+				return false;
+			};
+
+			if (!ForkStdio(Parent->stdin))
+				fdt->_open("/dev/kcon", O_RDWR, 0666);
+
+			if (!ForkStdio(Parent->stdout))
+				fdt->_open("/dev/kcon", O_RDWR, 0666);
+
+			if (!ForkStdio(Parent->stderr))
+				fdt->_open("/dev/kcon", O_RDWR, 0666);
 
 			TCB *Thread = nullptr;
 			{

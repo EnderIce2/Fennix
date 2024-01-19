@@ -18,83 +18,15 @@
 #include <kshell.hpp>
 
 #include <filesystem.hpp>
-#include <module.hpp>
+#include <driver.hpp>
 #include <lock.hpp>
 #include <debug.h>
 
-#include "../modules/PersonalSystem2/keyboard.hpp"
 #include "../kernel.h"
-#include "../Fex.hpp"
-#include "../mapi.hpp"
+#include "../driver.h"
 #include "cmds.hpp"
 
-using namespace PS2Keyboard;
-
 NewLock(ShellLock);
-
-const char sc_ascii_low[] = {'?', '?', '1', '2', '3', '4', '5', '6',
-							 '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
-							 'u', 'i', 'o', 'p', '[', ']', '?', '?', 'a', 's', 'd', 'f', 'g',
-							 'h', 'j', 'k', 'l', ';', '\'', '`', '?', '\\', 'z', 'x', 'c', 'v',
-							 'b', 'n', 'm', ',', '.', '/', '?', '?', '?', ' '};
-
-const char sc_ascii_high[] = {'?', '?', '!', '@', '#', '$', '%', '^',
-							  '&', '*', '(', ')', '_', '+', '?', '?', 'Q', 'W', 'E', 'R', 'T', 'Y',
-							  'U', 'I', 'O', 'P', '{', '}', '?', '?', 'A', 'S', 'D', 'F', 'G',
-							  'H', 'J', 'K', 'L', ':', '\"', '~', '?', '|', 'Z', 'X', 'C', 'V',
-							  'B', 'N', 'M', '<', '>', '?', '?', '?', '?', ' '};
-
-static int LowerCase = true;
-
-char GetLetterFromScanCode(uint8_t ScanCode)
-{
-	if (ScanCode & 0x80)
-	{
-		switch (ScanCode)
-		{
-		case KEY_U_LSHIFT:
-			LowerCase = true;
-			return 0;
-		case KEY_U_RSHIFT:
-			LowerCase = true;
-			return 0;
-		default:
-			return 0;
-		}
-	}
-	else
-	{
-		switch (ScanCode)
-		{
-		case KEY_D_RETURN:
-			return '\n';
-		case KEY_D_LSHIFT:
-			LowerCase = false;
-			return 0;
-		case KEY_D_RSHIFT:
-			LowerCase = false;
-			return 0;
-		case KEY_D_BACKSPACE:
-			return ScanCode;
-		default:
-		{
-			if (ScanCode > 0x39)
-				break;
-			if (LowerCase)
-				return sc_ascii_low[ScanCode];
-			else
-				return sc_ascii_high[ScanCode];
-		}
-		}
-	}
-	return 0;
-}
-
-int GetChar()
-{
-	return 0;
-}
-
 struct Command
 {
 	const char *Name;
@@ -104,6 +36,7 @@ struct Command
 static Command commands[] = {
 	{"lsof", cmd_lsof},
 	{"ls", cmd_ls},
+	{"tree", cmd_tree},
 	{"cd", cmd_cd},
 	{"cat", cmd_cat},
 	{"echo", cmd_echo},
@@ -113,7 +46,7 @@ static Command commands[] = {
 	{"rmdir", nullptr},
 	{"mv", nullptr},
 	{"cp", nullptr},
-	{"clear", nullptr},
+	{"clear", cmd_clear},
 	{"help", nullptr},
 	{"exit", cmd_exit},
 	{"reboot", cmd_reboot},
@@ -136,40 +69,42 @@ static Command commands[] = {
 	{"chgrp", nullptr},
 	{"chmod", nullptr},
 	{"chroot", nullptr},
-	{"lspci", cmd_lspci}};
+	{"lspci", cmd_lspci},
+	{"lsacpi", cmd_lsacpi},
+	{"lsmod", cmd_lsmod},
+	{"modinfo", cmd_modinfo},
+	{"insmod", nullptr},
+	{"rmmod", nullptr},
+	{"modprobe", nullptr},
+	{"depmod", nullptr},
+};
 
 void StartKernelShell()
 {
+	if (ShellLock.Locked())
+		return;
 	SmartLock(ShellLock);
 
 	debug("Starting kernel shell...");
-	printf("Starting kernel shell...\n");
+	KPrint("Starting kernel shell...");
 	thisThread->SetPriority(Tasking::TaskPriority::High);
-	Display->SetBuffer(0);
 
-	Module::ModuleFile KeyboardModule;
-	if (likely(ModuleManager->GetModules().size() > 0))
-	{
-		foreach (auto Module in ModuleManager->GetModules())
-		{
-			if (((FexExtended *)Module.ExtendedHeaderAddress)->Module.Type == FexModuleType::FexModuleType_Input &&
-				((FexExtended *)Module.ExtendedHeaderAddress)->Module.TypeFlags & FexDriverInputTypes::FexDriverInputTypes_Keyboard)
-			{
-				KeyboardModule = Module;
-				printf("Using driver \eCA21F6%s\eCCCCCC for keyboard input.\n",
-					   ((FexExtended *)Module.ExtendedHeaderAddress)->Module.Name);
-				break;
-			}
-		}
-	}
-
-	Display->SetBuffer(0);
 	std::string Buffer;
 	std::vector<std::string *> History;
 	size_t HistoryIndex = 0;
 	bool CtrlDown = false;
+	bool UpperCase = false;
 	bool TabDoublePress = false;
 
+	int kfd = fopen("/dev/key", "r");
+	if (kfd < 0)
+	{
+		KPrint("Failed to open keyboard device! %s",
+			   strerror(kfd));
+		return;
+	}
+
+	printf("Using \eCA21F6/dev/key\eCCCCCC for keyboard input.\n");
 	while (true)
 	{
 		size_t BackspaceCount = 0;
@@ -185,27 +120,50 @@ void StartKernelShell()
 			   cwd->FullPath);
 		Display->SetBuffer(0);
 
+		uint8_t scBuf[2];
+		scBuf[1] = 0x00; /* Request scan code */
+		ssize_t nBytes;
 		while (true)
 		{
-			KernelCallback callback{};
-			callback.Reason = PollWaitReason;
-			ModuleManager->IOCB(KeyboardModule.modUniqueID, &callback);
-			char c = GetLetterFromScanCode(callback.InputCallback.Keyboard.Key);
+			nBytes = fread(kfd, scBuf, 2);
+			if (nBytes == 0)
+				continue;
+			if (nBytes < 0)
+			{
+				KPrint("Failed to read from keyboard device: %s",
+					   strerror((int)nBytes));
+				return;
+			}
 
-			switch (callback.InputCallback.Keyboard.Key)
+			if (scBuf[0] == 0x00)
+				continue;
+
+			uint8_t sc = scBuf[0];
+			switch (sc & ~KEY_PRESSED)
 			{
-			case KEY_D_LCTRL:
+			case KEY_LEFT_CTRL:
+			case KEY_RIGHT_CTRL:
 			{
-				CtrlDown = true;
+				if (sc & KEY_PRESSED)
+					CtrlDown = true;
+				else
+					CtrlDown = false;
 				continue;
 			}
-			case KEY_U_LCTRL:
+			case KEY_LEFT_SHIFT:
+			case KEY_RIGHT_SHIFT:
 			{
-				CtrlDown = false;
+				if (sc & KEY_PRESSED)
+					UpperCase = true;
+				else
+					UpperCase = false;
 				continue;
 			}
-			case KEY_D_BACKSPACE:
+			case KEY_BACKSPACE:
 			{
+				if (!(sc & KEY_PRESSED))
+					continue;
+
 				if (BackspaceCount == 0)
 					continue;
 
@@ -215,8 +173,11 @@ void StartKernelShell()
 				Display->SetBuffer(0);
 				continue;
 			}
-			case KEY_D_UP:
+			case KEY_UP_ARROW:
 			{
+				if (!(sc & KEY_PRESSED))
+					continue;
+
 				if (History.size() == 0 ||
 					HistoryIndex == 0)
 					continue;
@@ -235,8 +196,11 @@ void StartKernelShell()
 				Display->SetBuffer(0);
 				continue;
 			}
-			case KEY_D_DOWN:
+			case KEY_DOWN_ARROW:
 			{
+				if (!(sc & KEY_PRESSED))
+					continue;
+
 				if (History.size() == 0 ||
 					HistoryIndex == History.size())
 					continue;
@@ -265,8 +229,11 @@ void StartKernelShell()
 				Display->SetBuffer(0);
 				continue;
 			}
-			case KEY_D_TAB:
+			case KEY_TAB:
 			{
+				if (!(sc & KEY_PRESSED))
+					continue;
+
 				if (!TabDoublePress)
 				{
 					TabDoublePress = true;
@@ -276,10 +243,8 @@ void StartKernelShell()
 				if (Buffer.size() == 0)
 				{
 					for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
-					{
 						printf("%s ", commands[i].Name);
-						Display->SetBuffer(0);
-					}
+
 					Display->Print('\n', 0);
 					Display->SetBuffer(0);
 					goto SecLoopEnd;
@@ -307,8 +272,13 @@ void StartKernelShell()
 				break;
 			}
 
-			if (c == 0)
+			if (!(sc & KEY_PRESSED))
 				continue;
+
+			if (!Driver::IsValidChar(sc))
+				continue;
+
+			char c = Driver::GetScanCode(sc, UpperCase);
 
 			if (CtrlDown)
 			{
@@ -369,7 +339,7 @@ void StartKernelShell()
 				cmd_extracted += Buffer[i];
 			}
 
-			debug("cmd: %s, array[%d]: %s", cmd_extracted.c_str(), i, commands[i].Name);
+			// debug("cmd: %s, array[%d]: %s", cmd_extracted.c_str(), i, commands[i].Name);
 			if (strncmp(commands[i].Name, cmd_extracted.c_str(), cmd_extracted.size()) == 0)
 			{
 				if (strlen(commands[i].Name) != cmd_extracted.size())

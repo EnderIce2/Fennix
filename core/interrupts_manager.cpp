@@ -46,10 +46,64 @@ namespace Interrupts
 {
 	struct Event
 	{
-		int ID;
+		/** Interrupt number */
+		int IRQ;
+
+		/** Raw pointer to the Handler */
 		void *Data;
+
+		/** Is this a handler? */
+		bool IsHandler;
+
+		/**
+		 * Function to call if this is not a Handler
+		 *
+		 * Used for C-style callbacks.
+		 */
+		void (*Callback)(CPU::TrapFrame *);
+
+		/**
+		 * Context for the callback
+		 *
+		 * Used for C-style callbacks if the callback needs a context.
+		 * (e.g. a driver)
+		 */
+		void *Context;
+
+		/**
+		 * Priority of the event
+		 *
+		 * Used for sorting the events.
+		 *
+		 * This is incremented every time the event is called.
+		 *
+		 * This will improve performance by reducing the time
+		 * spent on searching for the event.
+		 */
+		unsigned long Priority;
+
+		/**
+		 * If this is true, the event is critical.
+		 *
+		 * This will make sure that the event will not be
+		 * removed by the kernel.
+		 * 
+		 * This is used to prevent the kernel from removing
+		 * ACPI related handlers. (SCI interrupts)
+		 */
+		bool Critical;
 	};
-	std::vector<Event> RegisteredEvents;
+	std::list<Event> RegisteredEvents;
+
+#ifdef DEBUG
+#define SORT_DIVIDER 10
+#else
+#define SORT_DIVIDER 1
+#endif
+
+#define SORT_START 10000
+	std::atomic_uint SortEvents = SORT_START / SORT_DIVIDER;
+	constexpr uint32_t SORT_ITR = (SORT_START * 100) / SORT_DIVIDER;
 
 #if defined(a86)
 	/* APIC::APIC */ void *apic[MAX_CPU];
@@ -120,6 +174,7 @@ namespace Interrupts
 #elif defined(aa64)
 		warn("aarch64 is not supported yet");
 #endif
+		CPU::Interrupts(CPU::Enable);
 	}
 
 	void InitializeTimer(int Core)
@@ -139,7 +194,90 @@ namespace Interrupts
 
 	SafeFunction void RemoveAll()
 	{
-		RegisteredEvents.clear();
+		forItr(itr, RegisteredEvents)
+		{
+			if (itr->Critical)
+				continue;
+			RegisteredEvents.erase(itr);
+		}
+	}
+
+	void AddHandler(void (*Callback)(CPU::TrapFrame *),
+					int InterruptNumber,
+					void *ctx, bool Critical)
+	{
+		/* Just log a warning if the interrupt is already registered. */
+		foreach (auto ev in RegisteredEvents)
+		{
+			if (ev.IRQ == InterruptNumber &&
+				ev.Callback == Callback)
+			{
+				warn("IRQ%d is already registered.",
+					 InterruptNumber);
+			}
+		}
+
+		Event newEvent =
+			{InterruptNumber, /* IRQ */
+			 nullptr,		  /* Data */
+			 false,			  /* IsHandler */
+			 Callback,		  /* Callback */
+			 ctx,			  /* Context */
+			 0,				  /* Priority */
+			 Critical};		  /* Critical */
+		RegisteredEvents.push_back(newEvent);
+		debug("Registered interrupt handler for IRQ%d to %#lx",
+			  InterruptNumber, Callback);
+	}
+
+	void RemoveHandler(void (*Callback)(CPU::TrapFrame *), int InterruptNumber)
+	{
+		forItr(itr, RegisteredEvents)
+		{
+			if (itr->IRQ == InterruptNumber &&
+				itr->Callback == Callback)
+			{
+				RegisteredEvents.erase(itr);
+				debug("Unregistered interrupt handler for IRQ%d to %#lx",
+					  InterruptNumber, Callback);
+				return;
+			}
+		}
+		warn("Event %d not found.", InterruptNumber);
+	}
+
+	void RemoveHandler(void (*Callback)(CPU::TrapFrame *))
+	{
+		forItr(itr, RegisteredEvents)
+		{
+			if (itr->Callback == Callback)
+			{
+				debug("Removing handle %d %#lx", itr->IRQ,
+					  itr->IsHandler
+						  ? itr->Data
+						  : (void *)itr->Callback);
+
+				RegisteredEvents.erase(itr);
+			}
+		}
+		warn("Handle not found.");
+	}
+
+	void RemoveHandler(int InterruptNumber)
+	{
+		forItr(itr, RegisteredEvents)
+		{
+			if (itr->IRQ == InterruptNumber)
+			{
+				debug("Removing handle %d %#lx", itr->IRQ,
+					  itr->IsHandler
+						  ? itr->Data
+						  : (void *)itr->Callback);
+
+				RegisteredEvents.erase(itr);
+			}
+		}
+		warn("IRQ%d not found.", InterruptNumber);
 	}
 
 	extern "C" SafeFunction void MainInterruptHandler(void *Data)
@@ -170,77 +308,126 @@ namespace Interrupts
 			Core = CoreData->ID;
 
 		/* If this is false, we have a big problem. */
-		if (likely(Frame->InterruptNumber < CPU::x86::IRQ223 &&
-				   Frame->InterruptNumber > CPU::x86::ISR0))
-		{
-			/* Halt core interrupt */
-			if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ29))
-				CPU::Stop();
-
-			bool InterruptHandled = false;
-			foreach (auto ev in RegisteredEvents)
-			{
-#if defined(a86)
-				if ((ev.ID + CPU::x86::IRQ0) == s_cst(int, Frame->InterruptNumber))
-#elif defined(aa64)
-				if (ev.ID == s_cst(int, Frame->InterruptNumber))
-#endif
-				{
-					Handler *hnd = (Handler *)ev.Data;
-					hnd->OnInterruptReceived(Frame);
-					InterruptHandled = true;
-				}
-			}
-
-			if (!InterruptHandled)
-			{
-				error("IRQ%d is unhandled on CPU %d.",
-					  Frame->InterruptNumber - 32, Core);
-				if (Frame->InterruptNumber == CPU::x86::IRQ1)
-				{
-					uint8_t scancode = inb(0x60);
-					warn("IRQ1 is the keyboard interrupt. Scancode: %#x", scancode);
-				}
-			}
-
-			if (likely(apic[Core]))
-			{
-				APIC::APIC *this_apic = (APIC::APIC *)apic[Core];
-				this_apic->EOI();
-				// TODO: Handle PIC too
-				return;
-			}
-			else
-				fixme("APIC not found for core %d", Core);
-			// TODO: PIC
-		}
-		else
+		if (unlikely(Frame->InterruptNumber >= CPU::x86::IRQ223 ||
+					 Frame->InterruptNumber <= CPU::x86::ISR0))
 		{
 			error("Interrupt number %d is out of range.",
 				  Frame->InterruptNumber);
+			assert(!"Interrupt number is out of range.");
 		}
 
-		error("HALT HALT HALT HALT HALT HALT HALT HALT HALT [IRQ%d]",
-			  Frame->InterruptNumber - 32);
+		/* Halt core interrupt */
+		if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ31))
+			CPU::Stop();
+
+		bool InterruptHandled = false;
+		foreach (auto &ev in RegisteredEvents)
+		{
+#if defined(a86)
+			int iEvNum = ev.IRQ + CPU::x86::IRQ0;
+#elif defined(aa64)
+			int iEvNum = ev.IRQ;
+#endif
+			if (iEvNum == s_cst(int, Frame->InterruptNumber))
+			{
+				if (ev.IsHandler)
+				{
+					Handler *hnd = (Handler *)ev.Data;
+					hnd->OnInterruptReceived(Frame);
+				}
+				else
+				{
+					if (ev.Context != nullptr)
+						ev.Callback((CPU::TrapFrame *)ev.Context);
+					else
+						ev.Callback(Frame);
+				}
+				ev.Priority++;
+				InterruptHandled = true;
+			}
+		}
+
+		if (unlikely(!InterruptHandled))
+		{
+			error("IRQ%d is unhandled on CPU %d.",
+				  Frame->InterruptNumber - 32, Core);
+		}
+
+		/* TODO: This should be done when the os is idle */
+		if (SortEvents++ > SORT_ITR)
+		{
+			debug("Sorting events");
+			SortEvents = 0;
+			RegisteredEvents.sort([](const Event &a, const Event &b)
+								  { return a.Priority < b.Priority; });
+
+#ifdef DEBUG
+			foreach (auto ev in RegisteredEvents)
+			{
+				void *func = ev.IsHandler
+								 ? ev.Data
+								 : (void *)ev.Callback;
+				const char *symbol = ev.IsHandler
+										 ? "class"
+										 : KernelSymbolTable->GetSymbol((uintptr_t)func);
+
+				debug("Event IRQ%d [%#lx %s] has priority %ld",
+					  ev.IRQ, func, symbol, ev.Priority);
+			}
+#endif
+		}
+
+		if (likely(apic[Core]))
+		{
+			APIC::APIC *this_apic = (APIC::APIC *)apic[Core];
+			this_apic->EOI();
+			// TODO: Handle PIC too
+			return;
+		}
+		else
+			fixme("APIC not found for core %d", Core);
+		// TODO: PIC
+
+		assert(!"Interrupt EOI not handled.");
 		CPU::Stop();
 	}
 
-	Handler::Handler(int InterruptNumber)
+	Handler::Handler(int InterruptNumber, bool Critical)
 	{
 		foreach (auto ev in RegisteredEvents)
 		{
-			if (ev.ID == InterruptNumber)
+			if (ev.IRQ == InterruptNumber)
 			{
 				warn("IRQ%d is already registered.",
 					 InterruptNumber);
 			}
 		}
 
-		debug("Registering interrupt handler for IRQ%d.",
-			  InterruptNumber);
-
 		this->InterruptNumber = InterruptNumber;
-		RegisteredEvents.push_back({InterruptNumber, this});
+
+		Event newEvent =
+			{InterruptNumber, /* IRQ */
+			 this,			  /* Data */
+			 true,			  /* IsHandler */
+			 nullptr,		  /* Callback */
+			 nullptr,		  /* Context */
+			 0,				  /* Priority */
+			 Critical};		  /* Critical */
+		RegisteredEvents.push_back(newEvent);
+		debug("Registered interrupt handler for IRQ%d.",
+			  InterruptNumber);
+	}
+
+	Handler::Handler(PCI::PCIDevice Device, bool Critical)
+	{
+		PCI::PCIHeader0 *hdr0 =
+			(PCI::PCIHeader0 *)Device.Header;
+		Handler(hdr0->InterruptLine, Critical);
+	}
+
+	Handler::Handler()
+	{
+		debug("Empty interrupt handler.");
 	}
 
 	Handler::~Handler()
@@ -250,7 +437,7 @@ namespace Interrupts
 
 		forItr(itr, RegisteredEvents)
 		{
-			if (itr->ID == this->InterruptNumber)
+			if (itr->IRQ == this->InterruptNumber)
 			{
 				RegisteredEvents.erase(itr);
 				return;
@@ -259,21 +446,9 @@ namespace Interrupts
 		warn("Event %d not found.", this->InterruptNumber);
 	}
 
-#if defined(a64)
-	void Handler::OnInterruptReceived(CPU::x64::TrapFrame *Frame)
+	void Handler::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
-		trace("Unhandled interrupt IRQ%d",
-			  Frame->InterruptNumber - 32);
-#elif defined(a32)
-	void Handler::OnInterruptReceived(CPU::x32::TrapFrame *Frame)
-	{
-		trace("Unhandled interrupt IRQ%d",
-			  Frame->InterruptNumber - 32);
-#elif defined(aa64)
-	void Handler::OnInterruptReceived(CPU::aarch64::TrapFrame *Frame)
-	{
-		trace("Unhandled interrupt IRQ%d",
+		trace("Unhandled interrupt %d",
 			  Frame->InterruptNumber);
-#endif
 	}
 }
