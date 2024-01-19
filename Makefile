@@ -1,22 +1,21 @@
 build:
+	cp -f ../Kernel/driver.h include/driver.h
 	mkdir -p out
-	make -C Input build
-	make -C Storage build
-	make -C Audio build
-	make -C FileSystem build
-	make -C Generic build
-	make -C Network build
-	make -C Video build
+	make -C library build
+	make -C audio build
+	make -C input build
+	make -C misc build
+	make -C network build
+	make -C storage build
 
 prepare:
 	$(info Nothing to prepare)
 
 clean:
 	rm -rf out
-	make -C Input clean
-	make -C Storage clean
-	make -C Audio clean
-	make -C FileSystem clean
-	make -C Generic clean
-	make -C Network clean
-	make -C Video clean
+	make -C library clean
+	make -C audio clean
+	make -C input clean
+	make -C misc clean
+	make -C network clean
+	make -C storage clean

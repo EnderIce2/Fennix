@@ -1,4 +1,6 @@
 out
 *.map
 *.o
+*.a
+*.su
 .dccache

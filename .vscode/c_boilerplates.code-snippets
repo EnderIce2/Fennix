@@ -24,5 +24,29 @@
 			"/** @brief $0 */"
 		],
 		"description": "Create documentation brief."
+	},
+	"License": {
+		"prefix": [
+			"license",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Drivers.",
+			"",
+			"\tFennix Drivers is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Drivers is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Drivers. If not, see <https://www.gnu.org/licenses/>.",
+			"*/"
+		],
+		"description": "Create kernel license."
 	}
 }

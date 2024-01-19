@@ -1,6 +1,6 @@
-# Modules
+# Drivers
 
-Modules for [Fennix](https://github.com/Fennix-Project/Fennix).
+Drivers for [Fennix](https://github.com/Fennix-Project/Fennix).
 
 ---
 
