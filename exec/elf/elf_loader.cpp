@@ -141,6 +141,7 @@ namespace Execute
 		}
 
 		Elf64_Ehdr ELFHeader;
+		lseek(fd, 0, SEEK_SET);
 		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
@@ -383,6 +384,7 @@ namespace Execute
 		}
 
 		Elf64_Ehdr ELFHeader;
+		lseek(fd, 0, SEEK_SET);
 		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
