@@ -32,36 +32,6 @@ using namespace vfs;
 
 namespace Execute
 {
-	void ELFObject::LoadPhdrs_x86_32(int fd,
-									 Elf64_Ehdr ELFHeader,
-									 Memory::VirtualMemoryArea *vma,
-									 PCB *TargetProcess)
-	{
-		stub;
-		UNUSED(fd);
-		UNUSED(ELFHeader);
-		UNUSED(TargetProcess);
-	}
-
-	void ELFObject::LoadPhdrs_x86_64(int fd,
-									 Elf64_Ehdr ELFHeader,
-									 Memory::VirtualMemoryArea *vma,
-									 PCB *TargetProcess)
-	{
-#if defined(a64)
-		// assert(ELFHeader.e_phentsize == sizeof(Elf64_Phdr));
-
-		size_t size = ELFHeader.e_phnum * sizeof(Elf64_Phdr);
-		assert(size > 0);
-		assert(size < 65536);
-		assert(size < PAGE_SIZE);
-
-		ELFProgramHeaders = vma->RequestPages(TO_PAGES(size), true);
-		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
-		fread(fd, (uint8_t *)ELFProgramHeaders, size);
-#endif
-	}
-
 	void ELFObject::GenerateAuxiliaryVector_x86_32(Memory::VirtualMemoryArea *vma,
 												   int fd,
 												   Elf32_Ehdr ELFHeader,
@@ -100,14 +70,28 @@ namespace Execute
 		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
 		// AT_FLAGS 8
 		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFProgramHeaders}}});
+
+		if (ELFProgramHeaders)
+		{
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFProgramHeaders}}});
+		}
+
 		// AT_CLKTCK 17
 		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
-// AT_HWCAP 16
-// AT_MINSIGSTKSZ 51
-// AT_SYSINFO_EHDR 33
+		// AT_HWCAP 16
+		// AT_SYSINFO_EHDR 33
+		// AT_MINSIGSTKSZ 51
+
+#ifdef DEBUG
+		foreach (auto var in Elfauxv)
+		{
+			debug("auxv: %ld %#lx",
+				  var.archaux.a_type,
+				  var.archaux.a_un.a_val);
+		}
+#endif
 #endif
 	}
 
@@ -164,8 +148,6 @@ namespace Execute
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
 		debug("Target process page table is %#lx", TargetProcess->PageTable);
-
-		LoadPhdrs_x86_64(fd, ELFHeader, vma, TargetProcess);
 
 		/* Copy segments into memory */
 		{
@@ -286,6 +268,12 @@ namespace Execute
 					};
 					break;
 				}
+				case PT_PHDR:
+				{
+					ELFProgramHeaders = (void *)ProgramHeader.p_vaddr;
+					debug("ELFProgramHeaders: %#lx", ELFProgramHeaders);
+					break;
+				}
 				case 0x6474E550: /* PT_GNU_EH_FRAME */
 				{
 					fixme("PT_GNU_EH_FRAME");
@@ -306,6 +294,8 @@ namespace Execute
 					fixme("PT_GNU_PROPERTY");
 					break;
 				}
+				case PT_INTERP:
+					break;
 				default:
 				{
 					fixme("Unhandled program header type: %#lx",
@@ -314,6 +304,9 @@ namespace Execute
 				}
 				}
 			}
+
+			if (!ELFProgramHeaders)
+				fixme("ELFProgramHeaders is null");
 
 			/* Set program break */
 			uintptr_t ProgramBreak = ROUND_UP(ProgramBreakHeader.p_vaddr +
@@ -382,8 +375,6 @@ namespace Execute
 
 				if (LoadInterpreter(ifd, TargetProcess))
 				{
-					/* FIXME: specify argv[1] as the location for the interpreter */
-
 					debug("Interpreter loaded successfully");
 					fclose(ifd);
 					return;
@@ -399,8 +390,6 @@ namespace Execute
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
 		uintptr_t BaseAddress = 0;
-
-		LoadPhdrs_x86_64(fd, ELFHeader, vma, TargetProcess);
 
 		/* Copy segments into memory */
 		{
@@ -493,6 +482,12 @@ namespace Execute
 					}
 					break;
 				}
+				case PT_PHDR:
+				{
+					ELFProgramHeaders = (void *)(BaseAddress + ProgramHeader.p_vaddr);
+					debug("ELFProgramHeaders: %#lx", ELFProgramHeaders);
+					break;
+				}
 				case 0x6474E550: /* PT_GNU_EH_FRAME */
 				{
 					fixme("PT_GNU_EH_FRAME");
@@ -513,6 +508,8 @@ namespace Execute
 					fixme("PT_GNU_PROPERTY");
 					break;
 				}
+				case PT_INTERP:
+					break;
 				default:
 				{
 					fixme("Unhandled program header type: %#lx",
@@ -521,6 +518,9 @@ namespace Execute
 				}
 				}
 			}
+
+			if (!ELFProgramHeaders)
+				ELFProgramHeaders = (void *)(BaseAddress + ELFHeader.e_phoff);
 
 			/* Set program break */
 			uintptr_t ProgramBreak = ROUND_UP(BaseAddress +
@@ -860,14 +860,41 @@ namespace Execute
 		while (envp[envc] != nullptr)
 			envc++;
 
+		Elf32_Ehdr ELFHeader;
+		fread(fd, &ELFHeader, sizeof(Elf32_Ehdr));
+
+		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
+		const char *ElfInterpPath = nullptr;
+		if (!PhdrINTERP.empty() && ELFHeader.e_type == ET_DYN)
+		{
+			lseek(fd, PhdrINTERP.front().p_offset, SEEK_SET);
+			ElfInterpPath = new char[256];
+			fread(fd, (void *)ElfInterpPath, 256);
+			debug("Interpreter: %s", ElfInterpPath);
+			lseek(fd, 0, SEEK_SET);
+			argc++;
+		}
+
 		// ELFargv = new const char *[argc + 2];
 		size_t argv_size = argc + 2 * sizeof(char *);
 		ELFargv = (const char **)TargetProcess->vma->RequestPages(TO_PAGES(argv_size));
-		for (int i = 0; i < argc; i++)
+
+		int interAdd = 0;
+		if (ElfInterpPath)
 		{
-			size_t arg_size = strlen(argv[i]) + 1;
+			size_t interp_size = strlen(ElfInterpPath) + 1;
+			ELFargv[0] = (const char *)TargetProcess->vma->RequestPages(TO_PAGES(interp_size));
+			strcpy((char *)ELFargv[0], ElfInterpPath);
+			delete[] ElfInterpPath;
+			interAdd++;
+		}
+
+		for (int i = interAdd; i < argc; i++)
+		{
+			assert(argv[i - interAdd] != nullptr);
+			size_t arg_size = strlen(argv[i - interAdd]) + 1;
 			ELFargv[i] = (const char *)TargetProcess->vma->RequestPages(TO_PAGES(arg_size));
-			strcpy((char *)ELFargv[i], argv[i]);
+			strcpy((char *)ELFargv[i], argv[i - interAdd]);
 		}
 		ELFargv[argc] = nullptr;
 
@@ -876,14 +903,12 @@ namespace Execute
 		ELFenvp = (const char **)TargetProcess->vma->RequestPages(TO_PAGES(envp_size));
 		for (int i = 0; i < envc; i++)
 		{
+			assert(envp[i] != nullptr);
 			size_t env_size = strlen(envp[i]) + 1;
 			ELFenvp[i] = (const char *)TargetProcess->vma->RequestPages(TO_PAGES(env_size));
 			strcpy((char *)ELFenvp[i], envp[i]);
 		}
 		ELFenvp[envc] = nullptr;
-
-		Elf32_Ehdr ELFHeader;
-		fread(fd, &ELFHeader, sizeof(Elf32_Ehdr));
 
 		switch (ELFHeader.e_type)
 		{
