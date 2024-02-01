@@ -67,6 +67,32 @@ namespace Memory
 				   MapType Type = MapType::FourKiB);
 
 		/**
+		 * @brief Check if the region has the specified flag.
+		 *
+		 * @param VirtualAddress Virtual address of the region.
+		 * @param Length Length of the region.
+		 * @param Flag Flag to check.
+		 * @param Type Type of the page. Check MapType enum.
+		 * @return true if the region has the specified flag, false otherwise.
+		 */
+		bool CheckRegion(void *VirtualAddress,
+						 size_t Length,
+						 PTFlag Flag = PTFlag::P,
+						 MapType Type = MapType::FourKiB)
+		{
+			for (size_t i = 0; i < Length; i += PAGE_SIZE_4K)
+			{
+				if (!this->Check((void *)((uintptr_t)VirtualAddress + i), Flag, Type))
+				{
+					debug("address %#lx for pt %#lx has flag(s) %#lx",
+						  (uintptr_t)VirtualAddress + i, this->pTable, Flag);
+					return false;
+				}
+			}
+			return true;
+		}
+
+		/**
 		 * @brief Get physical address of the page.
 		 * @param VirtualAddress Virtual address of the page.
 		 * @return Physical address of the page.
