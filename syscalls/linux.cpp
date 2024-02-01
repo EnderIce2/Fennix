@@ -236,9 +236,6 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	if (length == 0)
 		return (void *)-EINVAL;
 
-	if (fildes != -1)
-		return (void *)-ENOSYS;
-
 	bool p_None = prot & sc_PROT_NONE;
 	bool p_Read = prot & sc_PROT_READ;
 	bool p_Write = prot & sc_PROT_WRITE;
@@ -252,31 +249,22 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	UNUSED(p_None);
 	UNUSED(m_Anon);
 
-	debug("N:%d R:%d W:%d E:%d",
-		  p_None, p_Read, p_Write,
-		  p_Exec);
+	debug("None:%d Read:%d Write:%d Exec:%d",
+		  p_None, p_Read, p_Write, p_Exec);
 
-	debug("S:%d P:%d F:%d A:%d",
-		  m_Shared, m_Private,
-		  m_Fixed, m_Anon);
+	debug("Shared:%d Private:%d Fixed:%d Anon:%d",
+		  m_Shared, m_Private, m_Fixed, m_Anon);
 
 	int UnknownFlags = flags & ~(sc_MAP_SHARED |
 								 sc_MAP_PRIVATE |
 								 sc_MAP_FIXED |
 								 sc_MAP_ANONYMOUS);
-
 	if (UnknownFlags)
 	{
-		debug("Unknown flags: %x", UnknownFlags);
-		return (void *)-EINVAL;
+		/* We still have some flags missing afaik... */
+		fixme("Unknown flags: %x", UnknownFlags);
+		/* Allow? */
 	}
-
-	if (length > PAGE_SIZE_2M)
-		fixme("large page 2 MiB (requested %d)",
-			  TO_MiB(length));
-	else if (length > PAGE_SIZE_1G)
-		fixme("huge page 1 GiB (requested %d)",
-			  TO_GiB(length));
 
 	if (offset % PAGE_SIZE)
 		return (void *)-EINVAL;
@@ -290,6 +278,77 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
+	if (fildes != -1 && !m_Anon)
+	{
+		fixme("File mapping not fully implemented");
+		vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+		vfs::FileDescriptorTable::Fildes &_fd = fdt->GetDescriptor(fildes);
+		if (_fd.Descriptor != fildes)
+		{
+			debug("Invalid file descriptor %d", fildes);
+			return (void *)-EBADF;
+		}
+
+		if (p_Read)
+		{
+			Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+			void *pBuf = vma->RequestPages(TO_PAGES(length));
+			debug("created buffer at %#lx-%#lx",
+				  pBuf, (uintptr_t)pBuf + length);
+
+			uintptr_t mFlags = Memory::US;
+			if (p_Write)
+				mFlags |= Memory::RW;
+
+			if (m_Fixed)
+			{
+				if (m_Shared)
+					return (void *)-ENOSYS;
+
+				if (vmm.CheckRegion(addr, Memory::G))
+				{
+					debug("Address range %#lx-%#lx has a global page",
+						  addr, (uintptr_t)addr + length);
+					// return (void *)-EINVAL;
+				}
+
+				vmm.Map(addr, pBuf, length, mFlags);
+				off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
+				fdt->_lseek(fildes, offset, SEEK_SET);
+
+				ssize_t ret = fdt->_read(fildes, pBuf, length);
+
+				fdt->_lseek(fildes, oldOff, SEEK_SET);
+
+				if (ret < 0)
+				{
+					debug("Failed to read file");
+					return (void *)-ret;
+				}
+				return addr;
+			}
+			else
+				vmm.Map(pBuf, pBuf, length, mFlags);
+
+			off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
+			fdt->_lseek(fildes, offset, SEEK_SET);
+
+			ssize_t ret = fdt->_read(fildes, pBuf, length);
+
+			fdt->_lseek(fildes, oldOff, SEEK_SET);
+
+			if (ret < 0)
+			{
+				debug("Failed to read file");
+				return (void *)-ret;
+			}
+			return pBuf;
+		}
+
+		debug("???");
+		return (void *)-ENOSYS;
+	}
+
 	intptr_t ret = (intptr_t)vma->CreateCoWRegion(addr, length,
 												  p_Read, p_Write, p_Exec,
 												  m_Fixed, m_Shared);
