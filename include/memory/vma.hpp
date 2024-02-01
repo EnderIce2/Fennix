@@ -58,12 +58,12 @@ namespace Memory
 		PageTable *GetTable() { return Table; }
 		void SetTable(PageTable *Table) { this->Table = Table; }
 
-		std::vector<AllocatedPages> GetAllocatedPagesList()
+		std::vector<AllocatedPages> &GetAllocatedPagesList()
 		{
 			return AllocatedPagesList;
 		}
 
-		std::vector<SharedRegion> GetSharedRegions()
+		std::vector<SharedRegion> &GetSharedRegions()
 		{
 			return SharedRegions;
 		}
