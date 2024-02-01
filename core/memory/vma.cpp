@@ -345,7 +345,7 @@ namespace Memory
 
 		Memory::Virtual vmm(this->Table);
 		SmartLock(MgrLock);
-		foreach (auto ap in Parent->GetAllocatedPagesList())
+		foreach (auto &ap in Parent->GetAllocatedPagesList())
 		{
 			MgrLock.Unlock();
 			void *Address = this->RequestPages(ap.PageCount);
@@ -382,12 +382,12 @@ namespace Memory
 			}
 		}
 
-		foreach (auto sr in Parent->GetSharedRegions())
+		foreach (auto &sr in Parent->GetSharedRegions())
 		{
 			MgrLock.Unlock();
 			void *Address = this->CreateCoWRegion(sr.Address, sr.Length,
-												 sr.Read, sr.Write, sr.Exec,
-												 sr.Fixed, sr.Shared);
+												  sr.Read, sr.Write, sr.Exec,
+												  sr.Fixed, sr.Shared);
 			MgrLock.Lock(__FUNCTION__);
 			if (Address == nullptr)
 				return;
