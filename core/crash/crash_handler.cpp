@@ -844,7 +844,7 @@ namespace CrashHandler
 	SafeFunction inline bool Handle_x86_64(CHArchTrapFrame *Frame)
 	{
 #ifdef a64
-		trace("Exception at %s",
+		trace("Exception at %#lx(%s)", Frame->rip,
 			  KernelSymbolTable
 				  ? KernelSymbolTable->GetSymbol(Frame->rip)
 				  : "No symbol");
@@ -942,7 +942,7 @@ namespace CrashHandler
 	SafeFunction inline bool Handle_x86_32(CHArchTrapFrame *Frame)
 	{
 #ifdef a32
-		trace("Exception at %s",
+		trace("Exception at %#lx(%s)", Frame->eip,
 			  KernelSymbolTable
 				  ? KernelSymbolTable->GetSymbol(Frame->eip)
 				  : "No symbol");
