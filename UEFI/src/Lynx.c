@@ -74,7 +74,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
             while (1)
             asm("hlt");
     InitializeMemoryManagement(ImageHandle, SystemTable);
-    EFI_FILE *Kernel = LoadFile(NULL, L"kernel.fsys", ImageHandle, SystemTable);
+    EFI_FILE *Kernel = LoadFile(NULL, L"fennix.elf", ImageHandle, SystemTable);
 
     if (Kernel == NULL)
     {
