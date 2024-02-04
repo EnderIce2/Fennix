@@ -841,7 +841,7 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction inline bool Handle_x86_64(CHArchTrapFrame *Frame)
+	SafeFunction inline bool Handle_x86_64(CPU::TrapFrame *Frame)
 	{
 #ifdef a64
 		trace("Exception at %#lx(%s)", Frame->rip,
@@ -939,7 +939,7 @@ namespace CrashHandler
 		return false;
 	}
 
-	SafeFunction inline bool Handle_x86_32(CHArchTrapFrame *Frame)
+	SafeFunction inline bool Handle_x86_32(CPU::TrapFrame *Frame)
 	{
 #ifdef a32
 		trace("Exception at %#lx(%s)", Frame->eip,
@@ -1038,7 +1038,7 @@ namespace CrashHandler
 		return false;
 	}
 
-	SafeFunction inline void Print_x86_64(CHArchTrapFrame *Frame)
+	SafeFunction inline void Print_x86_64(CPU::TrapFrame *Frame)
 	{
 #ifdef a64
 		CPU::x64::CR0 cr0 = CPU::x64::readcr0();
@@ -1111,7 +1111,7 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction inline void Print_x86_32(CHArchTrapFrame *Frame)
+	SafeFunction inline void Print_x86_32(CPU::TrapFrame *Frame)
 	{
 #ifdef a32
 		CPU::x32::CR0 cr0 = CPU::x32::readcr0();
@@ -1175,7 +1175,7 @@ namespace CrashHandler
 	{
 		// TODO: SUPPORT SMP
 		CPU::Interrupts(CPU::Disable);
-		CHArchTrapFrame *Frame = (CHArchTrapFrame *)Data;
+		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
 		SBIdx = 255;
 		debug("-----------------------------------------------------------------------------------");
 		debug("%ld MiB / %ld MiB (%ld MiB Reserved)",

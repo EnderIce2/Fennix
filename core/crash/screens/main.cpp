@@ -46,7 +46,7 @@ namespace CrashHandler
 {
 	SafeFunction void DisplayMainScreen(CRData data)
 	{
-		CHArchTrapFrame *Frame = data.Frame;
+		CPU::TrapFrame *Frame = data.Frame;
 
 		/*
  _______ ___ ___ _______ _______ _______ _______      ______ ______ _______ _______ _______ _______ _____

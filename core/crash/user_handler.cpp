@@ -32,7 +32,7 @@
 
 #include "../../kernel.h"
 
-SafeFunction bool UserModeExceptionHandler(CHArchTrapFrame *Frame)
+SafeFunction bool UserModeExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CPUData *CurCPU = GetCurrentCPU();
 	Tasking::PCB *CurProc = CurCPU->CurrentProcess;

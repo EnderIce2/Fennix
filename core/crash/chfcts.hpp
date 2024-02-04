@@ -25,11 +25,10 @@
 #include <cpu.hpp>
 
 #if defined(a64)
-typedef struct CPU::x64::TrapFrame CHArchTrapFrame;
 
 struct CRData
 {
-	CHArchTrapFrame *Frame;
+	CPU::TrapFrame *Frame;
 
 	CPU::x64::CR0 cr0;
 	CPU::x64::CR2 cr2;
@@ -48,11 +47,10 @@ struct CRData
 };
 
 #elif defined(a32)
-typedef struct CPU::x32::TrapFrame CHArchTrapFrame;
 
 struct CRData
 {
-	CHArchTrapFrame *Frame;
+	CPU::TrapFrame *Frame;
 
 	CPU::x32::CR0 cr0;
 	CPU::x32::CR2 cr2;
@@ -69,11 +67,10 @@ struct CRData
 	Tasking::TCB *Thread;
 };
 #elif defined(aa64)
-typedef struct CPU::aarch64::TrapFrame CHArchTrapFrame;
 
 struct CRData
 {
-	CHArchTrapFrame *Frame;
+	CPU::TrapFrame *Frame;
 
 	long ID;
 	void *CPUData;
@@ -293,29 +290,29 @@ namespace CrashHandler
 	void DisplayConsoleScreen(CRData data);
 }
 
-void DivideByZeroExceptionHandler(CHArchTrapFrame *Frame);
-void DebugExceptionHandler(CHArchTrapFrame *Frame);
-void NonMaskableInterruptExceptionHandler(CHArchTrapFrame *Frame);
-void BreakpointExceptionHandler(CHArchTrapFrame *Frame);
-void OverflowExceptionHandler(CHArchTrapFrame *Frame);
-void BoundRangeExceptionHandler(CHArchTrapFrame *Frame);
-void InvalidOpcodeExceptionHandler(CHArchTrapFrame *Frame);
-void DeviceNotAvailableExceptionHandler(CHArchTrapFrame *Frame);
-void DoubleFaultExceptionHandler(CHArchTrapFrame *Frame);
-void CoprocessorSegmentOverrunExceptionHandler(CHArchTrapFrame *Frame);
-void InvalidTSSExceptionHandler(CHArchTrapFrame *Frame);
-void SegmentNotPresentExceptionHandler(CHArchTrapFrame *Frame);
-void StackFaultExceptionHandler(CHArchTrapFrame *Frame);
-void GeneralProtectionExceptionHandler(CHArchTrapFrame *Frame);
-void PageFaultExceptionHandler(CHArchTrapFrame *Frame);
-void x87FloatingPointExceptionHandler(CHArchTrapFrame *Frame);
-void AlignmentCheckExceptionHandler(CHArchTrapFrame *Frame);
-void MachineCheckExceptionHandler(CHArchTrapFrame *Frame);
-void SIMDFloatingPointExceptionHandler(CHArchTrapFrame *Frame);
-void VirtualizationExceptionHandler(CHArchTrapFrame *Frame);
-void SecurityExceptionHandler(CHArchTrapFrame *Frame);
-void UnknownExceptionHandler(CHArchTrapFrame *Frame);
+void DivideByZeroExceptionHandler(CPU::TrapFrame *Frame);
+void DebugExceptionHandler(CPU::TrapFrame *Frame);
+void NonMaskableInterruptExceptionHandler(CPU::TrapFrame *Frame);
+void BreakpointExceptionHandler(CPU::TrapFrame *Frame);
+void OverflowExceptionHandler(CPU::TrapFrame *Frame);
+void BoundRangeExceptionHandler(CPU::TrapFrame *Frame);
+void InvalidOpcodeExceptionHandler(CPU::TrapFrame *Frame);
+void DeviceNotAvailableExceptionHandler(CPU::TrapFrame *Frame);
+void DoubleFaultExceptionHandler(CPU::TrapFrame *Frame);
+void CoprocessorSegmentOverrunExceptionHandler(CPU::TrapFrame *Frame);
+void InvalidTSSExceptionHandler(CPU::TrapFrame *Frame);
+void SegmentNotPresentExceptionHandler(CPU::TrapFrame *Frame);
+void StackFaultExceptionHandler(CPU::TrapFrame *Frame);
+void GeneralProtectionExceptionHandler(CPU::TrapFrame *Frame);
+void PageFaultExceptionHandler(CPU::TrapFrame *Frame);
+void x87FloatingPointExceptionHandler(CPU::TrapFrame *Frame);
+void AlignmentCheckExceptionHandler(CPU::TrapFrame *Frame);
+void MachineCheckExceptionHandler(CPU::TrapFrame *Frame);
+void SIMDFloatingPointExceptionHandler(CPU::TrapFrame *Frame);
+void VirtualizationExceptionHandler(CPU::TrapFrame *Frame);
+void SecurityExceptionHandler(CPU::TrapFrame *Frame);
+void UnknownExceptionHandler(CPU::TrapFrame *Frame);
 
-bool UserModeExceptionHandler(CHArchTrapFrame *Frame);
+bool UserModeExceptionHandler(CPU::TrapFrame *Frame);
 
 #endif // !__FENNIX_KERNEL_CRASH_HANDLERS_FUNCTIONS_H__
