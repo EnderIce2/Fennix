@@ -123,9 +123,26 @@ namespace CrashHandler
 		Video::Font *f = Display->GetCurrentFont();
 		Video::FontInfo fi = f->GetInfo();
 
+		// for (uint32_t i = 0; i < sb->Width; i++)
+		// {
+		// 	for (uint32_t j = 0; j < fi.Height + 8; j++)
+		// 	{
+		// 		uint32_t grayValue = (j < 0x505050 / 0x040404) ? 0x505050 - (j * 0x040404) : 0;
+		// 		Display->SetPixel(i, j, grayValue, SBIdx);
+		// 	}
+		// }
+
 		for (uint32_t i = 0; i < sb->Width; i++)
+		{
 			for (uint32_t j = 0; j < fi.Height + 8; j++)
-				Display->SetPixel(i, j, 0x282828, SBIdx);
+			{
+				uint32_t grayValue = 0x505050 - (j * 0x020202);
+				Display->SetPixel(i, j, grayValue, SBIdx);
+			}
+		}
+
+		for (uint32_t i = 0; i < sb->Width; i++)
+			Display->SetPixel(i, fi.Height + 8, 0x404040, SBIdx);
 
 		Display->SetBufferCursor(SBIdx, 8, (fi.Height + 8) / 6);
 		switch (SBIdx)
