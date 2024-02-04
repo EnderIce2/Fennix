@@ -931,6 +931,25 @@ namespace CPU
 	{
 		typedef struct TrapFrame
 		{
+			uint64_t x0;  // General purpose
+			uint64_t x1;  // General purpose
+			uint64_t x2;  // General purpose
+			uint64_t x3;  // General purpose
+			uint64_t x4;  // General purpose
+			uint64_t x5;  // General purpose
+			uint64_t x6;  // General purpose
+			uint64_t x7;  // General purpose
+			uint64_t x8;  // General purpose
+			uint64_t x9;  // General purpose
+			uint64_t x10; // General purpose
+			uint64_t x11; // General purpose
+			uint64_t x12; // General purpose
+			uint64_t x13; // General purpose
+			uint64_t x14; // General purpose
+			uint64_t x15; // General purpose
+			uint64_t x16; // General purpose
+			uint64_t x17; // General purpose
+			uint64_t x18; // General purpose
 			uint64_t x19; // General purpose
 			uint64_t x20; // General purpose
 			uint64_t x21; // General purpose
@@ -939,18 +958,17 @@ namespace CPU
 			uint64_t x24; // General purpose
 			uint64_t x25; // General purpose
 			uint64_t x26; // General purpose
+			uint64_t x27; // General purpose
+			uint64_t x28; // General purpose
 
-			uint64_t x27; // Stack frame pointer
-			uint64_t x28; // Link register
-			uint64_t x29; // Frame pointer
-			uint64_t x30; // Program counter
+			uint64_t fp; // Frame Pointer (meant for stack frames)
+			uint64_t lr; // Link Register
 
-			uint64_t sp_el0;				  // Stack pointer
-			uint64_t elr_el1;				  // Exception Link Register
-			uint64_t spsr_el1;				  // Saved Program Status Register
-			uint64_t ErrorCode /* esr_el1 */; // Exception Syndrome Register
-
-			uint64_t InterruptNumber /* iar_el1 */; // Interrupt Acknowledge Register
+			uint64_t sp;	 // Stack Pointer
+			uint64_t pc;	 // Program Counter
+			uint64_t pstate; // Processor State (flags)
+			uint64_t esr;	 // Exception Syndrome Register
+			uint64_t far;	 // Fault Address Register
 		} TrapFrame;
 	}
 
