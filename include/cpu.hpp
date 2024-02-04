@@ -154,7 +154,7 @@ namespace CPU
 	/**
 	 * @brief Stop the CPU (infinite loop)
 	 */
-	SafeFunction __noreturn __naked __used inline void Stop()
+	SafeFunction __noreturn __used inline void Stop()
 	{
 #if defined(a86)
 		asmv("CPUStopLoop:\n"
