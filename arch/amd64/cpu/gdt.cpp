@@ -120,7 +120,7 @@ namespace GlobalDescriptorTable
 
 	void *CPUStackPointer[MAX_CPU];
 
-	SafeFunction void Init(int Core)
+	nsa void Init(int Core)
 	{
 		GDTEntries[Core] = GDTEntriesTemplate;
 		gdt[Core] =
@@ -194,7 +194,7 @@ namespace GlobalDescriptorTable
 		debug("Global Descriptor Table initialized");
 	}
 
-	SafeFunction void SetKernelStack(void *Stack)
+	nsa void SetKernelStack(void *Stack)
 	{
 		long CPUID = GetCurrentCPU()->ID;
 		if (Stack != nullptr)

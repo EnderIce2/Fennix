@@ -42,7 +42,7 @@ namespace CrashHandler
 		uintptr_t rip;
 	};
 
-	SafeFunction void TraceFrames(CRData data, int Count,
+	nsa void TraceFrames(CRData data, int Count,
 								  SymbolResolver::Symbols *SymHandle,
 								  bool Kernel)
 	{

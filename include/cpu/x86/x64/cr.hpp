@@ -190,7 +190,7 @@ namespace CPU
         } XCR0;
 
 #if defined(a64)
-        SafeFunction static inline CR0 readcr0()
+        nsa static inline CR0 readcr0()
         {
             uint64_t Result = 0;
             asmv("mov %%cr0, %[Result]"
@@ -198,7 +198,7 @@ namespace CPU
             return (CR0){.raw = Result};
         }
 
-        SafeFunction static inline CR2 readcr2()
+        nsa static inline CR2 readcr2()
         {
             uint64_t Result = 0;
             asmv("mov %%cr2, %[Result]"
@@ -206,7 +206,7 @@ namespace CPU
             return (CR2){.raw = Result};
         }
 
-        SafeFunction static inline CR3 readcr3()
+        nsa static inline CR3 readcr3()
         {
             uint64_t Result = 0;
             asmv("mov %%cr3, %[Result]"
@@ -214,7 +214,7 @@ namespace CPU
             return (CR3){.raw = Result};
         }
 
-        SafeFunction static inline CR4 readcr4()
+        nsa static inline CR4 readcr4()
         {
             uint64_t Result = 0;
             asmv("mov %%cr4, %[Result]"
@@ -222,7 +222,7 @@ namespace CPU
             return (CR4){.raw = Result};
         }
 
-        SafeFunction static inline CR8 readcr8()
+        nsa static inline CR8 readcr8()
         {
             uint64_t Result = 0;
             asmv("mov %%cr8, %[Result]"
@@ -230,7 +230,7 @@ namespace CPU
             return (CR8){.raw = Result};
         }
 
-        SafeFunction static inline XCR0 readxcr0()
+        nsa static inline XCR0 readxcr0()
         {
             uint64_t Result = 0;
             asmv("xgetbv"
@@ -240,7 +240,7 @@ namespace CPU
             return (XCR0){.raw = Result};
         }
 
-        SafeFunction static inline void writecr0(CR0 ControlRegister)
+        nsa static inline void writecr0(CR0 ControlRegister)
         {
             asmv("mov %[ControlRegister], %%cr0"
                  :
@@ -248,7 +248,7 @@ namespace CPU
                  : "memory");
         }
 
-        SafeFunction static inline void writecr2(CR2 ControlRegister)
+        nsa static inline void writecr2(CR2 ControlRegister)
         {
             asmv("mov %[ControlRegister], %%cr2"
                  :
@@ -256,7 +256,7 @@ namespace CPU
                  : "memory");
         }
 
-        SafeFunction static inline void writecr3(CR3 ControlRegister)
+        nsa static inline void writecr3(CR3 ControlRegister)
         {
             asmv("mov %[ControlRegister], %%cr3"
                  :
@@ -264,7 +264,7 @@ namespace CPU
                  : "memory");
         }
 
-        SafeFunction static inline void writecr4(CR4 ControlRegister)
+        nsa static inline void writecr4(CR4 ControlRegister)
         {
             asmv("mov %[ControlRegister], %%cr4"
                  :
@@ -272,7 +272,7 @@ namespace CPU
                  : "memory");
         }
 
-        SafeFunction static inline void writecr8(CR8 ControlRegister)
+        nsa static inline void writecr8(CR8 ControlRegister)
         {
             asmv("mov %[ControlRegister], %%cr8"
                  :
@@ -280,7 +280,7 @@ namespace CPU
                  : "memory");
         }
 
-        SafeFunction static inline void writexcr0(XCR0 ControlRegister)
+        nsa static inline void writexcr0(XCR0 ControlRegister)
         {
             asmv("xsetbv"
                  :

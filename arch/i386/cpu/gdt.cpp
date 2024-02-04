@@ -155,7 +155,7 @@ namespace GlobalDescriptorTable
 
 	void *CPUStackPointer[MAX_CPU];
 
-	SafeFunction void Init(int Core)
+	nsa void Init(int Core)
 	{
 		memcpy(&GDTEntries[Core], &GDTEntriesTemplate, sizeof(GlobalDescriptorTableEntries));
 		gdt[Core] = {.Length = sizeof(GlobalDescriptorTableEntries) - 1, .Entries = &GDTEntries[Core]};
@@ -253,7 +253,7 @@ namespace GlobalDescriptorTable
 		debug("Global Descriptor Table initialized");
 	}
 
-	SafeFunction void SetKernelStack(void *Stack)
+	nsa void SetKernelStack(void *Stack)
 	{
 		stub;
 	}

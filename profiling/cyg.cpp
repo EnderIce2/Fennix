@@ -28,7 +28,7 @@ unsigned int Level = 0;
 using namespace UniversalAsynchronousReceiverTransmitter;
 UART com2(COM2);
 
-static inline SafeFunction NIF void profiler_uart_wrapper(char c, void *unused)
+static inline nsa NIF void profiler_uart_wrapper(char c, void *unused)
 {
 	bool renable = EnableProfiler;
 	EnableProfiler = false;
@@ -38,7 +38,7 @@ static inline SafeFunction NIF void profiler_uart_wrapper(char c, void *unused)
 		EnableProfiler = true;
 }
 
-EXTERNC SafeFunction NIF void __cyg_profile_func_enter(void *Function, void *CallSite)
+EXTERNC nsa NIF void __cyg_profile_func_enter(void *Function, void *CallSite)
 {
 	if (!EnableProfiler)
 		return;
@@ -75,7 +75,7 @@ EXTERNC SafeFunction NIF void __cyg_profile_func_enter(void *Function, void *Cal
 	Wait = false;
 }
 
-EXTERNC SafeFunction NIF void __cyg_profile_func_exit(void *Function, void *CallSite)
+EXTERNC nsa NIF void __cyg_profile_func_exit(void *Function, void *CallSite)
 {
 	if (!EnableProfiler)
 		return;

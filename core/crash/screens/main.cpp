@@ -44,7 +44,7 @@ static const char *PagefaultDescriptions[8] = {
 
 namespace CrashHandler
 {
-	SafeFunction void DisplayMainScreen(CRData data)
+	nsa void DisplayMainScreen(CRData data)
 	{
 		CPU::TrapFrame *Frame = data.Frame;
 

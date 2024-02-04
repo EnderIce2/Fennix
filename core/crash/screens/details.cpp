@@ -34,7 +34,7 @@
 
 namespace CrashHandler
 {
-	SafeFunction void DisplayDetailsScreen(CRData data)
+	nsa void DisplayDetailsScreen(CRData data)
 	{
 		if (data.Process)
 			EHPrint("\e7981FCCurrent Process: %s(%ld)\n",

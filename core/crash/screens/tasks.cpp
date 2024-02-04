@@ -34,7 +34,7 @@
 
 namespace CrashHandler
 {
-	SafeFunction void DisplayTasksScreen(CRData data)
+	nsa void DisplayTasksScreen(CRData data)
 	{
 		const char *StatusColor[] = {
 			"FF0000", // Unknown

@@ -413,7 +413,8 @@ typedef uint48_t uint_fast48_t;
 #define PUBLIC __visibility("default")
 #define PRIVATE __visibility("hidden")
 
-#define SafeFunction __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
+#define NoSecurityAnalysis __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
+#define nsa NoSecurityAnalysis
 
 #define NIF __no_instrument_function
 

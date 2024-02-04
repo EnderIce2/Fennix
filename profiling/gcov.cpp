@@ -55,7 +55,7 @@ struct gcov_info
 	struct gcov_ctr_info counts[0];
 };
 
-static inline SafeFunction NIF void gcov_uart_wrapper(char c, void *unused)
+static inline nsa NIF void gcov_uart_wrapper(char c, void *unused)
 {
 	UART(COM2).Write(c);
 	UNUSED(unused);
@@ -63,25 +63,25 @@ static inline SafeFunction NIF void gcov_uart_wrapper(char c, void *unused)
 
 // TODO: Implement
 
-EXTERNC SafeFunction NIF void __gcov_init(gcov_info *p __unused)
+EXTERNC nsa NIF void __gcov_init(gcov_info *p __unused)
 {
 }
 
-EXTERNC SafeFunction NIF void __gcov_exit(void)
+EXTERNC nsa NIF void __gcov_exit(void)
 {
 }
 
-EXTERNC SafeFunction NIF void __gcov_flush(void)
+EXTERNC nsa NIF void __gcov_flush(void)
 {
 }
 
-EXTERNC SafeFunction NIF void __gcov_merge_add(gcov_type *counters, unsigned int n_counters)
+EXTERNC nsa NIF void __gcov_merge_add(gcov_type *counters, unsigned int n_counters)
 {
 	UNUSED(counters);
 	UNUSED(n_counters);
 }
 
-EXTERNC SafeFunction NIF void __gcov_merge_single(gcov_type *counters, unsigned int n_counters)
+EXTERNC nsa NIF void __gcov_merge_single(gcov_type *counters, unsigned int n_counters)
 {
 	UNUSED(counters);
 	UNUSED(n_counters);

@@ -24,7 +24,7 @@ namespace CPU
 {
     namespace MemBar
     {
-        SafeFunction static inline void Barrier()
+        nsa static inline void Barrier()
         {
 #if defined(a86)
             asmv("" ::
@@ -35,7 +35,7 @@ namespace CPU
 #endif
         }
 
-        SafeFunction static inline void Fence()
+        nsa static inline void Fence()
         {
 #if defined(a86)
             asmv("mfence" ::
@@ -46,7 +46,7 @@ namespace CPU
 #endif
         }
 
-        SafeFunction static inline void StoreFence()
+        nsa static inline void StoreFence()
         {
 #if defined(a86)
             asmv("sfence" ::
@@ -57,7 +57,7 @@ namespace CPU
 #endif
         }
 
-        SafeFunction static inline void LoadFence()
+        nsa static inline void LoadFence()
         {
 #if defined(a86)
             asmv("lfence" ::

@@ -106,7 +106,7 @@
 #define wut_schedbg(m, ...)
 #endif
 
-extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
+extern "C" nsa NIF void TaskingScheduler_OneShot(int TimeSlice)
 {
 	if (TimeSlice == 0)
 		TimeSlice = Tasking::TaskPriority::Normal;
@@ -125,7 +125,7 @@ extern "C" SafeFunction NIF void TaskingScheduler_OneShot(int TimeSlice)
 namespace Tasking
 {
 #if defined(a86)
-	SafeFunction NIF bool Task::FindNewProcess(void *CPUDataPointer)
+	nsa NIF bool Task::FindNewProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 		fnp_schedbg("%d processes", ProcessList.size());
@@ -178,7 +178,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction NIF bool Task::GetNextAvailableThread(void *CPUDataPointer)
+	nsa NIF bool Task::GetNextAvailableThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -237,7 +237,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction NIF bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+	nsa NIF bool Task::GetNextAvailableProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -297,7 +297,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction NIF bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+	nsa NIF bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -342,7 +342,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction NIF void Task::UpdateProcessState()
+	nsa NIF void Task::UpdateProcessState()
 	{
 		foreach (auto process in ProcessList)
 		{
@@ -378,7 +378,7 @@ namespace Tasking
 		}
 	}
 
-	SafeFunction NIF void Task::WakeUpThreads()
+	nsa NIF void Task::WakeUpThreads()
 	{
 		foreach (auto process in ProcessList)
 		{
@@ -418,7 +418,7 @@ namespace Tasking
 		}
 	}
 
-	SafeFunction NIF void Task::CleanupTerminated()
+	nsa NIF void Task::CleanupTerminated()
 	{
 		foreach (auto pcb in ProcessList)
 		{
@@ -473,7 +473,7 @@ namespace Tasking
 		"SchedulerSearchProcessThread",
 	};
 
-	SafeFunction NIF void OnScreenTaskManagerUpdate()
+	nsa NIF void OnScreenTaskManagerUpdate()
 	{
 		TimeManager->Sleep(10, Time::Units::Milliseconds);
 		Video::ScreenBuffer *sb = Display->GetBuffer(0);
@@ -513,7 +513,7 @@ namespace Tasking
 	}
 #endif
 
-	SafeFunction NIF void Task::Schedule(CPU::TrapFrame *Frame)
+	nsa NIF void Task::Schedule(CPU::TrapFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -725,37 +725,37 @@ namespace Tasking
 		CurrentCPU->CurrentProcess->PageTable->Update();
 	}
 
-	SafeFunction NIF void Task::OnInterruptReceived(CPU::TrapFrame *Frame)
+	nsa NIF void Task::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);
 	}
 #elif defined(aa64)
-	SafeFunction bool Task::FindNewProcess(void *CPUDataPointer)
+	nsa bool Task::FindNewProcess(void *CPUDataPointer)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction bool Task::GetNextAvailableThread(void *CPUDataPointer)
+	nsa bool Task::GetNextAvailableThread(void *CPUDataPointer)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+	nsa bool Task::GetNextAvailableProcess(void *CPUDataPointer)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+	nsa bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction void Task::Schedule(CPU::TrapFrame *Frame)
+	nsa void Task::Schedule(CPU::TrapFrame *Frame)
 	{
 		fixme("unimplemented");
 	}
 
-	SafeFunction void Task::OnInterruptReceived(CPU::TrapFrame *Frame) { this->Schedule(Frame); }
+	nsa void Task::OnInterruptReceived(CPU::TrapFrame *Frame) { this->Schedule(Frame); }
 #endif
 }

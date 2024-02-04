@@ -42,79 +42,79 @@ static const char *PageFaultDescriptions[8] = {
 	"User process tried to write to a non-present page entry\n",
 	"User process tried to write a page and caused a protection fault\n"};
 
-SafeFunction void DivideByZeroExceptionHandler(CPU::TrapFrame *Frame)
+nsa void DivideByZeroExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Divide by zero exception\n");
 	UNUSED(Frame);
 }
 
-SafeFunction void DebugExceptionHandler(CPU::TrapFrame *Frame)
+nsa void DebugExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CrashHandler::EHPrint("Kernel triggered debug exception.\n");
 	UNUSED(Frame);
 }
 
-SafeFunction void NonMaskableInterruptExceptionHandler(CPU::TrapFrame *Frame)
+nsa void NonMaskableInterruptExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("NMI exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void BreakpointExceptionHandler(CPU::TrapFrame *Frame)
+nsa void BreakpointExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Breakpoint exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void OverflowExceptionHandler(CPU::TrapFrame *Frame)
+nsa void OverflowExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Overflow exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void BoundRangeExceptionHandler(CPU::TrapFrame *Frame)
+nsa void BoundRangeExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Bound range exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void InvalidOpcodeExceptionHandler(CPU::TrapFrame *Frame)
+nsa void InvalidOpcodeExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CrashHandler::EHPrint("Kernel tried to execute an invalid opcode.\n");
 	UNUSED(Frame);
 }
 
-SafeFunction void DeviceNotAvailableExceptionHandler(CPU::TrapFrame *Frame)
+nsa void DeviceNotAvailableExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Device not available exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void DoubleFaultExceptionHandler(CPU::TrapFrame *Frame)
+nsa void DoubleFaultExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Double fault exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void CoprocessorSegmentOverrunExceptionHandler(CPU::TrapFrame *Frame)
+nsa void CoprocessorSegmentOverrunExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Coprocessor segment overrun exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void InvalidTSSExceptionHandler(CPU::TrapFrame *Frame)
+nsa void InvalidTSSExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Invalid TSS exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void SegmentNotPresentExceptionHandler(CPU::TrapFrame *Frame)
+nsa void SegmentNotPresentExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Segment not present exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void StackFaultExceptionHandler(CPU::TrapFrame *Frame)
+nsa void StackFaultExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
 #if defined(a64)
@@ -129,7 +129,7 @@ SafeFunction void StackFaultExceptionHandler(CPU::TrapFrame *Frame)
 	CrashHandler::EHPrint("Error code: %#lx\n", Frame->ErrorCode);
 }
 
-SafeFunction void GeneralProtectionExceptionHandler(CPU::TrapFrame *Frame)
+nsa void GeneralProtectionExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CPU::x64::SelectorErrorCode SelCode = {.raw = Frame->ErrorCode};
 	// switch (SelCode.Table)
@@ -156,7 +156,7 @@ SafeFunction void GeneralProtectionExceptionHandler(CPU::TrapFrame *Frame)
 	CrashHandler::EHPrint("Index: %#x\n", SelCode.Idx);
 }
 
-SafeFunction void PageFaultExceptionHandler(CPU::TrapFrame *Frame)
+nsa void PageFaultExceptionHandler(CPU::TrapFrame *Frame)
 {
 	CPU::x64::PageFaultErrorCode params = {.raw = (uint32_t)Frame->ErrorCode};
 #if defined(a64)
@@ -305,43 +305,43 @@ SafeFunction void PageFaultExceptionHandler(CPU::TrapFrame *Frame)
 #endif
 }
 
-SafeFunction void x87FloatingPointExceptionHandler(CPU::TrapFrame *Frame)
+nsa void x87FloatingPointExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("x87 floating point exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void AlignmentCheckExceptionHandler(CPU::TrapFrame *Frame)
+nsa void AlignmentCheckExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Alignment check exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void MachineCheckExceptionHandler(CPU::TrapFrame *Frame)
+nsa void MachineCheckExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Machine check exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void SIMDFloatingPointExceptionHandler(CPU::TrapFrame *Frame)
+nsa void SIMDFloatingPointExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("SIMD floating point exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void VirtualizationExceptionHandler(CPU::TrapFrame *Frame)
+nsa void VirtualizationExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Virtualization exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void SecurityExceptionHandler(CPU::TrapFrame *Frame)
+nsa void SecurityExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Security exception");
 	UNUSED(Frame);
 }
 
-SafeFunction void UnknownExceptionHandler(CPU::TrapFrame *Frame)
+nsa void UnknownExceptionHandler(CPU::TrapFrame *Frame)
 {
 	fixme("Unknown exception");
 	UNUSED(Frame);

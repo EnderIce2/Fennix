@@ -51,13 +51,13 @@ namespace CrashHandler
 	int SBIdx = 255;
 	CrashKeyboardDriver *kbd;
 
-	SafeFunction void printfWrapper(char c, void *unused)
+	nsa void printfWrapper(char c, void *unused)
 	{
 		Display->Print(c, SBIdx, true);
 		UNUSED(unused);
 	}
 
-	SafeFunction void EHPrint(const char *Format, ...)
+	nsa void EHPrint(const char *Format, ...)
 	{
 		va_list args;
 		va_start(args, Format);
@@ -65,7 +65,7 @@ namespace CrashHandler
 		va_end(args);
 	}
 
-	SafeFunction void EHDumpData(void *Address, unsigned long Length)
+	nsa void EHDumpData(void *Address, unsigned long Length)
 	{
 		EHPrint("-------------------------------------------------------------------------\n");
 		Display->SetBuffer(SBIdx);
@@ -101,7 +101,7 @@ namespace CrashHandler
 		Display->SetBuffer(SBIdx);
 	}
 
-	SafeFunction char *TrimWhiteSpace(char *str)
+	nsa char *TrimWhiteSpace(char *str)
 	{
 		char *end;
 		while (*str == ' ')
@@ -117,7 +117,7 @@ namespace CrashHandler
 
 	CRData crashdata{};
 
-	SafeFunction void DisplayTopOverlay()
+	nsa void DisplayTopOverlay()
 	{
 		Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
 		Video::Font *f = Display->GetCurrentFont();
@@ -252,7 +252,7 @@ namespace CrashHandler
 		}
 	}
 
-	SafeFunction void DisplayBottomOverlay()
+	nsa void DisplayBottomOverlay()
 	{
 		Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
 		Video::Font *f = Display->GetCurrentFont();
@@ -266,7 +266,7 @@ namespace CrashHandler
 		EHPrint("\eAAAAAA> \eFAFAFA");
 	}
 
-	SafeFunction void ArrowInput(uint8_t key)
+	nsa void ArrowInput(uint8_t key)
 	{
 		switch (key)
 		{
@@ -337,7 +337,7 @@ namespace CrashHandler
 		Display->SetBuffer(SBIdx);
 	}
 
-	SafeFunction void UserInput(char *Input)
+	nsa void UserInput(char *Input)
 	{
 		SmartCriticalSection(UserInputLock);
 		Display->ClearBuffer(SBIdx);
@@ -816,7 +816,7 @@ namespace CrashHandler
 		Display->SetBuffer(SBIdx);
 	}
 
-	SafeFunction void StopAllCores()
+	nsa void StopAllCores()
 	{
 #if defined(a86)
 		/* FIXME: Can't send IPIs to other cores
@@ -862,7 +862,7 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction inline bool Handle_x86_64(CPU::TrapFrame *Frame)
+	nsa inline bool Handle_x86_64(CPU::TrapFrame *Frame)
 	{
 #ifdef a64
 		trace("Exception at %#lx(%s)", Frame->rip,
@@ -960,7 +960,7 @@ namespace CrashHandler
 		return false;
 	}
 
-	SafeFunction inline bool Handle_x86_32(CPU::TrapFrame *Frame)
+	nsa inline bool Handle_x86_32(CPU::TrapFrame *Frame)
 	{
 #ifdef a32
 		trace("Exception at %#lx(%s)", Frame->eip,
@@ -1059,7 +1059,7 @@ namespace CrashHandler
 		return false;
 	}
 
-	SafeFunction inline void Print_x86_64(CPU::TrapFrame *Frame)
+	nsa inline void Print_x86_64(CPU::TrapFrame *Frame)
 	{
 #ifdef a64
 		CPU::x64::CR0 cr0 = CPU::x64::readcr0();
@@ -1132,7 +1132,7 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction inline void Print_x86_32(CPU::TrapFrame *Frame)
+	nsa inline void Print_x86_32(CPU::TrapFrame *Frame)
 	{
 #ifdef a32
 		CPU::x32::CR0 cr0 = CPU::x32::readcr0();
@@ -1192,7 +1192,7 @@ namespace CrashHandler
 #endif
 	}
 
-	SafeFunction void Handle(void *Data)
+	nsa void Handle(void *Data)
 	{
 		// TODO: SUPPORT SMP
 		CPU::Interrupts(CPU::Disable);

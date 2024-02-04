@@ -84,7 +84,7 @@ __naked __used __no_stack_protector void InitLimine()
 	asmv("jmp InitLimineAfterStack");
 }
 
-SafeFunction NIF void InitLimineAfterStack()
+nsa NIF void InitLimineAfterStack()
 {
 	struct BootInfo binfo = {};
 	struct limine_bootloader_info_response *BootloaderInfoResponse = BootloaderInfoRequest.response;

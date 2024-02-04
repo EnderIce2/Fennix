@@ -402,7 +402,7 @@ namespace CPU
         };
 
 #if defined(a64)
-        SafeFunction static inline uint64_t rdmsr(uint32_t msr)
+        nsa static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;
             asmv("rdmsr"
@@ -412,7 +412,7 @@ namespace CPU
             return ((uint64_t)Low) | (((uint64_t)High) << 32);
         }
 
-        SafeFunction static inline void wrmsr(uint32_t msr, uint64_t Value)
+        nsa static inline void wrmsr(uint32_t msr, uint64_t Value)
         {
             uint32_t Low = s_cst(uint32_t, Value), High = s_cst(uint32_t, Value >> 32);
             asmv("wrmsr"

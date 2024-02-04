@@ -54,7 +54,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
 	/* TODO: Serial Port implementation needs reword. https://wiki.osdev.org/Serial_Ports */
 
-	SafeFunction NIF UART::UART(SerialPorts Port)
+	nsa NIF UART::UART(SerialPorts Port)
 	{
 #if defined(a86)
 		if (Port == COMNULL)
@@ -132,9 +132,9 @@ namespace UniversalAsynchronousReceiverTransmitter
 #endif
 	}
 
-	SafeFunction NIF UART::~UART() {}
+	nsa NIF UART::~UART() {}
 
-	SafeFunction NIF void UART::Write(uint8_t Char)
+	nsa NIF void UART::Write(uint8_t Char)
 	{
 		if (!this->IsAvailable)
 			return;
@@ -148,7 +148,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 				e->OnSent(Char);
 	}
 
-	SafeFunction NIF uint8_t UART::Read()
+	nsa NIF uint8_t UART::Read()
 	{
 		if (!this->IsAvailable)
 			return 0;
@@ -168,13 +168,13 @@ namespace UniversalAsynchronousReceiverTransmitter
 		}
 	}
 
-	SafeFunction NIF Events::Events(SerialPorts Port)
+	nsa NIF Events::Events(SerialPorts Port)
 	{
 		this->Port = Port;
 		RegisteredEvents.push_back(this);
 	}
 
-	SafeFunction NIF Events::~Events()
+	nsa NIF Events::~Events()
 	{
 		forItr(itr, RegisteredEvents)
 		{

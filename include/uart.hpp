@@ -69,7 +69,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 		 * @brief Get the Registered Port object
 		 * @return SerialPorts
 		 */
-		SafeFunction NIF SerialPorts GetRegisteredPort() { return this->Port; }
+		nsa NIF SerialPorts GetRegisteredPort() { return this->Port; }
 
 		/**
 		 * @brief Called when a character is sent.

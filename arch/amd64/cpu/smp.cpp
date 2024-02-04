@@ -46,9 +46,9 @@ std::atomic_bool CPUEnabled = false;
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
 
-SafeFunction CPUData *GetCPU(long id) { return &CPUs[id]; }
+nsa CPUData *GetCPU(long id) { return &CPUs[id]; }
 
-SafeFunction CPUData *GetCurrentCPU()
+nsa CPUData *GetCurrentCPU()
 {
 	if (unlikely(!Interrupts::apic[0]))
 		return &CPUs[0]; /* No APIC means we are on the BSP. */

@@ -236,7 +236,7 @@ namespace CrashHandler
 	int BackSpaceLimit = 0;
 	static char UserInputBuffer[1024];
 
-	SafeFunction void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
+	nsa void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 #if defined(a86)
 		UNUSED(Frame);

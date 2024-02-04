@@ -35,7 +35,7 @@
 
 namespace CrashHandler
 {
-	SafeFunction void DisplayStackFrameScreen(CRData data)
+	nsa void DisplayStackFrameScreen(CRData data)
 	{
 		EHPrint("\eFAFAFATracing 10 frames...");
 		TraceFrames(data, 10, KernelSymbolTable, true);

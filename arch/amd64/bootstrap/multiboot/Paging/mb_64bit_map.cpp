@@ -38,14 +38,14 @@ union __attribute__((packed)) PageTableEntry
 	};
 	uint64_t raw;
 
-	__always_inline inline SafeFunction NIF void SetAddress(uintptr_t _Address)
+	__always_inline inline nsa NIF void SetAddress(uintptr_t _Address)
 	{
 		_Address &= 0x000000FFFFFFFFFF;
 		this->raw &= 0xFFF0000000000FFF;
 		this->raw |= (_Address << 12);
 	}
 
-	__always_inline inline SafeFunction NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
+	__always_inline inline nsa NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
 };
 
 struct __attribute__((packed)) PageTableEntryPtr
@@ -72,14 +72,14 @@ union __attribute__((packed)) PageDirectoryEntry
 	};
 	uint64_t raw;
 
-	__always_inline inline SafeFunction NIF void SetAddress(uintptr_t _Address)
+	__always_inline inline nsa NIF void SetAddress(uintptr_t _Address)
 	{
 		_Address &= 0x000000FFFFFFFFFF;
 		this->raw &= 0xFFF0000000000FFF;
 		this->raw |= (_Address << 12);
 	}
 
-	__always_inline inline SafeFunction NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
+	__always_inline inline nsa NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
 };
 
 struct __attribute__((packed)) PageDirectoryEntryPtr
@@ -106,14 +106,14 @@ union __attribute__((packed)) PageDirectoryPointerTableEntry
 	};
 	uint64_t raw;
 
-	__always_inline inline SafeFunction NIF void SetAddress(uintptr_t _Address)
+	__always_inline inline nsa NIF void SetAddress(uintptr_t _Address)
 	{
 		_Address &= 0x000000FFFFFFFFFF;
 		this->raw &= 0xFFF0000000000FFF;
 		this->raw |= (_Address << 12);
 	}
 
-	__always_inline inline SafeFunction NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
+	__always_inline inline nsa NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
 };
 
 struct __attribute__((packed)) PageDirectoryPointerTableEntryPtr
@@ -140,14 +140,14 @@ union __attribute__((packed)) PageMapLevel4
 	};
 	uint64_t raw;
 
-	__always_inline inline SafeFunction NIF void SetAddress(uintptr_t _Address)
+	__always_inline inline nsa NIF void SetAddress(uintptr_t _Address)
 	{
 		_Address &= 0x000000FFFFFFFFFF;
 		this->raw &= 0xFFF0000000000FFF;
 		this->raw |= (_Address << 12);
 	}
 
-	__always_inline inline SafeFunction NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
+	__always_inline inline nsa NIF uintptr_t GetAddress() { return (this->raw & 0x000FFFFFFFFFF000) >> 12; }
 };
 
 struct PageTable4
@@ -161,7 +161,7 @@ extern uintptr_t _kernel_start, _kernel_end;
 __attribute__((section(".bootstrap.data"))) static PageTable4 *BPTable = (PageTable4 *)BootPageTable;
 __attribute__((section(".bootstrap.data"))) static size_t BPT_Allocated = 0x4000;
 
-__always_inline inline SafeFunction NIF void *RequestPage()
+__always_inline inline nsa NIF void *RequestPage()
 {
 	void *Page = (void *)(BootPageTable + BPT_Allocated);
 	BPT_Allocated += 0x1000;
@@ -180,7 +180,7 @@ public:
 	uintptr_t PDPTEIndex = 0;
 	uintptr_t PDEIndex = 0;
 	uintptr_t PTEIndex = 0;
-	__always_inline inline SafeFunction NIF PageMapIndexer(uintptr_t VirtualAddress)
+	__always_inline inline nsa NIF PageMapIndexer(uintptr_t VirtualAddress)
 	{
 		uintptr_t Address = VirtualAddress;
 		Address >>= 12;
@@ -194,7 +194,7 @@ public:
 	}
 };
 
-__attribute__((section(".bootstrap.text"))) SafeFunction NIF void MB2_64_Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
+__attribute__((section(".bootstrap.text"))) nsa NIF void MB2_64_Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags)
 {
 	PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
 	// Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
@@ -280,7 +280,7 @@ __attribute__((section(".bootstrap.text"))) SafeFunction NIF void MB2_64_Map(voi
 		 : "memory");
 }
 
-EXTERNC __attribute__((section(".bootstrap.text"))) SafeFunction NIF __attribute__((section(".bootstrap.text"))) void UpdatePageTable64()
+EXTERNC __attribute__((section(".bootstrap.text"))) nsa NIF __attribute__((section(".bootstrap.text"))) void UpdatePageTable64()
 {
 	BPTable = (PageTable4 *)BootPageTable;
 

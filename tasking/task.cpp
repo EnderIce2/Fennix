@@ -61,7 +61,7 @@ namespace Tasking
 #endif
 	}
 
-	SafeFunction bool Task::InvalidPCB(PCB *pcb)
+	nsa bool Task::InvalidPCB(PCB *pcb)
 	{
 		if (!pcb)
 			return true;
@@ -81,7 +81,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction bool Task::InvalidTCB(TCB *tcb)
+	nsa bool Task::InvalidTCB(TCB *tcb)
 	{
 		if (!tcb)
 			return true;
@@ -101,7 +101,7 @@ namespace Tasking
 		return false;
 	}
 
-	SafeFunction bool Task::RemoveThread(TCB *Thread)
+	nsa bool Task::RemoveThread(TCB *Thread)
 	{
 		debug("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
 			  Thread->Name, Thread->ID, Thread->Parent->Name,
@@ -111,7 +111,7 @@ namespace Tasking
 		return true;
 	}
 
-	SafeFunction bool Task::RemoveProcess(PCB *Process)
+	nsa bool Task::RemoveProcess(PCB *Process)
 	{
 		if (unlikely(InvalidPCB(Process)))
 			return false;
@@ -131,7 +131,7 @@ namespace Tasking
 		return true;
 	}
 
-	SafeFunction void Task::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
+	nsa void Task::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
 	{
 		UNUSED(Core);
 		uint64_t CurrentTime = TimeManager->GetCounter();

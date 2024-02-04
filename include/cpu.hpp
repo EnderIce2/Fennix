@@ -139,7 +139,7 @@ namespace CPU
 	/**
 	 * @brief Pause the CPU
 	 */
-	SafeFunction static __always_inline inline void Pause(bool Loop = false)
+	nsa static __always_inline inline void Pause(bool Loop = false)
 	{
 		do
 		{
@@ -154,7 +154,7 @@ namespace CPU
 	/**
 	 * @brief Stop the CPU (infinite loop)
 	 */
-	SafeFunction __noreturn __used inline void Stop()
+	nsa __noreturn __used inline void Stop()
 	{
 #if defined(a86)
 		asmv("CPUStopLoop:\n"
@@ -174,7 +174,7 @@ namespace CPU
 	/**
 	 * @brief Halt the CPU
 	 */
-	SafeFunction static __always_inline inline void Halt(bool Loop = false)
+	nsa static __always_inline inline void Halt(bool Loop = false)
 	{
 		do
 		{
@@ -444,7 +444,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void lgdt(void *gdt)
+		nsa static inline void lgdt(void *gdt)
 		{
 #ifdef a32
 			asmv("lgdt (%0)"
@@ -455,7 +455,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void lidt(void *idt)
+		nsa static inline void lidt(void *idt)
 		{
 #ifdef a32
 			asmv("lidt (%0)"
@@ -466,7 +466,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void ltr(uint16_t Segment)
+		nsa static inline void ltr(uint16_t Segment)
 		{
 #ifdef a32
 			asmv("ltr %0"
@@ -477,7 +477,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void invlpg(void *Address)
+		nsa static inline void invlpg(void *Address)
 		{
 #ifdef a32
 			asmv("invlpg (%0)"
@@ -489,7 +489,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void fxsave(void *FXSaveArea)
+		nsa static inline void fxsave(void *FXSaveArea)
 		{
 #ifdef a32
 			if (!FXSaveArea)
@@ -504,7 +504,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void fxrstor(void *FXRstorArea)
+		nsa static inline void fxrstor(void *FXRstorArea)
 		{
 #ifdef a32
 			if (!FXRstorArea)
@@ -831,7 +831,7 @@ namespace CPU
 			uint8_t xmm[16][16];
 		} __packed __aligned(16);
 
-		SafeFunction static inline void lgdt(void *gdt)
+		nsa static inline void lgdt(void *gdt)
 		{
 #ifdef a64
 			asmv("lgdt (%0)"
@@ -840,7 +840,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void lidt(void *idt)
+		nsa static inline void lidt(void *idt)
 		{
 #ifdef a64
 			asmv("lidt (%0)"
@@ -849,7 +849,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void ltr(uint16_t Segment)
+		nsa static inline void ltr(uint16_t Segment)
 		{
 #ifdef a64
 			asmv("ltr %0"
@@ -858,7 +858,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void invlpg(void *Address)
+		nsa static inline void invlpg(void *Address)
 		{
 #ifdef a64
 			asmv("invlpg (%0)"
@@ -877,7 +877,7 @@ namespace CPU
 		 * @param ecx ECX
 		 * @param edx EDX
 		 */
-		SafeFunction static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
+		nsa static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 		{
 #ifdef a64
 			asmv("cpuid"
@@ -893,14 +893,14 @@ namespace CPU
 		 *
 		 * @return uint32_t
 		 */
-		SafeFunction static inline uint32_t GetHighestLeaf()
+		nsa static inline uint32_t GetHighestLeaf()
 		{
 			uint32_t eax, ebx, ecx, edx;
 			cpuid(0x0, &eax, &ebx, &ecx, &edx);
 			return eax;
 		}
 
-		SafeFunction static inline void fxsave(void *FXSaveArea)
+		nsa static inline void fxsave(void *FXSaveArea)
 		{
 #ifdef a64
 			if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
@@ -913,7 +913,7 @@ namespace CPU
 #endif
 		}
 
-		SafeFunction static inline void fxrstor(void *FXRstorArea)
+		nsa static inline void fxrstor(void *FXRstorArea)
 		{
 #ifdef a64
 			if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)

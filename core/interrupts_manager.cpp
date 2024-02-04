@@ -37,7 +37,7 @@
 #include "crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" SafeFunction void ExceptionHandler(void *Data)
+extern "C" nsa void ExceptionHandler(void *Data)
 {
 	CrashHandler::Handle(Data);
 }
@@ -192,7 +192,7 @@ namespace Interrupts
 #endif
 	}
 
-	SafeFunction void RemoveAll()
+	nsa void RemoveAll()
 	{
 		forItr(itr, RegisteredEvents)
 		{
@@ -280,7 +280,7 @@ namespace Interrupts
 		warn("IRQ%d not found.", InterruptNumber);
 	}
 
-	extern "C" SafeFunction void MainInterruptHandler(void *Data)
+	extern "C" nsa void MainInterruptHandler(void *Data)
 	{
 #if defined(a64)
 		CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
