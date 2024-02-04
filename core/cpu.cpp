@@ -53,8 +53,7 @@ namespace CPU
 		memcpy(Vendor + 4, &edx, 4);
 		memcpy(Vendor + 8, &ecx, 4);
 #elif defined(aa64)
-		asmv("mrs %0, MIDR_EL1"
-			 : "=r"(Vendor[0]));
+#error "Not implemented"
 #endif
 		return Vendor;
 	}
@@ -99,8 +98,7 @@ namespace CPU
 		memcpy(Name + 40, &ecx, 4);
 		memcpy(Name + 44, &edx, 4);
 #elif defined(aa64)
-		asmv("mrs %0, MIDR_EL1"
-			 : "=r"(Name[0]));
+#error "Not implemented"
 #endif
 		return Name;
 	}
@@ -143,8 +141,7 @@ namespace CPU
 		memcpy(Hypervisor + 4, &ecx, 4);
 		memcpy(Hypervisor + 8, &edx, 4);
 #elif defined(aa64)
-		asmv("mrs %0, MIDR_EL1"
-			 : "=r"(Hypervisor[0]));
+#error "Not implemented"
 #endif
 		return Hypervisor;
 	}
@@ -169,7 +166,7 @@ namespace CPU
 #elif defined(aa64)
 			asmv("mrs %0, cpsr"
 				 : "=r"(Flags));
-			return !(Flags & (1 << 7));
+			return Flags & (1 << 7);
 #endif
 		}
 		case Enable:
@@ -191,6 +188,7 @@ namespace CPU
 			return true;
 		}
 		default:
+			assert(!"Unknown InterruptsType");
 			break;
 		}
 		return false;
@@ -207,7 +205,8 @@ namespace CPU
 		{
 			asmv("movq %0, %%cr3"
 				 :
-				 : "r"(PT));
+				 : "r"(PT)
+				 : "memory");
 		}
 #elif defined(a32)
 		asmv("movl %%cr3, %0"
@@ -217,7 +216,8 @@ namespace CPU
 		{
 			asmv("movl %0, %%cr3"
 				 :
-				 : "r"(PT));
+				 : "r"(PT)
+				 : "memory");
 		}
 #elif defined(aa64)
 		asmv("mrs %0, ttbr0_el1"
@@ -227,7 +227,8 @@ namespace CPU
 		{
 			asmv("msr ttbr0_el1, %0"
 				 :
-				 : "r"(PT));
+				 : "r"(PT)
+				 : "memory");
 		}
 #endif
 		return ret;

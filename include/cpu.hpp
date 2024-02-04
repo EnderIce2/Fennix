@@ -154,21 +154,21 @@ namespace CPU
 	/**
 	 * @brief Stop the CPU (infinite loop)
 	 */
-#if defined(a86)
 	SafeFunction __noreturn __naked __used inline void Stop()
 	{
+#if defined(a86)
 		asmv("CPUStopLoop:\n"
 			 "cli\n"
 			 "hlt\n"
 			 "jmp CPUStopLoop");
-#elif defined(aa64) // annoying warning: "'noreturn' function does return" and "'naked' attribute directive ignored"
-	SafeFunction __used inline void Stop()
-	{
+#elif defined(aa64)
 		asmv("CPUStopLoop:\n"
-			 "msr daifset, #2\n" // Disable IRQs (bit 1 of the DAIF register)
-			 "wfi\n"			 // Wait for Interrupt (puts the processor in low-power state until an interrupt occurs)
-			 "b CPUStopLoop");	 // Branch to the beginning of the loop
+			 "cpsid i\n"
+			 "wfe\n"
+			 "wfi\n"
+			 "b CPUStopLoop");
 #endif
+		__builtin_unreachable();
 	}
 
 	/**
@@ -987,12 +987,12 @@ namespace CPU
 	 */
 	typedef x32::TrapFrame TrapFrame;
 #elif defined(aa64)
-/**
- * CPU trap frame for the current architecture
- *
- * @note This is for aarch64
- */
-typedef aarch64::TrapFrame TrapFrame;
+	/**
+	 * CPU trap frame for the current architecture
+	 *
+	 * @note This is for aarch64
+	 */
+	typedef aarch64::TrapFrame TrapFrame;
 #endif
 }
 
