@@ -103,4 +103,11 @@ namespace std
 					*first++ = std::move(*i);
 		return first;
 	}
+
+	template <class ForwardIt, class T>
+	void fill(ForwardIt first, ForwardIt last, const T &value)
+	{
+		for (; first != last; ++first)
+			*first = value;
+	}
 }
