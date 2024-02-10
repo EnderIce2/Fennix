@@ -770,6 +770,23 @@ public:
 			return;
 		}
 
+		if (IdentifyData->Signature != 0xA5)
+			Log("Port %d has no validity signature.", PortNumber);
+		else
+		{
+			uint8_t *ptr = (uint8_t *)IdentifyData;
+			uint8_t sum = 0;
+			for (size_t i = 0; i < sizeof(ATA_IDENTIFY); i++)
+				sum += ptr[i];
+			if (sum != 0)
+			{
+				Log("Port %d has invalid checksum.", PortNumber);
+				return;
+			}
+			else
+				Log("Port %d has valid checksum.", PortNumber);
+		}
+
 		auto swap = [](uint16_t *data, size_t size)
 		{
 			for (size_t i = 0; i < size; i++)
@@ -790,21 +807,6 @@ public:
 		Log("Port %d is %s (%d rotation rate)", PortNumber,
 			IdentifyData->NominalMediaRotationRate == 1 ? "SSD" : "HDD",
 			IdentifyData->NominalMediaRotationRate);
-
-		if (IdentifyData->Signature != 0xA5)
-		{
-			Log("Port %d has no validity signature.", PortNumber);
-			return;
-		}
-
-		uint8_t *ptr = (uint8_t *)IdentifyData;
-		uint8_t sum = 0;
-		for (size_t i = 0; i < 512; i++)
-			sum += ptr[i];
-		if (sum != 0)
-			Log("Port %d has invalid checksum.", PortNumber);
-		else
-			Log("Port %d has valid checksum.", PortNumber);
 	}
 };
 
