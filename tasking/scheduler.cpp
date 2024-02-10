@@ -35,9 +35,6 @@
 #elif defined(aa64)
 #endif
 
-/* FIXME: On screen task manager is corrupting the stack... */
-// #define ON_SCREEN_SCHEDULER_TASK_MANAGER 1
-
 // #define DEBUG_SCHEDULER 1
 // #define DEBUG_GET_NEXT_AVAILABLE_PROCESS 1
 // #define DEBUG_GET_NEXT_AVAILABLE_THREAD 1
@@ -436,83 +433,6 @@ namespace Tasking
 		}
 	}
 
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-	int SuccessSource = 0;
-	int sanity;
-
-	const char *Statuses[] = {
-		"FF0000", /* Unknown */
-		"AAFF00", /* Ready */
-		"00AA00", /* Running */
-		"FFAA00", /* Sleeping */
-		"FFAA00", /* Blocked */
-		"FFAA00", /* Stopped */
-		"FFAA00", /* Waiting */
-
-		"FF0088", /* Zombie */
-		"FF0000", /* Terminated */
-	};
-
-	const char *StatusesSign[] = {
-		"Unknown",
-		"Ready",
-		"Run",
-		"Sleep",
-		"Block",
-		"Wait",
-
-		"Core",
-		"Zombie",
-		"Terminated",
-	};
-
-	const char *SuccessSourceStrings[] = {
-		"Unknown",
-		"GetNextAvailableThread",
-		"GetNextAvailableProcess",
-		"SchedulerSearchProcessThread",
-	};
-
-	nsa NIF void OnScreenTaskManagerUpdate()
-	{
-		TimeManager->Sleep(10, Time::Units::Milliseconds);
-		Video::ScreenBuffer *sb = Display->GetBuffer(0);
-		for (short i = 0; i < 340; i++)
-		{
-			for (short j = 0; j < 600; j++)
-			{
-				uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
-				*Pixel = 0x222222;
-			}
-		}
-
-		uint32_t tmpX, tmpY;
-		Display->GetBufferCursor(0, &tmpX, &tmpY);
-		Display->SetBufferCursor(0, 0, 0);
-		printf("\eF02C21Task Manager\n");
-		foreach (auto Proc in TaskManager->GetProcessList())
-		{
-			int State = Proc->State;
-			printf("\e%s-> \eAABBCC%s \e00AAAA%s\n",
-				   Statuses[State], Proc->Name, StatusesSign[State]);
-
-			foreach (auto Thd in Proc->Threads)
-			{
-				State = Thd->State;
-				printf("  \e%s-> \eAABBCC%s \e00AAAA%s\n\eAABBCC",
-					   Statuses[State], Thd->Name, StatusesSign[State]);
-			}
-		}
-		register uintptr_t CurrentStackAddress asm("rsp");
-		printf("Sanity: %d, Stack: %#lx\nSched. Source: %s", sanity++, CurrentStackAddress, SuccessSourceStrings[SuccessSource]);
-		if (sanity > 1000)
-			sanity = 0;
-		Display->SetBufferCursor(0, tmpX, tmpY);
-		Display->SetBuffer(0);
-		TimeManager->Sleep(10, Time::Units::Milliseconds);
-	}
-#endif
-
 	nsa NIF void Task::Schedule(CPU::TrapFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
@@ -581,9 +501,6 @@ namespace Tasking
 
 			if (this->GetNextAvailableThread(CurrentCPU))
 			{
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-				SuccessSource = 1;
-#endif
 				ProcessNotChanged = true;
 				goto Success;
 			}
@@ -591,18 +508,12 @@ namespace Tasking
 
 			if (this->GetNextAvailableProcess(CurrentCPU))
 			{
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-				SuccessSource = 2;
-#endif
 				goto Success;
 			}
 			schedbg("Passed GetNextAvailableProcess");
 
 			if (SchedulerSearchProcessThread(CurrentCPU))
 			{
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-				SuccessSource = 3;
-#endif
 				schedbg("Passed SchedulerSearchProcessThread");
 				goto Success;
 			}
@@ -656,10 +567,6 @@ namespace Tasking
 #endif
 
 		CurrentCPU->CurrentProcess->Signals->HandleSignal(Frame);
-
-#ifdef ON_SCREEN_SCHEDULER_TASK_MANAGER
-		OnScreenTaskManagerUpdate();
-#endif
 
 		switch (CurrentCPU->CurrentProcess->Security.ExecutionMode)
 		{
