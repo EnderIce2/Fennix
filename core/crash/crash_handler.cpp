@@ -50,10 +50,11 @@ namespace CrashHandler
 	static bool ExceptionOccurred = false;
 	int SBIdx = 255;
 	CrashKeyboardDriver *kbd;
+	Video::Font *CrashFont = nullptr;
 
 	nsa void printfWrapper(char c, void *unused)
 	{
-		Display->Print(c, nullptr, true);
+		Display->Print(c, CrashFont, true);
 		UNUSED(unused);
 	}
 
@@ -1430,6 +1431,7 @@ namespace CrashHandler
 
 		if (Config.InterruptsOnCrash)
 		{
+			CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x15b_psf_start, &_binary_files_tamsyn_font_1_11_Tamsyn8x15b_psf_end, Video::FontType::PCScreenFont2);
 			DisplayTopOverlay();
 			DisplayMainScreen(crashdata);
 			Display->UpdateBuffer();
