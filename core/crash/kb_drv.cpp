@@ -267,7 +267,7 @@ namespace CrashHandler
 			{
 				if (BackSpaceLimit > 0)
 				{
-					Display->Print('\b', SBIdx);
+					Display->Print('\b');
 					backspace(UserInputBuffer);
 					BackSpaceLimit--;
 				}
@@ -281,10 +281,10 @@ namespace CrashHandler
 			else
 			{
 				append(UserInputBuffer, s_cst(char, key));
-				Display->Print((char)key, SBIdx);
+				Display->Print((char)key);
 				BackSpaceLimit++;
 			}
-			Display->SetBuffer(SBIdx); /* Update as we type. */
+			Display->UpdateBuffer(); /* Update as we type. */
 		}
 #endif // a64 || a32
 	}

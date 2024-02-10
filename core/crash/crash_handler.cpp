@@ -53,7 +53,7 @@ namespace CrashHandler
 
 	nsa void printfWrapper(char c, void *unused)
 	{
-		Display->Print(c, SBIdx, true);
+		Display->Print(c, nullptr, true);
 		UNUSED(unused);
 	}
 
@@ -68,7 +68,7 @@ namespace CrashHandler
 	nsa void EHDumpData(void *Address, unsigned long Length)
 	{
 		EHPrint("-------------------------------------------------------------------------\n");
-		Display->SetBuffer(SBIdx);
+		Display->UpdateBuffer();
 		unsigned char *AddressChar = (unsigned char *)Address;
 		unsigned char Buffer[17];
 		unsigned long Iterate;
@@ -79,7 +79,7 @@ namespace CrashHandler
 				if (Iterate != 0)
 					EHPrint("  \e8A78FF%s\eAABBCC\n", Buffer);
 				EHPrint("  \e9E9E9E%04x\eAABBCC ", Iterate);
-				Display->SetBuffer(SBIdx);
+				Display->UpdateBuffer();
 			}
 			EHPrint(" \e4287f5%02x\eAABBCC", AddressChar[Iterate]);
 			if ((AddressChar[Iterate] < 0x20) || (AddressChar[Iterate] > 0x7e))
@@ -92,13 +92,13 @@ namespace CrashHandler
 		while ((Iterate % 16) != 0)
 		{
 			EHPrint("   ");
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 			Iterate++;
 		}
 
 		EHPrint("  \e8A78FF%s\eAABBCC\n", Buffer);
 		EHPrint("-------------------------------------------------------------------------\n\n.");
-		Display->SetBuffer(SBIdx);
+		Display->UpdateBuffer();
 	}
 
 	nsa char *TrimWhiteSpace(char *str)
@@ -119,11 +119,10 @@ namespace CrashHandler
 
 	nsa void DisplayTopOverlay()
 	{
-		Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
 		Video::Font *f = Display->GetCurrentFont();
 		Video::FontInfo fi = f->GetInfo();
 
-		// for (uint32_t i = 0; i < sb->Width; i++)
+		// for (uint32_t i = 0; i < Display->GetWidth; i++)
 		// {
 		// 	for (uint32_t j = 0; j < fi.Height + 8; j++)
 		// 	{
@@ -132,19 +131,19 @@ namespace CrashHandler
 		// 	}
 		// }
 
-		for (uint32_t i = 0; i < sb->Width; i++)
+		for (uint32_t i = 0; i < Display->GetWidth; i++)
 		{
 			for (uint32_t j = 0; j < fi.Height + 8; j++)
 			{
 				uint32_t grayValue = 0x505050 - (j * 0x020202);
-				Display->SetPixel(i, j, grayValue, SBIdx);
+				Display->SetPixel(i, j, grayValue);
 			}
 		}
 
-		for (uint32_t i = 0; i < sb->Width; i++)
-			Display->SetPixel(i, fi.Height + 8, 0x404040, SBIdx);
+		for (uint32_t i = 0; i < Display->GetWidth; i++)
+			Display->SetPixel(i, fi.Height + 8, 0x404040);
 
-		Display->SetBufferCursor(SBIdx, 8, (fi.Height + 8) / 6);
+		Display->SetBufferCursor(8, (fi.Height + 8) / 6);
 		switch (SBIdx)
 		{
 		case 255:
@@ -185,84 +184,83 @@ namespace CrashHandler
 		EHPrint("  \eAA0F0F%s", CPU::Hypervisor());
 		EHPrint(" \eAAF00F%s", CPU::Vendor());
 		EHPrint(" \eAA00FF%s", CPU::Name());
-		Display->SetBufferCursor(SBIdx, 0, fi.Height + 10);
+		Display->SetBufferCursor(0, fi.Height + 10);
 
 		/* https://imgflip.com/i/77slbl */
 		if ((Random::rand32() % 100) >= 98)
 		{
 			debug("Easter egg activated!");
-			int BaseXOffset = sb->Width - 14;
+			int BaseXOffset = Display->GetWidth - 14;
 			int BaseYOffset = 8;
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 0, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 0, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 0, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 0, 0x21852E, SBIdx);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 0, 0x21852E);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 0, 0x21852E);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 0, 0x21852E);
+			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 0, 0x21852E);
 
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 1, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 8, BaseYOffset + 1, 0x21852E, SBIdx);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 1, 0x21852E);
+			Display->SetPixel(BaseXOffset + 8, BaseYOffset + 1, 0x21852E);
 
-			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 2, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 2, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 2, 0xFFFFFF, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 2, 0x000000, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 2, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 2, 0xFFFFFF, SBIdx);
-			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 2, 0x000000, SBIdx);
-			Display->SetPixel(BaseXOffset + 8, BaseYOffset + 2, 0x21852E, SBIdx);
+			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 2, 0x21852E);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 2, 0x21852E);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 2, 0xFFFFFF);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 2, 0x000000);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 2, 0x21852E);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 2, 0xFFFFFF);
+			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 2, 0x000000);
+			Display->SetPixel(BaseXOffset + 8, BaseYOffset + 2, 0x21852E);
 
-			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 3, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 3, 0x21852E, SBIdx);
+			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 3, 0x21852E);
+			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 3, 0x21852E);
 
-			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 4, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 4, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 4, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 4, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 4, 0xA84832, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 4, 0xA84832, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 4, 0xA84832, SBIdx);
-			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 4, 0xA84832, SBIdx);
+			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 4, 0x21852E);
+			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 4, 0x21852E);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 4, 0x21852E);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 4, 0x21852E);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 4, 0xA84832);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 4, 0xA84832);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 4, 0xA84832);
+			Display->SetPixel(BaseXOffset + 7, BaseYOffset + 4, 0xA84832);
 
-			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 5, 0x21852E, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 5, 0x21852E, SBIdx);
+			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 5, 0x21852E);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 5, 0x21852E);
 
-			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 6, 0x1216FF, SBIdx);
-			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 6, 0x1216FF, SBIdx);
+			Display->SetPixel(BaseXOffset + 0, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 1, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 2, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 3, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 4, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 5, BaseYOffset + 6, 0x1216FF);
+			Display->SetPixel(BaseXOffset + 6, BaseYOffset + 6, 0x1216FF);
 
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 	}
 
 	nsa void DisplayBottomOverlay()
 	{
-		Video::ScreenBuffer *sb = Display->GetBuffer(SBIdx);
 		Video::Font *f = Display->GetCurrentFont();
 		Video::FontInfo fi = f->GetInfo();
 
-		for (uint32_t i = 0; i < sb->Width; i++)
-			for (uint32_t j = sb->Height - fi.Height - 8; j < sb->Height; j++)
-				Display->SetPixel(i, j, 0x282828, SBIdx);
+		for (uint32_t i = 0; i < Display->GetWidth; i++)
+			for (uint32_t j = Display->GetHeight - fi.Height - 8; j < Display->GetHeight; j++)
+				Display->SetPixel(i, j, 0x282828);
 
-		Display->SetBufferCursor(SBIdx, 8, sb->Height - fi.Height - 4);
+		Display->SetBufferCursor(8, Display->GetHeight - fi.Height - 4);
 		EHPrint("\eAAAAAA> \eFAFAFA");
 	}
 
@@ -297,7 +295,7 @@ namespace CrashHandler
 		default:
 			break;
 		}
-		Display->ClearBuffer(SBIdx);
+		Display->ClearBuffer();
 		DisplayTopOverlay();
 		EHPrint("\eFAFAFA");
 
@@ -334,13 +332,13 @@ namespace CrashHandler
 		}
 		}
 		DisplayBottomOverlay();
-		Display->SetBuffer(SBIdx);
+		Display->UpdateBuffer();
 	}
 
 	nsa void UserInput(char *Input)
 	{
 		SmartCriticalSection(UserInputLock);
-		Display->ClearBuffer(SBIdx);
+		Display->ClearBuffer();
 		DisplayTopOverlay();
 		EHPrint("\eFAFAFA");
 
@@ -374,14 +372,14 @@ namespace CrashHandler
 		{
 			PowerManager->Shutdown();
 			EHPrint("\eFFFFFFNow it's safe to turn off your computer.");
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 			CPU::Stop();
 		}
 		else if (strcmp(Input, "reboot") == 0)
 		{
 			PowerManager->Reboot();
 			EHPrint("\eFFFFFFNow it's safe to reboot your computer.");
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 			CPU::Stop();
 		}
 		else if (strncmp(Input, "showbuf", 7) == 0 || strncmp(Input, "sb", 2) == 0)
@@ -389,13 +387,13 @@ namespace CrashHandler
 			char *arg = TrimWhiteSpace(Input + 7);
 			int tmpidx = SBIdx;
 			SBIdx = atoi(arg);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 #if defined(a86)
 			for (int i = 0; i < 5000000; i++)
 				inb(0x80);
 #endif // a64 || a32
 			SBIdx = tmpidx;
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strncmp(Input, "ifr", 3) == 0)
 		{
@@ -408,7 +406,7 @@ namespace CrashHandler
 			if (CountI > TotalCount)
 			{
 				EHPrint("\eFF4400Count too big! Maximum allowed is %ld\eFAFAFA\n", TotalCount);
-				Display->SetBuffer(SBIdx);
+				Display->UpdateBuffer();
 			}
 			else
 			{
@@ -434,7 +432,7 @@ namespace CrashHandler
 						for (int i = 0; i < 20000; i++)
 							inb(0x80);
 #endif // a64 || a32
-						Display->SetBuffer(SBIdx);
+						Display->UpdateBuffer();
 					}
 				}
 			}
@@ -466,7 +464,7 @@ namespace CrashHandler
 						PML4.Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 						PML4.ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 						PML4.GetAddress() << 12);
-				Display->SetBuffer(SBIdx);
+				Display->UpdateBuffer();
 				if (!PML4.Present)
 					continue;
 
@@ -486,7 +484,7 @@ namespace CrashHandler
 							PDPTE->Entries[PDPTEIndex].Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 							PDPTE->Entries[PDPTEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 							PDPTE->Entries[PDPTEIndex].GetAddress() << 12);
-					Display->SetBuffer(SBIdx);
+					Display->UpdateBuffer();
 					if (!PDPTE->Entries[PDPTEIndex].Present)
 						continue;
 
@@ -506,7 +504,7 @@ namespace CrashHandler
 								PDE->Entries[PDEIndex].Accessed ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 								PDE->Entries[PDEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 								PDE->Entries[PDEIndex].GetAddress() << 12);
-						Display->SetBuffer(SBIdx);
+						Display->UpdateBuffer();
 						if (!PDE->Entries[PDEIndex].Present)
 							continue;
 
@@ -530,7 +528,7 @@ namespace CrashHandler
 									PTE->Entries[PTEIndex].ProtectionKey,
 									PTE->Entries[PTEIndex].ExecuteDisable ? "\e00FF001\e4500F5" : "\eFF00000\e4500F5",
 									PTE->Entries[PTEIndex].GetAddress() << 12);
-							Display->SetBuffer(SBIdx);
+							Display->UpdateBuffer();
 						}
 					}
 				}
@@ -552,11 +550,11 @@ namespace CrashHandler
 				{
 					short Percentage = s_cst(short, (i * 100) / bm.Size);
 					EHPrint("\n\eFAFAFA[%03ld%%] %08ld: ", Percentage, i);
-					Display->SetBuffer(SBIdx);
+					Display->UpdateBuffer();
 				}
 			}
 			EHPrint("\n\e22AA44--- END OF BITMAP ---\nBitmap size: %ld\n\n.", bm.Size);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strcmp(Input, "mem") == 0)
 		{
@@ -577,7 +575,7 @@ namespace CrashHandler
 				EHPrint("\eFF00FF|");
 			EHPrint("\eCCCCCC]\n");
 
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strncmp(Input, "cr", 2) == 0)
 		{
@@ -693,7 +691,7 @@ namespace CrashHandler
 						if (!vmm.Check((void *)adr))
 						{
 							EHPrint("\eFFA500Address %#lx is not mapped\n", adr);
-							Display->SetBuffer(SBIdx);
+							Display->UpdateBuffer();
 							ActualLength -= PAGE_SIZE;
 						}
 					}
@@ -740,7 +738,7 @@ namespace CrashHandler
 				break;
 			}
 			EHPrint("\eF8F8F8Dumping memory to UART port %c (%#lx) and %s inaccessible pages.\n", cPort[0], port, cBoolSkip[0] == '1' ? "skipping" : "zeroing");
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 			uint64_t TotalMemLength = KernelAllocator.GetTotalMemory();
 			uint64_t ProgressLength = TotalMemLength;
 			UniversalAsynchronousReceiverTransmitter::UART uart(port);
@@ -764,11 +762,11 @@ namespace CrashHandler
 					{
 						Progress = NewProgress;
 						EHPrint("\n%d%%\n", Progress);
-						Display->SetBuffer(SBIdx);
+						Display->UpdateBuffer();
 					}
-					Display->Print('.', SBIdx);
+					Display->Print('.');
 					if (unlikely(i % 0x500 == 0))
-						Display->SetBuffer(SBIdx);
+						Display->UpdateBuffer();
 				}
 			}
 			EHPrint("\nDone.\n");
@@ -778,42 +776,42 @@ namespace CrashHandler
 			SBIdx = 255;
 			DisplayTopOverlay();
 			DisplayMainScreen(crashdata);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strcmp(Input, "details") == 0)
 		{
 			SBIdx = 254;
 			DisplayTopOverlay();
 			DisplayDetailsScreen(crashdata);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strcmp(Input, "frames") == 0)
 		{
 			SBIdx = 253;
 			DisplayTopOverlay();
 			DisplayStackFrameScreen(crashdata);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strcmp(Input, "tasks") == 0)
 		{
 			SBIdx = 252;
 			DisplayTopOverlay();
 			DisplayTasksScreen(crashdata);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strcmp(Input, "console") == 0)
 		{
 			SBIdx = 251;
 			DisplayTopOverlay();
 			DisplayConsoleScreen(crashdata);
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 		}
 		else if (strlen(Input) > 0)
 			EHPrint("Unknown command: %s", Input);
 
 	DrawBottom:
 		DisplayBottomOverlay();
-		Display->SetBuffer(SBIdx);
+		Display->UpdateBuffer();
 	}
 
 	nsa void StopAllCores()
@@ -907,7 +905,6 @@ namespace CrashHandler
 			if (TaskManager)
 				TaskManager->Panic();
 			ForceUnlock = true;
-			Display->CreateBuffer(0, 0, SBIdx);
 			StopAllCores();
 		}
 		else
@@ -943,7 +940,6 @@ namespace CrashHandler
 				if (TaskManager)
 					TaskManager->Panic();
 				ForceUnlock = true;
-				Display->CreateBuffer(0, 0, SBIdx);
 				StopAllCores();
 				return false;
 			}
@@ -1008,7 +1004,6 @@ namespace CrashHandler
 			if (TaskManager)
 				TaskManager->Panic();
 			ForceUnlock = true;
-			Display->CreateBuffer(0, 0, SBIdx);
 			StopAllCores();
 		}
 		else
@@ -1042,7 +1037,6 @@ namespace CrashHandler
 				if (TaskManager)
 					TaskManager->Panic();
 				ForceUnlock = true;
-				Display->CreateBuffer(0, 0, SBIdx);
 				StopAllCores();
 				return false;
 			}
@@ -1214,15 +1208,15 @@ namespace CrashHandler
 		if (ExceptionOccurred)
 		{
 			SBIdx = 255;
-			Display->ClearBuffer(SBIdx);
-			Display->SetBufferCursor(SBIdx, 0, 0);
+			Display->ClearBuffer();
+			Display->SetBufferCursor(0, 0);
 #if defined(a64)
 			Print_x86_64(Frame);
 #elif defined(a32)
 			Print_x86_32(Frame);
 #endif
 			EHPrint("\nException occurred while handling exception! HALTED!");
-			Display->SetBuffer(SBIdx);
+			Display->UpdateBuffer();
 			Interrupts::RemoveAll();
 			CPU::Stop();
 		}
@@ -1436,27 +1430,20 @@ namespace CrashHandler
 
 		if (Config.InterruptsOnCrash)
 		{
-			// 255 // Main
-			Display->CreateBuffer(0, 0, 254); // Details
-			Display->CreateBuffer(0, 0, 253); // Frames
-			Display->CreateBuffer(0, 0, 252); // Tasks
-			Display->CreateBuffer(0, 0, 251); // Console
-			Display->CreateBuffer(0, 0, 250); // Empty
-
 			DisplayTopOverlay();
 			DisplayMainScreen(crashdata);
-			Display->SetBuffer(255);
+			Display->UpdateBuffer();
 			Interrupts::RemoveAll();
 			kbd = new CrashKeyboardDriver;
 			DisplayBottomOverlay();
-			Display->SetBuffer(255);
+			Display->UpdateBuffer();
 		}
 		else
 		{
 			/*
 			TODO: Stuff that should be done when IOC is disabled.
 			*/
-			Display->SetBuffer(255);
+			Display->UpdateBuffer();
 		}
 
 		CPU::Halt(true);

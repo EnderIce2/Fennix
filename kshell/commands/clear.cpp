@@ -21,6 +21,6 @@
 
 void cmd_clear(const char *)
 {
-	Display->SetBufferCursor(0, 0, 0);
-	Display->ClearBuffer(0);
+	Display->SetBufferCursor(0, 0);
+	Display->ClearBuffer();
 }

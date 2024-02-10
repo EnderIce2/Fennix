@@ -35,6 +35,24 @@ namespace Video
 #define PSF2_MAGIC2 0x4a
 #define PSF2_MAGIC3 0x86
 
+	enum DisplayFont
+	{
+		Tamsyn5x9r,
+		Tamsyn5x9b,
+		Tamsyn6x12r,
+		Tamsyn6x12b,
+		Tamsyn7x14r,
+		Tamsyn7x14b,
+		Tamsyn7x13r,
+		Tamsyn7x13b,
+		Tamsyn8x15r,
+		Tamsyn8x15b,
+		Tamsyn8x16r,
+		Tamsyn8x16b,
+		Tamsyn10x20r,
+		Tamsyn10x20b,
+	};
+
 	struct PSF1_HEADER
 	{
 		uint8_t magic[2];
@@ -93,72 +111,82 @@ namespace Video
 		~Font();
 	};
 
-	struct ScreenBuffer
+	union Pixel
 	{
-		void *Buffer = nullptr;
-		uint32_t Width, Height;
-		size_t Size;
-		uint32_t Color;
-		uint32_t CursorX, CursorY;
-		char Brightness;
-		bool DoNotScroll;
-		long long Checksum;
+		struct
+		{
+			uint8_t Alpha;
+			uint8_t Red;
+			uint8_t Green;
+			uint8_t Blue;
+		};
+		uint32_t raw;
 	};
 
 	class Display
 	{
 	private:
 		BootInfo::FramebufferInfo framebuffer;
+		Font *DefaultFont = nullptr;
 		Font *CurrentFont = nullptr;
-		ScreenBuffer Buffers[256];
 		bool ColorIteration = false;
 		int ColorPickerIteration = 0;
 
+		void *Buffer;
+		size_t Size;
+		uint32_t Width, Height;
+		uint32_t Color;
+		uint32_t CursorX, CursorY;
+		bool DoNotScroll;
+		bool DirectWrite;
+
+		uint32_t RegionWidth = 64, RegionHeight = 64;
+		std::vector<bool> DirtyMap;
+
 	public:
+		decltype(Buffer) &GetBuffer = Buffer;
+		decltype(Size) &GetSize = Size;
+		decltype(Width) &GetWidth = Width;
+		decltype(Height) &GetHeight = Height;
+
 		BootInfo::FramebufferInfo GetFramebufferStruct() { return framebuffer; }
 		Font *GetCurrentFont();
 		void SetCurrentFont(Font *Font);
 		uint16_t GetBitsPerPixel();
 		size_t GetPitch();
 
-		/**
-		 * @brief Create a new buffer
-		 *
-		 * This function creates a new buffer.
-		 * 
-		 * For @see Width and @see Height. Both values must be greater than 0.
-		 *
-		 * @note Some indexes are reserved for the kernel.
-		 * 0 - Main buffer
-		 * 1 - Loading screen buffer
-		 * 200 - GUI buffer
-		 * 250 - Empty (crash screen)
-		 * 251 - Console (crash screen)
-		 * 252 - Tasks (crash screen)
-		 * 253 - Frames (crash screen)
-		 * 254 - Details (crash screen)
-		 * 255 - Main (crash screen)
-		 *
-		 * @param Width The width of the buffer
-		 * @param Height The height of the buffer
-		 * @param Index The index of the buffer (0-255)
-		 */
-		void CreateBuffer(uint32_t Width, uint32_t Height, int Index);
-		void SetBuffer(int Index);
-		ScreenBuffer *GetBuffer(int Index);
-		void ClearBuffer(int Index);
-		void DeleteBuffer(int Index);
-		void SetBrightness(int Value, int Index);
-		void SetBufferCursor(int Index, uint32_t X, uint32_t Y);
-		void GetBufferCursor(int Index, uint32_t *X, uint32_t *Y);
-		void SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index);
-		uint32_t GetPixel(uint32_t X, uint32_t Y, int Index);
-		void Scroll(int Index, int Lines);
-		void SetDoNotScroll(bool Value, int Index);
+		void ClearBuffer();
+		void SetPixel(uint32_t X, uint32_t Y, uint32_t Color);
+		void Scroll(int Lines);
 
-		char Print(char Char, int Index, bool WriteToUART = false);
-		void DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART = false);
-		Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont = true);
+		void SetDoNotScroll(bool Value)
+		{
+			this->DoNotScroll = Value;
+		}
+
+		void SetBufferCursor(uint32_t X, uint32_t Y)
+		{
+			this->CursorX = X;
+			this->CursorY = Y;
+		}
+
+		void GetBufferCursor(uint32_t *X, uint32_t *Y)
+		{
+			*X = this->CursorX;
+			*Y = this->CursorY;
+		}
+
+		void UpdateRegion(size_t RegionRow, size_t RegionColumn);
+		void MarkRegionDirty(size_t RegionRow, size_t RegionCol);
+		void UpdateBuffer();
+
+		char Print(char Char,
+				   Video::Font *Font = nullptr,
+				   bool WriteToUART = false);
+
+		Display(BootInfo::FramebufferInfo Info,
+				bool LoadDefaultFont = true,
+				bool DirectWrite = true);
 		~Display();
 	};
 }

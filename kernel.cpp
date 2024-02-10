@@ -63,12 +63,10 @@ Time::time *TimeManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
 
-// For the Display class. Printing on first buffer as default.
-int PutCharBufferIndex = 0;
 EXTERNC void putchar(char c)
 {
 	if (Display)
-		Display->Print(c, PutCharBufferIndex);
+		Display->Print(c);
 	else
 		UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
 }
@@ -98,7 +96,7 @@ EXTERNC void _KPrint(const char *Format, va_list Args)
 	vprintf(Format, Args);
 	printf("\eCCCCCC\n");
 	if (!Config.Quiet && Display)
-		Display->SetBuffer(0);
+		Display->UpdateBuffer();
 }
 
 EXTERNC void KPrint(const char *Format, ...)
@@ -206,21 +204,6 @@ EXTERNC NIF void Main()
 												 bInfo.Kernel.Symbols.EntSize,
 												 bInfo.Kernel.Symbols.Shndx,
 												 bInfo.Kernel.Symbols.Sections);
-
-	if (Config.Quiet)
-	{
-		Display->CreateBuffer(0, 0, 1);
-
-		Display->SetDoNotScroll(true, 1);
-		Video::ScreenBuffer *buf = Display->GetBuffer(1);
-		Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
-		Display->SetBufferCursor(1, 0, buf->Height - fi.Height);
-		PutCharBufferIndex = 1;
-		printf("Fennix Operating System - %s [\e058C19%s\eFFFFFF]\n",
-			   KERNEL_VERSION, GIT_COMMIT_SHORT);
-		Display->SetBuffer(1);
-		PutCharBufferIndex = 0;
-	}
 
 	KPrint("Initializing Power Manager");
 	PowerManager = new Power::Power;

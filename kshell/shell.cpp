@@ -77,6 +77,7 @@ static Command commands[] = {
 	{"rmmod", nullptr},
 	{"modprobe", nullptr},
 	{"depmod", nullptr},
+	{"panic", cmd_panic},
 };
 
 void StartKernelShell()
@@ -118,7 +119,7 @@ void StartKernelShell()
 			   "kernel",
 			   "fennix",
 			   cwd->FullPath);
-		Display->SetBuffer(0);
+		Display->UpdateBuffer();
 
 		uint8_t scBuf[2];
 		scBuf[1] = 0x00; /* Request scan code */
@@ -167,10 +168,10 @@ void StartKernelShell()
 				if (BackspaceCount == 0)
 					continue;
 
-				Display->Print('\b', 0);
+				Display->Print('\b');
 				Buffer.pop_back();
 				BackspaceCount--;
-				Display->SetBuffer(0);
+				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_UP_ARROW:
@@ -185,15 +186,15 @@ void StartKernelShell()
 				HistoryIndex--;
 
 				for (size_t i = 0; i < Buffer.size(); i++)
-					Display->Print('\b', 0);
-				Display->SetBuffer(0);
+					Display->Print('\b');
+				Display->UpdateBuffer();
 
 				Buffer = History[HistoryIndex]->c_str();
 
 				for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-					Display->Print(Buffer[i], 0);
+					Display->Print(Buffer[i]);
 				BackspaceCount = Buffer.size();
-				Display->SetBuffer(0);
+				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_DOWN_ARROW:
@@ -209,24 +210,24 @@ void StartKernelShell()
 				{
 					HistoryIndex++;
 					for (size_t i = 0; i < Buffer.size(); i++)
-						Display->Print('\b', 0);
+						Display->Print('\b');
 					BackspaceCount = Buffer.size();
-					Display->SetBuffer(0);
+					Display->UpdateBuffer();
 					continue;
 				}
 
 				for (size_t i = 0; i < Buffer.size(); i++)
-					Display->Print('\b', 0);
-				Display->SetBuffer(0);
+					Display->Print('\b');
+				Display->UpdateBuffer();
 
 				HistoryIndex++;
 				Buffer = History[HistoryIndex]->c_str();
 
 				for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-					Display->Print(Buffer[i], 0);
+					Display->Print(Buffer[i]);
 
 				BackspaceCount = Buffer.size();
-				Display->SetBuffer(0);
+				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_TAB:
@@ -245,14 +246,14 @@ void StartKernelShell()
 					for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 						printf("%s ", commands[i].Name);
 
-					Display->Print('\n', 0);
-					Display->SetBuffer(0);
+					Display->Print('\n');
+					Display->UpdateBuffer();
 					goto SecLoopEnd;
 				}
 
 				for (size_t i = 0; i < Buffer.size(); i++)
-					Display->Print('\b', 0);
-				Display->SetBuffer(0);
+					Display->Print('\b');
+				Display->UpdateBuffer();
 
 				for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 				{
@@ -260,9 +261,9 @@ void StartKernelShell()
 					{
 						Buffer = commands[i].Name;
 						for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-							Display->Print(Buffer[i], 0);
+							Display->Print(Buffer[i]);
 						BackspaceCount = Buffer.size();
-						Display->SetBuffer(0);
+						Display->UpdateBuffer();
 						break;
 					}
 				}
@@ -286,20 +287,20 @@ void StartKernelShell()
 				{
 				case 'C':
 				{
-					Display->Print('^', 0);
-					Display->Print('C', 0);
-					Display->Print('\n', 0);
+					Display->Print('^');
+					Display->Print('C');
+					Display->Print('\n');
 					fixme("No SIGINT handler yet.");
-					Display->SetBuffer(0);
+					Display->UpdateBuffer();
 					goto SecLoopEnd;
 				}
 				case 'D':
 				{
-					Display->Print('^', 0);
-					Display->Print('D', 0);
-					Display->Print('\n', 0);
+					Display->Print('^');
+					Display->Print('D');
+					Display->Print('\n');
 					fixme("No SIGKILL handler yet.");
-					Display->SetBuffer(0);
+					Display->UpdateBuffer();
 					goto SecLoopEnd;
 				}
 				default:
@@ -307,7 +308,7 @@ void StartKernelShell()
 				}
 			}
 
-			Display->Print(c, 0);
+			Display->Print(c);
 			if (c == '\n')
 			{
 				if (Buffer.length() > 0)
@@ -321,7 +322,7 @@ void StartKernelShell()
 
 			Buffer += c;
 			BackspaceCount++;
-			Display->SetBuffer(0);
+			Display->UpdateBuffer();
 		}
 	SecLoopEnd:
 

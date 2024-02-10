@@ -85,179 +85,28 @@ namespace Video
 	uint16_t Display::GetBitsPerPixel() { return this->framebuffer.BitsPerPixel; }
 	size_t Display::GetPitch() { return this->framebuffer.Pitch; }
 
-	void Display::CreateBuffer(uint32_t Width, uint32_t Height, int Index)
+	void Display::ClearBuffer()
 	{
-		if (Width == 0 || Height == 0)
-		{
-			Width = this->framebuffer.Width;
-			Height = this->framebuffer.Height;
-			debug("Buffer %d created with default size (%d, %d)", Index, Width, Height);
-		}
-
-		if (this->Buffers[Index].Checksum == 0xBBFFE515A117E)
-		{
-			warn("Buffer %d already exists, skipping creation", Index);
-			return;
-		}
-
-		size_t Size = this->framebuffer.Pitch * Height;
-
-		this->Buffers[Index].Buffer = KernelAllocator.RequestPages(TO_PAGES(Size + 1));
-		memset(this->Buffers[Index].Buffer, 0, Size);
-
-		this->Buffers[Index].Width = Width;
-		this->Buffers[Index].Height = Height;
-		this->Buffers[Index].Size = Size;
-		this->Buffers[Index].Color = 0xFFFFFF;
-		this->Buffers[Index].CursorX = 0;
-		this->Buffers[Index].CursorY = 0;
-		this->Buffers[Index].Brightness = 100;
-		this->Buffers[Index].Checksum = 0xBBFFE515A117E;
-		debug("Buffer %d created", Index);
+		memset(this->Buffer, 0, this->Size);
+		// std::fill(this->DirtyMap.begin(), this->DirtyMap.end(), true);
 	}
 
-	void Display::SetBuffer(int Index)
+	__no_sanitize("undefined") void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color)
 	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
+		if (unlikely(X >= this->Width))
+			X = this->Width - 1;
 
-		if (this->Buffers[Index].Brightness != 100)
-			this->SetBrightness(this->Buffers[Index].Brightness, Index);
+		if (unlikely(Y >= this->Height))
+			Y = this->Height - 1;
 
-		if (this->Buffers[Index].Brightness == 0) /* Just clear the buffer */
-			memset(this->Buffers[Index].Buffer, 0, this->Buffers[Index].Size);
-
-		memcpy(this->framebuffer.BaseAddress, this->Buffers[Index].Buffer, this->Buffers[Index].Size);
-	}
-
-	ScreenBuffer *Display::GetBuffer(int Index) { return &this->Buffers[Index]; }
-
-	void Display::ClearBuffer(int Index)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		memset(this->Buffers[Index].Buffer, 0, this->Buffers[Index].Size);
-	}
-
-	void Display::DeleteBuffer(int Index)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		KernelAllocator.FreePages(this->Buffers[Index].Buffer, TO_PAGES(this->Buffers[Index].Size + 1));
-		this->Buffers[Index].Buffer = nullptr;
-		this->Buffers[Index].Checksum = 0;
-		debug("Buffer %d deleted", Index);
-	}
-
-	void Display::SetBrightness(int Value, int Index)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		if (Value > 100)
-			Value = 100;
-		else if (Value < 0)
-			Value = 0;
-
-		uint32_t *pixel = (uint32_t *)this->Buffers[Index].Buffer;
-
-		for (uint32_t y = 0; y < this->Buffers[Index].Height; y++)
-		{
-			for (uint32_t x = 0; x < this->Buffers[Index].Width; x++)
-			{
-				uint32_t color = pixel[y * this->Buffers[Index].Width + x];
-
-				uint8_t r = color & 0xff;
-				uint8_t g = (color >> 8) & 0xff;
-				uint8_t b = (color >> 16) & 0xff;
-
-				r = s_cst(uint8_t, (r * Value) / 100);
-				g = s_cst(uint8_t, (g * Value) / 100);
-				b = s_cst(uint8_t, (b * Value) / 100);
-
-				pixel[y * this->Buffers[Index].Width + x] = (b << 16) | (g << 8) | r;
-			}
-		}
-		this->Buffers[Index].Brightness = s_cst(char, Value);
-	}
-
-	void Display::SetBufferCursor(int Index, uint32_t X, uint32_t Y)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		this->Buffers[Index].CursorX = X;
-		this->Buffers[Index].CursorY = Y;
-	}
-
-	void Display::GetBufferCursor(int Index, uint32_t *X, uint32_t *Y)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		*X = this->Buffers[Index].CursorX;
-		*Y = this->Buffers[Index].CursorY;
-	}
-
-	__no_sanitize("undefined") void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color, int Index)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		if (unlikely(X >= this->Buffers[Index].Width))
-			X = this->Buffers[Index].Width - 1;
-
-		if (unlikely(Y >= this->Buffers[Index].Height))
-			Y = this->Buffers[Index].Height - 1;
-
-		uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index].Buffer + (Y * this->Buffers[Index].Width + X) * (this->framebuffer.BitsPerPixel / 8));
+		uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffer + (Y * this->Width + X) * (this->framebuffer.BitsPerPixel / 8));
 		*Pixel = Color;
+		// MarkRegionDirty(Y / RegionHeight, X / RegionWidth);
 	}
 
-	uint32_t Display::GetPixel(uint32_t X, uint32_t Y, int Index)
+	void Display::Scroll(int Lines)
 	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-			return 0;
-
-		if (unlikely(X >= this->Buffers[Index].Width || Y >= this->Buffers[Index].Height))
-			return 0;
-
-		uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffers[Index].Buffer + (Y * this->Buffers[Index].Width + X) * (this->framebuffer.BitsPerPixel / 8));
-		return *Pixel;
-	}
-
-	void Display::Scroll(int Index, int Lines)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		if (this->Buffers[Index].DoNotScroll)
+		if (this->DoNotScroll)
 			return;
 
 		if (Lines == 0)
@@ -265,43 +114,31 @@ namespace Video
 
 		if (Lines > 0)
 		{
-			uint32_t LineSize = this->Buffers[Index].Width * (this->framebuffer.BitsPerPixel / 8);
+			uint32_t LineSize = this->Width * (this->framebuffer.BitsPerPixel / 8);
 			uint32_t BytesToMove = LineSize * Lines * this->CurrentFont->GetInfo().Height;
-			size_t BytesToClear = this->Buffers[Index].Size - BytesToMove;
-			memmove(this->Buffers[Index].Buffer, (uint8_t *)this->Buffers[Index].Buffer + BytesToMove, BytesToClear);
-			memset((uint8_t *)this->Buffers[Index].Buffer + BytesToClear, 0, BytesToMove);
+			size_t BytesToClear = this->Size - BytesToMove;
+			memmove(this->Buffer, (uint8_t *)this->Buffer + BytesToMove, BytesToClear);
+			memset((uint8_t *)this->Buffer + BytesToClear, 0, BytesToMove);
+
+			// memset(this->DirtyMap.data(), true, this->DirtyMap.size());
 		}
 	}
 
-	void Display::SetDoNotScroll(bool Value, int Index)
+	__no_sanitize("undefined") char Display::Print(char Char, Video::Font *_Font, bool WriteToUART)
 	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-		{
-			debug("Invalid buffer %d", Index);
-			return;
-		}
-
-		this->Buffers[Index].DoNotScroll = Value;
-	}
-
-	__no_sanitize("undefined") char Display::Print(char Char, int Index, bool WriteToUART)
-	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
-			return 0;
-
 		// SmartLock(PrintLock);
 
 		if (this->ColorIteration)
 		{
 			// RRGGBB
 			if (Char >= '0' && Char <= '9')
-				this->Buffers[Index].Color = (this->Buffers[Index].Color << 4) | (Char - '0');
+				this->Color = (this->Color << 4) | (Char - '0');
 			else if (Char >= 'a' && Char <= 'f')
-				this->Buffers[Index].Color = (this->Buffers[Index].Color << 4) | (Char - 'a' + 10);
+				this->Color = (this->Color << 4) | (Char - 'a' + 10);
 			else if (Char >= 'A' && Char <= 'F')
-				this->Buffers[Index].Color = (this->Buffers[Index].Color << 4) | (Char - 'A' + 10);
+				this->Color = (this->Color << 4) | (Char - 'A' + 10);
 			else
-				this->Buffers[Index].Color = 0xFFFFFF;
+				this->Color = 0xFFFFFF;
 			this->ColorPickerIteration++;
 			if (this->ColorPickerIteration == 6)
 			{
@@ -314,6 +151,10 @@ namespace Video
 		if (WriteToUART && Char != '\e')
 			UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(Char);
 
+		if (_Font == nullptr)
+			_Font = this->DefaultFont;
+		this->CurrentFont = _Font;
+
 		switch (Char)
 		{
 		case '\e':
@@ -323,7 +164,7 @@ namespace Video
 		}
 		case '\b':
 		{
-			switch (this->CurrentFont->GetInfo().Type)
+			switch (_Font->GetInfo().Type)
 			{
 			case FontType::PCScreenFont1:
 			{
@@ -332,13 +173,21 @@ namespace Video
 			}
 			case FontType::PCScreenFont2:
 			{
-				uint32_t fonthdrWidth = this->CurrentFont->GetInfo().PSF2Font->Header->width;
-				uint32_t fonthdrHeight = this->CurrentFont->GetInfo().PSF2Font->Header->height;
+				uint32_t fonthdrWidth = _Font->GetInfo().PSF2Font->Header->width;
+				uint32_t fonthdrHeight = _Font->GetInfo().PSF2Font->Header->height;
 
-				for (unsigned long Y = this->Buffers[Index].CursorY; Y < this->Buffers[Index].CursorY + fonthdrHeight; Y++)
-					for (unsigned long X = this->Buffers[Index].CursorX - fonthdrWidth; X < this->Buffers[Index].CursorX; X++)
-						*(uint32_t *)((uintptr_t)this->Buffers[Index].Buffer +
-									  (Y * this->Buffers[Index].Width + X) * (this->framebuffer.BitsPerPixel / 8)) = 0;
+				for (unsigned long Y = this->CursorY; Y < this->CursorY + fonthdrHeight; Y++)
+					for (unsigned long X = this->CursorX - fonthdrWidth; X < this->CursorX; X++)
+						*(uint32_t *)((uintptr_t)this->Buffer +
+									  (Y * this->Width + X) * (this->framebuffer.BitsPerPixel / 8)) = 0;
+
+				// for (size_t i = 0; i < 9; ++i)
+				// {
+				// 	size_t row = (CursorY / RegionHeight) + (i / 3) - 1;
+				// 	size_t col = (CursorX / RegionWidth) + (i % 3) - 1;
+				// 	if (row < Height / RegionHeight && col < Width / RegionWidth)
+				// 		MarkRegionDirty(row, col);
+				// }
 				break;
 			}
 			default:
@@ -346,25 +195,25 @@ namespace Video
 				break;
 			}
 
-			if (this->Buffers[Index].CursorX > 0)
-				this->Buffers[Index].CursorX -= this->GetCurrentFont()->GetInfo().Width;
+			if (this->CursorX > 0)
+				this->CursorX -= this->GetCurrentFont()->GetInfo().Width;
 
 			return Char;
 		}
 		case '\t':
 		{
-			this->Buffers[Index].CursorX = (this->Buffers[Index].CursorX + 8) & ~(8 - 1);
+			this->CursorX = (this->CursorX + 8) & ~(8 - 1);
 			return Char;
 		}
 		case '\r':
 		{
-			this->Buffers[Index].CursorX = 0;
+			this->CursorX = 0;
 			return Char;
 		}
 		case '\n':
 		{
-			this->Buffers[Index].CursorX = 0;
-			this->Buffers[Index].CursorY += this->GetCurrentFont()->GetInfo().Height;
+			this->CursorX = 0;
+			this->CursorY += this->GetCurrentFont()->GetInfo().Height;
 			return Char;
 		}
 		default:
@@ -373,44 +222,44 @@ namespace Video
 
 		uint32_t FontHeight = this->GetCurrentFont()->GetInfo().Height;
 
-		if (this->Buffers[Index].CursorX + this->GetCurrentFont()->GetInfo().Width >= this->Buffers[Index].Width)
+		if (this->CursorX + this->GetCurrentFont()->GetInfo().Width >= this->Width)
 		{
-			this->Buffers[Index].CursorX = 0;
-			this->Buffers[Index].CursorY += FontHeight;
+			this->CursorX = 0;
+			this->CursorY += FontHeight;
 		}
 
-		if (this->Buffers[Index].CursorY + FontHeight >= this->Buffers[Index].Height)
+		if (this->CursorY + FontHeight >= this->Height)
 		{
-			if (!this->Buffers[Index].DoNotScroll)
+			if (!this->DoNotScroll)
 			{
-				this->Buffers[Index].CursorY -= FontHeight;
-				this->Scroll(Index, 1);
+				this->CursorY -= FontHeight;
+				this->Scroll(1);
 			}
 		}
 
-		switch (this->CurrentFont->GetInfo().Type)
+		switch (_Font->GetInfo().Type)
 		{
 		case FontType::PCScreenFont1:
 		{
-			uint32_t *PixelPtr = (uint32_t *)this->Buffers[Index].Buffer;
-			char *FontPtr = (char *)this->CurrentFont->GetInfo().PSF1Font->GlyphBuffer + (Char * this->CurrentFont->GetInfo().PSF1Font->Header->charsize);
-			for (uint64_t Y = this->Buffers[Index].CursorY; Y < this->Buffers[Index].CursorY + 16; Y++)
+			uint32_t *PixelPtr = (uint32_t *)this->Buffer;
+			char *FontPtr = (char *)_Font->GetInfo().PSF1Font->GlyphBuffer + (Char * _Font->GetInfo().PSF1Font->Header->charsize);
+			for (uint64_t Y = this->CursorY; Y < this->CursorY + 16; Y++)
 			{
-				for (uint64_t X = this->Buffers[Index].CursorX; X < this->Buffers[Index].CursorX + 8; X++)
-					if ((*FontPtr & (0b10000000 >> (X - this->Buffers[Index].CursorX))) > 0)
-						*(unsigned int *)(PixelPtr + X + (Y * this->Buffers[Index].Width)) = this->Buffers[Index].Color;
+				for (uint64_t X = this->CursorX; X < this->CursorX + 8; X++)
+					if ((*FontPtr & (0b10000000 >> (X - this->CursorX))) > 0)
+						*(unsigned int *)(PixelPtr + X + (Y * this->Width)) = this->Color;
 				FontPtr++;
 			}
-			this->Buffers[Index].CursorX += 8;
+			this->CursorX += 8;
 
 			break;
 		}
 		case FontType::PCScreenFont2:
 		{
-			// if (this->CurrentFont->PSF2Font->GlyphBuffer == (uint16_t *)0x01) // HAS UNICODE TABLE
-			//     Char = this->CurrentFont->PSF2Font->GlyphBuffer[Char];
+			// if (_Font->PSF2Font->GlyphBuffer == (uint16_t *)0x01) // HAS UNICODE TABLE
+			//     Char = _Font->PSF2Font->GlyphBuffer[Char];
 
-			FontInfo fInfo = this->CurrentFont->GetInfo();
+			FontInfo fInfo = _Font->GetInfo();
 
 			int BytesPerLine = (fInfo.PSF2Font->Header->width + 7) / 8;
 			char *FontAddress = (char *)fInfo.StartAddress;
@@ -422,71 +271,128 @@ namespace Video
 			uint32_t FontHdrWidth = fInfo.PSF2Font->Header->width;
 			uint32_t FontHdrHeight = fInfo.PSF2Font->Header->height;
 
-			for (size_t Y = this->Buffers[Index].CursorY; Y < this->Buffers[Index].CursorY + FontHdrHeight; Y++)
+			for (size_t Y = this->CursorY; Y < this->CursorY + FontHdrHeight; Y++)
 			{
-				for (size_t X = this->Buffers[Index].CursorX; X < this->Buffers[Index].CursorX + FontHdrWidth; X++)
+				for (size_t X = this->CursorX; X < this->CursorX + FontHdrWidth; X++)
 				{
-					if ((*FontPtr & (0b10000000 >> (X - this->Buffers[Index].CursorX))) > 0)
+					if ((*FontPtr & (0b10000000 >> (X - this->CursorX))) > 0)
 					{
-						void *FramebufferAddress = (void *)((uintptr_t)this->Buffers[Index].Buffer +
-															(Y * this->Buffers[Index].Width + X) *
+						void *FramebufferAddress = (void *)((uintptr_t)this->Buffer +
+															(Y * this->Width + X) *
 																(this->framebuffer.BitsPerPixel / 8));
-						*(uint32_t *)FramebufferAddress = this->Buffers[Index].Color;
+						*(uint32_t *)FramebufferAddress = this->Color;
 					}
 				}
 				FontPtr += BytesPerLine;
 			}
-			this->Buffers[Index].CursorX += FontHdrWidth;
+			this->CursorX += FontHdrWidth;
 			break;
 		}
 		default:
 			warn("Unsupported font type");
 			break;
 		}
+
+		// // MarkRegionDirty(CursorY / RegionHeight, CursorX / RegionWidth);
+		// for (size_t i = 0; i < 9; ++i)
+		// {
+		// 	size_t row = (CursorY / RegionHeight) + (i / 3) - 1;
+		// 	size_t col = (CursorX / RegionWidth) + (i % 3) - 1;
+		// 	if (row < Height / RegionHeight && col < Width / RegionWidth)
+		// 		MarkRegionDirty(row, col);
+		// }
 		return Char;
 	}
 
-	void Display::DrawString(const char *String, uint32_t X, uint32_t Y, int Index, bool WriteToUART)
+	void Display::UpdateBuffer()
 	{
-		if (unlikely(this->Buffers[Index].Checksum != 0xBBFFE515A117E))
+		if (!DirectWrite)
+			memcpy(this->framebuffer.BaseAddress, this->Buffer, this->Size);
+
+		// for (size_t i = 0; i < DirtyMap.size(); ++i)
+		// {
+		// 	if (DirtyMap[i])
+		// 	{
+		// 		size_t rRow = i / (framebuffer.Width / RegionWidth);
+		// 		size_t rCol = i % (framebuffer.Width / RegionWidth);
+		// 		UpdateRegion(rRow, rCol);
+		// 		DirtyMap[i] = false;
+		// 	}
+		// }
+	}
+
+	void Display::UpdateRegion(size_t RegionRow, size_t RegionColumn)
+	{
+		size_t startRow = RegionRow * RegionHeight;
+		size_t endRow = startRow + RegionHeight;
+		size_t startCol = RegionColumn * RegionWidth;
+		size_t endCol = startCol + RegionWidth;
+
+		uint8_t *framebufferPtr = (uint8_t *)framebuffer.BaseAddress;
+		uint8_t *bufferPtr = (uint8_t *)Buffer;
+
+		for (size_t row = startRow; row < endRow; ++row)
 		{
-			debug("Invalid buffer %d", Index);
+			uint8_t *framebufferRowPtr = framebufferPtr + (row % framebuffer.Height) * framebuffer.Width * (framebuffer.BitsPerPixel / 8);
+			uint8_t *bufferRowPtr = bufferPtr + row * framebuffer.Width * (framebuffer.BitsPerPixel / 8);
+
+			for (size_t col = startCol; col < endCol; ++col)
+			{
+				uint8_t *framebufferPixelPtr = framebufferRowPtr + (col % framebuffer.Width) * (framebuffer.BitsPerPixel / 8);
+				uint8_t *bufferPixelPtr = bufferRowPtr + col * (framebuffer.BitsPerPixel / 8);
+
+				memcpy(framebufferPixelPtr, bufferPixelPtr, framebuffer.BitsPerPixel / 8);
+			}
+		}
+		/*
+		size_t startRow = RegionRow * RegionHeight;
+		size_t endRow = startRow + RegionHeight;
+		size_t startCol = RegionColumn * RegionWidth;
+		size_t endCol = startCol + RegionWidth;
+
+		for (size_t row = startRow; row < endRow; ++row)
+		{
+			for (size_t col = startCol; col < endCol; ++col)
+			{
+				size_t bufferIndex = row * framebuffer.Width + col;
+				size_t framebufferIndex = (row % framebuffer.Height) * framebuffer.Width + (col % framebuffer.Width);
+				memcpy((uint8_t *)framebuffer.BaseAddress + framebufferIndex * (framebuffer.BitsPerPixel / 8),
+					   (uint8_t *)Buffer + bufferIndex * (framebuffer.BitsPerPixel / 8),
+					   framebuffer.BitsPerPixel / 8);
+			}
+		}
+		*/
+	}
+
+	void Display::MarkRegionDirty(size_t RegionRow, size_t RegionCol)
+	{
+		size_t index = RegionRow * (framebuffer.Width / RegionWidth) + RegionCol;
+		DirtyMap[index] = true;
+	}
+
+	Display::Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont, bool _DirectWrite)
+		: framebuffer(Info), DirectWrite(_DirectWrite)
+	{
+		Width = Info.Width;
+		Height = Info.Height;
+		Size = this->framebuffer.Pitch * Height;
+		if (DirectWrite)
+			Buffer = (void *)this->framebuffer.BaseAddress;
+		else
+			Buffer = KernelAllocator.RequestPages(TO_PAGES(Size));
+
+		// DirtyMap.resize((Width / RegionWidth) * (Height / RegionHeight), false);
+
+		if (!LoadDefaultFont)
 			return;
-		}
-
-		this->Buffers[Index].CursorX = X;
-		this->Buffers[Index].CursorY = Y;
-
-		for (int i = 0; String[i] != '\0'; i++)
-			this->Print(String[i], Index, WriteToUART);
-	}
-
-	Display::Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont)
-	{
-		this->framebuffer = Info;
-		if (LoadDefaultFont)
-		{
-			this->CurrentFont = new Font(&_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, FontType::PCScreenFont2);
+		this->DefaultFont = new Font(&_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_start, &_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_end, FontType::PCScreenFont2);
 #ifdef DEBUG
-			FontInfo Info = this->CurrentFont->GetInfo();
-			debug("Font loaded: %dx%d %s",
-				  Info.Width, Info.Height,
-				  Info.Type == FontType::PCScreenFont1 ? "PSF1" : "PSF2");
+		FontInfo fInfo = this->DefaultFont->GetInfo();
+		debug("Font loaded: %dx%d %s",
+			  fInfo.Width, fInfo.Height,
+			  fInfo.Type == FontType::PCScreenFont1 ? "PSF1" : "PSF2");
 #endif
-		}
-		this->CreateBuffer(Info.Width, Info.Height, 0);
 	}
 
-	Display::~Display()
-	{
-		debug("Destructor called");
-		this->ClearBuffer(0);
-		this->SetBuffer(0);
-
-		for (int i = 0; i < s_cst(int, sizeof(this->Buffers) / sizeof(this->Buffers[0])); i++)
-		{
-			if (this->Buffers[i].Checksum == 0xBBFFE515A117E)
-				this->DeleteBuffer(i);
-		}
-	}
+	Display::~Display() {}
 }

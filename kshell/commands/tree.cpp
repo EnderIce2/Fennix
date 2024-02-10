@@ -27,7 +27,7 @@ void tree_loop(Node *rootNode, int depth = 0)
 {
 	foreach (auto Child in rootNode->Children)
 	{
-		Display->SetBuffer(0);
+		Display->UpdateBuffer();
 		if (Child->Type == NodeType::DIRECTORY ||
 			Child->Type == NodeType::MOUNTPOINT)
 		{

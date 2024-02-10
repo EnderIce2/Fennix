@@ -28,7 +28,7 @@ namespace vfs
 		for (size_t i = 0; i < Size; i++)
 			putchar(((char *)Buffer)[i]);
 
-		Display->SetBuffer(0); /* FIXME: stub */
+		Display->UpdateBuffer(); /* FIXME: stub */
 		return Size;
 	}
 
@@ -39,14 +39,13 @@ namespace vfs
 		case TIOCGWINSZ:
 		{
 			struct winsize *ws = (struct winsize *)Argp;
-			Video::ScreenBuffer *sb = Display->GetBuffer(0);
 			Video::FontInfo fi = Display->GetCurrentFont()->GetInfo();
 
 			fixme("TIOCGWINSZ: stub");
-			ws->ws_xpixel = uint16_t(sb->Width);
-			ws->ws_ypixel = uint16_t(sb->Height);
-			ws->ws_col = uint16_t(sb->Width / fi.Width);
-			ws->ws_row = uint16_t(sb->Height / fi.Height);
+			ws->ws_xpixel = uint16_t(Display->GetWidth);
+			ws->ws_ypixel = uint16_t(Display->GetHeight);
+			ws->ws_col = uint16_t(Display->GetWidth / fi.Width);
+			ws->ws_row = uint16_t(Display->GetHeight / fi.Height);
 			break;
 		}
 		default:

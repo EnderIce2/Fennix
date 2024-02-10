@@ -38,7 +38,7 @@ namespace vfs
 			putchar(((char *)Buffer)[i]);
 
 		if (!Config.Quiet)
-			Display->SetBuffer(0);
+			Display->UpdateBuffer();
 		return Size;
 	}
 

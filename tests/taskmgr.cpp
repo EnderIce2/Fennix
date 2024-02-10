@@ -111,19 +111,20 @@ void TaskMgr()
 			CPU::Pause();
 
 		static int sanity = 0;
-		Video::ScreenBuffer *sb = Display->GetBuffer(0);
 		for (short i = 0; i < 1000; i++)
 		{
 			for (short j = 0; j < 500; j++)
 			{
-				uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
-				*Pixel = 0x222222;
+				Video::Pixel *p = (Video::Pixel *)((uintptr_t)Display->GetBuffer +
+												   (j * Display->GetWidth + i) *
+													   (bInfo.Framebuffer[0].BitsPerPixel / 8));
+				*p = {0xFF, 0x22, 0x22, 0x22};
 			}
 		}
 
 		uint32_t tmpX, tmpY;
-		Display->GetBufferCursor(0, &tmpX, &tmpY);
-		Display->SetBufferCursor(0, 0, 0);
+		Display->GetBufferCursor(&tmpX, &tmpY);
+		Display->SetBufferCursor(0, 0);
 		printf("\eF02C21Task Manager\n");
 		static uint64_t OldSystemTime = 0;
 		foreach (auto Proc in TaskManager->GetProcessList())
@@ -176,9 +177,9 @@ void TaskMgr()
 #endif
 		if (sanity > 1000)
 			sanity = 0;
-		Display->SetBufferCursor(0, tmpX, tmpY);
+		Display->SetBufferCursor(tmpX, tmpY);
 		if (!Config.Quiet)
-			Display->SetBuffer(0);
+			Display->UpdateBuffer();
 
 		TaskManager->Sleep(100);
 	}

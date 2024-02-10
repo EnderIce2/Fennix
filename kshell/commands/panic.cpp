@@ -15,24 +15,15 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifdef DEBUG
+#include "../cmds.hpp"
 
-#include "t.h"
+#include <filesystem.hpp>
 
-#include "../kernel.h"
+#include "../../kernel.h"
 
-void TreeFS(vfs::Node *node, int Depth)
+using namespace vfs;
+
+void cmd_panic(const char *args)
 {
-	return;
-	foreach (auto Chld in node->Children)
-	{
-		printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
-
-		if (!Config.Quiet)
-			Display->UpdateBuffer();
-		TaskManager->Sleep(100);
-		TreeFS(Chld, Depth + 1);
-	}
+	int3;
 }
-
-#endif // DEBUG

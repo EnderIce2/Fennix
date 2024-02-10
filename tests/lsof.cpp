@@ -44,19 +44,20 @@ void lsof()
 		while (ShowOpenFiles == 0)
 			CPU::Pause();
 
-		Video::ScreenBuffer *sb = Display->GetBuffer(0);
 		for (short i = 0; i < 500; i++)
 		{
 			for (short j = 0; j < 500; j++)
 			{
-				uint32_t *Pixel = (uint32_t *)((uintptr_t)sb->Buffer + (j * sb->Width + i) * (bInfo.Framebuffer[0].BitsPerPixel / 8));
-				*Pixel = 0x222222;
+				Video::Pixel *p = (Video::Pixel *)((uintptr_t)Display->GetBuffer +
+												   (j * Display->GetWidth + i) *
+													   (bInfo.Framebuffer[0].BitsPerPixel / 8));
+				*p = {0xFF, 0x22, 0x22, 0x22};
 			}
 		}
 
 		uint32_t tmpX, tmpY;
-		Display->GetBufferCursor(0, &tmpX, &tmpY);
-		Display->SetBufferCursor(0, 0, 0);
+		Display->GetBufferCursor(&tmpX, &tmpY);
+		Display->SetBufferCursor(0, 0);
 		printf("\eF02C21Open Files (%ld):\e00AAAA\n",
 			   TaskManager->GetProcessList().size());
 		foreach (auto Proc in TaskManager->GetProcessList())
@@ -72,9 +73,9 @@ void lsof()
 				printf("  %d: %s\n", fd.Descriptor,
 					   fd.Handle->node->FullPath);
 		}
-		Display->SetBufferCursor(0, tmpX, tmpY);
+		Display->SetBufferCursor(tmpX, tmpY);
 		if (!Config.Quiet)
-			Display->SetBuffer(0);
+			Display->UpdateBuffer();
 	}
 }
 
