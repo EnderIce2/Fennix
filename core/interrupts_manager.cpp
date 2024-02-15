@@ -37,9 +37,11 @@
 #include "crashhandler.hpp"
 #include "../kernel.h"
 
-extern "C" nsa void ExceptionHandler(void *Data)
+void HandleException(CPU::ExceptionFrame *Frame);
+
+extern "C" nsa void ExceptionHandler(void *Frame)
 {
-	CrashHandler::Handle(Data);
+	HandleException((CPU::ExceptionFrame *)Frame);
 }
 
 namespace Interrupts
