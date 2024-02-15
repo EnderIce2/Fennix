@@ -239,6 +239,10 @@ namespace Video
 		char Print(char Char,
 				   Video::Font *Font = nullptr,
 				   bool WriteToUART = false);
+		
+		void PrintString(const char *String,
+						 Video::Font *Font = nullptr,
+						 bool WriteToUART = false);
 
 		Display(BootInfo::FramebufferInfo Info,
 				bool LoadDefaultFont = true,

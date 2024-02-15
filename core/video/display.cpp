@@ -35,7 +35,9 @@ namespace Video
 		// std::fill(this->DirtyMap.begin(), this->DirtyMap.end(), true);
 	}
 
-	__no_sanitize("undefined") void Display::SetPixel(uint32_t X, uint32_t Y, uint32_t Color)
+	__no_sanitize("undefined") void Display::SetPixel(uint32_t X,
+													  uint32_t Y,
+													  uint32_t Color)
 	{
 		if (unlikely(X >= this->Width))
 			X = this->Width - 1;
@@ -68,7 +70,9 @@ namespace Video
 		}
 	}
 
-	__no_sanitize("undefined") char Display::Print(char Char, Video::Font *_Font, bool WriteToUART)
+	__no_sanitize("undefined") char Display::Print(char Char,
+												   Video::Font *_Font,
+												   bool WriteToUART)
 	{
 		// SmartLock(PrintLock);
 
@@ -248,6 +252,14 @@ namespace Video
 		return Char;
 	}
 
+	void Display::PrintString(const char *String,
+							  Video::Font *Font,
+							  bool WriteToUART)
+	{
+		for (size_t i = 0; String[i] != '\0'; ++i)
+			Print(String[i], Font, WriteToUART);
+	}
+
 	void Display::UpdateBuffer()
 	{
 		if (!DirectWrite)
@@ -314,7 +326,9 @@ namespace Video
 		DirtyMap[index] = true;
 	}
 
-	Display::Display(BootInfo::FramebufferInfo Info, bool LoadDefaultFont, bool _DirectWrite)
+	Display::Display(BootInfo::FramebufferInfo Info,
+					 bool LoadDefaultFont,
+					 bool _DirectWrite)
 		: framebuffer(Info), DirectWrite(_DirectWrite)
 	{
 		Width = Info.Width;
