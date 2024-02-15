@@ -787,12 +787,6 @@ public:
 				Log("Port %d has valid checksum.", PortNumber);
 		}
 
-		auto swap = [](uint16_t *data, size_t size)
-		{
-			for (size_t i = 0; i < size; i++)
-				data[i] = (data[i] >> 8) | (data[i] << 8);
-		};
-
 		char *Model = (char *)this->IdentifyData->ModelNumber;
 		char ModelSwap[41];
 		for (size_t i = 0; i < 40; i += 2)
