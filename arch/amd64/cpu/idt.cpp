@@ -128,6 +128,7 @@ namespace InterruptDescriptorTable
 			"pushq %rsi\n"
 			"pushq %rdi\n"
 			"pushq %rbp\n"
+
 			"pushq %r8\n"
 			"pushq %r9\n"
 			"pushq %r10\n"
@@ -137,8 +138,44 @@ namespace InterruptDescriptorTable
 			"pushq %r14\n"
 			"pushq %r15\n"
 
+			"movq %ds, %rax\n pushq %rax\n"
+			"movq %es, %rax\n pushq %rax\n"
+			"movq %fs, %rax\n pushq %rax\n"
+			"movq %gs, %rax\n pushq %rax\n"
+
+			"movq %dr7, %rax\n pushq %rax\n"
+			"movq %dr6, %rax\n pushq %rax\n"
+			"movq %dr3, %rax\n pushq %rax\n"
+			"movq %dr2, %rax\n pushq %rax\n"
+			"movq %dr1, %rax\n pushq %rax\n"
+			"movq %dr0, %rax\n pushq %rax\n"
+
+			"movq %cr8, %rax\n pushq %rax\n"
+			"movq %cr4, %rax\n pushq %rax\n"
+			"movq %cr3, %rax\n pushq %rax\n"
+			"movq %cr2, %rax\n pushq %rax\n"
+			"movq %cr0, %rax\n pushq %rax\n"
+
 			"movq %rsp, %rdi\n"
 			"call ExceptionHandler\n"
+
+			"popq %rax\n movq %rax, %cr0\n"
+			"popq %rax\n movq %rax, %cr2\n"
+			"popq %rax\n movq %rax, %cr3\n"
+			"popq %rax\n movq %rax, %cr4\n"
+			"popq %rax\n movq %rax, %cr8\n"
+
+			"popq %rax\n movq %rax, %dr0\n"
+			"popq %rax\n movq %rax, %dr1\n"
+			"popq %rax\n movq %rax, %dr2\n"
+			"popq %rax\n movq %rax, %dr3\n"
+			"popq %rax\n movq %rax, %dr6\n"
+			"popq %rax\n movq %rax, %dr7\n"
+
+			"popq %rax\n movq %rax, %gs\n"
+			"popq %rax\n movq %rax, %fs\n"
+			"popq %rax\n movq %rax, %es\n"
+			"popq %rax\n movq %rax, %ds\n"
 
 			"popq %r15\n"
 			"popq %r14\n"
@@ -148,6 +185,7 @@ namespace InterruptDescriptorTable
 			"popq %r10\n"
 			"popq %r9\n"
 			"popq %r8\n"
+
 			"popq %rbp\n"
 			"popq %rdi\n"
 			"popq %rsi\n"
@@ -173,6 +211,7 @@ namespace InterruptDescriptorTable
 			"pushq %rsi\n"
 			"pushq %rdi\n"
 			"pushq %rbp\n"
+
 			"pushq %r8\n"
 			"pushq %r9\n"
 			"pushq %r10\n"
@@ -193,6 +232,7 @@ namespace InterruptDescriptorTable
 			"popq %r10\n"
 			"popq %r9\n"
 			"popq %r8\n"
+
 			"popq %rbp\n"
 			"popq %rdi\n"
 			"popq %rsi\n"
@@ -532,11 +572,11 @@ namespace InterruptDescriptorTable
 		}
 
 		bool EnableISRs = true;
-// #ifdef DEBUG
+#ifdef DEBUG
 		EnableISRs = !DebuggerIsAttached;
 		if (!EnableISRs)
 			KPrint("\eFFA500The debugger is attached, disabling all ISRs.");
-// #endif
+#endif
 
 		/* ISR */
 		SetEntry(0x0, InterruptHandler_0x0, IST1, TRAP_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
