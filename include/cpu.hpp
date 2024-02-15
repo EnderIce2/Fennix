@@ -292,7 +292,7 @@ namespace CPU
 			uint32_t raw;
 		} EFLAGS;
 
-		typedef struct TrapFrame
+		struct TrapFrame
 		{
 			uint32_t edi; // Destination index for string operations
 			uint32_t esi; // Source index for string operations
@@ -312,7 +312,7 @@ namespace CPU
 
 			uint32_t r3_esp; // Stack Pointer
 			uint32_t r3_ss;	 // Stack Segment
-		} TrapFrame;
+		};
 
 		typedef union DR6
 		{
@@ -612,34 +612,81 @@ namespace CPU
 			uint64_t raw;
 		} RFLAGS;
 
-		typedef struct TrapFrame
+		struct TrapFrame
 		{
-			uint64_t r15; // General purpose
-			uint64_t r14; // General purpose
-			uint64_t r13; // General purpose
-			uint64_t r12; // General purpose
-			uint64_t r11; // General purpose
-			uint64_t r10; // General purpose
-			uint64_t r9;  // General purpose
-			uint64_t r8;  // General purpose
+			uint64_t r15; /* General purpose */
+			uint64_t r14; /* General purpose */
+			uint64_t r13; /* General purpose */
+			uint64_t r12; /* General purpose */
+			uint64_t r11; /* General purpose */
+			uint64_t r10; /* General purpose */
+			uint64_t r9;  /* General purpose */
+			uint64_t r8;  /* General purpose */
 
-			uint64_t rbp; // Base Pointer (meant for stack frames)
-			uint64_t rdi; // Destination index for string operations
-			uint64_t rsi; // Source index for string operations
-			uint64_t rdx; // Data (commonly extends the A register)
-			uint64_t rcx; // Counter
-			uint64_t rbx; // Base
-			uint64_t rax; // Accumulator
+			uint64_t rbp; /* Base Pointer (meant for stack frames) */
+			uint64_t rdi; /* Destination index for string operations */
+			uint64_t rsi; /* Source index for string operations */
+			uint64_t rdx; /* Data (commonly extends the A register) */
+			uint64_t rcx; /* Counter */
+			uint64_t rbx; /* Base */
+			uint64_t rax; /* Accumulator */
 
-			uint64_t InterruptNumber; // Interrupt Number
-			uint64_t ErrorCode;		  // Error code
+			uint64_t InterruptNumber; /* Interrupt Number */
+			uint64_t ErrorCode;		  /* Error code */
 
-			uint64_t rip;  // Instruction Pointer
-			uint64_t cs;   // Code Segment
-			RFLAGS rflags; // Register Flags
-			uint64_t rsp;  // Stack Pointer
-			uint64_t ss;   // Stack Segment
-		} TrapFrame;
+			uint64_t rip;  /* Instruction Pointer */
+			uint64_t cs;   /* Code Segment */
+			RFLAGS rflags; /* Register Flags */
+			uint64_t rsp;  /* Stack Pointer */
+			uint64_t ss;   /* Stack Segment */
+		};
+
+		struct ExceptionFrame
+		{
+			uint64_t cr0; /* Control Register 0 (system control) */
+			uint64_t cr2; /* Control Register 2 (page fault linear address) */
+			uint64_t cr3; /* Control Register 3 (page directory base) */
+			uint64_t cr4; /* Control Register 4 (system control) */
+			uint64_t cr8; /* Control Register 8 (task priority) */
+
+			uint64_t dr0; /* Debug Register */
+			uint64_t dr1; /* Debug Register */
+			uint64_t dr2; /* Debug Register */
+			uint64_t dr3; /* Debug Register */
+			uint64_t dr6; /* Debug Register */
+			uint64_t dr7; /* Debug Register */
+
+			uint64_t gs; /* General purpose */
+			uint64_t fs; /* General purpose */
+			uint64_t es; /* Extra Segment */
+			uint64_t ds; /* Data Segment */
+
+			uint64_t r15; /* General purpose */
+			uint64_t r14; /* General purpose */
+			uint64_t r13; /* General purpose */
+			uint64_t r12; /* General purpose */
+			uint64_t r11; /* General purpose */
+			uint64_t r10; /* General purpose */
+			uint64_t r9;  /* General purpose */
+			uint64_t r8;  /* General purpose */
+
+			uint64_t rbp; /* Base Pointer (meant for stack frames) */
+			uint64_t rdi; /* Destination index for string operations */
+			uint64_t rsi; /* Source index for string operations */
+			uint64_t rdx; /* Data (commonly extends the A register) */
+			uint64_t rcx; /* Counter */
+			uint64_t rbx; /* Base */
+			uint64_t rax; /* Accumulator */
+
+			uint64_t InterruptNumber; /* Interrupt Number */
+			uint64_t ErrorCode;		  /* Error code */
+
+			uint64_t rip;  /* Instruction Pointer */
+			uint64_t cs;   /* Code Segment */
+			RFLAGS rflags; /* Register Flags */
+			uint64_t rsp;  /* Stack Pointer */
+			uint64_t ss;   /* Stack Segment */
+		};
 
 		typedef union EFER
 		{
@@ -929,7 +976,7 @@ namespace CPU
 
 	namespace aarch64
 	{
-		typedef struct TrapFrame
+		struct TrapFrame
 		{
 			uint64_t x0;  // General purpose
 			uint64_t x1;  // General purpose
@@ -969,7 +1016,7 @@ namespace CPU
 			uint64_t pstate; // Processor State (flags)
 			uint64_t esr;	 // Exception Syndrome Register
 			uint64_t far;	 // Fault Address Register
-		} TrapFrame;
+		};
 	}
 
 #if defined(a64)
@@ -979,6 +1026,7 @@ namespace CPU
 	 * @note This is for x86_64
 	 */
 	typedef x64::TrapFrame TrapFrame;
+	typedef x64::ExceptionFrame ExceptionFrame;
 #elif defined(a32)
 	/**
 	 * CPU trap frame for the current architecture
@@ -986,6 +1034,7 @@ namespace CPU
 	 * @note This is for x86_32
 	 */
 	typedef x32::TrapFrame TrapFrame;
+	typedef x32::ExceptionFrame ExceptionFrame;
 #elif defined(aa64)
 	/**
 	 * CPU trap frame for the current architecture
@@ -993,6 +1042,7 @@ namespace CPU
 	 * @note This is for aarch64
 	 */
 	typedef aarch64::TrapFrame TrapFrame;
+	typedef aarch64::TrapFrame ExceptionFrame;
 #endif
 }
 
