@@ -100,6 +100,7 @@ namespace CPU
             IRQ31 = 0x3f, /* Halt core interrupt */
 
             /* Free */
+
             IRQ32 = 0x40,
             IRQ33 = 0x41,
             IRQ34 = 0x42,
