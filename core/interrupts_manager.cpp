@@ -89,7 +89,7 @@ namespace Interrupts
 		 *
 		 * This will make sure that the event will not be
 		 * removed by the kernel.
-		 * 
+		 *
 		 * This is used to prevent the kernel from removing
 		 * ACPI related handlers. (SCI interrupts)
 		 */
@@ -108,8 +108,8 @@ namespace Interrupts
 	constexpr uint32_t SORT_ITR = (SORT_START * 100) / SORT_DIVIDER;
 
 #if defined(a86)
-	/* APIC::APIC */ void *apic[MAX_CPU];
-	/* APIC::Timer */ void *apicTimer[MAX_CPU];
+	/* APIC::APIC */ void *apic[MAX_CPU] = {nullptr};
+	/* APIC::Timer */ void *apicTimer[MAX_CPU] = {nullptr};
 #elif defined(aa64)
 #endif
 	void *InterruptFrames[INT_FRAMES_MAX];
