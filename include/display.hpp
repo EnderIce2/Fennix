@@ -238,11 +238,13 @@ namespace Video
 
 		char Print(char Char,
 				   Video::Font *Font = nullptr,
-				   bool WriteToUART = false);
-		
+				   bool WriteToUART = false,
+				   bool IgnoreSpecialChars = false);
+
 		void PrintString(const char *String,
 						 Video::Font *Font = nullptr,
-						 bool WriteToUART = false);
+						 bool WriteToUART = false,
+						 bool IgnoreSpecialChars = false);
 
 		Display(BootInfo::FramebufferInfo Info,
 				bool LoadDefaultFont = true,

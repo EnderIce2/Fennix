@@ -72,7 +72,8 @@ namespace Video
 
 	__no_sanitize("undefined") char Display::Print(char Char,
 												   Video::Font *_Font,
-												   bool WriteToUART)
+												   bool WriteToUART,
+												   bool IgnoreSpecialChars)
 	{
 		// SmartLock(PrintLock);
 
@@ -102,6 +103,10 @@ namespace Video
 		if (_Font == nullptr)
 			_Font = this->DefaultFont;
 		this->CurrentFont = _Font;
+		uint32_t FontHeight;
+
+		if (IgnoreSpecialChars)
+			goto IgnoreSpecialChars;
 
 		switch (Char)
 		{
@@ -168,7 +173,8 @@ namespace Video
 			break;
 		}
 
-		uint32_t FontHeight = this->GetCurrentFont()->GetInfo().Height;
+	IgnoreSpecialChars:
+		FontHeight = this->GetCurrentFont()->GetInfo().Height;
 
 		if (this->CursorX + this->GetCurrentFont()->GetInfo().Width >= this->Width)
 		{
@@ -254,10 +260,11 @@ namespace Video
 
 	void Display::PrintString(const char *String,
 							  Video::Font *Font,
-							  bool WriteToUART)
+							  bool WriteToUART,
+							  bool IgnoreSpecialChars)
 	{
 		for (size_t i = 0; String[i] != '\0'; ++i)
-			Print(String[i], Font, WriteToUART);
+			Print(String[i], Font, WriteToUART, IgnoreSpecialChars);
 	}
 
 	void Display::UpdateBuffer()
