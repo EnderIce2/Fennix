@@ -301,7 +301,7 @@ namespace Interrupts
 #elif defined(a32)
 		InterruptFrames[0] = (void *)Frame->eip;
 #elif defined(aa64)
-		InterruptFrames[0] = (void *)Frame->elr_el1;
+		InterruptFrames[0] = (void *)Frame->pc;
 #endif
 
 		CPUData *CoreData = GetCurrentCPU();
