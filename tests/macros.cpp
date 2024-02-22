@@ -47,6 +47,10 @@
 #endif // UINTPTR_MAX != UINT64_MAX
 #endif // aa64
 
+#ifndef __fennix__
+#error "This compiler is not supported!"
+#endif // __fennix__
+
 static_assert(sc_SEEK_SET == SEEK_SET);
 static_assert(sc_SEEK_CUR == SEEK_CUR);
 static_assert(sc_SEEK_END == SEEK_END);
