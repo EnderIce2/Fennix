@@ -206,6 +206,7 @@ namespace Video
 		decltype(Height) &GetHeight = Height;
 
 		BootInfo::FramebufferInfo GetFramebufferStruct() { return framebuffer; }
+		Font *GetDefaultFont() { return DefaultFont; }
 		Font *GetCurrentFont();
 		void SetCurrentFont(Font *Font);
 		uint16_t GetBitsPerPixel();
