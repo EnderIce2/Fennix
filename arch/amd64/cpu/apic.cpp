@@ -398,7 +398,7 @@ namespace APIC
 
 	APIC::~APIC() {}
 
-	void Timer::OnInterruptReceived(CPU::TrapFrame *Frame) { UNUSED(Frame); }
+	void Timer::OnInterruptReceived(CPU::TrapFrame *) {}
 
 	void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
 	{
