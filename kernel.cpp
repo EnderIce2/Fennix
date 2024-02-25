@@ -130,6 +130,12 @@ EXTERNC NIF void Main()
 	if (Display->GetFramebufferStruct().BitsPerPixel != 32)
 		KPrint("\eFF5500Framebuffer is not 32 bpp. This may cause issues.");
 
+	if (Display->GetWidth < 640 || Display->GetHeight < 480)
+	{
+		KPrint("\eFF5500Minimum supported resolution is 640x480!");
+		KPrint("\eFF5500Some elements may not be displayed correctly.");
+	}
+
 	debug("CPU: %s %s %s",
 		  CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
