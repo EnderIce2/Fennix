@@ -66,42 +66,6 @@ __constructor void TestCPUIDStructs()
 		CPU::x86::AMD::CPUID0x80000023 cpuid80000023;
 		CPU::x86::AMD::CPUID0x80000026 cpuid80000026;
 
-		cpuid0.Get();
-		cpuid1.Get();
-		cpuid5.Get();
-		cpuid6.Get();
-		cpuid7.Get();
-		cpuidB_C_0.Get();
-		cpuidB_C_1.Get();
-		cpuidD_C_0.Get();
-		cpuidD_C_1.Get();
-		cpuidD_C_2.Get();
-		cpuidD_C_11.Get();
-		cpuidD_C_12.Get();
-		cpuidD_C_3E.Get();
-		cpuid80000000.Get();
-		cpuid80000001.Get();
-		cpuid80000002.Get();
-		cpuid80000003.Get();
-		cpuid80000004.Get();
-		cpuid80000005.Get();
-		cpuid80000006.Get();
-		cpuid80000007.Get();
-		cpuid80000008.Get();
-		cpuid8000000A.Get();
-		cpuid80000019.Get();
-		cpuid8000001A.Get();
-		cpuid8000001B.Get();
-		cpuid8000001C.Get();
-		cpuid8000001D.Get();
-		cpuid8000001E.Get();
-		cpuid8000001F.Get();
-		cpuid80000020.Get();
-		cpuid80000021.Get();
-		cpuid80000022.Get();
-		cpuid80000023.Get();
-		cpuid80000026.Get();
-
 		// asmv("int3");
 	}
 	else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
@@ -126,27 +90,6 @@ __constructor void TestCPUIDStructs()
 		CPU::x86::Intel::CPUID0x80000006 cpuid80000006;
 		CPU::x86::Intel::CPUID0x80000008 cpuid80000008;
 		CPU::x86::Intel::CPUID0x8000000A cpuid8000000A;
-
-		cpuid0.Get();
-		cpuid1.Get();
-		cpuid2.Get();
-		cpuid3.Get();
-		cpuid4_1.Get();
-		cpuid5.Get();
-		cpuid6.Get();
-		cpuid7_0.Get();
-		cpuid7_1.Get();
-		cpuidA.Get();
-		cpuid15.Get();
-		cpuid16.Get();
-		cpuid80000000.Get();
-		cpuid80000001.Get();
-		cpuid80000002.Get();
-		cpuid80000003.Get();
-		cpuid80000004.Get();
-		cpuid80000006.Get();
-		cpuid80000008.Get();
-		cpuid8000000A.Get();
 
 		// asmv("int3");
 	}

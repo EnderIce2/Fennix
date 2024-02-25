@@ -251,14 +251,12 @@ NIF void CreatePageTable(PageTable *pt)
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x80000001 cpuid;
-			cpuid.Get();
 			PSESupport = cpuid.EDX.PSE;
 			Page1GBSupport = cpuid.EDX.Page1GB;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 			CPU::x86::Intel::CPUID0x00000001 cpuid;
-			cpuid.Get();
 			PSESupport = cpuid.EDX.PSE;
 		}
 

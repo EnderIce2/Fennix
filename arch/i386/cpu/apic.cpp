@@ -279,7 +279,6 @@ namespace APIC
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
-			cpuid.Get();
 			if (cpuid.ECX.x2APIC)
 			{
 				// x2APICSupported = cpuid.ECX.x2APIC;
@@ -289,7 +288,6 @@ namespace APIC
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 			CPU::x86::Intel::CPUID0x00000001 cpuid;
-			cpuid.Get();
 			if (cpuid.ECX.x2APIC)
 			{
 				// x2APICSupported = cpuid.ECX.x2APIC;

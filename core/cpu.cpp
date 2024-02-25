@@ -252,8 +252,6 @@ namespace CPU
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid1;
 			CPU::x86::AMD::CPUID0x00000007 cpuid7;
-			cpuid1.Get();
-			cpuid7.Get();
 
 			feat.PGE = cpuid1.EDX.PGE;
 			feat.SSE = cpuid1.EDX.SSE;
@@ -266,8 +264,7 @@ namespace CPU
 		{
 			CPU::x86::Intel::CPUID0x00000001 cpuid1;
 			CPU::x86::Intel::CPUID0x00000007_0 cpuid7_0;
-			cpuid1.Get();
-			cpuid7_0.Get();
+
 			feat.PGE = cpuid1.EDX.PGE;
 			feat.SSE = cpuid1.EDX.SSE;
 			feat.SMEP = cpuid7_0.EBX.SMEP;
@@ -324,9 +321,35 @@ namespace CPU
 			SSEEnableAfter = true;
 		}
 
+		/* More info in AMD64 Architecture Programmer's Manual
+			Volume 2: 3.1.1 CR0 Register */
+
+		/* Not Write-Through
+			This is ignored on recent processors.
+		*/
 		cr0.NW = false;
+
+		/* Cache Disable
+			Wether the CPU should cache memory or not.
+			If it's enabled, PWT and PCD are ignored.
+		*/
 		cr0.CD = false;
+
+		/* Write Protect
+			When set, the supervisor can't write to read-only pages.
+		*/
 		cr0.WP = true;
+
+		/* Alignment check
+			The CPU checks the alignment of memory operands
+			and generates #AC if the alignment is incorrect.
+
+			The condition for an alignment check is:
+			- The AM flag in CR0 is set.
+			- The AC flag in the RFLAGS register is set.
+			- CPL is 3.
+		*/
+		cr0.AM = true;
 
 		writecr0(cr0);
 

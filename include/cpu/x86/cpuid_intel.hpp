@@ -19,6 +19,7 @@
 #define __FENNIX_KERNEL_CPU_x86_CPUID_INTEL_H__
 
 #include <types.h>
+#include <debug.h>
 
 #if defined(a64)
 typedef uint64_t cpuid_t;
@@ -27,6 +28,42 @@ typedef uint32_t cpuid_t;
 #else
 typedef uint64_t cpuid_t;
 #endif // a64 || a32
+
+#if defined(a86)
+#define __intel_cpuid_init(leaf)                          \
+	CPUID##leaf()                                         \
+	{                                                     \
+		asmv("cpuid"                                      \
+			 : "=a"(EAX.raw), "=b"(EBX.raw),              \
+			   "=c"(ECX.raw), "=d"(EDX.raw)               \
+			 : "a"(leaf));                                \
+		if (!EAX.raw && !EBX.raw && !ECX.raw && !EDX.raw) \
+			warn("cpuid not supported");                  \
+	}
+
+#define __intel_cpuid_init2(leaf, leaf2, suffix)          \
+	CPUID##leaf##suffix()                                 \
+	{                                                     \
+		asmv("cpuid"                                      \
+			 : "=a"(EAX.raw), "=b"(EBX.raw),              \
+			   "=c"(ECX.raw), "=d"(EDX.raw)               \
+			 : "a"(leaf), "c"(leaf2));                    \
+		if (!EAX.raw && !EBX.raw && !ECX.raw && !EDX.raw) \
+			warn("cpuid not supported");                  \
+	}
+#else
+#define __intel_cpuid_init(leaf)                                \
+	CPUID##leaf()                                               \
+	{                                                           \
+		assert(!"cpuid not implemented for this architecture"); \
+	}
+
+#define __intel_cpuid_init2(leaf, leaf2, suffix)                \
+	CPUID##leaf##suffix()                                       \
+	{                                                           \
+		assert(!"cpuid not implemented for this architecture"); \
+	}
+#endif
 
 namespace CPU
 {
@@ -38,14 +75,7 @@ namespace CPU
 			/** @brief Basic CPU information */
 			struct CPUID0x00000000
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x0));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000000);
 
 				union
 				{
@@ -84,14 +114,7 @@ namespace CPU
 			/** @brief Additional CPU information */
 			struct CPUID0x00000001
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x1));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000001);
 
 				union
 				{
@@ -102,7 +125,7 @@ namespace CPU
 						uint32_t Family : 4;
 						/**
 						 * @brief Processor Type
-						 * 
+						 *
 						 * 00: Original OEM Processor
 						 * 01: Intel OverDrive Processor
 						 * 10: Dual processor
@@ -217,14 +240,7 @@ namespace CPU
 			/** @brief CPU cache and TLB */ /* FIXME TODO */
 			struct CPUID0x00000002
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x2));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000002);
 
 				union
 				{
@@ -278,14 +294,7 @@ namespace CPU
 			/** @brief CPU serial number */
 			struct CPUID0x00000003
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x3));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000003);
 
 				union
 				{
@@ -327,14 +336,7 @@ namespace CPU
 			/** @brief Cache information */
 			struct CPUID0x00000004_1
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x4), "c"(0x1)); /* FIXME */
-#endif // a64 || a32
-				}
+				__intel_cpuid_init2(0x00000004, 0x1, _1);
 
 				union
 				{
@@ -384,14 +386,7 @@ namespace CPU
 			/** @brief MONITOR information */
 			struct CPUID0x00000005
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x5));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000005);
 
 				union
 				{
@@ -442,14 +437,7 @@ namespace CPU
 			/** @brief Thermal and power management information */
 			struct CPUID0x00000006
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x6));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000006);
 
 				union
 				{
@@ -494,14 +482,7 @@ namespace CPU
 			/** @brief Extended feature flags enumeration */
 			struct CPUID0x00000007_0
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x7), "c"(0x0)); /* FIXME */
-#endif // a64 || a32
-				}
+				__intel_cpuid_init2(0x00000007, 0x0, _0);
 
 				union
 				{
@@ -720,14 +701,7 @@ namespace CPU
 			/** @brief Extended feature flags enumeration */
 			struct CPUID0x00000007_1
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x7), "c"(0x1)); /* FIXME */
-#endif // a64 || a32
-				}
+				__intel_cpuid_init2(0x00000007, 0x1, _1);
 
 				union
 				{
@@ -826,14 +800,7 @@ namespace CPU
 			/** @brief Performance monitors */
 			struct CPUID0x0000000A
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0xA));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x0000000A);
 
 				union
 				{
@@ -887,14 +854,7 @@ namespace CPU
 			/** @brief Get CPU frequency information */
 			struct CPUID0x00000015
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x15));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000015);
 
 				union
 				{
@@ -948,14 +908,7 @@ namespace CPU
 			/** @brief Get CPU frequency information */
 			struct CPUID0x00000016
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x16));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x00000016);
 
 				union
 				{
@@ -1009,14 +962,7 @@ namespace CPU
 			/** @brief Extended CPU information */
 			struct CPUID0x80000000
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000000));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000000);
 
 				union
 				{
@@ -1059,14 +1005,7 @@ namespace CPU
 			/** @brief Extended CPU information */
 			struct CPUID0x80000001
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000001));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000001);
 
 				union
 				{
@@ -1116,14 +1055,7 @@ namespace CPU
 			/** @brief CPU brand string */
 			struct CPUID0x80000002
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000002));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000002);
 
 				union
 				{
@@ -1166,14 +1098,7 @@ namespace CPU
 			/** @brief CPU brand string */
 			struct CPUID0x80000003
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000003));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000003);
 
 				union
 				{
@@ -1216,14 +1141,7 @@ namespace CPU
 			/** @brief CPU brand string */
 			struct CPUID0x80000004
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000004));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000004);
 
 				union
 				{
@@ -1266,14 +1184,7 @@ namespace CPU
 			/** @brief CPU cache line information */
 			struct CPUID0x80000006
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000006));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000006);
 
 				union
 				{
@@ -1325,14 +1236,7 @@ namespace CPU
 			/** @brief Virtual and physical memory size */
 			struct CPUID0x80000008
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x80000008));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x80000008);
 
 				union
 				{
@@ -1377,14 +1281,7 @@ namespace CPU
 			/** @brief Secure virtual machine parameters */
 			struct CPUID0x8000000A
 			{
-				__always_inline inline void Get()
-				{
-#if defined(a86)
-					asmv("cpuid"
-						 : "=a"(EAX.raw), "=b"(EBX.raw), "=c"(ECX.raw), "=d"(EDX.raw)
-						 : "a"(0x8000000A));
-#endif // a64 || a32
-				}
+				__intel_cpuid_init(0x8000000A);
 
 				union
 				{
@@ -1427,5 +1324,8 @@ namespace CPU
 		}
 	}
 }
+
+#undef __intel_cpuid_init
+#undef __intel_cpuid_init2
 
 #endif // !__FENNIX_KERNEL_CPU_x86_CPUID_INTEL_H__

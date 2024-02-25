@@ -175,7 +175,6 @@ namespace Time
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x80000007 cpuid80000007;
-			cpuid80000007.Get();
 			if (cpuid80000007.EDX.TscInvariant)
 				TSCInvariant = true;
 		}
@@ -183,7 +182,6 @@ namespace Time
 		{
 			// TODO: Intel 0x80000007
 			CPU::x86::AMD::CPUID0x80000007 cpuid80000007;
-			cpuid80000007.Get();
 			if (cpuid80000007.EDX.TscInvariant)
 				TSCInvariant = true;
 		}

@@ -27,13 +27,11 @@ __constructor void TestRandom()
 	if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 	{
 		CPU::x86::AMD::CPUID0x00000001 cpuid;
-		cpuid.Get();
 		RDRANDFlag = cpuid.ECX.RDRAND;
 	}
 	else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 	{
 		CPU::x86::Intel::CPUID0x00000001 cpuid;
-		cpuid.Get();
 		RDRANDFlag = cpuid.ECX.RDRAND;
 	}
 

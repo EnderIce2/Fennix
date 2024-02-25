@@ -121,7 +121,6 @@ bool DetectByCPUID()
 	if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 	{
 		CPU::x86::Intel::CPUID0x00000001 cpuid00000001;
-		cpuid00000001.Get();
 
 		if (cpuid00000001.ECX.Hypervisor == 1)
 		{
@@ -133,7 +132,6 @@ bool DetectByCPUID()
 	else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 	{
 		CPU::x86::AMD::CPUID0x00000001 cpuid00000001;
-		cpuid00000001.Get();
 
 		if (cpuid00000001.ECX.Hypervisor == 1)
 		{
