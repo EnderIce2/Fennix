@@ -23,6 +23,49 @@
 
 using namespace vfs;
 
+const char *ColorNodeType(Node *node)
+{
+	switch (node->Type)
+	{
+	case NodeType::DIRECTORY:
+		return "\e44FF22";
+	case NodeType::BLOCKDEVICE:
+	case NodeType::CHARDEVICE:
+		return "\eFF22AA";
+	case NodeType::PIPE:
+		return "\eFFAA22";
+	case NodeType::SYMLINK:
+		return "\eFF22FF";
+	case NodeType::FILE:
+	default:
+		return "\eCCCCCC";
+	}
+}
+
+size_t MaxNameLength(Node *nodes)
+{
+	size_t maxLength = 0;
+	foreach (auto &node in nodes->Children)
+		maxLength = std::max(maxLength, strlen(node->Name));
+	return maxLength;
+}
+
+void PrintLS(Node *node)
+{
+	size_t maxNameLength = MaxNameLength(node);
+	int count = 0;
+	bool first = true;
+	foreach (auto &var in node->Children)
+	{
+		if (count % 5 == 0 && !first)
+			printf("\n");
+		printf(" %s%-*s ", ColorNodeType(var), (int)maxNameLength, var->Name);
+		count++;
+		first = false;
+	}
+	printf("\eCCCCCC\n");
+}
+
 void cmd_ls(const char *args)
 {
 	if (args[0] == '\0')
@@ -32,8 +75,7 @@ void cmd_ls(const char *args)
 		if (rootNode == nullptr)
 			rootNode = fs->GetRootNode()->Children[0];
 
-		foreach (auto var in rootNode->Children)
-			printf("%s\n", var->Name);
+		PrintLS(rootNode);
 	}
 	else
 	{
@@ -47,11 +89,10 @@ void cmd_ls(const char *args)
 
 		if (thisNode->Type != NodeType::DIRECTORY)
 		{
-			printf("%s\n", thisNode->Name);
+			printf("%s%s\n", ColorNodeType(thisNode), thisNode->Name);
 			return;
 		}
 
-		foreach (auto var in thisNode->Children)
-			printf("%s\n", var->Name);
+		PrintLS(thisNode);
 	}
 }
