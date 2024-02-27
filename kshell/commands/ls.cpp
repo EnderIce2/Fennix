@@ -28,17 +28,19 @@ const char *ColorNodeType(Node *node)
 	switch (node->Type)
 	{
 	case NodeType::DIRECTORY:
-		return "\e44FF22";
+		return "\e3871F5";
 	case NodeType::BLOCKDEVICE:
+		return "\eE8CD1E";
 	case NodeType::CHARDEVICE:
-		return "\eFF22AA";
+		return "\e86E01F";
 	case NodeType::PIPE:
-		return "\eFFAA22";
+		return "\eE0991F";
 	case NodeType::SYMLINK:
-		return "\eFF22FF";
+		return "\e1FB9E0";
 	case NodeType::FILE:
-	default:
 		return "\eCCCCCC";
+	default:
+		return "\eF72020";
 	}
 }
 
