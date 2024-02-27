@@ -90,12 +90,12 @@ void StartKernelShell()
 	KPrint("Starting kernel shell...");
 	thisThread->SetPriority(Tasking::TaskPriority::High);
 
-	std::string Buffer;
-	std::vector<std::string *> History;
-	size_t HistoryIndex = 0;
-	bool CtrlDown = false;
-	bool UpperCase = false;
-	bool TabDoublePress = false;
+	std::string strBuf;
+	std::vector<std::string *> history;
+	size_t hIdx = 0;
+	bool ctrlDown = false;
+	bool upperCase = false;
+	bool tabDblPress = false;
 
 	int kfd = fopen("/dev/key", "r");
 	if (kfd < 0)
@@ -108,8 +108,8 @@ void StartKernelShell()
 	printf("Using \eCA21F6/dev/key\eCCCCCC for keyboard input.\n");
 	while (true)
 	{
-		size_t BackspaceCount = 0;
-		Buffer.clear();
+		size_t bsCount = 0;
+		strBuf.clear();
 
 		vfs::Node *cwd = thisProcess->CurrentWorkingDirectory;
 		if (!cwd)
@@ -146,18 +146,18 @@ void StartKernelShell()
 			case KEY_RIGHT_CTRL:
 			{
 				if (sc & KEY_PRESSED)
-					CtrlDown = true;
+					ctrlDown = true;
 				else
-					CtrlDown = false;
+					ctrlDown = false;
 				continue;
 			}
 			case KEY_LEFT_SHIFT:
 			case KEY_RIGHT_SHIFT:
 			{
 				if (sc & KEY_PRESSED)
-					UpperCase = true;
+					upperCase = true;
 				else
-					UpperCase = false;
+					upperCase = false;
 				continue;
 			}
 			case KEY_BACKSPACE:
@@ -165,12 +165,12 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				if (BackspaceCount == 0)
+				if (bsCount == 0)
 					continue;
 
 				Display->Print('\b');
-				Buffer.pop_back();
-				BackspaceCount--;
+				strBuf.pop_back();
+				bsCount--;
 				Display->UpdateBuffer();
 				continue;
 			}
@@ -179,21 +179,21 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				if (History.size() == 0 ||
-					HistoryIndex == 0)
+				if (history.size() == 0 ||
+					hIdx == 0)
 					continue;
 
-				HistoryIndex--;
+				hIdx--;
 
-				for (size_t i = 0; i < Buffer.size(); i++)
+				for (size_t i = 0; i < strBuf.size(); i++)
 					Display->Print('\b');
 				Display->UpdateBuffer();
 
-				Buffer = History[HistoryIndex]->c_str();
+				strBuf = history[hIdx]->c_str();
 
-				for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-					Display->Print(Buffer[i]);
-				BackspaceCount = Buffer.size();
+				for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
+					Display->Print(strBuf[i]);
+				bsCount = strBuf.size();
 				Display->UpdateBuffer();
 				continue;
 			}
@@ -202,31 +202,31 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				if (History.size() == 0 ||
-					HistoryIndex == History.size())
+				if (history.size() == 0 ||
+					hIdx == history.size())
 					continue;
 
-				if (HistoryIndex == History.size() - 1)
+				if (hIdx == history.size() - 1)
 				{
-					HistoryIndex++;
-					for (size_t i = 0; i < Buffer.size(); i++)
+					hIdx++;
+					for (size_t i = 0; i < strBuf.size(); i++)
 						Display->Print('\b');
-					BackspaceCount = Buffer.size();
+					bsCount = strBuf.size();
 					Display->UpdateBuffer();
 					continue;
 				}
 
-				for (size_t i = 0; i < Buffer.size(); i++)
+				for (size_t i = 0; i < strBuf.size(); i++)
 					Display->Print('\b');
 				Display->UpdateBuffer();
 
-				HistoryIndex++;
-				Buffer = History[HistoryIndex]->c_str();
+				hIdx++;
+				strBuf = history[hIdx]->c_str();
 
-				for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-					Display->Print(Buffer[i]);
+				for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
+					Display->Print(strBuf[i]);
 
-				BackspaceCount = Buffer.size();
+				bsCount = strBuf.size();
 				Display->UpdateBuffer();
 				continue;
 			}
@@ -235,13 +235,13 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				if (!TabDoublePress)
+				if (!tabDblPress)
 				{
-					TabDoublePress = true;
+					tabDblPress = true;
 					continue;
 				}
-				TabDoublePress = false;
-				if (Buffer.size() == 0)
+				tabDblPress = false;
+				if (strBuf.size() == 0)
 				{
 					for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 						printf("%s ", commands[i].Name);
@@ -251,18 +251,18 @@ void StartKernelShell()
 					goto SecLoopEnd;
 				}
 
-				for (size_t i = 0; i < Buffer.size(); i++)
+				for (size_t i = 0; i < strBuf.size(); i++)
 					Display->Print('\b');
 				Display->UpdateBuffer();
 
 				for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 				{
-					if (strncmp(Buffer.c_str(), commands[i].Name, Buffer.size()) == 0)
+					if (strncmp(strBuf.c_str(), commands[i].Name, strBuf.size()) == 0)
 					{
-						Buffer = commands[i].Name;
-						for (size_t i = 0; i < strlen(Buffer.c_str()); i++)
-							Display->Print(Buffer[i]);
-						BackspaceCount = Buffer.size();
+						strBuf = commands[i].Name;
+						for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
+							Display->Print(strBuf[i]);
+						bsCount = strBuf.size();
 						Display->UpdateBuffer();
 						break;
 					}
@@ -279,9 +279,9 @@ void StartKernelShell()
 			if (!Driver::IsValidChar(sc))
 				continue;
 
-			char c = Driver::GetScanCode(sc, UpperCase);
+			char c = Driver::GetScanCode(sc, upperCase);
 
-			if (CtrlDown)
+			if (ctrlDown)
 			{
 				switch (std::toupper((char)c))
 				{
@@ -311,33 +311,33 @@ void StartKernelShell()
 			Display->Print(c);
 			if (c == '\n')
 			{
-				if (Buffer.length() > 0)
+				if (strBuf.length() > 0)
 				{
-					std::string *hBuff = new std::string(Buffer.c_str());
-					History.push_back(hBuff);
-					HistoryIndex = History.size();
+					std::string *hBuff = new std::string(strBuf.c_str());
+					history.push_back(hBuff);
+					hIdx = history.size();
 				}
 				break;
 			}
 
-			Buffer += c;
-			BackspaceCount++;
+			strBuf += c;
+			bsCount++;
 			Display->UpdateBuffer();
 		}
 	SecLoopEnd:
 
-		if (Buffer.length() == 0)
+		if (strBuf.length() == 0)
 			continue;
 
 		bool Found = false;
 		for (size_t i = 0; i < sizeof(commands) / sizeof(Command); i++)
 		{
 			std::string cmd_extracted;
-			for (size_t i = 0; i < Buffer.length(); i++)
+			for (size_t i = 0; i < strBuf.length(); i++)
 			{
-				if (Buffer[i] == ' ')
+				if (strBuf[i] == ' ')
 					break;
-				cmd_extracted += Buffer[i];
+				cmd_extracted += strBuf[i];
 			}
 
 			// debug("cmd: %s, array[%d]: %s", cmd_extracted.c_str(), i, commands[i].Name);
@@ -350,19 +350,19 @@ void StartKernelShell()
 
 				std::string arg_only;
 				const char *cmd_name = commands[i].Name;
-				for (size_t i = strlen(cmd_name) + 1; i < Buffer.length(); i++)
-					arg_only += Buffer[i];
+				for (size_t i = strlen(cmd_name) + 1; i < strBuf.length(); i++)
+					arg_only += strBuf[i];
 
 				if (commands[i].Function)
 					commands[i].Function(arg_only.c_str());
 				else
 				{
 					std::string cmd_only;
-					for (size_t i = 0; i < Buffer.length(); i++)
+					for (size_t i = 0; i < strBuf.length(); i++)
 					{
-						if (Buffer[i] == ' ')
+						if (strBuf[i] == ' ')
 							break;
-						cmd_only += Buffer[i];
+						cmd_only += strBuf[i];
 					}
 					printf("%s: command not implemented\n",
 						   cmd_only.c_str());
@@ -374,11 +374,11 @@ void StartKernelShell()
 		if (!Found)
 		{
 			std::string cmd_only;
-			for (size_t i = 0; i < Buffer.length(); i++)
+			for (size_t i = 0; i < strBuf.length(); i++)
 			{
-				if (Buffer[i] == ' ')
+				if (strBuf[i] == ' ')
 					break;
-				cmd_only += Buffer[i];
+				cmd_only += strBuf[i];
 			}
 			printf("%s: command not found\n",
 				   cmd_only.c_str());
