@@ -363,7 +363,7 @@ namespace vfs
 		 */
 		RefNode *Open(const char *Path, Node *Parent = nullptr);
 
-		Node *CreateIfNotExists(const char *Path, NodeType Type, Node *Parent);
+		Node *CreateIfNotExists(const char *Path, NodeType Type, Node *Parent = nullptr);
 
 		Virtual();
 		~Virtual();
