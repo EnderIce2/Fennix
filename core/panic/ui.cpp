@@ -156,7 +156,7 @@ nsa void ExDumpData(void *Address, unsigned long Length)
 			Display->UpdateBuffer();
 		}
 		ExPrint(" \e4287f5%02x\eAABBCC", AddressChar[Iterate]);
-		if ((AddressChar[Iterate] < 0x20) || (AddressChar[Iterate] > 0x7e))
+		if ((AddressChar[Iterate] < 0x20) || (AddressChar[Iterate] > 0x7E))
 			Buffer[Iterate % 16] = '.';
 		else
 			Buffer[Iterate % 16] = AddressChar[Iterate];

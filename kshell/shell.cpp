@@ -78,6 +78,7 @@ static Command commands[] = {
 	{"modprobe", nullptr},
 	{"depmod", nullptr},
 	{"panic", cmd_panic},
+	{"dump", cmd_dump},
 };
 
 void StartKernelShell()
