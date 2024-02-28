@@ -203,7 +203,7 @@ namespace Driver
 
 			/* TODO: Check if this is correct and/or it needs more
 				complex calculations & allocations */
-			void *SegmentsAddress = dVma->RequestPages(TO_PAGES(SegmentsSize) + 1, true);
+			void *SegmentsAddress = dVma->RequestPages(TO_PAGES(SegmentsSize) + 1);
 			BaseAddress = (uintptr_t)SegmentsAddress;
 			debug("BaseAddress: %#lx, End: %#lx (%#lx)", BaseAddress,
 				  BaseAddress + FROM_PAGES(TO_PAGES(SegmentsSize)),
