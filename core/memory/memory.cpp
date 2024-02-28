@@ -116,13 +116,13 @@ NIF void MapFramebuffer(PageTable *PT)
 		{
 			vmm.OptimizedMap(bInfo.Framebuffer[itrfb].BaseAddress,
 							 bInfo.Framebuffer[itrfb].BaseAddress,
-							 fbSize, RW | US | G);
+							 fbSize, RW | G);
 		}
 		else
 		{
 			vmm.Map(bInfo.Framebuffer[itrfb].BaseAddress,
 					bInfo.Framebuffer[itrfb].BaseAddress,
-					fbSize, RW | US | G);
+					fbSize, RW | G);
 		}
 		itrfb++;
 	}
