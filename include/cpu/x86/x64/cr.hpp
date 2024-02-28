@@ -106,9 +106,9 @@ namespace CPU
                 uint64_t PGE : 1;
                 /** @brief Performance Monitoring Counter */
                 uint64_t PCE : 1;
-                /** @brief Operating System Support */
+                /** @brief FXSAVE/FXRSTOR Support */
                 uint64_t OSFXSR : 1;
-                /** @brief Operating System Support */
+                /** @brief Unmasked Exception Support */
                 uint64_t OSXMMEXCPT : 1;
                 /** @brief User-Mode Instruction Prevention */
                 uint64_t UMIP : 1;
