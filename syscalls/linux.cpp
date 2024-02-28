@@ -686,10 +686,9 @@ static pid_t linux_fork(SysFrm *sf)
 	PCB *Parent = Thread->Parent;
 
 	PCB *NewProcess =
-		TaskManager->CreateProcess(Parent,
-								   Parent->Name,
+		TaskManager->CreateProcess(Parent, Parent->Name,
 								   Parent->Security.ExecutionMode,
-								   nullptr, true);
+								   true);
 	if (unlikely(!NewProcess))
 	{
 		error("Failed to create process for fork");
@@ -701,17 +700,6 @@ static pid_t linux_fork(SysFrm *sf)
 	NewProcess->vma->Fork(Parent->vma);
 	NewProcess->ProgramBreak->SetTable(NewProcess->PageTable);
 	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
-
-	if (Parent->ELFSymbolTable &&
-		Parent->ELFSymbolTable->SymTableExists)
-	{
-		NewProcess->ELFSymbolTable = new SymbolResolver::Symbols(0);
-		foreach (auto sym in Parent->ELFSymbolTable->GetSymTable())
-		{
-			NewProcess->ELFSymbolTable->AddSymbol(sym.Address,
-												  sym.FunctionName);
-		}
-	}
 
 	TCB *NewThread =
 		TaskManager->CreateThread(NewProcess,

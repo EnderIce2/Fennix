@@ -441,7 +441,6 @@ namespace Tasking
 
 		/* Other */
 		Signal *Signals;
-		SymbolResolver::Symbols *ELFSymbolTable;
 
 		/* Threads & Children */
 		std::list<TCB *> Threads;
@@ -462,10 +461,8 @@ namespace Tasking
 			PCB *Parent,
 			const char *Name,
 			TaskExecutionMode ExecutionMode,
-			void *Image = nullptr,
 			bool UseKernelPageTable = false,
-			uint16_t UserID = -1,
-			uint16_t GroupID = -1);
+			uint16_t UserID = -1, uint16_t GroupID = -1);
 
 		~PCB();
 	};
@@ -641,7 +638,6 @@ namespace Tasking
 		PCB *CreateProcess(PCB *Parent,
 						   const char *Name,
 						   TaskExecutionMode TrustLevel,
-						   void *Image = nullptr,
 						   bool UseKernelPageTable = false,
 						   uint16_t UserID = UINT16_MAX,
 						   uint16_t GroupID = UINT16_MAX);

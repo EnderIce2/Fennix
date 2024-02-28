@@ -58,26 +58,14 @@ int sys_fork(SysFrm *Frame)
 	TCB *Thread = thisThread;
 
 	PCB *NewProcess =
-		TaskManager->CreateProcess(Parent,
-								   Parent->Name,
+		TaskManager->CreateProcess(Parent, Parent->Name,
 								   Parent->Security.ExecutionMode,
-								   nullptr, true);
+								   true);
 
 	if (!NewProcess)
 	{
 		error("Failed to create process for fork");
 		return -EAGAIN;
-	}
-
-	if (Parent->ELFSymbolTable &&
-		Parent->ELFSymbolTable->SymTableExists)
-	{
-		NewProcess->ELFSymbolTable = new SymbolResolver::Symbols(0);
-		foreach (auto sym in Parent->ELFSymbolTable->GetSymTable())
-		{
-			NewProcess->ELFSymbolTable->AddSymbol(sym.Address,
-												  sym.FunctionName);
-		}
 	}
 
 	NewProcess->PageTable = Parent->PageTable->Fork();

@@ -153,13 +153,11 @@ void TaskMgr()
 #if defined(a64)
 				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
 					   Statuses[State], Thd->Name, StatusesSign[State], ThreadCpuUsage, Thd->Info.KernelTime,
-					   Thd->Info.UserTime, Thd->Registers.rip,
-					   Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbol(Thd->Registers.rip) : "unknown");
+					   Thd->Info.UserTime, Thd->Registers.rip, "unknown");
 #elif defined(a32)
 				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld, IP: \e24FF2B%#x \eEDFF24%s\e00AAAA)\n\eAABBCC",
 					   Statuses[State], Thd->Name, StatusesSign[State], ThreadCpuUsage, Thd->Info.KernelTime,
-					   Thd->Info.UserTime, Thd->Registers.eip,
-					   Thd->Parent->ELFSymbolTable ? Thd->Parent->ELFSymbolTable->GetSymbol(Thd->Registers.eip) : "unknown");
+					   Thd->Info.UserTime, Thd->Registers.eip, "unknown");
 #elif defined(aa64)
 #endif
 			}

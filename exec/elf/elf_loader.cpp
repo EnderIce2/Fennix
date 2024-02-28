@@ -317,18 +317,6 @@ namespace Execute
 			TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
 		}
 
-		struct stat statbuf;
-		fstat(fd, &statbuf);
-		Memory::SmartHeap sh = Memory::SmartHeap(statbuf.st_size);
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, sh, statbuf.st_size);
-		TargetProcess->ELFSymbolTable->AppendSymbols(uintptr_t(sh.Get()));
-
-#ifdef DEBUG
-		if (!TargetProcess->ELFSymbolTable->SymTableExists)
-			debug("NO SYMBOL TABLE FOUND?");
-#endif
-
 		debug("Entry Point: %#lx", EntryPoint);
 
 		this->GenerateAuxiliaryVector_x86_64(vma, fd, ELFHeader,
@@ -741,18 +729,6 @@ namespace Execute
 		// }
 
 		/* ------------------------------------------------------------------------ */
-
-		struct stat statbuf;
-		fstat(fd, &statbuf);
-		Memory::SmartHeap sh = Memory::SmartHeap(statbuf.st_size);
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, sh, statbuf.st_size);
-		TargetProcess->ELFSymbolTable->AppendSymbols(uintptr_t(sh.Get()), BaseAddress);
-
-		if (!TargetProcess->ELFSymbolTable->SymTableExists)
-		{
-			debug("NO SYMBOL TABLE FOUND?");
-		}
 
 		debug("Entry Point: %#lx", EntryPoint);
 

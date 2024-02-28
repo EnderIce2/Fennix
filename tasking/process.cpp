@@ -127,7 +127,7 @@ namespace Tasking
 	}
 
 	PCB::PCB(Task *ctx, PCB *Parent, const char *Name,
-			 TaskExecutionMode ExecutionMode, void *Image,
+			 TaskExecutionMode ExecutionMode,
 			 bool UseKernelPageTable,
 			 uint16_t UserID, uint16_t GroupID)
 		: Node(ProcFS, std::to_string(ctx->NextPID), NodeType::DIRECTORY)
@@ -208,9 +208,6 @@ namespace Tasking
 		this->ProgramBreak = new Memory::ProgramBreak(this->PageTable, this->vma);
 		this->Signals = new Signal(this);
 
-		if (Image)
-			this->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)Image);
-
 		debug("Process page table: %#lx", this->PageTable);
 		debug("Created %s process \"%s\"(%d). Parent \"%s\"(%d)",
 			  ExecutionMode == TaskExecutionMode::User ? "user" : "kernel",
@@ -246,10 +243,6 @@ namespace Tasking
 		ctx->ProcessList.erase(std::find(ctx->ProcessList.begin(),
 										 ctx->ProcessList.end(),
 										 this));
-
-		debug("Freeing symbol table strings");
-		if (this->ELFSymbolTable)
-			delete this->ELFSymbolTable;
 
 		debug("Freeing signals");
 		delete this->Signals;

@@ -99,11 +99,6 @@ namespace Execute
 
 			/* ------------------------------------------------------------------------------------------------------------------------------ */
 
-			void *ElfFile = KernelAllocator.RequestPages(TO_PAGES(statbuf.st_size + 1));
-			fread(fd, (uint8_t *)ElfFile, statbuf.st_size);
-			debug("Loaded elf %s at %#lx with the length of %ld",
-				  Path, ElfFile, statbuf.st_size);
-
 			PCB *Process;
 			if (Fork)
 			{
@@ -119,10 +114,7 @@ namespace Execute
 				}
 
 				fixme("free allocated memory");
-				fixme("change symbol table");
 				// Process->vma->FreeAllPages();
-				delete Process->ELFSymbolTable;
-				Process->ELFSymbolTable = new SymbolResolver::Symbols((uintptr_t)ElfFile);
 			}
 			else
 			{
@@ -132,16 +124,13 @@ namespace Execute
 				Process = TaskManager->CreateProcess(Parent,
 													 BaseName,
 													 TaskExecutionMode::User,
-													 ElfFile, false,
-													 0, 0);
+													 false, 0, 0);
 				Process->Info.Compatibility = Compatibility;
 				Process->Info.Architecture = Arch;
 			}
 
 			Process->SetWorkingDirectory(fs->GetNodeFromPath(Path)->Parent);
 			Process->SetExe(Path);
-
-			KernelAllocator.FreePages(ElfFile, TO_PAGES(statbuf.st_size + 1));
 
 			ELFObject *obj = new ELFObject(Path, Process, argv, envp);
 			if (!obj->IsValid)

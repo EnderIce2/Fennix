@@ -313,15 +313,12 @@ namespace Tasking
 	PCB *Task::CreateProcess(PCB *Parent,
 							 const char *Name,
 							 TaskExecutionMode ExecutionMode,
-							 void *Image,
 							 bool UseKernelPageTable,
-							 uint16_t UserID,
-							 uint16_t GroupID)
+							 uint16_t UserID, uint16_t GroupID)
 	{
 		SmartLock(TaskingLock);
 		return new PCB(this, Parent, Name, ExecutionMode,
-					   Image, UseKernelPageTable,
-					   UserID, GroupID);
+					   UseKernelPageTable, UserID, GroupID);
 	}
 
 	void Task::StartScheduler()
@@ -383,10 +380,8 @@ namespace Tasking
 #endif
 
 		KernelProcess = CreateProcess(nullptr, "Kernel",
-									  TaskExecutionMode::Kernel,
-									  nullptr, true);
+									  TaskExecutionMode::Kernel, true);
 		KernelProcess->PageTable = KernelPageTable;
-		KernelProcess->ELFSymbolTable = KernelSymbolTable;
 		TCB *kthrd = CreateThread(KernelProcess, EntryPoint,
 								  nullptr, nullptr,
 								  std::vector<AuxiliaryVector>(), Arch);
@@ -418,9 +413,7 @@ namespace Tasking
 		}
 
 		IdleProcess = CreateProcess(nullptr, (char *)"Idle",
-									TaskExecutionMode::Kernel,
-									nullptr, true);
-		IdleProcess->ELFSymbolTable = KernelSymbolTable;
+									TaskExecutionMode::Kernel, true);
 		for (int i = 0; i < SMP::CPUCores; i++)
 		{
 			TCB *thd = CreateThread(IdleProcess, IP(IdleProcessLoop));
