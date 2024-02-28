@@ -327,9 +327,9 @@ namespace CPU
 			};
 
 			/** @brief Structured Extended Feature Identifiers */
-			struct CPUID0x00000007
+			struct CPUID0x00000007_ECX_0
 			{
-				__amd_cpuid_init(0x00000007);
+				__amd_cpuid_init2(0x00000007, 0x0, _ECX_0);
 
 				/** @brief Structured Extended Feature Identifiers */
 				union

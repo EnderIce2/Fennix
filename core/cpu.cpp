@@ -251,7 +251,7 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid1;
-			CPU::x86::AMD::CPUID0x00000007 cpuid7;
+			CPU::x86::AMD::CPUID0x00000007_ECX_0 cpuid7;
 
 			feat.PGE = cpuid1.EDX.PGE;
 			feat.SSE = cpuid1.EDX.SSE;
