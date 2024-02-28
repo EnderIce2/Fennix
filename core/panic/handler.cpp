@@ -45,6 +45,8 @@ extern void DisplayStackSmashing();
 extern void DisplayBufferOverflow();
 
 Video::Font *CrashFont = nullptr;
+void *FbBeforePanic = nullptr;
+size_t FbPagesBeforePanic = 0;
 
 nsa void __printfWrapper(char c, void *)
 {
@@ -101,9 +103,19 @@ nsa void HaltAllCores()
 
 nsa void InitFont()
 {
+	/* Hope we won't crash here */
+
+	if (FbBeforePanic != nullptr)
+		KernelAllocator.FreePages(FbBeforePanic, FbPagesBeforePanic);
+	else
+	{
+		FbPagesBeforePanic = TO_PAGES(Display->GetSize);
+		FbBeforePanic = KernelAllocator.RequestPages(FbPagesBeforePanic);
+		memcpy(FbBeforePanic, Display->GetBuffer, Display->GetSize);
+	}
+
 	if (CrashFont == nullptr)
 	{
-		/* Hope we won't crash here */
 		CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
 									&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
 									Video::FontType::PCScreenFont2);

@@ -40,9 +40,11 @@
 #include "keyboard.hpp"
 
 extern void ExPrint(const char *Format, ...);
-extern Video::Font *CrashFont;
 extern void DiagnosticDataCollection();
 extern void InitFont();
+
+extern Video::Font *CrashFont;
+extern void *FbBeforePanic;
 
 struct StackFrame
 {
@@ -789,6 +791,7 @@ nsa void UserInput(char *Input)
 		ExPrint("\eCACACA  mem               - Display memory information.\n");
 		ExPrint("\eAAAAAA  dump [addr] [len] - Dump [len] bytes from [addr].\n");
 		ExPrint("\eCACACA  diag			     - Collect diagnostic information.\n");
+		ExPrint("\eAAAAAA  screen            - Display the final output prior to system panic.\n");
 	}
 	else if (strcmp(Input, "clear") == 0)
 	{
@@ -917,6 +920,17 @@ nsa void UserInput(char *Input)
 	else if (strcmp(Input, "diag") == 0)
 	{
 		DiagnosticDataCollection();
+	}
+	else if (strcmp(Input, "screen") == 0)
+	{
+		if (unlikely(FbBeforePanic == nullptr))
+		{
+			ExPrint("\eFF0000No screen data available\n");
+			goto End;
+		}
+		memcpy(Display->GetBuffer, FbBeforePanic, Display->GetSize);
+		Display->UpdateBuffer();
+		return;
 	}
 #ifdef DEBUG
 	else if (strcmp(Input, "pt") == 0)
