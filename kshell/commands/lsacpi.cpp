@@ -35,5 +35,4 @@ void cmd_lsacpi(const char *)
 			   Table.second->OEMID,
 			   Table.second->OEMTableID);
 	}
-	putchar('\n');
 }
