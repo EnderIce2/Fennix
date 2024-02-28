@@ -508,7 +508,7 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 	}
 }
 
-nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame)
+nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = true)
 {
 	const char *StatusColor[] = {
 		"FF0000", // Unknown
@@ -540,7 +540,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame)
 
 	if (!TaskManager)
 	{
-		ExPrint("\eFF5555Scheduler is not initialized\n");
+		ExPrint("\eFF5555Tasking is not initialized\n");
 		return;
 	}
 
@@ -552,14 +552,29 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame)
 
 	ExPrint("\n\eFAFAFAProcess list (%ld):\n", Plist.size());
 	bool pRdy = false;
+	bool showNote = false;
+	/* FIXME: This is slow */
 	foreach (auto Process in Plist)
 	{
-		if (Process->State == Tasking::Ready)
+		bool ignore = true;
+		if (Process->State == Tasking::Ready && IgnoreReady)
 		{
-			pRdy = true;
-			debug("Ignoring ready process %s(%d)",
-				  Process->Name, Process->ID);
-			continue;
+			foreach (auto Thread in Process->Threads)
+			{
+				if (Thread->State == Tasking::Ready)
+					continue;
+				ignore = false;
+				break;
+			}
+
+			if (ignore)
+			{
+				pRdy = true;
+				debug("Ignoring ready process %s(%d)",
+					  Process->Name, Process->ID);
+				showNote = true;
+				continue;
+			}
 		}
 
 		ExPrint("\eAAAAAA-> \eFAFAFA%.*s%s\e8A8A8A(%ld) \e%s%s\n",
@@ -571,11 +586,12 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame)
 		bool tRdy = false;
 		foreach (auto Thread in Process->Threads)
 		{
-			if (Thread->State == Tasking::Ready)
+			if (Thread->State == Tasking::Ready && IgnoreReady)
 			{
 				tRdy = true;
 				debug("Ignoring ready thread %s(%d)",
 					  Thread->Name, Thread->ID);
+				showNote = true;
 				continue;
 			}
 
@@ -591,7 +607,8 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame)
 	if (pRdy)
 		ExPrint("\eAAAAAA-> \e8A8A8A...\n");
 
-	ExPrint("\e5A5A5ANote: Some processes may not be displayed.\n");
+	if (showNote)
+		ExPrint("\e5A5A5ANote: Some processes may not be displayed.\n");
 }
 
 CPU::ExceptionFrame *ExFrame;
@@ -907,6 +924,10 @@ nsa void UserInput(char *Input)
 		/* Helpful for qemu "info tlb" command */
 		CPU::PageTable((void *)ExFrame->cr3);
 		ExPrint("Here be dragons\n");
+	}
+	else if (strcmp(Input, "ps") == 0)
+	{
+		DisplayProcessScreen(ExFrame, false);
 	}
 #endif // DEBUG
 	else if (strlen(Input) > 0)
