@@ -29,7 +29,7 @@ void cmd_lsacpi(const char *)
 	ACPI::ACPI *acpi = (ACPI::ACPI *)PowerManager->GetACPI();
 	foreach (auto Table in acpi->Tables)
 	{
-		KPrint("%#lx: %s [%s:%s]",
+		KPrint("%#lx: %.4s [%.6s:%.8s]",
 			   Table.second,
 			   Table.second->Signature,
 			   Table.second->OEMID,

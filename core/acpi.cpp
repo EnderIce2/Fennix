@@ -48,7 +48,7 @@ namespace ACPI
 				if (i == 3)
 				{
 #ifdef DEBUG
-					KPrint("ACPI: %s [%s:%s] found at address %#lx",
+					KPrint("ACPI: %.4s [%.6s:%.8s] found at address %#lx",
 						   Signature,
 						   SDTHdr->OEMID,
 						   SDTHdr->OEMTableID,
