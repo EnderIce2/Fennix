@@ -487,6 +487,27 @@ namespace std
 			}
 		}
 
+		void insert(size_t Index, size_t Count, char Ch)
+		{
+			strdbg("%#lx: String insert: %d, %d, '%c'",
+				   this, Index, Count, Ch);
+			if (Index > this->Length)
+				return;
+
+			size_t NewLength = this->Length + Count;
+			this->resize(NewLength);
+
+			for (size_t i = this->Length - 1; i >= Index + Count; i--)
+				this->Data[i] = this->Data[i - Count];
+
+			for (size_t i = 0; i < Count; i++)
+				this->Data[Index + i] = Ch;
+
+			strdbg("%#lx: String inserted: \"%s\" (data: %#lx, length: %d, capacity: %d)",
+				   this, this->Data, this->Data, this->Length, this->Capacity);
+		}
+
+
 		string operator+(const string &Other) const
 		{
 			string result = *this;
