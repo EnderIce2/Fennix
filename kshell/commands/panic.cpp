@@ -23,7 +23,8 @@
 
 using namespace vfs;
 
-void cmd_panic(const char *args)
+nsa void cmd_panic(const char *)
 {
-	int3;
+	asmv("int $0x0");
+	__unreachable;
 }
