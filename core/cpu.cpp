@@ -241,7 +241,6 @@ namespace CPU
 		bool UMIP = false;
 		bool SMEP = false;
 		bool SMAP = false;
-		bool FSGSBASE = false;
 	};
 
 	SupportedFeat GetCPUFeat()
@@ -258,7 +257,6 @@ namespace CPU
 			feat.SMEP = cpuid7.EBX.SMEP;
 			feat.SMAP = cpuid7.EBX.SMAP;
 			feat.UMIP = cpuid7.ECX.UMIP;
-			feat.FSGSBASE = cpuid7.EBX.FSGSBASE;
 		}
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
@@ -270,7 +268,6 @@ namespace CPU
 			feat.SMEP = cpuid7_0.EBX.SMEP;
 			feat.SMAP = cpuid7_0.EBX.SMAP;
 			feat.UMIP = cpuid7_0.ECX.UMIP;
-			feat.FSGSBASE = cpuid7_0.EBX.FSGSBase;
 		}
 
 		return feat;
@@ -351,58 +348,34 @@ namespace CPU
 		*/
 		cr0.AM = true;
 
+		debug("Updating CR0...");
 		writecr0(cr0);
+		debug("Updated CR0.");
 
-		if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) != 0 &&
-			strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
-		{
-			debug("Enabling UMIP, SMEP & SMAP support...");
-			if (feat.UMIP)
-			{
-				if (!BSP)
-					KPrint("UMIP is supported.");
-				fixme("UMIP is supported.");
-				// cr4.UMIP = true;
-			}
+		debug("CPU Prevention Features:%s%s%s",
+			  feat.SMEP ? " SMEP" : "",
+			  feat.SMAP ? " SMAP" : "",
+			  feat.UMIP ? " UMIP" : "");
+		/* User-Mode Instruction Prevention
+			This prevents user-mode code from executing these instructions:
+				SGDT, SIDT, SLDT, SMSW, STR
+			If any of these instructions are executed with CPL > 0, a #GP is generated.
+		*/
+		// cr4.UMIP = feat.UMIP;
 
-			if (feat.SMEP)
-			{
-				if (!BSP)
-					KPrint("SMEP is supported.");
-				fixme("SMEP is supported.");
-				// cr4.SMEP = true;
-			}
+		/* Supervisor Mode Execution Prevention
+			This prevents user-mode code from executing code in the supervisor mode.
+		*/
+		cr4.SMEP = feat.SMEP;
 
-			if (feat.SMAP)
-			{
-				if (!BSP)
-					KPrint("SMAP is supported.");
-				fixme("SMAP is supported.");
-				// cr4.SMAP = true;
-			}
-		}
-		else
-		{
-			if (!BSP)
-			{
-				if (strcmp(Hypervisor(), x86_CPUID_VENDOR_VIRTUALBOX) == 0)
-					KPrint("VirtualBox detected. Not using UMIP, SMEP & SMAP");
-				else if (strcmp(Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-					KPrint("QEMU (TCG) detected. Not using UMIP, SMEP & SMAP");
-			}
-		}
+		/* Supervisor Mode Access Prevention
+			This prevents supervisor-mode code from accessing user-mode pages.
+		*/
+		cr4.SMAP = feat.SMAP;
 
-		if (feat.FSGSBASE)
-		{
-			if (!BSP)
-				KPrint("FSGSBASE is supported.");
-			fixme("FSGSBASE is supported.");
-			// cr4.FSGSBASE = true;
-		}
-
-		debug("Writing CR4...");
+		debug("Updating CR4...");
 		writecr4(cr4);
-		debug("Wrote CR4.");
+		debug("Updated CR4.");
 
 		debug("Enabling PAT support...");
 		wrmsr(MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
