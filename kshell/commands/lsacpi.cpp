@@ -29,7 +29,11 @@ void cmd_lsacpi(const char *)
 	ACPI::ACPI *acpi = (ACPI::ACPI *)PowerManager->GetACPI();
 	foreach (auto Table in acpi->Tables)
 	{
-		printf("%s ", Table.first);
+		KPrint("%#lx: %s [%s:%s]",
+			   Table.second,
+			   Table.second->Signature,
+			   Table.second->OEMID,
+			   Table.second->OEMTableID);
 	}
 	putchar('\n');
 }
