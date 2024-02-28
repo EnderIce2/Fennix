@@ -479,9 +479,8 @@ namespace Driver
 	{
 		dbg_api("%d, %s", MajorID, Name);
 
-		Tasking::PCB *pcb = TaskManager->CreateProcess(nullptr,
-													   Name, Tasking::System,
-													   nullptr, true, 0, 0);
+		Tasking::PCB *pcb = TaskManager->CreateProcess(nullptr, Name, Tasking::System,
+													   true, 0, 0);
 
 		return pcb->ID;
 	}

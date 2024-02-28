@@ -38,7 +38,6 @@ namespace Interrupts
 	/* APIC::Timer */ extern void *apicTimer[255]; // MAX_CPU
 #elif defined(aa64)
 #endif
-	extern void *InterruptFrames[INT_FRAMES_MAX];
 
 	void Initialize(int Core);
 	void Enable(int Core);

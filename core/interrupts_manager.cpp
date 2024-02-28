@@ -34,7 +34,6 @@
 #elif defined(aa64)
 #endif
 
-#include "crashhandler.hpp"
 #include "../kernel.h"
 
 void HandleException(CPU::ExceptionFrame *Frame);
@@ -112,7 +111,6 @@ namespace Interrupts
 	/* APIC::Timer */ void *apicTimer[MAX_CPU] = {nullptr};
 #elif defined(aa64)
 #endif
-	void *InterruptFrames[INT_FRAMES_MAX];
 
 	void Initialize(int Core)
 	{
@@ -292,17 +290,6 @@ namespace Interrupts
 		CPU::aarch64::TrapFrame *Frame = (CPU::aarch64::TrapFrame *)Data;
 #endif
 		// debug("IRQ%ld", Frame->InterruptNumber - 32);
-
-		memmove(InterruptFrames + 1,
-				InterruptFrames,
-				sizeof(InterruptFrames) - sizeof(InterruptFrames[0]));
-#if defined(a64)
-		InterruptFrames[0] = (void *)Frame->rip;
-#elif defined(a32)
-		InterruptFrames[0] = (void *)Frame->eip;
-#elif defined(aa64)
-		InterruptFrames[0] = (void *)Frame->pc;
-#endif
 
 		CPUData *CoreData = GetCurrentCPU();
 		int Core = 0;

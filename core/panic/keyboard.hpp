@@ -15,69 +15,9 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_CRASH_HANDLERS_FUNCTIONS_H__
-#define __FENNIX_KERNEL_CRASH_HANDLERS_FUNCTIONS_H__
-
-#include <types.h>
-
 #include <ints.hpp>
-#include <task.hpp>
-#include <cpu.hpp>
 
-#if defined(a64)
-
-struct CRData
-{
-	CPU::TrapFrame *Frame;
-
-	CPU::x64::CR0 cr0;
-	CPU::x64::CR2 cr2;
-	CPU::x64::CR3 cr3;
-	CPU::x64::CR4 cr4;
-	CPU::x64::CR8 cr8;
-	CPU::x64::EFER efer;
-	uintptr_t dr0, dr1, dr2, dr3;
-	CPU::x64::DR6 dr6;
-	CPU::x64::DR7 dr7;
-
-	long ID;
-	void *CPUData;
-	Tasking::PCB *Process;
-	Tasking::TCB *Thread;
-};
-
-#elif defined(a32)
-
-struct CRData
-{
-	CPU::TrapFrame *Frame;
-
-	CPU::x32::CR0 cr0;
-	CPU::x32::CR2 cr2;
-	CPU::x32::CR3 cr3;
-	CPU::x32::CR4 cr4;
-	CPU::x32::CR8 cr8;
-	uintptr_t dr0, dr1, dr2, dr3;
-	CPU::x32::DR6 dr6;
-	CPU::x32::DR7 dr7;
-
-	long ID;
-	void *CPUData;
-	Tasking::PCB *Process;
-	Tasking::TCB *Thread;
-};
-#elif defined(aa64)
-
-struct CRData
-{
-	CPU::TrapFrame *Frame;
-
-	long ID;
-	void *CPUData;
-	Tasking::PCB *Process;
-	Tasking::TCB *Thread;
-};
-#endif
+#pragma once
 
 enum Keys
 {
@@ -263,56 +203,17 @@ enum Keys
 	KEY_U_F12 = 0xd8,
 };
 
-namespace CrashHandler
+class CrashKeyboardDriver : public Interrupts::Handler
 {
-	extern int SBIdx;
+private:
+	void PS2Wait(bool Read);
+	void OnInterruptReceived(CPU::TrapFrame *Frame);
 
-	class CrashKeyboardDriver : public Interrupts::Handler
-	{
-	private:
-		void PS2Wait(bool Read);
-		void OnInterruptReceived(CPU::TrapFrame *Frame);
+	int BackSpaceLimit = 0;
+	char UserInputBuffer[256];
+	int TimeoutCallNumber = 0;
 
-	public:
-		CrashKeyboardDriver();
-		~CrashKeyboardDriver();
-	};
-
-	void TraceFrames(CRData data, int Count, SymbolResolver::Symbols *SymHandle, bool Kernel);
-
-	void ArrowInput(uint8_t key);
-	void UserInput(char *Input);
-
-	void DisplayMainScreen(CRData data);
-	void DisplayDetailsScreen(CRData data);
-	void DisplayStackFrameScreen(CRData data);
-	void DisplayTasksScreen(CRData data);
-	void DisplayConsoleScreen(CRData data);
-}
-
-void DivideByZeroExceptionHandler(CPU::TrapFrame *Frame);
-void DebugExceptionHandler(CPU::TrapFrame *Frame);
-void NonMaskableInterruptExceptionHandler(CPU::TrapFrame *Frame);
-void BreakpointExceptionHandler(CPU::TrapFrame *Frame);
-void OverflowExceptionHandler(CPU::TrapFrame *Frame);
-void BoundRangeExceptionHandler(CPU::TrapFrame *Frame);
-void InvalidOpcodeExceptionHandler(CPU::TrapFrame *Frame);
-void DeviceNotAvailableExceptionHandler(CPU::TrapFrame *Frame);
-void DoubleFaultExceptionHandler(CPU::TrapFrame *Frame);
-void CoprocessorSegmentOverrunExceptionHandler(CPU::TrapFrame *Frame);
-void InvalidTSSExceptionHandler(CPU::TrapFrame *Frame);
-void SegmentNotPresentExceptionHandler(CPU::TrapFrame *Frame);
-void StackFaultExceptionHandler(CPU::TrapFrame *Frame);
-void GeneralProtectionExceptionHandler(CPU::TrapFrame *Frame);
-void PageFaultExceptionHandler(CPU::TrapFrame *Frame);
-void x87FloatingPointExceptionHandler(CPU::TrapFrame *Frame);
-void AlignmentCheckExceptionHandler(CPU::TrapFrame *Frame);
-void MachineCheckExceptionHandler(CPU::TrapFrame *Frame);
-void SIMDFloatingPointExceptionHandler(CPU::TrapFrame *Frame);
-void VirtualizationExceptionHandler(CPU::TrapFrame *Frame);
-void SecurityExceptionHandler(CPU::TrapFrame *Frame);
-void UnknownExceptionHandler(CPU::TrapFrame *Frame);
-
-bool UserModeExceptionHandler(CPU::TrapFrame *Frame);
-
-#endif // !__FENNIX_KERNEL_CRASH_HANDLERS_FUNCTIONS_H__
+public:
+	CrashKeyboardDriver();
+	~CrashKeyboardDriver() {}
+};

@@ -38,6 +38,8 @@
 #define ACPI_PCIE_WAKE 0x4000
 #define ACPI_WAKE 0x8000
 
+extern std::atomic<bool> ExceptionLock;
+
 namespace ACPI
 {
 	__always_inline inline bool IsCanonical(uint64_t Address)
@@ -104,6 +106,12 @@ namespace ACPI
 		}
 		else if (Event & ACPI_POWER_BUTTON)
 		{
+			if (ExceptionLock.load())
+			{
+				this->Shutdown();
+				CPU::Stop();
+			}
+
 			Tasking::PCB *pcb = thisProcess;
 			if (pcb && !pcb->GetContext()->IsPanic())
 			{
