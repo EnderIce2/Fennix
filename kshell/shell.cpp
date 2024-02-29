@@ -346,6 +346,37 @@ void StartKernelShell()
 				Display->UpdateBuffer();
 				continue;
 			}
+			case KEY_DELETE:
+			{
+				if (!(sc & KEY_PRESSED))
+					continue;
+
+				if (bsCount == 0)
+					continue;
+
+				if (seekCount == bsCount)
+				{
+					debug("seekCount == bsCount (%d == %d)",
+						  seekCount, bsCount);
+					continue;
+				}
+
+				uint32_t tmpX, tmpY;
+				Display->GetBufferCursor(&tmpX, &tmpY);
+
+				Display->SetBufferCursor(unseekX, unseekY);
+				strBufBck();
+				debug("seekCount: %d: %s", seekCount, strBuf.c_str());
+				strBuf.erase((int)seekCount);
+				Display->PrintString(strBuf.c_str());
+				debug("after strBuf: %s", strBuf.c_str());
+
+				Display->SetBufferCursor(tmpX, tmpY);
+				unseekX -= Display->GetCurrentFont()->GetInfo().Width;
+				bsCount--;
+				Display->UpdateBuffer();
+				continue;
+			}
 			case KEY_UP_ARROW:
 			{
 				if (!(sc & KEY_PRESSED))
