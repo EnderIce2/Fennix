@@ -21,6 +21,7 @@
 #include <driver.hpp>
 #include <lock.hpp>
 #include <debug.h>
+#include <thread>
 
 #include "../kernel.h"
 #include "../driver.h"
@@ -81,6 +82,77 @@ static Command commands[] = {
 	{"dump", cmd_dump},
 };
 
+std::atomic_uint32_t CurX = 0x10, CurY = 0x10;
+std::atomic_bool CurBlinking = false;
+std::atomic_bool CurHalt = true;
+std::atomic_uint64_t BlinkerSleep = 0;
+
+NewLock(BlinkerLock);
+
+void PrintBlinker(uint32_t fx, uint32_t fy)
+{
+	for (uint32_t i = 0; i < fx; i++)
+	{
+		for (uint32_t j = 0; j < fy; j++)
+		{
+			uint32_t px = CurX.load() + i;
+			uint32_t py = CurY.load() + j;
+			uint32_t color = Display->GetPixel(px, py);
+			Display->SetPixel(px, py, ~color);
+		}
+	}
+}
+
+void UpdateBlinker()
+{
+	if (CurBlinking.load())
+	{
+		SmartLock(BlinkerLock);
+		uint32_t fx = 0, fy = 0;
+		if (unlikely(fx == 0 || fy == 0))
+		{
+			fx = Display->GetCurrentFont()->GetInfo().Width;
+			fy = Display->GetCurrentFont()->GetInfo().Height;
+		}
+
+		PrintBlinker(fx, fy);
+		CurBlinking.store(false);
+		Display->UpdateBuffer();
+	}
+}
+
+void CursorBlink()
+{
+	uint32_t fx, fy;
+	fx = Display->GetCurrentFont()->GetInfo().Width;
+	fy = Display->GetCurrentFont()->GetInfo().Height;
+	while (true)
+	{
+		if (CurHalt.load() ||
+			BlinkerSleep.load() > TimeManager->GetCounter())
+		{
+			TaskManager->Sleep(250);
+			continue;
+		}
+
+		{
+			SmartLock(BlinkerLock);
+			PrintBlinker(fx, fy);
+			CurBlinking.store(!CurBlinking.load());
+			Display->UpdateBuffer();
+		}
+		TaskManager->Sleep(500);
+
+		{
+			SmartLock(BlinkerLock);
+			PrintBlinker(fx, fy);
+			CurBlinking.store(!CurBlinking.load());
+			Display->UpdateBuffer();
+		}
+		TaskManager->Sleep(500);
+	}
+}
+
 void StartKernelShell()
 {
 	if (ShellLock.Locked())
@@ -106,6 +178,8 @@ void StartKernelShell()
 		return;
 	}
 
+	std::thread thd(CursorBlink);
+
 	printf("Using \eCA21F6/dev/key\eCCCCCC for keyboard input.\n");
 	while (true)
 	{
@@ -127,6 +201,12 @@ void StartKernelShell()
 		ssize_t nBytes;
 		while (true)
 		{
+			uint32_t cx, cy;
+			Display->GetBufferCursor(&cx, &cy);
+			CurX.store(cx);
+			CurY.store(cy);
+			CurHalt.store(false);
+
 			nBytes = fread(kfd, scBuf, 2);
 			if (nBytes == 0)
 				continue;
@@ -139,6 +219,10 @@ void StartKernelShell()
 
 			if (scBuf[0] == 0x00)
 				continue;
+
+			UpdateBlinker();
+			BlinkerSleep.store(TimeManager->CalculateTarget(250, Time::Units::Milliseconds));
+			CurHalt.store(true);
 
 			uint8_t sc = scBuf[0];
 			switch (sc & ~KEY_PRESSED)
