@@ -50,6 +50,39 @@ namespace Video
 		// MarkRegionDirty(Y / RegionHeight, X / RegionWidth);
 	}
 
+	__no_sanitize("undefined") uint32_t Display::GetPixel(uint32_t X,
+														  uint32_t Y)
+	{
+		if (unlikely(X >= this->Width))
+			X = this->Width - 1;
+
+		if (unlikely(Y >= this->Height))
+			Y = this->Height - 1;
+
+		uint32_t *Pixel = (uint32_t *)((uintptr_t)this->Buffer + (Y * this->Width + X) * (this->framebuffer.BitsPerPixel / 8));
+		return *Pixel;
+	}
+
+	__no_sanitize("undefined") void Display::DrawRectangle(uint32_t X,
+														   uint32_t Y,
+														   uint32_t Width,
+														   uint32_t Height,
+														   uint32_t Color)
+	{
+		for (uint32_t i = 0; i < Width; i++)
+		{
+			for (uint32_t j = 0; j < Height; j++)
+			{
+				uint32_t *Pixel =
+					(uint32_t *)((uintptr_t)this->Buffer + ((Y + j) *
+																this->Width +
+															(X + i)) *
+															   (this->framebuffer.BitsPerPixel / 8));
+				*Pixel = Color;
+			}
+		}
+	}
+
 	void Display::Scroll(int Lines)
 	{
 		if (this->DoNotScroll)

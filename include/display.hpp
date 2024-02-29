@@ -214,6 +214,10 @@ namespace Video
 
 		void ClearBuffer();
 		void SetPixel(uint32_t X, uint32_t Y, uint32_t Color);
+		uint32_t GetPixel(uint32_t X, uint32_t Y);
+		void DrawRectangle(uint32_t X, uint32_t Y,
+						   uint32_t Width, uint32_t Height,
+						   uint32_t Color);
 		void Scroll(int Lines);
 
 		void SetDoNotScroll(bool Value)
