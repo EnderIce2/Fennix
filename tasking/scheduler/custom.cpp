@@ -252,6 +252,11 @@ namespace Tasking::Scheduler
 		this->ProcessList.remove(pcb);
 	}
 
+	std::pair<PCB *, TCB *> Custom::GetIdle()
+	{
+		return std::make_pair(IdleProcess, IdleThread);
+	}
+
 	/* --------------------------------------------------------------- */
 
 	nsa void Custom::OneShot(int TimeSlice)

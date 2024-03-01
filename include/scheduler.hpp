@@ -93,6 +93,11 @@ namespace Tasking::Scheduler
 			assert(!"PopProcess not implemented");
 		}
 
+		virtual std::pair<PCB *, TCB *> GetIdle()
+		{
+			assert(!"GetIdle not implemented");
+		}
+
 		Base(Task *_ctx)
 			: ctx(_ctx) {}
 
@@ -121,6 +126,7 @@ namespace Tasking::Scheduler
 		void Yield() final;
 		void PushProcess(PCB *pcb) final;
 		void PopProcess(PCB *pcb) final;
+		std::pair<PCB *, TCB *> GetIdle() final;
 
 		void OneShot(int TimeSlice);
 
