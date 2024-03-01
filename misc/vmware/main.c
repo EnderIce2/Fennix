@@ -568,6 +568,7 @@ static int DisplayGetSize(ToolboxContext *ctx)
 }
 
 pid_t dst_id = -1;
+pid_t dst_pid = -1;
 ToolboxContext *tb_ctx = NULL;
 void DisplayScaleThread()
 {
@@ -686,6 +687,7 @@ int DriverEntry()
 		MessageClose(&tb_ctx);
 		dst_id = CreateKernelThread(0, "VMware Display Scale",
 									(void *)DisplayScaleThread, NULL);
+		dst_pid = GetCurrentProcess();
 	}
 
 	PS2WriteCommand(PS2_CMD_ENABLE_PORT_2);
@@ -723,7 +725,7 @@ int DriverFinal()
 
 	if (ToolboxSupported)
 	{
-		KillThread(dst_id, 0);
+		KillThread(dst_id, dst_pid, 0);
 		if (tb_ctx->TCLOChannel != -1)
 			MessageClose(tb_ctx);
 		FreeMemory(tb_ctx, 1);

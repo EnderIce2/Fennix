@@ -35,16 +35,21 @@ pid_t CreateKernelThread(pid_t pId, const char *Name, void *EntryPoint, void *Ar
 								   Argument);
 }
 
+pid_t GetCurrentProcess()
+{
+	return API->GetCurrentProcess(API->MajorID);
+}
+
 int KillProcess(pid_t pId, int ExitCode)
 {
 	return API->KillProcess(API->MajorID,
 							pId, ExitCode);
 }
 
-int KillThread(pid_t tId, int ExitCode)
+int KillThread(pid_t tId, pid_t pId, int ExitCode)
 {
 	return API->KillThread(API->MajorID,
-						   tId, ExitCode);
+						   tId, pId, ExitCode);
 }
 
 void Yield()

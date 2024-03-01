@@ -298,8 +298,9 @@ typedef struct
 	/* Scheduling */
 	pid_t (*CreateKernelProcess)(dev_t MajorID, const char *Name);
 	pid_t (*CreateKernelThread)(dev_t MajorID, pid_t pId, const char *Name, void *EntryPoint, void *Argument);
+	pid_t (*GetCurrentProcess)(dev_t MajorID);
 	int (*KillProcess)(dev_t MajorID, pid_t pId, int ExitCode);
-	int (*KillThread)(dev_t MajorID, pid_t tId, int ExitCode);
+	int (*KillThread)(dev_t MajorID, pid_t tId, pid_t pId, int ExitCode);
 	void (*Yield)(dev_t MajorID);
 	void (*Sleep)(dev_t MajorID, uint64_t Milliseconds);
 

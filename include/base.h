@@ -183,6 +183,12 @@ extern "C"
 							 void *Argument);
 
 	/**
+	 * @brief Get the PID of the current process
+	 * @return The PID of the current process
+	 */
+	pid_t GetCurrentProcess();
+
+	/**
 	 * @brief Kill a process
 	 * @param pId The PID of the process to kill
 	 * @param ExitCode The exit code of the process
@@ -193,10 +199,11 @@ extern "C"
 	/**
 	 * @brief Kill a thread
 	 * @param tId The TID of the thread to kill
+	 * @param pId The PID of the process the thread is in
 	 * @param ExitCode The exit code of the thread
 	 * @return 0 on success, errno on failure
 	 */
-	int KillThread(pid_t tId, int ExitCode);
+	int KillThread(pid_t tId, pid_t pId, int ExitCode);
 
 	/**
 	 * @brief Yield the current thread
