@@ -34,6 +34,12 @@ namespace Driver
 {
 	void Manager::LoadAllDrivers()
 	{
+		if (Drivers.empty())
+		{
+			KPrint("\eFF0000No drivers to load");
+			return;
+		}
+
 		foreach (auto &var in Drivers)
 		{
 			DriverObject *Drv = &var.second;
@@ -506,15 +512,15 @@ namespace Driver
 	{
 		debug("Initializing driver manager");
 		const char *DriverDirectory = Config.DriverDirectory;
-		RefNode *rn = fs->Open(DriverDirectory);
-		if (!rn)
+		RefNode *drvDirNode = fs->Open(DriverDirectory);
+		if (!drvDirNode)
 		{
 			error("Failed to open driver directory %s", DriverDirectory);
 			KPrint("Failed to open driver directory %s", DriverDirectory);
 			return;
 		}
 
-		foreach (auto drvNode in rn->node->Children)
+		foreach (auto drvNode in drvDirNode->node->Children)
 		{
 			if (drvNode->Type != vfs::FILE)
 				continue;
@@ -558,7 +564,7 @@ namespace Driver
 			strncpy(Drivers[countr].Name, drvName, sizeof(Drivers[countr].Name));
 		}
 
-		delete rn;
+		delete drvDirNode;
 
 		InputMouseDev = new MasterDeviceFile("mice", "mouse", DevFS, ddt_Mouse);
 		InputKeyboardDev = new MasterDeviceFile("key", "kbd", DevFS, ddt_Keyboard);
