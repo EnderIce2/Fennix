@@ -114,7 +114,8 @@ void KernelMainThread()
 
 	KPrint("Executing %s", Config.InitPath);
 	int ExitCode = -1;
-	Tasking::TCB *initThread = nullptr;
+	Tasking::TCB *initThread;
+	Tasking::PCB *initProc;
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
@@ -127,7 +128,8 @@ void KernelMainThread()
 		   Config.InitPath);
 	thisThread->SetPriority(Tasking::Idle);
 
-	initThread = TaskManager->GetThreadByID(tid);
+	initProc = TaskManager->GetProcessByID(tid);
+	initThread = TaskManager->GetThreadByID(tid, initProc);
 	TaskManager->WaitForThread(initThread);
 	ExitCode = initThread->GetExitCode();
 Exit:

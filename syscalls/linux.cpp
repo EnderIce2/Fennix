@@ -1781,7 +1781,7 @@ static __noreturn void linux_exit_group(SysFrm *sf, int status)
 /* https://man7.org/linux/man-pages/man2/tgkill.2.html */
 static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 {
-	Tasking::TCB *target = thisProcess->GetContext()->GetThreadByID(tid);
+	Tasking::TCB *target = thisProcess->GetContext()->GetThreadByID(tid, thisProcess);
 	if (!target)
 		return -ESRCH;
 

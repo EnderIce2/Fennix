@@ -426,7 +426,7 @@ namespace Tasking
 			this->Parent = Parent;
 
 		this->ctx = ctx;
-		this->ID = ctx->NextTID++;
+		this->ID = (TID)this->Parent->ID + (TID)this->Parent->Threads.size();
 
 		if (this->Name)
 			delete[] this->Name;

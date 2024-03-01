@@ -474,7 +474,6 @@ namespace Tasking
 		NewLock(TaskingLock);
 
 		PID NextPID = 0;
-		TID NextTID = 0;
 
 		PCB *KernelProcess = nullptr;
 
@@ -546,7 +545,7 @@ namespace Tasking
 
 		PCB *GetProcessByID(PID ID);
 
-		TCB *GetThreadByID(TID ID);
+		TCB *GetThreadByID(TID ID, PCB* Parent);
 
 		/** Wait for process to terminate */
 		void WaitForProcess(PCB *pcb);

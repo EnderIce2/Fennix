@@ -58,7 +58,7 @@ namespace Tasking::Scheduler
 			assert(!"GetProcessByID not implemented");
 		}
 
-		virtual TCB *GetThreadByID(TID ID)
+		virtual TCB *GetThreadByID(TID ID, PCB* Parent)
 		{
 			assert(!"GetThreadByID not implemented");
 		}
@@ -119,7 +119,7 @@ namespace Tasking::Scheduler
 		bool RemoveThread(TCB *tcb) final;
 		bool RemoveProcess(PCB *pcb) final;
 		PCB *GetProcessByID(TID ID) final;
-		TCB *GetThreadByID(TID ID) final;
+		TCB *GetThreadByID(TID ID, PCB* Parent) final;
 		std::list<PCB *> &GetProcessList() final;
 		void StartIdleProcess() final;
 		void StartScheduler() final;

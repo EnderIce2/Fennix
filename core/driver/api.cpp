@@ -501,6 +501,13 @@ namespace Driver
 		return tcb->ID;
 	}
 
+	pid_t GetCurrentProcess(dev_t MajorID)
+	{
+		dbg_api("%d", MajorID);
+
+		return TaskManager->GetCurrentProcess()->ID;
+	}
+
 	int KillProcess(dev_t MajorID, pid_t pId, int ExitCode)
 	{
 		dbg_api("%d, %d, %d", MajorID, pId, ExitCode);
@@ -512,11 +519,11 @@ namespace Driver
 		return 0;
 	}
 
-	int KillThread(dev_t MajorID, pid_t tId, int ExitCode)
+	int KillThread(dev_t MajorID, pid_t tId, pid_t pId, int ExitCode)
 	{
 		dbg_api("%d, %d, %d", MajorID, tId, ExitCode);
 
-		Tasking::TCB *tcb = TaskManager->GetThreadByID(tId);
+		Tasking::TCB *tcb = TaskManager->GetThreadByID(tId, TaskManager->GetProcessByID(pId));
 		if (!tcb)
 			return -EINVAL;
 		TaskManager->KillThread(tcb, (Tasking::KillCode)ExitCode);
@@ -913,6 +920,7 @@ namespace Driver
 
 		api->CreateKernelProcess = CreateKernelProcess;
 		api->CreateKernelThread = CreateKernelThread;
+		api->GetCurrentProcess = GetCurrentProcess;
 		api->KillProcess = KillProcess;
 		api->KillThread = KillThread;
 		api->Yield = Yield;

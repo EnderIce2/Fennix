@@ -155,15 +155,12 @@ namespace Tasking::Scheduler
 		return nullptr;
 	}
 
-	TCB *Custom::GetThreadByID(TID ID)
+	TCB *Custom::GetThreadByID(TID ID, PCB *Parent)
 	{
-		foreach (auto p in ProcessList)
+		foreach (auto t in Parent->Threads)
 		{
-			foreach (auto t in p->Threads)
-			{
-				if (t->ID == ID)
-					return t;
-			}
+			if (t->ID == ID)
+				return t;
 		}
 		return nullptr;
 	}
