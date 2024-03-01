@@ -28,7 +28,7 @@ _sig_native_trampoline_end:
 _sig_linux_trampoline_start:
 	movq %rsp, %rbp
 	movq (%rbp), %rax
-	call %rax
+	call *%rax
 	mov %rbp, %rsp
 	/* rt_sigreturn = 15 */
 	movq $15, %rax
