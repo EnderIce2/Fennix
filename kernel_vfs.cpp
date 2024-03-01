@@ -59,7 +59,7 @@ EXTERNC NIF void KernelVFS()
 				vfs::USTAR *ustar = new vfs::USTAR;
 				if (!ustar->TestArchive(initrdAddress))
 				{
-					KPrint("\eFF0000USTAR archive is invalid!");
+					KPrint("\eE85230USTAR archive is invalid!");
 					delete ustar;
 				}
 				else
