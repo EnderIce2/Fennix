@@ -467,7 +467,7 @@ namespace Tasking
 		~PCB();
 	};
 
-	class Task : public Interrupts::Handler
+	class Task
 	{
 	private:
 		NewLock(SchedulerLock);
@@ -476,114 +476,43 @@ namespace Tasking
 		PID NextPID = 0;
 		TID NextTID = 0;
 
-		std::list<PCB *> ProcessList;
 		PCB *KernelProcess = nullptr;
-		PCB *IdleProcess = nullptr;
-		TCB *IdleThread = nullptr;
-		std::atomic_size_t SchedulerTicks = 0;
-		std::atomic_size_t LastTaskTicks = 0;
-		std::atomic_int LastCore = 0;
-		std::atomic_bool StopScheduler = false;
-		std::atomic_bool SchedulerUpdateTrapFrame = false;
 
-		bool InvalidPCB(PCB *pcb);
-		bool InvalidTCB(TCB *tcb);
+		void *Scheduler = nullptr;
+		void *__sched_ctx = nullptr;
 
-		/**
-		 * Remove a thread from the scheduler
-		 *
-		 * @note This function is NOT thread safe
-		 * @note This function does not check if
-		 * the thread is valid nor if it has
-		 * Terminated status
-		 */
-		bool RemoveThread(TCB *tcb);
+		constexpr TaskArchitecture GetKArch()
+		{
+#if defined(a64)
+			return x64;
+#elif defined(a32)
+			return x32;
+#elif defined(aa64)
+			return ARM64;
+#endif
+		}
 
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		bool RemoveProcess(PCB *pcb);
-
-		void UpdateUsage(TaskInfo *Info,
-						 TaskExecutionMode Mode,
-						 int Core);
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		bool FindNewProcess(void *CPUDataPointer);
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		bool GetNextAvailableThread(void *CPUDataPointer);
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		bool GetNextAvailableProcess(void *CPUDataPointer);
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		bool SchedulerSearchProcessThread(void *CPUDataPointer);
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		void UpdateProcessState();
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		void WakeUpThreads();
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		void CleanupTerminated();
-
-		/**
-		 * @note This function is NOT thread safe
-		 */
-		void Schedule(CPU::TrapFrame *Frame);
-
-		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
+		void PushProcess(PCB *pcb);
+		void PopProcess(PCB *pcb);
 
 	public:
+		void *GetScheduler() { return Scheduler; }
 		PCB *GetKernelProcess() { return KernelProcess; }
-		size_t GetSchedulerTicks() { return SchedulerTicks.load(); }
-		size_t GetLastTaskTicks() { return LastTaskTicks.load(); }
-		int GetLastCore() { return LastCore.load(); }
-		std::list<PCB *> GetProcessList() { return ProcessList; }
-		void Panic() { StopScheduler = true; }
-		bool IsPanic() { return StopScheduler; }
+		std::list<PCB *> GetProcessList();
+		void Panic();
+		bool IsPanic();
 
 		/**
 		 * Yield the current thread and switch
 		 * to another thread if available
 		 */
-		__always_inline inline void Yield()
-		{
-			/* This will trigger the IRQ16
-			instantly so we won't execute
-			the next instruction */
-#if defined(a86)
-			asmv("int $0x30");
-#elif defined(aa64)
-			asmv("svc #0x30");
-#endif
-		}
+		void Yield();
 
 		/**
 		 * Update the current thread's trap frame
 		 * without switching to another thread
 		 */
-		__always_inline inline void UpdateFrame()
-		{
-			SchedulerUpdateTrapFrame = true;
-			Yield();
-		}
+		void UpdateFrame();
 
 		void SignalShutdown();
 
@@ -669,7 +598,5 @@ namespace Tasking
 
 #define thisProcess GetCurrentCPU()->CurrentProcess.load()
 #define thisThread GetCurrentCPU()->CurrentThread.load()
-
-extern "C" void TaskingScheduler_OneShot(int TimeSlice);
 
 #endif // !__FENNIX_KERNEL_TASKING_H__

@@ -228,7 +228,7 @@ namespace Tasking
 
 		if (Parent)
 			Parent->Children.push_back(this);
-		ctx->ProcessList.push_back(this);
+		ctx->PushProcess(this);
 	}
 
 	PCB::~PCB()
@@ -240,9 +240,7 @@ namespace Tasking
 		debug("Removing from process list");
 		/* Remove us from the process list so we
 			don't get scheduled anymore */
-		ctx->ProcessList.erase(std::find(ctx->ProcessList.begin(),
-										 ctx->ProcessList.end(),
-										 this));
+		ctx->PopProcess(this);
 
 		debug("Freeing signals");
 		delete this->Signals;

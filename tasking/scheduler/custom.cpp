@@ -15,7 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <task.hpp>
+#include <scheduler.hpp>
 
 #include <dumper.hpp>
 #include <convert.h>
@@ -103,26 +103,187 @@
 #define wut_schedbg(m, ...)
 #endif
 
-extern "C" nsa NIF void TaskingScheduler_OneShot(int TimeSlice)
+__naked __used nsa void __custom_sched_idle_loop()
 {
-	if (TimeSlice == 0)
-		TimeSlice = Tasking::TaskPriority::Normal;
-
-#ifdef DEBUG
-	if (DebuggerIsAttached)
-		TimeSlice += 10;
-#endif
-
 #if defined(a86)
-	((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
+	asmv("IdleLoop:");
+	asmv("hlt");
+	asmv("jmp IdleLoop");
 #elif defined(aa64)
+	asmv("IdleLoop:");
+	asmv("wfe");
+	asmv("b IdleLoop");
 #endif
 }
 
-namespace Tasking
+namespace Tasking::Scheduler
 {
+	bool Custom::RemoveThread(TCB *Thread)
+	{
+		debug("Thread \"%s\"(%d) removed from process \"%s\"(%d)",
+			  Thread->Name, Thread->ID, Thread->Parent->Name,
+			  Thread->Parent->ID);
+
+		delete Thread;
+		return true;
+	}
+
+	bool Custom::RemoveProcess(PCB *Process)
+	{
+		if (Process->State == Terminated)
+		{
+			delete Process;
+			return true;
+		}
+
+		foreach (TCB *Thread in Process->Threads)
+		{
+			if (Thread->State == Terminated)
+				RemoveThread(Thread);
+		}
+
+		return true;
+	}
+
+	PCB *Custom::GetProcessByID(TID ID)
+	{
+		foreach (auto p in ProcessList)
+		{
+			if (p->ID == ID)
+				return p;
+		}
+		return nullptr;
+	}
+
+	TCB *Custom::GetThreadByID(TID ID)
+	{
+		foreach (auto p in ProcessList)
+		{
+			foreach (auto t in p->Threads)
+			{
+				if (t->ID == ID)
+					return t;
+			}
+		}
+		return nullptr;
+	}
+
+	void Custom::StartIdleProcess()
+	{
+		IdleProcess = ctx->CreateProcess(nullptr, (char *)"Idle",
+										 TaskExecutionMode::Kernel, true);
+		for (int i = 0; i < SMP::CPUCores; i++)
+		{
+			TCB *thd = ctx->CreateThread(IdleProcess, IP(__custom_sched_idle_loop));
+			char IdleName[16];
+			sprintf(IdleName, "Idle Thread %d", i);
+			thd->Rename(IdleName);
+			thd->SetPriority(Idle);
+			for (int j = 0; j < MAX_CPU; j++)
+				thd->Info.Affinity[j] = false;
+			thd->Info.Affinity[i] = true;
+
+			if (unlikely(i == 0))
+				IdleThread = thd;
+		}
+	}
+
+	std::list<PCB *> &Custom::GetProcessList()
+	{
+		return ProcessList;
+	}
+
+	void Custom::StartScheduler()
+	{
 #if defined(a86)
-	nsa NIF bool Task::FindNewProcess(void *CPUDataPointer)
+		if (Interrupts::apicTimer[0])
+		{
+			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
+
+			/* FIXME: The kernel is not ready for multi-core tasking. */
+			return;
+
+			APIC::InterruptCommandRegister icr{};
+			bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
+
+			if (likely(x2APIC))
+			{
+				icr.x2.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.x2.MT = APIC::Fixed;
+				icr.x2.L = APIC::Assert;
+				icr.x2.DES = 0xFFFFFFFF; /* Broadcast IPI to all local APICs. */
+				((APIC::APIC *)Interrupts::apic[0])->ICR(icr);
+			}
+			else
+			{
+				icr.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.MT = APIC::Fixed;
+				icr.L = APIC::Assert;
+
+				for (int i = 0; i < SMP::CPUCores; i++)
+				{
+					icr.DES = uint8_t(i);
+					((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+				}
+			}
+		}
+#endif
+	}
+
+	void Custom::Yield()
+	{
+		/* This will trigger the IRQ16
+		instantly so we won't execute
+		the next instruction */
+#if defined(a86)
+		asmv("int $0x30");
+#elif defined(aa64)
+		asmv("svc #0x30");
+#endif
+	}
+
+	void Custom::PushProcess(PCB *pcb)
+	{
+		this->ProcessList.push_back(pcb);
+	}
+
+	void Custom::PopProcess(PCB *pcb)
+	{
+		this->ProcessList.remove(pcb);
+	}
+
+	/* --------------------------------------------------------------- */
+
+	nsa void Custom::OneShot(int TimeSlice)
+	{
+		if (TimeSlice == 0)
+			TimeSlice = Tasking::TaskPriority::Normal;
+
+#ifdef DEBUG
+		if (DebuggerIsAttached)
+			TimeSlice += 10;
+#endif
+
+#if defined(a86)
+		((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
+#elif defined(aa64)
+#endif
+	}
+
+	nsa void Custom::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
+	{
+		UNUSED(Core);
+		uint64_t CurrentTime = TimeManager->GetCounter();
+		uint64_t TimePassed = Info->LastUpdateTime - CurrentTime;
+		Info->LastUpdateTime = CurrentTime;
+
+		if (Mode == TaskExecutionMode::User)
+			Info->UserTime += TimePassed;
+		else
+			Info->KernelTime += TimePassed;
+	}
+
+	nsa NIF bool Custom::FindNewProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 		fnp_schedbg("%d processes", ProcessList.size());
@@ -133,9 +294,6 @@ namespace Tasking
 #endif
 		foreach (auto process in ProcessList)
 		{
-			if (unlikely(InvalidPCB(process)))
-				continue;
-
 			switch (process->State.load())
 			{
 			case TaskState::Ready:
@@ -157,9 +315,6 @@ namespace Tasking
 
 			foreach (auto thread in process->Threads)
 			{
-				if (unlikely(InvalidTCB(thread)))
-					continue;
-
 				if (thread->State.load() != TaskState::Ready)
 					continue;
 
@@ -175,7 +330,7 @@ namespace Tasking
 		return false;
 	}
 
-	nsa NIF bool Task::GetNextAvailableThread(void *CPUDataPointer)
+	nsa NIF bool Custom::GetNextAvailableThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -191,16 +346,6 @@ namespace Tasking
 					break;
 
 				TCB *nextThread = CurrentCPU->CurrentProcess->Threads[TempIndex + 1];
-
-				if (unlikely(InvalidTCB(nextThread)))
-				{
-					if (TempIndex > ThreadsSize)
-						break;
-					TempIndex++;
-
-					gnat_schedbg("Thread %#lx is invalid", nextThread);
-					goto RetryAnotherThread;
-				}
 
 				gnat_schedbg("\"%s\"(%d) and next thread is \"%s\"(%d)",
 							 CurrentCPU->CurrentProcess->Threads[i]->Name,
@@ -234,7 +379,7 @@ namespace Tasking
 		return false;
 	}
 
-	nsa NIF bool Task::GetNextAvailableProcess(void *CPUDataPointer)
+	nsa NIF bool Custom::GetNextAvailableProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -254,12 +399,6 @@ namespace Tasking
 				continue;
 			}
 
-			if (unlikely(InvalidPCB(process)))
-			{
-				gnap_schedbg("Invalid process %#lx", process);
-				continue;
-			}
-
 			if (process->State.load() != TaskState::Ready)
 			{
 				gnap_schedbg("Process %d is not ready", process->ID);
@@ -268,12 +407,6 @@ namespace Tasking
 
 			foreach (auto thread in process->Threads)
 			{
-				if (unlikely(InvalidTCB(thread)))
-				{
-					gnap_schedbg("Invalid thread %#lx", thread);
-					continue;
-				}
-
 				if (thread->State.load() != TaskState::Ready)
 				{
 					gnap_schedbg("Thread %d is not ready", thread->ID);
@@ -294,18 +427,12 @@ namespace Tasking
 		return false;
 	}
 
-	nsa NIF bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
+	nsa NIF bool Custom::SchedulerSearchProcessThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
 		foreach (auto process in ProcessList)
 		{
-			if (unlikely(InvalidPCB(process)))
-			{
-				sspt_schedbg("Invalid process %#lx", process);
-				continue;
-			}
-
 			if (process->State.load() != TaskState::Ready)
 			{
 				sspt_schedbg("Process %d is not ready", process->ID);
@@ -314,12 +441,6 @@ namespace Tasking
 
 			foreach (auto thread in process->Threads)
 			{
-				if (unlikely(InvalidTCB(thread)))
-				{
-					sspt_schedbg("Invalid thread %#lx", thread);
-					continue;
-				}
-
 				if (thread->State.load() != TaskState::Ready)
 				{
 					sspt_schedbg("Thread %d is not ready", thread->ID);
@@ -339,13 +460,10 @@ namespace Tasking
 		return false;
 	}
 
-	nsa NIF void Task::UpdateProcessState()
+	nsa NIF void Custom::UpdateProcessState()
 	{
 		foreach (auto process in ProcessList)
 		{
-			if (unlikely(InvalidPCB(process)))
-				continue;
-
 			if (process->State.load() == TaskState::Terminated)
 				continue;
 
@@ -375,13 +493,10 @@ namespace Tasking
 		}
 	}
 
-	nsa NIF void Task::WakeUpThreads()
+	nsa NIF void Custom::WakeUpThreads()
 	{
 		foreach (auto process in ProcessList)
 		{
-			if (unlikely(InvalidPCB(process)))
-				continue;
-
 			Tasking::TaskState pState = process->State.load();
 			if (pState != TaskState::Ready &&
 				pState != TaskState::Sleeping &&
@@ -390,9 +505,6 @@ namespace Tasking
 
 			foreach (auto thread in process->Threads)
 			{
-				if (unlikely(InvalidTCB(thread)))
-					continue;
-
 				if (likely(thread->State.load() != TaskState::Sleeping))
 					continue;
 
@@ -415,7 +527,7 @@ namespace Tasking
 		}
 	}
 
-	nsa NIF void Task::CleanupTerminated()
+	nsa NIF void Custom::CleanupTerminated()
 	{
 		foreach (auto pcb in ProcessList)
 		{
@@ -433,7 +545,7 @@ namespace Tasking
 		}
 	}
 
-	nsa NIF void Task::Schedule(CPU::TrapFrame *Frame)
+	nsa NIF void Custom::Schedule(CPU::TrapFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -450,8 +562,8 @@ namespace Tasking
 		this->LastCore.store(CurrentCPU->ID);
 		schedbg("Scheduler called on CPU %d.", CurrentCPU->ID);
 
-		if (unlikely(InvalidPCB(CurrentCPU->CurrentProcess.load()) ||
-					 InvalidTCB(CurrentCPU->CurrentThread.load())))
+		if (unlikely(!CurrentCPU->CurrentProcess.load() ||
+					 !CurrentCPU->CurrentThread.load()))
 		{
 			schedbg("Invalid process or thread. Finding a new one.");
 			ProcessNotChanged = true;
@@ -524,9 +636,7 @@ namespace Tasking
 			}
 		}
 
-		warn("Unwanted reach!");
-		TaskingScheduler_OneShot(100);
-		goto End;
+		assert(!"Unwanted code execution");
 
 	Idle:
 		ProcessNotChanged = true;
@@ -586,7 +696,7 @@ namespace Tasking
 		if (!ProcessNotChanged)
 			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetCounter();
 		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetCounter();
-		TaskingScheduler_OneShot(CurrentCPU->CurrentThread->Info.Priority);
+		this->OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
 		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled &&
 			CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
@@ -627,42 +737,74 @@ namespace Tasking
 				Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
 		schedbg("================================================================");
 
-	End:
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
 		CurrentCPU->CurrentProcess->PageTable->Update();
 	}
 
-	nsa NIF void Task::OnInterruptReceived(CPU::TrapFrame *Frame)
+	nsa NIF void Custom::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);
 	}
-#elif defined(aa64)
-	nsa bool Task::FindNewProcess(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-	}
 
-	nsa bool Task::GetNextAvailableThread(void *CPUDataPointer)
+	Custom::Custom(Task *ctx) : Base(ctx), Interrupts::Handler(16) /* IRQ16 */
 	{
-		fixme("unimplemented");
-	}
-
-	nsa bool Task::GetNextAvailableProcess(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-	}
-
-	nsa bool Task::SchedulerSearchProcessThread(void *CPUDataPointer)
-	{
-		fixme("unimplemented");
-	}
-
-	nsa void Task::Schedule(CPU::TrapFrame *Frame)
-	{
-		fixme("unimplemented");
-	}
-
-	nsa void Task::OnInterruptReceived(CPU::TrapFrame *Frame) { this->Schedule(Frame); }
+#if defined(a86)
+		// Map the IRQ16 to the first CPU.
+		((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
 #endif
+	}
+
+	Custom::~Custom()
+	{
+		foreach (PCB *Process in ProcessList)
+		{
+			foreach (TCB *Thread in Process->Threads)
+			{
+				if (Thread == GetCurrentCPU()->CurrentThread.load())
+					continue;
+				ctx->KillThread(Thread, KILL_SCHEDULER_DESTRUCTION);
+			}
+
+			if (Process == GetCurrentCPU()->CurrentProcess.load())
+				continue;
+			ctx->KillProcess(Process, KILL_SCHEDULER_DESTRUCTION);
+		}
+
+		debug("Waiting for processes to terminate");
+		uint64_t timeout = TimeManager->CalculateTarget(20, Time::Units::Seconds);
+		while (this->GetProcessList().size() > 0)
+		{
+			trace("Waiting for %d processes to terminate", this->GetProcessList().size());
+			int NotTerminated = 0;
+			foreach (PCB *Process in this->GetProcessList())
+			{
+				trace("Process %s(%d) is still running (or waiting to be removed state %#lx)",
+					  Process->Name, Process->ID, Process->State);
+
+				if (Process->State == TaskState::Terminated)
+				{
+					debug("Process %s(%d) terminated", Process->Name, Process->ID);
+					continue;
+				}
+
+				NotTerminated++;
+			}
+			if (NotTerminated == 1)
+				break;
+
+			ctx->Sleep(1000);
+			debug("Current working process is %s(%d)",
+				  ctx->GetCurrentProcess()->Name,
+				  ctx->GetCurrentProcess()->ID);
+
+			if (TimeManager->GetCounter() > timeout)
+			{
+				error("Timeout waiting for processes to terminate");
+				break;
+			}
+
+			this->OneShot(100);
+		}
+	}
 }
