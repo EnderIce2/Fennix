@@ -42,7 +42,7 @@ EXTERNC NIF void KernelVFS()
 
 		if (strcmp(bInfo.Modules[i].CommandLine, "initrd") == 0)
 		{
-			debug("Found initrd at %p", bInfo.Modules[i].Address);
+			KPrint("initrd found at %p", bInfo.Modules[i].Address);
 			static char initrd = 0;
 			if (!initrd++)
 			{
