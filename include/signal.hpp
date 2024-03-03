@@ -21,7 +21,7 @@
 #include <syscalls.hpp>
 #include <lock.hpp>
 #include <types.h>
-#include <vector>
+#include <list>
 #include <syscall/linux/signals.hpp>
 
 enum Signals : int
@@ -388,11 +388,11 @@ namespace Tasking
 		void *TrampAddr = nullptr;
 		size_t TrampSz = 0;
 
-		std::vector<SignalInfo> SignalQueue;
+		std::list<SignalInfo> SignalQueue;
 		std::atomic<sigset_t> SignalMask = 0;
 		sigaction SignalAction[SIGNAL_MAX]{};
 		SignalDisposition sigDisp[SIGNAL_MAX];
-		std::vector<SignalInfo> Watchers;
+		std::list<SignalInfo> Watchers;
 
 		bool LinuxSig();
 
@@ -403,6 +403,8 @@ namespace Tasking
 		sigset_t ConvertSigsetToNativeIfNecessary(sigset_t sig);
 
 		int MakeExitCode(int sig);
+
+		void InitTrampoline();
 
 		const sigset_t nMasks = ToFlag(SIGKILL) |
 								ToFlag(SIGSTOP) |
@@ -502,6 +504,7 @@ namespace Tasking
 		int SendSignal(int sig, union sigval val = {0});
 
 		int WaitAnySignal();
+		bool HasPendingSignal();
 
 		/**
 		 * Wait for a signal

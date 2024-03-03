@@ -249,6 +249,59 @@ namespace Tasking
 			return 100 + sig;
 	}
 
+	void Signal::InitTrampoline()
+	{
+		if (unlikely(TrampAddr))
+			return;
+
+		PCB *pcb = (PCB *)ctx;
+
+		debug("Trampoline not set up yet");
+		switch (pcb->Info.Compatibility)
+		{
+		case Native:
+		{
+			debug("%#lx - %#lx",
+				  &_sig_native_trampoline_end,
+				  &_sig_native_trampoline_start);
+
+			TrampSz = (size_t)&_sig_native_trampoline_end -
+					  (size_t)&_sig_native_trampoline_start;
+			TrampAddr = pcb->vma->RequestPages(TO_PAGES(TrampSz), true);
+			memcpy((void *)TrampAddr,
+				   (void *)&_sig_native_trampoline_start,
+				   TrampSz);
+			debug("Trampoline at %#lx with size %lld",
+				  TrampAddr, TrampSz);
+			break;
+		}
+		case Linux:
+		{
+			debug("%#lx - %#lx",
+				  &_sig_linux_trampoline_end,
+				  &_sig_linux_trampoline_start);
+
+			TrampSz = (size_t)&_sig_linux_trampoline_end -
+					  (size_t)&_sig_linux_trampoline_start;
+			TrampAddr = pcb->vma->RequestPages(TO_PAGES(TrampSz), true);
+			memcpy((void *)TrampAddr,
+				   (void *)&_sig_linux_trampoline_start,
+				   TrampSz);
+			debug("Trampoline at %#lx with size %lld",
+				  TrampAddr, TrampSz);
+			break;
+		}
+		case Windows:
+		{
+			fixme("Windows compatibility");
+			break;
+		}
+		default:
+			/* Process not fully initalized. */
+			return;
+		}
+	}
+
 	/* ------------------------------------------------------ */
 
 	int Signal::AddWatcher(Signal *who, int sig)
@@ -306,12 +359,8 @@ namespace Tasking
 			return false;
 
 		/* We don't want to do this in kernel mode */
-		if (unlikely(tf->cs != GDT_USER_CODE &&
-					 tf->cs != GDT_USER_DATA))
-		{
-			// debug("Not user-mode");
+		if (unlikely(tf->cs != GDT_USER_CODE))
 			return false;
-		}
 
 		debug("We have %d signals to handle", SignalQueue.size());
 
@@ -367,6 +416,8 @@ namespace Tasking
 		tf->rip = uint64_t(TrampAddr);
 		tf->rdi = CTLif(sigI.sig);
 		tf->rsi = uint64_t(sigI.val.sival_ptr);
+
+		assert(TrampAddr != nullptr);
 		return true;
 	}
 
@@ -573,50 +624,7 @@ namespace Tasking
 			return 0;
 		}
 
-		if (unlikely(TrampAddr == nullptr))
-		{
-			debug("Trampoline not set up yet");
-			switch (thisThread->Info.Compatibility)
-			{
-			case Native:
-			{
-				debug("%#lx - %#lx",
-					  &_sig_native_trampoline_end,
-					  &_sig_native_trampoline_start);
-
-				TrampSz = (size_t)&_sig_native_trampoline_end -
-						  (size_t)&_sig_native_trampoline_start;
-				TrampAddr = pcb->vma->RequestPages(TO_PAGES(TrampSz), true);
-				memcpy((void *)TrampAddr,
-					   (void *)&_sig_native_trampoline_start,
-					   TrampSz);
-				debug("Trampoline at %#lx with size %lld",
-					  TrampAddr, TrampSz);
-				break;
-			}
-			case Linux:
-			{
-				debug("%#lx - %#lx",
-					  &_sig_linux_trampoline_end,
-					  &_sig_linux_trampoline_start);
-
-				TrampSz = (size_t)&_sig_linux_trampoline_end -
-						  (size_t)&_sig_linux_trampoline_start;
-				TrampAddr = pcb->vma->RequestPages(TO_PAGES(TrampSz), true);
-				memcpy((void *)TrampAddr,
-					   (void *)&_sig_linux_trampoline_start,
-					   TrampSz);
-				debug("Trampoline at %#lx with size %lld",
-					  TrampAddr, TrampSz);
-				break;
-			}
-			default:
-			{
-				assert(!"Not implemented");
-				break;
-			}
-			}
-		}
+		this->InitTrampoline();
 
 		debug("Signal %s(%d) completed", sigStr[sig], sig);
 		if (sigDisp[sig] != SIG_IGN)
@@ -659,6 +667,11 @@ namespace Tasking
 
 		debug("Signal received");
 		return -EINTR;
+	}
+
+	bool Signal::HasPendingSignal()
+	{
+		return !SignalQueue.empty();
 	}
 
 	int Signal::WaitSignal(int sig, union sigval *val)
