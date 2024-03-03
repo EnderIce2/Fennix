@@ -472,6 +472,7 @@ namespace Tasking
 			this->Registers.rflags.AlwaysOne = 1;
 			this->Registers.rflags.IF = 1;
 			this->Registers.rflags.ID = 1;
+			this->Registers.rflags.AC = 0;
 			this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.rsp) = (uintptr_t)ThreadDoExit;
 #elif defined(a32)
@@ -480,6 +481,7 @@ namespace Tasking
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;
+			this->Registers.eflags.AC = 0;
 			this->Registers.esp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.esp) = (uintptr_t)ThreadDoExit;
 #elif defined(aa64)
@@ -512,6 +514,7 @@ namespace Tasking
 			this->Registers.rflags.AlwaysOne = 1;
 			this->Registers.rflags.IF = 1;
 			this->Registers.rflags.ID = 1;
+			this->Registers.rflags.AC = 0;
 			/* We need to leave the libc's crt
 			   to make a syscall when the Thread
 			   is exited or we are going to get
@@ -524,6 +527,7 @@ namespace Tasking
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;
+			this->Registers.eflags.AC = 0;
 			/* We need to leave the libc's crt
 			   to make a syscall when the Thread
 			   is exited or we are going to get
