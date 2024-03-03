@@ -20,6 +20,7 @@
 #include <types.h>
 #include <assert.h>
 #include <lock.hpp>
+#include <utility>
 
 namespace std
 {
