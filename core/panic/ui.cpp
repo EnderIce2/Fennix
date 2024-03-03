@@ -108,21 +108,48 @@ static const char *x86PageFaultDescriptions[9] = {
 
 int ActiveScreen = 0;
 
+char __modSym[20];
+nsa const char *ExGetKSymbolByAddress(uintptr_t Address)
+{
+	if (Address < (uintptr_t)&_kernel_start &&
+		Address > (uintptr_t)&_kernel_end)
+		return "<OUTSIDE KERNEL>";
+
+	if (!KernelSymbolTable)
+		return "<UNKNOWN>";
+
+	const char *sym = KernelSymbolTable->GetSymbol(Address);
+
+	size_t symLen = strlen(sym);
+
+	if (symLen > 16)
+	{
+		strncpy(__modSym, sym, 16);
+		__modSym[16] = '.';
+		__modSym[17] = '.';
+		__modSym[18] = '.';
+		__modSym[19] = '\0';
+		sym = __modSym;
+	}
+
+	if (unlikely(symLen > 128))
+		warn("Symbol \"%s\" is too long! Memory corrupted?", sym);
+	return sym;
+}
+
 nsa const char *ExGetKSymbol(CPU::ExceptionFrame *Frame)
 {
 	if (Frame->rip < (uintptr_t)&_kernel_start &&
 		Frame->rip > (uintptr_t)&_kernel_end)
 		return "<OUTSIDE KERNEL>";
 
-	if (KernelSymbolTable)
 #if defined(a64)
-		return KernelSymbolTable->GetSymbol(Frame->rip);
+	return ExGetKSymbolByAddress(Frame->rip);
 #elif defined(a32)
-		return KernelSymbolTable->GetSymbol(Frame->eip);
+	return ExGetKSymbolByAddress(Frame->eip);
 #elif defined(aa64)
-		return KernelSymbolTable->GetSymbol(Frame->pc);
+	return ExGetKSymbolByAddress(Frame->pc);
 #endif
-	return "<UNKNOWN>";
 }
 
 nsa char *TrimWhiteSpace(char *str)
