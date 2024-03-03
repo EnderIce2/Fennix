@@ -650,9 +650,13 @@ static int linux_nanosleep(SysFrm *,
 
 	while (time < sleepTime)
 	{
+		if (pcb->Signals->HasPendingSignal())
+		{
+			debug("sleep interrupted by signal");
+			return -EINTR; 
+		}
+
 		pcb->GetContext()->Yield();
-		/* TODO: sleep should be interrupted by
-			the signal and return errno EINTR */
 		time = TimeManager->GetCounter();
 	}
 	debug("time=     %ld", time);
