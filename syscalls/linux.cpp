@@ -715,6 +715,8 @@ static pid_t linux_fork(SysFrm *sf)
 	NewProcess->vma->Fork(Parent->vma);
 	NewProcess->ProgramBreak->SetTable(NewProcess->PageTable);
 	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
+	NewProcess->Executable = Parent->Executable;
+	NewProcess->CurrentWorkingDirectory = Parent->CurrentWorkingDirectory;
 
 	TCB *NewThread =
 		TaskManager->CreateThread(NewProcess,
@@ -964,6 +966,13 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		delete File;
 		return ret;
 	}
+
+	const char *baseName;
+	cwk_path_get_basename(pPathname, &baseName, nullptr);
+
+	pcb->Rename(baseName);
+	pcb->SetWorkingDirectory(File->node->Parent);
+	pcb->SetExe(pPathname);
 
 	delete File;
 	Tasking::Task *ctx = pcb->GetContext();
