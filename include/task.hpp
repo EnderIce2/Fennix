@@ -282,15 +282,18 @@ namespace Tasking
 
 		void SetupUserStack_x86_64(const char **argv,
 								   const char **envp,
-								   const std::vector<AuxiliaryVector> &auxv);
+								   const std::vector<AuxiliaryVector> &auxv,
+								   TaskCompatibility Compatibility);
 
 		void SetupUserStack_x86_32(const char **argv,
 								   const char **envp,
-								   const std::vector<AuxiliaryVector> &auxv);
+								   const std::vector<AuxiliaryVector> &auxv,
+								   TaskCompatibility Compatibility);
 
 		void SetupUserStack_aarch64(const char **argv,
 									const char **envp,
-									const std::vector<AuxiliaryVector> &auxv);
+									const std::vector<AuxiliaryVector> &auxv,
+									TaskCompatibility Compatibility);
 
 		/**
 		 * This function should be called after
@@ -545,7 +548,7 @@ namespace Tasking
 
 		PCB *GetProcessByID(PID ID);
 
-		TCB *GetThreadByID(TID ID, PCB* Parent);
+		TCB *GetThreadByID(TID ID, PCB *Parent);
 
 		/** Wait for process to terminate */
 		void WaitForProcess(PCB *pcb);

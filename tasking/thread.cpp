@@ -182,7 +182,8 @@ namespace Tasking
 
 	__no_sanitize("undefined") void TCB::SetupUserStack_x86_64(const char **argv,
 															   const char **envp,
-															   const std::vector<AuxiliaryVector> &auxv)
+															   const std::vector<AuxiliaryVector> &auxv,
+															   TaskCompatibility Compatibility)
 	{
 		size_t argvLen = 0;
 		if (argv)
@@ -247,6 +248,12 @@ namespace Tasking
 			  (argvLen + envpLen) % 2,
 			  stackStr, pStack);
 
+		/* Ensure StackPointerReg is aligned to the closest lower 16 bytes boundary */
+		uintptr_t lower16Align = (uintptr_t)pStack;
+		lower16Align &= ~0xF;
+		debug("before: %#lx ; after: %#lx", pStack, lower16Align);
+		pStack = (char *)lower16Align;
+
 		/* We need 8 bit pointers for the stack from here */
 		uintptr_t *Stack64 = (uintptr_t *)pStack;
 		assert(Stack64 != nullptr);
@@ -300,11 +307,6 @@ namespace Tasking
 		/* Set "pStack" to the new stack pointer */
 		pStack = (char *)Stack64;
 
-		/* Ensure StackPointerReg is aligned to the closest lower 16 bytes boundary */
-		uintptr_t lower16Align = (uintptr_t)pStack;
-		lower16Align &= ~0xF;
-		pStack = (char *)lower16Align;
-
 		/* We need the virtual address but because we are in the kernel we can't use the process page table.
 			So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
 		uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)pStack;
@@ -332,18 +334,40 @@ namespace Tasking
 				 (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack),
 				 SubtractStack);
 #endif
+
+		if (Compatibility != Native)
+			return;
+
+#if defined(a64)
+		this->Registers.rdi = (uintptr_t)argvLen;										// argc
+		this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						// argv
+		this->Registers.rcx = (uintptr_t)envpLen;										// envc
+		this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * argvLen) + 8); // envp
+#elif defined(a32)
+		this->Registers.eax = (uintptr_t)argvLen;										// argc
+		this->Registers.ebx = (uintptr_t)(this->Registers.esp + 4);						// argv
+		this->Registers.ecx = (uintptr_t)envpLen;										// envc
+		this->Registers.edx = (uintptr_t)(this->Registers.esp + 4 + (4 * argvLen) + 4); // envp
+#elif defined(aa64)
+		this->Registers.x0 = (uintptr_t)argvLen;									  // argc
+		this->Registers.x1 = (uintptr_t)(this->Registers.sp + 8);					  // argv
+		this->Registers.x2 = (uintptr_t)envpLen;									  // envc
+		this->Registers.x3 = (uintptr_t)(this->Registers.sp + 8 + (8 * argvLen) + 8); // envp
+#endif
 	}
 
 	void TCB::SetupUserStack_x86_32(const char **argv,
 									const char **envp,
-									const std::vector<AuxiliaryVector> &auxv)
+									const std::vector<AuxiliaryVector> &auxv,
+									TaskCompatibility Compatibility)
 	{
 		fixme("Not implemented");
 	}
 
 	void TCB::SetupUserStack_aarch64(const char **argv,
 									 const char **envp,
-									 const std::vector<AuxiliaryVector> &auxv)
+									 const std::vector<AuxiliaryVector> &auxv,
+									 TaskCompatibility Compatibility)
 	{
 		fixme("Not implemented");
 	}
@@ -508,7 +532,7 @@ namespace Tasking
 			   is exited or we are going to get
 			   an exception. */
 
-			this->SetupUserStack_x86_64(argv, envp, auxv);
+			this->SetupUserStack_x86_64(argv, envp, auxv, Compatibility);
 #elif defined(a32)
 			this->Registers.cs = GDT_USER_CODE;
 			this->Registers.r3_ss = GDT_USER_DATA;
