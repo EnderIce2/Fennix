@@ -249,7 +249,7 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 		HandleUnrecoverableException(Frame);
 	}
 
-	if (Frame->cs == GDT_USER_CODE && Frame->cs == GDT_USER_DATA)
+	if (Frame->cs == GDT_USER_CODE && Frame->ss == GDT_USER_DATA)
 	{
 		if (UserModeExceptionHandler(Frame))
 			goto ExceptionExit;
