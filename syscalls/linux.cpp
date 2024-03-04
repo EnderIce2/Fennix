@@ -568,6 +568,17 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 	return Total;
 }
 
+/* https://man7.org/linux/man-pages/man2/access.2.html */
+static int linux_access(SysFrm *, const char *pathname, int mode)
+{
+	PCB *pcb = thisProcess;
+	auto pPathname = pcb->PageTable->Get(pathname);
+
+	stub;
+	debug("access(%s, %d)", (char *)pPathname, mode);
+	return 0;
+}
+
 /* https://man7.org/linux/man-pages/man2/pipe.2.html */
 static int linux_pipe(SysFrm *, int pipefd[2])
 {
@@ -1431,6 +1442,24 @@ static uid_t linux_getuid(SysFrm *)
 	return thisProcess->Security.Real.UserID;
 }
 
+/* https://man7.org/linux/man-pages/man2/getgid.2.html */
+static gid_t linux_getgid(SysFrm *)
+{
+	return thisProcess->Security.Real.GroupID;
+}
+
+/* https://man7.org/linux/man-pages/man2/getuid.2.html */
+static uid_t linux_geteuid(SysFrm *)
+{
+	return thisProcess->Security.Effective.UserID;
+}
+
+/* https://man7.org/linux/man-pages/man2/getgid.2.html */
+static gid_t linux_getegid(SysFrm *)
+{
+	return thisProcess->Security.Effective.GroupID;
+}
+
 /* https://man7.org/linux/man-pages/man2/getpid.2.html */
 static pid_t linux_getppid(SysFrm *)
 {
@@ -2012,7 +2041,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_pwrite64] = {"pwrite64", (void *)nullptr},
 	[__NR_amd64_readv] = {"readv", (void *)linux_readv},
 	[__NR_amd64_writev] = {"writev", (void *)linux_writev},
-	[__NR_amd64_access] = {"access", (void *)nullptr},
+	[__NR_amd64_access] = {"access", (void *)linux_access},
 	[__NR_amd64_pipe] = {"pipe", (void *)linux_pipe},
 	[__NR_amd64_select] = {"select", (void *)nullptr},
 	[__NR_amd64_sched_yield] = {"sched_yield", (void *)nullptr},
@@ -2095,11 +2124,11 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_ptrace] = {"ptrace", (void *)nullptr},
 	[__NR_amd64_getuid] = {"getuid", (void *)linux_getuid},
 	[__NR_amd64_syslog] = {"syslog", (void *)nullptr},
-	[__NR_amd64_getgid] = {"getgid", (void *)nullptr},
+	[__NR_amd64_getgid] = {"getgid", (void *)linux_getgid},
 	[__NR_amd64_setuid] = {"setuid", (void *)nullptr},
 	[__NR_amd64_setgid] = {"setgid", (void *)nullptr},
-	[__NR_amd64_geteuid] = {"geteuid", (void *)nullptr},
-	[__NR_amd64_getegid] = {"getegid", (void *)nullptr},
+	[__NR_amd64_geteuid] = {"geteuid", (void *)linux_geteuid},
+	[__NR_amd64_getegid] = {"getegid", (void *)linux_getegid},
 	[__NR_amd64_setpgid] = {"setpgid", (void *)nullptr},
 	[__NR_amd64_getppid] = {"getppid", (void *)linux_getppid},
 	[__NR_amd64_getpgrp] = {"getpgrp", (void *)nullptr},
@@ -2474,7 +2503,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_utime] = {"utime", (void *)nullptr},
 	[__NR_i386_stty] = {"stty", (void *)nullptr},
 	[__NR_i386_gtty] = {"gtty", (void *)nullptr},
-	[__NR_i386_access] = {"access", (void *)nullptr},
+	[__NR_i386_access] = {"access", (void *)linux_access},
 	[__NR_i386_nice] = {"nice", (void *)nullptr},
 	[__NR_i386_ftime] = {"ftime", (void *)nullptr},
 	[__NR_i386_sync] = {"sync", (void *)nullptr},
@@ -2488,10 +2517,10 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_prof] = {"prof", (void *)nullptr},
 	[__NR_i386_brk] = {"brk", (void *)linux_brk},
 	[__NR_i386_setgid] = {"setgid", (void *)nullptr},
-	[__NR_i386_getgid] = {"getgid", (void *)nullptr},
+	[__NR_i386_getgid] = {"getgid", (void *)linux_getgid},
 	[__NR_i386_signal] = {"signal", (void *)nullptr},
-	[__NR_i386_geteuid] = {"geteuid", (void *)nullptr},
-	[__NR_i386_getegid] = {"getegid", (void *)nullptr},
+	[__NR_i386_geteuid] = {"geteuid", (void *)linux_geteuid},
+	[__NR_i386_getegid] = {"getegid", (void *)linux_getegid},
 	[__NR_i386_acct] = {"acct", (void *)nullptr},
 	[__NR_i386_umount2] = {"umount2", (void *)nullptr},
 	[__NR_i386_lock] = {"lock", (void *)nullptr},
