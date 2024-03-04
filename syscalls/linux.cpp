@@ -653,7 +653,7 @@ static int linux_nanosleep(SysFrm *,
 		if (pcb->Signals->HasPendingSignal())
 		{
 			debug("sleep interrupted by signal");
-			return -EINTR; 
+			return -EINTR;
 		}
 
 		pcb->GetContext()->Yield();
@@ -758,9 +758,9 @@ static pid_t linux_fork(SysFrm *sf)
 }
 
 /* https://man7.org/linux/man-pages/man2/execve.2.html */
-static int linux_execve(SysFrm *sf, const char *pathname,
-						char *const argv[],
-						char *const envp[])
+__no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname,
+												   char *const argv[],
+												   char *const envp[])
 {
 	/* FIXME: exec doesn't follow the UNIX standard
 		The pid, open files, etc. should be preserved */
@@ -773,62 +773,98 @@ static int linux_execve(SysFrm *sf, const char *pathname,
 		!vmm.Check((void *)envp, Memory::US))
 		return -ENOENT;
 
-	const char *safe_path;
-	char **safe_argv;
-	char **safe_envp;
-	safe_path = (const char *)pcb->vma->RequestPages(1);
-	safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
-	safe_envp = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
+	if (!vmm.Check((void *)pathname, Memory::US))
 	{
-		Memory::SwapPT swap(pcb->PageTable);
-		size_t len = strlen(pathname);
-		memset((void *)safe_path, 0, PAGE_SIZE);
-		memcpy((void *)safe_path, pathname, len);
+		debug("Invalid address %#lx", pathname);
+		return -EFAULT;
+	}
 
-		const char *arg;
-		char *n_arg;
-		for (int i = 0; argv[i] != nullptr; i++)
+	if (!vmm.Check((void *)argv, Memory::US))
+	{
+		debug("Invalid address %#lx", argv);
+		return -EFAULT;
+	}
+
+	if (!vmm.Check((void *)envp, Memory::US))
+	{
+		debug("Invalid address %#lx", envp);
+		return -EFAULT;
+	}
+
+	auto pPathname = pcb->PageTable->Get(pathname);
+	auto pArgv = pcb->PageTable->Get(argv);
+	auto pEnvp = pcb->PageTable->Get(envp);
+
+	function("%s %#lx %#lx", pPathname, pArgv, pEnvp);
+
+	int argvLen = 0;
+	for (argvLen = 0; MAX_ARG; argvLen++)
+	{
+		auto arg = pcb->PageTable->Get(pArgv[argvLen]);
+		if (arg == nullptr)
+			break;
+
+		if (!vmm.Check((void *)arg, Memory::US))
 		{
-			arg = argv[i];
-			size_t len = strlen(arg);
-
-			n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
-			memcpy((void *)n_arg, arg, len);
-			n_arg[len] = '\0';
-
-			safe_argv[i] = n_arg;
-
-			if (likely(i < MAX_ARG - 1))
-				safe_argv[i + 1] = nullptr;
-		}
-
-		for (int i = 0; envp[i] != nullptr; i++)
-		{
-			arg = envp[i];
-			size_t len = strlen(arg);
-
-			n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
-			memcpy((void *)n_arg, arg, len);
-			n_arg[len] = '\0';
-
-			safe_envp[i] = n_arg;
-
-			if (likely(i < MAX_ARG - 1))
-				safe_envp[i + 1] = nullptr;
+			debug("Invalid address %#lx", arg);
+			return -EFAULT;
 		}
 	}
 
-	function("%s %#lx %#lx", safe_path, safe_argv, safe_envp);
+	int envpLen = 0;
+	for (envpLen = 0; MAX_ARG; envpLen++)
+	{
+		auto arg = pcb->PageTable->Get(pEnvp[envpLen]);
+		if (arg == nullptr)
+			break;
 
-#ifdef DEBUG
-	for (int i = 0; safe_argv[i] != nullptr; i++)
-		debug("safe_argv[%d]: %s", i, safe_argv[i]);
+		if (!vmm.Check((void *)arg, Memory::US))
+		{
+			debug("Invalid address %#lx", arg);
+			return -EFAULT;
+		}
+	}
 
-	for (int i = 0; safe_envp[i] != nullptr; i++)
-		debug("safe_envp[%d]: %s", i, safe_envp[i]);
-#endif
+	char **safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(argvLen * sizeof(char *)));
+	char **safe_envp = (char **)pcb->vma->RequestPages(TO_PAGES(envpLen * sizeof(char *)));
 
-	vfs::RefNode *File = fs->Open(safe_path,
+	const char *arg;
+	char *n_arg;
+	for (int i = 0; i < argvLen; i++)
+	{
+		arg = pcb->PageTable->Get(pArgv[i]);
+		assert(arg != nullptr);
+		size_t len = strlen(arg);
+		debug("arg[%d]: %s", i, arg);
+
+		n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+		memcpy((void *)n_arg, arg, len);
+		n_arg[len] = '\0';
+
+		safe_argv[i] = n_arg;
+
+		if (likely(i < MAX_ARG - 1))
+			safe_argv[i + 1] = nullptr;
+	}
+
+	for (int i = 0; i < envpLen; i++)
+	{
+		arg = pcb->PageTable->Get(pEnvp[i]);
+		assert(arg != nullptr);
+		size_t len = strlen(arg);
+		debug("env[%d]: %s", i, arg);
+
+		n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+		memcpy((void *)n_arg, arg, len);
+		n_arg[len] = '\0';
+
+		safe_envp[i] = n_arg;
+
+		if (likely(i < MAX_ARG - 1))
+			safe_envp[i + 1] = nullptr;
+	}
+
+	vfs::RefNode *File = fs->Open(pPathname,
 								  pcb->CurrentWorkingDirectory);
 
 	if (!File)
@@ -842,10 +878,10 @@ static int linux_execve(SysFrm *sf, const char *pathname,
 
 	if (shebang_magic[0] == '#' && shebang_magic[1] == '!')
 	{
-		char *orig_path = (char *)pcb->vma->RequestPages(TO_PAGES(strlen(pathname) + 1));
-		memcpy(orig_path, pathname, strlen(pathname) + 1);
+		char *orig_path = (char *)pcb->vma->RequestPages(TO_PAGES(strlen(pPathname) + 1));
+		memcpy(orig_path, pPathname, strlen(pPathname) + 1);
 
-		char *shebang = (char *)safe_path;
+		char *shebang = (char *)pPathname;
 		size_t shebang_len = 0;
 		constexpr int shebang_len_max = 255;
 		File->seek(2, SEEK_SET);
@@ -905,7 +941,7 @@ static int linux_execve(SysFrm *sf, const char *pathname,
 							(char *const *)safe_envp);
 	}
 
-	int ret = Execute::Spawn((char *)safe_path,
+	int ret = Execute::Spawn((char *)pPathname,
 							 (const char **)safe_argv,
 							 (const char **)safe_envp,
 							 pcb, true,
