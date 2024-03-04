@@ -111,6 +111,12 @@ NIF void MapFramebuffer(PageTable *PT)
 			break;
 
 		size_t fbSize = bInfo.Framebuffer[itrfb].Pitch * bInfo.Framebuffer[itrfb].Height;
+		fbSize = ALIGN_UP(fbSize, PAGE_SIZE);
+
+#ifdef DEBUG
+		if (DebuggerIsAttached)
+			fbSize += 16 * PAGE_SIZE;
+#endif
 
 		if (PSESupport && Page1GBSupport)
 		{
