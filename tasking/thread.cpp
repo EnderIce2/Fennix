@@ -184,71 +184,71 @@ namespace Tasking
 															   const char **envp,
 															   const std::vector<AuxiliaryVector> &auxv)
 	{
-		size_t ArgvSize = 0;
+		size_t argvLen = 0;
 		if (argv)
-			while (argv[ArgvSize] != nullptr)
-				ArgvSize++;
+			while (argv[argvLen] != nullptr)
+				argvLen++;
 
-		size_t EnvpSize = 0;
+		size_t envpLen = 0;
 		if (envp)
-			while (envp[EnvpSize] != nullptr)
-				EnvpSize++;
+			while (envp[envpLen] != nullptr)
+				envpLen++;
 
-		debug("ArgvSize: %d", ArgvSize);
-		debug("EnvpSize: %d", EnvpSize);
+		debug("argvLen: %d", argvLen);
+		debug("envpLen: %d", envpLen);
 
 		/* https://articles.manugarg.com/aboutelfauxiliaryvectors.html */
 		/* https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf#figure.3.9 */
 		/* rsp is the top of the stack */
-		char *Stack = (char *)this->Stack->GetStackPhysicalTop();
+		char *pStack = (char *)this->Stack->GetStackPhysicalTop();
 		/* Temporary stack pointer for strings */
-		char *StackStrings = (char *)Stack;
-		char *StackStringsVirtual = (char *)this->Stack->GetStackTop();
+		char *stackStr = (char *)pStack;
+		char *stackStrVirtual = (char *)this->Stack->GetStackTop();
 
 		/* Store string pointers for later */
-		uintptr_t *ArgvStrings = nullptr;
-		uintptr_t *EnvpStrings = nullptr;
-		if (ArgvSize > 0)
-			ArgvStrings = new uintptr_t[ArgvSize];
-		if (EnvpSize > 0)
-			EnvpStrings = new uintptr_t[EnvpSize];
+		uintptr_t *argvStrings = nullptr;
+		uintptr_t *envpStrings = nullptr;
+		if (argvLen > 0)
+			argvStrings = new uintptr_t[argvLen];
+		if (envpLen > 0)
+			envpStrings = new uintptr_t[envpLen];
 
-		for (size_t i = 0; i < ArgvSize; i++)
+		for (size_t i = 0; i < argvLen; i++)
 		{
 			/* Subtract the length of the string and the null terminator */
-			StackStrings -= strlen(argv[i]) + 1;
-			StackStringsVirtual -= strlen(argv[i]) + 1;
+			stackStr -= strlen(argv[i]) + 1;
+			stackStrVirtual -= strlen(argv[i]) + 1;
 			/* Store the pointer to the string */
-			ArgvStrings[i] = (uintptr_t)StackStringsVirtual;
+			argvStrings[i] = (uintptr_t)stackStrVirtual;
 			/* Copy the string to the stack */
-			strcpy(StackStrings, argv[i]);
+			strcpy(stackStr, argv[i]);
 			debug("argv[%d]: %s", i, argv[i]);
 		}
 
-		for (size_t i = 0; i < EnvpSize; i++)
+		for (size_t i = 0; i < envpLen; i++)
 		{
 			/* Subtract the length of the string and the null terminator */
-			StackStrings -= strlen(envp[i]) + 1;
-			StackStringsVirtual -= strlen(envp[i]) + 1;
+			stackStr -= strlen(envp[i]) + 1;
+			stackStrVirtual -= strlen(envp[i]) + 1;
 			/* Store the pointer to the string */
-			EnvpStrings[i] = (uintptr_t)StackStringsVirtual;
+			envpStrings[i] = (uintptr_t)stackStrVirtual;
 			/* Copy the string to the stack */
-			strcpy(StackStrings, envp[i]);
+			strcpy(stackStr, envp[i]);
 			debug("envp[%d]: %s", i, envp[i]);
 		}
 
 		/* Align the stack to 16 bytes */
-		StackStrings -= (uintptr_t)StackStrings & 0xF;
-		/* Set "Stack" to the new stack pointer */
-		Stack = (char *)StackStrings;
+		stackStr -= (uintptr_t)stackStr & 0xF;
+		/* Set "pStack" to the new stack pointer */
+		pStack = (char *)stackStr;
 		/* If argv and envp sizes are odd then we need to align the stack */
-		Stack -= (ArgvSize + EnvpSize) % 2;
+		pStack -= (argvLen + envpLen) % 2;
 		debug("odd align: %#lx | %#lx -> %#lx",
-			  (ArgvSize + EnvpSize) % 2,
-			  StackStrings, Stack);
+			  (argvLen + envpLen) % 2,
+			  stackStr, pStack);
 
 		/* We need 8 bit pointers for the stack from here */
-		uintptr_t *Stack64 = (uintptr_t *)Stack;
+		uintptr_t *Stack64 = (uintptr_t *)pStack;
 		assert(Stack64 != nullptr);
 
 		/* Store the null terminator */
@@ -273,44 +273,46 @@ namespace Tasking
 		/* Store the null terminator */
 		StackPush(Stack64, uintptr_t, AT_NULL);
 
-		/* Store EnvpStrings[] to the stack */
-		Stack64 -= EnvpSize; /* (1 Stack64 = 8 bits; Stack64 = 8 * EnvpSize) */
-		for (size_t i = 0; i < EnvpSize; i++)
+		/* Store envpStrings[] to the stack */
+		Stack64 -= envpLen; /* (1 Stack64 = 8 bits; Stack64 = 8 * envpLen) */
+		for (size_t i = 0; i < envpLen; i++)
 		{
-			*(Stack64 + i) = (uintptr_t)EnvpStrings[i];
-			debug("EnvpStrings[%d]: %#lx",
-				  i, EnvpStrings[i]);
+			*(Stack64 + i) = (uintptr_t)envpStrings[i];
+			debug("envpStrings[%d]: %#lx",
+				  i, envpStrings[i]);
 		}
 
 		/* Store the null terminator */
 		StackPush(Stack64, uintptr_t, AT_NULL);
 
-		/* Store ArgvStrings[] to the stack */
-		Stack64 -= ArgvSize; /* (1 Stack64 = 8 bits; Stack64 = 8 * ArgvSize) */
-		for (size_t i = 0; i < ArgvSize; i++)
+		/* Store argvStrings[] to the stack */
+		Stack64 -= argvLen; /* (1 Stack64 = 8 bits; Stack64 = 8 * argvLen) */
+		for (size_t i = 0; i < argvLen; i++)
 		{
-			*(Stack64 + i) = (uintptr_t)ArgvStrings[i];
-			debug("ArgvStrings[%d]: %#lx",
-				  i, ArgvStrings[i]);
+			*(Stack64 + i) = (uintptr_t)argvStrings[i];
+			debug("argvStrings[%d]: %#lx",
+				  i, argvStrings[i]);
 		}
 
 		/* Store the argc */
-		StackPush(Stack64, uintptr_t, ArgvSize);
+		StackPush(Stack64, uintptr_t, argvLen);
 
-		/* Set "Stack" to the new stack pointer */
-		Stack = (char *)Stack64;
+		/* Set "pStack" to the new stack pointer */
+		pStack = (char *)Stack64;
+
+		/* Ensure StackPointerReg is aligned to the closest lower 16 bytes boundary */
+		uintptr_t lower16Align = (uintptr_t)pStack;
+		lower16Align &= ~0xF;
+		pStack = (char *)lower16Align;
 
 		/* We need the virtual address but because we are in the kernel we can't use the process page table.
 			So we modify the physical address and store how much we need to subtract to get the virtual address for RSP. */
-		uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)Stack;
+		uintptr_t SubtractStack = (uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)pStack;
 		debug("SubtractStack: %#lx", SubtractStack);
 
 		/* Set the stack pointer to the new stack */
 		uintptr_t StackPointerReg = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
 		// assert(!(StackPointerReg & 0xF));
-
-		/* Ensure StackPointerReg is aligned to the closest lower 16 bytes boundary */
-		StackPointerReg &= ~0xF;
 
 #if defined(a64)
 		this->Registers.rsp = StackPointerReg;
@@ -320,10 +322,10 @@ namespace Tasking
 		this->Registers.sp = StackPointerReg;
 #endif
 
-		if (ArgvSize > 0)
-			delete[] ArgvStrings;
-		if (EnvpSize > 0)
-			delete[] EnvpStrings;
+		if (argvLen > 0)
+			delete[] argvStrings;
+		if (envpLen > 0)
+			delete[] envpStrings;
 
 #ifdef DEBUG
 		DumpData("Stack Data",
