@@ -606,11 +606,14 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 			}
 		}
 
-		ExPrint("\eAAAAAA-> \eFAFAFA%.*s%s\e8A8A8A(%ld) \e%s%s\n",
+		ExPrint("\eAAAAAA-> \eFAFAFA%.*s%s\e8A8A8A(%ld) \e%s%s \e8A8A8A[exe: %s]\n",
 				textLimit, Process->Name,
 				strlen(Process->Name) > textLimit ? "\e8A8A8A..." : "",
 				Process->ID, StatusColor[Process->State.load()],
-				StatusString[Process->State.load()]);
+				StatusString[Process->State.load()],
+				Process->Executable
+					? Process->Executable->Name
+					: "none");
 
 		bool tRdy = false;
 		foreach (auto Thread in Process->Threads)
