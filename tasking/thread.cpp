@@ -309,6 +309,9 @@ namespace Tasking
 		uintptr_t StackPointerReg = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
 		// assert(!(StackPointerReg & 0xF));
 
+		/* Ensure StackPointerReg is aligned to the closest lower 16 bytes boundary */
+		StackPointerReg &= ~0xF;
+
 #if defined(a64)
 		this->Registers.rsp = StackPointerReg;
 #elif defined(a32)
@@ -326,23 +329,6 @@ namespace Tasking
 		DumpData("Stack Data",
 				 (void *)((uintptr_t)this->Stack->GetStackPhysicalTop() - (uintptr_t)SubtractStack),
 				 SubtractStack);
-#endif
-
-#if defined(a64)
-		this->Registers.rdi = (uintptr_t)ArgvSize;										 // argc
-		this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						 // argv
-		this->Registers.rcx = (uintptr_t)EnvpSize;										 // envc
-		this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * ArgvSize) + 8); // envp
-#elif defined(a32)
-		this->Registers.eax = (uintptr_t)ArgvSize;										 // argc
-		this->Registers.ebx = (uintptr_t)(this->Registers.esp + 4);						 // argv
-		this->Registers.ecx = (uintptr_t)EnvpSize;										 // envc
-		this->Registers.edx = (uintptr_t)(this->Registers.esp + 4 + (4 * ArgvSize) + 4); // envp
-#elif defined(aa64)
-		this->Registers.x0 = (uintptr_t)ArgvSize;									   // argc
-		this->Registers.x1 = (uintptr_t)(this->Registers.sp + 8);					   // argv
-		this->Registers.x2 = (uintptr_t)EnvpSize;									   // envc
-		this->Registers.x3 = (uintptr_t)(this->Registers.sp + 8 + (8 * ArgvSize) + 8); // envp
 #endif
 	}
 
