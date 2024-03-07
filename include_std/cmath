@@ -34,4 +34,49 @@ namespace std
 
 		return result;
 	}
+
+	float powf(float base, float exp)
+	{
+		float result = 1.0;
+		for (int i = 0; i < (int)exp; ++i)
+			result *= base;
+		return result;
+	}
+
+	double pow(double base, double exp)
+	{
+		double result = 1.0;
+		for (int i = 0; i < (int)exp; ++i)
+			result *= base;
+		return result;
+	}
+
+	long double powl(long double base, long double exp)
+	{
+		long double result = 1.0;
+		for (long i = 0; i < (long)exp; ++i)
+			result *= base;
+		return result;
+	}
+
+	float fabsf(float num)
+	{
+		if (num < 0)
+			return -num;
+		return num;
+	}
+
+	double fabs(double num)
+	{
+		if (num < 0)
+			return -num;
+		return num;
+	}
+
+	long double fabsl(long double num)
+	{
+		if (num < 0)
+			return -num;
+		return num;
+	}
 }
