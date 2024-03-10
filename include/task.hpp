@@ -253,7 +253,17 @@ namespace Tasking
 		 */
 		uintptr_t TempStack;
 
+		/**
+		 * Used by syscall handler
+		 *
+		 * gs+0x10
+		 */
+		uint8_t Flags;
+
 		/* For future use */
+
+		/* gs+0x11 */
+		uintptr_t Padding : 7;
 		void *SyscallStackBase;
 		int ScPages;
 
