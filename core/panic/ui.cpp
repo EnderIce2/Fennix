@@ -417,9 +417,22 @@ nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
 	case CPU::x86::PageFault:
 	{
 		CPU::x64::PageFaultErrorCode pfCode = {.raw = (uint32_t)Frame->ErrorCode};
-		ExPrint("P:%d W:%d U:%d R:%d I:%d PK:%d SS:%d SGX:%d\n",
+		ExPrint("PFEC: P:%d W:%d U:%d R:%d I:%d PK:%d SS:%d SGX:%d\n",
 				pfCode.P, pfCode.W, pfCode.U, pfCode.R,
 				pfCode.I, pfCode.PK, pfCode.SS, pfCode.SGX);
+
+		{
+			Memory::Virtual vmm((Memory::PageTable *)Frame->cr3);
+			if (vmm.GetMapType((void *)Frame->cr2) != Memory::Virtual::FourKiB)
+				ExPrint("Can't display page at address %#lx\n", Frame->cr2);
+			else
+			{
+				Memory::PageTableEntry *pte = vmm.GetPTE((void *)Frame->cr2);
+				ExPrint("Page %#lx: P:%d W:%d U:%d G:%d NX:%d\n",
+						ALIGN_DOWN(Frame->cr2, 0x1000), pte->Present, pte->ReadWrite,
+						pte->UserSupervisor, pte->Global, pte->ExecuteDisable);
+			}
+		}
 
 		ExPrint("%s", x86PageFaultDescriptions[Frame->ErrorCode & 0b111]);
 		if (Frame->ErrorCode & 0x8)
