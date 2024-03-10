@@ -46,3 +46,6 @@
 - [ ] Optimize the scheduler
 	- Create a separate list for processes that are waiting for a resource or a signal, etc.
 	- Use all cores to schedule threads.
+
+- [ ] Improve Remap() function.
+	- Remove Unmap & Map logic. Remove all flags directly.
