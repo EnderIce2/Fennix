@@ -140,10 +140,9 @@ namespace vfs
 			this->Parent->Children.push_back(this);
 		};
 
-		if (Parent)
-			CreateWithParent(Name, Parent);
-		else if (NoParent)
+		if (NoParent)
 		{
+			Parent = nullptr;
 			const char *Path = Name;
 
 			Node *RootNode = fs->FileSystemRoot->Children[0];
@@ -211,6 +210,8 @@ namespace vfs
 				delete[] SegmentName;
 			} while (cwk_path_get_next_segment(&segment));
 		}
+		else if (Parent)
+			CreateWithParent(Name, Parent);
 		else
 		{
 			this->Name = new char[strlen(Name) + 1];
