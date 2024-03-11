@@ -428,9 +428,9 @@ nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
 			else
 			{
 				Memory::PageTableEntry *pte = vmm.GetPTE((void *)Frame->cr2);
-				ExPrint("Page %#lx: P:%d W:%d U:%d G:%d NX:%d\n",
+				ExPrint("Page %#lx: P:%d W:%d U:%d G:%d CoW:%d NX:%d\n",
 						ALIGN_DOWN(Frame->cr2, 0x1000), pte->Present, pte->ReadWrite,
-						pte->UserSupervisor, pte->Global, pte->ExecuteDisable);
+						pte->UserSupervisor, pte->Global, pte->CopyOnWrite, pte->ExecuteDisable);
 			}
 		}
 
