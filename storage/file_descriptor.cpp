@@ -184,12 +184,10 @@ namespace vfs
 		if (Flags & O_CREAT)
 		{
 			int ret;
+			bool absolute = cwk_path_is_absolute(AbsolutePath);
 			new Node(pcb->CurrentWorkingDirectory,
-					 AbsolutePath,
-					 NodeType::FILE,
-					 cwk_path_is_absolute(AbsolutePath),
-					 fs,
-					 &ret);
+					 AbsolutePath, NodeType::FILE,
+					 absolute, fs, &ret);
 
 			if (ret == -EEXIST)
 			{
