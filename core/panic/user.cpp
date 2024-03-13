@@ -109,7 +109,7 @@ nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 #endif
 
 #if defined(a86)
-	debug("CR8: TPL:%d", cr8.TPL);
+	debug("CR8: TPR:%d", cr8.TPR);
 #endif // defined(a86)
 
 #if defined(a64)
