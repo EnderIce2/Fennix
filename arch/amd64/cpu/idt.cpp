@@ -31,6 +31,9 @@
 extern "C" void MainInterruptHandler(void *Data);
 extern "C" void ExceptionHandler(void *Data);
 
+#define __stub_handler \
+	__naked __used __no_stack_protector __aligned(16)
+
 namespace InterruptDescriptorTable
 {
 	__aligned(8) static IDTGateDescriptor Entries[0x100];
@@ -40,13 +43,10 @@ namespace InterruptDescriptorTable
 		.BaseAddress = Entries,
 	};
 
-	void SetEntry(uint8_t Index,
-				  void (*Base)(),
+	void SetEntry(uint8_t Index, void (*Base)(),
 				  InterruptStackTableType InterruptStackTable,
-				  GateType Gate,
-				  PrivilegeLevelType Ring,
-				  bool Present,
-				  uint16_t SegmentSelector)
+				  GateType Gate, PrivilegeLevelType Ring,
+				  bool Present, uint16_t SegmentSelector)
 	{
 		switch (Gate)
 		{
@@ -110,13 +110,13 @@ namespace InterruptDescriptorTable
 		case BUSY_64BIT_TSS:
 		default:
 		{
-			assert(false);
+			assert(!"Unsupported gate type");
 			break;
 		}
 		}
 	}
 
-	extern "C" __naked __used __no_stack_protector __aligned(16) void ExceptionHandlerStub()
+	extern "C" __stub_handler void ExceptionHandlerStub()
 	{
 		asm("cld\n"
 			"cli\n"
@@ -199,7 +199,7 @@ namespace InterruptDescriptorTable
 			"iretq"); // pop CS RIP RFLAGS SS RSP
 	}
 
-	extern "C" __naked __used __no_stack_protector __aligned(16) void InterruptHandlerStub()
+	extern "C" __stub_handler void InterruptHandlerStub()
 	{
 		asm("cld\n"
 			"cli\n"
@@ -247,27 +247,29 @@ namespace InterruptDescriptorTable
 			"iretq"); // pop CS RIP RFLAGS SS RSP
 	}
 
-#pragma region Exceptions
+#pragma region Interrupt Macros
 
-#define EXCEPTION_HANDLER(num)                                                             \
-	__naked __used __no_stack_protector __aligned(16) static void InterruptHandler_##num() \
-	{                                                                                      \
-		asm("pushq $0\npushq $" #num "\n"                                                  \
-			"jmp ExceptionHandlerStub");                                                   \
+#define EXCEPTION_HANDLER(num)                          \
+	__stub_handler static void InterruptHandler_##num() \
+	{                                                   \
+		asm("pushq $0\n"                                \
+			"pushq $" #num "\n"                         \
+			"jmp ExceptionHandlerStub");                \
 	}
 
-#define EXCEPTION_ERROR_HANDLER(num)                                                       \
-	__naked __used __no_stack_protector __aligned(16) static void InterruptHandler_##num() \
-	{                                                                                      \
-		asm("pushq $" #num "\n"                                                            \
-			"jmp ExceptionHandlerStub");                                                   \
+#define EXCEPTION_ERROR_HANDLER(num)                    \
+	__stub_handler static void InterruptHandler_##num() \
+	{                                                   \
+		asm("pushq $" #num "\n"                         \
+			"jmp ExceptionHandlerStub");                \
 	}
 
-#define INTERRUPT_HANDLER(num)                                                      \
-	__naked __used __no_stack_protector __aligned(16) void InterruptHandler_##num() \
-	{                                                                               \
-		asm("pushq $0\npushq $" #num "\n"                                           \
-			"jmp InterruptHandlerStub\n");                                          \
+#define INTERRUPT_HANDLER(num)                   \
+	__stub_handler void InterruptHandler_##num() \
+	{                                            \
+		asm("pushq $0\n"                         \
+			"pushq $" #num "\n"                  \
+			"jmp InterruptHandlerStub\n");       \
 	}
 
 	/* ISR */
@@ -538,7 +540,7 @@ namespace InterruptDescriptorTable
 	INTERRUPT_HANDLER(0xfe)
 	INTERRUPT_HANDLER(0xff)
 
-#pragma endregion Exceptions
+#pragma endregion Interrupt Macros
 
 	void Init(int Core)
 	{
