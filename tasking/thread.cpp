@@ -508,10 +508,13 @@ namespace Tasking
 			this->Stack = new Memory::StackGuard(true, this->vma);
 
 			gsTCB *gsT = (gsTCB *)this->vma->RequestPages(TO_PAGES(sizeof(gsTCB)));
+#ifdef DEBUG
+			gsT->__stub = 0xFFFFFFFFFFFFFFFF;
+#endif
 
 			gsT->ScPages = TO_PAGES(STACK_SIZE);
 			gsT->SyscallStackBase = this->vma->RequestPages(gsT->ScPages);
-			gsT->SyscallStack = (uintptr_t)gsT->SyscallStackBase + STACK_SIZE - 0x10;
+			gsT->SyscallStack = (void *)((uintptr_t)gsT->SyscallStackBase + STACK_SIZE - 0x10);
 			debug("New syscall stack created: %#lx (base: %#lx) with gs base at %#lx",
 				  gsT->SyscallStack, gsT->SyscallStackBase, gsT);
 

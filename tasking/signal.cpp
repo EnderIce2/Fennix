@@ -452,7 +452,7 @@ namespace Tasking
 		sf->rax = si->tf.rax;
 		sf->Flags = si->tf.rflags.raw;
 		sf->ReturnAddress = si->tf.rip;
-		gs->TempStack = si->tf.rsp;
+		gs->TempStack = (void *)si->tf.rsp;
 
 		SignalMask.store(si->SignalMask);
 

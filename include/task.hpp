@@ -239,38 +239,42 @@ namespace Tasking
 	 */
 	struct gsTCB
 	{
-		/**
-		 * Used by syscall handler
-		 *
+		/** Used by syscall handler
 		 * gs+0x0
 		 */
-		uintptr_t SyscallStack;
+		void *SyscallStack;
 
-		/**
-		 * Used by syscall handler
-		 *
+		/** Used by syscall handler
 		 * gs+0x8
 		 */
-		uintptr_t TempStack;
-
-		/**
-		 * Used by syscall handler
-		 *
-		 * gs+0x10
-		 */
-		uint8_t Flags;
+		void *TempStack;
 
 		/* For future use */
 
-		/* gs+0x11 */
-		uintptr_t Padding : 7;
+		/** Used by syscall handler
+		 * gs+0x10
+		 */
+		uintptr_t Flags;
+
+		/* gs+0x18 */
+		uintptr_t Padding;
+
+		/* gs+0x20 */
 		void *SyscallStackBase;
-		int ScPages;
+
+		/* gs+0x28 */
+		intptr_t ScPages;
 
 		/**
 		 * The current thread class
+		 * gs+0x30
 		 */
 		class TCB *t;
+
+#ifdef DEBUG
+		/* gs+0x38 */
+		uintptr_t __stub;
+#endif
 	};
 
 	class TCB
