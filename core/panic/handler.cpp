@@ -301,7 +301,7 @@ ExceptionExit:
 	ExceptionLock.store(false, std::memory_order_release);
 }
 
-nsa void BaseBufferStackError()
+nsa void BaseBufferStackError(bool Stack)
 {
 	/* We don't need to restore the page table
 		because the ExceptionHandlerStub will
@@ -326,7 +326,7 @@ nsa void BaseBufferStackError()
 	ForceUnlock = true;
 
 	debug("-----------------------------------------------------------------------------------");
-	error("Buffer overflow detected");
+	error("%s", Stack ? "Stack smashing detected" : "Buffer overflow detected");
 	debug("%ld MiB / %ld MiB (%ld MiB Reserved)",
 		  TO_MiB(KernelAllocator.GetUsedMemory()),
 		  TO_MiB(KernelAllocator.GetTotalMemory()),
@@ -335,14 +335,14 @@ nsa void BaseBufferStackError()
 
 nsa __noreturn void HandleStackSmashing()
 {
-	BaseBufferStackError();
+	BaseBufferStackError(true);
 	DisplayStackSmashing();
 	CPU::Stop();
 }
 
 nsa __noreturn void HandleBufferOverflow()
 {
-	BaseBufferStackError();
+	BaseBufferStackError(false);
 	DisplayBufferOverflow();
 	CPU::Stop();
 }
