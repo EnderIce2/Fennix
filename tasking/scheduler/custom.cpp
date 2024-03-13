@@ -680,21 +680,6 @@ namespace Tasking::Scheduler
 
 		CurrentCPU->CurrentProcess->Signals->HandleSignal(Frame);
 
-		switch (CurrentCPU->CurrentProcess->Security.ExecutionMode)
-		{
-		case TaskExecutionMode::System:
-		case TaskExecutionMode::Kernel:
-			// wrmsr(MSR_SHADOW_GS_BASE, (uint64_t)CurrentCPU->CurrentThread);
-			break;
-		case TaskExecutionMode::User:
-			// wrmsr(MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->gs);
-			break;
-		default:
-			error("Unknown trust level %d.",
-				  CurrentCPU->CurrentProcess->Security.ExecutionMode);
-			break;
-		}
-
 		if (!ProcessNotChanged)
 			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetCounter();
 		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetCounter();
@@ -717,27 +702,6 @@ namespace Tasking::Scheduler
 				  CurrentCPU->CurrentThread->Registers.esp);
 #endif
 		}
-
-		schedbg("================================================================");
-		schedbg("Technical Informations on Thread %s[%ld]:",
-				CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID);
-		uintptr_t ds;
-		asmv("mov %%ds, %0"
-			 : "=r"(ds));
-		schedbg("FS=%#lx  GS=%#lx  SS=%#lx  CS=%#lx  DS=%#lx",
-				CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-				Frame->ss, Frame->cs, ds);
-		schedbg("R8=%#lx  R9=%#lx  R10=%#lx  R11=%#lx",
-				Frame->r8, Frame->r9, Frame->r10, Frame->r11);
-		schedbg("R12=%#lx  R13=%#lx  R14=%#lx  R15=%#lx",
-				Frame->r12, Frame->r13, Frame->r14, Frame->r15);
-		schedbg("RAX=%#lx  RBX=%#lx  RCX=%#lx  RDX=%#lx",
-				Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
-		schedbg("RSI=%#lx  RDI=%#lx  RBP=%#lx  RSP=%#lx",
-				Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-		schedbg("RIP=%#lx  RFL=%#lx  INT=%#lx  ERR=%#lx",
-				Frame->rip, Frame->rflags, Frame->InterruptNumber, Frame->ErrorCode);
-		schedbg("================================================================");
 
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
 		CurrentCPU->CurrentProcess->PageTable->Update();
