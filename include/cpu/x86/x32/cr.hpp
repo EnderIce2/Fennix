@@ -141,16 +141,6 @@ namespace CPU
             };
             uint32_t raw;
         } CR4;
-
-        typedef union CR8
-        {
-            struct
-            {
-                /** @brief Task Priority Level */
-                uint32_t TPL : 1;
-            };
-            uint32_t raw;
-        } CR8;
 #if defined(a32)
         nsa static inline CR0 readcr0()
         {

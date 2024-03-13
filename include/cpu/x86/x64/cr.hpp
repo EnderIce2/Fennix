@@ -148,8 +148,10 @@ namespace CPU
         {
             struct
             {
-                /** @brief Task Priority Level */
-                uint64_t TPL : 1;
+                /** @brief Task Priority Register */
+                uint64_t TPR : 4;
+				/** @brief Reserved */
+				uint64_t Reserved : 60;
             };
             uint64_t raw;
         } CR8;
