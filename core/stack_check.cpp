@@ -57,6 +57,8 @@ EXTERNC __constructor __no_stack_protector void __guard_setup(void)
 
 EXTERNC __noreturn __no_stack_protector void __stack_chk_fail(void)
 {
+	CPU::PageTable(KernelPageTable);
+
 	void *Stack = nullptr;
 #if defined(a64)
 	asmv("movq %%rsp, %0"
@@ -76,5 +78,7 @@ EXTERNC __noreturn __no_stack_protector void __stack_chk_fail(void)
 // https://github.com/gcc-mirror/gcc/blob/master/libssp/ssp.c
 EXTERNC __noreturn nsa void __chk_fail(void)
 {
+	CPU::PageTable(KernelPageTable);
+
 	HandleBufferOverflow();
 }
