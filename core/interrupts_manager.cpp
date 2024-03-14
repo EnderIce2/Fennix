@@ -282,19 +282,8 @@ namespace Interrupts
 
 	extern "C" nsa void MainInterruptHandler(void *Data)
 	{
-#if defined(a64)
-		CPU::x64::TrapFrame *Frame = (CPU::x64::TrapFrame *)Data;
-#elif defined(a32)
-		CPU::x32::TrapFrame *Frame = (CPU::x32::TrapFrame *)Data;
-#elif defined(aa64)
-		CPU::aarch64::TrapFrame *Frame = (CPU::aarch64::TrapFrame *)Data;
-#endif
+		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
 		// debug("IRQ%ld", Frame->InterruptNumber - 32);
-
-		CPUData *CoreData = GetCurrentCPU();
-		int Core = 0;
-		if (likely(CoreData != nullptr))
-			Core = CoreData->ID;
 
 		/* If this is false, we have a big problem. */
 		if (unlikely(Frame->InterruptNumber >= CPU::x86::IRQ223 ||
@@ -310,12 +299,12 @@ namespace Interrupts
 			CPU::Stop();
 
 		bool InterruptHandled = false;
+		int iEvNum = -1;
 		foreach (auto &ev in RegisteredEvents)
 		{
+			iEvNum = ev.IRQ;
 #if defined(a86)
-			int iEvNum = ev.IRQ + CPU::x86::IRQ0;
-#elif defined(aa64)
-			int iEvNum = ev.IRQ;
+			iEvNum += CPU::x86::IRQ0;
 #endif
 			if (iEvNum == s_cst(int, Frame->InterruptNumber))
 			{
@@ -335,6 +324,9 @@ namespace Interrupts
 				InterruptHandled = true;
 			}
 		}
+
+		CPUData *CoreData = GetCurrentCPU();
+		int Core = CoreData->ID;
 
 		if (unlikely(!InterruptHandled))
 		{
