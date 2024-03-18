@@ -833,7 +833,7 @@ nsa void UserInput(char *Input)
 		ExPrint("\eAAAAAA  bitmap            - Display the kernel's bitmap.\n");
 		ExPrint("\eCACACA  mem               - Display memory information.\n");
 		ExPrint("\eAAAAAA  dump [addr] [len] - Dump [len] bytes from [addr].\n");
-		ExPrint("\eCACACA  diag			     - Collect diagnostic information.\n");
+		ExPrint("\eCACACA  diag              - Collect diagnostic information.\n");
 		ExPrint("\eAAAAAA  screen            - Display the final output prior to system panic.\n");
 	}
 	else if (strcmp(Input, "clear") == 0)
