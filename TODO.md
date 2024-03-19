@@ -22,8 +22,8 @@
 - [ ] Rework the stack guard.
 - [x] Mutex implementation.
 - [ ] Update SMBIOS functions to support newer versions and actually use it.
-- [ ] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
-- [ ] Implement lazy allocation. (page faults)
+- [x] COW (Copy On Write) for the virtual memory. (https://en.wikipedia.org/wiki/Copy-on-write)
+- [x] Implement lazy allocation. (page faults)
 - [ ] Bootstrap should have a separate bss section + PHDR.
 - [ ] Reimplement the driver conflict detection.
 - [x] Elf loader shouldn't create a full copy of the elf binary. Copy only the needed sections.
@@ -39,7 +39,7 @@
 - [ ] Optimize screen printing.
 	- On real hardware it's very slow, a solution is dirty printing.
 
-- [ ] Thread ids should follow the POSIX standard.
+- [x] Thread ids should follow the POSIX standard.
 	- When a new process is created, the first thread should have the same id as the process id.
 	- If pid is 400, the first thread should have the id 400. The second thread should have the id 401, etc.
 
