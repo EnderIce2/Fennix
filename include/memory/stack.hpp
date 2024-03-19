@@ -19,7 +19,7 @@
 #define __FENNIX_KERNEL_MEMORY_STACK_GUARD_H__
 
 #include <types.h>
-#include <vector>
+#include <list>
 
 #include <memory/table.hpp>
 
@@ -42,10 +42,10 @@ namespace Memory
 		bool UserMode = false;
 		bool Expanded = false;
 		VirtualMemoryArea *vma = nullptr;
-		std::vector<AllocatedPages> AllocatedPagesList;
+		std::list<AllocatedPages> AllocatedPagesList;
 
 	public:
-		std::vector<AllocatedPages> GetAllocatedPages()
+		std::list<AllocatedPages> GetAllocatedPages()
 		{
 			return AllocatedPagesList;
 		}

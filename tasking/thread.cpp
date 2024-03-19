@@ -454,7 +454,7 @@ namespace Tasking
 		else
 			this->SetState(Ready);
 
-		this->vma = new Memory::VirtualMemoryArea(this->Parent->PageTable);
+		this->vma = this->Parent->vma;
 
 #if defined(a64)
 		this->Registers.rip = EntryPoint;
@@ -507,13 +507,13 @@ namespace Tasking
 		{
 			this->Stack = new Memory::StackGuard(true, this->vma);
 
-			gsTCB *gsT = (gsTCB *)this->vma->RequestPages(TO_PAGES(sizeof(gsTCB)));
+			gsTCB *gsT = (gsTCB *)this->vma->RequestPages(TO_PAGES(sizeof(gsTCB)), false, true);
 #ifdef DEBUG
 			gsT->__stub = 0xFFFFFFFFFFFFFFFF;
 #endif
 
 			gsT->ScPages = TO_PAGES(STACK_SIZE);
-			gsT->SyscallStackBase = this->vma->RequestPages(gsT->ScPages);
+			gsT->SyscallStackBase = this->vma->RequestPages(gsT->ScPages, false, true);
 			gsT->SyscallStack = (void *)((uintptr_t)gsT->SyscallStackBase + STACK_SIZE - 0x10);
 			debug("New syscall stack created: %#lx (base: %#lx) with gs base at %#lx",
 				  gsT->SyscallStack, gsT->SyscallStackBase, gsT);
@@ -640,9 +640,6 @@ namespace Tasking
 
 		/* Free CPU Stack */
 		delete this->Stack;
-
-		/* Free all allocated memory */
-		delete this->vma;
 
 		/* Free Name */
 		delete[] this->Name;

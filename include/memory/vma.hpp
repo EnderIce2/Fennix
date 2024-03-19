@@ -22,12 +22,13 @@
 #include <filesystem.hpp>
 #include <bitmap.hpp>
 #include <lock.hpp>
-#include <vector>
+#include <list>
 
 #include <memory/table.hpp>
 
 namespace Memory
 {
+
 	class VirtualMemoryArea
 	{
 	public:
@@ -35,6 +36,7 @@ namespace Memory
 		{
 			void *Address;
 			size_t PageCount;
+			bool Protected;
 		};
 
 		struct SharedRegion
@@ -49,30 +51,15 @@ namespace Memory
 	private:
 		NewLock(MgrLock);
 		Bitmap PageBitmap;
-		PageTable *Table;
 
-		std::vector<AllocatedPages> AllocatedPagesList;
-		std::vector<SharedRegion> SharedRegions;
+		std::list<AllocatedPages> AllocatedPagesList;
+		std::list<SharedRegion> SharedRegions;
 
 	public:
-		PageTable *GetTable() { return Table; }
-		void SetTable(PageTable *Table) { this->Table = Table; }
-
-		std::vector<AllocatedPages> &GetAllocatedPagesList()
-		{
-			return AllocatedPagesList;
-		}
-
-		std::vector<SharedRegion> &GetSharedRegions()
-		{
-			return SharedRegions;
-		}
-
+		PageTable *Table = nullptr;
 		uint64_t GetAllocatedMemorySize();
 
-		bool Add(void *Address, size_t Count);
-
-		void *RequestPages(size_t Count, bool User = false);
+		void *RequestPages(size_t Count, bool User = false, bool Protect = false);
 		void FreePages(void *Address, size_t Count);
 		void DetachAddress(void *Address);
 
@@ -88,18 +75,45 @@ namespace Memory
 		 * @param Shared Shared region
 		 * @return Address of the region
 		 */
-		void *CreateCoWRegion(void *Address,
-							  size_t Length,
+		void *CreateCoWRegion(void *Address, size_t Length,
 							  bool Read, bool Write, bool Exec,
 							  bool Fixed, bool Shared);
 
 		bool HandleCoW(uintptr_t PFA);
-
 		void FreeAllPages();
-
 		void Fork(VirtualMemoryArea *Parent);
 
-		VirtualMemoryArea(PageTable *Table = nullptr);
+		void Reserve(void *Address, size_t Length);
+		void Unreserve(void *Address, size_t Length);
+
+		int Map(void *VirtualAddress, void *PhysicalAddress,
+				size_t Length, uint64_t Flags);
+		int Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags);
+		int Unmap(void *VirtualAddress, size_t Length);
+		void *__UserCheckAndGetAddress(void *Address, size_t Length);
+		int __UserCheck(void *Address, size_t Length);
+
+		template <typename T>
+		T UserCheckAndGetAddress(T Address, size_t Length = 0)
+		{
+			if (Length == 0)
+				Length = sizeof(T);
+
+			void *PhysAddr = __UserCheckAndGetAddress((void *)Address, Length);
+			if (PhysAddr == nullptr)
+				return {};
+			return T(PhysAddr);
+		}
+
+		template <typename T>
+		int UserCheck(T Address, size_t Length = 0)
+		{
+			if (Length == 0)
+				Length = sizeof(T);
+			return __UserCheck((void *)Address, Length);
+		}
+
+		VirtualMemoryArea(PageTable *Table);
 		~VirtualMemoryArea();
 	};
 }

@@ -59,7 +59,7 @@ namespace Memory
 		CoW = 1 << 9,
 
 		/** @brief Available 1 */
-		AVL1 = 1 << 10,
+		KRsv = 1 << 10,
 
 		/** @brief Available 2 */
 		AVL2 = 1 << 11,
@@ -119,7 +119,7 @@ namespace Memory
 			uintptr_t PageAttributeTable : 1; // 7
 			uintptr_t Global : 1;			  // 8
 			uintptr_t CopyOnWrite : 1;		  // 9
-			uintptr_t Available1 : 1;		  // 10
+			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t Address : 40;			  // 12-51
 			uintptr_t Available3 : 1;		  // 52
@@ -142,7 +142,7 @@ namespace Memory
 			uintptr_t PageAttributeTable : 1; // 7
 			uintptr_t Global : 1;			  // 8
 			uintptr_t CopyOnWrite : 1;		  // 9
-			uintptr_t Available1 : 1;		  // 10
+			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t Address : 20;			  // 12-31
 #elif defined(aa64)
@@ -204,9 +204,22 @@ namespace Memory
 			uintptr_t Accessed : 1;		  // 5
 			uintptr_t CopyOnWrite : 1;	  // 6
 			uintptr_t PageSize : 1;		  // 7
-			uintptr_t Available1 : 4;	  // 8-11
+			uintptr_t KernelReserve : 1;  // 8
+			uintptr_t Available2 : 1;	  // 9
+			uintptr_t Available3 : 1;	  // 10
+			uintptr_t Available4 : 1;	  // 11
 			uintptr_t Address : 40;		  // 12-51
-			uintptr_t Available2 : 11;	  // 52-62
+			uintptr_t Available5 : 1;	  // 52
+			uintptr_t Available6 : 1;	  // 53
+			uintptr_t Available7 : 1;	  // 54
+			uintptr_t Available8 : 1;	  // 55
+			uintptr_t Available9 : 1;	  // 56
+			uintptr_t Available10 : 1;	  // 57
+			uintptr_t Available11 : 1;	  // 58
+			uintptr_t Available12 : 1;	  // 59
+			uintptr_t Available13 : 1;	  // 60
+			uintptr_t Available14 : 1;	  // 61
+			uintptr_t Available15 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
 
@@ -222,7 +235,7 @@ namespace Memory
 			uintptr_t PageSize : 1;			  // 7
 			uintptr_t Global : 1;			  // 8
 			uintptr_t CopyOnWrite : 1;		  // 9
-			uintptr_t Available1 : 1;		  // 10
+			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t PageAttributeTable : 1; // 12
 			uintptr_t Reserved0 : 8;		  // 13-20
@@ -248,7 +261,10 @@ namespace Memory
 			uintptr_t Accessed : 1;		  // 5
 			uintptr_t CopyOnWrite : 1;	  // 6
 			uintptr_t PageSize : 1;		  // 7
-			uintptr_t Available1 : 4;	  // 8-11
+			uintptr_t KernelReserve : 1;  // 8
+			uintptr_t Available2 : 1;	  // 9
+			uintptr_t Available3 : 1;	  // 10
+			uintptr_t Available4 : 1;	  // 11
 			uintptr_t Address : 20;		  // 12-31
 		};
 
@@ -264,7 +280,7 @@ namespace Memory
 			uintptr_t PageSize : 1;			  // 7
 			uintptr_t Global : 1;			  // 8
 			uintptr_t CopyOnWrite : 1;		  // 9
-			uintptr_t Available1 : 1;		  // 10
+			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t PageAttributeTable : 1; // 12
 			uintptr_t Address0 : 8;			  // 13-20
@@ -324,9 +340,22 @@ namespace Memory
 			uintptr_t Accessed : 1;		  // 5
 			uintptr_t CopyOnWrite : 1;	  // 6
 			uintptr_t PageSize : 1;		  // 7
-			uintptr_t Available1 : 4;	  // 8-11
+			uintptr_t KernelReserve : 1;  // 8
+			uintptr_t Available2 : 1;	  // 9
+			uintptr_t Available3 : 1;	  // 10
+			uintptr_t Available4 : 1;	  // 11
 			uintptr_t Address : 40;		  // 12-51
-			uintptr_t Available2 : 11;	  // 52-62
+			uintptr_t Available5 : 1;	  // 52
+			uintptr_t Available6 : 1;	  // 53
+			uintptr_t Available7 : 1;	  // 54
+			uintptr_t Available8 : 1;	  // 55
+			uintptr_t Available9 : 1;	  // 56
+			uintptr_t Available10 : 1;	  // 57
+			uintptr_t Available11 : 1;	  // 58
+			uintptr_t Available12 : 1;	  // 59
+			uintptr_t Available13 : 1;	  // 60
+			uintptr_t Available14 : 1;	  // 61
+			uintptr_t Available15 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
 
@@ -342,7 +371,7 @@ namespace Memory
 			uintptr_t PageSize : 1;			  // 7
 			uintptr_t Global : 1;			  // 8
 			uintptr_t CopyOnWrite : 1;		  // 9
-			uintptr_t Available1 : 1;		  // 10
+			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t PageAttributeTable : 1; // 12
 			uintptr_t Reserved0 : 17;		  // 13-29
@@ -406,9 +435,22 @@ namespace Memory
 			uintptr_t Accessed : 1;		  // 5
 			uintptr_t CopyOnWrite : 1;	  // 6
 			uintptr_t Reserved0 : 1;	  // 7
-			uintptr_t Available1 : 4;	  // 8-11
+			uintptr_t KernelReserve : 1;  // 8
+			uintptr_t Available2 : 1;	  // 9
+			uintptr_t Available3 : 1;	  // 10
+			uintptr_t Available4 : 1;	  // 11
 			uintptr_t Address : 40;		  // 12-51
-			uintptr_t Available2 : 11;	  // 52-62
+			uintptr_t Available5 : 1;	  // 52
+			uintptr_t Available6 : 1;	  // 53
+			uintptr_t Available7 : 1;	  // 54
+			uintptr_t Available8 : 1;	  // 55
+			uintptr_t Available9 : 1;	  // 56
+			uintptr_t Available10 : 1;	  // 57
+			uintptr_t Available11 : 1;	  // 58
+			uintptr_t Available12 : 1;	  // 59
+			uintptr_t Available13 : 1;	  // 60
+			uintptr_t Available14 : 1;	  // 61
+			uintptr_t Available15 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
 #elif defined(aa64)
@@ -460,9 +502,22 @@ namespace Memory
 			uintptr_t Accessed : 1;		  // 5
 			uintptr_t Available0 : 1;	  // 6
 			uintptr_t Reserved0 : 1;	  // 7
-			uintptr_t Available1 : 4;	  // 8-11
+			uintptr_t KernelReserve : 1;  // 8
+			uintptr_t Available1 : 1;	  // 9
+			uintptr_t Available2 : 1;	  // 10
+			uintptr_t Available3 : 1;	  // 11
 			uintptr_t Address : 40;		  // 12-51
-			uintptr_t Available2 : 11;	  // 52-62
+			uintptr_t Available4 : 1;	  // 52
+			uintptr_t Available5 : 1;	  // 53
+			uintptr_t Available6 : 1;	  // 54
+			uintptr_t Available7 : 1;	  // 55
+			uintptr_t Available8 : 1;	  // 56
+			uintptr_t Available9 : 1;	  // 57
+			uintptr_t Available10 : 1;	  // 58
+			uintptr_t Available11 : 1;	  // 59
+			uintptr_t Available12 : 1;	  // 60
+			uintptr_t Available13 : 1;	  // 61
+			uintptr_t Available14 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
 #elif defined(aa64)

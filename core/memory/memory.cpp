@@ -122,13 +122,13 @@ NIF void MapFramebuffer(PageTable *PT)
 		{
 			vmm.OptimizedMap(bInfo.Framebuffer[itrfb].BaseAddress,
 							 bInfo.Framebuffer[itrfb].BaseAddress,
-							 fbSize, RW | G);
+							 fbSize, RW | G | KRsv);
 		}
 		else
 		{
 			vmm.Map(bInfo.Framebuffer[itrfb].BaseAddress,
 					bInfo.Framebuffer[itrfb].BaseAddress,
-					fbSize, RW | G);
+					fbSize, RW | G | KRsv);
 		}
 		itrfb++;
 	}
@@ -190,7 +190,7 @@ NIF void MapKernel(PageTable *PT)
 	{
 		for (k = BootstrapStart; k < BootstrapEnd; k += PAGE_SIZE)
 		{
-			vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
+			vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G | KRsv);
 			KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 			BaseKernelMapAddress += PAGE_SIZE;
 		}
@@ -204,7 +204,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Text section */
 	for (k = KernelTextStart; k < KernelTextEnd; k += PAGE_SIZE)
 	{
-		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G | KRsv);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -212,7 +212,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Data section */
 	for (k = KernelDataStart; k < KernelDataEnd; k += PAGE_SIZE)
 	{
-		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G | KRsv);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -220,7 +220,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Read only data section */
 	for (k = KernelRoDataStart; k < KernelRoDataEnd; k += PAGE_SIZE)
 	{
-		vmm.Map((void *)k, (void *)BaseKernelMapAddress, G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, G | KRsv);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -228,7 +228,7 @@ NIF void MapKernel(PageTable *PT)
 	/* Block starting symbol section */
 	for (k = KernelBssStart; k < KernelBssEnd; k += PAGE_SIZE)
 	{
-		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G);
+		vmm.Map((void *)k, (void *)BaseKernelMapAddress, RW | G | KRsv);
 		KernelAllocator.ReservePage((void *)BaseKernelMapAddress);
 		BaseKernelMapAddress += PAGE_SIZE;
 	}
@@ -240,7 +240,7 @@ NIF void MapKernel(PageTable *PT)
 	{
 		for (k = KernelFileStart; k < KernelFileEnd; k += PAGE_SIZE)
 		{
-			vmm.Map((void *)k, (void *)k, G);
+			vmm.Map((void *)k, (void *)k, G | KRsv);
 			KernelAllocator.ReservePage((void *)k);
 		}
 	}

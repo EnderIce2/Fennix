@@ -424,13 +424,14 @@ nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
 		{
 			Memory::Virtual vmm((Memory::PageTable *)Frame->cr3);
 			if (vmm.GetMapType((void *)Frame->cr2) != Memory::Virtual::FourKiB)
-				ExPrint("Can't display page at address %#lx\n", Frame->cr2);
+				ExPrint("Can't display page %#lx\n", Frame->cr2);
 			else
 			{
 				Memory::PageTableEntry *pte = vmm.GetPTE((void *)Frame->cr2);
-				ExPrint("Page %#lx: P:%d W:%d U:%d G:%d CoW:%d NX:%d\n",
+				ExPrint("Page %#lx: P:%d W:%d U:%d G:%d CoW:%d KRsv:%d NX:%d\n",
 						ALIGN_DOWN(Frame->cr2, 0x1000), pte->Present, pte->ReadWrite,
-						pte->UserSupervisor, pte->Global, pte->CopyOnWrite, pte->ExecuteDisable);
+						pte->UserSupervisor, pte->Global, pte->CopyOnWrite,
+						pte->KernelReserve, pte->ExecuteDisable);
 			}
 		}
 

@@ -65,9 +65,14 @@ void linux_fork_return(void *tableAddr)
 static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 {
 	PCB *pcb = thisProcess;
-	void *pBuf = pcb->PageTable->Get(buf);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	void *pBuf = vma->UserCheckAndGetAddress(buf, count);
+	if (pBuf == nullptr)
+		return -EFAULT;
 
 	function("%d, %p, %d", fd, buf, count);
+
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	ssize_t ret = fdt->_read(fd, pBuf, count);
 	if (ret >= 0)
@@ -79,9 +84,14 @@ static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 {
 	PCB *pcb = thisProcess;
-	const void *pBuf = pcb->PageTable->Get((void *)buf);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const void *pBuf = vma->UserCheckAndGetAddress(buf, count);
+	if (pBuf == nullptr)
+		return -EFAULT;
 
 	function("%d, %p, %d", fd, buf, count);
+
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	ssize_t ret = fdt->_write(fd, pBuf, count);
 	if (ret)
@@ -93,7 +103,11 @@ static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 {
 	PCB *pcb = thisProcess;
-	const char *pPathname = pcb->PageTable->Get(pathname);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const char *pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
+	if (pPathname == nullptr)
+		return -EFAULT;
 
 	function("%s, %d, %d", pPathname, flags, mode);
 
@@ -130,14 +144,11 @@ static int linux_stat(SysFrm *, const char *pathname, struct stat *statbuf)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)pathname, Memory::US))
-	{
-		debug("Invalid address %#lx", pathname);
+	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
+	if (pPathname == nullptr)
 		return -EFAULT;
-	}
-	auto pPathname = pcb->PageTable->Get(pathname);
 
 	return fdt->_stat(pPathname, statbuf);
 }
@@ -148,14 +159,11 @@ static int linux_fstat(SysFrm *, int fd, struct stat *statbuf)
 #undef fstat
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)statbuf, Memory::US))
-	{
-		debug("Invalid address %#lx", statbuf);
+	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	if (pStatbuf == nullptr)
 		return -EFAULT;
-	}
-	auto pStatbuf = pcb->PageTable->Get(statbuf);
 
 	return fdt->_fstat(fd, pStatbuf);
 }
@@ -166,22 +174,12 @@ static int linux_lstat(SysFrm *, const char *pathname, struct stat *statbuf)
 #undef lstat
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)pathname, Memory::US))
-	{
-		debug("Invalid address %#lx", pathname);
+	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
+	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
-	}
-
-	if (!vmm.Check((void *)statbuf, Memory::US))
-	{
-		debug("Invalid address %#lx", statbuf);
-		return -EFAULT;
-	}
-
-	auto pPathname = pcb->PageTable->Get(pathname);
-	auto pStatbuf = pcb->PageTable->Get(statbuf);
 
 	return fdt->_lstat(pPathname, pStatbuf);
 }
@@ -291,7 +289,6 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 
 		if (p_Read)
 		{
-			Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
 			void *pBuf = vma->RequestPages(TO_PAGES(length));
 			debug("created buffer at %#lx-%#lx",
 				  pBuf, (uintptr_t)pBuf + length);
@@ -305,30 +302,34 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 				if (m_Shared)
 					return (void *)-ENOSYS;
 
-				if (vmm.CheckRegion(addr, Memory::G))
+				int mRet = vma->Map(addr, pBuf, length, mFlags);
+				if (mRet < 0)
 				{
-					debug("Address range %#lx-%#lx has a global page",
-						  addr, (uintptr_t)addr + length);
-					// return (void *)-EINVAL;
+					debug("Failed to map file: %s", strerror(mRet));
+					return (void *)(uintptr_t)mRet;
 				}
-
-				vmm.Map(addr, pBuf, length, mFlags);
 				off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
 				fdt->_lseek(fildes, offset, SEEK_SET);
 
 				ssize_t ret = fdt->_read(fildes, pBuf, length);
-
 				fdt->_lseek(fildes, oldOff, SEEK_SET);
 
 				if (ret < 0)
 				{
 					debug("Failed to read file");
-					return (void *)-ret;
+					return (void *)ret;
 				}
 				return addr;
 			}
 			else
-				vmm.Map(pBuf, pBuf, length, mFlags);
+			{
+				int mRet = vma->Map(pBuf, pBuf, length, mFlags);
+				if (mRet < 0)
+				{
+					debug("Failed to map file: %s", strerror(mRet));
+					return (void *)(uintptr_t)mRet;
+				}
+			}
 
 			off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
 			fdt->_lseek(fildes, offset, SEEK_SET);
@@ -340,7 +341,7 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 			if (ret < 0)
 			{
 				debug("Failed to read file");
-				return (void *)-ret;
+				return (void *)ret;
 			}
 			return pBuf;
 		}
@@ -349,10 +350,9 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 		return (void *)-ENOSYS;
 	}
 
-	intptr_t ret = (intptr_t)vma->CreateCoWRegion(addr, length,
-												  p_Read, p_Write, p_Exec,
-												  m_Fixed, m_Shared);
-
+	void *ret = vma->CreateCoWRegion(addr, length,
+									 p_Read, p_Write, p_Exec,
+									 m_Fixed, m_Shared);
 	return (void *)ret;
 }
 #undef __FENNIX_KERNEL_SYSCALLS_LIST_H__
@@ -378,58 +378,56 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		 i < uintptr_t(addr) + len;
 		 i += PAGE_SIZE)
 	{
-		if (likely(!vmm.Check((void *)i, Memory::G)))
-		{
-			Memory::PageTableEntry *pte = vmm.GetPTE(addr);
-			if (pte == nullptr)
-			{
-				debug("Page %#lx is not mapped inside %#lx",
-					  (void *)i, pcb->PageTable);
-				fixme("Page %#lx is not mapped", (void *)i);
-				continue;
-				return -ENOMEM;
-			}
-
-			if (!pte->Present ||
-				(!pte->UserSupervisor && p_Read) ||
-				(!pte->ReadWrite && p_Write))
-			{
-				debug("Page %p is not mapped with the correct permissions",
-					  (void *)i);
-				return -EACCES;
-			}
-
-			// pte->Present = !p_None;
-			pte->UserSupervisor = p_Read;
-			pte->ReadWrite = p_Write;
-			// pte->ExecuteDisable = p_Exec;
-
-			debug("Changed permissions of page %#lx to %s %s %s %s",
-				  (void *)i,
-				  (prot & sc_PROT_NONE) ? "None" : "",
-				  p_Read ? "Read" : "",
-				  p_Write ? "Write" : "",
-				  (prot & sc_PROT_EXEC) ? "Exec" : "");
-
-#if defined(a64)
-			CPU::x64::invlpg(addr);
-#elif defined(a32)
-			CPU::x32::invlpg(addr);
-#elif defined(aa64)
-			asmv("dsb sy");
-			asmv("tlbi vae1is, %0"
-				 :
-				 : "r"(addr)
-				 : "memory");
-			asmv("dsb sy");
-			asmv("isb");
-#endif
-		}
-		else
+		if (unlikely(vmm.Check((void *)i, Memory::G)))
 		{
 			warn("%p is a global page", (void *)i);
 			return -ENOMEM;
 		}
+
+		Memory::PageTableEntry *pte = vmm.GetPTE(addr);
+		if (pte == nullptr)
+		{
+			debug("Page %#lx is not mapped inside %#lx",
+				  (void *)i, pcb->PageTable);
+			fixme("Page %#lx is not mapped", (void *)i);
+			continue;
+			return -ENOMEM;
+		}
+
+		if (!pte->Present ||
+			(!pte->UserSupervisor && p_Read) ||
+			(!pte->ReadWrite && p_Write))
+		{
+			debug("Page %p is not mapped with the correct permissions",
+				  (void *)i);
+			return -EACCES;
+		}
+
+		// pte->Present = !p_None;
+		pte->UserSupervisor = p_Read;
+		pte->ReadWrite = p_Write;
+		// pte->ExecuteDisable = p_Exec;
+
+		debug("Changed permissions of page %#lx to %s %s %s %s",
+			  (void *)i,
+			  (prot & sc_PROT_NONE) ? "None" : "",
+			  p_Read ? "Read" : "",
+			  p_Write ? "Write" : "",
+			  (prot & sc_PROT_EXEC) ? "Exec" : "");
+
+#if defined(a64)
+		CPU::x64::invlpg(addr);
+#elif defined(a32)
+		CPU::x32::invlpg(addr);
+#elif defined(aa64)
+		asmv("dsb sy");
+		asmv("tlbi vae1is, %0"
+			 :
+			 : "r"(addr)
+			 : "memory");
+		asmv("dsb sy");
+		asmv("isb");
+#endif
 	}
 
 	return 0;
@@ -446,21 +444,7 @@ static int linux_munmap(SysFrm *, void *addr, size_t length)
 
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
-
-	for (uintptr_t i = uintptr_t(addr);
-		 i < uintptr_t(addr) + length;
-		 i += PAGE_SIZE)
-	{
-		if (likely(!vmm.Check((void *)i, Memory::G)))
-			vmm.Remap((void *)i, (void *)i, Memory::P | Memory::RW);
-		else
-			warn("%p is a global page", (void *)i);
-	}
-
-	/* TODO: Check if the page is allocated
-				and not only mapped */
-	vma->FreePages((void *)addr, TO_PAGES(length) + 1);
+	vma->FreePages((void *)addr, TO_PAGES(length));
 	return 0;
 }
 
@@ -478,14 +462,11 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)argp, Memory::US))
-	{
-		debug("Invalid address %#lx", argp);
+	auto pArgp = vma->UserCheckAndGetAddress(argp);
+	if (pArgp == nullptr)
 		return -EFAULT;
-	}
-	auto pArgp = pcb->PageTable->Get(argp);
 
 	return fdt->_ioctl(fd, request, pArgp);
 }
@@ -494,7 +475,11 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
 	PCB *pcb = thisProcess;
-	const struct iovec *pIov = pcb->PageTable->Get(iov);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const struct iovec *pIov = vma->UserCheckAndGetAddress(iov, sizeof(struct iovec) * iovcnt);
+	if (pIov == nullptr)
+		return -EFAULT;
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
@@ -533,7 +518,11 @@ static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int 
 static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
 	PCB *pcb = thisProcess;
-	const struct iovec *pIov = pcb->PageTable->Get(iov);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const struct iovec *pIov = vma->UserCheckAndGetAddress(iov, sizeof(struct iovec) * iovcnt);
+	if (pIov == nullptr)
+		return -EFAULT;
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
@@ -572,10 +561,14 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 static int linux_access(SysFrm *, const char *pathname, int mode)
 {
 	PCB *pcb = thisProcess;
-	auto pPathname = pcb->PageTable->Get(pathname);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pPathname = vma->UserCheckAndGetAddress(pathname);
+	if (pPathname == nullptr)
+		return -EFAULT;
 
 	stub;
-	debug("access(%s, %d)", (char *)pPathname, mode);
+	fixme("access(%s, %d)", (char *)pPathname, mode);
 	return 0;
 }
 
@@ -583,7 +576,9 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 static int linux_pipe(SysFrm *, int pipefd[2])
 {
 	PCB *pcb = thisProcess;
-	int *pPipefd = pcb->PageTable->Get(pipefd);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	int *pPipefd = vma->UserCheckAndGetAddress(pipefd);
 	debug("pipefd=%#lx", pPipefd);
 	fixme("pipefd=[%d, %d]", pPipefd[0], pPipefd[1]);
 	return -ENOSYS;
@@ -618,22 +613,12 @@ static int linux_nanosleep(SysFrm *,
 						   struct timespec *rem)
 {
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)req, Memory::US))
-	{
-		debug("Invalid address %#lx", req);
+	auto pReq = vma->UserCheckAndGetAddress(req);
+	auto pRem = vma->UserCheckAndGetAddress(rem);
+	if (pReq == nullptr || pRem == nullptr)
 		return -EFAULT;
-	}
-
-	if (rem && !vmm.Check((void *)rem, Memory::US))
-	{
-		debug("Invalid address %#lx", rem);
-		return -EFAULT;
-	}
-
-	auto pReq = pcb->PageTable->Get(req);
-	auto pRem = rem ? pcb->PageTable->Get(rem) : 0;
 
 	if (pReq->tv_nsec < 0 || pReq->tv_nsec > 999999999)
 	{
@@ -711,7 +696,7 @@ static pid_t linux_fork(SysFrm *sf)
 	}
 
 	NewProcess->PageTable = Parent->PageTable->Fork();
-	NewProcess->vma->SetTable(NewProcess->PageTable);
+	NewProcess->vma->Table = NewProcess->PageTable;
 	NewProcess->vma->Fork(Parent->vma);
 	NewProcess->ProgramBreak->SetTable(NewProcess->PageTable);
 	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
@@ -778,64 +763,36 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	/* FIXME: exec doesn't follow the UNIX standard
 		The pid, open files, etc. should be preserved */
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (pathname == nullptr ||
-		!vmm.Check((void *)pathname, Memory::US) ||
-		!vmm.Check((void *)argv, Memory::US) ||
-		!vmm.Check((void *)envp, Memory::US))
-		return -ENOENT;
-
-	if (!vmm.Check((void *)pathname, Memory::US))
-	{
-		debug("Invalid address %#lx", pathname);
+	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
+	auto pArgv = vma->UserCheckAndGetAddress(argv, 1/*MAX_ARG*/); /* MAX_ARG is too much? */
+	auto pEnvp = vma->UserCheckAndGetAddress(envp, 1/*MAX_ARG*/);
+	if (pPathname == nullptr || pArgv == nullptr || pEnvp == nullptr)
 		return -EFAULT;
-	}
-
-	if (!vmm.Check((void *)argv, Memory::US))
-	{
-		debug("Invalid address %#lx", argv);
-		return -EFAULT;
-	}
-
-	if (!vmm.Check((void *)envp, Memory::US))
-	{
-		debug("Invalid address %#lx", envp);
-		return -EFAULT;
-	}
-
-	auto pPathname = pcb->PageTable->Get(pathname);
-	auto pArgv = pcb->PageTable->Get(argv);
-	auto pEnvp = pcb->PageTable->Get(envp);
 
 	function("%s %#lx %#lx", pPathname, pArgv, pEnvp);
 
 	int argvLen = 0;
 	for (argvLen = 0; MAX_ARG; argvLen++)
 	{
+		if (vma->UserCheck(pArgv[argvLen]) < 0)
+			break;
+
 		auto arg = pcb->PageTable->Get(pArgv[argvLen]);
 		if (arg == nullptr)
 			break;
-
-		if (!vmm.Check((void *)arg, Memory::US))
-		{
-			debug("Invalid address %#lx", arg);
-			return -EFAULT;
-		}
 	}
 
 	int envpLen = 0;
 	for (envpLen = 0; MAX_ARG; envpLen++)
 	{
+		if (vma->UserCheck(pEnvp[envpLen]) < 0)
+			break;
+
 		auto arg = pcb->PageTable->Get(pEnvp[envpLen]);
 		if (arg == nullptr)
 			break;
-
-		if (!vmm.Check((void *)arg, Memory::US))
-		{
-			debug("Invalid address %#lx", arg);
-			return -EFAULT;
-		}
 	}
 
 	char **safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(argvLen * sizeof(char *)));
@@ -1011,13 +968,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 		inefficient and should be rewritten */
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
-
-	if (!vmm.Check(rusage, Memory::US) && rusage != nullptr)
-	{
-		debug("Invalid address %#lx", rusage);
-		return -EFAULT;
-	}
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (pid == -1)
 	{
@@ -1052,7 +1003,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 					size_t uTime = child->Info.UserTime;
 					size_t _maxrss = child->GetSize();
 
-					struct rusage *pRusage = pcb->PageTable->Get(rusage);
+					struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
+					if (pRusage == nullptr)
+						return -EFAULT;
 
 					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1071,7 +1024,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 			{
 				if (wstatus != nullptr)
 				{
-					int *pWstatus = pcb->PageTable->Get(wstatus);
+					int *pWstatus = vma->UserCheckAndGetAddress(wstatus);
+					if (pWstatus == nullptr)
+						return -EFAULT;
 					*pWstatus = 0;
 
 					bool ProcessExited = true;
@@ -1098,7 +1053,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 					size_t uTime = child->Info.UserTime;
 					size_t _maxrss = child->GetSize();
 
-					struct rusage *pRusage = pcb->PageTable->Get(rusage);
+					struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
+					if (pRusage == nullptr)
+						return -EFAULT;
 
 					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1172,7 +1129,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 
 	if (wstatus != nullptr)
 	{
-		int *pWstatus = pcb->PageTable->Get(wstatus);
+		int *pWstatus = vma->UserCheckAndGetAddress(wstatus);
+		if (pWstatus == nullptr)
+			return -EFAULT;
 		*pWstatus = 0;
 
 		bool ProcessExited = true;
@@ -1211,7 +1170,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 		size_t uTime = tPcb->Info.UserTime;
 		size_t _maxrss = tPcb->GetSize();
 
-		struct rusage *pRusage = pcb->PageTable->Get(rusage);
+		struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
+		if (pRusage == nullptr)
+			return -EFAULT;
 
 		pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 		pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1265,15 +1226,11 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 	assert(sizeof(struct utsname) < PAGE_SIZE);
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check(buf, Memory::US))
-	{
-		debug("Invalid address %#lx", buf);
+	auto pBuf = vma->UserCheckAndGetAddress(buf);
+	if (pBuf == nullptr)
 		return -EFAULT;
-	}
-
-	auto pBuf = pcb->PageTable->Get(buf);
 
 	struct utsname uname =
 	{
@@ -1337,11 +1294,11 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 	return 0;
 }
 
+/* https://man7.org/linux/man-pages/man2/fcntl.2.html */
 static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
 
 	switch (cmd)
 	{
@@ -1386,9 +1343,13 @@ static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
 static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 {
 	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 	fixme("semi-stub");
 
-	const char *pPathname = pcb->PageTable->Get(pathname);
+	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
+	if (!pPathname)
+		return -EFAULT;
+
 	vfs::Node *n = fs->Create(pPathname, vfs::DIRECTORY, pcb->CurrentWorkingDirectory);
 	if (!n)
 		return -EEXIST;
@@ -1409,15 +1370,13 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 	}
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
-	if (!vmm.Check((void *)buf, Memory::US))
-	{
-		warn("Invalid address %#lx", buf);
-		return -EFAULT;
-	}
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	const char *pPath = pcb->PageTable->Get(pathname);
-	char *pBuf = pcb->PageTable->Get(buf);
+	const char *pPath = vma->UserCheckAndGetAddress(pathname);
+	char *pBuf = vma->UserCheckAndGetAddress(buf);
+	if (pPath == nullptr || pBuf == nullptr)
+		return -EFAULT;
+
 	function("%s %#lx %ld", pPath, buf, bufsiz);
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	int fd = fdt->_open(pPath, O_RDONLY, 0);
@@ -1479,19 +1438,10 @@ static pid_t linux_getppid(SysFrm *)
 static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 {
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check((void *)addr))
-	{
-		debug("Invalid address %#lx", addr);
+	if (vma->UserCheck(addr) < 0)
 		return -EFAULT;
-	}
-
-	if (!vmm.Check((void *)addr, Memory::US))
-	{
-		debug("Address %#lx is not user accessible", addr);
-		return -EPERM;
-	}
 
 	switch (code)
 	{
@@ -1577,6 +1527,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	}
 
 	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	debug("cmd=%#x arg=%#lx", cmd, arg);
 	switch ((unsigned int)cmd)
@@ -1610,14 +1561,10 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	}
 	case LINUX_REBOOT_CMD_RESTART2:
 	{
-		Memory::Virtual vmm(pcb->PageTable);
-		if (!vmm.Check(arg, Memory::US))
-		{
-			debug("Invalid address %#lx", arg);
+		void *pArg = vma->__UserCheckAndGetAddress(arg, sizeof(void *));
+		if (pArg == nullptr)
 			return -EFAULT;
-		}
 
-		void *pArg = pcb->PageTable->Get(arg);
 		KPrint("Restarting system with command '%s'",
 			   (const char *)pArg);
 
@@ -1656,24 +1603,17 @@ static int linux_sigaction(SysFrm *, int signum,
 	}
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
-
-	if (oldact && !vmm.Check(oldact, Memory::US))
-	{
-		debug("Invalid address %#lx", oldact);
-		return -EFAULT;
-	}
-
-	if (act && !vmm.Check((void *)act, Memory::US))
-	{
-		debug("Invalid address %#lx", act);
-		return -EFAULT;
-	}
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	debug("signum=%d act=%#lx oldact=%#lx", signum, act, oldact);
 
-	auto pOldact = pcb->PageTable->Get(oldact);
+	if (vma->UserCheck(act) < 0 && act != nullptr)
+		return -EFAULT;
+	if (vma->UserCheck(oldact) < 0 && oldact != nullptr)
+		return -EFAULT;
+
 	auto pAct = pcb->PageTable->Get(act);
+	auto pOldact = pcb->PageTable->Get(oldact);
 	int ret = 0;
 
 	if (pOldact)
@@ -1701,6 +1641,13 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 	}
 
 	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	if (vma->UserCheck(set) < 0 && set != nullptr)
+		return -EFAULT;
+	if (vma->UserCheck(oldset) < 0 && oldset != nullptr)
+		return -EFAULT;
+
 	const sigset_t *pSet = (const sigset_t *)pcb->PageTable->Get((void *)set);
 	sigset_t *pOldset = (sigset_t *)pcb->PageTable->Get(oldset);
 
@@ -1761,6 +1708,7 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (count < sizeof(struct linux_dirent64))
 	{
@@ -1783,7 +1731,10 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 		return -ENOTDIR;
 	}
 
-	auto pDirp = pcb->PageTable->Get(dirp);
+	auto pDirp = vma->UserCheckAndGetAddress(dirp);
+	if (pDirp == nullptr)
+		return -EFAULT;
+
 	UNUSED(pDirp);
 	stub;
 	return -ENOSYS;
@@ -1795,15 +1746,11 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	static_assert(sizeof(struct timespec) < PAGE_SIZE);
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (!vmm.Check(tp, Memory::US))
-	{
-		debug("Invalid address %#lx", tp);
+	timespec *pTp = vma->UserCheckAndGetAddress(tp);
+	if (pTp == nullptr)
 		return -EFAULT;
-	}
-
-	timespec *pTp = pcb->PageTable->Get(tp);
 
 	/* FIXME: This is not correct? */
 	switch (clockid)
@@ -1875,22 +1822,10 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
 
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (flag)
 		fixme("flag %#x is stub", flag);
-
-	if (!filename)
-	{
-		debug("Invalid filename %#lx", filename);
-		return -EFAULT;
-	}
-
-	if (!statbuf)
-	{
-		debug("Invalid statbuf %#lx", statbuf);
-		return -EFAULT;
-	}
 
 	if (dfd == AT_FDCWD)
 	{
@@ -1906,8 +1841,10 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
 		return -EBADF;
 	}
 
-	const char *pFilename = pcb->PageTable->Get(filename);
-	struct stat *pStatbuf = pcb->PageTable->Get(statbuf);
+	const char *pFilename = vma->UserCheckAndGetAddress(filename);
+	struct stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	if (pFilename == nullptr || pStatbuf == nullptr)
+		return -EFAULT;
 
 	debug("%s %#lx %#lx", pFilename, filename, statbuf);
 	return fdt->_stat(pFilename, pStatbuf);
@@ -1920,7 +1857,12 @@ static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
 		return linux_pipe(sf, pipefd);
 
 	PCB *pcb = thisProcess;
-	int *pPipefd = pcb->PageTable->Get(pipefd);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	int *pPipefd = vma->UserCheckAndGetAddress(pipefd);
+	if (pPipefd == nullptr)
+		return -EFAULT;
+
 	debug("pipefd=%#lx", pPipefd);
 	fixme("pipefd=[%d, %d] flags=%#x", pPipefd[0], pPipefd[1], flags);
 	return -ENOSYS;
@@ -1934,22 +1876,15 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	static_assert(sizeof(struct rlimit) < PAGE_SIZE);
 
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (old_limit && !vmm.Check(old_limit, Memory::US))
-	{
-		debug("Invalid address %#lx", old_limit);
+	auto pOldLimit = vma->UserCheckAndGetAddress(old_limit);
+	auto pNewLimit = vma->UserCheckAndGetAddress(new_limit);
+	if (pOldLimit == nullptr && old_limit != nullptr)
 		return -EFAULT;
-	}
 
-	if (new_limit && !vmm.Check((void *)new_limit, Memory::US))
-	{
-		debug("Invalid address %#lx", new_limit);
+	if (pNewLimit == nullptr && new_limit != nullptr)
 		return -EFAULT;
-	}
-
-	auto pOldLimit = pcb->PageTable->Get(old_limit);
-	auto pNewLimit = pcb->PageTable->Get(new_limit);
 
 	UNUSED(pOldLimit);
 	UNUSED(pNewLimit);
@@ -1992,13 +1927,7 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 							   size_t buflen, unsigned int flags)
 {
 	PCB *pcb = thisProcess;
-	Memory::Virtual vmm(pcb->PageTable);
-
-	if (!vmm.Check(buf, Memory::US))
-	{
-		debug("Invalid address %#lx", buf);
-		return -EFAULT;
-	}
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (flags & GRND_NONBLOCK)
 		fixme("GRND_NONBLOCK not implemented");
@@ -2011,6 +1940,10 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 		return -EINVAL;
 	}
 
+	auto pBuf = vma->UserCheckAndGetAddress(buf, buflen);
+	if (pBuf == nullptr)
+		return -EFAULT;
+
 	if (flags & GRND_RANDOM)
 	{
 		uint16_t random;
@@ -2019,7 +1952,7 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 			random = Random::rand16();
 			{
 				Memory::SwapPT swap(pcb->PageTable);
-				((uint8_t *)buf)[i] = uint8_t(random & 0xFF);
+				((uint8_t *)pBuf)[i] = uint8_t(random & 0xFF);
 			}
 		}
 		return buflen;

@@ -38,7 +38,7 @@ namespace Memory
 				debug("AllocatedStack: %#lx", AllocatedStack);
 				memset(AllocatedStack, 0, USER_STACK_SIZE);
 
-				Virtual vmm = Virtual(this->vma->GetTable());
+				Virtual vmm = Virtual(this->vma->Table);
 				for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
 				{
 					void *VirtualPage = (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE));
@@ -79,8 +79,8 @@ namespace Memory
 
 		if (this->UserMode)
 		{
-			std::vector<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
-			Virtual vma(this->vma->GetTable());
+			std::list<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
+			Virtual vma(this->vma->Table);
 			foreach (auto Page in ParentAllocatedPages)
 			{
 				void *NewPhysical = this->vma->RequestPages(1);
@@ -114,7 +114,7 @@ namespace Memory
 			debug("AllocatedStack: %#lx", AllocatedStack);
 
 			{
-				Virtual vmm = Virtual(vma->GetTable());
+				Virtual vmm = Virtual(vma->Table);
 				for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
 				{
 					void *VirtualPage = (void *)(USER_STACK_BASE + (i * PAGE_SIZE));
