@@ -445,7 +445,7 @@ namespace Memory
 			if (vmm.Check((void *)va, PTFlag::US))
 				continue;
 
-			fixme("Unable to get address %#lx, page is not user accessible", va);
+			debug("Unable to get address %#lx, page is not user accessible", va);
 			return nullptr;
 		}
 
@@ -460,7 +460,7 @@ namespace Memory
 		if (vmm.Check(Address, PTFlag::US))
 			return 0;
 
-		error("Address %#lx is not user accessible", Address);
+		debug("Address %#lx is not user accessible", Address);
 		return -EFAULT;
 	}
 
