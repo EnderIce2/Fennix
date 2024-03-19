@@ -105,6 +105,12 @@ nsa void InitFont()
 {
 	/* Hope we won't crash here */
 
+	if (Display == nullptr)
+	{
+		error("Can't initialize font without display initalized");
+		CPU::Stop();
+	}
+
 	if (FbBeforePanic != nullptr)
 		KernelAllocator.FreePages(FbBeforePanic, FbPagesBeforePanic);
 	else
