@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 #include <atomic>
+#include <bitset>
 #include <list>
 
 void Test_std()
@@ -132,6 +133,61 @@ void Test_std()
 
 	assert(a0 == a1);
 	assert(a2 != a3);
+
+	/* ---------------------------- */
+
+	/* https://en.cppreference.com/w/cpp/utility/bitset */
+
+	typedef std::size_t length_t, position_t;
+	constexpr std::bitset<4> bs1;
+	constexpr std::bitset<4> bs2{0xA};
+	std::bitset<4> bs3{"0011"};
+	std::bitset<8> bs4{"ABBA", length_t(4), 'A', 'B'};
+
+	debug("bs1: %s; bs2: %s; bs3: %s; bs4: %s",
+		  bs1.to_string().c_str(), bs2.to_string().c_str(),
+		  bs3.to_string().c_str(), bs4.to_string().c_str());
+
+	assert(bs1 == 0b0000);
+	assert(bs2 == 0b1010);
+	assert(bs3 == 0b0011);
+	assert(bs4 == 0b00000110);
+
+	bs3 |= 0b0100;
+	assert(bs3 == 0b0111);
+	bs3 &= 0b0011;
+	assert(bs3 == 0b0011);
+	bs3 ^= std::bitset<4>{0b1100};
+	assert(bs3 == 0b1111);
+
+	bs3.reset();
+	assert(bs3 == 0);
+	bs3.set();
+	assert(bs3 == 0b1111);
+	bool all = bs3.all();
+	bool any = bs3.any();
+	bool none = bs3.none();
+	debug("all: %d; any: %d; none: %d", all, any, none);
+	assert(all && any && !none);
+	bs3.flip();
+	assert(bs3 == 0);
+
+	bs3.set(position_t(1), true);
+	assert(bs3 == 0b0010);
+	bs3.set(position_t(1), false);
+	assert(bs3 == 0);
+	bs3.flip(position_t(2));
+	assert(bs3 == 0b0100);
+	bs3.reset(position_t(2));
+	assert(bs3 == 0);
+
+	bs3[2] = true;
+	assert(true == bs3[2]);
+
+	assert(bs3.count() == 1);
+	assert(bs3.size() == 4);
+	assert(bs3.to_ullong() == 0b0100ULL);
+	assert(bs3.to_string() == "0100");
 
 	/* ---------------------------- */
 
