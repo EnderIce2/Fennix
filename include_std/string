@@ -700,4 +700,17 @@ namespace std
 			return iterator(this->Data + this->Length);
 		}
 	};
+
+	template <class CharT>
+	class char_traits
+	{
+	public:
+		static size_t length(const CharT *s)
+		{
+			size_t len = 0;
+			while (s[len] != 0)
+				len++;
+			return len;
+		}
+	};
 }
