@@ -59,12 +59,9 @@ namespace Memory
 		 *
 		 * @param VirtualAddress Virtual address of the page
 		 * @param Flag Flag to check
-		 * @param Type Type of the page. Check MapType enum.
 		 * @return true if page has the specified flag, false otherwise.
 		 */
-		bool Check(void *VirtualAddress,
-				   PTFlag Flag = PTFlag::P,
-				   MapType Type = MapType::FourKiB);
+		bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
 
 		/**
 		 * @brief Check if the region has the specified flag.
@@ -72,17 +69,14 @@ namespace Memory
 		 * @param VirtualAddress Virtual address of the region.
 		 * @param Length Length of the region.
 		 * @param Flag Flag to check.
-		 * @param Type Type of the page. Check MapType enum.
 		 * @return true if the region has the specified flag, false otherwise.
 		 */
-		bool CheckRegion(void *VirtualAddress,
-						 size_t Length,
-						 PTFlag Flag = PTFlag::P,
-						 MapType Type = MapType::FourKiB)
+		bool CheckRegion(void *VirtualAddress, size_t Length,
+						 PTFlag Flag = PTFlag::P)
 		{
 			for (size_t i = 0; i < Length; i += PAGE_SIZE_4K)
 			{
-				if (!this->Check((void *)((uintptr_t)VirtualAddress + i), Flag, Type))
+				if (!this->Check((void *)((uintptr_t)VirtualAddress + i), Flag))
 				{
 					debug("address %#lx for pt %#lx has flag(s) %#lx",
 						  (uintptr_t)VirtualAddress + i, this->pTable, Flag);
@@ -293,11 +287,7 @@ namespace Memory
 		 * @param Flags Flags of the page. Check PTFlag enum.
 		 * @param Type Type of the page. Check MapType enum.
 		 */
-		__always_inline inline void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type = MapType::FourKiB)
-		{
-			this->Unmap(VirtualAddress, Type);
-			this->Map(VirtualAddress, PhysicalAddress, Flags, Type);
-		}
+		void Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type = MapType::FourKiB);
 
 		/**
 		 * @brief Construct a new Virtual object
