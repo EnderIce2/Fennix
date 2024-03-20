@@ -31,6 +31,8 @@ namespace vfs
 		if (this->SymlinkTo)
 			return this->SymlinkTo->read(Buffer, Size);
 
+		debug("Reading %d bytes from %s[%d]",
+			  Size, this->node->FullPath, this->FileOffset.load());
 		return this->node->read(Buffer, Size, this->FileOffset.load());
 	}
 
@@ -39,6 +41,8 @@ namespace vfs
 		if (this->SymlinkTo)
 			return this->SymlinkTo->write(Buffer, Size);
 
+		debug("Writing %d bytes to %s[%d]",
+			  Size, this->node->FullPath, this->FileOffset.load());
 		return this->node->write(Buffer, Size, this->FileOffset.load());
 	}
 
