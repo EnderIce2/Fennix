@@ -1379,6 +1379,29 @@ static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
 	return fdt->_creat(pathname, mode);
 }
 
+/* https://man7.org/linux/man-pages/man2/getcwd.2.html */
+static int linux_getcwd(SysFrm *, char *buf, size_t size)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	char *pBuf = vma->UserCheckAndGetAddress(buf, size);
+	if (pBuf == nullptr)
+		return -EFAULT;
+
+	const char *cwd = pcb->CurrentWorkingDirectory->FullPath;
+	size_t len = strlen(cwd);
+	if (len >= size)
+	{
+		warn("Buffer too small");
+		return -ERANGE;
+	}
+
+	strncpy(pBuf, cwd, len);
+	pBuf[len] = '\0';
+	return len;
+}
+
 /* https://man7.org/linux/man-pages/man2/mkdir.2.html */
 static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 {
@@ -2174,7 +2197,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_truncate] = {"truncate", (void *)nullptr},
 	[__NR_amd64_ftruncate] = {"ftruncate", (void *)nullptr},
 	[__NR_amd64_getdents] = {"getdents", (void *)nullptr},
-	[__NR_amd64_getcwd] = {"getcwd", (void *)nullptr},
+	[__NR_amd64_getcwd] = {"getcwd", (void *)linux_getcwd},
 	[__NR_amd64_chdir] = {"chdir", (void *)nullptr},
 	[__NR_amd64_fchdir] = {"fchdir", (void *)nullptr},
 	[__NR_amd64_rename] = {"rename", (void *)nullptr},
@@ -2728,7 +2751,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_pread64] = {"pread64", (void *)linux_pread64},
 	[__NR_i386_pwrite64] = {"pwrite64", (void *)linux_pwrite64},
 	[__NR_i386_chown] = {"chown", (void *)nullptr},
-	[__NR_i386_getcwd] = {"getcwd", (void *)nullptr},
+	[__NR_i386_getcwd] = {"getcwd", (void *)linux_getcwd},
 	[__NR_i386_capget] = {"capget", (void *)nullptr},
 	[__NR_i386_capset] = {"capset", (void *)nullptr},
 	[__NR_i386_sigaltstack] = {"sigaltstack", (void *)nullptr},
