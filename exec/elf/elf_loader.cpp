@@ -177,7 +177,7 @@ namespace Execute
 						  vAddr, pAddr, ProgramHeader.p_memsz);
 					debug("Segment Offset is %#lx", SegDestOffset);
 
-					debug("Copying segment to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
+					debug("Copying PT_LOAD to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
 						  uintptr_t(pAddr) + SegDestOffset,
 						  uintptr_t(pAddr) + SegDestOffset + ProgramHeader.p_memsz,
 						  ProgramHeader.p_vaddr,
@@ -428,7 +428,7 @@ namespace Execute
 					if (ProgramHeader.p_memsz == 0)
 						continue;
 
-					debug("Copying PT_LOAD    to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
+					debug("Copying PT_LOAD to %#lx-%#lx (%ld file bytes, %ld mem bytes)",
 						  SegmentDestination, SegmentDestination + ProgramHeader.p_memsz,
 						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
 
