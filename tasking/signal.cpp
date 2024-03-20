@@ -500,7 +500,10 @@ namespace Tasking
 		SmartLock(SignalLock);
 		int nSig = CTNif(sig);
 		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		{
+			debug("Invalid signal: %d (req %d)", nSig, sig);
 			return -EINVAL;
+		}
 
 		SignalAction[nSig].__sa_handler.sa_handler = act.__sa_handler.sa_handler;
 		SignalAction[nSig].sa_mask = act.sa_mask;
@@ -519,7 +522,10 @@ namespace Tasking
 
 		int nSig = CTNif(sig);
 		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		{
+			debug("Invalid signal: %d (req %d)", nSig, sig);
 			return -EINVAL;
+		}
 
 		act->__sa_handler.sa_handler = SignalAction[nSig].__sa_handler.sa_handler;
 		act->sa_mask = SignalAction[nSig].sa_mask;
