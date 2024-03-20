@@ -1907,6 +1907,39 @@ static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 	return target->Parent->Signals->SendSignal(sig);
 }
 
+/* https://man7.org/linux/man-pages/man2/open.2.html */
+static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mode_t mode)
+{
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
+	if (pPathname == nullptr)
+		return -EFAULT;
+
+	debug("dirfd=%d pathname=%s flags=%#x mode=%#x",
+		  dirfd, pPathname, flags, mode);
+
+	if (dirfd == AT_FDCWD)
+	{
+		vfs::RefNode *absoluteNode = fs->Open(pPathname, pcb->CurrentWorkingDirectory);
+		if (!absoluteNode)
+			return -ENOENT;
+
+		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
+		strcpy((char *)absPath, absoluteNode->node->FullPath);
+		delete absoluteNode;
+		return fdt->_open(absPath, flags, mode);
+	}
+
+	if (!fs->PathIsRelative(pPathname))
+		return fdt->_open(pPathname, flags, mode);
+
+	fixme("dirfd=%d is stub", dirfd);
+	return -ENOSYS;
+}
+
 /* Undocumented? */
 static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
 							 struct stat *statbuf, int flag)
@@ -2322,7 +2355,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_inotify_add_watch] = {"inotify_add_watch", (void *)nullptr},
 	[__NR_amd64_inotify_rm_watch] = {"inotify_rm_watch", (void *)nullptr},
 	[__NR_amd64_migrate_pages] = {"migrate_pages", (void *)nullptr},
-	[__NR_amd64_openat] = {"openat", (void *)nullptr},
+	[__NR_amd64_openat] = {"openat", (void *)linux_openat},
 	[__NR_amd64_mkdirat] = {"mkdirat", (void *)nullptr},
 	[__NR_amd64_mknodat] = {"mknodat", (void *)nullptr},
 	[__NR_amd64_fchownat] = {"fchownat", (void *)nullptr},
@@ -2810,7 +2843,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_inotify_add_watch] = {"inotify_add_watch", (void *)nullptr},
 	[__NR_i386_inotify_rm_watch] = {"inotify_rm_watch", (void *)nullptr},
 	[__NR_i386_migrate_pages] = {"migrate_pages", (void *)nullptr},
-	[__NR_i386_openat] = {"openat", (void *)nullptr},
+	[__NR_i386_openat] = {"openat", (void *)linux_openat},
 	[__NR_i386_mkdirat] = {"mkdirat", (void *)nullptr},
 	[__NR_i386_mknodat] = {"mknodat", (void *)nullptr},
 	[__NR_i386_fchownat] = {"fchownat", (void *)nullptr},
