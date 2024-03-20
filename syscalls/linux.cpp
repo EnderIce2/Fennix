@@ -1497,10 +1497,34 @@ static pid_t linux_getppid(SysFrm *)
 	return thisProcess->Parent->ID;
 }
 
+/* https://man7.org/linux/man-pages/man2/getpgid.2.html */
+static pid_t linux_getpgid(SysFrm *, pid_t pid)
+{
+	PCB *pcb = thisProcess;
+	if (pid == 0)
+	{
+		fixme("pid=0 is stub!");
+		return 0;
+	}
+
+	PCB *target = pcb->GetContext()->GetProcessByID(pid);
+	if (!target)
+		return -ESRCH;
+
+	stub;
+	return 0;
+}
+
 /* https://man7.org/linux/man-pages/man2/setpgid.2.html */
 static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 {
 	PCB *pcb = thisProcess;
+	if (pid == 0)
+	{
+		fixme("pid=0 is stub!");
+		return 0;
+	}
+
 	PCB *target = pcb->GetContext()->GetProcessByID(pid);
 	if (!target)
 		return -ESRCH;
@@ -2254,7 +2278,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_getresuid] = {"getresuid", (void *)nullptr},
 	[__NR_amd64_setresgid] = {"setresgid", (void *)nullptr},
 	[__NR_amd64_getresgid] = {"getresgid", (void *)nullptr},
-	[__NR_amd64_getpgid] = {"getpgid", (void *)nullptr},
+	[__NR_amd64_getpgid] = {"getpgid", (void *)linux_getpgid},
 	[__NR_amd64_setfsuid] = {"setfsuid", (void *)nullptr},
 	[__NR_amd64_setfsgid] = {"setfsgid", (void *)nullptr},
 	[__NR_amd64_getsid] = {"getsid", (void *)nullptr},
@@ -2715,7 +2739,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_delete_module] = {"delete_module", (void *)nullptr},
 	[__NR_i386_get_kernel_syms] = {"get_kernel_syms", (void *)nullptr},
 	[__NR_i386_quotactl] = {"quotactl", (void *)nullptr},
-	[__NR_i386_getpgid] = {"getpgid", (void *)nullptr},
+	[__NR_i386_getpgid] = {"getpgid", (void *)linux_getpgid},
 	[__NR_i386_fchdir] = {"fchdir", (void *)nullptr},
 	[__NR_i386_bdflush] = {"bdflush", (void *)nullptr},
 	[__NR_i386_sysfs] = {"sysfs", (void *)nullptr},
