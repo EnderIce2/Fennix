@@ -2088,12 +2088,16 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 		fixme("Setting RLIMIT_STACK is stub");
 		return 0;
 	}
+	case RLIMIT_NPROC:
+	{
+		fixme("Setting RLIMIT_NPROC is stub");
+		return 0;
+	}
 	case RLIMIT_CPU:
 	case RLIMIT_FSIZE:
 	case RLIMIT_DATA:
 	case RLIMIT_CORE:
 	case RLIMIT_RSS:
-	case RLIMIT_NPROC:
 	case RLIMIT_MEMLOCK:
 	case RLIMIT_AS:
 	case RLIMIT_LOCKS:
