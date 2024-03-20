@@ -567,6 +567,11 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 	if (pPathname == nullptr)
 		return -EFAULT;
 
+	debug("access(%s, %d)", (char *)pPathname, mode);
+
+	if (!fs->PathExists(pPathname, pcb->CurrentWorkingDirectory))
+		return -ENOENT;
+
 	stub;
 	fixme("access(%s, %d)", (char *)pPathname, mode);
 	return 0;
