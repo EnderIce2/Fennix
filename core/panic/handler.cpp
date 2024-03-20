@@ -111,21 +111,19 @@ nsa void InitFont()
 		CPU::Stop();
 	}
 
-	if (FbBeforePanic != nullptr)
-		KernelAllocator.FreePages(FbBeforePanic, FbPagesBeforePanic);
-	else
+	if (FbBeforePanic == nullptr)
 	{
 		FbPagesBeforePanic = TO_PAGES(Display->GetSize);
 		FbBeforePanic = KernelAllocator.RequestPages(FbPagesBeforePanic);
-		memcpy(FbBeforePanic, Display->GetBuffer, Display->GetSize);
+		debug("Created before panic framebuffer at %#lx", FbBeforePanic);
 	}
+	memcpy(FbBeforePanic, Display->GetBuffer, Display->GetSize);
 
-	if (CrashFont == nullptr)
-	{
-		CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
-									&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
-									Video::FontType::PCScreenFont2);
-	}
+	if (CrashFont)
+		return;
+	CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
+								&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
+								Video::FontType::PCScreenFont2);
 }
 
 std::atomic<bool> UnrecoverableLock = false;
