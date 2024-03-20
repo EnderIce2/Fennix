@@ -609,7 +609,6 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 		return -ENOENT;
 
 	stub;
-	fixme("access(%s, %d)", (char *)pPathname, mode);
 	return 0;
 }
 
@@ -807,8 +806,8 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
-	auto pArgv = vma->UserCheckAndGetAddress(argv, 1/*MAX_ARG*/); /* MAX_ARG is too much? */
-	auto pEnvp = vma->UserCheckAndGetAddress(envp, 1/*MAX_ARG*/);
+	auto pArgv = vma->UserCheckAndGetAddress(argv, 1 /*MAX_ARG*/); /* MAX_ARG is too much? */
+	auto pEnvp = vma->UserCheckAndGetAddress(envp, 1 /*MAX_ARG*/);
 	if (pPathname == nullptr || pArgv == nullptr || pEnvp == nullptr)
 		return -EFAULT;
 
@@ -2030,11 +2029,9 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	case RLIMIT_CPU:
 	case RLIMIT_FSIZE:
 	case RLIMIT_DATA:
-	case RLIMIT_STACK:
 	case RLIMIT_CORE:
 	case RLIMIT_RSS:
 	case RLIMIT_NPROC:
-	case RLIMIT_NOFILE:
 	case RLIMIT_MEMLOCK:
 	case RLIMIT_AS:
 	case RLIMIT_LOCKS:
