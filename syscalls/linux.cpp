@@ -471,6 +471,42 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 	return fdt->_ioctl(fd, request, pArgp);
 }
 
+/* https://man7.org/linux/man-pages/man2/pread.2.html */
+static ssize_t linux_pread64(SysFrm *, int fd, void *buf, size_t count, off_t offset)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	void *pBuf = vma->UserCheckAndGetAddress(buf, count);
+	if (pBuf == nullptr)
+		return -EFAULT;
+
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	off_t oldOff = fdt->_lseek(fd, 0, SEEK_CUR);
+	fdt->_lseek(fd, offset, SEEK_SET);
+	ssize_t ret = fdt->_read(fd, pBuf, count);
+	fdt->_lseek(fd, oldOff, SEEK_SET);
+	return ret;
+}
+
+/* https://man7.org/linux/man-pages/man2/pread.2.html */
+static ssize_t linux_pwrite64(SysFrm *, int fd, const void *buf, size_t count, off_t offset)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const void *pBuf = vma->UserCheckAndGetAddress(buf, count);
+	if (pBuf == nullptr)
+		return -EFAULT;
+
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	off_t oldOff = fdt->_lseek(fd, 0, SEEK_CUR);
+	fdt->_lseek(fd, offset, SEEK_SET);
+	ssize_t ret = fdt->_write(fd, pBuf, count);
+	fdt->_lseek(fd, oldOff, SEEK_SET);
+	return ret;
+}
+
 /* https://man7.org/linux/man-pages/man2/readv.2.html */
 static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
@@ -2036,8 +2072,8 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_rt_sigprocmask] = {"rt_sigprocmask", (void *)linux_sigprocmask},
 	[__NR_amd64_rt_sigreturn] = {"rt_sigreturn", (void *)linux_sigreturn},
 	[__NR_amd64_ioctl] = {"ioctl", (void *)linux_ioctl},
-	[__NR_amd64_pread64] = {"pread64", (void *)nullptr},
-	[__NR_amd64_pwrite64] = {"pwrite64", (void *)nullptr},
+	[__NR_amd64_pread64] = {"pread64", (void *)linux_pread64},
+	[__NR_amd64_pwrite64] = {"pwrite64", (void *)linux_pwrite64},
 	[__NR_amd64_readv] = {"readv", (void *)linux_readv},
 	[__NR_amd64_writev] = {"writev", (void *)linux_writev},
 	[__NR_amd64_access] = {"access", (void *)linux_access},
@@ -2649,8 +2685,8 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_rt_sigtimedwait] = {"rt_sigtimedwait", (void *)nullptr},
 	[__NR_i386_rt_sigqueueinfo] = {"rt_sigqueueinfo", (void *)nullptr},
 	[__NR_i386_rt_sigsuspend] = {"rt_sigsuspend", (void *)nullptr},
-	[__NR_i386_pread64] = {"pread64", (void *)nullptr},
-	[__NR_i386_pwrite64] = {"pwrite64", (void *)nullptr},
+	[__NR_i386_pread64] = {"pread64", (void *)linux_pread64},
+	[__NR_i386_pwrite64] = {"pwrite64", (void *)linux_pwrite64},
 	[__NR_i386_chown] = {"chown", (void *)nullptr},
 	[__NR_i386_getcwd] = {"getcwd", (void *)nullptr},
 	[__NR_i386_capget] = {"capget", (void *)nullptr},
