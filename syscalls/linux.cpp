@@ -1380,7 +1380,7 @@ static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
 }
 
 /* https://man7.org/linux/man-pages/man2/getcwd.2.html */
-static int linux_getcwd(SysFrm *, char *buf, size_t size)
+static long linux_getcwd(SysFrm *, char *buf, size_t size)
 {
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -1495,6 +1495,21 @@ static gid_t linux_getegid(SysFrm *)
 static pid_t linux_getppid(SysFrm *)
 {
 	return thisProcess->Parent->ID;
+}
+
+/* https://man7.org/linux/man-pages/man2/setpgid.2.html */
+static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
+{
+	PCB *pcb = thisProcess;
+	PCB *target = pcb->GetContext()->GetProcessByID(pid);
+	if (!target)
+		return -ESRCH;
+
+	if (pgid < 0)
+		return -EINVAL;
+
+	fixme("setpgid(%d, %d) is stub!", pid, pgid);
+	return 0;
 }
 
 /* https://man7.org/linux/man-pages/man2/arch_prctl.2.html */
@@ -2227,7 +2242,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_setgid] = {"setgid", (void *)nullptr},
 	[__NR_amd64_geteuid] = {"geteuid", (void *)linux_geteuid},
 	[__NR_amd64_getegid] = {"getegid", (void *)linux_getegid},
-	[__NR_amd64_setpgid] = {"setpgid", (void *)nullptr},
+	[__NR_amd64_setpgid] = {"setpgid", (void *)linux_setpgid},
 	[__NR_amd64_getppid] = {"getppid", (void *)linux_getppid},
 	[__NR_amd64_getpgrp] = {"getpgrp", (void *)nullptr},
 	[__NR_amd64_setsid] = {"setsid", (void *)nullptr},
@@ -2625,7 +2640,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_ioctl] = {"ioctl", (void *)linux_ioctl},
 	[__NR_i386_fcntl] = {"fcntl", (void *)linux_fcntl},
 	[__NR_i386_mpx] = {"mpx", (void *)nullptr},
-	[__NR_i386_setpgid] = {"setpgid", (void *)nullptr},
+	[__NR_i386_setpgid] = {"setpgid", (void *)linux_setpgid},
 	[__NR_i386_ulimit] = {"ulimit", (void *)nullptr},
 	[__NR_i386_oldolduname] = {"oldolduname", (void *)nullptr},
 	[__NR_i386_umask] = {"umask", (void *)nullptr},
