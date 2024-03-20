@@ -1984,6 +1984,16 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 
 	switch (resource)
 	{
+	case RLIMIT_NOFILE:
+	{
+		fixme("Setting RLIMIT_NOFILE is stub");
+		return 0;
+	}
+	case RLIMIT_STACK:
+	{
+		fixme("Setting RLIMIT_STACK is stub");
+		return 0;
+	}
 	case RLIMIT_CPU:
 	case RLIMIT_FSIZE:
 	case RLIMIT_DATA:
