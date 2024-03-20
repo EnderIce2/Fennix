@@ -48,8 +48,7 @@ int SpawnInit()
 
 	const char *argv[4] = {
 		Config.InitPath,
-		"--init",
-		"--critical",
+		// "--help",
 		nullptr};
 
 	Tasking::TaskCompatibility compat = Tasking::Native;
