@@ -61,25 +61,17 @@ namespace vfs
 			memcpy(&this->term, t, sizeof(struct termios));
 			break;
 		}
-		case TCSETSW:
-		case TCSETSF:
-		case TCGETA:
-		case TCSETA:
-		case TCSETAW:
-		case TCSETAF:
-		case TCSBRK:
-		case TCXONC:
-		case TCFLSH:
-		case TIOCEXCL:
-		case TIOCNXCL:
-		case TIOCSCTTY:
 		case TIOCGPGRP:
-		case TIOCSPGRP:
-		case TIOCOUTQ:
-		case TIOCSTI:
 		{
-			fixme("ioctl %#lx not implemented", Request);
-			return -ENOSYS;
+			*((pid_t *)Argp) = 0;
+			fixme("TIOCGPGRP not implemented");
+			return 0;
+		}
+		case TIOCSPGRP:
+		{
+			*((pid_t *)Argp) = 0;
+			fixme("TIOCSPGRP not implemented");
+			return 0;
 		}
 		case TIOCGWINSZ:
 		{
@@ -93,6 +85,20 @@ namespace vfs
 			memcpy(&this->termSize, ws, sizeof(struct winsize));
 			break;
 		}
+		case TCSETSW:
+		case TCSETSF:
+		case TCGETA:
+		case TCSETA:
+		case TCSETAW:
+		case TCSETAF:
+		case TCSBRK:
+		case TCXONC:
+		case TCFLSH:
+		case TIOCEXCL:
+		case TIOCNXCL:
+		case TIOCSCTTY:
+		case TIOCOUTQ:
+		case TIOCSTI:
 		case TIOCMGET:
 		case TIOCMBIS:
 		case TIOCMBIC:
