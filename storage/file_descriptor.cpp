@@ -211,7 +211,7 @@ namespace vfs
 			{
 				error("Failed to open file %s",
 					  AbsolutePath);
-				return -EIO;
+				return -ENOENT;
 			}
 			delete File;
 		}
@@ -238,7 +238,7 @@ namespace vfs
 		{
 			error("Failed to open file %s",
 				  AbsolutePath);
-			return -EIO;
+			return -ENOENT;
 		}
 
 		Fildes fd = {.Descriptor = GetFreeFileDescriptor()};
@@ -491,7 +491,7 @@ namespace vfs
 		{
 			error("Failed to open file %s",
 				  pathname);
-			return -EIO;
+			return -ENOENT;
 		}
 
 		Node *node = file->node;
@@ -546,7 +546,7 @@ namespace vfs
 		{
 			error("Failed to open file %s",
 				  pathname);
-			return -EIO;
+			return -ENOENT;
 		}
 
 		Node *node = file->node;
