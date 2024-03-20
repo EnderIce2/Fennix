@@ -1796,6 +1796,58 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	return 0;
 }
 
+static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
+								 const struct timespec *request,
+								 struct timespec *remain)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const timespec *pRequest = vma->UserCheckAndGetAddress(request);
+	timespec *pRemain = vma->UserCheckAndGetAddress(remain);
+	if (pRequest == nullptr)
+		return -EFAULT;
+
+	UNUSED(pRemain);
+	UNUSED(flags);
+
+	switch (clockid)
+	{
+	case CLOCK_REALTIME:
+	case CLOCK_MONOTONIC:
+	{
+		uint64_t time = TimeManager->GetCounter();
+		uint64_t rqTime = pRequest->tv_sec * Time::ConvertUnit(Time::Seconds) +
+						  pRequest->tv_nsec * Time::ConvertUnit(Time::Nanoseconds);
+
+		debug("Sleeping for %ld", rqTime - time);
+		if (rqTime > time)
+			pcb->GetContext()->Sleep(rqTime - time);
+		break;
+	}
+	case CLOCK_PROCESS_CPUTIME_ID:
+	case CLOCK_THREAD_CPUTIME_ID:
+	case CLOCK_MONOTONIC_RAW:
+	case CLOCK_REALTIME_COARSE:
+	case CLOCK_MONOTONIC_COARSE:
+	case CLOCK_BOOTTIME:
+	case CLOCK_REALTIME_ALARM:
+	case CLOCK_BOOTTIME_ALARM:
+	case CLOCK_SGI_CYCLE:
+	case CLOCK_TAI:
+	{
+		fixme("clockid %d is stub", clockid);
+		return -ENOSYS;
+	}
+	default:
+	{
+		warn("Invalid clockid %#lx", clockid);
+		return -EINVAL;
+	}
+	}
+	return 0;
+}
+
 /* https://man7.org/linux/man-pages/man2/exit_group.2.html */
 static __noreturn void linux_exit_group(SysFrm *sf, int status)
 {
@@ -2192,7 +2244,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_clock_settime] = {"clock_settime", (void *)nullptr},
 	[__NR_amd64_clock_gettime] = {"clock_gettime", (void *)linux_clock_gettime},
 	[__NR_amd64_clock_getres] = {"clock_getres", (void *)nullptr},
-	[__NR_amd64_clock_nanosleep] = {"clock_nanosleep", (void *)nullptr},
+	[__NR_amd64_clock_nanosleep] = {"clock_nanosleep", (void *)linux_clock_nanosleep},
 	[__NR_amd64_exit_group] = {"exit_group", (void *)linux_exit_group},
 	[__NR_amd64_epoll_wait] = {"epoll_wait", (void *)nullptr},
 	[__NR_amd64_epoll_ctl] = {"epoll_ctl", (void *)nullptr},
