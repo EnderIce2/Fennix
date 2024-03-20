@@ -498,19 +498,18 @@ namespace Tasking
 	int Signal::SetAction(int sig, const sigaction act)
 	{
 		SmartLock(SignalLock);
-		if ((size_t)sig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		int nSig = CTNif(sig);
+		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
 			return -EINVAL;
 
-		sig = CTNif(sig);
-
-		SignalAction[sig].__sa_handler.sa_handler = act.__sa_handler.sa_handler;
-		SignalAction[sig].sa_mask = act.sa_mask;
-		SignalAction[sig].sa_flags = act.sa_flags;
+		SignalAction[nSig].__sa_handler.sa_handler = act.__sa_handler.sa_handler;
+		SignalAction[nSig].sa_mask = act.sa_mask;
+		SignalAction[nSig].sa_flags = act.sa_flags;
 		debug("Set action for %s with handler %#lx, mask %#lx and flags %#lx",
-			  LinuxSig() ? lSigStr[sig] : sigStr[sig],
-			  SignalAction[sig].__sa_handler.sa_handler,
-			  SignalAction[sig].sa_mask,
-			  SignalAction[sig].sa_flags);
+			  LinuxSig() ? lSigStr[nSig] : sigStr[nSig],
+			  SignalAction[nSig].__sa_handler.sa_handler,
+			  SignalAction[nSig].sa_mask,
+			  SignalAction[nSig].sa_flags);
 		return 0;
 	}
 
@@ -518,32 +517,31 @@ namespace Tasking
 	{
 		SmartLock(SignalLock);
 
-		if ((size_t)sig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		int nSig = CTNif(sig);
+		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
 			return -EINVAL;
 
-		sig = CTNif(sig);
-
-		act->__sa_handler.sa_handler = SignalAction[sig].__sa_handler.sa_handler;
-		act->sa_mask = SignalAction[sig].sa_mask;
-		act->sa_flags = SignalAction[sig].sa_flags;
+		act->__sa_handler.sa_handler = SignalAction[nSig].__sa_handler.sa_handler;
+		act->sa_mask = SignalAction[nSig].sa_mask;
+		act->sa_flags = SignalAction[nSig].sa_flags;
 		debug("Got action for %s with handler %#lx, mask %#lx and flags %#lx",
-			  LinuxSig() ? lSigStr[sig] : sigStr[sig],
-			  SignalAction[sig].__sa_handler.sa_handler,
-			  SignalAction[sig].sa_mask,
-			  SignalAction[sig].sa_flags);
+			  LinuxSig() ? lSigStr[nSig] : sigStr[nSig],
+			  SignalAction[nSig].__sa_handler.sa_handler,
+			  SignalAction[nSig].sa_mask,
+			  SignalAction[nSig].sa_flags);
 		return 0;
 	}
 
 	int Signal::SendSignal(int sig, union sigval val)
 	{
 		PCB *pcb = (PCB *)ctx;
-		sig = CTNif(sig);
-		LastSignal = (Signals)sig;
+		int nSig = CTNif(sig);
+		LastSignal = (Signals)nSig;
 
 		debug("Sending signal %s to %s(%d)",
-			  sigStr[sig], pcb->Name, pcb->ID);
+			  sigStr[nSig], pcb->Name, pcb->ID);
 
-		if (SignalAction[sig].__sa_handler.sa_handler)
+		if (SignalAction[nSig].__sa_handler.sa_handler)
 		{
 			if (pcb->Security.ExecutionMode == Kernel)
 			{
@@ -552,24 +550,24 @@ namespace Tasking
 			}
 
 			debug("sa_handler: %#lx",
-				  SignalAction[sig].__sa_handler.sa_handler);
-			debug("Adding signal %s to queue", sigStr[sig]);
+				  SignalAction[nSig].__sa_handler.sa_handler);
+			debug("Adding signal %s to queue", sigStr[nSig]);
 			goto CompleteSignal;
 		}
 
-		debug("Signal disposition: %s", dispStr[sigDisp[sig]]);
-		switch (sigDisp[sig])
+		debug("Signal disposition: %s", dispStr[sigDisp[nSig]]);
+		switch (sigDisp[nSig])
 		{
 		case SIG_TERM:
 		{
 			if (unlikely(pcb->Security.IsCritical))
 			{
 				debug("Critical process %s received signal %s(%d): Terminated",
-					  pcb->Name, sigStr[sig], sig);
+					  pcb->Name, sigStr[nSig], nSig);
 				// int3;
 			}
 
-			pcb->SetExitCode(MakeExitCode(sig));
+			pcb->SetExitCode(MakeExitCode(nSig));
 			debug("We have %d watchers", this->Watchers.size());
 			if (this->Watchers.size() > 0)
 				pcb->SetState(Zombie);
@@ -579,7 +577,7 @@ namespace Tasking
 		}
 		case SIG_IGN:
 		{
-			debug("Ignoring signal %d", sig);
+			debug("Ignoring signal %d", nSig);
 			return 0;
 		}
 		case SIG_CORE:
@@ -589,11 +587,11 @@ namespace Tasking
 			if (unlikely(pcb->Security.IsCritical))
 			{
 				debug("Critical process %s received signal %s(%d): Core dumped",
-					  pcb->Name, sigStr[sig], sig);
+					  pcb->Name, sigStr[nSig], nSig);
 				// int3;
 			}
 
-			pcb->SetExitCode(MakeExitCode(sig));
+			pcb->SetExitCode(MakeExitCode(nSig));
 			debug("We have %d watchers", this->Watchers.size());
 			if (this->Watchers.size() > 0)
 				pcb->SetState(CoreDump);
@@ -620,14 +618,14 @@ namespace Tasking
 		if (pcb->Security.ExecutionMode == Kernel)
 		{
 			debug("Kernel process %s received signal %s(%d)! Ignoring... (with exceptions)",
-				  pcb->Name, sigStr[sig], sig);
+				  pcb->Name, sigStr[nSig], nSig);
 			return 0;
 		}
 
 		this->InitTrampoline();
 
-		debug("Signal %s(%d) completed", sigStr[sig], sig);
-		if (sigDisp[sig] != SIG_IGN)
+		debug("Signal %s(%d) completed", sigStr[nSig], nSig);
+		if (sigDisp[nSig] != SIG_IGN)
 		{
 			foreach (auto info in Watchers)
 			{
@@ -641,7 +639,7 @@ namespace Tasking
 		}
 
 		debug("Adding signal to queue");
-		SignalQueue.push_back({.sig = sig, .val = val});
+		SignalQueue.push_back({.sig = nSig, .val = val});
 		return 0;
 	}
 
