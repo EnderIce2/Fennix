@@ -33,28 +33,31 @@
 // exobyte
 #define TO_EiB(d) ((d) / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
 
-#define PAGE_SIZE 0x1000		// 4KB
-#define PAGE_SIZE_4K PAGE_SIZE	// 4KB
-#define PAGE_SIZE_2M 0x200000	// 2MB
-#define PAGE_SIZE_4M 0x400000	// 4MB
-#define PAGE_SIZE_1G 0x40000000 // 1GB
+#define PAGE_SIZE 0x1000		/* 4 KiB */
+#define PAGE_SIZE_4K PAGE_SIZE	/* 4 KiB */
+#define PAGE_SIZE_2M 0x200000	/* 2 MiB */
+#define PAGE_SIZE_4M 0x400000	/* 4 MiB */
+#define PAGE_SIZE_1G 0x40000000 /* 1 GiB */
 
-#define STACK_SIZE 0x4000	   // 16kb
-#define USER_STACK_SIZE 0x2000 // 8kb
+#define STACK_SIZE 0x4000	   /* 16 KiB */
+#define USER_STACK_SIZE 0x2000 /* 8 KiB */
 
-// To pages
+/* To pages */
 #define TO_PAGES(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
-// From pages
+/* From pages */
 #define FROM_PAGES(d) ((d) * PAGE_SIZE)
 
 #if defined(a64) || defined(aa64)
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
 #define KERNEL_HEAP_BASE 0xFFFFFF0000000000
+
 #define USER_STACK_BASE 0xFFFFEFFFFFFF0000
+#define USER_STACK_END 0xFFFFEFFF00000000 /* 256 MiB */
 #elif defined(a32)
 #define KERNEL_VMA_OFFSET 0xC0000000
 #define KERNEL_HEAP_BASE 0xA0000000
 #define USER_STACK_BASE 0xEFFFFFFF
+#define USER_STACK_END 0xE0000000
 #endif
 
 #endif // !__FENNIX_KERNEL_MEMORY_MACROS_H__

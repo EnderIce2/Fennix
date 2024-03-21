@@ -23,133 +23,118 @@ namespace Memory
 {
 	bool StackGuard::Expand(uintptr_t FaultAddress)
 	{
-		if (this->UserMode)
+		if (!this->UserMode)
+			assert(!"Kernel mode stack expansion not implemented");
+
+		if (FaultAddress < USER_STACK_END ||
+			FaultAddress > USER_STACK_BASE)
 		{
-			if (FaultAddress < (uintptr_t)this->StackBottom - 0x100 ||
-				FaultAddress > (uintptr_t)this->StackTop)
-			{
-				info("Fault address %#lx is not in range of stack %#lx - %#lx", FaultAddress,
-					 (uintptr_t)this->StackBottom - 0x100, (uintptr_t)this->StackTop);
-				return false; /* It's not about the stack. */
-			}
-			else
-			{
-				void *AllocatedStack = this->vma->RequestPages(TO_PAGES(USER_STACK_SIZE) + 1);
-				debug("AllocatedStack: %#lx", AllocatedStack);
-				memset(AllocatedStack, 0, USER_STACK_SIZE);
-
-				Virtual vmm = Virtual(this->vma->Table);
-				for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
-				{
-					void *VirtualPage = (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE));
-					void *PhysicalPage = (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE));
-
-					vmm.Map(VirtualPage, PhysicalPage, PTFlag::RW | PTFlag::US);
-					AllocatedPages ap = {
-						.PhysicalAddress = PhysicalPage,
-						.VirtualAddress = VirtualPage,
-					};
-					AllocatedPagesList.push_back(ap);
-					debug("Mapped %#lx to %#lx", PhysicalPage, VirtualPage);
-				}
-
-				this->StackBottom = (void *)((uintptr_t)this->StackBottom - USER_STACK_SIZE);
-				this->Size += USER_STACK_SIZE;
-				debug("Stack expanded to %#lx", this->StackBottom);
-				this->Expanded = true;
-				return true;
-			}
+			info("Fault address %#lx is not in range of stack %#lx - %#lx",
+				 FaultAddress, USER_STACK_END, USER_STACK_BASE);
+			return false; /* It's not about the stack. */
 		}
-		else
+
+		uintptr_t roundFA = ROUND_DOWN(FaultAddress, PAGE_SIZE);
+		uintptr_t diff = (uintptr_t)this->StackBottom - roundFA;
+		size_t stackPages = TO_PAGES(diff);
+		stackPages = stackPages < 1 ? 1 : stackPages;
+
+		debug("roundFA: %#lx, sb: %#lx, diff: %#lx, stackPages: %d",
+			  roundFA, this->StackBottom, diff, stackPages);
+
+		void *AllocatedStack = vma->RequestPages(stackPages);
+		debug("AllocatedStack: %#lx", AllocatedStack);
+
+		for (size_t i = 0; i < stackPages; i++)
 		{
-			fixme("Not implemented and probably not needed");
-			return false;
+			void *vAddress = (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE));
+			void *pAddress = (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE));
+
+			vma->Map(vAddress, pAddress, PAGE_SIZE, PTFlag::RW | PTFlag::US);
+			AllocatedPages ap = {
+				.PhysicalAddress = pAddress,
+				.VirtualAddress = vAddress,
+			};
+			AllocatedPagesList.push_back(ap);
+			debug("Mapped %#lx to %#lx", pAddress, vAddress);
 		}
+
+		this->StackBottom = (void *)((uintptr_t)this->StackBottom - (stackPages * PAGE_SIZE));
+		this->Size += stackPages * PAGE_SIZE;
+		debug("Stack expanded to %#lx", this->StackBottom);
+		this->Expanded = true;
+		return true;
 	}
 
 	void StackGuard::Fork(StackGuard *Parent)
 	{
-		this->UserMode = Parent->GetUserMode();
-		this->StackBottom = Parent->GetStackBottom();
-		this->StackTop = Parent->GetStackTop();
-		this->StackPhysicalBottom = Parent->GetStackPhysicalBottom();
-		this->StackPhysicalTop = Parent->GetStackPhysicalTop();
-		this->Size = Parent->GetSize();
-		this->Expanded = Parent->IsExpanded();
+		if (!this->UserMode)
+			assert(!"Kernel mode stack fork not implemented");
 
-		if (this->UserMode)
-		{
-			std::list<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
-			Virtual vma(this->vma->Table);
-			foreach (auto Page in ParentAllocatedPages)
-			{
-				void *NewPhysical = this->vma->RequestPages(1);
-				debug("Forking address %#lx to %#lx", Page.PhysicalAddress, NewPhysical);
-				memcpy(NewPhysical, Page.PhysicalAddress, PAGE_SIZE);
-				vma.Map(Page.VirtualAddress, NewPhysical, PTFlag::RW | PTFlag::US);
+		this->UserMode = Parent->UserMode;
+		this->StackBottom = Parent->StackBottom;
+		this->StackTop = Parent->StackTop;
+		this->StackPhysicalBottom = Parent->StackPhysicalBottom;
+		this->StackPhysicalTop = Parent->StackPhysicalTop;
+		this->Size = Parent->Size;
+		this->Expanded = Parent->Expanded;
 
-				AllocatedPages ap = {
-					.PhysicalAddress = NewPhysical,
-					.VirtualAddress = Page.VirtualAddress,
-				};
-				AllocatedPagesList.push_back(ap);
-				debug("Mapped %#lx to %#lx", NewPhysical, Page.VirtualAddress);
-			}
-		}
-		else
+		std::list<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
+		foreach (auto Page in ParentAllocatedPages)
 		{
-			fixme("Kernel mode stack fork not implemented");
+			void *NewPhysical = vma->RequestPages(1);
+			debug("Forking address %#lx to %#lx", Page.PhysicalAddress, NewPhysical);
+			memcpy(NewPhysical, Page.PhysicalAddress, PAGE_SIZE);
+			vma->Remap(Page.VirtualAddress, NewPhysical, PTFlag::RW | PTFlag::US);
+
+			AllocatedPages ap = {
+				.PhysicalAddress = NewPhysical,
+				.VirtualAddress = Page.VirtualAddress,
+			};
+			AllocatedPagesList.push_back(ap);
+			debug("Mapped %#lx to %#lx", NewPhysical, Page.VirtualAddress);
 		}
 	}
 
-	StackGuard::StackGuard(bool User, VirtualMemoryArea *vma)
+	StackGuard::StackGuard(bool User, VirtualMemoryArea *_vma)
 	{
 		this->UserMode = User;
-		this->vma = vma;
+		this->vma = _vma;
 
 		if (this->UserMode)
 		{
-			void *AllocatedStack = vma->RequestPages(TO_PAGES(USER_STACK_SIZE) + 1);
-			memset(AllocatedStack, 0, USER_STACK_SIZE);
-			debug("AllocatedStack: %#lx", AllocatedStack);
-
-			{
-				Virtual vmm = Virtual(vma->Table);
-				for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
-				{
-					void *VirtualPage = (void *)(USER_STACK_BASE + (i * PAGE_SIZE));
-					void *PhysicalPage = (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE));
-					vmm.Map(VirtualPage, PhysicalPage, PTFlag::RW | PTFlag::US);
-
-					AllocatedPages ap = {
-						.PhysicalAddress = PhysicalPage,
-						.VirtualAddress = VirtualPage,
-					};
-					AllocatedPagesList.push_back(ap);
-					debug("Mapped %#lx to %#lx", PhysicalPage, VirtualPage);
-				}
-			}
-
+			void *AllocatedStack = vma->RequestPages(TO_PAGES(USER_STACK_SIZE));
 			this->StackBottom = (void *)USER_STACK_BASE;
 			this->StackTop = (void *)(USER_STACK_BASE + USER_STACK_SIZE);
-
 			this->StackPhysicalBottom = AllocatedStack;
 			this->StackPhysicalTop = (void *)((uintptr_t)AllocatedStack + USER_STACK_SIZE);
-
 			this->Size = USER_STACK_SIZE;
+
+			debug("AllocatedStack: %#lx", AllocatedStack);
+
+			for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
+			{
+				void *vAddress = (void *)(USER_STACK_BASE + (i * PAGE_SIZE));
+				void *pAddress = (void *)((uintptr_t)AllocatedStack + (i * PAGE_SIZE));
+				vma->Map(vAddress, pAddress, PAGE_SIZE, PTFlag::RW | PTFlag::US);
+
+				AllocatedPages ap = {
+					.PhysicalAddress = pAddress,
+					.VirtualAddress = vAddress,
+				};
+				AllocatedPagesList.push_back(ap);
+				debug("Mapped %#lx to %#lx", pAddress, vAddress);
+			}
 		}
 		else
 		{
-			this->StackBottom = vma->RequestPages(TO_PAGES(STACK_SIZE) + 1);
-			memset(this->StackBottom, 0, STACK_SIZE);
-			debug("StackBottom: %#lx", this->StackBottom);
-
+			this->StackBottom = vma->RequestPages(TO_PAGES(STACK_SIZE));
 			this->StackTop = (void *)((uintptr_t)this->StackBottom + STACK_SIZE);
-
 			this->StackPhysicalBottom = this->StackBottom;
 			this->StackPhysicalTop = this->StackTop;
-
 			this->Size = STACK_SIZE;
+
+			debug("StackBottom: %#lx", this->StackBottom);
 
 			for (size_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
 			{
