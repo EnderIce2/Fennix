@@ -164,6 +164,7 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 		if (Handled)
 		{
 			debug("Page fault handled");
+			Frame->cr2 = 0;
 			thread->SetState(Tasking::Ready);
 			return true;
 		}
