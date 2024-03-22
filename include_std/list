@@ -208,10 +208,11 @@ namespace std
 			}
 		}
 
-		void remove(const T &value)
+		size_t remove(const T &value)
 		{
 			SmartLock(this->lock);
 			node *p = head;
+			size_t count = 0;
 			while (p != nullptr)
 			{
 				if (p->value == value)
@@ -226,17 +227,19 @@ namespace std
 						tail = p->prev;
 					delete p;
 					--lSize;
-					return;
+					++count;
 				}
 				p = p->next;
 			}
+			return count;
 		}
 
 		template <class UnaryPredicate>
-		void remove_if(UnaryPredicate p)
+		size_t remove_if(UnaryPredicate p)
 		{
 			SmartLock(this->lock);
 			node *n = head;
+			size_t count = 0;
 			while (n != nullptr)
 			{
 				if (p(n->value))
@@ -251,10 +254,11 @@ namespace std
 						tail = n->prev;
 					delete n;
 					--lSize;
-					return;
+					++count;
 				}
 				n = n->next;
 			}
+			return count;
 		}
 
 		void reverse()
