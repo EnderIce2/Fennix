@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <lock.hpp>
 #include <utility>
 #include <vector>
@@ -61,6 +62,16 @@ namespace std
 			: Buckets(num)
 		{
 			umDebug("Created unordered_map with %d buckets", num);
+		}
+
+		unordered_map(std::initializer_list<pair_t> init)
+			: Buckets(16)
+		{
+			umDebug("Created unordered_map with 16 buckets (initializer_list)");
+			for (const auto &p : init)
+			{
+				insert(p);
+			}
 		}
 
 		~unordered_map()
