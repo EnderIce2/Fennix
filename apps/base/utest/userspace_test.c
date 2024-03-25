@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <pwd.h>
+#include <assert.h>
 
 #define AT_NULL 0
 #define AT_IGNORE 1
@@ -383,23 +384,84 @@ void test_system()
 int sigRec = 0;
 void signalHandler(int signo)
 {
-	if (signo == SIGUSR1)
-		printf("Signal received\n");
-	else
-		printf("Unknown signal received %d\n", signo);
+	printf("Signal %s received\n", strsignal(signo));
 	sigRec++;
+}
+
+int expect_sighup = 0;
+void sighupHandler(int)
+{
+	if (expect_sighup == 0)
+		assert(!"SIGHUP received");
+	else
+		printf("SIGHUP received\n");
+}
+
+void __sig_mask_test()
+{
+	printf("- Testing signal masking\n");
+	signal(SIGHUP, sighupHandler);
+
+	sigset_t mask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGHUP);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+
+	kill(getpid(), SIGHUP);
+	sleep(1);
+
+	expect_sighup = 1;
+	sigprocmask(SIG_UNBLOCK, &mask, NULL);
+	sleep(1);
+
+	signal(SIGHUP, SIG_IGN);
+	expect_sighup = 0;
+	kill(getpid(), SIGHUP);
+	sleep(1);
+}
+
+void __sig_mask_all()
+{
+	printf("- Testing all signal masking\n");
+	sigset_t mask;
+	sigfillset(&mask);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+	sigprocmask(SIG_UNBLOCK, &mask, NULL);
 }
 
 void test_signal()
 {
+	__sig_mask_all();
+	__sig_mask_test();
+
 	printf("- Testing Signals\n");
+	struct sigaction sa;
+	sa.sa_handler = signalHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGHUP, &sa, NULL);
+
 	signal(SIGUSR1, signalHandler);
 	signal(SIGUSR2, signalHandler);
+
+	sigset_t mask;
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGQUIT);
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+
 	printf("Sending SIGUSR1...\n");
 	kill(getpid(), SIGUSR1);
 	printf("Sending SIGUSR2...\n");
 	kill(getpid(), SIGUSR2);
-	printf("Signal sent\n");
+	printf("Sending SIGHUP...\n");
+	kill(getpid(), SIGHUP);
+	printf("Sending SIGINT...\n");
+	kill(getpid(), SIGINT);
+	printf("Sending SIGQUIT...\n");
+	kill(getpid(), SIGQUIT);
+
+	printf("Signals sent\n");
 	while (sigRec < 2)
 		sleep(1);
 }
