@@ -473,6 +473,7 @@ namespace Tasking
 		void SetWorkingDirectory(Node *node);
 		void SetExe(const char *path);
 		size_t GetSize();
+		TCB *GetThread(TID ID);
 
 		PCB(class Task *ctx,
 			PCB *Parent,

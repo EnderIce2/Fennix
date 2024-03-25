@@ -48,6 +48,14 @@ using namespace vfs;
 
 namespace Tasking
 {
+	TCB *PCB::GetThread(TID ID)
+	{
+		auto it = std::find_if(this->Threads.begin(), this->Threads.end(),
+							   [ID](TCB *t)
+							   { return t->ID == ID; });
+		return it != this->Threads.end() ? *it : nullptr;
+	}
+
 	int PCB::SendSignal(int sig)
 	{
 		return this->Signals->SendSignal(sig);
