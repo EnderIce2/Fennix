@@ -75,8 +75,8 @@ namespace std
 		return last;
 	}
 
-	template <class InputIt, class UnaryPredicate>
-	constexpr InputIt find_if(InputIt first, InputIt last, UnaryPredicate p)
+	template <class InputIt, class UnaryPred>
+	constexpr InputIt find_if(InputIt first, InputIt last, UnaryPred p)
 	{
 		for (; first != last; ++first)
 			if (p(*first))
@@ -85,8 +85,8 @@ namespace std
 		return last;
 	}
 
-	template <class InputIt, class UnaryPredicate>
-	constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPredicate q)
+	template <class InputIt, class UnaryPred>
+	constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPred q)
 	{
 		for (; first != last; ++first)
 			if (!q(*first))
@@ -106,8 +106,8 @@ namespace std
 		return first;
 	}
 
-	template <class ForwardIt, class UnaryPredicate>
-	ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPredicate p)
+	template <class ForwardIt, class UnaryPred>
+	ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPred p)
 	{
 		first = std::find_if(first, last, p);
 		if (first != last)
