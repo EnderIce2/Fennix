@@ -18,171 +18,121 @@
 #ifndef __FENNIX_KERNEL_SIGNAL_H__
 #define __FENNIX_KERNEL_SIGNAL_H__
 
+#include <unordered_map>
 #include <syscalls.hpp>
 #include <lock.hpp>
 #include <types.h>
+#include <bitset>
 #include <list>
-#include <syscall/linux/signals.hpp>
 
 enum Signals : int
 {
 	SIG_NULL = 0,
-
-	/**
-	 * Process abort signal.
-	 */
-	SIGABRT,
-
-	/**
-	 * Alarm clock.
-	 */
-	SIGALRM,
-
-	/**
-	 * Access to an undefined portion of a memory object.
-	 */
-	SIGBUS,
-
-	/**
-	 * Child process terminated, stopped, or continued.
-	 */
-	SIGCHLD,
-
-	/**
-	 * Continue executing, if stopped.
-	 */
-	SIGCONT,
-
-	/**
-	 * Erroneous arithmetic operation.
-	 */
-	SIGFPE,
-
-	/**
-	 * Hangup.
-	 */
-	SIGHUP,
-
-	/**
-	 * Illegal instruction.
-	 */
-	SIGILL,
-
-	/**
-	 * Terminal interrupt signal.
-	 */
-	SIGINT,
-
-	/**
-	 * Kill (cannot be caught or ignored).
-	 */
-	SIGKILL,
-
-	/**
-	 * Write on a pipe with no one to read it.
-	 */
-	SIGPIPE,
-
-	/**
-	 * Terminal quit signal.
-	 */
-	SIGQUIT,
-
-	/**
-	 * Invalid memory reference.
-	 */
-	SIGSEGV,
-
-	/**
-	 * Stop executing (cannot be caught or ignored).
-	 */
-	SIGSTOP,
-
-	/**
-	 * Termination signal.
-	 */
-	SIGTERM,
-
-	/**
-	 * Terminal stop signal.
-	 */
-	SIGTSTP,
-
-	/**
-	 * Background process attempting read.
-	 */
-	SIGTTIN,
-
-	/**
-	 * Background process attempting write.
-	 */
-	SIGTTOU,
-
-	/**
-	 * User-defined signal 1.
-	 */
-	SIGUSR1,
-
-	/**
-	 * User-defined signal 2.
-	 */
-	SIGUSR2,
-
-	/**
-	 * Pollable event.
-	 */
-	SIGPOLL,
-
-	/**
-	 * Profiling timer expired.
-	 */
-	SIGPROF,
-
-	/**
-	 * Bad system call.
-	 */
-	SIGSYS,
-
-	/**
-	 * Trace/breakpoint trap.
-	 */
-	SIGTRAP,
-
-	/**
-	 * High bandwidth data is available at a socket.
-	 */
-	SIGURG,
-
-	/**
-	 * Virtual timer expired.
-	 */
-	SIGVTALRM,
-
-	/**
-	 * CPU time limit exceeded.
-	 */
-	SIGXCPU,
-
-	/**
-	 * File size limit exceeded.
-	 */
-	SIGXFSZ,
+	/* Process abort signal. */
+	SIGABRT = 1,
+	/* Alarm clock. */
+	SIGALRM = 2,
+	/* Access to an undefined portion of a memory object. */
+	SIGBUS = 3,
+	/* Child process terminated, stopped, or continued. */
+	SIGCHLD = 4,
+	/* Continue executing, if stopped. */
+	SIGCONT = 5,
+	/* Erroneous arithmetic operation. */
+	SIGFPE = 6,
+	/* Hangup. */
+	SIGHUP = 7,
+	/* Illegal instruction. */
+	SIGILL = 8,
+	/* Terminal interrupt signal. */
+	SIGINT = 9,
+	/* Kill (cannot be caught or ignored). */
+	SIGKILL = 10,
+	/* Write on a pipe with no one to read it. */
+	SIGPIPE = 11,
+	/* Terminal quit signal. */
+	SIGQUIT = 12,
+	/* Invalid memory reference. */
+	SIGSEGV = 13,
+	/* Stop executing (cannot be caught or ignored). */
+	SIGSTOP = 14,
+	/* Termination signal. */
+	SIGTERM = 15,
+	/* Terminal stop signal. */
+	SIGTSTP = 16,
+	/* Background process attempting read. */
+	SIGTTIN = 17,
+	/* Background process attempting write. */
+	SIGTTOU = 18,
+	/* User-defined signal 1. */
+	SIGUSR1 = 19,
+	/* User-defined signal 2. */
+	SIGUSR2 = 20,
+	/* Pollable event. */
+	SIGPOLL = 21,
+	/* Profiling timer expired. */
+	SIGPROF = 22,
+	/* Bad system call. */
+	SIGSYS = 23,
+	/* Trace/breakpoint trap. */
+	SIGTRAP = 24,
+	/* High bandwidth data is available at a socket. */
+	SIGURG = 25,
+	/* Virtual timer expired. */
+	SIGVTALRM = 26,
+	/* CPU time limit exceeded. */
+	SIGXCPU = 27,
+	/* File size limit exceeded. */
+	SIGXFSZ = 28,
 
 	/**
 	 * Reserved
-	 *
 	 * These are just to match Linux's signal numbers.
 	 */
-	SIGRSV1,
-	SIGRSV2,
+	SIGCOMP1 = 29,
+	SIGCOMP2 = 30,
+	SIGCOMP3 = 31,
 
-	/**
-	 * Maximum signal number.
-	 */
-	SIGNAL_MAX
+	/* Real-time signals. */
+	SIGRTMIN = 32,
+	SIGRT_1 = 33,
+	SIGRT_2 = 34,
+	SIGRT_3 = 35,
+	SIGRT_4 = 36,
+	SIGRT_5 = 37,
+	SIGRT_6 = 38,
+	SIGRT_7 = 39,
+	SIGRT_8 = 40,
+	SIGRT_9 = 41,
+	SIGRT_10 = 42,
+	SIGRT_11 = 43,
+	SIGRT_12 = 44,
+	SIGRT_13 = 45,
+	SIGRT_14 = 46,
+	SIGRT_15 = 47,
+	SIGRT_16 = 48,
+	SIGRT_17 = 49,
+	SIGRT_18 = 50,
+	SIGRT_19 = 51,
+	SIGRT_20 = 52,
+	SIGRT_21 = 53,
+	SIGRT_22 = 54,
+	SIGRT_23 = 55,
+	SIGRT_24 = 56,
+	SIGRT_25 = 57,
+	SIGRT_26 = 58,
+	SIGRT_27 = 59,
+	SIGRT_28 = 60,
+	SIGRT_29 = 61,
+	SIGRT_30 = 62,
+	SIGRT_31 = 63,
+	SIGRTMAX = 64,
+
+	/* Maximum signal number. */
+	SIGNAL_MAX = SIGRTMAX
 };
 
-enum SignalDisposition
+enum SignalDispositions
 {
 	/**
 	 * Terminate the process.
@@ -210,21 +160,28 @@ enum SignalDisposition
 	SIG_CONT
 };
 
-enum SignalAction
+enum SignalActions
 {
 	SIG_BLOCK,
 	SIG_UNBLOCK,
 	SIG_SETMASK
 };
 
+enum SignalActionDisposition : long
+{
+	SAD_ERR = -1,
+	SAD_DFL = 0,
+	SAD_IGN = 1,
+};
+
 #define SA_NOCLDSTOP 1
 #define SA_NOCLDWAIT 2
 #define SA_SIGINFO 4
+#define SA_RESTORER 0x04000000
 #define SA_ONSTACK 0x08000000
 #define SA_RESTART 0x10000000
 #define SA_NODEFER 0x40000000
 #define SA_RESETHAND 0x80000000
-#define SA_RESTORER 0x04000000
 
 #define __SI_PAD_SIZE \
 	(128 - 2 * sizeof(int) - sizeof(long))
@@ -323,41 +280,32 @@ typedef struct
 	} __si_fields;
 } siginfo_t;
 
-struct sigaction
+struct SignalAction
 {
 	union
 	{
-		void (*sa_handler)(int);
-		void (*sa_sigaction)(int, siginfo_t *, void *);
-	} __sa_handler;
-	sigset_t sa_mask;
-	int sa_flags;
-	void (*sa_restorer)(void);
+		void (*Handler)(int);
+		void (*Action)(int, siginfo_t *, void *);
+		sigset_t Disposition;
+	} sa_handler;
+	std::bitset<64> Mask;
+	unsigned long Flags;
+	void (*Restorer)(void);
 };
 
 namespace Tasking
 {
-	__no_sanitize("shift") inline __always_inline
-		sigset_t
-		ToFlag(sigset_t sig)
-	{
-		return 1 << (sig - 1);
-	}
-
-	inline __always_inline
-		sigset_t
-		ToSig(sigset_t flag)
-	{
-		return __builtin_ctzl(flag) + 1;
-	}
-
 	class Signal
 	{
 	private:
 		struct SignalInfo
 		{
-			int sig;
-			union sigval val;
+			int sig = SIG_NULL;
+			union sigval val
+			{
+				0
+			};
+			pid_t tid = -1;
 		};
 
 		struct StackInfo
@@ -388,109 +336,97 @@ namespace Tasking
 		void *TrampAddr = nullptr;
 		size_t TrampSz = 0;
 
-		std::list<SignalInfo> SignalQueue;
-		std::atomic<sigset_t> SignalMask = 0;
-		sigaction SignalAction[SIGNAL_MAX]{};
-		SignalDisposition sigDisp[SIGNAL_MAX];
+		std::list<SignalInfo> Queue;
+		SignalAction sa[64 + 1]{};
+		// std::bitset<SIGNAL_MAX> GlobalMask;
+		// SignalDispositions Disposition[SIGNAL_MAX];
 		std::list<SignalInfo> Watchers;
+		std::unordered_map<Signals, SignalDispositions> Disposition = {
+			{SIGHUP, SIG_TERM},
+			{SIGINT, SIG_TERM},
+			{SIGQUIT, SIG_TERM},
+			{SIGILL, SIG_CORE},
+			{SIGTRAP, SIG_CORE},
+			{SIGABRT, SIG_CORE},
+			{SIGBUS, SIG_CORE},
+			{SIGFPE, SIG_CORE},
+			{SIGKILL, SIG_TERM},
+			{SIGUSR1, SIG_TERM},
+			{SIGSEGV, SIG_CORE},
+			{SIGUSR2, SIG_TERM},
+			{SIGPIPE, SIG_TERM},
+			{SIGALRM, SIG_TERM},
+			{SIGTERM, SIG_TERM},
+			{SIGCOMP1, SIG_IGN},
+			{SIGCHLD, SIG_IGN},
+			{SIGCONT, SIG_CONT},
+			{SIGSTOP, SIG_STOP},
+			{SIGTSTP, SIG_STOP},
+			{SIGTTIN, SIG_STOP},
+			{SIGTTOU, SIG_STOP},
+			{SIGURG, SIG_IGN},
+			{SIGXCPU, SIG_CORE},
+			{SIGXFSZ, SIG_CORE},
+			{SIGVTALRM, SIG_TERM},
+			{SIGPROF, SIG_TERM},
+			{SIGCOMP2, SIG_IGN},
+			{SIGPOLL, SIG_TERM},
+			{SIGCOMP3, SIG_IGN},
+			{SIGSYS, SIG_CORE},
+			{SIGRTMIN, SIG_IGN},
+			{SIGRT_1, SIG_IGN},
+			{SIGRT_2, SIG_IGN},
+			{SIGRT_3, SIG_IGN},
+			{SIGRT_4, SIG_IGN},
+			{SIGRT_5, SIG_IGN},
+			{SIGRT_6, SIG_IGN},
+			{SIGRT_7, SIG_IGN},
+			{SIGRT_8, SIG_IGN},
+			{SIGRT_9, SIG_IGN},
+			{SIGRT_10, SIG_IGN},
+			{SIGRT_11, SIG_IGN},
+			{SIGRT_12, SIG_IGN},
+			{SIGRT_13, SIG_IGN},
+			{SIGRT_14, SIG_IGN},
+			{SIGRT_15, SIG_IGN},
+			{SIGRT_16, SIG_IGN},
+			{SIGRT_17, SIG_IGN},
+			{SIGRT_18, SIG_IGN},
+			{SIGRT_19, SIG_IGN},
+			{SIGRT_20, SIG_IGN},
+			{SIGRT_21, SIG_IGN},
+			{SIGRT_22, SIG_IGN},
+			{SIGRT_23, SIG_IGN},
+			{SIGRT_24, SIG_IGN},
+			{SIGRT_25, SIG_IGN},
+			{SIGRT_26, SIG_IGN},
+			{SIGRT_27, SIG_IGN},
+			{SIGRT_28, SIG_IGN},
+			{SIGRT_29, SIG_IGN},
+			{SIGRT_30, SIG_IGN},
+			{SIGRT_31, SIG_IGN},
+			{SIGRTMAX, SIG_IGN}};
 
 		bool LinuxSig();
-
-		int ConvertToLinuxIfNecessary(int sig);
-		int ConvertToNativeIfNecessary(int sig);
-
-		sigset_t ConvertSigsetToLinuxIfNecessary(sigset_t sig);
-		sigset_t ConvertSigsetToNativeIfNecessary(sigset_t sig);
-
-		int MakeExitCode(int sig);
-
+		int MakeExitCode(Signals sig);
 		void InitTrampoline();
-
-		const sigset_t nMasks = ToFlag(SIGKILL) |
-								ToFlag(SIGSTOP) |
-								ToFlag(SIGCONT) |
-								ToFlag(SIGSEGV) |
-								ToFlag(SIGBUS) |
-								ToFlag(SIGILL) |
-								ToFlag(SIGFPE);
-
-		const sigset_t lMasks = ToFlag(linux_SIGKILL) |
-								ToFlag(linux_SIGSTOP) |
-								ToFlag(linux_SIGCONT) |
-								ToFlag(linux_SIGSEGV) |
-								ToFlag(linux_SIGBUS) |
-								ToFlag(linux_SIGILL) |
-								ToFlag(linux_SIGFPE);
-
-		void RemoveUnmaskable(sigset_t *sig)
-		{
-			if (LinuxSig())
-				*sig &= ~lMasks;
-			else
-				*sig &= ~nMasks;
-		}
-
-		bool CanHaveHandler(sigset_t sig)
-		{
-			switch (sig)
-			{
-			case SIGKILL:
-			case SIGSTOP:
-			case SIGCONT:
-				return false;
-			default:
-				return true;
-			}
-		}
+		SignalInfo GetAvailableSignal(void *thread);
 
 	public:
 		void *GetContext() { return ctx; }
 		Signals GetLastSignal() { return LastSignal; }
 
-		int AddWatcher(Signal *who, int sig);
-		int RemoveWatcher(Signal *who, int sig);
+		int AddWatcher(Signal *who, Signals sig);
+		int RemoveWatcher(Signal *who, Signals sig);
 
-		int AddSignal(int sig, union sigval val);
-		int RemoveSignal(int sig);
+		int AddSignal(Signals sig, union sigval val = {0}, pid_t tid = -1);
+		int RemoveSignal(Signals sig);
 
-		/**
-		 * For scheduler use only
-		 * @return True if there is a signal to handle
-		 */
-		bool HandleSignal(CPU::TrapFrame *tf);
-		void RestoreHandleSignal(SyscallsFrame *tf);
+		bool HandleSignal(CPU::TrapFrame *tf, void *thread);
+		void RestoreHandleSignal(SyscallsFrame *tf, void *thread);
 
-		/**
-		 * Mask a signal
-		 *
-		 * @param sig The signal to set
-		 *
-		 * @return Old mask
-		 */
-		sigset_t Block(sigset_t sig);
-
-		/**
-		 * Unmask a signal
-		 *
-		 * @param sig The signal to set
-		 *
-		 * @return Old mask
-		 */
-		sigset_t Unblock(sigset_t sig);
-
-		/**
-		 * Set the signal mask
-		 *
-		 * @param sig The signal to set
-		 *
-		 * @return Old mask
-		 */
-		sigset_t SetMask(sigset_t sig);
-
-		sigset_t GetMask() { return SignalMask.load(); }
-
-		int SetAction(int sig, const sigaction act);
-		int GetAction(int sig, sigaction *act);
+		int SetAction(Signals sig, const SignalAction *act);
+		int GetAction(Signals sig, SignalAction *act);
 
 		/**
 		 * Send a signal to the process
@@ -498,39 +434,56 @@ namespace Tasking
 		 * @param sig The signal to send
 		 * (compatibility specific)
 		 * @param val The value to send
+		 * @param tid The thread ID to send the signal to
 		 *
 		 * @return 0 on success, -errno on error
 		 */
-		int SendSignal(int sig, union sigval val = {0});
+		int SendSignal(Signals sig, sigval val = {0}, pid_t tid = -1);
 
 		int WaitAnySignal();
-		bool HasPendingSignal();
+		bool HasPendingSignal() { return !Queue.empty(); }
 
 		/**
 		 * Wait for a signal
 		 *
 		 * @param sig The signal to wait for
-		 * (compatibility specific)
 		 * @param val The value to wait for
 		 *
 		 * @return 0 on success, -errno on error
 		 */
-		int WaitSignal(int sig, union sigval *val);
+		int WaitSignal(Signals sig, union sigval *val);
 
 		/**
 		 * Wait for a signal with a timeout
 		 *
 		 * @param sig The signal to wait for
-		 * (compatibility specific)
 		 * @param val The value to wait for
 		 * @param timeout The timeout to wait for
 		 *
 		 * @return 0 on success, -errno on error
 		 */
-		int WaitSignalTimeout(int sig, union sigval *val, uint64_t timeout);
+		int WaitSignalTimeout(Signals sig, union sigval *val, uint64_t timeout);
 
 		Signal(void *ctx);
 		~Signal();
+
+		friend class ThreadSignal;
+	};
+
+	class ThreadSignal
+	{
+	private:
+		Signal &pSig;
+
+	public:
+		std::bitset<64> Mask = 0;
+
+		sigset_t Block(sigset_t sig);
+		sigset_t Unblock(sigset_t sig);
+		sigset_t SetMask(sigset_t sig);
+		sigset_t GetMask();
+
+		ThreadSignal(Signal &sig) : pSig(sig) {}
 	};
 }
 

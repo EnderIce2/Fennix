@@ -18,6 +18,7 @@
 #include <task.hpp>
 
 #include <dumper.hpp>
+#include <signal.hpp>
 #include <convert.h>
 #include <lock.hpp>
 #include <printf.h>
@@ -58,7 +59,7 @@ namespace Tasking
 
 	int PCB::SendSignal(int sig)
 	{
-		return this->Signals->SendSignal(sig);
+		return this->Signals.SendSignal((enum Signals)sig);
 	}
 
 	void PCB::SetState(TaskState state)
@@ -138,7 +139,8 @@ namespace Tasking
 			 TaskExecutionMode ExecutionMode,
 			 bool UseKernelPageTable,
 			 uint16_t UserID, uint16_t GroupID)
-		: Node(ProcFS, std::to_string(ctx->NextPID), NodeType::DIRECTORY)
+		: Node(ProcFS, std::to_string(ctx->NextPID), NodeType::DIRECTORY),
+		  Signals(this)
 	{
 		debug("+ %#lx", this);
 
@@ -214,7 +216,6 @@ namespace Tasking
 
 		this->vma = new Memory::VirtualMemoryArea(this->PageTable);
 		this->ProgramBreak = new Memory::ProgramBreak(this->PageTable, this->vma);
-		this->Signals = new Signal(this);
 
 		debug("Process page table: %#lx", this->PageTable);
 		debug("Created %s process \"%s\"(%d). Parent \"%s\"(%d)",
@@ -230,7 +231,6 @@ namespace Tasking
 		this->AllocatedMemory += sizeof(Memory::VirtualMemoryArea);
 		this->AllocatedMemory += sizeof(Memory::ProgramBreak);
 		this->AllocatedMemory += sizeof(SymbolResolver::Symbols);
-		this->AllocatedMemory += sizeof(Signal);
 
 		this->Info.SpawnTime = TimeManager->GetCounter();
 
@@ -249,9 +249,6 @@ namespace Tasking
 		/* Remove us from the process list so we
 			don't get scheduled anymore */
 		ctx->PopProcess(this);
-
-		debug("Freeing signals");
-		delete this->Signals;
 
 		debug("Freeing allocated memory");
 		delete this->ProgramBreak;

@@ -678,7 +678,7 @@ namespace Tasking::Scheduler
 		CPU::x32::wrmsr(CPU::x32::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 #endif
 
-		CurrentCPU->CurrentProcess->Signals->HandleSignal(Frame);
+		CurrentCPU->CurrentProcess->Signals.HandleSignal(Frame, CurrentCPU->CurrentThread.load());
 
 		if (!ProcessNotChanged)
 			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetCounter();

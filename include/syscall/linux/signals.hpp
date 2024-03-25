@@ -20,6 +20,8 @@
 
 #include <types.h>
 
+#define linux_NSIG 64
+
 #define linux_SIGHUP 1
 #define linux_SIGINT 2
 #define linux_SIGQUIT 3
@@ -52,5 +54,15 @@
 #define linux_SIGPWR 30
 #define linux_SIGSYS 31
 #define linux_SIGUNUSED linux_SIGSYS
+
+#define linux_SIGRTMIN 32
+#define linux_SIGRTMAX linux_NSIG
+struct k_sigaction
+{
+	void (*handler)(int);
+	unsigned long flags;
+	void (*restorer)(void);
+	unsigned mask[2];
+};
 
 #endif // !__FENNIX_KERNEL_LINUX_SIGNALS_H__

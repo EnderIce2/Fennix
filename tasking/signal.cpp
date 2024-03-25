@@ -30,73 +30,72 @@
 #include "../kernel.h"
 
 #ifdef DEBUG
-const char *lSigStr[] = {
-	"SIGHUP",
-	"SIGINT",
-	"SIGQUIT",
-	"SIGILL",
-	"SIGTRAP",
-	"SIGABRT",
-	"SIGBUS",
-	"SIGFPE",
-	"SIGKILL",
-	"SIGUSR1",
-	"SIGSEGV",
-	"SIGUSR2",
-	"SIGPIPE",
-	"SIGALRM",
-	"SIGTERM",
-	"SIGSTKFLT",
-	"SIGCHLD",
-	"SIGCONT",
-	"SIGSTOP",
-	"SIGTSTP",
-	"SIGTTIN",
-	"SIGTTOU",
-	"SIGURG",
-	"SIGXCPU",
-	"SIGXFSZ",
-	"SIGVTALRM",
-	"SIGPROF",
-	"SIGWINCH",
-	"SIGPOLL",
-	"SIGPWR",
-	"SIGSYS",
-	"SIGUNUSED",
-};
-
 const char *sigStr[] = {
-	"INVALID  ",
-	"SIGABRT  ",
-	"SIGALRM  ",
-	"SIGBUS   ",
-	"SIGCHLD  ",
-	"SIGCONT  ",
-	"SIGFPE   ",
-	"SIGHUP   ",
-	"SIGILL   ",
-	"SIGINT   ",
-	"SIGKILL  ",
-	"SIGPIPE  ",
-	"SIGQUIT  ",
-	"SIGSEGV  ",
-	"SIGSTOP  ",
-	"SIGTERM  ",
-	"SIGTSTP  ",
-	"SIGTTIN  ",
-	"SIGTTOU  ",
-	"SIGUSR1  ",
-	"SIGUSR2  ",
-	"SIGPOLL  ",
-	"SIGPROF  ",
-	"SIGSYS   ",
-	"SIGTRAP  ",
-	"SIGURG   ",
-	"SIGVTALRM",
-	"SIGXCPU  ",
-	"SIGXFSZ  ",
-	"SIGRSV1  ",
-	"SIGRSV2  ",
+	/*  0 */ "INVALID",
+	/*  1 */ "SIGABRT",
+	/*  2 */ "SIGALRM",
+	/*  3 */ "SIGBUS",
+	/*  4 */ "SIGCHLD",
+	/*  5 */ "SIGCONT",
+	/*  6 */ "SIGFPE",
+	/*  7 */ "SIGHUP",
+	/*  8 */ "SIGILL",
+	/*  9 */ "SIGINT",
+	/* 10 */ "SIGKILL",
+	/* 11 */ "SIGPIPE",
+	/* 12 */ "SIGQUIT",
+	/* 13 */ "SIGSEGV",
+	/* 14 */ "SIGSTOP",
+	/* 15 */ "SIGTERM",
+	/* 16 */ "SIGTSTP",
+	/* 17 */ "SIGTTIN",
+	/* 18 */ "SIGTTOU",
+	/* 19 */ "SIGUSR1",
+	/* 20 */ "SIGUSR2",
+	/* 21 */ "SIGPOLL",
+	/* 22 */ "SIGPROF",
+	/* 23 */ "SIGSYS",
+	/* 24 */ "SIGTRAP",
+	/* 25 */ "SIGURG",
+	/* 26 */ "SIGVTALRM",
+	/* 27 */ "SIGXCPU",
+	/* 28 */ "SIGXFSZ",
+	/* 29 */ "SIGCOMP1",
+	/* 30 */ "SIGCOMP2",
+	/* 31 */ "SIGCOMP3",
+	/* 32 */ "SIGRTMIN",
+	/* 33 */ "SIGRT_1",
+	/* 34 */ "SIGRT_2",
+	/* 35 */ "SIGRT_3",
+	/* 36 */ "SIGRT_4",
+	/* 37 */ "SIGRT_5",
+	/* 38 */ "SIGRT_6",
+	/* 39 */ "SIGRT_7",
+	/* 40 */ "SIGRT_8",
+	/* 41 */ "SIGRT_9",
+	/* 42 */ "SIGRT_10",
+	/* 43 */ "SIGRT_11",
+	/* 44 */ "SIGRT_12",
+	/* 45 */ "SIGRT_13",
+	/* 46 */ "SIGRT_14",
+	/* 47 */ "SIGRT_15",
+	/* 48 */ "SIGRT_16",
+	/* 49 */ "SIGRT_17",
+	/* 50 */ "SIGRT_18",
+	/* 51 */ "SIGRT_19",
+	/* 52 */ "SIGRT_20",
+	/* 53 */ "SIGRT_21",
+	/* 54 */ "SIGRT_22",
+	/* 55 */ "SIGRT_23",
+	/* 56 */ "SIGRT_24",
+	/* 57 */ "SIGRT_25",
+	/* 58 */ "SIGRT_26",
+	/* 59 */ "SIGRT_27",
+	/* 60 */ "SIGRT_28",
+	/* 61 */ "SIGRT_29",
+	/* 62 */ "SIGRT_30",
+	/* 63 */ "SIGRT_31",
+	/* 64 */ "SIGRTMAX",
 };
 
 const char *dispStr[] = {
@@ -113,50 +112,89 @@ extern "C" uintptr_t _sig_linux_trampoline_start, _sig_linux_trampoline_end;
 
 static const struct
 {
-	int linuxSignal;
-	int nativeSignal;
-} signalMapping[] = {
-	{linux_SIGHUP, SIGHUP},
-	{linux_SIGINT, SIGINT},
-	{linux_SIGQUIT, SIGQUIT},
-	{linux_SIGILL, SIGILL},
-	{linux_SIGTRAP, SIGTRAP},
-	{linux_SIGABRT, SIGABRT},
-	{linux_SIGBUS, SIGBUS},
-	{linux_SIGFPE, SIGFPE},
-	{linux_SIGKILL, SIGKILL},
-	{linux_SIGUSR1, SIGUSR1},
-	{linux_SIGSEGV, SIGSEGV},
-	{linux_SIGUSR2, SIGUSR2},
-	{linux_SIGPIPE, SIGPIPE},
-	{linux_SIGALRM, SIGALRM},
-	{linux_SIGTERM, SIGTERM},
-	{linux_SIGSTKFLT, SIGRSV1},
-	{linux_SIGCHLD, SIGCHLD},
-	{linux_SIGCONT, SIGCONT},
-	{linux_SIGSTOP, SIGSTOP},
-	{linux_SIGTSTP, SIGTSTP},
-	{linux_SIGTTIN, SIGTTIN},
-	{linux_SIGTTOU, SIGTTOU},
-	{linux_SIGURG, SIGURG},
-	{linux_SIGXCPU, SIGXCPU},
-	{linux_SIGXFSZ, SIGXFSZ},
-	{linux_SIGVTALRM, SIGVTALRM},
-	{linux_SIGPROF, SIGPROF},
-	{linux_SIGPOLL, SIGPOLL},
-	{linux_SIGPWR, SIGRSV2},
-	{linux_SIGSYS, SIGSYS},
-	{linux_SIGUNUSED, SIGSYS},
+	Signals Signal;
+	SignalDispositions Disposition;
+} SignalDisposition[] = {
+	{SIGHUP, SIG_TERM},
+	{SIGINT, SIG_TERM},
+	{SIGQUIT, SIG_TERM},
+	{SIGILL, SIG_CORE},
+	{SIGTRAP, SIG_CORE},
+	{SIGABRT, SIG_CORE},
+	{SIGBUS, SIG_CORE},
+	{SIGFPE, SIG_CORE},
+	{SIGKILL, SIG_TERM},
+	{SIGUSR1, SIG_TERM},
+	{SIGSEGV, SIG_CORE},
+	{SIGUSR2, SIG_TERM},
+	{SIGPIPE, SIG_TERM},
+	{SIGALRM, SIG_TERM},
+	{SIGTERM, SIG_TERM},
+	{SIGCOMP1, SIG_IGN},
+	{SIGCHLD, SIG_IGN},
+	{SIGCONT, SIG_CONT},
+	{SIGSTOP, SIG_STOP},
+	{SIGTSTP, SIG_STOP},
+	{SIGTTIN, SIG_STOP},
+	{SIGTTOU, SIG_STOP},
+	{SIGURG, SIG_IGN},
+	{SIGXCPU, SIG_CORE},
+	{SIGXFSZ, SIG_CORE},
+	{SIGVTALRM, SIG_TERM},
+	{SIGPROF, SIG_TERM},
+	{SIGCOMP2, SIG_IGN},
+	{SIGPOLL, SIG_TERM},
+	{SIGCOMP3, SIG_IGN},
+	{SIGSYS, SIG_CORE},
+	{SIGRTMIN, SIG_IGN},
+	{SIGRT_1, SIG_IGN},
+	{SIGRT_2, SIG_IGN},
+	{SIGRT_3, SIG_IGN},
+	{SIGRT_4, SIG_IGN},
+	{SIGRT_5, SIG_IGN},
+	{SIGRT_6, SIG_IGN},
+	{SIGRT_7, SIG_IGN},
+	{SIGRT_8, SIG_IGN},
+	{SIGRT_9, SIG_IGN},
+	{SIGRT_10, SIG_IGN},
+	{SIGRT_11, SIG_IGN},
+	{SIGRT_12, SIG_IGN},
+	{SIGRT_13, SIG_IGN},
+	{SIGRT_14, SIG_IGN},
+	{SIGRT_15, SIG_IGN},
+	{SIGRT_16, SIG_IGN},
+	{SIGRT_17, SIG_IGN},
+	{SIGRT_18, SIG_IGN},
+	{SIGRT_19, SIG_IGN},
+	{SIGRT_20, SIG_IGN},
+	{SIGRT_21, SIG_IGN},
+	{SIGRT_22, SIG_IGN},
+	{SIGRT_23, SIG_IGN},
+	{SIGRT_24, SIG_IGN},
+	{SIGRT_25, SIG_IGN},
+	{SIGRT_26, SIG_IGN},
+	{SIGRT_27, SIG_IGN},
+	{SIGRT_28, SIG_IGN},
+	{SIGRT_29, SIG_IGN},
+	{SIGRT_30, SIG_IGN},
+	{SIGRT_31, SIG_IGN},
+	{SIGRTMAX, SIG_IGN},
 };
 
-static_assert(linux_SIGUNUSED == SIGNAL_MAX);
+SignalDispositions GetDefaultSignalDisposition(Signals sig)
+{
+	foreach (auto var in SignalDisposition)
+	{
+		if (var.Signal == sig)
+			return var.Disposition;
+	}
 
-#define CTLif(x) ConvertToLinuxIfNecessary(x)
-#define CTNif(x) ConvertToNativeIfNecessary(x)
-#define CSigTLif(x) ConvertSigsetToLinuxIfNecessary(x)
-#define CSigTNif(x) ConvertSigsetToNativeIfNecessary(x)
+	error("Invalid signal: %d", sig);
+	return SIG_TERM;
+}
 
-/* TODO: CTLif & CTNif may need optimization */
+/* syscalls/linux.cpp */
+extern int ConvertSignalToLinux(Signals sig);
 
 namespace Tasking
 {
@@ -165,86 +203,10 @@ namespace Tasking
 		return ((PCB *)ctx)->Info.Compatibility == Linux;
 	}
 
-	int Signal::ConvertToLinuxIfNecessary(int sig)
-	{
-		if (!LinuxSig())
-		{
-			debug("Not linux sig: %d", sig);
-			return sig;
-		}
-
-		foreach (auto &mapping in signalMapping)
-		{
-			if (mapping.nativeSignal == sig)
-			{
-				// debug("Converted %d to %d", sig, mapping.linuxSignal);
-				return mapping.linuxSignal;
-			}
-		}
-
-		return -1;
-	}
-
-	int Signal::ConvertToNativeIfNecessary(int sig)
-	{
-		if (!LinuxSig())
-		{
-			debug("Not native sig: %d", sig);
-			return sig;
-		}
-
-		foreach (auto &mapping in signalMapping)
-		{
-			if (mapping.linuxSignal == sig)
-			{
-				// debug("Converted %d to %d", sig, mapping.nativeSignal);
-				return mapping.nativeSignal;
-			}
-		}
-
-		return -1;
-	}
-
-	sigset_t Signal::ConvertSigsetToLinuxIfNecessary(sigset_t sig)
-	{
-		if (!LinuxSig())
-		{
-			debug("Not linux sigset: %#lx", sig);
-			return 0;
-		}
-
-		sigset_t ret = 0;
-		for (int i = 0; i < SIGNAL_MAX; i++)
-		{
-			if (sig & ToFlag(i))
-				ret |= ToFlag(CTLif(i));
-		}
-
-		return ret;
-	}
-
-	sigset_t Signal::ConvertSigsetToNativeIfNecessary(sigset_t sig)
-	{
-		if (!LinuxSig())
-		{
-			debug("Not native sigset: %#lx", sig);
-			return 0;
-		}
-
-		sigset_t ret = 0;
-		for (int i = 0; i < linux_SIGUNUSED; i++)
-		{
-			if (sig & ToFlag(i))
-				ret |= ToFlag(CTNif(i));
-		}
-
-		return ret;
-	}
-
-	int Signal::MakeExitCode(int sig)
+	int Signal::MakeExitCode(Signals sig)
 	{
 		if (this->LinuxSig())
-			return 128 + sig;
+			return 128 + ConvertSignalToLinux(sig);
 		else
 			return 100 + sig;
 	}
@@ -293,7 +255,7 @@ namespace Tasking
 		}
 		case Windows:
 		{
-			fixme("Windows compatibility");
+			assert(!"Windows compatibility not implemented");
 			break;
 		}
 		default:
@@ -304,18 +266,18 @@ namespace Tasking
 
 	/* ------------------------------------------------------ */
 
-	int Signal::AddWatcher(Signal *who, int sig)
+	int Signal::AddWatcher(Signal *who, Signals sig)
 	{
-		SmartLock(SignalLock);
 		SignalInfo info;
 		info.sig = sig;
 		info.val.sival_ptr = who;
 
+		SmartLock(SignalLock);
 		Watchers.push_back(info);
 		return 0;
 	}
 
-	int Signal::RemoveWatcher(Signal *who, int sig)
+	int Signal::RemoveWatcher(Signal *who, Signals sig)
 	{
 		SmartLock(SignalLock);
 		forItr(itr, Watchers)
@@ -330,42 +292,73 @@ namespace Tasking
 		return -ENOENT;
 	}
 
-	int Signal::AddSignal(int sig, union sigval val)
+	int Signal::AddSignal(Signals sig, union sigval val, pid_t tid)
 	{
-		SmartLock(SignalLock);
-		SignalInfo info{.sig = sig, .val = val};
-		SignalQueue.push_back(info);
+		SignalInfo info{.sig = sig, .val = val, .tid = tid};
+		Queue.push_back(info);
 		return 0;
 	}
 
-	int Signal::RemoveSignal(int sig)
+	int Signal::RemoveSignal(Signals sig)
 	{
-		SmartLock(SignalLock);
-		forItr(itr, SignalQueue)
-		{
-			if (itr->sig == sig)
-			{
-				SignalQueue.erase(itr);
-				return 0;
-			}
-		}
-		return -ENOENT;
+		size_t n = Queue.remove_if([sig](SignalInfo &info)
+								   { return info.sig == sig; });
+		debug("Removed %d signals", n);
+		return n ? 0 : -ENOENT;
 	}
 
-	bool Signal::HandleSignal(CPU::TrapFrame *tf)
+	Signal::SignalInfo Signal::GetAvailableSignal(void *thread)
 	{
-		SmartLock(SignalLock);
-		if (SignalQueue.empty())
-			return false;
+		forItr(itr, Queue)
+		{
+			// if (GlobalMask.test(itr->sig - 1))
+			// {
+			// 	debug("Signal %s is blocked by global mask",
+			// 		  sigStr[itr->sig]);
+			// 	continue;
+			// }
 
+			if (((TCB *)thread)->Signals.Mask.test(itr->sig - 1))
+			{
+				debug("Signal %s is blocked by thread mask",
+					  sigStr[itr->sig]);
+				continue;
+			}
+
+			if (((TCB *)thread)->ID != itr->tid && itr->tid != -1)
+			{
+				debug("Signal %s is not for this thread",
+					  sigStr[itr->sig]);
+				continue;
+			}
+
+			assert(sa[itr->sig].sa_handler.Disposition != SAD_IGN);
+			assert(sa[itr->sig].sa_handler.Disposition != SAD_DFL);
+
+			Queue.erase(itr);
+			debug("Signal %s is available", sigStr[itr->sig]);
+			return *itr;
+		}
+
+		debug("No signal available");
+		return {};
+	}
+
+	bool Signal::HandleSignal(CPU::TrapFrame *tf, void *thread)
+	{
 		/* We don't want to do this in kernel mode */
-		if (unlikely(tf->cs != GDT_USER_CODE))
+		if (tf->cs != GDT_USER_CODE)
 			return false;
 
-		debug("We have %d signals to handle", SignalQueue.size());
+		if (Queue.empty())
+			return false;
 
-		SignalInfo sigI = SignalQueue.front();
-		SignalQueue.erase(SignalQueue.begin());
+		debug("We have %d signals to handle", Queue.size());
+
+		SmartLock(SignalLock);
+		SignalInfo sigI = GetAvailableSignal(thread);
+		if (sigI.sig == SIG_NULL)
+			return false;
 
 		uintptr_t _p_rsp = ((PCB *)ctx)->PageTable->Get(tf->rsp);
 		uint64_t paRsp = _p_rsp;
@@ -388,10 +381,11 @@ namespace Tasking
 		si.GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
 		si.FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
 		si.ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSR_SHADOW_GS_BASE);
+		si.SignalMask = ((TCB *)thread)->Signals.Mask.to_ulong();
+		si.Compatibility = ((PCB *)ctx)->Info.Compatibility;
+
 		debug("gs: %#lx fs: %#lx shadow: %#lx",
 			  si.GSBase, si.FSBase, si.ShadowGSBase);
-		si.SignalMask = SignalMask.load();
-		si.Compatibility = ((PCB *)ctx)->Info.Compatibility;
 
 		/* Copy the stack info */
 		uint64_t *pRsp = (uint64_t *)(paRsp - sizeof(StackInfo));
@@ -400,31 +394,56 @@ namespace Tasking
 		/* Set the handler address */
 		pRsp--; /* Alignment */
 		pRsp--;
-		*pRsp = uint64_t(SignalAction[sigI.sig].__sa_handler.sa_handler);
+		*pRsp = uint64_t(sa[sigI.sig].sa_handler.Handler);
 
 		assert(!((uintptr_t)pRsp & 0xF));
+
+		int cSig = LinuxSig() ? ConvertSignalToLinux((Signals)sigI.sig) : sigI.sig;
 
 #ifdef DEBUG
 		DumpData("Stack Data", (void *)pRsp,
 				 paRsp - uint64_t(pRsp));
 		debug("initial stack tf->rsp: %#lx after: %#lx",
 			  tf->rsp, uint64_t(vRsp));
-		debug("sig: %d -> %d", sigI.sig, CTLif(sigI.sig));
+		debug("sig: %d -> %d", sigI.sig, cSig);
 #endif
 
 		tf->rsp = uint64_t(vRsp);
 		tf->rip = uint64_t(TrampAddr);
-		tf->rdi = CTLif(sigI.sig);
-		tf->rsi = uint64_t(sigI.val.sival_ptr);
 
+		/* void func(int signo); */
+		/* void func(int signo, siginfo_t *info, void *context); */
+		tf->rdi = cSig;
+		if (sa[sigI.sig].Flags & SA_SIGINFO)
+		{
+			fixme("SA_SIGINFO not implemented");
+			siginfo_t *info = 0;
+			void *context = 0;
+			tf->rsi = uint64_t(info);
+			tf->rdx = uint64_t(context);
+			tf->rcx = 0;
+			tf->r8 = 0;
+			tf->r9 = 0;
+		}
+		else
+		{
+			tf->rsi = 0;
+			tf->rdx = 0;
+			tf->rcx = 0;
+			tf->r8 = 0;
+			tf->r9 = 0;
+		}
+
+		((TCB *)thread)->Signals.Mask = sa[sigI.sig].Mask;
 		assert(TrampAddr != nullptr);
 		return true;
 	}
 
-	void Signal::RestoreHandleSignal(SyscallsFrame *sf)
+	void Signal::RestoreHandleSignal(SyscallsFrame *sf, void *thread)
 	{
-		SmartLock(SignalLock);
 		debug("Restoring signal handler");
+		SmartLock(SignalLock);
+
 		gsTCB *gs = (gsTCB *)CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
 		uint64_t *sp = (uint64_t *)((PCB *)ctx)->PageTable->Get(gs->TempStack);
 		sp++; /* Alignment */
@@ -454,7 +473,7 @@ namespace Tasking
 		sf->ReturnAddress = si->tf.rip;
 		gs->TempStack = (void *)si->tf.rsp;
 
-		SignalMask.store(si->SignalMask);
+		((TCB *)thread)->Signals.Mask = si->SignalMask;
 
 		CPU::x64::fxrstor(&si->fx);
 		CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, si->ShadowGSBase);
@@ -468,86 +487,83 @@ namespace Tasking
 		/* Return because we will restore at sysretq */
 	}
 
-	sigset_t Signal::Block(sigset_t sig)
+	int Signal::SetAction(Signals sig, const SignalAction *act)
 	{
 		SmartLock(SignalLock);
-		sig = CSigTNif(sig);
-		sigset_t oldMask = SignalMask.fetch_or(sig);
-		debug("%#lx -> %#lx", oldMask, SignalMask);
-		return CSigTLif(oldMask);
-	}
-
-	sigset_t Signal::Unblock(sigset_t sig)
-	{
-		SmartLock(SignalLock);
-		sig = CSigTNif(sig);
-		sigset_t oldMask = SignalMask.fetch_and(~sig);
-		debug("%#lx -> %#lx", oldMask, SignalMask);
-		return CSigTLif(oldMask);
-	}
-
-	sigset_t Signal::SetMask(sigset_t sig)
-	{
-		SmartLock(SignalLock);
-		sig = CSigTNif(sig);
-		sigset_t oldMask = SignalMask.exchange(sig);
-		debug("%#lx -> %#lx", oldMask, SignalMask);
-		return CSigTLif(oldMask);
-	}
-
-	int Signal::SetAction(int sig, const sigaction act)
-	{
-		SmartLock(SignalLock);
-		int nSig = CTNif(sig);
-		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		if ((size_t)sig > sizeof(sa) / sizeof(sa[0]))
 		{
-			debug("Invalid signal: %d (req %d)", nSig, sig);
+			debug("Invalid signal: %d", sig);
 			return -EINVAL;
 		}
 
-		SignalAction[nSig].__sa_handler.sa_handler = act.__sa_handler.sa_handler;
-		SignalAction[nSig].sa_mask = act.sa_mask;
-		SignalAction[nSig].sa_flags = act.sa_flags;
+		if ((long)act->sa_handler.Disposition == SAD_IGN)
+		{
+			Disposition[sig] = SIG_IGN;
+			debug("Set disposition for %s to SIG_IGN", sigStr[sig]);
+			debug("Discarding pending signals %s", sigStr[sig]);
+
+			bool found = false;
+			forItr(itr, Queue)
+			{
+				if (itr->sig == sig)
+				{
+					Queue.erase(itr);
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				debug("No pending signal %s", sigStr[sig]);
+			}
+		}
+
+		if ((long)act->sa_handler.Disposition == SAD_DFL)
+		{
+			Disposition[sig] = GetDefaultSignalDisposition(sig);
+			debug("Set disposition for %s to %s (default)", sigStr[sig],
+				  dispStr[Disposition[sig]]);
+		}
+
+		sa[sig].sa_handler.Handler = act->sa_handler.Handler;
+		sa[sig].Mask = act->Mask;
+		sa[sig].Flags = act->Flags;
+		sa[sig].Restorer = act->Restorer;
+
 		debug("Set action for %s with handler %#lx, mask %#lx and flags %#lx",
-			  LinuxSig() ? lSigStr[nSig] : sigStr[nSig],
-			  SignalAction[nSig].__sa_handler.sa_handler,
-			  SignalAction[nSig].sa_mask,
-			  SignalAction[nSig].sa_flags);
+			  sigStr[sig], sa[sig].sa_handler.Handler, sa[sig].Mask, sa[sig].Flags);
 		return 0;
 	}
 
-	int Signal::GetAction(int sig, sigaction *act)
+	int Signal::GetAction(Signals sig, SignalAction *act)
 	{
 		SmartLock(SignalLock);
-
-		int nSig = CTNif(sig);
-		if ((size_t)nSig > sizeof(SignalAction) / sizeof(SignalAction[0]))
+		if ((size_t)sig > sizeof(sa) / sizeof(sa[0]))
 		{
-			debug("Invalid signal: %d (req %d)", nSig, sig);
+			debug("Invalid signal: %d", sig);
 			return -EINVAL;
 		}
 
-		act->__sa_handler.sa_handler = SignalAction[nSig].__sa_handler.sa_handler;
-		act->sa_mask = SignalAction[nSig].sa_mask;
-		act->sa_flags = SignalAction[nSig].sa_flags;
+		act->sa_handler.Handler = sa[sig].sa_handler.Handler;
+		act->Mask = sa[sig].Mask;
+		act->Flags = sa[sig].Flags;
+		act->Restorer = sa[sig].Restorer;
 		debug("Got action for %s with handler %#lx, mask %#lx and flags %#lx",
-			  LinuxSig() ? lSigStr[nSig] : sigStr[nSig],
-			  SignalAction[nSig].__sa_handler.sa_handler,
-			  SignalAction[nSig].sa_mask,
-			  SignalAction[nSig].sa_flags);
+			  sigStr[sig], sa[sig].sa_handler.Handler, sa[sig].Mask, sa[sig].Flags);
 		return 0;
 	}
 
-	int Signal::SendSignal(int sig, union sigval val)
+	int Signal::SendSignal(Signals sig, sigval val, pid_t tid)
 	{
+		SmartLock(SignalLock);
 		PCB *pcb = (PCB *)ctx;
-		int nSig = CTNif(sig);
-		LastSignal = (Signals)nSig;
+		LastSignal = sig;
 
 		debug("Sending signal %s to %s(%d)",
-			  sigStr[nSig], pcb->Name, pcb->ID);
+			  sigStr[sig], pcb->Name, pcb->ID);
 
-		if (SignalAction[nSig].__sa_handler.sa_handler)
+		if (sa[sig].sa_handler.Handler)
 		{
 			if (pcb->Security.ExecutionMode == Kernel)
 			{
@@ -555,35 +571,51 @@ namespace Tasking
 				return -EINVAL;
 			}
 
-			debug("sa_handler: %#lx",
-				  SignalAction[nSig].__sa_handler.sa_handler);
-			debug("Adding signal %s to queue", sigStr[nSig]);
+			if (sa[sig].sa_handler.Disposition == SAD_IGN)
+			{
+				debug("Ignoring signal %s", sigStr[sig]);
+				return 0;
+			}
+
+			debug("sa_handler: %#lx", sa[sig].sa_handler.Handler);
+			debug("Adding signal %s to queue", sigStr[sig]);
 			goto CompleteSignal;
 		}
+		else
+		{
+			debug("No handler for signal %s", sigStr[sig]);
+		}
 
-		debug("Signal disposition: %s", dispStr[sigDisp[nSig]]);
-		switch (sigDisp[nSig])
+		if (thisThread->Signals.Mask.test(sig - 1))
+		{
+			debug("Signal %s is blocked by thread mask",
+				  sigStr[sig]);
+			return 0;
+		}
+
+		debug("Signal disposition: %s", dispStr[Disposition[sig]]);
+		switch (Disposition[sig])
 		{
 		case SIG_TERM:
 		{
 			if (unlikely(pcb->Security.IsCritical))
 			{
 				debug("Critical process %s received signal %s(%d): Terminated",
-					  pcb->Name, sigStr[nSig], nSig);
+					  pcb->Name, sigStr[sig], sig);
 				// int3;
 			}
 
-			pcb->SetExitCode(MakeExitCode(nSig));
+			pcb->SetExitCode(MakeExitCode(sig));
 			debug("We have %d watchers", this->Watchers.size());
 			if (this->Watchers.size() > 0)
 				pcb->SetState(Zombie);
 			else
 				pcb->SetState(Terminated);
-			break;
+			return 0;
 		}
 		case SIG_IGN:
 		{
-			debug("Ignoring signal %d", nSig);
+			debug("Ignoring signal %d", sig);
 			return 0;
 		}
 		case SIG_CORE:
@@ -593,27 +625,31 @@ namespace Tasking
 			if (unlikely(pcb->Security.IsCritical))
 			{
 				debug("Critical process %s received signal %s(%d): Core dumped",
-					  pcb->Name, sigStr[nSig], nSig);
+					  pcb->Name, sigStr[sig], sig);
 				// int3;
 			}
 
-			pcb->SetExitCode(MakeExitCode(nSig));
+			pcb->SetExitCode(MakeExitCode(sig));
 			debug("We have %d watchers", this->Watchers.size());
 			if (this->Watchers.size() > 0)
 				pcb->SetState(CoreDump);
 			else
 				pcb->SetState(Terminated);
-			break;
+			return 0;
 		}
 		case SIG_STOP:
 		{
+			debug("Stopping process %s(%d) with signal %s(%d)",
+				  pcb->Name, pcb->ID, sigStr[sig], sig);
 			pcb->SetState(Stopped);
-			break;
+			return 0;
 		}
 		case SIG_CONT:
 		{
+			debug("Continuing process %s(%d) with signal %s(%d)",
+				  pcb->Name, pcb->ID, sigStr[sig], sig);
 			pcb->SetState(Ready);
-			break;
+			return 0;
 		}
 		default:
 			assert(!"Invalid signal disposition");
@@ -624,14 +660,14 @@ namespace Tasking
 		if (pcb->Security.ExecutionMode == Kernel)
 		{
 			debug("Kernel process %s received signal %s(%d)! Ignoring... (with exceptions)",
-				  pcb->Name, sigStr[nSig], nSig);
+				  pcb->Name, sigStr[sig], sig);
 			return 0;
 		}
 
 		this->InitTrampoline();
 
-		debug("Signal %s(%d) completed", sigStr[nSig], nSig);
-		if (sigDisp[nSig] != SIG_IGN)
+		debug("Signal %s(%d) completed", sigStr[sig], sig);
+		if (Disposition[sig] != SIG_IGN)
 		{
 			foreach (auto info in Watchers)
 			{
@@ -645,27 +681,24 @@ namespace Tasking
 		}
 
 		debug("Adding signal to queue");
-		SignalQueue.push_back({.sig = nSig, .val = val});
+		Queue.push_back({.sig = sig, .val = val, .tid = tid});
 		return 0;
 	}
 
 	int Signal::WaitAnySignal()
 	{
-		/* Sleep until a signal that terminated or invokes
-		the signal catch function */
-
 		debug("Waiting for any signal");
 
-		size_t oldSize = SignalQueue.size();
+		size_t oldSize = Queue.size();
 	Reset:
-		while (SignalQueue.size() == oldSize)
+		while (Queue.size() == oldSize)
 			TaskManager->Yield();
 
-		if (SignalQueue.size() > oldSize)
+		if (Queue.size() > oldSize)
 		{
 			debug("Added signal to queue %d > %d",
-				  SignalQueue.size(), oldSize);
-			oldSize = SignalQueue.size();
+				  Queue.size(), oldSize);
+			oldSize = Queue.size();
 			goto Reset;
 		}
 
@@ -673,77 +706,66 @@ namespace Tasking
 		return -EINTR;
 	}
 
-	bool Signal::HasPendingSignal()
+	int Signal::WaitSignal(Signals sig, union sigval *val)
 	{
-		return !SignalQueue.empty();
-	}
-
-	int Signal::WaitSignal(int sig, union sigval *val)
-	{
+		assert(!"WaitSignal not implemented");
 		return 0;
 	}
 
-	int Signal::WaitSignalTimeout(int sig, union sigval *val, uint64_t timeout)
+	int Signal::WaitSignalTimeout(Signals sig, union sigval *val, uint64_t timeout)
 	{
+		assert(!"WaitSignalTimeout not implemented");
 		return 0;
 	}
 
-	Signal::Signal(void *ctx)
+	Signal::Signal(void *_ctx)
 	{
-		assert(ctx != nullptr);
-		this->ctx = ctx;
+		assert(_ctx != nullptr);
+		this->ctx = _ctx;
 
-		sigDisp[SIG_NULL] = SIG_IGN;
-		sigDisp[SIGABRT] = SIG_CORE;
-		sigDisp[SIGALRM] = SIG_TERM;
-		sigDisp[SIGBUS] = SIG_CORE;
-		sigDisp[SIGCHLD] = SIG_IGN;
-		sigDisp[SIGCONT] = SIG_CONT;
-		sigDisp[SIGFPE] = SIG_CORE;
-		sigDisp[SIGHUP] = SIG_TERM;
-		sigDisp[SIGILL] = SIG_CORE;
-		sigDisp[SIGINT] = SIG_TERM;
-		sigDisp[SIGKILL] = SIG_TERM;
-		sigDisp[SIGPIPE] = SIG_TERM;
-		sigDisp[SIGQUIT] = SIG_TERM;
-		sigDisp[SIGSEGV] = SIG_CORE;
-		sigDisp[SIGSTOP] = SIG_STOP;
-		sigDisp[SIGTERM] = SIG_TERM;
-		sigDisp[SIGTSTP] = SIG_STOP;
-		sigDisp[SIGTTIN] = SIG_STOP;
-		sigDisp[SIGTTOU] = SIG_STOP;
-		sigDisp[SIGUSR1] = SIG_TERM;
-		sigDisp[SIGUSR2] = SIG_TERM;
-		sigDisp[SIGPOLL] = SIG_TERM;
-		sigDisp[SIGPROF] = SIG_TERM;
-		sigDisp[SIGSYS] = SIG_CORE;
-		sigDisp[SIGTRAP] = SIG_CORE;
-		sigDisp[SIGURG] = SIG_IGN;
-		sigDisp[SIGVTALRM] = SIG_TERM;
-		sigDisp[SIGXCPU] = SIG_CORE;
-		sigDisp[SIGXFSZ] = SIG_CORE;
+		// for (int i = 1; i < SIGNAL_MAX; i++)
+		// 	Disposition[i] = GetDefaultSignalDisposition(i);
 
 #ifdef DEBUG
 		static int once = 0;
 		if (!once++)
 		{
-			if (LinuxSig())
-			{
-				for (int i = 0; i <= linux_SIGUNUSED; i++)
-					debug("%s: %s",
-						  lSigStr[i],
-						  dispStr[sigDisp[i]]);
-			}
-			else
-			{
-				for (int i = 0; i < SIGNAL_MAX; i++)
-					debug("%s: %s",
-						  sigStr[i],
-						  dispStr[sigDisp[i]]);
-			}
+			for (int i = 1; i < SIGNAL_MAX; i++)
+				debug("%s: %s",
+					  sigStr[i],
+					  dispStr[Disposition[(Signals)i]]);
 		}
 #endif
 	}
 
 	Signal::~Signal() {}
+
+	sigset_t ThreadSignal::Block(sigset_t sig)
+	{
+		sigset_t oldMask = Mask.to_ulong();
+		Mask |= sig;
+		debug("%#lx -> %#lx", oldMask, Mask);
+		return oldMask;
+	}
+
+	sigset_t ThreadSignal::Unblock(sigset_t sig)
+	{
+		sigset_t oldMask = Mask.to_ulong();
+		Mask &= ~sig;
+		debug("%#lx -> %#lx", oldMask, Mask);
+		return oldMask;
+	}
+
+	sigset_t ThreadSignal::SetMask(sigset_t sig)
+	{
+		sigset_t oldMask = Mask.to_ulong();
+		Mask = sig;
+		debug("%#lx -> %#lx", oldMask, Mask);
+		return oldMask;
+	}
+
+	sigset_t ThreadSignal::GetMask()
+	{
+		return Mask.to_ulong();
+	}
 }

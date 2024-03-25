@@ -64,7 +64,7 @@ namespace Tasking
 {
 	int TCB::SendSignal(int sig)
 	{
-		return this->Parent->Signals->SendSignal(sig);
+		return this->Parent->Signals.SendSignal((enum Signals)sig, {0}, this->ID);
 	}
 
 	void TCB::SetState(TaskState state)
@@ -420,6 +420,7 @@ namespace Tasking
 			 TaskArchitecture Architecture,
 			 TaskCompatibility Compatibility,
 			 bool ThreadNotReady)
+		: Signals(Parent->Signals)
 	{
 		debug("+ %#lx", this);
 
@@ -439,6 +440,14 @@ namespace Tasking
 
 		this->ctx = ctx;
 		this->ID = (TID)this->Parent->ID + (TID)this->Parent->Threads.size();
+
+		if (Compatibility == TaskCompatibility::Linux)
+		{
+			if (Parent->Threads.size() == 0)
+				this->Linux.tgid = Parent->ID;
+			else
+				this->Linux.tgid = Parent->Threads.front()->Linux.tgid;
+		}
 
 		if (this->Name)
 			delete[] this->Name;

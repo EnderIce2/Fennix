@@ -169,15 +169,15 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 			return true;
 		}
 
-		proc->Signals->SendSignal(SIGSEGV,
-								  {Tasking::KILL_CRASH});
+		proc->Signals.SendSignal(SIGSEGV,
+								 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::Debug:
 	case CPU::x86::Breakpoint:
 	{
-		proc->Signals->SendSignal(SIGTRAP,
-								  {Tasking::KILL_CRASH});
+		proc->Signals.SendSignal(SIGTRAP,
+								 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::DivideByZero:
@@ -186,21 +186,21 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 	case CPU::x86::x87FloatingPoint:
 	case CPU::x86::SIMDFloatingPoint:
 	{
-		proc->Signals->SendSignal(SIGFPE,
-								  {Tasking::KILL_CRASH});
+		proc->Signals.SendSignal(SIGFPE,
+								 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::InvalidOpcode:
 	case CPU::x86::GeneralProtectionFault:
 	{
-		proc->Signals->SendSignal(SIGILL,
-								  {Tasking::KILL_CRASH});
+		proc->Signals.SendSignal(SIGILL,
+								 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::DeviceNotAvailable:
 	{
-		proc->Signals->SendSignal(SIGBUS,
-								  {Tasking::KILL_CRASH});
+		proc->Signals.SendSignal(SIGBUS,
+								 {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::NonMaskableInterrupt:

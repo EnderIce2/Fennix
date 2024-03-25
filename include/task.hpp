@@ -333,6 +333,9 @@ namespace Tasking
 		Memory::VirtualMemoryArea *vma;
 		Memory::StackGuard *Stack;
 
+		/* Signal */
+		ThreadSignal Signals;
+
 		/* CPU state */
 #if defined(a64)
 		CPU::x64::TrapFrame Registers{};
@@ -361,6 +364,7 @@ namespace Tasking
 		{
 			int *set_child_tid{};
 			int *clear_child_tid{};
+			pid_t tgid = 0;
 		} Linux{};
 
 		int SendSignal(int sig);
@@ -437,6 +441,8 @@ namespace Tasking
 				uint16_t UserID = UINT16_MAX;
 				uint16_t GroupID = UINT16_MAX;
 			} Real, Effective;
+			pid_t ProcessGroupID = 0;
+			pid_t SessionID = 0;
 		} Security{};
 		TaskInfo Info{};
 		ThreadLocalStorage TLS{};
@@ -457,7 +463,7 @@ namespace Tasking
 		Memory::ProgramBreak *ProgramBreak;
 
 		/* Other */
-		Signal *Signals;
+		Signal Signals;
 
 		/* Threads & Children */
 		std::list<TCB *> Threads;

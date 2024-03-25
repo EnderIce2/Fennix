@@ -39,13 +39,288 @@
 using Tasking::PCB;
 using Tasking::TCB;
 
+static_assert(linux_SIGRTMIN == SIGRTMIN);
+static_assert(linux_SIGRTMAX == SIGRTMAX);
+
 struct SyscallData
 {
 	const char *Name;
 	void *Handler;
 };
 
-void linux_fork_return(void *tableAddr)
+#ifdef DEBUG
+const char *lSigStr[] = {
+	"INVALID",
+	"SIGHUP",
+	"SIGINT",
+	"SIGQUIT",
+	"SIGILL",
+	"SIGTRAP",
+	"SIGABRT",
+	"SIGBUS",
+	"SIGFPE",
+	"SIGKILL",
+	"SIGUSR1",
+	"SIGSEGV",
+	"SIGUSR2",
+	"SIGPIPE",
+	"SIGALRM",
+	"SIGTERM",
+	"SIGSTKFLT",
+	"SIGCHLD",
+	"SIGCONT",
+	"SIGSTOP",
+	"SIGTSTP",
+	"SIGTTIN",
+	"SIGTTOU",
+	"SIGURG",
+	"SIGXCPU",
+	"SIGXFSZ",
+	"SIGVTALRM",
+	"SIGPROF",
+	"SIGWINCH",
+	"SIGPOLL",
+	"SIGPWR",
+	"SIGSYS",
+	"SIGRTMIN",
+	"SIGRT_1",
+	"SIGRT_2",
+	"SIGRT_3",
+	"SIGRT_4",
+	"SIGRT_5",
+	"SIGRT_6",
+	"SIGRT_7",
+	"SIGRT_8",
+	"SIGRT_9",
+	"SIGRT_10",
+	"SIGRT_11",
+	"SIGRT_12",
+	"SIGRT_13",
+	"SIGRT_14",
+	"SIGRT_15",
+	"SIGRT_16",
+	"SIGRT_17",
+	"SIGRT_18",
+	"SIGRT_19",
+	"SIGRT_20",
+	"SIGRT_21",
+	"SIGRT_22",
+	"SIGRT_23",
+	"SIGRT_24",
+	"SIGRT_25",
+	"SIGRT_26",
+	"SIGRT_27",
+	"SIGRT_28",
+	"SIGRT_29",
+	"SIGRT_30",
+	"SIGRT_31",
+	"SIGRTMAX",
+};
+#endif
+
+const char *rlimitStr[] = {
+	"RLIMIT_CPU",
+	"RLIMIT_FSIZE",
+	"RLIMIT_DATA",
+	"RLIMIT_STACK",
+	"RLIMIT_CORE",
+	"RLIMIT_RSS",
+	"RLIMIT_NPROC",
+	"RLIMIT_NOFILE",
+	"RLIMIT_MEMLOCK",
+	"RLIMIT_AS",
+	"RLIMIT_LOCKS",
+	"RLIMIT_SIGPENDING",
+	"RLIMIT_MSGQUEUE",
+	"RLIMIT_NICE",
+	"RLIMIT_RTPRIO",
+	"RLIMIT_RTTIME",
+	"RLIMIT_NLIMITS",
+};
+
+static const struct
+{
+	int linuxSignal;
+	Signals nativeSignal;
+	SignalDispositions nativeDisposition;
+} signalMapping[] = {
+	{linux_SIGHUP, SIGHUP, SIG_TERM},
+	{linux_SIGINT, SIGINT, SIG_TERM},
+	{linux_SIGQUIT, SIGQUIT, SIG_TERM},
+	{linux_SIGILL, SIGILL, SIG_CORE},
+	{linux_SIGTRAP, SIGTRAP, SIG_CORE},
+	{linux_SIGABRT, SIGABRT, SIG_CORE},
+	{linux_SIGBUS, SIGBUS, SIG_CORE},
+	{linux_SIGFPE, SIGFPE, SIG_CORE},
+	{linux_SIGKILL, SIGKILL, SIG_TERM},
+	{linux_SIGUSR1, SIGUSR1, SIG_TERM},
+	{linux_SIGSEGV, SIGSEGV, SIG_CORE},
+	{linux_SIGUSR2, SIGUSR2, SIG_TERM},
+	{linux_SIGPIPE, SIGPIPE, SIG_TERM},
+	{linux_SIGALRM, SIGALRM, SIG_TERM},
+	{linux_SIGTERM, SIGTERM, SIG_TERM},
+	{linux_SIGSTKFLT, SIGCOMP1, SIG_IGN},
+	{linux_SIGCHLD, SIGCHLD, SIG_IGN},
+	{linux_SIGCONT, SIGCONT, SIG_CONT},
+	{linux_SIGSTOP, SIGSTOP, SIG_STOP},
+	{linux_SIGTSTP, SIGTSTP, SIG_STOP},
+	{linux_SIGTTIN, SIGTTIN, SIG_STOP},
+	{linux_SIGTTOU, SIGTTOU, SIG_STOP},
+	{linux_SIGURG, SIGURG, SIG_IGN},
+	{linux_SIGXCPU, SIGXCPU, SIG_CORE},
+	{linux_SIGXFSZ, SIGXFSZ, SIG_CORE},
+	{linux_SIGVTALRM, SIGVTALRM, SIG_TERM},
+	{linux_SIGPROF, SIGPROF, SIG_TERM},
+	{linux_SIGWINCH, SIGCOMP2, SIG_IGN},
+	{linux_SIGPOLL, SIGPOLL, SIG_TERM},
+	{linux_SIGPWR, SIGCOMP3, SIG_IGN},
+	{linux_SIGSYS, SIGSYS, SIG_CORE},
+	{linux_SIGRTMIN, SIGRTMIN, SIG_IGN},
+	{linux_SIGRTMIN + 1, SIGRT_1, SIG_IGN},
+	{linux_SIGRTMIN + 2, SIGRT_2, SIG_IGN},
+	{linux_SIGRTMIN + 3, SIGRT_3, SIG_IGN},
+	{linux_SIGRTMIN + 4, SIGRT_4, SIG_IGN},
+	{linux_SIGRTMIN + 5, SIGRT_5, SIG_IGN},
+	{linux_SIGRTMIN + 6, SIGRT_6, SIG_IGN},
+	{linux_SIGRTMIN + 7, SIGRT_7, SIG_IGN},
+	{linux_SIGRTMIN + 8, SIGRT_8, SIG_IGN},
+	{linux_SIGRTMIN + 9, SIGRT_9, SIG_IGN},
+	{linux_SIGRTMIN + 10, SIGRT_10, SIG_IGN},
+	{linux_SIGRTMIN + 11, SIGRT_11, SIG_IGN},
+	{linux_SIGRTMIN + 12, SIGRT_12, SIG_IGN},
+	{linux_SIGRTMIN + 13, SIGRT_13, SIG_IGN},
+	{linux_SIGRTMIN + 14, SIGRT_14, SIG_IGN},
+	{linux_SIGRTMIN + 15, SIGRT_15, SIG_IGN},
+	{linux_SIGRTMIN + 16, SIGRT_16, SIG_IGN},
+	{linux_SIGRTMIN + 17, SIGRT_17, SIG_IGN},
+	{linux_SIGRTMIN + 18, SIGRT_18, SIG_IGN},
+	{linux_SIGRTMIN + 19, SIGRT_19, SIG_IGN},
+	{linux_SIGRTMIN + 20, SIGRT_20, SIG_IGN},
+	{linux_SIGRTMIN + 21, SIGRT_21, SIG_IGN},
+	{linux_SIGRTMIN + 22, SIGRT_22, SIG_IGN},
+	{linux_SIGRTMIN + 23, SIGRT_23, SIG_IGN},
+	{linux_SIGRTMIN + 24, SIGRT_24, SIG_IGN},
+	{linux_SIGRTMIN + 25, SIGRT_25, SIG_IGN},
+	{linux_SIGRTMIN + 26, SIGRT_26, SIG_IGN},
+	{linux_SIGRTMIN + 27, SIGRT_27, SIG_IGN},
+	{linux_SIGRTMIN + 28, SIGRT_28, SIG_IGN},
+	{linux_SIGRTMIN + 29, SIGRT_29, SIG_IGN},
+	{linux_SIGRTMIN + 30, SIGRT_30, SIG_IGN},
+	{linux_SIGRTMIN + 31, SIGRT_31, SIG_IGN},
+	{linux_SIGRTMAX, SIGRTMAX, SIG_IGN}};
+
+int ConvertSignalToLinux(Signals sig)
+{
+	if (sig >= SIGRTMIN && sig <= SIGRTMAX)
+		return sig; /* We ignore for now */
+
+	foreach (auto &mapping in signalMapping)
+	{
+		if (mapping.nativeSignal == sig)
+		{
+			// debug("Converted \"%s\"(%d) to \"%s\"(%d)",
+			// 	  sigStr[mapping.nativeSignal], sig,
+			// 	  lSigStr[mapping.linuxSignal], mapping.linuxSignal);
+			return mapping.linuxSignal;
+		}
+	}
+	debug("Unknown signal %d", sig);
+	// assert(!"Unknown signal");
+	return SIG_NULL;
+}
+
+Signals ConvertSignalToNative(int sig)
+{
+	if (sig >= linux_SIGRTMIN && sig <= linux_SIGRTMAX)
+		return (Signals)sig; /* We ignore for now */
+
+	foreach (auto &mapping in signalMapping)
+	{
+		if (mapping.linuxSignal == sig)
+		{
+			// debug("Converted \"%s\"(%d) to \"%s\"(%d)",
+			// 	  lSigStr[mapping.linuxSignal], sig,
+			// 	  sigStr[mapping.nativeSignal], mapping.nativeSignal);
+			return mapping.nativeSignal;
+		}
+	}
+	debug("Unknown signal %d", sig);
+	// assert(!"Unknown signal");
+	return SIG_NULL;
+}
+
+unsigned long ConvertMaskToNative(unsigned long mask)
+{
+	unsigned long ret = 0;
+	for (int i = 0; i < 64; i++)
+	{
+		if (mask & (1ul << i))
+		{
+			int sig = ConvertSignalToNative(i + 1);
+			if (unlikely(sig == SIG_NULL))
+				continue;
+			ret |= 1ul << (sig - 1);
+		}
+	}
+	return ret;
+
+	// std::bitset<SIGNAL_MAX + 1> bitMask(mask);
+	// for (int i = 0; i < SIGNAL_MAX + 1; i++)
+	// {
+	// 	if (bitMask.test(i))
+	// 		ret |= 1 << (ConvertSignalToNative(i + 1) - 1);
+	// }
+}
+
+unsigned long ConvertMaskToLinux(unsigned long mask)
+{
+	unsigned long ret = 0;
+	for (int i = 0; i < 64; i++)
+	{
+		if (mask & (1ul << i))
+		{
+			int sig = ConvertSignalToLinux((Signals)(i + 1));
+			if (unlikely(sig == SIG_NULL))
+				continue;
+			ret |= 1ul << (sig - 1);
+		}
+	}
+	return ret;
+
+	// std::bitset<linux_SIGUNUSED + 1> bitMask(mask);
+	// for (int i = 0; i < linux_SIGUNUSED + 1; i++)
+	// {
+	// 	if (bitMask.test(i))
+	// 		ret |= 1 << (ConvertSignalToLinux(i + 1) - 1);
+	// }
+}
+
+void SetSigActToNative(const k_sigaction *linux, SignalAction *native)
+{
+	native->sa_handler.Handler = linux->handler;
+	native->Flags = linux->flags;
+	native->Restorer = linux->restorer;
+
+	unsigned long mask = ((unsigned long)linux->mask[1] << 32) | linux->mask[0];
+	native->Mask = std::bitset<64>(ConvertMaskToNative(mask));
+	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
+}
+
+void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
+{
+	linux->handler = native->sa_handler.Handler;
+	linux->flags = native->Flags;
+	linux->restorer = native->Restorer;
+
+	unsigned long mask = native->Mask.to_ulong();
+	mask = ConvertMaskToLinux(mask);
+
+	linux->mask[0] = mask & 0xFFFFFFFF;
+	linux->mask[1] = (mask >> 32) & 0xFFFFFFFF;
+	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
+}
+
+void __LinuxForkReturn(void *tableAddr)
 {
 #if defined(a64)
 	asmv("movq %0, %%cr3" ::"r"(tableAddr)); /* Load process page table */
@@ -56,7 +331,7 @@ void linux_fork_return(void *tableAddr)
 	asmv("sti\n");							 /* Enable interrupts */
 	asmv("sysretq\n");						 /* Return to rcx address in user mode */
 #elif defined(a32)
-#warning "linux_fork_return not implemented for i386"
+#warning "__LinuxForkReturn not implemented for i386"
 #endif
 	__builtin_unreachable();
 }
@@ -648,7 +923,7 @@ static int linux_dup2(SysFrm *, int oldfd, int newfd)
 static int linux_pause(SysFrm *)
 {
 	PCB *pcb = thisProcess;
-	return pcb->Signals->WaitAnySignal();
+	return pcb->Signals.WaitAnySignal();
 }
 
 /* https://man7.org/linux/man-pages/man2/nanosleep.2.html */
@@ -690,7 +965,7 @@ static int linux_nanosleep(SysFrm *,
 
 	while (time < sleepTime)
 	{
-		if (pcb->Signals->HasPendingSignal())
+		if (pcb->Signals.HasPendingSignal())
 		{
 			debug("sleep interrupted by signal");
 			return -EINTR;
@@ -739,6 +1014,9 @@ static pid_t linux_fork(SysFrm *sf)
 		return -EAGAIN;
 	}
 
+	NewProcess->Security.ProcessGroupID = Parent->Security.ProcessGroupID;
+	NewProcess->Security.SessionID = Parent->Security.SessionID;
+
 	NewProcess->PageTable = Parent->PageTable->Fork();
 	NewProcess->vma->Table = NewProcess->PageTable;
 	NewProcess->vma->Fork(Parent->vma);
@@ -773,7 +1051,7 @@ static pid_t linux_fork(SysFrm *sf)
 	NewThread->Security.IsCritical = Thread->Security.IsCritical;
 	NewThread->Registers = Thread->Registers;
 #if defined(a64)
-	NewThread->Registers.rip = (uintptr_t)linux_fork_return;
+	NewThread->Registers.rip = (uintptr_t)__LinuxForkReturn;
 	/* For sysretq */
 	NewThread->Registers.rdi = (uintptr_t)NewProcess->PageTable;
 	NewThread->Registers.rcx = sf->ReturnAddress;
@@ -789,7 +1067,7 @@ static pid_t linux_fork(SysFrm *sf)
 #endif
 
 	debug("ret addr: %#lx, stack: %#lx ip: %#lx", sf->ReturnAddress,
-		  sf->StackPointer, (uintptr_t)linux_fork_return);
+		  sf->StackPointer, (uintptr_t)__LinuxForkReturn);
 	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)",
 		  Thread->Name, Thread->ID,
 		  NewThread->Name, NewThread->ID);
@@ -1077,7 +1355,9 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 					int ExitStatus = child->ExitCode.load();
 					bool ProcessSignaled = true;
 					bool CoreDumped = true;
-					int TermSignal = child->Signals->GetLastSignal();
+					int TermSignal = child->Signals.GetLastSignal();
+					TermSignal = ConvertSignalToLinux((Signals)TermSignal);
+					assert(TermSignal != SIG_NULL);
 
 					debug("Process returned %d", ExitStatus);
 
@@ -1234,8 +1514,8 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 /* https://man7.org/linux/man-pages/man2/kill.2.html */
 static int linux_kill(SysFrm *, pid_t pid, int sig)
 {
-	PCB *target = thisProcess->GetContext()->GetProcessByID(pid);
-	if (!target)
+	PCB *pcb = thisProcess->GetContext()->GetProcessByID(pid);
+	if (!pcb)
 		return -ESRCH;
 
 	/* TODO: Check permissions */
@@ -1245,8 +1525,21 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 
 	if (pid == 0)
 	{
-		fixme("Sending signal %d to all processes", sig);
-		return -ENOSYS;
+		bool found = false;
+		Signals nSig = ConvertSignalToNative(sig);
+		assert(nSig != SIG_NULL);
+		foreach (auto proc in pcb->GetContext()->GetProcessList())
+		{
+			if (proc->Security.ProcessGroupID == thisProcess->Security.ProcessGroupID)
+			{
+				debug("Sending signal %s to %s(%d)", lSigStr[sig], proc->Name, proc->ID);
+				proc->SendSignal(nSig);
+				found = true;
+			}
+		}
+		if (!found)
+			return -ESRCH;
+		return 0;
 	}
 
 	if (pid == -1)
@@ -1261,7 +1554,9 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 		return -ENOSYS;
 	}
 
-	return target->Signals->SendSignal(sig);
+	Signals nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIG_NULL);
+	return pcb->SendSignal(nSig);
 }
 
 /* https://man7.org/linux/man-pages/man2/uname.2.html */
@@ -1510,17 +1805,13 @@ static pid_t linux_getpgid(SysFrm *, pid_t pid)
 {
 	PCB *pcb = thisProcess;
 	if (pid == 0)
-	{
-		fixme("pid=0 is stub!");
-		return 0;
-	}
+		return pcb->Security.ProcessGroupID;
 
 	PCB *target = pcb->GetContext()->GetProcessByID(pid);
 	if (!target)
 		return -ESRCH;
 
-	stub;
-	return 0;
+	return target->Security.ProcessGroupID;
 }
 
 /* https://man7.org/linux/man-pages/man2/setpgid.2.html */
@@ -1529,7 +1820,7 @@ static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 	PCB *pcb = thisProcess;
 	if (pid == 0)
 	{
-		fixme("pid=0 is stub!");
+		pcb->Security.ProcessGroupID = pgid;
 		return 0;
 	}
 
@@ -1537,10 +1828,13 @@ static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 	if (!target)
 		return -ESRCH;
 
-	if (pgid < 0)
-		return -EINVAL;
+	if (pgid == 0)
+	{
+		target->Security.ProcessGroupID = target->ID;
+		return 0;
+	}
 
-	fixme("setpgid(%d, %d) is stub!", pid, pgid);
+	target->Security.ProcessGroupID = pgid;
 	return 0;
 }
 
@@ -1702,13 +1996,19 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 }
 
 /* https://man7.org/linux/man-pages/man2/sigaction.2.html */
-static int linux_sigaction(SysFrm *, int signum,
-						   const struct sigaction *act,
-						   struct sigaction *oldact)
+static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
+						   k_sigaction *oldact, size_t sigsetsize)
 {
-	if (signum == linux_SIGKILL || signum == linux_SIGSTOP)
+	if (signum < 1 || signum > linux_SIGRTMAX ||
+		signum == linux_SIGKILL || signum == linux_SIGSTOP)
 	{
 		debug("Invalid signal %d", signum);
+		return -EINVAL;
+	}
+
+	if (sigsetsize != sizeof(sigset_t))
+	{
+		warn("Unsupported sigsetsize %d!", sigsetsize);
 		return -EINVAL;
 	}
 
@@ -1727,13 +2027,35 @@ static int linux_sigaction(SysFrm *, int signum,
 	int ret = 0;
 
 	if (pOldact)
-		ret = pcb->Signals->GetAction(signum, pOldact);
+	{
+		Signals nSig = ConvertSignalToNative(signum);
+		assert(nSig != SIG_NULL);
+
+		SignalAction nSA{};
+		SetSigActToNative(pOldact, &nSA);
+		ret = pcb->Signals.GetAction(nSig, &nSA);
+		SetSigActToLinux(&nSA, pOldact);
+	}
 
 	if (unlikely(ret < 0))
 		return ret;
 
 	if (pAct)
-		ret = pcb->Signals->SetAction(signum, *pAct);
+	{
+		if (pAct->flags & SA_IMMUTABLE)
+		{
+			warn("Immutable signal %d", signum);
+			return -EINVAL;
+		}
+
+		Signals nSig = ConvertSignalToNative(signum);
+		assert(nSig != SIG_NULL);
+
+		SignalAction nSA{};
+		SetSigActToNative(pAct, &nSA);
+		ret = pcb->Signals.SetAction(nSig, &nSA);
+		SetSigActToLinux(&nSA, (k_sigaction *)pAct);
+	}
 
 	return ret;
 }
@@ -1750,7 +2072,8 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 		return -EINVAL;
 	}
 
-	PCB *pcb = thisProcess;
+	TCB *tcb = thisThread;
+	PCB *pcb = tcb->Parent;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (vma->UserCheck(set) < 0 && set != nullptr)
@@ -1765,21 +2088,25 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 		  how, pSet ? *pSet : 0, pOldset ? *pOldset : 0);
 
 	if (pOldset)
-		*pOldset = pcb->Signals->GetMask();
+	{
+		*pOldset = tcb->Signals.GetMask();
+		*pOldset = ConvertMaskToLinux(*pOldset);
+	}
 
 	if (!pSet)
 		return 0;
 
+	sigset_t nativeSet = ConvertMaskToNative(*pSet);
 	switch (how)
 	{
 	case SIG_BLOCK:
-		pcb->Signals->Block(*pSet);
+		tcb->Signals.Block(nativeSet);
 		break;
 	case SIG_UNBLOCK:
-		pcb->Signals->Unblock(*pSet);
+		tcb->Signals.Unblock(nativeSet);
 		break;
 	case SIG_SETMASK:
-		pcb->Signals->SetMask(*pSet);
+		tcb->Signals.SetMask(nativeSet);
 		break;
 	default:
 		warn("Invalid how %#x", how);
@@ -1791,7 +2118,7 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 /* https://man7.org/linux/man-pages/man2/sigreturn.2.html */
 static void linux_sigreturn(SysFrm *sf)
 {
-	thisProcess->Signals->RestoreHandleSignal(sf);
+	thisProcess->Signals.RestoreHandleSignal(sf, thisThread);
 }
 
 /* https://man7.org/linux/man-pages/man2/gettid.2.html */
@@ -1803,14 +2130,13 @@ static pid_t linux_gettid(SysFrm *)
 /* https://man7.org/linux/man-pages/man2/tkill.2.html */
 static int linux_tkill(SysFrm *, int tid, int sig)
 {
-	Tasking::PCB *pcb = thisProcess;
-	Tasking::TCB *tcb = pcb->GetThread(tid);
+	Tasking::TCB *tcb = thisProcess->GetThread(tid);
 	if (!tcb)
 		return -ESRCH;
 
 	Signals nSig = ConvertSignalToNative(sig);
 	assert(nSig != SIG_NULL);
-	return pcb->Signals.SendSignal(nSig);
+	return tcb->SendSignal(nSig);
 }
 
 /* https://man7.org/linux/man-pages/man2/set_tid_address.2.html */
@@ -1919,6 +2245,7 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	return 0;
 }
 
+/* https://man7.org/linux/man-pages/man2/clock_nanosleep.2.html */
 static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 								 const struct timespec *request,
 								 struct timespec *remain)
@@ -1981,12 +2308,29 @@ static __noreturn void linux_exit_group(SysFrm *sf, int status)
 /* https://man7.org/linux/man-pages/man2/tgkill.2.html */
 static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 {
-	Tasking::TCB *target = thisProcess->GetContext()->GetThreadByID(tid, thisProcess);
-	if (!target)
-		return -ESRCH;
+	Tasking::TCB *tcb = thisProcess->GetThread(tid);
+	if (!tcb || tcb->Linux.tgid != tgid)
+	{
+		debug("Invalid tgid %d tid %d", tgid, tid);
 
-	fixme("semi-stub: %d %d %d", tgid, tid, sig);
-	return target->Parent->Signals->SendSignal(sig);
+		tcb = nullptr;
+		foreach (auto t in thisProcess->Threads)
+		{
+			if (t->Linux.tgid == tgid)
+			{
+				debug("Found tgid %d tid %d", tgid, t->ID);
+				tcb = t;
+				break;
+			}
+		}
+
+		if (!tcb)
+			return -ESRCH;
+	}
+
+	Signals nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIG_NULL);
+	return tcb->SendSignal(nSig);
 }
 
 /* https://man7.org/linux/man-pages/man2/open.2.html */
@@ -2098,36 +2442,20 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	UNUSED(pNewLimit);
 
 	if (new_limit)
-		debug("new limit: rlim_cur:%ld rlim_max:%ld", pNewLimit->rlim_cur, pNewLimit->rlim_max);
+		debug("new limit: rlim_cur:%#lx rlim_max:%#lx", pNewLimit->rlim_cur, pNewLimit->rlim_max);
 	if (old_limit)
-		debug("old limit: rlim_cur:%ld rlim_max:%ld", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		debug("old limit: rlim_cur:%#lx rlim_max:%#lx", pOldLimit->rlim_cur, pOldLimit->rlim_max);
 
 	switch (resource)
 	{
-	case RLIMIT_NOFILE:
-	{
-		fixme("Setting RLIMIT_NOFILE is stub");
-		return 0;
-	}
-	case RLIMIT_STACK:
-	{
-		fixme("Setting RLIMIT_STACK is stub");
-		return 0;
-	}
-	case RLIMIT_NPROC:
-	{
-		fixme("Setting RLIMIT_NPROC is stub");
-		return 0;
-	}
-	case RLIMIT_FSIZE:
-	{
-		fixme("Setting RLIMIT_FSIZE is stub");
-		return 0;
-	}
 	case RLIMIT_CPU:
+	case RLIMIT_FSIZE:
 	case RLIMIT_DATA:
+	case RLIMIT_STACK:
 	case RLIMIT_CORE:
 	case RLIMIT_RSS:
+	case RLIMIT_NPROC:
+	case RLIMIT_NOFILE:
 	case RLIMIT_MEMLOCK:
 	case RLIMIT_AS:
 	case RLIMIT_LOCKS:
@@ -2138,8 +2466,8 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	case RLIMIT_RTTIME:
 	case RLIMIT_NLIMITS:
 	{
-		fixme("resource %d is stub", resource);
-		return -ENOSYS;
+		fixme("resource %s(%d) is stub", rlimitStr[resource], resource);
+		return 0; /* just return 0 */
 	}
 	default:
 	{

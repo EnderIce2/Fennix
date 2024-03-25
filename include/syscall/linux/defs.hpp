@@ -170,6 +170,8 @@
 #define LINUX_REBOOT_CMD_SW_SUSPEND 0xD000FCE2
 #define LINUX_REBOOT_CMD_KEXEC 0x45584543
 
+#define SA_IMMUTABLE 0x00800000
+
 typedef long __kernel_old_time_t;
 typedef long __kernel_suseconds_t;
 typedef int clockid_t;
