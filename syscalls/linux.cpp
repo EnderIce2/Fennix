@@ -150,7 +150,11 @@ static int linux_stat(SysFrm *, const char *pathname, struct stat *statbuf)
 	if (pPathname == nullptr)
 		return -EFAULT;
 
-	return fdt->_stat(pPathname, statbuf);
+	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	if (pStatbuf == nullptr)
+		return -EFAULT;
+
+	return fdt->_stat(pPathname, pStatbuf);
 }
 
 /* https://man7.org/linux/man-pages/man2/fstat.2.html */
