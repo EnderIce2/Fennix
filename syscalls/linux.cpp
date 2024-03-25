@@ -1792,6 +1792,19 @@ static pid_t linux_gettid(SysFrm *)
 	return thisThread->ID;
 }
 
+/* https://man7.org/linux/man-pages/man2/tkill.2.html */
+static int linux_tkill(SysFrm *, int tid, int sig)
+{
+	Tasking::PCB *pcb = thisProcess;
+	Tasking::TCB *tcb = pcb->GetThread(tid);
+	if (!tcb)
+		return -ESRCH;
+
+	Signals nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIG_NULL);
+	return pcb->Signals.SendSignal(nSig);
+}
+
 /* https://man7.org/linux/man-pages/man2/set_tid_address.2.html */
 static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 {
@@ -2361,7 +2374,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_removexattr] = {"removexattr", (void *)nullptr},
 	[__NR_amd64_lremovexattr] = {"lremovexattr", (void *)nullptr},
 	[__NR_amd64_fremovexattr] = {"fremovexattr", (void *)nullptr},
-	[__NR_amd64_tkill] = {"tkill", (void *)nullptr},
+	[__NR_amd64_tkill] = {"tkill", (void *)linux_tkill},
 	[__NR_amd64_time] = {"time", (void *)nullptr},
 	[__NR_amd64_futex] = {"futex", (void *)nullptr},
 	[__NR_amd64_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
@@ -2849,7 +2862,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_removexattr] = {"removexattr", (void *)nullptr},
 	[__NR_i386_lremovexattr] = {"lremovexattr", (void *)nullptr},
 	[__NR_i386_fremovexattr] = {"fremovexattr", (void *)nullptr},
-	[__NR_i386_tkill] = {"tkill", (void *)nullptr},
+	[__NR_i386_tkill] = {"tkill", (void *)linux_tkill},
 	[__NR_i386_sendfile64] = {"sendfile64", (void *)nullptr},
 	[__NR_i386_futex] = {"futex", (void *)nullptr},
 	[__NR_i386_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
