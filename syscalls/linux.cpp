@@ -2097,6 +2097,11 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	UNUSED(pOldLimit);
 	UNUSED(pNewLimit);
 
+	if (new_limit)
+		debug("new limit: rlim_cur:%ld rlim_max:%ld", pNewLimit->rlim_cur, pNewLimit->rlim_max);
+	if (old_limit)
+		debug("old limit: rlim_cur:%ld rlim_max:%ld", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+
 	switch (resource)
 	{
 	case RLIMIT_NOFILE:
@@ -2114,8 +2119,12 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 		fixme("Setting RLIMIT_NPROC is stub");
 		return 0;
 	}
-	case RLIMIT_CPU:
 	case RLIMIT_FSIZE:
+	{
+		fixme("Setting RLIMIT_FSIZE is stub");
+		return 0;
+	}
+	case RLIMIT_CPU:
 	case RLIMIT_DATA:
 	case RLIMIT_CORE:
 	case RLIMIT_RSS:
