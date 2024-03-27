@@ -172,9 +172,20 @@
 
 #define SA_IMMUTABLE 0x00800000
 
+#define ITIMER_REAL 0
+#define ITIMER_VIRTUAL 1
+#define ITIMER_PROF 2
+
+#define RUSAGE_SELF 0
+#define RUSAGE_CHILDREN (-1)
+#define RUSAGE_THREAD 1
+
 typedef long __kernel_old_time_t;
 typedef long __kernel_suseconds_t;
 typedef int clockid_t;
+
+typedef long time64_t;
+typedef unsigned long timeu64_t;
 
 struct iovec
 {
@@ -186,6 +197,18 @@ struct timeval
 {
 	__kernel_old_time_t tv_sec;
 	__kernel_suseconds_t tv_usec;
+};
+
+struct timespec64
+{
+	time64_t tv_sec;
+	long tv_nsec;
+};
+
+struct itimerspec64
+{
+	struct timespec64 it_interval;
+	struct timespec64 it_value;
 };
 
 struct rusage

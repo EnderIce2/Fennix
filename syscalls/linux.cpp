@@ -991,6 +991,46 @@ static pid_t linux_getpid(SysFrm *)
 	return thisProcess->ID;
 }
 
+/* https://man7.org/linux/man-pages/man2/setitimer.2.html */
+static int linux_setitimer(SysFrm *, int which,
+						   const struct itimerspec64 *new_value,
+						   struct itimerspec64 *old_value)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pNewValue = vma->UserCheckAndGetAddress(new_value);
+	auto pOldValue = vma->UserCheckAndGetAddress(old_value);
+	if (pNewValue == nullptr)
+		return -EFAULT;
+
+	if (pOldValue == nullptr && old_value)
+		return -EFAULT;
+
+	switch (which)
+	{
+	case ITIMER_REAL:
+	{
+		fixme("ITIMER_REAL not implemented");
+		return 0;
+	}
+	case ITIMER_VIRTUAL:
+	{
+		fixme("ITIMER_VIRTUAL not implemented");
+		return 0;
+	}
+	case ITIMER_PROF:
+	{
+		fixme("ITIMER_PROF not implemented");
+		return 0;
+	}
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 /* https://man7.org/linux/man-pages/man2/shutdown.2.html */
 static int linux_shutdown(SysFrm *, int sockfd, int how)
 {
@@ -1768,6 +1808,79 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 
 	strncpy(pBuf, node->Symlink, len);
 	return len;
+}
+
+/* https://man7.org/linux/man-pages/man2/getrusage.2.html */
+static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pUsage = vma->UserCheckAndGetAddress(usage);
+	if (pUsage == nullptr)
+		return -EFAULT;
+
+	switch (who)
+	{
+	case RUSAGE_SELF:
+	{
+		size_t kTime = pcb->Info.KernelTime;
+		size_t uTime = pcb->Info.UserTime;
+		size_t _maxrss = pcb->GetSize();
+
+		pUsage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+		pUsage->ru_utime.tv_usec = uTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+		pUsage->ru_stime.tv_usec = kTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_maxrss = _maxrss;
+		break;
+	}
+	case RUSAGE_CHILDREN:
+	{
+		size_t kTime = 0;
+		size_t uTime = 0;
+		size_t _maxrss = 0;
+
+		foreach (auto child in pcb->Children)
+		{
+			kTime += child->Info.KernelTime;
+			uTime += child->Info.UserTime;
+			_maxrss += child->GetSize();
+		}
+
+		pUsage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+		pUsage->ru_utime.tv_usec = uTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+		pUsage->ru_stime.tv_usec = kTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_maxrss = _maxrss;
+		break;
+	}
+	case RUSAGE_THREAD:
+	{
+		TCB *tcb = thisThread;
+
+		size_t kTime = tcb->Info.KernelTime;
+		size_t uTime = tcb->Info.UserTime;
+		size_t _maxrss = tcb->GetSize();
+
+		pUsage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
+		pUsage->ru_utime.tv_usec = uTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_stime.tv_sec = kTime / 1000000000000000; /* Seconds */
+		pUsage->ru_stime.tv_usec = kTime / 1000000000;		/* Microseconds */
+
+		pUsage->ru_maxrss = _maxrss;
+		break;
+	}
+	default:
+		return -EINVAL;
+	}
+
+	return 0;
 }
 
 /* https://man7.org/linux/man-pages/man2/getuid.2.html */
@@ -2562,7 +2675,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_nanosleep] = {"nanosleep", (void *)linux_nanosleep},
 	[__NR_amd64_getitimer] = {"getitimer", (void *)nullptr},
 	[__NR_amd64_alarm] = {"alarm", (void *)nullptr},
-	[__NR_amd64_setitimer] = {"setitimer", (void *)nullptr},
+	[__NR_amd64_setitimer] = {"setitimer", (void *)linux_setitimer},
 	[__NR_amd64_getpid] = {"getpid", (void *)linux_getpid},
 	[__NR_amd64_sendfile] = {"sendfile", (void *)nullptr},
 	[__NR_amd64_socket] = {"socket", (void *)nullptr},
@@ -2622,7 +2735,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_umask] = {"umask", (void *)nullptr},
 	[__NR_amd64_gettimeofday] = {"gettimeofday", (void *)nullptr},
 	[__NR_amd64_getrlimit] = {"getrlimit", (void *)nullptr},
-	[__NR_amd64_getrusage] = {"getrusage", (void *)nullptr},
+	[__NR_amd64_getrusage] = {"getrusage", (void *)linux_getrusage},
 	[__NR_amd64_sysinfo] = {"sysinfo", (void *)nullptr},
 	[__NR_amd64_times] = {"times", (void *)nullptr},
 	[__NR_amd64_ptrace] = {"ptrace", (void *)nullptr},
@@ -3051,7 +3164,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_sethostname] = {"sethostname", (void *)nullptr},
 	[__NR_i386_setrlimit] = {"setrlimit", (void *)nullptr},
 	[__NR_i386_getrlimit] = {"getrlimit", (void *)nullptr},
-	[__NR_i386_getrusage] = {"getrusage", (void *)nullptr},
+	[__NR_i386_getrusage] = {"getrusage", (void *)linux_getrusage},
 	[__NR_i386_gettimeofday_time32] = {"gettimeofday_time32", (void *)nullptr},
 	[__NR_i386_settimeofday_time32] = {"settimeofday_time32", (void *)nullptr},
 	[__NR_i386_getgroups] = {"getgroups", (void *)nullptr},
@@ -3078,7 +3191,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_ioperm] = {"ioperm", (void *)nullptr},
 	[__NR_i386_socketcall] = {"socketcall", (void *)nullptr},
 	[__NR_i386_syslog] = {"syslog", (void *)nullptr},
-	[__NR_i386_setitimer] = {"setitimer", (void *)nullptr},
+	[__NR_i386_setitimer] = {"setitimer", (void *)linux_setitimer},
 	[__NR_i386_getitimer] = {"getitimer", (void *)nullptr},
 	[__NR_i386_stat] = {"stat", (void *)linux_stat},
 	[__NR_i386_lstat] = {"lstat", (void *)linux_lstat},
@@ -3440,7 +3553,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	if (unlikely(!call))
 	{
-		fixme("Syscall %s(%d) not implemented.",
+		fixme("Syscall %s(%d) not implemented",
 			  Syscall.Name, Frame->rax);
 		return -ENOSYS;
 	}
@@ -3471,7 +3584,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	if (unlikely(!call))
 	{
-		fixme("Syscall %s(%d) not implemented.",
+		fixme("Syscall %s(%d) not implemented",
 			  Syscall.Name, Frame->eax);
 		return -ENOSYS;
 	}
