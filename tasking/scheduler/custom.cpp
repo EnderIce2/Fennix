@@ -704,7 +704,8 @@ namespace Tasking::Scheduler
 		}
 
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
-		CurrentCPU->CurrentProcess->PageTable->Update();
+		if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE)
+			CurrentCPU->CurrentProcess->PageTable->Update();
 	}
 
 	nsa NIF void Custom::OnInterruptReceived(CPU::TrapFrame *Frame)
