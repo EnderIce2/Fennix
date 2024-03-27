@@ -118,8 +118,8 @@ void KernelMainThread()
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
-		KPrint("\eE85230Failed to start %s! Code: %d",
-			   Config.InitPath, tid);
+		KPrint("\eE85230Failed to start %s! Error: %s (%d)",
+			   Config.InitPath, strerror(tid), tid);
 		goto Exit;
 	}
 
