@@ -21,6 +21,7 @@
 #include <types.h>
 
 #include <filesystem.hpp>
+#include <memory/va.hpp>
 #include <symbols.hpp>
 #include <memory.hpp>
 #include <signal.hpp>
@@ -498,11 +499,10 @@ namespace Tasking
 		NewLock(TaskingLock);
 
 		PID NextPID = 0;
-
 		PCB *KernelProcess = nullptr;
-
 		void *Scheduler = nullptr;
 		void *__sched_ctx = nullptr;
+		Memory::VirtualAllocation va = (void *)0xFFFFA00000000000;
 
 		constexpr TaskArchitecture GetKArch()
 		{

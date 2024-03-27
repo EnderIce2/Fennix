@@ -516,13 +516,18 @@ namespace Tasking
 		{
 			this->Stack = new Memory::StackGuard(true, this->vma);
 
-			gsTCB *gsT = (gsTCB *)this->vma->RequestPages(TO_PAGES(sizeof(gsTCB)), false, true);
+			Memory::VirtualAllocation::AllocatedPages gst = this->ctx->va.RequestPages(TO_PAGES(sizeof(gsTCB)));
+			this->ctx->va.MapTo(gst, this->Parent->PageTable);
+			gsTCB *gsT = (gsTCB *)gst.PhysicalAddress;
 #ifdef DEBUG
 			gsT->__stub = 0xFFFFFFFFFFFFFFFF;
 #endif
 
 			gsT->ScPages = TO_PAGES(STACK_SIZE);
-			gsT->SyscallStackBase = this->vma->RequestPages(gsT->ScPages, false, true);
+
+			Memory::VirtualAllocation::AllocatedPages ssb = this->ctx->va.RequestPages(gsT->ScPages);
+			this->ctx->va.MapTo(ssb, this->Parent->PageTable);
+			gsT->SyscallStackBase = ssb.VirtualAddress;
 			gsT->SyscallStack = (void *)((uintptr_t)gsT->SyscallStackBase + STACK_SIZE - 0x10);
 			debug("New syscall stack created: %#lx (base: %#lx) with gs base at %#lx",
 				  gsT->SyscallStack, gsT->SyscallStackBase, gsT);
@@ -530,7 +535,7 @@ namespace Tasking
 			gsT->TempStack = 0x0;
 			gsT->t = this;
 #if defined(a64)
-			this->ShadowGSBase = (uintptr_t)gsT;
+			this->ShadowGSBase = (uintptr_t)gst.VirtualAddress;
 			this->GSBase = 0;
 			this->FSBase = 0;
 			this->Registers.cs = GDT_USER_CODE;
