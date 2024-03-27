@@ -316,7 +316,7 @@ void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
 	mask = ConvertMaskToLinux(mask);
 
 	linux->mask[0] = mask & 0xFFFFFFFF;
-	linux->mask[1] = (mask >> 32) & 0xFFFFFFFF;
+	linux->mask[1] = (uint32_t)((mask >> 32) & 0xFFFFFFFF);
 	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
 }
 
@@ -2442,9 +2442,14 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	UNUSED(pNewLimit);
 
 	if (new_limit)
+	{
 		debug("new limit: rlim_cur:%#lx rlim_max:%#lx", pNewLimit->rlim_cur, pNewLimit->rlim_max);
+	}
+
 	if (old_limit)
+	{
 		debug("old limit: rlim_cur:%#lx rlim_max:%#lx", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+	}
 
 	switch (resource)
 	{

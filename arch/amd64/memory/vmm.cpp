@@ -51,8 +51,10 @@ namespace Memory
 		{
 			bool result = PDPTE->Entries[Index.PDPTEIndex].raw & Flag;
 			if (!result)
+			{
 				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
 					  PDPTE->Entries[Index.PDPTEIndex].raw);
+			}
 			return result;
 		}
 
@@ -67,8 +69,10 @@ namespace Memory
 		{
 			bool result = PDE->Entries[Index.PDEIndex].raw & Flag;
 			if (!result)
+			{
 				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
 					  PDE->Entries[Index.PDEIndex].raw);
+			}
 			return result;
 		}
 
@@ -81,8 +85,10 @@ namespace Memory
 
 		bool result = PTE->Entries[Index.PTEIndex].raw & Flag;
 		if (!result)
+		{
 			debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
 				  PTE->Entries[Index.PTEIndex].raw);
+		}
 		return result;
 	}
 
