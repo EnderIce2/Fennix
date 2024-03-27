@@ -737,6 +737,20 @@ void reboot_linux()
 	reboot(RB_AUTOBOOT);
 }
 
+void test_stdin()
+{
+	printf("- Testing stdin\n");
+
+	while (1)
+	{
+		printf("Input: ");
+		fflush(stdout);
+		char input[256];
+		fgets(input, sizeof(input), stdin);
+		printf("%s", input);
+	}
+}
+
 void self_fork_exec()
 {
 	while (1)
@@ -812,6 +826,8 @@ int main(int argc, char *argv[], char *envp[])
 	// fork_bomb();
 	// fork_bomb_syscall();
 
+	// test_stdin();
+	// test_stdio();
 	test_unaligned();
 	test_passwd();
 	test_brk();
@@ -819,7 +835,6 @@ int main(int argc, char *argv[], char *envp[])
 	test_signal();
 	test_ptmx();
 	test_args(argc, argv, envp);
-	// test_stdio();
 	test_system();
 	test_file();
 	test_dirent();
