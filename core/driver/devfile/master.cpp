@@ -171,7 +171,9 @@ namespace Driver
 		default:
 			break;
 		}
-		KeyQueue.push_back(GetScanCode(ScanCode, UpperCase || CapsLock));
+
+		if (ScanCode & KEY_PRESSED)
+			KeyQueue.push_back(GetScanCode(ScanCode, UpperCase || CapsLock));
 
 		SlaveDeviceFile *sdf = (*slave)[MinorID];
 		return sdf->ReportKeyEvent(ScanCode);
