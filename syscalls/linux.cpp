@@ -1689,10 +1689,19 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 		return fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg));
 	case F_GETFL:
 	{
-		fixme("F_GETFL is stub");
+		fixme("F_GETFL is stub?");
 		return fdt->GetFlags(fd);
 	}
 	case F_SETFL:
+	{
+		fixme("F_SETFL is stub?");
+		int flags = s_cst(int, (uintptr_t)arg);
+		if (flags & O_APPEND)
+			fdt->SetFlags(fd, fdt->GetFlags(fd) | O_APPEND);
+		else
+			fdt->SetFlags(fd, fdt->GetFlags(fd) & ~O_APPEND);
+		return 0;
+	}
 	case F_SETOWN:
 	case F_GETOWN:
 	case F_SETSIG:
