@@ -27,7 +27,7 @@ typedef __SIZE_TYPE__ Xsize_t;
 typedef __UINTPTR_TYPE__ Xuintptr_t;
 
 #define Xalloc_StopOnFail true
-#define Xalloc_MapPages true
+#define Xalloc_MapPages false
 #define Xalloc_PAGE_SIZE PAGE_SIZE
 #define Xalloc_trace(m, ...) trace(m, ##__VA_ARGS__)
 #define Xalloc_warn(m, ...) warn(m, ##__VA_ARGS__)

@@ -386,13 +386,13 @@ NIF void InitializeMemoryManagement()
 		break;
 	case MemoryAllocatorType::XallocV1:
 	{
-		XallocV1Allocator = new Xalloc::V1((void *)KERNEL_HEAP_BASE, false, false);
+		XallocV1Allocator = new Xalloc::V1((void *)nullptr, false, false);
 		trace("XallocV1 Allocator initialized at %#lx", XallocV1Allocator);
 		break;
 	}
 	case MemoryAllocatorType::XallocV2:
 	{
-		XallocV2Allocator = new Xalloc::V2((void *)KERNEL_HEAP_BASE);
+		XallocV2Allocator = new Xalloc::V2((void *)nullptr);
 		trace("XallocV2 Allocator initialized at %#lx", XallocV2Allocator);
 		break;
 	}
