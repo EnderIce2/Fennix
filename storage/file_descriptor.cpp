@@ -497,7 +497,7 @@ namespace vfs
 		Node *node = file->node;
 		statbuf->st_dev = 0; /* FIXME: stub */
 		statbuf->st_ino = node->IndexNode;
-		statbuf->st_mode = node->Type | node->Mode;
+		statbuf->st_mode = node->Type | (node->Mode & ~S_IFMT);
 		statbuf->st_nlink = 0; /* FIXME: stub */
 		statbuf->st_uid = node->UserIdentifier;
 		statbuf->st_gid = node->GroupIdentifier;
@@ -521,7 +521,7 @@ namespace vfs
 		Node *node = fd.Handle->node;
 		statbuf->st_dev = 0; /* FIXME: stub */
 		statbuf->st_ino = node->IndexNode;
-		statbuf->st_mode = node->Type | node->Mode;
+		statbuf->st_mode = node->Type | (node->Mode & ~S_IFMT);
 		statbuf->st_nlink = 0; /* FIXME: stub */
 		statbuf->st_uid = node->UserIdentifier;
 		statbuf->st_gid = node->GroupIdentifier;
@@ -552,7 +552,7 @@ namespace vfs
 		Node *node = file->node;
 		statbuf->st_dev = 0; /* FIXME: stub */
 		statbuf->st_ino = node->IndexNode;
-		statbuf->st_mode = node->Type | node->Mode;
+		statbuf->st_mode = node->Type | (node->Mode & ~S_IFMT);
 		statbuf->st_nlink = 0; /* FIXME: stub */
 		statbuf->st_uid = node->UserIdentifier;
 		statbuf->st_gid = node->GroupIdentifier;
