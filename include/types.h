@@ -232,6 +232,67 @@ typedef long clock_t;
 typedef int pid_t;
 #endif
 
+#ifdef __cplusplus
+template <typename T>
+class ptr_t
+{
+	T ptr;
+
+public:
+	ptr_t() : ptr(nullptr) {}
+	ptr_t(T p) : ptr(p) {}
+	ptr_t(int p) : ptr((T)(uintptr_t)p) {}
+	ptr_t(const ptr_t<T> &other) : ptr(other.ptr) {}
+
+	operator T() { return ptr; }
+	operator uintptr_t() { return (uintptr_t)ptr; }
+
+	operator bool() { return (void *)(uintptr_t)ptr != nullptr; }
+
+	ptr_t<T> &operator=(const ptr_t<T> &other)
+	{
+		ptr = other.ptr;
+		return *this;
+	}
+
+	ptr_t<T> &operator+=(uintptr_t offset)
+	{
+		ptr = (T)((uintptr_t)ptr + offset);
+		return *this;
+	}
+
+	ptr_t<T> &operator-=(uintptr_t offset)
+	{
+		ptr = (T)((uintptr_t)ptr - offset);
+		return *this;
+	}
+
+	bool operator==(const ptr_t<T> &other) const { return ptr == other.ptr; }
+	bool operator==(auto other) const { return (uintptr_t)ptr == (uintptr_t)other; }
+
+	bool operator!=(const ptr_t<T> &other) const { return ptr != other.ptr; }
+	bool operator!=(auto other) const { return (uintptr_t)ptr != (uintptr_t)other; }
+
+	bool operator>(const ptr_t<T> &other) const { return ptr > other.ptr; }
+	bool operator>(auto other) const { return (uintptr_t)ptr > (uintptr_t)other; }
+
+	bool operator<(const ptr_t<T> &other) const { return ptr < other.ptr; }
+	bool operator<(auto other) const { return (uintptr_t)ptr < (uintptr_t)other; }
+
+	bool operator>=(const ptr_t<T> &other) const { return ptr >= other.ptr; }
+	bool operator>=(auto other) const { return (uintptr_t)ptr >= (uintptr_t)other; }
+
+	bool operator<=(const ptr_t<T> &other) const { return ptr <= other.ptr; }
+	bool operator<=(auto other) const { return (uintptr_t)ptr <= (uintptr_t)other; }
+
+	ptr_t<T> operator+(auto offset) const { return ptr_t<T>((void *)((uintptr_t)ptr + offset)); }
+	ptr_t<T> operator-(auto offset) const { return ptr_t<T>((void *)((uintptr_t)ptr - offset)); }
+
+	T operator->() { return ptr; }
+	T operator*() { return *ptr; }
+};
+#endif // __cplusplus
+
 #define INT8_MAX __INT8_MAX__
 #define INT8_MIN (-INT8_MAX - 1)
 #define UINT8_MAX __UINT8_MAX__
