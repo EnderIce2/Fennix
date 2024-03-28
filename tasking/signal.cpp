@@ -611,7 +611,7 @@ namespace Tasking
 				pcb->SetState(Zombie);
 			else
 				pcb->SetState(Terminated);
-			return 0;
+			return val.sival_int == Tasking::KILL_CRASH ? -EFAULT : 0;
 		}
 		case SIG_IGN:
 		{
@@ -635,7 +635,7 @@ namespace Tasking
 				pcb->SetState(CoreDump);
 			else
 				pcb->SetState(Terminated);
-			return 0;
+			return val.sival_int == Tasking::KILL_CRASH ? -EFAULT : 0;
 		}
 		case SIG_STOP:
 		{

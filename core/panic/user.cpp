@@ -153,6 +153,7 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 	dbgPrint(Frame);
 #endif
 
+	int sigRet = -1;
 	switch (Frame->InterruptNumber)
 	{
 	case CPU::x86::PageFault:
@@ -169,15 +170,15 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 			return true;
 		}
 
-		proc->Signals.SendSignal(SIGSEGV,
-								 {Tasking::KILL_CRASH});
+		sigRet = proc->Signals.SendSignal(SIGSEGV,
+										  {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::Debug:
 	case CPU::x86::Breakpoint:
 	{
-		proc->Signals.SendSignal(SIGTRAP,
-								 {Tasking::KILL_CRASH});
+		sigRet = proc->Signals.SendSignal(SIGTRAP,
+										  {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::DivideByZero:
@@ -186,21 +187,21 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 	case CPU::x86::x87FloatingPoint:
 	case CPU::x86::SIMDFloatingPoint:
 	{
-		proc->Signals.SendSignal(SIGFPE,
-								 {Tasking::KILL_CRASH});
+		sigRet = proc->Signals.SendSignal(SIGFPE,
+										  {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::InvalidOpcode:
 	case CPU::x86::GeneralProtectionFault:
 	{
-		proc->Signals.SendSignal(SIGILL,
-								 {Tasking::KILL_CRASH});
+		sigRet = proc->Signals.SendSignal(SIGILL,
+										  {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::DeviceNotAvailable:
 	{
-		proc->Signals.SendSignal(SIGBUS,
-								 {Tasking::KILL_CRASH});
+		sigRet = proc->Signals.SendSignal(SIGBUS,
+										  {Tasking::KILL_CRASH});
 		break;
 	}
 	case CPU::x86::NonMaskableInterrupt:
@@ -219,6 +220,13 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 			  Frame->InterruptNumber, core->ID);
 		break;
 	}
+	}
+
+	if (sigRet == 0)
+	{
+		trace("User mode exception handler handled");
+		thread->SetState(Tasking::Ready);
+		return true;
 	}
 
 	error("User mode exception handler failed");
