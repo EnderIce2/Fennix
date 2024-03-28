@@ -20,6 +20,7 @@
 #include <filesystem.hpp>
 #include <driver.hpp>
 #include <lock.hpp>
+#include <exec.hpp>
 #include <debug.h>
 #include <thread>
 
@@ -34,6 +35,17 @@ struct Command
 	void (*Function)(const char *);
 };
 
+bool ignoreBuiltin = false;
+
+void __cmd_builtin(const char *)
+{
+	ignoreBuiltin = !ignoreBuiltin;
+	if (ignoreBuiltin)
+		printf("Builtin commands are now ignored.\n");
+	else
+		printf("Builtin commands are now accepted.\n");
+}
+
 static Command commands[] = {
 	{"lsof", cmd_lsof},
 	{"ls", cmd_ls},
@@ -41,12 +53,6 @@ static Command commands[] = {
 	{"cd", cmd_cd},
 	{"cat", cmd_cat},
 	{"echo", cmd_echo},
-	{"mkdir", nullptr},
-	{"touch", nullptr},
-	{"rm", nullptr},
-	{"rmdir", nullptr},
-	{"mv", nullptr},
-	{"cp", nullptr},
 	{"clear", cmd_clear},
 	{"help", nullptr},
 	{"exit", cmd_exit},
@@ -57,19 +63,9 @@ static Command commands[] = {
 	{"killall", cmd_killall},
 	{"top", cmd_top},
 	{"mem", cmd_mem},
-	{"mount", nullptr},
-	{"umount", nullptr},
 	{"uname", cmd_uname},
 	{"whoami", cmd_whoami},
-	{"passwd", nullptr},
-	{"su", nullptr},
-	{"login", nullptr},
-	{"logout", nullptr},
 	{"uptime", cmd_uptime},
-	{"chown", nullptr},
-	{"chgrp", nullptr},
-	{"chmod", nullptr},
-	{"chroot", nullptr},
 	{"lspci", cmd_lspci},
 	{"lsacpi", cmd_lsacpi},
 	{"lsmod", cmd_lsmod},
@@ -80,6 +76,7 @@ static Command commands[] = {
 	{"depmod", nullptr},
 	{"panic", cmd_panic},
 	{"dump", cmd_dump},
+	{"builtin", __cmd_builtin},
 };
 
 std::atomic_uint32_t CurX = 0x10, CurY = 0x10;
@@ -692,6 +689,16 @@ void StartKernelShell()
 		bool Found = false;
 		for (size_t i = 0; i < sizeof(commands) / sizeof(Command); i++)
 		{
+			if (unlikely(strncmp(strBuf.c_str(), "builtin", strBuf.length()) == 0))
+			{
+				__cmd_builtin(nullptr);
+				Found = true;
+				break;
+			}
+
+			if (ignoreBuiltin)
+				break;
+
 			std::string cmd_extracted;
 			for (size_t i = 0; i < strBuf.length(); i++)
 			{
@@ -731,18 +738,83 @@ void StartKernelShell()
 			}
 		}
 
-		if (!Found)
+		if (Found)
+			continue;
+
+		std::string cmd_only;
+		for (size_t i = 0; i < strBuf.length(); i++)
 		{
-			std::string cmd_only;
-			for (size_t i = 0; i < strBuf.length(); i++)
-			{
-				if (strBuf[i] == ' ')
-					break;
-				cmd_only += strBuf[i];
-			}
-			printf("%s: command not found\n",
-				   cmd_only.c_str());
+			if (strBuf[i] == ' ')
+				break;
+			cmd_only += strBuf[i];
 		}
+
+		std::string path = "/bin/";
+		path += cmd_only;
+		if (fs->PathExists(path.c_str()))
+		{
+			const char *envp[5] = {
+				"PATH=/bin:/usr/bin",
+				"TERM=tty",
+				"HOME=/root",
+				"USER=root",
+				nullptr};
+
+			const char **argv;
+			if (strBuf.length() > cmd_only.length())
+			{
+				std::string arg_only;
+				for (size_t i = cmd_only.length() + 1; i < strBuf.length(); i++)
+					arg_only += strBuf[i];
+
+				argv = new const char *[3];
+				argv[0] = path.c_str();
+				argv[1] = new char[arg_only.length() + 1];
+				strcpy((char *)argv[1], arg_only.c_str());
+				argv[2] = nullptr;
+
+				debug("argv[0]: %s; argv[1]: %s", argv[0], argv[1]);
+			}
+			else
+			{
+				argv = new const char *[2];
+				argv[0] = path.c_str();
+				argv[1] = nullptr;
+			}
+
+			Tasking::TaskCompatibility compat = Tasking::Native;
+			if (Config.UseLinuxSyscalls)
+				compat = Tasking::Linux;
+
+			int ret = Execute::Spawn((char *)path.c_str(), argv, envp,
+									 nullptr, false, compat, false);
+			if (argv[1])
+				delete argv[1];
+			delete argv;
+			if (ret >= 0)
+			{
+				Tasking::TCB *tcb;
+				Tasking::PCB *pcb;
+				pcb = TaskManager->GetProcessByID(ret);
+				if (pcb == nullptr)
+				{
+					printf("Failed to get process by ID\n");
+					continue;
+				}
+				pcb->SetWorkingDirectory(cwd);
+				tcb = TaskManager->GetThreadByID(ret, pcb);
+				if (tcb == nullptr)
+				{
+					printf("Failed to get thread by ID\n");
+					continue;
+				}
+				TaskManager->WaitForThread(tcb);
+				continue;
+			}
+		}
+
+		printf("%s: command not found\n",
+			   cmd_only.c_str());
 	}
 }
 

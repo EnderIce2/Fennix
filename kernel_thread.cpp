@@ -56,8 +56,7 @@ int SpawnInit()
 		compat = Tasking::Linux;
 
 	return Execute::Spawn(Config.InitPath, argv, envp,
-						  nullptr, false,
-						  compat, true);
+						  nullptr, false, compat, true);
 }
 
 void KernelMainThread()
