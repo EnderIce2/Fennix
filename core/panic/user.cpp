@@ -33,41 +33,14 @@
 nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 {
 #if defined(a64)
-	CPU::x64::CR0 cr0 = CPU::x64::readcr0();
-	CPU::x64::CR2 cr2 = CPU::x64::CR2{.PFLA = Frame->cr2};
-	CPU::x64::CR3 cr3 = CPU::x64::readcr3();
-	CPU::x64::CR4 cr4 = CPU::x64::readcr4();
-	CPU::x64::CR8 cr8 = CPU::x64::readcr8();
-	CPU::x64::EFER efer;
-	efer.raw = CPU::x64::rdmsr(CPU::x64::MSR_EFER);
-	uintptr_t ds;
-	asmv("mov %%ds, %0"
-		 : "=r"(ds));
-#elif defined(a32)
-	CPU::x32::CR0 cr0 = CPU::x32::readcr0();
-	CPU::x32::CR2 cr2 = CPU::x32::CR2{.PFLA = CrashHandler::PageFaultAddress};
-	CPU::x32::CR3 cr3 = CPU::x32::readcr3();
-	CPU::x32::CR4 cr4 = CPU::x32::readcr4();
-	CPU::x32::CR8 cr8 = CPU::x32::readcr8();
-	uintptr_t ds;
-	asmv("mov %%ds, %0"
-		 : "=r"(ds));
-#elif defined(aa64)
-#endif
-
-#if defined(a64)
-	debug("FS=%#lx GS=%#lx SS=%#lx CS=%#lx DS=%#lx",
-		  CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE), CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE),
-		  Frame->ss, Frame->cs, ds);
+	debug("FS=%#lx GS=%#lx SS=%#lx CS=%#lx DS=%#lx", Frame->fs, Frame->gs, Frame->ss, Frame->cs, Frame->ds);
 	debug("R8=%#lx R9=%#lx R10=%#lx R11=%#lx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
 	debug("R12=%#lx R13=%#lx R14=%#lx R15=%#lx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
 	debug("RAX=%#lx RBX=%#lx RCX=%#lx RDX=%#lx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
 	debug("RSI=%#lx RDI=%#lx RBP=%#lx RSP=%#lx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
-	debug("RIP=%#lx RFL=%#lx INT=%#lx ERR=%#lx EFER=%#lx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode, efer.raw);
+	debug("RIP=%#lx RFL=%#lx INT=%#lx ERR=%#lx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
 #elif defined(a32)
-	debug("FS=%#x GS=%#x CS=%#x DS=%#x",
-		  CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE), CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE),
-		  Frame->cs, ds);
+	debug("FS=%#x GS=%#x CS=%#x DS=%#x", Frame->fs, Frame->gs, Frame->cs, Frame->ds);
 	debug("EAX=%#x EBX=%#x ECX=%#x EDX=%#x", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
 	debug("ESI=%#x EDI=%#x EBP=%#x ESP=%#x", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
 	debug("EIP=%#x EFL=%#x INT=%#x ERR=%#x", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
@@ -75,41 +48,7 @@ nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 #endif
 
 #if defined(a86)
-	debug("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx", cr0.raw, cr2.raw, cr3.raw, cr4.raw, cr8.raw);
-
-	debug("CR0: PE:%s MP:%s EM:%s TS:%s ET:%s NE:%s WP:%s AM:%s NW:%s CD:%s PG:%s R0:%#x R1:%#x R2:%#x",
-		  cr0.PE ? "True " : "False", cr0.MP ? "True " : "False", cr0.EM ? "True " : "False", cr0.TS ? "True " : "False",
-		  cr0.ET ? "True " : "False", cr0.NE ? "True " : "False", cr0.WP ? "True " : "False", cr0.AM ? "True " : "False",
-		  cr0.NW ? "True " : "False", cr0.CD ? "True " : "False", cr0.PG ? "True " : "False",
-		  cr0.Reserved0, cr0.Reserved1, cr0.Reserved2);
-
-	debug("CR2: PFLA: %#lx",
-		  cr2.PFLA);
-
-	debug("CR3: PWT:%s PCD:%s PDBR:%#llx",
-		  cr3.PWT ? "True " : "False", cr3.PCD ? "True " : "False", cr3.PDBR);
-#endif // defined(a86)
-
-#if defined(a64)
-	debug("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x R2:%#x",
-		  cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
-		  cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
-		  cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
-		  cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
-		  cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
-		  cr4.Reserved0, cr4.Reserved1, cr4.Reserved2);
-#elif defined(a32)
-	debug("CR4: VME:%s PVI:%s TSD:%s DE:%s PSE:%s PAE:%s MCE:%s PGE:%s PCE:%s UMIP:%s OSFXSR:%s OSXMMEXCPT:%s    LA57:%s    VMXE:%s    SMXE:%s   PCIDE:%s OSXSAVE:%s    SMEP:%s    SMAP:%s PKE:%s R0:%#x R1:%#x",
-		  cr4.VME ? "True " : "False", cr4.PVI ? "True " : "False", cr4.TSD ? "True " : "False", cr4.DE ? "True " : "False",
-		  cr4.PSE ? "True " : "False", cr4.PAE ? "True " : "False", cr4.MCE ? "True " : "False", cr4.PGE ? "True " : "False",
-		  cr4.PCE ? "True " : "False", cr4.UMIP ? "True " : "False", cr4.OSFXSR ? "True " : "False", cr4.OSXMMEXCPT ? "True " : "False",
-		  cr4.LA57 ? "True " : "False", cr4.VMXE ? "True " : "False", cr4.SMXE ? "True " : "False", cr4.PCIDE ? "True " : "False",
-		  cr4.OSXSAVE ? "True " : "False", cr4.SMEP ? "True " : "False", cr4.SMAP ? "True " : "False", cr4.PKE ? "True " : "False",
-		  cr4.Reserved0, cr4.Reserved1);
-#endif
-
-#if defined(a86)
-	debug("CR8: TPR:%d", cr8.TPR);
+	debug("CR2=%#lx CR3=%#lx", Frame->cr2, Frame->cr3);
 #endif // defined(a86)
 
 #if defined(a64)
@@ -129,13 +68,6 @@ nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 		  Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
 		  Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
 #elif defined(aa64)
-#endif
-
-#if defined(a64)
-	debug("EFER: SCE:%s LME:%s LMA:%s NXE:%s SVME:%s LMSLE:%s FFXSR:%s TCE:%s R0:%#x R1:%#x R2:%#x",
-		  efer.SCE ? "True " : "False", efer.LME ? "True " : "False", efer.LMA ? "True " : "False", efer.NXE ? "True " : "False",
-		  efer.SVME ? "True " : "False", efer.LMSLE ? "True " : "False", efer.FFXSR ? "True " : "False", efer.TCE ? "True " : "False",
-		  efer.Reserved0, efer.Reserved1, efer.Reserved2);
 #endif
 }
 #endif
@@ -162,7 +94,7 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 		if (!Handled)
 			Handled = thread->Stack->Expand(Frame->cr2);
 
-		if (Handled)
+		if (likely(Handled))
 		{
 			debug("Page fault handled");
 			Frame->cr2 = 0;
