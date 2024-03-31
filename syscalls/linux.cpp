@@ -320,6 +320,91 @@ void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
 	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
 }
 
+struct stat KStatToStat(struct k_stat kstat)
+{
+	struct stat stat;
+	stat.st_dev = kstat.st_dev;
+	stat.st_ino = kstat.st_ino;
+	stat.st_nlink = (nlink_t)kstat.st_nlink;
+	stat.st_mode = kstat.st_mode;
+	stat.st_uid = kstat.st_uid;
+	stat.st_gid = kstat.st_gid;
+	stat.st_rdev = kstat.st_rdev;
+	stat.st_size = kstat.st_size;
+	stat.st_blksize = kstat.st_blksize;
+	stat.st_blocks = kstat.st_blocks;
+	stat.st_atime = kstat.st_atime;
+	// stat.st_atime_nsec = kstat.st_atime_nsec;
+	stat.st_mtime = kstat.st_mtime;
+	// stat.st_mtime_nsec = kstat.st_mtime_nsec;
+	stat.st_ctime = kstat.st_ctime;
+	// stat.st_ctime_nsec = kstat.st_ctime_nsec;
+	return stat;
+}
+
+struct k_stat StatToKStat(struct stat stat)
+{
+	struct k_stat kstat;
+	kstat.st_dev = stat.st_dev;
+	kstat.st_ino = stat.st_ino;
+	kstat.st_nlink = stat.st_nlink;
+	kstat.st_mode = stat.st_mode;
+	kstat.st_uid = stat.st_uid;
+	kstat.st_gid = stat.st_gid;
+	kstat.st_rdev = stat.st_rdev;
+	kstat.st_size = stat.st_size;
+	kstat.st_blksize = stat.st_blksize;
+	kstat.st_blocks = stat.st_blocks;
+	kstat.st_atime = stat.st_atime;
+	// kstat.st_atime_nsec = stat.st_atime_nsec;
+	kstat.st_mtime = stat.st_mtime;
+	// kstat.st_mtime_nsec = stat.st_mtime_nsec;
+	kstat.st_ctime = stat.st_ctime;
+	// kstat.st_ctime_nsec = stat.st_ctime_nsec;
+	return kstat;
+}
+
+struct stat OKStatToStat(struct __old_kernel_stat okstat)
+{
+	struct stat stat;
+	stat.st_dev = okstat.st_dev;
+	stat.st_ino = okstat.st_ino;
+	stat.st_nlink = okstat.st_nlink;
+	stat.st_mode = okstat.st_mode;
+	stat.st_uid = okstat.st_uid;
+	stat.st_gid = okstat.st_gid;
+	stat.st_rdev = okstat.st_rdev;
+	stat.st_size = okstat.st_size;
+	stat.st_atime = okstat.st_atime;
+	stat.st_mtime = okstat.st_mtime;
+	stat.st_ctime = okstat.st_ctime;
+	return stat;
+}
+
+struct __old_kernel_stat StatToOKStat(struct stat stat)
+{
+	struct __old_kernel_stat okstat;
+	okstat.st_dev = (unsigned short)stat.st_dev;
+	okstat.st_ino = (unsigned short)stat.st_ino;
+	okstat.st_nlink = (unsigned short)stat.st_nlink;
+	okstat.st_mode = (unsigned short)stat.st_mode;
+	okstat.st_uid = (unsigned short)stat.st_uid;
+	okstat.st_gid = (unsigned short)stat.st_gid;
+	okstat.st_rdev = (unsigned short)stat.st_rdev;
+#ifdef __i386__
+	okstat.st_size = (unsigned long)stat.st_size;
+	okstat.st_atime = (unsigned long)stat.st_atime;
+	okstat.st_mtime = (unsigned long)stat.st_mtime;
+	okstat.st_ctime = (unsigned long)stat.st_ctime;
+#else
+	okstat.st_size = (unsigned int)stat.st_size;
+	okstat.st_atime = (unsigned int)stat.st_atime;
+	okstat.st_mtime = (unsigned int)stat.st_mtime;
+	okstat.st_ctime = (unsigned int)stat.st_ctime;
+#endif
+	return okstat;
+}
+
 void __LinuxForkReturn(void *tableAddr)
 {
 #if defined(a64)
@@ -415,7 +500,7 @@ static int linux_close(SysFrm *, int fd)
 }
 
 /* https://man7.org/linux/man-pages/man2/stat.2.html */
-static int linux_stat(SysFrm *, const char *pathname, struct stat *statbuf)
+static int linux_stat(SysFrm *, const char *pathname, struct __old_kernel_stat *statbuf)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
@@ -429,11 +514,14 @@ static int linux_stat(SysFrm *, const char *pathname, struct stat *statbuf)
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	return fdt->_stat(pPathname, pStatbuf);
+	struct stat nstat = OKStatToStat(*pStatbuf);
+	int ret = fdt->_stat(pPathname, &nstat);
+	*pStatbuf = StatToOKStat(nstat);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/fstat.2.html */
-static int linux_fstat(SysFrm *, int fd, struct stat *statbuf)
+static int linux_fstat(SysFrm *, int fd, struct __old_kernel_stat *statbuf)
 {
 #undef fstat
 	PCB *pcb = thisProcess;
@@ -444,11 +532,14 @@ static int linux_fstat(SysFrm *, int fd, struct stat *statbuf)
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	return fdt->_fstat(fd, pStatbuf);
+	struct stat nstat = OKStatToStat(*pStatbuf);
+	int ret = fdt->_fstat(fd, &nstat);
+	*pStatbuf = StatToOKStat(nstat);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/lstat.2.html */
-static int linux_lstat(SysFrm *, const char *pathname, struct stat *statbuf)
+static int linux_lstat(SysFrm *, const char *pathname, struct __old_kernel_stat *statbuf)
 {
 #undef lstat
 	PCB *pcb = thisProcess;
@@ -460,7 +551,10 @@ static int linux_lstat(SysFrm *, const char *pathname, struct stat *statbuf)
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
-	return fdt->_lstat(pPathname, pStatbuf);
+	struct stat nstat = OKStatToStat(*pStatbuf);
+	int ret = fdt->_lstat(pPathname, &nstat);
+	*pStatbuf = StatToOKStat(nstat);
+	return ret;
 }
 
 #include "../syscalls.h"
@@ -2492,7 +2586,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 
 /* Undocumented? */
 static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
-							 struct stat *statbuf, int flag)
+							 struct k_stat *statbuf, int flag)
 {
 	/* FIXME: This function is not working at all? */
 
@@ -2504,7 +2598,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		fixme("flag %#x is stub", flag);
 
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
-	struct stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	struct k_stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
@@ -2519,7 +2613,9 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
 		strcpy((char *)absPath, absoluteNode->node->FullPath);
 		delete absoluteNode;
-		int ret = fdt->_stat(absPath, pStatbuf);
+		struct stat nstat = KStatToStat(*pStatbuf);
+		int ret = fdt->_stat(absPath, &nstat);
+		*pStatbuf = StatToKStat(nstat);
 		delete[] absPath;
 		return ret;
 	}
@@ -2532,7 +2628,10 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		return -EBADF;
 	}
 
-	return fdt->_stat(pPathname, pStatbuf);
+	struct stat nstat = KStatToStat(*pStatbuf);
+	int ret = fdt->_stat(pPathname, &nstat);
+	*pStatbuf = StatToKStat(nstat);
+	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/pipe2.2.html */
