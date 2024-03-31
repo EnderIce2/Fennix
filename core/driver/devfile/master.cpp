@@ -70,8 +70,8 @@ namespace Driver
 			/* Request scancode */
 			if (Size == 2 && Buffer[1] == 0x00)
 			{
-				if (RawKeyQueue.empty())
-					return 0;
+				while (RawKeyQueue.empty())
+					TaskManager->Yield();
 
 				Buffer[0] = RawKeyQueue.front();
 				RawKeyQueue.pop_front();
