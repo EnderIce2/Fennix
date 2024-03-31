@@ -2491,7 +2491,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 }
 
 /* Undocumented? */
-static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
+static long linux_newfstatat(SysFrm *, int dfd, const char *pathname,
 							 struct stat *statbuf, int flag)
 {
 	/* FIXME: This function is not working at all? */
@@ -2503,10 +2503,23 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
 	if (flag)
 		fixme("flag %#x is stub", flag);
 
+	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
+	struct stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	if (pPathname == nullptr || pStatbuf == nullptr)
+		return -EFAULT;
+
 	if (dfd == AT_FDCWD)
 	{
-		fixme("dfd AT_FDCWD is stub");
-		return -ENOSYS;
+		vfs::RefNode *absoluteNode = fs->Open(pPathname, pcb->CurrentWorkingDirectory);
+		if (!absoluteNode)
+			return -ENOENT;
+
+		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
+		strcpy((char *)absPath, absoluteNode->node->FullPath);
+		delete absoluteNode;
+		int ret = fdt->_stat(absPath, pStatbuf);
+		delete[] absPath;
+		return ret;
 	}
 
 	vfs::FileDescriptorTable::Fildes &
@@ -2517,13 +2530,8 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *filename,
 		return -EBADF;
 	}
 
-	const char *pFilename = vma->UserCheckAndGetAddress(filename);
-	struct stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
-	if (pFilename == nullptr || pStatbuf == nullptr)
-		return -EFAULT;
-
-	debug("%s %#lx %#lx", pFilename, filename, statbuf);
-	return fdt->_stat(pFilename, pStatbuf);
+	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
+	return fdt->_stat(pPathname, pStatbuf);
 }
 
 /* https://man7.org/linux/man-pages/man2/pipe2.2.html */
