@@ -90,14 +90,13 @@ namespace vfs
 	}
 
 	Node::Node(Node *Parent, const char *Name, NodeType Type,
-			   bool NoParent, Virtual *fs, int *Err)
+			   bool NoParent, Virtual *_fs, int *Err)
 	{
 		assert(Name != nullptr);
 		assert(strlen(Name) != 0);
-		assert((NoParent == false &&
-				fs == nullptr) ||
-			   (NoParent == true &&
-				fs != nullptr));
+
+		if (Parent && _fs == nullptr)
+			_fs = Parent->vFS;
 
 		if (Err != nullptr)
 			*Err = 0;
@@ -145,10 +144,10 @@ namespace vfs
 			Parent = nullptr;
 			const char *Path = Name;
 
-			Node *RootNode = fs->FileSystemRoot->Children[0];
-			Node *CurrentParent = fs->GetParent(Path, Parent);
+			Node *RootNode = _fs->FileSystemRoot->Children[0];
+			Node *CurrentParent = _fs->GetParent(Path, Parent);
 
-			if (fs->PathExists(Path, CurrentParent))
+			if (_fs->PathExists(Path, CurrentParent))
 			{
 				debug("Path \"%s\" already exists.", Path);
 				delete[] Path;
@@ -158,7 +157,7 @@ namespace vfs
 				return;
 			}
 
-			const char *CleanPath = fs->NormalizePath(Path, CurrentParent);
+			const char *CleanPath = _fs->NormalizePath(Path, CurrentParent);
 
 			cwk_segment segment;
 			if (!cwk_path_get_first_segment(CleanPath, &segment))
