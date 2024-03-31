@@ -1914,6 +1914,16 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 	return len;
 }
 
+/* https://man7.org/linux/man-pages/man2/umask.2.html */
+static mode_t linux_umask(SysFrm *, mode_t mask)
+{
+	PCB *pcb = thisProcess;
+	mode_t old = pcb->FileCreationMask;
+	pcb->FileCreationMask = mask & 0777;
+	debug("old=%#o new=%#o (mask: %#lx)", old, pcb->FileCreationMask, mask);
+	return old;
+}
+
 /* https://man7.org/linux/man-pages/man2/getrusage.2.html */
 static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 {
@@ -2852,7 +2862,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_chown] = {"chown", (void *)nullptr},
 	[__NR_amd64_fchown] = {"fchown", (void *)nullptr},
 	[__NR_amd64_lchown] = {"lchown", (void *)nullptr},
-	[__NR_amd64_umask] = {"umask", (void *)nullptr},
+	[__NR_amd64_umask] = {"umask", (void *)linux_umask},
 	[__NR_amd64_gettimeofday] = {"gettimeofday", (void *)nullptr},
 	[__NR_amd64_getrlimit] = {"getrlimit", (void *)nullptr},
 	[__NR_amd64_getrusage] = {"getrusage", (void *)linux_getrusage},
@@ -3267,7 +3277,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_setpgid] = {"setpgid", (void *)linux_setpgid},
 	[__NR_i386_ulimit] = {"ulimit", (void *)nullptr},
 	[__NR_i386_oldolduname] = {"oldolduname", (void *)nullptr},
-	[__NR_i386_umask] = {"umask", (void *)nullptr},
+	[__NR_i386_umask] = {"umask", (void *)linux_umask},
 	[__NR_i386_chroot] = {"chroot", (void *)nullptr},
 	[__NR_i386_ustat] = {"ustat", (void *)nullptr},
 	[__NR_i386_dup2] = {"dup2", (void *)linux_dup2},
