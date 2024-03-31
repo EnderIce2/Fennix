@@ -200,20 +200,20 @@ typedef intptr_t ssize_t;
 
 #if defined(a64) || defined(aa64)
 typedef int64_t off_t;
-typedef long long off64_t;
-typedef __INT32_TYPE__ mode_t;
-typedef int64_t dev_t;
-typedef int64_t ino64_t;
-typedef int64_t ino_t;
-typedef unsigned int nlink_t;
-typedef int blksize_t;
+typedef int64_t off64_t;
+typedef uint32_t mode_t;
+typedef uint64_t dev_t;
+typedef uint64_t ino64_t;
+typedef uint64_t ino_t;
+typedef uint32_t nlink_t;
+typedef int64_t blksize_t;
 typedef int64_t blkcnt_t;
 typedef int64_t blkcnt64_t;
 typedef int64_t time_t;
-typedef unsigned uid_t;
-typedef unsigned gid_t;
-typedef long clock_t;
-typedef int pid_t;
+typedef uint32_t uid_t;
+typedef uint32_t gid_t;
+typedef int64_t clock_t;
+typedef int32_t pid_t;
 #elif defined(a32)
 typedef int32_t off_t;
 typedef long long off64_t;
