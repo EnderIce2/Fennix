@@ -1158,6 +1158,7 @@ static pid_t linux_fork(SysFrm *sf)
 	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
 	NewProcess->Executable = Parent->Executable;
 	NewProcess->CurrentWorkingDirectory = Parent->CurrentWorkingDirectory;
+	NewProcess->FileCreationMask = Parent->FileCreationMask;
 
 	TCB *NewThread =
 		TaskManager->CreateThread(NewProcess,

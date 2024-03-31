@@ -465,6 +465,8 @@ namespace Tasking
 
 		/* Other */
 		Signal Signals;
+		mode_t FileCreationMask = S_IRUSR | S_IWUSR | S_IRGRP |
+								  S_IWGRP | S_IROTH | S_IWOTH;
 
 		/* Threads & Children */
 		std::list<TCB *> Threads;
