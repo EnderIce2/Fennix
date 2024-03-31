@@ -2478,7 +2478,9 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
 		strcpy((char *)absPath, absoluteNode->node->FullPath);
 		delete absoluteNode;
-		return fdt->_open(absPath, flags, mode);
+		int ret = fdt->_open(absPath, flags, mode);
+		delete[] absPath;
+		return ret;
 	}
 
 	if (!fs->PathIsRelative(pPathname))
