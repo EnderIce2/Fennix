@@ -2491,7 +2491,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 }
 
 /* Undocumented? */
-static long linux_newfstatat(SysFrm *, int dfd, const char *pathname,
+static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 							 struct stat *statbuf, int flag)
 {
 	/* FIXME: This function is not working at all? */
@@ -2508,7 +2508,9 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *pathname,
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
-	if (dfd == AT_FDCWD)
+	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
+
+	if (dirfd == AT_FDCWD && !fs->PathIsRelative(pPathname))
 	{
 		vfs::RefNode *absoluteNode = fs->Open(pPathname, pcb->CurrentWorkingDirectory);
 		if (!absoluteNode)
@@ -2523,14 +2525,13 @@ static long linux_newfstatat(SysFrm *, int dfd, const char *pathname,
 	}
 
 	vfs::FileDescriptorTable::Fildes &
-		fildes = fdt->GetDescriptor(dfd);
+		fildes = fdt->GetDescriptor(dirfd);
 	if (!fildes.Handle)
 	{
-		debug("Invalid fd %d", dfd);
+		debug("Invalid fd %d", dirfd);
 		return -EBADF;
 	}
 
-	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
 	return fdt->_stat(pPathname, pStatbuf);
 }
 
