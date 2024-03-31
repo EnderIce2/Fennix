@@ -503,6 +503,9 @@ namespace vfs
 		statbuf->st_gid = node->GroupIdentifier;
 		statbuf->st_rdev = 0; /* FIXME: stub */
 		statbuf->st_size = node->Size;
+		statbuf->st_atime = node->AccessTime;
+		statbuf->st_mtime = node->ModifyTime;
+		statbuf->st_ctime = node->ChangeTime;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
 		statbuf->st_attr = 0;	 /* FIXME: stub */
@@ -527,6 +530,9 @@ namespace vfs
 		statbuf->st_gid = node->GroupIdentifier;
 		statbuf->st_rdev = 0; /* FIXME: stub */
 		statbuf->st_size = node->Size;
+		statbuf->st_atime = node->AccessTime;
+		statbuf->st_mtime = node->ModifyTime;
+		statbuf->st_ctime = node->ChangeTime;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
 		statbuf->st_attr = 0;	 /* FIXME: stub */
@@ -558,6 +564,9 @@ namespace vfs
 		statbuf->st_gid = node->GroupIdentifier;
 		statbuf->st_rdev = 0; /* FIXME: stub */
 		statbuf->st_size = node->Size;
+		statbuf->st_atime = node->AccessTime;
+		statbuf->st_mtime = node->ModifyTime;
+		statbuf->st_ctime = node->ChangeTime;
 		statbuf->st_blksize = 0; /* FIXME: stub */
 		statbuf->st_blocks = 0;	 /* FIXME: stub */
 		statbuf->st_attr = 0;	 /* FIXME: stub */
