@@ -1797,6 +1797,14 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 			fdt->SetFlags(fd, fdt->GetFlags(fd) & ~O_APPEND);
 		return 0;
 	}
+	case F_DUPFD_CLOEXEC:
+	{
+		int ret = fdt->_dup2(fd, s_cst(int, (uintptr_t)arg));
+		if (ret < 0)
+			return ret;
+		fdt->GetDescriptor(ret).Flags |= FD_CLOEXEC;
+		return ret;
+	}
 	case F_SETOWN:
 	case F_GETOWN:
 	case F_SETSIG:
@@ -1806,6 +1814,10 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	case F_SETLKW:
 	case F_SETOWN_EX:
 	case F_GETOWN_EX:
+	case F_GETOWNER_UIDS:
+	case F_OFD_GETLK:
+	case F_OFD_SETLK:
+	case F_OFD_SETLKW:
 	{
 		fixme("cmd %d not implemented", cmd);
 		return -ENOSYS;

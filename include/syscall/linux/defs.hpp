@@ -131,6 +131,15 @@
 
 #define F_SETOWN_EX 15
 #define F_GETOWN_EX 16
+#define F_GETOWNER_UIDS 17
+
+#define F_OFD_GETLK 36
+#define F_OFD_SETLK 37
+#define F_OFD_SETLKW 38
+
+#define F_DUPFD_CLOEXEC 1030
+
+#define FD_CLOEXEC 1
 
 #define DT_UNKNOWN 0
 #define DT_FIFO 1
@@ -187,6 +196,12 @@ typedef long __kernel_suseconds_t;
 typedef unsigned long timeu64_t;
 typedef int clockid_t;
 typedef long time64_t;
+
+struct f_owner_ex
+{
+	int type;
+	pid_t pid;
+};
 
 struct iovec
 {
