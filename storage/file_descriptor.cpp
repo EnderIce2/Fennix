@@ -194,6 +194,12 @@ namespace vfs
 				debug("%s: File already exists, continuing...",
 					  AbsolutePath);
 			}
+			else if (Flags & O_EXCL)
+			{
+				debug("%s: File already exists, returning EEXIST",
+					  AbsolutePath);
+				return -EEXIST;
+			}
 			else if (ret < 0)
 			{
 				error("Failed to create file %s: %d",
@@ -202,28 +208,9 @@ namespace vfs
 			}
 		}
 
-		if (Flags & O_EXCL)
-		{
-			RefNode *File = fs->Open(AbsolutePath,
-									 pcb->CurrentWorkingDirectory);
-
-			if (!File)
-			{
-				error("Failed to open file %s",
-					  AbsolutePath);
-				return -ENOENT;
-			}
-			delete File;
-		}
-
 		if (Flags & O_TRUNC)
 		{
 			fixme("O_TRUNC");
-		}
-
-		if (Flags & O_APPEND)
-		{
-			fixme("O_APPEND");
 		}
 
 		if (Flags & O_CLOEXEC)
@@ -239,6 +226,12 @@ namespace vfs
 			error("Failed to open file %s",
 				  AbsolutePath);
 			return -ENOENT;
+		}
+
+		if (Flags & O_APPEND)
+		{
+			debug("Appending to file %s", AbsolutePath);
+			File->seek(0, SEEK_END);
 		}
 
 		Fildes fd = {.Descriptor = GetFreeFileDescriptor()};
