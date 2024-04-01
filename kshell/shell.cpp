@@ -167,11 +167,10 @@ void StartKernelShell()
 	bool upperCase = false;
 	bool tabDblPress = false;
 
-	int kfd = fopen("/dev/key", "r");
-	if (kfd < 0)
+	vfs::RefNode *kfd = fs->Open("/dev/key");
+	if (kfd == nullptr)
 	{
-		KPrint("Failed to open keyboard device! %s",
-			   strerror(kfd));
+		KPrint("Failed to open keyboard device!");
 		return;
 	}
 
@@ -216,7 +215,7 @@ void StartKernelShell()
 			CurY.store(__cy);
 			CurHalt.store(false);
 
-			nBytes = fread(kfd, scBuf, 2);
+			nBytes = kfd->read(scBuf, 2);
 			if (nBytes == 0)
 				continue;
 			if (nBytes < 0)

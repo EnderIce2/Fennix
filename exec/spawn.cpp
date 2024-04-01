@@ -35,15 +35,13 @@ namespace Execute
 			  Tasking::TaskCompatibility Compatibility,
 			  bool Critical)
 	{
-		int fd = fopen(Path, "r");
-		if (fd < 0)
-			return fd;
+		vfs::RefNode *fd = fs->Open(Path);
+		if (fd == nullptr)
+			return -ENOENT;
 
-		struct stat statbuf;
-		fstat(fd, &statbuf);
-		if (!S_ISREG(statbuf.st_mode))
+		if (fd->node->Type == vfs::NodeType::DIRECTORY)
 		{
-			fclose(fd);
+			delete fd;
 			return -EISDIR;
 		}
 
@@ -55,7 +53,7 @@ namespace Execute
 			const char *BaseName;
 			cwk_path_get_basename(Path, &BaseName, nullptr);
 			Elf32_Ehdr ELFHeader;
-			fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf32_Ehdr));
+			fd->read((uint8_t *)&ELFHeader, sizeof(Elf32_Ehdr));
 
 			switch (ELFHeader.e_machine)
 			{
@@ -136,7 +134,7 @@ namespace Execute
 			if (!obj->IsValid)
 			{
 				error("Failed to load ELF object");
-				fclose(fd);
+				delete fd;
 				delete Process;
 				return -ENOEXEC;
 			}
@@ -186,19 +184,19 @@ namespace Execute
 												   Compatibility);
 				Thread->SetCritical(Critical);
 			}
-			fclose(fd);
+			delete fd;
 			return Thread->ID;
 		}
 		default:
 		{
 			debug("Unknown binary type: %d",
 				  GetBinaryType(Path));
-			fclose(fd);
+			delete fd;
 			return -ENOEXEC;
 		}
 		}
 
-		fclose(fd);
+		delete fd;
 		return -ENOEXEC;
 	}
 }

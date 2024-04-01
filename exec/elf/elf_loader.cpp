@@ -33,7 +33,7 @@ using namespace vfs;
 namespace Execute
 {
 	void ELFObject::GenerateAuxiliaryVector_x86_32(Memory::VirtualMemoryArea *vma,
-												   int fd,
+												   vfs::RefNode *fd,
 												   Elf32_Ehdr ELFHeader,
 												   uint32_t EntryPoint,
 												   uint32_t BaseAddress)
@@ -41,7 +41,7 @@ namespace Execute
 	}
 
 	void ELFObject::GenerateAuxiliaryVector_x86_64(Memory::VirtualMemoryArea *vma,
-												   int fd,
+												   vfs::RefNode *fd,
 												   Elf64_Ehdr ELFHeader,
 												   uint64_t EntryPoint,
 												   uint64_t BaseAddress)
@@ -50,10 +50,8 @@ namespace Execute
 		char *aux_platform = (char *)vma->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
 
-		const char *execfn = thisProcess->FileDescriptors->GetAbsolutePath(fd);
-		void *execfn_str = vma->RequestPages(TO_PAGES(strlen(execfn) + 1), true);
-		strcpy((char *)execfn_str, execfn);
-		delete[] execfn;
+		void *execfn_str = vma->RequestPages(TO_PAGES(strlen(fd->node->FullPath) + 1), true);
+		strcpy((char *)execfn_str, fd->node->FullPath);
 		void *at_random = vma->RequestPages(1, true);
 		*(uint64_t *)at_random = Random::rand16();
 
@@ -95,25 +93,23 @@ namespace Execute
 #endif
 	}
 
-	void ELFObject::LoadExec_x86_32(int fd, PCB *TargetProcess)
+	void ELFObject::LoadExec_x86_32(vfs::RefNode *, PCB *)
 	{
 		stub;
-		UNUSED(fd);
-		UNUSED(TargetProcess);
 	}
 
-	void ELFObject::LoadExec_x86_64(int fd, PCB *TargetProcess)
+	void ELFObject::LoadExec_x86_64(vfs::RefNode *fd, PCB *TargetProcess)
 	{
 #if defined(a64)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{
 			Memory::SmartHeap InterpreterPath = Memory::SmartHeap(256);
-			lseek(fd, Interp.p_offset, SEEK_SET);
-			fread(fd, InterpreterPath, 256);
+			fd->seek(Interp.p_offset, SEEK_SET);
+			fd->read(InterpreterPath, 256);
 
-			int ifd = fopen((const char *)InterpreterPath.Get(), "r");
-			if (ifd < 0)
+			vfs::RefNode *ifd = fs->Open((const char *)InterpreterPath.Get());
+			if (ifd == nullptr)
 			{
 				warn("Failed to open interpreter file: %s",
 					 (const char *)InterpreterPath.Get());
@@ -125,7 +121,7 @@ namespace Execute
 				{
 					warn("Interpreter %s is not an ELF file",
 						 (const char *)InterpreterPath.Get());
-					fclose(ifd);
+					delete ifd;
 					continue;
 				}
 
@@ -134,15 +130,15 @@ namespace Execute
 					/* FIXME: specify argv[1] as the location for the interpreter */
 
 					debug("Interpreter loaded successfully");
-					fclose(ifd);
+					delete ifd;
 					return;
 				}
 			}
 		}
 
 		Elf64_Ehdr ELFHeader;
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
+		fd->seek(0, SEEK_SET);
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
 
@@ -156,8 +152,8 @@ namespace Execute
 			Elf64_Phdr ProgramHeader;
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				lseek(fd, ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
-				fread(fd, (uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
+				fd->seek(ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
+				fd->read((uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
 				switch (ProgramHeader.p_type)
 				{
 				case PT_LOAD:
@@ -188,8 +184,8 @@ namespace Execute
 					{
 						debug("%d %#lx %d", ProgramHeader.p_offset,
 							  (uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz);
-						lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-						fread(fd, (uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz);
+						fd->seek(ProgramHeader.p_offset, SEEK_SET);
+						fd->read((uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -207,40 +203,40 @@ namespace Execute
 				case PT_NOTE:
 				{
 					Elf64_Nhdr NoteHeader;
-					lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-					fread(fd, (uint8_t *)&NoteHeader, sizeof(Elf64_Nhdr));
+					fd->seek(ProgramHeader.p_offset, SEEK_SET);
+					fd->read((uint8_t *)&NoteHeader, sizeof(Elf64_Nhdr));
 
 					switch (NoteHeader.n_type)
 					{
 					case NT_PRSTATUS:
 					{
 						Elf64_Prstatus prstatus;
-						lseek(fd, ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
-						fread(fd, (uint8_t *)&prstatus, sizeof(Elf64_Prstatus));
+						fd->seek(ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
+						fd->read((uint8_t *)&prstatus, sizeof(Elf64_Prstatus));
 						debug("PRSTATUS: %#lx", prstatus.pr_reg[0]);
 						break;
 					}
 					case NT_PRPSINFO:
 					{
 						Elf64_Prpsinfo prpsinfo;
-						lseek(fd, ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
-						fread(fd, (uint8_t *)&prpsinfo, sizeof(Elf64_Prpsinfo));
+						fd->seek(ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
+						fd->read((uint8_t *)&prpsinfo, sizeof(Elf64_Prpsinfo));
 						debug("PRPSINFO: %s", prpsinfo.pr_fname);
 						break;
 					}
 					case NT_PLATFORM:
 					{
 						char platform[256];
-						lseek(fd, ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
-						fread(fd, (uint8_t *)&platform, 256);
+						fd->seek(ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
+						fd->read((uint8_t *)&platform, 256);
 						debug("PLATFORM: %s", platform);
 						break;
 					}
 					case NT_AUXV:
 					{
 						Elf64_auxv_t auxv;
-						lseek(fd, ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
-						fread(fd, (uint8_t *)&auxv, sizeof(Elf64_auxv_t));
+						fd->seek(ProgramHeader.p_offset + sizeof(Elf64_Nhdr), SEEK_SET);
+						fd->read((uint8_t *)&auxv, sizeof(Elf64_auxv_t));
 						debug("AUXV: %#lx", auxv.a_un.a_val);
 						break;
 					}
@@ -258,8 +254,8 @@ namespace Execute
 					debug("TLS Size: %ld (%ld pages)",
 						  tlsSize, TO_PAGES(tlsSize));
 					void *tlsMemory = vma->RequestPages(TO_PAGES(tlsSize));
-					lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-					fread(fd, (uint8_t *)tlsMemory, tlsSize);
+					fd->seek(ProgramHeader.p_offset, SEEK_SET);
+					fd->read((uint8_t *)tlsMemory, tlsSize);
 					TargetProcess->TLS = {
 						.pBase = uintptr_t(tlsMemory),
 						.vBase = ProgramHeader.p_vaddr,
@@ -327,26 +323,24 @@ namespace Execute
 #endif
 	}
 
-	void ELFObject::LoadDyn_x86_32(int fd, PCB *TargetProcess)
+	void ELFObject::LoadDyn_x86_32(vfs::RefNode *, PCB *)
 	{
 		stub;
-		UNUSED(fd);
-		UNUSED(TargetProcess);
 	}
 
-	void ELFObject::LoadDyn_x86_64(int fd, PCB *TargetProcess)
+	void ELFObject::LoadDyn_x86_64(vfs::RefNode *fd, PCB *TargetProcess)
 	{
 #if defined(a64)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{
 			Memory::SmartHeap InterpreterPath = Memory::SmartHeap(256);
-			lseek(fd, Interp.p_offset, SEEK_SET);
-			fread(fd, InterpreterPath, 256);
+			fd->seek(Interp.p_offset, SEEK_SET);
+			fd->read(InterpreterPath, 256);
 			InterpreterPath = InterpreterPath;
 
-			int ifd = fopen((const char *)InterpreterPath.Get(), "r");
-			if (ifd < 0)
+			vfs::RefNode *ifd = fs->Open((const char *)InterpreterPath.Get());
+			if (ifd == nullptr)
 			{
 				warn("Failed to open interpreter file: %s",
 					 (const char *)InterpreterPath.Get());
@@ -358,22 +352,22 @@ namespace Execute
 				{
 					warn("Interpreter %s is not an ELF file",
 						 (const char *)InterpreterPath.Get());
-					fclose(ifd);
+					delete ifd;
 					continue;
 				}
 
 				if (LoadInterpreter(ifd, TargetProcess))
 				{
 					debug("Interpreter loaded successfully");
-					fclose(ifd);
+					delete ifd;
 					return;
 				}
 			}
 		}
 
 		Elf64_Ehdr ELFHeader;
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
+		fd->seek(0, SEEK_SET);
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
 
@@ -389,8 +383,8 @@ namespace Execute
 			size_t SegmentsSize = 0;
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				lseek(fd, ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
-				fread(fd, (uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
+				fd->seek(ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
+				fd->read((uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
 
 				if (ProgramHeader.p_type == PT_LOAD ||
 					ProgramHeader.p_type == PT_DYNAMIC)
@@ -414,8 +408,8 @@ namespace Execute
 
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				lseek(fd, ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
-				fread(fd, (uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
+				fd->seek(ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)), SEEK_SET);
+				fd->read((uint8_t *)&ProgramHeader, sizeof(Elf64_Phdr));
 
 				switch (ProgramHeader.p_type)
 				{
@@ -434,8 +428,8 @@ namespace Execute
 
 					if (ProgramHeader.p_filesz > 0)
 					{
-						lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-						fread(fd, (uint8_t *)SegmentDestination, ProgramHeader.p_filesz);
+						fd->seek(ProgramHeader.p_offset, SEEK_SET);
+						fd->read((uint8_t *)SegmentDestination, ProgramHeader.p_filesz);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -461,8 +455,8 @@ namespace Execute
 
 					if (ProgramHeader.p_filesz > 0)
 					{
-						lseek(fd, ProgramHeader.p_offset, SEEK_SET);
-						fread(fd, (uint8_t *)DynamicSegmentDestination, ProgramHeader.p_filesz);
+						fd->seek(ProgramHeader.p_offset, SEEK_SET);
+						fd->read((uint8_t *)DynamicSegmentDestination, ProgramHeader.p_filesz);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -565,14 +559,14 @@ namespace Execute
 		// 	Elf64_Shdr shdr;
 		// 	for (Elf64_Half i = 0; i < ELFHeader.e_shnum; i++)
 		// 	{
-		// 		lseek(fd, ELFHeader.e_shoff + i * sizeof(Elf64_Shdr), SEEK_SET);
-		// 		fread(fd, (uint8_t *)&shdr, sizeof(Elf64_Shdr));
+		// 		fd->seek(ELFHeader.e_shoff + i * sizeof(Elf64_Shdr), SEEK_SET);
+		// 		fd->read((uint8_t *)&shdr, sizeof(Elf64_Shdr));
 		// 		char sectionName[32];
 		// 		Elf64_Shdr n_shdr;
-		// 		lseek(fd, ELFHeader.e_shoff + ELFHeader.e_shstrndx * sizeof(Elf64_Shdr), SEEK_SET);
-		// 		fread(fd, (uint8_t *)&n_shdr, sizeof(Elf64_Shdr));
-		// 		lseek(fd, n_shdr.sh_offset + shdr.sh_name, SEEK_SET);
-		// 		fread(fd, (uint8_t *)sectionName, 32);
+		// 		fd->seek(ELFHeader.e_shoff + ELFHeader.e_shstrndx * sizeof(Elf64_Shdr), SEEK_SET);
+		// 		fd->read((uint8_t *)&n_shdr, sizeof(Elf64_Shdr));
+		// 		fd->seek(n_shdr.sh_offset + shdr.sh_name, SEEK_SET);
+		// 		fd->read((uint8_t *)sectionName, 32);
 		// 		debug("shdr: %s", sectionName);
 		// 		if (strcmp(sectionName, ".rela.plt") == 0)
 		// 		{
@@ -698,8 +692,8 @@ namespace Execute
 		// 			// STT_OBJECT
 		// 			Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
 		// 			Elf64_Sym *SymArray = new Elf64_Sym[numEntries];
-		// 			lseek(fd, shdr.sh_offset, SEEK_SET);
-		// 			fread(fd, (uint8_t *)SymArray, shdr.sh_size);
+		// 			fd->seek(shdr.sh_offset, SEEK_SET);
+		// 			fd->read((uint8_t *)SymArray, shdr.sh_size);
 		// 			debug("start %#lx (off %#lx), entries %ld",
 		// 				  SymArray, shdr.sh_addr, numEntries);
 		// 			for (Elf64_Xword j = 0; j < numEntries; j++)
@@ -740,10 +734,10 @@ namespace Execute
 #endif
 	}
 
-	bool ELFObject::LoadInterpreter(int fd, PCB *TargetProcess)
+	bool ELFObject::LoadInterpreter(vfs::RefNode *fd, PCB *TargetProcess)
 	{
 		Elf32_Ehdr ELFHeader;
-		fread(fd, &ELFHeader, sizeof(Elf32_Ehdr));
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf32_Ehdr));
 
 		switch (ELFHeader.e_type)
 		{
@@ -822,8 +816,8 @@ namespace Execute
 			return;
 		}
 
-		int fd = fopen(AbsolutePath, "r");
-		if (fd < 0)
+		vfs::RefNode *fd = fs->Open(AbsolutePath);
+		if (fd == nullptr)
 		{
 			error("Failed to open %s, errno: %d", AbsolutePath, fd);
 			return;
@@ -839,17 +833,17 @@ namespace Execute
 			envc++;
 
 		Elf32_Ehdr ELFHeader;
-		fread(fd, &ELFHeader, sizeof(Elf32_Ehdr));
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf32_Ehdr));
 
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		const char *ElfInterpPath = nullptr;
 		if (!PhdrINTERP.empty() && ELFHeader.e_type == ET_DYN)
 		{
-			lseek(fd, PhdrINTERP.front().p_offset, SEEK_SET);
+			fd->seek(PhdrINTERP.front().p_offset, SEEK_SET);
 			ElfInterpPath = new char[256];
-			fread(fd, (void *)ElfInterpPath, 256);
+			fd->read((uint8_t *)ElfInterpPath, 256);
 			debug("Interpreter: %s", ElfInterpPath);
-			lseek(fd, 0, SEEK_SET);
+			fd->seek(0, SEEK_SET);
 			argc++;
 		}
 
@@ -952,7 +946,7 @@ namespace Execute
 		}
 		}
 
-		fclose(fd);
+		delete fd;
 	}
 
 	ELFObject::~ELFObject()

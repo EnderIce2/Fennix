@@ -22,12 +22,6 @@
 	- **user <=> ref_node.cpp**
 	- Manages the file descriptor table for user processes
 
-<br>
-
-- `kernel_io.cpp`
-	- **kernel <=> file_descriptor.cpp**
-	- Performs a similar role as `file_descriptor.cpp` but for kernel processes
-
 ### /storage/fs
 
 This directory contains the implementations of various file systems, such as `fat32.cpp` and `ustar.cpp`.

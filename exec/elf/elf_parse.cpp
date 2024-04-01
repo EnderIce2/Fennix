@@ -92,14 +92,14 @@ namespace Execute
 		return nullptr;
 	}
 
-	Elf64_Sym ELFLookupSymbol(int fd, const char *Name)
+	Elf64_Sym ELFLookupSymbol(vfs::RefNode *fd, const char *Name)
 	{
 #if defined(a64)
-		off_t OldOffset = lseek(fd, 0, SEEK_CUR);
+		off_t OldOffset = fd->seek(0, SEEK_CUR);
 
 		Elf64_Ehdr Header;
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, (uint8_t *)&Header, sizeof(Elf64_Ehdr));
+		fd->seek(0, SEEK_SET);
+		fd->read((uint8_t *)&Header, sizeof(Elf64_Ehdr));
 
 		Elf64_Shdr SymbolTable;
 		Elf64_Shdr StringTable;
@@ -107,15 +107,15 @@ namespace Execute
 		for (Elf64_Half i = 0; i < Header.e_shnum; i++)
 		{
 			Elf64_Shdr shdr;
-			lseek(fd, Header.e_shoff + (i * sizeof(Elf64_Shdr)), SEEK_SET);
-			fread(fd, (uint8_t *)&shdr, sizeof(Elf64_Shdr));
+			fd->seek(Header.e_shoff + (i * sizeof(Elf64_Shdr)), SEEK_SET);
+			fd->read((uint8_t *)&shdr, sizeof(Elf64_Shdr));
 
 			switch (shdr.sh_type)
 			{
 			case SHT_SYMTAB:
 				SymbolTable = shdr;
-				lseek(fd, Header.e_shoff + (shdr.sh_link * sizeof(Elf64_Shdr)), SEEK_SET);
-				fread(fd, (uint8_t *)&StringTable, sizeof(Elf64_Shdr));
+				fd->seek(Header.e_shoff + (shdr.sh_link * sizeof(Elf64_Shdr)), SEEK_SET);
+				fd->read((uint8_t *)&StringTable, sizeof(Elf64_Shdr));
 				break;
 			default:
 			{
@@ -128,7 +128,7 @@ namespace Execute
 			StringTable.sh_name == 0)
 		{
 			error("Symbol table not found.");
-			lseek(fd, OldOffset, SEEK_SET);
+			fd->seek(OldOffset, SEEK_SET);
 			return {};
 		}
 
@@ -136,22 +136,22 @@ namespace Execute
 		{
 			// Elf64_Sym *Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
 			Elf64_Sym Symbol;
-			lseek(fd, SymbolTable.sh_offset + (i * sizeof(Elf64_Sym)), SEEK_SET);
-			fread(fd, (uint8_t *)&Symbol, sizeof(Elf64_Sym));
+			fd->seek(SymbolTable.sh_offset + (i * sizeof(Elf64_Sym)), SEEK_SET);
+			fd->read((uint8_t *)&Symbol, sizeof(Elf64_Sym));
 
 			// char *String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
 			char String[256];
-			lseek(fd, StringTable.sh_offset + Symbol.st_name, SEEK_SET);
-			fread(fd, (uint8_t *)&String, 256);
+			fd->seek(StringTable.sh_offset + Symbol.st_name, SEEK_SET);
+			fd->read((uint8_t *)&String, 256);
 
 			if (strcmp(String, Name) == 0)
 			{
-				lseek(fd, OldOffset, SEEK_SET);
+				fd->seek(OldOffset, SEEK_SET);
 				return Symbol;
 			}
 		}
 		error("Symbol not found.");
-		lseek(fd, OldOffset, SEEK_SET);
+		fd->seek(OldOffset, SEEK_SET);
 #endif
 		return {};
 	}

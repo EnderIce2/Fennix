@@ -42,16 +42,14 @@ void cmd_cat(const char *args)
 		return;
 	}
 
-	int fd = fopen(thisNode->FullPath, "r");
-	struct stat st;
-	fstat(fd, &st);
+	vfs::RefNode *fd = fs->Open(thisNode->FullPath);
 
-	char *buffer = new char[st.st_size + 1];
-	ssize_t rBytes = fread(fd, buffer, st.st_size);
+	uint8_t *buffer = new uint8_t[fd->Size + 1];
+	ssize_t rBytes = fd->read(buffer, fd->Size);
 	if (rBytes > 0)
 		printf("%s\n", buffer);
 	else
 		printf("cat: %s: Could not read file\n", args);
 	delete[] buffer;
-	fclose(fd);
+	delete fd;
 }

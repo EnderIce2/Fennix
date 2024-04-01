@@ -21,31 +21,31 @@
 
 namespace Execute
 {
-	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(int fd,
+	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(vfs::RefNode *fd,
 													SegmentTypes Tag)
 	{
 #if defined(a64) || defined(aa64)
-		off_t OldOffset = lseek(fd, 0, SEEK_CUR);
+		off_t OldOffset = fd->seek(0, SEEK_CUR);
 		std::vector<Elf64_Phdr> Ret;
 
 		Elf64_Ehdr ELFHeader;
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
+		fd->seek(0, SEEK_SET);
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 
 		Elf64_Phdr ProgramHeaders;
-		lseek(fd, ELFHeader.e_phoff, SEEK_SET);
-		fread(fd, (uint8_t *)&ProgramHeaders, sizeof(Elf64_Phdr));
+		fd->seek(ELFHeader.e_phoff, SEEK_SET);
+		fd->read((uint8_t *)&ProgramHeaders, sizeof(Elf64_Phdr));
 
 		for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 		{
 			if (ProgramHeaders.p_type == Tag)
 				Ret.push_back(ProgramHeaders);
 
-			lseek(fd, sizeof(Elf64_Phdr), SEEK_CUR);
-			fread(fd, (uint8_t *)&ProgramHeaders, sizeof(Elf64_Phdr));
+			fd->seek(sizeof(Elf64_Phdr), SEEK_CUR);
+			fd->read((uint8_t *)&ProgramHeaders, sizeof(Elf64_Phdr));
 		}
 
-		lseek(fd, OldOffset, SEEK_SET);
+		fd->seek(OldOffset, SEEK_SET);
 		return Ret;
 #elif defined(a32)
 		return {};

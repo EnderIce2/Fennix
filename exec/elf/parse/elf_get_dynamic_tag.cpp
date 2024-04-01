@@ -21,16 +21,16 @@
 
 namespace Execute
 {
-	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(int fd,
+	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(vfs::RefNode *fd,
 												   DynamicArrayTags Tag)
 	{
 #if defined(a64) || defined(aa64)
-		off_t OldOffset = lseek(fd, 0, SEEK_CUR);
+		off_t OldOffset = fd->seek(0, SEEK_CUR);
 		std::vector<Elf64_Dyn> Ret;
 
 		Elf64_Ehdr ELFHeader;
-		lseek(fd, 0, SEEK_SET);
-		fread(fd, (uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
+		fd->seek(0, SEEK_SET);
+		fd->read((uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
 
 		std::vector<Elf64_Phdr> DYNAMICPhdrs = ELFGetSymbolType_x86_64(fd, PT_DYNAMIC);
 
@@ -45,8 +45,8 @@ namespace Execute
 			Elf64_Dyn Dynamic;
 			for (size_t i = 0; i < Phdr.p_filesz / sizeof(Elf64_Dyn); i++)
 			{
-				lseek(fd, Phdr.p_offset + (i * sizeof(Elf64_Dyn)), SEEK_SET);
-				fread(fd, (uint8_t *)&Dynamic, sizeof(Elf64_Dyn));
+				fd->seek(Phdr.p_offset + (i * sizeof(Elf64_Dyn)), SEEK_SET);
+				fd->read((uint8_t *)&Dynamic, sizeof(Elf64_Dyn));
 
 				if (Dynamic.d_tag != Tag)
 					continue;
@@ -57,7 +57,7 @@ namespace Execute
 			}
 		}
 
-		lseek(fd, OldOffset, SEEK_SET);
+		fd->seek(OldOffset, SEEK_SET);
 		return Ret;
 #elif defined(a32)
 		return {};

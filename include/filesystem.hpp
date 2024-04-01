@@ -436,14 +436,4 @@ namespace vfs
 	};
 }
 
-int fopen(const char *pathname, const char *mode);
-int creat(const char *pathname, mode_t mode);
-ssize_t fread(int fd, void *buf, size_t count);
-ssize_t fwrite(int fd, const void *buf, size_t count);
-int fclose(int fd);
-off_t lseek(int fd, off_t offset, int whence);
-int stat(const char *pathname, struct stat *statbuf);
-int fstat(int fd, struct stat *statbuf);
-int lstat(const char *pathname, struct stat *statbuf);
-
 #endif // !__FENNIX_KERNEL_FILESYSTEM_H__

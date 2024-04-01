@@ -67,31 +67,20 @@ namespace Execute
 		void *ELFProgramHeaders;
 
 		void GenerateAuxiliaryVector_x86_32(Memory::VirtualMemoryArea *vma,
-											int fd,
-											Elf32_Ehdr ELFHeader,
+											vfs::RefNode *fd, Elf32_Ehdr ELFHeader,
 											uint32_t EntryPoint,
 											uint32_t BaseAddress);
 
 		void GenerateAuxiliaryVector_x86_64(Memory::VirtualMemoryArea *vma,
-											int fd,
-											Elf64_Ehdr ELFHeader,
+											vfs::RefNode *fd, Elf64_Ehdr ELFHeader,
 											uint64_t EntryPoint,
 											uint64_t BaseAddress);
 
-		void LoadExec_x86_32(int fd,
-							 Tasking::PCB *TargetProcess);
-
-		void LoadExec_x86_64(int fd,
-							 Tasking::PCB *TargetProcess);
-
-		void LoadDyn_x86_32(int fd,
-							Tasking::PCB *TargetProcess);
-
-		void LoadDyn_x86_64(int fd,
-							Tasking::PCB *TargetProcess);
-
-		bool LoadInterpreter(int fd,
-							 Tasking::PCB *TargetProcess);
+		void LoadExec_x86_32(vfs::RefNode *fd, Tasking::PCB *TargetProcess);
+		void LoadExec_x86_64(vfs::RefNode *fd, Tasking::PCB *TargetProcess);
+		void LoadDyn_x86_32(vfs::RefNode *fd, Tasking::PCB *TargetProcess);
+		void LoadDyn_x86_64(vfs::RefNode *fd, Tasking::PCB *TargetProcess);
+		bool LoadInterpreter(vfs::RefNode *fd, Tasking::PCB *TargetProcess);
 
 	public:
 		decltype(IsElfValid) &IsValid = IsElfValid;
@@ -111,7 +100,7 @@ namespace Execute
 
 	int Spawn(char *Path, const char **argv, const char **envp,
 			  Tasking::PCB *Parent = nullptr, bool Fork = false,
-			  Tasking::TaskCompatibility Compatibility = Tasking::TaskCompatibility::Native,
+			  Tasking::TaskCompatibility Compatibility = Tasking::Native,
 			  bool Critical = false);
 
 	bool ELFIs64(void *Header);
@@ -120,17 +109,17 @@ namespace Execute
 	char *GetELFStringTable(Elf64_Ehdr *Header);
 	char *ELFLookupString(Elf64_Ehdr *Header, uintptr_t Offset);
 	Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name);
-	Elf64_Sym ELFLookupSymbol(int fd, const char *Name);
+	Elf64_Sym ELFLookupSymbol(vfs::RefNode *fd, const char *Name);
 	uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index);
 
-	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(int fd, SegmentTypes Tag);
-	std::vector<Elf32_Phdr> ELFGetSymbolType_x86_32(int fd, SegmentTypes Tag);
+	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(vfs::RefNode *fd, SegmentTypes Tag);
+	std::vector<Elf32_Phdr> ELFGetSymbolType_x86_32(vfs::RefNode *fd, SegmentTypes Tag);
 
-	std::vector<Elf64_Shdr> ELFGetSections_x86_64(int fd, const char *SectionName);
-	std::vector<Elf32_Shdr> ELFGetSections_x86_32(int fd, const char *SectionName);
+	std::vector<Elf64_Shdr> ELFGetSections_x86_64(vfs::RefNode *fd, const char *SectionName);
+	std::vector<Elf32_Shdr> ELFGetSections_x86_32(vfs::RefNode *fd, const char *SectionName);
 
-	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(int fd, DynamicArrayTags Tag);
-	std::vector<Elf32_Dyn> ELFGetDynamicTag_x86_32(int fd, DynamicArrayTags Tag);
+	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(vfs::RefNode *fd, DynamicArrayTags Tag);
+	std::vector<Elf32_Dyn> ELFGetDynamicTag_x86_32(vfs::RefNode *fd, DynamicArrayTags Tag);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__

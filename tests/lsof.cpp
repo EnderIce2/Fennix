@@ -37,7 +37,7 @@ void lsof()
 	thisThread->SetPriority(Tasking::High);
 
 	fs->Create("/dummy_lsof_file", NodeType::FILE);
-	fopen("/dummy_lsof_file", "r");
+	fs->Open("/dummy_lsof_file");
 
 	while (true)
 	{

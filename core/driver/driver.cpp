@@ -381,14 +381,14 @@ namespace Driver
 							break;
 						}
 
-						int fd = fopen(rDrv->node->FullPath, "r");
+						vfs::RefNode *fd = fs->Open(rDrv->node->FullPath);
 
 						std::vector<Elf64_Dyn> SymTab = Execute::ELFGetDynamicTag_x86_64(fd, DT_SYMTAB);
 						std::vector<Elf64_Dyn> StrTab = Execute::ELFGetDynamicTag_x86_64(fd, DT_STRTAB);
 						Elf64_Sym *_SymTab = (Elf64_Sym *)((uintptr_t)BaseAddress + SymTab[0].d_un.d_ptr);
 						char *DynStr = (char *)((uintptr_t)BaseAddress + StrTab[0].d_un.d_ptr);
 						UNUSED(DynStr);
-						fclose(fd);
+						delete fd;
 
 						Elf64_Rela *Rela = (Elf64_Rela *)(BaseAddress + Dynamic->d_un.d_ptr);
 						for (size_t i = 0; i < (PltRelSize->d_un.d_val / sizeof(Elf64_Rela)); i++)
@@ -431,14 +431,14 @@ namespace Driver
 					{
 						fixme("DT_SYMTAB");
 						break;
-						int fd = fopen(rDrv->node->FullPath, "r");
+						vfs::RefNode *fd = fs->Open(rDrv->node->FullPath);
 
 						std::vector<Elf64_Dyn> SymTab = Execute::ELFGetDynamicTag_x86_64(fd, DT_SYMTAB);
 						std::vector<Elf64_Dyn> StrTab = Execute::ELFGetDynamicTag_x86_64(fd, DT_STRTAB);
 						Elf64_Sym *_SymTab = (Elf64_Sym *)((uintptr_t)BaseAddress + SymTab[0].d_un.d_ptr);
 						char *DynStr = (char *)((uintptr_t)BaseAddress + StrTab[0].d_un.d_ptr);
 						UNUSED(DynStr);
-						fclose(fd);
+						delete fd;
 
 						size_t symtabEntrySize = 0;
 						Elf64_Dyn *entrySizeDyn = Dynamic;

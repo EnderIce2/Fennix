@@ -19,6 +19,8 @@
 
 #include <msexec.h>
 
+#include "../kernel.h"
+
 namespace Execute
 {
 	BinaryType GetBinaryType(const char *Path)
@@ -26,18 +28,17 @@ namespace Execute
 		debug("Checking binary type of %s(ptr: %#lx)",
 			  Path, Path);
 		BinaryType Type;
-		int fd = fopen(Path, "r");
+		vfs::RefNode *fd = fs->Open(Path);
 
-		if (fd < 0)
+		if (fd == nullptr)
 		{
-			debug("Failed to open file %s: %s",
-				  Path, strerror(fd));
-			return (BinaryType)fd;
+			debug("Failed to open file %s", Path);
+			return (BinaryType)-ENOENT;
 		}
 
 		debug("File opened: %s, descriptor %d", Path, fd);
 		Memory::SmartHeap sh = Memory::SmartHeap(1024);
-		fread(fd, sh, 128);
+		fd->read(sh, 128);
 
 		Elf32_Ehdr *ELFHeader = (Elf32_Ehdr *)sh.Get();
 		IMAGE_DOS_HEADER *MZHeader = (IMAGE_DOS_HEADER *)sh.Get();
@@ -56,8 +57,8 @@ namespace Execute
 		/* Check MZ header. */
 		else if (MZHeader->e_magic == IMAGE_DOS_SIGNATURE)
 		{
-			lseek(fd, MZHeader->e_lfanew, SEEK_SET);
-			fread(fd, sh, 512);
+			fd->seek(MZHeader->e_lfanew, SEEK_SET);
+			fd->read(sh, 512);
 			IMAGE_NT_HEADERS *PEHeader =
 				(IMAGE_NT_HEADERS *)(((char *)sh.Get()) +
 									 MZHeader->e_lfanew);
@@ -91,7 +92,7 @@ namespace Execute
 
 		Type = BinaryType::BinTypeUnknown;
 	Success:
-		fclose(fd);
+		delete fd;
 		return Type;
 	}
 }
