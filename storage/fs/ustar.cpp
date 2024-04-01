@@ -44,16 +44,9 @@ namespace vfs
 		return Size;
 	}
 
-	USTARNode::USTARNode(uintptr_t Address,
-						 const char *Name,
-						 NodeType Type,
-						 Virtual *vfs_ctx)
-		: Node(nullptr,
-			   Name,
-			   Type,
-			   true,
-			   vfs_ctx,
-			   nullptr),
+	USTARNode::USTARNode(uintptr_t Address, const char *Name,
+						 NodeType Type, Virtual *vfs_ctx)
+		: Node(nullptr, Name, Type, true, vfs_ctx, nullptr),
 		  Address(Address)
 	{
 	}
@@ -88,10 +81,17 @@ namespace vfs
 
 		debug("USTAR signature valid! Name:%s Signature:%s Mode:%d Size:%lu",
 			  header->name, header->signature,
-			  string2int(header->mode), header->size);
+			  StringToInt(header->mode), header->size);
 
+		Memory::Virtual vmm;
 		for (size_t i = 0;; i++)
 		{
+			if (!vmm.Check((void *)header))
+			{
+				error("Address %#lx is not mapped!", header);
+				return;
+			}
+
 			if (memcmp(header->signature, "ustar", 5) != 0)
 				break;
 
@@ -105,12 +105,7 @@ namespace vfs
 				header->name[strlen(header->name) - 1] = 0;
 			}
 
-			// if (!isempty((char *)header->name))
-			//     KPrint("Adding file \e88AACC%s\eCCCCCC (\e88AACC%lu \eCCCCCCbytes)", header->name, size);
-			// else
-			//     goto NextFileAddress;
-
-			size_t size = getsize(header->size);
+			size_t size = GetSize(header->size);
 			Node *node;
 			NodeType type = NODE_TYPE_NONE;
 			if (isempty((char *)header->name))
@@ -143,16 +138,16 @@ namespace vfs
 
 			// debug("%s %d KiB, Type:%c", header->name,
 			// 	  TO_KiB(size), header->typeflag[0]);
-			node->Mode = string2int(header->mode);
+			node->Mode = StringToInt(header->mode);
 			node->Size = size;
-			node->GroupIdentifier = getsize(header->gid);
-			node->UserIdentifier = getsize(header->uid);
-			node->DeviceMajor = getsize(header->dev_maj);
-			node->DeviceMinor = getsize(header->dev_min);
+			node->GroupIdentifier = GetSize(header->gid);
+			node->UserIdentifier = GetSize(header->uid);
+			node->DeviceMajor = GetSize(header->dev_maj);
+			node->DeviceMinor = GetSize(header->dev_min);
 
-			node->AccessTime = getsize(header->mtime);
-			node->ModifyTime = getsize(header->mtime);
-			node->ChangeTime = getsize(header->mtime);
+			node->AccessTime = GetSize(header->mtime);
+			node->ModifyTime = GetSize(header->mtime);
+			node->ChangeTime = GetSize(header->mtime);
 			node->IndexNode = i;
 
 			if (type == NodeType::SYMLINK)

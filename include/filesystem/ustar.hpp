@@ -30,13 +30,9 @@ namespace vfs
 		uintptr_t Address;
 
 	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset);
+		size_t read(uint8_t *Buffer, size_t Size, off_t Offset) final;
 
-		USTARNode(uintptr_t Address,
-				  const char *Name,
-				  NodeType Type,
+		USTARNode(uintptr_t Address, const char *Name, NodeType Type,
 				  Virtual *vfs_ctx);
 
 		~USTARNode();
@@ -78,24 +74,24 @@ namespace vfs
 		};
 
 	private:
-		uint32_t getsize(const char *s)
+		inline uint32_t GetSize(const char *String)
 		{
 			uint32_t ret = 0;
-			while (*s)
+			while (*String)
 			{
 				ret *= 8;
-				ret += *s - '0';
-				s++;
+				ret += *String - '0';
+				String++;
 			}
 			return ret;
 		}
 
-		int string2int(const char *str)
+		inline int StringToInt(const char *String)
 		{
-			int res = 0;
-			for (int i = 0; str[i] != '\0'; ++i)
-				res = res * 10 + str[i] - '0';
-			return res;
+			int ret = 0;
+			for (int i = 0; String[i] != '\0'; ++i)
+				ret = ret * 10 + String[i] - '0';
+			return ret;
 		}
 
 	public:
