@@ -36,6 +36,9 @@ void cmd_cd(const char *args)
 		return;
 	}
 
+	if (thisNode->Type == NodeType::SYMLINK)
+		thisNode = fs->GetNodeFromPath(thisNode->Symlink);
+
 	if (thisNode->Type != NodeType::DIRECTORY)
 	{
 		printf("cd: %s: Not a directory\n", args);

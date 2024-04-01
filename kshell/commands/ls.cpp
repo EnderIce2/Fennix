@@ -89,6 +89,9 @@ void cmd_ls(const char *args)
 			return;
 		}
 
+		if (thisNode->Type == NodeType::SYMLINK)
+			thisNode = fs->GetNodeFromPath(thisNode->Symlink);
+
 		if (thisNode->Type != NodeType::DIRECTORY)
 		{
 			printf("%s%s\n", ColorNodeType(thisNode), thisNode->Name);
