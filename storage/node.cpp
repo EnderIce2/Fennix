@@ -27,7 +27,7 @@ namespace vfs
 
 		debug("Operation not handled for %s(%#lx)",
 			  this->FullPath, this);
-		return -ENODEV;
+		return -ENOSYS;
 	}
 
 	int Node::close()
@@ -37,7 +37,7 @@ namespace vfs
 
 		debug("Operation not handled for %s(%#lx)",
 			  this->FullPath, this);
-		return -ENODEV;
+		return -ENOSYS;
 	}
 
 	size_t Node::read(uint8_t *Buffer, size_t Size, off_t Offset)
@@ -47,7 +47,7 @@ namespace vfs
 
 		debug("Operation not handled for %s(%#lx)",
 			  this->FullPath, this);
-		return -ENODEV;
+		return -ENOSYS;
 	}
 
 	size_t Node::write(uint8_t *Buffer, size_t Size, off_t Offset)
@@ -57,7 +57,7 @@ namespace vfs
 
 		debug("Operation not handled for %s(%#lx)",
 			  this->FullPath, this);
-		return -ENODEV;
+		return -ENOSYS;
 	}
 
 	int Node::ioctl(unsigned long Request, void *Argp)
@@ -67,7 +67,7 @@ namespace vfs
 
 		debug("Operation not handled for %s(%#lx)",
 			  this->FullPath, this);
-		return -ENODEV;
+		return -ENOSYS;
 	}
 
 	RefNode *Node::CreateReference()

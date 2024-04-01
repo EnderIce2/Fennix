@@ -320,53 +320,53 @@ void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
 	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
 }
 
-struct stat KStatToStat(struct k_stat kstat)
+struct kstat KStatToStat(struct linux_kstat linux_stat)
 {
-	struct stat stat;
-	stat.st_dev = kstat.st_dev;
-	stat.st_ino = kstat.st_ino;
-	stat.st_nlink = (nlink_t)kstat.st_nlink;
-	stat.st_mode = kstat.st_mode;
-	stat.st_uid = kstat.st_uid;
-	stat.st_gid = kstat.st_gid;
-	stat.st_rdev = kstat.st_rdev;
-	stat.st_size = kstat.st_size;
-	stat.st_blksize = kstat.st_blksize;
-	stat.st_blocks = kstat.st_blocks;
-	stat.st_atime = kstat.st_atime;
-	// stat.st_atime_nsec = kstat.st_atime_nsec;
-	stat.st_mtime = kstat.st_mtime;
-	// stat.st_mtime_nsec = kstat.st_mtime_nsec;
-	stat.st_ctime = kstat.st_ctime;
-	// stat.st_ctime_nsec = kstat.st_ctime_nsec;
+	struct kstat stat;
+	stat.st_dev = linux_stat.st_dev;
+	stat.st_ino = linux_stat.st_ino;
+	stat.st_nlink = (nlink_t)linux_stat.st_nlink;
+	stat.st_mode = linux_stat.st_mode;
+	stat.st_uid = linux_stat.st_uid;
+	stat.st_gid = linux_stat.st_gid;
+	stat.st_rdev = linux_stat.st_rdev;
+	stat.st_size = linux_stat.st_size;
+	stat.st_blksize = linux_stat.st_blksize;
+	stat.st_blocks = linux_stat.st_blocks;
+	stat.st_atime = linux_stat.st_atime;
+	// stat.st_atime_nsec = linux_stat.st_atime_nsec;
+	stat.st_mtime = linux_stat.st_mtime;
+	// stat.st_mtime_nsec = linux_stat.st_mtime_nsec;
+	stat.st_ctime = linux_stat.st_ctime;
+	// stat.st_ctime_nsec = linux_stat.st_ctime_nsec;
 	return stat;
 }
 
-struct k_stat StatToKStat(struct stat stat)
+struct linux_kstat StatToKStat(struct kstat stat)
 {
-	struct k_stat kstat;
-	kstat.st_dev = stat.st_dev;
-	kstat.st_ino = stat.st_ino;
-	kstat.st_nlink = stat.st_nlink;
-	kstat.st_mode = stat.st_mode;
-	kstat.st_uid = stat.st_uid;
-	kstat.st_gid = stat.st_gid;
-	kstat.st_rdev = stat.st_rdev;
-	kstat.st_size = stat.st_size;
-	kstat.st_blksize = stat.st_blksize;
-	kstat.st_blocks = stat.st_blocks;
-	kstat.st_atime = stat.st_atime;
-	// kstat.st_atime_nsec = stat.st_atime_nsec;
-	kstat.st_mtime = stat.st_mtime;
-	// kstat.st_mtime_nsec = stat.st_mtime_nsec;
-	kstat.st_ctime = stat.st_ctime;
-	// kstat.st_ctime_nsec = stat.st_ctime_nsec;
-	return kstat;
+	struct linux_kstat linux_stat;
+	linux_stat.st_dev = stat.st_dev;
+	linux_stat.st_ino = stat.st_ino;
+	linux_stat.st_nlink = stat.st_nlink;
+	linux_stat.st_mode = stat.st_mode;
+	linux_stat.st_uid = stat.st_uid;
+	linux_stat.st_gid = stat.st_gid;
+	linux_stat.st_rdev = stat.st_rdev;
+	linux_stat.st_size = stat.st_size;
+	linux_stat.st_blksize = stat.st_blksize;
+	linux_stat.st_blocks = stat.st_blocks;
+	linux_stat.st_atime = stat.st_atime;
+	// linux_stat.st_atime_nsec = stat.st_atime_nsec;
+	linux_stat.st_mtime = stat.st_mtime;
+	// linux_stat.st_mtime_nsec = stat.st_mtime_nsec;
+	linux_stat.st_ctime = stat.st_ctime;
+	// linux_stat.st_ctime_nsec = stat.st_ctime_nsec;
+	return linux_stat;
 }
 
-struct stat OKStatToStat(struct __old_kernel_stat okstat)
+struct kstat OKStatToStat(struct __old_kernel_stat okstat)
 {
-	struct stat stat;
+	struct kstat stat;
 	stat.st_dev = okstat.st_dev;
 	stat.st_ino = okstat.st_ino;
 	stat.st_nlink = okstat.st_nlink;
@@ -381,7 +381,7 @@ struct stat OKStatToStat(struct __old_kernel_stat okstat)
 	return stat;
 }
 
-struct __old_kernel_stat StatToOKStat(struct stat stat)
+struct __old_kernel_stat StatToOKStat(struct kstat stat)
 {
 	struct __old_kernel_stat okstat;
 	okstat.st_dev = (unsigned short)stat.st_dev;
@@ -505,7 +505,7 @@ if __ARCH_WANT_OLD_STAT is defined
 so what about __old_kernel_stat? when it is used? */
 
 /* https://man7.org/linux/man-pages/man2/stat.2.html */
-static int linux_stat(SysFrm *, const char *pathname, struct k_stat *statbuf)
+static int linux_stat(SysFrm *, const char *pathname, struct linux_kstat *statbuf)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
@@ -519,14 +519,14 @@ static int linux_stat(SysFrm *, const char *pathname, struct k_stat *statbuf)
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = KStatToStat(*pStatbuf);
+	struct kstat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_stat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/fstat.2.html */
-static int linux_fstat(SysFrm *, int fd, struct k_stat *statbuf)
+static int linux_fstat(SysFrm *, int fd, struct linux_kstat *statbuf)
 {
 #undef fstat
 	PCB *pcb = thisProcess;
@@ -537,16 +537,15 @@ static int linux_fstat(SysFrm *, int fd, struct k_stat *statbuf)
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = KStatToStat(*pStatbuf);
+	struct kstat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_fstat(fd, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/lstat.2.html */
-static int linux_lstat(SysFrm *, const char *pathname, struct k_stat *statbuf)
+static int linux_lstat(SysFrm *, const char *pathname, struct linux_kstat *statbuf)
 {
-#undef lstat
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -556,7 +555,7 @@ static int linux_lstat(SysFrm *, const char *pathname, struct k_stat *statbuf)
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = KStatToStat(*pStatbuf);
+	struct kstat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_lstat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
@@ -2614,7 +2613,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 
 /* Undocumented? */
 static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
-							 struct k_stat *statbuf, int flag)
+							 struct linux_kstat *statbuf, int flag)
 {
 	/* FIXME: This function is not working at all? */
 
@@ -2626,7 +2625,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		fixme("flag %#x is stub", flag);
 
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
-	struct k_stat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
+	struct linux_kstat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
@@ -2641,7 +2640,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
 		strcpy((char *)absPath, absoluteNode->node->FullPath);
 		delete absoluteNode;
-		struct stat nstat = KStatToStat(*pStatbuf);
+		struct kstat nstat = KStatToStat(*pStatbuf);
 		int ret = fdt->_stat(absPath, &nstat);
 		*pStatbuf = StatToKStat(nstat);
 		delete[] absPath;
@@ -2656,7 +2655,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		return -EBADF;
 	}
 
-	struct stat nstat = KStatToStat(*pStatbuf);
+	struct kstat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_stat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;

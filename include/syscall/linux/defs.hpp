@@ -271,7 +271,7 @@ struct linux_dirent64
 	char d_name[];			 /* Filename (null-terminated) */
 };
 
-struct k_stat
+struct linux_kstat
 {
 #if defined(a64)
 	__kernel_ulong_t st_dev;
@@ -317,7 +317,7 @@ struct k_stat
 #endif
 };
 
-struct k_stat64
+struct linux_kstat64
 {
 	unsigned long long st_dev;
 	unsigned char __pad0[4];

@@ -472,7 +472,7 @@ namespace vfs
 	}
 
 	int FileDescriptorTable::_stat(const char *pathname,
-								   struct stat *statbuf)
+								   struct kstat *statbuf)
 	{
 		if (pathname == nullptr)
 			return -EINVAL;
@@ -505,7 +505,7 @@ namespace vfs
 		return 0;
 	}
 
-	int FileDescriptorTable::_fstat(int _fd, struct stat *statbuf)
+	int FileDescriptorTable::_fstat(int _fd, struct kstat *statbuf)
 	{
 		Fildes &fd = this->GetDescriptor(_fd);
 		if (fd == nullfd)
@@ -533,7 +533,7 @@ namespace vfs
 	}
 
 	int FileDescriptorTable::_lstat(const char *pathname,
-									struct stat *statbuf)
+									struct kstat *statbuf)
 	{
 		if (pathname == nullptr)
 			return -EINVAL;

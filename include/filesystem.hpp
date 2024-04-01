@@ -84,14 +84,7 @@
 #define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)
 #define S_ISSOCK(mode) (((mode) & S_IFMT) == S_IFSOCK)
 
-/**
- * @struct stat
- * @brief Structure holding information about a file, as returned by the stat function.
- *
- * The 'stat' structure provides information about a file, including its size, ownership, permissions,
- * and other attributes. It is used with the stat function to query file status.
- */
-struct stat
+struct kstat
 {
 	/** Device ID of the file. */
 	dev_t st_dev;
@@ -119,45 +112,6 @@ struct stat
 	blksize_t st_blksize;
 	/** Number of blocks allocated. */
 	blkcnt_t st_blocks;
-	/** Additional file attributes. */
-	mode_t st_attr;
-};
-
-/**
- * @struct stat64
- * @brief Extended structure for large file support, holding information about a file.
- *
- * The 'stat64' structure is similar to 'struct stat' but is extended to support large files on 32-bit systems.
- * It is used with the stat64 function for large file support.
- */
-struct stat64
-{
-	/** Device ID of the file. */
-	dev_t st_dev;
-	/** Inode number. */
-	ino64_t st_ino;
-	/** File type and mode. */
-	mode_t st_mode;
-	/** Number of hard links. */
-	nlink_t st_nlink;
-	/** User ID of the file's owner. */
-	uid_t st_uid;
-	/** Group ID of the file's owner. */
-	gid_t st_gid;
-	/** Device ID for special files. */
-	dev_t st_rdev;
-	/** Size of the file in bytes. */
-	off64_t st_size;
-	/** Time of last access. */
-	time_t st_atime;
-	/** Time of last modification. */
-	time_t st_mtime;
-	/** Time of last status change. */
-	time_t st_ctime;
-	/** Optimal I/O block size. */
-	blksize_t st_blksize;
-	/** Number of blocks allocated. */
-	blkcnt64_t st_blocks;
 	/** Additional file attributes. */
 	mode_t st_attr;
 };
@@ -223,9 +177,9 @@ namespace vfs
 		virtual size_t read(uint8_t *Buffer, size_t Size, off_t Offset);
 		virtual size_t write(uint8_t *Buffer, size_t Size, off_t Offset);
 		virtual int ioctl(unsigned long Request, void *Argp);
-		// virtual int stat(struct stat *Stat);
-		// virtual int lstat(struct stat *Stat);
-		// virtual int fstat(struct stat *Stat);
+		// virtual int stat(struct kstat *Stat);
+		// virtual int lstat(struct kstat *Stat);
+		// virtual int fstat(struct kstat *Stat);
 		// virtual int unlink();
 		// virtual int mkdir(mode_t Mode);
 		// virtual int rmdir();
@@ -424,9 +378,9 @@ namespace vfs
 		ssize_t _write(int fd, const void *buf, size_t count);
 		int _close(int fd);
 		off_t _lseek(int fd, off_t offset, int whence);
-		int _stat(const char *pathname, struct stat *statbuf);
-		int _fstat(int fd, struct stat *statbuf);
-		int _lstat(const char *pathname, struct stat *statbuf);
+		int _stat(const char *pathname, struct kstat *statbuf);
+		int _fstat(int fd, struct kstat *statbuf);
+		int _lstat(const char *pathname, struct kstat *statbuf);
 		int _dup(int oldfd);
 		int _dup2(int oldfd, int newfd);
 		int _ioctl(int fd, unsigned long request, void *argp);
