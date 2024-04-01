@@ -7,19 +7,19 @@
 ### /storage
 
 - `node.cpp`
-	- **ref_node <=> device**
-	- Handles open/close/read/write operations for the device
+	- **Node <=> device**
+	- Handles open/close/read/write operations for the device and holds information about the file
 
 <br>
 
-- `ref_node.cpp`
+- `reference.cpp`
 	- **kernel/user <=> node.cpp**
 	- Maintains the count of references to a node and the seek position
 
 <br>
 
-- `file_descriptor.cpp`
-	- **user <=> ref_node.cpp**
+- `descriptor.cpp`
+	- **user <=> reference.cpp**
 	- Manages the file descriptor table for user processes
 
 ### /storage/fs
