@@ -742,8 +742,7 @@ nsa void DisplayBufferOverflow()
 	/* TODO: Add additional info */
 }
 
-EXTERNC nsa __noreturn void DisplayAssertionFailed(const char *File, int Line,
-												   const char *Expression)
+nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expression)
 {
 	InitFont();
 	Display->ClearBuffer();
@@ -768,7 +767,8 @@ EXTERNC nsa __noreturn void DisplayAssertionFailed(const char *File, int Line,
 	ExPrint(" Please create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
 
 	Display->UpdateBuffer();
-	CPU::Stop();
+
+	/* TODO: Add additional info */
 }
 
 nsa void ArrowInput(uint8_t key)

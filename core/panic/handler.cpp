@@ -39,10 +39,11 @@
 #include "../../kernel.h"
 
 extern const char *x86ExceptionMnemonics[];
-extern void DisplayCrashScreen(CPU::ExceptionFrame *Frame);
-extern bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame);
+extern void DisplayCrashScreen(CPU::ExceptionFrame *);
+extern bool UserModeExceptionHandler(CPU::ExceptionFrame *);
 extern void DisplayStackSmashing();
 extern void DisplayBufferOverflow();
+extern void DisplayAssertionFailed(const char *, int, const char *);
 
 Video::Font *CrashFont = nullptr;
 void *FbBeforePanic = nullptr;
@@ -348,5 +349,12 @@ nsa __noreturn void HandleBufferOverflow()
 {
 	BaseBufferStackError(false);
 	DisplayBufferOverflow();
+	CPU::Stop();
+}
+
+EXTERNC nsa __noreturn void HandleAssertionFailed(const char *File, int Line,
+												  const char *Expression)
+{
+	DisplayAssertionFailed(File, Line, Expression);
 	CPU::Stop();
 }

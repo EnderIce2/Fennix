@@ -20,18 +20,18 @@
 
 #include <debug.h>
 
-EXTERNC void __attribute__((noreturn)) DisplayAssertionFailed(const char *File, int Line,
-															  const char *Expression);
+EXTERNC void __attribute__((noreturn)) HandleAssertionFailed(const char *File, int Line,
+															 const char *Expression);
 
-#define assert(x)                                           \
-	do                                                      \
-	{                                                       \
-		if (__builtin_expect(!!(!(x)), 0))                  \
-		{                                                   \
-			error("Assertion failed! [%s]", #x);            \
-			DisplayAssertionFailed(__FILE__, __LINE__, #x); \
-			__builtin_unreachable();                        \
-		}                                                   \
+#define assert(x)                                          \
+	do                                                     \
+	{                                                      \
+		if (__builtin_expect(!!(!(x)), 0))                 \
+		{                                                  \
+			error("Assertion failed! [%s]", #x);           \
+			HandleAssertionFailed(__FILE__, __LINE__, #x); \
+			__builtin_unreachable();                       \
+		}                                                  \
 	} while (0)
 
 #define assert_allow_continue(x)                 \
