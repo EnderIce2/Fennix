@@ -750,7 +750,12 @@ void StartKernelShell()
 		}
 
 		std::string path = "/bin/";
+
+		if (!fs->PathExists("/bin"))
+			path = "/usr/bin/";
+
 		path += cmd_only;
+		debug("path: %s", path.c_str());
 		if (fs->PathExists(path.c_str()))
 		{
 			const char *envp[5] = {
