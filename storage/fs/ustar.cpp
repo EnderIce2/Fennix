@@ -141,8 +141,8 @@ namespace vfs
 			node = new USTARNode((Address + 512), header->name,
 								 type, vfs_ctx);
 
-			debug("%s %d KiB, Type:%c", header->name,
-				  TO_KiB(size), header->typeflag[0]);
+			// debug("%s %d KiB, Type:%c", header->name,
+			// 	  TO_KiB(size), header->typeflag[0]);
 			node->Mode = string2int(header->mode);
 			node->Size = size;
 			node->GroupIdentifier = getsize(header->gid);

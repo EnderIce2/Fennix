@@ -221,7 +221,7 @@ namespace vfs
 				  this->Name, this);
 		}
 
-		debug("Created node %s(%#lx)", this->FullPath, this);
+		// debug("Created node %s(%#lx)", this->FullPath, this);
 	}
 
 	Node::~Node()
