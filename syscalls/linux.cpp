@@ -499,8 +499,13 @@ static int linux_close(SysFrm *, int fd)
 	return fdt->_close(fd);
 }
 
+/* stat, lstat and fstat uses __old_kernel_stat:
+https://github.com/torvalds/linux/blob/bfa8f18691ed2e978e4dd51190569c434f93e268/fs/stat.c#L353
+if __ARCH_WANT_OLD_STAT is defined
+so what about __old_kernel_stat? when it is used? */
+
 /* https://man7.org/linux/man-pages/man2/stat.2.html */
-static int linux_stat(SysFrm *, const char *pathname, struct __old_kernel_stat *statbuf)
+static int linux_stat(SysFrm *, const char *pathname, struct k_stat *statbuf)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
@@ -514,14 +519,14 @@ static int linux_stat(SysFrm *, const char *pathname, struct __old_kernel_stat *
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = OKStatToStat(*pStatbuf);
+	struct stat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_stat(pPathname, &nstat);
-	*pStatbuf = StatToOKStat(nstat);
+	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/fstat.2.html */
-static int linux_fstat(SysFrm *, int fd, struct __old_kernel_stat *statbuf)
+static int linux_fstat(SysFrm *, int fd, struct k_stat *statbuf)
 {
 #undef fstat
 	PCB *pcb = thisProcess;
@@ -532,14 +537,14 @@ static int linux_fstat(SysFrm *, int fd, struct __old_kernel_stat *statbuf)
 	if (pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = OKStatToStat(*pStatbuf);
+	struct stat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_fstat(fd, &nstat);
-	*pStatbuf = StatToOKStat(nstat);
+	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
 /* https://man7.org/linux/man-pages/man2/lstat.2.html */
-static int linux_lstat(SysFrm *, const char *pathname, struct __old_kernel_stat *statbuf)
+static int linux_lstat(SysFrm *, const char *pathname, struct k_stat *statbuf)
 {
 #undef lstat
 	PCB *pcb = thisProcess;
@@ -551,9 +556,9 @@ static int linux_lstat(SysFrm *, const char *pathname, struct __old_kernel_stat 
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -EFAULT;
 
-	struct stat nstat = OKStatToStat(*pStatbuf);
+	struct stat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->_lstat(pPathname, &nstat);
-	*pStatbuf = StatToOKStat(nstat);
+	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
