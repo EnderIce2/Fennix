@@ -33,6 +33,15 @@
 #include <abi.h>
 #include <list>
 
+#define RLIM_INFINITY (~0ULL)
+
+typedef unsigned long long rlim_t;
+struct rlimit
+{
+	rlim_t rlim_cur;
+	rlim_t rlim_max;
+};
+
 namespace Tasking
 {
 	using vfs::FileDescriptorTable;
@@ -445,6 +454,12 @@ namespace Tasking
 			pid_t ProcessGroupID = 0;
 			pid_t SessionID = 0;
 		} Security{};
+		struct
+		{
+			rlim_t OpenFiles = 4096;
+			rlim_t Threads = 1024;
+			rlim_t Memory = 8589934592; /* 8 GiB */
+		} Limits{};
 		TaskInfo Info{};
 		ThreadLocalStorage TLS{};
 

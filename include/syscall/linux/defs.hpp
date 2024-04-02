@@ -247,13 +247,6 @@ struct rusage
 	long ru_nivcsw;
 };
 
-typedef unsigned long rlim_t;
-struct rlimit
-{
-	rlim_t rlim_cur; /* Soft limit */
-	rlim_t rlim_max; /* Hard limit (ceiling for rlim_cur) */
-};
-
 struct linux_dirent
 {
 	unsigned long d_ino;	 /* Inode number */

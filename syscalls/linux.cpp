@@ -26,6 +26,7 @@
 #include <rand.hpp>
 #include <limits.h>
 #include <exec.hpp>
+#include <task.hpp>
 #include <debug.h>
 #include <cpu.hpp>
 #include <time.h>
@@ -2702,12 +2703,14 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 
 	if (new_limit)
 	{
-		debug("new limit: rlim_cur:%#lx rlim_max:%#lx", pNewLimit->rlim_cur, pNewLimit->rlim_max);
+		debug("new limit: rlim_cur:%lld rlim_max:%lld",
+			  pNewLimit->rlim_cur, pNewLimit->rlim_max);
 	}
 
 	if (old_limit)
 	{
-		debug("old limit: rlim_cur:%#lx rlim_max:%#lx", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		debug("old limit: rlim_cur:%lld rlim_max:%lld",
+			  pOldLimit->rlim_cur, pOldLimit->rlim_max);
 	}
 
 	switch (resource)
@@ -2718,10 +2721,27 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	case RLIMIT_STACK:
 	case RLIMIT_CORE:
 	case RLIMIT_RSS:
+		goto __stub;
 	case RLIMIT_NPROC:
+	{
+		if (new_limit)
+			pcb->Limits.Threads = pNewLimit->rlim_max;
+		return 0;
+	}
 	case RLIMIT_NOFILE:
+	{
+		if (new_limit)
+			pcb->Limits.OpenFiles = pNewLimit->rlim_max;
+		return 0;
+	}
 	case RLIMIT_MEMLOCK:
+		goto __stub;
 	case RLIMIT_AS:
+	{
+		if (new_limit)
+			pcb->Limits.Memory = pNewLimit->rlim_max;
+		return 0;
+	}
 	case RLIMIT_LOCKS:
 	case RLIMIT_SIGPENDING:
 	case RLIMIT_MSGQUEUE:
@@ -2729,6 +2749,7 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	case RLIMIT_RTPRIO:
 	case RLIMIT_RTTIME:
 	case RLIMIT_NLIMITS:
+	__stub:
 	{
 		fixme("resource %s(%d) is stub", rlimitStr[resource], resource);
 		return 0; /* just return 0 */
