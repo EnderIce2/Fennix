@@ -341,8 +341,12 @@ EXTERNC int isspace(int c)
 
 EXTERNC int isempty(char *str)
 {
+	if (str == NULL)
+		return 1;
+
 	if (strlen(str) == 0)
 		return 1;
+
 	while (*str != '\0')
 	{
 		if (!isspace(*str))
