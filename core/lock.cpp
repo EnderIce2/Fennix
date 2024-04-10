@@ -96,8 +96,7 @@ size_t GetLocksCount() { return LocksCount.load(); }
 
 void LockClass::Yield()
 {
-	if (CPU::Interrupts(CPU::Check) &&
-		TaskManager &&
+	if (CPU::Interrupts(CPU::Check) && TaskManager &&
 		!TaskManager->IsPanic())
 	{
 		TaskManager->Yield();
@@ -123,10 +122,8 @@ void LockClass::DeadLock(SpinLockData &Lock)
 		CCore = CoreData->ID;
 
 	warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld held by %ld. (%ld times happened)",
-		 Lock.AttemptingToGet, Lock.CurrentHolder,
-		 Lock.Count, Lock.Count > 1 ? "locks" : "lock",
-		 CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
-		 CCore, Lock.Core, this->DeadLocks);
+		 Lock.AttemptingToGet, Lock.CurrentHolder, Lock.Count, Lock.Count > 1 ? "locks" : "lock",
+		 CPU::Interrupts(CPU::Check) ? "enabled" : "disabled", CCore, Lock.Core, this->DeadLocks);
 
 #ifdef PRINT_BACKTRACE
 	PrintStacktrace(&Lock);
@@ -201,10 +198,8 @@ void LockClass::TimeoutDeadLock(SpinLockData &Lock, uint64_t Timeout)
 	uint64_t Counter = TimeManager->GetCounter();
 
 	warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld held by %ld. Timeout in %ld (%ld ticks remaining).",
-		 Lock.AttemptingToGet, Lock.CurrentHolder,
-		 Lock.Count, Lock.Count > 1 ? "locks" : "lock",
-		 CPU::Interrupts(CPU::Check) ? "enabled" : "disabled",
-		 CCore, Lock.Core, Timeout, Timeout - Counter);
+		 Lock.AttemptingToGet, Lock.CurrentHolder, Lock.Count, Lock.Count > 1 ? "locks" : "lock",
+		 CPU::Interrupts(CPU::Check) ? "enabled" : "disabled", CCore, Lock.Core, Timeout, Timeout - Counter);
 
 #ifdef PRINT_BACKTRACE
 	PrintStacktrace(&Lock);

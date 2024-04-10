@@ -29,53 +29,80 @@ namespace std
 {
 	void mutex::lock()
 	{
+	RetryLock:
 		bool Result = this->Locked.exchange(true, std::memory_order_acquire);
-		__sync;
 
-		if (Result)
+		TCB *tcb = thisThread;
+		if (Result == true)
 		{
-			this->Waiting.push_back(thisThread);
-			thisThread->Block();
+			debug("%#lx: Mutex is locked, blocking task %d (\"%s\" : %d)", this,
+				  tcb->ID, tcb->Parent->Name, tcb->Parent->ID);
+
+			this->Waiting.push_back(tcb);
+			tcb->Block();
 			TaskManager->Yield();
-			return;
+			goto RetryLock;
 		}
 
-		this->Holder = thisThread;
-		this->Waiting.erase(std::find(this->Waiting.begin(),
-									  this->Waiting.end(),
-									  thisThread));
+		this->Holder = tcb;
+		this->Waiting.remove(tcb);
+
+		debug("%#lx: Mutex locked by task %d (\"%s\" : %d)", this,
+			  tcb->ID, tcb->Parent->Name, tcb->Parent->ID);
 	}
 
 	bool mutex::try_lock()
 	{
 		bool Result = this->Locked.exchange(true, std::memory_order_acquire);
-		__sync;
 
-		if (!Result)
+		TCB *tcb = thisThread;
+		if (Result == true)
 		{
-			this->Holder = thisThread;
-			this->Waiting.erase(std::find(this->Waiting.begin(),
-										  this->Waiting.end(),
-										  thisThread));
+			debug("%#lx: Mutex is locked, task %d (\"%s\" : %d) failed to lock", this,
+				  tcb->ID, tcb->Parent->Name, tcb->Parent->ID);
+			return false;
 		}
-		return !Result;
+
+		this->Holder = tcb;
+		this->Waiting.remove(tcb);
+
+		debug("%#lx: Mutex locked by task %d (\"%s\" : %d)", this,
+			  tcb->ID, tcb->Parent->Name, tcb->Parent->ID);
+		return true;
 	}
 
 	void mutex::unlock()
 	{
-		__sync;
+		TCB *tcb = thisThread;
+		assert(this->Holder == tcb);
+
+		this->Holder = nullptr;
 		this->Locked.store(false, std::memory_order_release);
 
-		if (!this->Waiting.empty())
+		if (this->Waiting.empty())
 		{
-			this->Holder = this->Waiting[0];
-
-			this->Holder = this->Waiting.front();
-			this->Waiting.erase(this->Waiting.begin());
-			this->Holder->Unblock();
-			TaskManager->Yield();
+			debug("%#lx: Mutex unlocked, no tasks to unblock", this);
+			return;
 		}
-		else
-			this->Holder = nullptr;
+
+		TCB *Next = this->Waiting.front();
+		this->Waiting.pop_front();
+
+		debug("%#lx: Mutex unlocked, task %d (\"%s\" : %d) unblocked", this,
+			  Next->ID, Next->Parent->Name, Next->Parent->ID);
+
+		Next->Unblock();
+	}
+
+	mutex::mutex()
+	{
+		debug("%#lx: Creating mutex", this);
+	}
+
+	mutex::~mutex()
+	{
+		debug("%#lx: Destroying mutex", this);
+		assert(this->Holder == nullptr);
+		assert(this->Waiting.empty());
 	}
 }

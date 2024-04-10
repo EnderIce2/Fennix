@@ -25,6 +25,21 @@
 
 namespace std
 {
+
+	struct defer_lock_t
+	{
+		explicit defer_lock_t() = default;
+	};
+
+	struct try_to_lock_t
+	{
+		explicit try_to_lock_t() = default;
+	};
+	struct adopt_lock_t
+	{
+		explicit adopt_lock_t() = default;
+	};
+
 	/**
 	 * A mutex implementation.
 	 *
@@ -35,7 +50,7 @@ namespace std
 	{
 	private:
 		atomic_bool Locked = false;
-		vector<Tasking::TCB *> Waiting;
+		list<Tasking::TCB *> Waiting;
 		Tasking::TCB *Holder = nullptr;
 
 	public:
@@ -43,24 +58,37 @@ namespace std
 		bool try_lock();
 		void unlock();
 
-		mutex() = default;
+		mutex();
 		mutex(const mutex &) = delete;
-		~mutex() = default;
+		~mutex();
 	};
 
 	template <class Mutex>
 	class lock_guard
 	{
 	private:
-		Mutex &m;
+		Mutex &mutexRef;
 
 	public:
-		explicit lock_guard(Mutex &mutex)
-			: m(mutex) { m.lock(); }
+		explicit lock_guard(Mutex &m)
+			: mutexRef(m)
+		{
+			mutexRef.lock();
+		}
 
-		~lock_guard() { m.unlock(); }
+		lock_guard(Mutex &m, adopt_lock_t t)
+			: mutexRef(m)
+		{
+			/* Do nothing */
+		}
 
 		lock_guard(const lock_guard &) = delete;
+
+		~lock_guard()
+		{
+			mutexRef.unlock();
+		}
+
 		lock_guard &operator=(const lock_guard &) = delete;
 	};
 }

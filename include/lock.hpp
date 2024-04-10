@@ -68,6 +68,32 @@ public:
 	int TimeoutLock(const char *FunctionName, uint64_t Timeout);
 };
 
+class spin_lock
+{
+private:
+	LockClass lc;
+
+public:
+	bool locked()
+	{
+		return this->lc.Locked();
+	}
+
+	bool lock(const char *FunctionName)
+	{
+		return this->lc.Lock(FunctionName) == 0;
+	}
+
+	bool unlock()
+	{
+		return this->lc.Unlock() == 0;
+	}
+
+	spin_lock() = default;
+	spin_lock(const spin_lock &) = delete;
+	~spin_lock() = default;
+};
+
 /** @brief Please use this macro to create a new smart lock. */
 class SmartLockClass
 {
@@ -106,6 +132,7 @@ public:
 		this->LockPointer = &Lock;
 		this->LockPointer->TimeoutLock(FunctionName, Timeout);
 	}
+
 	~SmartTimeoutLockClass()
 	{
 		this->LockPointer->Unlock();
@@ -128,6 +155,7 @@ public:
 		this->LockPointer = &Lock;
 		this->LockPointer->Lock(FunctionName);
 	}
+
 	~SmartLockCriticalSectionClass()
 	{
 		this->LockPointer->Unlock();
@@ -153,6 +181,7 @@ public:
 			InterruptsEnabled = true;
 		CPU::Interrupts(CPU::Disable);
 	}
+
 	~SmartCriticalSectionClass()
 	{
 		if (InterruptsEnabled)
