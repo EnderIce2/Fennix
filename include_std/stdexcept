@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <assert.h>
+
 namespace std
 {
 	class runtime_error
@@ -27,5 +29,15 @@ namespace std
 	public:
 		runtime_error(const char *what_arg) : m_what(what_arg) {}
 		const char *what() const { return this->m_what; }
+	};
+
+	class out_of_range
+	{
+	public:
+		out_of_range(const char *what_arg)
+		{
+			/* FIXME: This is a temporary assert */
+			assert(what_arg != nullptr);
+		}
 	};
 }

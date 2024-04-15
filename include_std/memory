@@ -1,0 +1,108 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <type_traits>
+#include <cstddef>
+#include <utility>
+#include <limits>
+
+namespace std
+{
+	template <class Pointer, class SizeType = std::size_t>
+	struct allocation_result
+	{
+		Pointer ptr;
+		SizeType count;
+	};
+
+	template <class T>
+	struct allocator
+	{
+	public:
+		typedef T value_type;
+		typedef T *pointer;
+		typedef const T *const_pointer;
+		typedef T &reference;
+		typedef const T &const_reference;
+		typedef std::size_t size_type;
+		typedef std::ptrdiff_t difference_type;
+		typedef std::true_type propagate_on_container_move_assignment;
+		typedef std::true_type is_always_equal;
+
+		template <class U>
+		struct rebind
+		{
+			typedef allocator<U> other;
+		};
+
+		allocator() {}
+		allocator(const allocator &other) {}
+		template <class U>
+		allocator(const allocator<U> &other) {}
+		~allocator() {}
+
+		pointer allocate(size_type n, const void *hint = 0)
+		{
+			return static_cast<pointer>(::operator new(n * sizeof(T)));
+		}
+
+		std::allocation_result<T *, std::size_t> allocate_at_least(std::size_t n)
+		{
+			if (n > max_size())
+				return {nullptr, 0};
+			return {allocate(n), n};
+		}
+
+		void deallocate(T *p, std::size_t n)
+		{
+			::operator delete(p);
+		}
+
+		size_type max_size() const
+		{
+			return std::numeric_limits<size_type>::max() / sizeof(T);
+		}
+
+		void construct(pointer p, const_reference val)
+		{
+			::new ((void *)p) T(val);
+		}
+
+		template <class U, class... Args>
+		void construct(U *p, Args &&...args)
+		{
+			::new ((void *)p) U(std::forward<Args>(args)...);
+		}
+
+		void destroy(pointer p) { p->~T(); }
+		template <class U>
+		void destroy(U *p) { p->~U(); }
+		pointer address(reference x) const { return &x; }
+		const_pointer address(const_reference x) const { return &x; }
+	};
+
+	template <class T>
+	T *addressof(T &arg)
+	{
+		return reinterpret_cast<T *>(&const_cast<char &>(reinterpret_cast<const volatile char &>(arg)));
+	}
+
+	template <class T>
+	const T *addressof(const T &&) = delete;
+}

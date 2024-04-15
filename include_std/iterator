@@ -1,0 +1,85 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+namespace std
+{
+	struct input_iterator_tag
+	{
+	};
+
+	struct output_iterator_tag
+	{
+	};
+
+	struct forward_iterator_tag : public input_iterator_tag
+	{
+	};
+
+	struct bidirectional_iterator_tag : public forward_iterator_tag
+	{
+	};
+
+	struct random_access_iterator_tag : public bidirectional_iterator_tag
+	{
+	};
+
+	struct contiguous_iterator_tag : public random_access_iterator_tag
+	{
+	};
+
+	template <class Iter>
+	class reverse_iterator
+	{
+	public:
+		/* FIXME: missing implementation */
+	};
+
+	template <class Iter>
+	struct iterator_traits
+	{
+	public:
+		typedef Iter::difference_type difference_type;
+
+		/* FIXME: missing implementation */
+	};
+
+	template <class It>
+	constexpr typename std::iterator_traits<It>::difference_type __do_distance(It first, It last, std::input_iterator_tag)
+	{
+		typename std::iterator_traits<It>::difference_type result = 0;
+		while (first != last)
+		{
+			++first;
+			++result;
+		}
+		return result;
+	}
+
+	template <class It>
+	constexpr typename std::iterator_traits<It>::difference_type __do_distance(It first, It last, std::random_access_iterator_tag)
+	{
+		return last - first;
+	}
+
+	template <class InputIt>
+	constexpr typename std::iterator_traits<InputIt>::difference_type distance(InputIt first, InputIt last)
+	{
+		return __do_distance(first, last, typename std::iterator_traits<InputIt>::iterator_category());
+	}
+}

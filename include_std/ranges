@@ -19,27 +19,10 @@
 
 namespace std
 {
-	template <typename T>
-	struct is_trivially_copyable
+	struct from_range_t
 	{
-		static constexpr bool value = __is_trivially_copyable(T);
+		explicit from_range_t() = default;
 	};
 
-	template <class T>
-	struct remove_reference
-	{
-		typedef T type;
-	};
-
-	template <class T>
-	struct remove_reference<T &>
-	{
-		typedef T type;
-	};
-
-	template <class T>
-	struct remove_reference<T &&>
-	{
-		typedef T type;
-	};
+	inline constexpr std::from_range_t from_range{};
 }

@@ -19,6 +19,9 @@
 
 namespace std
 {
-    typedef __SIZE_TYPE__ size_t;
-    typedef __PTRDIFF_TYPE__ ptrdiff_t;
+	typedef __SIZE_TYPE__ size_t;
+	typedef __PTRDIFF_TYPE__ ptrdiff_t;
+	using nullptr_t = decltype(nullptr);
 }
+
+static_assert(sizeof(std::nullptr_t) == sizeof(void *));

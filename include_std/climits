@@ -1,0 +1,56 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#undef CHAR_BIT
+#undef SCHAR_MIN
+#undef SCHAR_MAX
+#undef UCHAR_MAX
+#undef CHAR_MIN
+#undef CHAR_MAX
+#undef MB_LEN_MAX
+#undef SHRT_MIN
+#undef SHRT_MAX
+#undef USHRT_MAX
+#undef INT_MIN
+#undef INT_MAX
+#undef UINT_MAX
+#undef LONG_MIN
+#undef LONG_MAX
+#undef ULONG_MAX
+#undef LLONG_MIN
+#undef LLONG_MAX
+#undef ULLONG_MAX
+
+#define CHAR_BIT __CHAR_BIT__
+#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define SCHAR_MAX __SCHAR_MAX__
+#define UCHAR_MAX (SCHAR_MAX * 2 + 1)
+#define CHAR_MIN 0
+#define CHAR_MAX SCHAR_MAX
+#define MB_LEN_MAX 1
+#define SHRT_MIN (-SHRT_MAX - 1)
+#define SHRT_MAX __SHRT_MAX__
+#define USHRT_MAX (SHRT_MAX * 2 + 1)
+#define INT_MIN (-INT_MAX - 1)
+#define INT_MAX __INT_MAX__
+#define UINT_MAX (INT_MAX * 2U + 1U)
+#define LONG_MIN (-LONG_MAX - 1L)
+#define LONG_MAX __LONG_MAX__
+#define ULONG_MAX (LONG_MAX * 2UL + 1UL)
+#define LLONG_MIN (-LLONG_MAX - 1LL)
+#define LLONG_MAX __LONG_LONG_MAX__
+#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)

@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-#include <type_trails>
+#include <type_traits>
 #include <debug.h>
 
 // show debug messages

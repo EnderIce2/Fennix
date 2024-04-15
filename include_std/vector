@@ -19,7 +19,7 @@
 
 #include <types.h>
 
-#include <type_trails>
+#include <type_traits>
 #include <functional>
 #include <algorithm>
 #include <assert.h>
