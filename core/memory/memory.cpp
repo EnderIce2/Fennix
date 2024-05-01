@@ -696,3 +696,18 @@ void operator delete[](void *Pointer, long unsigned int Size)
 
 	free(Pointer);
 }
+
+void operator delete(void *Pointer, unsigned long Size, std::align_val_t Alignment)
+{
+	assert(Pointer != nullptr);
+	assert(Size > 0);
+
+	memdbg("delete(%#lx, %d, %d)->[%s]",
+		   Pointer, Size, Alignment,
+		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
+							 : "Unknown");
+
+	fixme("operator delete with alignment is not implemented");
+
+	free(Pointer);
+}
