@@ -30,16 +30,16 @@ namespace Random
 			if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 			{
 				CPU::x86::AMD::CPUID0x00000007_ECX_0 cpuid;
-				RDRANDFlag = cpuid.EBX.RDSEED;
+				RDSEEDFlag = cpuid.EBX.RDSEED;
 			}
 			else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 			{
 				CPU::x86::Intel::CPUID0x00000007_0 cpuid;
-				RDRANDFlag = cpuid.EBX.RDSEED;
+				RDSEEDFlag = cpuid.EBX.RDSEED;
 			}
 		}
 		else
-			RDRANDFlag = false;
+			RDSEEDFlag = false;
 
 		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 		{
@@ -55,7 +55,10 @@ namespace Random
 			}
 		}
 		else
-			RDRANDFlag = 0;
+			RDRANDFlag = false;
+
+		if (RDSEEDFlag)
+			fixme("RDSEED is not implemented yet!");
 	}
 
 	uint16_t rand16()
