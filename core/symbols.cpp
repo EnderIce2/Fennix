@@ -40,15 +40,11 @@ namespace SymbolResolver
 			return Result.FunctionName;
 		}
 
-		std::vector<SymbolTable> rSymTable = this->SymTable;
-		rSymTable.reverse();
-
-		foreach (auto st in rSymTable)
+		for (auto it = this->SymTable.rbegin(); it != this->SymTable.rend(); ++it)
 		{
-			if (unlikely(st.Address <= Address &&
-						 st.Address > Result.Address))
+			if (unlikely(it->Address <= Address && it->Address > Result.Address))
 			{
-				Result = st;
+				Result = *it;
 				break;
 			}
 		}
@@ -72,14 +68,11 @@ namespace SymbolResolver
 			return Result.Address;
 		}
 
-		std::vector<SymbolTable> rSymTable = this->SymTable;
-		rSymTable.reverse();
-
-		foreach (auto st in rSymTable)
+		for (auto it = this->SymTable.rbegin(); it != this->SymTable.rend(); ++it)
 		{
-			if (unlikely(strcmp(st.FunctionName, Name) == 0))
+			if (unlikely(strcmp(it->FunctionName, Name) == 0))
 			{
-				Result = st;
+				Result = *it;
 				break;
 			}
 		}

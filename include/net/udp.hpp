@@ -53,7 +53,7 @@ namespace NetworkUDP
 			UNUSED(Socket);
 			UNUSED(Data);
 			UNUSED(Length);
-			warn("Not implemented.");
+			warn("Not implemented");
 		}
 	};
 

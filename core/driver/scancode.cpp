@@ -15,9 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <interface/driver.h>
 #include <driver.hpp>
-
-#include "../../driver.h"
 
 static char ScanCodeConversionTableLower[] = {
 	[KEY_1] = '1',

@@ -28,28 +28,29 @@ void cmd_cat(const char *args)
 	if (args[0] == '\0')
 		return;
 
-	Node *thisNode = fs->GetNodeFromPath(args, thisProcess->CurrentWorkingDirectory);
-	if (thisNode == nullptr)
-	{
-		printf("cat: %s: No such file or directory\n", args);
-		return;
-	}
+	/* FIXME: Reimplement this later */
+	assert(!"Function not implemented");
+	// Node *thisNode = fs->GetByPath(args, thisProcess->CWD, true);
+	// if (thisNode == nullptr)
+	// {
+	// 	printf("cat: %s: No such file or directory\n", args);
+	// 	return;
+	// }
 
-	if (thisNode->Type != NodeType::FILE &&
-		thisNode->Type != NodeType::CHARDEVICE)
-	{
-		printf("cat: %s: Not a file\n", args);
-		return;
-	}
+	// if (!thisNode->Stat.IsType(FILE) && !thisNode->Stat.IsType(CHARDEVICE))
+	// {
+	// 	printf("cat: %s: Not a file\n", args);
+	// 	return;
+	// }
 
-	vfs::RefNode *fd = fs->Open(thisNode->FullPath);
+	// vfs::FileHandle *fd = fs->Open(thisNode->FilePath, nullptr, true);
 
-	uint8_t *buffer = new uint8_t[fd->Size + 1];
-	ssize_t rBytes = fd->read(buffer, fd->Size);
-	if (rBytes > 0)
-		printf("%s\n", buffer);
-	else
-		printf("cat: %s: Could not read file\n", args);
-	delete[] buffer;
-	delete fd;
+	// uint8_t *buffer = new uint8_t[fd->node->Stat.Size + 1];
+	// ssize_t rBytes = fd->read(buffer, fd->node->Stat.Size);
+	// if (rBytes > 0)
+	// 	printf("%s\n", buffer);
+	// else
+	// 	printf("cat: %s: Could not read file\n", args);
+	// delete[] buffer;
+	// delete fd;
 }

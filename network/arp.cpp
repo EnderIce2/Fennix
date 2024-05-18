@@ -17,7 +17,6 @@
 
 #include <net/arp.hpp>
 #include <debug.h>
-#include <smart_ptr.hpp>
 
 #include "../kernel.h"
 

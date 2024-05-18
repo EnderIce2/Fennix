@@ -22,14 +22,12 @@
 #include <types.h>
 #include <filesystem.hpp>
 
-void TestString();
-void Test_std();
+void Test_stl();
 void TestMemoryAllocation();
 void tasking_test_fb();
 void tasking_test_mutex();
-void lsof();
 void TaskMgr();
-void TreeFS(vfs::Node *node, int Depth);
+void TreeFS(FileNode *node, int Depth);
 void TaskHeartbeat();
 void StressKernel();
 

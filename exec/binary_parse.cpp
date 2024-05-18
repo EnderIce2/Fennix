@@ -18,63 +18,65 @@
 #include <exec.hpp>
 
 #include <msexec.h>
+#include <macho.h>
+#include <memory>
 
 #include "../kernel.h"
 
 namespace Execute
 {
-	BinaryType GetBinaryType(const char *Path)
+	BinaryType GetBinaryType(FileNode *Node)
 	{
-		debug("Checking binary type of %s(ptr: %#lx)",
-			  Path, Path);
+		debug("Checking binary type of %s", Node->Path.c_str());
 		BinaryType Type;
-		vfs::RefNode *fd = fs->Open(Path);
 
-		if (fd == nullptr)
-		{
-			debug("Failed to open file %s", Path);
-			return (BinaryType)-ENOENT;
-		}
+		if (Node == nullptr)
+			ReturnLogError((BinaryType)-ENOENT, "Node is null");
 
-		debug("File opened: %s, descriptor %d", Path, fd);
-		Memory::SmartHeap sh = Memory::SmartHeap(1024);
-		fd->read(sh, 128);
+		Elf32_Ehdr ELFHeader;
+		Node->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
 
-		Elf32_Ehdr *ELFHeader = (Elf32_Ehdr *)sh.Get();
-		IMAGE_DOS_HEADER *MZHeader = (IMAGE_DOS_HEADER *)sh.Get();
+		mach_header MachHeader;
+		Node->Read(&MachHeader, sizeof(mach_header), 0);
+
+		IMAGE_DOS_HEADER MZHeader;
+		Node->Read(&MZHeader, sizeof(IMAGE_DOS_HEADER), 0);
 
 		/* Check ELF header. */
-		if (ELFHeader->e_ident[EI_MAG0] == ELFMAG0 &&
-			ELFHeader->e_ident[EI_MAG1] == ELFMAG1 &&
-			ELFHeader->e_ident[EI_MAG2] == ELFMAG2 &&
-			ELFHeader->e_ident[EI_MAG3] == ELFMAG3)
+		if (ELFHeader.e_ident[EI_MAG0] == ELFMAG0 &&
+			ELFHeader.e_ident[EI_MAG1] == ELFMAG1 &&
+			ELFHeader.e_ident[EI_MAG2] == ELFMAG2 &&
+			ELFHeader.e_ident[EI_MAG3] == ELFMAG3)
 		{
 			debug("Image - ELF");
 			Type = BinaryType::BinTypeELF;
 			goto Success;
 		}
 
-		/* Check MZ header. */
-		else if (MZHeader->e_magic == IMAGE_DOS_SIGNATURE)
+		if (MachHeader.magic == MH_MAGIC || MachHeader.magic == MH_CIGAM)
 		{
-			fd->seek(MZHeader->e_lfanew, SEEK_SET);
-			fd->read(sh, 512);
-			IMAGE_NT_HEADERS *PEHeader =
-				(IMAGE_NT_HEADERS *)(((char *)sh.Get()) +
-									 MZHeader->e_lfanew);
+			debug("Image - Mach-O");
+			Type = BinaryType::BinTypeMachO;
+			goto Success;
+		}
 
-			IMAGE_OS2_HEADER *NEHeader =
-				(IMAGE_OS2_HEADER *)(((char *)sh.Get()) +
-									 MZHeader->e_lfanew);
+		/* Check MZ header. */
+		else if (MZHeader.e_magic == IMAGE_DOS_SIGNATURE)
+		{
+			IMAGE_NT_HEADERS PEHeader;
+			Node->Read(&PEHeader, sizeof(IMAGE_NT_HEADERS), MZHeader.e_lfanew);
+
+			IMAGE_OS2_HEADER NEHeader;
+			Node->Read(&NEHeader, sizeof(IMAGE_OS2_HEADER), MZHeader.e_lfanew);
 
 			/* TODO: LE, EDOS */
-			if (PEHeader->Signature == IMAGE_NT_SIGNATURE)
+			if (PEHeader.Signature == IMAGE_NT_SIGNATURE)
 			{
 				debug("Image - PE");
 				Type = BinaryType::BinTypePE;
 				goto Success;
 			}
-			else if (NEHeader->ne_magic == IMAGE_OS2_SIGNATURE)
+			else if (NEHeader.ne_magic == IMAGE_OS2_SIGNATURE)
 			{
 				debug("Image - NE");
 				Type = BinaryType::BinTypeNE;
@@ -92,7 +94,12 @@ namespace Execute
 
 		Type = BinaryType::BinTypeUnknown;
 	Success:
-		delete fd;
 		return Type;
+	}
+
+	BinaryType GetBinaryType(std::string Path)
+	{
+		FileNode *node = fs->GetByPath(Path.c_str(), nullptr);
+		return GetBinaryType(node);
 	}
 }

@@ -21,24 +21,20 @@
 
 namespace Execute
 {
-	std::vector<Elf64_Shdr> ELFGetSections_x86_64(vfs::RefNode *fd,
+	std::vector<Elf64_Shdr> ELFGetSections_x86_64(FileNode *fd,
 												  const char *SectionName)
 	{
 #if defined(a64) || defined(aa64)
-		off_t OldOffset = fd->seek(0, SEEK_CUR);
 		std::vector<Elf64_Shdr> Ret;
 
-		Elf64_Ehdr ELFHeader;
-		fd->seek(0, SEEK_SET);
-		fd->read((uint8_t *)&ELFHeader, sizeof(Elf64_Ehdr));
+		Elf64_Ehdr ELFHeader{};
+		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
 
 		Elf64_Shdr *SectionHeaders = new Elf64_Shdr[ELFHeader.e_shnum];
-		fd->seek(ELFHeader.e_shoff, SEEK_SET);
-		fd->read((uint8_t *)SectionHeaders, sizeof(Elf64_Shdr) * ELFHeader.e_shnum);
+		fd->Read(SectionHeaders, sizeof(Elf64_Shdr) * ELFHeader.e_shnum, ELFHeader.e_shoff);
 
 		char *SectionNames = new char[SectionHeaders[ELFHeader.e_shstrndx].sh_size];
-		fd->seek(SectionHeaders[ELFHeader.e_shstrndx].sh_offset, SEEK_SET);
-		fd->read((uint8_t *)SectionNames, SectionHeaders[ELFHeader.e_shstrndx].sh_size);
+		fd->Read(SectionNames, SectionHeaders[ELFHeader.e_shstrndx].sh_size, SectionHeaders[ELFHeader.e_shstrndx].sh_offset);
 
 		for (Elf64_Half i = 0; i < ELFHeader.e_shnum; ++i)
 		{
@@ -47,7 +43,6 @@ namespace Execute
 				Ret.push_back(SectionHeaders[i]);
 		}
 
-		fd->seek(OldOffset, SEEK_SET);
 		delete[] SectionHeaders;
 		delete[] SectionNames;
 		return Ret;

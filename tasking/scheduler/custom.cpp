@@ -185,7 +185,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	std::list<PCB *> &Custom::GetProcessList()
+	std::vector<PCB *> &Custom::GetProcessList()
 	{
 		return ProcessList;
 	}
@@ -246,7 +246,16 @@ namespace Tasking::Scheduler
 
 	void Custom::PopProcess(PCB *pcb)
 	{
-		this->ProcessList.remove(pcb);
+		auto it = std::find(this->ProcessList.begin(),
+							this->ProcessList.end(), pcb);
+
+		if (it == this->ProcessList.end())
+		{
+			debug("Process %d not found in the list", pcb->ID);
+			return;
+		}
+
+		this->ProcessList.erase(it);
 	}
 
 	std::pair<PCB *, TCB *> Custom::GetIdle()

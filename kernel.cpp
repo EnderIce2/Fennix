@@ -37,9 +37,6 @@ bool DebuggerIsAttached = false;
 extern bool EnableProfiler;
 NewLock(KernelLock);
 
-using vfs::Node;
-using vfs::NodeType;
-
 __aligned(16) BootInfo bInfo{};
 
 struct KernelConfig Config = {
@@ -62,6 +59,7 @@ Power::Power *PowerManager = nullptr;
 Time::time *TimeManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
+Driver::Manager *DriverManager = nullptr;
 
 EXTERNC void putchar(char c)
 {
@@ -264,8 +262,8 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	// https://wiki.osdev.org/Calling_Global_Constructors
 	trace("There are %d constructors to call",
 		  __init_array_end - __init_array_start);
-	for (CallPtr *func = __init_array_start; func != __init_array_end; func++)
-		(*func)();
+	for (CallPtr *fct = __init_array_start; fct != __init_array_end; fct++)
+		(*fct)();
 
 #ifdef a86
 	if (!bInfo.SMBIOSPtr)
@@ -347,8 +345,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	 * memory management to be initialized first.
 	 */
 	TestMemoryAllocation();
-	TestString();
-	Test_std();
+	Test_stl();
 #endif
 	EnableProfiler = true;
 	Main();
@@ -366,12 +363,6 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 	KPrint("%s...", Reboot ? "Rebooting" : "Shutting down");
 
 	KPrint("Stopping network interfaces");
-	if (NIManager)
-		delete NIManager, NIManager = nullptr;
-
-	KPrint("Stopping disk manager");
-	if (DiskManager)
-		delete DiskManager, DiskManager = nullptr;
 
 	KPrint("Unloading all drivers");
 	if (DriverManager)
@@ -396,8 +387,8 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 
 	// https://wiki.osdev.org/Calling_Global_Constructors
 	KPrint("Calling destructors");
-	for (CallPtr *func = __fini_array_start; func != __fini_array_end; func++)
-		(*func)();
+	for (CallPtr *fct = __fini_array_start; fct != __fini_array_end; fct++)
+		(*fct)();
 	__cxa_finalize(nullptr);
 	debug("Done.");
 }

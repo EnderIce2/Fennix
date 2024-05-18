@@ -66,14 +66,14 @@ namespace NetworkUDP
 	Socket *UDP::Listen(uint16_t Port)
 	{
 		UNUSED(Port);
-		fixme("Not implemented.");
+		fixme("Not implemented");
 		return nullptr;
 	}
 
 	void UDP::Disconnect(Socket *Socket)
 	{
 		UNUSED(Socket);
-		fixme("Not implemented.");
+		fixme("Not implemented");
 	}
 
 	void UDP::Send(Socket *Socket, uint8_t *Data, size_t Length)

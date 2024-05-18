@@ -58,7 +58,7 @@ namespace Execute
 		return StringTable + Offset;
 	}
 
-	Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, const char *Name)
+	Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, std::string Name)
 	{
 		Elf64_Shdr *SymbolTable = nullptr;
 		Elf64_Shdr *StringTable = nullptr;
@@ -86,36 +86,31 @@ namespace Execute
 		{
 			Elf64_Sym *Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
 			char *String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
-			if (strcmp(String, Name) == 0)
+			if (strcmp(String, Name.c_str()) == 0)
 				return Symbol;
 		}
 		return nullptr;
 	}
 
-	Elf64_Sym ELFLookupSymbol(vfs::RefNode *fd, const char *Name)
+	Elf64_Sym ELFLookupSymbol(FileNode *fd, std::string Name)
 	{
 #if defined(a64)
-		off_t OldOffset = fd->seek(0, SEEK_CUR);
+		Elf64_Ehdr Header{};
+		fd->Read(&Header, sizeof(Elf64_Ehdr), 0);
 
-		Elf64_Ehdr Header;
-		fd->seek(0, SEEK_SET);
-		fd->read((uint8_t *)&Header, sizeof(Elf64_Ehdr));
-
-		Elf64_Shdr SymbolTable;
-		Elf64_Shdr StringTable;
+		Elf64_Shdr SymbolTable{};
+		Elf64_Shdr StringTable{};
 
 		for (Elf64_Half i = 0; i < Header.e_shnum; i++)
 		{
 			Elf64_Shdr shdr;
-			fd->seek(Header.e_shoff + (i * sizeof(Elf64_Shdr)), SEEK_SET);
-			fd->read((uint8_t *)&shdr, sizeof(Elf64_Shdr));
+			fd->Read(&shdr, sizeof(Elf64_Shdr), Header.e_shoff + (i * sizeof(Elf64_Shdr)));
 
 			switch (shdr.sh_type)
 			{
 			case SHT_SYMTAB:
 				SymbolTable = shdr;
-				fd->seek(Header.e_shoff + (shdr.sh_link * sizeof(Elf64_Shdr)), SEEK_SET);
-				fd->read((uint8_t *)&StringTable, sizeof(Elf64_Shdr));
+				fd->Read(&StringTable, sizeof(Elf64_Shdr), Header.e_shoff + (shdr.sh_link * sizeof(Elf64_Shdr)));
 				break;
 			default:
 			{
@@ -124,11 +119,9 @@ namespace Execute
 			}
 		}
 
-		if (SymbolTable.sh_name == 0 ||
-			StringTable.sh_name == 0)
+		if (SymbolTable.sh_name == 0 || StringTable.sh_name == 0)
 		{
 			error("Symbol table not found.");
-			fd->seek(OldOffset, SEEK_SET);
 			return {};
 		}
 
@@ -136,22 +129,16 @@ namespace Execute
 		{
 			// Elf64_Sym *Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
 			Elf64_Sym Symbol;
-			fd->seek(SymbolTable.sh_offset + (i * sizeof(Elf64_Sym)), SEEK_SET);
-			fd->read((uint8_t *)&Symbol, sizeof(Elf64_Sym));
+			fd->Read(&Symbol, sizeof(Elf64_Sym), SymbolTable.sh_offset + (i * sizeof(Elf64_Sym)));
 
 			// char *String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
 			char String[256];
-			fd->seek(StringTable.sh_offset + Symbol.st_name, SEEK_SET);
-			fd->read((uint8_t *)&String, 256);
+			fd->Read(&String, sizeof(String), StringTable.sh_offset + Symbol.st_name);
 
-			if (strcmp(String, Name) == 0)
-			{
-				fd->seek(OldOffset, SEEK_SET);
+			if (strcmp(String, Name.c_str()) == 0)
 				return Symbol;
-			}
 		}
 		error("Symbol not found.");
-		fd->seek(OldOffset, SEEK_SET);
 #endif
 		return {};
 	}

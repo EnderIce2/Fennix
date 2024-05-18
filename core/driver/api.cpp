@@ -16,14 +16,16 @@
 */
 
 #include <driver.hpp>
+#include <interface/driver.h>
+#include <interface/fs.h>
+#include <type_traits>
 
 #include "../../kernel.h"
-#include "../../driver.h"
 
 // #define DEBUG_API
 
 #ifdef DEBUG_API
-#define dbg_api(Format, ...) function(Format, ##__VA_ARGS__)
+#define dbg_api(Format, ...) func(Format, ##__VA_ARGS__)
 #else
 #define dbg_api(Format, ...)
 #endif
@@ -53,19 +55,19 @@ namespace Driver
 		{
 		case _drf_Entry:
 			drv->Entry = (int (*)())Function;
-			debug("Entry %#lx for %s", (uintptr_t)Function, drv->Path);
+			debug("Entry %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
 			break;
 		case _drf_Final:
 			drv->Final = (int (*)())Function;
-			debug("Finalize %#lx for %s", (uintptr_t)Function, drv->Path);
+			debug("Finalize %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
 			break;
 		case _drf_Panic:
 			drv->Panic = (int (*)())Function;
-			debug("Panic %#lx for %s", (uintptr_t)Function, drv->Path);
+			debug("Panic %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
 			break;
 		case _drf_Probe:
 			drv->Probe = (int (*)())Function;
-			debug("Probe %#lx for %s", (uintptr_t)Function, drv->Path);
+			debug("Probe %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
 			break;
 		default:
 			assert(!"Invalid driver function type");
@@ -134,7 +136,7 @@ namespace Driver
 			{
 				if (ih.first == IRQ)
 				{
-					debug("Removing IRQ %d: %#lx for %s", IRQ, (uintptr_t)ih.second, drv->Path);
+					debug("Removing IRQ %d: %#lx for %s", IRQ, (uintptr_t)ih.second, drv->Path.c_str());
 					Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))ih.second, IRQ);
 					drv->InterruptHandlers->erase(IRQ);
 					break;
@@ -177,221 +179,10 @@ namespace Driver
 		foreach (auto &i in * drv->InterruptHandlers)
 		{
 			Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, i.first);
-			debug("Removed IRQ %d: %#lx for %s", i.first, (uintptr_t)Handler, drv->Path);
+			debug("Removed IRQ %d: %#lx for %s", i.first, (uintptr_t)Handler, drv->Path.c_str());
 		}
 		drv->InterruptHandlers->clear();
 		return 0;
-	}
-
-	/* --------- */
-
-	dev_t RegisterInputDevice(dev_t MajorID, DeviceDriverType Type)
-	{
-		dbg_api("%d, %d", MajorID, Type);
-
-		switch (Type)
-		{
-		case ddt_Keyboard:
-			return DriverManager->InputKeyboardDev->Register(MajorID);
-		case ddt_Mouse:
-			return DriverManager->InputMouseDev->Register(MajorID);
-		/* ... */
-		default:
-			assert(!"Invalid input device type");
-		}
-	}
-
-	int UnregisterInputDevice(dev_t MajorID, dev_t MinorID, DeviceDriverType Type)
-	{
-		dbg_api("%d, %d, %d", MajorID, MinorID, Type);
-
-		switch (Type)
-		{
-		case ddt_Keyboard:
-			return DriverManager->InputKeyboardDev->Unregister(MajorID, MinorID);
-		case ddt_Mouse:
-			return DriverManager->InputMouseDev->Unregister(MajorID, MinorID);
-		/* ... */
-		default:
-			assert(!"Invalid input device type");
-		}
-	}
-
-	int ReportKeyboardEvent(dev_t MajorID, dev_t MinorID, uint8_t ScanCode)
-	{
-		dbg_api("%d, %d, %d", MajorID, MinorID, ScanCode);
-
-		return DriverManager->InputKeyboardDev->ReportKeyEvent(MajorID, MinorID, ScanCode);
-	}
-
-	int ReportRelativeMouseEvent(dev_t MajorID, dev_t MinorID, __MouseButtons Button, int X, int Y, int8_t Z)
-	{
-		dbg_api("%d, %d, %d, %d, %d, %d", MajorID, MinorID, Button, X, Y, Z);
-
-		return DriverManager->InputMouseDev->ReportMouseEvent(MajorID, MinorID,
-															  Button.LeftButton, Button.RightButton, Button.MiddleButton,
-															  Button.Button4, Button.Button5, Button.Button6, Button.Button7, Button.Button8,
-															  X, Y, Z, true);
-	}
-
-	int ReportAbsoluteMouseEvent(dev_t MajorID, dev_t MinorID, __MouseButtons Button, uintptr_t X, uintptr_t Y, int8_t Z)
-	{
-		dbg_api("%d, %d, %d, %d, %d, %d", MajorID, MinorID, Button, X, Y, Z);
-
-		return DriverManager->InputMouseDev->ReportMouseEvent(MajorID, MinorID,
-															  Button.LeftButton, Button.RightButton, Button.MiddleButton,
-															  Button.Button4, Button.Button5, Button.Button6, Button.Button7, Button.Button8,
-															  X, Y, Z, false);
-	}
-
-	/* --------- */
-
-	dev_t RegisterBlockDevice(dev_t MajorID, DeviceDriverType Type, void *Open, void *Close, void *Read, void *Write, void *Ioctl)
-	{
-		dbg_api("%d, %d, %#lx, %#lx, %#lx, %#lx, %#lx", MajorID, Type, Open, Close, Read, Write, Ioctl);
-
-		switch (Type)
-		{
-		case ddt_SATA:
-		{
-			dev_t ret = DriverManager->BlockSATADev->Register(MajorID);
-			DriverManager->BlockSATADev->NewBlock(MajorID, ret,
-												  (SlaveDeviceFile::drvOpen_t)Open,
-												  (SlaveDeviceFile::drvClose_t)Close,
-												  (SlaveDeviceFile::drvRead_t)Read,
-												  (SlaveDeviceFile::drvWrite_t)Write,
-												  (SlaveDeviceFile::drvIoctl_t)Ioctl);
-			return ret;
-		}
-		case ddt_ATA:
-		{
-			dev_t ret = DriverManager->BlockHDDev->Register(MajorID);
-			DriverManager->BlockHDDev->NewBlock(MajorID, ret,
-												(SlaveDeviceFile::drvOpen_t)Open,
-												(SlaveDeviceFile::drvClose_t)Close,
-												(SlaveDeviceFile::drvRead_t)Read,
-												(SlaveDeviceFile::drvWrite_t)Write,
-												(SlaveDeviceFile::drvIoctl_t)Ioctl);
-			return ret;
-		}
-		case ddt_NVMe:
-		{
-			dev_t ret = DriverManager->BlockNVMeDev->Register(MajorID);
-			DriverManager->BlockNVMeDev->NewBlock(MajorID, ret,
-												  (SlaveDeviceFile::drvOpen_t)Open,
-												  (SlaveDeviceFile::drvClose_t)Close,
-												  (SlaveDeviceFile::drvRead_t)Read,
-												  (SlaveDeviceFile::drvWrite_t)Write,
-												  (SlaveDeviceFile::drvIoctl_t)Ioctl);
-			return ret;
-		}
-		/* ... */
-		default:
-			assert(!"Invalid storage device type");
-		}
-	}
-
-	int UnregisterBlockDevice(dev_t MajorID, dev_t MinorID, DeviceDriverType Type)
-	{
-		dbg_api("%d, %d, %d", MajorID, MinorID, Type);
-
-		switch (Type)
-		{
-		case ddt_SATA:
-			return DriverManager->BlockSATADev->Unregister(MajorID, MinorID);
-		case ddt_ATA:
-			return DriverManager->BlockHDDev->Unregister(MajorID, MinorID);
-		case ddt_NVMe:
-			return DriverManager->BlockNVMeDev->Unregister(MajorID, MinorID);
-		/* ... */
-		default:
-			assert(!"Invalid storage device type");
-		}
-	}
-
-	/* --------- */
-
-	dev_t RegisterAudioDevice(dev_t MajorID, DeviceDriverType Type, void *Open, void *Close, void *Read, void *Write, void *Ioctl)
-	{
-		dbg_api("%d, %d, %#lx, %#lx, %#lx, %#lx, %#lx", MajorID, Type, Open, Close, Read, Write, Ioctl);
-
-		switch (Type)
-		{
-		case ddt_Audio:
-		{
-			dev_t ret = DriverManager->AudioDev->Register(MajorID);
-			DriverManager->AudioDev->NewAudio(MajorID, ret,
-											  (SlaveDeviceFile::drvOpen_t)Open,
-											  (SlaveDeviceFile::drvClose_t)Close,
-											  (SlaveDeviceFile::drvRead_t)Read,
-											  (SlaveDeviceFile::drvWrite_t)Write,
-											  (SlaveDeviceFile::drvIoctl_t)Ioctl);
-			return ret;
-		}
-		/* ... */
-		default:
-			assert(!"Invalid audio device type");
-		}
-	}
-
-	int UnregisterAudioDevice(dev_t MajorID, dev_t MinorID, DeviceDriverType Type)
-	{
-		dbg_api("%d, %d, %d", MajorID, MinorID, Type);
-
-		switch (Type)
-		{
-		case ddt_Audio:
-			return DriverManager->AudioDev->Unregister(MajorID, MinorID);
-		/* ... */
-		default:
-			assert(!"Invalid audio device type");
-		}
-	}
-
-	/* --------- */
-
-	dev_t RegisterNetDevice(dev_t MajorID, DeviceDriverType Type, void *Open, void *Close, void *Read, void *Write, void *Ioctl)
-	{
-		dbg_api("%d, %d, %#lx, %#lx, %#lx, %#lx, %#lx", MajorID, Type, Open, Close, Read, Write, Ioctl);
-
-		switch (Type)
-		{
-		case ddt_Network:
-		{
-			dev_t ret = DriverManager->NetDev->Register(MajorID);
-			DriverManager->NetDev->NewNet(MajorID, ret,
-										  (SlaveDeviceFile::drvOpen_t)Open,
-										  (SlaveDeviceFile::drvClose_t)Close,
-										  (SlaveDeviceFile::drvRead_t)Read,
-										  (SlaveDeviceFile::drvWrite_t)Write,
-										  (SlaveDeviceFile::drvIoctl_t)Ioctl);
-			return ret;
-		}
-		/* ... */
-		default:
-			assert(!"Invalid audio device type");
-		}
-	}
-
-	int UnregisterNetDevice(dev_t MajorID, dev_t MinorID, DeviceDriverType Type)
-	{
-		dbg_api("%d, %d, %d", MajorID, MinorID, Type);
-
-		switch (Type)
-		{
-		case ddt_Network:
-			return DriverManager->NetDev->Unregister(MajorID, MinorID);
-		/* ... */
-		default:
-			assert(!"Invalid audio device type");
-		}
-	}
-
-	int ReportNetworkPacket(dev_t MajorID, dev_t MinorID, void *Buffer, size_t Size)
-	{
-		dbg_api("%d, %d, %#lx, %d", MajorID, MinorID, Buffer, Size);
-
-		return DriverManager->NetDev->ReportNetworkPacket(MajorID, MinorID, Buffer, Size);
 	}
 
 	/* --------- */
@@ -891,22 +682,6 @@ namespace Driver
 		api->UnregisterInterruptHandler = UnregisterInterruptHandler;
 		api->UnregisterAllInterruptHandlers = UnregisterAllInterruptHandlers;
 
-		api->RegisterInputDevice = RegisterInputDevice;
-		api->UnregisterInputDevice = UnregisterInputDevice;
-		api->ReportKeyboardEvent = ReportKeyboardEvent;
-		api->ReportRelativeMouseEvent = ReportRelativeMouseEvent;
-		api->ReportAbsoluteMouseEvent = ReportAbsoluteMouseEvent;
-
-		api->RegisterBlockDevice = RegisterBlockDevice;
-		api->UnregisterBlockDevice = UnregisterBlockDevice;
-
-		api->RegisterAudioDevice = RegisterAudioDevice;
-		api->UnregisterAudioDevice = UnregisterAudioDevice;
-
-		api->RegisterNetDevice = RegisterNetDevice;
-		api->UnregisterNetDevice = UnregisterNetDevice;
-		api->ReportNetworkPacket = ReportNetworkPacket;
-
 		api->KPrint = d_KPrint;
 		api->KernelLog = KernelLog;
 
@@ -944,3 +719,28 @@ namespace Driver
 		api->strstr = api__strstr;
 	}
 }
+
+dev_t __api_RegisterFileSystem(FileSystemInfo *Info, struct Inode *Root)
+{
+	return fs->RegisterFileSystem(Info, Root);
+}
+
+int __api_UnregisterFileSystem(dev_t Device)
+{
+	return fs->UnregisterFileSystem(Device);
+}
+
+struct APISymbols
+{
+	const char *Name;
+	void *Function;
+};
+
+static struct APISymbols APISymbols[] = {
+	{"RegisterFileSystem", (void *)__api_RegisterFileSystem},
+	{"UnregisterFileSystem", (void *)__api_UnregisterFileSystem},
+};
+
+/* Checking functions signatures */
+static_assert(std::is_same_v<decltype(__api_RegisterFileSystem), decltype(RegisterFileSystem)>);
+static_assert(std::is_same_v<decltype(__api_UnregisterFileSystem), decltype(UnregisterFileSystem)>);

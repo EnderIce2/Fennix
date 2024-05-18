@@ -149,30 +149,30 @@ namespace Memory
 
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
-			goto ReturnError;
+			goto ReturnLogError;
 
 		PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->GetAddress() << 12);
 		if (!PDPTE || !PDPTE->Entries[Index.PDPTEIndex].Present)
-			goto ReturnError;
+			goto ReturnLogError;
 
 		if (PDPTE->Entries[Index.PDPTEIndex].PageSize)
 			return MapType::OneGiB;
 
 		PDE = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
 		if (!PDE || !PDE->Entries[Index.PDEIndex].Present)
-			goto ReturnError;
+			goto ReturnLogError;
 
 		if (PDE->Entries[Index.PDEIndex].PageSize)
 			return MapType::TwoMiB;
 
 		PTE = (PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
 		if (!PTE)
-			goto ReturnError;
+			goto ReturnLogError;
 
 		if (PTE->Entries[Index.PTEIndex].Present)
 			return MapType::FourKiB;
 
-	ReturnError:
+	ReturnLogError:
 		return MapType::NoMapType;
 	}
 

@@ -173,7 +173,7 @@ typedef volatile _Atomic(int64_t) atomic64_t;
 typedef volatile _Atomic(void *) atomicptr_t;
 
 /* Intellisense errors */
-#ifndef __debug_vscode__
+#ifndef __vscode__
 
 static FORCEINLINE int32_t atomic_load32(atomic32_t *src) { return atomic_load_explicit(src, memory_order_relaxed); }
 static FORCEINLINE void atomic_store32(atomic32_t *dst, int32_t val) { atomic_store_explicit(dst, val, memory_order_relaxed); }

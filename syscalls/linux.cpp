@@ -19,8 +19,10 @@
 #include <syscall/linux/syscalls_i386.hpp>
 #include <syscall/linux/signals.hpp>
 #include <syscall/linux/defs.hpp>
+#include <syscall/linux/errno.h>
 #include <syscalls.hpp>
 
+#include <static_vector>
 #include <signal.hpp>
 #include <utsname.h>
 #include <rand.hpp>
@@ -208,7 +210,93 @@ static const struct
 	{linux_SIGRTMIN + 29, SIGRT_29, SIG_IGN},
 	{linux_SIGRTMIN + 30, SIGRT_30, SIG_IGN},
 	{linux_SIGRTMIN + 31, SIGRT_31, SIG_IGN},
-	{linux_SIGRTMAX, SIGRTMAX, SIG_IGN}};
+	{linux_SIGRTMAX, SIGRTMAX, SIG_IGN},
+};
+
+static_vector<int, __ERRNO_MAX> errnoMap = {
+	/*EOK*/ 0,
+	/*E2BIG*/ linux_E2BIG,
+	/*EACCES*/ linux_EACCES,
+	/*EADDRINUSE*/ linux_EADDRINUSE,
+	/*EADDRNOTAVAIL*/ linux_EADDRNOTAVAIL,
+	/*EAFNOSUPPORT*/ linux_EAFNOSUPPORT,
+	/*EAGAIN*/ linux_EAGAIN,
+	/*EALREADY*/ linux_EALREADY,
+	/*EBADF*/ linux_EBADF,
+	/*EBADMSG*/ linux_EBADMSG,
+	/*EBUSY*/ linux_EBUSY,
+	/*ECANCELED*/ linux_ECANCELED,
+	/*ECHILD*/ linux_ECHILD,
+	/*ECONNABORTED*/ linux_ECONNABORTED,
+	/*ECONNREFUSED*/ linux_ECONNREFUSED,
+	/*ECONNRESET*/ linux_ECONNRESET,
+	/*EDEADLK*/ linux_EDEADLK,
+	/*EDESTADDRREQ*/ linux_EDESTADDRREQ,
+	/*EDOM*/ linux_EDOM,
+	/*EDQUOT*/ linux_EDQUOT,
+	/*EEXIST*/ linux_EEXIST,
+	/*EFAULT*/ linux_EFAULT,
+	/*EFBIG*/ linux_EFBIG,
+	/*EHOSTUNREACH*/ linux_EHOSTUNREACH,
+	/*EIDRM*/ linux_EIDRM,
+	/*EILSEQ*/ linux_EILSEQ,
+	/*EINPROGRESS*/ linux_EINPROGRESS,
+	/*EINTR*/ linux_EINTR,
+	/*EINVAL*/ linux_EINVAL,
+	/*EIO*/ linux_EIO,
+	/*EISCONN*/ linux_EISCONN,
+	/*EISDIR*/ linux_EISDIR,
+	/*ELOOP*/ linux_ELOOP,
+	/*EMFILE*/ linux_EMFILE,
+	/*EMLINK*/ linux_EMLINK,
+	/*EMSGSIZE*/ linux_EMSGSIZE,
+	/*EMULTIHOP*/ linux_EMULTIHOP,
+	/*ENAMETOOLONG*/ linux_ENAMETOOLONG,
+	/*ENETDOWN*/ linux_ENETDOWN,
+	/*ENETRESET*/ linux_ENETRESET,
+	/*ENETUNREACH*/ linux_ENETUNREACH,
+	/*ENFILE*/ linux_ENFILE,
+	/*ENOBUFS*/ linux_ENOBUFS,
+	/*ENODATA*/ linux_ENODATA,
+	/*ENODEV*/ linux_ENODEV,
+	/*ENOENT*/ linux_ENOENT,
+	/*ENOEXEC*/ linux_ENOEXEC,
+	/*ENOLCK*/ linux_ENOLCK,
+	/*ENOLINK*/ linux_ENOLINK,
+	/*ENOMEM*/ linux_ENOMEM,
+	/*ENOMSG*/ linux_ENOMSG,
+	/*ENOPROTOOPT*/ linux_ENOPROTOOPT,
+	/*ENOSPC*/ linux_ENOSPC,
+	/*ENOSR*/ linux_ENOSR,
+	/*ENOSTR*/ linux_ENOSTR,
+	/*ENOSYS*/ linux_ENOSYS,
+	/*ENOTCONN*/ linux_ENOTCONN,
+	/*ENOTDIR*/ linux_ENOTDIR,
+	/*ENOTEMPTY*/ linux_ENOTEMPTY,
+	/*ENOTRECOVERABLE*/ linux_ENOTRECOVERABLE,
+	/*ENOTSOCK*/ linux_ENOTSOCK,
+	/*ENOTSUP*/ linux_EOPNOTSUPP,
+	/*ENOTTY*/ linux_ENOTTY,
+	/*ENXIO*/ linux_ENXIO,
+	/*EOPNOTSUPP*/ linux_EOPNOTSUPP,
+	/*EOVERFLOW*/ linux_EOVERFLOW,
+	/*EOWNERDEAD*/ linux_EOWNERDEAD,
+	/*EPERM*/ linux_EPERM,
+	/*EPIPE*/ linux_EPIPE,
+	/*EPROTO*/ linux_EPROTO,
+	/*EPROTONOSUPPORT*/ linux_EPROTONOSUPPORT,
+	/*EPROTOTYPE*/ linux_EPROTOTYPE,
+	/*ERANGE*/ linux_ERANGE,
+	/*EROFS*/ linux_EROFS,
+	/*ESPIPE*/ linux_ESPIPE,
+	/*ESRCH*/ linux_ESRCH,
+	/*ESTALE*/ linux_ESTALE,
+	/*ETIME*/ linux_ETIME,
+	/*ETIMEDOUT*/ linux_ETIMEDOUT,
+	/*ETXTBSY*/ linux_ETXTBSY,
+	/*EWOULDBLOCK*/ linux_EAGAIN,
+	/*EXDEV*/ linux_EXDEV,
+};
 
 int ConvertSignalToLinux(Signals sig)
 {
@@ -324,21 +412,21 @@ void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
 struct kstat KStatToStat(struct linux_kstat linux_stat)
 {
 	struct kstat stat;
-	stat.st_dev = linux_stat.st_dev;
-	stat.st_ino = linux_stat.st_ino;
-	stat.st_nlink = (nlink_t)linux_stat.st_nlink;
-	stat.st_mode = linux_stat.st_mode;
-	stat.st_uid = linux_stat.st_uid;
-	stat.st_gid = linux_stat.st_gid;
-	stat.st_rdev = linux_stat.st_rdev;
-	stat.st_size = linux_stat.st_size;
-	stat.st_blksize = linux_stat.st_blksize;
-	stat.st_blocks = linux_stat.st_blocks;
-	stat.st_atime = linux_stat.st_atime;
+	stat.Device = linux_stat.st_dev;
+	stat.Index = linux_stat.st_ino;
+	stat.HardLinks = (nlink_t)linux_stat.st_nlink;
+	stat.Mode = linux_stat.st_mode;
+	stat.UserID = linux_stat.st_uid;
+	stat.GroupID = linux_stat.st_gid;
+	stat.RawDevice = linux_stat.st_rdev;
+	stat.Size = linux_stat.st_size;
+	stat.BlockSize = linux_stat.st_blksize;
+	stat.Blocks = linux_stat.st_blocks;
+	stat.AccessTime = linux_stat.st_atime;
 	// stat.st_atime_nsec = linux_stat.st_atime_nsec;
-	stat.st_mtime = linux_stat.st_mtime;
+	stat.ModifyTime = linux_stat.st_mtime;
 	// stat.st_mtime_nsec = linux_stat.st_mtime_nsec;
-	stat.st_ctime = linux_stat.st_ctime;
+	stat.ChangeTime = linux_stat.st_ctime;
 	// stat.st_ctime_nsec = linux_stat.st_ctime_nsec;
 	return stat;
 }
@@ -346,21 +434,21 @@ struct kstat KStatToStat(struct linux_kstat linux_stat)
 struct linux_kstat StatToKStat(struct kstat stat)
 {
 	struct linux_kstat linux_stat;
-	linux_stat.st_dev = stat.st_dev;
-	linux_stat.st_ino = stat.st_ino;
-	linux_stat.st_nlink = stat.st_nlink;
-	linux_stat.st_mode = stat.st_mode;
-	linux_stat.st_uid = stat.st_uid;
-	linux_stat.st_gid = stat.st_gid;
-	linux_stat.st_rdev = stat.st_rdev;
-	linux_stat.st_size = stat.st_size;
-	linux_stat.st_blksize = stat.st_blksize;
-	linux_stat.st_blocks = stat.st_blocks;
-	linux_stat.st_atime = stat.st_atime;
+	linux_stat.st_dev = stat.Device;
+	linux_stat.st_ino = stat.Index;
+	linux_stat.st_nlink = stat.HardLinks;
+	linux_stat.st_mode = stat.Mode;
+	linux_stat.st_uid = stat.UserID;
+	linux_stat.st_gid = stat.GroupID;
+	linux_stat.st_rdev = stat.RawDevice;
+	linux_stat.st_size = stat.Size;
+	linux_stat.st_blksize = stat.BlockSize;
+	linux_stat.st_blocks = stat.Blocks;
+	linux_stat.st_atime = stat.AccessTime;
 	// linux_stat.st_atime_nsec = stat.st_atime_nsec;
-	linux_stat.st_mtime = stat.st_mtime;
+	linux_stat.st_mtime = stat.ModifyTime;
 	// linux_stat.st_mtime_nsec = stat.st_mtime_nsec;
-	linux_stat.st_ctime = stat.st_ctime;
+	linux_stat.st_ctime = stat.ChangeTime;
 	// linux_stat.st_ctime_nsec = stat.st_ctime_nsec;
 	return linux_stat;
 }
@@ -368,40 +456,40 @@ struct linux_kstat StatToKStat(struct kstat stat)
 struct kstat OKStatToStat(struct __old_kernel_stat okstat)
 {
 	struct kstat stat;
-	stat.st_dev = okstat.st_dev;
-	stat.st_ino = okstat.st_ino;
-	stat.st_nlink = okstat.st_nlink;
-	stat.st_mode = okstat.st_mode;
-	stat.st_uid = okstat.st_uid;
-	stat.st_gid = okstat.st_gid;
-	stat.st_rdev = okstat.st_rdev;
-	stat.st_size = okstat.st_size;
-	stat.st_atime = okstat.st_atime;
-	stat.st_mtime = okstat.st_mtime;
-	stat.st_ctime = okstat.st_ctime;
+	stat.Device = okstat.st_dev;
+	stat.Index = okstat.st_ino;
+	stat.HardLinks = okstat.st_nlink;
+	stat.Mode = okstat.st_mode;
+	stat.UserID = okstat.st_uid;
+	stat.GroupID = okstat.st_gid;
+	stat.RawDevice = okstat.st_rdev;
+	stat.Size = okstat.st_size;
+	stat.AccessTime = okstat.st_atime;
+	stat.ModifyTime = okstat.st_mtime;
+	stat.ChangeTime = okstat.st_ctime;
 	return stat;
 }
 
 struct __old_kernel_stat StatToOKStat(struct kstat stat)
 {
 	struct __old_kernel_stat okstat;
-	okstat.st_dev = (unsigned short)stat.st_dev;
-	okstat.st_ino = (unsigned short)stat.st_ino;
-	okstat.st_nlink = (unsigned short)stat.st_nlink;
-	okstat.st_mode = (unsigned short)stat.st_mode;
-	okstat.st_uid = (unsigned short)stat.st_uid;
-	okstat.st_gid = (unsigned short)stat.st_gid;
-	okstat.st_rdev = (unsigned short)stat.st_rdev;
+	okstat.st_dev = (unsigned short)stat.Device;
+	okstat.st_ino = (unsigned short)stat.Index;
+	okstat.st_nlink = (unsigned short)stat.HardLinks;
+	okstat.st_mode = (unsigned short)stat.Mode;
+	okstat.st_uid = (unsigned short)stat.UserID;
+	okstat.st_gid = (unsigned short)stat.GroupID;
+	okstat.st_rdev = (unsigned short)stat.RawDevice;
 #ifdef __i386__
-	okstat.st_size = (unsigned long)stat.st_size;
-	okstat.st_atime = (unsigned long)stat.st_atime;
-	okstat.st_mtime = (unsigned long)stat.st_mtime;
-	okstat.st_ctime = (unsigned long)stat.st_ctime;
+	okstat.st_size = (unsigned long)stat.Size;
+	okstat.st_atime = (unsigned long)stat.AccessTime;
+	okstat.st_mtime = (unsigned long)stat.ModifyTime;
+	okstat.st_ctime = (unsigned long)stat.ChangeTime;
 #else
-	okstat.st_size = (unsigned int)stat.st_size;
-	okstat.st_atime = (unsigned int)stat.st_atime;
-	okstat.st_mtime = (unsigned int)stat.st_mtime;
-	okstat.st_ctime = (unsigned int)stat.st_ctime;
+	okstat.st_size = (unsigned int)stat.Size;
+	okstat.st_atime = (unsigned int)stat.AccessTime;
+	okstat.st_mtime = (unsigned int)stat.ModifyTime;
+	okstat.st_ctime = (unsigned int)stat.ChangeTime;
 #endif
 	return okstat;
 }
@@ -422,7 +510,6 @@ void __LinuxForkReturn(void *tableAddr)
 	__builtin_unreachable();
 }
 
-/* https://man7.org/linux/man-pages/man2/read.2.html */
 static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 {
 	PCB *pcb = thisProcess;
@@ -432,16 +519,15 @@ static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 	if (pBuf == nullptr)
 		return -EFAULT;
 
-	function("%d, %p, %d", fd, buf, count);
+	func("%d, %p, %d", fd, buf, count);
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t ret = fdt->_read(fd, pBuf, count);
+	ssize_t ret = fdt->usr_read(fd, pBuf, count);
 	if (ret >= 0)
-		fdt->_lseek(fd, ret, SEEK_CUR);
+		fdt->usr_lseek(fd, ret, SEEK_CUR);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/write.2.html */
 static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 {
 	PCB *pcb = thisProcess;
@@ -451,16 +537,15 @@ static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 	if (pBuf == nullptr)
 		return -EFAULT;
 
-	function("%d, %p, %d", fd, buf, count);
+	func("%d, %p, %d", fd, buf, count);
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t ret = fdt->_write(fd, pBuf, count);
+	ssize_t ret = fdt->usr_write(fd, pBuf, count);
 	if (ret)
-		fdt->_lseek(fd, ret, SEEK_CUR);
+		fdt->usr_lseek(fd, ret, SEEK_CUR);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/open.2.html */
 static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 {
 	PCB *pcb = thisProcess;
@@ -470,18 +555,18 @@ static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 	if (pPathname == nullptr)
 		return -EFAULT;
 
-	function("%s, %d, %d", pPathname, flags, mode);
+	func("%s, %d, %d", pPathname, flags, mode);
 
 	if (flags & 0200000 /* O_DIRECTORY */)
 	{
-		vfs::Node *node = fs->GetNodeFromPath(pPathname);
-		if (!node)
+		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+		if (node == nullptr)
 		{
 			debug("Couldn't find %s", pPathname);
 			return -ENOENT;
 		}
 
-		if (node->Type != vfs::NodeType::DIRECTORY)
+		if (!node->IsDirectory())
 		{
 			debug("%s is not a directory", pPathname);
 			return -ENOTDIR;
@@ -489,15 +574,14 @@ static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 	}
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_open(pPathname, flags, mode);
+	return fdt->usr_open(pPathname, flags, mode);
 }
 
-/* https://man7.org/linux/man-pages/man2/close.2.html */
 static int linux_close(SysFrm *, int fd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_close(fd);
+	return fdt->usr_close(fd);
 }
 
 /* stat, lstat and fstat uses __old_kernel_stat:
@@ -505,7 +589,6 @@ https://github.com/torvalds/linux/blob/bfa8f18691ed2e978e4dd51190569c434f93e268/
 if __ARCH_WANT_OLD_STAT is defined
 so what about __old_kernel_stat? when it is used? */
 
-/* https://man7.org/linux/man-pages/man2/stat.2.html */
 static int linux_stat(SysFrm *, const char *pathname, struct linux_kstat *statbuf)
 {
 	PCB *pcb = thisProcess;
@@ -521,15 +604,13 @@ static int linux_stat(SysFrm *, const char *pathname, struct linux_kstat *statbu
 		return -EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->_stat(pPathname, &nstat);
+	int ret = fdt->usr_stat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/fstat.2.html */
 static int linux_fstat(SysFrm *, int fd, struct linux_kstat *statbuf)
 {
-#undef fstat
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -539,12 +620,11 @@ static int linux_fstat(SysFrm *, int fd, struct linux_kstat *statbuf)
 		return -EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->_fstat(fd, &nstat);
+	int ret = fdt->usr_fstat(fd, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/lstat.2.html */
 static int linux_lstat(SysFrm *, const char *pathname, struct linux_kstat *statbuf)
 {
 	PCB *pcb = thisProcess;
@@ -557,70 +637,39 @@ static int linux_lstat(SysFrm *, const char *pathname, struct linux_kstat *statb
 		return -EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->_lstat(pPathname, &nstat);
+	int ret = fdt->usr_lstat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
-#include "../syscalls.h"
-/* https://man7.org/linux/man-pages/man2/lseek.2.html */
+// #include "../syscalls.h"
+
 static off_t linux_lseek(SysFrm *, int fd, off_t offset, int whence)
 {
-	static_assert(SEEK_SET == sc_SEEK_SET);
-	static_assert(SEEK_CUR == sc_SEEK_CUR);
-	static_assert(SEEK_END == sc_SEEK_END);
+	static_assert(linux_SEEK_SET == SEEK_SET);
+	static_assert(linux_SEEK_CUR == SEEK_CUR);
+	static_assert(linux_SEEK_END == SEEK_END);
 
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_lseek(fd, offset, whence);
+	return fdt->usr_lseek(fd, offset, whence);
 }
 
-/* https://man7.org/linux/man-pages/man2/mmap.2.html */
 static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 						int flags, int fildes, off_t offset)
 {
-	static_assert(PROT_NONE == sc_PROT_NONE);
-	static_assert(PROT_READ == sc_PROT_READ);
-	static_assert(PROT_WRITE == sc_PROT_WRITE);
-	static_assert(PROT_EXEC == sc_PROT_EXEC);
-
-	int new_flags = 0;
-	if (flags & MAP_SHARED)
-	{
-		new_flags |= sc_MAP_SHARED;
-		flags &= ~MAP_SHARED;
-	}
-	if (flags & MAP_PRIVATE)
-	{
-		new_flags |= sc_MAP_PRIVATE;
-		flags &= ~MAP_PRIVATE;
-	}
-	if (flags & MAP_FIXED)
-	{
-		new_flags |= sc_MAP_FIXED;
-		flags &= ~MAP_FIXED;
-	}
-	if (flags & MAP_ANONYMOUS)
-	{
-		new_flags |= sc_MAP_ANONYMOUS;
-		flags &= ~MAP_ANONYMOUS;
-	}
-	if (flags)
-		fixme("unhandled flags: %#x", flags);
-	flags = new_flags;
-
 	if (length == 0)
 		return (void *)-EINVAL;
 
-	bool p_None = prot & sc_PROT_NONE;
-	bool p_Read = prot & sc_PROT_READ;
-	bool p_Write = prot & sc_PROT_WRITE;
-	bool p_Exec = prot & sc_PROT_EXEC;
+	bool p_None = prot & linux_PROT_NONE;
+	bool p_Read = prot & linux_PROT_READ;
+	bool p_Write = prot & linux_PROT_WRITE;
+	bool p_Exec = prot & linux_PROT_EXEC;
 
-	bool m_Shared = flags & sc_MAP_SHARED;
-	bool m_Private = flags & sc_MAP_PRIVATE;
-	bool m_Fixed = flags & sc_MAP_FIXED;
-	bool m_Anon = flags & sc_MAP_ANONYMOUS;
+	bool m_Shared = flags & linux_MAP_SHARED;
+	bool m_Private = flags & linux_MAP_PRIVATE;
+	bool m_Fixed = flags & linux_MAP_FIXED;
+	bool m_Anon = flags & linux_MAP_ANONYMOUS;
 
 	UNUSED(p_None);
 	UNUSED(m_Anon);
@@ -631,15 +680,13 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	debug("Shared:%d Private:%d Fixed:%d Anon:%d",
 		  m_Shared, m_Private, m_Fixed, m_Anon);
 
-	int UnknownFlags = flags & ~(sc_MAP_SHARED |
-								 sc_MAP_PRIVATE |
-								 sc_MAP_FIXED |
-								 sc_MAP_ANONYMOUS);
-	if (UnknownFlags)
+	int unknownFlags = flags & ~(linux_MAP_SHARED | linux_MAP_PRIVATE |
+								 linux_MAP_FIXED | linux_MAP_ANONYMOUS);
+	if (unknownFlags)
 	{
 		/* We still have some flags missing afaik... */
-		fixme("Unknown flags: %x", UnknownFlags);
-		/* Allow? */
+		fixme("Unknown flags: %x", unknownFlags);
+		/* FIXME: Continue? */
 	}
 
 	if (offset % PAGE_SIZE)
@@ -658,8 +705,9 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	{
 		fixme("File mapping not fully implemented");
 		vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-		vfs::FileDescriptorTable::Fildes &_fd = fdt->GetDescriptor(fildes);
-		if (_fd.Descriptor != fildes)
+
+		auto _fd = fdt->FileMap.find(fildes);
+		if (_fd == fdt->FileMap.end())
 		{
 			debug("Invalid file descriptor %d", fildes);
 			return (void *)-EBADF;
@@ -686,11 +734,11 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 					debug("Failed to map file: %s", strerror(mRet));
 					return (void *)(uintptr_t)mRet;
 				}
-				off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
-				fdt->_lseek(fildes, offset, SEEK_SET);
+				off_t oldOff = fdt->usr_lseek(fildes, 0, SEEK_CUR);
+				fdt->usr_lseek(fildes, offset, SEEK_SET);
 
-				ssize_t ret = fdt->_read(fildes, pBuf, length);
-				fdt->_lseek(fildes, oldOff, SEEK_SET);
+				ssize_t ret = fdt->usr_read(fildes, pBuf, length);
+				fdt->usr_lseek(fildes, oldOff, SEEK_SET);
 
 				if (ret < 0)
 				{
@@ -709,12 +757,12 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 				}
 			}
 
-			off_t oldOff = fdt->_lseek(fildes, 0, SEEK_CUR);
-			fdt->_lseek(fildes, offset, SEEK_SET);
+			off_t oldOff = fdt->usr_lseek(fildes, 0, SEEK_CUR);
+			fdt->usr_lseek(fildes, offset, SEEK_SET);
 
-			ssize_t ret = fdt->_read(fildes, pBuf, length);
+			ssize_t ret = fdt->usr_read(fildes, pBuf, length);
 
-			fdt->_lseek(fildes, oldOff, SEEK_SET);
+			fdt->usr_lseek(fildes, oldOff, SEEK_SET);
 
 			if (ret < 0)
 			{
@@ -735,7 +783,6 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 }
 #undef __FENNIX_KERNEL_SYSCALLS_LIST_H__
 
-/* https://man7.org/linux/man-pages/man2/mprotect.2.html */
 static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 {
 	if (len == 0)
@@ -744,10 +791,10 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 	if (uintptr_t(addr) % PAGE_SIZE)
 		return -EINVAL;
 
-	// bool p_None = prot & sc_PROT_NONE;
-	bool p_Read = prot & sc_PROT_READ;
-	bool p_Write = prot & sc_PROT_WRITE;
-	// bool p_Exec = prot & sc_PROT_EXEC;
+	// bool p_None = prot & linux_PROT_NONE;
+	bool p_Read = prot & linux_PROT_READ;
+	bool p_Write = prot & linux_PROT_WRITE;
+	// bool p_Exec = prot & linux_PROT_EXEC;
 
 	PCB *pcb = thisProcess;
 	Memory::Virtual vmm = Memory::Virtual(pcb->PageTable);
@@ -788,10 +835,10 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 
 		debug("Changed permissions of page %#lx to %s %s %s %s",
 			  (void *)i,
-			  (prot & sc_PROT_NONE) ? "None" : "",
+			  (prot & linux_PROT_NONE) ? "None" : "",
 			  p_Read ? "Read" : "",
 			  p_Write ? "Write" : "",
-			  (prot & sc_PROT_EXEC) ? "Exec" : "");
+			  (prot & linux_PROT_EXEC) ? "Exec" : "");
 
 #if defined(a64)
 		CPU::x64::invlpg(addr);
@@ -811,7 +858,6 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/munmap.2.html */
 static int linux_munmap(SysFrm *, void *addr, size_t length)
 {
 	if (uintptr_t(addr) % PAGE_SIZE)
@@ -826,7 +872,6 @@ static int linux_munmap(SysFrm *, void *addr, size_t length)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/brk.2.html */
 static void *linux_brk(SysFrm *, void *addr)
 {
 	PCB *pcb = thisProcess;
@@ -835,7 +880,6 @@ static void *linux_brk(SysFrm *, void *addr)
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/ioctl.2.html */
 static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 {
 	PCB *pcb = thisProcess;
@@ -846,10 +890,9 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 	if (pArgp == nullptr)
 		return -EFAULT;
 
-	return fdt->_ioctl(fd, request, pArgp);
+	return fdt->usr_ioctl(fd, request, pArgp);
 }
 
-/* https://man7.org/linux/man-pages/man2/pread.2.html */
 static ssize_t linux_pread64(SysFrm *, int fd, void *buf, size_t count, off_t offset)
 {
 	PCB *pcb = thisProcess;
@@ -860,14 +903,13 @@ static ssize_t linux_pread64(SysFrm *, int fd, void *buf, size_t count, off_t of
 		return -EFAULT;
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	off_t oldOff = fdt->_lseek(fd, 0, SEEK_CUR);
-	fdt->_lseek(fd, offset, SEEK_SET);
-	ssize_t ret = fdt->_read(fd, pBuf, count);
-	fdt->_lseek(fd, oldOff, SEEK_SET);
+	off_t oldOff = fdt->usr_lseek(fd, 0, SEEK_CUR);
+	fdt->usr_lseek(fd, offset, SEEK_SET);
+	ssize_t ret = fdt->usr_read(fd, pBuf, count);
+	fdt->usr_lseek(fd, oldOff, SEEK_SET);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/pread.2.html */
 static ssize_t linux_pwrite64(SysFrm *, int fd, const void *buf, size_t count, off_t offset)
 {
 	PCB *pcb = thisProcess;
@@ -878,14 +920,13 @@ static ssize_t linux_pwrite64(SysFrm *, int fd, const void *buf, size_t count, o
 		return -EFAULT;
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	off_t oldOff = fdt->_lseek(fd, 0, SEEK_CUR);
-	fdt->_lseek(fd, offset, SEEK_SET);
-	ssize_t ret = fdt->_write(fd, pBuf, count);
-	fdt->_lseek(fd, oldOff, SEEK_SET);
+	off_t oldOff = fdt->usr_lseek(fd, 0, SEEK_CUR);
+	fdt->usr_lseek(fd, offset, SEEK_SET);
+	ssize_t ret = fdt->usr_write(fd, pBuf, count);
+	fdt->usr_lseek(fd, oldOff, SEEK_SET);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/readv.2.html */
 static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
 	PCB *pcb = thisProcess;
@@ -928,7 +969,6 @@ static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int 
 	return Total;
 }
 
-/* https://man7.org/linux/man-pages/man2/writev.2.html */
 static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
 {
 	PCB *pcb = thisProcess;
@@ -971,7 +1011,6 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 	return Total;
 }
 
-/* https://man7.org/linux/man-pages/man2/access.2.html */
 static int linux_access(SysFrm *, const char *pathname, int mode)
 {
 	PCB *pcb = thisProcess;
@@ -983,14 +1022,13 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 
 	debug("access(%s, %d)", (char *)pPathname, mode);
 
-	if (!fs->PathExists(pPathname, pcb->CurrentWorkingDirectory))
+	if (!fs->PathExists(pPathname, pcb->CWD))
 		return -ENOENT;
 
 	stub;
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/pipe.2.html */
 static int linux_pipe(SysFrm *, int pipefd[2])
 {
 	PCB *pcb = thisProcess;
@@ -1002,30 +1040,26 @@ static int linux_pipe(SysFrm *, int pipefd[2])
 	return -ENOSYS;
 }
 
-/* https://man7.org/linux/man-pages/man2/dup.2.html */
 static int linux_dup(SysFrm *, int oldfd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_dup(oldfd);
+	return fdt->usr_dup(oldfd);
 }
 
-/* https://man7.org/linux/man-pages/man2/dup.2.html */
 static int linux_dup2(SysFrm *, int oldfd, int newfd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_dup2(oldfd, newfd);
+	return fdt->usr_dup2(oldfd, newfd);
 }
 
-/* https://man7.org/linux/man-pages/man2/pause.2.html */
 static int linux_pause(SysFrm *)
 {
 	PCB *pcb = thisProcess;
 	return pcb->Signals.WaitAnySignal();
 }
 
-/* https://man7.org/linux/man-pages/man2/nanosleep.2.html */
 static int linux_nanosleep(SysFrm *,
 						   const struct timespec *req,
 						   struct timespec *rem)
@@ -1084,13 +1118,11 @@ static int linux_nanosleep(SysFrm *,
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/getpid.2.html */
 static pid_t linux_getpid(SysFrm *)
 {
 	return thisProcess->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/setitimer.2.html */
 static int linux_setitimer(SysFrm *, int which,
 						   const struct itimerspec64 *new_value,
 						   struct itimerspec64 *old_value)
@@ -1108,17 +1140,17 @@ static int linux_setitimer(SysFrm *, int which,
 
 	switch (which)
 	{
-	case ITIMER_REAL:
+	case linux_ITIMER_REAL:
 	{
 		fixme("ITIMER_REAL not implemented");
 		return 0;
 	}
-	case ITIMER_VIRTUAL:
+	case linux_ITIMER_VIRTUAL:
 	{
 		fixme("ITIMER_VIRTUAL not implemented");
 		return 0;
 	}
-	case ITIMER_PROF:
+	case linux_ITIMER_PROF:
 	{
 		fixme("ITIMER_PROF not implemented");
 		return 0;
@@ -1130,14 +1162,12 @@ static int linux_setitimer(SysFrm *, int which,
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/shutdown.2.html */
 static int linux_shutdown(SysFrm *, int sockfd, int how)
 {
 	stub;
 	return -ENOSYS;
 }
 
-/* https://man7.org/linux/man-pages/man2/fork.2.html */
 static pid_t linux_fork(SysFrm *sf)
 {
 	TCB *Thread = thisThread;
@@ -1162,7 +1192,7 @@ static pid_t linux_fork(SysFrm *sf)
 	NewProcess->ProgramBreak->SetTable(NewProcess->PageTable);
 	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
 	NewProcess->Executable = Parent->Executable;
-	NewProcess->CurrentWorkingDirectory = Parent->CurrentWorkingDirectory;
+	NewProcess->CWD = Parent->CWD;
 	NewProcess->FileCreationMask = Parent->FileCreationMask;
 
 	TCB *NewThread =
@@ -1217,7 +1247,6 @@ static pid_t linux_fork(SysFrm *sf)
 	return (int)NewProcess->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/execve.2.html */
 __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname,
 												   char *const argv[],
 												   char *const envp[])
@@ -1233,7 +1262,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	if (pPathname == nullptr || pArgv == nullptr || pEnvp == nullptr)
 		return -EFAULT;
 
-	function("%s %#lx %#lx", pPathname, pArgv, pEnvp);
+	func("%s %#lx %#lx", pPathname, pArgv, pEnvp);
 
 	int argvLen = 0;
 	for (argvLen = 0; MAX_ARG; argvLen++)
@@ -1296,8 +1325,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 			safe_envp[i + 1] = nullptr;
 	}
 
-	vfs::RefNode *File = fs->Open(pPathname,
-								  pcb->CurrentWorkingDirectory);
+	FileNode *File = fs->GetByPath(pPathname, pcb->CWD);
 
 	if (!File)
 	{
@@ -1306,7 +1334,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	}
 
 	char shebang_magic[2];
-	File->read((uint8_t *)shebang_magic, 2);
+	File->Read((uint8_t *)shebang_magic, 2, 0);
 
 	if (shebang_magic[0] == '#' && shebang_magic[1] == '!')
 	{
@@ -1316,12 +1344,11 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		char *shebang = (char *)pPathname;
 		size_t shebang_len = 0;
 		constexpr int shebang_len_max = 255;
-		File->seek(2, SEEK_SET);
 		off_t shebang_off = 2;
 		while (true)
 		{
 			char c;
-			if (File->node->read((uint8_t *)&c, 1, shebang_off) == 0)
+			if (File->Read((uint8_t *)&c, 1, shebang_off) == 0)
 				break;
 			if (c == '\n' || shebang_len == shebang_len_max)
 				break;
@@ -1367,7 +1394,6 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		}
 		safe_argv[i] = nullptr;
 
-		delete File;
 		return linux_execve(sf, safe_argv[0],
 							(char *const *)safe_argv,
 							(char *const *)safe_envp);
@@ -1382,7 +1408,6 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	if (ret < 0)
 	{
 		error("Failed to spawn");
-		delete File;
 		return ret;
 	}
 
@@ -1390,10 +1415,9 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	cwk_path_get_basename(pPathname, &baseName, nullptr);
 
 	pcb->Rename(baseName);
-	pcb->SetWorkingDirectory(File->node->Parent);
+	pcb->SetWorkingDirectory(File->Parent);
 	pcb->SetExe(pPathname);
 
-	delete File;
 	Tasking::Task *ctx = pcb->GetContext();
 	// ctx->Sleep(1000);
 	// pcb->SetState(Tasking::Zombie);
@@ -1403,7 +1427,6 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	__builtin_unreachable();
 }
 
-/* https://man7.org/linux/man-pages/man2/exit.2.html */
 static __noreturn void linux_exit(SysFrm *, int status)
 {
 	TCB *t = thisThread;
@@ -1420,7 +1443,6 @@ static __noreturn void linux_exit(SysFrm *, int status)
 	__builtin_unreachable();
 }
 
-/* https://man7.org/linux/man-pages/man2/wait4.2.html */
 static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 						 int options, struct rusage *rusage)
 {
@@ -1651,7 +1673,6 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 	return pid;
 }
 
-/* https://man7.org/linux/man-pages/man2/kill.2.html */
 static int linux_kill(SysFrm *, pid_t pid, int sig)
 {
 	PCB *pcb = thisProcess->GetContext()->GetProcessByID(pid);
@@ -1699,7 +1720,6 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 	return pcb->SendSignal(nSig);
 }
 
-/* https://man7.org/linux/man-pages/man2/uname.2.html */
 static int linux_uname(SysFrm *, struct utsname *buf)
 {
 	assert(sizeof(struct utsname) < PAGE_SIZE);
@@ -1712,29 +1732,33 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 		return -EFAULT;
 
 	struct utsname uname =
-	{
-		/* TODO: This shouldn't be hardcoded */
-		.sysname = KERNEL_NAME,
-		.nodename = "fennix",
-		.release = KERNEL_VERSION,
-		.version = KERNEL_VERSION,
+		{
+			/* TODO: This shouldn't be hardcoded */
+			.sysname = KERNEL_NAME,
+			.nodename = "fennix",
+			.release = KERNEL_VERSION,
+			.version = KERNEL_VERSION,
 #if defined(a64)
-		.machine = "x86_64",
+			.machine = "x86_64",
 #elif defined(a32)
-		.machine = "i386",
+			.machine = "i386",
 #elif defined(aa64)
-		.machine = "arm64",
+			.machine = "arm64",
 #elif defined(aa32)
-		.machine = "arm",
+			.machine = "arm",
 #endif
-	};
+		};
 
-	vfs::RefNode *rn = fs->Open("/etc/cross/linux");
+	FileNode *rn = fs->GetByPath("/etc/cross/linux", pcb->Info.RootNode);
 	if (rn)
 	{
-		Memory::SmartHeap sh(rn->Size);
-		rn->read(sh, rn->Size);
-		delete rn;
+		struct kstat st
+		{
+		};
+		rn->Stat(&st);
+
+		Memory::SmartHeap sh = Memory::SmartHeap(st.Size);
+		rn->Read(sh.Get(), st.Size, 0);
 
 		ini_t *ini = ini_load(sh, NULL);
 		int section = ini_find_section(ini, "uname", NULL);
@@ -1773,7 +1797,6 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/fcntl.2.html */
 static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 {
 	PCB *pcb = thisProcess;
@@ -1781,18 +1804,18 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 
 	switch (cmd)
 	{
-	case F_DUPFD:
-		return fdt->_dup2(fd, s_cst(int, (uintptr_t)arg));
-	case F_GETFD:
+	case linux_F_DUPFD:
+		return fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg));
+	case linux_F_GETFD:
 		return fdt->GetFlags(fd);
-	case F_SETFD:
+	case linux_F_SETFD:
 		return fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg));
-	case F_GETFL:
+	case linux_F_GETFL:
 	{
 		fixme("F_GETFL is stub?");
 		return fdt->GetFlags(fd);
 	}
-	case F_SETFL:
+	case linux_F_SETFL:
 	{
 		fixme("F_SETFL is stub?");
 		int flags = s_cst(int, (uintptr_t)arg);
@@ -1802,27 +1825,32 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 			fdt->SetFlags(fd, fdt->GetFlags(fd) & ~O_APPEND);
 		return 0;
 	}
-	case F_DUPFD_CLOEXEC:
+	case linux_F_DUPFD_CLOEXEC:
 	{
-		int ret = fdt->_dup2(fd, s_cst(int, (uintptr_t)arg));
+		int ret = fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg));
 		if (ret < 0)
 			return ret;
-		fdt->GetDescriptor(ret).Flags |= FD_CLOEXEC;
+
+		auto it = fdt->FileMap.find(fd);
+		if (it == fdt->FileMap.end())
+			ReturnLogError(-EBADF, "Invalid fd %d", fd);
+
+		it->second.Flags |= linux_FD_CLOEXEC;
 		return ret;
 	}
-	case F_SETOWN:
-	case F_GETOWN:
-	case F_SETSIG:
-	case F_GETSIG:
-	case F_GETLK:
-	case F_SETLK:
-	case F_SETLKW:
-	case F_SETOWN_EX:
-	case F_GETOWN_EX:
-	case F_GETOWNER_UIDS:
-	case F_OFD_GETLK:
-	case F_OFD_SETLK:
-	case F_OFD_SETLKW:
+	case linux_F_SETOWN:
+	case linux_F_GETOWN:
+	case linux_F_SETSIG:
+	case linux_F_GETSIG:
+	case linux_F_GETLK:
+	case linux_F_SETLK:
+	case linux_F_SETLKW:
+	case linux_F_SETOWN_EX:
+	case linux_F_GETOWN_EX:
+	case linux_F_GETOWNER_UIDS:
+	case linux_F_OFD_GETLK:
+	case linux_F_OFD_SETLK:
+	case linux_F_OFD_SETLKW:
 	{
 		fixme("cmd %d not implemented", cmd);
 		return -ENOSYS;
@@ -1835,15 +1863,13 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	}
 }
 
-/* https://man7.org/linux/man-pages/man2/creat.2.html */
 static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->_creat(pathname, mode);
+	return fdt->usr_creat(pathname, mode);
 }
 
-/* https://man7.org/linux/man-pages/man2/getcwd.2.html */
 static long linux_getcwd(SysFrm *, char *buf, size_t size)
 {
 	PCB *pcb = thisProcess;
@@ -1853,7 +1879,7 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 	if (pBuf == nullptr)
 		return -EFAULT;
 
-	const char *cwd = pcb->CurrentWorkingDirectory->FullPath;
+	const char *cwd = pcb->CWD->Path.c_str();
 	size_t len = strlen(cwd);
 	if (len >= size)
 	{
@@ -1866,7 +1892,6 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 	return len;
 }
 
-/* https://man7.org/linux/man-pages/man2/mkdir.2.html */
 static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 {
 	PCB *pcb = thisProcess;
@@ -1877,13 +1902,14 @@ static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 	if (!pPathname)
 		return -EFAULT;
 
-	vfs::Node *n = fs->Create(pPathname, vfs::DIRECTORY, pcb->CurrentWorkingDirectory);
+	mode &= ~pcb->FileCreationMask & 0777;
+
+	FileNode *n = fs->Create(pcb->CWD, pPathname, mode);
 	if (!n)
 		return -EEXIST;
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/readlink.2.html */
 static ssize_t linux_readlink(SysFrm *, const char *pathname,
 							  char *buf, size_t bufsiz)
 {
@@ -1904,34 +1930,26 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 	if (pPath == nullptr || pBuf == nullptr)
 		return -EFAULT;
 
-	function("%s %#lx %ld", pPath, buf, bufsiz);
+	func("%s %#lx %ld", pPath, buf, bufsiz);
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	int fd = fdt->_open(pPath, O_RDONLY, 0);
+	int fd = fdt->usr_open(pPath, O_RDONLY, 0);
 	if (fd < 0)
 		return -ENOENT;
 
-	vfs::FileDescriptorTable::Fildes fildes = fdt->GetDescriptor(fd);
-	vfs::Node *node = fildes.Handle->node;
-	fdt->_close(fd);
+	auto it = fdt->FileMap.find(fd);
+	if (it == fdt->FileMap.end())
+		ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-	if (node->Type != vfs::NodeType::SYMLINK)
+	vfs::FileDescriptorTable::Fildes &fildes = it->second;
+	FileNode *node = fildes.Node;
+	fdt->usr_close(fd);
+
+	if (!node->IsSymbolicLink())
 		return -EINVAL;
 
-	if (!node->Symlink)
-	{
-		warn("Symlink null for \"%s\"?", pPath);
-		return -EINVAL;
-	}
-
-	size_t len = strlen(node->Symlink);
-	if (len > bufsiz)
-		len = bufsiz;
-
-	strncpy(pBuf, node->Symlink, len);
-	return len;
+	return node->ReadLink(pBuf, bufsiz);
 }
 
-/* https://man7.org/linux/man-pages/man2/umask.2.html */
 static mode_t linux_umask(SysFrm *, mode_t mask)
 {
 	PCB *pcb = thisProcess;
@@ -1941,7 +1959,6 @@ static mode_t linux_umask(SysFrm *, mode_t mask)
 	return old;
 }
 
-/* https://man7.org/linux/man-pages/man2/getrusage.2.html */
 static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 {
 	PCB *pcb = thisProcess;
@@ -1953,7 +1970,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 
 	switch (who)
 	{
-	case RUSAGE_SELF:
+	case linux_RUSAGE_SELF:
 	{
 		size_t kTime = pcb->Info.KernelTime;
 		size_t uTime = pcb->Info.UserTime;
@@ -1968,7 +1985,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 		pUsage->ru_maxrss = _maxrss;
 		break;
 	}
-	case RUSAGE_CHILDREN:
+	case linux_RUSAGE_CHILDREN:
 	{
 		size_t kTime = 0;
 		size_t uTime = 0;
@@ -1990,7 +2007,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 		pUsage->ru_maxrss = _maxrss;
 		break;
 	}
-	case RUSAGE_THREAD:
+	case linux_RUSAGE_THREAD:
 	{
 		TCB *tcb = thisThread;
 
@@ -2014,37 +2031,31 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/getuid.2.html */
 static uid_t linux_getuid(SysFrm *)
 {
 	return thisProcess->Security.Real.UserID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getgid.2.html */
 static gid_t linux_getgid(SysFrm *)
 {
 	return thisProcess->Security.Real.GroupID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getuid.2.html */
 static uid_t linux_geteuid(SysFrm *)
 {
 	return thisProcess->Security.Effective.UserID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getgid.2.html */
 static gid_t linux_getegid(SysFrm *)
 {
 	return thisProcess->Security.Effective.GroupID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getpid.2.html */
 static pid_t linux_getppid(SysFrm *)
 {
 	return thisProcess->Parent->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getpgid.2.html */
 static pid_t linux_getpgid(SysFrm *, pid_t pid)
 {
 	PCB *pcb = thisProcess;
@@ -2058,7 +2069,6 @@ static pid_t linux_getpgid(SysFrm *, pid_t pid)
 	return target->Security.ProcessGroupID;
 }
 
-/* https://man7.org/linux/man-pages/man2/setpgid.2.html */
 static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 {
 	PCB *pcb = thisProcess;
@@ -2082,7 +2092,6 @@ static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/arch_prctl.2.html */
 static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 {
 	PCB *pcb = thisProcess;
@@ -2093,7 +2102,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 
 	switch (code)
 	{
-	case ARCH_SET_GS:
+	case linux_ARCH_SET_GS:
 	{
 #if defined(a64)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, addr);
@@ -2102,7 +2111,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case ARCH_SET_FS:
+	case linux_ARCH_SET_FS:
 	{
 #if defined(a64)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, addr);
@@ -2111,7 +2120,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case ARCH_GET_FS:
+	case linux_ARCH_GET_FS:
 	{
 #if defined(a64)
 		*r_cst(uint64_t *, addr) =
@@ -2122,7 +2131,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case ARCH_GET_GS:
+	case linux_ARCH_GET_GS:
 	{
 #if defined(a64)
 		*r_cst(uint64_t *, addr) =
@@ -2133,22 +2142,22 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 #endif
 		return 0;
 	}
-	case ARCH_GET_CPUID:
-	case ARCH_SET_CPUID:
-	case ARCH_GET_XCOMP_SUPP:
-	case ARCH_GET_XCOMP_PERM:
-	case ARCH_REQ_XCOMP_PERM:
-	case ARCH_GET_XCOMP_GUEST_PERM:
-	case ARCH_REQ_XCOMP_GUEST_PERM:
-	case ARCH_XCOMP_TILECFG:
-	case ARCH_XCOMP_TILEDATA:
-	case ARCH_MAP_VDSO_X32:
-	case ARCH_MAP_VDSO_32:
-	case ARCH_MAP_VDSO_64:
-	case ARCH_GET_UNTAG_MASK:
-	case ARCH_ENABLE_TAGGED_ADDR:
-	case ARCH_GET_MAX_TAG_BITS:
-	case ARCH_FORCE_TAGGED_SVA:
+	case linux_ARCH_GET_CPUID:
+	case linux_ARCH_SET_CPUID:
+	case linux_ARCH_GET_XCOMP_SUPP:
+	case linux_ARCH_GET_XCOMP_PERM:
+	case linux_ARCH_REQ_XCOMP_PERM:
+	case linux_ARCH_GET_XCOMP_GUEST_PERM:
+	case linux_ARCH_REQ_XCOMP_GUEST_PERM:
+	case linux_ARCH_XCOMP_TILECFG:
+	case linux_ARCH_XCOMP_TILEDATA:
+	case linux_ARCH_MAP_VDSO_X32:
+	case linux_ARCH_MAP_VDSO_32:
+	case linux_ARCH_MAP_VDSO_64:
+	case linux_ARCH_GET_UNTAG_MASK:
+	case linux_ARCH_ENABLE_TAGGED_ADDR:
+	case linux_ARCH_GET_MAX_TAG_BITS:
+	case linux_ARCH_FORCE_TAGGED_SVA:
 	{
 		fixme("Code %#lx not implemented", code);
 		return -ENOSYS;
@@ -2161,14 +2170,13 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	}
 }
 
-/* https://man7.org/linux/man-pages/man2/reboot.2.html */
 static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 {
-	if (magic != LINUX_REBOOT_MAGIC1 ||
-		(magic2 != LINUX_REBOOT_MAGIC2 &&
-		 magic2 != LINUX_REBOOT_MAGIC2A &&
-		 magic2 != LINUX_REBOOT_MAGIC2B &&
-		 magic2 != LINUX_REBOOT_MAGIC2C))
+	if (magic != linux_LINUX_REBOOT_MAGIC1 ||
+		(magic2 != linux_LINUX_REBOOT_MAGIC2 &&
+		 magic2 != linux_LINUX_REBOOT_MAGIC2A &&
+		 magic2 != linux_LINUX_REBOOT_MAGIC2B &&
+		 magic2 != linux_LINUX_REBOOT_MAGIC2C))
 	{
 		warn("Invalid magic %#x %#x", magic, magic2);
 		return -EINVAL;
@@ -2180,7 +2188,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	debug("cmd=%#x arg=%#lx", cmd, arg);
 	switch ((unsigned int)cmd)
 	{
-	case LINUX_REBOOT_CMD_RESTART:
+	case linux_LINUX_REBOOT_CMD_RESTART:
 	{
 		KPrint("Restarting system.");
 
@@ -2190,14 +2198,14 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 			->Rename("Restart");
 		return 0;
 	}
-	case LINUX_REBOOT_CMD_HALT:
+	case linux_LINUX_REBOOT_CMD_HALT:
 	{
 		KPrint("System halted.");
 
 		pcb->GetContext()->Panic();
 		CPU::Stop();
 	}
-	case LINUX_REBOOT_CMD_POWER_OFF:
+	case linux_LINUX_REBOOT_CMD_POWER_OFF:
 	{
 		KPrint("Power down.");
 
@@ -2207,7 +2215,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 			->Rename("Shutdown");
 		return 0;
 	}
-	case LINUX_REBOOT_CMD_RESTART2:
+	case linux_LINUX_REBOOT_CMD_RESTART2:
 	{
 		void *pArg = vma->__UserCheckAndGetAddress(arg, sizeof(void *));
 		if (pArg == nullptr)
@@ -2222,10 +2230,10 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 			->Rename("Restart");
 		break;
 	}
-	case LINUX_REBOOT_CMD_CAD_ON:
-	case LINUX_REBOOT_CMD_CAD_OFF:
-	case LINUX_REBOOT_CMD_SW_SUSPEND:
-	case LINUX_REBOOT_CMD_KEXEC:
+	case linux_LINUX_REBOOT_CMD_CAD_ON:
+	case linux_LINUX_REBOOT_CMD_CAD_OFF:
+	case linux_LINUX_REBOOT_CMD_SW_SUSPEND:
+	case linux_LINUX_REBOOT_CMD_KEXEC:
 	{
 		fixme("cmd %#x not implemented", cmd);
 		return -ENOSYS;
@@ -2239,7 +2247,6 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/sigaction.2.html */
 static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 						   k_sigaction *oldact, size_t sigsetsize)
 {
@@ -2286,7 +2293,7 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 
 	if (pAct)
 	{
-		if (pAct->flags & SA_IMMUTABLE)
+		if (pAct->flags & linux_SA_IMMUTABLE)
 		{
 			warn("Immutable signal %d", signum);
 			return -EINVAL;
@@ -2304,7 +2311,6 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/sigprocmask.2.html */
 static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 							 sigset_t *oldset, size_t sigsetsize)
 {
@@ -2359,19 +2365,16 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/sigreturn.2.html */
 static void linux_sigreturn(SysFrm *sf)
 {
 	thisProcess->Signals.RestoreHandleSignal(sf, thisThread);
 }
 
-/* https://man7.org/linux/man-pages/man2/gettid.2.html */
 static pid_t linux_gettid(SysFrm *)
 {
 	return thisThread->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/tkill.2.html */
 static int linux_tkill(SysFrm *, int tid, int sig)
 {
 	Tasking::TCB *tcb = thisProcess->GetThread(tid);
@@ -2383,7 +2386,6 @@ static int linux_tkill(SysFrm *, int tid, int sig)
 	return tcb->SendSignal(nSig);
 }
 
-/* https://man7.org/linux/man-pages/man2/set_tid_address.2.html */
 static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 {
 	if (tidptr == nullptr)
@@ -2395,7 +2397,6 @@ static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 	return tcb->ID;
 }
 
-/* https://man7.org/linux/man-pages/man2/getdents.2.html */
 static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 								size_t count)
 {
@@ -2409,20 +2410,14 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 		return -EINVAL;
 	}
 
-	vfs::FileDescriptorTable::Fildes &
-		fildes = fdt->GetDescriptor(fd);
-	if (!fildes.Handle)
-	{
-		debug("Invalid fd %d", fd);
-		return -EBADF;
-	}
+	auto it = fdt->FileMap.find(fd);
+	if (it == fdt->FileMap.end())
+		ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-	if (fildes.Handle->node->Type != vfs::NodeType::DIRECTORY)
-	{
-		debug("Invalid node type %d",
-			  fildes.Handle->node->Type);
-		return -ENOTDIR;
-	}
+	vfs::FileDescriptorTable::Fildes &fildes = it->second;
+
+	if (!fildes.Node->IsDirectory())
+		ReturnLogError(-ENOTDIR, "Not a directory");
 
 	auto pDirp = vma->UserCheckAndGetAddress(dirp);
 	if (pDirp == nullptr)
@@ -2433,7 +2428,6 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 	return -ENOSYS;
 }
 
-/* https://man7.org/linux/man-pages/man3/clock_gettime.3.html */
 static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 {
 	static_assert(sizeof(struct timespec) < PAGE_SIZE);
@@ -2448,7 +2442,7 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	/* FIXME: This is not correct? */
 	switch (clockid)
 	{
-	case CLOCK_REALTIME:
+	case linux_CLOCK_REALTIME:
 	{
 		uint64_t time = TimeManager->GetCounter();
 		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
@@ -2457,7 +2451,7 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 			  time, pTp->tv_sec, pTp->tv_nsec);
 		break;
 	}
-	case CLOCK_MONOTONIC:
+	case linux_CLOCK_MONOTONIC:
 	{
 		uint64_t time = TimeManager->GetCounter();
 		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
@@ -2466,16 +2460,16 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 			  time, pTp->tv_sec, pTp->tv_nsec);
 		break;
 	}
-	case CLOCK_PROCESS_CPUTIME_ID:
-	case CLOCK_THREAD_CPUTIME_ID:
-	case CLOCK_MONOTONIC_RAW:
-	case CLOCK_REALTIME_COARSE:
-	case CLOCK_MONOTONIC_COARSE:
-	case CLOCK_BOOTTIME:
-	case CLOCK_REALTIME_ALARM:
-	case CLOCK_BOOTTIME_ALARM:
-	case CLOCK_SGI_CYCLE:
-	case CLOCK_TAI:
+	case linux_CLOCK_PROCESS_CPUTIME_ID:
+	case linux_CLOCK_THREAD_CPUTIME_ID:
+	case linux_CLOCK_MONOTONIC_RAW:
+	case linux_CLOCK_REALTIME_COARSE:
+	case linux_CLOCK_MONOTONIC_COARSE:
+	case linux_CLOCK_BOOTTIME:
+	case linux_CLOCK_REALTIME_ALARM:
+	case linux_CLOCK_BOOTTIME_ALARM:
+	case linux_CLOCK_SGI_CYCLE:
+	case linux_CLOCK_TAI:
 	{
 		fixme("clockid %d is stub", clockid);
 		return -ENOSYS;
@@ -2489,7 +2483,6 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/clock_nanosleep.2.html */
 static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 								 const struct timespec *request,
 								 struct timespec *remain)
@@ -2507,8 +2500,8 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 
 	switch (clockid)
 	{
-	case CLOCK_REALTIME:
-	case CLOCK_MONOTONIC:
+	case linux_CLOCK_REALTIME:
+	case linux_CLOCK_MONOTONIC:
 	{
 		uint64_t time = TimeManager->GetCounter();
 		uint64_t rqTime = pRequest->tv_sec * Time::ConvertUnit(Time::Seconds) +
@@ -2519,16 +2512,16 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 			pcb->GetContext()->Sleep(rqTime - time);
 		break;
 	}
-	case CLOCK_PROCESS_CPUTIME_ID:
-	case CLOCK_THREAD_CPUTIME_ID:
-	case CLOCK_MONOTONIC_RAW:
-	case CLOCK_REALTIME_COARSE:
-	case CLOCK_MONOTONIC_COARSE:
-	case CLOCK_BOOTTIME:
-	case CLOCK_REALTIME_ALARM:
-	case CLOCK_BOOTTIME_ALARM:
-	case CLOCK_SGI_CYCLE:
-	case CLOCK_TAI:
+	case linux_CLOCK_PROCESS_CPUTIME_ID:
+	case linux_CLOCK_THREAD_CPUTIME_ID:
+	case linux_CLOCK_MONOTONIC_RAW:
+	case linux_CLOCK_REALTIME_COARSE:
+	case linux_CLOCK_MONOTONIC_COARSE:
+	case linux_CLOCK_BOOTTIME:
+	case linux_CLOCK_REALTIME_ALARM:
+	case linux_CLOCK_BOOTTIME_ALARM:
+	case linux_CLOCK_SGI_CYCLE:
+	case linux_CLOCK_TAI:
 	{
 		fixme("clockid %d is stub", clockid);
 		return -ENOSYS;
@@ -2542,14 +2535,12 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/exit_group.2.html */
 static __noreturn void linux_exit_group(SysFrm *sf, int status)
 {
 	fixme("status=%d", status);
 	linux_exit(sf, status);
 }
 
-/* https://man7.org/linux/man-pages/man2/tgkill.2.html */
 static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 {
 	Tasking::TCB *tcb = thisProcess->GetThread(tid);
@@ -2577,7 +2568,6 @@ static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 	return tcb->SendSignal(nSig);
 }
 
-/* https://man7.org/linux/man-pages/man2/open.2.html */
 static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mode_t mode)
 {
 	PCB *pcb = thisProcess;
@@ -2591,22 +2581,21 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 	debug("dirfd=%d pathname=%s flags=%#x mode=%#x",
 		  dirfd, pPathname, flags, mode);
 
-	if (dirfd == AT_FDCWD)
+	if (dirfd == linux_AT_FDCWD)
 	{
-		vfs::RefNode *absoluteNode = fs->Open(pPathname, pcb->CurrentWorkingDirectory);
+		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
 		if (!absoluteNode)
 			return -ENOENT;
 
-		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
-		strcpy((char *)absPath, absoluteNode->node->FullPath);
-		delete absoluteNode;
-		int ret = fdt->_open(absPath, flags, mode);
+		const char *absPath = new char[strlen(absoluteNode->Path.c_str()) + 1];
+		strcpy((char *)absPath, absoluteNode->Path.c_str());
+		int ret = fdt->usr_open(absPath, flags, mode);
 		delete[] absPath;
 		return ret;
 	}
 
 	if (!fs->PathIsRelative(pPathname))
-		return fdt->_open(pPathname, flags, mode);
+		return fdt->usr_open(pPathname, flags, mode);
 
 	fixme("dirfd=%d is stub", dirfd);
 	return -ENOSYS;
@@ -2632,37 +2621,33 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 
 	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
 
-	if (dirfd == AT_FDCWD && !fs->PathIsRelative(pPathname))
+	if (dirfd == linux_AT_FDCWD && !fs->PathIsRelative(pPathname))
 	{
-		vfs::RefNode *absoluteNode = fs->Open(pPathname, pcb->CurrentWorkingDirectory);
+		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
 		if (!absoluteNode)
 			return -ENOENT;
 
-		const char *absPath = new char[strlen(absoluteNode->node->FullPath) + 1];
-		strcpy((char *)absPath, absoluteNode->node->FullPath);
-		delete absoluteNode;
+		const char *absPath = new char[strlen(absoluteNode->Path.c_str()) + 1];
+		strcpy((char *)absPath, absoluteNode->Path.c_str());
 		struct kstat nstat = KStatToStat(*pStatbuf);
-		int ret = fdt->_stat(absPath, &nstat);
+		int ret = fdt->usr_stat(absPath, &nstat);
 		*pStatbuf = StatToKStat(nstat);
 		delete[] absPath;
 		return ret;
 	}
 
-	vfs::FileDescriptorTable::Fildes &
-		fildes = fdt->GetDescriptor(dirfd);
-	if (!fildes.Handle)
-	{
-		debug("Invalid fd %d", dirfd);
-		return -EBADF;
-	}
+	auto it = fdt->FileMap.find(dirfd);
+	if (it == fdt->FileMap.end())
+		ReturnLogError(-EBADF, "Invalid fd %d", dirfd);
+
+	vfs::FileDescriptorTable::Fildes &fildes = it->second;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->_stat(pPathname, &nstat);
+	int ret = fdt->usr_stat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
 
-/* https://man7.org/linux/man-pages/man2/pipe2.2.html */
 static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
 {
 	if (flags == 0)
@@ -2680,7 +2665,6 @@ static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
 	return -ENOSYS;
 }
 
-/* https://man7.org/linux/man-pages/man2/getrlimit.2.html */
 static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 						   const struct rlimit *new_limit,
 						   struct rlimit *old_limit)
@@ -2715,40 +2699,40 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 
 	switch (resource)
 	{
-	case RLIMIT_CPU:
-	case RLIMIT_FSIZE:
-	case RLIMIT_DATA:
-	case RLIMIT_STACK:
-	case RLIMIT_CORE:
-	case RLIMIT_RSS:
+	case linux_RLIMIT_CPU:
+	case linux_RLIMIT_FSIZE:
+	case linux_RLIMIT_DATA:
+	case linux_RLIMIT_STACK:
+	case linux_RLIMIT_CORE:
+	case linux_RLIMIT_RSS:
 		goto __stub;
-	case RLIMIT_NPROC:
+	case linux_RLIMIT_NPROC:
 	{
 		if (new_limit)
 			pcb->Limits.Threads = pNewLimit->rlim_max;
 		return 0;
 	}
-	case RLIMIT_NOFILE:
+	case linux_RLIMIT_NOFILE:
 	{
 		if (new_limit)
 			pcb->Limits.OpenFiles = pNewLimit->rlim_max;
 		return 0;
 	}
-	case RLIMIT_MEMLOCK:
+	case linux_RLIMIT_MEMLOCK:
 		goto __stub;
-	case RLIMIT_AS:
+	case linux_RLIMIT_AS:
 	{
 		if (new_limit)
 			pcb->Limits.Memory = pNewLimit->rlim_max;
 		return 0;
 	}
-	case RLIMIT_LOCKS:
-	case RLIMIT_SIGPENDING:
-	case RLIMIT_MSGQUEUE:
-	case RLIMIT_NICE:
-	case RLIMIT_RTPRIO:
-	case RLIMIT_RTTIME:
-	case RLIMIT_NLIMITS:
+	case linux_RLIMIT_LOCKS:
+	case linux_RLIMIT_SIGPENDING:
+	case linux_RLIMIT_MSGQUEUE:
+	case linux_RLIMIT_NICE:
+	case linux_RLIMIT_RTPRIO:
+	case linux_RLIMIT_RTTIME:
+	case linux_RLIMIT_NLIMITS:
 	__stub:
 	{
 		fixme("resource %s(%d) is stub", rlimitStr[resource], resource);
@@ -2764,19 +2748,18 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	return 0;
 }
 
-/* https://man7.org/linux/man-pages/man2/getrandom.2.html */
 static ssize_t linux_getrandom(SysFrm *, void *buf,
 							   size_t buflen, unsigned int flags)
 {
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	if (flags & GRND_NONBLOCK)
+	if (flags & linux_GRND_NONBLOCK)
 		fixme("GRND_NONBLOCK not implemented");
 
-	if (flags & ~(GRND_NONBLOCK |
-				  GRND_RANDOM |
-				  GRND_INSECURE))
+	if (flags & ~(linux_GRND_NONBLOCK |
+				  linux_GRND_RANDOM |
+				  linux_GRND_INSECURE))
 	{
 		warn("Invalid flags %#x", flags);
 		return -EINVAL;
@@ -2786,7 +2769,7 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 	if (pBuf == nullptr)
 		return -EFAULT;
 
-	if (flags & GRND_RANDOM)
+	if (flags & linux_GRND_RANDOM)
 	{
 		uint16_t random;
 		for (size_t i = 0; i < buflen; i++)

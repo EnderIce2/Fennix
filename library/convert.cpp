@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <debug.h>
 #include <cpu.hpp>
+#include <cctype>
 #ifdef DEBUG
 #include <uart.hpp>
 #endif

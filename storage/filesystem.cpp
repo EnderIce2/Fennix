@@ -17,416 +17,217 @@
 
 #include <filesystem.hpp>
 
-#include <smart_ptr.hpp>
 #include <convert.h>
 #include <printf.h>
+#include <rand.hpp>
 #include <cwalk.h>
 
 #include "../kernel.h"
 
-// show debug messages
-// #define DEBUG_FILESYSTEM 1
-
-#ifdef DEBUG_FILESYSTEM
-#define vfsdbg(m, ...) debug(m, ##__VA_ARGS__)
-#else
-#define vfsdbg(m, ...)
-#endif
-
 namespace vfs
 {
-	Node *Virtual::GetNodeFromPath_Unsafe(const char *Path, Node *Parent)
-	{
-		vfsdbg("GetNodeFromPath( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent ? Parent->Name : "(null)");
-
-		if (strcmp(Path, "/") == 0)
-			return FileSystemRoot->Children[0]; // 0 - filesystem root
-
-		if (strcmp(Path, ".") == 0)
-			return Parent;
-
-		if (strcmp(Path, "..") == 0)
-		{
-			if (Parent)
-			{
-				if (Parent->Parent)
-					return Parent->Parent;
-				else
-					return Parent;
-			}
-			else
-				return nullptr;
-		}
-
-		Node *ReturnNode = Parent;
-		bool IsAbsolutePath = cwk_path_is_absolute(Path);
-
-		if (!ReturnNode)
-			ReturnNode = FileSystemRoot->Children[0]; // 0 - filesystem root
-
-		if (IsAbsolutePath)
-			ReturnNode = FileSystemRoot->Children[0]; // 0 - filesystem root
-
-		cwk_segment segment;
-		if (unlikely(!cwk_path_get_first_segment(Path, &segment)))
-		{
-			error("Path doesn't have any segments.");
-			return nullptr;
-		}
-
-		do
-		{
-			char *SegmentName = new char[segment.end - segment.begin + 1];
-			memcpy(SegmentName, segment.begin, segment.end - segment.begin);
-			vfsdbg("GetNodeFromPath()->SegmentName: \"%s\"", SegmentName);
-		GetNodeFromPathNextParent:
-			foreach (auto Child in ReturnNode->Children)
-			{
-				vfsdbg("comparing \"%s\" with \"%s\"",
-					   Child->Name, SegmentName);
-				if (strcmp(Child->Name, SegmentName) == 0)
-				{
-					ReturnNode = Child;
-					goto GetNodeFromPathNextParent;
-				}
-			}
-			delete[] SegmentName;
-		} while (cwk_path_get_next_segment(&segment));
-
-		const char *basename;
-		cwk_path_get_basename(Path, &basename, nullptr);
-		vfsdbg("BaseName: \"%s\" NodeName: \"%s\"",
-			   basename, ReturnNode->Name);
-
-		if (strcmp(basename, ReturnNode->Name) == 0)
-		{
-			vfsdbg("GetNodeFromPath()->\"%s\"", ReturnNode->Name);
-			return ReturnNode;
-		}
-
-		vfsdbg("GetNodeFromPath()->\"(null)\"");
-		return nullptr;
-	}
-
-	Node *Virtual::GetNodeFromPath(const char *Path, Node *Parent)
-	{
-		SmartLock(VirtualLock);
-		return GetNodeFromPath_Unsafe(Path, Parent);
-	}
-
 	bool Virtual::PathIsRelative(const char *Path)
 	{
-		vfsdbg("PathIsRelative( Path: \"%s\" )", Path);
-		bool IsRelative = cwk_path_is_relative(Path);
-		vfsdbg("PathIsRelative()->\"%s\"",
-			   IsRelative ? "true" : "false");
-		return IsRelative;
+		return cwk_path_is_relative(Path);
 	}
 
-	Node *Virtual::GetParent(const char *Path, Node *Parent)
+	dev_t Virtual::EarlyReserveDevice()
 	{
-		vfsdbg("GetParent( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent ? Parent->Name : "(nil)");
-
-		if (Parent)
-		{
-			vfsdbg("GetParent()->\"%s\"", Parent->Name);
-			return Parent;
-		}
-
-		Parent = FileSystemRoot->Children[0];
-
-		size_t length;
-		cwk_path_get_root(Path, &length);
-		if (length > 0)
-		{
-			foreach (auto Child in FileSystemRoot->Children)
-			{
-				if (strcmp(Child->Name, Path) == 0)
-				{
-					Parent = Child;
-					break;
-				}
-			}
-		}
-
-		vfsdbg("GetParent()->\"%s\"", ParentNode->Name);
-		return Parent;
+		RegisterLock.store(true);
+		size_t len = DeviceMap.size();
+		return len;
 	}
 
-	const char *Virtual::NormalizePath(const char *Path, Node *Parent)
+	int Virtual::LateRegisterFileSystem(dev_t Device, FileSystemInfo *fsi, Inode *Root)
 	{
-		assert(Parent != nullptr);
+		auto it = DeviceMap.find(Device);
+		if (it != DeviceMap.end())
+			ReturnLogError(-EEXIST, "Device %d already registered", Device);
 
-		vfsdbg("NormalizePath( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent->Name);
-
-		size_t PathSize = strlen((char *)Path) + 1;
-		char *NormalizedPath = new char[PathSize];
-
-		{
-			Memory::SmartHeap sh(PathSize);
-			memcpy(sh, (char *)Path, PathSize);
-			cwk_path_normalize(sh, NormalizedPath, PathSize);
-		}
-
-		const char *FinalPath;
-		if (cwk_path_is_relative(NormalizedPath))
-		{
-			size_t PathSize = cwk_path_join(Parent->FullPath,
-											NormalizedPath,
-											nullptr, 0);
-
-			FinalPath = new char[PathSize + 1];
-			cwk_path_join(Parent->FullPath, NormalizedPath,
-						  (char *)FinalPath, PathSize + 1);
-
-			delete[] NormalizedPath;
-		}
-		else
-			FinalPath = NormalizedPath;
-
-		vfsdbg("NormalizePath()->\"%s\"", FinalPath);
-		return FinalPath;
-	}
-
-	bool Virtual::PathExists(const char *Path, Node *Parent)
-	{
-		if (isempty((char *)Path))
-		{
-			vfsdbg("PathExists()->PathIsEmpty");
-			return false;
-		}
-
-		if (Parent == nullptr)
-			Parent = FileSystemRoot;
-
-		vfsdbg("PathExists( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent->Name);
-
-		const char *CleanPath = NormalizePath(Path, Parent);
-		bool ret = GetNodeFromPath(CleanPath, Parent) != nullptr;
-		delete[] CleanPath;
-		vfsdbg("PathExists()->\"%s\"",
-			   ret ? "true" : "false");
-		return ret;
-	}
-
-	Node *Virtual::Create(const char *Path, NodeType Type, Node *Parent)
-	{
-		if (isempty((char *)Path))
-			return nullptr;
-
-		SmartLock(VirtualLock);
-		Node *RootNode = FileSystemRoot->Children[0];
-		Node *CurrentParent = this->GetParent(Path, Parent);
-		vfsdbg("Virtual::Create( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent ? Parent->Name : CurrentParent->Name);
-
-		const char *CleanPath = this->NormalizePath(Path, CurrentParent);
-		vfsdbg("CleanPath: \"%s\"", CleanPath);
-
-		VirtualLock.Unlock();
-		if (PathExists(CleanPath, CurrentParent))
-		{
-			error("Path \"%s\" already exists.", CleanPath);
-			goto CreatePathError;
-		}
-		VirtualLock.Lock(__FUNCTION__);
-
-		cwk_segment segment;
-		if (!cwk_path_get_first_segment(CleanPath, &segment))
-		{
-			error("Path doesn't have any segments.");
-			goto CreatePathError;
-		}
-
-		do
-		{
-			char *SegmentName = new char[segment.end - segment.begin + 1];
-			memcpy(SegmentName, segment.begin, segment.end - segment.begin);
-			vfsdbg("SegmentName: \"%s\"", SegmentName);
-
-			auto GetChild = [](const char *Name, Node *Parent)
-			{
-				vfsdbg("GetChild( Name: \"%s\" Parent: \"%s\" )",
-					   Name, Parent->Name);
-
-				if (!Parent)
-				{
-					vfsdbg("GetChild()->nullptr");
-					return (Node *)nullptr;
-				}
-
-				foreach (auto Child in Parent->Children)
-				{
-					if (strcmp(Child->Name, Name) == 0)
-					{
-						vfsdbg("GetChild()->\"%s\"", Child->Name);
-						return Child;
-					}
-				}
-
-				vfsdbg("GetChild()->nullptr (not found)");
-				return (Node *)nullptr;
-			};
-
-			if (Parent)
-			{
-				if (GetChild(SegmentName, RootNode) != nullptr)
-				{
-					RootNode = GetChild(SegmentName, RootNode);
-					delete[] SegmentName;
-					continue;
-				}
-			}
-
-			if (GetChild(SegmentName, CurrentParent) != nullptr)
-				CurrentParent = GetChild(SegmentName, CurrentParent);
-			else
-			{
-				CurrentParent = new Node(CurrentParent,
-										 SegmentName,
-										 NodeType::DIRECTORY);
-			}
-
-			delete[] SegmentName;
-		} while (cwk_path_get_next_segment(&segment));
-
-		CurrentParent->Type = Type;
-		// CurrentParent->FullPath = CleanPath;
-
-		vfsdbg("Virtual::Create()->\"%s\"", CurrentParent->Name);
-#ifdef DEBUG
-		VirtualLock.Unlock();
-		debug("Path created: \"%s\"",
-			  CurrentParent->FullPath);
-		VirtualLock.Lock(__FUNCTION__);
-#endif
-		return CurrentParent;
-
-	CreatePathError:
-		delete[] CleanPath;
-		vfsdbg("Virtual::Create()->nullptr");
-		return nullptr;
-	}
-
-	Node *Virtual::CreateLink(const char *Path, const char *Target, Node *Parent)
-	{
-		Node *node = this->Create(Path, NodeType::SYMLINK, Parent);
-		if (node)
-		{
-			node->Symlink = new char[strlen(Target) + 1];
-			strncpy((char *)node->Symlink,
-					Target,
-					strlen(Target));
-
-			node->SymlinkTarget = node->vFS->GetNodeFromPath(node->Symlink);
-			return node;
-		}
-
-		error("Failed to create link \"%s\" -> \"%s\"",
-			  Path, Target);
-		return nullptr;
-	}
-
-	int Virtual::Delete(const char *Path, bool Recursive, Node *Parent)
-	{
-		vfsdbg("Virtual::Delete( Path: \"%s\" Parent: \"%s\" )",
-			   Path, Parent ? Parent->Name : "(null)");
-
-		if (isempty((char *)Path))
-			return -EINVAL;
-
-		if (Parent == nullptr)
-			Parent = FileSystemRoot;
-
-		const char *CleanPath = this->NormalizePath(Path, Parent);
-		vfsdbg("CleanPath: \"%s\"", CleanPath);
-
-		if (!PathExists(CleanPath, Parent))
-		{
-			vfsdbg("Path \"%s\" doesn't exist.", CleanPath);
-			delete[] CleanPath;
-			return -ENOENT;
-		}
-
-		Node *NodeToDelete = GetNodeFromPath(CleanPath, Parent);
-
-		if (!NodeToDelete->References.empty())
-			fixme("Path \"%s\" is referenced by %d objects.",
-				  CleanPath, NodeToDelete->References.size());
-
-		delete[] CleanPath;
-		delete NodeToDelete;
+		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
+		DeviceMap.insert({Device, fsmi});
+		RegisterLock.store(false);
 		return 0;
 	}
 
-	int Virtual::Delete(Node *Path, bool Recursive, Node *Parent)
+	dev_t Virtual::RegisterFileSystem(FileSystemInfo *fsi, Inode *Root)
 	{
-		return Delete(Path->FullPath, Recursive, Parent);
+		RegisterLock.store(true);
+		size_t len = DeviceMap.size();
+		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
+		DeviceMap.insert({len, fsmi});
+		RegisterLock.store(false);
+		return len;
 	}
 
-	RefNode *Virtual::Open(const char *Path, Node *Parent)
+	int Virtual::UnregisterFileSystem(dev_t Device)
 	{
-		vfsdbg("Opening \"%s\" with parent \"%s\"",
-			   Path, Parent ? Parent->Name : "(null)");
+		auto it = DeviceMap.find(Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(-ENOENT, "Device %d not found", Device);
 
-		if (strcmp(Path, "/") == 0)
-			return FileSystemRoot->CreateReference();
+		if (it->second.fsi->SuperOps.Synchronize)
+			it->second.fsi->SuperOps.Synchronize(it->second.fsi, NULL);
+		if (it->second.fsi->SuperOps.Destroy)
+			it->second.fsi->SuperOps.Destroy(it->second.fsi);
+		DeviceMap.erase(it);
+		return 0;
+	}
 
-		if (!Parent)
-			Parent = FileSystemRoot->Children[0];
+	void Virtual::AddRoot(Inode *Root)
+	{
+		SmartLock(VirtualLock);
+		FileSystemRoots->Children.push_back(Root);
+	}
 
-		if (strcmp(Path, ".") == 0)
-			return Parent->CreateReference();
+	FileNode *Virtual::GetRoot(size_t Index)
+	{
+		if (Index >= FileSystemRoots->Children.size())
+			return nullptr;
 
-		if (strcmp(Path, "..") == 0)
+		Inode *RootNode = FileSystemRoots->Children[Index];
+
+		char rootName[128]{};
+		snprintf(rootName, sizeof(rootName), "root-%ld", Index);
+
+		return this->CreateCacheNode(nullptr, RootNode, rootName, 0);
+	}
+
+	FileNode *Virtual::Create(FileNode *Parent, const char *Name, mode_t Mode)
+	{
+		FileNode *existingNode = this->GetByPath(Name, Parent);
+		if (existingNode != nullptr)
+			ReturnLogError(existingNode, "File %s already exists", Name);
+
+		if (Parent == nullptr)
 		{
-			if (Parent->Parent)
-				return Parent->Parent->CreateReference();
-			else
-				return Parent->CreateReference();
+			assert(thisProcess != nullptr);
+			Parent = thisProcess->Info.RootNode;
 		}
 
-		Node *CurrentParent = this->GetParent(Path, Parent);
-		const char *CleanPath = NormalizePath(Path, CurrentParent);
+		auto it = DeviceMap.find(Parent->Node->Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(nullptr, "Device %d not found", Parent->Node->Device);
 
-		if (PathExists(CleanPath, CurrentParent))
+		Inode *Node = NULL;
+		if (it->second.fsi->Ops.Create == NULL)
+			ReturnLogError(nullptr, "Create not supported for %d", it->first);
+
+		int ret = it->second.fsi->Ops.Create(Parent->Node, Name, Mode, &Node);
+		if (ret < 0)
+			ReturnLogError(nullptr, "Create for %d failed with %d", it->first, ret);
+
+		return this->CreateCacheNode(Parent, Node, Name, Mode);
+	}
+
+	FileNode *Virtual::ForceCreate(FileNode *Parent, const char *Name, mode_t Mode)
+	{
+		fixme("ForceCreate: %s", Name);
+		return this->Create(Parent, Name, Mode);
+	}
+
+	FileNode *Virtual::GetByPath(const char *Path, FileNode *Parent)
+	{
+		FileNode *fn = this->CacheLookup(Path);
+		if (fn)
+			return fn;
+
+		if (Parent == nullptr)
+			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
+
+		auto it = DeviceMap.find(Parent->Node->Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(nullptr, "Device %d not found", Parent->Node->Device);
+
+		struct cwk_segment segment;
+		if (!cwk_path_get_first_segment(Path, &segment))
+			ReturnLogError(nullptr, "Path has no segments");
+
+		Inode *Node = NULL;
+		FileNode *__Parent = Parent;
+		do
 		{
-			Node *node = GetNodeFromPath(CleanPath, CurrentParent);
-			if (node)
+			if (it->second.fsi->Ops.Lookup == NULL)
+				ReturnLogError(nullptr, "Lookup not supported for %d", it->first);
+
+			std::string segmentName(segment.begin, segment.size);
+			int ret = it->second.fsi->Ops.Lookup(__Parent->Node, segmentName.c_str(), &Node);
+			if (ret < 0)
+				ReturnLogError(nullptr, "Lookup for %d failed with %d", it->first, ret);
+			__Parent = this->CreateCacheNode(__Parent, Node, segmentName.c_str(), 0);
+		} while (cwk_path_get_next_segment(&segment));
+
+		FileNode *ret = __Parent;
+		if (!ret->IsDirectory())
+			return ret;
+
+		size_t dirAllocLen = sizeof(struct kdirent) + strlen(Path);
+		struct kdirent *dirent = (struct kdirent *)malloc(dirAllocLen);
+		size_t offset = 2; /* Skip . and .. */
+		while (it->second.fsi->Ops.ReadDir(Node, dirent, dirAllocLen, offset++, 1) > 0)
+		{
+			Inode *ChildNode = NULL;
+			int luRet = it->second.fsi->Ops.Lookup(Node, dirent->d_name, &ChildNode);
+			if (luRet < 0)
 			{
-				delete[] CleanPath;
-				/* TODO: Check if dir or file? */
-				return node->CreateReference();
+				debug("Lookup for %d failed with %d", it->first, luRet);
+				break;
 			}
+
+			this->CreateCacheNode(ret, ChildNode, dirent->d_name, 0);
 		}
-
-		return nullptr;
+		free(dirent);
+		return ret;
 	}
 
-	Node *Virtual::CreateIfNotExists(const char *Path, NodeType Type, Node *Parent)
+	FileNode *Virtual::CreateLink(const char *Path, FileNode *Parent, const char *Target)
 	{
-		Node *node = GetNodeFromPath(Path, Parent);
-		if (node)
-			return node;
-		return Create(Path, Type, Parent);
+		auto it = DeviceMap.find(Parent->Node->Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(nullptr, "Device %d not found", Parent->Node->Device);
+
+		Inode *Node = NULL;
+
+		if (it->second.fsi->Ops.SymLink == NULL)
+			ReturnLogError(nullptr, "SymLink not supported for %d", it->first);
+
+		int ret = it->second.fsi->Ops.SymLink(Parent->Node, Path, Target, &Node);
+		if (ret < 0)
+			ReturnLogError(nullptr, "SymLink for %d failed with %d", it->first, ret);
+		return this->CreateCacheNode(Parent, Node, Path, 0);
 	}
 
-	Virtual::Virtual()
+	FileNode *Virtual::CreateLink(const char *Path, FileNode *Parent, FileNode *Target)
 	{
-		SmartLock(VirtualLock);
-		trace("Initializing virtual file system...");
-		FileSystemRoot = new Node(nullptr, "<root>", NodeType::MOUNTPOINT);
-		FileSystemRoot->vFS = this;
+		return this->CreateLink(Path, Parent, Target->Path.c_str());
 	}
 
-	Virtual::~Virtual()
+	bool Virtual::PathExists(const char *Path, FileNode *Parent)
 	{
-		SmartLock(VirtualLock);
-		stub;
-		/* TODO: sync, cache */
+		FileNode *fn = this->CacheLookup(Path);
+		if (fn)
+			return true;
+
+		FileNode *Node = this->GetByPath(Path, Parent);
+		if (Node)
+			return true;
+		return false;
+	}
+
+	int Virtual::Remove(FileNode *Node)
+	{
+		auto it = DeviceMap.find(Node->Node->Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(-ENODEV, "Device %d not found", Node->Node->Device);
+
+		if (it->second.fsi->Ops.Remove == NULL)
+			ReturnLogError(-ENOTSUP, "Remove not supported for %d", it->first);
+
+		int ret = it->second.fsi->Ops.Remove(Node->Parent->Node, Node->Name.c_str());
+		if (ret < 0)
+			ReturnLogError(ret, "Remove for %d failed with %d", it->first, ret);
+
+		this->RemoveCacheNode(Node);
+		return 0;
 	}
 }

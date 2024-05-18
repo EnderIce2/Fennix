@@ -24,6 +24,7 @@
 #include <memory.hpp>
 #include <debug.h>
 #include <cstring>
+#include <vector>
 
 extern uintptr_t _binary_files_tamsyn_font_1_11_Tamsyn10x20b_psf_end;
 extern uintptr_t _binary_files_tamsyn_font_1_11_Tamsyn10x20b_psf_size;

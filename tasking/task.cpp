@@ -67,7 +67,7 @@ namespace Tasking
 		return ((Scheduler::Base *)Scheduler)->GetThreadByID(ID, Parent);
 	}
 
-	std::list<PCB *> Task::GetProcessList()
+	std::vector<PCB *> Task::GetProcessList()
 	{
 		return ((Scheduler::Base *)Scheduler)->GetProcessList();
 	}

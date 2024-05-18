@@ -44,7 +44,7 @@ namespace Memory
 
 		void InitBrk(uintptr_t Address)
 		{
-			function("%#lx", Address);
+			func("%#lx", Address);
 			HeapStart = Address;
 			Break = Address;
 		}

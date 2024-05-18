@@ -95,15 +95,15 @@ namespace Tasking
 		strcpy((char *)this->Name, name);
 	}
 
-	void PCB::SetWorkingDirectory(vfs::Node *node)
+	void PCB::SetWorkingDirectory(FileNode *node)
 	{
 		trace("Setting working directory of process %s to %#lx (%s)",
-			  this->Name, node, node->Name);
-		CurrentWorkingDirectory = node;
-		Node *cwd = fs->GetNodeFromPath("cwd", this);
+			  this->Name, node, node->Name.c_str());
+		CWD = node;
+		FileNode *cwd = fs->GetByPath("cwd", ProcDirectory);
 		if (cwd)
-			delete cwd;
-		cwd = fs->CreateLink("cwd", node->FullPath, this);
+			fs->Remove(cwd);
+		cwd = fs->CreateLink("cwd", ProcDirectory, node);
 		if (cwd == nullptr)
 			error("Failed to create cwd link");
 	}
@@ -112,11 +112,11 @@ namespace Tasking
 	{
 		trace("Setting exe %s to %s",
 			  this->Name, path);
-		Executable = fs->GetNodeFromPath(path);
-		Node *exe = fs->GetNodeFromPath("exe", this);
+		Executable = fs->GetByPath(path, ProcDirectory);
+		FileNode *exe = fs->GetByPath("exe", ProcDirectory);
 		if (exe)
-			delete exe;
-		exe = fs->CreateLink("exe", Executable->FullPath, this);
+			fs->Remove(exe);
+		exe = fs->CreateLink("exe", ProcDirectory, path);
 		if (exe == nullptr)
 			error("Failed to create exe link");
 	}
@@ -139,8 +139,7 @@ namespace Tasking
 			 TaskExecutionMode ExecutionMode,
 			 bool UseKernelPageTable,
 			 uint16_t UserID, uint16_t GroupID)
-		: Node(ProcFS, std::to_string(ctx->NextPID), NodeType::DIRECTORY),
-		  Signals(this)
+		: Signals(this)
 	{
 		debug("+ %#lx", this);
 
@@ -149,6 +148,18 @@ namespace Tasking
 		assert(strlen(Name) > 0);
 		assert(ExecutionMode >= _ExecuteModeMin);
 		assert(ExecutionMode <= _ExecuteModeMax);
+
+		FileNode *procDir = fs->GetByPath("/proc", nullptr);
+		assert(procDir != nullptr);
+
+		/* d r-x r-x r-x */
+		mode_t mode = S_IROTH | S_IXOTH |
+					  S_IRGRP | S_IXGRP |
+					  S_IRUSR | S_IXUSR |
+					  S_IFDIR;
+
+		ProcDirectory = fs->Create(procDir, std::to_string(ctx->NextPID).c_str(), mode);
+		assert(ProcDirectory != nullptr);
 
 		this->ctx = ctx;
 		this->ID = ctx->NextPID++;
@@ -298,13 +309,10 @@ namespace Tasking
 		delete[] this->Name;
 
 		debug("Removing from parent process");
-		if (this->Parent)
+		if (likely(this->Parent))
 		{
-			std::list<Tasking::PCB *> &pChild = this->Parent->Children;
-
-			pChild.erase(std::find(pChild.begin(),
-								   pChild.end(),
-								   this));
+			this->Parent->Children.erase(std::find(this->Parent->Children.begin(),
+												   this->Parent->Children.end(), this));
 		}
 
 		debug("Process \"%s\"(%d) destroyed",

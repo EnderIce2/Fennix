@@ -128,7 +128,7 @@ namespace NetworkIPv4
 			UNUSED(DestinationIP);
 			UNUSED(Data);
 			UNUSED(Length);
-			warn("Not implemented.");
+			warn("Not implemented");
 			return false;
 		}
 	};

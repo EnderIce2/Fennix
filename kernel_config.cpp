@@ -24,23 +24,6 @@
 
 #include "kernel.h"
 
-// TODO: Implement proper fprintf
-EXTERNC void fprintf(FILE *stream, const char *Format, ...)
-{
-	va_list args;
-	va_start(args, Format);
-	vprintf(Format, args);
-	va_end(args);
-	UNUSED(stream);
-}
-
-// TODO: Implement proper fputs
-EXTERNC void fputs(const char *s, FILE *stream)
-{
-	printf("%s", s);
-	UNUSED(stream);
-}
-
 static struct cag_option ConfigOptions[] = {
 	{.identifier = 'a',
 	 .access_letters = "aA",

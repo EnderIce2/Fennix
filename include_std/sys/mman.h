@@ -18,7 +18,7 @@
 #pragma once
 #include <types.h>
 
-/* stubs */
+/* stubs for rpmalloc.c */
 
 #ifndef MAP_PRIVATE
 #define MAP_PRIVATE 0x0

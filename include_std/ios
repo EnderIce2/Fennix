@@ -1,0 +1,286 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <system_error>
+#include <string>
+#include <vector>
+#include <locale>
+
+#ifdef in
+#undef in
+#endif /* deprecated macro in */
+
+namespace std
+{
+	enum class io_errc
+	{
+		stream = 1,
+	};
+
+	typedef long long streamsize;
+
+	class ios_base
+	{
+	public:
+#pragma region Member types and constants
+
+		typedef int openmode;
+		static constexpr openmode app = 1;
+		static constexpr openmode binary = 2;
+		static constexpr openmode in = 4;
+		static constexpr openmode out = 8;
+		static constexpr openmode trunc = 16;
+		static constexpr openmode ate = 32;
+		static constexpr openmode noreplace = 64;
+
+		typedef int fmtflags;
+		static constexpr fmtflags dec = 1;
+		static constexpr fmtflags oct = 2;
+		static constexpr fmtflags hex = 4;
+		static constexpr fmtflags basefield = dec | oct | hex;
+
+		static constexpr fmtflags left = 1;
+		static constexpr fmtflags right = 2;
+		static constexpr fmtflags internal = 4;
+		static constexpr fmtflags adjustfield = left | right | internal;
+
+		static constexpr fmtflags scientific = 1;
+		static constexpr fmtflags fixed = 2;
+		static constexpr fmtflags floatfield = scientific | fixed;
+
+		static constexpr fmtflags boolalpha = 1;
+		static constexpr fmtflags showbase = 2;
+		static constexpr fmtflags showpoint = 4;
+		static constexpr fmtflags showpos = 8;
+		static constexpr fmtflags skipws = 16;
+		static constexpr fmtflags unitbuf = 32;
+		static constexpr fmtflags uppercase = 64;
+
+		typedef int iostate;
+		static constexpr iostate goodbit = 0;
+		static constexpr iostate badbit = 1;
+		static constexpr iostate failbit = 2;
+		static constexpr iostate eofbit = 4;
+
+		typedef int seekdir;
+		static constexpr seekdir beg = 0;
+		static constexpr seekdir end = 1;
+		static constexpr seekdir cur = 2;
+
+		enum event
+		{
+			erase_event,
+			imbue_event,
+			copyfmt_event
+		};
+
+		typedef void (*event_callback)(event type, ios_base &ios, int index);
+
+#pragma endregion Member types and constants
+
+#pragma region Member Functions
+
+	protected:
+		ios_base();
+
+	public:
+		ios_base(const ios_base &) = delete;
+		virtual ~ios_base() = default;
+		ios_base &operator=(const ios_base &) = delete;
+
+#pragma endregion Member Functions
+
+#pragma region Formatting
+
+		fmtflags flags() const
+		{
+			return _flags;
+		}
+
+		fmtflags flags(fmtflags flags)
+		{
+			fmtflags old = _flags;
+			_flags = flags;
+			return old;
+		}
+
+		fmtflags setf(fmtflags flags)
+		{
+			fmtflags old = _flags;
+			_flags |= flags;
+			return old;
+		}
+
+		fmtflags setf(fmtflags flags, fmtflags mask)
+		{
+			fmtflags old = _flags;
+			_flags &= ~mask;
+			_flags |= flags;
+			return old;
+		}
+
+		void unsetf(fmtflags flags)
+		{
+			_flags &= ~flags;
+		}
+
+		streamsize precision() const
+		{
+			return _precision;
+		}
+
+		streamsize precision(streamsize new_precision)
+		{
+			streamsize old = _precision;
+			_precision = new_precision;
+			return old;
+		}
+
+		streamsize width() const
+		{
+			return _width;
+		}
+
+		streamsize width(streamsize new_width)
+		{
+			streamsize old = _width;
+			_width = new_width;
+			return old;
+		}
+
+#pragma endregion Formatting
+
+#pragma region Locales
+
+		std::locale imbue(const std::locale &loc)
+		{
+			std::locale old = _loc;
+			_loc = loc;
+			__call_event(imbue_event, *this, 0);
+			return old;
+		}
+
+		std::locale getloc() const
+		{
+			return _loc;
+		}
+
+#pragma endregion Locales
+
+#pragma region Internal Extensible Array
+
+		static int xalloc()
+		{
+			static int index = 0;
+			return index++;
+		}
+
+		long &iword(int index)
+		{
+			static std::vector<long> iwords;
+			if ((size_t)index >= iwords.size())
+				iwords.resize(index + 1);
+			return iwords[index];
+		}
+
+		void *&pword(int index)
+		{
+			static std::vector<void *> pwords;
+			if ((size_t)index >= pwords.size())
+				pwords.resize(index + 1);
+			return pwords[index];
+		}
+
+#pragma endregion Internal Extensible Array
+
+#pragma region Miscellaneous
+
+		void register_callback(event_callback function, int index)
+		{
+			_event_callback = function;
+			__call_event(imbue_event, *this, index);
+		}
+
+		static bool sync_with_stdio(bool sync = true)
+		{
+			return false;
+		}
+
+#pragma endregion Miscellaneous
+
+#pragma region Member Classes
+
+		class failure
+		{
+		public:
+			explicit failure(const std::string &message, const std::error_code &ec = std::io_errc::stream)
+			{
+			}
+
+			explicit failure(const char *message, const std::error_code &ec = std::io_errc::stream)
+			{
+			}
+
+			failure(const failure &other) noexcept
+			{
+			}
+
+			failure &operator=(const failure &other) noexcept
+			{
+				return *this;
+			}
+
+			virtual const char *what() const noexcept
+			{
+				return nullptr;
+			}
+		};
+
+		class Init
+		{
+		public:
+			Init() = default;
+			~Init() = default;
+		};
+
+#pragma endregion Member Classes
+
+	private:
+		fmtflags _flags = skipws;
+		streamsize _precision = 6;
+		streamsize _width = 0;
+		std::locale _loc = std::locale::classic();
+
+		static event_callback _event_callback;
+
+		static void __call_event(event type, ios_base &ios, int index)
+		{
+			if (_event_callback)
+				_event_callback(type, ios, index);
+		}
+	};
+
+	template <class CharT, class Traits = std::char_traits<CharT>>
+	class basic_ios : public std::ios_base
+	{
+	};
+
+	typedef basic_ios<char> ios;
+	typedef basic_ios<wchar_t> wios;
+}

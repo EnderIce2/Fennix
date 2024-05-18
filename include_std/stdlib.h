@@ -15,7 +15,27 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _STDLIB_H
-#define _STDLIB_H
+#ifndef __FENNIX_KERNEL_STDLIB_H__
+#define __FENNIX_KERNEL_STDLIB_H__
 
-#endif // !_STDLIB_H
+#include <types.h>
+
+START_EXTERNC
+
+#ifndef __FENNIX_KERNEL_INTERNAL_MEMORY_H__
+
+void *malloc(size_t Size);
+void *calloc(size_t n, size_t Size);
+void *realloc(void *Address, size_t Size);
+void free(void *Address);
+
+#endif // !__FENNIX_KERNEL_INTERNAL_MEMORY_H__
+
+void abort();
+
+#define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
+
+END_EXTERNC
+
+#endif // !__FENNIX_KERNEL_STDLIB_H__

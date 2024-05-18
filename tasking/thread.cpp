@@ -579,13 +579,31 @@ namespace Tasking
 
 		this->Info.Architecture = Architecture;
 		this->Info.Compatibility = Compatibility;
-		this->Security.ExecutionMode =
-			this->Parent->Security.ExecutionMode;
+		this->Security.ExecutionMode = this->Parent->Security.ExecutionMode;
+
+		switch (Compatibility)
+		{
+		case TaskCompatibility::Native:
+			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[0];
+			break;
+		case TaskCompatibility::Linux:
+			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[1];
+			break;
+		case TaskCompatibility::Windows:
+			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[2];
+			break;
+		default:
+			assert(!"Invalid compatibility mode");
+			break;
+		}
+		/* FIXME */
+		this->Info.RootNode = fs->GetRoot(0);
 
 		if (this->Parent->Threads.size() == 0)
 		{
 			this->Parent->Info.Architecture = this->Info.Architecture;
 			this->Parent->Info.Compatibility = this->Info.Compatibility;
+			this->Parent->Info.RootNode = this->Info.RootNode;
 		}
 
 		// TODO: Is really a good idea to use the FPU in kernel mode?
@@ -647,10 +665,9 @@ namespace Tasking
 
 		/* Remove us from the process list so we
 			don't get scheduled anymore */
-		std::list<Tasking::TCB *> &Threads = this->Parent->Threads;
-		Threads.erase(std::find(Threads.begin(),
-								Threads.end(),
-								this));
+		this->Parent->Threads.erase(std::find(this->Parent->Threads.begin(),
+											  this->Parent->Threads.end(),
+											  this));
 
 		/* Free CPU Stack */
 		delete this->Stack;

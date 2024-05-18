@@ -17,6 +17,7 @@
 
 #pragma once
 #include <types.h>
+#include <ctype.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -31,11 +32,7 @@ extern "C"
 
 #define NAN (__builtin_nanf(""))
 
-	int isdigit(int c);
-	int isspace(int c);
 	int isempty(char *str);
-	int isalpha(int c);
-	int isupper(int c);
 	unsigned int isdelim(char c, const char *delim);
 	long abs(long i);
 	void swap(char *x, char *y);

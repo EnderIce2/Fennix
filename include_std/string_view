@@ -1,0 +1,62 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <string>
+#include <ostream>
+
+namespace std
+{
+	typedef basic_string_view<char> string_view;
+	typedef basic_string_view<wchar_t> wstring_view;
+	typedef basic_string_view<char8_t> u8string_view;
+	typedef basic_string_view<char16_t> u16string_view;
+	typedef basic_string_view<char32_t> u32string_view;
+
+	template <class CharT, class Traits>
+	std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os, std::basic_string_view<CharT, Traits> v)
+	{
+		os.write(v.data(), v.size());
+		return os;
+	}
+
+	constexpr std::string_view operator""sv(const char *str, std::size_t len) noexcept
+	{
+		return std::string_view{str, len};
+	}
+
+	constexpr std::u8string_view operator""sv(const char8_t *str, std::size_t len) noexcept
+	{
+		return std::u8string_view{str, len};
+	}
+
+	constexpr std::u16string_view operator""sv(const char16_t *str, std::size_t len) noexcept
+	{
+		return std::u16string_view{str, len};
+	}
+
+	constexpr std::u32string_view operator""sv(const char32_t *str, std::size_t len) noexcept
+	{
+		return std::u32string_view{str, len};
+	}
+
+	constexpr std::wstring_view operator""sv(const wchar_t *str, std::size_t len) noexcept
+	{
+		return std::wstring_view{str, len};
+	}
+}

@@ -19,13 +19,12 @@
 
 #include <types.h>
 #include <filesystem/ioctl.hpp>
+#include <interface/syscalls.h>
 #include <memory/macro.hpp>
 #include <memory/vma.hpp>
+#include <filesystem.hpp>
 #include <assert.h>
 #include <debug.h>
-
-#include <filesystem.hpp>
-#include "../syscalls.h"
 
 /* static assert, no constructor needed */
 
@@ -51,9 +50,6 @@
 #error "This compiler is not supported!"
 #endif // __fennix__
 
-static_assert(sc_SEEK_SET == SEEK_SET);
-static_assert(sc_SEEK_CUR == SEEK_CUR);
-static_assert(sc_SEEK_END == SEEK_END);
 static_assert(TIOCGPTN == 0x80045430);
 static_assert(TIOCSPTLCK == 0x40045431);
 

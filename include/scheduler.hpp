@@ -58,12 +58,12 @@ namespace Tasking::Scheduler
 			assert(!"GetProcessByID not implemented");
 		}
 
-		virtual TCB *GetThreadByID(TID ID, PCB* Parent)
+		virtual TCB *GetThreadByID(TID ID, PCB *Parent)
 		{
 			assert(!"GetThreadByID not implemented");
 		}
 
-		virtual std::list<PCB *> &GetProcessList()
+		virtual std::vector<PCB *> &GetProcessList()
 		{
 			assert(!"GetProcessList not implemented");
 		}
@@ -111,7 +111,7 @@ namespace Tasking::Scheduler
 		NewLock(SchedulerLock);
 
 	public:
-		std::list<PCB *> ProcessList;
+		std::vector<PCB *> ProcessList;
 
 		PCB *IdleProcess = nullptr;
 		TCB *IdleThread = nullptr;
@@ -119,8 +119,8 @@ namespace Tasking::Scheduler
 		bool RemoveThread(TCB *tcb) final;
 		bool RemoveProcess(PCB *pcb) final;
 		PCB *GetProcessByID(TID ID) final;
-		TCB *GetThreadByID(TID ID, PCB* Parent) final;
-		std::list<PCB *> &GetProcessList() final;
+		TCB *GetThreadByID(TID ID, PCB *Parent) final;
+		std::vector<PCB *> &GetProcessList() final;
 		void StartIdleProcess() final;
 		void StartScheduler() final;
 		void Yield() final;

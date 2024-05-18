@@ -26,16 +26,22 @@ namespace std
 	{
 	public:
 		exception() noexcept {}
-		virtual ~exception() noexcept;
-		exception(const exception &) = default;
-		exception &operator=(const exception &) = default;
-		exception(exception &&) = default;
-		exception &operator=(exception &&) = default;
-
-		virtual const char *what() const noexcept;
+		exception(const exception &) noexcept = default;
+		virtual ~exception() noexcept = default;
+		exception &operator=(const exception &) noexcept = default;
+		virtual const char *what() const noexcept { return "Exception"; }
 	};
 
 	typedef void (*terminate_handler)();
+	typedef void (*unexpected_handler)();
+
+	[[noreturn]] void terminate() noexcept;
+	std::terminate_handler set_terminate(std::terminate_handler f) noexcept;
+	std::terminate_handler get_terminate() noexcept;
+
+	[[noreturn]] void unexpected();
+	std::unexpected_handler set_unexpected(std::unexpected_handler f) noexcept;
+	std::unexpected_handler get_unexpected() noexcept;
 }
 
 #endif // !__FENNIX_KERNEL_EXCEPTION_H__

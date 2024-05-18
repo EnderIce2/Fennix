@@ -23,9 +23,9 @@
 #include <boot/binfo.h>
 #include <bitmap.hpp>
 #include <lock.hpp>
-#include <std.hpp>
-#include <atomic>
 #include <cstddef>
+#include <atomic>
+#include <new>
 #endif // __cplusplus
 #include <types.h>
 
@@ -53,7 +53,7 @@ namespace Memory
 
 		/**
 		 * @warning Not working as expected.
-		 * 
+		 *
 		 * FIXME: This allocator is not working as expected.
 		 */
 		rpmalloc_,
@@ -73,23 +73,19 @@ namespace Memory
 void InitializeMemoryManagement();
 void CreatePageTable(Memory::PageTable *pt);
 
-void *operator new(std::size_t Size);
-void *operator new[](std::size_t Size);
-void *operator new(std::size_t Size, std::align_val_t Alignment);
-void operator delete(void *Pointer);
-void operator delete[](void *Pointer);
-void operator delete(void *Pointer, long unsigned int Size);
-void operator delete[](void *Pointer, long unsigned int Size);
-
 extern Memory::Physical KernelAllocator;
 extern Memory::PageTable *KernelPageTable;
 
 #endif // __cplusplus
 
+#ifndef __FENNIX_KERNEL_STDLIB_H__
+
 EXTERNC void *malloc(size_t Size);
 EXTERNC void *calloc(size_t n, size_t Size);
 EXTERNC void *realloc(void *Address, size_t Size);
 EXTERNC void free(void *Address);
+
+#endif // !__FENNIX_KERNEL_STDLIB_H__
 
 #define kmalloc(Size) malloc(Size)
 #define kcalloc(n, Size) calloc(n, Size)

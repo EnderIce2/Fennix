@@ -48,7 +48,8 @@ namespace NetworkICMPv4
 			Packet->Header.Type = ICMPv4Type::TYPE_ECHO_REPLY;
 			Packet->Header.Code = 0x0;
 			Packet->Header.Checksum = CalculateChecksum((uint16_t *)Packet, sizeof(ICMPHeader));
-			NIManager->Send(this->Interface, (uint8_t *)Packet, sizeof(ICMPHeader) + 0);
+			// NIManager->Send(this->Interface, (uint8_t *)Packet, sizeof(ICMPHeader) + 0);
+			assert(!"Function not implemented");
 		}
 		else
 		{

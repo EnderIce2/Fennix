@@ -35,15 +35,12 @@ namespace Execute
 			  Tasking::TaskCompatibility Compatibility,
 			  bool Critical)
 	{
-		vfs::RefNode *fd = fs->Open(Path);
+		FileNode *fd = fs->GetByPath(Path, nullptr);
 		if (fd == nullptr)
 			return -ENOENT;
 
-		if (fd->node->Type == vfs::NodeType::DIRECTORY)
-		{
-			delete fd;
-			return -EISDIR;
-		}
+		if (!fd->IsRegularFile())
+			return -ENOEXEC;
 
 		switch (GetBinaryType(Path))
 		{
@@ -53,7 +50,7 @@ namespace Execute
 			const char *BaseName;
 			cwk_path_get_basename(Path, &BaseName, nullptr);
 			Elf32_Ehdr ELFHeader;
-			fd->read((uint8_t *)&ELFHeader, sizeof(Elf32_Ehdr));
+			fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
 
 			switch (ELFHeader.e_machine)
 			{
@@ -119,22 +116,20 @@ namespace Execute
 				if (Parent == nullptr)
 					Parent = thisProcess;
 
-				Process = TaskManager->CreateProcess(Parent,
-													 BaseName,
+				Process = TaskManager->CreateProcess(Parent, BaseName,
 													 TaskExecutionMode::User,
 													 false, 0, 0);
 				Process->Info.Compatibility = Compatibility;
 				Process->Info.Architecture = Arch;
 			}
 
-			Process->SetWorkingDirectory(fs->GetNodeFromPath(Path)->Parent);
+			Process->SetWorkingDirectory(fs->GetByPath(Path, nullptr)->Parent);
 			Process->SetExe(Path);
 
 			ELFObject *obj = new ELFObject(Path, Process, argv, envp);
 			if (!obj->IsValid)
 			{
 				error("Failed to load ELF object");
-				delete fd;
 				delete Process;
 				return -ENOEXEC;
 			}
@@ -142,23 +137,20 @@ namespace Execute
 			vfs::FileDescriptorTable *pfdt = Parent->FileDescriptors;
 			vfs::FileDescriptorTable *fdt = Process->FileDescriptors;
 
-			auto ForkStdio = [pfdt, fdt](Node *SearchNode)
+			auto ForkStdio = [pfdt, fdt](FileNode *SearchNode)
 			{
 				if (unlikely(SearchNode == nullptr))
 					return false;
 
-				std::vector<FileDescriptorTable::Fildes>
-					pfds = pfdt->GetFileDescriptors();
-
-				foreach (auto ffd in pfds)
+				foreach (const auto &ffd in pfdt->FileMap)
 				{
-					if (ffd.Flags & O_CLOEXEC)
+					if (ffd.second.Flags & O_CLOEXEC)
 						continue;
 
-					if (ffd.Handle->node == SearchNode)
+					if (ffd.second.Node == SearchNode)
 					{
-						fdt->_open(ffd.Handle->node->FullPath,
-								   ffd.Flags, ffd.Mode);
+						fdt->usr_open(ffd.second.Node->Path.c_str(),
+									  ffd.second.Flags, ffd.second.Mode);
 						return true;
 					}
 				}
@@ -166,37 +158,31 @@ namespace Execute
 			};
 
 			if (!ForkStdio(Parent->stdin))
-				fdt->_open("/dev/kcon", O_RDWR, 0666);
+				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			if (!ForkStdio(Parent->stdout))
-				fdt->_open("/dev/kcon", O_RDWR, 0666);
+				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			if (!ForkStdio(Parent->stderr))
-				fdt->_open("/dev/kcon", O_RDWR, 0666);
+				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			TCB *Thread = nullptr;
 			{
 				CriticalSection cs;
-				Thread = TaskManager->CreateThread(Process,
-												   obj->InstructionPointer,
+				Thread = TaskManager->CreateThread(Process, obj->InstructionPointer,
 												   obj->argv, obj->envp, obj->auxv,
-												   Arch,
-												   Compatibility);
+												   Arch, Compatibility);
 				Thread->SetCritical(Critical);
 			}
-			delete fd;
 			return Thread->ID;
 		}
 		default:
 		{
-			debug("Unknown binary type: %d",
-				  GetBinaryType(Path));
-			delete fd;
+			debug("Unknown binary type: %d", GetBinaryType(Path));
 			return -ENOEXEC;
 		}
 		}
 
-		delete fd;
 		return -ENOEXEC;
 	}
 }

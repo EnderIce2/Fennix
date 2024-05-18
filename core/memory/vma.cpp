@@ -36,9 +36,9 @@ namespace Memory
 
 	void *VirtualMemoryArea::RequestPages(size_t Count, bool User, bool Protect)
 	{
-		function("%lld, %s, %s", Count,
-				 User ? "true" : "false",
-				 Protect ? "true" : "false");
+		func("%lld, %s, %s", Count,
+			 User ? "true" : "false",
+			 Protect ? "true" : "false");
 
 		void *Address = KernelAllocator.RequestPages(Count);
 		memset(Address, 0, Count * PAGE_SIZE);
@@ -61,7 +61,7 @@ namespace Memory
 
 	void VirtualMemoryArea::FreePages(void *Address, size_t Count)
 	{
-		function("%#lx, %lld", Address, Count);
+		func("%#lx, %lld", Address, Count);
 
 		SmartLock(MgrLock);
 		forItr(itr, AllocatedPagesList)
@@ -104,7 +104,7 @@ namespace Memory
 
 	void VirtualMemoryArea::DetachAddress(void *Address)
 	{
-		function("%#lx", Address);
+		func("%#lx", Address);
 
 		SmartLock(MgrLock);
 		forItr(itr, AllocatedPagesList)
@@ -128,12 +128,12 @@ namespace Memory
 											 bool Read, bool Write, bool Exec,
 											 bool Fixed, bool Shared)
 	{
-		function("%#lx, %lld, %s, %s, %s, %s, %s", Address, Length,
-				 Read ? "true" : "false",
-				 Write ? "true" : "false",
-				 Exec ? "true" : "false",
-				 Fixed ? "true" : "false",
-				 Shared ? "true" : "false");
+		func("%#lx, %lld, %s, %s, %s, %s, %s", Address, Length,
+			 Read ? "true" : "false",
+			 Write ? "true" : "false",
+			 Exec ? "true" : "false",
+			 Fixed ? "true" : "false",
+			 Shared ? "true" : "false");
 
 		Virtual vmm(this->Table);
 
@@ -191,7 +191,7 @@ namespace Memory
 
 	bool VirtualMemoryArea::HandleCoW(uintptr_t PFA)
 	{
-		function("%#lx", PFA);
+		func("%#lx", PFA);
 		Virtual vmm(this->Table);
 		PageTableEntry *pte = vmm.GetPTE((void *)PFA);
 
@@ -269,7 +269,7 @@ namespace Memory
 
 	void VirtualMemoryArea::Fork(VirtualMemoryArea *Parent)
 	{
-		function("%#lx", Parent);
+		func("%#lx", Parent);
 		assert(Parent);
 
 		debug("parent apl:%d sr:%d [P:%#lx C:%#lx]",

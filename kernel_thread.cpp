@@ -30,13 +30,6 @@
 #include <vm.hpp>
 #include <vector>
 
-using vfs::Node;
-using vfs::NodeType;
-
-Disk::Manager *DiskManager = nullptr;
-Driver::Manager *DriverManager = nullptr;
-NetworkInterfaceManager::NetworkInterface *NIManager = nullptr;
-
 int SpawnInit()
 {
 	const char *envp[5] = {
@@ -69,9 +62,8 @@ void KernelMainThread()
 	// TaskManager->CreateThread(thisProcess, Tasking::IP(tasking_test_mutex));
 	// ilp;
 	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr));
-	TaskManager->CreateThread(thisProcess, Tasking::IP(lsof));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskHeartbeat));
-	TreeFS(fs->GetRootNode(), 0);
+	TreeFS(fs->GetRoot(0), 0);
 #endif
 
 	KPrint("Kernel Compiled at: %s %s with C++ Standard: %d",
@@ -81,28 +73,12 @@ void KernelMainThread()
 	if (IsVirtualizedEnvironment())
 		KPrint("Running in a virtualized environment");
 
-	KPrint("Initializing Disk Manager");
-	DiskManager = new Disk::Manager;
+	KPrint("Initializing Driver Manager");
+	DriverManager = new Driver::Manager;
 
 	KPrint("Loading Drivers");
-	DriverManager = new Driver::Manager;
+	DriverManager->PreloadDrivers();
 	DriverManager->LoadAllDrivers();
-
-	// KPrint("Fetching Disks");
-	/* KernelCallback */
-	// if (DriverManager->GetModules().size() > 0)
-	// {
-	// 	foreach (auto mod in DriverManager->GetModules())
-	// 		if (((FexExtended *)mod.ExtendedHeaderAddress)->Driver.Type == FexDriverType::FexDriverType_Storage)
-	// 			DiskManager->FetchDisks(mod.modUniqueID);
-	// }
-	// else
-	// 	KPrint("\eE85230No disk driver found! Cannot fetch disks!");
-
-	// KPrint("Initializing Network Interface Manager");
-	// NIManager = new NetworkInterfaceManager::NetworkInterface;
-	// KPrint("Starting Network Interface Manager");
-	// NIManager->StartService();
 
 #ifdef DEBUG
 	// TaskManager->CreateThread(thisProcess,

@@ -94,6 +94,25 @@ public:
 	~spin_lock() = default;
 };
 
+class __sl_guard
+{
+private:
+	spin_lock &sl;
+
+public:
+	__sl_guard(spin_lock &sl, const char *FunctionName) : sl(sl)
+	{
+		this->sl.lock(FunctionName);
+	}
+
+	~__sl_guard()
+	{
+		this->sl.unlock();
+	}
+};
+
+#define sl_guard(sl) __sl_guard CONCAT(sl_guard_, __COUNTER__)(sl, __FUNCTION__)
+
 /** @brief Please use this macro to create a new smart lock. */
 class SmartLockClass
 {

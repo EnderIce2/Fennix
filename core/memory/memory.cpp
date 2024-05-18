@@ -427,7 +427,11 @@ NIF void InitializeMemoryManagement()
 
 void *malloc(size_t Size)
 {
-	assert(Size > 0);
+	if (Size == 0)
+	{
+		warn("Attempt to allocate 0 bytes");
+		Size = 16;
+	}
 
 	memdbg("malloc(%d)->[%s]", Size,
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
@@ -474,7 +478,11 @@ void *malloc(size_t Size)
 
 void *calloc(size_t n, size_t Size)
 {
-	assert(Size > 0);
+	if (Size == 0)
+	{
+		warn("Attempt to allocate 0 bytes");
+		Size = 16;
+	}
 
 	memdbg("calloc(%d, %d)->[%s]", n, Size,
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
@@ -521,7 +529,11 @@ void *calloc(size_t n, size_t Size)
 
 void *realloc(void *Address, size_t Size)
 {
-	assert(Size > 0);
+	if (Size == 0)
+	{
+		warn("Attempt to allocate 0 bytes");
+		Size = 16;
+	}
 
 	memdbg("realloc(%#lx, %d)->[%s]", Address, Size,
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
@@ -568,7 +580,11 @@ void *realloc(void *Address, size_t Size)
 
 void free(void *Address)
 {
-	assert(Address != nullptr);
+	if (Address == nullptr)
+	{
+		warn("Attempt to free a null pointer");
+		return;
+	}
 
 	memdbg("free(%#lx)->[%s]", Address,
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
@@ -608,106 +624,4 @@ void free(void *Address)
 		CPU::Stop();
 	}
 	}
-}
-
-void *operator new(std::size_t Size)
-{
-	assert(Size > 0);
-
-	memdbg("new(%d)->[%s]", Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	void *ret = malloc(Size);
-	return ret;
-}
-
-void *operator new[](std::size_t Size)
-{
-	assert(Size > 0);
-
-	memdbg("new[](%d)->[%s]", Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	void *ret = malloc(Size);
-	return ret;
-}
-
-void *operator new(std::size_t Size, std::align_val_t Alignment)
-{
-	assert(Size > 0);
-
-	memdbg("new(%d, %d)->[%s]", Size, Alignment,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	fixme("operator new with alignment(%#lx) is not implemented",
-		  Alignment);
-
-	void *ret = malloc(Size);
-	return ret;
-}
-
-void operator delete(void *Pointer)
-{
-	assert(Pointer != nullptr);
-
-	memdbg("delete(%#lx)->[%s]", Pointer,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	free(Pointer);
-}
-
-void operator delete[](void *Pointer)
-{
-	assert(Pointer != nullptr);
-
-	memdbg("delete[](%#lx)->[%s]", Pointer,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	free(Pointer);
-}
-
-void operator delete(void *Pointer, long unsigned int Size)
-{
-	assert(Pointer != nullptr);
-	assert(Size > 0);
-
-	memdbg("delete(%#lx, %d)->[%s]",
-		   Pointer, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	free(Pointer);
-}
-
-void operator delete[](void *Pointer, long unsigned int Size)
-{
-	assert(Pointer != nullptr);
-	assert(Size > 0);
-
-	memdbg("delete[](%#lx, %d)->[%s]",
-		   Pointer, Size,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	free(Pointer);
-}
-
-void operator delete(void *Pointer, unsigned long Size, std::align_val_t Alignment)
-{
-	assert(Pointer != nullptr);
-	assert(Size > 0);
-
-	memdbg("delete(%#lx, %d, %d)->[%s]",
-		   Pointer, Size, Alignment,
-		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
-							 : "Unknown");
-
-	fixme("operator delete with alignment is not implemented");
-
-	free(Pointer);
 }

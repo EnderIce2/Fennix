@@ -20,184 +20,53 @@
 
 #include <types.h>
 
-#include <filesystem/termios.hpp>
 #include <filesystem.hpp>
 #include <bitmap.hpp>
-#include <task.hpp>
+#include <termios.h>
 #include <lock.hpp>
 #include <vector>
 
 namespace vfs
 {
-	class vfsRoot : public Node
-	{
-	public:
-		vfsRoot(const char *Name, Virtual *vfs_ctx);
-		~vfsRoot() {}
-	};
-
-	class NullDevice : public Node
-	{
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset) final;
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-
-		NullDevice();
-		~NullDevice();
-	};
-
-	class RandomDevice : public Node
-	{
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset) final;
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-
-		RandomDevice();
-		~RandomDevice();
-	};
-
-	class ZeroDevice : public Node
-	{
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset) final;
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-
-		ZeroDevice();
-		~ZeroDevice();
-	};
-
-	class KConDevice : public Node
-	{
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset) final;
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-		int ioctl(unsigned long Request,
-				  void *Argp) final;
-
-		termios term{};
-		winsize termSize{};
-
-		KConDevice();
-		~KConDevice();
-	};
-
-	class TTYDevice : public Node
-	{
-	public:
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-		int ioctl(unsigned long Request,
-				  void *Argp) final;
-
-		TTYDevice();
-		~TTYDevice();
-	};
-
-	class MasterPTY
-	{
-		NewLock(PTYLock);
-
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset);
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset);
-
-		MasterPTY();
-		~MasterPTY();
-	};
-
-	class SlavePTY
-	{
-		NewLock(PTYLock);
-
-	public:
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset);
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset);
-
-		SlavePTY();
-		~SlavePTY();
-	};
-
-	class PTYDevice : public Node
+	class PTYDevice
 	{
 	private:
-		Node *pts;
+		Inode *pts;
 		int id;
-		int fildes;
-		bool isMaster;
 		termios term{};
 		winsize termSize{};
 
-		MasterPTY *MasterDev;
-		SlavePTY *SlaveDev;
+		class PTYSlave
+		{
+		};
+
+		class PTYMaster
+		{
+		};
 
 	public:
 		decltype(id) &ptyId = id;
-		decltype(fildes) &fd = fildes;
 
-		int open(int Flags, mode_t Mode) final;
-		int close() final;
-		size_t read(uint8_t *Buffer,
-					size_t Size,
-					off_t Offset) final;
-		size_t write(uint8_t *Buffer,
-					 size_t Size,
-					 off_t Offset) final;
-		int ioctl(unsigned long Request,
-				  void *Argp) final;
+		ssize_t Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset);
+		ssize_t Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset);
+		int Ioctl(struct Inode *Node, unsigned long Request, void *Argp);
 
-		int OpenMaster(int Flags, mode_t Mode);
-
-		PTYDevice(Node *pts, int id);
+		PTYDevice(Inode *pts, int id);
 		~PTYDevice();
 	};
 
-	class PTMXDevice : public Node
+	class PTMXDevice
 	{
 	private:
 		NewLock(PTMXLock);
-		Node *pts;
+		FileNode *ptmx;
+		FileNode *pts;
 		Bitmap ptysId;
-		std::vector<PTYDevice *> ptysList;
+		std::unordered_map<size_t, PTYDevice *> ptysList;
 
 	public:
-		int open(int Flags, mode_t Mode) final;
-
-		/**
-		 * Remove a PTY from the list
-		 *
-		 * @param fd The file descriptor of the PTY
-		 * @param pcb The process that owns the PTY
-		 *
-		 * @note if pcb is nullptr, the current process
-		 * will be used.
-		 *
-		 */
-		void RemovePTY(int fd, Tasking::PCB *pcb = nullptr);
+		int Open(struct Inode *Node, int Flags, mode_t Mode, struct Inode *Result);
+		int Close(struct Inode *Node);
 
 		PTMXDevice();
 		~PTMXDevice();

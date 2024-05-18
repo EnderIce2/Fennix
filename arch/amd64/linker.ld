@@ -62,6 +62,16 @@ SECTIONS
 	{
 		*(.data .data.*)
 	} :data
+
+	.eh_frame : AT(ADDR(.eh_frame) - KERNEL_VMA) ONLY_IF_RW
+	{
+		KEEP (*(.eh_frame .eh_frame.*))
+	} :data
+
+	.gcc_except_table : AT(ADDR(.gcc_except_table) - KERNEL_VMA) ONLY_IF_RW
+	{
+		KEEP (*(.gcc_except_table .gcc_except_table.*))
+	} :data
 	_kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
 	_kernel_rodata_start = ALIGN(CONSTANT(MAXPAGESIZE));
@@ -84,6 +94,21 @@ SECTIONS
 		KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
 		KEEP(*(.fini_array .dtors))
 		PROVIDE_HIDDEN (__fini_array_end = .);
+	} :rodata
+
+	.eh_frame_hdr : AT(ADDR(.eh_frame_hdr) - KERNEL_VMA)
+	{
+		*(.eh_frame_hdr .eh_frame_hdr.*)
+	} :rodata
+
+	.eh_frame : AT(ADDR(.eh_frame) - KERNEL_VMA) ONLY_IF_RO
+	{
+		KEEP (*(.eh_frame .eh_frame.*))
+	} :rodata
+
+	.gcc_except_table : AT(ADDR(.gcc_except_table) - KERNEL_VMA) ONLY_IF_RO
+	{
+		KEEP (*(.gcc_except_table .gcc_except_table.*))
 	} :rodata
 	_kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
 

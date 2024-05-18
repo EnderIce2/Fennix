@@ -169,7 +169,11 @@ namespace NetworkInterfaceManager
 		fixme("Stop network stack");
 	}
 
-	void CallStartNetworkStackWrapper() { NIManager->StartNetworkStack(); }
+	void CallStartNetworkStackWrapper()
+	{
+		// NIManager->StartNetworkStack();
+		assert(!"Function not implemented");
+	}
 
 	void NetworkInterface::StartService()
 	{
@@ -179,16 +183,18 @@ namespace NetworkInterfaceManager
 
 	void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 	{
-		foreach (auto inf in this->Interfaces)
-			if (inf->DriverID == DriverID)
-				NIManager->Send(inf, Data, Size);
+		// foreach (auto inf in this->Interfaces)
+		// 	if (inf->DriverID == DriverID)
+		// 		NIManager->Send(inf, Data, Size);
+		assert(!"Function not implemented");
 	}
 
 	void NetworkInterface::DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 	{
-		foreach (auto inf in this->Interfaces)
-			if (inf->DriverID == DriverID)
-				NIManager->Receive(inf, Data, Size);
+		// foreach (auto inf in this->Interfaces)
+		// 	if (inf->DriverID == DriverID)
+		// 		NIManager->Receive(inf, Data, Size);
+		assert(!"Function not implemented");
 	}
 
 	void NetworkInterface::Send(DeviceInterface *Interface, uint8_t *Data, size_t Length)

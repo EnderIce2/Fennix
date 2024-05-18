@@ -27,7 +27,7 @@ namespace Memory
 {
 	VirtualAllocation::AllocatedPages VirtualAllocation::RequestPages(size_t Count)
 	{
-		function("%lld", Count);
+		func("%lld", Count);
 
 		void *pAddress = KernelAllocator.RequestPages(Count);
 		memset(pAddress, 0, FROM_PAGES(Count));
@@ -79,7 +79,7 @@ namespace Memory
 
 	void VirtualAllocation::FreePages(void *Address, size_t Count)
 	{
-		function("%#lx, %lld", Address, Count);
+		func("%#lx, %lld", Address, Count);
 
 		SmartLock(MgrLock);
 		foreach (auto &apl in AllocatedPagesList)
@@ -110,7 +110,7 @@ namespace Memory
 
 	void VirtualAllocation::MapTo(AllocatedPages ap, PageTable *TargetTable)
 	{
-		function("%#lx, %#lx", ap.VirtualAddress, TargetTable);
+		func("%#lx, %#lx", ap.VirtualAddress, TargetTable);
 
 		Virtual vmm(TargetTable);
 		vmm.Map(ap.VirtualAddress, ap.PhysicalAddress, FROM_PAGES(ap.PageCount), RW | KRsv | G);
@@ -120,7 +120,7 @@ namespace Memory
 		: BaseAddress(Base), CurrentBase(Base),
 		  Table((PageTable *)CPU::PageTable())
 	{
-		function("%#lx", Base);
+		func("%#lx", Base);
 	}
 
 	VirtualAllocation::~VirtualAllocation()

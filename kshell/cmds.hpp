@@ -20,7 +20,6 @@
 
 #include <types.h>
 
-void cmd_lsof(const char *args);
 void cmd_clear(const char *args);
 void cmd_echo(const char *args);
 void cmd_ls(const char *args);

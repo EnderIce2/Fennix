@@ -18,8 +18,8 @@
 #ifndef __FENNIX_KERNEL_TYPEINFO_H__
 #define __FENNIX_KERNEL_TYPEINFO_H__
 
-#include <types.h>
 #include <exception>
+#include <cstddef>
 
 namespace __cxxabiv1
 {
@@ -31,26 +31,33 @@ namespace std
 {
 	class type_info
 	{
+	protected:
+		const char *Name;
+		explicit type_info(const char *n) : Name(n) {}
+
 	public:
+		type_info() = delete;
+		type_info(const type_info &) = delete;
 		virtual ~type_info();
 
-		bool operator==(const type_info &Argument) const noexcept
+		type_info &operator=(const type_info &) = delete;
+		type_info &operator=(type_info &&) = delete;
+
+		constexpr bool operator==(const type_info &rhs) const noexcept
 		{
-			return ((Name == Argument.Name) ||
-					(Name[0] != '*' &&
-					 __builtin_strcmp(Name, Argument.Name) == 0));
+			return this == &rhs;
 		}
 
-		bool operator!=(const type_info &Argument) const noexcept
+		bool before(const type_info &rhs) const noexcept
 		{
-			return !operator==(Argument);
+			return (Name[0] == '*' && rhs.Name[0] == '*')
+					   ? Name < rhs.Name
+					   : __builtin_strcmp(Name, rhs.Name) < 0;
 		}
 
-		bool before(const type_info &Argument) const noexcept
+		std::size_t hash_code() const noexcept
 		{
-			return (Name[0] == '*' && Argument.Name[0] == '*')
-					   ? Name < Argument.Name
-					   : __builtin_strcmp(Name, Argument.Name) < 0;
+			return reinterpret_cast<std::size_t>(this);
 		}
 
 		const char *name() const noexcept
@@ -68,20 +75,8 @@ namespace std
 			return Name[0] == '(';
 		}
 
-		virtual bool __do_catch(const type_info *ThrowType,
-								void **ThrowObject,
-								unsigned Outer) const;
-
-		virtual bool __do_upcast(const __cxxabiv1::__class_type_info *Target,
-								 void **ObjectPointer) const;
-
-	protected:
-		const char *Name;
-		explicit type_info(const char *n) : Name(n) {}
-
-	private:
-		type_info &operator=(const type_info &);
-		type_info(const type_info &);
+		virtual bool __do_catch(const type_info *ThrowType, void **ThrowObject, unsigned Outer) const;
+		virtual bool __do_upcast(const __cxxabiv1::__class_type_info *Target, void **ObjectPointer) const;
 	};
 
 	class bad_cast : public exception
@@ -109,11 +104,13 @@ namespace __cxxabiv1
 		unsigned int Flags;
 		const std::type_info *Pointee;
 
-		explicit __pbase_type_info(const char *n, int Qualifiers,
-								   const std::type_info *Type)
+		explicit __pbase_type_info(const char *n, int Qualifiers, const std::type_info *Type)
 			: std::type_info(n),
 			  Flags(Qualifiers),
-			  Pointee(Type) {}
+			  Pointee(Type)
+		{
+		}
+
 		virtual ~__pbase_type_info();
 
 		enum __masks
@@ -207,18 +204,6 @@ namespace __cxxabiv1
 		}
 	};
 
-	/* FIXME: stub */
-	class __vmi_class_type_info /* : public __class_type_info */
-	{
-	public:
-		enum __flags_masks
-		{
-			__non_diamond_repeat_mask = 0x1,
-			__diamond_shaped_mask = 0x2,
-			__flags_unknown_mask = 0x10
-		};
-	};
-
 	class __class_type_info : public std::type_info
 	{
 	public:
@@ -260,7 +245,7 @@ namespace __cxxabiv1
 			__sub_kind dst2src;
 			int whole_details;
 
-			__dyncast_result(int details_ = __vmi_class_type_info::__flags_unknown_mask)
+			__dyncast_result(int details_ = 0x10 /*__vmi_class_type_info::__flags_unknown_mask*/)
 				: dst_ptr(NULL),
 				  whole2dst(__unknown),
 				  whole2src(__unknown),
@@ -298,6 +283,22 @@ namespace __cxxabiv1
 		virtual bool __do_catch(const type_info *ThrowType,
 								void **ThrowObject,
 								unsigned Outer) const;
+	};
+
+	class __vmi_class_type_info : public __class_type_info
+	{
+	public:
+		enum __flags_masks
+		{
+			__non_diamond_repeat_mask = 0x1,
+			__diamond_shaped_mask = 0x2,
+			__flags_unknown_mask = 0x10
+		};
+
+		virtual ~__vmi_class_type_info();
+
+		virtual bool __do_upcast(const __class_type_info *target, void **thrown_object) const;
+		virtual void *cast_to(void *obj, const struct __class_type_info *other) const;
 	};
 
 	class __si_class_type_info : public __class_type_info

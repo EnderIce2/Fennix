@@ -23,53 +23,55 @@
 
 using namespace vfs;
 
-void tree_loop(Node *rootNode, int depth = 0)
-{
-	foreach (auto Child in rootNode->Children)
-	{
-		Display->UpdateBuffer();
-		if (Child->Type == NodeType::DIRECTORY ||
-			Child->Type == NodeType::MOUNTPOINT)
-		{
-			printf("%*s%*s%*s|- %s\n",
-				   depth, "",
-				   depth, "",
-				   depth, "",
-				   Child->Name);
-			tree_loop(Child, depth + 1);
-		}
-		else
-			printf("%*s%*s%*s|- %s\n",
-				   depth, "",
-				   depth, "",
-				   depth, "",
-				   Child->Name);
-	}
-}
+// void tree_loop(Node *rootNode, int depth = 0)
+// {
+// 	foreach (auto Child in rootNode->GetChildren(true))
+// 	{
+// 		Display->UpdateBuffer();
+// 		if (Child->Stat.IsType(DIRECTORY) || Child->Stat.IsType(MOUNTPOINT))
+// 		{
+// 			printf("%*s%*s%*s|- %s\n",
+// 				   depth, "",
+// 				   depth, "",
+// 				   depth, "",
+// 				   Child->FileName);
+// 			tree_loop(Child, depth + 1);
+// 		}
+// 		else
+// 			printf("%*s%*s%*s|- %s\n",
+// 				   depth, "",
+// 				   depth, "",
+// 				   depth, "",
+// 				   Child->FileName);
+// 	}
+// }
 
 void cmd_tree(const char *args)
 {
-	Node *rootNode = thisProcess->CurrentWorkingDirectory;
-	if (args[0] == '\0')
-	{
-		if (rootNode == nullptr)
-			rootNode = fs->GetRootNode()->Children[0];
-	}
-	else
-	{
-		rootNode = fs->GetNodeFromPath(args, thisProcess->CurrentWorkingDirectory);
-		if (rootNode == nullptr)
-		{
-			printf("ls: %s: No such file or directory\n", args);
-			return;
-		}
-		if (rootNode->Type != NodeType::DIRECTORY)
-		{
-			printf("%s\n", rootNode->Name);
-			return;
-		}
-	}
+	/* FIXME: Reimplement this later */
+	assert(!"Function not implemented");
 
-	printf("%s\n", rootNode->Name);
-	tree_loop(rootNode);
+	// Node *rootNode = thisProcess->CWD;
+	// if (args[0] == '\0')
+	// {
+	// 	if (rootNode == nullptr)
+	// 		rootNode = fs->FileSystemRoots->GetChildren(true)[0];
+	// }
+	// else
+	// {
+	// 	rootNode = fs->GetByPath(args, thisProcess->CWD, true);
+	// 	if (rootNode == nullptr)
+	// 	{
+	// 		printf("ls: %s: No such file or directory\n", args);
+	// 		return;
+	// 	}
+	// 	if (!rootNode->Stat.IsType(DIRECTORY))
+	// 	{
+	// 		printf("%s\n", rootNode->FileName);
+	// 		return;
+	// 	}
+	// }
+
+	// printf("%s\n", rootNode->FileName);
+	// tree_loop(rootNode);
 }

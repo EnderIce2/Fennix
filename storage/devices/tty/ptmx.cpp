@@ -24,69 +24,67 @@
 
 namespace vfs
 {
-	int PTMXDevice::open(int Flags, mode_t Mode)
+	int PTMXDevice::Open(Inode *Node, int Flags, mode_t Mode, struct Inode *Result)
 	{
-		SmartLock(PTMXLock);
-		int id = -1;
-		for (size_t i = 0; i < ptysId.Size; i++)
-		{
-			if (unlikely(ptysId.Buffer[i] == false))
-			{
-				id = int(i);
-				ptysId.Buffer[i] = true;
-				break;
-			}
-		}
+		// SmartLock(PTMXLock);
 
-		if (id == -1)
-			return -ENFILE;
+		// int ptyID = -1;
+		// for (int i = 0; i < (int)ptysId.Size; i++)
+		// {
+		// 	if (ptysId.Buffer[i])
+		// 		continue;
 
-		PTYDevice *pty = new PTYDevice(pts, id);
-		ptysList.push_back(pty);
-		return pty->OpenMaster(Flags, Mode);
+		// 	ptyID = i;
+		// 	ptysId.Buffer[i] = true;
+		// 	break;
+		// }
+
+		// if (ptyID == -1)
+		// 	return -ENFILE;
+
+		// PTYDevice *pty = new PTYDevice(pts, ptyID);
+		// ptysList.insert(std::make_pair(ptyID, pty));
+		// // return pty->OpenMaster(Flags, Mode);
+		assert(!"Function not implemented");
 	}
 
-	void PTMXDevice::RemovePTY(int fd, Tasking::PCB *pcb)
+	int PTMXDevice::Close(struct Inode *Node)
 	{
 		SmartLock(PTMXLock);
-		if (!pcb)
-			pcb = thisProcess;
-		assert(pcb != nullptr);
 
-		FileDescriptorTable *fdt = pcb->FileDescriptors;
-		RefNode *node = fdt->GetRefNode(fd);
-
-		assert(node->SpecialData != nullptr);
-		PTYDevice *pty = (PTYDevice *)node->SpecialData;
-		int id = pty->ptyId;
-
-		forItr(itr, ptysList)
-		{
-			if (*itr != pty)
-				continue;
-
-			ptysList.erase(itr);
-			delete *itr;
-			break;
-		}
-		ptysId.Buffer[id] = false;
+		PTYDevice *pty = ptysList.at(Node->Index);
+		ptysList.erase(Node->Index);
+		assert(!"Function not implemented");
 	}
 
-	PTMXDevice::PTMXDevice() : Node(DevFS, "ptmx", CHARDEVICE)
+	PTMXDevice::PTMXDevice()
 	{
-		this->Mode = 0644;
-		this->UserIdentifier = 0;
-		this->GroupIdentifier = 0;
-		pts = new Node(DevFS, "pts", DIRECTORY);
 
-		ptysId.Buffer = new uint8_t[0x1000];
-		ptysId.Size = 0x1000;
+		// /* c rw- rw- rw- */
+		// mode_t mode = S_IRUSR | S_IWUSR |
+		// 			  S_IRGRP | S_IWGRP |
+		// 			  S_IROTH | S_IWOTH |
+		// 			  S_IFCHR;
+
+		// ptmx = fs->Create(ptmx, "pts", mode);
+		// assert(!"Function not implemented");
+		// // ptmx->SetDevice(5, 2);
+
+		// /* d rwx r-x r-x */
+		// mode_t ptsMode = S_IRWXU |
+		// 				 S_IRGRP | S_IXGRP |
+		// 				 S_IROTH | S_IXOTH |
+		// 				 S_IFDIR;
+		// pts = fs->Create(ptmx, "pts", ptsMode);
+		// assert(pts != nullptr);
+
+		// ptysId.Buffer = new uint8_t[0x1000];
+		// ptysId.Size = 0x1000;
 	}
 
 	PTMXDevice::~PTMXDevice()
 	{
 		SmartLock(PTMXLock);
-		delete pts;
 		delete[] ptysId.Buffer;
 	}
 }

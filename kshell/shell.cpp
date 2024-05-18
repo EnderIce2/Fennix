@@ -17,15 +17,16 @@
 
 #include <kshell.hpp>
 
+#include <interface/driver.h>
 #include <filesystem.hpp>
 #include <driver.hpp>
 #include <lock.hpp>
 #include <exec.hpp>
 #include <debug.h>
 #include <thread>
+#include <cctype>
 
 #include "../kernel.h"
-#include "../driver.h"
 #include "cmds.hpp"
 
 NewLock(ShellLock);
@@ -47,7 +48,6 @@ void __cmd_builtin(const char *)
 }
 
 static Command commands[] = {
-	{"lsof", cmd_lsof},
 	{"ls", cmd_ls},
 	{"tree", cmd_tree},
 	{"cd", cmd_cd},
@@ -167,7 +167,7 @@ void StartKernelShell()
 	bool upperCase = false;
 	bool tabDblPress = false;
 
-	vfs::RefNode *kfd = fs->Open("/dev/key");
+	FileNode *kfd = fs->GetByPath("/dev/key", nullptr);
 	if (kfd == nullptr)
 	{
 		KPrint("Failed to open keyboard device!");
@@ -192,14 +192,14 @@ void StartKernelShell()
 		size_t seekCount = 0;
 		strBuf.clear();
 
-		vfs::Node *cwd = thisProcess->CurrentWorkingDirectory;
+		FileNode *cwd = thisProcess->CWD;
 		if (!cwd)
-			cwd = fs->GetNodeFromPath("/");
+			cwd = fs->GetByPath("/", nullptr);
 
 		printf("\e34C6EB%s@%s:%s$ \eCCCCCC",
 			   "kernel",
 			   "fennix",
-			   cwd->FullPath);
+			   cwd->Path.c_str());
 		Display->UpdateBuffer();
 
 		Display->GetBufferCursor(&homeX, &homeY);
@@ -215,7 +215,7 @@ void StartKernelShell()
 			CurY.store(__cy);
 			CurHalt.store(false);
 
-			nBytes = kfd->read(scBuf, 2);
+			nBytes = kfd->Read(scBuf, 2, 0);
 			if (nBytes == 0)
 				continue;
 			if (nBytes < 0)
@@ -330,7 +330,7 @@ void StartKernelShell()
 				size_t strSeek = seekCount ? seekCount - 1 : 0;
 				seekCount = strSeek;
 				debug("strSeek: %d: %s", strSeek, strBuf.c_str());
-				strBuf.erase((int)strSeek);
+				strBuf.erase(strSeek);
 				Display->PrintString(strBuf.c_str());
 				debug("after strBuf: %s", strBuf.c_str());
 
@@ -363,7 +363,7 @@ void StartKernelShell()
 				Display->SetBufferCursor(unseekX, unseekY);
 				strBufBck();
 				debug("seekCount: %d: %s", seekCount, strBuf.c_str());
-				strBuf.erase((int)seekCount);
+				strBuf.erase(seekCount);
 				Display->PrintString(strBuf.c_str());
 				debug("after strBuf: %s", strBuf.c_str());
 
@@ -666,7 +666,7 @@ void StartKernelShell()
 
 				// size_t strSeek = seekCount ? seekCount - 1 : 0;
 				debug("seekCount: %d; \"%s\"", seekCount, strBuf.c_str());
-				strBuf.insert(seekCount, 1, c);
+				strBuf.insert(seekCount, (size_t)1, c);
 				Display->PrintString(strBuf.c_str());
 				debug("after strBuf: %s (seek and bs is +1 [seek: %d; bs: %d])",
 					  strBuf.c_str(), seekCount + 1, bsCount + 1);
@@ -750,12 +750,12 @@ void StartKernelShell()
 
 		std::string path = "/bin/";
 
-		if (!fs->PathExists("/bin"))
+		if (!fs->PathExists(path.c_str(), nullptr))
 			path = "/usr/bin/";
 
 		path += cmd_only;
 		debug("path: %s", path.c_str());
-		if (fs->PathExists(path.c_str()))
+		if (fs->PathExists(path.c_str(), nullptr))
 		{
 			const char *envp[5] = {
 				"PATH=/bin:/usr/bin",

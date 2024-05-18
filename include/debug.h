@@ -50,11 +50,11 @@ namespace SysDbg
 #ifdef DEBUG
 #define debug(Format, ...) SysDbg::WriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define ubsan(Format, ...) SysDbg::WriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define function(Format, ...) SysDbg::WriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define func(Format, ...) SysDbg::WriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #else
 #define debug(Format, ...)
 #define ubsan(Format, ...)
-#define function(Format, ...)
+#define func(Format, ...)
 #endif
 #define trace(Format, ...) SysDbg::WriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define fixme(Format, ...) SysDbg::WriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
@@ -89,11 +89,11 @@ void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, co
 #ifdef DEBUG
 #define debug(Format, ...) SysDbgWriteLine(DebugLevelDebug, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define ubsan(Format, ...) SysDbgWriteLine(DebugLevelUbsan, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
-#define function(Format, ...) SysDbgWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
+#define func(Format, ...) SysDbgWriteLine(DebugLevelFunction, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #else
 #define debug(Format, ...)
 #define ubsan(Format, ...)
-#define function(Format, ...)
+#define func(Format, ...)
 #endif
 #define trace(Format, ...) SysDbgWriteLine(DebugLevelTrace, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)
 #define fixme(Format, ...) SysDbgWriteLine(DebugLevelFixme, __FILE__, __LINE__, __FUNCTION__, Format, ##__VA_ARGS__)

@@ -19,7 +19,7 @@
 #define __FENNIX_KERNEL_SMP_H__
 
 #include <task.hpp>
-#include <cxxabi.h>
+#include <kexcept/cxxabi.h>
 #include <types.h>
 #include <atomic>
 
@@ -39,31 +39,31 @@ struct CPUArchData
 
 struct CPUData
 {
-	/** @brief Used by CPU */
+	/** Used by CPU */
 	uintptr_t Stack;
 
-	/** @brief CPU ID. */
+	/** CPU ID. */
 	int ID;
 
-	/** @brief Local CPU error code. */
+	/** Local CPU error code. */
 	long ErrorCode;
 
-	/** @brief Current running process */
+	/** Current running process */
 	std::atomic<Tasking::PCB *> CurrentProcess;
 
-	/** @brief Current running thread */
+	/** Current running thread */
 	std::atomic<Tasking::TCB *> CurrentThread;
 
-	/** @brief Unwind data */
-	__cxa_eh_globals EHGlobals;
+	/** Exception information. */
+	ExceptionInfo Exception;
 
-	/** @brief Architecture-specific data. */
+	/** Architecture-specific data. */
 	CPUArchData Data;
 
-	/** @brief Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
+	/** Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
 	int Checksum;
 
-	/** @brief Is CPU online? */
+	/** Is CPU online? */
 	bool IsActive;
 } __aligned(16);
 

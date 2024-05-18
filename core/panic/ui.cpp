@@ -517,7 +517,7 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 				sym, offset);
 	}
 	else
-		ExPrint("\eFF5555???\n");
+		ExPrint("\eFF5555??? \eFFAAAA<- Exception\n");
 
 	if (!sf || !sf->ip || !sf->bp)
 	{
@@ -591,7 +591,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 	if (Display->GetWidth > 800 && Display->GetHeight > 600)
 		textLimit = 128;
 
-	std::list<Tasking::PCB *> Plist = TaskManager->GetProcessList();
+	std::vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
 
 	ExPrint("\n\eFAFAFAProcess list (%ld):\n", Plist.size());
 	bool pRdy = false;
@@ -626,7 +626,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 				Process->ID, StatusColor[Process->State.load()],
 				StatusString[Process->State.load()],
 				Process->Executable
-					? Process->Executable->Name
+					? Process->Executable->Name.c_str()
 					: "none");
 
 		bool tRdy = false;
@@ -766,6 +766,29 @@ nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expressi
 	ExPrint(" This is a kernel bug.\n");
 	ExPrint(" Please create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
 
+	CPU::ExceptionFrame ef;
+	// Fill only the necessary fields
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wframe-address"
+
+	/* Jump over HandleAssertionFailed, and ip will be the function where it failed */
+	void *fun = __builtin_return_address(1);
+	/* Jump over this, HandleAssertionFailed & ip */
+	void *stk = __builtin_frame_address(2);
+
+#pragma GCC diagnostic pop
+
+#ifdef __x86_64__
+	asmv("movq %%cr3, %0" : "=r"(ef.cr3));
+	ef.rip = (uint64_t)fun;
+	ef.rbp = ef.rsp = (uint64_t)stk;
+#elif defined(__i386__)
+	asmv("movl %%cr3, %0" : "=r"(ef.cr3));
+	ef.eip = (uint32_t)fun;
+	ef.ebp = ef.esp = (uint32_t)stk;
+#endif
+	DisplayStackScreen(&ef);
 	Display->UpdateBuffer();
 
 	/* TODO: Add additional info */

@@ -62,7 +62,7 @@ void cmd_modinfo(const char *args)
 	printf("Resource Info:\n");
 	printf(" Initialized: %s\n", drv.Initialized ? "yes" : "no");
 	printf(" Error Code: %i (%s)\n", drv.ErrorCode, strerror(drv.ErrorCode));
-	printf(" Path: %s\n", drv.Path);
+	printf(" Path: %s\n", drv.Path.c_str());
 	printf(" Used Memory: %ld KiB\n", TO_KiB(drv.vma->GetAllocatedMemorySize()));
 	printf(" Used IRQs:%s\n", drv.InterruptHandlers->empty() ? " none" : "");
 	foreach (auto var in *drv.InterruptHandlers)

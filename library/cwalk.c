@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Leonard Iklé
+Copyright (c) 2024 Leonard Iklé
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,24 @@ SOFTWARE.
 */
 
 #include <assert.h>
+#include <ctype.h>
 #include <cwalk.h>
-#include <convert.h>
-
-#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-#pragma GCC diagnostic ignored "-Wsequence-point"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 /**
  * We try to default to a different path style depending on the operating
  * system. So this should detect whether we should use windows or unix paths.
  */
-/*
-#if defined(WIN32) || defined(_WIN32) ||                                       \
+/*#if defined(WIN32) || defined(_WIN32) ||                                       \
   defined(__WIN32) && !defined(__CYGWIN__)
 static enum cwk_path_style path_style = CWK_STYLE_WINDOWS;
 #else
 static enum cwk_path_style path_style = CWK_STYLE_UNIX;
-#endif
-*/
+#endif*/
 
+/* This will extract the path style of the running process */
 extern enum cwk_path_style *__cwalk_path_style(void);
 #define path_style (*__cwalk_path_style())
 
@@ -153,7 +152,9 @@ static void cwk_path_terminate_output(char *buffer, size_t buffer_size,
 static bool cwk_path_is_string_equal(const char *first, const char *second,
   size_t first_size, size_t second_size)
 {
-  // THe two strings are not equal if the sizes are not equal.
+  bool are_both_separators;
+
+  // The two strings are not equal if the sizes are not equal.
   if (first_size != second_size) {
     return false;
   }
@@ -169,10 +170,17 @@ static bool cwk_path_is_string_equal(const char *first, const char *second,
   // own.
   while (*first && *second && first_size > 0) {
     // We can consider the string to be not equal if the two lowercase
-    // characters are not equal.
-    if (tolower(*first++) != tolower(*second++)) {
+    // characters are not equal. The two chars may also be separators, which
+    // means they would be equal.
+    are_both_separators = strchr(separators[path_style], *first) != NULL &&
+                          strchr(separators[path_style], *second) != NULL;
+
+    if (tolower(*first) != tolower(*second) && !are_both_separators) {
       return false;
     }
+
+    first++;
+    second++;
 
     --first_size;
   }
@@ -511,7 +519,7 @@ static void cwk_path_get_root_windows(const char *path, size_t *length)
   if (cwk_path_is_separator(c)) {
     ++c;
 
-    // Check whether the path starts with a single back slash, which means this
+    // Check whether the path starts with a single backslash, which means this
     // is not a network path - just a normal path starting with a backslash.
     if (!cwk_path_is_separator(c)) {
       // Okay, this is not a network path but we still use the backslash as a
@@ -599,6 +607,29 @@ static bool cwk_path_is_root_absolute(const char *path, size_t length)
   return cwk_path_is_separator(&path[length - 1]);
 }
 
+static void cwk_path_fix_root(char *buffer, size_t buffer_size, size_t length)
+{
+  size_t i;
+
+  // This only affects windows.
+  if (path_style != CWK_STYLE_WINDOWS) {
+    return;
+  }
+
+  // Make sure we are not writing further than we are actually allowed to.
+  if (length > buffer_size) {
+    length = buffer_size;
+  }
+
+  // Replace all forward slashes with backwards slashes. Since this is windows
+  // we can't have any forward slashes in the root.
+  for (i = 0; i < length; ++i) {
+    if (cwk_path_is_separator(&buffer[i])) {
+      buffer[i] = *separators[CWK_STYLE_WINDOWS];
+    }
+  }
+}
+
 static size_t cwk_path_join_and_normalize_multiple(const char **paths,
   char *buffer, size_t buffer_size)
 {
@@ -613,8 +644,10 @@ static size_t cwk_path_join_and_normalize_multiple(const char **paths,
   // later on whether we can remove superfluous "../" or not.
   absolute = cwk_path_is_root_absolute(paths[0], pos);
 
-  // First copy the root to the output. We will not modify the root.
+  // First copy the root to the output. After copying, we will normalize the
+  // root.
   cwk_path_output_sized(buffer, buffer_size, 0, paths[0], pos);
+  cwk_path_fix_root(buffer, buffer_size, pos);
 
   // So we just grab the first segment. If there is no segment we will always
   // output a "/", since we currently only support absolute paths here.

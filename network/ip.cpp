@@ -114,7 +114,8 @@ namespace NetworkIPv4
 			Packet->Header.TimeToLive = 0x40;
 			Packet->Header.HeaderChecksum = 0x0;
 			Packet->Header.HeaderChecksum = CalculateChecksum((uint16_t *)Data, 4 * Packet->Header.TotalLength);
-			NIManager->Send(Ethernet->GetInterface(), (uint8_t *)Data, Length);
+			// NIManager->Send(Ethernet->GetInterface(), (uint8_t *)Data, Length);
+			assert(!"Function not implemented");
 		}
 		return Reply;
 	}

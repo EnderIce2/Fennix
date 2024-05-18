@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2020 Leonard Iklé
+Copyright (c) 2024 Leonard Iklé
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,8 @@ SOFTWARE.
 #ifndef CWK_LIBRARY_H
 #define CWK_LIBRARY_H
 
-#include <types.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CWK_EXPORT __declspec(dllexport)
@@ -344,9 +345,10 @@ CWK_PUBLIC size_t cwk_path_change_extension(const char *path,
  * This function creates a normalized version of the path within the specified
  * buffer. This function will not write out more than the specified buffer can
  * contain. However, the generated string is always null-terminated - even if
- * not the whole path is written out. The function returns the total number of
- * characters the complete buffer would have, even if it was not written out
- * completely. The path may be the same memory address as the buffer.
+ * not the whole path is written out. The returned value is the amount of
+ * characters which the resulting path would take if it was not truncated
+ * (excluding the null-terminating character). The path may be the same memory
+ * address as the buffer.
  *
  * The following will be true for the normalized path:
  * 1) "../" will be resolved.

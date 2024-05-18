@@ -21,18 +21,19 @@
 
 #include "../kernel.h"
 
-void TreeFS(vfs::Node *node, int Depth)
+void TreeFS(FileNode *node, int Depth)
 {
 	return;
-	foreach (auto Chld in node->Children)
-	{
-		printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->Name);
+	// foreach (auto Chld in node->GetChildren(true))
+	// {
+	// 	printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->FileName);
 
-		if (!Config.Quiet)
-			Display->UpdateBuffer();
-		TaskManager->Sleep(100);
-		TreeFS(Chld, Depth + 1);
-	}
+	// 	if (!Config.Quiet)
+	// 		Display->UpdateBuffer();
+	// 	TaskManager->Sleep(100);
+	// 	TreeFS(Chld, Depth + 1);
+	// }
+	assert(!"Function not implemented");
 }
 
 #endif // DEBUG

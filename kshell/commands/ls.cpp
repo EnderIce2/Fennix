@@ -23,81 +23,84 @@
 
 using namespace vfs;
 
-const char *ColorNodeType(Node *node)
-{
-	switch (node->Type)
-	{
-	case NodeType::DIRECTORY:
-		return "\e3871F5";
-	case NodeType::BLOCKDEVICE:
-		return "\eE8CD1E";
-	case NodeType::CHARDEVICE:
-		return "\e86E01F";
-	case NodeType::PIPE:
-		return "\eE0991F";
-	case NodeType::SYMLINK:
-		return "\e1FB9E0";
-	case NodeType::FILE:
-		return "\eCCCCCC";
-	default:
-		return "\eF72020";
-	}
-}
+// const char *ColorNodeType(Node *node)
+// {
+// 	switch (node->Stat.GetFileType())
+// 	{
+// 	case DIRECTORY:
+// 		return "\e3871F5";
+// 	case BLOCKDEVICE:
+// 		return "\eE8CD1E";
+// 	case CHARDEVICE:
+// 		return "\e86E01F";
+// 	case PIPE:
+// 		return "\eE0991F";
+// 	case SYMLINK:
+// 		return "\e1FB9E0";
+// 	case FILE:
+// 		return "\eCCCCCC";
+// 	default:
+// 		return "\eF72020";
+// 	}
+// }
 
-size_t MaxNameLength(Node *nodes)
-{
-	size_t maxLength = 0;
-	foreach (auto &node in nodes->Children)
-		maxLength = std::max(maxLength, strlen(node->Name));
-	return maxLength;
-}
+// size_t MaxNameLength(Node *nodes)
+// {
+// 	size_t maxLength = 0;
+// 	foreach (auto &node in nodes->GetChildren(true))
+// 		maxLength = std::max(maxLength, strlen(node->FileName));
+// 	return maxLength;
+// }
 
-void PrintLS(Node *node)
-{
-	size_t maxNameLength = MaxNameLength(node);
-	int count = 0;
-	bool first = true;
-	foreach (auto &var in node->Children)
-	{
-		if (count % 5 == 0 && !first)
-			printf("\n");
-		printf(" %s%-*s ", ColorNodeType(var), (int)maxNameLength, var->Name);
-		count++;
-		first = false;
-	}
-	printf("\eCCCCCC\n");
-}
+// void PrintLS(Node *node)
+// {
+// 	size_t maxNameLength = MaxNameLength(node);
+// 	int count = 0;
+// 	bool first = true;
+// 	foreach (auto &var in node->GetChildren(true))
+// 	{
+// 		if (count % 5 == 0 && !first)
+// 			printf("\n");
+// 		printf(" %s%-*s ", ColorNodeType(var), (int)maxNameLength, var->FileName);
+// 		count++;
+// 		first = false;
+// 	}
+// 	printf("\eCCCCCC\n");
+// }
 
 void cmd_ls(const char *args)
 {
-	if (args[0] == '\0')
-	{
-		Node *rootNode = thisProcess->CurrentWorkingDirectory;
+	/* FIXME: Reimplement this later */
+	assert(!"Function not implemented");
 
-		if (rootNode == nullptr)
-			rootNode = fs->GetRootNode()->Children[0];
+	// if (args[0] == '\0')
+	// {
+	// 	Node *rootNode = thisProcess->CWD;
 
-		PrintLS(rootNode);
-	}
-	else
-	{
-		Node *thisNode = fs->GetNodeFromPath(args, thisProcess->CurrentWorkingDirectory);
+	// 	if (rootNode == nullptr)
+	// 		rootNode = fs->FileSystemRoots->GetChildren(true)[0];
 
-		if (thisNode == nullptr)
-		{
-			printf("ls: %s: No such file or directory\n", args);
-			return;
-		}
+	// 	PrintLS(rootNode);
+	// }
+	// else
+	// {
+	// 	Node *thisNode = fs->GetByPath(args, thisProcess->CWD, true);
 
-		if (thisNode->Type == NodeType::SYMLINK)
-			thisNode = fs->GetNodeFromPath(thisNode->Symlink);
+	// 	if (thisNode == nullptr)
+	// 	{
+	// 		printf("ls: %s: No such file or directory\n", args);
+	// 		return;
+	// 	}
 
-		if (thisNode->Type != NodeType::DIRECTORY)
-		{
-			printf("%s%s\n", ColorNodeType(thisNode), thisNode->Name);
-			return;
-		}
+	// 	if (thisNode->Stat.IsType(SYMLINK))
+	// 		thisNode = fs->GetByPath(thisNode->GetSymLink(), nullptr, true);
 
-		PrintLS(thisNode);
-	}
+	// 	if (!thisNode->Stat.IsType(DIRECTORY))
+	// 	{
+	// 		printf("%s%s\n", ColorNodeType(thisNode), thisNode->FileName);
+	// 		return;
+	// 	}
+
+	// 	PrintLS(thisNode);
+	// }
 }

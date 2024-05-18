@@ -17,376 +17,1007 @@
 
 #pragma once
 
-#include <types.h>
-
-#include <type_traits>
-#include <functional>
+#include <initializer_list>
+#include <stdexcept>
 #include <algorithm>
-#include <assert.h>
-#include <lock.hpp>
-#include <cstring>
-#include <utility>
-
-// #define DEBUG_VECTOR_MESSAGES 1
-
-#ifdef DEBUG_VECTOR_MESSAGES
-#define vDebug(m, ...) debug("%#lx: " m, this, ##__VA_ARGS__)
-#else
-#define vDebug(m, ...)
-#endif
+#include <iterator>
+#include <memory>
 
 namespace std
 {
-	template <class T>
+	template <class T, class Allocator = std::allocator<T>>
 	class vector
 	{
+	public:
+		using value_type = T;
+		using allocator_type = Allocator;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using pointer = typename std::allocator_traits<Allocator>::pointer;
+		using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
+		// using iterator = typename vector<T, Allocator>::iterator;
+		// using const_iterator = typename vector<T, Allocator>::const_iterator;
+		// using reverse_iterator = typename vector<T, Allocator>::reverse_iterator;
+		// using const_reverse_iterator = typename vector<T, Allocator>::const_reverse_iterator;
+
+		class iterator
+		{
+		public:
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T *;
+			using reference = T &;
+			using iterator_category = std::random_access_iterator_tag;
+
+		public:
+			pointer itrPtr;
+
+		public:
+			constexpr iterator() noexcept : itrPtr(nullptr) {}
+			constexpr iterator(pointer ptr) noexcept : itrPtr(ptr) {}
+			constexpr iterator(const iterator &other) noexcept : itrPtr(other.itrPtr) {}
+			constexpr iterator(iterator &&other) noexcept : itrPtr(other.itrPtr) {}
+
+			constexpr reference operator*() const { return *itrPtr; }
+			constexpr pointer operator->() const { return itrPtr; }
+
+			constexpr iterator &operator=(const iterator &other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr iterator &operator=(iterator &&other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr iterator &operator++()
+			{
+				itrPtr++;
+				return *this;
+			}
+
+			constexpr iterator operator++(int)
+			{
+				iterator temp = *this;
+				itrPtr++;
+				return temp;
+			}
+
+			constexpr iterator &operator--()
+			{
+				itrPtr--;
+				return *this;
+			}
+
+			constexpr iterator operator--(int)
+			{
+				iterator temp = *this;
+				itrPtr--;
+				return temp;
+			}
+
+			constexpr difference_type operator-(const iterator &other) const
+			{
+				return itrPtr - other.itrPtr;
+			}
+
+			constexpr iterator operator+(difference_type n) const
+			{
+				return iterator(itrPtr + n);
+			}
+
+			constexpr bool operator==(const iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const iterator &other) const { return itrPtr != other.itrPtr; }
+		};
+
+		class const_iterator
+		{
+		public:
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = const T *;
+			using reference = const T &;
+			using iterator_category = std::random_access_iterator_tag;
+
+		public:
+			pointer itrPtr;
+
+		public:
+			constexpr const_iterator() noexcept : itrPtr(nullptr) {}
+			constexpr const_iterator(pointer ptr) noexcept : itrPtr(ptr) {}
+			constexpr const_iterator(iterator it) noexcept : itrPtr(it.itrPtr) {}
+			constexpr const_iterator(const const_iterator &other) noexcept : itrPtr(other.itrPtr) {}
+			constexpr const_iterator(const_iterator &&other) noexcept : itrPtr(other.itrPtr) {}
+
+			constexpr reference operator*() const { return *itrPtr; }
+			constexpr pointer operator->() const { return itrPtr; }
+
+			constexpr const_iterator &operator=(const const_iterator &other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr const_iterator &operator=(const_iterator &&other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr const_iterator &operator++()
+			{
+				itrPtr++;
+				return *this;
+			}
+
+			constexpr const_iterator operator++(int)
+			{
+				const_iterator temp = *this;
+				itrPtr++;
+				return temp;
+			}
+
+			constexpr const_iterator &operator--()
+			{
+				itrPtr--;
+				return *this;
+			}
+
+			constexpr const_iterator operator--(int)
+			{
+				const_iterator temp = *this;
+				itrPtr--;
+				return temp;
+			}
+
+			constexpr difference_type operator-(const const_iterator &other) const
+			{
+				return itrPtr - other.itrPtr;
+			}
+
+			constexpr const_iterator operator+(difference_type n) const
+			{
+				return const_iterator(itrPtr + n);
+			}
+
+			constexpr bool operator==(const const_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const const_iterator &other) const { return itrPtr != other.itrPtr; }
+		};
+
+		class reverse_iterator
+		{
+		public:
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T *;
+			using reference = T &;
+			using iterator_category = std::random_access_iterator_tag;
+
+		public:
+			pointer itrPtr;
+
+		public:
+			constexpr reverse_iterator() noexcept : itrPtr(nullptr) {}
+			constexpr reverse_iterator(pointer ptr) noexcept : itrPtr(ptr) {}
+			constexpr reverse_iterator(const reverse_iterator &other) noexcept : itrPtr(other.itrPtr) {}
+			constexpr reverse_iterator(reverse_iterator &&other) noexcept : itrPtr(other.itrPtr) {}
+
+			constexpr reference operator*() const { return *itrPtr; }
+			constexpr pointer operator->() const { return itrPtr; }
+
+			constexpr reverse_iterator &operator=(const reverse_iterator &other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr reverse_iterator &operator=(reverse_iterator &&other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr reverse_iterator &operator++()
+			{
+				itrPtr--;
+				return *this;
+			}
+
+			constexpr reverse_iterator operator++(int)
+			{
+				reverse_iterator temp = *this;
+				itrPtr--;
+				return temp;
+			}
+
+			constexpr reverse_iterator &operator--()
+			{
+				itrPtr++;
+				return *this;
+			}
+
+			constexpr reverse_iterator operator--(int)
+			{
+				reverse_iterator temp = *this;
+				itrPtr++;
+				return temp;
+			}
+
+			constexpr difference_type operator-(const reverse_iterator &other) const
+			{
+				return itrPtr - other.itrPtr;
+			}
+
+			constexpr reverse_iterator operator+(difference_type n) const
+			{
+				return reverse_iterator(itrPtr - n);
+			}
+
+			constexpr bool operator==(const reverse_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const reverse_iterator &other) const { return itrPtr != other.itrPtr; }
+
+			constexpr bool operator==(const const_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const const_iterator &other) const { return itrPtr != other.itrPtr; }
+
+			constexpr bool operator==(const iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const iterator &other) const { return itrPtr != other.itrPtr; }
+		};
+
+		class const_reverse_iterator
+		{
+		public:
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = const T *;
+			using reference = const T &;
+			using iterator_category = std::random_access_iterator_tag;
+
+		public:
+			pointer itrPtr;
+
+		public:
+			constexpr const_reverse_iterator() noexcept : itrPtr(nullptr) {}
+			constexpr const_reverse_iterator(pointer ptr) noexcept : itrPtr(ptr) {}
+			constexpr const_reverse_iterator(const const_reverse_iterator &other) noexcept : itrPtr(other.itrPtr) {}
+			constexpr const_reverse_iterator(const_reverse_iterator &&other) noexcept : itrPtr(other.itrPtr) {}
+
+			constexpr reference operator*() const { return *itrPtr; }
+			constexpr pointer operator->() const { return itrPtr; }
+
+			constexpr const_reverse_iterator &operator=(const const_reverse_iterator &other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr const_reverse_iterator &operator=(const_reverse_iterator &&other)
+			{
+				itrPtr = other.itrPtr;
+				return *this;
+			}
+
+			constexpr const_reverse_iterator &operator++()
+			{
+				itrPtr--;
+				return *this;
+			}
+
+			constexpr const_reverse_iterator operator++(int)
+			{
+				const_reverse_iterator temp = *this;
+				itrPtr--;
+				return temp;
+			}
+
+			constexpr const_reverse_iterator &operator--()
+			{
+				itrPtr++;
+				return *this;
+			}
+
+			constexpr const_reverse_iterator operator--(int)
+			{
+				const_reverse_iterator temp = *this;
+				itrPtr++;
+				return temp;
+			}
+
+			constexpr difference_type operator-(const const_reverse_iterator &other) const
+			{
+				return itrPtr - other.itrPtr;
+			}
+
+			constexpr const_reverse_iterator operator+(difference_type n) const
+			{
+				return const_reverse_iterator(itrPtr - n);
+			}
+
+			constexpr bool operator==(const const_reverse_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const const_reverse_iterator &other) const { return itrPtr != other.itrPtr; }
+
+			constexpr bool operator==(const reverse_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const reverse_iterator &other) const { return itrPtr != other.itrPtr; }
+
+			constexpr bool operator==(const const_iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const const_iterator &other) const { return itrPtr != other.itrPtr; }
+
+			constexpr bool operator==(const iterator &other) const { return itrPtr == other.itrPtr; }
+			constexpr bool operator!=(const iterator &other) const { return itrPtr != other.itrPtr; }
+		};
+
 	private:
-		NewLock(lock);
-		std::atomic_size_t VectorSize = 0;
-		std::atomic_size_t VectorCapacity = 0;
-		T *VectorBuffer = nullptr;
+		allocator_type _alloc;
+		size_type _size;
+		size_type _capacity;
+		pointer _data;
 
 	public:
-		typedef T *iterator;
-		typedef const T *const_iterator;
+#pragma region Member Functions
 
-		vector() { vDebug("( empty init )"); }
-
-		vector(size_t Size)
-			: VectorSize(Size),
-			  VectorCapacity(Size),
-			  VectorBuffer(new T[Size])
+		constexpr vector() noexcept(noexcept(Allocator()))
+			: _size(0),
+			  _capacity(0),
+			  _data(nullptr)
 		{
-			vDebug("( init w/size: %lld )", Size);
 		}
 
-		vector(size_t Size, const T &Initial)
-			: VectorSize(Size),
-			  VectorCapacity(Size),
-			  VectorBuffer(new T[Size])
+		constexpr explicit vector(const Allocator &alloc) noexcept
+			: _alloc(alloc),
+			  _size(0),
+			  _capacity(0),
+			  _data(nullptr)
 		{
-			vDebug("( init w/size: %lld, initial vector: %llx )",
-				   Size, Initial);
-
-			assert(Size > 0);
-
-			SmartLock(this->lock);
-			for (size_t i = 0; i < Size; i++)
-				VectorBuffer[i] = Initial;
 		}
 
-		vector(const vector<T> &v)
-			: VectorSize(v.VectorSize.load()),
-			  VectorCapacity(v.VectorCapacity.load()),
-			  VectorBuffer(nullptr)
+		constexpr vector(size_type count, const T &value, const Allocator &alloc = Allocator())
+			: _alloc(alloc),
+			  _size(count),
+			  _capacity(count),
+			  _data(_alloc.allocate(count))
 		{
-			vDebug("( vector copy: %#lx )", &v);
+			for (size_type i = 0; i < count; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, value);
+		}
 
-			if (!v.VectorBuffer || VectorSize.load() <= 0)
+		constexpr explicit vector(size_type count, const Allocator &alloc = Allocator())
+			: _alloc(alloc),
+			  _size(count),
+			  _capacity(count),
+			  _data(_alloc.allocate(count))
+		{
+			for (size_type i = 0; i < count; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i);
+		}
+
+		/* FIXME: this conflicts with the above constructors */
+		// template <class InputIt>
+		// constexpr vector(InputIt first, InputIt last, const Allocator &alloc = Allocator())
+		// {
+		// 	_alloc = alloc;
+		// 	_size = last - first;
+		// 	_capacity = last - first;
+		// 	_data = _alloc.allocate(_size);
+		// 	for (size_type i = 0; i < _size; i++)
+		// 		std::allocator_traits<Allocator>::construct(_alloc, _data + i, *(first + i));
+		// }
+
+		constexpr vector(const vector &other)
+			: _alloc(other._alloc),
+			  _size(other._size),
+			  _capacity(other._capacity),
+			  _data(_alloc.allocate(_size))
+		{
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, other._data[i]);
+		}
+
+		constexpr vector(const vector &other, const Allocator &alloc)
+			: _alloc(other._alloc),
+			  _size(other._size),
+			  _capacity(other._capacity),
+			  _data(_alloc.allocate(_size))
+		{
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, other._data[i]);
+		}
+
+		constexpr vector(vector &&other) noexcept
+			: _alloc(std::move(other._alloc)),
+			  _size(other._size),
+			  _capacity(other._capacity),
+			  _data(other._data)
+		{
+			other._size = 0;
+			other._capacity = 0;
+			other._data = nullptr;
+		}
+
+		constexpr vector(vector &&other, const Allocator &alloc)
+			: _alloc(alloc),
+			  _size(other._size),
+			  _capacity(other._capacity),
+			  _data(other._data)
+		{
+			other._size = 0;
+			other._capacity = 0;
+			other._data = nullptr;
+		}
+
+		constexpr vector(std::initializer_list<T> init, const Allocator &alloc = Allocator())
+			: _alloc(alloc),
+			  _size(init.size()),
+			  _capacity(init.size()),
+			  _data(_alloc.allocate(_size))
+		{
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, *(init.begin() + i));
+		}
+
+		constexpr ~vector()
+		{
+			if (_capacity == 0 || _data == nullptr)
 				return;
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
 
-			SmartLock(this->lock);
-			VectorBuffer = new T[VectorSize.load()];
-			std::copy(v.VectorBuffer, v.VectorBuffer + VectorSize.load(), VectorBuffer);
+			_alloc.deallocate(_data, _size);
 		}
 
-		~vector()
+		constexpr vector &operator=(const vector &other)
 		{
-			vDebug("( deinit )");
-
-			VectorSize.store(0);
-			VectorCapacity.store(0);
-
-			SmartLock(this->lock);
-
-			if (VectorBuffer != nullptr)
-			{
-				delete[] VectorBuffer;
-				VectorBuffer = nullptr;
-			}
-		}
-
-		void erase(iterator Position)
-		{
-			vDebug("Erasing element at position %lld (v. size: %lld)",
-				   Position - this->VectorBuffer, this->VectorSize.load());
-
-			if (Position == this->end())
-			{
-				warn("%#lx: Cannot erase element at end of vector (not found if std::find is used)",
-					 this);
-				return;
-			}
-
-			assert(Position <= this->end());
-			assert(Position >= this->VectorBuffer);
-			assert(Position < this->VectorBuffer + this->VectorSize.load());
-
-			SmartLock(this->lock);
-			size_t index = Position - this->VectorBuffer;
-
-			if (std::is_trivially_copyable<T>::value)
-			{
-				this->VectorBuffer[index] = T();
-				vDebug("%#lx is trivially copyable",
-					   &this->VectorBuffer[index]);
-			}
-			else
-			{
-				this->VectorBuffer[index].~T();
-				vDebug("%#lx is not trivially copyable",
-					   &this->VectorBuffer[index]);
-			}
-
-			for (size_t i = index; i < this->VectorSize.load() - 1; ++i)
-			{
-				this->VectorBuffer[i] = std::move(this->VectorBuffer[i + 1]);
-			}
-			this->VectorSize--;
-		}
-
-		T &next(size_t Position)
-		{
-			SmartLock(this->lock);
-
-			if (Position + 1 < this->VectorSize.load())
-				return this->VectorBuffer[Position + 1];
-
-			warn("%#lx: next( %lld ) is null (requested by %#lx)", this,
-				 Position, __builtin_return_address(0));
-
-			return {};
-		}
-
-		T &prev(size_t Position)
-		{
-			SmartLock(this->lock);
-
-			if (Position > 0)
-				return this->VectorBuffer[Position - 1];
-
-			warn("%#lx: prev( %lld ) is null (requested by %#lx)", this,
-				 Position, __builtin_return_address(0));
-
-			return {};
-		}
-
-		T &next(const T &Value)
-		{
-			SmartLock(this->lock);
-
-			for (size_t i = 0; i < this->VectorSize.load(); i++)
-			{
-				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
-				{
-					if (i + 1 < this->VectorSize.load())
-						return this->VectorBuffer[i + 1];
-					else
-						break;
-				}
-			}
-
-			warn("%#lx: next( %#lx ) is null (requested by %#lx)", this,
-				 Value, __builtin_return_address(0));
-
-			return {};
-		}
-
-		T &prev(const T &Value)
-		{
-			SmartLock(this->lock);
-
-			for (size_t i = 0; i < this->VectorSize.load(); i++)
-			{
-				if (std::equal_to<T>()(this->VectorBuffer[i], Value))
-				{
-					if (i > 0)
-						return this->VectorBuffer[i - 1];
-					else
-						break;
-				}
-			}
-
-			warn("%#lx: prev( %#lx ) is null (requested by %#lx)", this,
-				 Value, __builtin_return_address(0));
-
-			return {};
-		}
-
-		void push_back(const T &Value)
-		{
-			vDebug("push_back( %#lx )", Value);
-
-			if (this->VectorSize.load() >= this->VectorCapacity.load())
-			{
-				size_t newCapacity = this->VectorCapacity.load() == 0
-										 ? 1
-										 : this->VectorCapacity.load() * 2;
-				reserve(newCapacity);
-			}
-
-			SmartLock(this->lock);
-			this->VectorBuffer[this->VectorSize++] = Value;
-		}
-
-		template <class... Args>
-		void emplace_back(Args &&...args)
-		{
-			vDebug("emplace_back( %#lx )", args...);
-
-			if (this->VectorSize.load() >= this->VectorCapacity.load())
-			{
-				size_t newCapacity = this->VectorCapacity.load() == 0
-										 ? 1
-										 : this->VectorCapacity.load() * 2;
-				reserve(newCapacity);
-			}
-
-			SmartLock(this->lock);
-			this->VectorBuffer[this->VectorSize++] = T(std::forward<Args>(args)...);
-		}
-
-		void reverse()
-		{
-			if (this->VectorSize.load() <= 1)
-				return;
-
-			SmartLock(this->lock);
-			for (size_t i = 0, j = this->VectorSize.load() - 1; i < j; i++, j--)
-			{
-				T &elem1 = this->VectorBuffer[i];
-				T &elem2 = this->VectorBuffer[j];
-				std::swap(elem1, elem2);
-			}
-		}
-
-		void reserve(size_t Capacity)
-		{
-			assert(!(Capacity <= VectorCapacity.load()));
-
-			SmartLock(this->lock);
-
-			T *NewBuffer = new T[Capacity];
-			size_t Size = std::min(Capacity, this->VectorSize.load());
-			for (size_t i = 0; i < Size; i++)
-				NewBuffer[i] = std::move(this->VectorBuffer[i]);
-
-			vDebug("reserve( %lld )->Buffer:~%#lx",
-				   Capacity, this->VectorBuffer);
-
-			delete[] this->VectorBuffer;
-			this->VectorBuffer = NewBuffer;
-			this->VectorCapacity.store(Capacity);
-		}
-
-		void resize(size_t Size)
-		{
-			reserve(Size);
-			this->VectorSize.store(Size);
-		}
-
-		void resize(size_t count, const T &value)
-		{
-			reserve(count);
-			for (size_t i = this->VectorSize.load(); i < count; i++)
-				this->VectorBuffer[i] = value;
-			this->VectorSize.store(count);
-		}
-
-		void clear()
-		{
-			this->VectorCapacity.store(0);
-			this->VectorSize.store(0);
-
-			SmartLock(this->lock);
-			if (VectorBuffer != nullptr)
-			{
-				delete[] this->VectorBuffer;
-				this->VectorBuffer = nullptr;
-			}
-		}
-
-		T &operator[](size_t Index)
-		{
-			SmartLock(this->lock);
-			if (Index >= this->VectorSize.load() || !this->VectorBuffer)
-			{
-				warn("%#lx: operator[]( %lld ) is null (requested by %#lx)", this,
-					 Index, __builtin_return_address(0));
-
-				static T null_elem{};
-				return null_elem;
-			}
-			return this->VectorBuffer[Index];
-		}
-
-		vector<T> &operator=(const vector<T> &v)
-		{
-			SmartLock(this->lock);
-
-			if (this == &v)
+			if (this == &other)
 				return *this;
 
-			delete[] this->VectorBuffer;
-			this->VectorSize.store(v.VectorSize.load());
-			this->VectorCapacity.store(v.VectorCapacity.load());
+			if (_capacity != 0 && _data != nullptr)
+			{
+				for (size_type i = 0; i < _size; i++)
+					_data[i].~value_type();
 
-			vDebug("operator=( <vector> )->Size:%lld",
-				   this->VectorSize.load());
+				_alloc.deallocate(_data, _size);
+			}
 
-			this->VectorBuffer = new T[this->VectorSize.load()];
-			for (size_t i = 0; i < this->VectorSize.load(); i++)
-				this->VectorBuffer[i] = v.VectorBuffer[i];
+			_size = other._size;
+			_capacity = other._capacity;
+			_data = _alloc.allocate(_size);
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, other._data[i]);
 
 			return *this;
 		}
 
-		void pop_back() { this->VectorSize--; }
-
-		T &front()
+		constexpr vector &operator=(vector &&other) /* noexcept(_alloc.propagate_on_container_move_assignment::value || _alloc.is_always_equal::value) */
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer[0];
+			if (this == &other)
+				return *this;
+
+			if (_capacity != 0 && _data != nullptr)
+			{
+				for (size_type i = 0; i < _size; i++)
+					_data[i].~value_type();
+
+				_alloc.deallocate(_data, _size);
+			}
+
+			_size = other._size;
+			_capacity = other._capacity;
+			_data = other._data;
+			other._size = 0;
+			other._capacity = 0;
+			other._data = nullptr;
+
+			return *this;
 		}
 
-		T &back()
+		constexpr vector &operator=(std::initializer_list<T> ilist)
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer[this->VectorSize.load() - 1];
+			_size = ilist.size();
+			_capacity = ilist.size();
+			_data = _alloc.allocate(_size);
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, *(ilist.begin() + i));
+
+			return *this;
 		}
 
-		T *data()
+		constexpr void assign(size_type count, const T &value)
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer;
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
+
+			if (_data != nullptr)
+				_alloc.deallocate(_data, _size);
+
+			_size = count;
+			_capacity = count;
+			_data = _alloc.allocate(_size);
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, value);
 		}
 
-		bool empty() const { return this->VectorSize.load() == 0; }
-		size_t capacity() const { return this->VectorCapacity.load(); }
-		size_t size() const { return this->VectorSize.load(); }
-
-		iterator begin()
+		template <class InputIt>
+		constexpr void assign(InputIt first, InputIt last)
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer;
+			if (_capacity != 0 && _data != nullptr)
+			{
+				for (size_type i = 0; i < _size; i++)
+					_data[i].~value_type();
+
+				_alloc.deallocate(_data, _size);
+			}
+
+			_size = last - first;
+			_capacity = last - first;
+			_data = _alloc.allocate(_size);
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, *(first + i));
 		}
 
-		iterator end()
+		constexpr void assign(std::initializer_list<T> ilist)
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer + size();
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
+
+			if (_data != nullptr)
+				_alloc.deallocate(_data, _size);
+
+			_size = ilist.size();
+			_capacity = ilist.size();
+			_data = _alloc.allocate(_size);
+
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, _data + i, *(ilist.begin() + i));
 		}
 
-		const_iterator begin() const
+		constexpr allocator_type get_allocator() const noexcept
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer;
+			return _alloc;
 		}
 
-		const_iterator end() const
+#pragma endregion Member Functions
+
+#pragma region Element Access
+
+		reference at(size_type pos)
 		{
-			SmartLock(this->lock);
-			return this->VectorBuffer + size();
+			if (pos >= _size)
+				throw std::out_of_range("vector::at");
+
+			return _data[pos];
 		}
+
+		const_reference at(size_type pos) const
+		{
+			if (pos >= _size)
+				throw std::out_of_range("vector::at");
+
+			return _data[pos];
+		}
+
+		reference operator[](size_type pos)
+		{
+			return _data[pos];
+		}
+
+		const_reference operator[](size_type pos) const
+		{
+			return _data[pos];
+		}
+
+		reference front()
+		{
+			return _data[0];
+		}
+
+		const_reference front() const
+		{
+			return _data[0];
+		}
+
+		reference back()
+		{
+			return _data[_size - 1];
+		}
+
+		const_reference back() const
+		{
+			return _data[_size - 1];
+		}
+
+		constexpr T *data() noexcept
+		{
+			return _data;
+		}
+
+		constexpr const T *data() const
+		{
+			return _data;
+		}
+
+#pragma endregion Element Access
+
+#pragma region Iterators
+
+		constexpr iterator begin()
+		{
+			return iterator(_data);
+		}
+
+		constexpr const_iterator begin() const
+		{
+			return const_iterator(_data);
+		}
+
+		constexpr const_iterator cbegin() const noexcept
+		{
+			return const_iterator(_data);
+		}
+
+		constexpr iterator end() noexcept
+		{
+			return iterator(_data + _size);
+		}
+
+		constexpr const_iterator end() const noexcept
+		{
+			return const_iterator(_data + _size);
+		}
+
+		constexpr const_iterator cend() const noexcept
+		{
+			return const_iterator(_data + _size);
+		}
+
+		constexpr reverse_iterator rbegin()
+		{
+			return reverse_iterator(_data + _size - 1);
+		}
+
+		constexpr const_reverse_iterator rbegin() const
+		{
+			return const_reverse_iterator(_data + _size - 1);
+		}
+
+		constexpr const_reverse_iterator crbegin() const noexcept
+		{
+			return const_reverse_iterator(_data + _size - 1);
+		}
+
+		constexpr iterator rend() noexcept
+		{
+			return iterator(_data - 1);
+		}
+
+		constexpr const_iterator rend() const noexcept
+		{
+			return const_iterator(_data - 1);
+		}
+
+		constexpr const_iterator crend() const noexcept
+		{
+			return const_iterator(_data - 1);
+		}
+
+#pragma endregion Iterators
+
+#pragma region Capacity
+
+		[[nodiscard]] constexpr bool empty() const noexcept
+		{
+			return _size == 0; /* begin() == end() */
+		}
+
+		constexpr size_type size() const noexcept
+		{
+			return _size; /* std::distance(begin(), end()) */
+		}
+
+		constexpr size_type max_size() const noexcept
+		{
+			return std::numeric_limits<difference_type>::max();
+		}
+
+		constexpr void reserve(size_type new_cap)
+		{
+			if (new_cap <= _capacity)
+				return;
+
+			pointer new_data = _alloc.allocate(new_cap);
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, new_data + i, _data[i]);
+
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
+
+			if (_data != nullptr)
+				_alloc.deallocate(_data, _size);
+
+			_data = new_data;
+			_capacity = new_cap;
+		}
+
+		constexpr size_type capacity() const noexcept
+		{
+			return _capacity;
+		}
+
+		constexpr void shrink_to_fit()
+		{
+			if (_size >= _capacity)
+				return;
+
+			pointer new_data = _alloc.allocate(_size);
+			for (size_type i = 0; i < _size; i++)
+				std::allocator_traits<Allocator>::construct(_alloc, new_data + i, _data[i]);
+
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
+
+			if (_data != nullptr)
+				_alloc.deallocate(_data, _size);
+			_data = new_data;
+			_capacity = _size;
+		}
+
+#pragma endregion Capacity
+
+#pragma region Modifiers
+
+		constexpr void clear() noexcept
+		{
+			for (size_type i = 0; i < _size; i++)
+				_data[i].~value_type();
+
+			_size = 0;
+		}
+
+		constexpr iterator insert(const_iterator pos, const T &value)
+		{
+			size_type index = pos - begin();
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			for (size_type i = _size; i > index; i--)
+				_data[i] = _data[i - 1];
+
+			_data[index] = value;
+			_size++;
+			return iterator(_data + index);
+		}
+
+		constexpr iterator insert(const_iterator pos, size_type count, const T &value)
+		{
+			size_type index = pos - begin();
+			if (_size + count > _capacity)
+				reserve(_capacity + count);
+
+			for (size_type i = _size + count - 1; i > index + count - 1; i--)
+				_data[i] = _data[i - count];
+
+			for (size_type i = index; i < index + count; i++)
+				_data[i] = value;
+
+			_size += count;
+			return iterator(_data + index);
+		}
+		template <class InputIt>
+		constexpr iterator insert(const_iterator pos, InputIt first, InputIt last)
+		{
+			size_type index = pos - begin();
+			size_type count = last - first;
+			if (_size + count > _capacity)
+				reserve(_capacity + count);
+
+			for (size_type i = _size + count - 1; i > index + count - 1; i--)
+				_data[i] = _data[i - count];
+
+			for (size_type i = index; i < index + count; i++)
+				_data[i] = *(first + i - index);
+
+			_size += count;
+			return iterator(_data + index);
+		}
+
+		constexpr iterator insert(const_iterator pos,
+								  std::initializer_list<T> ilist)
+		{
+			size_type index = pos - begin();
+			size_type count = ilist.size();
+			if (_size + count > _capacity)
+				reserve(_capacity + count);
+
+			for (size_type i = _size + count - 1; i > index + count - 1; i--)
+				_data[i] = _data[i - count];
+
+			for (size_type i = index; i < index + count; i++)
+				_data[i] = *(ilist.begin() + i - index);
+
+			_size += count;
+			return iterator(_data + index);
+		}
+
+		template <class... Args>
+		constexpr iterator emplace(const_iterator pos, Args &&...args)
+		{
+			size_type index = pos - begin();
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			for (size_type i = _size; i > index; i--)
+				_data[i] = _data[i - 1];
+
+			std::allocator_traits<Allocator>::construct(_alloc, _data + index, std::forward<Args>(args)...);
+			_size++;
+			return iterator(_data + index);
+		}
+
+		constexpr iterator erase(const_iterator pos)
+		{
+			size_type index = pos - cbegin();
+			for (size_type i = index; i < _size - 1; i++)
+				_data[i] = _data[i + 1];
+
+			_data[_size - 1].~value_type();
+			_size--;
+			return iterator(_data + index);
+		}
+
+		constexpr iterator erase(const_iterator first, const_iterator last)
+		{
+			size_type index = first - cbegin();
+			size_type count = last - first;
+			for (size_type i = index; i < _size - count; i++)
+				_data[i] = _data[i + count];
+
+			for (size_type i = _size - count; i < _size; i++)
+				_data[i].~value_type();
+
+			_size -= count;
+			return iterator(_data + index);
+		}
+
+		constexpr void push_back(const T &value)
+		{
+			if (_capacity == 0)
+				reserve(sizeof(T) * 2);
+
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			_data[_size] = value;
+			_size++;
+		}
+
+		constexpr void push_back(T &&value)
+		{
+			if (_capacity == 0)
+				reserve(sizeof(T) * 2);
+
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			_data[_size] = std::move(value);
+			_size++;
+		}
+
+		template <class... Args>
+		constexpr reference emplace_back(Args &&...args)
+		{
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			std::allocator_traits<Allocator>::construct(_alloc, _data + _size, std::forward<Args>(args)...);
+			_size++;
+			return _data[_size - 1];
+		}
+
+		constexpr void pop_back()
+		{
+			_data[_size - 1].~value_type();
+			_size--;
+		}
+
+		constexpr void resize(size_type count)
+		{
+			if (count > _size)
+			{
+				if (count > _capacity)
+					reserve(count);
+
+				for (size_type i = _size; i < count; i++)
+					std::allocator_traits<Allocator>::construct(_alloc, _data + i);
+			}
+			else
+			{
+				for (size_type i = count; i < _size; i++)
+					_data[i].~value_type();
+			}
+			_size = count;
+		}
+
+		constexpr void resize(size_type count, const value_type &value)
+		{
+			if (count > _size)
+			{
+				if (count > _capacity)
+					reserve(count);
+
+				for (size_type i = _size; i < count; i++)
+					std::allocator_traits<Allocator>::construct(_alloc, _data + i, value);
+			}
+			else
+			{
+				for (size_type i = count; i < _size; i++)
+					_data[i].~value_type();
+			}
+			_size = count;
+		}
+
+		constexpr void swap(vector &other) /* noexcept(_alloc.propagate_on_container_swap::value || _alloc.is_always_equal::value) */
+		{
+			size_type temp_size = _size;
+			size_type temp_capacity = _capacity;
+			pointer temp_data = _data;
+
+			_size = other._size;
+			_capacity = other._capacity;
+			_data = other._data;
+
+			other._size = temp_size;
+			other._capacity = temp_capacity;
+			other._data = temp_data;
+		}
+
+#pragma endregion Modifiers
 	};
+
+	template <class T, class Alloc>
+	constexpr bool operator==(const std::vector<T, Alloc> &lhs, const std::vector<T, Alloc> &rhs)
+	{
+		if (lhs.size() != rhs.size())
+		{
+			return false;
+		}
+		for (size_t i = 0; i < lhs.size(); i++)
+		{
+			if (lhs[i] != rhs[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	template <class T, class Alloc>
+	constexpr void swap(std::vector<T, Alloc> &lhs, std::vector<T, Alloc> &rhs) noexcept(noexcept(noexcept(lhs.swap(rhs))))
+	{
+		lhs.swap(rhs);
+	}
+
+	template <class T, class Alloc, class U>
+	constexpr std::vector<T, Alloc>::size_type erase(std::vector<T, Alloc> &c, const U &value)
+	{
+		auto it = std::remove(c.begin(), c.end(), value);
+		auto r = c.end() - it;
+		c.erase(it, c.end());
+		return r;
+	}
+
+	template <class T, class Alloc, class Pred>
+	constexpr std::vector<T, Alloc>::size_type erase_if(std::vector<T, Alloc> &c, Pred pred)
+	{
+		auto it = std::remove_if(c.begin(), c.end(), pred);
+		auto r = c.end() - it;
+		c.erase(it, c.end());
+		return r;
+	}
 }

@@ -345,15 +345,15 @@ namespace Interrupts
 #ifdef DEBUG
 			foreach (auto ev in RegisteredEvents)
 			{
-				void *func = ev.IsHandler
-								 ? ev.Data
-								 : (void *)ev.Callback;
+				void *fct = ev.IsHandler
+								? ev.Data
+								: (void *)ev.Callback;
 				const char *symbol = ev.IsHandler
 										 ? "class"
-										 : KernelSymbolTable->GetSymbol((uintptr_t)func);
+										 : KernelSymbolTable->GetSymbol((uintptr_t)fct);
 
 				debug("Event IRQ%d [%#lx %s] has priority %ld",
-					  ev.IRQ, func, symbol, ev.Priority);
+					  ev.IRQ, fct, symbol, ev.Priority);
 			}
 #endif
 		}

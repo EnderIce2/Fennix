@@ -33,6 +33,7 @@ namespace std
 		bool Result = this->Locked.exchange(true, std::memory_order_acquire);
 
 		TCB *tcb = thisThread;
+		assert(tcb != nullptr);
 		if (Result == true)
 		{
 			debug("%#lx: Mutex is locked, blocking task %d (\"%s\" : %d)", this,
@@ -56,6 +57,7 @@ namespace std
 		bool Result = this->Locked.exchange(true, std::memory_order_acquire);
 
 		TCB *tcb = thisThread;
+		assert(tcb != nullptr);
 		if (Result == true)
 		{
 			debug("%#lx: Mutex is locked, task %d (\"%s\" : %d) failed to lock", this,
@@ -74,6 +76,7 @@ namespace std
 	void mutex::unlock()
 	{
 		TCB *tcb = thisThread;
+		assert(tcb != nullptr);
 		assert(this->Holder == tcb);
 
 		this->Holder = nullptr;

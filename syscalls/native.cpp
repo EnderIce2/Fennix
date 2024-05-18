@@ -15,15 +15,15 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <syscalls.hpp>
+#include <interface/syscalls.h>
 
+#include <syscalls.hpp>
 #include <memory.hpp>
 #include <lock.hpp>
 #include <exec.hpp>
 #include <errno.h>
 #include <debug.h>
 
-#include "../syscalls.h"
 #include "../kernel.h"
 
 struct SyscallData
@@ -41,91 +41,22 @@ typedef long arch_t;
 typedef int arch_t;
 #endif
 
-void sys_exit(SysFrm *, int status);
+void sys_0() { stub; }
+void sys_1() { stub; }
 
-void *sys_mmap(SysFrm *,
-			   void *addr, size_t len,
-			   int prot, int flags,
-			   int fildes, off_t off);
-
-int sys_munmap(SysFrm *,
-			   void *addr, size_t len);
-
-int sys_mprotect(SysFrm *,
-				 void *addr, size_t len,
-				 int prot);
-
-int sys_open(SysFrm *,
-			 const char *path,
-			 int oflag, mode_t mode);
-
-int sys_close(SysFrm *,
-			  int fildes);
-
-ssize_t sys_read(SysFrm *, int fildes,
-				 void *buf, size_t nbyte);
-
-ssize_t sys_write(SysFrm *, int fildes,
-				  const void *buf,
-				  size_t nbyte);
-
-off_t sys_lseek(SysFrm *, int fildes,
-				off_t offset, int whence);
-
-int sys_fork(SysFrm *Frame);
+#define sc_MaxSyscall 2
 
 static SyscallData NativeSyscallsTable[sc_MaxSyscall] = {
-	[sc_exit] = {
-		"exit",
-		(void *)sys_exit,
+	[0] = {
+		"0 syscall",
+		(void *)sys_0,
 		UINT16_MAX,
 	},
-	[sc_mmap] = {
-		"mmap",
-		(void *)sys_mmap,
+	[1] = {
+		"1 syscall",
+		(void *)sys_1,
 		UINT16_MAX,
-	},
-	[sc_munmap] = {
-		"munmap",
-		(void *)sys_munmap,
-		UINT16_MAX,
-	},
-	[sc_mprotect] = {
-		"mprotect",
-		(void *)sys_mprotect,
-		UINT16_MAX,
-	},
-	[sc_open] = {
-		"open",
-		(void *)sys_open,
-		UINT16_MAX,
-	},
-	[sc_close] = {
-		"close",
-		(void *)sys_close,
-		UINT16_MAX,
-	},
-	[sc_read] = {
-		"read",
-		(void *)sys_read,
-		UINT16_MAX,
-	},
-	[sc_write] = {
-		"write",
-		(void *)sys_write,
-		UINT16_MAX,
-	},
-	[sc_lseek] = {
-		"lseek",
-		(void *)sys_lseek,
-		UINT16_MAX,
-	},
-	[sc_fork] = {
-		"fork",
-		(void *)sys_fork,
-		UINT16_MAX,
-	},
-};
+	}};
 
 uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 {

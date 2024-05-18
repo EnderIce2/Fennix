@@ -57,7 +57,8 @@ namespace NetworkEthernet
 		memcpy(Packet->Data, Data, Length);
 		/* Network Interface Manager takes care of physical allocation.
 		   So basically, we allocate here and then it allocates again but 1:1 mapped. */
-		NIManager->Send(Interface, (uint8_t *)Packet, PacketLength);
+		// NIManager->Send(Interface, (uint8_t *)Packet, PacketLength);
+		assert(!"Function not implemented");
 		kfree(Packet);
 	}
 

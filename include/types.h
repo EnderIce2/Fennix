@@ -18,6 +18,8 @@
 #ifndef __FENNIX_KERNEL_TYPES_H__
 #define __FENNIX_KERNEL_TYPES_H__
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #define START_EXTERNC \
@@ -35,14 +37,10 @@
 #define NULL 0
 #else // __cplusplus
 #define NULL ((void *)0)
-#define bool _Bool
 #endif // __cplusplus
 
 #define asm __asm__
 #define asmv __asm__ volatile
-
-#define true 1
-#define false 0
 
 #define inf_loop while (1)
 #define ilp inf_loop; /* Used for debugging */
@@ -64,11 +62,6 @@
 #define UNUSED(x) (void)(x)
 #define CONCAT(x, y) x##y
 
-#ifndef __cplusplus /* This conflicts with std */
-#define toupper(c) ((c)-0x20 * (((c) >= 'a') && ((c) <= 'z')))
-#define tolower(c) ((c) + 0x20 * (((c) >= 'A') && ((c) <= 'Z')))
-#endif
-
 #ifndef __va_list__
 typedef __builtin_va_list va_list;
 #endif
@@ -77,8 +70,8 @@ typedef __builtin_va_list va_list;
 #define va_end(v) __builtin_va_end(v)
 #define va_arg(v, l) __builtin_va_arg(v, l)
 
-#define ALIGN_UP(x, align) ((__typeof__(x))(((uintptr_t)(x) + ((align)-1)) & (~((align)-1))))
-#define ALIGN_DOWN(x, align) ((__typeof__(x))((x) & (~((align)-1))))
+#define ALIGN_UP(x, align) ((__typeof__(x))(((uintptr_t)(x) + ((align) - 1)) & (~((align) - 1))))
+#define ALIGN_DOWN(x, align) ((__typeof__(x))((x) & (~((align) - 1))))
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
@@ -96,8 +89,8 @@ typedef __builtin_va_list va_list;
 		_a < _b ? _a : _b;      \
 	})
 
-#define ROUND_UP(x, y) (((x) + (y)-1) & ~((y)-1))
-#define ROUND_DOWN(x, y) ((x) & ~((y)-1))
+#define ROUND_UP(x, y) (((x) + (y) - 1) & ~((y) - 1))
+#define ROUND_DOWN(x, y) ((x) & ~((y) - 1))
 
 #define VPOKE(type, address) (*((volatile type *)(address)))
 #define POKE(type, address) (*((type *)(address)))
@@ -399,20 +392,52 @@ typedef uint48_t uint_fast48_t;
 				 (((x) & 0xff0000000000) >> 40)))
 #define b64(x) __builtin_bswap64(x)
 
-/* https://gcc.gnu.org/onlinedocs/gcc-9.5.0/gnat_ugn/Optimization-Levels.html */
+/* https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html */
 
-/** @brief No optimization (the default); generates unoptimized code but has the fastest compilation time. */
+/** No optimization (the default); generates
+ *  unoptimized code but has the fastest compilation time.
+ */
 #define O0 __attribute__((optimize("O0")))
-/** @brief Moderate optimization; optimizes reasonably well but does not degrade compilation time significantly. */
+
+/** Moderate optimization;
+ *  optimizes reasonably well but does not degrade
+ *  compilation time significantly. */
 #define O1 __attribute__((optimize("O1")))
-/** @brief Full optimization; generates highly optimized code and has the slowest compilation time. */
+
+/** Full optimization; generates highly
+ *  optimized code and has the slowest compilation time.
+ */
 #define O2 __attribute__((optimize("O2")))
-/** @brief Full optimization as in -O2; also uses more aggressive automatic inlining of subprograms within a unit (Inlining of Subprograms) and attempts to vectorize loops. */
+
+/** Full optimization as in -O2;
+ *  also uses more aggressive automatic inlining of
+ *  subprograms within a unit (Inlining of Subprograms)
+ *  and attempts to vectorize loops. */
 #define O3 __attribute__((optimize("O3")))
-/** @brief Optimize space usage (code and data) of resulting program. */
+
+/** Optimize space usage (code and data)
+ *  of resulting program.
+ */
 #define Os __attribute__((optimize("Os")))
-/** @brief Disregard strict standards compliance. -Ofast enables all -O3 optimizations. It also enables optimizations that are not valid for all standard-compliant programs. */
+
+/** Disregard strict standards compliance.
+ * -Ofast enables all -O3 optimizations.
+ * It also enables optimizations that are not valid for
+ *  all standard-compliant programs.
+ */
 #define Ofast __attribute__((optimize("Ofast")))
+
+/** Optimize for size.
+ * -Oz enables all -Os optimizations that do not typically
+ * increase code size.
+ */
+#define Oz __attribute__((optimize("Oz")))
+
+/** Optimize for debugging.
+ * -Og enables optimizations that do not interfere with
+ * debugging.
+ */
+#define Og __attribute__((optimize("Og")))
 
 #define __unused __attribute__((unused))
 #define __packed __attribute__((packed))
@@ -457,8 +482,6 @@ typedef uint48_t uint_fast48_t;
 // sanitizer
 #define __no_sanitize(x) __attribute__((no_sanitize(x)))
 #define __no_sanitize_address __attribute__((no_sanitize_address))
-/** @brief The no_address_safety_analysis is a deprecated alias of the no_sanitize_address attribute, new code should use no_sanitize_address. */
-#define __no_address_safety_analysis __attribute__((no_address_safety_analysis))
 #define __no_sanitize_thread __attribute__((no_sanitize_thread))
 #define __no_sanitize_undefined __attribute__((no_sanitize_undefined))
 #define __no_sanitize_coverage __attribute__((no_sanitize_coverage))
@@ -471,10 +494,7 @@ typedef uint48_t uint_fast48_t;
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-#define PUBLIC __visibility("default")
-#define PRIVATE __visibility("hidden")
-
-#define NoSecurityAnalysis __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_address_safety_analysis __no_sanitize_thread
+#define NoSecurityAnalysis __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_sanitize_thread
 #define nsa NoSecurityAnalysis
 
 #define NIF __no_instrument_function
@@ -486,9 +506,16 @@ typedef uint48_t uint_fast48_t;
 						 : "memory")
 
 #define StackPush(stack, type, value) \
-	*((type *)--stack) = value;
+	*((type *)--stack) = value
 
 #define StackPop(stack, type) \
 	*((type *)stack++)
+
+#define ReturnLogError(ret, Format, ...) \
+	{                                    \
+		trace(Format, ##__VA_ARGS__);    \
+		return ret;                      \
+	}                                    \
+	while (0)
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

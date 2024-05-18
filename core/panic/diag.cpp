@@ -65,7 +65,7 @@ struct DiagnosticFile
 	} Data;
 };
 
-nsa bool WriteDiagDataToNode(vfs::RefNode *refFile)
+nsa bool WriteDiagDataToNode(FileNode *node)
 {
 	uintptr_t KStart = (uintptr_t)&_kernel_start;
 	uintptr_t kEnd = (uintptr_t)&_kernel_end;
@@ -89,8 +89,8 @@ nsa bool WriteDiagDataToNode(vfs::RefNode *refFile)
 	file->Data.KernelMemoryLength = uint32_t(kSize);
 	memcpy(file->Data.KernelMemory, (void *)KStart, kSize);
 
-	ExPrint("\eFAFAFAWriting to %s\n", refFile->node->FullPath);
-	size_t w = refFile->write(buf, fileSize);
+	ExPrint("\eFAFAFAWriting to %s\n", node->Path.c_str());
+	size_t w = node->Write(buf, fileSize, 0);
 	if (w != fileSize)
 	{
 		debug("%d out of %d bytes written", w, fileSize);
@@ -111,7 +111,12 @@ nsa void DiagnosticDataCollection()
 	ExPrint("\n\eFAFAFAPlease wait while we collect some diagnostic information...\n");
 	ExPrint("This may take a while...\n");
 
-	vfs::Node *panicDir = fs->CreateIfNotExists("/var/panic", vfs::DIRECTORY);
+	mode_t mode = S_IRWXU |
+				  S_IRWXG |
+				  S_IROTH |
+				  S_IFDIR;
+
+	FileNode *panicDir = fs->ForceCreate(nullptr, "/var/panic", mode);
 	if (!panicDir)
 	{
 		ExPrint("\eFF0000Failed to create /var/panic\n");
@@ -119,6 +124,7 @@ nsa void DiagnosticDataCollection()
 		return;
 	}
 
+	FileNode *dumpFile;
 	Time::Clock clock = Time::ReadClock();
 	char filename[64];
 	for (int i = 0; i < INT32_MAX; i++)
@@ -128,18 +134,18 @@ nsa void DiagnosticDataCollection()
 		if (fs->PathExists(filename, panicDir))
 			continue;
 
-		fs->Create(filename, vfs::FILE, panicDir);
+		mode = S_IRWXU |
+			   S_IRWXG |
+			   S_IROTH |
+			   S_IFREG;
+
+		dumpFile = fs->Create(panicDir, filename, mode);
 		break;
 	}
 
-	vfs::RefNode *refFile = fs->Open(filename, panicDir);
-	if (!WriteDiagDataToNode(refFile))
-	{
-		delete refFile;
+	if (!WriteDiagDataToNode(dumpFile))
 		return;
-	}
 
 	ExPrint("You can find the diagnostic file in /var/panic/%s\n", filename);
 	Display->UpdateBuffer();
-	delete refFile;
 }

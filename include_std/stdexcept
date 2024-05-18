@@ -17,27 +17,103 @@
 
 #pragma once
 
-#include <assert.h>
+#include <convert.h>
+#include <cassert>
+#include <new>
 
 namespace std
 {
-	class runtime_error
+	class __simple_string
 	{
 	private:
-		const char *m_what;
+		char *data;
+		size_t size;
 
 	public:
-		runtime_error(const char *what_arg) : m_what(what_arg) {}
-		const char *what() const { return this->m_what; }
+		__simple_string()
+			: data(nullptr),
+			  size(0)
+		{
+		}
+
+		__simple_string(const char *str)
+			: data(nullptr),
+			  size(0)
+		{
+			size = strlen(str);
+			data = new char[size + 1];
+			assert(data != nullptr);
+			memcpy(data, str, size);
+			data[size] = '\0';
+		}
+
+		__simple_string(const __simple_string &other)
+			: data(nullptr),
+			  size(0)
+		{
+			size = other.size;
+			data = new char[size + 1];
+			assert(data != nullptr);
+			memcpy(data, other.data, size);
+			data[size] = '\0';
+		}
+
+		~__simple_string()
+		{
+			if (data)
+				delete[] data;
+		}
+
+		const char *c_str() const { return data; }
+
+		__simple_string &operator=(const __simple_string &other)
+		{
+			if (data)
+				delete[] data;
+
+			size = other.size;
+			data = new char[size + 1];
+			assert(data != nullptr);
+			memcpy(data, other.data, size);
+			data[size] = '\0';
+
+			return *this;
+		}
 	};
 
-	class out_of_range
+	class runtime_error : public exception
+	{
+	};
+
+	class logic_error : public exception
+	{
+	private:
+		__simple_string msg;
+
+	public:
+		logic_error(const char *what_arg) : msg(what_arg) {}
+		logic_error(const logic_error &other) : msg(other.msg) {}
+
+		logic_error &operator=(const logic_error &other) noexcept
+		{
+			msg = other.msg;
+			return *this;
+		}
+
+		virtual const char *what() const noexcept
+		{
+			return msg.c_str();
+		}
+	};
+
+	class out_of_range : public logic_error
 	{
 	public:
-		out_of_range(const char *what_arg)
-		{
-			/* FIXME: This is a temporary assert */
-			assert(what_arg != nullptr);
-		}
+		out_of_range(const char *what_arg) : logic_error(what_arg) {}
+		out_of_range(const out_of_range &other) = default;
+		out_of_range &operator=(const out_of_range &) = default;
+		out_of_range(out_of_range &&) = default;
+		out_of_range &operator=(out_of_range &&) = default;
+		virtual ~out_of_range() = default;
 	};
 }

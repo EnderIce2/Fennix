@@ -28,22 +28,24 @@ void cmd_cd(const char *args)
 	if (args[0] == '\0')
 		return;
 
-	Node *thisNode = fs->GetNodeFromPath(args, thisProcess->CurrentWorkingDirectory);
+	/* FIXME: Reimplement this later */
+	assert(!"Function not implemented");
+	// Node *thisNode = fs->GetByPath(args, thisProcess->CWD, true);
 
-	if (thisNode == nullptr)
-	{
-		printf("cd: %s: No such file or directory\n", args);
-		return;
-	}
+	// if (thisNode == nullptr)
+	// {
+	// 	printf("cd: %s: No such file or directory\n", args);
+	// 	return;
+	// }
 
-	if (thisNode->Type == NodeType::SYMLINK)
-		thisNode = fs->GetNodeFromPath(thisNode->Symlink);
+	// if (thisNode->Stat.IsType(SYMLINK))
+	// 	thisNode = fs->GetByPath(thisNode->GetSymLink(), nullptr, true);
 
-	if (thisNode->Type != NodeType::DIRECTORY)
-	{
-		printf("cd: %s: Not a directory\n", args);
-		return;
-	}
+	// if (!thisNode->Stat.IsType(DIRECTORY))
+	// {
+	// 	printf("cd: %s: Not a directory\n", args);
+	// 	return;
+	// }
 
-	thisProcess->CurrentWorkingDirectory = thisNode;
+	// thisProcess->CWD = thisNode;
 }

@@ -86,6 +86,6 @@ EXTERNC int __rpmalloc_munmap(void *addr, size_t length)
 
 EXTERNC int __rpmalloc_posix_madvise(void *addr, size_t length, int advice)
 {
-	function("%#lx %d %d", addr, length, advice);
+	func("%#lx %d %d", addr, length, advice);
 	return 0;
 }

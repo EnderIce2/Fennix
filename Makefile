@@ -17,6 +17,9 @@ RUST_TARGET_PATH = arch/$(OSARCH)/rust-target.json
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
 
+HEADERS = $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
+INCLUDE_DIR = -I./include -I./include_std
+
 BMP_SOURCES = $(shell find ./ -type f -name '*.bmp')
 PSF_SOURCES = $(shell find ./ -type f -name '*.psf')
 ifeq ($(OSARCH), amd64)
@@ -24,42 +27,46 @@ S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/i386/*" -not 
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
+HEADERS += $(sort $(dir $(wildcard ./arch/amd64/include/*)))
+INCLUDE_DIR += -I./arch/amd64/include
 else ifeq ($(OSARCH), i386)
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
+HEADERS += $(sort $(dir $(wildcard ./arch/i386/include/*)))
+INCLUDE_DIR += -I./arch/i386/include
 else ifeq ($(OSARCH), aarch64)
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 s_SOURCES = $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
+HEADERS += $(sort $(dir $(wildcard ./arch/aarch64/include/*)))
+INCLUDE_DIR += -I./arch/aarch64/include
 endif
-HEADERS = $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(s_SOURCES:.s=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
-INCLUDE_DIR = -I./include -I./include_std
 
 LDFLAGS := -Wl,-Map kernel.map -static -nostdlib -nodefaultlibs -nolibc
 
 # Disable all warnings by adding "-w" in WARNCFLAG and if you want to treat the warnings as errors, add "-Werror"
+# -Wconversion this may be re-added later
 WARNCFLAG = -Wall -Wextra \
 			-Wfloat-equal -Wpointer-arith -Wcast-align \
 			-Wredundant-decls -Winit-self -Wswitch-default \
-			-Wstrict-overflow=5 -Wconversion -Wno-error=cpp -Werror \
+			-Wstrict-overflow=5 -Wno-error=cpp -Werror \
 			-Wno-unused-parameter
 
 # https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
 CFLAGS :=										\
 	$(INCLUDE_DIR)								\
+	-D__kernel__='1'							\
 	-DKERNEL_NAME='"$(OSNAME)"' 				\
 	-DKERNEL_ARCH='"$(OSARCH)"' 				\
 	-DKERNEL_VERSION='"$(KERNEL_VERSION)"'		\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\
 	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"'
-
-SIMD_FLAGS := -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mavx512f
 
 ifeq ($(OSARCH), amd64)
 
@@ -131,6 +138,7 @@ endif
 $(KERNEL_FILENAME): $(OBJ)
 	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(OBJ) -o $@
+#	$(CC) $(LDFLAGS) $(OBJ) -mno-red-zone -lgcc -o $@
 
 %.o: %.c $(HEADERS)
 	$(info Compiling $<)
@@ -139,7 +147,7 @@ $(KERNEL_FILENAME): $(OBJ)
 # https://gcc.gnu.org/projects/cxx-status.html
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-exceptions -fno-rtti
+	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
 
 %.o: %.S
 	$(info Compiling $<)

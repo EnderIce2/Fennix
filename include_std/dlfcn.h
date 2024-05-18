@@ -15,7 +15,17 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _DLFCN_H
-#define _DLFCN_H
+#ifndef __FENNIX_KERNEL_DLFCN_H__
+#define __FENNIX_KERNEL_DLFCN_H__
 
-#endif // !_DLFCN_H
+#include <types.h>
+
+typedef struct
+{
+	const char *dli_fname;
+	void *dli_fbase;
+	const char *dli_sname;
+	void *dli_saddr;
+} Dl_info;
+
+#endif // !__FENNIX_KERNEL_DLFCN_H__

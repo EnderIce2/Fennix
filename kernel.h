@@ -49,16 +49,9 @@ extern Power::Power *PowerManager;
 extern Time::time *TimeManager;
 extern PCI::Manager *PCIManager;
 extern vfs::Virtual *fs;
-extern vfs::Node *DevFS;
-extern vfs::Node *MntFS;
-extern vfs::Node *ProcFS;
-extern vfs::Node *VarLogFS;
-extern vfs::PTMXDevice *ptmx;
 extern Tasking::Task *TaskManager;
 
-extern Disk::Manager *DiskManager;
 extern Driver::Manager *DriverManager;
-extern NetworkInterfaceManager::NetworkInterface *NIManager;
 
 #endif // __cplusplus
 

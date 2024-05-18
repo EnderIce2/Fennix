@@ -26,12 +26,13 @@
 #include <memory.hpp>
 #include <signal.hpp>
 #include <ints.hpp>
+#include <kexcept/cxxabi.h>
 #include <debug.h>
 #include <cwalk.h>
 #include <vector>
 #include <atomic>
+#include <vector>
 #include <abi.h>
-#include <list>
 
 #define RLIM_INFINITY (~0ULL)
 
@@ -45,7 +46,6 @@ struct rlimit
 namespace Tasking
 {
 	using vfs::FileDescriptorTable;
-	using vfs::Node;
 
 	/** Instruction Pointer */
 	typedef __UINTPTR_TYPE__ IP;
@@ -212,6 +212,7 @@ namespace Tasking
 		TaskArchitecture Architecture = TaskArchitecture::UnknownArchitecture;
 		TaskCompatibility Compatibility = TaskCompatibility::UnknownPlatform;
 		cwk_path_style PathStyle = CWK_STYLE_UNIX;
+		FileNode *RootNode = nullptr;
 	};
 
 	struct ThreadLocalStorage
@@ -334,7 +335,7 @@ namespace Tasking
 		class PCB *Parent = nullptr;
 		IP EntryPoint = 0;
 
-		/* Statuses */
+		/* Status */
 		std::atomic_int ExitCode;
 		std::atomic<TaskState> State = TaskState::Waiting;
 		int ErrorNumber;
@@ -377,6 +378,9 @@ namespace Tasking
 			pid_t tgid = 0;
 		} Linux{};
 
+		/* Kernel Exceptions */
+		ExceptionInfo KernelException{};
+
 		int SendSignal(int sig);
 		void SetState(TaskState state);
 		void SetExitCode(int code);
@@ -411,7 +415,7 @@ namespace Tasking
 		~TCB();
 	};
 
-	class PCB : public vfs::Node
+	class PCB
 	{
 	private:
 		class Task *ctx = nullptr;
@@ -434,6 +438,7 @@ namespace Tasking
 		PID ID = -1;
 		const char *Name = nullptr;
 		PCB *Parent = nullptr;
+		FileNode *ProcDirectory = nullptr;
 
 		/* Statuses */
 		std::atomic_int ExitCode;
@@ -464,14 +469,14 @@ namespace Tasking
 		ThreadLocalStorage TLS{};
 
 		/* Filesystem */
-		Node *CurrentWorkingDirectory;
-		Node *Executable;
+		FileNode *CWD;
+		FileNode *Executable;
 		FileDescriptorTable *FileDescriptors;
 
 		/* stdio */
-		Node *stdin;
-		Node *stdout;
-		Node *stderr;
+		FileNode *stdin;
+		FileNode *stdout;
+		FileNode *stderr;
 
 		/* Memory */
 		Memory::PageTable *PageTable;
@@ -480,12 +485,13 @@ namespace Tasking
 
 		/* Other */
 		Signal Signals;
-		mode_t FileCreationMask = S_IRUSR | S_IWUSR | S_IRGRP |
-								  S_IWGRP | S_IROTH | S_IWOTH;
+		mode_t FileCreationMask = S_IRUSR | S_IWUSR |
+								  S_IRGRP | S_IWGRP |
+								  S_IROTH | S_IWOTH;
 
 		/* Threads & Children */
-		std::list<TCB *> Threads;
-		std::list<PCB *> Children;
+		std::vector<TCB *> Threads;
+		std::vector<PCB *> Children;
 
 	public:
 		class Task *GetContext() { return ctx; }
@@ -494,7 +500,7 @@ namespace Tasking
 		void SetState(TaskState state);
 		void SetExitCode(int code);
 		void Rename(const char *name);
-		void SetWorkingDirectory(Node *node);
+		void SetWorkingDirectory(FileNode *node);
 		void SetExe(const char *path);
 		size_t GetSize();
 		TCB *GetThread(TID ID);
@@ -538,7 +544,7 @@ namespace Tasking
 	public:
 		void *GetScheduler() { return Scheduler; }
 		PCB *GetKernelProcess() { return KernelProcess; }
-		std::list<PCB *> GetProcessList();
+		std::vector<PCB *> GetProcessList();
 		void Panic();
 		bool IsPanic();
 

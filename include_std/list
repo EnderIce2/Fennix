@@ -17,26 +17,44 @@
 
 #pragma once
 
-#include <types.h>
+#include <initializer_list>
+#include <algorithm>
 #include <assert.h>
 #include <lock.hpp>
+#include <iterator>
 #include <utility>
+#include <memory>
 
 namespace std
 {
-	template <typename T>
+	template <class T, class Allocator = std::allocator<T>>
 	class list
 	{
+	public:
+		using value_type = T;
+		using allocator_type = Allocator;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using pointer = typename std::allocator_traits<Allocator>::pointer;
+		using const_pointer = typename std::allocator_traits<Allocator>::const_pointer;
+		// using iterator = typename list<T, Allocator>::iterator;
+		// using const_iterator = typename list<T, Allocator>::const_iterator;
+		// using reverse_iterator = typename list<T, Allocator>::reverse_iterator;
+		// using const_reverse_iterator = typename list<T, Allocator>::const_reverse_iterator;
+
 	private:
-		NewLock(lock);
+		spin_lock lock;
+		Allocator alloc;
 
 		struct node
 		{
-			T value;
+			value_type value;
 			node *prev;
 			node *next;
 
-			node(const T &v, node *p = nullptr, node *n = nullptr)
+			node(const_reference v, node *p = nullptr, node *n = nullptr)
 				: value(v), prev(p), next(n) {}
 		};
 
@@ -45,13 +63,440 @@ namespace std
 		std::atomic_size_t lSize = 0;
 
 	public:
-		list() {}
+		class iterator
+		{
+		private:
+			node *_node;
+			friend class list;
+
+		public:
+			using difference_type = std::ptrdiff_t;
+			using value_type = T;
+			using pointer = typename std::allocator_traits<Allocator>::pointer;
+			using reference = value_type &;
+			using iterator_category = std::bidirectional_iterator_tag;
+
+			iterator(node *p = nullptr) : _node(p) {}
+
+			T &operator*() const { return _node->value; }
+			T *operator->() const { return &_node->value; }
+
+			iterator &operator++()
+			{
+				if (_node)
+					_node = _node->next;
+				return *this;
+			}
+
+			iterator &operator--()
+			{
+				if (_node)
+					_node = _node->prev;
+				return *this;
+			}
+
+			iterator operator++(int)
+			{
+				iterator tmp = *this;
+				++*this;
+				return tmp;
+			}
+
+			iterator operator--(int)
+			{
+				iterator tmp = *this;
+				--*this;
+				return tmp;
+			}
+
+			bool operator==(const iterator &rhs) const { return _node == rhs._node; }
+			bool operator!=(const iterator &rhs) const { return _node != rhs._node; }
+		};
+
+		class const_iterator
+		{
+		private:
+			node *_node;
+			friend class list;
+
+		public:
+			using difference_type = std::ptrdiff_t;
+			using value_type = T;
+			using pointer = typename std::allocator_traits<Allocator>::const_pointer;
+			using reference = const value_type &;
+			using iterator_category = std::bidirectional_iterator_tag;
+
+			const_iterator(iterator it) : _node(it._node) {}
+			const_iterator(node *p = nullptr) : _node(p) {}
+			const T &operator*() const { return _node->value; }
+			const T *operator->() const { return &_node->value; }
+
+			const_iterator &operator++()
+			{
+				if (_node)
+					_node = _node->next;
+				return *this;
+			}
+
+			const_iterator &operator--()
+			{
+				if (_node)
+					_node = _node->prev;
+				return *this;
+			}
+
+			const_iterator operator++(int)
+			{
+				const_iterator it = *this;
+				++*this;
+				return it;
+			}
+
+			const_iterator operator--(int)
+			{
+				const_iterator it = *this;
+				--*this;
+				return it;
+			}
+
+			bool operator==(const const_iterator &rhs) const { return _node == rhs._node; }
+			bool operator!=(const const_iterator &rhs) const { return _node != rhs._node; }
+		};
+
+#pragma region Member Functions
+
+		list()
+		{
+		}
+
+		explicit list(const Allocator &alloc)
+			: alloc(alloc)
+		{
+		}
+
+		list(size_type count, const T &value,
+			 const Allocator &alloc = Allocator())
+		{
+			for (size_t i = 0; i < count; ++i)
+				push_back(value);
+		}
+
+		explicit list(size_type count, const Allocator &alloc = Allocator())
+		{
+			for (size_t i = 0; i < count; ++i)
+				push_back(T());
+		}
+
+		template <class InputIt>
+		list(InputIt first, InputIt last, const Allocator &alloc = Allocator())
+		{
+			for (InputIt it = first; it != last; ++it)
+				push_back(*it);
+		}
+
+		list(const list &other)
+		{
+			*this = other;
+		}
+
+		list(const list &other, const Allocator &alloc)
+		{
+			*this = other;
+		}
+
+		list(list &&other)
+		{
+			*this = std::move(other);
+		}
+
+		list(list &&other, const Allocator &alloc)
+		{
+			*this = std::move(other);
+		}
+
+		list(std::initializer_list<T> init, const Allocator &alloc = Allocator())
+		{
+			foreach (const_reference value in init)
+				push_back(value);
+		}
+
 		~list() { clear(); }
-		list(const list &other) { *this = other; }
+
+		list &operator=(const list &other)
+		{
+			if (this == &other)
+				return *this;
+
+			for (const_reference value : other)
+				push_back(value);
+
+			return *this;
+		}
+
+		list &operator=(list &&other)
+		{
+			if (this == &other)
+				return *this;
+
+			clear();
+			head = other.head;
+			tail = other.tail;
+			lSize.store(other.lSize.load());
+			other.head = other.tail = nullptr;
+			other.lSize.store(0);
+			return *this;
+		}
+
+		list &operator=(std::initializer_list<T> ilist)
+		{
+			clear();
+			foreach (const_reference value in ilist)
+				push_back(value);
+			return *this;
+		}
+
+		void assign(size_type count, const T &value)
+		{
+			clear();
+			for (size_t i = 0; i < count; ++i)
+				push_back(value);
+		}
+
+		template <class InputIt>
+		void assign(InputIt first, InputIt last)
+		{
+			clear();
+			for (InputIt it = first; it != last; ++it)
+				push_back(*it);
+		}
+
+		void assign(std::initializer_list<T> ilist)
+		{
+			clear();
+			foreach (const_reference value in ilist)
+				push_back(value);
+		}
+
+		allocator_type get_allocator() const
+		{
+			return alloc;
+		}
+
+#pragma endregion Member Functions
+
+#pragma region Element Access
+
+		reference front()
+		{
+			sl_guard(this->lock);
+			return head->value;
+		}
+
+		const_reference front() const
+		{
+			sl_guard(this->lock);
+			return head->value;
+		}
+
+		reference back()
+		{
+			sl_guard(this->lock);
+			return tail->value;
+		}
+
+		const_reference back() const
+		{
+			sl_guard(this->lock);
+			return tail->value;
+		}
+
+#pragma endregion Element Access
+
+#pragma region Iterators
+
+		iterator begin()
+		{
+			return iterator(head);
+		}
+
+		const_iterator begin() const
+		{
+			return const_iterator(head);
+		}
+
+		const_iterator cbegin() const
+		{
+			return const_iterator(head);
+		}
+
+		iterator end()
+		{
+			return iterator(nullptr);
+		}
+
+		const_iterator end() const
+		{
+			return const_iterator(nullptr);
+		}
+
+		const_iterator cend() const
+		{
+			return const_iterator(nullptr);
+		}
+
+		/* FIXME: rbegin, rend, crbegin, crend */
+
+#pragma endregion Iterators
+
+#pragma region Capacity
+
+		[[nodiscard]] bool empty() const
+		{
+			return lSize.load() == 0; /*  or begin() == end() ? */
+		}
+
+		size_type size() const
+		{
+			return lSize.load();
+		}
+
+		size_type max_size() const
+		{
+			return std::numeric_limits<difference_type>::max();
+		}
+
+#pragma endregion Capacity
+
+#pragma region Modifiers
+
+		void clear()
+		{
+			while (!empty())
+				pop_back();
+		}
+
+		iterator insert(const_iterator pos, const T &value)
+		{
+			if (pos == end())
+			{
+				push_back(value);
+				return iterator(tail);
+			}
+			else if (pos == begin())
+			{
+				push_front(value);
+				return iterator(head);
+			}
+			else
+			{
+				sl_guard(this->lock);
+				node *p = pos._node;
+				node *nNode = new node(value, p->prev, p);
+				p->prev->next = nNode;
+				p->prev = nNode;
+				lSize.fetch_add(1);
+				return iterator(nNode);
+			}
+		}
+
+		iterator insert(const_iterator pos, T &&value)
+		{
+			if (pos == end())
+			{
+				push_back(value);
+				return iterator(tail);
+			}
+			else if (pos == begin())
+			{
+				push_front(value);
+				return iterator(head);
+			}
+			else
+			{
+				sl_guard(this->lock);
+				node *p = pos._node;
+				node *nNode = new node(std::move(value), p->prev, p);
+				p->prev->next = nNode;
+				p->prev = nNode;
+				lSize.fetch_add(1);
+				return iterator(nNode);
+			}
+		}
+
+		iterator insert(const_iterator pos, size_type count, const T &value)
+		{
+			iterator ret;
+			for (size_t i = 0; i < count; ++i)
+				ret = insert(pos, value);
+			return ret;
+		}
+
+		template <class InputIt>
+		iterator insert(const_iterator pos, InputIt first, InputIt last)
+		{
+			iterator ret;
+			for (InputIt it = first; it != last; ++it)
+				ret = insert(pos, *it);
+			return ret;
+		}
+
+		iterator insert(const_iterator pos, std::initializer_list<T> ilist)
+		{
+			iterator ret;
+			foreach (const_reference value in ilist)
+				ret = insert(pos, value);
+			return ret;
+		}
+
+		template <class... Args>
+		iterator emplace(const_iterator pos, Args &&...args)
+		{
+			return insert(pos, T(std::forward<Args>(args)...));
+		}
+
+		iterator erase(const_iterator pos)
+		{
+			if (pos == cend())
+				return end();
+			else if (pos == cbegin())
+			{
+				pop_front();
+				return begin();
+			}
+			else
+			{
+				sl_guard(this->lock);
+				node *p = pos._node;
+				if (p->prev)
+					p->prev->next = p->next;
+
+				if (p->next)
+					p->next->prev = p->prev;
+
+				if (head == p)
+					head = p->next;
+
+				if (tail == p)
+					tail = p->prev;
+
+				iterator ret(p->next);
+				delete p;
+				lSize.fetch_sub(1);
+				return ret;
+			}
+		}
+
+		iterator erase(const_iterator first, const_iterator last)
+		{
+			iterator ret;
+			while (first != last)
+				ret = erase(first++);
+			return ret;
+		}
 
 		void push_back(const T &value)
 		{
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 
 			node *nNode = new node(value, tail);
 			if (empty())
@@ -61,12 +506,64 @@ namespace std
 				tail->next = nNode;
 				tail = nNode;
 			}
-			++lSize;
+			lSize.fetch_add(1);
+		}
+
+		void push_back(T &&value)
+		{
+			sl_guard(this->lock);
+
+			node *nNode = new node(std::move(value), tail);
+			if (empty())
+				head = tail = nNode;
+			else
+			{
+				tail->next = nNode;
+				tail = nNode;
+			}
+			lSize.fetch_add(1);
+		}
+
+		template <class... Args>
+		void emplace_back(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			sl_guard(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), tail);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				tail->next = nNode;
+				tail = nNode;
+			}
+			lSize.fetch_add(1);
+		}
+
+		template <class... Args>
+		reference emplace_back(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			sl_guard(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), tail);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				tail->next = nNode;
+				tail = nNode;
+			}
+			lSize.fetch_add(1);
+			return tail->value;
 		}
 
 		void pop_back()
 		{
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 
 			if (unlikely(empty()))
 				assert(!"list is empty");
@@ -74,7 +571,7 @@ namespace std
 			{
 				delete tail;
 				head = tail = nullptr;
-				--lSize;
+				lSize.fetch_sub(1);
 			}
 			else
 			{
@@ -82,13 +579,13 @@ namespace std
 				tail = tail->prev;
 				tail->next = nullptr;
 				delete oldTail;
-				--lSize;
+				lSize.fetch_sub(1);
 			}
 		}
 
 		void push_front(const T &value)
 		{
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 
 			node *nNode = new node(value, nullptr, head);
 			if (empty())
@@ -98,7 +595,59 @@ namespace std
 				head->prev = nNode;
 				head = nNode;
 			}
-			++lSize;
+			lSize.fetch_add(1);
+		}
+
+		void push_front(T &&value)
+		{
+			sl_guard(this->lock);
+
+			node *nNode = new node(std::move(value), nullptr, head);
+			if (empty())
+				head = tail = nNode;
+			else
+			{
+				head->prev = nNode;
+				head = nNode;
+			}
+			lSize.fetch_add(1);
+		}
+
+		template <class... Args>
+		void emplace_front(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			sl_guard(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), nullptr, head);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				head->prev = nNode;
+				head = nNode;
+			}
+			lSize.fetch_add(1);
+		}
+
+		template <class... Args>
+		reference emplace_front(Args &&...args)
+		{
+			assert(sizeof...(args) > 0);
+
+			sl_guard(this->lock);
+
+			node *nNode = new node(T(std::forward<Args>(args)...), nullptr, head);
+			if (this->empty())
+				head = tail = nNode;
+			else
+			{
+				head->prev = nNode;
+				head = nNode;
+			}
+			lSize.fetch_add(1);
+			return head->value;
 		}
 
 		void pop_front()
@@ -110,96 +659,71 @@ namespace std
 
 			if (head == tail)
 			{
-				SmartLock(this->lock);
+				sl_guard(this->lock);
 				delete head;
 				head = tail = nullptr;
-				--lSize;
+				lSize.fetch_sub(1);
 			}
 			else
 			{
-				SmartLock(this->lock);
+				sl_guard(this->lock);
 				node *old_head = head;
 				head = head->next;
 				head->prev = nullptr;
 				delete old_head;
-				--lSize;
+				lSize.fetch_sub(1);
 			}
 		}
 
-		template <class... Args>
-		void emplace_back(Args &&...args)
+		void resize(size_type count)
 		{
-			assert(sizeof...(args) > 0);
-
-			SmartLock(this->lock);
-
-			node *nNode = new node(T(std::forward<Args>(args)...), tail);
-			if (this->empty())
-				head = tail = nNode;
-			else
+			if (count < lSize.load())
 			{
-				tail->next = nNode;
-				tail = nNode;
+				while (lSize.load() > count)
+					pop_back();
 			}
-			++lSize;
-		}
-
-		template <class... Args>
-		void emplace_front(Args &&...args)
-		{
-			assert(sizeof...(args) > 0);
-
-			SmartLock(this->lock);
-
-			node *nNode = new node(T(std::forward<Args>(args)...), nullptr, head);
-			if (this->empty())
-				head = tail = nNode;
-			else
+			else if (count > lSize.load())
 			{
-				head->prev = nNode;
-				head = nNode;
+				while (lSize.load() < count)
+					push_back(T());
 			}
-			++lSize;
 		}
 
-		T &front()
+		void resize(size_type count, const value_type &value)
 		{
-			SmartLock(this->lock);
-			return head->value;
+			if (count < lSize.load())
+			{
+				while (lSize.load() > count)
+					pop_back();
+			}
+			else if (count > lSize.load())
+			{
+				while (lSize.load() < count)
+					push_back(value);
+			}
 		}
 
-		const T &front() const
+		void swap(list &other)
 		{
-			SmartLock(this->lock);
-			return head->value;
+			sl_guard(this->lock);
+			other.lock.lock("list::swap");
+
+			std::swap(head, other.head);
+			std::swap(tail, other.tail);
+
+			size_t oSize = other.lSize.load();
+			other.lSize.store(lSize.load());
+			lSize.store(oSize);
+
+			other.lock.unlock();
 		}
 
-		T &back()
-		{
-			SmartLock(this->lock);
-			return tail->value;
-		}
+#pragma endregion Modifiers
 
-		const T &back() const
-		{
-			SmartLock(this->lock);
-			return tail->value;
-		}
-
-		bool empty() const { return lSize.load() == 0; }
-		size_t size() const { return lSize; }
-
-		void clear()
-		{
-			while (!empty())
-				pop_back();
-		}
+#pragma region Operations
 
 		void merge(list &other)
 		{
-			if (this == &other)
-				return;
-
 			while (other.empty() == false)
 			{
 				T &fr = other.front();
@@ -208,11 +732,99 @@ namespace std
 			}
 		}
 
-		size_t remove(const T &value)
+		void merge(list &&other)
 		{
-			SmartLock(this->lock);
+			while (other.empty() == false)
+			{
+				T &fr = other.front();
+				push_back(fr);
+				other.pop_front();
+			}
+		}
+
+		template <class Compare>
+		void merge(list &other, Compare comp)
+		{
+			while (other.empty() == false)
+			{
+				T &fr = other.front();
+				if (comp(tail->value, fr))
+					push_back(fr);
+				else
+					push_front(fr);
+				other.pop_front();
+			}
+		}
+
+		template <class Compare>
+		void merge(list &&other, Compare comp)
+		{
+			while (other.empty() == false)
+			{
+				T &fr = other.front();
+				if (comp(tail->value, fr))
+					push_back(fr);
+				else
+					push_front(fr);
+				other.pop_front();
+			}
+		}
+
+		void splice(const_iterator pos, list &other)
+		{
+			while (other.empty() == false)
+			{
+				T &fr = other.front();
+				insert(pos, fr);
+				other.pop_front();
+			}
+		}
+
+		void splice(const_iterator pos, list &&other)
+		{
+			while (other.empty() == false)
+			{
+				T &fr = other.front();
+				insert(pos, fr);
+				other.pop_front();
+			}
+		}
+
+		void splice(const_iterator pos, list &other, const_iterator it)
+		{
+			insert(pos, *it);
+			other.erase(it);
+		}
+
+		void splice(const_iterator pos, list &&other, const_iterator it)
+		{
+			insert(pos, *it);
+			other.erase(it);
+		}
+
+		void splice(const_iterator pos, list &other, const_iterator first, const_iterator last)
+		{
+			while (first != last)
+			{
+				insert(pos, *first);
+				other.erase(first++);
+			}
+		}
+
+		void splice(const_iterator pos, list &&other, const_iterator first, const_iterator last)
+		{
+			while (first != last)
+			{
+				insert(pos, *first);
+				other.erase(first++);
+			}
+		}
+
+		size_type remove(const T &value)
+		{
+			sl_guard(this->lock);
 			node *p = head;
-			size_t count = 0;
+			size_type count = 0;
 			while (p != nullptr)
 			{
 				if (p->value == value)
@@ -226,7 +838,7 @@ namespace std
 					if (p == tail)
 						tail = p->prev;
 					delete p;
-					--lSize;
+					lSize.fetch_sub(1);
 					++count;
 				}
 				p = p->next;
@@ -235,11 +847,11 @@ namespace std
 		}
 
 		template <class UnaryPredicate>
-		size_t remove_if(UnaryPredicate p)
+		size_type remove_if(UnaryPredicate p)
 		{
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 			node *n = head;
-			size_t count = 0;
+			size_type count = 0;
 			while (n != nullptr)
 			{
 				if (p(n->value))
@@ -253,7 +865,7 @@ namespace std
 					if (n == tail)
 						tail = n->prev;
 					delete n;
-					--lSize;
+					lSize.fetch_sub(1);
 					++count;
 				}
 				n = n->next;
@@ -266,7 +878,7 @@ namespace std
 			if (empty())
 				return;
 
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 			node *p = head;
 			while (p != nullptr)
 			{
@@ -280,12 +892,75 @@ namespace std
 			tail = tmp;
 		}
 
+		size_type unique()
+		{
+			sl_guard(this->lock);
+			node *p = head;
+			size_type count = 0;
+			while (p != nullptr)
+			{
+				node *n = p->next;
+				while (n != nullptr)
+				{
+					if (p->value == n->value)
+					{
+						if (n->prev)
+							n->prev->next = n->next;
+						if (n->next)
+							n->next->prev = n->prev;
+						if (n == head)
+							head = n->next;
+						if (n == tail)
+							tail = n->prev;
+						delete n;
+						lSize.fetch_sub(1);
+						++count;
+					}
+					n = n->next;
+				}
+				p = p->next;
+			}
+			return count;
+		}
+
+		template <class BinaryPredicate>
+		size_type unique(BinaryPredicate p)
+		{
+			sl_guard(this->lock);
+			node *n = head;
+			size_type count = 0;
+			while (n != nullptr)
+			{
+				node *m = n->next;
+				while (m != nullptr)
+				{
+					if (p(n->value, m->value))
+					{
+						if (m->prev)
+							m->prev->next = m->next;
+						if (m->next)
+							m->next->prev = m->prev;
+						if (m == head)
+							head = m->next;
+						if (m == tail)
+							tail = m->prev;
+						delete m;
+						lSize.fetch_sub(1);
+						++count;
+					}
+					m = m->next;
+				}
+				n = n->next;
+			}
+			return count;
+		}
+
 		void sort()
 		{
 			if (empty())
 				return;
 
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 			bool swapped = true;
 			while (swapped)
 			{
@@ -311,7 +986,7 @@ namespace std
 			if (empty())
 				return;
 
-			SmartLock(this->lock);
+			sl_guard(this->lock);
 			bool swapped = true;
 			while (swapped)
 			{
@@ -331,127 +1006,23 @@ namespace std
 			}
 		}
 
-		/* Non-STL function */
-		T &operator[](size_t Index)
-		{
-			SmartLock(this->lock);
-			node *p = head;
-			for (size_t i = 0; i < Index; ++i)
-				p = p->next;
-			return p->value;
-		}
-
-		list &operator=(const list &other)
-		{
-			if (this == &other)
-				return *this;
-
-			for (const T &value : other)
-				push_back(value);
-
-			return *this;
-		}
-
-		class iterator
-		{
-		private:
-			node *_node;
-			friend class list;
-
-		public:
-			iterator(node *p = nullptr) : _node(p) {}
-			T &operator*() const { return _node->value; }
-			T *operator->() const { return &_node->value; }
-
-			iterator &operator++()
-			{
-				_node = _node->next;
-				return *this;
-			}
-
-			iterator &operator--()
-			{
-				_node = _node->prev;
-				return *this;
-			}
-
-			iterator operator++(int)
-			{
-				iterator tmp = *this;
-				++*this;
-				return tmp;
-			}
-
-			iterator operator--(int)
-			{
-				iterator tmp = *this;
-				--*this;
-				return tmp;
-			}
-
-			bool operator==(const iterator &rhs) const { return _node == rhs._node; }
-			bool operator!=(const iterator &rhs) const { return _node != rhs._node; }
-		};
-
-		iterator begin() { return iterator(head); }
-		iterator end() { return iterator(nullptr); }
-		const iterator begin() const { return iterator(head); }
-		const iterator end() const { return iterator(nullptr); }
-
-		iterator insert(iterator pos, const T &value)
-		{
-			if (pos == end())
-			{
-				push_back(value);
-				return iterator(tail);
-			}
-			else if (pos == begin())
-			{
-				push_front(value);
-				return iterator(head);
-			}
-			else
-			{
-				SmartLock(this->lock);
-				node *p = pos.node;
-				node *nNode = new node(value, p->prev, p);
-				p->prev->next = nNode;
-				p->prev = nNode;
-				++lSize;
-				return iterator(nNode);
-			}
-		}
-
-		iterator erase(iterator pos)
-		{
-			if (pos == end())
-				return end();
-			else if (pos == begin())
-			{
-				pop_front();
-				return begin();
-			}
-			else
-			{
-				SmartLock(this->lock);
-				node *p = pos._node;
-				if (p->prev)
-					p->prev->next = p->next;
-
-				if (p->next)
-					p->next->prev = p->prev;
-
-				if (head == p)
-					head = p->next;
-
-				if (tail == p)
-					tail = p->prev;
-
-				iterator ret(p->next);
-				delete p;
-				--lSize;
-				return ret;
-			}
-		}
+#pragma endregion Operations
 	};
+
+	template <class T, class Alloc>
+	bool operator==(const std::list<T, Alloc> &lhs, const std::list<T, Alloc> &rhs)
+	{
+		if (lhs.size() != rhs.size())
+			return false;
+		auto it1 = lhs.begin();
+		auto it2 = rhs.begin();
+		while (it1 != lhs.end())
+		{
+			if (*it1 != *it2)
+				return false;
+			++it1;
+			++it2;
+		}
+		return true;
+	}
 }

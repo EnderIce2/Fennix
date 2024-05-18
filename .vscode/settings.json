@@ -1,5 +1,5 @@
 {
-    "C_Cpp.errorSquiggles": "Enabled",
+    "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.autocompleteAddParentheses": true,
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "C_Cpp.clang_format_style": "Visual Studio",
@@ -14,6 +14,10 @@
         "clang-diagnostic-unknown-warning-option",
         "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling",
         "clang-diagnostic-implicit-exception-spec-mismatch",
-        "clang-diagnostic-unknown-attributes"
+        "clang-diagnostic-unknown-attributes",
+        "clang-diagnostic-user-defined-literals",
+        "clang-diagnostic-non-pod-varargs",
+        "clang-diagnostic-non-pod-varargs",
+        "clang-diagnostic-non-pod-varargs"
     ]
 }

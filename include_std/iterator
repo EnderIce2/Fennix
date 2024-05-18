@@ -44,25 +44,20 @@ namespace std
 	};
 
 	template <class Iter>
-	class reverse_iterator
-	{
-	public:
-		/* FIXME: missing implementation */
-	};
-
-	template <class Iter>
 	struct iterator_traits
 	{
 	public:
-		typedef Iter::difference_type difference_type;
-
-		/* FIXME: missing implementation */
+		using difference_type = typename Iter::difference_type;
+		using value_type = typename Iter::value_type;
+		using pointer = typename Iter::pointer;
+		using reference = typename Iter::reference;
+		using iterator_category = typename Iter::iterator_category;
 	};
 
-	template <class It>
-	constexpr typename std::iterator_traits<It>::difference_type __do_distance(It first, It last, std::input_iterator_tag)
+	template <class InputIt>
+	constexpr typename std::iterator_traits<InputIt>::difference_type __do_distance(InputIt first, InputIt last, std::input_iterator_tag)
 	{
-		typename std::iterator_traits<It>::difference_type result = 0;
+		typename std::iterator_traits<InputIt>::difference_type result = 0;
 		while (first != last)
 		{
 			++first;
@@ -71,8 +66,8 @@ namespace std
 		return result;
 	}
 
-	template <class It>
-	constexpr typename std::iterator_traits<It>::difference_type __do_distance(It first, It last, std::random_access_iterator_tag)
+	template <class InputIt>
+	constexpr typename std::iterator_traits<InputIt>::difference_type __do_distance(InputIt first, InputIt last, std::random_access_iterator_tag)
 	{
 		return last - first;
 	}
@@ -81,5 +76,57 @@ namespace std
 	constexpr typename std::iterator_traits<InputIt>::difference_type distance(InputIt first, InputIt last)
 	{
 		return __do_distance(first, last, typename std::iterator_traits<InputIt>::iterator_category());
+	}
+
+	template <class InputIt>
+	void __do_advance(InputIt &it, typename std::iterator_traits<InputIt>::difference_type n, std::input_iterator_tag)
+	{
+		while (n > 0)
+		{
+			--n;
+			++it;
+		}
+	}
+
+	template <class InputIt>
+	void __do_advance(InputIt &it, typename std::iterator_traits<InputIt>::difference_type n, std::bidirectional_iterator_tag)
+	{
+		while (n > 0)
+		{
+			--n;
+			++it;
+		}
+		while (n < 0)
+		{
+			++n;
+			--it;
+		}
+	}
+
+	template <class InputIt>
+	void __do_advance(InputIt &it, typename std::iterator_traits<InputIt>::difference_type n, std::random_access_iterator_tag)
+	{
+		it += n;
+	}
+
+	template <class InputIt, class Distance>
+	constexpr void advance(InputIt &it, Distance n)
+	{
+		__do_advance(it, typename std::iterator_traits<InputIt>::difference_type(n),
+					 typename std::iterator_traits<InputIt>::iterator_category());
+	}
+
+	template <class BidirIt>
+	constexpr BidirIt prev(BidirIt it, typename std::iterator_traits<BidirIt>::difference_type n = 1)
+	{
+		std::advance(it, -n);
+		return it;
+	}
+
+	template <class InputIt>
+	constexpr InputIt next(InputIt it, typename std::iterator_traits<InputIt>::difference_type n = 1)
+	{
+		std::advance(it, n);
+		return it;
 	}
 }

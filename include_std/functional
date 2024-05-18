@@ -17,9 +17,13 @@
 
 #pragma once
 
+#include <types.h>
+#include <algorithm>
+#include <typeinfo>
+
 namespace std
 {
-	template <typename T>
+	template <typename T = void>
 	struct equal_to
 	{
 		bool operator()(const T &lhs, const T &rhs) const
@@ -56,6 +60,195 @@ namespace std
 			}
 
 			return static_cast<size_t>(hash);
+		}
+	};
+
+	template <class T>
+	class reference_wrapper;
+
+	template <class>
+	class function; /* undefined */
+
+	template <class R, class... Args>
+	class function<R(Args...)>
+	{
+	private:
+		class impl_base
+		{
+		public:
+			virtual ~impl_base() = default;
+			virtual R invoke(Args...) const = 0;
+#ifdef __GXX_RTTI
+			virtual const std::type_info &target_type() const noexcept = 0;
+#endif
+			virtual impl_base *clone() const = 0;
+		};
+
+		template <class F>
+		class impl : public impl_base
+		{
+		public:
+			F _f;
+
+			template <class G>
+			impl(G &&f)
+				: _f(std::forward<G>(f))
+			{
+			}
+
+			R invoke(Args... args) const override
+			{
+				return _f(std::forward<Args>(args)...);
+			}
+
+#ifdef __GXX_RTTI
+			const std::type_info &target_type() const noexcept override
+			{
+				return typeid(F);
+			}
+#endif
+
+			impl_base *clone() const override
+			{
+				return new impl<F>(_f);
+			}
+		};
+
+		impl_base *_ptr;
+
+	public:
+		using result_type = R;
+
+		function() noexcept
+			: _ptr(nullptr)
+		{
+		}
+
+		function(std::nullptr_t) noexcept
+			: _ptr(nullptr)
+		{
+		}
+
+		function(const function &other)
+			: _ptr(other._ptr)
+		{
+		}
+
+		function(function &&other) noexcept
+			: _ptr(other._ptr)
+		{
+			other._ptr = nullptr;
+		}
+
+		template <class F>
+		function(F &&f)
+			: _ptr(new impl<F>(std::forward<F>(f)))
+		{
+		}
+
+		~function()
+		{
+			delete _ptr;
+		}
+
+		function &operator=(const function &other)
+		{
+			if (this != &other)
+			{
+				delete _ptr;
+				_ptr = other._ptr ? other._ptr->clone() : nullptr;
+			}
+			return *this;
+		}
+
+		function &operator=(function &&other)
+		{
+			if (this != &other)
+			{
+				delete _ptr;
+				_ptr = other._ptr;
+				other._ptr = nullptr;
+			}
+			return *this;
+		}
+
+		function &operator=(std::nullptr_t) noexcept
+		{
+			delete _ptr;
+			_ptr = nullptr;
+			return *this;
+		}
+
+		template <class F>
+		function &operator=(F &&f)
+		{
+			delete _ptr;
+			_ptr = new impl<F>(std::forward<F>(f));
+			return *this;
+		}
+
+		template <class F>
+		function &operator=(std::reference_wrapper<F> f) noexcept
+		{
+			delete _ptr;
+			_ptr = new impl<std::reference_wrapper<F>>(f);
+			return *this;
+		}
+
+		void swap(function &other) noexcept
+		{
+			std::swap(_ptr, other._ptr);
+		}
+
+		explicit operator bool() const noexcept
+		{
+			return _ptr != nullptr;
+		}
+
+		R operator()(Args... args) const
+		{
+			return _ptr->invoke(std::forward<Args>(args)...);
+		}
+
+#ifdef __GXX_RTTI
+		const std::type_info &target_type() const noexcept
+		{
+			return _ptr ? _ptr->target_type() : typeid(void);
+		}
+
+		template <class T>
+		T *target() noexcept
+		{
+			return _ptr && _ptr->target_type() == typeid(T) ? &static_cast<impl<T> *>(_ptr)->_f : nullptr;
+		}
+
+		template <class T>
+		const T *target() const noexcept
+		{
+			return _ptr && _ptr->target_type() == typeid(T) ? &static_cast<impl<T> *>(_ptr)->_f : nullptr;
+		}
+#endif
+	};
+
+	template <class R, class... Args>
+	void swap(std::function<R(Args...)> &lhs, std::function<R(Args...)> &rhs) noexcept
+	{
+		lhs.swap(rhs);
+	}
+
+	template <class R, class... ArgTypes>
+
+	bool operator==(const std::function<R(ArgTypes...)> &f, std::nullptr_t) noexcept
+	{
+		return !f;
+	}
+
+	template <class T = void>
+	struct less
+	{
+		constexpr bool operator()(const T &lhs, const T &rhs) const
+		{
+			return lhs < rhs;
 		}
 	};
 }

@@ -29,7 +29,7 @@ void killChildren(Tasking::PCB *pcb)
 		return;
 	}
 
-	std::list<Tasking::PCB *> children = pcb->Children;
+	std::vector<Tasking::PCB *> children = pcb->Children;
 
 	foreach (auto child in children)
 	{
@@ -50,7 +50,7 @@ constexpr size_t chunk = 10 * 1024 * 1024; /* 10 MiB */
 std::atomic_size_t totalAllocated = 0;
 std::atomic_size_t highestScore = 0;
 std::atomic_bool halt_fork = false;
-std::list<void *> allocatedChunks;
+std::vector<void *> allocatedChunks;
 Tasking::PCB *baseProc = nullptr;
 Tasking::PCB *lastProc = nullptr;
 std::atomic_bool hold = false;

@@ -17,9 +17,12 @@
 
 #pragma once
 
+#include <cfloat>
+#include <type_traits>
+
 namespace std
 {
-	double sin(double x)
+	constexpr double sin(double x)
 	{
 		const int NUM_TERMS = 10;
 
@@ -35,7 +38,7 @@ namespace std
 		return result;
 	}
 
-	float powf(float base, float exp)
+	constexpr float powf(float base, float exp)
 	{
 		float result = 1.0;
 		for (int i = 0; i < (int)exp; ++i)
@@ -43,7 +46,7 @@ namespace std
 		return result;
 	}
 
-	double pow(double base, double exp)
+	constexpr double pow(double base, double exp)
 	{
 		double result = 1.0;
 		for (int i = 0; i < (int)exp; ++i)
@@ -51,7 +54,7 @@ namespace std
 		return result;
 	}
 
-	long double powl(long double base, long double exp)
+	constexpr long double powl(long double base, long double exp)
 	{
 		long double result = 1.0;
 		for (long i = 0; i < (long)exp; ++i)
@@ -59,24 +62,121 @@ namespace std
 		return result;
 	}
 
-	float fabsf(float num)
+	constexpr float fabsf(float num)
 	{
 		if (num < 0)
 			return -num;
 		return num;
 	}
 
-	double fabs(double num)
+	constexpr double fabs(double num)
 	{
 		if (num < 0)
 			return -num;
 		return num;
 	}
 
-	long double fabsl(long double num)
+	constexpr long double fabsl(long double num)
 	{
 		if (num < 0)
 			return -num;
 		return num;
+	}
+
+	template <class Integer>
+	constexpr bool isinf(Integer num)
+	{
+		union
+		{
+			unsigned long u;
+			double f;
+		} ieee754;
+		ieee754.f = num;
+
+		bool a = ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000;
+		bool b = ((unsigned)ieee754.u == 0);
+		return a && b;
+	}
+
+	template <class Integer>
+	constexpr bool isnan(Integer num)
+	{
+		return num != num;
+	}
+
+	template <class Integer>
+	constexpr double fabs(Integer num)
+	{
+		return num < 0 ? -num : num;
+	}
+
+	template <class Integer>
+	constexpr double remainder(Integer x, Integer y)
+	{
+		return x - (int)(x / y) * y;
+	}
+
+	template <class Integer>
+	constexpr double copysign(Integer mag, Integer sgn)
+	{
+		return (sgn < 0) ? -mag : mag;
+	}
+
+	template <class Integer>
+	constexpr bool signbit(Integer num)
+	{
+		return num < 0;
+	}
+
+	template <class Integer>
+	constexpr double fmod(Integer x, Integer y)
+	{
+#pragma STDC FENV_ACCESS ON
+		double result = std::remainder(std::fabs(x), y = std::fabs(y));
+		if (std::signbit(result))
+			result += (double)y;
+		return std::copysign(result, x);
+	}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+
+	template <class Integer>
+	constexpr double ceil(Integer num)
+	{
+		// int i = (int)num;
+		// return i + (i < num);
+
+		double remainder = std::fmod((double)num, 1.0);
+		return num >= 0 ? (remainder == 0 ? num : num + 1 - remainder) : num - remainder;
+	}
+
+#pragma GCC diagnostic pop
+
+	template <class Integer>
+	constexpr double trunc(Integer num)
+	{
+		if (std::isinf(num))
+			return num;
+
+		if (std::isnan(num))
+			return num;
+
+		return static_cast<int>(num);
+	}
+
+	template <class Integer>
+	constexpr double exp(Integer num)
+	{
+		double result = 1.0;
+		double term = 1.0;
+
+		for (int i = 1; i <= 10; ++i)
+		{
+			term *= static_cast<double>(num) / i;
+			result += term;
+		}
+
+		return result;
 	}
 }
