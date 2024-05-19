@@ -31,10 +31,10 @@
 static_assert(DTTOIF(DT_FIFO) == S_IFIFO);
 static_assert(IFTODT(S_IFCHR) == DT_CHR);
 
-#define __check_op(op, ...)     \
-	if (fsi->Ops.op == nullptr) \
-		return -ENOTSUP;        \
-	else                        \
+#define __check_op(op, err, ...) \
+	if (fsi->Ops.op == nullptr)  \
+		return -err;             \
+	else                         \
 		return fsi->Ops.op(this->Node, ##__VA_ARGS__)
 
 class FileNode
@@ -54,23 +54,23 @@ public:
 	bool IsSymbolicLink() { return S_ISLNK(Node->Mode); }
 	bool IsSocket() { return S_ISSOCK(Node->Mode); }
 
-	int Lookup(const char *Name, Inode **Node) { __check_op(Lookup, Name, Node); }
-	int Create(const char *Name, mode_t Mode, Inode **Node) { __check_op(Create, Name, Mode, Node); }
-	int Remove(const char *Name) { __check_op(Remove, Name); }
-	int Rename(const char *OldName, const char *NewName) { __check_op(Rename, OldName, NewName); }
-	ssize_t Read(auto Buffer, size_t Size, off_t Offset) { __check_op(Read, (void *)Buffer, Size, Offset); }
-	ssize_t Write(const auto Buffer, size_t Size, off_t Offset) { __check_op(Write, (const void *)Buffer, Size, Offset); }
-	int Truncate(off_t Size) { __check_op(Truncate, Size); }
-	int Open(int Flags, mode_t Mode) { __check_op(Open, Flags, Mode); }
-	int Close() { __check_op(Close); }
-	int Ioctl(unsigned long Request, void *Argp) { __check_op(Ioctl, Request, Argp); }
-	ssize_t ReadDir(struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries) { __check_op(ReadDir, Buffer, Size, Offset, Entries); }
-	int MkDir(const char *Name, mode_t Mode, struct Inode **Result) { __check_op(MkDir, Name, Mode, Result); }
-	int RmDir(const char *Name) { __check_op(RmDir, Name); }
-	int SymLink(const char *Name, const char *Target, struct Inode **Result) { __check_op(SymLink, Name, Target, Result); }
-	ssize_t ReadLink(auto Buffer, size_t Size) { __check_op(ReadLink, (char *)Buffer, Size); }
-	off_t Seek(off_t Offset) { __check_op(Seek, Offset); }
-	int Stat(struct kstat *Stat) { __check_op(Stat, Stat); }
+	int Lookup(const char *Name, Inode **Node) { __check_op(Lookup, ENOTSUP, Name, Node); }
+	int Create(const char *Name, mode_t Mode, Inode **Node) { __check_op(Create, EROFS, Name, Mode, Node); }
+	int Remove(const char *Name) { __check_op(Remove, EROFS, Name); }
+	int Rename(const char *OldName, const char *NewName) { __check_op(Rename, EROFS, OldName, NewName); }
+	ssize_t Read(auto Buffer, size_t Size, off_t Offset) { __check_op(Read, ENOTSUP, (void *)Buffer, Size, Offset); }
+	ssize_t Write(const auto Buffer, size_t Size, off_t Offset) { __check_op(Write, EROFS, (const void *)Buffer, Size, Offset); }
+	int Truncate(off_t Size) { __check_op(Truncate, EROFS, Size); }
+	int Open(int Flags, mode_t Mode) { __check_op(Open, ENOTSUP, Flags, Mode); }
+	int Close() { __check_op(Close, ENOTSUP); }
+	int Ioctl(unsigned long Request, void *Argp) { __check_op(Ioctl, ENOTSUP, Request, Argp); }
+	ssize_t ReadDir(struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries) { __check_op(ReadDir, ENOTSUP, Buffer, Size, Offset, Entries); }
+	int MkDir(const char *Name, mode_t Mode, struct Inode **Result) { __check_op(MkDir, EROFS, Name, Mode, Result); }
+	int RmDir(const char *Name) { __check_op(RmDir, EROFS, Name); }
+	int SymLink(const char *Name, const char *Target, struct Inode **Result) { __check_op(SymLink, EROFS, Name, Target, Result); }
+	ssize_t ReadLink(auto Buffer, size_t Size) { __check_op(ReadLink, ENOTSUP, (char *)Buffer, Size); }
+	off_t Seek(off_t Offset) { __check_op(Seek, ENOTSUP, Offset); }
+	int Stat(struct kstat *Stat) { __check_op(Stat, ENOTSUP, Stat); }
 
 	~FileNode() = delete;
 };
