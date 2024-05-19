@@ -309,11 +309,12 @@ struct Inode
 
 	Inode()
 	{
-		Index = 0;
-		Mode = 0;
 		Device = 0;
 		RawDevice = 0;
+		Index = 0;
+		Mode = 0;
 		Flags = 0;
+		Offset = 0;
 		PrivateData = nullptr;
 	}
 
