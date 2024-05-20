@@ -221,6 +221,14 @@ enum SymbolTypes
 	STT_HIPROC = 15
 };
 
+enum SymbolVisibilities
+{
+	STV_DEFAULT = 0,
+	STV_INTERNAL = 1,
+	STV_HIDDEN = 2,
+	STV_PROTECTED = 3
+};
+
 enum SegmentTypes
 {
 	PT_NULL = 0,
@@ -334,10 +342,29 @@ enum DynamicArrayTags
 #define ELF64_R_INFO(s, t) (((s) << 32) + ((t) & 0xffffffffL))
 
 #define SHN_UNDEF 0
+#define SHN_LORESERVE 0xff00
+#define SHN_LOPROC 0xff00
+#define SHN_BEFORE 0xff00
+#define SHN_AFTER 0xff01
+#define SHN_HIPROC 0xff1f
 #define SHN_ABS 0xfff1
+#define SHN_COMMON 0xfff2
+#define SHN_HIRESERVE 0xffff
 
 #define SHF_WRITE 0x1
 #define SHF_ALLOC 0x2
+#define SHF_EXECINSTR 0x4
+#define SHF_MERGE 0x10
+#define SHF_STRINGS 0x20
+#define SHF_INFO_LINK 0x40
+#define SHF_LINK_ORDER 0x80
+#define SHF_OS_NONCONFORMING 0x100
+#define SHF_GROUP 0x200
+#define SHF_TLS 0x400
+#define SHF_MASKOS 0x0ff00000
+#define SHF_ORDERED 0x40000000
+#define SHF_EXCLUDE 0x80000000
+#define SHF_MASKPROC 0xf0000000
 
 #define EM_NONE 0			 /*	No machine */
 #define EM_M32 1			 /*	AT&T WE 32100 */
