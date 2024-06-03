@@ -820,7 +820,7 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
 	fsi->Ops.ReadLink = __ustar_ReadLink;
 	fsi->Ops.Stat = __ustar_Stat;
 	fsi->PrivateData = ustar;
-	int ret = fs->LateRegisterFileSystem(ustar->DeviceID, fsi, initrd);
+	fs->LateRegisterFileSystem(ustar->DeviceID, fsi, initrd);
 
 	fs->AddRoot(initrd);
 	return true;
