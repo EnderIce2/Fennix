@@ -477,6 +477,23 @@ EXTERNC char *strtok(char *src, const char *delim)
 	return NULL;
 }
 
+char *strrchr(const char *str, int c)
+{
+	const char *last_occurrence = NULL;
+
+	while (*str)
+	{
+		if (*str == (char)c)
+			last_occurrence = str;
+		str++;
+	}
+
+	if (c == '\0')
+		return (char *)str;
+
+	return (char *)last_occurrence;
+}
+
 int strcasecmp(const char *s1, const char *s2)
 {
 	const unsigned char *p1 = (const unsigned char *)s1;
