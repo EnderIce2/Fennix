@@ -288,6 +288,7 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 		Display->SetBufferCursor(x, y);
 		Display->PrintString("\eFF2525");
 		Display->PrintString(msg, CrashFont);
+		Display->SetBufferCursor(0, 0);
 		Display->UpdateBuffer();
 	}
 
