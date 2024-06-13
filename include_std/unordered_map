@@ -418,32 +418,38 @@ namespace std
 
 		iterator begin() noexcept
 		{
-			return iterator(buckets, buckets.begin(), buckets.front().begin());
+			auto it = buckets.begin();
+			while (it != buckets.end() && it->empty())
+				++it;
+			return iterator(buckets, it, it == buckets.end() ? typename node_type::iterator() : it->begin());
 		}
 
 		const_iterator begin() const noexcept
 		{
-			return const_iterator(buckets, buckets.begin(), buckets.front().begin());
+			auto it = buckets.begin();
+			while (it != buckets.end() && it->empty())
+				++it;
+			return const_iterator(buckets, it, it == buckets.end() ? typename node_type::const_iterator() : it->begin());
 		}
 
 		const_iterator cbegin() const noexcept
 		{
-			return const_iterator(buckets, buckets.begin(), buckets.front().begin());
+			return begin();
 		}
 
 		iterator end() noexcept
 		{
-			return iterator(buckets, buckets.end(), buckets.back().end());
+			return iterator(buckets, buckets.end(), typename node_type::iterator());
 		}
 
 		const_iterator end() const noexcept
 		{
-			return const_iterator(buckets, buckets.end(), buckets.back().end());
+			return const_iterator(buckets, buckets.end(), typename node_type::const_iterator());
 		}
 
 		const_iterator cend() const noexcept
 		{
-			return const_iterator(buckets, buckets.end(), buckets.back().end());
+			return end();
 		}
 
 #pragma endregion Iterators
