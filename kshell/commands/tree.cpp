@@ -21,57 +21,81 @@
 
 #include "../../kernel.h"
 
-using namespace vfs;
+void tree_loop(FileNode *rootNode, int depth = 0)
+{
+	// foreach (auto Child in rootNode->GetChildren(true))
+	// {
+	// 	Display->UpdateBuffer();
+	// 	if (Child->Stat.IsType(DIRECTORY) || Child->Stat.IsType(MOUNTPOINT))
+	// 	{
+	// 		printf("%*s%*s%*s|- %s\n",
+	// 			   depth, "",
+	// 			   depth, "",
+	// 			   depth, "",
+	// 			   Child->FileName);
+	// 		tree_loop(Child, depth + 1);
+	// 	}
+	// 	else
+	// 		printf("%*s%*s%*s|- %s\n",
+	// 			   depth, "",
+	// 			   depth, "",
+	// 			   depth, "",
+	// 			   Child->FileName);
+	// }
 
-// void tree_loop(Node *rootNode, int depth = 0)
-// {
-// 	foreach (auto Child in rootNode->GetChildren(true))
-// 	{
-// 		Display->UpdateBuffer();
-// 		if (Child->Stat.IsType(DIRECTORY) || Child->Stat.IsType(MOUNTPOINT))
-// 		{
-// 			printf("%*s%*s%*s|- %s\n",
-// 				   depth, "",
-// 				   depth, "",
-// 				   depth, "",
-// 				   Child->FileName);
-// 			tree_loop(Child, depth + 1);
-// 		}
-// 		else
-// 			printf("%*s%*s%*s|- %s\n",
-// 				   depth, "",
-// 				   depth, "",
-// 				   depth, "",
-// 				   Child->FileName);
-// 	}
-// }
+	kdirent *dirBuffer = new kdirent[16];
+	ssize_t read = 0;
+	off_t offset = 0;
+	while ((read = rootNode->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
+	{
+		if (read / sizeof(kdirent) == 0)
+			break;
+
+		off_t bufOffset = 0;
+		for (size_t i = 0; i < read / sizeof(kdirent); i++)
+		{
+			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
+			if (dirent->d_reclen == 0)
+				break;
+			bufOffset += dirent->d_reclen;
+
+			if (strcmp(dirent->d_name, ".") == 0 || strcmp(dirent->d_name, "..") == 0)
+				continue;
+
+			FileNode *node = fs->GetByPath(dirent->d_name, rootNode);
+			if (node == nullptr)
+				continue;
+
+			for (int i = 0; i < depth; i++)
+				printf("  ");
+			printf("|- %s\n", dirent->d_name);
+
+			if (node->IsDirectory())
+				tree_loop(node, depth + 1);
+		}
+		offset += read;
+	}
+	delete[] dirBuffer;
+}
 
 void cmd_tree(const char *args)
 {
-	/* FIXME: Reimplement this later */
-	assert(!"Function not implemented");
+	FileNode *rootNode = thisProcess->CWD;
+	if (args[0] == '\0')
+	{
+		if (rootNode == nullptr)
+			rootNode = fs->GetRoot(0);
+	}
+	else
+	{
+		rootNode = fs->GetByPath(args, nullptr);
+		if (rootNode == nullptr)
+		{
+			printf("ls: %s: No such file or directory\n", args);
+			return;
+		}
+	}
 
-	// Node *rootNode = thisProcess->CWD;
-	// if (args[0] == '\0')
-	// {
-	// 	if (rootNode == nullptr)
-	// 		rootNode = fs->FileSystemRoots->GetChildren(true)[0];
-	// }
-	// else
-	// {
-	// 	rootNode = fs->GetByPath(args, thisProcess->CWD, true);
-	// 	if (rootNode == nullptr)
-	// 	{
-	// 		printf("ls: %s: No such file or directory\n", args);
-	// 		return;
-	// 	}
-	// 	if (!rootNode->Stat.IsType(DIRECTORY))
-	// 	{
-	// 		printf("%s\n", rootNode->FileName);
-	// 		return;
-	// 	}
-	// }
-
-	// printf("%s\n", rootNode->FileName);
-	// tree_loop(rootNode);
+	printf("%s\n", rootNode->Name.c_str());
+	tree_loop(rootNode);
 }

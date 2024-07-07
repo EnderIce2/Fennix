@@ -15,32 +15,15 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../cmds.hpp"
+#ifndef __FENNIX_API_NETWORK_H__
+#define __FENNIX_API_NETWORK_H__
 
-#include <filesystem.hpp>
+#include <types.h>
 
-#include "../../kernel.h"
+#if __has_include(<interface/device.h>)
+#include <interface/device.h>
+#else
+#include <device.h>
+#endif
 
-using namespace vfs;
-
-void cmd_cd(const char *args)
-{
-	if (args[0] == '\0')
-		return;
-
-	FileNode *node = fs->GetByPath(args, nullptr);
-
-	if (node == nullptr)
-	{
-		printf("cd: %s: No such file or directory\n", args);
-		return;
-	}
-
-	if (!node->IsDirectory())
-	{
-		printf("cd: %s: Not a directory\n", args);
-		return;
-	}
-
-	thisProcess->CWD = node;
-}
+#endif // !__FENNIX_API_NETWORK_H__

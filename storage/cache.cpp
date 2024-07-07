@@ -26,30 +26,140 @@
 
 namespace vfs
 {
-	FileNode *Virtual::__CacheRecursiveSearch(FileNode *Root, const char *NameOrPath, bool IsName)
+	FileNode *Virtual::CacheSearchReturnLast(FileNode *Parent, const char **Path)
+	{
+		assert(Parent != nullptr);
+
+		struct cwk_segment segment;
+		if (!cwk_path_get_first_segment(*Path, &segment))
+			ReturnLogError(nullptr, "Failed to get first segment of path");
+
+		size_t segments = 0;
+		while (cwk_path_get_next_segment(&segment))
+			segments++;
+
+		if (segments == 0)
+			return Parent;
+
+		const char *path = *Path;
+		if (strncmp(path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		{
+			path += 6;
+			while (*path != '\0' && *path != '\003')
+				path++;
+			if (*path == '\003')
+				path++;
+		}
+		else
+			path = *Path;
+
+		FileNode *__Parent = Parent;
+		if (this->PathIsAbsolute(path))
+		{
+			while (__Parent->Parent)
+				__Parent = __Parent->Parent;
+		}
+
+		cwk_path_get_first_segment(path, &segment);
+		do
+		{
+			std::string segmentName(segment.begin, segment.size);
+
+			bool found = false;
+			for (FileNode *fn : __Parent->Children)
+			{
+				if (fn->Name != segmentName)
+					continue;
+
+				cwk_segment __seg = segment;
+				assert(cwk_path_get_next_segment(&__seg)); /* There's something wrong */
+
+				__Parent = fn;
+				found = true;
+				break;
+			}
+
+			if (!found)
+			{
+				*Path = segment.begin;
+				break;
+			}
+		} while (cwk_path_get_next_segment(&segment));
+
+		return __Parent;
+	}
+
+	FileNode *Virtual::CacheRecursiveSearch(FileNode *Root, const char *NameOrPath, bool IsName)
 	{
 		if (Root == nullptr)
 			return nullptr;
 
-		if (IsName)
+		debug("%s cache search for \"%s\" in \"%s\"", IsName ? "Relative" : "Absolute", NameOrPath, Root->Path.c_str());
+
+		struct cwk_segment segment;
+		if (!cwk_path_get_first_segment(NameOrPath, &segment))
+			ReturnLogError(nullptr, "Failed to get first segment of path");
+
+		size_t segments = 0;
+		while (cwk_path_get_next_segment(&segment))
+			segments++;
+
+		if (IsName && segments == 0)
 		{
-			if (strcmp(Root->Name.c_str(), NameOrPath) == 0)
-				return Root;
+			for (FileNode *fn : Root->Children)
+			{
+				if (fn->Name == NameOrPath)
+					return fn;
+			}
+
+			ReturnLogError(nullptr, "Failed to find \"%s\" in \"%s\"", NameOrPath, Root->Path.c_str());
+		}
+
+		const char *path = NameOrPath;
+		if (strncmp(path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		{
+			path += 6;
+			while (*path != '\0' && *path != '\003')
+				path++;
+			if (*path == '\003')
+				path++;
 		}
 		else
+			path = NameOrPath;
+
+		FileNode *__Parent = Root;
+		if (this->PathIsAbsolute(path))
 		{
-			if (strcmp(Root->Path.c_str(), NameOrPath) == 0)
-				return Root;
+			/* Get the root if Root is not the root 【・_・?】 */
+			while (__Parent->Parent)
+				__Parent = __Parent->Parent;
 		}
 
-		for (const auto &Child : Root->Children)
+		cwk_path_get_first_segment(path, &segment);
+		do
 		{
-			FileNode *ret = __CacheRecursiveSearch(Child, NameOrPath, IsName);
-			if (ret)
-				return ret;
-		}
+			std::string segmentName(segment.begin, segment.size);
 
-		debug("Failed to find %s in %s", NameOrPath, Root->Path.c_str());
+			bool found = false;
+			for (FileNode *fn : __Parent->Children)
+			{
+				if (fn->Name != segmentName)
+					continue;
+
+				cwk_segment __seg = segment;
+				if (!cwk_path_get_next_segment(&__seg))
+					return fn;
+
+				__Parent = fn;
+				found = true;
+				break;
+			}
+
+			if (!found)
+				break;
+		} while (cwk_path_get_next_segment(&segment));
+
+		debug("Failed to find \"%s\" in \"%s\"", NameOrPath, Root->Path.c_str());
 		return nullptr;
 	}
 
@@ -57,35 +167,17 @@ namespace vfs
 	{
 		FileNode *rootNode = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
-		FileNode *ret = __CacheRecursiveSearch(rootNode, Path, false);
+		FileNode *ret = CacheRecursiveSearch(rootNode, Path, false);
 		if (ret)
 			return ret;
 
 		debug("Path \"%s\" not found", Path);
 		return nullptr;
-		__unreachable;
-
-		debug("Path \"%s\" not found; attempting to search by segments", Path);
-		/* FIXME: This may not be the greatest idea */
-
-		struct cwk_segment segment;
-		if (!cwk_path_get_first_segment(Path, &segment))
-			return __CacheRecursiveSearch(rootNode, Path, true);
-
-		do
-		{
-			std::string segmentStr(segment.begin, segment.size);
-			ret = __CacheRecursiveSearch(rootNode, segmentStr.c_str(), true);
-			if (ret)
-				return ret;
-		} while (cwk_path_get_next_segment(&segment));
-
-		return nullptr;
 	}
 
 	FileNode *Virtual::CreateCacheNode(FileNode *Parent, Inode *Node, const char *Name, mode_t Mode)
 	{
-		FileNode *fn = new FileNode();
+		FileNode *fn = new FileNode;
 		fn->Name = Name;
 		if (Parent)
 		{
@@ -107,7 +199,7 @@ namespace vfs
 	int Virtual::RemoveCacheNode(FileNode *Node)
 	{
 		if (Node == nullptr)
-			return -1;
+			return -EINVAL;
 
 		if (Node->Parent)
 		{

@@ -18,6 +18,7 @@
 #include <kshell.hpp>
 
 #include <interface/driver.h>
+#include <interface/input.h>
 #include <filesystem.hpp>
 #include <driver.hpp>
 #include <lock.hpp>
@@ -160,14 +161,14 @@ void StartKernelShell()
 	KPrint("Starting kernel shell...");
 	thisThread->SetPriority(Tasking::TaskPriority::High);
 
-	std::string strBuf;
+	std::string strBuf = "";
 	std::vector<std::string *> history;
 	size_t hIdx = 0;
 	bool ctrlDown = false;
 	bool upperCase = false;
 	bool tabDblPress = false;
 
-	FileNode *kfd = fs->GetByPath("/dev/key", nullptr);
+	FileNode *kfd = fs->GetByPath("/dev/input/keyboard", fs->GetRoot(0));
 	if (kfd == nullptr)
 	{
 		KPrint("Failed to open keyboard device!");
@@ -194,18 +195,17 @@ void StartKernelShell()
 
 		FileNode *cwd = thisProcess->CWD;
 		if (!cwd)
-			cwd = fs->GetByPath("/", nullptr);
+			cwd = fs->GetRoot(0);
+		std::string cwdStr = fs->GetByNode(cwd);
 
 		printf("\e34C6EB%s@%s:%s$ \eCCCCCC",
-			   "kernel",
-			   "fennix",
-			   cwd->Path.c_str());
+			   "kernel", "fennix",
+			   cwdStr.c_str());
 		Display->UpdateBuffer();
 
 		Display->GetBufferCursor(&homeX, &homeY);
 
-		uint8_t scBuf[2];
-		scBuf[1] = 0x00; /* Request scan code */
+		KeyboardReport scBuf{};
 		ssize_t nBytes;
 		while (true)
 		{
@@ -215,24 +215,21 @@ void StartKernelShell()
 			CurY.store(__cy);
 			CurHalt.store(false);
 
-			nBytes = kfd->Read(scBuf, 2, 0);
+			nBytes = kfd->Read(&scBuf, sizeof(KeyboardReport), 0);
 			if (nBytes == 0)
 				continue;
-			if (nBytes < 0)
+			if (nBytes < (ssize_t)sizeof(KeyboardReport))
 			{
 				KPrint("Failed to read from keyboard device: %s",
 					   strerror((int)nBytes));
 				return;
 			}
 
-			if (scBuf[0] == 0x00)
-				continue;
-
 			BlinkerSleep.store(TimeManager->CalculateTarget(250, Time::Units::Milliseconds));
 			CurHalt.store(true);
 			UpdateBlinker();
 
-			uint8_t sc = scBuf[0];
+			const KeyScanCodes &sc = scBuf.Key;
 			switch (sc & ~KEY_PRESSED)
 			{
 			case KEY_LEFT_CTRL:
@@ -291,15 +288,15 @@ void StartKernelShell()
 
 				for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 				{
-					if (strncmp(strBuf.c_str(), commands[i].Name, strBuf.size()) == 0)
-					{
-						strBuf = commands[i].Name;
-						for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
-							Display->Print(strBuf[i]);
-						seekCount = bsCount = strBuf.size();
-						Display->UpdateBuffer();
-						break;
-					}
+					if (strncmp(strBuf.c_str(), commands[i].Name, strBuf.size()) != 0)
+						continue;
+
+					strBuf = commands[i].Name;
+					for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
+						Display->Print(strBuf[i]);
+					seekCount = bsCount = strBuf.size();
+					Display->UpdateBuffer();
+					break;
 				}
 				continue;
 			}
@@ -714,7 +711,7 @@ void StartKernelShell()
 
 				Found = true;
 
-				std::string arg_only;
+				std::string arg_only = "";
 				const char *cmd_name = commands[i].Name;
 				for (size_t i = strlen(cmd_name) + 1; i < strBuf.length(); i++)
 					arg_only += strBuf[i];

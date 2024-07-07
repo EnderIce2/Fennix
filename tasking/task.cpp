@@ -62,7 +62,7 @@ namespace Tasking
 		return ((Scheduler::Base *)Scheduler)->GetProcessByID(ID);
 	}
 
-	TCB *Task::GetThreadByID(TID ID, PCB* Parent)
+	TCB *Task::GetThreadByID(TID ID, PCB *Parent)
 	{
 		return ((Scheduler::Base *)Scheduler)->GetThreadByID(ID, Parent);
 	}

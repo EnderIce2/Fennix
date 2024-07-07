@@ -95,52 +95,6 @@ typedef __builtin_va_list va_list;
 #define VPOKE(type, address) (*((volatile type *)(address)))
 #define POKE(type, address) (*((type *)(address)))
 
-#ifndef __cplusplus
-
-#ifdef __STDC__
-#ifdef __STDC_VERSION__
-#if (__STDC_VERSION__ >= 201710L)
-#define C_LANGUAGE_STANDARD 2018
-#elif (__STDC_VERSION__ >= 201112L)
-#define C_LANGUAGE_STANDARD 2011
-#elif (__STDC_VERSION__ >= 199901L)
-#define C_LANGUAGE_STANDARD 1999
-#elif (__STDC_VERSION__ >= 199409L)
-#define C_LANGUAGE_STANDARD 1995
-#endif
-#else
-#define C_LANGUAGE_STANDARD 1990
-#endif
-#else
-#define C_LANGUAGE_STANDARD 1972
-#endif
-
-#else
-
-#ifdef __STDC__
-#ifdef __cplusplus
-#if (__cplusplus >= 202100L)
-#define CPP_LANGUAGE_STANDARD 2023
-#elif (__cplusplus >= 202002L)
-#define CPP_LANGUAGE_STANDARD 2020
-#elif (__cplusplus >= 201703L)
-#define CPP_LANGUAGE_STANDARD 2017
-#elif (__cplusplus >= 201402L)
-#define CPP_LANGUAGE_STANDARD 2014
-#elif (__cplusplus >= 201103L)
-#define CPP_LANGUAGE_STANDARD 2011
-#elif (__cplusplus >= 199711L)
-#define CPP_LANGUAGE_STANDARD 1998
-#endif
-#else
-#define CPP_LANGUAGE_STANDARD __cplusplus
-#endif
-#else
-#define CPP_LANGUAGE_STANDARD __cplusplus
-#endif
-
-#endif // __cplusplus
-
 #ifndef __SIG_ATOMIC_TYPE__
 #define __SIG_ATOMIC_TYPE__ int
 #endif
@@ -511,11 +465,22 @@ typedef uint48_t uint_fast48_t;
 #define StackPop(stack, type) \
 	*((type *)stack++)
 
-#define ReturnLogError(ret, Format, ...) \
+#define ReturnLogError(ret, format, ...) \
 	{                                    \
-		trace(Format, ##__VA_ARGS__);    \
+		trace(format, ##__VA_ARGS__);    \
 		return ret;                      \
 	}                                    \
-	while (0)
+	while (0)                            \
+	__builtin_unreachable()
+
+#define AssertReturnError(condition, ret)          \
+	do                                             \
+	{                                              \
+		if (__builtin_expect(!!(!(condition)), 0)) \
+		{                                          \
+			error("\"%s\" failed!", #condition);   \
+			return ret;                            \
+		}                                          \
+	} while (0)
 
 #endif // !__FENNIX_KERNEL_TYPES_H__

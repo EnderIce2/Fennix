@@ -23,84 +23,113 @@
 
 using namespace vfs;
 
-// const char *ColorNodeType(Node *node)
-// {
-// 	switch (node->Stat.GetFileType())
-// 	{
-// 	case DIRECTORY:
-// 		return "\e3871F5";
-// 	case BLOCKDEVICE:
-// 		return "\eE8CD1E";
-// 	case CHARDEVICE:
-// 		return "\e86E01F";
-// 	case PIPE:
-// 		return "\eE0991F";
-// 	case SYMLINK:
-// 		return "\e1FB9E0";
-// 	case FILE:
-// 		return "\eCCCCCC";
-// 	default:
-// 		return "\eF72020";
-// 	}
-// }
+const char *ColorNodeType(FileNode *node)
+{
+	if (node->IsRegularFile())
+		return "\eCCCCCC";
+	else if (node->IsDirectory())
+		return "\e3871F5";
+	else if (node->IsBlockDevice())
+		return "\eE8CD1E";
+	else if (node->IsCharacterDevice())
+		return "\e86E01F";
+	else if (node->IsFIFO())
+		return "\eE0991F";
+	else if (node->IsSymbolicLink())
+		return "\e1FB9E0";
+	else
+		return "\eF72020";
+}
 
-// size_t MaxNameLength(Node *nodes)
-// {
-// 	size_t maxLength = 0;
-// 	foreach (auto &node in nodes->GetChildren(true))
-// 		maxLength = std::max(maxLength, strlen(node->FileName));
-// 	return maxLength;
-// }
+__no_sanitize("alignment") size_t MaxNameLength(FileNode *nodes)
+{
+	size_t maxLength = 0;
 
-// void PrintLS(Node *node)
-// {
-// 	size_t maxNameLength = MaxNameLength(node);
-// 	int count = 0;
-// 	bool first = true;
-// 	foreach (auto &var in node->GetChildren(true))
-// 	{
-// 		if (count % 5 == 0 && !first)
-// 			printf("\n");
-// 		printf(" %s%-*s ", ColorNodeType(var), (int)maxNameLength, var->FileName);
-// 		count++;
-// 		first = false;
-// 	}
-// 	printf("\eCCCCCC\n");
-// }
+	kdirent *dirBuffer = new kdirent[16];
+	ssize_t read = 0;
+	off_t offset = 0;
+	while ((read = nodes->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
+	{
+		if (read / sizeof(kdirent) == 0)
+			break;
+
+		off_t bufOffset = 0;
+		debug("There are %ld entries in this directory", read / sizeof(kdirent));
+		for (size_t i = 0; i < read / sizeof(kdirent); i++)
+		{
+			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
+			if (dirent->d_reclen == 0)
+				break;
+			bufOffset += dirent->d_reclen;
+			maxLength = std::max(maxLength, strlen(dirent->d_name));
+			debug("dirent->d_name: %s (max length: %ld)", dirent->d_name, maxLength);
+		}
+		offset += read / sizeof(kdirent);
+	}
+	delete[] dirBuffer;
+	return maxLength;
+}
+
+__no_sanitize("alignment") void PrintLS(FileNode *node)
+{
+	size_t maxNameLength = MaxNameLength(node);
+	int count = 0;
+	bool first = true;
+
+	kdirent *dirBuffer = new kdirent[16];
+	ssize_t read = 0;
+	off_t offset = 0;
+	while ((read = node->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
+	{
+		if (read / sizeof(kdirent) == 0)
+			break;
+
+		off_t bufOffset = 0;
+		for (size_t i = 0; i < read / sizeof(kdirent); i++)
+		{
+			if (count % 5 == 0 && !first)
+				printf("\n");
+			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
+			if (dirent->d_reclen == 0)
+				break;
+			bufOffset += dirent->d_reclen;
+			printf(" %s%-*s ", ColorNodeType(node), (int)maxNameLength, dirent->d_name);
+			count++;
+			first = false;
+		}
+		offset += read / sizeof(kdirent);
+	}
+
+	printf("\eCCCCCC\n");
+	delete[] dirBuffer;
+}
 
 void cmd_ls(const char *args)
 {
-	/* FIXME: Reimplement this later */
-	assert(!"Function not implemented");
+	if (args[0] == '\0')
+	{
+		FileNode *rootNode = thisProcess->CWD;
 
-	// if (args[0] == '\0')
-	// {
-	// 	Node *rootNode = thisProcess->CWD;
+		if (rootNode == nullptr)
+			rootNode = fs->GetRoot(0);
 
-	// 	if (rootNode == nullptr)
-	// 		rootNode = fs->FileSystemRoots->GetChildren(true)[0];
+		PrintLS(rootNode);
+		return;
+	}
 
-	// 	PrintLS(rootNode);
-	// }
-	// else
-	// {
-	// 	Node *thisNode = fs->GetByPath(args, thisProcess->CWD, true);
+	FileNode *thisNode = fs->GetByPath(args, nullptr);
 
-	// 	if (thisNode == nullptr)
-	// 	{
-	// 		printf("ls: %s: No such file or directory\n", args);
-	// 		return;
-	// 	}
+	if (thisNode == nullptr)
+	{
+		printf("ls: %s: No such file or directory\n", args);
+		return;
+	}
 
-	// 	if (thisNode->Stat.IsType(SYMLINK))
-	// 		thisNode = fs->GetByPath(thisNode->GetSymLink(), nullptr, true);
+	if (!thisNode->IsDirectory())
+	{
+		printf("%s%s\n", ColorNodeType(thisNode), thisNode->Path.c_str());
+		return;
+	}
 
-	// 	if (!thisNode->Stat.IsType(DIRECTORY))
-	// 	{
-	// 		printf("%s%s\n", ColorNodeType(thisNode), thisNode->FileName);
-	// 		return;
-	// 	}
-
-	// 	PrintLS(thisNode);
-	// }
+	PrintLS(thisNode);
 }

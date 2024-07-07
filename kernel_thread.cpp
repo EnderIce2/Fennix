@@ -66,15 +66,18 @@ void KernelMainThread()
 	TreeFS(fs->GetRoot(0), 0);
 #endif
 
-	KPrint("Kernel Compiled at: %s %s with C++ Standard: %d",
-		   __DATE__, __TIME__, CPP_LANGUAGE_STANDARD);
-	KPrint("C++ Language Version (__cplusplus): %ld", __cplusplus);
+	KPrint("Kernel compiled using GCC %d.%d.%d as of %s %s with Standard C++ %dL",
+		   __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
+		   __DATE__, __TIME__,
+		   __cplusplus);
 
 	if (IsVirtualizedEnvironment())
 		KPrint("Running in a virtualized environment");
 
 	KPrint("Initializing Driver Manager");
 	DriverManager = new Driver::Manager;
+	TaskManager->CreateThread(thisProcess, Tasking::IP(Driver::ManagerDaemonWrapper))
+		->Rename("Device Service");
 
 	KPrint("Loading Drivers");
 	DriverManager->PreloadDrivers();
@@ -88,8 +91,8 @@ void KernelMainThread()
 
 	KPrint("Executing %s", Config.InitPath);
 	int ExitCode = -1;
-	Tasking::TCB *initThread;
 	Tasking::PCB *initProc;
+	Tasking::TCB *initThread;
 	int tid = SpawnInit();
 	if (tid < 0)
 	{

@@ -100,6 +100,7 @@ namespace Execute
 	BinaryType GetBinaryType(std::string Path)
 	{
 		FileNode *node = fs->GetByPath(Path.c_str(), nullptr);
+		assert(node != nullptr);
 		return GetBinaryType(node);
 	}
 }

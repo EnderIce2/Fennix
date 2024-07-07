@@ -143,7 +143,7 @@ namespace vfs
 		};
 
 		FileHeader *hdr = new FileHeader{};
-		SetMode(Mode, hdr);
+		SetMode(inode.Mode, hdr);
 		strncpy(hdr->name, basename, sizeof(hdr->name));
 		strncpy(hdr->signature, TMAGIC, TMAGLEN);
 		strncpy(hdr->version, TVERSION, TVERSLEN);
@@ -205,12 +205,14 @@ namespace vfs
 		}
 
 		memcpy(Buffer, (uint8_t *)((uintptr_t)node->Header + sizeof(FileHeader) + Offset), Size);
-		debug("Read %d bytes from %d[%d]", Size, Node->Index, Offset);
+		// debug("Read %d bytes from %d[%d]", Size, Node->Index, Offset);
 		return Size;
 	}
 
-	ssize_t USTAR::ReadDir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
+	__no_sanitize("alignment")
+		ssize_t USTAR::ReadDir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
 	{
+		/* FIXME: FIX ALIGNMENT FOR DIRENT! */
 		auto Node = (USTARInode *)_Node;
 
 		off_t realOffset = Offset;
@@ -321,6 +323,15 @@ namespace vfs
 			entries++;
 		}
 
+		if (totalSize + sizeof(struct kdirent) >= Size)
+			return totalSize;
+
+		ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+		ent->d_ino = 0;
+		ent->d_off = 0;
+		ent->d_reclen = 0;
+		ent->d_type = DT_UNKNOWN;
+		ent->d_name[0] = '\0';
 		return totalSize;
 	}
 
@@ -809,7 +820,8 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
 
 	FileSystemInfo *fsi = new FileSystemInfo;
 	fsi->Name = "ustar";
-	fsi->Flags = I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
+	fsi->RootName = "/";
+	fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 	fsi->SuperOps.DeleteInode = __ustar_DestroyInode;
 	fsi->SuperOps.Destroy = __ustar_Destroy;
 	fsi->Ops.Lookup = __ustar_Lookup;

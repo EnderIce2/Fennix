@@ -31,49 +31,6 @@ namespace vfs
 		return cwk_path_is_relative(Path);
 	}
 
-	dev_t Virtual::EarlyReserveDevice()
-	{
-		RegisterLock.store(true);
-		size_t len = DeviceMap.size();
-		return len;
-	}
-
-	int Virtual::LateRegisterFileSystem(dev_t Device, FileSystemInfo *fsi, Inode *Root)
-	{
-		auto it = DeviceMap.find(Device);
-		if (it != DeviceMap.end())
-			ReturnLogError(-EEXIST, "Device %d already registered", Device);
-
-		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
-		DeviceMap.insert({Device, fsmi});
-		RegisterLock.store(false);
-		return 0;
-	}
-
-	dev_t Virtual::RegisterFileSystem(FileSystemInfo *fsi, Inode *Root)
-	{
-		RegisterLock.store(true);
-		size_t len = DeviceMap.size();
-		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
-		DeviceMap.insert({len, fsmi});
-		RegisterLock.store(false);
-		return len;
-	}
-
-	int Virtual::UnregisterFileSystem(dev_t Device)
-	{
-		auto it = DeviceMap.find(Device);
-		if (it == DeviceMap.end())
-			ReturnLogError(-ENOENT, "Device %d not found", Device);
-
-		if (it->second.fsi->SuperOps.Synchronize)
-			it->second.fsi->SuperOps.Synchronize(it->second.fsi, NULL);
-		if (it->second.fsi->SuperOps.Destroy)
-			it->second.fsi->SuperOps.Destroy(it->second.fsi);
-		DeviceMap.erase(it);
-		return 0;
-	}
-
 	void Virtual::AddRoot(Inode *Root)
 	{
 		SmartLock(VirtualLock);
@@ -88,9 +45,15 @@ namespace vfs
 		Inode *RootNode = FileSystemRoots->Children[Index];
 
 		char rootName[128]{};
-		snprintf(rootName, sizeof(rootName), "root-%ld", Index);
+		snprintf(rootName, sizeof(rootName), "\002root-%ld\003", Index);
 
-		return this->CreateCacheNode(nullptr, RootNode, rootName, 0);
+		auto it = FileRoots.find(Index);
+		if (it != FileRoots.end())
+			return it->second;
+
+		FileNode *ret = this->CreateCacheNode(nullptr, RootNode, rootName, 0);
+		FileRoots.insert({Index, ret});
+		return ret;
 	}
 
 	FileNode *Virtual::Create(FileNode *Parent, const char *Name, mode_t Mode)
@@ -126,40 +89,103 @@ namespace vfs
 		return this->Create(Parent, Name, Mode);
 	}
 
+	FileNode *Virtual::Mount(FileNode *Parent, Inode *Node, const char *Path)
+	{
+		char *path = strdup(Path);
+		char *lastSlash = strrchr(path, '/');
+		if (lastSlash == path)
+			lastSlash++;
+		*lastSlash = '\0';
+
+		FileNode *parentNode = this->GetByPath(path, Parent);
+		free(path);
+		lastSlash = strrchr(Path, '/');
+		lastSlash++;
+		return this->CreateCacheNode(parentNode, Node, lastSlash, Node->Mode);
+	}
+
+	int Virtual::Unmount(const char *Path)
+	{
+		FileNode *node = this->GetByPath(Path, nullptr);
+		if (node == nullptr)
+			ReturnLogError(-ENOENT, "Path %s not found", Path);
+
+		return this->RemoveCacheNode(node);
+	}
+
 	FileNode *Virtual::GetByPath(const char *Path, FileNode *Parent)
 	{
-		FileNode *fn = this->CacheLookup(Path);
-		if (fn)
-			return fn;
-
 		if (Parent == nullptr)
 			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
-		auto it = DeviceMap.find(Parent->Node->Device);
-		if (it == DeviceMap.end())
-			ReturnLogError(nullptr, "Device %d not found", Parent->Node->Device);
+		if (strcmp(Path, ".") == 0)
+			return Parent;
+
+		if (strcmp(Path, "..") == 0)
+			return Parent->Parent ? Parent->Parent : Parent;
+
+		FileNode *fn = this->CacheRecursiveSearch(Parent, Path, this->PathIsRelative(Path));
+		if (fn)
+			return fn;
+
+		if (strncmp(Path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		{
+			Path += 7;
+			while (*Path != '\0' && *Path != '\003')
+				Path++;
+			if (*Path == '\003')
+				Path++;
+		}
+
+		FileNode *__Parent = CacheSearchReturnLast(Parent, &Path);
 
 		struct cwk_segment segment;
 		if (!cwk_path_get_first_segment(Path, &segment))
+		{
+			auto it = DeviceMap.find(Parent->Node->Device);
+			if (unlikely(it == DeviceMap.end()))
+				ReturnLogError(nullptr, "Device %d not found", Parent->Node->Device);
+
+			if (it->second.fsi->Ops.Lookup == NULL)
+				ReturnLogError(nullptr, "Lookup not supported for %d", it->first);
+
+			Inode *Node = NULL;
+			int ret = it->second.fsi->Ops.Lookup(Parent->Node, Path, &Node);
+			if (ret < 0)
+				ReturnLogError(nullptr, "Lookup for \"%s\"(%d) failed with %d", Path, it->first, ret);
+
+			if (Parent->Node == Node) /* root / */
+			{
+				debug("Returning root (%#lx)", Node);
+				return Parent;
+			}
 			ReturnLogError(nullptr, "Path has no segments");
+		}
 
 		Inode *Node = NULL;
-		FileNode *__Parent = Parent;
 		do
 		{
+			auto it = DeviceMap.find(__Parent->Node->Device);
+			if (unlikely(it == DeviceMap.end()))
+				ReturnLogError(nullptr, "Device %d not found", __Parent->Node->Device);
+
 			if (it->second.fsi->Ops.Lookup == NULL)
 				ReturnLogError(nullptr, "Lookup not supported for %d", it->first);
 
 			std::string segmentName(segment.begin, segment.size);
 			int ret = it->second.fsi->Ops.Lookup(__Parent->Node, segmentName.c_str(), &Node);
 			if (ret < 0)
-				ReturnLogError(nullptr, "Lookup for %d failed with %d", it->first, ret);
+				ReturnLogError(nullptr, "Lookup for \"%s\"(%d) failed with %d", segmentName.c_str(), it->first, ret);
 			__Parent = this->CreateCacheNode(__Parent, Node, segmentName.c_str(), 0);
 		} while (cwk_path_get_next_segment(&segment));
 
 		FileNode *ret = __Parent;
 		if (!ret->IsDirectory())
 			return ret;
+
+		auto it = DeviceMap.find(__Parent->Node->Device);
+		if (unlikely(it == DeviceMap.end()))
+			ReturnLogError(nullptr, "Device %d not found", __Parent->Node->Device);
 
 		size_t dirAllocLen = sizeof(struct kdirent) + strlen(Path);
 		struct kdirent *dirent = (struct kdirent *)malloc(dirAllocLen);
@@ -178,6 +204,34 @@ namespace vfs
 		}
 		free(dirent);
 		return ret;
+	}
+
+	std::string Virtual::GetByNode(FileNode *Node)
+	{
+		if (Node->Parent == nullptr)
+		{
+			if (Node->Node->Flags & I_FLAG_ROOT)
+				return Node->fsi->RootName;
+			assert(Node->Parent != nullptr);
+		}
+
+		std::string path;
+
+		auto appendPath = [&path](const char *name)
+		{
+			if (path.size() > 0)
+				path += "/";
+			path += name;
+		};
+
+		FileNode *current = Node;
+		while (current->Parent != nullptr)
+		{
+			appendPath(current->Name.c_str());
+			current = current->Parent;
+		}
+
+		return path;
 	}
 
 	FileNode *Virtual::CreateLink(const char *Path, FileNode *Parent, const char *Target)

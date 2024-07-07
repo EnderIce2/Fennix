@@ -28,29 +28,34 @@ void cmd_cat(const char *args)
 	if (args[0] == '\0')
 		return;
 
-	/* FIXME: Reimplement this later */
-	assert(!"Function not implemented");
-	// Node *thisNode = fs->GetByPath(args, thisProcess->CWD, true);
-	// if (thisNode == nullptr)
-	// {
-	// 	printf("cat: %s: No such file or directory\n", args);
-	// 	return;
-	// }
+	FileNode *node = fs->GetByPath(args, nullptr);
 
-	// if (!thisNode->Stat.IsType(FILE) && !thisNode->Stat.IsType(CHARDEVICE))
-	// {
-	// 	printf("cat: %s: Not a file\n", args);
-	// 	return;
-	// }
+	if (node == nullptr)
+	{
+		printf("cat: %s: No such file or directory\n", args);
+		return;
+	}
 
-	// vfs::FileHandle *fd = fs->Open(thisNode->FilePath, nullptr, true);
+	if (!node->IsRegularFile() && !node->IsCharacterDevice())
+	{
+		printf("cat: %s: Not a regular file or character device\n", args);
+		return;
+	}
 
-	// uint8_t *buffer = new uint8_t[fd->node->Stat.Size + 1];
-	// ssize_t rBytes = fd->read(buffer, fd->node->Stat.Size);
-	// if (rBytes > 0)
-	// 	printf("%s\n", buffer);
-	// else
-	// 	printf("cat: %s: Could not read file\n", args);
-	// delete[] buffer;
-	// delete fd;
+	if (node->IsCharacterDevice())
+	{
+		printf("cat: %s: Character devices are not supported yet\n", args);
+		return;
+	}
+
+	kstat stat = {};
+	node->Stat(&stat);
+
+	uint8_t *buffer = new uint8_t[stat.Size + 1];
+	ssize_t rBytes = node->Read(buffer, stat.Size, 0);
+	if (rBytes > 0)
+		printf("%s\n", buffer);
+	else
+		printf("cat: %s: Could not read file\n", args);
+	delete[] buffer;
 }

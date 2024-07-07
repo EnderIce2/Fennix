@@ -19,10 +19,13 @@
 #include <interface/driver.h>
 #include <interface/fs.h>
 #include <type_traits>
+#include <interface/aip.h>
+#include <interface/input.h>
+#include <interface/pci.h>
 
 #include "../../kernel.h"
 
-// #define DEBUG_API
+#define DEBUG_API
 
 #ifdef DEBUG_API
 #define dbg_api(Format, ...) func(Format, ##__VA_ARGS__)
@@ -30,222 +33,461 @@
 #define dbg_api(Format, ...)
 #endif
 
-using enum PCI::PCICommands;
-
-#define VMWARE_MAGIC 0x564D5868 /* hXMV */
-#define VMWARE_PORT 0x5658
-#define CMD_GETVERSION 0xA
-
-namespace Driver
+namespace v0
 {
-	int RegisterFunction(dev_t MajorID, void *Function, __driverRegFunc Type)
+	typedef int CriticalState;
+
+	void KernelPrint(dev_t DriverID, const char *Format, va_list args)
 	{
-		dbg_api("%d, %#lx, %d", MajorID, (uintptr_t)Function, Type);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(MajorID);
-		if (itr == Drivers.end())
-			return -EINVAL;
-
-		DriverObject *drv = &itr->second;
-
-		switch (Type)
-		{
-		case _drf_Entry:
-			drv->Entry = (int (*)())Function;
-			debug("Entry %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
-			break;
-		case _drf_Final:
-			drv->Final = (int (*)())Function;
-			debug("Finalize %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
-			break;
-		case _drf_Panic:
-			drv->Panic = (int (*)())Function;
-			debug("Panic %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
-			break;
-		case _drf_Probe:
-			drv->Probe = (int (*)())Function;
-			debug("Probe %#lx for %s", (uintptr_t)Function, drv->Path.c_str());
-			break;
-		default:
-			assert(!"Invalid driver function type");
-		}
-		return 0;
-	}
-
-	int GetDriverInfo(dev_t MajorID, const char *Name, const char *Description, const char *Author, const char *Version, const char *License)
-	{
-		dbg_api("%d, %s, %s, %s, %s, %s", MajorID, Name, Description, Author, Version, License);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(MajorID);
-		if (itr == Drivers.end())
-			return -EINVAL;
-
-		DriverObject *drv = &itr->second;
-
-		strncpy(drv->Name, Name, sizeof(drv->Name));
-		strncpy(drv->Description, Description, sizeof(drv->Description));
-		strncpy(drv->Author, Author, sizeof(drv->Author));
-		strncpy(drv->Version, Version, sizeof(drv->Version));
-		strncpy(drv->License, License, sizeof(drv->License));
-		return 0;
-	}
-
-	/* --------- */
-
-	int RegisterInterruptHandler(dev_t MajorID, uint8_t IRQ, void *Handler)
-	{
-		dbg_api("%d, %d, %#lx", MajorID, IRQ, Handler);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(MajorID);
-		if (itr == Drivers.end())
-			return -EINVAL;
-
-		DriverObject *drv = &itr->second;
-
-		if (drv->InterruptHandlers->contains(IRQ))
-			return -EEXIST;
-
-		Interrupts::AddHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
-		drv->InterruptHandlers->insert(std::pair<uint8_t, void *>(IRQ, Handler));
-		return 0;
-	}
-
-	int OverrideInterruptHandler(dev_t MajorID, uint8_t IRQ, void *Handler)
-	{
-		dbg_api("%d, %d, %#lx", MajorID, IRQ, Handler);
-
-		debug("Overriding IRQ %d with %#lx", IRQ, Handler);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		foreach (auto &var in Drivers)
-		{
-			DriverObject *drv = &var.second;
-
-			foreach (auto &ih in * drv->InterruptHandlers)
-			{
-				if (ih.first == IRQ)
-				{
-					debug("Removing IRQ %d: %#lx for %s", IRQ, (uintptr_t)ih.second, drv->Path.c_str());
-					Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))ih.second, IRQ);
-					drv->InterruptHandlers->erase(IRQ);
-					break;
-				}
-			}
-		}
-
-		return RegisterInterruptHandler(MajorID, IRQ, Handler);
-	}
-
-	int UnregisterInterruptHandler(dev_t MajorID, uint8_t IRQ, void *Handler)
-	{
-		dbg_api("%d, %d, %#lx", MajorID, IRQ, Handler);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(MajorID);
-		if (itr == Drivers.end())
-			return -EINVAL;
-
-		DriverObject *drv = &itr->second;
-		Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
-		drv->InterruptHandlers->erase(IRQ);
-		return 0;
-	}
-
-	int UnregisterAllInterruptHandlers(dev_t MajorID, void *Handler)
-	{
-		dbg_api("%d, %#lx", MajorID, Handler);
-
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(MajorID);
-		if (itr == Drivers.end())
-			return -EINVAL;
-
-		DriverObject *drv = &itr->second;
-		foreach (auto &i in * drv->InterruptHandlers)
-		{
-			Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, i.first);
-			debug("Removed IRQ %d: %#lx for %s", i.first, (uintptr_t)Handler, drv->Path.c_str());
-		}
-		drv->InterruptHandlers->clear();
-		return 0;
-	}
-
-	/* --------- */
-
-	void d_KPrint(dev_t MajorID, const char *Format, va_list args)
-	{
-		dbg_api("%d %s, %#lx", MajorID, Format, args);
+		dbg_api("%d, %s, %#lx", DriverID, Format, args);
 
 		_KPrint(Format, args);
 	}
 
-	void KernelLog(dev_t MajorID, const char *Format, va_list args)
+	void KernelLog(dev_t DriverID, const char *Format, va_list args)
 	{
-		dbg_api("%d, %s, %#lx", MajorID, Format, args);
+		dbg_api("%d, %s, %#lx", DriverID, Format, args);
 
-		fctprintf(uart_wrapper, nullptr, "DRVER| %ld: ", MajorID);
+		fctprintf(uart_wrapper, nullptr, "DRVER| %ld: ", DriverID);
 		vfctprintf(uart_wrapper, nullptr, Format, args);
 		uart_wrapper('\n', nullptr);
 	}
 
 	/* --------- */
 
-	void *RequestPages(dev_t MajorID, size_t Pages)
+	CriticalState EnterCriticalSection(dev_t DriverID)
 	{
-		dbg_api("%d, %d", MajorID, Pages);
+		dbg_api("%d", DriverID);
 
-		std::unordered_map<dev_t, DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-		auto itr = Drivers.find(MajorID);
-		assert(itr != Drivers.end());
+		CriticalState cs;
 
-		return itr->second.vma->RequestPages(Pages);
+#if defined(__i386__) || defined(__x86_64__)
+
+		uintptr_t Flags;
+#if defined(__x86_64__)
+		asmv("pushfq");
+		asmv("popq %0"
+			 : "=r"(Flags));
+#else
+		asmv("pushfl");
+		asmv("popl %0"
+			 : "=r"(Flags));
+#endif
+		cs = Flags & (1 << 9);
+		asmv("cli");
+
+#elif defined(__arm__) || defined(__aarch64__)
+
+		uintptr_t Flags;
+		asmv("mrs %0, cpsr"
+			 : "=r"(Flags));
+		cs = Flags & (1 << 7);
+		asmv("cpsid i");
+
+#endif
+
+		return cs;
 	}
 
-	void FreePages(dev_t MajorID, void *Pointer, size_t Pages)
+	void LeaveCriticalSection(dev_t DriverID, CriticalState PreviousState)
 	{
-		dbg_api("%d, %#lx, %d", MajorID, Pointer, Pages);
+		dbg_api("%d, %d", DriverID, PreviousState);
 
-		std::unordered_map<dev_t, DriverObject> &Drivers =
+#if defined(__i386__) || defined(__x86_64__)
+
+		if (PreviousState)
+			asmv("sti");
+
+#elif defined(__arm__) || defined(__aarch64__)
+
+		if (PreviousState)
+			asmv("cpsie i");
+
+#endif
+	}
+
+	int RegisterInterruptHandler(dev_t DriverID, uint8_t IRQ, void *Handler)
+	{
+		dbg_api("%d, %d, %#lx", DriverID, IRQ, Handler);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+			DriverManager->GetDrivers();
+		const auto it = drivers.find(DriverID);
+		if (it == drivers.end())
+			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
+		const Driver::DriverObject *drv = &it->second;
+
+		if (drv->InterruptHandlers->contains(IRQ))
+			return -EEXIST;
+
+		Interrupts::AddHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
+		auto ih = drv->InterruptHandlers;
+		ih->insert(std::pair<uint8_t, void *>(IRQ, Handler));
+		return 0;
+	}
+
+	int OverrideInterruptHandler(dev_t DriverID, uint8_t IRQ, void *Handler)
+	{
+		dbg_api("%d, %d, %#lx", DriverID, IRQ, Handler);
+
+		debug("Overriding IRQ %d with %#lx", IRQ, Handler);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
 			DriverManager->GetDrivers();
 
-		auto itr = Drivers.find(MajorID);
+		for (auto &var : drivers)
+		{
+			Driver::DriverObject *drv = &var.second;
+			for (const auto &ih : *drv->InterruptHandlers)
+			{
+				if (ih.first != IRQ)
+					continue;
+
+				debug("Removing IRQ %d: %#lx for %s", IRQ, (uintptr_t)ih.second, drv->Path.c_str());
+				Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))ih.second, IRQ);
+				drv->InterruptHandlers->erase(IRQ);
+				break;
+			}
+		}
+
+		return RegisterInterruptHandler(DriverID, IRQ, Handler);
+	}
+
+	int UnregisterInterruptHandler(dev_t DriverID, uint8_t IRQ, void *Handler)
+	{
+		dbg_api("%d, %d, %#lx", DriverID, IRQ, Handler);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+			DriverManager->GetDrivers();
+		const auto it = drivers.find(DriverID);
+		if (it == drivers.end())
+			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
+		const Driver::DriverObject *drv = &it->second;
+
+		Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
+		auto ih = drv->InterruptHandlers;
+		ih->erase(IRQ);
+		return 0;
+	}
+
+	int UnregisterAllInterruptHandlers(dev_t DriverID, void *Handler)
+	{
+		dbg_api("%d, %#lx", DriverID, Handler);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+			DriverManager->GetDrivers();
+		const auto it = drivers.find(DriverID);
+		if (it == drivers.end())
+			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
+		const Driver::DriverObject *drv = &it->second;
+
+		for (auto &i : *drv->InterruptHandlers)
+		{
+			Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, i.first);
+			debug("Removed IRQ %d: %#lx for %s", i.first, (uintptr_t)Handler, drv->Path.c_str());
+		}
+		auto ih = drv->InterruptHandlers;
+		ih->clear();
+		return 0;
+	}
+
+	/* --------- */
+
+	dev_t RegisterFileSystem(dev_t DriverID, FileSystemInfo *Info, struct Inode *Root)
+	{
+		dbg_api("%d, %#lx, %#lx", DriverID, Info, Root);
+
+		return fs->RegisterFileSystem(Info, Root);
+	}
+
+	int UnregisterFileSystem(dev_t DriverID, dev_t Device)
+	{
+		dbg_api("%d, %d", DriverID, Device);
+
+		return fs->UnregisterFileSystem(Device);
+	}
+
+	/* --------- */
+
+	pid_t CreateKernelProcess(dev_t DriverID, const char *Name)
+	{
+		dbg_api("%d, %s", DriverID, Name);
+
+		Tasking::PCB *pcb = TaskManager->CreateProcess(nullptr, Name, Tasking::System,
+													   true, 0, 0);
+
+		return pcb->ID;
+	}
+
+	pid_t CreateKernelThread(dev_t DriverID, pid_t pId, const char *Name, void *EntryPoint, void *Argument)
+	{
+		dbg_api("%d, %d, %s, %#lx, %#lx", DriverID, pId, Name, EntryPoint, Argument);
+
+		Tasking::PCB *parent = TaskManager->GetProcessByID(pId);
+		if (!parent)
+			return -EINVAL;
+
+		CriticalSection cs;
+		Tasking::TCB *tcb = TaskManager->CreateThread(parent, (Tasking::IP)EntryPoint);
+		if (Argument)
+			tcb->SYSV_ABI_Call((uintptr_t)Argument);
+		tcb->Rename(Name);
+		return tcb->ID;
+	}
+
+	pid_t GetCurrentProcess(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		return TaskManager->GetCurrentProcess()->ID;
+	}
+
+	int KillProcess(dev_t DriverID, pid_t pId, int ExitCode)
+	{
+		dbg_api("%d, %d, %d", DriverID, pId, ExitCode);
+
+		Tasking::PCB *pcb = TaskManager->GetProcessByID(pId);
+		if (!pcb)
+			return -EINVAL;
+		TaskManager->KillProcess(pcb, (Tasking::KillCode)ExitCode);
+		return 0;
+	}
+
+	int KillThread(dev_t DriverID, pid_t tId, pid_t pId, int ExitCode)
+	{
+		dbg_api("%d, %d, %d", DriverID, tId, ExitCode);
+
+		Tasking::TCB *tcb = TaskManager->GetThreadByID(tId, TaskManager->GetProcessByID(pId));
+		if (!tcb)
+			return -EINVAL;
+		TaskManager->KillThread(tcb, (Tasking::KillCode)ExitCode);
+		return 0;
+	}
+
+	void Yield(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		TaskManager->Yield();
+	}
+
+	void Sleep(dev_t DriverID, uint64_t Milliseconds)
+	{
+		dbg_api("%d, %d", DriverID, Milliseconds);
+
+		TaskManager->Sleep(Milliseconds);
+	}
+
+	/* --------- */
+
+	void PIC_EOI(dev_t DriverID, uint8_t IRQ)
+	{
+		dbg_api("%d, %d", DriverID, IRQ);
+
+		if (IRQ >= 8)
+			outb(PIC2_CMD, _PIC_EOI);
+		outb(PIC1_CMD, _PIC_EOI);
+	}
+
+	void IRQ_MASK(dev_t DriverID, uint8_t IRQ)
+	{
+		dbg_api("%d, %d", DriverID, IRQ);
+
+		uint16_t port;
+		uint8_t value;
+
+		if (IRQ < 8)
+			port = PIC1_DATA;
+		else
+		{
+			port = PIC2_DATA;
+			IRQ -= 8;
+		}
+
+		value = inb(port) | (1 << IRQ);
+		outb(port, value);
+	}
+
+	void IRQ_UNMASK(dev_t DriverID, uint8_t IRQ)
+	{
+		dbg_api("%d, %d", DriverID, IRQ);
+
+		uint16_t port;
+		uint8_t value;
+
+		if (IRQ < 8)
+			port = PIC1_DATA;
+		else
+		{
+			port = PIC2_DATA;
+			IRQ -= 8;
+		}
+
+		value = inb(port) & ~(1 << IRQ);
+		outb(port, value);
+	}
+
+	void PS2Wait(dev_t DriverID, const bool Output)
+	{
+		dbg_api("%d, %d", DriverID, Output);
+
+		int Timeout = 100000;
+		PS2_STATUSES Status = {.Raw = inb(PS2_STATUS)};
+		while (Timeout--)
+		{
+			if (!Output) /* FIXME: Reverse? */
+			{
+				if (Status.OutputBufferFull == 0)
+					return;
+			}
+			else
+			{
+				if (Status.InputBufferFull == 0)
+					return;
+			}
+			Status.Raw = inb(PS2_STATUS);
+		}
+
+		warn("PS/2 controller timeout! (Status: %#x, %d)", Status, Output);
+	}
+
+	void PS2WriteCommand(dev_t DriverID, uint8_t Command)
+	{
+		dbg_api("%d, %d", DriverID, Command);
+
+		WaitInput;
+		outb(PS2_CMD, Command);
+	}
+
+	void PS2WriteData(dev_t DriverID, uint8_t Data)
+	{
+		dbg_api("%d, %d", DriverID, Data);
+
+		WaitInput;
+		outb(PS2_DATA, Data);
+	}
+
+	uint8_t PS2ReadData(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		WaitOutput;
+		return inb(PS2_DATA);
+	}
+
+	uint8_t PS2ReadStatus(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		WaitOutput;
+		return inb(PS2_STATUS);
+	}
+
+	uint8_t PS2ReadAfterACK(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		uint8_t ret = PS2ReadData(DriverID);
+		while (ret == PS2_ACK)
+		{
+			WaitOutput;
+			ret = inb(PS2_DATA);
+		}
+		return ret;
+	}
+
+	void PS2ClearOutputBuffer(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		PS2_STATUSES Status;
+		int timeout = 0x500;
+		while (timeout--)
+		{
+			Status.Raw = inb(PS2_STATUS);
+			if (Status.OutputBufferFull == 0)
+				return;
+			inb(PS2_DATA);
+		}
+	}
+
+	int PS2ACKTimeout(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		int timeout = 0x500;
+		while (timeout > 0)
+		{
+			if (PS2ReadData(DriverID) == PS2_ACK)
+				return 0;
+			timeout--;
+		}
+		return -ETIMEDOUT;
+	}
+
+	/* --------- */
+
+	void *AllocateMemory(dev_t DriverID, size_t Pages)
+	{
+		dbg_api("%d, %d", DriverID, Pages);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &Drivers =
+			DriverManager->GetDrivers();
+
+		auto itr = Drivers.find(DriverID);
+		assert(itr != Drivers.end());
+
+		void *ptr = itr->second.vma->RequestPages(Pages);
+		memset(ptr, 0, FROM_PAGES(Pages));
+		return ptr;
+	}
+
+	void FreeMemory(dev_t DriverID, void *Pointer, size_t Pages)
+	{
+		dbg_api("%d, %#lx, %d", DriverID, Pointer, Pages);
+
+		std::unordered_map<dev_t, Driver::DriverObject> &Drivers =
+			DriverManager->GetDrivers();
+
+		auto itr = Drivers.find(DriverID);
 		assert(itr != Drivers.end());
 
 		itr->second.vma->FreePages(Pointer, Pages);
 	}
 
-	/* --------- */
-
-	void AppendMapFlag(dev_t MajorID, void *Address, PageMapFlags Flag)
+	void *MemoryCopy(dev_t DriverID, void *Destination, const void *Source, size_t Length)
 	{
-		dbg_api("%d, %#lx, %d", MajorID, Address, Flag);
+		dbg_api("%d, %#lx, %#lx, %d", DriverID, Destination, Source, Length);
 
-		Memory::Virtual vmm(KernelPageTable);
-		vmm.GetPTE(Address)->raw |= Flag;
+		return memcpy(Destination, Source, Length);
 	}
 
-	void RemoveMapFlag(dev_t MajorID, void *Address, PageMapFlags Flag)
+	void *MemorySet(dev_t DriverID, void *Destination, int Value, size_t Length)
 	{
-		dbg_api("%d, %#lx, %d", MajorID, Address, Flag);
+		dbg_api("%d, %#lx, %d, %d", DriverID, Destination, Value, Length);
 
-		Memory::Virtual vmm(KernelPageTable);
-		vmm.GetPTE(Address)->raw &= ~Flag;
+		return memset(Destination, Value, Length);
+	}
+
+	void *MemoryMove(dev_t DriverID, void *Destination, const void *Source, size_t Length)
+	{
+		dbg_api("%d, %#lx, %#lx, %d", DriverID, Destination, Source, Length);
+
+		return memmove(Destination, Source, Length);
+	}
+
+	size_t StringLength(dev_t DriverID, const char String[])
+	{
+		dbg_api("%d, %s", DriverID, String);
+
+		return strlen(String);
+	}
+
+	char *_strstr(dev_t DriverID, const char *Haystack, const char *Needle)
+	{
+		dbg_api("%d, %s, %s", DriverID, Haystack, Needle);
+
+		return (char *)strstr(Haystack, Needle);
 	}
 
 	void MapPages(dev_t MajorID, void *PhysicalAddress, void *VirtualAddress, size_t Pages, uint32_t Flags)
@@ -264,87 +506,46 @@ namespace Driver
 		vmm.Unmap(VirtualAddress, Pages);
 	}
 
-	/* --------- */
-
-	pid_t CreateKernelProcess(dev_t MajorID, const char *Name)
+	void AppendMapFlag(dev_t MajorID, void *Address, PageMapFlags Flag)
 	{
-		dbg_api("%d, %s", MajorID, Name);
+		dbg_api("%d, %#lx, %d", MajorID, Address, Flag);
 
-		Tasking::PCB *pcb = TaskManager->CreateProcess(nullptr, Name, Tasking::System,
-													   true, 0, 0);
-
-		return pcb->ID;
+		Memory::Virtual vmm(KernelPageTable);
+		vmm.GetPTE(Address)->raw |= Flag;
 	}
 
-	pid_t CreateKernelThread(dev_t MajorID, pid_t pId, const char *Name, void *EntryPoint, void *Argument)
+	void RemoveMapFlag(dev_t MajorID, void *Address, PageMapFlags Flag)
 	{
-		dbg_api("%d, %d, %s, %#lx, %#lx", MajorID, pId, Name, EntryPoint, Argument);
+		dbg_api("%d, %#lx, %d", MajorID, Address, Flag);
 
-		Tasking::PCB *parent = TaskManager->GetProcessByID(pId);
-		if (!parent)
-			return -EINVAL;
-
-		CriticalSection cs;
-		Tasking::TCB *tcb = TaskManager->CreateThread(parent, (Tasking::IP)EntryPoint);
-		if (Argument)
-			tcb->SYSV_ABI_Call((uintptr_t)Argument);
-		tcb->Rename(Name);
-		return tcb->ID;
+		Memory::Virtual vmm(KernelPageTable);
+		vmm.GetPTE(Address)->raw &= ~Flag;
 	}
 
-	pid_t GetCurrentProcess(dev_t MajorID)
+	void *Znwm(size_t Size)
 	{
-		dbg_api("%d", MajorID);
+		dbg_api("%d", Size);
 
-		return TaskManager->GetCurrentProcess()->ID;
+		return malloc(Size);
 	}
 
-	int KillProcess(dev_t MajorID, pid_t pId, int ExitCode)
+	void ZdlPvm(void *Pointer, size_t Size)
 	{
-		dbg_api("%d, %d, %d", MajorID, pId, ExitCode);
+		dbg_api("%d, %#lx", Pointer, Size);
 
-		Tasking::PCB *pcb = TaskManager->GetProcessByID(pId);
-		if (!pcb)
-			return -EINVAL;
-		TaskManager->KillProcess(pcb, (Tasking::KillCode)ExitCode);
-		return 0;
-	}
-
-	int KillThread(dev_t MajorID, pid_t tId, pid_t pId, int ExitCode)
-	{
-		dbg_api("%d, %d, %d", MajorID, tId, ExitCode);
-
-		Tasking::TCB *tcb = TaskManager->GetThreadByID(tId, TaskManager->GetProcessByID(pId));
-		if (!tcb)
-			return -EINVAL;
-		TaskManager->KillThread(tcb, (Tasking::KillCode)ExitCode);
-		return 0;
-	}
-
-	void Yield(dev_t MajorID)
-	{
-		dbg_api("%d", MajorID);
-
-		TaskManager->Yield();
-	}
-
-	void Sleep(dev_t MajorID, uint64_t Milliseconds)
-	{
-		dbg_api("%d, %d", MajorID, Milliseconds);
-
-		TaskManager->Sleep(Milliseconds);
+		free(Pointer);
 	}
 
 	/* --------- */
 
-	__PCIArray *GetPCIDevices(dev_t MajorID, uint16_t _Vendors[], uint16_t _Devices[])
+	__PCIArray *GetPCIDevices(dev_t DriverID, uint16_t _Vendors[], uint16_t _Devices[])
 	{
-		dbg_api("%d, %#lx, %#lx", MajorID, _Vendors, _Devices);
+		dbg_api("%d, %#lx, %#lx", DriverID, _Vendors, _Devices);
 
-		std::unordered_map<dev_t, DriverObject> &Drivers =
+		std::unordered_map<dev_t, Driver::DriverObject> &Drivers =
 			DriverManager->GetDrivers();
 
-		auto itr = Drivers.find(MajorID);
+		auto itr = Drivers.find(DriverID);
 		if (itr == Drivers.end())
 			return nullptr;
 
@@ -394,11 +595,12 @@ namespace Driver
 		return head;
 	}
 
-	void InitializePCI(dev_t MajorID, void *_Header)
+	void InitializePCI(dev_t DriverID, void *_Header)
 	{
-		dbg_api("%d, %#lx", MajorID, _Header);
+		dbg_api("%d, %#lx", DriverID, _Header);
 
-		PCI::PCIDeviceHeader *Header = (PCI::PCIDeviceHeader *)_Header;
+		PCI::PCIDevice *__device = (PCI::PCIDevice *)_Header;
+		PCI::PCIDeviceHeader *Header = (PCI::PCIDeviceHeader *)__device->Header;
 
 		debug("Header Type: %d", Header->HeaderType);
 		switch (Header->HeaderType)
@@ -523,11 +725,12 @@ namespace Driver
 		Header->Command &= ~PCI_COMMAND_INTX_DISABLE;
 	}
 
-	uint32_t GetBAR(dev_t MajorID, uint8_t i, void *_Header)
+	uint32_t GetBAR(dev_t DriverID, uint8_t i, void *_Header)
 	{
-		dbg_api("%d, %d, %#lx", MajorID, i, _Header);
+		dbg_api("%d, %d, %#lx", DriverID, i, _Header);
 
-		PCI::PCIDeviceHeader *Header = (PCI::PCIDeviceHeader *)_Header;
+		PCI::PCIDevice *__device = (PCI::PCIDevice *)_Header;
+		PCI::PCIDeviceHeader *Header = (PCI::PCIDeviceHeader *)__device->Header;
 
 		switch (Header->HeaderType)
 		{
@@ -580,154 +783,44 @@ namespace Driver
 		}
 	}
 
-	/* --------- */
-
-	void *api__memcpy(dev_t MajorID, void *Destination, const void *Source, size_t Length)
+	uint8_t iLine(dev_t DriverID, PCIDevice *Device)
 	{
-		dbg_api("%d, %#lx, %#lx, %d", MajorID, Destination, Source, Length);
+		dbg_api("%d, %#lx", DriverID, Device);
 
-		return memcpy(Destination, Source, Length);
+		PCIHeader0 *Header = (PCIHeader0 *)Device->Header;
+		return Header->InterruptLine;
 	}
 
-	void *api__memset(dev_t MajorID, void *Destination, int Value, size_t Length)
+	uint8_t iPin(dev_t DriverID, PCIDevice *Device)
 	{
-		dbg_api("%d, %#lx, %d, %d", MajorID, Destination, Value, Length);
+		dbg_api("%d, %#lx", DriverID, Device);
 
-		return memset(Destination, Value, Length);
-	}
-
-	void *api__memmove(dev_t MajorID, void *Destination, const void *Source, size_t Length)
-	{
-		dbg_api("%d, %#lx, %#lx, %d", MajorID, Destination, Source, Length);
-
-		return memmove(Destination, Source, Length);
-	}
-
-	int api__memcmp(dev_t MajorID, const void *Left, const void *Right, size_t Length)
-	{
-		dbg_api("%d, %#lx, %#lx, %d", MajorID, Left, Right, Length);
-
-		return memcmp(Left, Right, Length);
-	}
-
-	size_t api__strlen(dev_t MajorID, const char *String)
-	{
-		dbg_api("%d, %s", MajorID, String);
-
-		return strlen(String);
-	}
-
-	char *api__strcpy(dev_t MajorID, char *Destination, const char *Source)
-	{
-		dbg_api("%d, %#lx, %s", MajorID, Destination, Source);
-
-		return strcpy(Destination, Source);
-	}
-
-	char *api__strcat(dev_t MajorID, char *Destination, const char *Source)
-	{
-		dbg_api("%d, %#lx, %s", MajorID, Destination, Source);
-
-		return strcat(Destination, Source);
-	}
-
-	int api__strcmp(dev_t MajorID, const char *Left, const char *Right)
-	{
-		dbg_api("%d, %s, %s", MajorID, Left, Right);
-
-		return strcmp(Left, Right);
-	}
-
-	int api__strncmp(dev_t MajorID, const char *Left, const char *Right, size_t Length)
-	{
-		dbg_api("%d, %s, %s, %d", MajorID, Left, Right, Length);
-
-		return strncmp(Left, Right, Length);
-	}
-
-	char *api__strchr(dev_t MajorID, const char *String, int Character)
-	{
-		dbg_api("%d, %s, %d", MajorID, String, Character);
-
-		return strchr(String, Character);
-	}
-
-	char *api__strrchr(dev_t MajorID, const char *String, int Character)
-	{
-		dbg_api("%d, %s, %d", MajorID, String, Character);
-
-		stub;
-		return nullptr;
-		// return strrchr(String, Character);
-	}
-
-	char *api__strstr(dev_t MajorID, const char *Haystack, const char *Needle)
-	{
-		dbg_api("%d, %s, %s", MajorID, Haystack, Needle);
-
-		return strstr(Haystack, Needle);
+		PCIHeader0 *Header = (PCIHeader0 *)Device->Header;
+		return Header->InterruptPin;
 	}
 
 	/* --------- */
 
-	void PopulateDriverAPI(void *API)
+	dev_t RegisterDevice(dev_t DriverID, DeviceType Type, const InodeOperations *Operations)
 	{
-		__driverAPI *api = (__driverAPI *)API;
+		dbg_api("%d, %d, %#lx", DriverID, Type, Operations);
 
-		api->RegisterFunction = RegisterFunction;
-		api->GetDriverInfo = GetDriverInfo;
-
-		api->RegisterInterruptHandler = RegisterInterruptHandler;
-		api->OverrideInterruptHandler = OverrideInterruptHandler;
-		api->UnregisterInterruptHandler = UnregisterInterruptHandler;
-		api->UnregisterAllInterruptHandlers = UnregisterAllInterruptHandlers;
-
-		api->KPrint = d_KPrint;
-		api->KernelLog = KernelLog;
-
-		api->RequestPages = RequestPages;
-		api->FreePages = FreePages;
-
-		api->AppendMapFlag = AppendMapFlag;
-		api->RemoveMapFlag = RemoveMapFlag;
-		api->MapPages = MapPages;
-		api->UnmapPages = UnmapPages;
-
-		api->CreateKernelProcess = CreateKernelProcess;
-		api->CreateKernelThread = CreateKernelThread;
-		api->GetCurrentProcess = GetCurrentProcess;
-		api->KillProcess = KillProcess;
-		api->KillThread = KillThread;
-		api->Yield = Yield;
-		api->Sleep = Sleep;
-
-		api->GetPCIDevices = GetPCIDevices;
-		api->InitializePCI = InitializePCI;
-		api->GetBAR = GetBAR;
-
-		api->memcpy = api__memcpy;
-		api->memset = api__memset;
-		api->memmove = api__memmove;
-		api->memcmp = api__memcmp;
-		api->strlen = api__strlen;
-		api->strcpy = api__strcpy;
-		api->strcat = api__strcat;
-		api->strcmp = api__strcmp;
-		api->strncmp = api__strncmp;
-		api->strchr = api__strchr;
-		api->strrchr = api__strrchr;
-		api->strstr = api__strstr;
+		return DriverManager->RegisterDevice(DriverID, Type, Operations);
 	}
-}
 
-dev_t __api_RegisterFileSystem(FileSystemInfo *Info, struct Inode *Root)
-{
-	return fs->RegisterFileSystem(Info, Root);
-}
+	int UnregisterDevice(dev_t DriverID, dev_t Device)
+	{
+		dbg_api("%d, %d", DriverID, Device);
 
-int __api_UnregisterFileSystem(dev_t Device)
-{
-	return fs->UnregisterFileSystem(Device);
+		return DriverManager->UnregisterDevice(DriverID, Device);
+	}
+
+	int ReportInputEvent(dev_t DriverID, InputReport *Report)
+	{
+		dbg_api("%d, %#lx", DriverID, Report);
+
+		return DriverManager->ReportInputEvent(DriverID, Report);
+	}
 }
 
 struct APISymbols
@@ -736,11 +829,96 @@ struct APISymbols
 	void *Function;
 };
 
-static struct APISymbols APISymbols[] = {
-	{"RegisterFileSystem", (void *)__api_RegisterFileSystem},
-	{"UnregisterFileSystem", (void *)__api_UnregisterFileSystem},
+static struct APISymbols APISymbols_v0[] = {
+	{"__KernelPrint", (void *)v0::KernelPrint},
+	{"__KernelLog", (void *)v0::KernelLog},
+
+	{"__EnterCriticalSection", (void *)v0::EnterCriticalSection},
+	{"__LeaveCriticalSection", (void *)v0::LeaveCriticalSection},
+
+	{"__RegisterInterruptHandler", (void *)v0::RegisterInterruptHandler},
+	{"__OverrideInterruptHandler", (void *)v0::OverrideInterruptHandler},
+	{"__UnregisterInterruptHandler", (void *)v0::UnregisterInterruptHandler},
+	{"__UnregisterAllInterruptHandlers", (void *)v0::UnregisterAllInterruptHandlers},
+
+	{"__RegisterFileSystem", (void *)v0::RegisterFileSystem},
+	{"__UnregisterFileSystem", (void *)v0::UnregisterFileSystem},
+
+	{"__CreateKernelProcess", (void *)v0::CreateKernelProcess},
+	{"__CreateKernelThread", (void *)v0::CreateKernelThread},
+	{"__GetCurrentProcess", (void *)v0::GetCurrentProcess},
+	{"__KillProcess", (void *)v0::KillProcess},
+	{"__KillThread", (void *)v0::KillThread},
+	{"__Yield", (void *)v0::Yield},
+	{"__Sleep", (void *)v0::Sleep},
+
+	{"__PIC_EOI", (void *)v0::PIC_EOI},
+	{"__IRQ_MASK", (void *)v0::IRQ_MASK},
+	{"__IRQ_UNMASK", (void *)v0::IRQ_UNMASK},
+	{"__PS2Wait", (void *)v0::PS2Wait},
+	{"__PS2WriteCommand", (void *)v0::PS2WriteCommand},
+	{"__PS2WriteData", (void *)v0::PS2WriteData},
+	{"__PS2ReadData", (void *)v0::PS2ReadData},
+	{"__PS2ReadStatus", (void *)v0::PS2ReadStatus},
+	{"__PS2ReadAfterACK", (void *)v0::PS2ReadAfterACK},
+	{"__PS2ClearOutputBuffer", (void *)v0::PS2ClearOutputBuffer},
+	{"__PS2ACKTimeout", (void *)v0::PS2ACKTimeout},
+
+	{"__AllocateMemory", (void *)v0::AllocateMemory},
+	{"__FreeMemory", (void *)v0::FreeMemory},
+	{"__MemoryCopy", (void *)v0::MemoryCopy},
+	{"__MemorySet", (void *)v0::MemorySet},
+	{"__MemoryMove", (void *)v0::MemoryMove},
+	{"__StringLength", (void *)v0::StringLength},
+	{"__strstr", (void *)v0::_strstr},
+	{"__MapPages", (void *)v0::MapPages},
+	{"__UnmapPages", (void *)v0::UnmapPages},
+	{"__AppendMapFlag", (void *)v0::AppendMapFlag},
+	{"__RemoveMapFlag", (void *)v0::RemoveMapFlag},
+	{"_Znwm", (void *)v0::Znwm},
+	{"_ZdlPvm", (void *)v0::ZdlPvm},
+
+	{"__GetPCIDevices", (void *)v0::GetPCIDevices},
+	{"__InitializePCI", (void *)v0::InitializePCI},
+	{"__GetBAR", (void *)v0::GetBAR},
+	{"__iLine", (void *)v0::iLine},
+	{"__iPin", (void *)v0::iPin},
+
+	{"__RegisterDevice", (void *)v0::RegisterDevice},
+	{"__UnregisterDevice", (void *)v0::UnregisterDevice},
+	{"__ReportInputEvent", (void *)v0::ReportInputEvent},
 };
 
-/* Checking functions signatures */
-static_assert(std::is_same_v<decltype(__api_RegisterFileSystem), decltype(RegisterFileSystem)>);
-static_assert(std::is_same_v<decltype(__api_UnregisterFileSystem), decltype(UnregisterFileSystem)>);
+long __KernelUndefinedFunction(long arg0, long arg1, long arg2, long arg3,
+							   long arg4, long arg5, long arg6, long arg7)
+{
+	debug("%#lx, %#lx, %#lx, %#lx, %#lx, %#lx, %#lx, %#lx",
+		  arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+	assert(!"Undefined kernel driver API function called!");
+	CPU::Stop();
+}
+
+void *GetSymbolByName(const char *Name, int Version)
+{
+	switch (Version)
+	{
+	case 0:
+	{
+		for (auto sym : APISymbols_v0)
+		{
+			if (strcmp(Name, sym.Name) != 0)
+				continue;
+
+			debug("Symbol %s found in API version %d", Name, Version);
+			return sym.Function;
+		}
+		break;
+	}
+	default:
+		assert(!"Invalid API version");
+	}
+
+	error("Symbol %s not found in API version %d", Name, Version);
+	KPrint("Driver API symbol \"%s\" not found!", Name);
+	return (void *)__KernelUndefinedFunction;
+}

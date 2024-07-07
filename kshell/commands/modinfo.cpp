@@ -53,11 +53,16 @@ void cmd_modinfo(const char *args)
 	}
 
 	Driver::DriverObject drv = drivers[id];
+
+	char drvVersion[32];
+	snprintf(drvVersion, sizeof(drvVersion), "%d.%d.%d",
+			 drv.Version.Major, drv.Version.Minor, drv.Version.Patch);
+
 	printf("Base Info:\n");
 	printf(" Name: %s\n", drv.Name);
 	printf(" Description: %s\n", drv.Description);
 	printf(" Author: %s\n", drv.Author);
-	printf(" Version: %s\n", drv.Version);
+	printf(" Version: %s\n", drvVersion);
 	printf(" License: %s\n", drv.License);
 	printf("Resource Info:\n");
 	printf(" Initialized: %s\n", drv.Initialized ? "yes" : "no");

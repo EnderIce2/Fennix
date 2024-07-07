@@ -18,9 +18,7 @@
 #ifndef __FENNIX_API_FILESYSTEM_H__
 #define __FENNIX_API_FILESYSTEM_H__
 
-#ifdef __kernel__
 #include <types.h>
-#endif
 
 #define SEEK_SET 0
 #define SEEK_CUR 1
@@ -253,30 +251,6 @@ struct kdirent
 	char d_name[];
 };
 
-struct InodeOperations
-{
-	int (*Lookup)(struct Inode *Parent, const char *Name, struct Inode **Result);
-	int (*Create)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result);
-	int (*Remove)(struct Inode *Parent, const char *Name);
-	int (*Rename)(struct Inode *Parent, const char *OldName, const char *NewName);
-	ssize_t (*Read)(struct Inode *Node, void *Buffer, size_t Size, off_t Offset);
-	ssize_t (*Write)(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset);
-	int (*Truncate)(struct Inode *Node, off_t Size);
-	int (*Open)(struct Inode *Node, int Flags, mode_t Mode);
-	int (*Close)(struct Inode *Node);
-	int (*Ioctl)(struct Inode *Node, unsigned long Request, void *Argp);
-	ssize_t (*ReadDir)(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries);
-	int (*MkDir)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result);
-	int (*RmDir)(struct Inode *Parent, const char *Name);
-	int (*SymLink)(struct Inode *Parent, const char *Name, const char *Target, struct Inode **Result);
-	ssize_t (*ReadLink)(struct Inode *Node, char *Buffer, size_t Size);
-	off_t (*Seek)(struct Inode *Node, off_t Offset);
-	int (*Stat)(struct Inode *Node, struct kstat *Stat);
-} __attribute__((packed));
-
-#define I_FLAG_MOUNTPOINT 0x1
-#define I_FLAG_CACHE_KEEP 0x2
-
 struct Inode
 {
 	dev_t Device, RawDevice;
@@ -335,6 +309,32 @@ struct Inode
 #endif // __cplusplus
 };
 
+struct InodeOperations
+{
+	int (*Lookup)(struct Inode *Parent, const char *Name, struct Inode **Result);
+	int (*Create)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result);
+	int (*Remove)(struct Inode *Parent, const char *Name);
+	int (*Rename)(struct Inode *Parent, const char *OldName, const char *NewName);
+	ssize_t (*Read)(struct Inode *Node, void *Buffer, size_t Size, off_t Offset);
+	ssize_t (*Write)(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset);
+	int (*Truncate)(struct Inode *Node, off_t Size);
+	int (*Open)(struct Inode *Node, int Flags, mode_t Mode);
+	int (*Close)(struct Inode *Node);
+	int (*Ioctl)(struct Inode *Node, unsigned long Request, void *Argp);
+	ssize_t (*ReadDir)(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries);
+	int (*MkDir)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result);
+	int (*RmDir)(struct Inode *Parent, const char *Name);
+	int (*SymLink)(struct Inode *Parent, const char *Name, const char *Target, struct Inode **Result);
+	ssize_t (*ReadLink)(struct Inode *Node, char *Buffer, size_t Size);
+	off_t (*Seek)(struct Inode *Node, off_t Offset);
+	int (*Stat)(struct Inode *Node, struct kstat *Stat);
+} __attribute__((packed));
+
+#define I_FLAG_ROOT 0x1
+#define I_FLAG_MOUNTPOINT 0x2
+#define I_FLAG_CACHE_KEEP 0x4
+
+struct FileSystemInfo;
 struct SuperBlockOperations
 {
 	int (*AllocateInode)(struct FileSystemInfo *Info, struct Inode **Result);
@@ -360,12 +360,13 @@ struct SuperBlockOperations
 	 *
 	 * @return Zero on success, otherwise an error code.
 	 */
-	int (*Destroy)(FileSystemInfo *Info);
+	int (*Destroy)(struct FileSystemInfo *Info);
 } __attribute__((packed));
 
 struct FileSystemInfo
 {
 	const char *Name;
+	const char *RootName;
 	int Flags;
 	struct SuperBlockOperations SuperOps;
 	struct InodeOperations Ops;
@@ -373,7 +374,7 @@ struct FileSystemInfo
 	void *PrivateData;
 } __attribute__((packed));
 
-dev_t RegisterFileSystem(FileSystemInfo *Info, struct Inode *Root);
+dev_t RegisterFileSystem(struct FileSystemInfo *Info, struct Inode *Root);
 int UnregisterFileSystem(dev_t Device);
 
 #endif // !__FENNIX_API_FILESYSTEM_H__

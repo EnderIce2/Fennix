@@ -37,6 +37,8 @@ static_assert(IFTODT(S_IFCHR) == DT_CHR);
 	else                         \
 		return fsi->Ops.op(this->Node, ##__VA_ARGS__)
 
+#define FSROOT(num) "\002root-" #num "\003"
+
 class FileNode
 {
 public:
@@ -83,6 +85,7 @@ namespace vfs
 	{
 		Inode Node;
 		std::string Name;
+		std::string FriendlyName;
 		std::vector<Inode *> Children;
 	};
 
@@ -106,7 +109,8 @@ namespace vfs
 		std::unordered_map<dev_t, FSMountInfo> DeviceMap;
 		std::atomic_bool RegisterLock = false;
 
-		FileNode *__CacheRecursiveSearch(FileNode *, const char *, bool);
+		FileNode *CacheSearchReturnLast(FileNode *Parent, const char **Path);
+		FileNode *CacheRecursiveSearch(FileNode *Root, const char *NameOrPath, bool IsName);
 		FileNode *CacheLookup(const char *Path);
 		FileNode *CreateCacheNode(FileNode *Parent, Inode *Node, const char *Name, mode_t Mode);
 
@@ -114,6 +118,7 @@ namespace vfs
 
 	public:
 		vfsInode *FileSystemRoots = nullptr;
+		std::unordered_map<ino_t, FileNode *> FileRoots;
 
 		bool PathIsRelative(const char *Path);
 		bool PathIsAbsolute(const char *Path) { return !PathIsRelative(Path); }
@@ -140,7 +145,11 @@ namespace vfs
 		FileNode *Create(FileNode *Parent, const char *Name, mode_t Mode);
 		FileNode *ForceCreate(FileNode *Parent, const char *Name, mode_t Mode);
 
+		FileNode *Mount(FileNode *Parent, Inode *Node, const char *Path);
+		int Unmount(const char *Path);
+
 		FileNode *GetByPath(const char *Path, FileNode *Parent);
+		std::string GetByNode(FileNode *Node);
 		FileNode *CreateLink(const char *Path, FileNode *Parent, const char *Target);
 		FileNode *CreateLink(const char *Path, FileNode *Parent, FileNode *Target);
 		bool PathExists(const char *Path, FileNode *Parent);

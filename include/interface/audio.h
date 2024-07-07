@@ -15,31 +15,15 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_CIRCULAR_BUFFER_H__
-#define __FENNIX_KERNEL_CIRCULAR_BUFFER_H__
+#ifndef __FENNIX_API_AUDIO_H__
+#define __FENNIX_API_AUDIO_H__
 
 #include <types.h>
-#include <lock.hpp>
 
-class CircularBuffer
-{
-private:
-	spin_lock Lock;
-	uint8_t *Buffer;
-	size_t BufferSize;
-	size_t BufferCount;
+#if __has_include(<interface/device.h>)
+#include <interface/device.h>
+#else
+#include <device.h>
+#endif
 
-	size_t Head;
-	size_t Tail;
-
-public:
-	CircularBuffer(size_t Size);
-	~CircularBuffer();
-	size_t Write(const uint8_t *Data, size_t Size);
-	size_t Read(uint8_t *Data, size_t Size);
-	size_t Peek(uint8_t *Data, size_t Size);
-	size_t Count();
-	size_t Free();
-};
-
-#endif // !__FENNIX_KERNEL_CIRCULAR_BUFFER_H__
+#endif // !__FENNIX_API_AUDIO_H__

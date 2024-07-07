@@ -19,7 +19,6 @@
 
 #include <convert.h>
 #include <printf.h>
-#include <rand.hpp>
 #include <cwalk.h>
 
 #include "../kernel.h"
@@ -52,7 +51,7 @@ namespace vfs
 		foreach (const auto &Root in Parent->Children)
 		{
 			char rootName[128]{};
-			snprintf(rootName, sizeof(rootName), "root-%ld", offset);
+			snprintf(rootName, sizeof(rootName), "\x02root-%ld\x03", offset);
 
 			if (strcmp(rootName, Name) == 0)
 			{
@@ -71,78 +70,9 @@ namespace vfs
 		assert(!"Not implemented");
 	}
 
-	ssize_t __vfs_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
-	{
-		switch (Node->GetMinor())
-		{
-		case 2: /* /dev/null */
-		{
-			return 0;
-		}
-		case 3: /* /dev/zero */
-		{
-			if (Size <= 0)
-				return 0;
-
-			memset(Buffer, 0, Size);
-			return Size;
-		}
-		case 4: /* /dev/random */
-		{
-			if (Size <= 0)
-				return 0;
-
-			if (Size < sizeof(uint64_t))
-			{
-				uint8_t *buf = (uint8_t *)Buffer;
-				for (size_t i = 0; i < Size; i++)
-					buf[i] = (uint8_t)(Random::rand16() & 0xFF);
-				return Size;
-			}
-
-			uint64_t *buf = (uint64_t *)Buffer;
-			for (size_t i = 0; i < Size / sizeof(uint64_t); i++)
-				buf[i] = Random::rand64();
-			return Size;
-		}
-		case 5: /* /dev/mem */
-		{
-			stub;
-			return 0;
-		}
-		default:
-			return -ENOENT;
-		};
-	}
-
-	ssize_t __vfs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
-	{
-		switch (Node->GetMinor())
-		{
-		case 2: /* /dev/null */
-		{
-			return Size;
-		}
-		case 3: /* /dev/zero */
-		{
-			return Size;
-		}
-		case 4: /* /dev/random */
-		{
-			return Size;
-		}
-		case 5: /* /dev/mem */
-		{
-			stub;
-			return 0;
-		}
-		default:
-			return -ENOENT;
-		};
-	}
-
 	/* This implementation is used internally by the kernel, so no "." & ".." */
-	ssize_t __vfs_Readdir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
+	__no_sanitize("alignment")
+		ssize_t __vfs_Readdir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
 	{
 		if (_Node->GetMinor() != 0)
 		{
@@ -189,6 +119,15 @@ namespace vfs
 		if (ent)
 			ent->d_off = INT32_MAX;
 
+		if (totalSize + sizeof(struct kdirent) >= Size)
+			return totalSize;
+
+		ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+		ent->d_ino = 0;
+		ent->d_off = 0;
+		ent->d_reclen = 0;
+		ent->d_type = DT_UNKNOWN;
+		ent->d_name[0] = '\0';
 		return totalSize;
 	}
 
@@ -222,13 +161,9 @@ namespace vfs
 					  S_IRWXG |
 					  S_IRWXO |
 					  S_IFDIR;
-		FileNode *dev = this->ForceCreate(this->GetRoot(0), "dev", mode);
-		FileNode *mnt = this->ForceCreate(this->GetRoot(0), "mnt", mode);
 		FileNode *proc = this->ForceCreate(this->GetRoot(0), "proc", mode);
 		FileNode *log = this->ForceCreate(this->GetRoot(0), "var", mode);
 		log = this->ForceCreate(log, "log", mode);
-		dev->Node->Flags = iFlags;
-		mnt->Node->Flags = iFlags;
 		proc->Node->Flags = iFlags;
 		log->Node->Flags = iFlags;
 
@@ -242,47 +177,52 @@ namespace vfs
 		self->Node->SetDevice(0, 1);
 		self->Node->Flags = iFlags;
 
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		FileNode *null = this->ForceCreate(dev, "null", mode);
-		null->Node->Device = FileSystemRoots->Node.Device;
-		null->Node->SetDevice(0, 2);
-		null->Node->Flags = iFlags;
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		FileNode *zero = this->ForceCreate(dev, "zero", mode);
-		zero->Node->Device = FileSystemRoots->Node.Device;
-		zero->Node->SetDevice(0, 3);
-		zero->Node->Flags = iFlags;
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		FileNode *random = this->ForceCreate(dev, "random", mode);
-		random->Node->Device = FileSystemRoots->Node.Device;
-		random->Node->SetDevice(0, 4);
-		random->Node->Flags = iFlags;
-
-		/* c rw- r-- --- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP |
-
-			   S_IFCHR;
-		FileNode *mem = this->ForceCreate(dev, "mem", mode);
-		mem->Node->Device = FileSystemRoots->Node.Device;
-		mem->Node->SetDevice(0, 5);
-		mem->Node->Flags = iFlags;
-
 		new vfs::PTMXDevice();
+	}
+
+	dev_t Virtual::EarlyReserveDevice()
+	{
+		RegisterLock.store(true);
+		size_t len = DeviceMap.size();
+		return len;
+	}
+
+	int Virtual::LateRegisterFileSystem(dev_t Device, FileSystemInfo *fsi, Inode *Root)
+	{
+		auto it = DeviceMap.find(Device);
+		if (it != DeviceMap.end())
+			ReturnLogError(-EEXIST, "Device %d already registered", Device);
+
+		Root->Flags |= I_FLAG_ROOT;
+		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
+		DeviceMap.insert({Device, fsmi});
+		RegisterLock.store(false);
+		return 0;
+	}
+
+	dev_t Virtual::RegisterFileSystem(FileSystemInfo *fsi, Inode *Root)
+	{
+		RegisterLock.store(true);
+		size_t len = DeviceMap.size();
+		Root->Flags |= I_FLAG_ROOT;
+		FSMountInfo fsmi{.fsi = fsi, .Root = Root};
+		DeviceMap.insert({len, fsmi});
+		RegisterLock.store(false);
+		return len;
+	}
+
+	int Virtual::UnregisterFileSystem(dev_t Device)
+	{
+		auto it = DeviceMap.find(Device);
+		if (it == DeviceMap.end())
+			ReturnLogError(-ENOENT, "Device %d not found", Device);
+
+		if (it->second.fsi->SuperOps.Synchronize)
+			it->second.fsi->SuperOps.Synchronize(it->second.fsi, NULL);
+		if (it->second.fsi->SuperOps.Destroy)
+			it->second.fsi->SuperOps.Destroy(it->second.fsi);
+		DeviceMap.erase(it);
+		return 0;
 	}
 
 	Virtual::Virtual()
@@ -297,19 +237,18 @@ namespace vfs
 									 S_IROTH | S_IXOTH |
 									 S_IFDIR;
 
-		FileSystemRoots->Node.Flags = I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
+		FileSystemRoots->Node.Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 
 		FileSystemRoots->Node.Offset = INT32_MAX;
 		FileSystemRoots->Name = "<ROOT>";
 
 		FileSystemInfo *fsi = new FileSystemInfo;
 		fsi->Name = "Virtual Roots";
-		fsi->Flags = I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
+		fsi->RootName = "ROOT";
+		fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 		fsi->SuperOps = {};
 		fsi->Ops.Lookup = __vfs_Lookup;
 		fsi->Ops.Create = __vfs_Create;
-		fsi->Ops.Read = __vfs_Read;
-		fsi->Ops.Write = __vfs_Write;
 		fsi->Ops.ReadDir = __vfs_Readdir;
 		fsi->Ops.ReadLink = __vfs_ReadLink;
 
