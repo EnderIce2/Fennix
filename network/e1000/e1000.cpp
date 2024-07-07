@@ -20,7 +20,7 @@
 #include <regs.h>
 #include <base.h>
 #include <pci.h>
-#include <net.h>
+#include <network.h>
 #include <io.h>
 
 #include "e1000.hpp"
@@ -205,7 +205,7 @@ public:
 					mac.Address[i] = BaseMac8[i];
 			else
 			{
-				Log("No MAC address found.");
+				KernelLog("No MAC address found.");
 				return MediaAccessControl();
 			}
 		}
@@ -240,7 +240,11 @@ public:
 			uint8_t *data = (uint8_t *)RX[RXCurrent]->Address;
 			uint16_t dataSz = RX[RXCurrent]->Length;
 
-			ReportNetworkPacket(ID, data, dataSz);
+			// ReportNetworkPacket(ID, data, dataSz);
+			/* FIXME: Implement */
+			KernelLog("FIXME: Received packet");
+			(void)data;
+			(void)dataSz;
 
 			RX[RXCurrent]->Status = 0;
 			uint16_t OldRXCurrent = RXCurrent;
@@ -270,7 +274,7 @@ public:
 		{
 		case 0x100E:
 		{
-			Log("Found Intel 82540EM Gigabit Ethernet Controller.");
+			KernelLog("Found Intel 82540EM Gigabit Ethernet Controller.");
 
 			/* Detect EEPROM */
 			WriteCMD(REG::EEPROM, 0x1);
@@ -282,7 +286,7 @@ public:
 
 			if (!GetMAC().Valid())
 			{
-				Log("Failed to get MAC");
+				KernelLog("Failed to get MAC");
 				return;
 			}
 
@@ -303,7 +307,7 @@ public:
 		}
 		default:
 		{
-			Log("Unimplemented E1000 device.");
+			KernelLog("Unimplemented E1000 device.");
 			return;
 		}
 		}
@@ -343,7 +347,7 @@ public:
 		}
 		default:
 		{
-			Log("Unimplemented E1000 device.");
+			KernelLog("Unimplemented E1000 device.");
 			return;
 		}
 		}
@@ -351,7 +355,7 @@ public:
 };
 
 E1000Device *Drivers[4] = {nullptr};
-dev_t AudioID[4] = {0};
+dev_t NetID[4] = {(dev_t)-1};
 
 #define OIR(x) OIR_##x
 #define CREATE_OIR(x) \
@@ -362,19 +366,39 @@ CREATE_OIR(1);
 CREATE_OIR(2);
 CREATE_OIR(3);
 
-int drvOpen(dev_t, dev_t, int, mode_t) { return 0; }
-int drvClose(dev_t, dev_t) { return 0; }
-size_t drvRead(dev_t, dev_t, uint8_t *, size_t, off_t) { return 0; }
+int __fs_Open(struct Inode *, int, mode_t) { return 0; }
+int __fs_Close(struct Inode *) { return 0; }
+ssize_t __fs_Read(struct Inode *, void *, size_t, off_t) { return 0; }
 
-size_t drvWrite(dev_t, dev_t min, uint8_t *Buffer, size_t Size, off_t)
+ssize_t __fs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t)
 {
-	return Drivers[AudioID[min]]->write(Buffer, Size);
+	return Drivers[NetID[Node->GetMinor()]]->write((uint8_t *)Buffer, Size);
 }
 
-int drvIoctl(dev_t, dev_t min, unsigned long Request, void *Argp)
+int __fs_Ioctl(struct Inode *Node, unsigned long Request, void *Argp)
 {
-	return Drivers[AudioID[min]]->ioctl((NetIoctl)Request, Argp);
+	return Drivers[NetID[Node->GetMinor()]]->ioctl((NetIoctl)Request, Argp);
 }
+
+const struct InodeOperations NetOps = {
+	.Lookup = nullptr,
+	.Create = nullptr,
+	.Remove = nullptr,
+	.Rename = nullptr,
+	.Read = __fs_Read,
+	.Write = __fs_Write,
+	.Truncate = nullptr,
+	.Open = __fs_Open,
+	.Close = __fs_Close,
+	.Ioctl = __fs_Ioctl,
+	.ReadDir = nullptr,
+	.MkDir = nullptr,
+	.RmDir = nullptr,
+	.SymLink = nullptr,
+	.ReadLink = nullptr,
+	.Seek = nullptr,
+	.Stat = nullptr,
+};
 
 PCIArray *Devices;
 EXTERNC int cxx_Panic()
@@ -402,10 +426,10 @@ EXTERNC int cxx_Probe()
 							0x10EA, /* I217-LM */
 							0x153A, /* 82577LM */
 							PCI_END};
-	Devices = FindPCIDevices(VendorIDs, DeviceIDs);
+	Devices = GetPCIDevices(VendorIDs, DeviceIDs);
 	if (Devices == nullptr)
 	{
-		Log("No E1000 device found.");
+		KernelLog("No E1000 device found.");
 		return -ENODEV;
 	}
 	return 0;
@@ -427,11 +451,8 @@ EXTERNC int cxx_Initialize()
 
 		if (Drivers[Count]->IsInitialized())
 		{
-			dev_t ret = RegisterNetDevice(ddt_Network,
-										  drvOpen, drvClose,
-										  drvRead, drvWrite,
-										  drvIoctl);
-			AudioID[Count] = ret;
+			dev_t ret = RegisterDevice(NETWORK_TYPE_ETHERNET, &NetOps);
+			NetID[Count] = ret;
 			Drivers[Count]->ID = ret;
 
 			/* FIXME: bad code */
@@ -460,7 +481,7 @@ EXTERNC int cxx_Initialize()
 
 	if (Count == 0)
 	{
-		Log("No valid E1000 device found.");
+		KernelLog("No valid E1000 device found.");
 		return -EINVAL;
 	}
 
@@ -479,6 +500,12 @@ EXTERNC int cxx_Finalize()
 		delete Drivers[Count++];
 		ctx->Device->Header->Command |= PCI_COMMAND_INTX_DISABLE;
 		ctx = (PCIArray *)ctx->Next;
+	}
+
+	for (size_t i = 0; i < sizeof(NetID) / sizeof(dev_t); i++)
+	{
+		if (NetID[i] != (dev_t)-1)
+			UnregisterDevice(NetID[i]);
 	}
 
 	return 0;

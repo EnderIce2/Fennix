@@ -17,11 +17,11 @@
 
 #include <driver.h>
 #include <errno.h>
+#include <fs.h>
 #include <input.h>
 #include <regs.h>
 #include <base.h>
 #include <aip.h>
-#include <vm.h>
 #include <io.h>
 
 enum RPCMessages
@@ -170,7 +170,7 @@ typedef struct
 						   "r"(bp) : "memory", "cc")
 
 /* TODO:
-	- use vmcall or vmmcall instead of out or in if available
+	- use vmcall or vmmcall instead of "out" and "in" if available
 */
 
 typedef struct
@@ -183,6 +183,102 @@ typedef struct
 
 dev_t MouseDevID = -1;
 
+int __strcmp(const char *l, const char *r)
+{
+	for (; *l == *r && *l; l++, r++)
+		;
+
+	return *(unsigned char *)l - *(unsigned char *)r;
+}
+
+void __cpuid(uint32_t Function,
+			 uint32_t *eax, uint32_t *ebx,
+			 uint32_t *ecx, uint32_t *edx)
+{
+	asmv("cpuid"
+		 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
+		 : "a"(Function));
+}
+
+bool __CheckHypervisorBit()
+{
+	uint32_t eax, ebx, ecx, edx;
+	__cpuid(0x1, &eax, &ebx, &ecx, &edx);
+	if (!(ecx & (1 << 31)))
+		return false; /* Hypervisor not detected */
+	return true;
+}
+
+bool __VMwareBackdoorHypervisors()
+{
+	const char hv[13] = {0};
+	uint32_t eax, ebx, ecx, edx;
+	__cpuid(0x40000000, &eax, &ebx, &ecx, &edx);
+
+	*(uint32_t *)hv = ebx;
+	*(uint32_t *)(hv + 4) = ecx;
+	*(uint32_t *)(hv + 8) = edx;
+
+	if (__strcmp(hv, "VMwareVMware") != 0 &&
+		__strcmp(hv, "KVMKVMKVM") != 0 &&
+		__strcmp(hv, "TCGTCGTCGTCG") != 0)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool IsVMwareBackdoorAvailable()
+{
+	if (!__CheckHypervisorBit())
+		return false;
+
+	if (!__VMwareBackdoorHypervisors())
+		return false;
+
+	struct
+	{
+		union
+		{
+			uint32_t ax;
+			uint32_t magic;
+		};
+		union
+		{
+			uint32_t bx;
+			size_t size;
+		};
+		union
+		{
+			uint32_t cx;
+			uint16_t command;
+		};
+		union
+		{
+			uint32_t dx;
+			uint16_t port;
+		};
+		uint32_t si;
+		uint32_t di;
+	} cmd;
+
+	cmd.si = cmd.di = 0;
+	cmd.bx = ~0x564D5868;
+	cmd.command = 0xA;
+	cmd.magic = 0x564D5868;
+	cmd.port = 0x5658;
+
+	asmv("in %%dx, %0"
+		 : "+a"(cmd.ax), "+b"(cmd.bx),
+		   "+c"(cmd.cx), "+d"(cmd.dx),
+		   "+S"(cmd.si), "+D"(cmd.di));
+
+	if (cmd.bx != 0x564D5868 ||
+		cmd.ax == 0xFFFFFFFF)
+		return false;
+	return true;
+}
+
 static int OpenMessageChannel(ToolboxContext *ctx, uint32_t Protocol)
 {
 	uintptr_t ax, bx, cx, dx, si = 0, di = 0;
@@ -194,7 +290,7 @@ static int OpenMessageChannel(ToolboxContext *ctx, uint32_t Protocol)
 
 	if ((HighWord(cx) & STATUS_SUCCESS) == 0)
 	{
-		Log("Failed to open message channel %#lx", Protocol);
+		KernelLog("Failed to open message channel %#lx", Protocol);
 		return -EINVAL;
 	}
 
@@ -343,8 +439,8 @@ static int MessageSend(ToolboxContext *ctx,
 
 		if ((HighWord(cx) & STATUS_SUCCESS) == 0)
 		{
-			Log("Failed to send message size for \"%s\": %d",
-				Message, cx);
+			KernelLog("Failed to send message size for \"%s\": %d",
+					  Message, cx);
 			return -EINVAL;
 		}
 
@@ -363,14 +459,14 @@ static int MessageSend(ToolboxContext *ctx,
 		}
 		else if ((status & STATUS_CPT) == 0)
 		{
-			Log("Checkpoint occurred for message \"%s\"", Message);
+			KernelLog("Checkpoint occurred for message \"%s\"", Message);
 			continue;
 		}
 		else
 			break;
 	}
 
-	Log("Failed to send message \"%s\": %#lx", Message, bx);
+	KernelLog("Failed to send message \"%s\": %#lx", Message, bx);
 	return -EINVAL;
 }
 
@@ -401,12 +497,12 @@ static int MessageReceive(ToolboxContext *ctx,
 
 		if ((HighWord(cx) & STATUS_SUCCESS) == 0)
 		{
-			Log("Failed to receive message size: %d", cx);
+			KernelLog("Failed to receive message size: %d", cx);
 			return -EINVAL;
 		}
 		else if ((HighWord(cx) & STATUS_DORECV) == 0)
 		{
-			// Log("No message to receive");
+			DebugLog("No message to receive");
 			return -EAGAIN;
 		}
 
@@ -427,11 +523,11 @@ static int MessageReceive(ToolboxContext *ctx,
 		{
 			if ((HighWord(bx) & STATUS_CPT) == 0)
 			{
-				Log("Checkpoint occurred for message payload");
+				KernelLog("Checkpoint occurred for message payload");
 				continue;
 			}
 
-			Log("Failed to receive message payload: %d", HighWord(bx));
+			KernelLog("Failed to receive message payload: %d", HighWord(bx));
 			FreeMemory(ReplyBuf, ReplyBufPages);
 			return -EINVAL;
 		}
@@ -451,11 +547,11 @@ static int MessageReceive(ToolboxContext *ctx,
 		{
 			if ((HighWord(cx) & STATUS_CPT) == 0)
 			{
-				Log("Retrying message receive");
+				KernelLog("Retrying message receive");
 				continue;
 			}
 
-			Log("Failed to receive message status: %d", HighWord(cx));
+			KernelLog("Failed to receive message status: %d", HighWord(cx));
 			FreeMemory(ReplyBuf, ReplyBufPages);
 			return -EINVAL;
 		}
@@ -465,7 +561,7 @@ static int MessageReceive(ToolboxContext *ctx,
 
 	if (ReplyBuf == NULL)
 	{
-		Log("Failed to receive message");
+		KernelLog("Failed to receive message");
 		return -EINVAL;
 	}
 
@@ -481,14 +577,14 @@ static int SendRPCI(ToolboxContext *, const char *Request)
 	int status = OpenMessageChannel(&rpci_ctx, MESSAGE_RPCI);
 	if (status < 0)
 	{
-		Log("Failed to open RPCI channel: %d", status);
+		KernelLog("Failed to open RPCI channel: %d", status);
 		return status;
 	}
 
 	status = MessageSend(&rpci_ctx, Request);
 	if (status < 0)
 	{
-		Log("Failed to send RPCI request: %d", status);
+		KernelLog("Failed to send RPCI request: %d", status);
 		return status;
 	}
 
@@ -524,7 +620,7 @@ static int DisplayGetSize(ToolboxContext *ctx)
 		}
 		else if (status < 0)
 		{
-			Log("Failed to receive message");
+			KernelLog("Failed to receive message");
 			return 1;
 		}
 
@@ -579,7 +675,7 @@ void DisplayScaleThread()
 	while (true)
 	{
 		if (DisplayGetSize(tb_ctx) != 0)
-			Log("Failed to scale display");
+			KernelLog("Failed to scale display");
 		Sleep(1000);
 	}
 }
@@ -627,6 +723,7 @@ void Relative()
 	CommandSend(&cmd);
 }
 
+InputReport ir = {0};
 void InterruptHandler(TrapFrame *)
 {
 	uint8_t Data = inb(0x60);
@@ -639,7 +736,7 @@ void InterruptHandler(TrapFrame *)
 
 	if (cmd.ax == 0xFFFF0000)
 	{
-		Log("VMware mouse is not connected?");
+		KernelLog("VMware mouse is not connected?");
 		Relative();
 		Absolute();
 		return;
@@ -654,17 +751,6 @@ void InterruptHandler(TrapFrame *)
 
 	int Buttons = (cmd.ax & 0xFFFF);
 
-	MouseReport mr = {
-		.LeftButton = Buttons & 0x20,
-		.RightButton = Buttons & 0x10,
-		.MiddleButton = Buttons & 0x08,
-		.Button4 = 0x0,
-		.Button5 = 0x0,
-		.X = 0,
-		.Y = 0,
-		.Z = (int8_t)cmd.dx,
-	};
-
 	/**
 	 * How should I handle this?
 	 * (cmd.[bx,cx] * Width) / 0xFFFF
@@ -672,8 +758,43 @@ void InterruptHandler(TrapFrame *)
 	 */
 	uintptr_t AbsoluteX = cmd.bx;
 	uintptr_t AbsoluteY = cmd.cx;
-	ReportAbsoluteMouseEvent(MouseDevID, mr, AbsoluteX, AbsoluteY);
+
+	ir.Type = INPUT_TYPE_MOUSE;
+	ir.Device = MouseDevID;
+	ir.Mouse.X = AbsoluteX;
+	ir.Mouse.Y = AbsoluteY;
+	ir.Mouse.Z = (int8_t)cmd.dx;
+	ir.Mouse.Absolute = 1;
+	ir.Mouse.LeftButton = Buttons & 0x20;
+	ir.Mouse.RightButton = Buttons & 0x10;
+	ir.Mouse.MiddleButton = Buttons & 0x08;
+	// ir.Mouse.Button4 = 0x0;
+	// ir.Mouse.Button5 = 0x0;
+	// ir.Mouse.Button6 = 0x0;
+	// ir.Mouse.Button7 = 0x0;
+	// ir.Mouse.Button8 = 0x0;
+	ReportInputEvent(&ir);
 }
+
+int __fs_Ioctl(struct Inode *, unsigned long Request, void *)
+{
+	switch (Request)
+	{
+	case 0x1:
+		Relative();
+		break;
+	case 0x2:
+		Absolute();
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+const struct InodeOperations MouseOps = {
+	.Ioctl = __fs_Ioctl,
+};
 
 bool ToolboxSupported = false;
 int DriverEntry()
@@ -711,7 +832,8 @@ int DriverEntry()
 	 * override its interrupt handler.
 	 */
 	OverrideInterruptHandler(12, InterruptHandler);
-	MouseDevID = RegisterInputDevice(ddt_Mouse);
+
+	MouseDevID = RegisterDevice(INPUT_TYPE_MOUSE, &MouseOps);
 	return 0;
 }
 
@@ -721,7 +843,8 @@ int DriverFinal()
 	PS2WriteData(PS2_MOUSE_CMD_DISABLE_DATA_REPORTING);
 
 	Relative();
-	UnregisterInputDevice(MouseDevID, ddt_Mouse);
+
+	UnregisterDevice(MouseDevID);
 
 	if (ToolboxSupported)
 	{
@@ -751,5 +874,5 @@ int DriverProbe()
 DriverInfo("vmware",
 		   "VMware Tools Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

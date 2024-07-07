@@ -21,6 +21,7 @@
 #include <types.h>
 
 #if defined(__amd64__)
+
 typedef struct
 {
 	uint64_t r15; // General purpose
@@ -49,8 +50,10 @@ typedef struct
 	uint64_t rsp;	 // Stack Pointer
 	uint64_t ss;	 // Stack Segment
 } TrapFrame;
+
 #elif defined(__i386__)
-typedef struct TrapFrame
+
+typedef struct
 {
 	uint32_t edi; // Destination index for string operations
 	uint32_t esi; // Source index for string operations
@@ -71,8 +74,10 @@ typedef struct TrapFrame
 	uint32_t r3_esp; // Stack Pointer
 	uint32_t r3_ss;	 // Stack Segment
 } TrapFrame;
+
 #elif defined(__aarch64__)
-typedef struct TrapFrame
+
+typedef struct
 {
 	uint64_t x19; // General purpose
 	uint64_t x20; // General purpose
@@ -95,6 +100,7 @@ typedef struct TrapFrame
 
 	uint64_t InterruptNumber /* iar_el1 */; // Interrupt Acknowledge Register
 } TrapFrame;
+
 #endif
 
 #endif // !__FENNIX_API_REGISTERS_H__

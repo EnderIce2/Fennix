@@ -21,6 +21,7 @@
 #include <base.h>
 #include <pci.h>
 #include <io.h>
+#include <fs.h>
 
 #define DescriptorListLength 0x20
 
@@ -370,13 +371,13 @@ public:
 	{
 		if (Buffer == nullptr)
 		{
-			Log("Invalid buffer.");
+			KernelLog("Invalid buffer.");
 			return -EINVAL;
 		}
 
 		if ((Size == 0) || (Size % (SampleSize * Channels)))
 		{
-			Log("Invalid buffer length.");
+			KernelLog("Invalid buffer length.");
 			return -EINVAL;
 		}
 
@@ -431,7 +432,7 @@ public:
 
 				if (Wrote == 0)
 				{
-					Log("Wrote 0 bytes.");
+					KernelLog("Wrote 0 bytes.");
 					break;
 				}
 
@@ -563,7 +564,7 @@ public:
 			uint16_t CurrentBDL = inb(BusMasterAddress + PCMOUT_BufferDescriptorEntry);
 			uint16_t LastBDL = (CurrentBDL + 2) & (DescriptorListLength - 1);
 			outb(BusMasterAddress + PCMOUT_DescriptorEntries, LastBDL);
-			Log("FIXME: CurrentBDL: %d, LastBDL: %d", CurrentBDL, LastBDL);
+			KernelLog("FIXME: CurrentBDL: %d, LastBDL: %d", CurrentBDL, LastBDL);
 		}
 		else if (Status & TC_LastBufferEntryInterruptEnable)
 		{
@@ -577,7 +578,7 @@ public:
 		}
 		else if (Status & TC_FifoERRORInterruptEnable)
 		{
-			Log("FIFO error");
+			KernelLog("FIFO error");
 			outw(MixerAddress + PCMOUT_Status, TC_FifoERRORInterruptEnable);
 		}
 		else
@@ -689,7 +690,7 @@ public:
 };
 
 AC97Device *Drivers[4] = {nullptr};
-dev_t AudioID[4] = {0};
+dev_t AudioID[4] = {(dev_t)-1};
 
 #define OIR(x) OIR_##x
 #define CREATE_OIR(x) \
@@ -700,19 +701,39 @@ CREATE_OIR(1);
 CREATE_OIR(2);
 CREATE_OIR(3);
 
-int drvOpen(dev_t, dev_t, int, mode_t) { return 0; }
-int drvClose(dev_t, dev_t) { return 0; }
-size_t drvRead(dev_t, dev_t, uint8_t *, size_t, off_t) { return 0; }
+int __fs_Open(struct Inode *, int, mode_t) { return 0; }
+int __fs_Close(struct Inode *) { return 0; }
+ssize_t __fs_Read(struct Inode *, void *, size_t, off_t) { return 0; }
 
-size_t drvWrite(dev_t, dev_t min, uint8_t *Buffer, size_t Size, off_t)
+ssize_t __fs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t)
 {
-	return Drivers[AudioID[min]]->write(Buffer, Size);
+	return Drivers[AudioID[Node->GetMinor()]]->write((uint8_t *)Buffer, Size);
 }
 
-int drvIoctl(dev_t, dev_t min, unsigned long Request, void *Argp)
+int __fs_Ioctl(struct Inode *Node, unsigned long Request, void *Argp)
 {
-	return Drivers[AudioID[min]]->ioctl((AudioIoctl)Request, Argp);
+	return Drivers[AudioID[Node->GetMinor()]]->ioctl((AudioIoctl)Request, Argp);
 }
+
+const struct InodeOperations AudioOps = {
+	.Lookup = nullptr,
+	.Create = nullptr,
+	.Remove = nullptr,
+	.Rename = nullptr,
+	.Read = __fs_Read,
+	.Write = __fs_Write,
+	.Truncate = nullptr,
+	.Open = __fs_Open,
+	.Close = __fs_Close,
+	.Ioctl = __fs_Ioctl,
+	.ReadDir = nullptr,
+	.MkDir = nullptr,
+	.RmDir = nullptr,
+	.SymLink = nullptr,
+	.ReadLink = nullptr,
+	.Seek = nullptr,
+	.Stat = nullptr,
+};
 
 PCIArray *Devices;
 EXTERNC int cxx_Panic()
@@ -734,10 +755,10 @@ EXTERNC int cxx_Probe()
 {
 	uint16_t VendorIDs[] = {0x8086, PCI_END};
 	uint16_t DeviceIDs[] = {0x2415, PCI_END};
-	Devices = FindPCIDevices(VendorIDs, DeviceIDs);
+	Devices = GetPCIDevices(VendorIDs, DeviceIDs);
 	if (Devices == nullptr)
 	{
-		Log("No AC'97 device found.");
+		KernelLog("No AC'97 device found.");
 		return -ENODEV;
 	}
 
@@ -754,10 +775,10 @@ EXTERNC int cxx_Probe()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type != 1)
 		{
-			Log("Device %x:%x.%d BAR0 is not I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is not I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
@@ -767,7 +788,7 @@ EXTERNC int cxx_Probe()
 
 	if (!Found)
 	{
-		Log("No valid AC'97 device found.");
+		KernelLog("No valid AC'97 device found.");
 		return -EINVAL;
 	}
 	return 0;
@@ -787,10 +808,10 @@ EXTERNC int cxx_Initialize()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type != 1)
 		{
-			Log("Device %x:%x.%d BAR0 is not I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is not I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
@@ -815,10 +836,7 @@ EXTERNC int cxx_Initialize()
 		default:
 			break;
 		}
-		dev_t ret = RegisterAudioDevice(ddt_Audio,
-										drvOpen, drvClose,
-										drvRead, drvWrite,
-										drvIoctl);
+		dev_t ret = RegisterDevice(AUDIO_TYPE_PCM, &AudioOps);
 		AudioID[Count] = ret;
 		Count++;
 		ctx = (PCIArray *)ctx->Next;
@@ -841,16 +859,22 @@ EXTERNC int cxx_Finalize()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type != 1)
 		{
-			Log("Device %x:%x.%d BAR0 is not I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is not I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
 		delete Drivers[Count++];
 		ctx->Device->Header->Command |= PCI_COMMAND_INTX_DISABLE;
 		ctx = (PCIArray *)ctx->Next;
+	}
+
+	for (size_t i = 0; i < sizeof(AudioID) / sizeof(dev_t); i++)
+	{
+		if (AudioID[i] != (dev_t)-1)
+			UnregisterDevice(AudioID[i]);
 	}
 
 	return 0;

@@ -27,5 +27,5 @@ int DriverProbe() { return cxx_Probe(); }
 DriverInfo("e1000",
 		   "Intel(R) PRO/1000 Network Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

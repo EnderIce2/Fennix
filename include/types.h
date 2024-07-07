@@ -53,11 +53,41 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__ size_t;
+typedef intptr_t ssize_t;
 
-typedef __SIZE_TYPE__ dev_t;
-typedef __SIZE_TYPE__ off_t;
+#if defined(__LP64__)
+typedef int64_t off_t;
+typedef int64_t off64_t;
+typedef uint32_t mode_t;
+typedef uint64_t dev_t;
+typedef uint64_t ino64_t;
+typedef uint64_t ino_t;
+typedef uint32_t nlink_t;
+typedef int64_t blksize_t;
+typedef int64_t blkcnt_t;
+typedef int64_t blkcnt64_t;
+typedef int64_t time_t;
+typedef uint32_t uid_t;
+typedef uint32_t gid_t;
+typedef int64_t clock_t;
+typedef int32_t pid_t;
+#elif defined(__LP32__)
+typedef int32_t off_t;
+typedef long long off64_t;
 typedef __INT32_TYPE__ mode_t;
+typedef int32_t dev_t;
+typedef int32_t ino64_t;
+typedef int32_t ino_t;
+typedef unsigned int nlink_t;
+typedef int blksize_t;
+typedef int32_t blkcnt_t;
+typedef int32_t blkcnt64_t;
+typedef int32_t time_t;
+typedef unsigned uid_t;
+typedef unsigned gid_t;
+typedef long clock_t;
 typedef int pid_t;
+#endif
 
 #define UNUSED(x) (void)(x)
 
@@ -107,5 +137,50 @@ typedef __builtin_va_list va_list;
 
 #define TO_PAGES(d) (((d) + PAGE_SIZE - 1) / PAGE_SIZE)
 #define FROM_PAGES(d) ((d) * PAGE_SIZE)
+
+#define __unused __attribute__((unused))
+#define __packed __attribute__((packed))
+#define __naked __attribute__((naked))
+#define __aligned(x) __attribute__((aligned(x)))
+#define __section(x) __attribute__((section(x)))
+#define __noreturn __attribute__((noreturn))
+#define __weak __attribute__((weak))
+#define __alias(x) __attribute__((alias(x)))
+#define __always_inline __attribute__((always_inline))
+#define __noinline __attribute__((noinline))
+#define __pure __attribute__((pure))
+#define __const __attribute__((const))
+#define __malloc __attribute__((malloc))
+#define __returns_twice __attribute__((returns_twice))
+#define __used __attribute__((used))
+#define __deprecated __attribute__((deprecated))
+#define __deprecated_msg(x) __attribute__((deprecated(x)))
+#define __weakref(x) __attribute__((weakref(x)))
+#define __weakrefalias(x) __attribute__((weakref(#x)))
+#define __visibility(x) __attribute__((visibility(x)))
+#define __constructor __attribute__((constructor))
+#define __destructor __attribute__((destructor))
+#define __cleanup(x) __attribute__((cleanup(x)))
+#define __fallthrough __attribute__((fallthrough))
+#define __nonnull(x) __attribute__((nonnull x))
+#define __nonnull_all __attribute__((nonnull))
+#define __returns_nonnull __attribute__((returns_nonnull))
+#define __sentinel __attribute__((sentinel))
+#define __sentinel_all __attribute__((sentinel(0)))
+#define __format(x, y, z) __attribute__((format(x, y, z)))
+#define __format_arg(x) __attribute__((format_arg(x)))
+#define __nonnull_params(x) __attribute__((nonnull x))
+#define __nonnull_all __attribute__((nonnull))
+#define __warn_unused_result __attribute__((warn_unused_result))
+#define __no_stack_protector __attribute__((no_stack_protector))
+#define __no_instrument_function __attribute__((no_instrument_function))
+#define __no_debug __attribute__((no_debug))
+#define __target(x) __attribute__((target(x)))
+#define __min_vector_width(x) __attribute__((min_vector_width(x)))
+
+#define __sync __sync_synchronize()
+#define __unreachable __builtin_unreachable()
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 #endif // !__FENNIX_API_TYPES_H__

@@ -104,7 +104,7 @@ int DriverEntry()
 
 	DualChannel = cfg.Port2Clock;
 	if (DualChannel)
-		Log("Dual channel PS/2 controller detected");
+		KernelLog("Dual channel PS/2 controller detected");
 	cfg.Port1Interrupt = 1;
 	cfg.Port2Interrupt = 1;
 	cfg.Port1Translation = 1;
@@ -116,7 +116,7 @@ int DriverEntry()
 	uint8_t test = PS2ReadData();
 	if (test != PS2_TEST_PASSED)
 	{
-		Log("PS/2 controller self test failed (%#x)", test);
+		KernelLog("PS/2 controller self test failed (%#x)", test);
 		return -EFAULT;
 	}
 
@@ -137,7 +137,7 @@ int DriverEntry()
 	test = PS2ReadData();
 	if (test != 0x00)
 	{
-		Log("PS/2 Port 1 self test failed (%#x)", test);
+		KernelLog("PS/2 Port 1 self test failed (%#x)", test);
 		return -EFAULT;
 	}
 
@@ -147,7 +147,7 @@ int DriverEntry()
 		test = PS2ReadData();
 		if (test != 0x00)
 		{
-			Log("PS/2 Port 2 self test failed (%#x)", test);
+			KernelLog("PS/2 Port 2 self test failed (%#x)", test);
 			return -EFAULT;
 		}
 	}
@@ -204,7 +204,7 @@ int DriverProbe()
 	{
 		if (!IsKeyboard(Device1ID[0]))
 		{
-			Log("PS/2 Port 1 is not a keyboard");
+			KernelLog("PS/2 Port 1 is not a keyboard");
 			// return -EINVAL;
 		}
 	}
@@ -213,15 +213,15 @@ int DriverProbe()
 	{
 		if (!IsMouse(Device2ID[0]))
 		{
-			Log("PS/2 Port 2 is not a mouse");
+			KernelLog("PS/2 Port 2 is not a mouse");
 			// return -EINVAL;
 		}
 	}
 
-	KPrint("PS/2 Port 1: %s (0x%X 0x%X)",
+	KernelPrint("PS/2 Port 1: %s (0x%X 0x%X)",
 		   GetPS2DeviceName(Device1ID[0], Device1ID[1]),
 		   Device1ID[0], Device1ID[1]);
-	KPrint("PS/2 Port 2: %s (0x%X 0x%X)",
+	KernelPrint("PS/2 Port 2: %s (0x%X 0x%X)",
 		   GetPS2DeviceName(Device2ID[0], Device2ID[1]),
 		   Device2ID[0], Device2ID[1]);
 	return 0;
@@ -230,5 +230,5 @@ int DriverProbe()
 DriverInfo("aip",
 		   "Advanced Integrated Peripheral Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

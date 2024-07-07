@@ -27,5 +27,5 @@ int DriverProbe() { return cxx_Probe(); }
 DriverInfo("rtl8139",
 		   "Realtek RTL8139 Network Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

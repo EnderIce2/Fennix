@@ -77,20 +77,20 @@ extern "C"
 	void UnmapPages(void *VirtualAddress, size_t Pages);
 
 	/**
-	 * @brief Print to the screen
+	 * @brief Print to the kernel terminal
 	 * @param Format The format string
 	 * @param ... The arguments to the format string
 	 *
 	 * @note The newline character is automatically appended
 	 */
-	void KPrint(const char *Format, ...);
+	void KernelPrint(const char *Format, ...);
 
 	/**
 	 * @brief Print to the kernel logger
 	 * @param Format The format string
 	 * @param ... The arguments to the format string
 	 */
-	void Log(const char *Format, ...);
+	void KernelLog(const char *Format, ...);
 
 	/**
 	 * @brief Register an interrupt handler
@@ -241,17 +241,20 @@ extern "C"
 	/** @copydoc LeaveCriticalSection */
 #define LCS LeaveCriticalSection(__ECS)
 
-#define DriverInfo(Name, Description, Author, Version, License)         \
-	void __IdentifyDriver(                                              \
-		dev_t ID,                                                       \
-		int (*GetDriverInfo)(dev_t, const char *, const char *,         \
-							 const char *, const char *, const char *)) \
-	{                                                                   \
-		GetDriverInfo(ID, Name, Description, Author, Version, License); \
-	}
+#define DriverInfo(_Name, _Description, _Author, _MajorVersion,  \
+				   _MinorVersion, _PathVersion, _License)        \
+	__attribute__((section(".driver.info"))) struct __DriverInfo \
+		__di = {.Name = _Name,                                   \
+				.Description = _Description,                     \
+				.Author = _Author,                               \
+				.Version = {.APIVersion = 0,                     \
+							.Major = _MajorVersion,              \
+							.Minor = _MinorVersion,              \
+							.Patch = _PathVersion},              \
+				.License = _License}
 
 #ifdef DEBUG
-#define DebugLog(m, ...) Log(m, ##__VA_ARGS__)
+#define DebugLog(m, ...) KernelLog(m, ##__VA_ARGS__)
 #else
 #define DebugLog(m, ...)
 #endif // DEBUG

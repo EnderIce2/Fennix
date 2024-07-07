@@ -16,7 +16,7 @@
 */
 
 #include <errno.h>
-#include <block.h>
+#include <device.h>
 #include <regs.h>
 #include <base.h>
 #include <pci.h>
@@ -634,9 +634,9 @@ public:
 
 		Identify();
 
-		Log("Port %d \"%x %x %x %x\" configured", PortNumber,
-			HBAPortPtr->Vendor[0], HBAPortPtr->Vendor[1],
-			HBAPortPtr->Vendor[2], HBAPortPtr->Vendor[3]);
+		KernelLog("Port %d \"%x %x %x %x\" configured", PortNumber,
+				  HBAPortPtr->Vendor[0], HBAPortPtr->Vendor[1],
+				  HBAPortPtr->Vendor[2], HBAPortPtr->Vendor[3]);
 	}
 
 	bool ReadWrite(uint64_t Sector, uint32_t SectorCount, uint8_t *Buffer, bool Write)
@@ -644,7 +644,7 @@ public:
 		if (this->AHCIPortType == PortType::SATAPI &&
 			Write == true)
 		{
-			Log("SATAPI port does not support write.");
+			KernelLog("SATAPI port does not support write.");
 			return false;
 		}
 
@@ -702,7 +702,7 @@ public:
 
 		if (Spin == 1000000)
 		{
-			Log("Port not responding.");
+			KernelLog("Port not responding.");
 			return false;
 		}
 
@@ -715,8 +715,8 @@ public:
 		{
 			if (Spin > 100000000)
 			{
-				Log("Port %d not responding. (%d)",
-					this->PortNumber, TryCount);
+				KernelLog("Port %d not responding. (%d)",
+						  this->PortNumber, TryCount);
 
 				Spin = 0;
 				TryCount++;
@@ -730,7 +730,7 @@ public:
 
 			if (HBAPortPtr->InterruptStatus & HBA_PxIS_TFES)
 			{
-				Log("Error reading/writing (%d).", Write);
+				KernelLog("Error reading/writing (%d).", Write);
 				return false;
 			}
 		}
@@ -766,12 +766,12 @@ public:
 
 		if (HBAPortPtr->InterruptStatus & HBA_PxIS_TFES)
 		{
-			Log("Error reading IDENTIFY command.");
+			KernelLog("Error reading IDENTIFY command.");
 			return;
 		}
 
 		if (IdentifyData->Signature != 0xA5)
-			Log("Port %d has no validity signature.", PortNumber);
+			KernelLog("Port %d has no validity signature.", PortNumber);
 		else
 		{
 			uint8_t *ptr = (uint8_t *)IdentifyData;
@@ -780,11 +780,11 @@ public:
 				sum += ptr[i];
 			if (sum != 0)
 			{
-				Log("Port %d has invalid checksum.", PortNumber);
+				KernelLog("Port %d has invalid checksum.", PortNumber);
 				return;
 			}
 			else
-				Log("Port %d has valid checksum.", PortNumber);
+				KernelLog("Port %d has valid checksum.", PortNumber);
 		}
 
 		char *Model = (char *)this->IdentifyData->ModelNumber;
@@ -796,11 +796,11 @@ public:
 		}
 		ModelSwap[40] = 0;
 
-		Log("Port %d \"%s\" identified", PortNumber,
-			ModelSwap);
-		Log("Port %d is %s (%d rotation rate)", PortNumber,
-			IdentifyData->NominalMediaRotationRate == 1 ? "SSD" : "HDD",
-			IdentifyData->NominalMediaRotationRate);
+		KernelLog("Port %d \"%s\" identified", PortNumber,
+				  ModelSwap);
+		KernelLog("Port %d is %s (%d rotation rate)", PortNumber,
+				  IdentifyData->NominalMediaRotationRate == 1 ? "SSD" : "HDD",
+				  IdentifyData->NominalMediaRotationRate);
 	}
 };
 
@@ -839,25 +839,46 @@ PortType CheckPortType(HBAPort *Port)
 	}
 }
 
-size_t drvRead(dev_t, dev_t min,
-			   uint8_t *Buffer, size_t Size, off_t Offset)
+int __fs_Open(struct Inode *, int, mode_t) { return 0; }
+int __fs_Close(struct Inode *) { return 0; }
+
+ssize_t __fs_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
 {
-	bool ok = Ports[min]->ReadWrite(Offset / 512,
-									uint32_t(Size / 512),
-									Buffer,
-									false);
+	bool ok = Ports[Node->GetMinor()]->ReadWrite(Offset / 512,
+												 uint32_t(Size / 512),
+												 (uint8_t *)Buffer,
+												 false);
 	return ok ? Size : 0;
 }
 
-size_t drvWrite(dev_t, dev_t min,
-				uint8_t *Buffer, size_t Size, off_t Offset)
+ssize_t __fs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
 {
-	bool ok = Ports[min]->ReadWrite(Offset / 512,
-									uint32_t(Size / 512),
-									Buffer,
-									true);
+	bool ok = Ports[Node->GetMinor()]->ReadWrite(Offset / 512,
+												 uint32_t(Size / 512),
+												 (uint8_t *)Buffer,
+												 true);
 	return ok ? Size : 0;
 }
+
+const struct InodeOperations BlockOps = {
+	.Lookup = nullptr,
+	.Create = nullptr,
+	.Remove = nullptr,
+	.Rename = nullptr,
+	.Read = __fs_Read,
+	.Write = __fs_Write,
+	.Truncate = nullptr,
+	.Open = __fs_Open,
+	.Close = __fs_Close,
+	.Ioctl = nullptr,
+	.ReadDir = nullptr,
+	.MkDir = nullptr,
+	.RmDir = nullptr,
+	.SymLink = nullptr,
+	.ReadLink = nullptr,
+	.Seek = nullptr,
+	.Stat = nullptr,
+};
 
 void OnInterruptReceived(TrapFrame *)
 {
@@ -880,10 +901,10 @@ EXTERNC int cxx_Probe()
 							0x2829, /* ICH8 */
 							0x07E0, /* SATA AHCI (VMware) */
 							PCI_END};
-	Devices = FindPCIDevices(VendorIDs, DeviceIDs);
+	Devices = GetPCIDevices(VendorIDs, DeviceIDs);
 	if (Devices == nullptr)
 	{
-		Log("No AHCI device found.");
+		KernelLog("No AHCI device found.");
 		return -ENODEV;
 	}
 	return 0;
@@ -905,31 +926,28 @@ EXTERNC int cxx_Initialize()
 		HBAMemory *HBA = (HBAMemory *)(uintptr_t)GetBAR(5, ctx->Device);
 
 		uint32_t PortsImplemented = HBA->PortsImplemented;
-		Log("AHCI ports implemented: %x", PortsImplemented);
+		KernelLog("AHCI ports implemented: %x", PortsImplemented);
 		for (int i = 0; i < 32; i++)
 		{
 			if (PortCount > 64)
 			{
-				Log("There are more than 64 AHCI ports implemented");
+				KernelLog("There are more than 64 AHCI ports implemented");
 				break;
 			}
 
 			if (PortsImplemented & (1 << i))
 			{
-				Log("Port %d implemented", i);
+				KernelLog("Port %d implemented", i);
 				PortType portType = CheckPortType(&HBA->Ports[i]);
 				if (portType == PortType::SATA || portType == PortType::SATAPI)
 				{
-					KPrint("%s drive found at port %d", PortTypeName[portType], i);
+					KernelPrint("%s drive found at port %d", PortTypeName[portType], i);
 					Ports[PortCount] = new Port(portType, &HBA->Ports[i], PortCount);
-					dev_t ret = RegisterBlockDevice(ddt_SATA,
-													nullptr, nullptr,
-													drvRead, drvWrite,
-													nullptr);
+					dev_t ret = RegisterDevice(BLOCK_TYPE_HDD, &BlockOps);
 					if (ret != (dev_t)PortCount)
 					{
-						KPrint("Failed to register block device %d", ret);
-						return -EBADSLT;
+						KernelPrint("Failed to register block device %d", ret);
+						return -EBADF;
 					}
 
 					PortCount++;
@@ -939,8 +957,8 @@ EXTERNC int cxx_Initialize()
 				{
 					if (portType != PortType::None)
 					{
-						KPrint("Unsupported drive type %s found at port %d",
-							   PortTypeName[portType], i);
+						KernelPrint("Unsupported drive type %s found at port %d",
+									PortTypeName[portType], i);
 					}
 				}
 			}
@@ -949,7 +967,7 @@ EXTERNC int cxx_Initialize()
 		ctx = (PCIArray *)ctx->Next;
 	}
 
-	Log("Initializing AHCI ports");
+	KernelLog("Initializing AHCI ports");
 	for (int i = 0; i < PortCount; i++)
 		Ports[i]->Configure();
 
@@ -968,7 +986,7 @@ EXTERNC int cxx_Finalize()
 
 	do
 	{
-		UnregisterBlockDevice(PortCount, ddt_SATA);
+		UnregisterDevice(PortCount);
 		PortCount--;
 	} while (PortCount >= 0);
 

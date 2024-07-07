@@ -19,6 +19,7 @@
 
 #include <driver.h>
 #include <errno.h>
+#include <fs.h>
 #include <input.h>
 #include <base.h>
 #include <io.h>
@@ -161,6 +162,17 @@ const unsigned short ScanCodeSet3[] = {
 	[0x4B] = KEY_L,
 	[0x4D] = KEY_P};
 
+InputReport kir = {0};
+int ReportKeyboardEvent(dev_t Device, KeyScanCodes ScanCode, uint8_t Pressed)
+{
+	kir.Type = INPUT_TYPE_KEYBOARD;
+	kir.Device = Device;
+	kir.Keyboard.Key = ScanCode;
+	kir.Keyboard.Key |= Pressed ? KEY_PRESSED : 0;
+	ReportInputEvent(&kir);
+	return 0;
+}
+
 bool IsE0 = false;
 bool IsE1 = false;
 void PS2KbdInterruptHandler(TrapFrame *)
@@ -217,11 +229,20 @@ void PS2KbdInterruptHandler(TrapFrame *)
 	{
 		if (IsE0)
 			IsE0 = false;
-		Log("Unknown PS/2 Keyboard Scan Code Set: %#x", KeyboardScanCodeSet);
+		KernelLog("Unknown PS/2 Keyboard Scan Code Set: %#x", KeyboardScanCodeSet);
 		break;
 	}
 	}
 }
+
+int __fs_kb_Ioctl(struct Inode *, unsigned long, void *)
+{
+	return 0;
+}
+
+const struct InodeOperations KbdOps = {
+	.Ioctl = __fs_kb_Ioctl,
+};
 
 int InitializeKeyboard()
 {
@@ -230,45 +251,50 @@ int InitializeKeyboard()
 	// if (test != PS2_KBD_RESP_TEST_PASSED &&
 	// 	test != PS2_KBD_RESP_ACK)
 	// {
-	// 	Log("PS/2 keyboard reset failed (%#x)", test);
+	// 	KernelLog("PS/2 keyboard reset failed (%#x)", test);
 	// 	return -EFAULT;
 	// }
 
 	PS2WriteData(PS2_KBD_CMD_DEFAULTS);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to set defaults");
+		KernelLog("PS/2 keyboard failed to set defaults");
 
 	PS2WriteData(PS2_KBD_CMD_SCAN_CODE_SET);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to set scan code set");
+		KernelLog("PS/2 keyboard failed to set scan code set");
 
 	/* We want Scan Code Set 1 */
 	PS2WriteData(PS2_KBD_SCAN_CODE_SET_2); /* It will set to 1 but with translation? */
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to set scan code set 2");
+		KernelLog("PS/2 keyboard failed to set scan code set 2");
 
 	PS2WriteData(PS2_KBD_CMD_SCAN_CODE_SET);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to set scan code set");
+		KernelLog("PS/2 keyboard failed to set scan code set");
 
 	PS2WriteData(PS2_KBD_SCAN_CODE_GET_CURRENT);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to get current scan code set");
+		KernelLog("PS/2 keyboard failed to get current scan code set");
 
 	KeyboardScanCodeSet = PS2ReadAfterACK();
-	Log("PS/2 Keyboard Scan Code Set: 0x%X", KeyboardScanCodeSet);
+	KernelLog("PS/2 Keyboard Scan Code Set: 0x%X", KeyboardScanCodeSet);
 	PS2ClearOutputBuffer();
 
 	PS2WriteData(PS2_KBD_CMD_ENABLE_SCANNING);
 
 	RegisterInterruptHandler(1, PS2KbdInterruptHandler);
-	KeyboardDevID = RegisterInputDevice(ddt_Keyboard);
+
+	KeyboardDevID = RegisterDevice(INPUT_TYPE_KEYBOARD, &KbdOps);
 	return 0;
 }
 
 int FinalizeKeyboard()
 {
-	UnregisterInputDevice(KeyboardDevID, ddt_Keyboard);
+	PS2WriteData(PS2_KBD_CMD_DISABLE_SCANNING);
+	if (PS2ACKTimeout() != 0)
+		KernelLog("PS/2 keyboard failed to disable scanning");
+
+	UnregisterDevice(KeyboardDevID);
 	return 0;
 }
 
@@ -276,11 +302,11 @@ int DetectPS2Keyboard()
 {
 	PS2WriteData(PS2_KBD_CMD_DISABLE_SCANNING);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to disable scanning");
+		KernelLog("PS/2 keyboard failed to disable scanning");
 
 	PS2WriteData(PS2_KBD_CMD_IDENTIFY);
 	if (PS2ACKTimeout() != 0)
-		Log("PS/2 keyboard failed to identify");
+		KernelLog("PS/2 keyboard failed to identify");
 
 	uint8_t recByte;
 	int timeout = 1000000;
@@ -300,10 +326,10 @@ int DetectPS2Keyboard()
 			break;
 	}
 	if (timeout == 0)
-		Log("PS/2 keyboard second byte timed out");
+		KernelLog("PS/2 keyboard second byte timed out");
 	else
 		Device1ID[1] = recByte;
 
-	Log("PS2 Keyboard Device: 0x%X 0x%X", Device1ID[0], Device1ID[1]);
+	KernelLog("PS2 Keyboard Device: 0x%X 0x%X", Device1ID[0], Device1ID[1]);
 	return 0;
 }

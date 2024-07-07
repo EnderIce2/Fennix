@@ -19,8 +19,6 @@
 #define __FENNIX_API_AIP_H__
 
 #include <types.h>
-#include <aip/kbd.h>
-#include <aip/mouse.h>
 
 #define PIC1_CMD 0x20
 #define PIC1_DATA (PIC1_CMD + 1)
@@ -117,7 +115,145 @@ uint8_t PS2ReadAfterACK();
 void PS2ClearOutputBuffer();
 int PS2ACKTimeout();
 
-#define WaitOutput PS2Wait(true)
-#define WaitInput PS2Wait(false)
+#define WaitOutput PS2Wait(DriverID, true)
+#define WaitInput PS2Wait(DriverID, false)
+
+
+#define PS2_KBD_CMD_SET_LEDS 0xED
+#define PS2_KBD_CMD_ECHO 0xEE
+#define PS2_KBD_CMD_SCAN_CODE_SET 0xF0
+#define PS2_KBD_CMD_IDENTIFY 0xF2
+#define PS2_KBD_CMD_TYPEMATIC 0xF3
+#define PS2_KBD_CMD_ENABLE_SCANNING 0xF4
+#define PS2_KBD_CMD_DISABLE_SCANNING 0xF5
+#define PS2_KBD_CMD_DEFAULTS 0xF6
+#define PS2_KBD_CMD_ALL_TYPEMATIC 0xF7
+#define PS2_KBD_CMD_ALL_MAKE_RELEASE 0xF8
+#define PS2_KBD_CMD_ALL_MAKE 0xF9
+#define PS2_KBD_CMD_ALL_TYPEMATIC_MAKE_RELEASE 0xFA
+#define PS2_KBD_CMD_SPECIFIC_TYPEMATIC 0xFB
+#define PS2_KBD_CMD_SPECIFIC_MAKE_RELEASE 0xFC
+#define PS2_KBD_CMD_SPECIFIC_MAKE 0xFD
+#define PS2_KBD_CMD_RESEND 0xFE
+#define PS2_KBD_CMD_RESET 0xFF
+
+#define PS2_KBD_RESP_ACK 0xFA
+#define PS2_KBD_RESP_ECHO 0xEE
+#define PS2_KBD_RESP_RESEND 0xFE
+#define PS2_KBD_RESP_TEST_PASSED 0xAA
+#define PS2_KBD_RESP_TEST_FAILED 0xFC
+#define PS2_KBD_RESP_TEST_FAILED_2 0xFD
+
+typedef enum
+{
+	PS2_KBD_LED_SCROLL_LOCK = 1,
+	PS2_KBD_LED_NUM_LOCK = 2,
+	PS2_KBD_LED_CAPS_LOCK = 4
+} PS2_KBD_LEDS;
+
+typedef enum
+{
+	PS2_KBD_SCAN_CODE_GET_CURRENT = 0,
+	PS2_KBD_SCAN_CODE_SET_1 = 1,
+	PS2_KBD_SCAN_CODE_SET_2 = 2,
+	PS2_KBD_SCAN_CODE_SET_3 = 3,
+
+	PS2_KBD_SC_SET_1 = 0x43,
+	PS2_KBD_SC_SET_2 = 0x41,
+	PS2_KBD_SC_SET_3 = 0x3F
+} PS2_KBD_SCAN_CODE_SET;
+
+typedef union
+{
+	struct
+	{
+		/**
+		 * 00000b - 30Hz
+		 * 11111b - 2Hz
+		 */
+		uint8_t RepeatRate : 5;
+
+		/**
+		 * 00b - 250ms
+		 * 01b - 500ms
+		 * 10b - 750ms
+		 * 11b - 1000ms
+		 */
+		uint8_t Delay : 2;
+
+		/**
+		 * Must be zero
+		 */
+		uint8_t Zero : 1;
+	};
+	uint8_t Raw;
+} PS2_KBD_TYPEMATIC;
+
+
+#define PS2_MOUSE_CMD_SET_SCALING_1_1 0xE6
+#define PS2_MOUSE_CMD_SET_SCALING_2_1 0xE7
+#define PS2_MOUSE_CMD_SET_RESOLUTION 0xE8
+#define PS2_MOUSE_CMD_GET_STATUS 0xE9
+#define PS2_MOUSE_CMD_SET_STREAM_MODE 0xEA
+#define PS2_MOUSE_CMD_READ_DATA 0xEB
+#define PS2_MOUSE_CMD_RESET_WRAP_MODE 0xEC
+#define PS2_MOUSE_CMD_SET_WRAP_MODE 0xEE
+#define PS2_MOUSE_CMD_SET_REMOTE_MODE 0xF0
+#define PS2_MOUSE_CMD_READ_ID 0xF2
+/** Values: 10, 20, 40, 60, 80, 100, 200 */
+#define PS2_MOUSE_CMD_SET_SAMPLE_RATE 0xF3
+#define PS2_MOUSE_CMD_ENABLE_DATA_REPORTING 0xF4
+#define PS2_MOUSE_CMD_DISABLE_DATA_REPORTING 0xF5
+#define PS2_MOUSE_CMD_SET_DEFAULTS 0xF6
+#define PS2_MOUSE_CMD_RESEND 0xFE
+#define PS2_MOUSE_CMD_RESET 0xFF
+
+#define PS2_MOUSE_RESP_ACK 0xFA
+#define PS2_MOUSE_RESP_RESEND 0xFE
+#define PS2_MOUSE_RESP_TEST_PASSED 0xAA
+#define PS2_MOUSE_RESP_TEST_FAILED 0xFC
+
+typedef enum
+{
+	PS2_MOUSE_RES_1 = 0,
+	PS2_MOUSE_RES_2 = 1,
+	PS2_MOUSE_RES_4 = 2,
+	PS2_MOUSE_RES_8 = 3
+} PS2_MOUSE_RESOLUTION;
+
+typedef struct
+{
+	union
+	{
+		struct
+		{
+			uint8_t LeftButton : 1;
+			uint8_t RightButton : 1;
+			uint8_t MiddleButton : 1;
+			uint8_t Always1 : 1;
+			uint8_t XSign : 1;
+			uint8_t YSign : 1;
+			uint8_t XOverflow : 1;
+			uint8_t YOverflow : 1;
+		} __attribute__((packed));
+		uint8_t Raw;
+	} Base;
+
+	uint8_t XMovement;
+	uint8_t YMovement;
+
+	union
+	{
+		struct
+		{
+			uint8_t Z : 4;
+			uint8_t Button4 : 1;
+			uint8_t Button5 : 1;
+			uint8_t Always0 : 1;
+			uint8_t Always0_2 : 1;
+		} __attribute__((packed));
+		uint8_t Raw;
+	} ZMovement;
+} PS2_MOUSE_PACKET;
 
 #endif // !__FENNIX_API_AIP_H__

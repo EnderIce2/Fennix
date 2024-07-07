@@ -1,7 +1,7 @@
 # Config file
 include ../../Makefile.conf
 
-FILENAME = libdriver.a
+FILENAME = libkernel.so
 
 CC = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
@@ -17,15 +17,12 @@ OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURC
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 INCLUDE_DIR = ../include
 
-LDFLAGS := 															\
-	-fPIC -fPIE -pie												\
-	-nostdlib -nodefaultlibs -nolibc  								\
-	-zmax-page-size=0x1000											\
-	-Wl,-Map driver.map -static -fvisibility=hidden
+LDFLAGS := -fPIC -fPIE -pie -nostdlib -nodefaultlibs -nolibc	\
+	-zmax-page-size=0x1000 -Wl,-Map libkernel.map -shared
 
 WARNCFLAG = -Wall -Wextra
 
-CFLAGS := -I$(INCLUDE_DIR) -fvisibility=hidden
+CFLAGS := -I$(INCLUDE_DIR) -shared
 
 ifeq ($(OSARCH), amd64)
 
@@ -46,25 +43,29 @@ CFLAGS += -pipe -fno-builtin -fPIC
 
 endif
 
+CRT_CFLAGS := -fPIC -fPIE -pie -mno-red-zone -std=c++20 -I../include
+
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage
+	CRT_CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage
 ifeq ($(OSARCH), amd64)
 	CFLAGS += -fverbose-asm
+	CRT_CFLAGS += -fverbose-asm
 endif
 ifneq ($(OSARCH), aarch64)
 	CFLAGS += -fstack-check
+	CRT_CFLAGS += -fstack-check
 endif
 	LDFLAGS += -ggdb3 -O0
 endif
 
 build: $(FILENAME)
-	$(CC) $(CFLAGS) $(WARNCFLAG) -std=c17 -shared -c crt/crt0.c -o dcrt0.o
+	$(CPP) $(CRT_CFLAGS) -c crt/crt0.cpp -o dcrt0.o
 	mv dcrt0.o ../out/dcrt0.o
 
 $(FILENAME): $(OBJ)
 	$(info Linking $@)
-	$(AR) rcs $@ $(OBJ)
-	mv $(FILENAME) ../out/$(FILENAME)
+	$(CC) $(LDFLAGS) $(OBJ) -o ../out/$(FILENAME)
 
 %.o: %.c $(HEADERS)
 	$(info Compiling $<)
@@ -79,4 +80,4 @@ $(FILENAME): $(OBJ)
 	$(AS) -o $@ $<
 
 clean:
-	rm -f driver.map $(OBJ) $(FILENAME) $(STACK_USAGE_OBJ) dcrt0.su
+	rm -f libkernel.map $(OBJ) $(FILENAME) $(STACK_USAGE_OBJ) dcrt0.su

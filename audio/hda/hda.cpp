@@ -21,6 +21,7 @@
 #include <base.h>
 #include <pci.h>
 #include <io.h>
+#include <fs.h>
 
 #include "hda.hpp"
 
@@ -62,7 +63,7 @@ public:
 		  RIRB((uint64_t *)AllocateMemory(1))
 	{
 		CTL = (ControllerRegisters *)(uintptr_t)Header->BAR0;
-		Log("Unimplemented HDA driver");
+		KernelLog("Unimplemented HDA driver");
 		return;
 		Initialized = true;
 	}
@@ -75,7 +76,7 @@ public:
 };
 
 HDADevice *Drivers[4] = {nullptr};
-dev_t AudioID[4] = {0};
+dev_t AudioID[4] = {(dev_t)-1};
 
 #define OIR(x) OIR_##x
 #define CREATE_OIR(x) \
@@ -86,19 +87,39 @@ CREATE_OIR(1);
 CREATE_OIR(2);
 CREATE_OIR(3);
 
-int drvOpen(dev_t, dev_t, int, mode_t) { return 0; }
-int drvClose(dev_t, dev_t) { return 0; }
-size_t drvRead(dev_t, dev_t, uint8_t *, size_t, off_t) { return 0; }
+int __fs_Open(struct Inode *, int, mode_t) { return 0; }
+int __fs_Close(struct Inode *) { return 0; }
+ssize_t __fs_Read(struct Inode *, void *, size_t, off_t) { return 0; }
 
-size_t drvWrite(dev_t, dev_t min, uint8_t *Buffer, size_t Size, off_t)
+ssize_t __fs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t)
 {
-	return Drivers[AudioID[min]]->write(Buffer, Size);
+	return Drivers[AudioID[Node->GetMinor()]]->write((uint8_t *)Buffer, Size);
 }
 
-int drvIoctl(dev_t, dev_t min, unsigned long Request, void *Argp)
+int __fs_Ioctl(struct Inode *Node, unsigned long Request, void *Argp)
 {
-	return Drivers[AudioID[min]]->ioctl((AudioIoctl)Request, Argp);
+	return Drivers[AudioID[Node->GetMinor()]]->ioctl((AudioIoctl)Request, Argp);
 }
+
+const struct InodeOperations AudioOps = {
+	.Lookup = nullptr,
+	.Create = nullptr,
+	.Remove = nullptr,
+	.Rename = nullptr,
+	.Read = __fs_Read,
+	.Write = __fs_Write,
+	.Truncate = nullptr,
+	.Open = __fs_Open,
+	.Close = __fs_Close,
+	.Ioctl = __fs_Ioctl,
+	.ReadDir = nullptr,
+	.MkDir = nullptr,
+	.RmDir = nullptr,
+	.SymLink = nullptr,
+	.ReadLink = nullptr,
+	.Seek = nullptr,
+	.Stat = nullptr,
+};
 
 PCIArray *Devices;
 EXTERNC int cxx_Panic()
@@ -125,10 +146,10 @@ EXTERNC int cxx_Probe()
 							0x2668 /* ICH6 */,
 							0x293E /* ICH9 */,
 							PCI_END};
-	Devices = FindPCIDevices(VendorIDs, DeviceIDs);
+	Devices = GetPCIDevices(VendorIDs, DeviceIDs);
 	if (Devices == nullptr)
 	{
-		Log("No HDA device found.");
+		KernelLog("No HDA device found.");
 		return -ENODEV;
 	}
 
@@ -145,10 +166,10 @@ EXTERNC int cxx_Probe()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type == 1)
 		{
-			Log("Device %x:%x.%d BAR0 is I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
@@ -158,7 +179,7 @@ EXTERNC int cxx_Probe()
 
 	if (!Found)
 	{
-		Log("No valid HDA device found.");
+		KernelLog("No valid HDA device found.");
 		return -EINVAL;
 	}
 	return 0;
@@ -178,10 +199,10 @@ EXTERNC int cxx_Initialize()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type == 1)
 		{
-			Log("Device %x:%x.%d BAR0 is I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
@@ -191,10 +212,7 @@ EXTERNC int cxx_Initialize()
 
 		if (Drivers[Count]->IsInitialized())
 		{
-			dev_t ret = RegisterAudioDevice(ddt_Audio,
-											drvOpen, drvClose,
-											drvRead, drvWrite,
-											drvIoctl);
+			dev_t ret = RegisterDevice(AUDIO_TYPE_PCM, &AudioOps);
 			AudioID[Count] = ret;
 			Count++;
 		}
@@ -203,7 +221,7 @@ EXTERNC int cxx_Initialize()
 
 	if (Count == 0)
 	{
-		Log("No valid HDA device found.");
+		KernelLog("No valid HDA device found.");
 		return -EINVAL;
 	}
 
@@ -224,15 +242,21 @@ EXTERNC int cxx_Finalize()
 		uint8_t Type = PCIBAR0 & 1;
 		if (Type == 1)
 		{
-			Log("Device %x:%x.%d BAR0 is I/O.",
-				PCIBaseAddress->Header.VendorID,
-				PCIBaseAddress->Header.DeviceID,
-				PCIBaseAddress->Header.ProgIF);
+			KernelLog("Device %x:%x.%d BAR0 is I/O.",
+					  PCIBaseAddress->Header.VendorID,
+					  PCIBaseAddress->Header.DeviceID,
+					  PCIBaseAddress->Header.ProgIF);
 			continue;
 		}
 
 		delete Drivers[Count++];
 		ctx = (PCIArray *)ctx->Next;
+	}
+
+	for (size_t i = 0; i < sizeof(AudioID) / sizeof(dev_t); i++)
+	{
+		if (AudioID[i] != (dev_t)-1)
+			UnregisterDevice(AudioID[i]);
 	}
 
 	return 0;

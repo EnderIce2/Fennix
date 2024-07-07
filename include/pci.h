@@ -21,7 +21,7 @@
 #include <types.h>
 
 /* https://sites.uclouvain.be/SystInfo/usr/include/linux/pci_regs.h.html */
-enum PCICommands
+typedef enum
 {
 	/** @brief Enable response in I/O space */
 	PCI_COMMAND_IO = 0x1,
@@ -45,7 +45,7 @@ enum PCICommands
 	PCI_COMMAND_FAST_BACK = 0x200,
 	/** @brief INTx Emulation Disable */
 	PCI_COMMAND_INTX_DISABLE = 0x400
-};
+} PCI_COMMANDS;
 
 typedef struct
 {
@@ -171,7 +171,7 @@ extern "C"
 {
 #endif
 
-	PCIArray *FindPCIDevices(uint16_t Vendors[], uint16_t Devices[]);
+	PCIArray *GetPCIDevices(uint16_t Vendors[], uint16_t Devices[]);
 	void InitializePCI(PCIDevice *Device);
 	uint32_t GetBAR(uint8_t Index, PCIDevice *Device);
 	uint8_t iLine(PCIDevice *Device);

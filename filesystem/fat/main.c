@@ -15,17 +15,31 @@
 	along with Fennix Drivers. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <block.h>
+#include <base.h>
 
-extern __driverAPI *API;
-
-dev_t RegisterBlockDevice(DeviceDriverType Type, drvOpen_t Open, drvClose_t Close,
-						  drvRead_t Read, drvWrite_t Write, drvIoctl_t Ioctl)
+int DriverEntry()
 {
-	return API->RegisterBlockDevice(API->MajorID, Type, Open, Close, Read, Write, Ioctl);
+	return 0;
 }
 
-int UnregisterBlockDevice(dev_t DeviceID, DeviceDriverType Type)
+int DriverFinal()
 {
-	return API->UnregisterBlockDevice(API->MajorID, DeviceID, Type);
+	return 0;
 }
+
+int DriverPanic()
+{
+	return 0;
+}
+
+int DriverProbe()
+{
+	/* Nothing to do */
+	return 0;
+}
+
+DriverInfo("fat",
+		   "File Allocation Table Driver",
+		   "EnderIce2",
+		   0, 0, 1,
+		   "GPLv3");

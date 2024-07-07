@@ -27,5 +27,5 @@ int DriverProbe() { return cxx_Probe(); }
 DriverInfo("ahci",
 		   "Advanced Host Controller Interface Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

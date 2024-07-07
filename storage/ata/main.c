@@ -72,5 +72,5 @@ int DriverProbe()
 DriverInfo("ata",
 		   "Advanced Technology Attachment Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

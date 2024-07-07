@@ -9,7 +9,7 @@ HEADERS = $(sort $(dir $(wildcard ../../include/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(S_SOURCES:.S=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
 
-FILENAME = ahci.drv
+FILENAME = fat.drv
 
 build: $(FILENAME)
 	mv $(FILENAME) ../../out/$(FILENAME)

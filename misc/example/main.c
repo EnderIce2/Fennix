@@ -20,16 +20,15 @@
 int DriverEntry()
 {
 	/** This is the main function of the driver.
-	 * This function is called when the driver is loaded.
 	 * This function should be used to initialize the PCI device
 	 * and allocate resources.
 	 */
 
-	/* Print a message to the screen */
-	KPrint("Hello World from Example Driver!");
+	/* Print a message to the kernel terminal */
+	KernelPrint("Hello World from Example Driver!");
 
 	/* Print a message to the kernel log */
-	Log("Hello World from Example Driver!");
+	KernelLog("Hello World from Example Driver!");
 
 	/* Print a message only if DEBUG is set */
 	DebugLog("Hello World from Example Driver!");
@@ -52,7 +51,7 @@ int DriverPanic()
 {
 	/** This function is called when the kernel panics.
 	 * This function should be used to stop the driver from
-	 * receiving interrupts or anything else that is not
+	 * sending interrupts or anything else that is not
 	 * safe to do when the kernel panics.
 	 */
 
@@ -63,13 +62,14 @@ int DriverProbe()
 {
 	/** This is the first function that is called when the
 	 * driver is loaded.
-	 * We can use this function to test if the driver is
-	 * compatible with the hardware.
-	 * Like if we have a specific PCI device or if we have
-	 * a specific CPU feature.
+	 *
+	 * This function is to test if the driver is compatible
+	 * with the hardware.
+	 * Example: Like if there is a PCI device that the driver
+	 * is for, or a CPU feature that etc.
 	 *
 	 * Return 0 if the driver is compatible with the hardware.
-	 * Otherwise, we return a value from the errno.h header.
+	 * Otherwise, return a value that is not 0.
 	 *
 	 * Note: In this function you cannot use variables that
 	 * have constructors or destructors. Before DriverEntry,
@@ -80,8 +80,18 @@ int DriverProbe()
 	return 0;
 }
 
+/** DriverInfo() is a macro that is used to define the
+ * driver's information.
+ *
+ * The parameters are:
+ * - Name: Lowercase name
+ * - Description: A short description
+ * - Author: The author
+ * - Version: The version
+ * - License: The license
+ */
 DriverInfo("example",
 		   "Example Driver",
 		   "EnderIce2",
-		   "0.1",
+		   0, 0, 1,
 		   "GPLv3");

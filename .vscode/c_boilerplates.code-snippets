@@ -4,14 +4,14 @@
 			"head",
 		],
 		"body": [
-			"#ifndef __FENNIX_API_${2:header}_H__",
-			"#define __FENNIX_API_${2:header}_H__",
+			"#ifndef __FENNIX_DRIVER_${2:header}_H__",
+			"#define __FENNIX_DRIVER_${2:header}_H__",
 			"",
 			"#include <types.h>",
 			"",
 			"$0",
 			"",
-			"#endif // !__FENNIX_API_${2:header}_H__",
+			"#endif // !__FENNIX_DRIVER_${2:header}_H__",
 			""
 		],
 		"description": "Create header."
