@@ -341,8 +341,9 @@ namespace vfs
 		if (ret < 0)
 			return ret;
 
-		USTARInode *node = (USTARInode *)Result;
-		strncpy(node->Header->link, Target, sizeof(node->Header->link));
+		USTARInode *node = (USTARInode *)*Result;
+		FileHeader *hdr = node->Header;
+		strncpy(hdr->link, Target, MIN(sizeof(hdr->link) - 1, strlen(Target)));
 		return 0;
 	}
 
