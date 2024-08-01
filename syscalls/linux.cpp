@@ -1120,7 +1120,8 @@ static int linux_nanosleep(SysFrm *,
 
 static pid_t linux_getpid(SysFrm *)
 {
-	return thisProcess->ID;
+	PCB *pcb = thisProcess;
+	return pcb->ID;
 }
 
 static int linux_setitimer(SysFrm *, int which,
