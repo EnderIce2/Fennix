@@ -105,22 +105,22 @@ namespace Execute
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{
-			Memory::SmartHeap InterpreterPath = Memory::SmartHeap(256);
-			fd->Read(InterpreterPath, 256, Interp.p_offset);
+			std::string interpreterPath;
+			interpreterPath.resize(256);
+			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
+			debug("Interpreter: %s", interpreterPath.c_str());
 
-			FileNode *ifd = fs->GetByPath((const char *)InterpreterPath.Get(), TargetProcess->Info.RootNode);
+			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
 			if (ifd == nullptr)
 			{
-				warn("Failed to open interpreter file: %s",
-					 (const char *)InterpreterPath.Get());
+				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
 				continue;
 			}
 			else
 			{
-				if (GetBinaryType((const char *)InterpreterPath.Get()) != BinTypeELF)
+				if (GetBinaryType(interpreterPath) != BinTypeELF)
 				{
-					warn("Interpreter %s is not an ELF file",
-						 (const char *)InterpreterPath.Get());
+					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
 					continue;
 				}
 
@@ -322,23 +322,23 @@ namespace Execute
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{
-			Memory::SmartHeap InterpreterPath = Memory::SmartHeap(256);
-			fd->Read(InterpreterPath, 256, Interp.p_offset);
-			InterpreterPath = InterpreterPath;
+			std::string interpreterPath;
+			interpreterPath.resize(256);
+			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
+			debug("Interpreter: %s", (const char *)interpreterPath.c_str());
 
-			FileNode *ifd = fs->GetByPath((const char *)InterpreterPath.Get(), TargetProcess->Info.RootNode);
+			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
 			if (ifd == nullptr)
 			{
-				warn("Failed to open interpreter file: %s",
-					 (const char *)InterpreterPath.Get());
+				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
 				continue;
 			}
 			else
 			{
-				if (GetBinaryType((const char *)InterpreterPath.Get()) != BinTypeELF)
+				debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
+				if (GetBinaryType(interpreterPath) != BinTypeELF)
 				{
-					warn("Interpreter %s is not an ELF file",
-						 (const char *)InterpreterPath.Get());
+					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
 					continue;
 				}
 

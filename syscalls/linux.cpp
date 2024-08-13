@@ -1758,8 +1758,8 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 		};
 		rn->Stat(&st);
 
-		Memory::SmartHeap sh = Memory::SmartHeap(st.Size);
-		rn->Read(sh.Get(), st.Size, 0);
+		char *sh = new char[st.Size];
+		rn->Read(sh, st.Size, 0);
 
 		ini_t *ini = ini_load(sh, NULL);
 		int section = ini_find_section(ini, "uname", NULL);
@@ -1790,6 +1790,8 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 		if (uMac && strcmp(uMac, "auto") != 0)
 			strncpy(uname.machine, uMac, sizeof(uname.machine));
 		ini_destroy(ini);
+
+		delete[] sh;
 	}
 	else
 		warn("Couldn't open /etc/cross/linux");

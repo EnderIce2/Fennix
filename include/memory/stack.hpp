@@ -22,6 +22,7 @@
 #include <list>
 
 #include <memory/table.hpp>
+#include <memory/vma.hpp>
 
 namespace Memory
 {
