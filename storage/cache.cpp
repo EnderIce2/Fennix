@@ -165,6 +165,7 @@ namespace vfs
 
 	FileNode *Virtual::CacheLookup(const char *Path)
 	{
+		debug("Cache lookup for \"%s\"", Path);
 		FileNode *rootNode = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
 		FileNode *ret = CacheRecursiveSearch(rootNode, Path, false);

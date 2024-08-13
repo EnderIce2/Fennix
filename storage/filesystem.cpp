@@ -115,6 +115,7 @@ namespace vfs
 
 	FileNode *Virtual::GetByPath(const char *Path, FileNode *Parent)
 	{
+		debug("GetByPath: %s", Path);
 		if (Parent == nullptr)
 			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
