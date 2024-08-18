@@ -1515,14 +1515,14 @@ namespace std
 
 		constexpr iterator erase(const_iterator position)
 		{
-			size_type index = position - begin();
+			size_type index = position - cbegin();
 			erase(index, 1);
 			return begin() + index;
 		}
 
 		constexpr iterator erase(const_iterator first, const_iterator last)
 		{
-			size_type index = first - begin();
+			size_type index = first - cbegin();
 			erase(index, last - first);
 			return begin() + index;
 		}
