@@ -28,57 +28,57 @@ namespace CPU
         {
             /* ISR */
 
-            ISR0 = 0x0,   // Divide-by-zero Error
-            ISR1 = 0x1,   // Debug
-            ISR2 = 0x2,   // Non-maskable Interrupt
-            ISR3 = 0x3,   // Breakpoint
-            ISR4 = 0x4,   // Overflow
-            ISR5 = 0x5,   // Bound Range Exceeded
-            ISR6 = 0x6,   // Invalid Opcode
-            ISR7 = 0x7,   // Device Not Available
-            ISR8 = 0x8,   // Double Fault
-            ISR9 = 0x9,   // Coprocessor Segment Overrun
-            ISR10 = 0xa,  // Invalid TSS
-            ISR11 = 0xb,  // Segment Not P
-            ISR12 = 0xc,  // Stack-Segment Fault
-            ISR13 = 0xd,  // General Protection Fault
-            ISR14 = 0xe,  // Page Fault
-            ISR15 = 0xf,  // Reserved
-            ISR16 = 0x10, // x87 Floating-Point Exception
-            ISR17 = 0x11, // Alignment Check
-            ISR18 = 0x12, // Machine Check
-            ISR19 = 0x13, // SIMD Floating-Point Exception
-            ISR20 = 0x14, // Virtualization Exception
-            ISR21 = 0x15, // Reserved
-            ISR22 = 0x16, // Reserved
-            ISR23 = 0x17, // Reserved
-            ISR24 = 0x18, // Reserved
-            ISR25 = 0x19, // Reserved
-            ISR26 = 0x1a, // Reserved
-            ISR27 = 0x1b, // Reserved
-            ISR28 = 0x1c, // Reserved
-            ISR29 = 0x1d, // Reserved
-            ISR30 = 0x1e, // Security Exception
-            ISR31 = 0x1f, // Reserved
+            ISR0 = 0x0,   /* Divide-by-zero Error */
+            ISR1 = 0x1,   /* Debug */
+            ISR2 = 0x2,   /* Non-maskable Interrupt */
+            ISR3 = 0x3,   /* Breakpoint */
+            ISR4 = 0x4,   /* Overflow */
+            ISR5 = 0x5,   /* Bound Range Exceeded */
+            ISR6 = 0x6,   /* Invalid Opcode */
+            ISR7 = 0x7,   /* Device Not Available */
+            ISR8 = 0x8,   /* Double Fault */
+            ISR9 = 0x9,   /* Coprocessor Segment Overrun */
+            ISR10 = 0xa,  /* Invalid TSS */
+            ISR11 = 0xb,  /* Segment Not P */
+            ISR12 = 0xc,  /* Stack-Segment Fault */
+            ISR13 = 0xd,  /* General Protection Fault */
+            ISR14 = 0xe,  /* Page Fault */
+            ISR15 = 0xf,  /* Reserved */
+            ISR16 = 0x10, /* x87 Floating-Point Exception */
+            ISR17 = 0x11, /* Alignment Check */
+            ISR18 = 0x12, /* Machine Check */
+            ISR19 = 0x13, /* SIMD Floating-Point Exception */
+            ISR20 = 0x14, /* Virtualization Exception */
+            ISR21 = 0x15, /* Reserved */
+            ISR22 = 0x16, /* Reserved */
+            ISR23 = 0x17, /* Reserved */
+            ISR24 = 0x18, /* Reserved */
+            ISR25 = 0x19, /* Reserved */
+            ISR26 = 0x1a, /* Reserved */
+            ISR27 = 0x1b, /* Reserved */
+            ISR28 = 0x1c, /* Reserved */
+            ISR29 = 0x1d, /* Reserved */
+            ISR30 = 0x1e, /* Security Exception */
+            ISR31 = 0x1f, /* Reserved */
 
             /* IRQ */
 
-            IRQ0 = 0x20,  // Programmable Interrupt Timer Interrupt
-            IRQ1 = 0x21,  // Keyboard Interrupt
-            IRQ2 = 0x22,  // Cascade (used internally by the two PICs. never raised)
-            IRQ3 = 0x23,  // COM2 (if enabled)
-            IRQ4 = 0x24,  // COM1 (if enabled)
-            IRQ5 = 0x25,  // LPT2 (if enabled)
-            IRQ6 = 0x26,  // Floppy Disk
-            IRQ7 = 0x27,  // LPT1 / Unreliable "spurious" interrupt (usually)
-            IRQ8 = 0x28,  // CMOS real-time clock (if enabled)
-            IRQ9 = 0x29,  // Free for peripherals / legacy SCSI / NIC
-            IRQ10 = 0x2a, // Free for peripherals / SCSI / NIC
-            IRQ11 = 0x2b, // Free for peripherals / SCSI / NIC
-            IRQ12 = 0x2c, // PS2 Mouse
-            IRQ13 = 0x2d, // FPU / Coprocessor / Inter-processor
-            IRQ14 = 0x2e, // Primary ATA Hard Disk
-            IRQ15 = 0x2f, // Secondary ATA Hard Disk
+            IRQ0 = 0x20,  /* Programmable Interrupt Timer Interrupt */
+            IRQ1 = 0x21,  /* Keyboard Interrupt */
+            IRQ2 = 0x22,  /* Cascade (used internally by the two PICs. never raised) */
+            IRQ3 = 0x23,  /* COM2/COM4 (if enabled) */
+            IRQ4 = 0x24,  /* COM1/COM3 (if enabled) */
+            IRQ5 = 0x25,  /* LPT2 (if enabled) */
+            IRQ6 = 0x26,  /* Floppy Disk */
+            IRQ7 = 0x27,  /* LPT1 / Unreliable "spurious" interrupt (usually) */
+            IRQ8 = 0x28,  /* CMOS real-time clock (if enabled) */
+            IRQ9 = 0x29,  /* Free for peripherals / legacy SCSI / NIC */
+            IRQ10 = 0x2a, /* Free for peripherals / SCSI / NIC */
+            IRQ11 = 0x2b, /* Free for peripherals / SCSI / NIC */
+            IRQ12 = 0x2c, /* PS2 Mouse */
+            IRQ13 = 0x2d, /* FPU / Coprocessor / Inter-processor */
+            IRQ14 = 0x2e, /* Primary ATA Hard Disk */
+            IRQ15 = 0x2f, /* Secondary ATA Hard Disk */
 
             /* Reserved by OS */
 
