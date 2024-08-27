@@ -34,5 +34,6 @@ void PS2MouseInterruptHandler(TrapFrame *);
 int InitializeMouse();
 int FinalizeMouse();
 int DetectPS2Mouse();
+int DetectUART();
 
 #endif // !__FENNIX_DRIVER_AIP_H__

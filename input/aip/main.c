@@ -194,10 +194,11 @@ int DriverProbe()
 
 	int kbd = DetectPS2Keyboard();
 	int mouse = DetectPS2Mouse();
+	int uart = DetectUART();
 
 	UnregisterAllInterruptHandlers(__intStub);
 
-	if (kbd != 0 && mouse != 0)
+	if (kbd != 0 && mouse != 0 && uart != 0)
 		return -ENODEV;
 
 	if (kbd == 0)
@@ -219,11 +220,11 @@ int DriverProbe()
 	}
 
 	KernelPrint("PS/2 Port 1: %s (0x%X 0x%X)",
-		   GetPS2DeviceName(Device1ID[0], Device1ID[1]),
-		   Device1ID[0], Device1ID[1]);
+				GetPS2DeviceName(Device1ID[0], Device1ID[1]),
+				Device1ID[0], Device1ID[1]);
 	KernelPrint("PS/2 Port 2: %s (0x%X 0x%X)",
-		   GetPS2DeviceName(Device2ID[0], Device2ID[1]),
-		   Device2ID[0], Device2ID[1]);
+				GetPS2DeviceName(Device2ID[0], Device2ID[1]),
+				Device2ID[0], Device2ID[1]);
 	return 0;
 }
 
