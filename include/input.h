@@ -168,6 +168,16 @@ typedef enum
 typedef struct
 {
 	KeyScanCodes Key;
+
+	union
+	{
+		struct
+		{
+			char IsScanCode : 1;
+		};
+		char Value;
+	};
+	unsigned char Character;
 } KeyboardReport;
 
 typedef struct
