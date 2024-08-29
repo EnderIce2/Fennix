@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #define _POSIX_SOURCE
+#define _GNU_SOURCE
 #include <stdint.h>
 #include <stddef.h>
 #include <dirent.h>
@@ -15,7 +16,6 @@
 #include <sys/stat.h>
 #include <sys/reboot.h>
 #include <sys/syscall.h>
-#define _GNU_SOURCE
 #include <unistd.h>
 #include <time.h>
 #include <pwd.h>
@@ -345,6 +345,58 @@ void test_file()
 		putchar(ch);
 	}
 	fclose(test);
+}
+
+void test_stat()
+{
+	printf("- Testing stat\n");
+
+	struct stat st;
+	if (stat("/etc/passwd", &st) == -1)
+	{
+		perror("stat");
+		fflush(stdout);
+		fflush(stderr);
+		return;
+	}
+
+	printf("File size: %ld\n", st.st_size);
+	printf("File mode: %o\n", st.st_mode);
+	printf("File inode: %ld\n", st.st_ino);
+
+	int fd = open("/etc/passwd", O_RDONLY);
+	if (fd == -1)
+	{
+		perror("open");
+		fflush(stdout);
+		fflush(stderr);
+		return;
+	}
+
+	if (fstat(fd, &st) == -1)
+	{
+		perror("fstat");
+		fflush(stdout);
+		fflush(stderr);
+		return;
+	}
+
+	printf("File size: %ld\n", st.st_size);
+	printf("File mode: %o\n", st.st_mode);
+	printf("File inode: %ld\n", st.st_ino);
+	close(fd);
+
+	if (lstat("/etc/passwd", &st) == -1)
+	{
+		perror("lstat");
+		fflush(stdout);
+		fflush(stderr);
+		return;
+	}
+
+	printf("File size: %ld\n", st.st_size);
+	printf("File mode: %o\n", st.st_mode);
+	printf("File inode: %ld\n", st.st_ino);
 }
 
 void test_ptmx()
@@ -837,6 +889,7 @@ int main(int argc, char *argv[], char *envp[])
 	test_args(argc, argv, envp);
 	test_system();
 	test_file();
+	test_stat();
 	test_dirent();
 	test_execve_fork();
 	test_watch_file();
