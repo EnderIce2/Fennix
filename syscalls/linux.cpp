@@ -1886,12 +1886,13 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 	size_t len = strlen(cwd);
 	if (len >= size)
 	{
-		warn("Buffer too small");
+		warn("Buffer too small (%ld < %ld)", len, size);
 		return -ERANGE;
 	}
 
 	strncpy(pBuf, cwd, len);
 	pBuf[len] = '\0';
+	debug("cwd: \"%s\" with %ld bytes", cwd, len);
 	return len;
 }
 
