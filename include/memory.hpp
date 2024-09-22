@@ -60,7 +60,6 @@ namespace Memory
 	};
 }
 
-#include <memory/smart_heap.hpp>
 #include <memory/physical.hpp>
 #include <memory/virtual.hpp>
 #include <memory/swap_pt.hpp>
