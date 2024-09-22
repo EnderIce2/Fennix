@@ -89,7 +89,7 @@ namespace Driver
 	{
 		if (Drivers.empty())
 		{
-			KPrint("\eE85230No drivers to load");
+			KPrint("\x1b[1;31;41mNo drivers to load");
 			return;
 		}
 

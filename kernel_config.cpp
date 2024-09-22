@@ -143,22 +143,22 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			value = cag_option_get_value(&context);
 			if (strcmp(value, "xallocv1") == 0)
 			{
-				KPrint("\eAAFFAAUsing XallocV1 as memory allocator");
+				KPrint("Using XallocV1 as memory allocator");
 				ModConfig->AllocatorType = Memory::XallocV1;
 			}
 			else if (strcmp(value, "xallocv2") == 0)
 			{
-				KPrint("\eAAFFAAUsing XallocV2 as memory allocator");
+				KPrint("Using XallocV2 as memory allocator");
 				ModConfig->AllocatorType = Memory::XallocV2;
 			}
 			else if (strcmp(value, "liballoc11") == 0)
 			{
-				KPrint("\eAAFFAAUsing Liballoc11 as memory allocator");
+				KPrint("Using Liballoc11 as memory allocator");
 				ModConfig->AllocatorType = Memory::liballoc11;
 			}
 			else if (strcmp(value, "pages") == 0)
 			{
-				KPrint("\eAAFFAAUsing Pages as memory allocator");
+				KPrint("Using Pages as memory allocator");
 				ModConfig->AllocatorType = Memory::Pages;
 			}
 			break;
@@ -166,14 +166,14 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		case 'c':
 		{
 			value = cag_option_get_value(&context);
-			KPrint("\eAAFFAAUsing %s cores", atoi(value) ? value : "all");
+			KPrint("Using %s cores", atoi(value) ? value : "all");
 			ModConfig->Cores = atoi(value);
 			break;
 		}
 		case 'p':
 		{
 			value = cag_option_get_value(&context);
-			KPrint("\eAAFFAARedirecting I/O APIC interrupts to %s%s",
+			KPrint("Redirecting I/O APIC interrupts to %s%s",
 				   atoi(value) ? "core " : "", atoi(value) ? value : "BSP");
 			ModConfig->IOAPICInterruptCore = atoi(value);
 			break;
@@ -183,17 +183,17 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			value = cag_option_get_value(&context);
 			if (strcmp(value, "multi") == 0)
 			{
-				KPrint("\eAAFFAAUsing Multi-Tasking Scheduler");
+				KPrint("Using Multi-Tasking Scheduler");
 				ModConfig->SchedulerType = Multi;
 			}
 			else if (strcmp(value, "single") == 0)
 			{
-				KPrint("\eAAFFAAUsing Single-Tasking Scheduler");
+				KPrint("Using Single-Tasking Scheduler");
 				ModConfig->SchedulerType = Mono;
 			}
 			else
 			{
-				KPrint("\eAAFFAAUnknown scheduler: %s", value);
+				KPrint("Unknown scheduler: %s", value);
 				ModConfig->SchedulerType = Multi;
 			}
 			break;
@@ -202,14 +202,14 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			strncpy(ModConfig->DriverDirectory, value, strlen(value));
-			KPrint("\eAAFFAAUsing %s as module directory", value);
+			KPrint("Using %s as module directory", value);
 			break;
 		}
 		case 'i':
 		{
 			value = cag_option_get_value(&context);
 			strncpy(ModConfig->InitPath, value, strlen(value));
-			KPrint("\eAAFFAAUsing %s as init program", value);
+			KPrint("Using %s as init program", value);
 			break;
 		}
 		case 'y':
@@ -218,7 +218,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			strcmp(value, "true") == 0
 				? ModConfig->UseLinuxSyscalls = true
 				: ModConfig->UseLinuxSyscalls = false;
-			KPrint("\eAAFFAAUse Linux syscalls by default: %s", value);
+			KPrint("Use Linux syscalls by default: %s", value);
 			break;
 		}
 		case 'o':
@@ -227,7 +227,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			strcmp(value, "true") == 0
 				? ModConfig->InterruptsOnCrash = true
 				: ModConfig->InterruptsOnCrash = false;
-			KPrint("\eAAFFAAInterrupts on crash: %s", value);
+			KPrint("Interrupts on crash: %s", value);
 			break;
 		}
 		case 'l':
@@ -236,7 +236,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			strcmp(value, "true") == 0
 				? ModConfig->UnlockDeadLock = true
 				: ModConfig->UnlockDeadLock = false;
-			KPrint("\eAAFFAAUnlocking the deadlock after 10 retries");
+			KPrint("Unlocking the deadlock after 10 retries");
 			break;
 		}
 		case 's':
@@ -244,7 +244,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0 ? ModConfig->SIMD = true
 									   : ModConfig->SIMD = false;
-			KPrint("\eAAFFAASingle Instruction, Multiple Data (SIMD): %s", value);
+			KPrint("Single Instruction, Multiple Data (SIMD): %s", value);
 			break;
 		}
 		case 'b':
@@ -252,7 +252,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0 ? ModConfig->Quiet = true
 									   : ModConfig->Quiet = false;
-			KPrint("\eAAFFAAQuiet boot: %s", value);
+			KPrint("Quiet boot: %s", value);
 			break;
 		}
 		case 'h':
@@ -260,12 +260,12 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			KPrint("\n---------------------------------------------------------------------------\nUsage: fennix.elf [OPTION]...\nKernel configuration.");
 			cag_option_print(ConfigOptions, CAG_ARRAY_SIZE(ConfigOptions),
 							 nullptr);
-			KPrint("\eFF2200System Halted.");
+			KPrint("\x1b[1;31;41mSystem Halted.");
 			CPU::Stop();
 		}
 		default:
 		{
-			KPrint("\eFF2200Unknown option: %c", identifier);
+			KPrint("\x1b[31mUnknown option: %c", identifier);
 			break;
 		}
 		}

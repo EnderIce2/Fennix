@@ -26,19 +26,19 @@ using namespace vfs;
 const char *ColorNodeType(FileNode *node)
 {
 	if (node->IsRegularFile())
-		return "\eCCCCCC";
+		return "\x1b[32m";
 	else if (node->IsDirectory())
-		return "\e3871F5";
+		return "\x1b[34m";
 	else if (node->IsBlockDevice())
-		return "\eE8CD1E";
+		return "\x1b[33m";
 	else if (node->IsCharacterDevice())
-		return "\e86E01F";
+		return "\x1b[33m";
 	else if (node->IsFIFO())
-		return "\eE0991F";
+		return "\x1b[33m";
 	else if (node->IsSymbolicLink())
-		return "\e1FB9E0";
+		return "\x1b[35m";
 	else
-		return "\eF72020";
+		return "\x1b[0m";
 }
 
 __no_sanitize("alignment") size_t MaxNameLength(FileNode *nodes)
@@ -100,7 +100,7 @@ __no_sanitize("alignment") void PrintLS(FileNode *node)
 		offset += read / sizeof(kdirent);
 	}
 
-	printf("\eCCCCCC\n");
+	printf("\x1b[0m\n");
 	delete[] dirBuffer;
 }
 

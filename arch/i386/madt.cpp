@@ -40,7 +40,7 @@ namespace ACPI
 				if (ptr[4] & 1)
 				{
 					lapic.push_back((LocalAPIC *)ptr);
-					KPrint("Local APIC \e8888FF%d\eCCCCCC (APIC \e8888FF%d\eCCCCCC) found.", lapic.back()->ACPIProcessorId, lapic.back()->APICId);
+					KPrint("Local APIC %d (APIC %d) found.", lapic.back()->ACPIProcessorId, lapic.back()->APICId);
 					CPUCores++;
 				}
 				break;
@@ -48,34 +48,34 @@ namespace ACPI
 			case 1:
 			{
 				ioapic.push_back((MADTIOApic *)ptr);
-				KPrint("I/O APIC \e8888FF%d\eCCCCCC (Address \e8888FF%#lx\eCCCCCC) found.", ioapic.back()->APICID, ioapic.back()->Address);
+				KPrint("I/O APIC %d (Address %#lx) found.", ioapic.back()->APICID, ioapic.back()->Address);
 				Memory::Virtual(KernelPageTable).Map((void *)(uintptr_t)ioapic.back()->Address, (void *)(uintptr_t)ioapic.back()->Address, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
 				break;
 			}
 			case 2:
 			{
 				iso.push_back((MADTIso *)ptr);
-				KPrint("ISO (IRQ:\e8888FF%#lx\eCCCCCC, BUS:\e8888FF%#lx\eCCCCCC, GSI:\e8888FF%#lx\eCCCCCC, %s\eCCCCCC/%s\eCCCCCC) found.",
+				KPrint("ISO (IRQ:%#lx, BUS:%#lx, GSI:%#lx, %s/%s) found.",
 					   iso.back()->IRQSource, iso.back()->BuSSource, iso.back()->GSI,
-					   iso.back()->Flags & 0x00000004 ? "\e1770FFActive High" : "\e475EFFActive Low",
-					   iso.back()->Flags & 0x00000100 ? "\e00962DEdge Triggered" : "\e008F58Level Triggered");
+					   iso.back()->Flags & 0x00000004 ? "Active High" : "Active Low",
+					   iso.back()->Flags & 0x00000100 ? "Edge Triggered" : "Level Triggered");
 				break;
 			}
 			case 4:
 			{
 				nmi.push_back((MADTNmi *)ptr);
-				KPrint("NMI \e8888FF%#lx\eCCCCCC (lint:\e8888FF%#lx\eCCCCCC) found.", nmi.back()->processor, nmi.back()->lint);
+				KPrint("NMI %#lx (lint:%#lx) found.", nmi.back()->processor, nmi.back()->lint);
 				break;
 			}
 			case 5:
 			{
 				LAPICAddress = (LAPIC *)ptr;
-				KPrint("APIC found at \e8888FF%#lx\eCCCCCC", LAPICAddress);
+				KPrint("APIC found at %#lx", LAPICAddress);
 				break;
 			}
 			default:
 			{
-				KPrint("Unknown MADT entry \e8888FF%#lx\eCCCCCC", *(ptr));
+				KPrint("Unknown MADT entry %#lx", *(ptr));
 				break;
 			}
 			}

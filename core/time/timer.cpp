@@ -156,11 +156,11 @@ namespace Time
 				hpet = new HighPrecisionEventTimer(((ACPI::ACPI *)acpi)->HPET);
 				ActiveTimer = HPET;
 				SupportedTimers |= HPET;
-				KPrint("\e11FF11HPET found");
+				KPrint("HPET found");
 			}
 			else
 			{
-				KPrint("\eFF2200HPET not found");
+				KPrint("\x1b[33mHPET not found");
 			}
 
 			/* TODO: ACPI check */
@@ -168,7 +168,7 @@ namespace Time
 		}
 		else
 		{
-			KPrint("\eFF2200ACPI not found");
+			KPrint("\x1b[33mACPI not found");
 		}
 
 		bool TSCInvariant = false;
@@ -191,10 +191,10 @@ namespace Time
 			tsc = new TimeStampCounter;
 			// FIXME: ActiveTimer = TSC;
 			SupportedTimers |= TSC;
-			KPrint("\e11FF11Invariant TSC found");
+			KPrint("Invariant TSC found");
 		}
 		else
-			KPrint("\eFF2200TSC is not invariant");
+			KPrint("\x1b[33mTSC is not invariant");
 #endif
 	}
 

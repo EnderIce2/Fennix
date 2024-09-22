@@ -89,7 +89,7 @@ extern "C" void StartCPU()
 	asmv("mov %0, %%rsp" ::"r"((&CPUs[CoreID])->Stack));
 
 	CPU::Interrupts(CPU::Enable);
-	KPrint("\e058C19CPU \e8888FF%d \e058C19is online", CoreID);
+	KPrint("CPU %d is online", CoreID);
 	CPUEnabled.store(true, std::memory_order_release);
 	CPU::Halt(true);
 }
@@ -177,7 +177,7 @@ namespace SMP
 					if (TimeManager->GetCounter() > Timeout)
 					{
 						error("CPU %d failed to load!", lapic->APICId);
-						KPrint("\eFF8C19CPU \e8888FF%d \eFF8C19failed to load!",
+						KPrint("\x1b[1;37;41mCPU %d failed to load!",
 							   lapic->APICId);
 						break;
 					}
@@ -187,7 +187,7 @@ namespace SMP
 				CPUEnabled.store(false, std::memory_order_release);
 			}
 			else
-				KPrint("\e058C19CPU \e8888FF%d \e058C19is the BSP", lapic->APICId);
+				KPrint("CPU %d is the BSP", lapic->APICId);
 		}
 
 		KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE + 1));

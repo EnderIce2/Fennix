@@ -184,17 +184,10 @@ namespace Video
 	{
 	private:
 		BootInfo::FramebufferInfo framebuffer;
-		Font *DefaultFont = nullptr;
-		Font *CurrentFont = nullptr;
-		bool ColorIteration = false;
-		int ColorPickerIteration = 0;
 
 		void *Buffer;
 		size_t Size;
 		uint32_t Width, Height;
-		uint32_t Color;
-		uint32_t CursorX, CursorY;
-		bool DoNotScroll;
 		bool DirectWrite;
 
 		uint32_t RegionWidth = 64, RegionHeight = 64;
@@ -207,9 +200,6 @@ namespace Video
 		decltype(Height) &GetHeight = Height;
 
 		BootInfo::FramebufferInfo GetFramebufferStruct() { return framebuffer; }
-		Font *GetDefaultFont() { return DefaultFont; }
-		Font *GetCurrentFont();
-		void SetCurrentFont(Font *Font);
 		uint16_t GetBitsPerPixel();
 		size_t GetPitch();
 
@@ -219,41 +209,12 @@ namespace Video
 		void DrawRectangle(uint32_t X, uint32_t Y,
 						   uint32_t Width, uint32_t Height,
 						   uint32_t Color);
-		void Scroll(int Lines);
-
-		void SetDoNotScroll(bool Value)
-		{
-			this->DoNotScroll = Value;
-		}
-
-		void SetBufferCursor(uint32_t X, uint32_t Y)
-		{
-			this->CursorX = X;
-			this->CursorY = Y;
-		}
-
-		void GetBufferCursor(uint32_t *X, uint32_t *Y)
-		{
-			*X = this->CursorX;
-			*Y = this->CursorY;
-		}
 
 		void UpdateRegion(size_t RegionRow, size_t RegionColumn);
 		void MarkRegionDirty(size_t RegionRow, size_t RegionCol);
 		void UpdateBuffer();
 
-		char Print(char Char,
-				   Video::Font *Font = nullptr,
-				   bool WriteToUART = false,
-				   bool IgnoreSpecialChars = false);
-
-		void PrintString(const char *String,
-						 Video::Font *Font = nullptr,
-						 bool WriteToUART = false,
-						 bool IgnoreSpecialChars = false);
-
 		Display(BootInfo::FramebufferInfo Info,
-				bool LoadDefaultFont = true,
 				bool DirectWrite = true);
 		~Display();
 	};

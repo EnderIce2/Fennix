@@ -33,6 +33,7 @@
 #include <task.hpp>
 #include <time.hpp>
 #include <disk.hpp>
+#include <kcon.hpp>
 #include <pci.hpp>
 #include <smp.hpp>
 #endif

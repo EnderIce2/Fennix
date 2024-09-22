@@ -43,6 +43,7 @@ void cmd_lsmod(const char *args);
 void cmd_modinfo(const char *args);
 void cmd_panic(const char *args);
 void cmd_dump(const char *args);
+void cmd_theme(const char *args);
 
 #define IF_ARG(x) strcmp(args, x) == 0
 

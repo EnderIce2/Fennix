@@ -59,7 +59,7 @@ namespace vfs
 
 	PTMXDevice::PTMXDevice()
 	{
-
+		fixme("PTMXDevice");
 		// /* c rw- rw- rw- */
 		// mode_t mode = S_IRUSR | S_IWUSR |
 		// 			  S_IRGRP | S_IWGRP |

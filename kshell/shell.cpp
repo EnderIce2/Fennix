@@ -77,89 +77,17 @@ static Command commands[] = {
 	{"depmod", nullptr},
 	{"panic", cmd_panic},
 	{"dump", cmd_dump},
+	{"theme", cmd_theme},
 	{"builtin", __cmd_builtin},
 };
 
-std::atomic_uint32_t CurX = 0x10, CurY = 0x10;
-std::atomic_bool CurBlinking = false;
-std::atomic_bool CurHalt = true;
-std::atomic_uint64_t BlinkerSleep = 0;
-
-NewLock(BlinkerLock);
-
-void PrintBlinker(uint32_t fx, uint32_t fy)
+void KShellThread()
 {
-	for (uint32_t i = 0; i < fx; i++)
-	{
-		for (uint32_t j = 0; j < fy; j++)
-		{
-			uint32_t px = CurX.load() + i;
-			uint32_t py = CurY.load() + j;
-			uint32_t color = Display->GetPixel(px, py);
-			Display->SetPixel(px, py, ~color);
-		}
-	}
-}
+	assert(!ShellLock.Locked());
+	ShellLock.Lock(__FUNCTION__);
 
-void UpdateBlinker(bool force = false)
-{
-	SmartLock(BlinkerLock);
-	if (CurBlinking.load() || force)
-	{
-		uint32_t fx = 0, fy = 0;
-		if (unlikely(fx == 0 || fy == 0))
-		{
-			fx = Display->GetCurrentFont()->GetInfo().Width;
-			fy = Display->GetCurrentFont()->GetInfo().Height;
-		}
-
-		PrintBlinker(fx, fy);
-		CurBlinking.store(force);
-		Display->UpdateBuffer();
-	}
-}
-
-void CursorBlink()
-{
-	uint32_t fx, fy;
-	fx = Display->GetCurrentFont()->GetInfo().Width;
-	fy = Display->GetCurrentFont()->GetInfo().Height;
-	while (true)
-	{
-		if (CurHalt.load() ||
-			BlinkerSleep.load() > TimeManager->GetCounter())
-		{
-			TaskManager->Sleep(250);
-			continue;
-		}
-
-		{
-			SmartLock(BlinkerLock);
-			PrintBlinker(fx, fy);
-			CurBlinking.store(!CurBlinking.load());
-			Display->UpdateBuffer();
-		}
-		TaskManager->Sleep(500);
-
-		{
-			SmartLock(BlinkerLock);
-			PrintBlinker(fx, fy);
-			CurBlinking.store(!CurBlinking.load());
-			Display->UpdateBuffer();
-		}
-		TaskManager->Sleep(500);
-	}
-}
-
-void StartKernelShell()
-{
-	if (ShellLock.Locked())
-		return;
-	SmartLock(ShellLock);
-
-	debug("Starting kernel shell...");
 	KPrint("Starting kernel shell...");
-	thisThread->SetPriority(Tasking::TaskPriority::High);
+	thisThread->SetPriority(Tasking::TaskPriority::Normal);
 
 	std::string strBuf = "";
 	std::vector<std::string *> history;
@@ -168,7 +96,8 @@ void StartKernelShell()
 	bool upperCase = false;
 	bool tabDblPress = false;
 
-	FileNode *kfd = fs->GetByPath("/dev/input/keyboard", fs->GetRoot(0));
+	const char *keyDevPath = "/dev/input/keyboard";
+	FileNode *kfd = fs->GetByPath(keyDevPath, fs->GetRoot(0));
 	if (kfd == nullptr)
 	{
 		KPrint("Failed to open keyboard device!");
@@ -179,12 +108,14 @@ void StartKernelShell()
 	auto strBufBck = [&]()
 	{
 		for (size_t i = 0; i < strBuf.size(); i++)
-			Display->Print('\b');
+		{
+			putchar('\b');
+			putchar(' ');
+			putchar('\b');
+		}
 	};
 
-	std::thread thd(CursorBlink);
-
-	printf("Using \eCA21F6/dev/key\eCCCCCC for keyboard input.\n");
+	printf("Using \x1b[1;34m%s\x1b[0m for keyboard input.\n", keyDevPath);
 	while (true)
 	{
 		size_t bsCount = 0;
@@ -198,36 +129,26 @@ void StartKernelShell()
 			cwd = fs->GetRoot(0);
 		std::string cwdStr = fs->GetByNode(cwd);
 
-		printf("\e34C6EB%s@%s:%s$ \eCCCCCC",
+		printf("\x1b[1;34m%s@%s:%s$ \x1b[0m",
 			   "kernel", "fennix",
 			   cwdStr.c_str());
-		Display->UpdateBuffer();
-
-		Display->GetBufferCursor(&homeX, &homeY);
 
 		KeyboardReport scBuf{};
 		ssize_t nBytes;
 		while (true)
 		{
-			uint32_t __cx, __cy;
-			Display->GetBufferCursor(&__cx, &__cy);
-			CurX.store(__cx);
-			CurY.store(__cy);
-			CurHalt.store(false);
-
 			nBytes = kfd->Read(&scBuf, sizeof(KeyboardReport), 0);
 			if (nBytes == 0)
+			{
+				debug("Empty read from keyboard device!");
 				continue;
+			}
 			if (nBytes < (ssize_t)sizeof(KeyboardReport))
 			{
 				KPrint("Failed to read from keyboard device: %s",
 					   strerror((int)nBytes));
 				return;
 			}
-
-			BlinkerSleep.store(TimeManager->CalculateTarget(250, Time::Units::Milliseconds));
-			CurHalt.store(true);
-			UpdateBlinker();
 
 			const KeyScanCodes &sc = scBuf.Key;
 			switch (sc & ~KEY_PRESSED)
@@ -263,28 +184,14 @@ void StartKernelShell()
 				tabDblPress = false;
 				if (strBuf.size() == 0)
 				{
-					if (unseekX != 0 || unseekY != 0)
-					{
-						Display->SetBufferCursor(unseekX, unseekY);
-						unseekX = unseekY = 0;
-					}
-
 					for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 						printf("%s ", commands[i].Name);
 
-					Display->Print('\n');
-					Display->UpdateBuffer();
+					putchar('\n');
 					goto SecLoopEnd;
 				}
 
-				if (unseekX != 0 || unseekY != 0)
-				{
-					Display->SetBufferCursor(unseekX, unseekY);
-					unseekX = unseekY = 0;
-				}
-
 				strBufBck();
-				Display->UpdateBuffer();
 
 				for (size_t i = 0; i < sizeof(commands) / sizeof(commands[0]); i++)
 				{
@@ -293,9 +200,8 @@ void StartKernelShell()
 
 					strBuf = commands[i].Name;
 					for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
-						Display->Print(strBuf[i]);
+						putchar(strBuf[i]);
 					seekCount = bsCount = strBuf.size();
-					Display->UpdateBuffer();
 					break;
 				}
 				continue;
@@ -312,31 +218,24 @@ void StartKernelShell()
 				{
 					debug("seekCount == bsCount (%d == %d)",
 						  seekCount, bsCount);
-					Display->Print('\b');
+					putchar('\b');
+					putchar(' ');
+					putchar('\b');
 					strBuf.pop_back();
 					seekCount = --bsCount;
-					Display->UpdateBuffer();
 					continue;
 				}
 
-				uint32_t tmpX, tmpY;
-				Display->GetBufferCursor(&tmpX, &tmpY);
-
-				Display->SetBufferCursor(unseekX, unseekY);
 				strBufBck();
 				size_t strSeek = seekCount ? seekCount - 1 : 0;
 				seekCount = strSeek;
 				debug("strSeek: %d: %s", strSeek, strBuf.c_str());
 				strBuf.erase(strSeek);
-				Display->PrintString(strBuf.c_str());
+				printf("%s", strBuf.c_str());
 				debug("after strBuf: %s", strBuf.c_str());
 
-				uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-				Display->SetBufferCursor(tmpX - fx, tmpY);
-				unseekX -= fx;
 
 				bsCount--;
-				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_DELETE:
@@ -354,20 +253,13 @@ void StartKernelShell()
 					continue;
 				}
 
-				uint32_t tmpX, tmpY;
-				Display->GetBufferCursor(&tmpX, &tmpY);
-
-				Display->SetBufferCursor(unseekX, unseekY);
 				strBufBck();
 				debug("seekCount: %d: %s", seekCount, strBuf.c_str());
 				strBuf.erase(seekCount);
-				Display->PrintString(strBuf.c_str());
+				printf("%s", strBuf.c_str());
 				debug("after strBuf: %s", strBuf.c_str());
 
-				Display->SetBufferCursor(tmpX, tmpY);
-				unseekX -= Display->GetCurrentFont()->GetInfo().Width;
 				bsCount--;
-				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_UP_ARROW:
@@ -383,19 +275,16 @@ void StartKernelShell()
 
 				if (unseekX != 0 || unseekY != 0)
 				{
-					Display->SetBufferCursor(unseekX, unseekY);
 					unseekX = unseekY = 0;
 				}
 
 				strBufBck();
-				Display->UpdateBuffer();
 
 				strBuf = history[hIdx]->c_str();
 
 				for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
-					Display->Print(strBuf[i]);
+					putchar(strBuf[i]);
 				seekCount = bsCount = strBuf.size();
-				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_DOWN_ARROW:
@@ -410,35 +299,26 @@ void StartKernelShell()
 				if (hIdx == history.size() - 1)
 				{
 					if (unseekX != 0 || unseekY != 0)
-					{
-						Display->SetBufferCursor(unseekX, unseekY);
 						unseekX = unseekY = 0;
-					}
 
 					hIdx++;
 					strBufBck();
 					seekCount = bsCount = strBuf.size();
-					Display->UpdateBuffer();
 					continue;
 				}
 
 				if (unseekX != 0 || unseekY != 0)
-				{
-					Display->SetBufferCursor(unseekX, unseekY);
 					unseekX = unseekY = 0;
-				}
 
 				strBufBck();
-				Display->UpdateBuffer();
 
 				hIdx++;
 				strBuf = history[hIdx]->c_str();
 
 				for (size_t i = 0; i < strlen(strBuf.c_str()); i++)
-					Display->Print(strBuf[i]);
+					putchar(strBuf[i]);
 
 				seekCount = bsCount = strBuf.size();
-				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_LEFT_ARROW:
@@ -446,16 +326,12 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				UpdateBlinker();
 				if (seekCount == 0)
 					continue;
 
 				debug("orig seekCount: %d", seekCount);
 
 				seekCount--;
-
-				if (unseekX == 0 && unseekY == 0)
-					Display->GetBufferCursor(&unseekX, &unseekY);
 
 				if (ctrlDown)
 				{
@@ -474,27 +350,9 @@ void StartKernelShell()
 					}
 					seekCount++;
 					debug("offset: %d; seekCount: %d", offset, seekCount);
-
-					uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-					uint32_t cx, cy;
-					Display->GetBufferCursor(&cx, &cy);
-					Display->SetBufferCursor(cx - (fx * offset), cy);
-					CurX.store(cx - (fx * offset));
-					CurY.store(cy);
-					UpdateBlinker(true);
-					Display->UpdateBuffer();
 					continue;
 				}
 
-				uint32_t cx, cy;
-				Display->GetBufferCursor(&cx, &cy);
-				uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-				Display->SetBufferCursor(cx - fx, cy);
-
-				CurX.store(cx - fx);
-				CurY.store(cy);
-				UpdateBlinker(true);
-				Display->UpdateBuffer();
 				continue;
 			}
 			case KEY_RIGHT_ARROW:
@@ -502,15 +360,11 @@ void StartKernelShell()
 				if (!(sc & KEY_PRESSED))
 					continue;
 
-				UpdateBlinker();
 				if (seekCount == bsCount)
 					continue;
 				seekCount++;
 
 				debug("orig seekCount: %d", seekCount);
-
-				if (unseekX == 0 && unseekY == 0)
-					Display->GetBufferCursor(&unseekX, &unseekY);
 
 				if (ctrlDown)
 				{
@@ -528,28 +382,9 @@ void StartKernelShell()
 					seekCount--;
 
 					debug("offset: %d; seekCount: %d", offset, seekCount);
-
-					uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-					uint32_t cx, cy;
-					Display->GetBufferCursor(&cx, &cy);
-					Display->SetBufferCursor(cx + (fx * offset), cy);
-
-					CurX.store(cx + (fx * offset));
-					CurY.store(cy);
-					UpdateBlinker(true);
-					Display->UpdateBuffer();
 					continue;
 				}
 
-				uint32_t cx, cy;
-				Display->GetBufferCursor(&cx, &cy);
-				uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-				Display->SetBufferCursor(cx + fx, cy);
-
-				CurX.store(cx + fx);
-				CurY.store(cy);
-				Display->UpdateBuffer();
-				UpdateBlinker(true);
 				continue;
 			}
 			case KEY_HOME:
@@ -560,20 +395,9 @@ void StartKernelShell()
 				if (homeX == 0 || homeY == 0)
 					continue;
 
-				UpdateBlinker();
-				if (unseekX == 0 || unseekY == 0)
-					Display->GetBufferCursor(&unseekX, &unseekY);
-
-				Display->SetBufferCursor(homeX, homeY);
-
 				seekCount = 0;
 
 				debug("seekCount set to 0");
-
-				CurX.store(homeX);
-				CurY.store(homeY);
-				Display->UpdateBuffer();
-				UpdateBlinker(true);
 				continue;
 			}
 			case KEY_END:
@@ -584,16 +408,8 @@ void StartKernelShell()
 				if (unseekX == 0 || unseekY == 0)
 					continue;
 
-				UpdateBlinker();
-				Display->SetBufferCursor(unseekX, unseekY);
 				seekCount = bsCount;
-
 				debug("seekCount set to bsCount (%d)", bsCount);
-
-				CurX.store(unseekX);
-				CurY.store(unseekY);
-				Display->UpdateBuffer();
-				UpdateBlinker(true);
 				continue;
 			}
 			default:
@@ -614,20 +430,18 @@ void StartKernelShell()
 				{
 				case 'C':
 				{
-					Display->Print('^');
-					Display->Print('C');
-					Display->Print('\n');
+					putchar('^');
+					putchar('C');
+					putchar('\n');
 					fixme("No SIGINT handler yet.");
-					Display->UpdateBuffer();
 					goto SecLoopEnd;
 				}
 				case 'D':
 				{
-					Display->Print('^');
-					Display->Print('D');
-					Display->Print('\n');
+					putchar('^');
+					putchar('D');
+					putchar('\n');
 					fixme("No SIGKILL handler yet.");
-					Display->UpdateBuffer();
 					goto SecLoopEnd;
 				}
 				default:
@@ -637,7 +451,7 @@ void StartKernelShell()
 
 			if (c == '\n')
 			{
-				Display->Print(c);
+				putchar(c);
 				if (strBuf.length() > 0)
 				{
 					std::string *hBuff = new std::string(strBuf.c_str());
@@ -648,34 +462,23 @@ void StartKernelShell()
 			}
 			else if (seekCount >= bsCount)
 			{
-				Display->Print(c);
+				putchar(c);
 				strBuf += c;
 				seekCount = ++bsCount;
 			}
 			else
 			{
-				uint32_t tmpX, tmpY;
-				Display->GetBufferCursor(&tmpX, &tmpY);
-
-				if (unseekX != 0 && unseekY != 0)
-					Display->SetBufferCursor(unseekX, unseekY);
 				strBufBck();
 
-				// size_t strSeek = seekCount ? seekCount - 1 : 0;
 				debug("seekCount: %d; \"%s\"", seekCount, strBuf.c_str());
 				strBuf.insert(seekCount, (size_t)1, c);
-				Display->PrintString(strBuf.c_str());
+				printf("%s", strBuf.c_str());
 				debug("after strBuf: %s (seek and bs is +1 [seek: %d; bs: %d])",
 					  strBuf.c_str(), seekCount + 1, bsCount + 1);
 
-				uint32_t fx = Display->GetCurrentFont()->GetInfo().Width;
-				Display->SetBufferCursor(tmpX + fx, tmpY);
-				unseekX += fx;
 				seekCount++;
 				bsCount++;
 			}
-
-			Display->UpdateBuffer();
 		}
 	SecLoopEnd:
 
@@ -817,10 +620,5 @@ void StartKernelShell()
 		printf("%s: command not found\n",
 			   cmd_only.c_str());
 	}
-}
-
-void KShellThread()
-{
-	StartKernelShell();
 	inf_loop;
 }

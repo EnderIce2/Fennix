@@ -400,7 +400,7 @@ namespace APIC
 		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks));
 		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
 		trace("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);
-		KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks.", Ticks);
+		KPrint("APIC Timer: \x1b[1;32m%ld\x1b[0m ticks.", Ticks);
 	}
 
 	Timer::~Timer()

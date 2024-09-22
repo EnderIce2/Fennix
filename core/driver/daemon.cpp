@@ -38,10 +38,12 @@ namespace Driver
 	 * maj = 0
 	 *	min:
 	 *		0 - <ROOT>
-	 *		1 - /dev/null
-	 *		2 - /dev/zero
-	 *		3 - /dev/random
-	 *		4 - /dev/mem
+	 *		1 - /proc/self
+	 *		2 - /dev/null
+	 *		3 - /dev/zero
+	 *		4 - /dev/random
+	 *		5 - /dev/mem
+	 *		6 - /dev/kcon
 	 *
 	 * maj = 1
 	 * 	min:
@@ -103,11 +105,11 @@ namespace Driver
 		{
 			switch (Node->GetMinor())
 			{
-			case 1: /* /dev/null */
+			case 2: /* /dev/null */
 			{
 				return 0;
 			}
-			case 2: /* /dev/zero */
+			case 3: /* /dev/zero */
 			{
 				if (Size <= 0)
 					return 0;
@@ -115,7 +117,7 @@ namespace Driver
 				memset(Buffer, 0, Size);
 				return Size;
 			}
-			case 3: /* /dev/random */
+			case 4: /* /dev/random */
 			{
 				if (Size <= 0)
 					return 0;
@@ -133,7 +135,12 @@ namespace Driver
 					buf[i] = Random::rand64();
 				return Size;
 			}
-			case 4: /* /dev/mem */
+			case 5: /* /dev/mem */
+			{
+				stub;
+				return 0;
+			}
+			case 6: /* /dev/kcon */
 			{
 				stub;
 				return 0;
@@ -209,22 +216,30 @@ namespace Driver
 		{
 			switch (Node->GetMinor())
 			{
-			case 1: /* /dev/null */
+			case 2: /* /dev/null */
 			{
 				return Size;
 			}
-			case 2: /* /dev/zero */
+			case 3: /* /dev/zero */
 			{
 				return Size;
 			}
-			case 3: /* /dev/random */
+			case 4: /* /dev/random */
 			{
 				return Size;
 			}
-			case 4: /* /dev/mem */
+			case 5: /* /dev/mem */
 			{
 				stub;
 				return 0;
+			}
+			case 6: /* /dev/kcon */
+			{
+				char *buf = (char *)Buffer;
+				KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load();
+				for (size_t i = 0; i < Size; i++)
+					vt->Process(buf[i]);
+				return Size;
 			}
 			default:
 				return -ENOENT;
@@ -552,6 +567,7 @@ namespace Driver
 
 		dev->Device = fs->RegisterFileSystem(fsi, dev);
 		dev->SetDevice(0, MinorID++);
+		MinorID++; /* 1 = /proc/self */
 
 		devNode = fs->Mount(fs->GetRoot(0), dev, "/dev");
 		_dev->Parent = devNode->Parent;
@@ -612,6 +628,13 @@ namespace Driver
 
 			   S_IFCHR;
 		createDevice(_dev, devNode, "mem", 0, MinorID++, mode);
+
+		/* c rw- r-- --- */
+		mode = S_IRUSR | S_IWUSR |
+			   S_IRGRP |
+
+			   S_IFCHR;
+		createDevice(_dev, devNode, "kcon", 0, MinorID++, mode);
 
 		/* ------------------------------------------------------ */
 

@@ -42,8 +42,8 @@
 extern void ExPrint(const char *Format, ...);
 extern void DiagnosticDataCollection();
 extern void InitFont();
+extern KernelConsole::FontRenderer CrashFontRenderer;
 
-extern Video::Font *CrashFont;
 extern void *FbBeforePanic;
 
 struct StackFrame
@@ -168,8 +168,7 @@ nsa char *TrimWhiteSpace(char *str)
 
 nsa void ExDumpData(void *Address, unsigned long Length)
 {
-	ExPrint("\eAAAAAA-------------------------------------------------------------------------\n");
-	Display->UpdateBuffer();
+	ExPrint("-------------------------------------------------------------------------\n");
 	unsigned char *AddressChar = (unsigned char *)Address;
 	unsigned char Buffer[17];
 	unsigned long Iterate;
@@ -178,11 +177,10 @@ nsa void ExDumpData(void *Address, unsigned long Length)
 		if ((Iterate % 16) == 0)
 		{
 			if (Iterate != 0)
-				ExPrint("  \e8A78FF%s\eAABBCC\n", Buffer);
-			ExPrint("  \e9E9E9E%04x\eAABBCC ", Iterate);
-			Display->UpdateBuffer();
+				ExPrint("  %s\n", Buffer);
+			ExPrint("  %04x ", Iterate);
 		}
-		ExPrint(" \e4287f5%02x\eAABBCC", AddressChar[Iterate]);
+		ExPrint(" %02x", AddressChar[Iterate]);
 		if ((AddressChar[Iterate] < 0x20) || (AddressChar[Iterate] > 0x7E))
 			Buffer[Iterate % 16] = '.';
 		else
@@ -193,65 +191,38 @@ nsa void ExDumpData(void *Address, unsigned long Length)
 	while ((Iterate % 16) != 0)
 	{
 		ExPrint("   ");
-		Display->UpdateBuffer();
 		Iterate++;
 	}
 
-	ExPrint("  \e8A78FF%s\eAAAAAA\n", Buffer);
+	ExPrint("  %s\n", Buffer);
 	ExPrint("-------------------------------------------------------------------------\n\n.");
-	Display->UpdateBuffer();
 }
 
 nsa void DisplayTopOverlay()
 {
-	Video::Font *f = Display->GetCurrentFont();
-	Video::FontInfo fi = f->GetInfo();
-
-	for (uint32_t i = 0; i < Display->GetWidth; i++)
-	{
-		for (uint32_t j = 0; j < fi.Height + 8; j++)
-		{
-			// uint32_t grayValue = 0x505050 - (j * 0x020202);
-			// Display->SetPixel(i, j, grayValue);
-			Display->SetPixel(i, j, 0x202020);
-		}
-	}
-
-	for (uint32_t i = 0; i < Display->GetWidth; i++)
-		Display->SetPixel(i, fi.Height + 8, 0x404040);
-
-	Display->SetBufferCursor(8, (fi.Height + 8) / 6);
-
-	/* This wouldn't have enough space for a 640x480 screen */
-	// ExPrint("%sMAIN %sDETAILS %sSTACK %sPROCESS \eAAAAAA| ",
-	// 		ActiveScreen == 0 ? "\e00AAFF" : "\eAAAAAA",
-	// 		ActiveScreen == 1 ? "\e00AAFF" : "\eAAAAAA",
-	// 		ActiveScreen == 2 ? "\e00AAFF" : "\eAAAAAA",
-	// 		ActiveScreen == 3 ? "\e00AAFF" : "\eAAAAAA");
-
-	ExPrint("%s %s %s %s \eAAAAAA| ",
-			ActiveScreen == 0 ? "\eAAAAAA"
+	ExPrint("\x1b[H%s %s %s %s \x1b[0m| ",
+			ActiveScreen == 0 ? "\x1b[1;37m"
 								"MAIN   "
-							  : "\e5A5A5A"
+							  : "\x1b[0m"
 								"M",
-			ActiveScreen == 1 ? "\eAAAAAA"
+			ActiveScreen == 1 ? "\x1b[1;37m"
 								"DETAIL "
-							  : "\e5A5A5A"
+							  : "\x1b[0m"
 								"D",
-			ActiveScreen == 2 ? "\eAAAAAA"
+			ActiveScreen == 2 ? "\x1b[1;37m"
 								"STACK  "
-							  : "\e5A5A5A"
+							  : "\x1b[0m"
 								"S",
-			ActiveScreen == 3 ? "\eAAAAAA"
+			ActiveScreen == 3 ? "\x1b[1;37m"
 								"PROCESS"
-							  : "\e5A5A5A"
+							  : "\x1b[0m"
 								"P");
 
 	ExPrint("%s %s %s | ", KERNEL_NAME, KERNEL_ARCH, KERNEL_VERSION);
 	ExPrint("%ld | ", TO_MiB(KernelAllocator.GetFreeMemory()));
 	ExPrint("%s %s", CPU::Hypervisor(), CPU::Vendor());
 
-	Display->SetBufferCursor(0, fi.Height + 10);
+	ExPrint("\x1b[3;1H");
 
 	/* https://imgflip.com/i/77slbl */
 	if ((Random::rand32() % 100) >= 98)
@@ -320,23 +291,12 @@ nsa void DisplayTopOverlay()
 
 nsa void DisplayBottomOverlay()
 {
-	Video::Font *f = Display->GetCurrentFont();
-	Video::FontInfo fi = f->GetInfo();
-
-	for (uint32_t i = 0; i < Display->GetWidth; i++)
-		for (uint32_t j = Display->GetHeight - fi.Height - 8; j < Display->GetHeight; j++)
-			Display->SetPixel(i, j, 0x202020);
-
-	for (uint32_t i = 0; i < Display->GetWidth; i++)
-		Display->SetPixel(i, Display->GetHeight - fi.Height - 8, 0x404040);
-
-	Display->SetBufferCursor(8, Display->GetHeight - fi.Height - 4);
-	ExPrint("\eAAAAAA> \eFAFAFA");
+	ExPrint("\x1b[%d;%dH> \x1b[1;37m", (Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width) - 1, 1);
 }
 
 nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 {
-	ExPrint("\n\eFAFAFAWe're sorry, but the system has encountered a critical error and needs to restart.\n");
+	ExPrint("\nWe're sorry, but the system has encountered a critical error and needs to restart.\n");
 
 	ExPrint("\nError: %s (%s 0x%x)\n",
 #if defined(a86)
@@ -373,15 +333,15 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 	ExPrint("  2. Remove any newly installed hardware.\n");
 	ExPrint("  3. Check for any available updates for your operating system.\n");
 	ExPrint("  4. Uninstall any recently installed drivers or software.\n");
-	ExPrint("  If none of the above steps resolve the issue, create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
+	ExPrint("  If none of the above steps resolve the issue, create a new issue on https://github.com/Fennix-Project/Fennix for further assistance.\n");
 
 	ExPrint("\nUse command 'diag' to create a diagnostic report.\n");
 }
 
 nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
 {
-	ExPrint("\n\eFAFAFAException Frame:\n");
-	ExPrint(" General Purpose Registers:\n\eAAAAAA");
+	ExPrint("\nException Frame:\n");
+	ExPrint(" General Purpose Registers:\n");
 	ExPrint("  RAX: %#lx  RBX: %#lx  RCX: %#lx  RDX: %#lx\n",
 			Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
 	ExPrint("  RSI: %#lx  RDI: %#lx  R8: %#lx  R9: %#lx\n",
@@ -390,28 +350,28 @@ nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
 			Frame->r10, Frame->r11, Frame->r12, Frame->r13);
 	ExPrint("  R14: %#lx  R15: %#lx\n", Frame->r14, Frame->r15);
 
-	ExPrint("\eFAFAFA Control Registers:\n\eAAAAAA");
+	ExPrint(" Control Registers:\n");
 	ExPrint("  CR0: %#lx  CR2: %#lx  CR3: %#lx  CR4: %#lx\n",
 			Frame->cr0, Frame->cr2, Frame->cr3, Frame->cr4);
 	ExPrint("  CR8: %#lx\n", Frame->cr8);
 
-	ExPrint("\eFAFAFA Segment Registers:\n\eAAAAAA");
+	ExPrint(" Segment Registers:\n");
 	ExPrint("  CS: %#lx  SS: %#lx  DS: %#lx  ES: %#lx  FS: %#lx  GS: %#lx\n",
 			Frame->cs, Frame->ss, Frame->ds, Frame->es, Frame->fs, Frame->gs);
 
-	ExPrint("\eFAFAFA Debug Registers:\n\eAAAAAA");
+	ExPrint(" Debug Registers:\n");
 	ExPrint("  DR0: %#lx  DR1: %#lx  DR2: %#lx  DR3: %#lx\n",
 			Frame->dr0, Frame->dr1, Frame->dr2, Frame->dr3);
 	ExPrint("  DR6: %#lx  DR7: %#lx\n", Frame->dr6, Frame->dr7);
 
-	ExPrint("\eFAFAFA Other:\n\eAAAAAA");
+	ExPrint(" Other:\n");
 	ExPrint("  INT: %#lx  ERR: %#lx  RIP: %#lx  RFLAGS: %#lx\n",
 			Frame->InterruptNumber, Frame->ErrorCode,
 			Frame->rip, Frame->rflags.raw);
 	ExPrint("  RSP: %#lx  RBP: %#lx\n",
 			Frame->rsp, Frame->rbp);
 
-	ExPrint("\eFAFAFAException Details:\n");
+	ExPrint("Exception Details:\n");
 	switch (Frame->InterruptNumber)
 	{
 	case CPU::x86::PageFault:
@@ -477,7 +437,7 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 	sf = (struct StackFrame *)Frame->ebp;
 #endif
 
-	ExPrint("\n\eFAFAFAStack trace (%#lx):\n", sf);
+	ExPrint("\nStack trace (%#lx):\n", sf);
 
 	if (!vmm.Check(sf))
 	{
@@ -487,7 +447,7 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 			sf = (struct StackFrame *)ptr;
 		else
 		{
-			ExPrint("\eFF0000< No stack trace available. >\n");
+			ExPrint("\x1b[31m< No stack trace available. >\x1b[0m\n");
 			return;
 		}
 	}
@@ -503,8 +463,8 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 	fIP = Frame->pc;
 #endif
 
-	ExPrint("\eAAAAAA%p", (void *)fIP);
-	ExPrint("\e5A5A5A in ");
+	ExPrint("%p", (void *)fIP);
+	ExPrint(" in ");
 	if ((fIP >= (uintptr_t)&_kernel_start &&
 		 fIP <= (uintptr_t)&_kernel_end))
 	{
@@ -513,15 +473,15 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 		if (offset < 0)
 			offset = -offset;
 
-		ExPrint("\eFAFAFA%s\e5A5A5A+%#lx \eFFAAAA<- Exception\n",
+		ExPrint("%s+%#lx \x1b[31m<- Exception\x1b[0m\n",
 				sym, offset);
 	}
 	else
-		ExPrint("\eFF5555??? \eFFAAAA<- Exception\n");
+		ExPrint("??? \x1b[31m<- Exception\x1b[0m\n");
 
 	if (!sf || !sf->ip || !sf->bp)
 	{
-		ExPrint("\n\eFF0000< No stack trace available. >\n");
+		ExPrint("\n\x1b[31m< No stack trace available. >\x1b[0m\n");
 		return;
 	}
 
@@ -530,8 +490,8 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 		if (!sf->ip)
 			break;
 
-		ExPrint("\eAAAAAA%p", (void *)sf->ip);
-		ExPrint("\e5A5A5A in ");
+		ExPrint("%p", (void *)sf->ip);
+		ExPrint(" in ");
 		if ((sf->ip >= (uintptr_t)&_kernel_start &&
 			 sf->ip <= (uintptr_t)&_kernel_end))
 		{
@@ -540,10 +500,10 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 			if (offset < 0)
 				offset = -offset;
 
-			ExPrint("\eFAFAFA%s\e5A5A5A+%#lx\n", sym, offset);
+			ExPrint("%s+%#lx\n", sym, offset);
 		}
 		else
-			ExPrint("\eFF5555???\n");
+			ExPrint("???\n");
 
 		if (!vmm.Check(sf->bp))
 			return;
@@ -554,17 +514,17 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = true)
 {
 	const char *StatusColor[] = {
-		"FF0000", // Unknown
-		"AAFF00", // Ready
-		"00AA00", // Running
-		"FFAA00", // Sleeping
-		"FFAA00", // Blocked
-		"FFAA00", // Stopped
-		"FFAA00", // Waiting
+		"31m",	 // Unknown
+		"1;33m", // Ready
+		"32m",	 // Running
+		"1;33m", // Sleeping
+		"1;33m", // Blocked
+		"1;33m", // Stopped
+		"1;33m", // Waiting
 
-		"FF00FF", // Core dump
-		"FF0088", // Zombie
-		"FF0000", // Terminated
+		"35m",	 // Core dump
+		"1;31m", // Zombie
+		"31m",	 // Terminated
 	};
 
 	const char *StatusString[] = {
@@ -583,7 +543,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 
 	if (!TaskManager)
 	{
-		ExPrint("\eFF5555Tasking is not initialized\n");
+		ExPrint("Tasking is not initialized\n");
 		return;
 	}
 
@@ -593,7 +553,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 
 	std::vector<Tasking::PCB *> Plist = TaskManager->GetProcessList();
 
-	ExPrint("\n\eFAFAFAProcess list (%ld):\n", Plist.size());
+	ExPrint("\nProcess list (%ld):\n", Plist.size());
 	bool pRdy = false;
 	bool showNote = false;
 	/* FIXME: This is slow */
@@ -620,9 +580,9 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 			}
 		}
 
-		ExPrint("\eAAAAAA-> \eFAFAFA%.*s%s\e8A8A8A(%ld) \e%s%s \e8A8A8A[exe: %s]\n",
+		ExPrint("-> %.*s%s(%ld) \x1b[%s%s\x1b[0m [exe: %s]\n",
 				textLimit, Process->Name,
-				strlen(Process->Name) > textLimit ? "\e8A8A8A..." : "",
+				strlen(Process->Name) > textLimit ? "..." : "",
 				Process->ID, StatusColor[Process->State.load()],
 				StatusString[Process->State.load()],
 				Process->Executable
@@ -641,22 +601,24 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 				continue;
 			}
 
-			ExPrint("\eAAAAAA  -> \eFAFAFA%.*s%s\e8A8A8A(%ld) \e%s%s\n",
+			ExPrint("  -> %.*s%s(%ld) \x1b[%s%s\x1b[0m\n",
 					textLimit, Thread->Name,
-					strlen(Thread->Name) > textLimit ? "\e8A8A8A..." : "",
+					strlen(Thread->Name) > textLimit ? "..." : "",
 					Thread->ID, StatusColor[Thread->State.load()],
 					StatusString[Thread->State.load()]);
 		}
 		if (tRdy)
-			ExPrint("\eAAAAAA%s  -> \e8A8A8A...\n");
+			ExPrint("  -> ...\n");
 	}
 	if (pRdy)
-		ExPrint("\eAAAAAA-> \e8A8A8A...\n");
+		ExPrint("-> ...\n");
 
 	if (showNote)
-		ExPrint("\e5A5A5ANote: Some processes may not be displayed.\n");
+		ExPrint("Note: Some processes may not be displayed.\n");
 }
 
+void UserInput(char *Input);
+void ArrowInput(uint8_t key);
 CPU::ExceptionFrame *ExFrame;
 nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 {
@@ -668,11 +630,10 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 	// 	memcpy(BufferBeforeUpdate, Display->GetBuffer, Display->GetSize);
 
 	Display->ClearBuffer();
+	ExPrint("\x1b[2J\x1b[H");
 	if (Config.InterruptsOnCrash == false)
 	{
-		Display->SetBufferCursor(0, 0);
 		DisplayMainScreen(Frame);
-		Display->UpdateBuffer();
 		CPU::Stop();
 	}
 
@@ -680,21 +641,122 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 
 	DisplayMainScreen(Frame);
 
-	Display->UpdateBuffer();
 	new CrashKeyboardDriver;
 
 	DisplayBottomOverlay();
-	Display->UpdateBuffer();
-	CPU::Halt(true);
+	// CPU::Halt(true);
+
+#ifdef DEBUG
+	static int once = 0;
+	static uint8_t com4 = 0xFF;
+	if (!once++)
+		com4 = inb(0x2E8);
+	if (com4 == 0xFF)
+		CPU::Halt(true);
+
+	char UserInputBuffer[256]{'\0'};
+	int BackSpaceLimit = 0;
+
+	while (true)
+	{
+		while ((inb(0x2E8 + 5) & 1) == 0)
+			CPU::Pause();
+		char key = inb(0x2E8);
+		// debug("key: %d", key);
+
+		if (key == '\x7f') /* Backspace (DEL) */
+		{
+			if (BackSpaceLimit <= 0)
+				continue;
+
+			char keyBuf[5] = {'\b', '\x1b', '[', 'K', '\0'};
+			ExPrint(keyBuf);
+			backspace(UserInputBuffer);
+			BackSpaceLimit--;
+			continue;
+		}
+		else if (key == '\x0d') /* Enter (CR) */
+		{
+			UserInput(UserInputBuffer);
+			BackSpaceLimit = 0;
+			UserInputBuffer[0] = '\0';
+			continue;
+		}
+		else if (key == '\x1b') /* Escape */
+		{
+			char tmp[16]{'\0'};
+			append(tmp, key);
+
+			while ((inb(0x2E8 + 5) & 1) == 0)
+				CPU::Pause();
+			char key = inb(0x2E8);
+			append(tmp, key);
+
+			if (key == '[')
+			{
+				// 27 91
+				// <  68
+				// > 67
+				// 	down 66
+				// 	up 65
+				while ((inb(0x2E8 + 5) & 1) == 0)
+					CPU::Pause();
+				key = inb(0x2E8);
+				append(tmp, key);
+				switch (key)
+				{
+				case 'A':
+					key = KEY_D_UP;
+					break;
+				case 'B':
+					key = KEY_D_DOWN;
+					break;
+				case 'C':
+					key = KEY_D_RIGHT;
+					break;
+				case 'D':
+					key = KEY_D_LEFT;
+					break;
+				default:
+				{
+					for (size_t i = 0; i < strlen(tmp); i++)
+					{
+						if ((int)sizeof(UserInputBuffer) <= BackSpaceLimit)
+							continue;
+
+						append(UserInputBuffer, tmp[i]);
+						BackSpaceLimit++;
+						char keyBuf[2] = {(char)tmp[i], '\0'};
+						ExPrint(keyBuf);
+					}
+					continue;
+				}
+				}
+
+				ArrowInput(key);
+				continue;
+			}
+		}
+
+		if ((int)sizeof(UserInputBuffer) <= BackSpaceLimit)
+			continue;
+
+		append(UserInputBuffer, key);
+		BackSpaceLimit++;
+		char keyBuf[2] = {(char)key, '\0'};
+		ExPrint(keyBuf);
+	}
+#endif
 }
 
 nsa void DisplayStackSmashing()
 {
 	InitFont();
+	ExPrint("\x1b[2J\x1b[H");
 	Display->ClearBuffer();
 	DisplayTopOverlay();
 
-	ExPrint("\n\eFAFAFAWe're sorry, but the system has encountered a critical error and needs to restart.\n");
+	ExPrint("\nWe're sorry, but the system has encountered a critical error and needs to restart.\n");
 	ExPrint("\nError: Stack Smashing In Kernel Mode\n");
 
 	CPUData *core = GetCurrentCPU();
@@ -708,9 +770,7 @@ nsa void DisplayStackSmashing()
 
 	ExPrint("\nWhat to do:\n");
 	ExPrint(" This is a kernel bug.\n");
-	ExPrint(" Please create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
-
-	Display->UpdateBuffer();
+	ExPrint(" Please create a new issue on https://github.com/Fennix-Project/Fennix for further assistance.\n");
 
 	/* TODO: Add additional info */
 }
@@ -718,10 +778,11 @@ nsa void DisplayStackSmashing()
 nsa void DisplayBufferOverflow()
 {
 	InitFont();
+	ExPrint("\x1b[2J\x1b[H");
 	Display->ClearBuffer();
 	DisplayTopOverlay();
 
-	ExPrint("\n\eFAFAFAWe're sorry, but the system has encountered a critical error and needs to restart.\n");
+	ExPrint("\nWe're sorry, but the system has encountered a critical error and needs to restart.\n");
 	ExPrint("\nError: Buffer Overflow In Kernel Mode\n");
 
 	CPUData *core = GetCurrentCPU();
@@ -735,9 +796,7 @@ nsa void DisplayBufferOverflow()
 
 	ExPrint("\nWhat to do:\n");
 	ExPrint(" This is a kernel bug.\n");
-	ExPrint(" Please create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
-
-	Display->UpdateBuffer();
+	ExPrint(" Please create a new issue on https://github.com/Fennix-Project/Fennix for further assistance.\n");
 
 	/* TODO: Add additional info */
 }
@@ -745,10 +804,11 @@ nsa void DisplayBufferOverflow()
 nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expression)
 {
 	InitFont();
+	ExPrint("\x1b[2J\x1b[H");
 	Display->ClearBuffer();
 	DisplayTopOverlay();
 
-	ExPrint("\n\eFAFAFAWe're sorry, but the system has encountered a critical error and needs to restart.\n");
+	ExPrint("\nWe're sorry, but the system has encountered a critical error and needs to restart.\n");
 	ExPrint("\nError: Assertion Failed\n");
 	ExPrint("In file \"%s\" at line %d, \"%s\" failed\n",
 			File, Line, Expression);
@@ -764,7 +824,7 @@ nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expressi
 
 	ExPrint("\nWhat to do:\n");
 	ExPrint(" This is a kernel bug.\n");
-	ExPrint(" Please create a new issue on \e00AAFFhttps://github.com/Fennix-Project/Fennix\eFAFAFA for further assistance.\n");
+	ExPrint(" Please create a new issue on https://github.com/Fennix-Project/Fennix for further assistance.\n");
 
 	CPU::ExceptionFrame ef;
 	// Fill only the necessary fields
@@ -789,7 +849,6 @@ nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expressi
 	ef.ebp = ef.esp = (uint32_t)stk;
 #endif
 	DisplayStackScreen(&ef);
-	Display->UpdateBuffer();
 
 	/* TODO: Add additional info */
 }
@@ -817,6 +876,7 @@ nsa void ArrowInput(uint8_t key)
 	}
 
 	Display->ClearBuffer();
+	ExPrint("\x1b[2J");
 	DisplayTopOverlay();
 
 	switch (ActiveScreen)
@@ -838,31 +898,31 @@ nsa void ArrowInput(uint8_t key)
 	}
 
 	DisplayBottomOverlay();
-	Display->UpdateBuffer();
 }
 
 nsa void UserInput(char *Input)
 {
 	debug("User input: %s", Input);
 	Display->ClearBuffer();
+	ExPrint("\x1b[2J");
 	DisplayTopOverlay();
 
 	if (strcmp(Input, "help") == 0)
 	{
 		ExPrint("Commands:\n");
-		ExPrint("\eAAAAAA  help              - Display this help message.\n");
-		ExPrint("\eCACACA  clear             - Clear the screen.\n");
-		ExPrint("\eAAAAAA  exit              - Shutdown the device.\n");
-		ExPrint("\eCACACA  reboot            - Reboot the device.\n");
-		ExPrint("\eAAAAAA  bitmap            - Display the kernel's bitmap.\n");
-		ExPrint("\eCACACA  mem               - Display memory information.\n");
-		ExPrint("\eAAAAAA  dump [addr] [len] - Dump [len] bytes from [addr].\n");
-		ExPrint("\eCACACA  diag              - Collect diagnostic information.\n");
-		ExPrint("\eAAAAAA  screen            - Display the final output prior to system panic.\n");
+		ExPrint("\x1b[1;37m  help              - Display this help message.\n");
+		ExPrint("\x1b[0m  clear             - Clear the screen.\n");
+		ExPrint("\x1b[1;37m  exit              - Shutdown the device.\n");
+		ExPrint("\x1b[0m  reboot            - Reboot the device.\n");
+		ExPrint("\x1b[1;37m  bitmap            - Display the kernel's bitmap.\n");
+		ExPrint("\x1b[0m  mem               - Display memory information.\n");
+		ExPrint("\x1b[1;37m  dump [addr] [len] - Dump [len] bytes from [addr].\n");
+		ExPrint("\x1b[0m  diag              - Collect diagnostic information.\n");
+		ExPrint("\x1b[1;37m  screen            - Display the final output prior to system panic.\n");
 	}
 	else if (strcmp(Input, "clear") == 0)
 	{
-		Display->ClearBuffer();
+		ExPrint("\x1b[2J");
 		DisplayTopOverlay();
 	}
 	else if (strcmp(Input, "exit") == 0)
@@ -871,14 +931,15 @@ nsa void UserInput(char *Input)
 
 		const char msg[] = "Shutting down...";
 		size_t msgLen = strlen(msg);
-		size_t msgPixels = msgLen * CrashFont->GetInfo().Width;
+		size_t msgPixels = msgLen * CrashFontRenderer.CurrentFont->GetInfo().Width;
 		uint32_t x = uint32_t((Display->GetWidth - msgPixels) / 2);
-		uint32_t y = uint32_t((Display->GetHeight - CrashFont->GetInfo().Height) / 2);
-		Display->SetBufferCursor(x, y);
-		Display->PrintString("\eAAAAAA");
-		Display->PrintString(msg, CrashFont);
+		uint32_t y = uint32_t((Display->GetHeight - CrashFontRenderer.CurrentFont->GetInfo().Height) / 2);
+		x /= CrashFontRenderer.CurrentFont->GetInfo().Width;
+		y /= CrashFontRenderer.CurrentFont->GetInfo().Height;
+		ExPrint("\x1b[2J");
+		ExPrint("\x1b[%d;%dH", y, x);
+		ExPrint("\x1b[30;41m%s\x1b[0m\x1b[H", msg);
 
-		Display->UpdateBuffer();
 		PowerManager->Shutdown();
 		CPU::Stop();
 	}
@@ -888,42 +949,37 @@ nsa void UserInput(char *Input)
 
 		const char msg[] = "Rebooting...";
 		size_t msgLen = strlen(msg);
-		size_t msgPixels = msgLen * CrashFont->GetInfo().Width;
+		size_t msgPixels = msgLen * CrashFontRenderer.CurrentFont->GetInfo().Width;
 		uint32_t x = uint32_t((Display->GetWidth - msgPixels) / 2);
-		uint32_t y = uint32_t((Display->GetHeight - CrashFont->GetInfo().Height) / 2);
-		Display->SetBufferCursor(x, y);
-		Display->PrintString("\eAAAAAA");
-		Display->PrintString(msg, CrashFont);
+		uint32_t y = uint32_t((Display->GetHeight - CrashFontRenderer.CurrentFont->GetInfo().Height) / 2);
+		x /= CrashFontRenderer.CurrentFont->GetInfo().Width;
+		y /= CrashFontRenderer.CurrentFont->GetInfo().Height;
+		ExPrint("\x1b[2J");
+		ExPrint("\x1b[%d;%dH", y, x);
+		ExPrint("\x1b[30;41m%s\x1b[0m\x1b[H", msg);
 
-		Display->UpdateBuffer();
 		PowerManager->Reboot();
 		CPU::Stop();
 	}
 	else if (strncmp(Input, "bitmap", 6) == 0)
 	{
 		Bitmap bm = KernelAllocator.GetPageBitmap();
-		Video::Font *oldFont = CrashFont;
-		CrashFont = Display->GetDefaultFont();
 
-		ExPrint("\n\eAAAAAA[0%%] %08ld: ", 0);
+		ExPrint("\n[0%%] %08ld: ", 0);
 		for (size_t i = 0; i < bm.Size; i++)
 		{
 			if (bm.Get(i))
-				Display->PrintString("\eFF0000");
+				ExPrint("\x1b[31m1\x1b[0m");
 			else
-				Display->PrintString("\e00FF00");
-			Display->Print('0');
+				ExPrint("\x1b[32m0\x1b[0m");
 			if (i % 128 == 127)
 			{
 				short Percentage = s_cst(short, (i * 100) / bm.Size);
-				ExPrint("\n\eAAAAAA[%03ld%%] %08ld: ", Percentage, i);
-				Display->UpdateBuffer();
+				ExPrint("\n[%03ld%%] %08ld: ", Percentage, i);
 			}
 		}
-		ExPrint("\n\eAAAAAA--- END OF BITMAP ---\nBitmap size: %ld\n\n.", bm.Size);
+		ExPrint("\n--- END OF BITMAP ---\nBitmap size: %ld\n\n.", bm.Size);
 		DisplayTopOverlay();
-		Display->UpdateBuffer();
-		CrashFont = oldFont;
 	}
 	else if (strcmp(Input, "mem") == 0)
 	{
@@ -932,17 +988,17 @@ nsa void UserInput(char *Input)
 		uint64_t Free = KernelAllocator.GetFreeMemory();
 		uint64_t Reserved = KernelAllocator.GetReservedMemory();
 
-		ExPrint("\e22AA44Total: %ld bytes\n\eFF0000Used: %ld bytes\n\e00FF00Free: %ld bytes\n\eFF00FFReserved: %ld bytes\n", Total, Used, Free, Reserved);
+		ExPrint("\x1b[1;32mTotal: %ld bytes\n\x1b[1;31mUsed: %ld bytes\n\x1b[1;32mFree: %ld bytes\n\x1b[1;35mReserved: %ld bytes\n", Total, Used, Free, Reserved);
 		int Progress = s_cst(int, (Used * 100) / Total);
 		int ReservedProgress = s_cst(int, (Reserved * 100) / Total);
-		ExPrint("\e22AA44%3d%% \eCCCCCC[", Progress);
+		ExPrint("\x1b[1;32m%3d%% \x1b[0m[", Progress);
 		for (int i = 0; i < Progress; i++)
-			ExPrint("\eFF0000|");
+			ExPrint("\x1b[1;31m|");
 		for (int i = 0; i < 100 - Progress; i++)
-			ExPrint("\e00FF00|");
+			ExPrint("\x1b[1;32m|");
 		for (int i = 0; i < ReservedProgress; i++)
-			ExPrint("\eFF00FF|");
-		ExPrint("\eCCCCCC]\eAAAAAA\n");
+			ExPrint("\x1b[1;35m|");
+		ExPrint("\x1b[0m]\n");
 	}
 	else if (strncmp(Input, "dump", 4) == 0)
 	{
@@ -951,7 +1007,7 @@ nsa void UserInput(char *Input)
 		char *len = strtok(NULL, " ");
 		if (addr == NULL || len == NULL)
 		{
-			ExPrint("\eFF0000Invalid arguments\n");
+			ExPrint("\x1b[31mInvalid arguments\n");
 			goto End;
 		}
 
@@ -968,7 +1024,7 @@ nsa void UserInput(char *Input)
 			{
 				if (!vmm.Check((void *)adr))
 				{
-					ExPrint("\eFFA500Address %#lx is not mapped\n", adr);
+					ExPrint("\x1b[31mAddress %#lx is not mapped\n", adr);
 					IsRangeValid = false;
 				}
 			}
@@ -977,11 +1033,7 @@ nsa void UserInput(char *Input)
 		if (IsRangeValid)
 		{
 			debug("Dumping %ld bytes from %#lx\n", Length, Address);
-
-			Video::Font *oldFont = CrashFont;
-			CrashFont = Display->GetDefaultFont();
 			ExDumpData((void *)Address, (unsigned long)Length);
-			CrashFont = oldFont;
 		}
 	}
 	else if (strcmp(Input, "diag") == 0)
@@ -992,11 +1044,10 @@ nsa void UserInput(char *Input)
 	{
 		if (unlikely(FbBeforePanic == nullptr))
 		{
-			ExPrint("\eFF0000No screen data available\n");
+			ExPrint("No screen data available\n");
 			goto End;
 		}
 		memcpy(Display->GetBuffer, FbBeforePanic, Display->GetSize);
-		Display->UpdateBuffer();
 		return;
 	}
 #ifdef DEBUG
@@ -1018,5 +1069,4 @@ nsa void UserInput(char *Input)
 
 End:
 	DisplayBottomOverlay();
-	Display->UpdateBuffer();
 }

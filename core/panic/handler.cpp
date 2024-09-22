@@ -22,6 +22,7 @@
 #include <lock.hpp>
 #include <rand.hpp>
 #include <uart.hpp>
+#include <kcon.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cpu.hpp>
@@ -38,6 +39,8 @@
 
 #include "../../kernel.h"
 
+using namespace KernelConsole;
+
 extern const char *x86ExceptionMnemonics[];
 extern void DisplayCrashScreen(CPU::ExceptionFrame *);
 extern bool UserModeExceptionHandler(CPU::ExceptionFrame *);
@@ -45,13 +48,43 @@ extern void DisplayStackSmashing();
 extern void DisplayBufferOverflow();
 extern void DisplayAssertionFailed(const char *, int, const char *);
 
-Video::Font *CrashFont = nullptr;
 void *FbBeforePanic = nullptr;
 size_t FbPagesBeforePanic = 0;
+FontRenderer CrashFontRenderer;
+
+int ExTermColors[] = {
+	[TerminalColor::BLACK] = 0x000000,
+	[TerminalColor::RED] = 0xAA0000,
+	[TerminalColor::GREEN] = 0x00AA00,
+	[TerminalColor::YELLOW] = 0xAA5500,
+	[TerminalColor::BLUE] = 0x0000AA,
+	[TerminalColor::MAGENTA] = 0xAA00AA,
+	[TerminalColor::CYAN] = 0x00AAAA,
+	[TerminalColor::GREY] = 0xAAAAAA,
+};
+
+int ExTermBrightColors[] = {
+	[TerminalColor::BLACK] = 0x858585,
+	[TerminalColor::RED] = 0xFF5555,
+	[TerminalColor::GREEN] = 0x55FF55,
+	[TerminalColor::YELLOW] = 0xFFFF55,
+	[TerminalColor::BLUE] = 0x5555FF,
+	[TerminalColor::MAGENTA] = 0xFF55FF,
+	[TerminalColor::CYAN] = 0x55FFFF,
+	[TerminalColor::GREY] = 0xFFFFFF,
+};
+
+void paint_callback(TerminalCell *cell, long x, long y)
+{
+	if (cell->attr.Bright)
+		CrashFontRenderer.Paint(x, y, cell->c, ExTermBrightColors[cell->attr.Foreground], ExTermColors[cell->attr.Background]);
+	else
+		CrashFontRenderer.Paint(x, y, cell->c, ExTermColors[cell->attr.Foreground], ExTermColors[cell->attr.Background]);
+}
 
 nsa void __printfWrapper(char c, void *)
 {
-	Display->Print(c, CrashFont, true);
+	KernelConsole::Terminals[15]->Process(c);
 }
 
 nsa void ExPrint(const char *Format, ...)
@@ -120,11 +153,17 @@ nsa void InitFont()
 	}
 	memcpy(FbBeforePanic, Display->GetBuffer, Display->GetSize);
 
-	if (CrashFont)
-		return;
-	CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
-								&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
-								Video::FontType::PCScreenFont2);
+	if (CrashFontRenderer.CurrentFont == nullptr)
+		CrashFontRenderer.CurrentFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
+														&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
+														Video::FontType::PCScreenFont2);
+
+	if (Terminals[15] == nullptr)
+	{
+		size_t Cols = Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width;
+		size_t Rows = Display->GetHeight / CrashFontRenderer.CurrentFont->GetInfo().Height;
+		Terminals[15] = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
+	}
 }
 
 std::atomic<bool> UnrecoverableLock = false;
@@ -137,7 +176,7 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 			for (uint32_t y = 0; y < Display->GetHeight; y++)
 				Display->SetPixel(x, y, 0xFF250500);
 
-		Display->SetBufferCursor(0, 0);
+		ExPrint("\x1b[H");
 	}
 
 	CPUData *core = GetCurrentCPU();
@@ -145,8 +184,8 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 	while (UnrecoverableLock.exchange(true, std::memory_order_acquire))
 		CPU::Pause();
 
-	ExPrint("\eFFFFFF-----------------------------------------------\n");
-	ExPrint("Unrecoverable exception %#lx on CPU %d\n",
+	ExPrint("\x1b[0m-----------------------------------------------\n");
+	ExPrint("\x1b[30;41mUnrecoverable exception %#lx on CPU %d\n",
 			Frame->InterruptNumber, core->ID);
 #if defined(a86)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",
@@ -191,7 +230,7 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 
 nsa __noreturn void HandleExceptionInsideException(CPU::ExceptionFrame *Frame)
 {
-	ExPrint("\eFFFFFF-----------------------------------------------\n");
+	ExPrint("\x1b[0m-----------------------------------------------\n");
 	ExPrint("Exception inside exception: %#lx at %#lx\n",
 			Frame->InterruptNumber,
 #if defined(a64)
@@ -282,14 +321,13 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 	{
 		const char msg[] = "Entering in panic mode...";
 		size_t msgLen = strlen(msg);
-		size_t msgPixels = msgLen * CrashFont->GetInfo().Width;
+		size_t msgPixels = msgLen * CrashFontRenderer.CurrentFont->GetInfo().Width;
 		uint32_t x = uint32_t((Display->GetWidth - msgPixels) / 2);
-		uint32_t y = uint32_t((Display->GetHeight - CrashFont->GetInfo().Height) / 2);
-		Display->SetBufferCursor(x, y);
-		Display->PrintString("\eFF2525");
-		Display->PrintString(msg, CrashFont);
-		Display->SetBufferCursor(0, 0);
-		Display->UpdateBuffer();
+		uint32_t y = uint32_t((Display->GetHeight - CrashFontRenderer.CurrentFont->GetInfo().Height) / 2);
+		x /= CrashFontRenderer.CurrentFont->GetInfo().Width;
+		y /= CrashFontRenderer.CurrentFont->GetInfo().Height;
+		printf("\x1b[2J\x1b[%d;%dH", y, x);
+		printf("\x1b[30;41m%s\x1b[0m\x1b[H", msg);
 	}
 
 	if (DriverManager)
@@ -314,12 +352,16 @@ nsa void BaseBufferStackError(bool Stack)
 		do it for us if we return. */
 	CPU::PageTable(KernelPageTable);
 
-	if (CrashFont == nullptr)
+	if (CrashFontRenderer.CurrentFont == nullptr)
+		CrashFontRenderer.CurrentFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
+														&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
+														Video::FontType::PCScreenFont2);
+
+	if (Terminals[15] == nullptr)
 	{
-		/* Hope we won't crash here */
-		CrashFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_start,
-									&_binary_files_tamsyn_font_1_11_Tamsyn8x16b_psf_end,
-									Video::FontType::PCScreenFont2);
+		size_t Cols = Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width;
+		size_t Rows = Display->GetHeight / CrashFontRenderer.CurrentFont->GetInfo().Height;
+		Terminals[15] = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
 	}
 
 	ExceptionLock.store(true, std::memory_order_release);

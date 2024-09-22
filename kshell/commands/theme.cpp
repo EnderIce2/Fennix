@@ -19,7 +19,7 @@
 
 #include "../../kernel.h"
 
-void cmd_clear(const char *)
+void cmd_theme(const char *args)
 {
-	printf("\x1b[2J");
+	KernelConsole::SetTheme(args);
 }

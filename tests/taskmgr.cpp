@@ -123,8 +123,9 @@ void TaskMgr()
 		}
 
 		uint32_t tmpX, tmpY;
-		Display->GetBufferCursor(&tmpX, &tmpY);
-		Display->SetBufferCursor(0, 0);
+		fixme("cursor 127-128; 179");
+		// Display->GetBufferCursor(&tmpX, &tmpY);
+		// Display->SetBufferCursor(0, 0);
 		printf("\eF02C21Task Manager\n");
 		static uint64_t OldSystemTime = 0;
 		foreach (auto Proc in TaskManager->GetProcessList())
@@ -175,7 +176,7 @@ void TaskMgr()
 #endif
 		if (sanity > 1000)
 			sanity = 0;
-		Display->SetBufferCursor(tmpX, tmpY);
+		// Display->SetBufferCursor(tmpX, tmpY);
 		if (!Config.Quiet)
 			Display->UpdateBuffer();
 

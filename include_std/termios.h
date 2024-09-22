@@ -170,10 +170,7 @@ struct termios
 	tcflag_t c_oflag;
 	tcflag_t c_cflag;
 	tcflag_t c_lflag;
-	cc_t c_line;
 	cc_t c_cc[NCCS];
-	speed_t c_ispeed;
-	speed_t c_ospeed;
 };
 
 struct winsize
@@ -182,6 +179,12 @@ struct winsize
 	unsigned short ws_col;
 	unsigned short ws_xpixel;
 	unsigned short ws_ypixel;
+};
+
+struct ttysize
+{
+	int ts_lines;
+	int ts_cols;
 };
 
 #endif // !__FENNIX_KERNEL_TERMIOS_H__

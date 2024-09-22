@@ -478,7 +478,7 @@ namespace APIC
 
 		trace("%d APIC Timer %d ticks in.",
 			  GetCurrentCPU()->ID, Ticks);
-		KPrint("APIC Timer: \e8888FF%ld\eCCCCCC ticks.", Ticks);
+		KPrint("APIC Timer: \x1b[1;32m%ld\x1b[0m ticks.", Ticks);
 	}
 
 	Timer::~Timer()

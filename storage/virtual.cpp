@@ -29,10 +29,7 @@ namespace vfs
 		min:
 			0 - <ROOT>
 			1 - /proc/self
-			2 - /dev/null
-			3 - /dev/zero
-			4 - /dev/random
-			5 - /dev/mem
+			...
 	*/
 
 	int __vfs_Lookup(struct Inode *_Parent, const char *Name, struct Inode **Result)
@@ -176,8 +173,6 @@ namespace vfs
 		self->Node->Device = FileSystemRoots->Node.Device;
 		self->Node->SetDevice(0, 1);
 		self->Node->Flags = iFlags;
-
-		new vfs::PTMXDevice();
 	}
 
 	dev_t Virtual::EarlyReserveDevice()

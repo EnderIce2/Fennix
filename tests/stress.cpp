@@ -78,14 +78,14 @@ void StressKernel()
 		Tasking::PCB *pcb = nullptr;
 		if (TO_MiB(KernelAllocator.GetFreeMemory()) < 20)
 		{
-			KPrint("\eE85230Not enough memory left!");
+			KPrint("\x1b[1;31;41mNot enough memory left!");
 			goto End;
 		}
 
 		ptr = KernelAllocator.RequestPages(TO_PAGES(chunk));
 		if (ptr == nullptr)
 		{
-			KPrint("\eE85230Failed to allocate memory!");
+			KPrint("\x1b[1;31;41mFailed to allocate memory!");
 			KPrint("Score is: %d MiB (current is %d MiB)",
 				   TO_MiB(highestScore.load()), TO_MiB(totalAllocated.load()));
 			continue;

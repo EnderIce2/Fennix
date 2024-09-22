@@ -26,6 +26,7 @@
 #include <lock.hpp>
 #include <printf.h>
 #include <exec.hpp>
+#include <kcon.hpp>
 #include <cwalk.h>
 #include <vm.hpp>
 #include <vector>
@@ -83,6 +84,7 @@ void KernelMainThread()
 	DriverManager->PreloadDrivers();
 	DriverManager->LoadAllDrivers();
 
+	KernelConsole::LateInit();
 #ifdef DEBUG
 	// TaskManager->CreateThread(thisProcess,
 	// 						  Tasking::IP(KShellThread))
@@ -96,12 +98,12 @@ void KernelMainThread()
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
-		KPrint("\eE85230Failed to start %s! Error: %s (%d)",
+		KPrint("\x1b[1;37;41mFailed to start %s! Error: %s (%d)",
 			   Config.InitPath, strerror(tid), tid);
 		goto Exit;
 	}
 
-	KPrint("Waiting for \e22AAFF%s\eCCCCCC to start...",
+	KPrint("Waiting for \x1b[32m%s\x1b[0m to start...",
 		   Config.InitPath);
 	thisThread->SetPriority(Tasking::Idle);
 
@@ -110,7 +112,7 @@ void KernelMainThread()
 	TaskManager->WaitForThread(initThread);
 	ExitCode = initThread->GetExitCode();
 Exit:
-	KPrint("\eE85230Userspace process exited with code %d (%#x)",
+	KPrint("\x1b[31mUserspace process exited with code %d (%#x)",
 		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
 
 	KPrint("Dropping to kernel shell");

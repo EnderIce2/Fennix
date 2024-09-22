@@ -25,6 +25,7 @@
 #include <printf.h>
 #include <lock.hpp>
 #include <uart.hpp>
+#include <kcon.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cargs.h>
@@ -63,8 +64,9 @@ Driver::Manager *DriverManager = nullptr;
 
 EXTERNC void putchar(char c)
 {
-	if (Display)
-		Display->Print(c);
+	KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
+	if (vt != nullptr)
+		vt->Process(c);
 	else
 		UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
 }
@@ -79,20 +81,20 @@ EXTERNC void _KPrint(const char *Format, va_list Args)
 		if (Nanoseconds != 0)
 		{
 #if defined(a64)
-			printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
 #elif defined(a32)
-			printf("\eCCCCCC[\e00AEFF%llu.%07llu\eCCCCCC] ",
+			printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
 #elif defined(aa64)
-			printf("\eCCCCCC[\e00AEFF%lu.%07lu\eCCCCCC] ",
+			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
 #endif
 		}
 	}
 
 	vprintf(Format, Args);
-	printf("\eCCCCCC\n");
+	printf("\x1b[0m\n");
 	if (!Config.Quiet && Display)
 		Display->UpdateBuffer();
 }
@@ -119,26 +121,28 @@ EXTERNC void KPrint(const char *Format, ...)
 EXTERNC NIF void Main()
 {
 	Display = new Video::Display(bInfo.Framebuffer[0]);
+	KernelConsole::EarlyInit();
 
-	KPrint("%s - %s [\e058C19%s\eFFFFFF]",
+	printf("\x1b[H\x1b[2J");
+	KPrint("%s - %s [\x1b[32m%s\x1b[0m]",
 		   KERNEL_NAME, KERNEL_VERSION, GIT_COMMIT_SHORT);
-	KPrint("CPU: \e058C19%s \e8822AA%s \e8888FF%s",
+	KPrint("CPU: \x1b[32m%s \x1b[31m%s \x1b[37m%s",
 		   CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
 	if (Display->GetFramebufferStruct().BitsPerPixel != 32)
-		KPrint("\eFF5500Framebuffer is not 32 bpp. This may cause issues.");
+		KPrint("\x1b[1;31mFramebuffer is not 32 bpp. This may cause issues.");
 
 	if (Display->GetWidth < 640 || Display->GetHeight < 480)
 	{
-		KPrint("\eFF5500Minimum supported resolution is 640x480!");
-		KPrint("\eFF5500Some elements may not be displayed correctly.");
+		KPrint("\x1b[1;31mMinimum supported resolution is 640x480!");
+		KPrint("\x1b[1;31mSome elements may not be displayed correctly.");
 	}
 
 	debug("CPU: %s %s %s",
 		  CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
 
 	if (DebuggerIsAttached)
-		KPrint("\eFFA500Kernel debugger detected.");
+		KPrint("Kernel debugger detected.");
 
 #if defined(a86) && defined(DEBUG)
 	uint8_t lpt1 = inb(0x378);
@@ -171,7 +175,7 @@ EXTERNC NIF void Main()
 	if (com4 != 0xFF)
 		KPrint("COM4 is present.");
 
-	KPrint("Display: %dx%d %d bpp \eFF0000R:%d %d \e00FF00G: %d %d \e0000FFB: %d %d",
+	KPrint("Display: %dx%d %d bpp R:%d %d G:%d %d B:%d %d",
 		   Display->GetFramebufferStruct().Width,
 		   Display->GetFramebufferStruct().Height,
 		   Display->GetFramebufferStruct().BitsPerPixel,
@@ -236,7 +240,7 @@ EXTERNC NIF void Main()
 	KPrint("Initializing Filesystem");
 	KernelVFS();
 
-	KPrint("\e058C19################################");
+	KPrint("\x1b[1;32m################################");
 	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
 	TaskManager->StartScheduler();
 	CPU::Halt(true);

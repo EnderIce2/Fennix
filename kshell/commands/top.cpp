@@ -41,16 +41,16 @@ const char *TaskStateStrings[] = {
 
 void cmd_top(const char *)
 {
-	printf("\e9400A1PID    \e9CA100Name                \e00A15BState    \eCCCCCCPriority    Memory Usage    CPU Usage\n");
+	printf("PID    Name                State    Priority    Memory Usage    CPU Usage\n");
 	foreach (auto Proc in TaskManager->GetProcessList())
 	{
 #if defined(a64)
-		printf("\e9400A1%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %ld KiB         %ld\n",
+		printf("%-4d %-20s %s       %d           %ld KiB         %ld\n",
 			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
 #elif defined(a32)
-		printf("\e9400A1%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %lld KiB         %lld\n",
+		printf("%-4d %-20s %s       %d           %lld KiB         %lld\n",
 			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
@@ -59,12 +59,12 @@ void cmd_top(const char *)
 		foreach (auto Thrd in Proc->Threads)
 		{
 #if defined(a64)
-			printf(" \eA80011%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %ld KiB         %ld\n",
+			printf(" %-4d %-20s %s       %d           %ld KiB         %ld\n",
 				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);
 #elif defined(a32)
-			printf(" \eA80011%-4d \e9CA100%-20s \e00A15B%s       \eCCCCCC%d           %lld KiB         %lld\n",
+			printf(" %-4d %-20s %s       %d           %lld KiB         %lld\n",
 				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);

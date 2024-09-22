@@ -41,7 +41,6 @@
 #include "keyboard.hpp"
 
 extern void ExPrint(const char *Format, ...);
-extern Video::Font *CrashFont;
 extern void DisplayTopOverlay();
 extern CPU::ExceptionFrame *ExFrame;
 
@@ -75,7 +74,7 @@ nsa bool WriteDiagDataToNode(FileNode *node)
 	uint8_t *buf = (uint8_t *)KernelAllocator.RequestPages(TO_PAGES(fileSize));
 	if (!buf)
 	{
-		ExPrint("\eFF0000Failed to allocate memory for diagnostic data\n");
+		ExPrint("\x1b[0;30;41mFailed to allocate memory for diagnostic data\x1b[0m\n");
 		Display->UpdateBuffer();
 		return false;
 	}
@@ -89,12 +88,12 @@ nsa bool WriteDiagDataToNode(FileNode *node)
 	file->Data.KernelMemoryLength = uint32_t(kSize);
 	memcpy(file->Data.KernelMemory, (void *)KStart, kSize);
 
-	ExPrint("\eFAFAFAWriting to %s\n", node->Path.c_str());
+	ExPrint("Writing to %s\n", node->Path.c_str());
 	size_t w = node->Write(buf, fileSize, 0);
 	if (w != fileSize)
 	{
 		debug("%d out of %d bytes written", w, fileSize);
-		ExPrint("\eFF0000Failed to write diagnostic data to file: %s\n",
+		ExPrint("\x1b[0;30;41mFailed to write diagnostic data to file: %s\x1b[0m\n",
 				strerror((int)w));
 		Display->UpdateBuffer();
 		return false;
@@ -108,7 +107,7 @@ nsa void DiagnosticDataCollection()
 	Display->ClearBuffer();
 	DisplayTopOverlay();
 
-	ExPrint("\n\eFAFAFAPlease wait while we collect some diagnostic information...\n");
+	ExPrint("\nPlease wait while we collect some diagnostic information...\n");
 	ExPrint("This may take a while...\n");
 
 	mode_t mode = S_IRWXU |
@@ -119,7 +118,7 @@ nsa void DiagnosticDataCollection()
 	FileNode *panicDir = fs->ForceCreate(nullptr, "/var/panic", mode);
 	if (!panicDir)
 	{
-		ExPrint("\eFF0000Failed to create /var/panic\n");
+		ExPrint("\x1b[0;30;41mFailed to create /var/panic\x1b[0m\n");
 		Display->UpdateBuffer();
 		return;
 	}

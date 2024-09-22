@@ -75,6 +75,8 @@ typedef __builtin_va_list va_list;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
+#define RGB_TO_HEX(r, g, b) ((r << 16) | (g << 8) | (b))
+
 #define MAX(a, b)               \
 	({                          \
 		__typeof__(a) _a = (a); \

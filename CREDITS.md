@@ -12,6 +12,9 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [ToaruOS](https://github.com/klange/toaruos)
 - [Various SIMD functions](https://wiki.osdev.org/User:01000101/optlib/)
 
+## Virtual terminal
+- [vtconsole](https://github.com/sleepy-monax/vtconsole)
+
 ## Font
 - [Tamsyn Font](http://www.fial.com/~scott/tamsyn-font/)
 
@@ -110,6 +113,9 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [I/O Ports on OSDev](https://wiki.osdev.org/I/O_ports)
 - [PS/2 Controller on OSDev](https://wiki.osdev.org/%228042%22_PS/2_Controller)
 - [AIP on OSDev](https://wiki.osdev.org/Advanced_Integrated_Peripheral)
+
+## UART
+- [Interfacing the Serial / RS232 Port V5.0](http://www.senet.com.au/~cpeacock)
 
 ---
 

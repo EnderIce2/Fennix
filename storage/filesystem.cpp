@@ -209,6 +209,7 @@ namespace vfs
 
 	std::string Virtual::GetByNode(FileNode *Node)
 	{
+		assert(Node != nullptr);
 		if (Node->Parent == nullptr)
 		{
 			if (Node->Node->Flags & I_FLAG_ROOT)

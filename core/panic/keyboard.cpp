@@ -20,6 +20,7 @@
 #include <display.hpp>
 #include <convert.h>
 #include <printf.h>
+#include <kcon.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <cpu.hpp>
@@ -33,13 +34,16 @@
 
 #include "../../kernel.h"
 
-#define ERROR_COLOR "\eFF0000"
-#define WARN_COLOR "\eFFAA00"
-#define DEFAULT_COLOR "\e00FF00"
+using namespace KernelConsole;
+
+#define ERROR_COLOR "\x1b[31m"
+#define WARN_COLOR "\x1b[33m"
+#define DEFAULT_COLOR "\x1b[0m"
 
 extern void ExPrint(const char *Format, ...);
 extern void ArrowInput(uint8_t key);
 extern void UserInput(char *Input);
+extern FontRenderer CrashFontRenderer;
 
 const char sc_ascii_low[] = {'?', '?', '1', '2', '3', '4', '5', '6',
 							 '7', '8', '9', '0', '-', '=', '?', '?', 'q', 'w', 'e', 'r', 't', 'y',
@@ -142,16 +146,13 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 {
 #define WaitRead PS2Wait(true)
 #define WaitWrite PS2Wait(false)
-#define SetMessageLocation                        \
-	Display->SetBufferCursor(8,                   \
-							 Display->GetHeight - \
-								 Display->GetCurrentFont()->GetInfo().Height - 24)
+#define SetMessageLocation \
+	ExPrint("\x1b[%d;%dH", (Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width) - 1, 0);
+
 	CPU::Interrupts(CPU::Disable);
 
 	/* Dots will be printed at the bottom of the screen as a progress bar. */
-	Display->SetBufferCursor(8,
-							 Display->GetHeight -
-								 Display->GetCurrentFont()->GetInfo().Height - 8);
+	ExPrint("\x1b[%d;%dH", (Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width) - 2, 0);
 #if defined(a86)
 
 	/* Disable port 1 & 2 */
@@ -164,7 +165,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		WaitWrite;
 		outb(0x64, 0xA7);
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 	/* Flush */
 	{
@@ -181,7 +182,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		}
 	}
 
-	Display->Print('.');
+	ExPrint(".");
 	/* Test controller */
 	{
 		/* Save config */
@@ -221,7 +222,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		WaitWrite;
 		outb(0x60, cfg);
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 	/* Disable scanning; Enable port 1; Set default settings */
 	{
@@ -235,7 +236,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		/* Set default settings */
 		outb(0x60, 0xF6);
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 	/* Test port 1 */
 	{
@@ -264,7 +265,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 			}
 		}
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 	/* Configure the controller */
 	{
@@ -283,7 +284,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		WaitWrite;
 		outb(0x60, cfg);
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 	/* Enable port 1; Set scan code; Enable scanning */
 	{
@@ -327,7 +328,7 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		/* Enable scanning */
 		outb(0x60, 0xF4);
 	}
-	Display->Print('.');
+	ExPrint(".");
 
 #endif // defined(a86)
 
@@ -365,7 +366,8 @@ nsa void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 		{
 			if (BackSpaceLimit > 0)
 			{
-				Display->Print('\b');
+				char keyBuf[5] = {'\b', '\x1b', '[', 'K', '\0'};
+				ExPrint(keyBuf);
 				backspace(UserInputBuffer);
 				BackSpaceLimit--;
 			}
@@ -379,7 +381,8 @@ nsa void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 		else
 		{
 			append(UserInputBuffer, s_cst(char, key));
-			Display->Print((char)key);
+			char keyBuf[2] = {(char)key, '\0'};
+			ExPrint(keyBuf);
 			BackSpaceLimit++;
 		}
 		Display->UpdateBuffer(); /* Update as we type. */

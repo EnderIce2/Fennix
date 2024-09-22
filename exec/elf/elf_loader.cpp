@@ -350,7 +350,7 @@ namespace Execute
 			}
 		}
 
-		Elf64_Ehdr ELFHeader;
+		Elf64_Ehdr ELFHeader{};
 		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
 		uintptr_t EntryPoint = ELFHeader.e_entry;
 		debug("Entry point is %#lx", EntryPoint);
@@ -808,7 +808,7 @@ namespace Execute
 		while (envp[envc] != nullptr)
 			envc++;
 
-		Elf32_Ehdr ELFHeader;
+		Elf32_Ehdr ELFHeader{};
 		fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
 
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
