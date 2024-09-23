@@ -234,7 +234,6 @@ void KShellThread()
 				printf("%s", strBuf.c_str());
 				debug("after strBuf: %s", strBuf.c_str());
 
-
 				bsCount--;
 				continue;
 			}

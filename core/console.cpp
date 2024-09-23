@@ -359,10 +359,11 @@ namespace KernelConsole
 											   &_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_end,
 											   Video::FontType::PCScreenFont2);
 
-		size_t Cols = Display->GetWidth / Renderer.CurrentFont->GetInfo().Width;
-		size_t Rows = Display->GetHeight / Renderer.CurrentFont->GetInfo().Height;
-		Terminals[0] = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
-		Terminals[0]->Clear(0, 0, Cols, Rows - 1);
+		size_t Rows = Display->GetWidth / Renderer.CurrentFont->GetInfo().Width;
+		size_t Cols = Display->GetHeight / Renderer.CurrentFont->GetInfo().Height;
+		debug("Terminal size: %ux%u", Rows, Cols);
+		Terminals[0] = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
+		Terminals[0]->Clear(0, 0, Rows, Cols - 1);
 		CurrentTerminal.store(Terminals[0], std::memory_order_release);
 	}
 
