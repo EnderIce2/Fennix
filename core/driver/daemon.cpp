@@ -585,6 +585,7 @@ namespace Driver
 		input->Node.Device = dev->Device;
 		input->Node.Mode = mode;
 		input->Node.Flags = I_FLAG_CACHE_KEEP;
+		input->Node.Offset = _dev->Children.size();
 		_dev->Children.push_back(input);
 		devInputNode = fs->GetByPath("input", devNode);
 
@@ -598,6 +599,7 @@ namespace Driver
 			device->Node.Mode = mode;
 			device->Node.SetDevice(maj, min);
 			device->Node.Flags = I_FLAG_CACHE_KEEP;
+			device->Node.Offset = p1->Children.size();
 			p1->Children.push_back(device);
 		};
 
