@@ -344,8 +344,12 @@ namespace Driver
 		off_t entries = 0;
 		for (const auto &var : Node->Children)
 		{
-			if (var->Node.Offset < Offset)
+			debug("iterating \"%s\" inside \"%s\"", var->Name.c_str(), Node->Name.c_str());
+			if (var->Node.Offset < realOffset)
+			{
+				debug("skipping \"%s\" (%d < %d)", var->Name.c_str(), var->Node.Offset, Offset);
 				continue;
+			}
 
 			if (entries >= Entries)
 				break;
