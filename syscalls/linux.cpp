@@ -1903,8 +1903,8 @@ static int linux_chdir(SysFrm *, const char *path)
 	if (!n)
 		return -linux_ENOENT;
 
+	pcb->SetWorkingDirectory(n);
 	debug("Changed cwd to \"%s\"", n->GetPath().c_str());
-	pcb->CWD = n;
 	return 0;
 }
 
