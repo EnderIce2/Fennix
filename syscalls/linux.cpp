@@ -1890,10 +1890,22 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 		return -ERANGE;
 	}
 
-	strncpy(pBuf, cwd, len);
-	pBuf[len] = '\0';
-	debug("cwd: \"%s\" with %ld bytes", cwd, len);
-	return len;
+static int linux_chdir(SysFrm *, const char *path)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const char *pPath = vma->UserCheckAndGetAddress(path);
+	if (!pPath)
+		return -linux_EFAULT;
+
+	FileNode *n = fs->GetByPath(pPath, pcb->CWD);
+	if (!n)
+		return -linux_ENOENT;
+
+	debug("Changed cwd to \"%s\"", n->GetPath().c_str());
+	pcb->CWD = n;
+	return 0;
 }
 
 static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
@@ -2871,7 +2883,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_ftruncate] = {"ftruncate", (void *)nullptr},
 	[__NR_amd64_getdents] = {"getdents", (void *)nullptr},
 	[__NR_amd64_getcwd] = {"getcwd", (void *)linux_getcwd},
-	[__NR_amd64_chdir] = {"chdir", (void *)nullptr},
+	[__NR_amd64_chdir] = {"chdir", (void *)linux_chdir},
 	[__NR_amd64_fchdir] = {"fchdir", (void *)nullptr},
 	[__NR_amd64_rename] = {"rename", (void *)nullptr},
 	[__NR_amd64_mkdir] = {"mkdir", (void *)linux_mkdir},
@@ -3253,7 +3265,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_link] = {"link", (void *)nullptr},
 	[__NR_i386_unlink] = {"unlink", (void *)nullptr},
 	[__NR_i386_execve] = {"execve", (void *)linux_execve},
-	[__NR_i386_chdir] = {"chdir", (void *)nullptr},
+	[__NR_i386_chdir] = {"chdir", (void *)linux_chdir},
 	[__NR_i386_time] = {"time", (void *)nullptr},
 	[__NR_i386_mknod] = {"mknod", (void *)nullptr},
 	[__NR_i386_chmod] = {"chmod", (void *)nullptr},
