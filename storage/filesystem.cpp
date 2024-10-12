@@ -287,3 +287,27 @@ namespace vfs
 		return 0;
 	}
 }
+
+std::string FileNode::GetName()
+{
+	return this->Name;
+}
+
+std::string FileNode::GetPath()
+{
+	const char *path = this->Path.c_str();
+	if (strncmp(path, "\x06root-", 6) == 0) /* FIXME: deduce the index */
+	{
+		path += 6;
+		while (*path != '\0' && *path != '\x06')
+			path++;
+		if (*path == '\x06')
+			path++;
+	}
+	else
+		return this->Path;
+
+	if (path[0] == '\0')
+		return std::string(this->fsi->RootName);
+	return std::string(path);
+}

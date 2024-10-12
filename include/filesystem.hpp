@@ -48,6 +48,9 @@ public:
 	Inode *Node;
 	FileSystemInfo *fsi;
 
+	std::string GetName();
+	std::string GetPath();
+
 	bool IsDirectory() { return S_ISDIR(Node->Mode); }
 	bool IsCharacterDevice() { return S_ISCHR(Node->Mode); }
 	bool IsBlockDevice() { return S_ISBLK(Node->Mode); }

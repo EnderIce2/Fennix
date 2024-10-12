@@ -1897,13 +1897,18 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 	if (pBuf == nullptr)
 		return -EFAULT;
 
-	const char *cwd = pcb->CWD->Path.c_str();
-	size_t len = strlen(cwd);
-	if (len >= size)
+	std::string cwd = pcb->CWD->GetPath();
+	if (cwd.length() >= size)
 	{
-		warn("Buffer too small (%ld < %ld)", len, size);
-		return -ERANGE;
+		warn("Buffer too small (%ld < %ld)", cwd.length(), size);
+		return -linux_ERANGE;
 	}
+
+	strncpy(pBuf, cwd.c_str(), cwd.length());
+	pBuf[cwd.length()] = '\0';
+	debug("cwd: \"%s\" with %ld bytes", cwd.c_str(), cwd.length());
+	return cwd.length();
+}
 
 static int linux_chdir(SysFrm *, const char *path)
 {
