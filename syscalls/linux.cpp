@@ -1248,6 +1248,12 @@ static pid_t linux_fork(SysFrm *sf)
 	return (int)NewProcess->ID;
 }
 
+static pid_t linux_vfork(SysFrm *sf)
+{
+	stub;
+	return -linux_ENOSYS;
+}
+
 __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname,
 												   char *const argv[],
 												   char *const envp[])
@@ -2909,7 +2915,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_getsockopt] = {"getsockopt", (void *)nullptr},
 	[__NR_amd64_clone] = {"clone", (void *)nullptr},
 	[__NR_amd64_fork] = {"fork", (void *)linux_fork},
-	[__NR_amd64_vfork] = {"vfork", (void *)nullptr},
+	[__NR_amd64_vfork] = {"vfork", (void *)linux_vfork},
 	[__NR_amd64_execve] = {"execve", (void *)linux_execve},
 	[__NR_amd64_exit] = {"exit", (void *)linux_exit},
 	[__NR_amd64_wait4] = {"wait4", (void *)linux_wait4},
@@ -3491,7 +3497,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_sendfile] = {"sendfile", (void *)nullptr},
 	[__NR_i386_getpmsg] = {"getpmsg", (void *)nullptr},
 	[__NR_i386_putpmsg] = {"putpmsg", (void *)nullptr},
-	[__NR_i386_vfork] = {"vfork", (void *)nullptr},
+	[__NR_i386_vfork] = {"vfork", (void *)linux_vfork},
 	[__NR_i386_ugetrlimit] = {"ugetrlimit", (void *)nullptr},
 	[__NR_i386_mmap2] = {"mmap2", (void *)nullptr},
 	[__NR_i386_truncate64] = {"truncate64", (void *)nullptr},
