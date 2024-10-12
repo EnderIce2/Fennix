@@ -166,7 +166,7 @@ namespace vfs
 	{
 		Tasking::PCB *pcb = thisProcess;
 
-		for (size_t i = 0; i < pcb->Limits.OpenFiles; i++)
+		for (size_t i = 0; i < pcb->SoftLimits.OpenFiles; i++)
 		{
 			auto it = this->FileMap.find(i);
 			if (it == this->FileMap.end())

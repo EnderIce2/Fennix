@@ -451,6 +451,7 @@ namespace Tasking
 			bool IsCritical = false;
 			bool IsDebugEnabled = false;
 			bool IsKernelDebugEnabled = false;
+			bool CanAdjustHardLimits = false;
 			struct
 			{
 				uint16_t UserID = UINT16_MAX;
@@ -461,10 +462,16 @@ namespace Tasking
 		} Security{};
 		struct
 		{
+			rlim_t OpenFiles = 128;
+			rlim_t Threads = 64;
+			rlim_t Memory = 1073741824; /* 1 GiB */
+		} SoftLimits{};
+		struct
+		{
 			rlim_t OpenFiles = 4096;
 			rlim_t Threads = 1024;
 			rlim_t Memory = 8589934592; /* 8 GiB */
-		} Limits{};
+		} HardLimits{};
 		TaskInfo Info{};
 		ThreadLocalStorage TLS{};
 

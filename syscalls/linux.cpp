@@ -2687,30 +2687,32 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 {
 	static_assert(sizeof(struct rlimit) < PAGE_SIZE);
 
-	PCB *pcb = thisProcess;
-	Memory::VirtualMemoryArea *vma = pcb->vma;
+	PCB *pcb = nullptr;
+	if (likely(pid == 0))
+		pcb = thisProcess;
+	else
+	{
+		pcb = thisProcess->GetContext()->GetProcessByID(pid);
+		if (pcb == nullptr)
+			return -linux_ESRCH;
+
+		fixme("implement CAP_SYS_RESOURCE");
+		return -linux_EPERM;
+	}
+	Memory::VirtualMemoryArea *vma = thisProcess->vma;
 
 	auto pOldLimit = vma->UserCheckAndGetAddress(old_limit);
 	auto pNewLimit = vma->UserCheckAndGetAddress(new_limit);
 	if (pOldLimit == nullptr && old_limit != nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	if (pNewLimit == nullptr && new_limit != nullptr)
-		return -EFAULT;
-
-	UNUSED(pOldLimit);
-	UNUSED(pNewLimit);
+		return -linux_EFAULT;
 
 	if (new_limit)
 	{
-		debug("new limit: rlim_cur:%lld rlim_max:%lld",
-			  pNewLimit->rlim_cur, pNewLimit->rlim_max);
-	}
-
-	if (old_limit)
-	{
-		debug("old limit: rlim_cur:%lld rlim_max:%lld",
-			  pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		if (pNewLimit->rlim_cur > pNewLimit->rlim_max)
+			return -linux_EINVAL;
 	}
 
 	switch (resource)
@@ -2724,22 +2726,70 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 		goto __stub;
 	case linux_RLIMIT_NPROC:
 	{
+		if (old_limit)
+		{
+			pOldLimit->rlim_cur = pcb->SoftLimits.Threads;
+			pOldLimit->rlim_max = pcb->HardLimits.Threads;
+			debug("read NPROC limit: {%#lx, %#lx}", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		}
+
 		if (new_limit)
-			pcb->Limits.Threads = pNewLimit->rlim_max;
+		{
+			if (pNewLimit->rlim_max > pcb->HardLimits.Threads && !pcb->Security.CanAdjustHardLimits)
+				return -linux_EPERM;
+
+			debug("setting NPROC limit to {%#lx, %#lx}->{%#lx, %#lx}",
+				  pcb->SoftLimits.Threads, pcb->HardLimits.Threads,
+				  pNewLimit->rlim_cur, pNewLimit->rlim_max);
+			pcb->SoftLimits.Threads = pNewLimit->rlim_cur;
+			pcb->HardLimits.Threads = pNewLimit->rlim_max;
+		}
 		return 0;
 	}
 	case linux_RLIMIT_NOFILE:
 	{
+		if (old_limit)
+		{
+			pOldLimit->rlim_cur = pcb->SoftLimits.OpenFiles;
+			pOldLimit->rlim_max = pcb->HardLimits.OpenFiles;
+			debug("read NOFILE limit: {%#lx, %#lx}", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		}
+
 		if (new_limit)
-			pcb->Limits.OpenFiles = pNewLimit->rlim_max;
+		{
+			if (pNewLimit->rlim_max > pcb->HardLimits.OpenFiles && !pcb->Security.CanAdjustHardLimits)
+				return -linux_EPERM;
+
+			debug("setting NOFILE limit to {%#lx, %#lx}->{%#lx, %#lx}",
+				  pcb->SoftLimits.OpenFiles, pcb->HardLimits.OpenFiles,
+				  pNewLimit->rlim_cur, pNewLimit->rlim_max);
+			pcb->SoftLimits.OpenFiles = pNewLimit->rlim_cur;
+			pcb->HardLimits.OpenFiles = pNewLimit->rlim_max;
+		}
 		return 0;
 	}
 	case linux_RLIMIT_MEMLOCK:
 		goto __stub;
 	case linux_RLIMIT_AS:
 	{
+		if (old_limit)
+		{
+			pOldLimit->rlim_cur = pcb->SoftLimits.Memory;
+			pOldLimit->rlim_max = pcb->HardLimits.Memory;
+			debug("read AS limit: {%#lx, %#lx}", pOldLimit->rlim_cur, pOldLimit->rlim_max);
+		}
+
 		if (new_limit)
-			pcb->Limits.Memory = pNewLimit->rlim_max;
+		{
+			if (pNewLimit->rlim_max > pcb->HardLimits.Memory && !pcb->Security.CanAdjustHardLimits)
+				return -linux_EPERM;
+
+			debug("setting AS limit to {%#lx, %#lx}->{%#lx, %#lx}",
+				  pcb->SoftLimits.Memory, pcb->HardLimits.Memory,
+				  pNewLimit->rlim_cur, pNewLimit->rlim_max);
+			pcb->SoftLimits.Memory = pNewLimit->rlim_cur;
+			pcb->HardLimits.Memory = pNewLimit->rlim_max;
+		}
 		return 0;
 	}
 	case linux_RLIMIT_LOCKS:
@@ -2757,11 +2807,9 @@ static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
 	default:
 	{
 		debug("Invalid resource %d", resource);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
-
-	return 0;
 }
 
 static ssize_t linux_getrandom(SysFrm *, void *buf,
