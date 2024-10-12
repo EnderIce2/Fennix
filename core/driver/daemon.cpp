@@ -439,7 +439,7 @@ namespace Driver
 			mode_t mode = S_IRWXU |
 						  S_IRGRP |
 						  S_IROTH |
-						  S_IFCHR;
+						  S_IFBLK;
 
 			node = fs->ForceCreate(devInputNode, deviceName.c_str(), mode);
 			node->Node->SetDevice(DriverID, i);
