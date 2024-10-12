@@ -24,6 +24,7 @@
 
 #include <static_vector>
 #include <signal.hpp>
+#include <dumper.hpp>
 #include <utsname.h>
 #include <rand.hpp>
 #include <limits.h>
@@ -525,6 +526,10 @@ static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 	ssize_t ret = fdt->usr_read(fd, pBuf, count);
 	if (ret >= 0)
 		fdt->usr_lseek(fd, ret, SEEK_CUR);
+
+#ifdef DEBUG
+	DumpData("READ", pBuf, ret < 0 ? 0 : ret);
+#endif
 	return ret;
 }
 
@@ -543,6 +548,10 @@ static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 	ssize_t ret = fdt->usr_write(fd, pBuf, count);
 	if (ret)
 		fdt->usr_lseek(fd, ret, SEEK_CUR);
+
+#ifdef DEBUG
+	DumpData("WRITE", (void *)pBuf, ret < 0 ? 0 : ret);
+#endif
 	return ret;
 }
 
