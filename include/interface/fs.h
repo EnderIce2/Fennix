@@ -259,6 +259,7 @@ struct Inode
 	uint32_t Flags;
 	off_t Offset;
 
+	uintptr_t KernelData;
 	void *PrivateData;
 
 #ifdef __cplusplus
@@ -289,6 +290,7 @@ struct Inode
 		Mode = 0;
 		Flags = 0;
 		Offset = 0;
+		KernelData = 0x0;
 		PrivateData = nullptr;
 	}
 
