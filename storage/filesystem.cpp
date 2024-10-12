@@ -39,19 +39,16 @@ namespace vfs
 
 	FileNode *Virtual::GetRoot(size_t Index)
 	{
-		if (Index >= FileSystemRoots->Children.size())
-			return nullptr;
-
-		Inode *RootNode = FileSystemRoots->Children[Index];
-
-		char rootName[128]{};
-		snprintf(rootName, sizeof(rootName), "\002root-%ld\003", Index);
+		assert(Index < FileSystemRoots->Children.size());
 
 		auto it = FileRoots.find(Index);
 		if (it != FileRoots.end())
 			return it->second;
 
-		FileNode *ret = this->CreateCacheNode(nullptr, RootNode, rootName, 0);
+		Inode *rootNode = FileSystemRoots->Children[Index];
+		char rootName[128]{};
+		snprintf(rootName, sizeof(rootName), "\x06root-%ld\x06", Index);
+		FileNode *ret = this->CreateCacheNode(nullptr, rootNode, rootName, 0);
 		FileRoots.insert({Index, ret});
 		return ret;
 	}
@@ -116,7 +113,7 @@ namespace vfs
 	FileNode *Virtual::GetByPath(const char *Path, FileNode *Parent)
 	{
 		debug("GetByPath: %s", Path);
-		if (Parent == nullptr)
+		if (Parent == nullptr || this->PathIsAbsolute(Path))
 			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
 		if (strcmp(Path, ".") == 0)
@@ -129,12 +126,12 @@ namespace vfs
 		if (fn)
 			return fn;
 
-		if (strncmp(Path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		if (strncmp(Path, "\x06root-", 6) == 0) /* FIXME: deduce the index */
 		{
 			Path += 7;
-			while (*Path != '\0' && *Path != '\003')
+			while (*Path != '\0' && *Path != '\x06')
 				Path++;
-			if (*Path == '\003')
+			if (*Path == '\x06')
 				Path++;
 		}
 

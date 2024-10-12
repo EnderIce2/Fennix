@@ -32,7 +32,12 @@ namespace vfs
 
 		struct cwk_segment segment;
 		if (!cwk_path_get_first_segment(*Path, &segment))
+		{
+			if (strcmp(*Path, Parent->fsi->RootName) == 0)
+				return Parent;
+
 			ReturnLogError(nullptr, "Failed to get first segment of path");
+		}
 
 		size_t segments = 0;
 		while (cwk_path_get_next_segment(&segment))
@@ -41,26 +46,26 @@ namespace vfs
 		if (segments == 0)
 			return Parent;
 
-		const char *path = *Path;
-		if (strncmp(path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		const char *tmpPath = *Path;
+		if (strncmp(tmpPath, "\x06root-", 6) == 0) /* FIXME: deduce the index */
 		{
-			path += 6;
-			while (*path != '\0' && *path != '\003')
-				path++;
-			if (*path == '\003')
-				path++;
+			tmpPath += 6;
+			while (*tmpPath != '\0' && *tmpPath != '\x06')
+				tmpPath++;
+			if (*tmpPath == '\x06')
+				tmpPath++;
 		}
 		else
-			path = *Path;
+			tmpPath = *Path;
 
 		FileNode *__Parent = Parent;
-		if (this->PathIsAbsolute(path))
+		if (this->PathIsAbsolute(tmpPath))
 		{
 			while (__Parent->Parent)
 				__Parent = __Parent->Parent;
 		}
 
-		cwk_path_get_first_segment(path, &segment);
+		cwk_path_get_first_segment(tmpPath, &segment);
 		do
 		{
 			std::string segmentName(segment.begin, segment.size);
@@ -94,11 +99,18 @@ namespace vfs
 		if (Root == nullptr)
 			return nullptr;
 
-		debug("%s cache search for \"%s\" in \"%s\"", IsName ? "Relative" : "Absolute", NameOrPath, Root->Path.c_str());
+		debug("%s cache search for \"%s\" in \"%s\"",
+			  IsName ? "Relative" : "Absolute",
+			  NameOrPath,
+			  Root->Path.c_str());
 
 		struct cwk_segment segment;
 		if (!cwk_path_get_first_segment(NameOrPath, &segment))
+		{
+			if (strcmp(NameOrPath, Root->fsi->RootName) == 0)
+				return Root;
 			ReturnLogError(nullptr, "Failed to get first segment of path");
+		}
 
 		size_t segments = 0;
 		while (cwk_path_get_next_segment(&segment))
@@ -116,12 +128,12 @@ namespace vfs
 		}
 
 		const char *path = NameOrPath;
-		if (strncmp(path, "\002root-", 6) == 0) /* FIXME: deduce the index */
+		if (strncmp(path, "\x06root-", 6) == 0) /* FIXME: deduce the index */
 		{
 			path += 6;
-			while (*path != '\0' && *path != '\003')
+			while (*path != '\0' && *path != '\x06')
 				path++;
-			if (*path == '\003')
+			if (*path == '\x06')
 				path++;
 		}
 		else

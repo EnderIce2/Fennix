@@ -45,10 +45,10 @@ namespace vfs
 			return -ENOENT;
 
 		off_t offset = 0;
-		foreach (const auto &Root in Parent->Children)
+		for (const auto &Root : Parent->Children)
 		{
 			char rootName[128]{};
-			snprintf(rootName, sizeof(rootName), "\x02root-%ld\x03", offset);
+			snprintf(rootName, sizeof(rootName), "\x06root-%ld\x06", offset);
 
 			if (strcmp(rootName, Name) == 0)
 			{
@@ -159,8 +159,8 @@ namespace vfs
 					  S_IRWXO |
 					  S_IFDIR;
 		FileNode *proc = this->ForceCreate(this->GetRoot(0), "proc", mode);
-		FileNode *log = this->ForceCreate(this->GetRoot(0), "var", mode);
-		log = this->ForceCreate(log, "log", mode);
+		FileNode *var = this->ForceCreate(this->GetRoot(0), "var", mode);
+		FileNode *log = this->ForceCreate(var, "log", mode);
 		proc->Node->Flags = iFlags;
 		log->Node->Flags = iFlags;
 

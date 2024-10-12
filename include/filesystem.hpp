@@ -37,7 +37,7 @@ static_assert(IFTODT(S_IFCHR) == DT_CHR);
 	else                         \
 		return fsi->Ops.op(this->Node, ##__VA_ARGS__)
 
-#define FSROOT(num) "\002root-" #num "\003"
+#define FSROOT(num) "\x06root-" #num "\x06"
 
 class FileNode
 {
