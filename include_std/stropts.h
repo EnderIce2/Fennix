@@ -74,5 +74,6 @@
 #define TIOCMBIS	0x5416
 #define TIOCMBIC	0x5417
 #define TIOCMSET	0x5418
+#define TIOCGSID    0x5429
 
 #endif
