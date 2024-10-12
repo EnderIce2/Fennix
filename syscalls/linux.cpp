@@ -120,6 +120,226 @@ const char *lSigStr[] = {
 	"SIGRT_31",
 	"SIGRTMAX",
 };
+
+const char *nErrnoStr[] = {
+	"EOK",
+	"E2BIG",
+	"EACCES",
+	"EADDRINUSE",
+	"EADDRNOTAVAIL",
+	"EAFNOSUPPORT",
+	"EAGAIN",
+	"EALREADY",
+	"EBADF",
+	"EBADMSG",
+	"EBUSY",
+	"ECANCELED",
+	"ECHILD",
+	"ECONNABORTED",
+	"ECONNREFUSED",
+	"ECONNRESET",
+	"EDEADLK",
+	"EDESTADDRREQ",
+	"EDOM",
+	"EDQUOT",
+	"EEXIST",
+	"EFAULT",
+	"EFBIG",
+	"EHOSTUNREACH",
+	"EIDRM",
+	"EILSEQ",
+	"EINPROGRESS",
+	"EINTR",
+	"EINVAL",
+	"EIO",
+	"EISCONN",
+	"EISDIR",
+	"ELOOP",
+	"EMFILE",
+	"EMLINK",
+	"EMSGSIZE",
+	"EMULTIHOP",
+	"ENAMETOOLONG",
+	"ENETDOWN",
+	"ENETRESET",
+	"ENETUNREACH",
+	"ENFILE",
+	"ENOBUFS",
+	"ENODATA",
+	"ENODEV",
+	"ENOENT",
+	"ENOEXEC",
+	"ENOLCK",
+	"ENOLINK",
+	"ENOMEM",
+	"ENOMSG",
+	"ENOPROTOOPT",
+	"ENOSPC",
+	"ENOSR",
+	"ENOSTR",
+	"ENOSYS",
+	"ENOTCONN",
+	"ENOTDIR",
+	"ENOTEMPTY",
+	"ENOTRECOVERABLE",
+	"ENOTSOCK",
+	"ENOTSUP",
+	"ENOTTY",
+	"ENXIO",
+	"EOPNOTSUPP",
+	"EOVERFLOW",
+	"EOWNERDEAD",
+	"EPERM",
+	"EPIPE",
+	"EPROTO",
+	"EPROTONOSUPPORT",
+	"EPROTOTYPE",
+	"ERANGE",
+	"EROFS",
+	"ESPIPE",
+	"ESRCH",
+	"ESTALE",
+	"ETIME",
+	"ETIMEDOUT",
+	"ETXTBSY",
+	"EWOULDBLOCK",
+	"EXDEV",
+};
+
+const char *lErrnoStr[] = {
+	"zero",
+	"EPERM",
+	"ENOENT",
+	"ESRCH",
+	"EINTR",
+	"EIO",
+	"ENXIO",
+	"E2BIG",
+	"ENOEXEC",
+	"EBADF",
+	"ECHILD",
+	"EAGAIN",
+	"ENOMEM",
+	"EACCES",
+	"EFAULT",
+	"ENOTBLK",
+	"EBUSY",
+	"EEXIST",
+	"EXDEV",
+	"ENODEV",
+	"ENOTDIR",
+	"EISDIR",
+	"EINVAL",
+	"ENFILE",
+	"EMFILE",
+	"ENOTTY",
+	"ETXTBSY",
+	"EFBIG",
+	"ENOSPC",
+	"ESPIPE",
+	"EROFS",
+	"EMLINK",
+	"EPIPE",
+	"EDOM",
+	"ERANGE",
+	"EDEADLK",
+	"ENAMETOOLONG",
+	"ENOLCK",
+	"ENOSYS",
+	"ENOTEMPTY",
+	"ELOOP",
+	"unknown",
+	"ENOMSG",
+	"EIDRM",
+	"ECHRNG",
+	"EL2NSYNC",
+	"EL3HLT",
+	"EL3RST",
+	"ELNRNG",
+	"EUNATCH",
+	"ENOCSI",
+	"EL2HLT",
+	"EBADE",
+	"EBADR",
+	"EXFULL",
+	"ENOANO",
+	"EBADRQC",
+	"EBADSLT",
+	"unknown",
+	"EBFONT",
+	"ENOSTR",
+	"ENODATA",
+	"ETIME",
+	"ENOSR",
+	"ENONET",
+	"ENOPKG",
+	"EREMOTE",
+	"ENOLINK",
+	"EADV",
+	"ESRMNT",
+	"ECOMM",
+	"EPROTO",
+	"EMULTIHOP",
+	"EDOTDOT",
+	"EBADMSG",
+	"EOVERFLOW",
+	"ENOTUNIQ",
+	"EBADFD",
+	"EREMCHG",
+	"ELIBACC",
+	"ELIBBAD",
+	"ELIBSCN",
+	"ELIBMAX",
+	"ELIBEXEC",
+	"EILSEQ",
+	"ERESTART",
+	"ESTRPIPE",
+	"EUSERS",
+	"ENOTSOCK",
+	"EDESTADDRREQ",
+	"EMSGSIZE",
+	"EPROTOTYPE",
+	"ENOPROTOOPT",
+	"EPROTONOSUPPORT",
+	"ESOCKTNOSUPPORT",
+	"EOPNOTSUPP",
+	"EPFNOSUPPORT",
+	"EAFNOSUPPORT",
+	"EADDRINUSE",
+	"EADDRNOTAVAIL",
+	"ENETDOWN",
+	"ENETUNREACH",
+	"ENETRESET",
+	"ECONNABORTED",
+	"ECONNRESET",
+	"ENOBUFS",
+	"EISCONN",
+	"ENOTCONN",
+	"ESHUTDOWN",
+	"ETOOMANYREFS",
+	"ETIMEDOUT",
+	"ECONNREFUSED",
+	"EHOSTDOWN",
+	"EHOSTUNREACH",
+	"EALREADY",
+	"EINPROGRESS",
+	"ESTALE",
+	"EUCLEAN",
+	"ENOTNAM",
+	"ENAVAIL",
+	"EISNAM",
+	"EREMOTEIO",
+	"EDQUOT",
+	"ENOMEDIUM",
+	"EMEDIUMTYPE",
+	"ECANCELED",
+	"ENOKEY",
+	"EKEYEXPIRED",
+	"EKEYREVOKED",
+	"EKEYREJECTED",
+	"EOWNERDEAD",
+	"ENOTRECOVERABLE",
+};
 #endif
 
 const char *rlimitStr[] = {
@@ -298,6 +518,21 @@ static_vector<int, __ERRNO_MAX> errnoMap = {
 	/*EWOULDBLOCK*/ linux_EAGAIN,
 	/*EXDEV*/ linux_EXDEV,
 };
+
+inline intptr_t ConvertErrnoToLinux(auto err)
+{
+	intptr_t errc = (intptr_t)err;
+
+	if (errc >= 0)
+	{
+		debug("no change for %#lx", errc);
+		return errc;
+	}
+
+	intptr_t ret = errnoMap[-errc];
+	debug("converted %s(%ld) to %s(%ld)", nErrnoStr[-errc], -errc, lErrnoStr[ret], ret);
+	return -ret;
+}
 
 int ConvertSignalToLinux(Signals sig)
 {
@@ -518,12 +753,12 @@ static ssize_t linux_read(SysFrm *, int fd, void *buf, size_t count)
 
 	void *pBuf = vma->UserCheckAndGetAddress(buf, count);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	func("%d, %p, %d", fd, buf, count);
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t ret = fdt->usr_read(fd, pBuf, count);
+	ssize_t ret = ConvertErrnoToLinux(fdt->usr_read(fd, pBuf, count));
 	if (ret >= 0)
 		fdt->usr_lseek(fd, ret, SEEK_CUR);
 
@@ -540,12 +775,12 @@ static ssize_t linux_write(SysFrm *, int fd, const void *buf, size_t count)
 
 	const void *pBuf = vma->UserCheckAndGetAddress(buf, count);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	func("%d, %p, %d", fd, buf, count);
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	ssize_t ret = fdt->usr_write(fd, pBuf, count);
+	ssize_t ret = ConvertErrnoToLinux(fdt->usr_write(fd, pBuf, count));
 	if (ret)
 		fdt->usr_lseek(fd, ret, SEEK_CUR);
 
@@ -562,7 +797,7 @@ static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
 	if (pPathname == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	func("%s, %d, %d", pPathname, flags, mode);
 
@@ -572,25 +807,25 @@ static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 		if (node == nullptr)
 		{
 			debug("Couldn't find %s", pPathname);
-			return -ENOENT;
+			return -linux_ENOENT;
 		}
 
 		if (!node->IsDirectory())
 		{
 			debug("%s is not a directory", pPathname);
-			return -ENOTDIR;
+			return -linux_ENOTDIR;
 		}
 	}
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_open(pPathname, flags, mode);
+	return ConvertErrnoToLinux(fdt->usr_open(pPathname, flags, mode));
 }
 
 static int linux_close(SysFrm *, int fd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_close(fd);
+	return ConvertErrnoToLinux(fdt->usr_close(fd));
 }
 
 /* stat, lstat and fstat uses __old_kernel_stat:
@@ -606,14 +841,14 @@ static int linux_stat(SysFrm *, const char *pathname, struct linux_kstat *statbu
 
 	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
 	if (pPathname == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pStatbuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->usr_stat(pPathname, &nstat);
+	int ret = ConvertErrnoToLinux(fdt->usr_stat(pPathname, &nstat));
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
@@ -626,10 +861,10 @@ static int linux_fstat(SysFrm *, int fd, struct linux_kstat *statbuf)
 
 	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pStatbuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->usr_fstat(fd, &nstat);
+	int ret = ConvertErrnoToLinux(fdt->usr_fstat(fd, &nstat));
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
@@ -643,10 +878,10 @@ static int linux_lstat(SysFrm *, const char *pathname, struct linux_kstat *statb
 	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
 	auto pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pPathname == nullptr || pStatbuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->usr_lstat(pPathname, &nstat);
+	int ret = ConvertErrnoToLinux(fdt->usr_lstat(pPathname, &nstat));
 	*pStatbuf = StatToKStat(nstat);
 	return ret;
 }
@@ -661,14 +896,14 @@ static off_t linux_lseek(SysFrm *, int fd, off_t offset, int whence)
 
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_lseek(fd, offset, whence);
+	return ConvertErrnoToLinux(fdt->usr_lseek(fd, offset, whence));
 }
 
 static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 						int flags, int fildes, off_t offset)
 {
 	if (length == 0)
-		return (void *)-EINVAL;
+		return (void *)-linux_EINVAL;
 
 	bool p_None = prot & linux_PROT_NONE;
 	bool p_Read = prot & linux_PROT_READ;
@@ -699,14 +934,14 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	}
 
 	if (offset % PAGE_SIZE)
-		return (void *)-EINVAL;
+		return (void *)-linux_EINVAL;
 
 	if (uintptr_t(addr) % PAGE_SIZE && m_Fixed)
-		return (void *)-EINVAL;
+		return (void *)-linux_EINVAL;
 
 	if ((m_Shared && m_Private) ||
 		(!m_Shared && !m_Private))
-		return (void *)-EINVAL;
+		return (void *)-linux_EINVAL;
 
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -719,7 +954,7 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 		if (_fd == fdt->FileMap.end())
 		{
 			debug("Invalid file descriptor %d", fildes);
-			return (void *)-EBADF;
+			return (void *)-linux_EBADF;
 		}
 
 		if (p_Read)
@@ -735,13 +970,13 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 			if (m_Fixed)
 			{
 				if (m_Shared)
-					return (void *)-ENOSYS;
+					return (void *)-linux_ENOSYS;
 
 				int mRet = vma->Map(addr, pBuf, length, mFlags);
 				if (mRet < 0)
 				{
 					debug("Failed to map file: %s", strerror(mRet));
-					return (void *)(uintptr_t)mRet;
+					return (void *)(uintptr_t)ConvertErrnoToLinux(mRet);
 				}
 				off_t oldOff = fdt->usr_lseek(fildes, 0, SEEK_CUR);
 				fdt->usr_lseek(fildes, offset, SEEK_SET);
@@ -752,7 +987,7 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 				if (ret < 0)
 				{
 					debug("Failed to read file");
-					return (void *)ret;
+					return (void *)ConvertErrnoToLinux(ret);
 				}
 				return addr;
 			}
@@ -762,7 +997,7 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 				if (mRet < 0)
 				{
 					debug("Failed to map file: %s", strerror(mRet));
-					return (void *)(uintptr_t)mRet;
+					return (void *)(uintptr_t)ConvertErrnoToLinux(mRet);
 				}
 			}
 
@@ -776,13 +1011,13 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 			if (ret < 0)
 			{
 				debug("Failed to read file");
-				return (void *)ret;
+				return (void *)ConvertErrnoToLinux(ret);
 			}
 			return pBuf;
 		}
 
 		debug("???");
-		return (void *)-ENOSYS;
+		return (void *)-linux_ENOSYS;
 	}
 
 	void *ret = vma->CreateCoWRegion(addr, length,
@@ -795,10 +1030,10 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 {
 	if (len == 0)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	if (uintptr_t(addr) % PAGE_SIZE)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	// bool p_None = prot & linux_PROT_NONE;
 	bool p_Read = prot & linux_PROT_READ;
@@ -815,7 +1050,7 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		if (unlikely(vmm.Check((void *)i, Memory::G)))
 		{
 			warn("%p is a global page", (void *)i);
-			return -ENOMEM;
+			return -linux_ENOMEM;
 		}
 
 		Memory::PageTableEntry *pte = vmm.GetPTE(addr);
@@ -825,7 +1060,7 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 				  (void *)i, pcb->PageTable);
 			fixme("Page %#lx is not mapped", (void *)i);
 			continue;
-			return -ENOMEM;
+			return -linux_ENOMEM;
 		}
 
 		if (!pte->Present ||
@@ -834,7 +1069,7 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		{
 			debug("Page %p is not mapped with the correct permissions",
 				  (void *)i);
-			return -EACCES;
+			return -linux_EACCES;
 		}
 
 		// pte->Present = !p_None;
@@ -870,10 +1105,10 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 static int linux_munmap(SysFrm *, void *addr, size_t length)
 {
 	if (uintptr_t(addr) % PAGE_SIZE)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	if (length == 0)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	PCB *pcb = thisProcess;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -886,7 +1121,7 @@ static void *linux_brk(SysFrm *, void *addr)
 	PCB *pcb = thisProcess;
 	void *ret = pcb->ProgramBreak->brk(addr);
 	debug("brk(%#lx) = %#lx", addr, ret);
-	return ret;
+	return (void *)ConvertErrnoToLinux(ret);
 }
 
 static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
@@ -897,9 +1132,10 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 
 	auto pArgp = vma->UserCheckAndGetAddress(argp);
 	if (pArgp == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
-	return fdt->usr_ioctl(fd, request, pArgp);
+	int ret = ConvertErrnoToLinux(fdt->usr_ioctl(fd, request, pArgp));
+	return ret;
 }
 
 static ssize_t linux_pread64(SysFrm *, int fd, void *buf, size_t count, off_t offset)
@@ -909,14 +1145,14 @@ static ssize_t linux_pread64(SysFrm *, int fd, void *buf, size_t count, off_t of
 
 	void *pBuf = vma->UserCheckAndGetAddress(buf, count);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	off_t oldOff = fdt->usr_lseek(fd, 0, SEEK_CUR);
 	fdt->usr_lseek(fd, offset, SEEK_SET);
 	ssize_t ret = fdt->usr_read(fd, pBuf, count);
 	fdt->usr_lseek(fd, oldOff, SEEK_SET);
-	return ret;
+	return ConvertErrnoToLinux(ret);
 }
 
 static ssize_t linux_pwrite64(SysFrm *, int fd, const void *buf, size_t count, off_t offset)
@@ -926,14 +1162,14 @@ static ssize_t linux_pwrite64(SysFrm *, int fd, const void *buf, size_t count, o
 
 	const void *pBuf = vma->UserCheckAndGetAddress(buf, count);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	off_t oldOff = fdt->usr_lseek(fd, 0, SEEK_CUR);
 	fdt->usr_lseek(fd, offset, SEEK_SET);
 	ssize_t ret = fdt->usr_write(fd, pBuf, count);
 	fdt->usr_lseek(fd, oldOff, SEEK_SET);
-	return ret;
+	return ConvertErrnoToLinux(ret);
 }
 
 static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int iovcnt)
@@ -943,7 +1179,7 @@ static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int 
 
 	const struct iovec *pIov = vma->UserCheckAndGetAddress(iov, sizeof(struct iovec) * iovcnt);
 	if (pIov == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
@@ -953,7 +1189,7 @@ static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int 
 		if (!pIov[i].iov_base)
 		{
 			debug("invalid iov_base");
-			return -EFAULT;
+			return -linux_EFAULT;
 		}
 
 		if (pIov[i].iov_len == 0)
@@ -964,7 +1200,7 @@ static ssize_t linux_readv(SysFrm *sf, int fildes, const struct iovec *iov, int 
 
 		ssize_t n = linux_read(sf, fildes, pIov[i].iov_base, pIov[i].iov_len);
 		if (n < 0)
-			return n;
+			return ConvertErrnoToLinux(n);
 		debug("n: %d", n);
 
 		Total += n;
@@ -985,7 +1221,7 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 
 	const struct iovec *pIov = vma->UserCheckAndGetAddress(iov, sizeof(struct iovec) * iovcnt);
 	if (pIov == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	ssize_t Total = 0;
 	for (int i = 0; i < iovcnt; i++)
@@ -995,7 +1231,7 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 		if (!pIov[i].iov_base)
 		{
 			debug("invalid iov_base");
-			return -EFAULT;
+			return -linux_EFAULT;
 		}
 
 		if (pIov[i].iov_len == 0)
@@ -1006,7 +1242,7 @@ static ssize_t linux_writev(SysFrm *sf, int fildes, const struct iovec *iov, int
 
 		ssize_t n = linux_write(sf, fildes, pIov[i].iov_base, pIov[i].iov_len);
 		if (n < 0)
-			return n;
+			return ConvertErrnoToLinux(n);
 		debug("n: %d", n);
 
 		Total += n;
@@ -1027,12 +1263,12 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 
 	auto pPathname = vma->UserCheckAndGetAddress(pathname);
 	if (pPathname == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	debug("access(%s, %d)", (char *)pPathname, mode);
 
 	if (!fs->PathExists(pPathname, pcb->CWD))
-		return -ENOENT;
+		return -linux_ENOENT;
 
 	stub;
 	return 0;
@@ -1046,27 +1282,27 @@ static int linux_pipe(SysFrm *, int pipefd[2])
 	int *pPipefd = vma->UserCheckAndGetAddress(pipefd);
 	debug("pipefd=%#lx", pPipefd);
 	fixme("pipefd=[%d, %d]", pPipefd[0], pPipefd[1]);
-	return -ENOSYS;
+	return -linux_ENOSYS;
 }
 
 static int linux_dup(SysFrm *, int oldfd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_dup(oldfd);
+	return ConvertErrnoToLinux(fdt->usr_dup(oldfd));
 }
 
 static int linux_dup2(SysFrm *, int oldfd, int newfd)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_dup2(oldfd, newfd);
+	return ConvertErrnoToLinux(fdt->usr_dup2(oldfd, newfd));
 }
 
 static int linux_pause(SysFrm *)
 {
 	PCB *pcb = thisProcess;
-	return pcb->Signals.WaitAnySignal();
+	return ConvertErrnoToLinux(pcb->Signals.WaitAnySignal());
 }
 
 static int linux_nanosleep(SysFrm *,
@@ -1079,18 +1315,18 @@ static int linux_nanosleep(SysFrm *,
 	auto pReq = vma->UserCheckAndGetAddress(req);
 	auto pRem = vma->UserCheckAndGetAddress(rem);
 	if (pReq == nullptr || pRem == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	if (pReq->tv_nsec < 0 || pReq->tv_nsec > 999999999)
 	{
 		debug("Invalid tv_nsec %ld", pReq->tv_nsec);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	if (pReq->tv_sec < 0)
 	{
 		debug("Invalid tv_sec %ld", pReq->tv_sec);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	debug("tv_nsec=%ld tv_sec=%ld",
@@ -1110,7 +1346,7 @@ static int linux_nanosleep(SysFrm *,
 		if (pcb->Signals.HasPendingSignal())
 		{
 			debug("sleep interrupted by signal");
-			return -EINTR;
+			return -linux_EINTR;
 		}
 
 		pcb->GetContext()->Yield();
@@ -1143,10 +1379,10 @@ static int linux_setitimer(SysFrm *, int which,
 	auto pNewValue = vma->UserCheckAndGetAddress(new_value);
 	auto pOldValue = vma->UserCheckAndGetAddress(old_value);
 	if (pNewValue == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	if (pOldValue == nullptr && old_value)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	switch (which)
 	{
@@ -1166,7 +1402,7 @@ static int linux_setitimer(SysFrm *, int which,
 		return 0;
 	}
 	default:
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	return 0;
@@ -1175,7 +1411,7 @@ static int linux_setitimer(SysFrm *, int which,
 static int linux_shutdown(SysFrm *, int sockfd, int how)
 {
 	stub;
-	return -ENOSYS;
+	return -linux_ENOSYS;
 }
 
 static pid_t linux_fork(SysFrm *sf)
@@ -1190,7 +1426,7 @@ static pid_t linux_fork(SysFrm *sf)
 	if (unlikely(!NewProcess))
 	{
 		error("Failed to create process for fork");
-		return -EAGAIN;
+		return -linux_EAGAIN;
 	}
 
 	NewProcess->Security.ProcessGroupID = Parent->Security.ProcessGroupID;
@@ -1218,7 +1454,7 @@ static pid_t linux_fork(SysFrm *sf)
 	{
 		error("Failed to create thread for fork");
 		delete NewProcess;
-		return -EAGAIN;
+		return -linux_EAGAIN;
 	}
 	NewThread->Rename(Thread->Name);
 
@@ -1276,7 +1512,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	auto pArgv = vma->UserCheckAndGetAddress(argv, 1 /*MAX_ARG*/); /* MAX_ARG is too much? */
 	auto pEnvp = vma->UserCheckAndGetAddress(envp, 1 /*MAX_ARG*/);
 	if (pPathname == nullptr || pArgv == nullptr || pEnvp == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	func("%s %#lx %#lx", pPathname, pArgv, pEnvp);
 
@@ -1346,7 +1582,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	if (!File)
 	{
 		error("File not found");
-		return -ENOENT;
+		return -linux_ENOENT;
 	}
 
 	char shebang_magic[2];
@@ -1410,9 +1646,9 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		}
 		safe_argv[i] = nullptr;
 
-		return linux_execve(sf, safe_argv[0],
-							(char *const *)safe_argv,
-							(char *const *)safe_envp);
+		return ConvertErrnoToLinux(linux_execve(sf, safe_argv[0],
+												(char *const *)safe_argv,
+												(char *const *)safe_envp));
 	}
 
 	int ret = Execute::Spawn((char *)pPathname,
@@ -1424,7 +1660,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	if (ret < 0)
 	{
 		error("Failed to spawn");
-		return ret;
+		return ConvertErrnoToLinux(ret);
 	}
 
 	const char *baseName;
@@ -1475,7 +1711,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 		if (pcb->Children.empty())
 		{
 			debug("No children");
-			return -ECHILD;
+			return -linux_ECHILD;
 		}
 
 		std::vector<PCB *> wChilds;
@@ -1505,7 +1741,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 
 					struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
 					if (pRusage == nullptr)
-						return -EFAULT;
+						return -linux_EFAULT;
 
 					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1526,7 +1762,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 				{
 					int *pWstatus = vma->UserCheckAndGetAddress(wstatus);
 					if (pWstatus == nullptr)
-						return -EFAULT;
+						return -linux_EFAULT;
 					*pWstatus = 0;
 
 					bool ProcessExited = true;
@@ -1557,7 +1793,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 
 					struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
 					if (pRusage == nullptr)
-						return -EFAULT;
+						return -linux_EFAULT;
 
 					pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 					pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1579,7 +1815,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 		if (wChilds.empty())
 		{
 			debug("No children");
-			return -ECHILD;
+			return -linux_ECHILD;
 		}
 
 		fixme("Waiting for %d children", wChilds.size());
@@ -1589,13 +1825,13 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 	if (pid == 0)
 	{
 		fixme("Waiting for any child process whose process group ID is equal to that of the calling process");
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	if (pid < -1)
 	{
 		fixme("Waiting for any child process whose process group ID is equal to the absolute value of pid");
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	/* Wait for a child process, or any process? */
@@ -1603,7 +1839,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 	if (!tPcb)
 	{
 		warn("Invalid PID %d", pid);
-		return -ECHILD;
+		return -linux_ECHILD;
 	}
 
 	if (options)
@@ -1633,7 +1869,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 	{
 		int *pWstatus = vma->UserCheckAndGetAddress(wstatus);
 		if (pWstatus == nullptr)
-			return -EFAULT;
+			return -linux_EFAULT;
 		*pWstatus = 0;
 
 		bool ProcessExited = true;
@@ -1674,7 +1910,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 
 		struct rusage *pRusage = vma->UserCheckAndGetAddress(rusage);
 		if (pRusage == nullptr)
-			return -EFAULT;
+			return -linux_EFAULT;
 
 		pRusage->ru_utime.tv_sec = uTime / 1000000000000000; /* Seconds */
 		pRusage->ru_utime.tv_usec = uTime / 1000000000;		 /* Microseconds */
@@ -1693,7 +1929,7 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 {
 	PCB *pcb = thisProcess->GetContext()->GetProcessByID(pid);
 	if (!pcb)
-		return -ESRCH;
+		return -linux_ESRCH;
 
 	/* TODO: Check permissions */
 
@@ -1715,25 +1951,25 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 			}
 		}
 		if (!found)
-			return -ESRCH;
+			return -linux_ESRCH;
 		return 0;
 	}
 
 	if (pid == -1)
 	{
 		fixme("Sending signal %d to all processes except init", sig);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	if (pid < -1)
 	{
 		fixme("Sending signal %d to process group %d", sig, pid);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	Signals nSig = ConvertSignalToNative(sig);
 	assert(nSig != SIG_NULL);
-	return pcb->SendSignal(nSig);
+	return ConvertErrnoToLinux(pcb->SendSignal(nSig));
 }
 
 static int linux_uname(SysFrm *, struct utsname *buf)
@@ -1745,7 +1981,7 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 
 	auto pBuf = vma->UserCheckAndGetAddress(buf);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	struct utsname uname =
 		{
@@ -1823,15 +2059,15 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	switch (cmd)
 	{
 	case linux_F_DUPFD:
-		return fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg));
+		return ConvertErrnoToLinux(fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg)));
 	case linux_F_GETFD:
-		return fdt->GetFlags(fd);
+		return ConvertErrnoToLinux(fdt->GetFlags(fd));
 	case linux_F_SETFD:
-		return fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg));
+		return ConvertErrnoToLinux(fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg)));
 	case linux_F_GETFL:
 	{
 		fixme("F_GETFL is stub?");
-		return fdt->GetFlags(fd);
+		return ConvertErrnoToLinux(fdt->GetFlags(fd));
 	}
 	case linux_F_SETFL:
 	{
@@ -1847,11 +2083,11 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	{
 		int ret = fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg));
 		if (ret < 0)
-			return ret;
+			return ConvertErrnoToLinux(ret);
 
 		auto it = fdt->FileMap.find(fd);
 		if (it == fdt->FileMap.end())
-			ReturnLogError(-EBADF, "Invalid fd %d", fd);
+			ReturnLogError(-linux_EBADF, "Invalid fd %d", fd);
 
 		it->second.Flags |= linux_FD_CLOEXEC;
 		return ret;
@@ -1871,12 +2107,12 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	case linux_F_OFD_SETLKW:
 	{
 		fixme("cmd %d not implemented", cmd);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 	default:
 	{
 		debug("Invalid cmd %#x", cmd);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
 }
@@ -1885,7 +2121,7 @@ static int linux_creat(SysFrm *, const char *pathname, mode_t mode)
 {
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	return fdt->usr_creat(pathname, mode);
+	return ConvertErrnoToLinux(fdt->usr_creat(pathname, mode));
 }
 
 static long linux_getcwd(SysFrm *, char *buf, size_t size)
@@ -1895,7 +2131,7 @@ static long linux_getcwd(SysFrm *, char *buf, size_t size)
 
 	char *pBuf = vma->UserCheckAndGetAddress(buf, size);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	std::string cwd = pcb->CWD->GetPath();
 	if (cwd.length() >= size)
@@ -1936,13 +2172,13 @@ static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
 	if (!pPathname)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	mode &= ~pcb->FileCreationMask & 0777;
 
 	FileNode *n = fs->Create(pcb->CWD, pPathname, mode);
 	if (!n)
-		return -EEXIST;
+		return -linux_EEXIST;
 	return 0;
 }
 
@@ -1950,12 +2186,12 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 							  char *buf, size_t bufsiz)
 {
 	if (!pathname || !buf)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	if (bufsiz > PAGE_SIZE)
 	{
 		warn("bufsiz is too large: %ld", bufsiz);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	PCB *pcb = thisProcess;
@@ -1964,26 +2200,26 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 	const char *pPath = vma->UserCheckAndGetAddress(pathname);
 	char *pBuf = vma->UserCheckAndGetAddress(buf);
 	if (pPath == nullptr || pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	func("%s %#lx %ld", pPath, buf, bufsiz);
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	int fd = fdt->usr_open(pPath, O_RDONLY, 0);
 	if (fd < 0)
-		return -ENOENT;
+		return -linux_ENOENT;
 
 	auto it = fdt->FileMap.find(fd);
 	if (it == fdt->FileMap.end())
-		ReturnLogError(-EBADF, "Invalid fd %d", fd);
+		ReturnLogError(-linux_EBADF, "Invalid fd %d", fd);
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
 	FileNode *node = fildes.Node;
 	fdt->usr_close(fd);
 
 	if (!node->IsSymbolicLink())
-		return -EINVAL;
+		return -linux_EINVAL;
 
-	return node->ReadLink(pBuf, bufsiz);
+	return ConvertErrnoToLinux(node->ReadLink(pBuf, bufsiz));
 }
 
 static mode_t linux_umask(SysFrm *, mode_t mask)
@@ -2002,7 +2238,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 
 	auto pUsage = vma->UserCheckAndGetAddress(usage);
 	if (pUsage == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	switch (who)
 	{
@@ -2061,7 +2297,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 		break;
 	}
 	default:
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	return 0;
@@ -2100,7 +2336,7 @@ static pid_t linux_getpgid(SysFrm *, pid_t pid)
 
 	PCB *target = pcb->GetContext()->GetProcessByID(pid);
 	if (!target)
-		return -ESRCH;
+		return -linux_ESRCH;
 
 	return target->Security.ProcessGroupID;
 }
@@ -2116,7 +2352,7 @@ static int linux_setpgid(SysFrm *, pid_t pid, pid_t pgid)
 
 	PCB *target = pcb->GetContext()->GetProcessByID(pid);
 	if (!target)
-		return -ESRCH;
+		return -linux_ESRCH;
 
 	if (pgid == 0)
 	{
@@ -2134,7 +2370,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (vma->UserCheck(addr) < 0)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	switch (code)
 	{
@@ -2196,12 +2432,12 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	case linux_ARCH_FORCE_TAGGED_SVA:
 	{
 		fixme("Code %#lx not implemented", code);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 	default:
 	{
 		debug("Invalid code %#lx", code);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
 }
@@ -2215,7 +2451,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 		 magic2 != linux_LINUX_REBOOT_MAGIC2C))
 	{
 		warn("Invalid magic %#x %#x", magic, magic2);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	PCB *pcb = thisProcess;
@@ -2255,7 +2491,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	{
 		void *pArg = vma->__UserCheckAndGetAddress(arg, sizeof(void *));
 		if (pArg == nullptr)
-			return -EFAULT;
+			return -linux_EFAULT;
 
 		KPrint("Restarting system with command '%s'",
 			   (const char *)pArg);
@@ -2272,12 +2508,12 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	case linux_LINUX_REBOOT_CMD_KEXEC:
 	{
 		fixme("cmd %#x not implemented", cmd);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 	default:
 	{
 		debug("Invalid cmd %#x", cmd);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
 	return 0;
@@ -2290,13 +2526,13 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 		signum == linux_SIGKILL || signum == linux_SIGSTOP)
 	{
 		debug("Invalid signal %d", signum);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	if (sigsetsize != sizeof(sigset_t))
 	{
 		warn("Unsupported sigsetsize %d!", sigsetsize);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	PCB *pcb = thisProcess;
@@ -2305,9 +2541,9 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 	debug("signum=%d act=%#lx oldact=%#lx", signum, act, oldact);
 
 	if (vma->UserCheck(act) < 0 && act != nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 	if (vma->UserCheck(oldact) < 0 && oldact != nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	auto pAct = pcb->PageTable->Get(act);
 	auto pOldact = pcb->PageTable->Get(oldact);
@@ -2325,14 +2561,14 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 	}
 
 	if (unlikely(ret < 0))
-		return ret;
+		return ConvertErrnoToLinux(ret);
 
 	if (pAct)
 	{
 		if (pAct->flags & linux_SA_IMMUTABLE)
 		{
 			warn("Immutable signal %d", signum);
-			return -EINVAL;
+			return -linux_EINVAL;
 		}
 
 		Signals nSig = ConvertSignalToNative(signum);
@@ -2344,7 +2580,7 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 		SetSigActToLinux(&nSA, (k_sigaction *)pAct);
 	}
 
-	return ret;
+	return ConvertErrnoToLinux(ret);
 }
 
 static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
@@ -2355,7 +2591,7 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 	if (sigsetsize != sizeof(sigset_t))
 	{
 		warn("Unsupported sigsetsize %d!", sigsetsize);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	TCB *tcb = thisThread;
@@ -2363,9 +2599,9 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	if (vma->UserCheck(set) < 0 && set != nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 	if (vma->UserCheck(oldset) < 0 && oldset != nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	const sigset_t *pSet = (const sigset_t *)pcb->PageTable->Get((void *)set);
 	sigset_t *pOldset = (sigset_t *)pcb->PageTable->Get(oldset);
@@ -2396,7 +2632,7 @@ static int linux_sigprocmask(SysFrm *, int how, const sigset_t *set,
 		break;
 	default:
 		warn("Invalid how %#x", how);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	return 0;
 }
@@ -2415,17 +2651,17 @@ static int linux_tkill(SysFrm *, int tid, int sig)
 {
 	Tasking::TCB *tcb = thisProcess->GetThread(tid);
 	if (!tcb)
-		return -ESRCH;
+		return -linux_ESRCH;
 
 	Signals nSig = ConvertSignalToNative(sig);
 	assert(nSig != SIG_NULL);
-	return tcb->SendSignal(nSig);
+	return ConvertErrnoToLinux(tcb->SendSignal(nSig));
 }
 
 static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 {
 	if (tidptr == nullptr)
-		return -EINVAL;
+		return -linux_EINVAL;
 
 	Tasking::TCB *tcb = thisThread;
 
@@ -2443,12 +2679,12 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 	if (count < sizeof(struct linux_dirent64))
 	{
 		debug("Invalid count %d", count);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	auto it = fdt->FileMap.find(fd);
 	if (it == fdt->FileMap.end())
-		ReturnLogError(-EBADF, "Invalid fd %d", fd);
+		ReturnLogError(-linux_EBADF, "Invalid fd %d", fd);
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
 
@@ -2457,11 +2693,11 @@ static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
 
 	auto pDirp = vma->UserCheckAndGetAddress(dirp);
 	if (pDirp == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	UNUSED(pDirp);
 	stub;
-	return -ENOSYS;
+	return -linux_ENOSYS;
 }
 
 static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
@@ -2473,7 +2709,7 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 
 	timespec *pTp = vma->UserCheckAndGetAddress(tp);
 	if (pTp == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	/* FIXME: This is not correct? */
 	switch (clockid)
@@ -2508,12 +2744,12 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	case linux_CLOCK_TAI:
 	{
 		fixme("clockid %d is stub", clockid);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 	default:
 	{
 		warn("Invalid clockid %#lx", clockid);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
 	return 0;
@@ -2529,7 +2765,7 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 	const timespec *pRequest = vma->UserCheckAndGetAddress(request);
 	timespec *pRemain = vma->UserCheckAndGetAddress(remain);
 	if (pRequest == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	UNUSED(pRemain);
 	UNUSED(flags);
@@ -2560,12 +2796,12 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 	case linux_CLOCK_TAI:
 	{
 		fixme("clockid %d is stub", clockid);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 	default:
 	{
 		warn("Invalid clockid %#lx", clockid);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 	}
 	return 0;
@@ -2596,12 +2832,12 @@ static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 		}
 
 		if (!tcb)
-			return -ESRCH;
+			return -linux_ESRCH;
 	}
 
 	Signals nSig = ConvertSignalToNative(sig);
 	assert(nSig != SIG_NULL);
-	return tcb->SendSignal(nSig);
+	return ConvertErrnoToLinux(tcb->SendSignal(nSig));
 }
 
 static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mode_t mode)
@@ -2612,7 +2848,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
 	if (pPathname == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	debug("dirfd=%d pathname=%s flags=%#x mode=%#x",
 		  dirfd, pPathname, flags, mode);
@@ -2621,20 +2857,20 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 	{
 		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
 		if (!absoluteNode)
-			return -ENOENT;
+			return -linux_ENOENT;
 
 		const char *absPath = new char[strlen(absoluteNode->Path.c_str()) + 1];
 		strcpy((char *)absPath, absoluteNode->Path.c_str());
 		int ret = fdt->usr_open(absPath, flags, mode);
 		delete[] absPath;
-		return ret;
+		return ConvertErrnoToLinux(ret);
 	}
 
 	if (!fs->PathIsRelative(pPathname))
 		return fdt->usr_open(pPathname, flags, mode);
 
 	fixme("dirfd=%d is stub", dirfd);
-	return -ENOSYS;
+	return -linux_ENOSYS;
 }
 
 /* Undocumented? */
@@ -2653,7 +2889,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
 	struct linux_kstat *pStatbuf = vma->UserCheckAndGetAddress(statbuf);
 	if (pPathname == nullptr || pStatbuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
 
@@ -2661,7 +2897,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	{
 		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
 		if (!absoluteNode)
-			return -ENOENT;
+			return -linux_ENOENT;
 
 		const char *absPath = new char[strlen(absoluteNode->Path.c_str()) + 1];
 		strcpy((char *)absPath, absoluteNode->Path.c_str());
@@ -2669,19 +2905,19 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 		int ret = fdt->usr_stat(absPath, &nstat);
 		*pStatbuf = StatToKStat(nstat);
 		delete[] absPath;
-		return ret;
+		return ConvertErrnoToLinux(ret);
 	}
 
 	auto it = fdt->FileMap.find(dirfd);
 	if (it == fdt->FileMap.end())
-		ReturnLogError(-EBADF, "Invalid fd %d", dirfd);
+		ReturnLogError(-linux_EBADF, "Invalid fd %d", dirfd);
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
 
 	struct kstat nstat = KStatToStat(*pStatbuf);
 	int ret = fdt->usr_stat(pPathname, &nstat);
 	*pStatbuf = StatToKStat(nstat);
-	return ret;
+	return ConvertErrnoToLinux(ret);
 }
 
 static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
@@ -2694,11 +2930,11 @@ static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
 
 	int *pPipefd = vma->UserCheckAndGetAddress(pipefd);
 	if (pPipefd == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	debug("pipefd=%#lx", pPipefd);
 	fixme("pipefd=[%d, %d] flags=%#x", pPipefd[0], pPipefd[1], flags);
-	return -ENOSYS;
+	return -linux_ENOSYS;
 }
 
 static int linux_prlimit64(SysFrm *, pid_t pid, int resource,
@@ -2846,12 +3082,12 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 				  linux_GRND_INSECURE))
 	{
 		warn("Invalid flags %#x", flags);
-		return -EINVAL;
+		return -linux_EINVAL;
 	}
 
 	auto pBuf = vma->UserCheckAndGetAddress(buf, buflen);
 	if (pBuf == nullptr)
-		return -EFAULT;
+		return -linux_EFAULT;
 
 	if (flags & linux_GRND_RANDOM)
 	{
@@ -3777,7 +4013,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	{
 		fixme("Syscall %d not implemented",
 			  Frame->rax);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	SyscallData Syscall = LinuxSyscallsTableAMD64[Frame->rax];
@@ -3789,7 +4025,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	{
 		fixme("Syscall %s(%d) not implemented",
 			  Syscall.Name, Frame->rax);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
@@ -3808,7 +4044,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	{
 		fixme("Syscall %d not implemented",
 			  Frame->eax);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	SyscallData Syscall = LinuxSyscallsTableI386[Frame->eax];
@@ -3820,7 +4056,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	{
 		fixme("Syscall %s(%d) not implemented",
 			  Syscall.Name, Frame->eax);
-		return -ENOSYS;
+		return -linux_ENOSYS;
 	}
 
 	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
@@ -3835,7 +4071,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	debug("< [%d:\"%s\"] = %d", Frame->eax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(aa64)
-	return -ENOSYS;
+	return -linux_ENOSYS;
 #endif
 
 #if defined(a64)
