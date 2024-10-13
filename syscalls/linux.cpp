@@ -2164,6 +2164,20 @@ static int linux_chdir(SysFrm *, const char *path)
 	return 0;
 }
 
+static int linux_fchdir(SysFrm *, int fd)
+{
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+
+	auto it = fdt->FileMap.find(fd);
+	if (it == fdt->FileMap.end())
+		return -linux_EBADF;
+
+	pcb->SetWorkingDirectory(it->second.Node);
+	debug("Changed cwd to \"%s\"", it->second.Node->GetPath().c_str());
+	return 0;
+}
+
 static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 {
 	PCB *pcb = thisProcess;
@@ -3188,7 +3202,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_getdents] = {"getdents", (void *)nullptr},
 	[__NR_amd64_getcwd] = {"getcwd", (void *)linux_getcwd},
 	[__NR_amd64_chdir] = {"chdir", (void *)linux_chdir},
-	[__NR_amd64_fchdir] = {"fchdir", (void *)nullptr},
+	[__NR_amd64_fchdir] = {"fchdir", (void *)linux_fchdir},
 	[__NR_amd64_rename] = {"rename", (void *)nullptr},
 	[__NR_amd64_mkdir] = {"mkdir", (void *)linux_mkdir},
 	[__NR_amd64_rmdir] = {"rmdir", (void *)nullptr},
@@ -3690,7 +3704,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_get_kernel_syms] = {"get_kernel_syms", (void *)nullptr},
 	[__NR_i386_quotactl] = {"quotactl", (void *)nullptr},
 	[__NR_i386_getpgid] = {"getpgid", (void *)linux_getpgid},
-	[__NR_i386_fchdir] = {"fchdir", (void *)nullptr},
+	[__NR_i386_fchdir] = {"fchdir", (void *)linux_fchdir},
 	[__NR_i386_bdflush] = {"bdflush", (void *)nullptr},
 	[__NR_i386_sysfs] = {"sysfs", (void *)nullptr},
 	[__NR_i386_personality] = {"personality", (void *)nullptr},
