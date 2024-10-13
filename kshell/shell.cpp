@@ -601,14 +601,14 @@ void KShellThread()
 				pcb = TaskManager->GetProcessByID(ret);
 				if (pcb == nullptr)
 				{
-					printf("Failed to get process by ID\n");
+					printf("KShell: Failed to get process by ID\n");
 					continue;
 				}
 				pcb->SetWorkingDirectory(cwd);
 				tcb = TaskManager->GetThreadByID(ret, pcb);
 				if (tcb == nullptr)
 				{
-					printf("Failed to get thread by ID\n");
+					printf("KShell: Failed to get thread by ID\n");
 					continue;
 				}
 				TaskManager->WaitForThread(tcb);
