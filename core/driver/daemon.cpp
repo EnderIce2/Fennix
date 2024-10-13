@@ -154,7 +154,12 @@ namespace Driver
 			case 6: /* /dev/kcon */
 				return KernelConsole::CurrentTerminal.load()->Read(Buffer, Size, Offset);
 			case 7: /* /dev/tty */
-				return ((TTY::TeletypeDriver *)thisProcess->tty)->Read(Buffer, Size, Offset);
+			{
+				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
+				if (tty == nullptr)
+					return -ENOTTY;
+				return tty->Read(Buffer, Size, Offset);
+			}
 			case 8: /* /dev/ptmx */
 				return -ENOSYS;
 			default:
@@ -250,7 +255,12 @@ namespace Driver
 			case 6: /* /dev/kcon */
 				return KernelConsole::CurrentTerminal.load()->Write(Buffer, Size, Offset);
 			case 7: /* /dev/tty */
-				return ((TTY::TeletypeDriver *)thisProcess->tty)->Write(Buffer, Size, Offset);
+			{
+				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
+				if (tty == nullptr)
+					return -ENOTTY;
+				return tty->Write(Buffer, Size, Offset);
+			}
 			case 8: /* /dev/ptmx */
 				return -ENOSYS;
 			default:
@@ -311,7 +321,12 @@ namespace Driver
 			case 6: /* /dev/kcon */
 				return KernelConsole::CurrentTerminal.load()->Open(Flags, Mode);
 			case 7: /* /dev/tty */
-				return ((TTY::TeletypeDriver *)thisProcess->tty)->Open(Flags, Mode);
+			{
+				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
+				if (tty == nullptr)
+					return -ENOTTY;
+				return tty->Open(Flags, Mode);
+			}
 			case 8: /* /dev/ptmx */
 				return ptmx->Open();
 			default:
@@ -367,7 +382,12 @@ namespace Driver
 			case 6: /* /dev/kcon */
 				return KernelConsole::CurrentTerminal.load()->Close();
 			case 7: /* /dev/tty */
-				return ((TTY::TeletypeDriver *)thisProcess->tty)->Close();
+			{
+				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
+				if (tty == nullptr)
+					return -ENOTTY;
+				return tty->Close();
+			}
 			case 8: /* /dev/ptmx */
 				return ptmx->Close();
 			default:
@@ -423,7 +443,12 @@ namespace Driver
 			case 6: /* /dev/kcon */
 				return KernelConsole::CurrentTerminal.load()->Ioctl(Request, Argp);
 			case 7: /* /dev/tty */
-				return ((TTY::TeletypeDriver *)thisProcess->tty)->Ioctl(Request, Argp);
+			{
+				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
+				if (tty == nullptr)
+					return -ENOTTY;
+				return tty->Ioctl(Request, Argp);
+			}
 			case 8: /* /dev/ptmx */
 				return -ENOSYS;
 			default:
