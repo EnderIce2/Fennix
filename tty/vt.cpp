@@ -17,6 +17,7 @@
 
 #include <kcon.hpp>
 
+#include <filesystem/ioctl.hpp>
 #include <memory.hpp>
 #include <stropts.h>
 #include <string.h>
@@ -26,16 +27,184 @@
 
 namespace KernelConsole
 {
+	int VirtualTerminal::Open(int Flags, mode_t Mode)
+	{
+		std::lock_guard<std::mutex> lock(Mutex);
+		stub;
+		return 0;
+	}
+
+	int VirtualTerminal::Close()
+	{
+		std::lock_guard<std::mutex> lock(Mutex);
+		stub;
+		return 0;
+	}
+
+	ssize_t VirtualTerminal::Read(void *Buffer, size_t Size, off_t Offset)
+	{
+		std::lock_guard<std::mutex> lock(Mutex);
+
+		KeyboardReport report{};
+
+		/* FIXME: this is a hack, "static" is not a good idea */
+		static bool upperCase = false;
+
+	RecheckKeyboard:
+		while (DriverManager->GlobalKeyboardInputReports.Count() == 0)
+			TaskManager->Yield();
+
+		DriverManager->GlobalKeyboardInputReports.Read(&report, sizeof(report));
+
+		int pkey = report.Key & ~KEY_PRESSED;
+		if (pkey == KEY_LEFT_SHIFT || pkey == KEY_RIGHT_SHIFT)
+		{
+			if (report.Key & KEY_PRESSED)
+				upperCase = true;
+			else
+				upperCase = false;
+			goto RecheckKeyboard;
+		}
+
+		if (!(report.Key & KEY_PRESSED))
+			goto RecheckKeyboard;
+
+		if (!Driver::IsValidChar(report.Key))
+			goto RecheckKeyboard;
+
+		char c = Driver::GetScanCode(report.Key, upperCase);
+		char *buf = (char *)Buffer;
+		buf[0] = c;
+		debug("KCON: %c", c);
+
+		if (this->TerminalConfig.c_lflag & ECHO)
+		{
+			debug("ECHO");
+			if (this->TerminalConfig.c_lflag & ICANON)
+				this->Process(buf[0]);
+			else
+				this->Append(buf[0]);
+		}
+
+		if (this->TerminalConfig.c_lflag & ICANON)
+		{
+			fixme("ICANON");
+			// if (pkey == KEY_RETURN)
+			// {
+			//
+			// 	return bufLength;
+			// }
+		}
+		else
+		{
+			debug("~ICANON");
+		}
+
+		debug("ret 1");
+		return 1;
+	}
+
+	ssize_t VirtualTerminal::Write(const void *Buffer, size_t Size, off_t Offset)
+	{
+		std::lock_guard<std::mutex> lock(Mutex);
+
+		char *buf = (char *)Buffer;
+		debug("string: \"%*s\"", Size, buf);
+		for (size_t i = 0; i < Size; i++)
+		{
+			if (this->TerminalConfig.c_lflag & ICANON)
+				this->Process(buf[i]);
+			else
+				this->Append(buf[i]);
+		}
+
+		debug("ret %ld", Size);
+		return Size;
+	}
+
+	int VirtualTerminal::Ioctl(unsigned long Request, void *Argp)
+	{
+		std::lock_guard<std::mutex> lock(Mutex);
+
+		switch (Request)
+		{
+		case 0xffffffff80045430: /* FIXME: ???? */
+			debug("???");
+			[[fallthrough]];
+		case TIOCGPTN:
+		{
+			fixme("stub ioctl TIOCGPTN");
+
+			int *n = (int *)Argp;
+			*n = -1;
+			return 0;
+		}
+		case TIOCSPTLCK:
+		{
+			fixme("stub ioctl TIOCSPTLCK");
+
+			int *n = (int *)Argp;
+			*n = 0;
+			return 0;
+		}
+		case TCGETS:
+		{
+			struct termios *t = (struct termios *)Argp;
+			*t = TerminalConfig;
+			return 0;
+		}
+		case TCSETSW:
+		{
+			debug("draining output buffer...");
+			TermBuf.DrainOutput();
+			debug("output buffer drained");
+
+			TerminalConfig = *(struct termios *)Argp;
+			return 0;
+		}
+		case TIOCGWINSZ:
+		{
+			struct winsize *ws = (struct winsize *)Argp;
+			*ws = TerminalSize;
+			return 0;
+		}
+		case TIOCGPGRP:
+		{
+			*((pid_t *)Argp) = thisProcess->Security.ProcessGroupID;
+			debug("returning pgid %d", thisProcess->Security.ProcessGroupID);
+			return 0;
+		}
+		case TIOCSPGRP:
+		{
+			thisProcess->Security.ProcessGroupID = *((pid_t *)Argp);
+			debug("updated pgid to %d", thisProcess->Security.ProcessGroupID);
+			return 0;
+		}
+		case TIOCGSID:
+		{
+			*((pid_t *)Argp) = thisProcess->Security.SessionID;
+			debug("returning sid %d", thisProcess->Security.SessionID);
+			return 0;
+		}
+
+		default:
+		{
+			debug("Unknown ioctl %#lx", Request);
+			return -ENOTSUP;
+		}
+		}
+	}
+
 	void VirtualTerminal::Clear(unsigned short StartX, unsigned short StartY, unsigned short EndX, unsigned short EndY)
 	{
 		assert(this->PaintCB != nullptr);
-		for (long i = StartX + StartY * this->termSize.ws_row; i < EndX + EndY * this->termSize.ws_row; i++)
+		for (long i = StartX + StartY * this->TerminalSize.ws_row; i < EndX + EndY * this->TerminalSize.ws_row; i++)
 		{
 			TerminalCell *cell = &this->Cells[i];
 			cell->c = ' ';
 			cell->attr = {};
 
-			this->PaintCB(cell, i % this->termSize.ws_row, i / this->termSize.ws_row);
+			this->PaintCB(cell, i % this->TerminalSize.ws_row, i / this->TerminalSize.ws_row);
 		}
 	}
 
@@ -45,21 +214,21 @@ namespace KernelConsole
 		if (Lines == 0)
 			return;
 
-		Lines = Lines > this->termSize.ws_col ? this->termSize.ws_col : Lines;
+		Lines = Lines > this->TerminalSize.ws_col ? this->TerminalSize.ws_col : Lines;
 
-		for (int i = 0; i < ((this->termSize.ws_row * this->termSize.ws_col) - (this->termSize.ws_row * Lines)); i++)
+		for (int i = 0; i < ((this->TerminalSize.ws_row * this->TerminalSize.ws_col) - (this->TerminalSize.ws_row * Lines)); i++)
 		{
-			this->Cells[i] = this->Cells[i + (this->termSize.ws_row * Lines)];
-			this->PaintCB(&this->Cells[i], i % this->termSize.ws_row, i / this->termSize.ws_row);
+			this->Cells[i] = this->Cells[i + (this->TerminalSize.ws_row * Lines)];
+			this->PaintCB(&this->Cells[i], i % this->TerminalSize.ws_row, i / this->TerminalSize.ws_row);
 		}
 
-		for (int i = ((this->termSize.ws_row * this->termSize.ws_col) - (this->termSize.ws_row * Lines)); i < this->termSize.ws_row * this->termSize.ws_col; i++)
+		for (int i = ((this->TerminalSize.ws_row * this->TerminalSize.ws_col) - (this->TerminalSize.ws_row * Lines)); i < this->TerminalSize.ws_row * this->TerminalSize.ws_col; i++)
 		{
 			TerminalCell *cell = &this->Cells[i];
 			cell->attr = {};
 			cell->c = ' ';
 
-			this->PaintCB(cell, i % this->termSize.ws_row, i / this->termSize.ws_row);
+			this->PaintCB(cell, i % this->TerminalSize.ws_row, i / this->TerminalSize.ws_row);
 		}
 
 		// Move the cursor up $lines
@@ -80,7 +249,7 @@ namespace KernelConsole
 		this->Cursor.X = 0;
 		this->Cursor.Y++;
 
-		if (this->Cursor.Y >= this->termSize.ws_col)
+		if (this->Cursor.Y >= this->TerminalSize.ws_col)
 			this->Scroll(1);
 
 		if (this->CursorCB != nullptr)
@@ -113,7 +282,7 @@ namespace KernelConsole
 			else
 			{
 				this->Cursor.Y--;
-				this->Cursor.X = this->termSize.ws_row - 1;
+				this->Cursor.X = this->TerminalSize.ws_row - 1;
 			}
 
 			if (this->CursorCB != nullptr)
@@ -121,10 +290,10 @@ namespace KernelConsole
 		}
 		else
 		{
-			if (this->Cursor.X >= this->termSize.ws_row)
+			if (this->Cursor.X >= this->TerminalSize.ws_row)
 				this->NewLine();
 
-			TerminalCell *cell = &this->Cells[this->Cursor.X + this->Cursor.Y * this->termSize.ws_row];
+			TerminalCell *cell = &this->Cells[this->Cursor.X + this->Cursor.Y * this->TerminalSize.ws_row];
 			cell->c = c;
 			cell->attr = this->Attribute;
 
@@ -150,12 +319,12 @@ namespace KernelConsole
 			if (Args[0].Empty)
 				this->Cursor.Y = 0;
 			else
-				this->Cursor.Y = MIN(Args[0].Value - 1, this->termSize.ws_col - 1);
+				this->Cursor.Y = MIN(Args[0].Value - 1, this->TerminalSize.ws_col - 1);
 
 			if (Args[1].Empty)
 				this->Cursor.Y = 0;
 			else
-				this->Cursor.X = MIN(Args[1].Value - 1, this->termSize.ws_row - 1);
+				this->Cursor.X = MIN(Args[1].Value - 1, this->TerminalSize.ws_row - 1);
 		}
 
 		if (this->CursorCB != nullptr)
@@ -167,17 +336,17 @@ namespace KernelConsole
 		TerminalCursor cursor = this->Cursor;
 
 		if (Args[0].Empty)
-			this->Clear(cursor.X, cursor.Y, this->termSize.ws_row, this->termSize.ws_col - 1);
+			this->Clear(cursor.X, cursor.Y, this->TerminalSize.ws_row, this->TerminalSize.ws_col - 1);
 		else
 		{
 			int attr = Args[0].Value;
 
 			if (attr == 0)
-				this->Clear(cursor.X, cursor.Y, this->termSize.ws_row, this->termSize.ws_col - 1);
+				this->Clear(cursor.X, cursor.Y, this->TerminalSize.ws_row, this->TerminalSize.ws_col - 1);
 			else if (attr == 1)
 				this->Clear(0, 0, cursor.X, cursor.Y);
 			else if (attr == 2)
-				this->Clear(0, 0, this->termSize.ws_row, this->termSize.ws_col - 1);
+				this->Clear(0, 0, this->TerminalSize.ws_row, this->TerminalSize.ws_col - 1);
 		}
 	}
 
@@ -186,17 +355,17 @@ namespace KernelConsole
 		TerminalCursor cursor = this->Cursor;
 
 		if (Args[0].Empty)
-			this->Clear(cursor.X, cursor.Y, this->termSize.ws_row, cursor.Y);
+			this->Clear(cursor.X, cursor.Y, this->TerminalSize.ws_row, cursor.Y);
 		else
 		{
 			int attr = Args[0].Value;
 
 			if (attr == 0)
-				this->Clear(cursor.X, cursor.Y, this->termSize.ws_row, cursor.Y);
+				this->Clear(cursor.X, cursor.Y, this->TerminalSize.ws_row, cursor.Y);
 			else if (attr == 1)
 				this->Clear(0, cursor.Y, cursor.X, cursor.Y);
 			else if (attr == 2)
-				this->Clear(0, cursor.Y, this->termSize.ws_row, cursor.Y);
+				this->Clear(0, cursor.Y, this->TerminalSize.ws_row, cursor.Y);
 		}
 	}
 
@@ -234,8 +403,8 @@ namespace KernelConsole
 	{
 		int P1 = (ArgsCount > 0 && !Args[0].Empty) ? Args[0].Value : 1;
 		Cursor.Y += P1;
-		if (Cursor.Y >= this->termSize.ws_col)
-			Cursor.Y = this->termSize.ws_col - 1;
+		if (Cursor.Y >= this->TerminalSize.ws_col)
+			Cursor.Y = this->TerminalSize.ws_col - 1;
 		if (CursorCB)
 			CursorCB(&Cursor);
 	}
@@ -244,8 +413,8 @@ namespace KernelConsole
 	{
 		int P1 = (ArgsCount > 0 && !Args[0].Empty) ? Args[0].Value : 1;
 		Cursor.X += P1;
-		if (Cursor.X >= this->termSize.ws_row)
-			Cursor.X = this->termSize.ws_row - 1;
+		if (Cursor.X >= this->TerminalSize.ws_row)
+			Cursor.X = this->TerminalSize.ws_row - 1;
 		if (CursorCB)
 			CursorCB(&Cursor);
 	}
@@ -264,8 +433,8 @@ namespace KernelConsole
 	{
 		int P1 = (ArgsCount > 0 && !Args[0].Empty) ? Args[0].Value : 1;
 		Cursor.Y += P1;
-		if (Cursor.Y >= this->termSize.ws_col)
-			Cursor.Y = this->termSize.ws_col - 1;
+		if (Cursor.Y >= this->TerminalSize.ws_col)
+			Cursor.Y = this->TerminalSize.ws_col - 1;
 		Cursor.X = 0;
 		if (CursorCB)
 			CursorCB(&Cursor);
@@ -286,8 +455,8 @@ namespace KernelConsole
 	{
 		int P1 = (ArgsCount > 0 && !Args[0].Empty) ? Args[0].Value : 1;
 		Cursor.X = P1 - 1;
-		if (Cursor.X >= this->termSize.ws_row)
-			Cursor.X = this->termSize.ws_row - 1;
+		if (Cursor.X >= this->TerminalSize.ws_row)
+			Cursor.X = this->TerminalSize.ws_row - 1;
 		if (CursorCB)
 			CursorCB(&Cursor);
 	}
@@ -378,7 +547,10 @@ namespace KernelConsole
 		case ANSIParser::ParserState::EndValue:
 			break;
 		default:
+		{
+			error("Invalid parser state: %d", parser->State);
 			assert(!"Invalid parser state");
+		}
 		}
 
 		if (parser->State == ANSIParser::ParserState::EndValue)
@@ -442,7 +614,7 @@ namespace KernelConsole
 									 PaintCallback _Paint, CursorCallback _Print)
 		: PaintCB(_Paint), CursorCB(_Print)
 	{
-		this->termSize = {
+		this->TerminalSize = {
 			.ws_row = Rows,
 			.ws_col = Columns,
 			.ws_xpixel = XPixels,
@@ -463,28 +635,29 @@ namespace KernelConsole
 		- ECHO   - Echo input characters
 		- ICANON - Enable canonical input (enable line editing)
 		*/
-		this->term.c_iflag = /*ICRNL |*/ IXON;
-		this->term.c_oflag = OPOST | ONLCR;
-		this->term.c_cflag = CS8 | CREAD | HUPCL;
-		this->term.c_lflag = ECHO | ICANON;
+		this->TerminalConfig.c_iflag = /*ICRNL |*/ IXON;
+		this->TerminalConfig.c_oflag = OPOST | ONLCR;
+		this->TerminalConfig.c_cflag = CS8 | CREAD | HUPCL;
+		this->TerminalConfig.c_lflag = ECHO | ICANON;
+		this->TerminalConfig.c_lflag &= ~ICANON; /* FIXME: not ready for this yet */
 
-		this->term.c_cc[VINTR] = 0x03;	  /* ^C */
-		this->term.c_cc[VQUIT] = 0x1C;	  /* ^\ */
-		this->term.c_cc[VERASE] = 0x7F;	  /* DEL */
-		this->term.c_cc[VKILL] = 0x15;	  /* ^U */
-		this->term.c_cc[VEOF] = 0x04;	  /* ^D */
-		this->term.c_cc[VTIME] = 0;		  /* Timeout for non-canonical read */
-		this->term.c_cc[VMIN] = 1;		  /* Minimum number of characters for non-canonical read */
-		this->term.c_cc[VSWTC] = 0;		  /* ^O */
-		this->term.c_cc[VSTART] = 0x11;	  /* ^Q */
-		this->term.c_cc[VSTOP] = 0x13;	  /* ^S */
-		this->term.c_cc[VSUSP] = 0x1A;	  /* ^Z */
-		this->term.c_cc[VEOL] = 0x00;	  /* NUL */
-		this->term.c_cc[VREPRINT] = 0x12; /* ^R */
-		this->term.c_cc[VDISCARD] = 0x14; /* ^T */
-		this->term.c_cc[VWERASE] = 0x17;  /* ^W */
-		this->term.c_cc[VLNEXT] = 0x19;	  /* ^Y */
-		this->term.c_cc[VEOL2] = 0x7F;	  /* DEL (or sometimes EOF) */
+		this->TerminalConfig.c_cc[VINTR] = 0x03;	/* ^C */
+		this->TerminalConfig.c_cc[VQUIT] = 0x1C;	/* ^\ */
+		this->TerminalConfig.c_cc[VERASE] = 0x7F;	/* DEL */
+		this->TerminalConfig.c_cc[VKILL] = 0x15;	/* ^U */
+		this->TerminalConfig.c_cc[VEOF] = 0x04;		/* ^D */
+		this->TerminalConfig.c_cc[VTIME] = 0;		/* Timeout for non-canonical read */
+		this->TerminalConfig.c_cc[VMIN] = 1;		/* Minimum number of characters for non-canonical read */
+		this->TerminalConfig.c_cc[VSWTC] = 0;		/* ^O */
+		this->TerminalConfig.c_cc[VSTART] = 0x11;	/* ^Q */
+		this->TerminalConfig.c_cc[VSTOP] = 0x13;	/* ^S */
+		this->TerminalConfig.c_cc[VSUSP] = 0x1A;	/* ^Z */
+		this->TerminalConfig.c_cc[VEOL] = 0x00;		/* NUL */
+		this->TerminalConfig.c_cc[VREPRINT] = 0x12; /* ^R */
+		this->TerminalConfig.c_cc[VDISCARD] = 0x14; /* ^T */
+		this->TerminalConfig.c_cc[VWERASE] = 0x17;	/* ^W */
+		this->TerminalConfig.c_cc[VLNEXT] = 0x19;	/* ^Y */
+		this->TerminalConfig.c_cc[VEOL2] = 0x7F;	/* DEL (or sometimes EOF) */
 
 		this->Cells = new TerminalCell[Rows * Columns];
 

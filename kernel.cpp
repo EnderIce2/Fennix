@@ -17,7 +17,6 @@
 
 #include "kernel.h"
 
-#include <filesystem/mounts.hpp>
 #include <filesystem/ustar.hpp>
 #include <memory.hpp>
 #include <convert.h>

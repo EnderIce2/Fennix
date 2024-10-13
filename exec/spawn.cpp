@@ -157,6 +157,10 @@ namespace Execute
 				return false;
 			};
 
+			fixme("remove workarounds for stdio and tty");
+			if (!Parent->tty)
+				Process->tty = KernelConsole::CurrentTerminal.load();
+
 			if (!ForkStdio(Parent->stdin))
 				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 

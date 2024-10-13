@@ -22,7 +22,6 @@
 
 #include <boot/binfo.h>
 #ifdef __cplusplus
-#include <filesystem/mounts.hpp>
 #include <filesystem.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
@@ -34,6 +33,7 @@
 #include <time.hpp>
 #include <disk.hpp>
 #include <kcon.hpp>
+#include <tty.hpp>
 #include <pci.hpp>
 #include <smp.hpp>
 #endif

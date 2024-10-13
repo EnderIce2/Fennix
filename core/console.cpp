@@ -17,7 +17,6 @@
 
 #include <kcon.hpp>
 
-#include <filesystem/ioctl.hpp>
 #include <memory.hpp>
 #include <stropts.h>
 #include <string.h>
@@ -27,100 +26,6 @@
 
 namespace KernelConsole
 {
-	int KConIoctl(struct Inode *Node, unsigned long Request, void *Argp)
-	{
-		fixme("KConIoctl");
-		switch (Request)
-		{
-		case TCGETS:
-		{
-			struct termios *t = (struct termios *)Argp;
-			// memcpy(t, &term, sizeof(struct termios));
-			return 0;
-		}
-		case TCSETS:
-		{
-			debug("TCSETS not supported");
-			return -EINVAL;
-
-			struct termios *t = (struct termios *)Argp;
-			// memcpy(&term, t, sizeof(struct termios));
-			return 0;
-		}
-		case TIOCGPGRP:
-		{
-			*((pid_t *)Argp) = 0;
-			return 0;
-		}
-		case TIOCSPGRP:
-		{
-			*((pid_t *)Argp) = 0;
-			return 0;
-		}
-		case TIOCGWINSZ:
-		{
-			struct winsize *ws = (struct winsize *)Argp;
-			// memcpy(ws, &termSize, sizeof(struct winsize));
-			return 0;
-		}
-		case TIOCSWINSZ:
-		{
-			debug("TIOCSWINSZ not supported");
-			return -EINVAL;
-
-			struct winsize *ws = (struct winsize *)Argp;
-			// memcpy(&termSize, ws, sizeof(struct winsize));
-			return 0;
-		}
-		case TCSETSW:
-		case TCSETSF:
-		case TCGETA:
-		case TCSETA:
-		case TCSETAW:
-		case TCSETAF:
-		case TCSBRK:
-		case TCXONC:
-		case TCFLSH:
-		case TIOCEXCL:
-		case TIOCNXCL:
-		case TIOCSCTTY:
-		case TIOCOUTQ:
-		case TIOCSTI:
-		case TIOCMGET:
-		case TIOCMBIS:
-		case TIOCMBIC:
-		case TIOCMSET:
-		{
-			fixme("ioctl %#lx not implemented", Request);
-			return -ENOSYS;
-		}
-		case TIOCGPTN:
-		case 0xffffffff80045430: /* FIXME: ???? */
-		{
-			fixme("stub ioctl %#lx", Request);
-
-			int *n = (int *)Argp;
-			*n = -1;
-			break;
-		}
-		case TIOCSPTLCK:
-		{
-			fixme("stub ioctl %#lx", Request);
-
-			int *n = (int *)Argp;
-			*n = 0;
-			break;
-		}
-		default:
-		{
-			debug("Unknown ioctl %#lx", Request);
-			return -EINVAL;
-		}
-		}
-
-		return 0;
-	}
-
 	int TermColors[] = {
 		[TerminalColor::BLACK] = 0x000000,
 		[TerminalColor::RED] = 0xAA0000,
@@ -369,8 +274,6 @@ namespace KernelConsole
 
 	void LateInit()
 	{
-		new vfs::PTMXDevice;
-
 		FileNode *rn = fs->GetByPath("/etc/term", thisProcess->Info.RootNode);
 		if (rn == nullptr)
 			return;

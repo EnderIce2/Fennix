@@ -20,6 +20,7 @@
 #include <interface/driver.h>
 #include <interface/input.h>
 #include <memory.hpp>
+#include <stropts.h>
 #include <ints.hpp>
 #include <task.hpp>
 #include <printf.h>
@@ -44,6 +45,8 @@ namespace Driver
 	 *		4 - /dev/random
 	 *		5 - /dev/mem
 	 *		6 - /dev/kcon
+	 *      7 - /dev/tty
+	 *      8 - /dev/ptmx
 	 *
 	 * maj = 1
 	 * 	min:
@@ -52,9 +55,13 @@ namespace Driver
 	 * 		..- /dev/input/eventX
 	 */
 
+	TTY::PTMXDevice *ptmx = nullptr;
+
 	int __fs_Lookup(struct Inode *_Parent, const char *Name, struct Inode **Result)
 	{
-		auto Parent = (Manager::DeviceInode *)_Parent;
+		func("%#lx %s %#lx", _Parent, Name, Result);
+
+		assert(_Parent != nullptr);
 
 		const char *basename;
 		size_t length;
@@ -65,9 +72,10 @@ namespace Driver
 			return -EINVAL;
 		}
 
+		auto Parent = (Manager::DeviceInode *)_Parent;
 		for (const auto &child : Parent->Children)
 		{
-			debug("Comparing %s with %s", child->Name.c_str(), basename);
+			debug("Comparing %s with %s", basename, child->Name.c_str());
 			if (strcmp(child->Name.c_str(), basename) != 0)
 				continue;
 
@@ -81,6 +89,8 @@ namespace Driver
 
 	int __fs_Create(struct Inode *_Parent, const char *Name, mode_t Mode, struct Inode **Result)
 	{
+		func("%#lx %s %d", _Parent, Name, Mode);
+
 		assert(_Parent != nullptr);
 
 		/* We expect to be /dev or children of it */
@@ -99,6 +109,7 @@ namespace Driver
 
 	ssize_t __fs_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
 	{
+		func("%#lx %d %d", Node, Size, Offset);
 		switch (Node->GetMajor())
 		{
 		case 0:
@@ -141,10 +152,11 @@ namespace Driver
 				return 0;
 			}
 			case 6: /* /dev/kcon */
-			{
-				stub;
-				return 0;
-			}
+				return KernelConsole::CurrentTerminal.load()->Read(Buffer, Size, Offset);
+			case 7: /* /dev/tty */
+				return ((TTY::TeletypeDriver *)thisProcess->tty)->Read(Buffer, Size, Offset);
+			case 8: /* /dev/ptmx */
+				return -ENOSYS;
 			default:
 				return -ENOENT;
 			};
@@ -210,6 +222,8 @@ namespace Driver
 
 	ssize_t __fs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
 	{
+		func("%#lx %p %d %d", Node, Buffer, Size, Offset);
+
 		switch (Node->GetMajor())
 		{
 		case 0:
@@ -234,13 +248,11 @@ namespace Driver
 				return 0;
 			}
 			case 6: /* /dev/kcon */
-			{
-				char *buf = (char *)Buffer;
-				KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load();
-				for (size_t i = 0; i < Size; i++)
-					vt->Process(buf[i]);
-				return Size;
-			}
+				return KernelConsole::CurrentTerminal.load()->Write(Buffer, Size, Offset);
+			case 7: /* /dev/tty */
+				return ((TTY::TeletypeDriver *)thisProcess->tty)->Write(Buffer, Size, Offset);
+			case 8: /* /dev/ptmx */
+				return -ENOSYS;
 			default:
 				return -ENOENT;
 			};
@@ -281,9 +293,180 @@ namespace Driver
 		}
 	}
 
+	int __fs_Open(struct Inode *Node, int Flags, mode_t Mode)
+	{
+		func("%#lx %d %d", Node, Flags, Mode);
+
+		switch (Node->GetMajor())
+		{
+		case 0:
+		{
+			switch (Node->GetMinor())
+			{
+			case 2: /* /dev/null */
+			case 3: /* /dev/zero */
+			case 4: /* /dev/random */
+			case 5: /* /dev/mem */
+				return -ENOSYS;
+			case 6: /* /dev/kcon */
+				return KernelConsole::CurrentTerminal.load()->Open(Flags, Mode);
+			case 7: /* /dev/tty */
+				return ((TTY::TeletypeDriver *)thisProcess->tty)->Open(Flags, Mode);
+			case 8: /* /dev/ptmx */
+				return ptmx->Open();
+			default:
+				return -ENOENT;
+			};
+		}
+		case 1:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/input/keyboard */
+			case 1: /* /dev/input/mouse */
+				return -ENOTSUP;
+			default:
+				return -ENOENT;
+			};
+		}
+		default:
+		{
+			std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+				DriverManager->GetDrivers();
+			const auto it = drivers.find(Node->GetMajor());
+			if (it == drivers.end())
+				ReturnLogError(-EINVAL, "Driver %d not found", Node->GetMajor());
+			const Driver::DriverObject *drv = &it->second;
+
+			auto dop = drv->DeviceOperations;
+			auto dOps = dop->find(Node->GetMinor());
+			if (dOps == dop->end())
+				ReturnLogError(-EINVAL, "Device %d not found", Node->GetMinor());
+			AssertReturnError(dOps->second.Ops, -ENOTSUP);
+			AssertReturnError(dOps->second.Ops->Open, -ENOTSUP);
+			return dOps->second.Ops->Open(Node, Flags, Mode);
+		}
+		}
+	}
+
+	int __fs_Close(struct Inode *Node)
+	{
+		func("%#lx", Node);
+
+		switch (Node->GetMajor())
+		{
+		case 0:
+		{
+			switch (Node->GetMinor())
+			{
+			case 2: /* /dev/null */
+			case 3: /* /dev/zero */
+			case 4: /* /dev/random */
+			case 5: /* /dev/mem */
+				return -ENOSYS;
+			case 6: /* /dev/kcon */
+				return KernelConsole::CurrentTerminal.load()->Close();
+			case 7: /* /dev/tty */
+				return ((TTY::TeletypeDriver *)thisProcess->tty)->Close();
+			case 8: /* /dev/ptmx */
+				return ptmx->Close();
+			default:
+				return -ENOENT;
+			};
+		}
+		case 1:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/input/keyboard */
+			case 1: /* /dev/input/mouse */
+				return -ENOTSUP;
+			default:
+				return -ENOENT;
+			};
+		}
+		default:
+		{
+			std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+				DriverManager->GetDrivers();
+			const auto it = drivers.find(Node->GetMajor());
+			if (it == drivers.end())
+				ReturnLogError(-EINVAL, "Driver %d not found", Node->GetMajor());
+			const Driver::DriverObject *drv = &it->second;
+
+			auto dop = drv->DeviceOperations;
+			auto dOps = dop->find(Node->GetMinor());
+			if (dOps == dop->end())
+				ReturnLogError(-EINVAL, "Device %d not found", Node->GetMinor());
+			AssertReturnError(dOps->second.Ops, -ENOTSUP);
+			AssertReturnError(dOps->second.Ops->Close, -ENOTSUP);
+			return dOps->second.Ops->Close(Node);
+		}
+		}
+	}
+
+	int __fs_Ioctl(struct Inode *Node, unsigned long Request, void *Argp)
+	{
+		func("%#lx %lu %#lx", Node, Request, Argp);
+
+		switch (Node->GetMajor())
+		{
+		case 0:
+		{
+			switch (Node->GetMinor())
+			{
+			case 2: /* /dev/null */
+			case 3: /* /dev/zero */
+			case 4: /* /dev/random */
+			case 5: /* /dev/mem */
+				return -ENOSYS;
+			case 6: /* /dev/kcon */
+				return KernelConsole::CurrentTerminal.load()->Ioctl(Request, Argp);
+			case 7: /* /dev/tty */
+				return ((TTY::TeletypeDriver *)thisProcess->tty)->Ioctl(Request, Argp);
+			case 8: /* /dev/ptmx */
+				return -ENOSYS;
+			default:
+				return -ENOENT;
+			};
+			break;
+		}
+		case 1:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/input/keyboard */
+			case 1: /* /dev/input/mouse */
+				return -ENOSYS;
+			default:
+				return -ENOENT;
+			};
+		}
+		default:
+		{
+			std::unordered_map<dev_t, Driver::DriverObject> &drivers =
+				DriverManager->GetDrivers();
+			const auto it = drivers.find(Node->GetMajor());
+			if (it == drivers.end())
+				ReturnLogError(-EINVAL, "Driver %d not found", Node->GetMajor());
+			const Driver::DriverObject *drv = &it->second;
+
+			auto dop = drv->DeviceOperations;
+			auto dOps = dop->find(Node->GetMinor());
+			if (dOps == dop->end())
+				ReturnLogError(-EINVAL, "Device %d not found", Node->GetMinor());
+			AssertReturnError(dOps->second.Ops, -ENOTSUP);
+			AssertReturnError(dOps->second.Ops->Ioctl, -ENOTSUP);
+			return dOps->second.Ops->Ioctl(Node, Request, Argp);
+		}
+		}
+	}
+
 	__no_sanitize("alignment")
 		ssize_t __fs_Readdir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
 	{
+		func("%#lx %#lx %d %d %d", _Node, Buffer, Size, Offset, Entries);
+
 		auto Node = (Manager::DeviceInode *)_Node;
 
 		off_t realOffset = Offset;
@@ -545,6 +728,8 @@ namespace Driver
 
 	void Manager::InitializeDaemonFS()
 	{
+		ptmx = new TTY::PTMXDevice;
+
 		dev_t MinorID = 0;
 		DeviceInode *_dev = new DeviceInode;
 		_dev->Name = "dev";
@@ -559,7 +744,7 @@ namespace Driver
 		dev->Flags = I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 
 		FileSystemInfo *fsi = new FileSystemInfo;
-		fsi->Name = "Driver Manager";
+		fsi->Name = "Device Virtual File System";
 		fsi->RootName = "dev";
 		fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 		fsi->SuperOps = {};
@@ -567,6 +752,9 @@ namespace Driver
 		fsi->Ops.Create = __fs_Create;
 		fsi->Ops.Read = __fs_Read;
 		fsi->Ops.Write = __fs_Write;
+		fsi->Ops.Open = __fs_Open;
+		fsi->Ops.Close = __fs_Close;
+		fsi->Ops.Ioctl = __fs_Ioctl;
 		fsi->Ops.ReadDir = __fs_Readdir;
 
 		dev->Device = fs->RegisterFileSystem(fsi, dev);
@@ -641,6 +829,20 @@ namespace Driver
 
 			   S_IFCHR;
 		createDevice(_dev, devNode, "kcon", 0, MinorID++, mode);
+
+		/* c rw- rw- rw- */
+		mode = S_IRUSR | S_IWUSR |
+			   S_IRGRP | S_IWGRP |
+			   S_IRUSR | S_IWUSR |
+			   S_IFCHR;
+		createDevice(_dev, devNode, "tty", 0, MinorID++, mode);
+
+		/* c rw- rw- rw- */
+		mode = S_IRUSR | S_IWUSR |
+			   S_IRGRP | S_IWGRP |
+			   S_IRUSR | S_IWUSR |
+			   S_IFCHR;
+		createDevice(_dev, devNode, "ptmx", 0, MinorID++, mode);
 
 		/* ------------------------------------------------------ */
 

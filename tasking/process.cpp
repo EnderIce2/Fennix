@@ -213,6 +213,7 @@ namespace Tasking
 		}
 
 		this->FileDescriptors = new FileDescriptorTable(this);
+		this->tty = nullptr;
 
 		/* If create page table */
 		if (UseKernelPageTable == false)
@@ -267,6 +268,10 @@ namespace Tasking
 
 		debug("Closing file descriptors");
 		delete this->FileDescriptors;
+
+		debug("Deleting tty");
+		if (this->tty)
+			delete ((TTY::TeletypeDriver *)this->tty);
 
 		/* If we own the pointer to the
 			PageTable, we need to free it */

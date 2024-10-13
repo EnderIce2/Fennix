@@ -484,6 +484,7 @@ namespace Tasking
 		FileNode *stdin;
 		FileNode *stdout;
 		FileNode *stderr;
+		/*TTY::TeletypeDriver*/ void *tty;
 
 		/* Memory */
 		Memory::PageTable *PageTable;

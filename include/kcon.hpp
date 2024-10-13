@@ -19,8 +19,7 @@
 #define __FENNIX_KERNEL_KERNEL_CONSOLE_H__
 
 #include <display.hpp>
-#include <termios.h>
-#include <atomic>
+#include <tty.hpp>
 
 namespace KernelConsole
 {
@@ -86,7 +85,7 @@ namespace KernelConsole
 		char Paint(long CellX, long CellY, char Char, uint32_t Foreground, uint32_t Background);
 	};
 
-	class VirtualTerminal
+	class VirtualTerminal : public TTY::TeletypeDriver
 	{
 	private:
 		ANSIParser Parser{};
@@ -98,9 +97,17 @@ namespace KernelConsole
 		PaintCallback PaintCB = nullptr;
 		CursorCallback CursorCB = nullptr;
 
+		std::mutex Mutex;
+
 	public:
-		termios term;
-		winsize termSize;
+		termios *GetTermios() { return &this->TerminalConfig; }
+		winsize *GetWinsize() { return &this->TerminalSize; }
+
+		int Open(int Flags, mode_t Mode) final;
+		int Close() final;
+		ssize_t Read(void *Buffer, size_t Size, off_t Offset) final;
+		ssize_t Write(const void *Buffer, size_t Size, off_t Offset) final;
+		int Ioctl(unsigned long Request, void *Argp) final;
 
 		void Clear(unsigned short StartX, unsigned short StartY, unsigned short EndX, unsigned short EndY);
 		void Scroll(unsigned short Lines);

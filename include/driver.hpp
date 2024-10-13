@@ -93,6 +93,7 @@ namespace Driver
 		FileNode *devNode = nullptr;
 		FileNode *devInputNode = nullptr;
 
+
 		int LoadDriverFile(DriverObject &Drv, FileNode *File);
 
 		void InitializeDaemonFS();
