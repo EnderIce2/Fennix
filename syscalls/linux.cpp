@@ -2683,35 +2683,74 @@ static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 	return tcb->ID;
 }
 
-static ssize_t linux_getdents64(SysFrm *, int fd, struct linux_dirent64 *dirp,
-								size_t count)
+__no_sanitize("undefined") static ssize_t linux_getdents64(SysFrm *,
+														   int fd, struct linux_dirent64 *dirp, size_t count)
 {
-	PCB *pcb = thisProcess;
-	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
-	Memory::VirtualMemoryArea *vma = pcb->vma;
-
-	if (count < sizeof(struct linux_dirent64))
+	if (unlikely(count < sizeof(struct linux_dirent64)))
 	{
 		debug("Invalid count %d", count);
 		return -linux_EINVAL;
 	}
 
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	auto it = fdt->FileMap.find(fd);
 	if (it == fdt->FileMap.end())
-		ReturnLogError(-linux_EBADF, "Invalid fd %d", fd);
+	{
+		debug("Invalid fd %d", fd);
+		return -linux_EBADF;
+	}
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
-
 	if (!fildes.Node->IsDirectory())
-		ReturnLogError(-ENOTDIR, "Not a directory");
+	{
+		debug("Not a directory");
+		return -ENOTDIR;
+	}
 
+	Memory::VirtualMemoryArea *vma = pcb->vma;
 	auto pDirp = vma->UserCheckAndGetAddress(dirp);
 	if (pDirp == nullptr)
 		return -linux_EFAULT;
 
-	UNUSED(pDirp);
-	stub;
-	return -linux_ENOSYS;
+	/* Sanity checks */
+	static_assert(sizeof(kdirent) == sizeof(linux_dirent64));
+	static_assert(offsetof(kdirent, d_ino) == offsetof(linux_dirent64, d_ino));
+	static_assert(offsetof(kdirent, d_off) == offsetof(linux_dirent64, d_off));
+	static_assert(offsetof(kdirent, d_reclen) == offsetof(linux_dirent64, d_reclen));
+	static_assert(offsetof(kdirent, d_type) == offsetof(linux_dirent64, d_type));
+	static_assert(offsetof(kdirent, d_name) == offsetof(linux_dirent64, d_name));
+
+	/* The structs are the same, no need for conversion. */
+	ssize_t ret = fildes.Node->ReadDir((struct kdirent *)pDirp, count, fildes.Offset,
+									   count / sizeof(kdirent));
+
+	if (ret > 0)
+		fildes.Offset += ret;
+
+#ifdef DEBUG
+	if (ret > 0)
+	{
+		for (size_t bpos = 0; bpos < ret;)
+		{
+			linux_dirent64 *d = (struct linux_dirent64 *)((char *)pDirp + bpos);
+			debug("%ld: d_ino:%d d_off:%d d_reclen:%d d_type:%d(%s) d_name:\"%s\"",
+				  bpos, d->d_ino, d->d_off, d->d_reclen, d->d_type,
+				  (d->d_type == DT_REG)	   ? "REG"
+				  : (d->d_type == DT_DIR)  ? "DIR"
+				  : (d->d_type == DT_FIFO) ? "FIFO"
+				  : (d->d_type == DT_SOCK) ? "SOCK"
+				  : (d->d_type == DT_LNK)  ? "LNK"
+				  : (d->d_type == DT_BLK)  ? "BLK"
+				  : (d->d_type == DT_CHR)  ? "CHR"
+										   : "???",
+				  d->d_name);
+
+			bpos += (d->d_reclen == 0) ? 1 : d->d_reclen;
+		}
+	}
+#endif
+	return ret;
 }
 
 static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
