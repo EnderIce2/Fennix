@@ -2902,10 +2902,11 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	if (pPathname == nullptr || pStatbuf == nullptr)
 		return -linux_EFAULT;
 
-	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
+	debug("\"%s\" %#lx %#lx", pPathname, pathname, statbuf);
 
 	if (fs->PathIsAbsolute(pPathname))
 	{
+		debug("path \"%s\" is absolute", pPathname);
 		struct kstat nstat = KStatToStat(*pStatbuf);
 		int ret = fdt->usr_stat(pPathname, &nstat);
 		*pStatbuf = StatToKStat(nstat);
@@ -2916,6 +2917,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	{
 	case linux_AT_FDCWD:
 	{
+		debug("dirfd is AT_FDCWD for \"%s\"", pPathname);
 		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
 		if (!node)
 			return -linux_ENOENT;
@@ -2927,12 +2929,14 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	}
 	default:
 	{
+		debug("dirfd is %d for \"%s\"", dirfd, pPathname);
 		auto it = fdt->FileMap.find(dirfd);
 		if (it == fdt->FileMap.end())
 			ReturnLogError(-linux_EBADF, "Invalid fd %d", dirfd);
 
 		vfs::FileDescriptorTable::Fildes &fildes = it->second;
 		FileNode *node = fs->GetByPath(pPathname, fildes.Node);
+		debug("node: %s", node->GetPath().c_str());
 		if (!node)
 			return -linux_ENOENT;
 
