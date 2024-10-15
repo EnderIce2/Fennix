@@ -122,12 +122,14 @@ void KShellThread()
 		uint32_t homeX = 0, homeY = 0;
 		uint32_t unseekX = 0, unseekY = 0;
 		size_t seekCount = 0;
+		debug("clearing strBuf(\"%s\")", strBuf.c_str());
 		strBuf.clear();
 
 		FileNode *cwd = thisProcess->CWD;
 		if (!cwd)
 			cwd = fs->GetRoot(0);
 		std::string cwdStr = fs->GetByNode(cwd);
+		debug("cwd: %*s", (int)cwdStr.size(), cwdStr.c_str());
 
 		printf("\x1b[1;34m%s@%s:%s$ \x1b[0m",
 			   "kernel", "fennix",
@@ -422,6 +424,7 @@ void KShellThread()
 				continue;
 
 			char c = Driver::GetScanCode(sc, upperCase);
+			debug("sc: %#lx, uc: %d -> %c", sc, upperCase, c);
 
 			if (ctrlDown)
 			{
@@ -454,15 +457,19 @@ void KShellThread()
 				if (strBuf.length() > 0)
 				{
 					std::string *hBuff = new std::string(strBuf.c_str());
+					debug("cloned strBuf(\"%s\") to hBuff(\"%s\")", strBuf.c_str(), hBuff->c_str());
 					history.push_back(hBuff);
 					hIdx = history.size();
+					debug("pushed \"%s\" to history; index: %d", hBuff->c_str(), hIdx);
 				}
 				break;
 			}
 			else if (seekCount >= bsCount)
 			{
 				putchar(c);
+				debug("BEFORE strBuf(\"%s\") %ld %ld", strBuf.c_str(), strBuf.size(), strBuf.capacity());
 				strBuf += c;
+				debug("AFTER strBuf(\"%s\") %ld %ld", strBuf.c_str(), strBuf.size(), strBuf.capacity());
 				seekCount = ++bsCount;
 			}
 			else
@@ -481,6 +488,7 @@ void KShellThread()
 		}
 	SecLoopEnd:
 
+		debug("strBuf.length(): %d", strBuf.length());
 		if (strBuf.length() == 0)
 			continue;
 
@@ -546,6 +554,7 @@ void KShellThread()
 				break;
 			cmd_only += strBuf[i];
 		}
+		debug("cmd_only: %s", cmd_only.c_str());
 
 		std::string path = "/bin/";
 
