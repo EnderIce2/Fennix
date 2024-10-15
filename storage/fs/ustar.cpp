@@ -315,8 +315,36 @@ namespace vfs
 			ent->d_ino = var->Node.Index;
 			ent->d_off = var->Node.Offset;
 			ent->d_reclen = reclen;
-			fixme("Wrong d_type returned");
-			ent->d_type = IFTODT(StringToInt(var->Header->typeflag));
+			switch (var->Header->typeflag[0])
+			{
+			case AREGTYPE:
+			case REGTYPE:
+				ent->d_type = DT_REG;
+				break;
+			case LNKTYPE:
+				fixme("Hard link not implemented for %s", var->Header->name);
+				ent->d_type = DT_LNK;
+				break;
+			case SYMTYPE:
+				ent->d_type = DT_LNK;
+				break;
+			case CHRTYPE:
+				ent->d_type = DT_CHR;
+				break;
+			case BLKTYPE:
+				ent->d_type = DT_BLK;
+				break;
+			case DIRTYPE:
+				ent->d_type = DT_DIR;
+				break;
+			case FIFOTYPE:
+				ent->d_type = DT_FIFO;
+				break;
+			case CONTTYPE:
+			default:
+				ent->d_type = 0;
+				break;
+			}
 			strncpy(ent->d_name, var->Name.c_str(), strlen(var->Name.c_str()));
 
 			totalSize += reclen;
