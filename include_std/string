@@ -1530,7 +1530,7 @@ namespace std
 		constexpr void push_back(CharT ch)
 		{
 			if (_size == _capacity)
-				reserve(_capacity == 0 ? 1 : _capacity * 2);
+				reserve(_capacity == 0 ? 2 : _capacity * 2);
 
 			_data[_size++] = ch;
 			_data[_size] = 0;
