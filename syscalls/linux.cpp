@@ -2887,12 +2887,9 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 	return -linux_ENOSYS;
 }
 
-/* Undocumented? */
 static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 							 struct linux_kstat *statbuf, int flag)
 {
-	/* FIXME: This function is not working at all? */
-
 	PCB *pcb = thisProcess;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
@@ -2907,31 +2904,44 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 
 	debug("%s %#lx %#lx", pPathname, pathname, statbuf);
 
-	if (dirfd == linux_AT_FDCWD && !fs->PathIsRelative(pPathname))
+	if (fs->PathIsAbsolute(pPathname))
 	{
-		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
-		if (!absoluteNode)
-			return -linux_ENOENT;
-
-		const char *absPath = new char[strlen(absoluteNode->Path.c_str()) + 1];
-		strcpy((char *)absPath, absoluteNode->Path.c_str());
 		struct kstat nstat = KStatToStat(*pStatbuf);
-		int ret = fdt->usr_stat(absPath, &nstat);
+		int ret = fdt->usr_stat(pPathname, &nstat);
 		*pStatbuf = StatToKStat(nstat);
-		delete[] absPath;
 		return ConvertErrnoToLinux(ret);
 	}
 
-	auto it = fdt->FileMap.find(dirfd);
-	if (it == fdt->FileMap.end())
-		ReturnLogError(-linux_EBADF, "Invalid fd %d", dirfd);
+	switch (dirfd)
+	{
+	case linux_AT_FDCWD:
+	{
+		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+		if (!node)
+			return -linux_ENOENT;
 
-	vfs::FileDescriptorTable::Fildes &fildes = it->second;
+		struct kstat nstat = {};
+		int ret = fdt->usr_stat(node->GetPath().c_str(), &nstat);
+		*pStatbuf = StatToKStat(nstat);
+		return ConvertErrnoToLinux(ret);
+	}
+	default:
+	{
+		auto it = fdt->FileMap.find(dirfd);
+		if (it == fdt->FileMap.end())
+			ReturnLogError(-linux_EBADF, "Invalid fd %d", dirfd);
 
-	struct kstat nstat = KStatToStat(*pStatbuf);
-	int ret = fdt->usr_stat(pPathname, &nstat);
-	*pStatbuf = StatToKStat(nstat);
-	return ConvertErrnoToLinux(ret);
+		vfs::FileDescriptorTable::Fildes &fildes = it->second;
+		FileNode *node = fs->GetByPath(pPathname, fildes.Node);
+		if (!node)
+			return -linux_ENOENT;
+
+		struct kstat nstat = {};
+		int ret = fdt->usr_stat(node->GetPath().c_str(), &nstat);
+		*pStatbuf = StatToKStat(nstat);
+		return ConvertErrnoToLinux(ret);
+	}
+	}
 }
 
 static int linux_pipe2(SysFrm *sf, int pipefd[2], int flags)
