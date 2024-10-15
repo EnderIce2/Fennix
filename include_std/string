@@ -978,7 +978,10 @@ namespace std
 		~basic_string()
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
 		}
 
 		basic_string &operator=(const basic_string &str)
@@ -986,7 +989,11 @@ namespace std
 			if (this != &str)
 			{
 				if (_data != nullptr)
+				{
 					_alloc.deallocate(_data, _capacity);
+					_data = nullptr;
+				}
+
 				_size = str._size;
 				_capacity = str._capacity;
 				_data = _alloc.allocate(_capacity);
@@ -998,7 +1005,11 @@ namespace std
 		basic_string &operator=(const CharT *s)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = Traits::length(s);
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1010,7 +1021,11 @@ namespace std
 		basic_string &operator=(CharT ch)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = 1;
 			_capacity = 2;
 			_data = _alloc.allocate(_capacity);
@@ -1022,7 +1037,11 @@ namespace std
 		basic_string &operator=(std::initializer_list<CharT> ilist)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = ilist._size();
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1035,7 +1054,11 @@ namespace std
 		basic_string &operator=(const StringViewLike &t)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = t._size();
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1049,7 +1072,11 @@ namespace std
 		constexpr basic_string &assign(size_type count, CharT ch)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = count;
 			_capacity = count + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1061,7 +1088,11 @@ namespace std
 		constexpr basic_string &assign(const basic_string &str)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = str._size;
 			_capacity = str._capacity;
 			_data = _alloc.allocate(_capacity);
@@ -1073,7 +1104,11 @@ namespace std
 		constexpr basic_string &assign(const basic_string &str, size_type pos, size_type count = npos)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = count;
 			_capacity = count + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1085,7 +1120,11 @@ namespace std
 		constexpr basic_string &assign(const CharT *s, size_type count)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = count;
 			_capacity = count + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1097,7 +1136,11 @@ namespace std
 		constexpr basic_string &assign(const CharT *s)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = Traits::length(s);
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1110,7 +1153,11 @@ namespace std
 		constexpr basic_string &assign(InputIt first, InputIt last)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = std::distance(first, last);
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1122,7 +1169,11 @@ namespace std
 		constexpr basic_string &assign(std::initializer_list<CharT> ilist)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = ilist._size();
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1135,7 +1186,11 @@ namespace std
 		constexpr basic_string &assign(const StringViewLike &t)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = t._size();
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1148,7 +1203,11 @@ namespace std
 		constexpr basic_string &assign(const StringViewLike &t, size_type pos, size_type count = npos)
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = count;
 			_capacity = count + 1;
 			_data = _alloc.allocate(_capacity);
@@ -1337,7 +1396,11 @@ namespace std
 					memcpy(new_data, _data, _size);
 
 				if (_data != nullptr)
+				{
 					_alloc.deallocate(_data, _capacity);
+					_data = nullptr;
+				}
+
 				_data = new_data;
 				_capacity = new_cap;
 			}
@@ -1356,7 +1419,11 @@ namespace std
 				memcpy(new_data, _data, _size);
 
 				if (_data != nullptr)
+				{
 					_alloc.deallocate(_data, _capacity);
+					_data = nullptr;
+				}
+
 				_data = new_data;
 				_capacity = _size;
 			}
@@ -1369,7 +1436,11 @@ namespace std
 		constexpr void clear()
 		{
 			if (_data != nullptr)
+			{
 				_alloc.deallocate(_data, _capacity);
+				_data = nullptr;
+			}
+
 			_size = 0;
 			_capacity = 0;
 		}
