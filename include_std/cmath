@@ -131,7 +131,6 @@ namespace std
 	template <class Integer>
 	constexpr double fmod(Integer x, Integer y)
 	{
-#pragma STDC FENV_ACCESS ON
 		double result = std::remainder(std::fabs(x), y = std::fabs(y));
 		if (std::signbit(result))
 			result += (double)y;
