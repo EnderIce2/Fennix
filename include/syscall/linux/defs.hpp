@@ -266,8 +266,8 @@ struct linux_dirent
 
 struct linux_dirent64
 {
-	uint64_t d_ino;
-	int64_t d_off;
+	ino64_t d_ino;
+	off64_t d_off;
 	unsigned short d_reclen;
 	unsigned char d_type;
 	char d_name[];
