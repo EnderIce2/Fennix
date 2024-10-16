@@ -364,4 +364,18 @@ struct __old_kernel_stat
 #endif
 };
 
+typedef struct cpu_set_t
+{
+	unsigned long __bits[128 / sizeof(long)];
+} cpu_set_t;
+
+#define CPU_SETSIZE 1024
+
+#define CPU_BIT_OP(i, size, set, operation) \
+	((i) / 8U >= (size) ? 0 : (((unsigned long *)(set))[(i) / (8 * sizeof(unsigned long))] operation(1UL << ((i) % (8 * sizeof(unsigned long))))))
+
+#define CPU_ISSET(i, set) CPU_BIT_OP(i, sizeof(cpu_set_t), set, &)
+#define CPU_SET(i, set) CPU_BIT_OP(i, sizeof(cpu_set_t), set, |=)
+#define CPU_ZERO(set) (memset((set), 0, sizeof(cpu_set_t)))
+
 #endif // !__FENNIX_KERNEL_LINUX_DEFS_H__

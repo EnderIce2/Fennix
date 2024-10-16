@@ -2672,6 +2672,81 @@ static int linux_tkill(SysFrm *, int tid, int sig)
 	return ConvertErrnoToLinux(tcb->SendSignal(nSig));
 }
 
+static int linux_sched_setaffinity(SysFrm *, pid_t pid, size_t cpusetsize, const cpu_set_t *mask)
+{
+	PCB *pcb = thisProcess;
+	TCB *tcb;
+	if (pid == 0)
+		tcb = thisThread;
+	else
+		tcb = pcb->GetThread(pid);
+
+	if (!tcb)
+		return -linux_ESRCH;
+
+	if (cpusetsize < sizeof(cpu_set_t))
+		return -linux_EINVAL;
+
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+	auto pMask = vma->UserCheckAndGetAddress(mask);
+	if (pMask == nullptr && mask != nullptr)
+		return -linux_EFAULT;
+
+	for (size_t i = 0; i < MAX_CPU && i < CPU_SETSIZE; ++i)
+	{
+		if (CPU_ISSET(i, pMask))
+			tcb->Info.Affinity[i] = true;
+		else
+			tcb->Info.Affinity[i] = false;
+	}
+
+#ifdef DEBUG
+	for (size_t i = 0; i < MAX_CPU && i < CPU_SETSIZE; ++i)
+	{
+		bool isset = CPU_ISSET(i, pMask);
+		bool affinity = tcb->Info.Affinity[i];
+		if (isset != affinity)
+		{
+			fixme("sched_setaffinity check failed %d != %d (cpu %d)",
+				  isset, affinity, i);
+			assert(isset == affinity);
+		}
+	}
+#endif
+	return 0;
+}
+
+static int linux_sched_getaffinity(SysFrm *, pid_t pid, size_t cpusetsize, cpu_set_t *mask)
+{
+	PCB *pcb = thisProcess;
+	TCB *tcb;
+	if (pid == 0)
+		tcb = thisThread;
+	else
+		tcb = pcb->GetThread(pid);
+
+	if (!tcb)
+		return -linux_ESRCH;
+
+	if (cpusetsize < sizeof(cpu_set_t))
+		return -linux_EINVAL;
+
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+	auto pMask = vma->UserCheckAndGetAddress(mask);
+	if (pMask == nullptr && mask != nullptr)
+		return -linux_EFAULT;
+
+	CPU_ZERO(pMask);
+
+	for (size_t i = 0; i < MAX_CPU && i < CPU_SETSIZE; ++i)
+	{
+		if (tcb->Info.Affinity[i])
+			CPU_SET(i, pMask);
+	}
+
+	return 0;
+}
+
 static pid_t linux_set_tid_address(SysFrm *, int *tidptr)
 {
 	if (tidptr == nullptr)
@@ -3377,8 +3452,8 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_tkill] = {"tkill", (void *)linux_tkill},
 	[__NR_amd64_time] = {"time", (void *)nullptr},
 	[__NR_amd64_futex] = {"futex", (void *)nullptr},
-	[__NR_amd64_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
-	[__NR_amd64_sched_getaffinity] = {"sched_getaffinity", (void *)nullptr},
+	[__NR_amd64_sched_setaffinity] = {"sched_setaffinity", (void *)linux_sched_setaffinity},
+	[__NR_amd64_sched_getaffinity] = {"sched_getaffinity", (void *)linux_sched_getaffinity},
 	[__NR_amd64_set_thread_area] = {"set_thread_area", (void *)nullptr},
 	[__NR_amd64_io_setup] = {"io_setup", (void *)nullptr},
 	[__NR_amd64_io_destroy] = {"io_destroy", (void *)nullptr},
@@ -3865,8 +3940,8 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_tkill] = {"tkill", (void *)linux_tkill},
 	[__NR_i386_sendfile64] = {"sendfile64", (void *)nullptr},
 	[__NR_i386_futex] = {"futex", (void *)nullptr},
-	[__NR_i386_sched_setaffinity] = {"sched_setaffinity", (void *)nullptr},
-	[__NR_i386_sched_getaffinity] = {"sched_getaffinity", (void *)nullptr},
+	[__NR_i386_sched_setaffinity] = {"sched_setaffinity", (void *)linux_sched_setaffinity},
+	[__NR_i386_sched_getaffinity] = {"sched_getaffinity", (void *)linux_sched_getaffinity},
 	[__NR_i386_set_thread_area] = {"set_thread_area", (void *)nullptr},
 	[__NR_i386_get_thread_area] = {"get_thread_area", (void *)nullptr},
 	[__NR_i386_io_setup] = {"io_setup", (void *)nullptr},
