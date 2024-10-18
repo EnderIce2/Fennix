@@ -54,7 +54,7 @@ namespace KernelConsole
 		while (DriverManager->GlobalKeyboardInputReports.Count() == 0)
 			TaskManager->Yield();
 
-		DriverManager->GlobalKeyboardInputReports.Read(&report, sizeof(report));
+		DriverManager->GlobalKeyboardInputReports.Read(&report, 1);
 
 		int pkey = report.Key & ~KEY_PRESSED;
 		if (pkey == KEY_LEFT_SHIFT || pkey == KEY_RIGHT_SHIFT)
@@ -75,11 +75,9 @@ namespace KernelConsole
 		char c = Driver::GetScanCode(report.Key, upperCase);
 		char *buf = (char *)Buffer;
 		buf[0] = c;
-		debug("KCON: %c", c);
 
 		if (this->TerminalConfig.c_lflag & ECHO)
 		{
-			debug("ECHO");
 			if (this->TerminalConfig.c_lflag & ICANON)
 				this->Process(buf[0]);
 			else
@@ -95,12 +93,7 @@ namespace KernelConsole
 			// 	return bufLength;
 			// }
 		}
-		else
-		{
-			debug("~ICANON");
-		}
 
-		debug("ret 1");
 		return 1;
 	}
 
