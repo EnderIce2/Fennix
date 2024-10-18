@@ -306,23 +306,23 @@ namespace Interrupts
 #if defined(a86)
 			iEvNum += CPU::x86::IRQ0;
 #endif
-			if (iEvNum == s_cst(int, Frame->InterruptNumber))
+			if (iEvNum != s_cst(int, Frame->InterruptNumber))
+				continue;
+
+			if (ev.IsHandler)
 			{
-				if (ev.IsHandler)
-				{
-					Handler *hnd = (Handler *)ev.Data;
-					hnd->OnInterruptReceived(Frame);
-				}
-				else
-				{
-					if (ev.Context != nullptr)
-						ev.Callback((CPU::TrapFrame *)ev.Context);
-					else
-						ev.Callback(Frame);
-				}
-				ev.Priority++;
-				InterruptHandled = true;
+				Handler *hnd = (Handler *)ev.Data;
+				hnd->OnInterruptReceived(Frame);
 			}
+			else
+			{
+				if (ev.Context != nullptr)
+					ev.Callback((CPU::TrapFrame *)ev.Context);
+				else
+					ev.Callback(Frame);
+			}
+			ev.Priority++;
+			InterruptHandled = true;
 		}
 
 		CPUData *CoreData = GetCurrentCPU();
