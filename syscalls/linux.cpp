@@ -1538,11 +1538,11 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 			break;
 	}
 
-	char **safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(argvLen * sizeof(char *)));
-	char **safe_envp = (char **)pcb->vma->RequestPages(TO_PAGES(envpLen * sizeof(char *)));
+	char **safeArgv = (char **)pcb->vma->RequestPages(TO_PAGES(argvLen * sizeof(char *)));
+	char **safeEnvp = (char **)pcb->vma->RequestPages(TO_PAGES(envpLen * sizeof(char *)));
 
 	const char *arg;
-	char *n_arg;
+	char *nArg;
 	for (int i = 0; i < argvLen; i++)
 	{
 		arg = pcb->PageTable->Get(pArgv[i]);
@@ -1550,14 +1550,14 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		size_t len = strlen(arg);
 		debug("arg[%d]: %s", i, arg);
 
-		n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
-		memcpy((void *)n_arg, arg, len);
-		n_arg[len] = '\0';
+		nArg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+		memcpy((void *)nArg, arg, len);
+		nArg[len] = '\0';
 
-		safe_argv[i] = n_arg;
+		safeArgv[i] = nArg;
 
 		if (likely(i < MAX_ARG - 1))
-			safe_argv[i + 1] = nullptr;
+			safeArgv[i + 1] = nullptr;
 	}
 
 	for (int i = 0; i < envpLen; i++)
@@ -1567,62 +1567,62 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		size_t len = strlen(arg);
 		debug("env[%d]: %s", i, arg);
 
-		n_arg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
-		memcpy((void *)n_arg, arg, len);
-		n_arg[len] = '\0';
+		nArg = (char *)pcb->vma->RequestPages(TO_PAGES(len));
+		memcpy((void *)nArg, arg, len);
+		nArg[len] = '\0';
 
-		safe_envp[i] = n_arg;
+		safeEnvp[i] = nArg;
 
 		if (likely(i < MAX_ARG - 1))
-			safe_envp[i + 1] = nullptr;
+			safeEnvp[i + 1] = nullptr;
 	}
 
-	FileNode *File = fs->GetByPath(pPathname, pcb->CWD);
+	FileNode *file = fs->GetByPath(pPathname, pcb->CWD);
 
-	if (!File)
+	if (!file)
 	{
 		error("File not found");
 		return -linux_ENOENT;
 	}
 
-	char shebang_magic[2];
-	File->Read((uint8_t *)shebang_magic, 2, 0);
+	char shebangMagic[2]{};
+	file->Read((uint8_t *)shebangMagic, 2, 0);
 
-	if (shebang_magic[0] == '#' && shebang_magic[1] == '!')
+	if (shebangMagic[0] == '#' && shebangMagic[1] == '!')
 	{
-		char *orig_path = (char *)pcb->vma->RequestPages(TO_PAGES(strlen(pPathname) + 1));
-		memcpy(orig_path, pPathname, strlen(pPathname) + 1);
+		char *origPath = (char *)pcb->vma->RequestPages(TO_PAGES(strlen(pPathname) + 1));
+		memcpy(origPath, pPathname, strlen(pPathname) + 1);
 
 		char *shebang = (char *)pPathname;
-		size_t shebang_len = 0;
-		constexpr int shebang_len_max = 255;
-		off_t shebang_off = 2;
+		size_t shebangLength = 0;
+		constexpr int shebangLengthMax = 255;
+		off_t shebangOffset = 2;
 		while (true)
 		{
 			char c;
-			if (File->Read((uint8_t *)&c, 1, shebang_off) == 0)
+			if (file->Read((uint8_t *)&c, 1, shebangOffset) == 0)
 				break;
-			if (c == '\n' || shebang_len == shebang_len_max)
+			if (c == '\n' || shebangLength == shebangLengthMax)
 				break;
-			shebang[shebang_len++] = c;
-			shebang_off++;
+			shebang[shebangLength++] = c;
+			shebangOffset++;
 		}
-		shebang[shebang_len] = '\0';
+		shebang[shebangLength] = '\0';
 		debug("Shebang: %s", shebang);
 
-		char **c_safe_argv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
+		char **cSafeArgv = (char **)pcb->vma->RequestPages(TO_PAGES(MAX_ARG));
 		int i = 0;
-		for (; safe_argv[i] != nullptr; i++)
+		for (; safeArgv[i] != nullptr; i++)
 		{
-			size_t arg_len = strlen(safe_argv[i]);
-			char *c_arg = (char *)pcb->vma->RequestPages(TO_PAGES(arg_len));
-			memcpy((void *)c_arg, safe_argv[i], arg_len);
-			c_arg[arg_len] = '\0';
+			size_t argLength = strlen(safeArgv[i]);
+			char *cArg = (char *)pcb->vma->RequestPages(TO_PAGES(argLength));
+			memcpy((void *)cArg, safeArgv[i], argLength);
+			cArg[argLength] = '\0';
 
-			c_safe_argv[i] = c_arg;
-			debug("c_safe_argv[%d]: %s", i, c_safe_argv[i]);
+			cSafeArgv[i] = cArg;
+			debug("cSafeArgv[%d]: %s", i, cSafeArgv[i]);
 		}
-		c_safe_argv[i] = nullptr;
+		cSafeArgv[i] = nullptr;
 
 		char *token = strtok(shebang, " ");
 		i = 0;
@@ -1633,27 +1633,27 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 			memcpy((void *)t_arg, token, len);
 			t_arg[len] = '\0';
 
-			safe_argv[i++] = t_arg;
+			safeArgv[i++] = t_arg;
 			token = strtok(nullptr, " ");
 		}
 
-		safe_argv[i++] = orig_path;
-		for (int j = 1; c_safe_argv[j] != nullptr; j++)
+		safeArgv[i++] = origPath;
+		for (int j = 1; cSafeArgv[j] != nullptr; j++)
 		{
-			safe_argv[i++] = c_safe_argv[j];
-			debug("clone: safe_argv[%d]: %s",
-				  i, safe_argv[i - 1]);
+			safeArgv[i++] = cSafeArgv[j];
+			debug("clone: safeArgv[%d]: %s",
+				  i, safeArgv[i - 1]);
 		}
-		safe_argv[i] = nullptr;
+		safeArgv[i] = nullptr;
 
-		return ConvertErrnoToLinux(linux_execve(sf, safe_argv[0],
-												(char *const *)safe_argv,
-												(char *const *)safe_envp));
+		return ConvertErrnoToLinux(linux_execve(sf, safeArgv[0],
+												(char *const *)safeArgv,
+												(char *const *)safeEnvp));
 	}
 
 	int ret = Execute::Spawn((char *)pPathname,
-							 (const char **)safe_argv,
-							 (const char **)safe_envp,
+							 (const char **)safeArgv,
+							 (const char **)safeEnvp,
 							 pcb, true,
 							 pcb->Info.Compatibility);
 
@@ -1667,7 +1667,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	cwk_path_get_basename(pPathname, &baseName, nullptr);
 
 	pcb->Rename(baseName);
-	pcb->SetWorkingDirectory(File->Parent);
+	pcb->SetWorkingDirectory(file->Parent);
 	pcb->SetExe(pPathname);
 
 	Tasking::Task *ctx = pcb->GetContext();
