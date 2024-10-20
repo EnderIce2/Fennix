@@ -1495,8 +1495,89 @@ static pid_t linux_fork(SysFrm *sf)
 
 static pid_t linux_vfork(SysFrm *sf)
 {
-	stub;
-	return -linux_ENOSYS;
+	TCB *Thread = thisThread;
+	PCB *Parent = Thread->Parent;
+
+	PCB *NewProcess =
+		TaskManager->CreateProcess(Parent, Parent->Name,
+								   Parent->Security.ExecutionMode,
+								   true);
+	if (unlikely(!NewProcess))
+	{
+		error("Failed to create process for vfork");
+		return -linux_EAGAIN;
+	}
+
+	NewProcess->Security.ProcessGroupID = Parent->Security.ProcessGroupID;
+	NewProcess->Security.SessionID = Parent->Security.SessionID;
+
+	NewProcess->PageTable = Parent->PageTable;
+	delete NewProcess->vma;
+	NewProcess->vma = Parent->vma;
+	delete NewProcess->ProgramBreak;
+	NewProcess->ProgramBreak = NewProcess->ProgramBreak;
+	NewProcess->FileDescriptors->Fork(Parent->FileDescriptors);
+	NewProcess->Executable = Parent->Executable;
+	NewProcess->CWD = Parent->CWD;
+	NewProcess->FileCreationMask = Parent->FileCreationMask;
+
+	TCB *NewThread =
+		TaskManager->CreateThread(NewProcess,
+								  0,
+								  nullptr,
+								  nullptr,
+								  std::vector<AuxiliaryVector>(),
+								  Thread->Info.Architecture,
+								  Thread->Info.Compatibility,
+								  true);
+	if (!NewThread)
+	{
+		error("Failed to create thread for fork");
+		delete NewProcess;
+		return -linux_EAGAIN;
+	}
+	NewThread->Rename(Thread->Name);
+
+	TaskManager->UpdateFrame();
+
+	NewThread->FPU = Thread->FPU;
+	delete NewThread->Stack;
+	NewThread->Stack = Thread->Stack;
+	NewThread->Info.Architecture = Thread->Info.Architecture;
+	NewThread->Info.Compatibility = Thread->Info.Compatibility;
+	NewThread->Security.IsCritical = Thread->Security.IsCritical;
+	NewThread->Registers = Thread->Registers;
+#if defined(a64)
+	NewThread->Registers.rip = (uintptr_t)__LinuxForkReturn;
+	/* For sysretq */
+	NewThread->Registers.rdi = (uintptr_t)NewProcess->PageTable;
+	NewThread->Registers.rcx = sf->ReturnAddress;
+	NewThread->Registers.r8 = sf->StackPointer;
+#else
+#warning "sys_fork not implemented for other platforms"
+#endif
+
+#ifdef a86
+	NewThread->GSBase = NewThread->ShadowGSBase;
+	NewThread->ShadowGSBase = Thread->ShadowGSBase;
+	NewThread->FSBase = Thread->FSBase;
+#endif
+
+	debug("ret addr: %#lx, stack: %#lx ip: %#lx", sf->ReturnAddress,
+		  sf->StackPointer, (uintptr_t)__LinuxForkReturn);
+	debug("Forked thread \"%s\"(%d) to \"%s\"(%d)",
+		  Thread->Name, Thread->ID,
+		  NewThread->Name, NewThread->ID);
+
+	{
+		CriticalSection cs;
+		Thread->SetState(Tasking::Frozen);
+		NewProcess->Linux.vforked = true;
+		NewProcess->Linux.CallingThread = Thread;
+		NewThread->SetState(Tasking::Ready);
+	}
+	Parent->GetContext()->Yield();
+	return (int)NewProcess->ID;
 }
 
 __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname,
@@ -1505,7 +1586,8 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 {
 	/* FIXME: exec doesn't follow the UNIX standard
 		The pid, open files, etc. should be preserved */
-	PCB *pcb = thisProcess;
+	TCB *tcb = thisThread;
+	PCB *pcb = tcb->Parent;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
 	auto pPathname = vma->UserCheckAndGetAddress(pathname, PAGE_SIZE);
@@ -1651,6 +1733,19 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 												(char *const *)safeEnvp));
 	}
 
+	if (pcb->Linux.vforked)
+	{
+		CriticalSection cs;
+
+		pcb->Linux.CallingThread->SetState(Tasking::Ready);
+		pcb->Linux.vforked = false;
+
+		pcb->PageTable = KernelPageTable->Fork();
+		pcb->vma = new Memory::VirtualMemoryArea(pcb->PageTable);
+		pcb->ProgramBreak = new Memory::ProgramBreak(pcb->PageTable, pcb->vma);
+		// tcb->Stack = new Memory::StackGuard(true, pcb->vma);
+	}
+
 	int ret = Execute::Spawn((char *)pPathname,
 							 (const char **)safeArgv,
 							 (const char **)safeEnvp,
@@ -1682,14 +1777,18 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 static __noreturn void linux_exit(SysFrm *, int status)
 {
 	TCB *t = thisThread;
+	{
+		CriticalSection cs;
+		trace("Userspace thread %s(%d) exited with code %d (%#x)",
+			  t->Name,
+			  t->ID, status,
+			  status < 0 ? -status : status);
 
-	trace("Userspace thread %s(%d) exited with code %d (%#x)",
-		  t->Name,
-		  t->ID, status,
-		  status < 0 ? -status : status);
-
-	t->SetState(Tasking::Zombie);
-	t->SetExitCode(status);
+		t->SetState(Tasking::Zombie);
+		t->SetExitCode(status);
+		if (t->Parent->Linux.vforked)
+			t->Parent->Linux.CallingThread->SetState(Tasking::Ready);
+	}
 	while (true)
 		t->GetContext()->Yield();
 	__builtin_unreachable();
