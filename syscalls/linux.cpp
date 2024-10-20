@@ -730,7 +730,7 @@ struct __old_kernel_stat StatToOKStat(struct kstat stat)
 	return okstat;
 }
 
-void __LinuxForkReturn(void *tableAddr)
+__no_stack_protector void __LinuxForkReturn(void *tableAddr)
 {
 #if defined(a64)
 	asmv("movq %0, %%cr3" ::"r"(tableAddr)); /* Load process page table */
