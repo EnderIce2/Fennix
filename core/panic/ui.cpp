@@ -525,6 +525,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 		"35m",	 // Core dump
 		"1;31m", // Zombie
 		"31m",	 // Terminated
+		"1;33m", // Frozen
 	};
 
 	const char *StatusString[] = {
@@ -539,6 +540,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 		"CRD", // Core dump
 		"ZMB", // Zombie
 		"TRM", // Terminated
+		"FRZ", // Frozen
 	};
 
 	if (!TaskManager)

@@ -37,6 +37,7 @@ const char *TaskStateStrings[] = {
 	"CoreDump",	  // Core dump
 	"Zombie",	  // Zombie
 	"Terminated", // Terminated
+	"Frozen",	  // Frozen
 };
 
 void cmd_top(const char *)

@@ -170,8 +170,15 @@ namespace Tasking
 		 */
 		Terminated,
 
+		/**
+		 * Frozen
+		 *
+		 * Used internally by the kernel
+		 */
+		Frozen,
+
 		_StatusMin = UnknownStatus,
-		_StatusMax = Terminated
+		_StatusMax = Frozen
 	};
 
 	enum TaskPriority
@@ -474,6 +481,12 @@ namespace Tasking
 		} HardLimits{};
 		TaskInfo Info{};
 		ThreadLocalStorage TLS{};
+
+		struct
+		{
+			bool vforked = false;
+			TCB *CallingThread = nullptr;
+		} Linux{};
 
 		/* Filesystem */
 		FileNode *CWD;

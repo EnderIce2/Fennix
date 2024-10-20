@@ -32,6 +32,8 @@ const char *Statuses[] = {
 
 	"FF0088", /* Zombie */
 	"FF0000", /* Terminated */
+
+	"FF8800", /* Frozen */
 };
 
 const char *StatusesSign[] = {
@@ -46,6 +48,7 @@ const char *StatusesSign[] = {
 	"Core",
 	"Zombie",
 	"Terminated",
+	"Frozen",
 };
 
 const char *SuccessSourceStrings[] = {
