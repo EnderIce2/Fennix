@@ -558,11 +558,15 @@ void KShellThread()
 
 		std::string path = "/bin/";
 
-		path += cmd_only;
-		if (!fs->PathExists(path.c_str(), nullptr))
-			path = "/usr/bin/";
+		if (fs->PathIsRelative(cmd_only.c_str()))
+		{
+			path += cmd_only;
+			if (!fs->PathExists(path.c_str(), nullptr))
+				path = "/usr/bin/" + cmd_only;
+		}
+		else
+			path = cmd_only;
 
-		path += cmd_only;
 		debug("path: %s", path.c_str());
 		if (fs->PathExists(path.c_str(), nullptr))
 		{
