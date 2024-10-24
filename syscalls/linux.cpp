@@ -3336,10 +3336,7 @@ static ssize_t linux_getrandom(SysFrm *, void *buf,
 		for (size_t i = 0; i < buflen; i++)
 		{
 			random = Random::rand16();
-			{
-				Memory::SwapPT swap(pcb->PageTable);
-				((uint8_t *)pBuf)[i] = uint8_t(random & 0xFF);
-			}
+			((uint8_t *)pBuf)[i] = uint8_t(random & 0xFF);
 		}
 		return buflen;
 	}
