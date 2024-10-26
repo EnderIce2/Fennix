@@ -31,12 +31,19 @@ namespace Memory
 	private:
 		PageTable *Replace = nullptr;
 		PageTable *Restore = nullptr;
+		bool Ignore;
 
 	public:
-		SwapPT(PageTable *ReplaceWith,
-			   PageTable *RestoreWith = nullptr)
-			: Replace(ReplaceWith)
+		SwapPT(auto ReplaceWith,
+			   auto _RestoreWith = nullptr)
+			: Replace((PageTable *)ReplaceWith)
 		{
+			PageTable *RestoreWith = (PageTable *)_RestoreWith;
+
+			this->Ignore = Replace == RestoreWith;
+			if (this->Ignore)
+				return;
+
 			if (RestoreWith)
 				Restore = RestoreWith;
 			else
@@ -45,7 +52,13 @@ namespace Memory
 			Replace->Update();
 		}
 
-		~SwapPT() { Restore->Update(); }
+		~SwapPT()
+		{
+			if (this->Ignore)
+				return;
+
+			Restore->Update();
+		}
 	};
 }
 
