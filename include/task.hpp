@@ -539,7 +539,6 @@ namespace Tasking
 	class Task
 	{
 	private:
-		NewLock(SchedulerLock);
 		NewLock(TaskingLock);
 
 		PID NextPID = 0;
