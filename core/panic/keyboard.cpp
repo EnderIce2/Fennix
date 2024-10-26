@@ -17,6 +17,7 @@
 
 #include "keyboard.hpp"
 
+#include <interface/aip.h>
 #include <display.hpp>
 #include <convert.h>
 #include <printf.h>
@@ -103,28 +104,28 @@ nsa static inline int GetLetterFromScanCode(uint8_t ScanCode)
 	return KEY_INVALID;
 }
 
-nsa void CrashKeyboardDriver::PS2Wait(bool Read)
+nsa void CrashKeyboardDriver::PS2Wait(bool Output)
 {
-	TimeoutCallNumber++;
 #if defined(a86)
-	int Timeout = 100000;
-	uint8_t Status = 0;
-	while (Timeout--)
+	TimeoutCallNumber++;
+	int timeout = 100000;
+	PS2_STATUSES status = {.Raw = inb(PS2_STATUS)};
+	while (timeout--)
 	{
-		Status = inb(0x64);
-		if (Read)
+		if (!Output)
 		{
-			if ((Status & 1) == 1)
+			if (status.OutputBufferFull == 0)
 				return;
 		}
 		else
 		{
-			if ((Status & 2) == 0)
+			if (status.InputBufferFull == 0)
 				return;
 		}
+		status.Raw = inb(PS2_STATUS);
 	}
 	ExPrint(WARN_COLOR "PS/2 controller timeout (%s;%d)\n" DEFAULT_COLOR,
-			Read ? "read" : "write", TimeoutCallNumber - 1);
+			Output ? "output" : "input", TimeoutCallNumber);
 #endif // a86
 }
 
@@ -159,21 +160,27 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 	{
 		/* Disable Port 1 */
 		WaitWrite;
-		outb(0x64, 0xAD);
+		outb(PS2_CMD, PS2_CMD_DISABLE_PORT_1);
 
 		/* Disable Port 2 */
 		WaitWrite;
-		outb(0x64, 0xA7);
+		outb(PS2_CMD, PS2_CMD_DISABLE_PORT_2);
 	}
 	ExPrint(".");
 
 	/* Flush */
 	{
-		int Timeout = 100000;
-		while ((inb(0x64) & 1) && Timeout-- > 0)
-			inb(0x60);
+		PS2_STATUSES status;
+		int timeout = 0x500;
+		while (timeout--)
+		{
+			status.Raw = inb(PS2_STATUS);
+			if (status.OutputBufferFull == 0)
+				break;
+			inb(PS2_DATA);
+		}
 
-		if (Timeout <= 0)
+		if (timeout <= 0)
 		{
 			SetMessageLocation;
 			ExPrint(ERROR_COLOR
@@ -181,32 +188,41 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 			CPU::Stop();
 		}
 	}
-
 	ExPrint(".");
+
 	/* Test controller */
 	{
 		/* Save config */
 		WaitWrite;
-		outb(0x64, 0x20);
+		outb(PS2_CMD, PS2_CMD_READ_CONFIG);
 		WaitRead;
-		uint8_t cfg = inb(0x60);
+		PS2_CONFIGURATION cfg = {.Raw = inb(PS2_DATA)};
+		cfg.Port1Interrupt = 1;
+		cfg.Port2Interrupt = 1;
+		cfg.Port1Translation = 1;
+
+		/* Update config */
+		WaitWrite;
+		outb(PS2_CMD, PS2_DATA);
+		WaitWrite;
+		outb(PS2_DATA, cfg.Raw);
 
 		/* Test PS/2 controller */
 		WaitWrite;
-		outb(0x64, 0xAA);
+		outb(PS2_CMD, PS2_CMD_TEST_CONTROLLER);
 		WaitRead;
-		uint8_t test = inb(0x60);
-		if (test != 0x55)
+		uint8_t test = inb(PS2_DATA);
+		if (test != PS2_TEST_PASSED)
 		{
-			if (test == 0xFA)
+			if (test == PS2_ACK)
 			{
 				trace("PS/2 controller sent ACK to test request.");
 
 				WaitRead;
-				test = inb(0x60);
+				test = inb(PS2_DATA);
 			}
 
-			if (test != 0x55)
+			if (test != PS2_TEST_PASSED)
 			{
 				SetMessageLocation;
 				ExPrint(ERROR_COLOR
@@ -218,41 +234,41 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 
 		/* Restore config */
 		WaitWrite;
-		outb(0x64, 0x60);
+		outb(PS2_CMD, PS2_DATA);
 		WaitWrite;
-		outb(0x60, cfg);
+		outb(PS2_DATA, cfg.Raw);
 	}
 	ExPrint(".");
 
 	/* Disable scanning; Enable port 1; Set default settings */
 	{
 		/* Disable scanning */
-		outb(0x60, 0xF5);
+		outb(PS2_DATA, PS2_KBD_CMD_DISABLE_SCANNING);
 
 		/* Enable Port 1 */
 		WaitWrite;
-		outb(0x64, 0xAE);
+		outb(PS2_CMD, PS2_CMD_ENABLE_PORT_1);
 
 		/* Set default settings */
-		outb(0x60, 0xF6);
+		outb(PS2_DATA, PS2_KBD_CMD_DEFAULTS);
 	}
 	ExPrint(".");
 
 	/* Test port 1 */
 	{
 		WaitWrite;
-		outb(0x64, 0xAB);
+		outb(PS2_CMD, PS2_CMD_TEST_PORT_1);
 		WaitRead;
-		uint8_t test = inb(0x60);
+		uint8_t test = inb(PS2_DATA);
 
 		if (test != 0x00)
 		{
-			if (test == 0xFA)
+			if (test == PS2_KBD_RESP_ACK)
 			{
 				trace("PS/2 keyboard sent ACK to test request.");
 
 				WaitRead;
-				test = inb(0x60);
+				test = inb(PS2_DATA);
 			}
 
 			if (test != 0x00)
@@ -269,55 +285,55 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 
 	/* Configure the controller */
 	{
-		/* Read Controller Configuration */
-		WaitWrite;
-		outb(0x64, 0x20);
-		WaitRead;
-		uint8_t cfg = inb(0x60);
+		// /* Read Controller Configuration */
+		// WaitWrite;
+		// outb(PS2_CMD, PS2_CMD_READ_CONFIG);
+		// WaitRead;
+		// uint8_t cfg = inb(PS2_DATA);
 
-		/* Enable Port 1 & Port 1 translation */
-		cfg |= 0b01000001;
+		// /* Enable Port 1 & Port 1 translation */
+		// cfg |= 0b01000001;
 
-		/* Write Controller Configuration */
-		WaitWrite;
-		outb(0x64, 0x60);
-		WaitWrite;
-		outb(0x60, cfg);
+		// /* Write Controller Configuration */
+		// WaitWrite;
+		// outb(PS2_CMD, PS2_CMD_WRITE_CONFIG);
+		// WaitWrite;
+		// outb(PS2_DATA, cfg);
 	}
 	ExPrint(".");
 
 	/* Enable port 1; Set scan code; Enable scanning */
 	{
 		/* Enable Port 1 */
-		outb(0x64, 0xAE);
+		outb(PS2_CMD, PS2_CMD_ENABLE_PORT_1);
 
 		/* Set scan code set 1 */
 		WaitWrite;
-		outb(0x60, 0xF0);
+		outb(PS2_DATA, PS2_KBD_CMD_SCAN_CODE_SET);
 		WaitWrite;
-		outb(0x60, 0x02);
+		outb(PS2_DATA, PS2_KBD_SCAN_CODE_SET_2);
 
 		/* Check if we have scan code set 1 */
 		WaitWrite;
-		outb(0x60, 0xF0);
+		outb(PS2_DATA, PS2_KBD_CMD_SCAN_CODE_SET);
 		WaitWrite;
-		outb(0x60, 0x00);
+		outb(PS2_DATA, PS2_KBD_SCAN_CODE_GET_CURRENT);
 
 		/* Read scan code set */
 		WaitRead;
-		uint8_t scs = inb(0x60);
-		if (scs == 0xFA || scs == 0xFE)
+		uint8_t scs = inb(PS2_DATA);
+		if (scs == PS2_KBD_RESP_ACK || scs == PS2_KBD_RESP_RESEND)
 		{
-			if (scs == 0xFA)
+			if (scs == PS2_KBD_RESP_ACK)
 				trace("PS/2 keyboard sent ACK to scan code set request.");
-			if (scs == 0xFE)
+			if (scs == PS2_KBD_RESP_RESEND)
 				trace("PS/2 keyboard sent RESEND to scan code set request.");
 
 			WaitRead;
-			scs = inb(0x60);
+			scs = inb(PS2_DATA);
 		}
 
-		if (scs != 0x41)
+		if (scs != PS2_KBD_SC_SET_2)
 		{
 			SetMessageLocation;
 			ExPrint(WARN_COLOR
@@ -326,8 +342,18 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 		}
 
 		/* Enable scanning */
-		outb(0x60, 0xF4);
+		outb(PS2_DATA, PS2_KBD_CMD_ENABLE_SCANNING);
 	}
+
+#ifdef DEBUG
+	WaitWrite;
+	outb(PS2_CMD, PS2_CMD_READ_CONFIG);
+	WaitRead;
+	PS2_CONFIGURATION cfg = {.Raw = inb(PS2_DATA)};
+	debug("PS2 CONFIG:\nPort1int: %d\nPort2int: %d\nSysFlg: %d\nZ: %d\nP1clk: %d\nP2clk: %d\nP1trans: %d\nz: %d",
+		  cfg.Port1Interrupt, cfg.Port2Interrupt, cfg.SystemFlag, cfg.Zero0, cfg.Port1Clock, cfg.Port2Clock, cfg.Port1Translation, cfg.Zero1);
+#endif
+
 	ExPrint(".");
 
 #endif // defined(a86)
@@ -339,7 +365,8 @@ nsa void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 {
 #if defined(a86)
 	UNUSED(Frame);
-	uint8_t scanCode = inb(0x60);
+	uint8_t scanCode = inb(PS2_DATA);
+
 	if (scanCode == KEY_D_TAB ||
 		scanCode == KEY_D_LCTRL ||
 		scanCode == KEY_D_LALT ||
