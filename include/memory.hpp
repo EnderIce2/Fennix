@@ -63,6 +63,7 @@ namespace Memory
 #include <memory/physical.hpp>
 #include <memory/virtual.hpp>
 #include <memory/swap_pt.hpp>
+#include <memory/kstack.hpp>
 #include <memory/table.hpp>
 #include <memory/macro.hpp>
 #include <memory/stack.hpp>
@@ -73,6 +74,7 @@ void InitializeMemoryManagement();
 void CreatePageTable(Memory::PageTable *pt);
 
 extern Memory::Physical KernelAllocator;
+extern Memory::KernelStackManager StackManager;
 extern Memory::PageTable *KernelPageTable;
 
 #endif // __cplusplus

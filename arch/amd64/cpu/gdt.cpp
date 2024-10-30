@@ -151,7 +151,7 @@ namespace GlobalDescriptorTable
 			 "movw %%ax, %%es\n" ::
 				 : "memory", "rax");
 
-		CPUStackPointer[Core] = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+		CPUStackPointer[Core] = StackManager.Allocate(STACK_SIZE);
 		memset(CPUStackPointer[Core], 0, STACK_SIZE);
 		debug("CPU %d Stack Pointer: %#lx-%#lx (%d pages)", Core,
 			  CPUStackPointer[Core], (uintptr_t)CPUStackPointer[Core] + STACK_SIZE,
@@ -183,8 +183,7 @@ namespace GlobalDescriptorTable
 
 		for (size_t i = 0; i < sizeof(tss[Core].InterruptStackTable) / sizeof(tss[Core].InterruptStackTable[7]); i++)
 		{
-			void *NewStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
-
+			void *NewStack = StackManager.Allocate(STACK_SIZE);
 			tss[Core].InterruptStackTable[i] = (uint64_t)NewStack + STACK_SIZE;
 			memset((void *)(tss[Core].InterruptStackTable[i] - STACK_SIZE), 0, STACK_SIZE);
 			debug("IST-%d: %#lx-%#lx", i, NewStack, (uintptr_t)NewStack + STACK_SIZE);

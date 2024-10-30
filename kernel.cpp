@@ -324,6 +324,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	InitializeMemoryManagement();
 
 	void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
+	// void *KernelStackAddress = StackManager.Allocate(STACK_SIZE); /* FIXME: This breaks stl tests, how? */
 	uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
 	debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
 #if defined(a64)

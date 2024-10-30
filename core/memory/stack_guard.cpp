@@ -128,10 +128,11 @@ namespace Memory
 		}
 		else
 		{
-			this->StackBottom = vma->RequestPages(TO_PAGES(STACK_SIZE));
+			Memory::KernelStackManager::StackAllocation sa = StackManager.DetailedAllocate(STACK_SIZE);
+			this->StackBottom = sa.VirtualAddress;
 			this->StackTop = (void *)((uintptr_t)this->StackBottom + STACK_SIZE);
-			this->StackPhysicalBottom = this->StackBottom;
-			this->StackPhysicalTop = this->StackTop;
+			this->StackPhysicalBottom = sa.PhysicalAddress;
+			this->StackPhysicalTop = (void *)((uintptr_t)this->StackPhysicalBottom + STACK_SIZE);
 			this->Size = STACK_SIZE;
 
 			debug("StackBottom: %#lx", this->StackBottom);
@@ -139,7 +140,7 @@ namespace Memory
 			for (size_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
 			{
 				AllocatedPages pa = {
-					.PhysicalAddress = (void *)((uintptr_t)this->StackBottom + (i * PAGE_SIZE)),
+					.PhysicalAddress = (void *)((uintptr_t)this->StackPhysicalBottom + (i * PAGE_SIZE)),
 					.VirtualAddress = (void *)((uintptr_t)this->StackBottom + (i * PAGE_SIZE)),
 				};
 				AllocatedPagesList.push_back(pa);
@@ -152,6 +153,12 @@ namespace Memory
 
 	StackGuard::~StackGuard()
 	{
+		if (!this->UserMode)
+		{
+			for (auto Page : this->AllocatedPagesList)
+				StackManager.Free(Page.VirtualAddress);
+		}
+
 		/* VMA will free the stack */
 	}
 }

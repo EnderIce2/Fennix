@@ -42,6 +42,7 @@
 using namespace Memory;
 
 Physical KernelAllocator;
+Memory::KernelStackManager StackManager;
 PageTable *KernelPageTable = nullptr;
 bool Page1GBSupport = false;
 bool PSESupport = false;
