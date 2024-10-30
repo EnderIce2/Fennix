@@ -280,59 +280,10 @@ namespace Interrupts
 		warn("IRQ%d not found.", InterruptNumber);
 	}
 
-	extern "C" nsa void MainInterruptHandler(void *Data)
+	nsa inline void ReturnFromInterrupt(CPU::TrapFrame *)
 	{
-		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
-		// debug("IRQ%ld", Frame->InterruptNumber - 32);
-
-		/* If this is false, we have a big problem. */
-		if (unlikely(Frame->InterruptNumber >= CPU::x86::IRQ223 ||
-					 Frame->InterruptNumber <= CPU::x86::ISR0))
-		{
-			error("Interrupt number %d is out of range.",
-				  Frame->InterruptNumber);
-			assert(!"Interrupt number is out of range.");
-		}
-
-		/* Halt core interrupt */
-		if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ31))
-			CPU::Stop();
-
-		bool InterruptHandled = false;
-		int iEvNum = -1;
-		foreach (auto &ev in RegisteredEvents)
-		{
-			iEvNum = ev.IRQ;
-#if defined(a86)
-			iEvNum += CPU::x86::IRQ0;
-#endif
-			if (iEvNum != s_cst(int, Frame->InterruptNumber))
-				continue;
-
-			if (ev.IsHandler)
-			{
-				Handler *hnd = (Handler *)ev.Data;
-				hnd->OnInterruptReceived(Frame);
-			}
-			else
-			{
-				if (ev.Context != nullptr)
-					ev.Callback((CPU::TrapFrame *)ev.Context);
-				else
-					ev.Callback(Frame);
-			}
-			ev.Priority++;
-			InterruptHandled = true;
-		}
-
 		CPUData *CoreData = GetCurrentCPU();
 		int Core = CoreData->ID;
-
-		if (unlikely(!InterruptHandled))
-		{
-			error("IRQ%d is unhandled on CPU %d.",
-				  Frame->InterruptNumber - 32, Core);
-		}
 
 		/* TODO: This should be done when the os is idle */
 		if (SortEvents++ > SORT_ITR)
@@ -362,15 +313,61 @@ namespace Interrupts
 		{
 			APIC::APIC *this_apic = (APIC::APIC *)apic[Core];
 			this_apic->EOI();
-			// TODO: Handle PIC too
 			return;
 		}
 		else
 			fixme("APIC not found for core %d", Core);
-		// TODO: PIC
+		// TODO: Handle PIC too
 
-		assert(!"Interrupt EOI not handled.");
+		assert(!"EOI not handled.");
 		CPU::Stop();
+	}
+
+	extern "C" nsa void MainInterruptHandler(void *Data)
+	{
+		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
+		// debug("IRQ%ld", Frame->InterruptNumber - 32);
+
+		/* Halt core interrupt */
+		if (unlikely(Frame->InterruptNumber == CPU::x86::IRQ31))
+			CPU::Stop();
+		assert(Frame->InterruptNumber <= CPU::x86::IRQ223);
+
+		auto it = RegisteredEvents.begin();
+		while (it != RegisteredEvents.end())
+		{
+			int iEvNum = it->IRQ;
+#if defined(a86)
+			iEvNum += CPU::x86::IRQ0;
+#endif
+			if (iEvNum == s_cst(int, Frame->InterruptNumber))
+				break;
+			++it;
+		}
+
+		if (it == RegisteredEvents.end())
+		{
+			warn("IRQ%d is not registered.", Frame->InterruptNumber - 32);
+			ReturnFromInterrupt(Frame);
+			return;
+		}
+
+		it->Priority++;
+
+		if (it->IsHandler)
+		{
+			Handler *hnd = (Handler *)it->Data;
+			hnd->OnInterruptReceived(Frame);
+		}
+		else
+		{
+			if (it->Context != nullptr)
+				it->Callback((CPU::TrapFrame *)it->Context);
+			else
+				it->Callback(Frame);
+		}
+
+		ReturnFromInterrupt(Frame);
 	}
 
 	Handler::Handler(int InterruptNumber, bool Critical)
