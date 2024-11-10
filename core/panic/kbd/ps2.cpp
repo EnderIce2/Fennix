@@ -15,6 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include "ps2.hpp"
 #include "keyboard.hpp"
 
 #include <interface/aip.h>
@@ -28,12 +29,12 @@
 #include <io.h>
 
 #if defined(a64)
-#include "../../arch/amd64/cpu/gdt.hpp"
+#include "../../../arch/amd64/cpu/gdt.hpp"
 #elif defined(a32)
 #elif defined(aa64)
 #endif
 
-#include "../../kernel.h"
+#include "../../../kernel.h"
 
 using namespace KernelConsole;
 
@@ -104,7 +105,7 @@ nsa static inline int GetLetterFromScanCode(uint8_t ScanCode)
 	return KEY_INVALID;
 }
 
-nsa void CrashKeyboardDriver::PS2Wait(bool Output)
+nsa void CrashPS2KeyboardDriver::PS2Wait(bool Output)
 {
 #if defined(a86)
 	TimeoutCallNumber++;
@@ -140,10 +141,8 @@ nsa void CrashKeyboardDriver::PS2Wait(bool Output)
 	automatically sent to I/O APIC if enabled/supported which is bad.
 
 	FIXME: On some real devices, the PS/2 keyboard doesn't send interrupts.
-
-	TODO: Implement a way to handle USB keyboards in the future.
 */
-CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
+nsa CrashPS2KeyboardDriver::CrashPS2KeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 {
 #define WaitRead PS2Wait(true)
 #define WaitWrite PS2Wait(false)
@@ -361,10 +360,9 @@ CrashKeyboardDriver::CrashKeyboardDriver() : Interrupts::Handler(1) /* IRQ1 */
 	CPU::Interrupts(CPU::Enable);
 }
 
-nsa void CrashKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
+nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 {
 #if defined(a86)
-	UNUSED(Frame);
 	uint8_t scanCode = inb(PS2_DATA);
 
 	if (scanCode == KEY_D_TAB ||

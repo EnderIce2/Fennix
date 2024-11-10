@@ -37,7 +37,7 @@
 #endif
 
 #include "../../kernel.h"
-#include "keyboard.hpp"
+#include "kbd/keyboard.hpp"
 
 extern void ExPrint(const char *Format, ...);
 extern void DiagnosticDataCollection();
@@ -640,13 +640,9 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 	}
 
 	DisplayTopOverlay();
-
 	DisplayMainScreen(Frame);
-
-	new CrashKeyboardDriver;
-
+	InitializeKeyboards();
 	DisplayBottomOverlay();
-	// CPU::Halt(true);
 
 #ifdef DEBUG
 	static int once = 0;
@@ -749,6 +745,8 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 		ExPrint(keyBuf);
 	}
 #endif
+	debug("cpu halted");
+	CPU::Halt(true);
 }
 
 nsa void DisplayStackSmashing()

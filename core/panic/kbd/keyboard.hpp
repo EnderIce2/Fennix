@@ -203,17 +203,4 @@ enum Keys
 	KEY_U_F12 = 0xd8,
 };
 
-class CrashKeyboardDriver : public Interrupts::Handler
-{
-private:
-	void PS2Wait(bool Read);
-	void OnInterruptReceived(CPU::TrapFrame *Frame);
-
-	int BackSpaceLimit = 0;
-	char UserInputBuffer[256];
-	int TimeoutCallNumber = 0;
-
-public:
-	CrashKeyboardDriver();
-	~CrashKeyboardDriver() {}
-};
+void InitializeKeyboards();
