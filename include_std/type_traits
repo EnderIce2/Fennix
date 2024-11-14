@@ -284,6 +284,17 @@ namespace std
 	template <bool B>
 	using bool_constant = integral_constant<bool, B>;
 
+	template <class T>
+		struct is_integral : bool_constant < requires(T t, T *p, void (*f)(T))
+	{
+		reinterpret_cast<T>(t);
+		f(0);
+		p + t;
+	} > {};
+
+	template <class T>
+	constexpr bool is_integral_v = is_integral<T>::value;
+
 	typedef integral_constant<bool, true> true_type;
 	typedef integral_constant<bool, false> false_type;
 

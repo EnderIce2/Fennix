@@ -129,4 +129,10 @@ namespace std
 		std::advance(it, n);
 		return it;
 	}
+
+	struct default_sentinel_t
+	{
+	};
+
+	inline constexpr default_sentinel_t default_sentinel{};
 }
