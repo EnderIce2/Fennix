@@ -147,7 +147,7 @@ $(KERNEL_FILENAME): $(OBJ)
 # https://gcc.gnu.org/projects/cxx-status.html
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(CPP) $(CFLAGS) $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
+	$(CPP) $(CFLAGS) -fcoroutines $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
 
 %.o: %.S
 	$(info Compiling $<)

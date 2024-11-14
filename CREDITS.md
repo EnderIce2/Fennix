@@ -12,6 +12,9 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [ToaruOS](https://github.com/klange/toaruos)
 - [Various SIMD functions](https://wiki.osdev.org/User:01000101/optlib/)
 
+## C++ STL
+- [cppreference.com](https://cppreference.com)
+
 ## Virtual terminal
 - [vtconsole](https://github.com/sleepy-monax/vtconsole)
 

@@ -30,6 +30,7 @@ void TaskMgr();
 void TreeFS(FileNode *node, int Depth);
 void TaskHeartbeat();
 void StressKernel();
+void coroutineTest();
 
 #endif // DEBUG
 #endif // !__FENNIX_KERNEL_non_constructor_tests_H__

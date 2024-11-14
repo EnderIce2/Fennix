@@ -32,6 +32,7 @@
 				"-mcmodel=kernel",
 				"-fno-builtin",
 				"-m64",
+				"-fcoroutines",
 				// Warnings
 				"-Wall",
 				"-Wextra",
@@ -103,6 +104,7 @@
 				"-msoft-float",
 				"-fno-builtin",
 				"-m32",
+				"-fcoroutines",
 				// Warnings
 				"-Wall",
 				"-Wextra",
@@ -167,6 +169,7 @@
 				"-msoft-float",
 				"-fPIC",
 				"-Wstack-protector",
+				"-fcoroutines",
 				// Warnings
 				"-Wall",
 				"-Wextra",

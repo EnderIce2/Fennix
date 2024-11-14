@@ -65,6 +65,7 @@ void KernelMainThread()
 	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskMgr));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(TaskHeartbeat));
 	TreeFS(fs->GetRoot(0), 0);
+	coroutineTest();
 #endif
 
 	KPrint("Kernel compiled using GCC %d.%d.%d as of %s %s with Standard C++ %dL",
