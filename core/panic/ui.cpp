@@ -814,7 +814,7 @@ nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expressi
 			File, Line, Expression);
 
 	CPUData *core = GetCurrentCPU();
-	if (TaskManager)
+	if (TaskManager && core->CurrentProcess.load() && core->CurrentThread.load())
 	{
 		ExPrint("Core: %d / pid: %d / tid: %d\n", core->ID,
 				core->CurrentProcess->ID, core->CurrentThread->ID);
