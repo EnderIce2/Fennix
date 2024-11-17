@@ -356,10 +356,10 @@ namespace Tasking
 
 		/* CPU state */
 #if defined(a64)
-		CPU::x64::TrapFrame Registers{};
+		CPU::x64::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(a32)
-		CPU::x32::TrapFrame Registers{};
+		CPU::x32::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(aa64)
 		uintptr_t Registers; // TODO

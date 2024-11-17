@@ -556,7 +556,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	nsa NIF void Custom::Schedule(CPU::TrapFrame *Frame)
+	nsa NIF void Custom::Schedule(CPU::SchedulerFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -564,9 +564,6 @@ namespace Tasking::Scheduler
 			return;
 		}
 		bool ProcessNotChanged = false;
-		/* Restore kernel page table for safety reasons. */
-		if (!SchedulerUpdateTrapFrame)
-			KernelPageTable->Update();
 		uint64_t SchedTmpTicks = TimeManager->GetCounter();
 		this->LastTaskTicks.store(size_t(SchedTmpTicks - this->SchedulerTicks.load()));
 		CPUData *CurrentCPU = GetCurrentCPU();
@@ -671,6 +668,13 @@ namespace Tasking::Scheduler
 		CurrentCPU->CurrentProcess->State.store(TaskState::Running);
 		CurrentCPU->CurrentThread->State.store(TaskState::Running);
 
+		if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE)
+			CurrentCPU->CurrentThread->Registers.ppt = (uint64_t)(void *)CurrentCPU->CurrentProcess->PageTable;
+		else
+			CurrentCPU->CurrentThread->Registers.ppt = (uint64_t)(void *)KernelPageTable;
+
+		// if (!SchedulerUpdateTrapFrame) {} // TODO
+
 		*Frame = CurrentCPU->CurrentThread->Registers;
 
 #ifdef a64
@@ -713,11 +717,9 @@ namespace Tasking::Scheduler
 		}
 
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
-		if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE)
-			CurrentCPU->CurrentProcess->PageTable->Update();
 	}
 
-	nsa NIF void Custom::OnInterruptReceived(CPU::TrapFrame *Frame)
+	nsa NIF void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);

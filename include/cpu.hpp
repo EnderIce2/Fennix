@@ -641,6 +641,38 @@ namespace CPU
 			uint64_t ss;   /* Stack Segment */
 		};
 
+		struct SchedulerFrame
+		{
+			uint64_t ppt; /* Process Page Table */
+			uint64_t opt; /* Original Page Table */
+
+			uint64_t r15; /* General purpose */
+			uint64_t r14; /* General purpose */
+			uint64_t r13; /* General purpose */
+			uint64_t r12; /* General purpose */
+			uint64_t r11; /* General purpose */
+			uint64_t r10; /* General purpose */
+			uint64_t r9;  /* General purpose */
+			uint64_t r8;  /* General purpose */
+
+			uint64_t rbp; /* Base Pointer (meant for stack frames) */
+			uint64_t rdi; /* Destination index for string operations */
+			uint64_t rsi; /* Source index for string operations */
+			uint64_t rdx; /* Data (commonly extends the A register) */
+			uint64_t rcx; /* Counter */
+			uint64_t rbx; /* Base */
+			uint64_t rax; /* Accumulator */
+
+			uint64_t InterruptNumber; /* Interrupt Number */
+			uint64_t ErrorCode;		  /* Error code */
+
+			uint64_t rip;  /* Instruction Pointer */
+			uint64_t cs;   /* Code Segment */
+			RFLAGS rflags; /* Register Flags */
+			uint64_t rsp;  /* Stack Pointer */
+			uint64_t ss;   /* Stack Segment */
+		};
+
 		struct ExceptionFrame
 		{
 			uint64_t cr0; /* Control Register 0 (system control) */
@@ -1026,6 +1058,7 @@ namespace CPU
 	 * @note This is for x86_64
 	 */
 	typedef x64::TrapFrame TrapFrame;
+	typedef x64::SchedulerFrame SchedulerFrame;
 	typedef x64::ExceptionFrame ExceptionFrame;
 #elif defined(a32)
 	/**
@@ -1034,6 +1067,7 @@ namespace CPU
 	 * @note This is for x86_32
 	 */
 	typedef x32::TrapFrame TrapFrame;
+	typedef x32::SchedulerFrame SchedulerFrame;
 	typedef x32::ExceptionFrame ExceptionFrame;
 #elif defined(aa64)
 	/**
@@ -1042,6 +1076,7 @@ namespace CPU
 	 * @note This is for aarch64
 	 */
 	typedef aarch64::TrapFrame TrapFrame;
+	typedef aarch64::SchedulerFrame SchedulerFrame;
 	typedef aarch64::TrapFrame ExceptionFrame;
 #endif
 }

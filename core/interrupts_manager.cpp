@@ -280,7 +280,7 @@ namespace Interrupts
 		warn("IRQ%d not found.", InterruptNumber);
 	}
 
-	nsa inline void ReturnFromInterrupt(CPU::TrapFrame *)
+	nsa inline void ReturnFromInterrupt()
 	{
 		CPUData *CoreData = GetCurrentCPU();
 		int Core = CoreData->ID;
@@ -348,7 +348,7 @@ namespace Interrupts
 		if (it == RegisteredEvents.end())
 		{
 			warn("IRQ%d is not registered.", Frame->InterruptNumber - 32);
-			ReturnFromInterrupt(Frame);
+			ReturnFromInterrupt();
 			return;
 		}
 
@@ -367,7 +367,40 @@ namespace Interrupts
 				it->Callback(Frame);
 		}
 
-		ReturnFromInterrupt(Frame);
+		ReturnFromInterrupt();
+	}
+
+	extern "C" nsa void SchedulerInterruptHandler(void *Data)
+	{
+		KernelPageTable->Update();
+		CPU::SchedulerFrame *Frame = (CPU::SchedulerFrame *)Data;
+#if defined(a86)
+		assert(Frame->InterruptNumber == CPU::x86::IRQ16);
+#else
+		assert(Frame->InterruptNumber == 16);
+#endif
+
+		auto it = std::find_if(RegisteredEvents.begin(), RegisteredEvents.end(),
+							   [](const Event &ev)
+							   {
+								   return ev.IRQ == 16;
+							   });
+
+		if (it == RegisteredEvents.end())
+		{
+			warn("Scheduler interrupt is not registered.");
+			ReturnFromInterrupt();
+			Frame->ppt = Frame->opt;
+			debug("opt = %#lx", Frame->opt);
+			return;
+		}
+		assert(it->IsHandler);
+
+		it->Priority++;
+
+		Handler *hnd = (Handler *)it->Data;
+		hnd->OnInterruptReceived(Frame);
+		ReturnFromInterrupt();
 	}
 
 	Handler::Handler(int InterruptNumber, bool Critical)
@@ -426,7 +459,11 @@ namespace Interrupts
 
 	void Handler::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
-		trace("Unhandled interrupt %d",
-			  Frame->InterruptNumber);
+		debug("Unhandled interrupt %d", Frame->InterruptNumber);
+	}
+
+	void Handler::OnInterruptReceived(CPU::SchedulerFrame *Frame)
+	{
+		debug("Unhandled scheduler interrupt %d", Frame->InterruptNumber);
 	}
 }

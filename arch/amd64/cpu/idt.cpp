@@ -29,6 +29,7 @@
 #pragma GCC diagnostic ignored "-Wconversion"
 
 extern "C" void MainInterruptHandler(void *Data);
+extern "C" void SchedulerInterruptHandler(void *Data);
 extern "C" void ExceptionHandler(void *Data);
 
 #define __stub_handler \
@@ -247,6 +248,62 @@ namespace InterruptDescriptorTable
 			"iretq"); // pop CS RIP RFLAGS SS RSP
 	}
 
+	extern "C" __stub_handler void SchedulerHandlerStub()
+	{
+		asm("cld\n"
+			"cli\n"
+
+			"pushq %rax\n"
+			"pushq %rbx\n"
+			"pushq %rcx\n"
+			"pushq %rdx\n"
+			"pushq %rsi\n"
+			"pushq %rdi\n"
+			"pushq %rbp\n"
+
+			"pushq %r8\n"
+			"pushq %r9\n"
+			"pushq %r10\n"
+			"pushq %r11\n"
+			"pushq %r12\n"
+			"pushq %r13\n"
+			"pushq %r14\n"
+			"pushq %r15\n"
+
+			/* TODO: Add advanced check so we won't update the cr3 when not needed */
+
+			"movq %cr3, %rax\n pushq %rax\n" /* Push opt */
+			"pushq %rax\n" /* Push ppt */
+
+			"movq %rsp, %rdi\n"
+			"call SchedulerInterruptHandler\n"
+
+			"popq %rax\n movq %rax, %cr3\n" /* Restore to ppt */
+			"popq %rax\n" /* Pop opt */
+
+			"popq %r15\n"
+			"popq %r14\n"
+			"popq %r13\n"
+			"popq %r12\n"
+			"popq %r11\n"
+			"popq %r10\n"
+			"popq %r9\n"
+			"popq %r8\n"
+
+			"popq %rbp\n"
+			"popq %rdi\n"
+			"popq %rsi\n"
+			"popq %rdx\n"
+			"popq %rcx\n"
+			"popq %rbx\n"
+			"popq %rax\n"
+
+			"addq $16, %rsp\n"
+
+			"sti\n"
+			"iretq"); // pop CS RIP RFLAGS SS RSP
+	}
+
 #pragma region Interrupt Macros
 
 #define EXCEPTION_HANDLER(num)                          \
@@ -270,6 +327,14 @@ namespace InterruptDescriptorTable
 		asm("pushq $0\n"                         \
 			"pushq $" #num "\n"                  \
 			"jmp InterruptHandlerStub\n");       \
+	}
+
+#define SCHEDULER_HANDLER(num)                   \
+	__stub_handler void InterruptHandler_##num() \
+	{                                            \
+		asm("pushq $0\n"                         \
+			"pushq $" #num "\n"                  \
+			"jmp SchedulerHandlerStub\n");       \
 	}
 
 	/* ISR */
@@ -328,7 +393,7 @@ namespace InterruptDescriptorTable
 
 	/* Reserved by OS */
 
-	INTERRUPT_HANDLER(0x30)
+	SCHEDULER_HANDLER(0x30)
 	INTERRUPT_HANDLER(0x31)
 	INTERRUPT_HANDLER(0x32)
 	INTERRUPT_HANDLER(0x33)

@@ -344,7 +344,7 @@ namespace Tasking
 		return {};
 	}
 
-	bool Signal::HandleSignal(CPU::TrapFrame *tf, void *thread)
+	bool Signal::HandleSignal(CPU::SchedulerFrame *tf, void *thread)
 	{
 		/* We don't want to do this in kernel mode */
 		if (tf->cs != GDT_USER_CODE)

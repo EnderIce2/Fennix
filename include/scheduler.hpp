@@ -142,8 +142,8 @@ namespace Tasking::Scheduler
 		void WakeUpThreads();
 		void CleanupTerminated();
 
-		void Schedule(CPU::TrapFrame *Frame);
-		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
+		void Schedule(CPU::SchedulerFrame *Frame);
+		void OnInterruptReceived(CPU::SchedulerFrame *Frame) final;
 
 		Custom(Task *ctx);
 		virtual ~Custom();

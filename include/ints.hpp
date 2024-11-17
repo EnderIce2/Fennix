@@ -78,6 +78,7 @@ namespace Interrupts
 
 	public:
 		virtual void OnInterruptReceived(CPU::TrapFrame *Frame);
+		virtual void OnInterruptReceived(CPU::SchedulerFrame *Frame);
 	};
 }
 

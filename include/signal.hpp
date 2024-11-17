@@ -312,11 +312,11 @@ namespace Tasking
 		{
 #ifdef a64
 			CPU::x64::FXState fx;
-			CPU::x64::TrapFrame tf;
+			CPU::x64::SchedulerFrame tf;
 			uintptr_t GSBase, FSBase, ShadowGSBase;
 #else
 			CPU::x32::FXState fx;
-			CPU::x32::TrapFrame tf;
+			CPU::x32::SchedulerFrame tf;
 			uintptr_t GSBase, FSBase;
 #endif
 			sigset_t SignalMask;
@@ -422,7 +422,7 @@ namespace Tasking
 		int AddSignal(Signals sig, union sigval val = {0}, pid_t tid = -1);
 		int RemoveSignal(Signals sig);
 
-		bool HandleSignal(CPU::TrapFrame *tf, void *thread);
+		bool HandleSignal(CPU::SchedulerFrame *tf, void *thread);
 		void RestoreHandleSignal(SyscallsFrame *tf, void *thread);
 
 		int SetAction(Signals sig, const SignalAction *act);
