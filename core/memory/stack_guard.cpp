@@ -128,16 +128,16 @@ namespace Memory
 		}
 		else
 		{
-			Memory::KernelStackManager::StackAllocation sa = StackManager.DetailedAllocate(STACK_SIZE);
+			Memory::KernelStackManager::StackAllocation sa = StackManager.DetailedAllocate(LARGE_STACK_SIZE);
 			this->StackBottom = sa.VirtualAddress;
-			this->StackTop = (void *)((uintptr_t)this->StackBottom + STACK_SIZE);
+			this->StackTop = (void *)((uintptr_t)this->StackBottom + LARGE_STACK_SIZE);
 			this->StackPhysicalBottom = sa.PhysicalAddress;
-			this->StackPhysicalTop = (void *)((uintptr_t)this->StackPhysicalBottom + STACK_SIZE);
-			this->Size = STACK_SIZE;
+			this->StackPhysicalTop = (void *)((uintptr_t)this->StackPhysicalBottom + LARGE_STACK_SIZE);
+			this->Size = LARGE_STACK_SIZE;
 
 			debug("StackBottom: %#lx", this->StackBottom);
 
-			for (size_t i = 0; i < TO_PAGES(STACK_SIZE); i++)
+			for (size_t i = 0; i < TO_PAGES(LARGE_STACK_SIZE); i++)
 			{
 				AllocatedPages pa = {
 					.PhysicalAddress = (void *)((uintptr_t)this->StackPhysicalBottom + (i * PAGE_SIZE)),
