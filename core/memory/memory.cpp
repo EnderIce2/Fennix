@@ -71,33 +71,21 @@ NIF void tracepagetable(PageTable *pt)
 }
 #endif
 
-NIF void MapFromZero(PageTable *PT)
+NIF void MapEntries(PageTable *PT)
 {
-	debug("Mapping from 0x0 to %#llx", bInfo.Memory.Size);
+	debug("mapping %d memory entries", bInfo.Memory.Entries);
 	Virtual vmm = Virtual(PT);
-	size_t MemSize = bInfo.Memory.Size;
 
-	if (Page1GBSupport && PSESupport)
+	for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
 	{
-		/* Map the first 100MB of memory as 4KB pages */
+		uintptr_t Base = r_cst(uintptr_t, bInfo.Memory.Entry[i].BaseAddress);
+		size_t Length = bInfo.Memory.Entry[i].Length;
 
-		// uintptr_t Physical4KBSectionStart = 0x10000000;
-		// vmm.Map((void *)0,
-		//        (void *)0,
-		//        Physical4KBSectionStart,
-		//        RW);
-
-		// vmm.Map((void *)Physical4KBSectionStart,
-		//        (void *)Physical4KBSectionStart,
-		//        MemSize - Physical4KBSectionStart,
-		//        RW,
-		//        Virtual::MapType::OneGiB);
-
-		vmm.Map((void *)0, (void *)0, MemSize, RW);
+		debug("mapping %#lx-%#lx", Base, Base + Length);
+		vmm.Map((void *)Base, (void *)Base, Length, RW);
 	}
-	else
-		vmm.Map((void *)0, (void *)0, MemSize, RW);
 
+	/* Make sure 0x0 is unmapped (so we PF when nullptr is accessed) */
 	vmm.Unmap((void *)0);
 }
 
@@ -289,7 +277,7 @@ NIF void CreatePageTable(PageTable *pt)
 	}
 
 	/* TODO: Map faster */
-	MapFromZero(pt);
+	MapEntries(pt);
 	MapFramebuffer(pt);
 	MapKernel(pt);
 
@@ -339,7 +327,7 @@ NIF void InitializeMemoryManagement()
 			break;
 		}
 
-		debug("%ld: %p-%p %s",
+		debug("%02ld: %p-%p %s",
 			  i,
 			  Base,
 			  End,
