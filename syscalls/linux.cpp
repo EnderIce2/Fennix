@@ -4275,7 +4275,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 					   Frame->rdi, Frame->rsi, Frame->rdx,
 					   Frame->r10, Frame->r8, Frame->r9);
 
-	debug("< [%d:\"%s\"] = %d", Frame->rax, Syscall.Name, sc_ret);
+	debug("< [%ld:\"%s\"] = %ld", Frame->rax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(a32)
 	if (Frame->eax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))
