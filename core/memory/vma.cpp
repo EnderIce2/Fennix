@@ -168,7 +168,9 @@ namespace Memory
 			return (void *)-EPERM;
 		}
 
+		debug("unmapping %#lx-%#lx", Address, (uintptr_t)Address + Length);
 		vmm.Unmap(Address, Length);
+		debug("mapping cow at %#lx-%#lx", Address, (uintptr_t)Address + Length);
 		vmm.Map(Address, nullptr, Length, PTFlag::CoW);
 		debug("CoW region created at range %#lx-%#lx for pt %#lx",
 			  Address, (uintptr_t)Address + Length, this->Table);

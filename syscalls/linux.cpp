@@ -1023,6 +1023,7 @@ static void *linux_mmap(SysFrm *, void *addr, size_t length, int prot,
 	void *ret = vma->CreateCoWRegion(addr, length,
 									 p_Read, p_Write, p_Exec,
 									 m_Fixed, m_Shared);
+	debug("ret: %#lx", ret);
 	return (void *)ret;
 }
 #undef __FENNIX_KERNEL_SYSCALLS_LIST_H__
