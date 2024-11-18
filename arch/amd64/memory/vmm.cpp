@@ -400,18 +400,12 @@ namespace Memory
 		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
-		{
-			warn("Page %#lx not present", PML4->GetAddress());
 			return;
-		}
 
 		PageDirectoryPointerTableEntryPtr *PDPTEPtr = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->Address << 12);
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (!PDPTE->Present)
-		{
-			warn("Page %#lx not present", PDPTE->GetAddress());
 			return;
-		}
 
 		if (Type == MapType::OneGiB && PDPTE->PageSize)
 		{
@@ -422,10 +416,7 @@ namespace Memory
 		PageDirectoryEntryPtr *PDEPtr = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Address << 12);
 		PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
 		if (!PDE->Present)
-		{
-			warn("Page %#lx not present", PDE->GetAddress());
 			return;
-		}
 
 		if (Type == MapType::TwoMiB && PDE->PageSize)
 		{
@@ -436,10 +427,7 @@ namespace Memory
 		PageTableEntryPtr *PTEPtr = (PageTableEntryPtr *)((uintptr_t)PDE->Address << 12);
 		PageTableEntry PTE = PTEPtr->Entries[Index.PTEIndex];
 		if (!PTE.Present)
-		{
-			warn("Page %#lx not present", PTE.GetAddress());
 			return;
-		}
 
 		PTE.Present = false;
 		PTEPtr->Entries[Index.PTEIndex] = PTE;
