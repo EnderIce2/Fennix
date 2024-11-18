@@ -325,6 +325,34 @@ namespace Interrupts
 
 	extern "C" nsa void MainInterruptHandler(void *Data)
 	{
+		class AutoSwitchPageTable
+		{
+		private:
+			void *Original;
+
+		public:
+			AutoSwitchPageTable()
+			{
+#if defined(a86)
+				asmv("mov %%cr3, %0" : "=r"(Original));
+#endif
+				if (likely(Original == KernelPageTable))
+					return;
+#if defined(a86)
+				asmv("mov %0, %%cr3" : : "r"(KernelPageTable));
+#endif
+			}
+
+			~AutoSwitchPageTable()
+			{
+				if (likely(Original == KernelPageTable))
+					return;
+#if defined(a86)
+				asmv("mov %0, %%cr3" : : "r"(Original));
+#endif
+			}
+		} SwitchPageTable;
+
 		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
 		// debug("IRQ%ld", Frame->InterruptNumber - 32);
 
