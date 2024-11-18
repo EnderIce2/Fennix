@@ -1286,6 +1286,16 @@ static int linux_pipe(SysFrm *, int pipefd[2])
 	return -linux_ENOSYS;
 }
 
+static int linux_madvise(SysFrm *, void *addr, size_t length, int advice)
+{
+	// PCB *pcb = thisProcess;
+	// Memory::VirtualMemoryArea *vma = pcb->vma;
+	/* TODO: For now we ignore the advice and just return 0 */
+	/* "man 2 madvise" for more info */
+	stub;
+	return 0;
+}
+
 static int linux_dup(SysFrm *, int oldfd)
 {
 	PCB *pcb = thisProcess;
@@ -3374,7 +3384,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_mremap] = {"mremap", (void *)nullptr},
 	[__NR_amd64_msync] = {"msync", (void *)nullptr},
 	[__NR_amd64_mincore] = {"mincore", (void *)nullptr},
-	[__NR_amd64_madvise] = {"madvise", (void *)nullptr},
+	[__NR_amd64_madvise] = {"madvise", (void *)linux_madvise},
 	[__NR_amd64_shmget] = {"shmget", (void *)nullptr},
 	[__NR_amd64_shmat] = {"shmat", (void *)nullptr},
 	[__NR_amd64_shmctl] = {"shmctl", (void *)nullptr},
@@ -4015,7 +4025,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_setfsgid32] = {"setfsgid32", (void *)nullptr},
 	[__NR_i386_pivot_root] = {"pivot_root", (void *)nullptr},
 	[__NR_i386_mincore] = {"mincore", (void *)nullptr},
-	[__NR_i386_madvise] = {"madvise", (void *)nullptr},
+	[__NR_i386_madvise] = {"madvise", (void *)linux_madvise},
 	[__NR_i386_getdents64] = {"getdents64", (void *)linux_getdents64},
 	[__NR_i386_fcntl64] = {"fcntl64", (void *)nullptr},
 	[222] = {"reserved", (void *)nullptr},
