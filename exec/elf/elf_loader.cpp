@@ -158,11 +158,11 @@ namespace Execute
 						continue;
 
 					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz), true);
-					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
+					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, ProgramHeader.p_align);
 					uintptr_t SegDestOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
 
 					vmm.Map(vAddr, pAddr,
-							ProgramHeader.p_memsz,
+							ALIGN_UP(ProgramHeader.p_memsz, ProgramHeader.p_align),
 							Memory::RW | Memory::US);
 
 					debug("Mapped %#lx to %#lx (%ld bytes)",
