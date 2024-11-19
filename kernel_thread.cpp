@@ -111,7 +111,10 @@ void KernelMainThread()
 	initProc = TaskManager->GetProcessByID(tid);
 	initThread = TaskManager->GetThreadByID(tid, initProc);
 	TaskManager->WaitForThread(initThread);
-	ExitCode = initThread->GetExitCode();
+	if (initThread)
+		ExitCode = initThread->GetExitCode();
+	else
+		ExitCode = 0xEBAD;
 Exit:
 	KPrint("\x1b[31mUserspace process exited with code %d (%#x)",
 		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);

@@ -105,6 +105,9 @@ namespace Tasking
 
 	void Task::WaitForProcess(PCB *pcb)
 	{
+		if (pcb == nullptr)
+			return;
+
 		if (pcb->State == TaskState::UnknownStatus)
 			return;
 
@@ -119,6 +122,9 @@ namespace Tasking
 
 	void Task::WaitForThread(TCB *tcb)
 	{
+		if (tcb == nullptr)
+			return;
+
 		if (tcb->State == TaskState::UnknownStatus)
 			return;
 
@@ -133,6 +139,9 @@ namespace Tasking
 
 	void Task::WaitForProcessStatus(PCB *pcb, TaskState status)
 	{
+		if (pcb == nullptr)
+			return;
+
 		if (pcb->State == TaskState::UnknownStatus)
 			return;
 
@@ -145,6 +154,9 @@ namespace Tasking
 
 	void Task::WaitForThreadStatus(TCB *tcb, TaskState status)
 	{
+		if (tcb == nullptr)
+			return;
+
 		if (tcb->State == TaskState::UnknownStatus)
 			return;
 

@@ -157,6 +157,9 @@ namespace Tasking::Scheduler
 
 	TCB *Custom::GetThreadByID(TID ID, PCB *Parent)
 	{
+		if (unlikely(Parent == nullptr))
+			return nullptr;
+
 		foreach (auto t in Parent->Threads)
 		{
 			if (t->ID == ID)
@@ -544,6 +547,7 @@ namespace Tasking::Scheduler
 		{
 			if (pcb->State.load() == TaskState::Terminated)
 			{
+				debug("Found terminated process %s(%d)", pcb->Name, pcb->ID);
 				delete pcb;
 				continue;
 			}
