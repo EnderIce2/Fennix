@@ -270,8 +270,14 @@ namespace Tasking
 		delete this->FileDescriptors;
 
 		debug("Deleting tty");
-		if (this->tty)
-			delete ((TTY::TeletypeDriver *)this->tty);
+		// if (this->tty)
+		// 	delete ((TTY::TeletypeDriver *)this->tty);
+		fixme("remove workarounds for stdio and tty");
+
+		/* FIXME: DON'T DELETE THE TTY
+			spawn.cpp is using this as workaround
+		 tty == KernelConsole::CurrentTerminal.load();
+		 */
 
 		/* If we own the pointer to the
 			PageTable, we need to free it */
