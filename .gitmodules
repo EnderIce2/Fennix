@@ -1,13 +1,6 @@
 [submodule "apps/user/games/doomgeneric"]
 	path = apps/user/games/doomgeneric
 	url = https://github.com/Fennix-Project/doomgeneric.git
-[submodule "apps/base/bash"]
-	path = apps/base/bash
-	url = https://github.com/Fennix-Project/bash.git
 [submodule "musl"]
 	path = musl
 	url = https://github.com/Fennix-Project/musl.git
-[submodule "apps/base/busybox"]
-	path = apps/base/busybox
-	url = git://busybox.net/busybox.git
-	branch = 1_36_stable

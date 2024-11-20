@@ -45,7 +45,7 @@ endif
 	cd out/lib && ln -s /lib/libc.so ./ld-musl-x86_64.so.1 && \
 	ln -s /lib/libc.so ./ld.so
 	mkdir -p out/include/fennix
-	cp ../Kernel/syscalls.h out/include/fennix/syscall.h
+	cp ../Kernel/include/interface/syscalls.h out/include/fennix/syscall.h
 
 create_out:
 	rm -rf out

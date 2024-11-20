@@ -32,10 +32,10 @@ FILENAME = utest
 
 HEADERS = $(sort $(dir $(wildcard $(WORKSPACE)out/include/*)))
 
-LDFLAGS =
+LDFLAGS = -static
 CFLAGS = -I$(WORKSPACE)out/include				\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\
-	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"'
+	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"' -static
 WARNCFLAG = -Wall -Wextra
 
 ifeq ($(DEBUG), 1)
