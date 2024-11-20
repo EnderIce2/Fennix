@@ -18,8 +18,6 @@
 #ifndef __FENNIX_KERNEL_LINUX_SYSCALLS_x64_H__
 #define __FENNIX_KERNEL_LINUX_SYSCALLS_x64_H__
 
-#include <types.h>
-
 #define __NR_amd64_read 0
 #define __NR_amd64_write 1
 #define __NR_amd64_open 2

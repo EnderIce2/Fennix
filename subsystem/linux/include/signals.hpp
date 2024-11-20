@@ -18,8 +18,6 @@
 #ifndef __FENNIX_KERNEL_LINUX_SIGNALS_H__
 #define __FENNIX_KERNEL_LINUX_SIGNALS_H__
 
-#include <types.h>
-
 #define linux_NSIG 64
 
 #define linux_SIGHUP 1
@@ -57,6 +55,7 @@
 
 #define linux_SIGRTMIN 32
 #define linux_SIGRTMAX linux_NSIG
+
 struct k_sigaction
 {
 	void (*handler)(int);

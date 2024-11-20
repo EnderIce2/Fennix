@@ -193,7 +193,7 @@ SignalDispositions GetDefaultSignalDisposition(Signals sig)
 	return SIG_TERM;
 }
 
-/* syscalls/linux.cpp */
+/* subsystem/linux/syscall.cpp */
 extern int ConvertSignalToLinux(Signals sig);
 
 namespace Tasking

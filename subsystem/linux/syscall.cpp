@@ -15,11 +15,6 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <syscall/linux/syscalls_amd64.hpp>
-#include <syscall/linux/syscalls_i386.hpp>
-#include <syscall/linux/signals.hpp>
-#include <syscall/linux/defs.hpp>
-#include <syscall/linux/errno.h>
 #include <syscalls.hpp>
 
 #include <static_vector>
@@ -38,7 +33,13 @@
 #define INI_IMPLEMENTATION
 #include <ini.h>
 
-#include "../kernel.h"
+#include "include/syscalls_amd64.hpp"
+#include "include/syscalls_i386.hpp"
+#include "include/signals.hpp"
+#include "include/defs.hpp"
+#include "include/errno.h"
+
+#include "../../kernel.h"
 
 using Tasking::PCB;
 using Tasking::TCB;
