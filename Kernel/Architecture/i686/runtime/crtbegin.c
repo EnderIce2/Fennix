@@ -1,1 +1,0 @@
-// C++ constructor/destructor stuff
