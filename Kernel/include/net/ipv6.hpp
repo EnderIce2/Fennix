@@ -1,0 +1,44 @@
+/*
+   This file is part of Fennix Kernel.
+
+   Fennix Kernel is free software: you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   Fennix Kernel is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#ifndef __FENNIX_KERNEL_IPv6_H__
+#define __FENNIX_KERNEL_IPv6_H__
+
+#include <types.h>
+
+namespace NetworkIPv6
+{
+    struct IPv6Header
+    {
+        uint32_t Version;
+        uint8_t TrafficClass;
+        uint16_t FlowLabel;
+        uint16_t PayloadLength;
+        uint8_t NextHeader;
+        uint8_t HopLimit;
+        uint32_t SourceIP;
+        uint32_t DestinationIP;
+    };
+
+    struct IPv6Packet
+    {
+        IPv6Header Header;
+        uint8_t Data[];
+    };
+}
+
+#endif // !__FENNIX_KERNEL_IPv6_H__
