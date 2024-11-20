@@ -1,5 +1,5 @@
 build:
-	make -C doomgeneric build
+#	make -C doomgeneric build
 
 clean:
-	make -C doomgeneric clean
+#	make -C doomgeneric clean
