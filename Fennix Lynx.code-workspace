@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "./Lynx"
+		}
+	],
+	"settings": {
+		"debug.allowBreakpointsEverywhere": true,
+		"files.associations": {
+			"*.su": "tsv",
+			"limine.h": "c"
+		},
+		"cSpell.words": [
+			"Bootloader",
+			"COMNULL",
+			"CPUID",
+			"FENNIX",
+			"JMPREL",
+			"UBSAN"
+		]
+	}
+}

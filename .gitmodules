@@ -1,0 +1,12 @@
+[submodule "Kernel"]
+	path = Kernel
+	url = https://github.com/Fennix-Project/Kernel.git
+[submodule "Lynx"]
+	path = Lynx
+	url = https://github.com/Fennix-Project/Lynx.git
+[submodule "Userspace"]
+	path = Userspace
+	url = https://github.com/Fennix-Project/Userspace.git
+[submodule "Modules"]
+	path = Drivers
+	url = https://github.com/Fennix-Project/Drivers.git

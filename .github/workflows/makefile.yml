@@ -1,0 +1,339 @@
+name: Build OS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploydoc:
+    name: Deploy Documentation to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Doxygen
+        run: sudo apt-get install doxygen make -y
+
+      - name: Generate Documentation
+        run: make doxygen
+
+      - name: Copy GitHub Pages Website
+        run: cp -r tools/website/* doxygen-doc/
+
+      - name: Deploy documentation
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: doxygen-doc
+
+  buildcompiler:
+    name: Build Cross-Compiler & Toolchain
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Cache cross Folder
+      id: cache-cross
+      uses: actions/cache@v3
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Update System
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: sudo apt-get update
+
+    - name: Install GCC Dependencies
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev autoconf m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch -y
+
+    - name: Clone All
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: make --quiet -C tools __clone_all_no_qemu
+
+    - name: Compile Binutils amd64
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: make --quiet -C tools do_binutils_64
+
+    - name: Compile Binutils i386
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: make --quiet -C tools do_binutils_32
+
+    - name: Compile GCC amd64
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: make --quiet -C tools do_gcc_64
+
+    - name: Compile GCC i386
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: make --quiet -C tools do_gcc_32
+
+    - name: Clean Up
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        cd tools
+        rm -rf binutils-gdb gcc build-binutils64 build-gcc64 build-binutils32 build-gcc32
+
+  compilegnuefi:
+    name: Build GNU-EFI
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Cache gnu-efi Folder
+      id: cache-gnuefi
+      uses: actions/cache@v3
+      with:
+        path: Lynx/gnu-efi
+        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
+
+    - name: Update System
+      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
+      run: sudo apt-get update
+
+    - name: Install MinGW compiler
+      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
+      run: sudo apt-get install make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+
+    - name: Get GNU-EFI source code and compile it
+      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
+      run: make --quiet -C Lynx prepare
+
+  analyze:
+    name: Analyze with CodeQL
+    runs-on: ubuntu-latest
+    needs: [buildcompiler, compilegnuefi]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Install Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo -y
+        make --quiet -C tools do_limine
+        make --quiet -C Drivers prepare
+        make --quiet -C Userspace prepare
+        make --quiet -C Lynx prepare
+        make --quiet -C Kernel prepare
+
+    - name: Cache cross
+      id: cache-cross
+      uses: actions/cache@v3
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Cache gnuefi
+      id: cache-gnuefi
+      uses: actions/cache@v3
+      with:
+        path: Lynx/gnu-efi
+        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
+
+    - name: Build OS
+      run: |
+        make build_lynx
+        make build_userspace
+        make build_drivers
+        make build_kernel
+        make build_userspace
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  compile64:
+    name: Build amd64
+    runs-on: ubuntu-latest
+    needs: [buildcompiler, compilegnuefi]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Update & Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        make --quiet -C tools do_limine
+        make --quiet -C Drivers prepare
+        make --quiet -C Userspace prepare
+        make --quiet -C Lynx prepare
+        make --quiet -C Kernel prepare
+
+    - name: Cache cross Folder
+      id: cache-cross
+      uses: actions/cache@v3
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Cache gnu-efi Folder
+      id: cache-gnuefi
+      uses: actions/cache@v3
+      with:
+        path: Lynx/gnu-efi
+        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
+
+    - name: Configure Makefile.conf
+      run: sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+
+    - name: Compile Debug and Release ISO
+      run: |
+        make build
+        mv Fennix.iso Fennix-debug.iso
+        make clean
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        make build
+        mv Fennix.iso Fennix-release.iso
+
+    - name: Upload Artifact (Fennix-debug.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-amd64-debug
+        path: Fennix-debug.iso
+
+    - name: Upload Artifact (Fennix-release.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-amd64-release
+        path: Fennix-release.iso
+
+  compile32:
+    name: Build i386
+    runs-on: ubuntu-latest
+    needs: [buildcompiler, compilegnuefi]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Update & Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        make --quiet -C tools do_limine
+        make --quiet -C Drivers prepare
+        make --quiet -C Userspace prepare
+        make --quiet -C Lynx prepare
+        make --quiet -C Kernel prepare
+
+    - name: Cache cross Folder
+      id: cache-cross
+      uses: actions/cache@v3
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Cache gnu-efi Folder
+      id: cache-gnuefi
+      uses: actions/cache@v3
+      with:
+        path: Lynx/gnu-efi
+        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
+
+    - name: Configure Makefile.conf
+      run: sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+
+    - name: Compile Debug and Release ISO
+      run: |
+        make build
+        mv Fennix.iso Fennix-debug.iso
+        make clean
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        make build
+        mv Fennix.iso Fennix-release.iso
+
+    - name: Upload Artifact (Fennix-debug.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-i386-debug
+        path: Fennix-debug.iso
+
+    - name: Upload Artifact (Fennix-release.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-i386-release
+        path: Fennix-release.iso
+
+  compilearm64:
+    if: ${{ false }} # Disabled until we can get it to work
+    name: Build aarch64
+    runs-on: ubuntu-latest
+    needs: [buildcompiler, compilegnuefi]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Update & Install Required Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        make --quiet -C tools do_limine
+        make --quiet -C Drivers prepare
+        make --quiet -C Userspace prepare
+        make --quiet -C Lynx prepare
+        make --quiet -C Kernel prepare
+
+    - name: Cache cross Folder
+      id: cache-cross
+      uses: actions/cache@v3
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Cache gnu-efi Folder
+      id: cache-gnuefi
+      uses: actions/cache@v3
+      with:
+        path: Lynx/gnu-efi
+        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
+
+    - name: Configure Makefile.conf
+      run: sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+
+    - name: Compile Debug and Release ISO
+      run: |
+        make build
+        mv Fennix.iso Fennix-debug.iso
+        make clean
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        make build
+        mv Fennix.iso Fennix-release.iso
+
+    - name: Upload Artifact (Fennix-debug.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-aarch64-debug
+        path: Fennix-debug.iso
+
+    - name: Upload Artifact (Fennix-release.iso)
+      uses: actions/upload-artifact@v3
+      with:
+        name: Fennix-aarch64-release
+        path: Fennix-release.iso

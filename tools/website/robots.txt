@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /userspace/
+Disallow: /drivers/
+Disallow: /kernel/
+Disallow: /lynx/
+Disallow: /fulldoc/

@@ -1,0 +1,26 @@
+{
+    "C_Cpp.errorSquiggles": "Enabled",
+    "C_Cpp.autocompleteAddParentheses": true,
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.clang_format_style": "Visual Studio",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.intelliSenseMemoryLimit": 16384,
+    "editor.smoothScrolling": true,
+    "editor.cursorSmoothCaretAnimation": "on",
+    "files.watcherExclude": {
+        "**/tools/binutils-gdb/**": true,
+        "**/tools/build-binutilsamd64/**": true,
+        "**/tools/build-binutilsarm64/**": true,
+        "**/tools/build-binutilsi386/**": true,
+        "**/tools/build-gccamd64/**": true,
+        "**/tools/build-gccarm64/**": true,
+        "**/tools/build-gcci386/**": true,
+        "**/tools/cross/**": true,
+        "**/tools/gcc/**": true,
+        "**/tools/limine/**": true,
+        "**/tools/qemu/**": true,
+        "**/doxygen-doc/**": true,
+    }
+}

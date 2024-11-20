@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "./Lynx"
+		}
+	],
+	"settings": {
+		"debug.allowBreakpointsEverywhere": true,
+		"files.associations": {
+			"efi.h": "c"
+		}
+	}
+}
