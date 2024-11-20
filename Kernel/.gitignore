@@ -1,0 +1,8 @@
+*.o
+*.su
+*.gcno
+*.map
+*.fsys
+*.log
+Files/*.psf
+.dccache
