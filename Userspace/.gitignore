@@ -1,0 +1,7 @@
+*.o
+*.map
+*.fex
+out/
+cache/*
+!cache/.gitkeep
+.dccache

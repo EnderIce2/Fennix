@@ -1,0 +1,28 @@
+{
+	"Fennix Kernel Header": {
+		"prefix": [
+			"head",
+		],
+		"body": [
+			"#ifndef __FENNIX_LIBC_${2:header}_H__",
+			"#define __FENNIX_LIBC_${2:header}_H__",
+			"",
+			"#include <types.h>",
+			"",
+			"$0",
+			"",
+			"#endif // !__FENNIX_LIBC_${2:header}_H__",
+			""
+		],
+		"description": "Create kernel header."
+	},
+	"Fennix Kernel brief": {
+		"prefix": [
+			"brief",
+		],
+		"body": [
+			"/** @brief $0 */"
+		],
+		"description": "Create kernel documentation brief."
+	}
+}

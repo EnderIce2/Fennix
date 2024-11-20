@@ -1,0 +1,107 @@
+{
+	"configurations": [
+		{
+			"name": "Fennix x64 (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/out/include/**",
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/libs/include"
+			],
+			"defines": [
+				"__debug_vscode__",
+				"KERNEL_NAME=\"Fennix\"",
+				"KERNEL_VERSION=\"1.0\"",
+				"GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
+				"GIT_COMMIT_SHORT=\"0000000\"",
+				"a64",
+				"a86",
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "gcc-x64",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// Compiler flags
+				"-fPIC",
+				"-fPIE",
+				"-pie",
+				"-march=x86-64",
+				"-pipe",
+				"-ffunction-sections",
+				"-fno-builtin",
+
+				// C++ flags
+				"-fexceptions",
+
+				// Linker flags
+				"-fPIC",
+				"-fPIE",
+				"-pie",
+				"-nostdlib",
+				"-nodefaultlibs",
+				"-nolibc",
+				"-zmax-page-size=0x1000",
+				"-static",
+
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		},
+		{
+			"name": "Fennix x32 (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/out/include/**",
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/libs/include"
+			],
+			"defines": [
+				"__debug_vscode__",
+				"KERNEL_NAME=\"Fennix\"",
+				"KERNEL_VERSION=\"1.0\"",
+				"GIT_COMMIT=\"0000000000000000000000000000000000000000\"",
+				"GIT_COMMIT_SHORT=\"0000000\"",
+				"a32",
+				"a86",
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "gcc-x86",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// Compiler flags
+				"-fPIC",
+				"-fPIE",
+				"-pie",
+				"-march=i386",
+				"-pipe",
+				"-ffunction-sections",
+				"-fno-builtin",
+
+				// C++ flags
+				"-fexceptions",
+
+				// Linker flags
+				"-fPIC",
+				"-fPIE",
+				"-pie",
+				"-nostdlib",
+				"-nodefaultlibs",
+				"-nolibc",
+				"-zmax-page-size=0x1000",
+				"-static",
+
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		}
+	],
+	"version": 4
+}

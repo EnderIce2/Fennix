@@ -1,0 +1,22 @@
+$  setarch `uname -m` -R strace ./utest_linux
+
+execve("./utest_linux", ["./utest_linux"], 0x7fffffffdec0 /* 56 vars */) = 0
+arch_prctl(0x3001 /* ARCH_??? */, 0x7fffffffde40) = -1 EINVAL (Invalid argument)
+brk(NULL)                               = 0x4cd000
+brk(0x4cddc0)                           = 0x4cddc0
+arch_prctl(ARCH_SET_FS, 0x4cd3c0)       = 0
+set_tid_address(0x4cd690)               = 68565
+set_robust_list(0x4cd6a0, 24)           = 0
+rseq(0x4cdd60, 0x20, 0, 0x53053053)     = 0
+uname({sysname="Fennix", nodename="fennix", ...}) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+readlink("/proc/self/exe", "/bin/utest_linux"..., 4096) = 50
+getrandom("\x1e\x3c\x20\xdd\x09\xe8\x46\x0d", 8, GRND_NONBLOCK) = 8
+brk(0x4eedc0)                           = 0x4eedc0
+brk(0x4ef000)                           = 0x4ef000
+mprotect(0x4c1000, 16384, PROT_READ)    = 0
+newfstatat(1, "", {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0x1), ...}, AT_EMPTY_PATH) = 0
+write(1, "Hello, World!\n", 14Hello, World!
+)         = 14
+exit_group(0)                           = ?
++++ exited with 0 +++
