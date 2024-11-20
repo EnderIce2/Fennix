@@ -1,0 +1,252 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <type_traits>
+#include <algorithm>
+#include <tuple>
+
+namespace std
+{
+	struct piecewise_construct_t
+	{
+		explicit piecewise_construct_t() = default;
+	};
+
+	inline constexpr std::piecewise_construct_t piecewise_construct{};
+
+	template <typename T>
+	typename std::remove_reference<T>::type &&move(T &&arg)
+	{
+		return static_cast<typename std::remove_reference<T>::type &&>(arg);
+	}
+
+	template <typename T>
+	void __utility_swap(T &a, T &b)
+	{
+		T temp = std::move(a);
+		a = std::move(b);
+		b = std::move(temp);
+	}
+
+	template <class T, T... Ints>
+	class integer_sequence
+	{
+	public:
+		typedef T value_type;
+
+		static constexpr std::size_t size() noexcept { return sizeof...(Ints); }
+	};
+
+	template <std::size_t... Ints>
+	using index_sequence = std::integer_sequence<std::size_t, Ints...>;
+
+	template <class T, T N>
+	using make_integer_sequence = std::integer_sequence<T, N>;
+
+	template <std::size_t N>
+	using make_index_sequence = std::make_integer_sequence<std::size_t, N>;
+
+	template <class... T>
+	using index_sequence_for = std::make_index_sequence<sizeof...(T)>;
+
+	template <class T>
+	constexpr T &&forward(std::remove_reference_t<T> &t) noexcept
+	{
+		return static_cast<T &&>(t);
+	}
+
+	template <class T>
+	constexpr T &&forward(std::remove_reference_t<T> &&t) noexcept
+	{
+		static_assert(!std::is_lvalue_reference<T>::value, "Can't forward an rvalue as an lvalue.");
+		return static_cast<T &&>(t);
+	}
+
+	template <typename T1, typename T2>
+	struct pair
+	{
+		typedef T1 first_type;
+		typedef T2 second_type;
+
+		first_type first;
+		second_type second;
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<std::is_default_constructible<U1>::value &&
+											  std::is_default_constructible<U2>::value,
+										  int>::type = true>
+		constexpr pair()
+			: first(),
+			  second()
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<!std::is_default_constructible<U1>::value ||
+											  !std::is_default_constructible<U2>::value,
+										  int>::type = false>
+		explicit constexpr pair()
+			: first(),
+			  second()
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<std::is_copy_constructible<U1>::value &&
+											  std::is_copy_constructible<U2>::value,
+										  int>::type = true>
+		constexpr pair(const T1 &x, const T2 &y)
+			: first(x),
+			  second(y)
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<!std::is_copy_constructible<U1>::value ||
+											  !std::is_copy_constructible<U2>::value,
+										  int>::type = false>
+		explicit constexpr pair(const T1 &x, const T2 &y)
+			: first(x),
+			  second(y)
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<std::is_move_constructible<U1>::value &&
+											  std::is_move_constructible<U2>::value,
+										  int>::type = true>
+		constexpr pair(U1 &&x, U2 &&y)
+			: first(std::forward<U1>(x)),
+			  second(std::forward<U2>(y))
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<!std::is_move_constructible<U1>::value ||
+											  !std::is_move_constructible<U2>::value,
+										  int>::type = false>
+		explicit constexpr pair(T1 &&x, T2 &&y)
+			: first(std::forward<T1>(x)),
+			  second(std::forward<T2>(y)){};
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<std::is_copy_constructible<U1>::value &&
+											  std::is_copy_constructible<U2>::value,
+										  int>::type = true>
+		constexpr pair(const pair<U1, U2> &p)
+			: first(p.first),
+			  second(p.second)
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<!std::is_copy_constructible<U1>::value ||
+											  !std::is_copy_constructible<U2>::value,
+										  int>::type = false>
+		explicit constexpr pair(const pair<U1, U2> &p)
+			: first(p.first),
+			  second(p.second)
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<std::is_move_constructible<U1>::value &&
+											  std::is_move_constructible<U2>::value,
+										  int>::type = true>
+		constexpr pair(pair<U1, U2> &&p)
+			: first(std::forward<U1>(p.first)),
+			  second(std::forward<U2>(p.second))
+		{
+		}
+
+		template <typename U1 = T1,
+				  typename U2 = T2,
+				  typename std::enable_if<!std::is_move_constructible<U1>::value ||
+											  !std::is_move_constructible<U2>::value,
+										  int>::type = false>
+		explicit constexpr pair(pair<U1, U2> &&p)
+			: first(std::forward<U1>(p.first)),
+			  second(std::forward<U2>(p.second))
+		{
+		}
+
+		template <class... Args1, class... Args2>
+		constexpr pair(std::piecewise_construct_t, std::tuple<Args1...> first_args, std::tuple<Args2...> second_args)
+			: pair(first_args, second_args, std::index_sequence_for<Args1...>(), std::index_sequence_for<Args2...>())
+		{
+		}
+
+		pair(const pair &p) = default;
+		pair(pair &&p) = default;
+
+		constexpr pair &operator=(const pair &other)
+		{
+			first = other.first;
+			second = other.second;
+			return *this;
+		}
+
+		template <class U1, class U2>
+		constexpr pair &operator=(const pair<U1, U2> &other)
+		{
+			first = other.first;
+			second = other.second;
+			return *this;
+		}
+
+		constexpr pair &operator=(pair &&other) noexcept(std::is_nothrow_move_assignable<T1>::value && std::is_nothrow_move_assignable<T2>::value)
+		{
+			first = std::move(other.first);
+			second = std::move(other.second);
+			return *this;
+		}
+
+		template <class U1, class U2>
+		constexpr pair &operator=(pair<U1, U2> &&p)
+		{
+			first = std::forward<U1>(p.first);
+			second = std::forward<U2>(p.second);
+			return *this;
+		}
+
+		constexpr void swap(pair &other) noexcept(std::is_nothrow_swappable_v<first_type> && std::is_nothrow_swappable_v<second_type>)
+		{
+			__utility_swap(first, other.first);
+			__utility_swap(second, other.second);
+		}
+	};
+
+	template <class T1, class T2>
+	std::pair<typename std::decay<T1>::type, typename std::decay<T2>::type> make_pair(T1 &&t, T2 &&u)
+	{
+		typedef typename std::decay<T1>::type first_type;
+		typedef typename std::decay<T2>::type second_type;
+		typedef pair<first_type, second_type> pair_type;
+		return pair_type(std::forward<T1>(t), std::forward<T2>(u));
+	}
+}

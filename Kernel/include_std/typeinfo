@@ -1,0 +1,338 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#ifndef __FENNIX_KERNEL_TYPEINFO_H__
+#define __FENNIX_KERNEL_TYPEINFO_H__
+
+#include <exception>
+#include <cstddef>
+
+namespace __cxxabiv1
+{
+	class __class_type_info;
+	class __si_class_type_info;
+}
+
+namespace std
+{
+	class type_info
+	{
+	protected:
+		const char *Name;
+		explicit type_info(const char *n) : Name(n) {}
+
+	public:
+		type_info() = delete;
+		type_info(const type_info &) = delete;
+		virtual ~type_info();
+
+		type_info &operator=(const type_info &) = delete;
+		type_info &operator=(type_info &&) = delete;
+
+		constexpr bool operator==(const type_info &rhs) const noexcept
+		{
+			return this == &rhs;
+		}
+
+		bool before(const type_info &rhs) const noexcept
+		{
+			return (Name[0] == '*' && rhs.Name[0] == '*')
+					   ? Name < rhs.Name
+					   : __builtin_strcmp(Name, rhs.Name) < 0;
+		}
+
+		std::size_t hash_code() const noexcept
+		{
+			return reinterpret_cast<std::size_t>(this);
+		}
+
+		const char *name() const noexcept
+		{
+			return Name[0] == '*' ? Name + 1 : Name;
+		}
+
+		virtual bool __is_pointer_p() const
+		{
+			return Name[0] == '*';
+		}
+
+		virtual bool __is_function_p() const
+		{
+			return Name[0] == '(';
+		}
+
+		virtual bool __do_catch(const type_info *ThrowType, void **ThrowObject, unsigned Outer) const;
+		virtual bool __do_upcast(const __cxxabiv1::__class_type_info *Target, void **ObjectPointer) const;
+	};
+
+	class bad_cast : public exception
+	{
+	public:
+		bad_cast() noexcept {}
+		virtual ~bad_cast() noexcept;
+		virtual const char *what() const noexcept;
+	};
+
+	class bad_typeid : public exception
+	{
+	public:
+		bad_typeid() noexcept {}
+		virtual ~bad_typeid() noexcept;
+		virtual const char *what() const noexcept;
+	};
+}
+
+namespace __cxxabiv1
+{
+	class __pbase_type_info : public std::type_info
+	{
+	public:
+		unsigned int Flags;
+		const std::type_info *Pointee;
+
+		explicit __pbase_type_info(const char *n, int Qualifiers, const std::type_info *Type)
+			: std::type_info(n),
+			  Flags(Qualifiers),
+			  Pointee(Type)
+		{
+		}
+
+		virtual ~__pbase_type_info();
+
+		enum __masks
+		{
+			__const_mask = 0x1,
+			__volatile_mask = 0x2,
+			__restrict_mask = 0x4,
+			__incomplete_mask = 0x8,
+			__incomplete_class_mask = 0x10,
+			__transaction_safe_mask = 0x20,
+			__noexcept_mask = 0x40
+		};
+
+	protected:
+		__pbase_type_info(const __pbase_type_info &);
+
+		__pbase_type_info &operator=(const __pbase_type_info &);
+
+		virtual bool __do_catch(const std::type_info *ThrowType,
+								void **ThrowObject,
+								unsigned int Outer) const;
+
+		inline bool __pointer_catch(const __pbase_type_info *ThrownType,
+									void **ThrowObject,
+									unsigned Outer) const
+		{
+			return Pointee->__do_catch(ThrownType->Pointee, ThrowObject, Outer + 2);
+		}
+	};
+
+	class __pointer_type_info : public __pbase_type_info
+	{
+	public:
+		explicit __pointer_type_info(const char *n,
+									 int Qualifiers,
+									 const std::type_info *Type)
+			: __pbase_type_info(n, Qualifiers, Type) {}
+		virtual ~__pointer_type_info();
+
+	protected:
+		virtual bool __is_pointer_p() const;
+
+		virtual bool __pointer_catch(const __pbase_type_info *ThrowType,
+									 void **ThrowObject,
+									 unsigned Outer) const;
+	};
+
+	/* FIXME: stub */
+	class __pointer_to_member_type_info : public __pbase_type_info
+	{
+	};
+
+	class __fundamental_type_info : public std::type_info
+	{
+	public:
+		explicit __fundamental_type_info(const char *n) : std::type_info(n) {}
+		virtual ~__fundamental_type_info();
+	};
+
+	class __base_class_type_info
+	{
+	public:
+		const __class_type_info *BaseType;
+#ifdef __LP64__
+		long long OffsetFlags;
+#else
+		long OffsetFlags;
+#endif
+
+		enum __offset_flags_masks
+		{
+			__virtual_mask = 0x1,
+			__public_mask = 0x2,
+			__hwm_bit = 0x2,
+			__offset_shift = 0x8
+		};
+
+		bool __is_virtual_p() const
+		{
+			return OffsetFlags & __virtual_mask;
+		}
+
+		bool __is_public_p() const
+		{
+			return OffsetFlags & __public_mask;
+		}
+
+		ptrdiff_t __offset() const
+		{
+			return static_cast<ptrdiff_t>(OffsetFlags) >> __offset_shift;
+		}
+	};
+
+	class __class_type_info : public std::type_info
+	{
+	public:
+		explicit __class_type_info(const char *n)
+			: std::type_info(n) {}
+		virtual ~__class_type_info();
+
+		enum __sub_kind
+		{
+			__unknown = 0,
+			__not_contained,
+			__contained_ambig,
+			__contained_virtual_mask = __base_class_type_info::__virtual_mask,
+			__contained_public_mask = __base_class_type_info::__public_mask,
+			__contained_mask = 1 << __base_class_type_info::__hwm_bit,
+			__contained_private = __contained_mask,
+			__contained_public = __contained_mask | __contained_public_mask
+		};
+
+		struct __upcast_result
+		{
+			const void *dst_ptr;
+			__sub_kind part2dst;
+			int src_details;
+			const __class_type_info *base_type;
+
+			__upcast_result(int d)
+				: dst_ptr(NULL),
+				  part2dst(__unknown),
+				  src_details(d),
+				  base_type(NULL) {}
+		};
+
+		struct __dyncast_result
+		{
+			const void *dst_ptr;
+			__sub_kind whole2dst;
+			__sub_kind whole2src;
+			__sub_kind dst2src;
+			int whole_details;
+
+			__dyncast_result(int details_ = 0x10 /*__vmi_class_type_info::__flags_unknown_mask*/)
+				: dst_ptr(NULL),
+				  whole2dst(__unknown),
+				  whole2src(__unknown),
+				  dst2src(__unknown),
+				  whole_details(details_) {}
+
+		protected:
+			__dyncast_result(const __dyncast_result &);
+
+			__dyncast_result &
+			operator=(const __dyncast_result &);
+		};
+
+		virtual __sub_kind __do_find_public_src(ptrdiff_t SourceToDestination,
+												const void *ObjectPointer,
+												const __class_type_info *SourceType,
+												const void *SubroutinePointer) const;
+
+		virtual bool __do_upcast(const __class_type_info *Destination,
+								 const void *Object,
+								 __upcast_result &__restrict Result) const;
+
+		virtual bool __do_dyncast(ptrdiff_t SourceToDestination,
+								  __sub_kind AccessPath,
+								  const __class_type_info *DestinationType,
+								  const void *ObjectPointer,
+								  const __class_type_info *SourceType,
+								  const void *SourcePointer,
+								  __dyncast_result &Result) const;
+
+	protected:
+		virtual bool __do_upcast(const __class_type_info *DestinationType,
+								 void **ObjectPointer) const;
+
+		virtual bool __do_catch(const type_info *ThrowType,
+								void **ThrowObject,
+								unsigned Outer) const;
+	};
+
+	class __vmi_class_type_info : public __class_type_info
+	{
+	public:
+		enum __flags_masks
+		{
+			__non_diamond_repeat_mask = 0x1,
+			__diamond_shaped_mask = 0x2,
+			__flags_unknown_mask = 0x10
+		};
+
+		virtual ~__vmi_class_type_info();
+
+		virtual bool __do_upcast(const __class_type_info *target, void **thrown_object) const;
+		virtual void *cast_to(void *obj, const struct __class_type_info *other) const;
+	};
+
+	class __si_class_type_info : public __class_type_info
+	{
+	public:
+		const __class_type_info *BaseType;
+
+		explicit __si_class_type_info(const char *n,
+									  const __class_type_info *Base)
+			: __class_type_info(n),
+			  BaseType(Base) {}
+		virtual ~__si_class_type_info();
+
+	protected:
+		__si_class_type_info(const __si_class_type_info &);
+
+		__si_class_type_info &operator=(const __si_class_type_info &);
+
+		virtual bool __do_dyncast(ptrdiff_t SourceToDestination, __sub_kind AccessPath,
+								  const __class_type_info *DestinationType, const void *ObjectPointer,
+								  const __class_type_info *SourceType, const void *SourcePointer,
+								  __dyncast_result &Result) const;
+
+		virtual __sub_kind __do_find_public_src(ptrdiff_t SourceToDestination,
+												const void *ObjectPointer,
+												const __class_type_info *SourceType,
+												const void *SubroutinePointer) const;
+
+		virtual bool __do_upcast(const __class_type_info *Destination,
+								 const void *Object,
+								 __upcast_result &__restrict Result) const;
+	};
+
+	static const __class_type_info *const nonvirtual_base_type = static_cast<const __class_type_info *>(0) + 1;
+}
+
+#endif // !__FENNIX_KERNEL_TYPEINFO_H__

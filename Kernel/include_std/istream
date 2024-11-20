@@ -1,0 +1,79 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <streambuf>
+#include <ostream>
+#include <string>
+#include <ios>
+
+namespace std
+{
+	template <class CharT, class Traits = std::char_traits<CharT>>
+	class basic_istream : virtual public std::basic_ios<CharT, Traits>
+	{
+	};
+
+	template <class CharT, class Traits = std::char_traits<CharT>>
+	class basic_iostream : public basic_istream<CharT, Traits>, public basic_ostream<CharT, Traits>
+	{
+	private:
+		void init(std::basic_streambuf<CharT, Traits> *sb)
+		{
+			this->basic_istream<CharT, Traits>::rdbuf(sb);
+			this->basic_ostream<CharT, Traits>::rdbuf(sb);
+		}
+
+	public:
+		typedef CharT char_type;
+		typedef Traits::char_type traits_type;
+		typedef Traits::int_type int_type;
+		typedef Traits::pos_type pos_type;
+		typedef Traits::off_type off_type;
+
+		explicit basic_iostream(std::basic_streambuf<CharT, Traits> *sb)
+		{
+			this->init(sb);
+		}
+
+		basic_iostream(const basic_iostream &other) = delete;
+		virtual ~basic_iostream() = default;
+
+		basic_iostream &operator=(const basic_iostream &other) = delete;
+
+	protected:
+		basic_iostream(basic_iostream &&other)
+		{
+			this->rdbuf(other.rdbuf());
+			other.rdbuf(nullptr);
+		}
+
+		basic_iostream &operator=(basic_iostream &&other);
+
+		void swap(basic_iostream &other)
+		{
+			std::swap(this->rdbuf(), other.rdbuf());
+		}
+	};
+
+	typedef basic_istream<char> istream;
+	typedef basic_istream<wchar_t> wistream;
+
+	typedef basic_iostream<char> iostream;
+	typedef basic_iostream<wchar_t> wiostream;
+}

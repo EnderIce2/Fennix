@@ -1,0 +1,6 @@
+*.o
+*.su
+*.gcno
+*.map
+fennix.elf
+*.log

@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"jeff-hykin.better-cpp-syntax",
+		"aaron-bond.better-comments",
+		"ms-vscode.cpptools",
+		"maziac.hex-hover-converter",
+		"zixuanwang.linkerscript",
+		"webfreak.debug",
+		"ibm.output-colorizer",
+		"wayou.vscode-todo-highlight",
+		"gruntfuggly.todo-tree",
+		"maziac.asm-code-lens"
+	]
+}

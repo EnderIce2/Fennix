@@ -1,0 +1,294 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <cstddef>
+#include <string>
+
+namespace std
+{
+	template <std::size_t N>
+	class bitset
+	{
+	private:
+		unsigned long long m_bits;
+
+	public:
+		class reference
+		{
+		private:
+			unsigned long long &m_bits;
+			std::size_t m_pos;
+
+		public:
+			reference(unsigned long long &bits, std::size_t pos) : m_bits(bits), m_pos(pos) {}
+			~reference() {}
+
+			reference &operator=(bool x)
+			{
+				if (x)
+					m_bits |= (1 << m_pos);
+				else
+					m_bits &= ~(1 << m_pos);
+				return *this;
+			}
+
+			reference &operator=(const reference &x)
+			{
+				if (x)
+					m_bits |= (1 << m_pos);
+				else
+					m_bits &= ~(1 << m_pos);
+				return *this;
+			}
+
+			operator bool() const
+			{
+				return (m_bits & (1 << m_pos)) != 0;
+			}
+
+			bool operator~() const
+			{
+				return (m_bits & (1 << m_pos)) == 0;
+			}
+
+			reference &flip()
+			{
+				m_bits ^= (1 << m_pos);
+				return *this;
+			}
+		};
+
+		constexpr bitset() : m_bits(0) {}
+		constexpr bitset(unsigned long long bits) : m_bits(bits) {}
+
+		template <class CharT>
+		explicit bitset(const CharT *str,
+						std::size_t n = std::size_t(-1),
+						CharT zero = CharT('0'),
+						CharT one = CharT('1'))
+		{
+			m_bits = 0;
+			std::size_t len = n == std::size_t(-1) ? std::char_traits<CharT>::length(str) : n;
+			for (std::size_t i = 0; i < len; i++)
+			{ /* FIXME: This is a hack, but it works for now. */
+				if (CharT('0') != zero || CharT('1') != one)
+				{
+					if (str[i] == zero)
+						m_bits &= ~(1ULL << i);
+					else if (str[i] == one)
+						m_bits |= (1ULL << i);
+				}
+				else
+				{
+					if (str[i] == zero)
+						m_bits |= (0ULL << (N - 1 - i));
+					else if (str[i] == one)
+						m_bits |= (1ULL << (N - 1 - i));
+				}
+			}
+		}
+
+		bool operator==(const bitset &rhs) const
+		{
+			return m_bits == rhs.m_bits;
+		}
+
+		bool operator[](std::size_t pos) const
+		{
+			return (m_bits & (1 << pos)) != 0;
+		}
+
+		reference operator[](std::size_t pos)
+		{
+			return reference(m_bits, pos);
+		}
+
+		bool test(std::size_t pos) const
+		{
+			return (m_bits & (1ULL << pos)) != 0;
+		}
+
+		bool all() const
+		{
+			return m_bits == (1ULL << N) - 1;
+		}
+
+		bool any() const
+		{
+			return m_bits != 0;
+		}
+
+		bool none() const
+		{
+			return m_bits == 0;
+		}
+
+		std::size_t count() const
+		{
+			std::size_t count = 0;
+			for (std::size_t i = 0; i < N; i++)
+			{
+				if (test(i))
+					count++;
+			}
+			return count;
+		}
+
+		std::size_t size() const
+		{
+			return N;
+		}
+
+		bitset &operator&=(const bitset &other)
+		{
+			m_bits &= other.m_bits;
+			return *this;
+		}
+
+		bitset &operator|=(const bitset &other)
+		{
+			m_bits |= other.m_bits;
+			return *this;
+		}
+
+		bitset &operator^=(const bitset &other)
+		{
+			m_bits ^= other.m_bits;
+			return *this;
+		}
+
+		bitset operator~() const
+		{
+			return bitset(~m_bits);
+		}
+
+		bitset operator<<(std::size_t pos) const
+		{
+			return bitset(m_bits << pos);
+		}
+
+		bitset &operator<<=(std::size_t pos)
+		{
+			m_bits <<= pos;
+			return *this;
+		}
+
+		bitset operator>>(std::size_t pos) const
+		{
+			return bitset(m_bits >> pos);
+		}
+
+		bitset &operator>>=(std::size_t pos)
+		{
+			m_bits >>= pos;
+			return *this;
+		}
+
+		bitset &set()
+		{
+			m_bits = (1ULL << N) - 1;
+			return *this;
+		}
+
+		bitset &set(std::size_t pos, bool value = true)
+		{
+			if (value)
+				m_bits |= (1ULL << pos);
+			else
+				m_bits &= ~(1ULL << pos);
+			return *this;
+		}
+
+		bitset &reset()
+		{
+			m_bits = 0;
+			return *this;
+		}
+
+		bitset &reset(std::size_t pos)
+		{
+			m_bits &= ~(1 << pos);
+			return *this;
+		}
+
+		bitset &flip()
+		{
+			m_bits = ~m_bits;
+			m_bits &= ((1ULL << N) - 1);
+			return *this;
+		}
+
+		bitset &flip(std::size_t pos)
+		{
+			m_bits ^= (1ULL << pos);
+			m_bits &= ((1ULL << N) - 1);
+			return *this;
+		}
+
+		std::string to_string(char zero = '0', char one = '1') const
+		{
+			std::string str;
+			for (std::size_t i = N; i > 0; i--)
+			{
+				if (test(i - 1))
+					str += one;
+				else
+					str += zero;
+			}
+			return str;
+		}
+
+		unsigned long to_ulong() const
+		{
+			return static_cast<unsigned long>(m_bits);
+		}
+
+		unsigned long long to_ullong() const
+		{
+			return m_bits;
+		}
+	};
+
+	template <std::size_t N>
+	std::bitset<N> operator&(const std::bitset<N> &lhs,
+							 const std::bitset<N> &rhs)
+	{
+		std::bitset<N> result(lhs);
+		result &= rhs;
+		return result;
+	}
+
+	template <std::size_t N>
+	std::bitset<N> operator|(const std::bitset<N> &lhs,
+							 const std::bitset<N> &rhs)
+	{
+		std::bitset<N> result(lhs);
+		result |= rhs;
+		return result;
+	}
+
+	template <std::size_t N>
+	std::bitset<N> operator^(const std::bitset<N> &lhs,
+							 const std::bitset<N> &rhs)
+	{
+		std::bitset<N> result(lhs);
+		result ^= rhs;
+		return result;
+	}
+}

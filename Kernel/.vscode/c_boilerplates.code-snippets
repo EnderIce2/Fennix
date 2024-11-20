@@ -1,0 +1,100 @@
+{
+	"Fennix Kernel C++ Header": {
+		"prefix": [
+			"head",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Kernel.",
+			"",
+			"\tFennix Kernel is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Kernel is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.",
+			"*/",
+			"",
+			"#pragma once",
+			"",
+			"$0",
+			"",
+			"$1",
+			""
+		],
+		"description": "Create kernel header."
+	},
+	"Fennix Kernel C Header": {
+		"prefix": [
+			"headc",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Kernel.",
+			"",
+			"\tFennix Kernel is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Kernel is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.",
+			"*/",
+			"",
+			"#ifndef __FENNIX_KERNEL_${1:header}_H__",
+			"#define __FENNIX_KERNEL_${1:header}_H__",
+			"",
+			"#include <types.h>",
+			"",
+			"$0",
+			"",
+			"#endif // !__FENNIX_KERNEL_${1:header}_H__",
+			""
+		],
+		"description": "Create kernel header."
+	},
+	"Fennix Kernel brief": {
+		"prefix": [
+			"brief",
+		],
+		"body": [
+			"/** @brief $0 */"
+		],
+		"description": "Create kernel documentation brief."
+	},
+	"License": {
+		"prefix": [
+			"license",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Kernel.",
+			"",
+			"\tFennix Kernel is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Kernel is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.",
+			"*/"
+		],
+		"description": "Create kernel license."
+	}
+}

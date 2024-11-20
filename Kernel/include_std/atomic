@@ -1,0 +1,666 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <types.h>
+#include <cstddef>
+#include <debug.h>
+
+namespace std
+{
+#define _atomic(T) T
+#define builtin_atomic_n(name) __atomic_##name##_n
+#define builtin_atomic(name) __atomic_##name
+
+	/**
+	 * Specifies the memory ordering constraints for atomic operations.
+	 *
+	 * This enum specifies the possible values for the memory order
+	 * parameter of atomic operations.
+	 *
+	 * Possible values are:
+	 *
+	 * - memory_order_relaxed: There are no synchronization
+	 * or ordering constraints imposed on other reads or writes,
+	 * only this operation's atomicity is guaranteed.
+	 *
+	 * - memory_order_consume: A load operation with this
+	 * memory order performs a consume operation on the
+	 * affected memory location: no reads or writes in the
+	 * current thread dependent on the value currently loaded
+	 * can be reordered before this load.
+	 *
+	 * - memory_order_acquire: A load operation with this
+	 * memory order performs the acquire operation on the
+	 * affected memory location: no reads or writes in the
+	 * current thread can be reordered before this load.
+	 *
+	 * - memory_order_release: A store operation with this
+	 * memory order performs the release operation: no reads
+	 * or writes in the current thread can be reordered after
+	 * this store.
+	 *
+	 * - memory_order_acq_rel: A read-modify-write operation
+	 * with this memory order is both an acquire operation
+	 * and a release operation.
+	 *
+	 * - memory_order_seq_cst: A load operation with this
+	 * memory order performs an acquire operation, a store
+	 * performs a release operation, and read-modify-write
+	 * performs both an acquire operation and a release
+	 * operation, plus a single total order exists in which
+	 * all threads observe all modifications in the same order.
+	 */
+	enum class memory_order : int
+	{
+		relaxed = __ATOMIC_RELAXED,
+		consume = __ATOMIC_CONSUME,
+		acquire = __ATOMIC_ACQUIRE,
+		release = __ATOMIC_RELEASE,
+		acq_rel = __ATOMIC_ACQ_REL,
+		seq_cst = __ATOMIC_SEQ_CST
+	};
+
+	/**
+	 * Relaxed memory order
+	 *
+	 * No synchronization or ordering constraints
+	 * imposed on other reads or writes.
+	 * Only atomicity is guaranteed. */
+	inline constexpr memory_order memory_order_relaxed =
+		memory_order::relaxed;
+
+	/**
+	 * Consume memory order
+	 *
+	 * A load operation with this memory order
+	 * performs a consume operation on the affected
+	 * memory location. No reads or writes in the
+	 * current thread dependent on the value
+	 * currently loaded can be reordered before this
+	 * load. Writes to data-dependent variables in
+	 * other threads that release the same atomic
+	 * variable are visible in the current thread.
+	 */
+	inline constexpr memory_order memory_order_consume =
+		memory_order::consume;
+
+	/** Acquire memory order
+	 *
+	 * A load operation with this memory order
+	 * performs the acquire operation on the affected
+	 * memory location. No reads or writes in the
+	 * current thread can be reordered before this
+	 * load. All writes in other threads that release
+	 * the same atomic variable are visible in the
+	 * current thread. */
+	inline constexpr memory_order memory_order_acquire =
+		memory_order::acquire;
+
+	/** Release memory order
+	 *
+	 * A store operation with this memory order
+	 * performs the release operation. No reads or
+	 * writes in the current thread can be reordered
+	 * after this store. All writes in the current
+	 * thread are visible in other threads that acquire
+	 * the same atomic variable, and writes that carry
+	 * a dependency into the atomic variable become
+	 * visible in other threads that consume the same
+	 * atomic. */
+	inline constexpr memory_order memory_order_release =
+		memory_order::release;
+
+	/** Acquire-release memory order
+	 *
+	 * A read-modify-write operation with this memory
+	 * order is both an acquire operation and a release
+	 * operation. No memory reads or writes in the
+	 * current thread can be reordered before the load,
+	 * nor after the store. All writes in other threads
+	 * that release the same atomic variable are visible
+	 * before the modification, and the modification is
+	 * visible in other threads that acquire the same
+	 * atomic variable. */
+	inline constexpr memory_order memory_order_acq_rel =
+		memory_order::acq_rel;
+
+	/** Sequentially-consistent memory order
+	 *
+	 * A load operation with this memory order performs
+	 * an acquire operation, a store performs a release
+	 * operation, and read-modify-write performs both an
+	 * acquire operation and a release operation.
+	 * Additionally, a single total order exists in which
+	 * all threads observe all modifications in the same
+	 * order. */
+	inline constexpr memory_order memory_order_seq_cst =
+		memory_order::seq_cst;
+
+	template <typename T>
+	class atomic
+	{
+		_atomic(T) value;
+
+	public:
+		atomic() : value(0) {}
+		atomic(T desired) : value(desired) {}
+		// atomic(const atomic &) = delete;
+
+		/**
+		 * Load the value of the atomic variable
+		 *
+		 * @note Order must be one of memory_order::relaxed,
+		 * memory_order::consume, memory_order::acquire or
+		 * memory_order::seq_cst
+		 *
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable
+		 */
+		inline __always_inline T load(memory_order order = memory_order::seq_cst) const
+		{
+			return builtin_atomic_n(load)(&this->value,
+										  static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc load()
+		 */
+		inline __always_inline T load(memory_order order = memory_order::seq_cst) const volatile
+		{
+			return builtin_atomic_n(load)(&this->value,
+										  static_cast<int>(order));
+		}
+
+		/**
+		 * Store the value of the atomic variable
+		 *
+		 * @note Order must be one of memory_order::relaxed,
+		 * memory_order::release or memory_order::seq_cst
+		 *
+		 * @param desired The value to store
+		 * @param order Memory order constraint to use
+		 */
+		inline __always_inline void store(T desired, memory_order order = memory_order::seq_cst)
+		{
+			builtin_atomic_n(store)(&this->value, desired,
+									static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc store()
+		 */
+		inline __always_inline void store(T desired,
+										  memory_order order = memory_order::seq_cst) volatile
+		{
+			builtin_atomic_n(store)(&this->value, desired,
+									static_cast<int>(order));
+		}
+
+		/**
+		 * Exchange the value of the atomic variable
+		 *
+		 * @param desired The value to exchange
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the exchange
+		 */
+		inline __always_inline T exchange(T desired, memory_order order = memory_order::seq_cst)
+		{
+			return builtin_atomic_n(exchange)(&this->value, desired,
+											  static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc exchange()
+		 */
+		inline __always_inline T exchange(T desired,
+										  memory_order order = memory_order::seq_cst) volatile
+		{
+			return builtin_atomic_n(exchange)(&this->value, desired,
+											  static_cast<int>(order));
+		}
+
+		/**
+		 * Compare and exchange the value of the atomic variable
+		 *
+		 * @param expected The expected value
+		 * @param desired The desired value
+		 * @param success Memory order constraint to use if the exchange succeeds
+		 * @param failure Memory order constraint to use if the exchange fails
+		 * @return True if the exchange succeeded, false otherwise
+		 */
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order success,
+														  memory_order failure)
+		{
+			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
+														 desired, false, success,
+														 failure);
+		}
+
+		/**
+		 * @copydoc compare_exchange_weak()
+		 */
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order success,
+														  memory_order failure) volatile
+		{
+			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
+														 desired, false, success,
+														 failure);
+		}
+
+		/**
+		 * Compare and exchange the value of the atomic variable
+		 *
+		 * @param expected The expected value
+		 * @param desired The desired value
+		 * @param order Memory order constraint to use
+		 * @return True if the exchange succeeded, false otherwise
+		 */
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order order =
+															  memory_order_seq_cst)
+		{
+			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
+														 desired, false, order,
+														 static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc compare_exchange_weak()
+		 */
+		inline __always_inline bool compare_exchange_weak(T &expected, T desired,
+														  memory_order order =
+															  memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(compare_exchange_weak)(&this->value, &expected,
+														 desired, false, order,
+														 static_cast<int>(order));
+		}
+
+		/**
+		 * Compare and exchange the value of the atomic variable
+		 *
+		 * @param expected The expected value
+		 * @param desired The desired value
+		 * @param success Memory order constraint to use if the exchange succeeds
+		 * @param failure Memory order constraint to use if the exchange fails
+		 * @return True if the exchange succeeded, false otherwise
+		 */
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order success,
+															memory_order failure)
+		{
+			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
+														   desired, true, success,
+														   failure);
+		}
+
+		/**
+		 * @copydoc compare_exchange_strong()
+		 */
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order success,
+															memory_order failure) volatile
+		{
+			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
+														   desired, true, success,
+														   failure);
+		}
+
+		/**
+		 * Compare and exchange the value of the atomic variable
+		 *
+		 * @param expected The expected value
+		 * @param desired The desired value
+		 * @param order Memory order constraint to use
+		 * @return True if the exchange succeeded, false otherwise
+		 */
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order order =
+																memory_order_seq_cst)
+		{
+			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
+														   desired, true, order,
+														   static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc compare_exchange_strong()
+		 */
+		inline __always_inline bool compare_exchange_strong(T &expected, T desired,
+															memory_order order =
+																memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(compare_exchange_strong)(&this->value, &expected,
+														   desired, true, order,
+														   static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and add the value of the atomic variable
+		 *
+		 * @param arg The value to add
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the addition
+		 */
+		inline __always_inline T fetch_add(T arg, memory_order order =
+													  memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_add)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_add()
+		 */
+		inline __always_inline T fetch_add(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_add)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and subtract the value of the atomic variable
+		 *
+		 * @param arg The value to subtract
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the subtraction
+		 */
+		inline __always_inline T fetch_sub(T arg, memory_order order =
+													  memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_sub)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_sub()
+		 */
+		inline __always_inline T fetch_sub(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_sub)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and bitwise AND the value of the atomic variable
+		 *
+		 * @param arg The value to AND
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the AND
+		 */
+		inline __always_inline T fetch_and(T arg, memory_order order =
+													  memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_and)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_and()
+		 */
+		inline __always_inline T fetch_and(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_and)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and bitwise OR the value of the atomic variable
+		 *
+		 * @param arg The value to OR
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the OR
+		 */
+		inline __always_inline T fetch_or(T arg, memory_order order =
+													 memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_or)(&this->value, arg,
+											static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_or()
+		 */
+		inline __always_inline T fetch_or(T arg, memory_order order =
+													 memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_or)(&this->value, arg,
+											static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and bitwise XOR the value of the atomic variable
+		 *
+		 * @param arg The value to XOR
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the XOR
+		 */
+		inline __always_inline T fetch_xor(T arg, memory_order order =
+													  memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_xor)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_xor()
+		 */
+		inline __always_inline T fetch_xor(T arg, memory_order order =
+													  memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_xor)(&this->value, arg,
+											 static_cast<int>(order));
+		}
+
+		/**
+		 * Fetch and bitwise NAND the value of the atomic variable
+		 *
+		 * @param arg The value to NAND
+		 * @param order Memory order constraint to use
+		 * @return The value of the atomic variable before the NAND
+		 */
+		inline __always_inline T fetch_nand(T arg, memory_order order =
+													   memory_order_seq_cst)
+		{
+			return builtin_atomic(fetch_nand)(&this->value, arg,
+											  static_cast<int>(order));
+		}
+
+		/**
+		 * @copydoc fetch_nand()
+		 */
+		inline __always_inline T fetch_nand(T arg, memory_order order =
+													   memory_order_seq_cst) volatile
+		{
+			return builtin_atomic(fetch_nand)(&this->value, arg,
+											  static_cast<int>(order));
+		}
+
+		/**
+		 * Notify all threads waiting on this atomic variable
+		 */
+		void notify_all() { stub; }
+
+		/**
+		 * @copydoc notify_all()
+		 */
+		void notify_all() volatile { stub; }
+
+		/**
+		 * Notify one thread waiting on this atomic variable
+		 */
+		void notify_one() { stub; }
+
+		/**
+		 * @copydoc notify_one()
+		 */
+		void notify_one() volatile { stub; }
+
+		/**
+		 * Wait for the atomic variable to change
+		 *
+		 * @param old The value to wait for
+		 * @param order Memory order constraint to use
+		 */
+		void wait(T old, memory_order order =
+							 memory_order::seq_cst) const
+		{
+			while (this->load(order) == old)
+				;
+		}
+
+		/**
+		 * Check whether this atomic type is lock-free
+		 * @return True if this atomic type is lock-free
+		 */
+		bool is_lock_free() const
+		{
+			stub;
+			return true;
+		}
+
+		/**
+		 * @copydoc is_lock_free()
+		 */
+		bool is_lock_free() const volatile
+		{
+			stub;
+			return true;
+		}
+
+		/**
+		 * Equals true if this atomic type is always lock-free
+		 */
+		static constexpr bool is_always_lock_free = true;
+
+		/************************************************/
+		T operator++() { return this->fetch_add(1) + 1; }
+		// T operator++() volatile { return this->fetch_add(1) + 1; }
+
+		T operator++(int) { return this->fetch_add(1); }
+		// T operator++(int) volatile { return this->fetch_add(1); }
+		/************************************************/
+		T operator--() { return this->fetch_sub(1) - 1; }
+		// T operator--() volatile { return this->fetch_sub(1) - 1; }
+
+		T operator--(int) { return this->fetch_sub(1); }
+		// T operator--(int) volatile { return this->fetch_sub(1); }
+		/************************************************/
+		T operator+=(T arg) { return this->fetch_add(arg) + arg; }
+		// T operator+=(T arg) volatile { return this->fetch_add(arg) + arg; }
+
+		// T operator+=(ptrdiff_t arg) { return this->fetch_add(arg) + arg; }
+		// T operator+=(ptrdiff_t arg) volatile { return this->fetch_add(arg) + arg; }
+		/************************************************/
+		T operator-=(T arg) { return this->fetch_sub(arg) - arg; }
+		// T operator-=(T arg) volatile { return this->fetch_sub(arg) - arg; }
+
+		// T operator-=(ptrdiff_t arg) { return this->fetch_sub(arg) - arg; }
+		// T operator-=(ptrdiff_t arg) volatile { return this->fetch_sub(arg) - arg; }
+		/************************************************/
+		T operator&=(T arg) { return this->fetch_and(arg) & arg; }
+		// T operator&=(T arg) volatile { return this->fetch_and(arg) & arg; }
+
+		T operator|=(T arg) { return this->fetch_or(arg) | arg; }
+		// T operator|=(T arg) volatile { return this->fetch_or(arg) | arg; }
+
+		T operator^=(T arg) { return this->fetch_xor(arg) ^ arg; }
+		// T operator^=(T arg) volatile { return this->fetch_xor(arg) ^ arg; }
+		/************************************************/
+		T operator=(T desired)
+		{
+			this->store(desired);
+			return desired;
+		}
+		// T operator=(T desired) volatile
+		// {
+		// 	this->store(desired);
+		// 	return desired;
+		// }
+
+		atomic &operator=(const atomic &other) = delete;
+		atomic &operator=(const atomic &other) volatile = delete;
+		/************************************************/
+
+		/* non standard functions */
+
+		T operator->() { return this->load(); }
+		T operator~() { return this->fetch_nand(-1); }
+
+		operator bool() { return this->load() != 0; }
+		operator T() const { return this->load(); }
+
+		bool operator==(const atomic &other) const { return this->load() == other.load(); }
+		bool operator==(T other) const { return this->load() == other; }
+	};
+
+	typedef atomic<bool> atomic_bool;
+	typedef atomic<char> atomic_char;
+	typedef atomic<signed char> atomic_schar;
+	typedef atomic<unsigned char> atomic_uchar;
+	typedef atomic<short> atomic_short;
+	typedef atomic<unsigned short> atomic_ushort;
+	typedef atomic<int> atomic_int;
+	typedef atomic<unsigned int> atomic_uint;
+	typedef atomic<long> atomic_long;
+	typedef atomic<unsigned long> atomic_ulong;
+	typedef atomic<long long> atomic_llong;
+	typedef atomic<unsigned long long> atomic_ullong;
+	typedef atomic<char16_t> atomic_char16_t;
+	typedef atomic<char32_t> atomic_char32_t;
+	typedef atomic<wchar_t> atomic_wchar_t;
+	typedef atomic<int8_t> atomic_int8_t;
+	typedef atomic<uint8_t> atomic_uint8_t;
+	typedef atomic<int16_t> atomic_int16_t;
+	typedef atomic<uint16_t> atomic_uint16_t;
+	typedef atomic<int32_t> atomic_int32_t;
+	typedef atomic<uint32_t> atomic_uint32_t;
+	typedef atomic<int64_t> atomic_int64_t;
+	typedef atomic<uint64_t> atomic_uint64_t;
+	typedef atomic<int_least8_t> atomic_int_least8_t;
+	typedef atomic<uint_least8_t> atomic_uint_least8_t;
+	typedef atomic<int_least16_t> atomic_int_least16_t;
+	typedef atomic<uint_least16_t> atomic_uint_least16_t;
+	typedef atomic<int_least32_t> atomic_int_least32_t;
+	typedef atomic<uint_least32_t> atomic_uint_least32_t;
+	typedef atomic<int_least64_t> atomic_int_least64_t;
+	typedef atomic<uint_least64_t> atomic_uint_least64_t;
+	typedef atomic<int_fast8_t> atomic_int_fast8_t;
+	typedef atomic<uint_fast8_t> atomic_uint_fast8_t;
+	typedef atomic<int_fast16_t> atomic_int_fast16_t;
+	typedef atomic<uint_fast16_t> atomic_uint_fast16_t;
+	typedef atomic<int_fast32_t> atomic_int_fast32_t;
+	typedef atomic<uint_fast32_t> atomic_uint_fast32_t;
+	typedef atomic<int_fast64_t> atomic_int_fast64_t;
+	typedef atomic<uint_fast64_t> atomic_uint_fast64_t;
+	typedef atomic<intptr_t> atomic_intptr_t;
+	typedef atomic<uintptr_t> atomic_uintptr_t;
+	typedef atomic<size_t> atomic_size_t;
+	typedef atomic<ptrdiff_t> atomic_ptrdiff_t;
+	typedef atomic<intmax_t> atomic_intmax_t;
+	typedef atomic<uintmax_t> atomic_uintmax_t;
+}
+
+#undef builtin_atomic_n
+#undef builtin_atomic

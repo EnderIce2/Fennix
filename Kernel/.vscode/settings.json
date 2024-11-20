@@ -1,0 +1,23 @@
+{
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.autocompleteAddParentheses": true,
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.clang_format_style": "Visual Studio",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.intelliSenseMemoryLimit": 16384,
+    "editor.smoothScrolling": true,
+    "editor.cursorSmoothCaretAnimation": "on",
+    "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+        "clang-analyzer-security.insecureAPI.strcpy",
+        "clang-diagnostic-unknown-warning-option",
+        "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling",
+        "clang-diagnostic-implicit-exception-spec-mismatch",
+        "clang-diagnostic-unknown-attributes",
+        "clang-diagnostic-user-defined-literals",
+        "clang-diagnostic-non-pod-varargs",
+        "clang-diagnostic-non-pod-varargs",
+        "clang-diagnostic-non-pod-varargs"
+    ]
+}
