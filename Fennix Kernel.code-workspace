@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
+		"terminal.integrated.cwd": "../",
 		"debug.allowBreakpointsEverywhere": true,
 		"editor.tabCompletion": "on",
 		"diffEditor.codeLens": true,
