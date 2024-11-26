@@ -17,7 +17,7 @@ jobs:
           submodules: recursive
 
       - name: Install Doxygen
-        run: sudo apt-get install doxygen make -y
+        run: apt -y install doxygen make
 
       - name: Generate Documentation
         run: make doxygen
@@ -47,11 +47,11 @@ jobs:
 
     - name: Update System
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: sudo apt-get update
+      run: apt update
 
     - name: Install GCC Dependencies
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: sudo apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev autoconf m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch -y
+      run: apt install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev autoconf m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch -y
 
     - name: Clone All
       if: steps.cache-cross.outputs.cache-hit != 'true'
@@ -96,11 +96,11 @@ jobs:
 
     - name: Update System
       if: steps.cache-gnuefi.outputs.cache-hit != 'true'
-      run: sudo apt-get update
+      run: apt update
 
     - name: Install MinGW compiler
       if: steps.cache-gnuefi.outputs.cache-hit != 'true'
-      run: sudo apt-get install make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+      run: apt install make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
 
     - name: Get GNU-EFI source code and compile it
       if: steps.cache-gnuefi.outputs.cache-hit != 'true'
@@ -133,8 +133,8 @@ jobs:
 
     - name: Install Packages
       run: |
-        sudo apt-get update
-        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo -y
+        apt update
+        apt install rustc xorriso mtools genisoimage ovmf nasm doxygen make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo -y
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
@@ -177,8 +177,8 @@ jobs:
 
     - name: Update & Install Required Packages
       run: |
-        sudo apt-get update
-        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        apt update
+        apt install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
@@ -234,8 +234,8 @@ jobs:
 
     - name: Update & Install Required Packages
       run: |
-        sudo apt-get update
-        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        apt update
+        apt install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
@@ -292,8 +292,8 @@ jobs:
 
     - name: Update & Install Required Packages
       run: |
-        sudo apt-get update
-        sudo apt-get install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
+        apt update
+        apt install rustc xorriso mtools genisoimage ovmf nasm doxygen make meson gcc-10 g++-10 gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
