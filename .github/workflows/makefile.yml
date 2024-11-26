@@ -9,7 +9,7 @@ on:
 jobs:
   deploydoc:
     name: Deploy Documentation to GitHub Pages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -32,7 +32,7 @@ jobs:
 
   buildcompiler:
     name: Build Cross-Compiler & Toolchain
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
       with:
@@ -79,37 +79,10 @@ jobs:
         cd tools
         rm -rf binutils-gdb gcc
 
-  compilegnuefi:
-    name: Build GNU-EFI
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: Cache gnu-efi Folder
-      id: cache-gnuefi
-      uses: actions/cache@v3
-      with:
-        path: Lynx/gnu-efi
-        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
-
-    - name: Update System
-      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
-      run: sudo apt update
-
-    - name: Install MinGW compiler
-      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
-      run: sudo apt install make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 -y
-
-    - name: Get GNU-EFI source code and compile it
-      if: steps.cache-gnuefi.outputs.cache-hit != 'true'
-      run: make --quiet -C Lynx prepare
-
   analyze:
     name: Analyze with CodeQL
-    runs-on: ubuntu-latest
-    needs: [buildcompiler, compilegnuefi]
+    runs-on: ubuntu-22.04
+    needs: [buildcompiler]
     permissions:
       actions: read
       contents: read
@@ -138,7 +111,6 @@ jobs:
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
-        make --quiet -C Lynx prepare
         make --quiet -C Kernel prepare
 
     - name: Cache cross
@@ -148,16 +120,8 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
-    - name: Cache gnuefi
-      id: cache-gnuefi
-      uses: actions/cache@v3
-      with:
-        path: Lynx/gnu-efi
-        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
-
     - name: Build OS
       run: |
-        make build_lynx
         make build_userspace
         make build_drivers
         make build_kernel
@@ -168,8 +132,8 @@ jobs:
 
   compile64:
     name: Build amd64
-    runs-on: ubuntu-latest
-    needs: [buildcompiler, compilegnuefi]
+    runs-on: ubuntu-22.04
+    needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -182,7 +146,6 @@ jobs:
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
-        make --quiet -C Lynx prepare
         make --quiet -C Kernel prepare
 
     - name: Cache cross Folder
@@ -191,13 +154,6 @@ jobs:
       with:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
-
-    - name: Cache gnu-efi Folder
-      id: cache-gnuefi
-      uses: actions/cache@v3
-      with:
-        path: Lynx/gnu-efi
-        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
 
     - name: Configure Makefile.conf
       run: sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
@@ -225,8 +181,8 @@ jobs:
 
   compile32:
     name: Build i386
-    runs-on: ubuntu-latest
-    needs: [buildcompiler, compilegnuefi]
+    runs-on: ubuntu-22.04
+    needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -239,7 +195,6 @@ jobs:
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
-        make --quiet -C Lynx prepare
         make --quiet -C Kernel prepare
 
     - name: Cache cross Folder
@@ -248,13 +203,6 @@ jobs:
       with:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
-
-    - name: Cache gnu-efi Folder
-      id: cache-gnuefi
-      uses: actions/cache@v3
-      with:
-        path: Lynx/gnu-efi
-        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
 
     - name: Configure Makefile.conf
       run: sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
@@ -283,8 +231,8 @@ jobs:
   compilearm64:
     if: ${{ false }} # Disabled until we can get it to work
     name: Build aarch64
-    runs-on: ubuntu-latest
-    needs: [buildcompiler, compilegnuefi]
+    runs-on: ubuntu-22.04
+    needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -297,7 +245,6 @@ jobs:
         make --quiet -C tools do_limine
         make --quiet -C Drivers prepare
         make --quiet -C Userspace prepare
-        make --quiet -C Lynx prepare
         make --quiet -C Kernel prepare
 
     - name: Cache cross Folder
@@ -306,13 +253,6 @@ jobs:
       with:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
-
-    - name: Cache gnu-efi Folder
-      id: cache-gnuefi
-      uses: actions/cache@v3
-      with:
-        path: Lynx/gnu-efi
-        key: ${{ runner.os }}-gnuefi-${{ hashFiles('Lynx/Makefile') }}
 
     - name: Configure Makefile.conf
       run: sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH

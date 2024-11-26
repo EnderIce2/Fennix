@@ -8,7 +8,7 @@ Opeating System from scratch made in C and C++
 
 - Clone repo using:
 ```bash
-git clone --recurse-submodules https://github.com/Fennix-Project/Fennix.git
+git clone --recurse-submodules https://github.com/EnderIce2/Fennix.git
 ```
 
 - Build the cross-compiler and other tools:
@@ -30,5 +30,3 @@ make run
 ```bash
 make clean
 ```
-
-More info about compiling and running [here](https://fennix.enderice2.software/).

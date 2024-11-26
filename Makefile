@@ -79,7 +79,6 @@ doxygen:
 	mkdir -p doxygen-doc
 	doxygen Doxyfile
 	doxygen Kernel/Doxyfile
-	doxygen Lynx/Doxyfile
 	doxygen Userspace/Doxyfile
 	doxygen Drivers/Doxyfile
 
@@ -94,11 +93,10 @@ endif
 tools:
 	make --quiet -C tools all
 	make --quiet -C Kernel prepare
-	make --quiet -C Lynx prepare
 	make --quiet -C Userspace prepare
 	make --quiet -C Drivers prepare
 
-build: build_lynx build_kernel build_userspace build_drivers build_image
+build: build_kernel build_userspace build_drivers build_image
 
 dump:
 	make --quiet -C Kernel dump
@@ -107,11 +105,6 @@ rebuild: clean build
 
 ifeq ($(QUIET_BUILD), 1)
 MAKE_QUIET_FLAG = --quiet
-endif
-
-build_lynx:
-ifeq ($(BOOTLOADER), lynx)
-	make $(MAKE_QUIET_FLAG) -C Lynx build
 endif
 
 build_kernel:
@@ -143,14 +136,6 @@ endif
 	tar cf initrd.tar -C initrd_tmp_data/ ./ --format=ustar
 	cp Kernel/fennix.elf initrd.tar \
 		iso_tmp_data/
-ifeq ($(BOOTLOADER), lynx)
-	cp tools/lynx.cfg Lynx/loader.bin Lynx/efi-loader.bin iso_tmp_data/
-	xorriso -as mkisofs -b loader.bin \
-		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		--efi-boot efi-loader.bin -V FENNIX \
-		-efi-boot-part --efi-boot-image --protective-msdos-label \
-		iso_tmp_data -o $(OSNAME).iso
-endif
 ifeq ($(BOOTLOADER), limine)
 	cp tools/limine.cfg $(LIMINE_FOLDER)/limine-bios.sys \
 						$(LIMINE_FOLDER)/limine-bios-cd.bin \
@@ -216,7 +201,7 @@ clean_logs:
 vscode_debug_only: clean_logs
 	$(QEMU) -S -gdb tcp::1234 -d cpu_reset,int -no-reboot -no-shutdown $(QEMU_UEFI_BIOS) -m 512M $(QEMUFLAGS) $(QEMU_SMP_DBG)
 
-vscode_debug: build_lynx build_kernel build_userspace build_drivers build_image vscode_debug_only
+vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debug_only
 
 qemu: qemu_vdisk clean_logs
 	touch serial.log parallel.log
@@ -233,6 +218,5 @@ clean: clean_logs
 	rm -rf doxygen-doc iso_tmp_data initrd_tmp_data
 	rm -f initrd.tar $(OSNAME).iso $(OSNAME).img
 	make -C Kernel clean
-	make -C Lynx clean
 	make -C Userspace clean
 	make -C Drivers clean
