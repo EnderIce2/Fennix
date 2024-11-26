@@ -11,6 +11,7 @@ tools/*
 !tools/website
 !tools/Makefile
 !tools/*.c
+!tools/*.patch
 !tools/*.cpp
 !tools/*.cfg
 !tools/SSDT1.dat

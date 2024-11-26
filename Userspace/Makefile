@@ -30,23 +30,6 @@ ifeq ($(DEBUG), 1)
 MUSL_CONFIGURE_FLAGS += --enable-debug
 endif
 
-build_musl:
-ifeq ($(wildcard cache/musl),)
-	mkdir -p cache/musl
-	cd cache/musl && \
-	../../musl/configure --prefix=$(PREFIX) \
-	--target=$(TARGET) --includedir=$(PREFIX)/include \
-	$(MUSL_CONFIGURE_FLAGS)
-	make -C cache/musl -j$(shell nproc)
-endif
-	$(info Installing musl libc)
-	cd cache/musl && make TARGET=$(TARGET) install
-#	cp out/lib/crt1.o out/lib/crt0.o
-	cd out/lib && ln -s /lib/libc.so ./ld-musl-x86_64.so.1 && \
-	ln -s /lib/libc.so ./ld.so
-	mkdir -p out/include/fennix
-	cp ../Kernel/include/interface/syscalls.h out/include/fennix/syscall.h
-
 create_out:
 	rm -rf out
 	mkdir -p out
@@ -60,11 +43,7 @@ create_out:
 	mkdir -p out/usr/include
 
 build: create_out
-ifeq ($(USE_LIBC), internal)
 	make -C libc build
-else ifeq ($(USE_LIBC), musl)
-	$(MAKE) build_musl
-endif
 	make -C libs build
 	make -C apps build
 

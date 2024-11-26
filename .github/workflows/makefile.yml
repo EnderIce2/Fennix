@@ -77,7 +77,7 @@ jobs:
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
         cd tools
-        rm -rf binutils-gdb gcc build-binutils64 build-gcc64 build-binutils32 build-gcc32
+        rm -rf binutils-gdb gcc
 
   compilegnuefi:
     name: Build GNU-EFI

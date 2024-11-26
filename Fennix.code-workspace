@@ -5,31 +5,6 @@
 		}
 	],
 	"settings": {
-		"debug.allowBreakpointsEverywhere": true,
-		"files.associations": {
-			"*.su": "tsv",
-			"thread": "cpp",
-			"bitset": "cpp",
-			"initializer_list": "cpp",
-			"semaphore": "cpp",
-			"memory": "cpp",
-			"limits": "cpp",
-			"climits": "cpp",
-			"iterator": "cpp",
-			"ranges": "cpp",
-			"cassert": "cpp",
-			"concepts": "cpp",
-			"cctype": "cpp",
-			"tuple": "cpp",
-			"streambuf": "cpp",
-			"system_error": "cpp",
-			"coroutine": "cpp",
-			"static_vector": "cpp",
-			"string_view": "cpp",
-			"compare": "cpp",
-			"ostream": "cpp",
-			"unordered_map": "cpp",
-			"vector": "cpp"
-		}
+		"debug.allowBreakpointsEverywhere": true
 	}
 }
