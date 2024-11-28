@@ -57,21 +57,13 @@ jobs:
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: make --quiet -C tools __clone_all_no_qemu
 
-    - name: Compile Binutils amd64
+    - name: Compile Binutils
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: make --quiet -C tools do_binutils_64
+      run: make --quiet -C tools do_binutils
 
-    - name: Compile Binutils i386
+    - name: Compile GCC
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: make --quiet -C tools do_binutils_32
-
-    - name: Compile GCC amd64
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: make --quiet -C tools do_gcc_64
-
-    - name: Compile GCC i386
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: make --quiet -C tools do_gcc_32
+      run: make --quiet -C tools do_gcc
 
     - name: Clean Up
       if: steps.cache-cross.outputs.cache-hit != 'true'

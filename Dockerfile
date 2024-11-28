@@ -36,10 +36,8 @@ RUN apt -y install \
 RUN apt clean && rm -rf /var/lib/apt/lists
 
 RUN make -C tools __clone_all_no_qemu
-RUN make --quiet -C tools do_binutils_64
-RUN make --quiet -C tools do_binutils_32
-RUN make --quiet -C tools do_gcc_64
-RUN make --quiet -C tools do_gcc_32
-RUN cd tools && rm -rf binutils-gdb gcc build-binutils64 build-gcc64 build-binutils32 build-gcc32
+RUN make --quiet -C tools do_binutils
+RUN make --quiet -C tools do_gcc
+RUN cd tools && rm -rf binutils-gdb gcc
 
 RUN make build

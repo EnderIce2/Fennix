@@ -39,7 +39,7 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -device AC97,audiodev=pa1 \
 			 -device intel-hda \
 			 -device ich9-intel-hda \
-			 -acpitable file=tools/SSDT1.dat
+			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), i386)
 QEMUFLAGS += -M q35 \
 			 -usb \
@@ -63,7 +63,7 @@ QEMUFLAGS += -M q35 \
 			 -device AC97,audiodev=pa1 \
 			 -device intel-hda \
 			 -device ich9-intel-hda \
-			 -acpitable file=tools/SSDT1.dat
+			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), aarch64)
 QEMUFLAGS += -M raspi3b \
 			 -cpu cortex-a57 \
@@ -72,7 +72,7 @@ QEMUFLAGS += -M raspi3b \
 			 -serial file:serial3.dmp \
 			 -serial stdio \
 			 -kernel $(OSNAME).img \
-			 -acpitable file=tools/SSDT1.dat
+			 -acpitable file=tools/acpi/SSDT1.dat
 endif
 
 doxygen:
@@ -137,13 +137,13 @@ endif
 	cp Kernel/fennix.elf initrd.tar \
 		iso_tmp_data/
 ifeq ($(BOOTLOADER), limine)
-	cp tools/limine.cfg $(LIMINE_FOLDER)/limine-bios.sys \
-						$(LIMINE_FOLDER)/limine-bios-cd.bin \
-						$(LIMINE_FOLDER)/limine-uefi-cd.bin \
+	cp tools/limine.cfg tools/limine/limine-bios.sys \
+						tools/limine/limine-bios-cd.bin \
+						tools/limine/limine-uefi-cd.bin \
 						iso_tmp_data/
 	mkdir -p iso_tmp_data/EFI/BOOT
-	cp  $(LIMINE_FOLDER)/BOOTX64.EFI \
-		$(LIMINE_FOLDER)/BOOTIA32.EFI \
+	cp  tools/limine/BOOTX64.EFI \
+		tools/limine/BOOTIA32.EFI \
 		iso_tmp_data/EFI/BOOT/
 	xorriso -as mkisofs -quiet -b limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \

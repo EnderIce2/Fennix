@@ -14,7 +14,7 @@ tools/*
 !tools/*.patch
 !tools/*.cpp
 !tools/*.cfg
-!tools/SSDT1.dat
+!tools/acpi
 doxygen-doc
 initrd.tar
 .dccache
@@ -29,3 +29,4 @@ initrd.tar
 *.so
 *.o
 *.dmp
+*.pcap

@@ -1,10 +1,10 @@
-WORKING_DIR = $(shell pwd)
+WORKING_DIR = $(CURDIR)
 CROSS_DIR=$(WORKING_DIR)/cross
 export PATH := $(CROSS_DIR):$(PATH)
 
-QEMU_VERSION = 8.1.2
+QEMU_VERSION = 8.2.8
 
-all: do_tools do_limine __clone_all do_binutils_64 do_gcc_64 do_binutils_32 do_gcc_32 do_qemu
+all: do_tools do_limine __clone_all do_binutils do_gcc do_qemu
 
 clean:
 	rm -f rep ep
@@ -29,7 +29,7 @@ ifeq ("$(wildcard ./qemu)", "")
 	rm -f qemu-${QEMU_VERSION}.tar.xz
 	mv qemu-${QEMU_VERSION} qemu
 else
-	$(info > TOOLS: Skipping cloning qemu because directory already exists.)
+	$(info > TOOLS: Skipping downloading qemu because directory already exists.)
 endif
 
 .PHONY: all clean __clone_binutils __clone_gcc __prep_cross __patch_cross __patch_cross_binutils __patch_cross_gcc
@@ -91,7 +91,8 @@ do_qemu: __prep_cross
 	--disable-opengl && \
 	make --quiet -j$(shell nproc) && make --quiet install
 
-do_binutils_64:
+do_binutils:
+# x86_64
 	$(MAKE) __patch_cross_binutils
 	$(MAKE) __prep_cross
 	cd binutils-gdb/__build && \
@@ -100,8 +101,18 @@ do_binutils_64:
 	--with-sysroot --enable-shared --disable-werror && \
 	make --quiet all -j$(shell nproc) && \
 	make --quiet install
+# i386
+	$(MAKE) __patch_cross_binutils
+	$(MAKE) __prep_cross
+	cd binutils-gdb/__build && \
+	../configure --target=i386-fennix \
+	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
+	--with-sysroot --enable-shared --disable-werror && \
+	make --quiet all -j$(shell nproc) && \
+	make --quiet install
 
-do_gcc_64:
+do_gcc:
+# x86_64
 	$(MAKE) __patch_cross_gcc
 	$(MAKE) __prep_cross
 	cd gcc/__build && \
@@ -112,18 +123,7 @@ do_gcc_64:
 	make --quiet all-target-libgcc -j$(shell nproc) && \
 	make --quiet install-gcc -j$(shell nproc) && \
 	make --quiet install-target-libgcc -j$(shell nproc)
-
-do_binutils_32:
-	$(MAKE) __patch_cross_binutils
-	$(MAKE) __prep_cross
-	cd binutils-gdb/__build && \
-	../configure --target=i386-fennix \
-	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
-	--with-sysroot --enable-shared --disable-werror && \
-	make --quiet all -j$(shell nproc) && \
-	make --quiet install
-
-do_gcc_32:
+# i386
 	$(MAKE) __patch_cross_gcc
 	$(MAKE) __prep_cross
 	cd gcc/__build && \
