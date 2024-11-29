@@ -18,8 +18,8 @@ KERNEL_VERSION = dev
 BOOTLOADER = grub
 
 BUILD_KERNEL = 1
-# BUILD_USERSPACE = 1
-# BUILD_DRIVERS = 1
+#BUILD_USERSPACE = 1
+BUILD_DRIVERS = 1
 
 QUIET_BUILD = 1
 
@@ -69,7 +69,7 @@ endif
 export __CONF_QEMU_PATH
 
 __CONF_CC := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gcc
-__CONF_CPP := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-g++
+__CONF_CXX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-g++
 __CONF_LD := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ld
 __CONF_AS := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-as
 __CONF_NM := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-nm
@@ -78,7 +78,7 @@ __CONF_OBJDUMP := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objdump
 __CONF_GDB := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gdb
 
 export __CONF_CC
-export __CONF_CPP
+export __CONF_CXX
 export __CONF_LD
 export __CONF_AS
 export __CONF_NM

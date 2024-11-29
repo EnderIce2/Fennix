@@ -1,21 +1,14 @@
-# Config file
-include ../../config.mk
-
 FILENAME = libkernel.so
 
-CC = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
-CPP = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)g++
-LD = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)ld
-AS = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)as
-AR = ../../$(COMPILER_PATH)/$(COMPILER_ARCH)ar
+default:
+	$(error Do not run this Makefile directly!)
 
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./crt/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./crt/*")
 CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./crt/*")
-HEADERS = $(sort $(dir $(wildcard ../include/*)))
+HEADERS = $(sort $(dir $(wildcard $(INCLUDE_DIR)/*)))
 OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
-INCLUDE_DIR = ../include
 
 LDFLAGS := -fPIC -fPIE -pie -nostdlib -nodefaultlibs -nolibc	\
 	-zmax-page-size=0x1000 -Wl,-Map libkernel.map -shared
@@ -43,7 +36,7 @@ CFLAGS += -pipe -fno-builtin -fPIC
 
 endif
 
-CRT_CFLAGS := -fPIC -fPIE -pie -mno-red-zone -std=c++20 -I../include
+CRT_CFLAGS := -fPIC -fPIE -pie -mno-red-zone -std=c++20 -I$(INCLUDE_DIR)
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage
@@ -60,12 +53,12 @@ endif
 endif
 
 build: $(FILENAME)
-	$(CPP) $(CRT_CFLAGS) -c crt/crt0.cpp -o dcrt0.o
-	mv dcrt0.o ../out/dcrt0.o
+	$(CXX) $(CRT_CFLAGS) -c crt/crt0.cpp -o dcrt0.o
+	mv dcrt0.o $(OUTPUT_DIR)dcrt0.o
 
 $(FILENAME): $(OBJ)
 	$(info Linking $@)
-	$(CC) $(LDFLAGS) $(OBJ) -o ../out/$(FILENAME)
+	$(CC) $(LDFLAGS) $(OBJ) -o $(OUTPUT_DIR)$(FILENAME)
 
 %.o: %.c $(HEADERS)
 	$(info Compiling $<)
@@ -73,7 +66,7 @@ $(FILENAME): $(OBJ)
 
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(CPP) $(CFLAGS) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@
+	$(CXX) $(CFLAGS) $(WARNCFLAG) -std=c++20 -fexceptions -c $< -o $@
 
 %.o: %.S
 	$(info Compiling $<)

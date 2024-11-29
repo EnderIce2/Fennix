@@ -84,7 +84,7 @@ endif # aarch64
 endif # DEBUG
 
 default:
-	$(error Please specify a target)
+	$(error Do not run this Makefile directly!)
 
 prepare:
 	$(info Nothing to prepare)
@@ -112,7 +112,7 @@ $(KERNEL_FILENAME): $(OBJ)
 # https://gcc.gnu.org/projects/cxx-status.html
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(__CONF_CPP) $(CFLAGS) -fcoroutines $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
+	$(__CONF_CXX) $(CFLAGS) -fcoroutines $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
 
 %.o: %.S
 	$(info Compiling $<)

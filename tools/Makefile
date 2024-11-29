@@ -4,6 +4,9 @@ export PATH := $(CROSS_DIR):$(PATH)
 
 QEMU_VERSION = 9.1.2
 
+default:
+	$(error Please specify a target)
+
 all: do_tools do_limine __clone_all do_binutils do_gcc do_qemu
 
 clean:

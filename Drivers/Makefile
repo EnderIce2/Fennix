@@ -1,3 +1,57 @@
+default:
+	$(error Do not run this Makefile directly!)
+
+CC := $(__CONF_CC)
+CXX := $(__CONF_CXX)
+LD := $(__CONF_LD)
+AS := $(__CONF_AS)
+OBJDUMP := $(__CONF_OBJDUMP)
+
+OUTPUT_DIR := $(CURDIR)/out/
+INCLUDE_DIR := $(CURDIR)/include
+
+export CC
+export CXX
+export LD
+export AS
+export OBJDUMP
+
+export OUTPUT_DIR
+export INCLUDE_DIR
+
+DRIVER_LDFLAGS = -nostdlib -nodefaultlibs -nolibc -zmax-page-size=0x1000	\
+			-Wl,-Map file.map -fvisibility=hidden -Wl,--dynamic-linker=/boot/fennix.elf
+
+ifeq ($(OSARCH), amd64)
+DRIVER_CFLAGS = -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
+		  -mno-red-zone -mno-sse -mno-sse2							\
+		  -march=x86-64 -pipe -ffunction-sections					\
+		  -msoft-float -fno-builtin
+
+else ifeq ($(OSARCH), i386)
+DRIVER_CFLAGS = -fPIC -fPIE -pie -mno-80387 -mno-mmx -mno-3dnow	\
+		  -mno-red-zone -mno-sse -mno-sse2 -ffunction-sections		\
+		  -march=i386 -pipe -msoft-float -fno-builtin
+else ifeq ($(OSARCH), aarch64)
+DRIVER_CFLAGS = -pipe -fno-builtin -fPIC
+endif
+
+DRIVER_CFLAGS += -I$(CURDIR)/include
+
+ifeq ($(DEBUG), 1)
+	DRIVER_CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage
+ifeq ($(OSARCH), amd64)
+	DRIVER_CFLAGS += -fverbose-asm
+endif
+ifneq ($(OSARCH), aarch64)
+	DRIVER_CFLAGS += -fstack-check
+endif
+	DRIVER_LDFLAGS += -ggdb3 -O0
+endif
+
+export DRIVER_LDFLAGS
+export DRIVER_CFLAGS
+
 build:
 	cp -rf ../Kernel/include/interface/* include/
 	mkdir -p out
