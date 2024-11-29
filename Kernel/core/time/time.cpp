@@ -24,7 +24,7 @@ namespace Time
 	Clock ReadClock()
 	{
 		Clock tm;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		uint32_t t = 0;
 		outb(0x70, 0x00);
 		t = inb(0x71);
@@ -45,7 +45,7 @@ namespace Time
 		t = inb(0x71);
 		tm.Year = ((t & 0x0F) + ((t >> 4) * 10));
 		tm.Counter = 0;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		tm.Year = 0;
 		tm.Month = 0;
 		tm.Day = 0;

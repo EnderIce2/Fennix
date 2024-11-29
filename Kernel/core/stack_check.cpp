@@ -60,13 +60,13 @@ EXTERNC __noreturn __no_stack_protector void __stack_chk_fail(void)
 	CPU::PageTable(KernelPageTable);
 
 	void *Stack = nullptr;
-#if defined(a64)
+#if defined(__amd64__)
 	asmv("movq %%rsp, %0"
 		 : "=r"(Stack));
-#elif defined(a32)
+#elif defined(__i386__)
 	asmv("movl %%esp, %0"
 		 : "=r"(Stack));
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	asmv("mov %%sp, %0"
 		 : "=r"(Stack));
 #endif

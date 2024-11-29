@@ -21,15 +21,15 @@
 #include <types.h>
 #include <debug.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 typedef uint64_t cpuid_t;
-#elif defined(a32)
+#elif defined(__i386__)
 typedef uint32_t cpuid_t;
 #else
 typedef uint64_t cpuid_t;
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 #define __amd_cpuid_init(leaf)                            \
 	CPUID##leaf()                                         \
 	{                                                     \

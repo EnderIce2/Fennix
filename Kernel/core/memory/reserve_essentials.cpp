@@ -90,10 +90,10 @@ namespace Memory
 			Elf_Sym *Symbols = nullptr;
 			uint8_t *StringAddress = nullptr;
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 			Elf64_Xword SymbolSize = 0;
 			Elf64_Xword StringSize = 0;
-#elif defined(a32)
+#elif defined(__i386__)
 			Elf32_Word SymbolSize = 0;
 			Elf32_Word StringSize = 0;
 #endif
@@ -149,7 +149,7 @@ namespace Memory
 							   TO_PAGES(bInfo.Modules[i].Size));
 		}
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (bInfo.RSDP)
 		{
 			debug("Reserving RSDT region %#lx-%#lx...", bInfo.RSDP,
@@ -201,7 +201,7 @@ namespace Memory
 				this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
 			}
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 	}
 }

@@ -1,5 +1,5 @@
 # Config file
-include ../../../Makefile.conf
+include ../../../config.mk
 
 cwd := $(CURDIR)
 CACHE_DIR := $(cwd)/../../cache

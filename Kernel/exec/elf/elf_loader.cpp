@@ -47,7 +47,7 @@ namespace Execute
 												   uint64_t EntryPoint,
 												   uint64_t BaseAddress)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		char *aux_platform = (char *)vma->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
 
@@ -101,7 +101,7 @@ namespace Execute
 
 	void ELFObject::LoadExec_x86_64(FileNode *fd, PCB *TargetProcess)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{
@@ -318,7 +318,7 @@ namespace Execute
 
 	void ELFObject::LoadDyn_x86_64(FileNode *fd, PCB *TargetProcess)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
 		foreach (auto Interp in PhdrINTERP)
 		{

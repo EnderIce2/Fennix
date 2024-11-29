@@ -27,13 +27,13 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../../arch/amd64/cpu/gdt.hpp"
 #include "../arch/amd64/cpu/apic.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../../arch/i386/cpu/gdt.hpp"
 #include "../arch/i386/cpu/apic.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 #include "../../kernel.h"
@@ -143,11 +143,11 @@ nsa const char *ExGetKSymbol(CPU::ExceptionFrame *Frame)
 		Frame->rip > (uintptr_t)&_kernel_end)
 		return "<OUTSIDE KERNEL>";
 
-#if defined(a64)
+#if defined(__amd64__)
 	return ExGetKSymbolByAddress(Frame->rip);
-#elif defined(a32)
+#elif defined(__i386__)
 	return ExGetKSymbolByAddress(Frame->eip);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	return ExGetKSymbolByAddress(Frame->pc);
 #endif
 }
@@ -299,23 +299,23 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 	ExPrint("\nWe're sorry, but the system has encountered a critical error and needs to restart.\n");
 
 	ExPrint("\nError: %s (%s 0x%x)\n",
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			x86Exceptions[Frame->InterruptNumber].Name,
 			x86Exceptions[Frame->InterruptNumber].Mnemonic,
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #error "AA64 not implemented"
 #endif
 			Frame->InterruptNumber);
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("Cause: %s\n", x86Exceptions[Frame->InterruptNumber].Cause);
 #endif
 	ExPrint("Exception occurred in function %s (%#lx)\n",
 			ExGetKSymbol(Frame),
-#if defined(a64)
+#if defined(__amd64__)
 			Frame->rip);
-#elif defined(a32)
+#elif defined(__i386__)
 			Frame->eip);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			Frame->pc);
 #endif
 
@@ -431,9 +431,9 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 {
 	Memory::Virtual vmm;
 	struct StackFrame *sf;
-#if defined(a64)
+#if defined(__amd64__)
 	sf = (struct StackFrame *)Frame->rbp;
-#elif defined(a32)
+#elif defined(__i386__)
 	sf = (struct StackFrame *)Frame->ebp;
 #endif
 
@@ -455,11 +455,11 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 	/* FIXME: Get symbol offset more efficiently */
 
 	uintptr_t fIP;
-#if defined(a64)
+#if defined(__amd64__)
 	fIP = Frame->rip;
-#elif defined(a32)
+#elif defined(__i386__)
 	fIP = Frame->eip;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	fIP = Frame->pc;
 #endif
 

@@ -25,21 +25,21 @@ namespace FXSR
 {
     void _fxsave(void *mem_addr)
     {
-#ifdef a64
+#ifdef __amd64__
         __builtin_ia32_fxsave(mem_addr);
 #endif
     }
 
     void _fxrstor(void *mem_addr)
     {
-#ifdef a64
+#ifdef __amd64__
         __builtin_ia32_fxrstor(mem_addr);
 #endif
     }
 
     void _fxsave64(void *mem_addr)
     {
-#ifdef a64
+#ifdef __amd64__
         asmv("fxsaveq (%0)"
              :
              : "r"(mem_addr)
@@ -49,7 +49,7 @@ namespace FXSR
 
     void _fxrstor64(void *mem_addr)
     {
-#ifdef a64
+#ifdef __amd64__
         asmv("fxrstorq (%0)"
              :
              : "r"(mem_addr)
@@ -62,18 +62,18 @@ namespace SMAP
 {
     void _clac(void)
     {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
         asmv("clac" ::
                  : "cc");
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
     }
 
     void _stac(void)
     {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
         asmv("stac" ::
                  : "cc");
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
     }
 }
 

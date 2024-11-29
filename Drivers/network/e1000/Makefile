@@ -1,5 +1,5 @@
 # Config files
-include ../../../Makefile.conf
+include ../../../config.mk
 include ../../config.mk
 
 S_SOURCES = $(shell find ./ -type f -name '*.S')

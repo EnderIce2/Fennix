@@ -137,15 +137,15 @@ void TaskMgr()
 				continue;
 			int State = Proc->State.load();
 			uint64_t ProcessCpuUsage = GetUsage(OldSystemTime, &Proc->Info);
-#if defined(a64)
+#if defined(__amd64__)
 			printf("\e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld)\n",
 				   Statuses[State], Proc->Name, StatusesSign[State],
 				   ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
-#elif defined(a32)
+#elif defined(__i386__)
 			printf("\e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld)\n",
 				   Statuses[State], Proc->Name, StatusesSign[State],
 				   ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 			foreach (auto Thd in Proc->Threads)
@@ -154,26 +154,26 @@ void TaskMgr()
 					continue;
 				State = Thd->State.load();
 				uint64_t ThreadCpuUsage = GetUsage(OldSystemTime, &Thd->Info);
-#if defined(a64)
+#if defined(__amd64__)
 				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %ld%% (KT: %ld UT: %ld, IP: \e24FF2B%#lx \eEDFF24%s\e00AAAA)\n\eAABBCC",
 					   Statuses[State], Thd->Name, StatusesSign[State], ThreadCpuUsage, Thd->Info.KernelTime,
 					   Thd->Info.UserTime, Thd->Registers.rip, "unknown");
-#elif defined(a32)
+#elif defined(__i386__)
 				printf("  \e%s-> \eAABBCC%s \e00AAAA%s %lld%% (KT: %lld UT: %lld, IP: \e24FF2B%#x \eEDFF24%s\e00AAAA)\n\eAABBCC",
 					   Statuses[State], Thd->Name, StatusesSign[State], ThreadCpuUsage, Thd->Info.KernelTime,
 					   Thd->Info.UserTime, Thd->Registers.eip, "unknown");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 			}
 		}
 		OldSystemTime = TimeManager->GetCounter();
-#if defined(a64)
+#if defined(__amd64__)
 		register uintptr_t CurrentStackAddress asm("rsp");
 		printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
-#elif defined(a32)
+#elif defined(__i386__)
 		register uintptr_t CurrentStackAddress asm("esp");
 		printf("Sanity: %d, Stack: %#x", sanity++, CurrentStackAddress);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		register uintptr_t CurrentStackAddress asm("sp");
 		printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
 #endif

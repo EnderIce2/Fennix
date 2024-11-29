@@ -9,7 +9,7 @@ on:
 jobs:
   deploydoc:
     name: Deploy Documentation to GitHub Pages
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -32,7 +32,7 @@ jobs:
 
   buildcompiler:
     name: Build Cross-Compiler & Toolchain
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
       with:
@@ -73,7 +73,7 @@ jobs:
 
   analyze:
     name: Analyze with CodeQL
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [buildcompiler]
     permissions:
       actions: read
@@ -122,9 +122,31 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
 
+  flawfinder:
+    name: Flawfinder
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+    
+      - name: flawfinder_scan
+        uses: david-a-wheeler/flawfinder@2.0.19
+        with:
+          arguments: '--sarif ./ --minlevel 4'
+          output: 'flawfinder_results.sarif'
+    
+      - name: Upload analysis results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{github.workspace}}/flawfinder_results.sarif
+
   compile64:
     name: Build amd64
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
@@ -147,15 +169,15 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
-    - name: Configure Makefile.conf
-      run: sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - name: Configure config.mk
+      run: sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 
     - name: Compile Debug and Release ISO
       run: |
         make build
         mv Fennix.iso Fennix-debug.iso
         make clean
-        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
         make build
         mv Fennix.iso Fennix-release.iso
 
@@ -173,7 +195,7 @@ jobs:
 
   compile32:
     name: Build i386
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
@@ -196,15 +218,15 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
-    - name: Configure Makefile.conf
-      run: sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - name: Configure config.mk
+      run: sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
 
     - name: Compile Debug and Release ISO
       run: |
         make build
         mv Fennix.iso Fennix-debug.iso
         make clean
-        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
         make build
         mv Fennix.iso Fennix-release.iso
 
@@ -223,7 +245,7 @@ jobs:
   compilearm64:
     if: ${{ false }} # Disabled until we can get it to work
     name: Build aarch64
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [buildcompiler]
     steps:
     - uses: actions/checkout@v3
@@ -246,15 +268,15 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
-    - name: Configure Makefile.conf
-      run: sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - name: Configure config.mk
+      run: sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
 
     - name: Compile Debug and Release ISO
       run: |
         make build
         mv Fennix.iso Fennix-debug.iso
         make clean
-        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+        sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
         make build
         mv Fennix.iso Fennix-release.iso
 

@@ -310,7 +310,7 @@ namespace Tasking
 
 		struct StackInfo
 		{
-#ifdef a64
+#ifdef __amd64__
 			CPU::x64::FXState fx;
 			CPU::x64::SchedulerFrame tf;
 			uintptr_t GSBase, FSBase, ShadowGSBase;

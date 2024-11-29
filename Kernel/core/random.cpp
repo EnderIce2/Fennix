@@ -63,7 +63,7 @@ namespace Random
 
 	uint16_t rand16()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (RDRANDFlag)
 		{
 			uint16_t RDRANDValue = 0;
@@ -80,7 +80,7 @@ namespace Random
 
 	uint32_t rand32()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (RDRANDFlag)
 		{
 			uint32_t RDRANDValue = 0;
@@ -97,7 +97,7 @@ namespace Random
 
 	uint64_t rand64()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (RDRANDFlag)
 		{
 			uintptr_t RDRANDValue = 0;

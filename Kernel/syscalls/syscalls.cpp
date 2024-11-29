@@ -29,7 +29,7 @@ private:
 public:
 	AutoSwitchPageTable()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("mov %%cr3, %0"
 			 : "=r"(Original));
 
@@ -45,7 +45,7 @@ public:
 	{
 		debug("-    %#lx %s(%d)", Original,
 			  thisProcess->Name, thisProcess->ID);
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("mov %0, %%cr3"
 			 :
 			 : "r"(Original));

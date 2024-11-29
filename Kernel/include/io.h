@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 
 #ifdef __cplusplus
 extern "C"
@@ -98,7 +98,7 @@ extern "C"
 			 : "memory");
 	}
 
-#if defined(a64)
+#if defined(__amd64__)
 	static inline void mmoutq(void *Address, uint64_t Value)
 	{
 		asmv("mov %1, %0"
@@ -138,7 +138,7 @@ extern "C"
 		return Result;
 	}
 
-#if defined(a64)
+#if defined(__amd64__)
 	static inline uint64_t mminq(void *Address)
 	{
 		uint64_t Result;
@@ -154,5 +154,5 @@ extern "C"
 }
 #endif
 
-#endif // defined(a86)
+#endif // defined(__amd64__) || defined(__i386__)
 #endif // !__FENNIX_KERNEL_IO_H__

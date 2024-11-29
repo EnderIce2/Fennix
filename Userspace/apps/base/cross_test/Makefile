@@ -1,7 +1,7 @@
 WORKSPACE := ../../../
 
 # Config file
-include ../$(WORKSPACE)Makefile.conf
+include ../$(WORKSPACE)config.mk
 
 FILENAME = utest_
 

@@ -23,7 +23,7 @@
 bool serialports[8] = {false, false, false, false, false, false, false, false};
 std::vector<UniversalAsynchronousReceiverTransmitter::Events *> RegisteredEvents;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 NIF __always_inline inline uint8_t NoProfiler_inportb(uint16_t Port)
 {
 	uint8_t Result;
@@ -56,7 +56,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 
 	nsa NIF UART::UART(SerialPorts Port)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (Port == COMNULL)
 			return;
 
@@ -138,7 +138,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 	{
 		if (!this->IsAvailable)
 			return;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & SERIAL_BUFFER_EMPTY) == 0)
 			;
 		NoProfiler_outportb(Port, Char);
@@ -152,7 +152,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 	{
 		if (!this->IsAvailable)
 			return 0;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		while ((NoProfiler_inportb(s_cst(uint16_t, Port + 5)) & 1) == 0)
 			;
 		return NoProfiler_inportb(Port);
@@ -161,7 +161,7 @@ namespace UniversalAsynchronousReceiverTransmitter
 		{
 			if (e->GetRegisteredPort() == Port || e->GetRegisteredPort() == COMNULL)
 			{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 				e->OnReceived(NoProfiler_inportb(Port));
 #endif
 			}

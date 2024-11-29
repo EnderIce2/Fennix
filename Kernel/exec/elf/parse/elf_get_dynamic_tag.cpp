@@ -24,7 +24,7 @@ namespace Execute
 	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(FileNode *fd,
 												   DynamicArrayTags Tag)
 	{
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 		std::vector<Elf64_Dyn> Ret;
 
 		Elf64_Ehdr ELFHeader{};
@@ -55,7 +55,7 @@ namespace Execute
 		}
 
 		return Ret;
-#elif defined(a32)
+#elif defined(__i386__)
 		return {};
 #endif
 	}

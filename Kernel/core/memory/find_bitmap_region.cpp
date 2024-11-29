@@ -75,7 +75,7 @@ namespace Memory
 			}
 		}
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (bInfo.RSDP)
 		{
 			RSDPStart = (uintptr_t)bInfo.RSDP;
@@ -101,7 +101,7 @@ namespace Memory
 			}
 #endif
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 		for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)

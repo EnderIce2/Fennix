@@ -28,12 +28,12 @@ namespace Time
 {
 	bool HighPrecisionEventTimer::Sleep(size_t Duration, Units Unit)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		uint64_t Target = mminq(&hpet->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
 		while (mminq(&hpet->MainCounterValue) < Target)
 			CPU::Pause();
 		return true;
-#elif defined(a32)
+#elif defined(__i386__)
 		uint64_t Target = mminl(&hpet->MainCounterValue) + (Duration * ConvertUnit(Unit)) / clk;
 		while (mminl(&hpet->MainCounterValue) < Target)
 			CPU::Pause();
@@ -44,25 +44,25 @@ namespace Time
 
 	uint64_t HighPrecisionEventTimer::GetCounter()
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		return mminq(&hpet->MainCounterValue);
-#elif defined(a32)
+#elif defined(__i386__)
 		return mminl(&hpet->MainCounterValue);
 #endif
 	}
 
 	uint64_t HighPrecisionEventTimer::CalculateTarget(uint64_t Target, Units Unit)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		return mminq(&hpet->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
-#elif defined(a32)
+#elif defined(__i386__)
 		return mminl(&hpet->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #endif
 	}
 
 	uint64_t HighPrecisionEventTimer::GetNanosecondsSinceClassCreation()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		uint64_t Subtraction = this->GetCounter() - this->ClassCreationTime;
 		if (Subtraction <= 0 || this->clk <= 0)
 			return 0;
@@ -74,7 +74,7 @@ namespace Time
 
 	HighPrecisionEventTimer::HighPrecisionEventTimer(void *hpet)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		ACPI::ACPI::HPETHeader *HPET_HDR = (ACPI::ACPI::HPETHeader *)hpet;
 		Memory::Virtual vmm;
 		vmm.Map((void *)HPET_HDR->Address.Address,
@@ -86,7 +86,7 @@ namespace Time
 			  (void *)HPET_HDR->Address.Address);
 		clk = s_cst(uint32_t, (uint64_t)this->hpet->GeneralCapabilities >> 32);
 		KPrint("HPET clock is %u Hz", clk);
-#ifdef a64
+#ifdef __amd64__
 		mmoutq(&this->hpet->GeneralConfiguration, 0);
 		mmoutq(&this->hpet->MainCounterValue, 0);
 		mmoutq(&this->hpet->GeneralConfiguration, 1);

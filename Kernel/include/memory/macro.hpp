@@ -48,7 +48,7 @@
 /* From pages */
 #define FROM_PAGES(d) ((d) * PAGE_SIZE)
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 #define KERNEL_VMA_OFFSET 0xFFFFFFFF80000000
 
 #define USER_ALLOC_BASE 0xFFFFA00000000000 /* 256 GiB */
@@ -59,7 +59,7 @@
 
 #define USER_STACK_END 0xFFFFEFFF00000000 /* 256 MiB */
 #define USER_STACK_BASE 0xFFFFEFFFFFFF0000
-#elif defined(a32)
+#elif defined(__i386__)
 #define KERNEL_VMA_OFFSET 0xC0000000
 
 #define USER_ALLOC_BASE 0x80000000

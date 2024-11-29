@@ -29,7 +29,7 @@ namespace Execute
 						   const char *Name,
 						   Tasking::PCB *Process)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		UNUSED(Name);
 		debug("Relocatable");
 		/* TODO: I have to fully implement this, but for now I will leave it as it is now. */
@@ -95,7 +95,7 @@ namespace Execute
 				}
 			}
 		}
-#elif defined(a32)
+#elif defined(__i386__)
 #endif
 	}
 }

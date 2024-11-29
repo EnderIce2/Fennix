@@ -22,7 +22,7 @@
 
 typedef struct SyscallsFrame
 {
-#if defined(a64)
+#if defined(__amd64__)
 	uint64_t r15;
 	uint64_t r14;
 	uint64_t r13;
@@ -44,7 +44,7 @@ typedef struct SyscallsFrame
 	uint64_t Flags;
 	uint64_t StackPointer;
 	uint64_t StackSegment;
-#elif defined(a32)
+#elif defined(__i386__)
 	uint32_t ebp;
 	uint32_t edi;
 	uint32_t esi;
@@ -58,7 +58,7 @@ typedef struct SyscallsFrame
 	uint32_t Flags;
 	uint32_t StackPointer;
 	uint32_t StackSegment;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	uint32_t ReturnAddress;
 	uint32_t StackPointer;
 #endif

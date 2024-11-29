@@ -22,7 +22,7 @@ namespace Memory
 	Virtual::PageMapIndexer::PageMapIndexer(uintptr_t VirtualAddress)
 	{
 		uintptr_t Address = VirtualAddress;
-#if defined(a64)
+#if defined(__amd64__)
 		Address >>= 12;
 		this->PTEIndex = Address & 0x1FF;
 		Address >>= 9;
@@ -31,12 +31,12 @@ namespace Memory
 		this->PDPTEIndex = Address & 0x1FF;
 		Address >>= 9;
 		this->PMLIndex = Address & 0x1FF;
-#elif defined(a32)
+#elif defined(__i386__)
 		Address >>= 12;
 		this->PTEIndex = Address & 0x3FF;
 		Address >>= 10;
 		this->PDEIndex = Address & 0x3FF;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 		if (VirtualAddress > PAGE_SIZE)
@@ -44,7 +44,7 @@ namespace Memory
 			assert(
 				this->PTEIndex != 0 ||
 				this->PDEIndex != 0
-#if defined(a64)
+#if defined(__amd64__)
 				|| this->PDPTEIndex != 0 ||
 				this->PMLIndex != 0
 #endif

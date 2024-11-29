@@ -1,5 +1,5 @@
 
-include Makefile.conf
+include config.mk
 
 .PHONY: default tools clean
 
@@ -9,7 +9,7 @@ default:
 
 # For tap0
 # -netdev tap,id=usernet0,ifname=tap0,script=no,downscript=no
-QEMU = ./$(QEMU_PATH)$(QEMU_ARCH)
+QEMU = $(__CONF_QEMU_PATH)
 QEMUFLAGS := -display gtk
 
 ifeq ($(OSARCH), amd64)
@@ -205,7 +205,7 @@ vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debu
 
 qemu: qemu_vdisk clean_logs
 	touch serial.log parallel.log
-	# x-terminal-emulator -e tail -f serial.log &
+#	x-terminal-emulator -e tail -f serial.log &
 #	x-terminal-emulator -e tail -f parallel.log &
 	$(QEMU) $(QEMU_UEFI_BIOS) -cpu host $(QEMUFLAGS) $(QEMUHWACCELERATION) $(QEMUMEMORY) $(QEMU_SMP)
 

@@ -26,13 +26,13 @@
 
 #include "../kernel.h"
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
 #include "../arch/i386/cpu/gdt.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 // #define DEBUG_SCHEDULER 1
@@ -105,11 +105,11 @@
 
 __naked __used nsa void __custom_sched_idle_loop()
 {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	asmv("IdleLoop:");
 	asmv("hlt");
 	asmv("jmp IdleLoop");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	asmv("IdleLoop:");
 	asmv("wfe");
 	asmv("b IdleLoop");
@@ -195,7 +195,7 @@ namespace Tasking::Scheduler
 
 	void Custom::StartScheduler()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (Interrupts::apicTimer[0])
 		{
 			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
@@ -235,9 +235,9 @@ namespace Tasking::Scheduler
 		/* This will trigger the IRQ16
 		instantly so we won't execute
 		the next instruction */
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("int $0x30");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("svc #0x30");
 #endif
 	}
@@ -278,9 +278,9 @@ namespace Tasking::Scheduler
 			TimeSlice += 10;
 #endif
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 	}
 
@@ -588,7 +588,7 @@ namespace Tasking::Scheduler
 		{
 			CurrentCPU->CurrentThread->Registers = *Frame;
 			CPU::x64::fxsave(&CurrentCPU->CurrentThread->FPU);
-#ifdef a64
+#ifdef __amd64__
 			CurrentCPU->CurrentThread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSR_SHADOW_GS_BASE);
 			CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
 			CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
@@ -681,7 +681,7 @@ namespace Tasking::Scheduler
 
 		*Frame = CurrentCPU->CurrentThread->Registers;
 
-#ifdef a64
+#ifdef __amd64__
 		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
 		CPU::x64::fxrstor(&CurrentCPU->CurrentThread->FPU);
 		CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
@@ -705,7 +705,7 @@ namespace Tasking::Scheduler
 		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled &&
 			CurrentCPU->CurrentThread->Security.IsKernelDebugEnabled)
 		{
-#ifdef a64
+#ifdef __amd64__
 			trace("%s[%ld]: RIP=%#lx  RBP=%#lx  RSP=%#lx",
 				  CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
 				  CurrentCPU->CurrentThread->Registers.rip,
@@ -731,7 +731,7 @@ namespace Tasking::Scheduler
 
 	Custom::Custom(Task *ctx) : Base(ctx), Interrupts::Handler(16) /* IRQ16 */
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		// Map the IRQ16 to the first CPU.
 		((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
 #endif

@@ -30,13 +30,13 @@ namespace Interrupts
 #define INT_FRAMES_MAX 8
 #endif
 
-#if defined(a64)
+#if defined(__amd64__)
 	/* APIC::APIC */ extern void *apic[255];	   // MAX_CPU
 	/* APIC::Timer */ extern void *apicTimer[255]; // MAX_CPU
-#elif defined(a32)
+#elif defined(__i386__)
 	/* APIC::APIC */ extern void *apic[255];	   // MAX_CPU
 	/* APIC::Timer */ extern void *apicTimer[255]; // MAX_CPU
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 	void Initialize(int Core);

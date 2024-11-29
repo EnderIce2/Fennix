@@ -24,7 +24,7 @@ namespace Execute
 	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(FileNode *fd,
 													SegmentTypes Tag)
 	{
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 		std::vector<Elf64_Phdr> Ret;
 
 		Elf64_Ehdr ELFHeader{};
@@ -44,7 +44,7 @@ namespace Execute
 		}
 
 		return Ret;
-#elif defined(a32)
+#elif defined(__i386__)
 		return {};
 #endif
 	}

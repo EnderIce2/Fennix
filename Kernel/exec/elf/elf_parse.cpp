@@ -94,7 +94,7 @@ namespace Execute
 
 	Elf64_Sym ELFLookupSymbol(FileNode *fd, std::string Name)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		Elf64_Ehdr Header{};
 		fd->Read(&Header, sizeof(Elf64_Ehdr), 0);
 
@@ -145,7 +145,7 @@ namespace Execute
 
 	uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		if (Table == SHN_UNDEF || Index == SHN_UNDEF)
 			return 0;
 		Elf64_Shdr *SymbolTable = GetELFSection(Header, Table);
@@ -186,7 +186,7 @@ namespace Execute
 			Elf64_Shdr *Target = GetELFSection(Header, Symbol->st_shndx);
 			return (uintptr_t)Header + Symbol->st_value + Target->sh_offset;
 		}
-#elif defined(a32)
+#elif defined(__i386__)
 		return 0xdead;
 #endif
 	}

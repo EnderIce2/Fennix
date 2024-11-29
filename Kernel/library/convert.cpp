@@ -803,7 +803,7 @@ EXTERNC void __chk_fail(void) __noreturn;
 
 __noreturn __always_inline static inline void __convert_chk_fail(void)
 {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	asmv("int3");
 #else
 #warning "Not implemented!"

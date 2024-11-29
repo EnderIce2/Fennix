@@ -45,7 +45,7 @@ namespace Memory
 		class PageMapIndexer
 		{
 		public:
-#if defined(a64)
+#if defined(__amd64__)
 			uintptr_t PMLIndex = 0;
 			uintptr_t PDPTEIndex = 0;
 #endif
@@ -100,11 +100,11 @@ namespace Memory
 		 */
 		MapType GetMapType(void *VirtualAddress);
 
-#ifdef a64
+#ifdef __amd64__
 		PageMapLevel5 *GetPML5(void *VirtualAddress, MapType Type = MapType::FourKiB);
 		PageMapLevel4 *GetPML4(void *VirtualAddress, MapType Type = MapType::FourKiB);
 		PageDirectoryPointerTableEntry *GetPDPTE(void *VirtualAddress, MapType Type = MapType::FourKiB);
-#endif /* a64 */
+#endif /* __amd64__ */
 		PageDirectoryEntry *GetPDE(void *VirtualAddress, MapType Type = MapType::FourKiB);
 		PageTableEntry *GetPTE(void *VirtualAddress, MapType Type = MapType::FourKiB);
 

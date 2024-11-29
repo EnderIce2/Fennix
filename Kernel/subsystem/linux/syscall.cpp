@@ -733,7 +733,7 @@ struct __old_kernel_stat StatToOKStat(struct kstat stat)
 
 __no_stack_protector void __LinuxForkReturn(void *tableAddr)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	asmv("movq %0, %%cr3" ::"r"(tableAddr)); /* Load process page table */
 	asmv("movq $0, %rax\n");				 /* Return 0 */
 	asmv("movq %r8, %rsp\n");				 /* Restore stack pointer */
@@ -741,7 +741,7 @@ __no_stack_protector void __LinuxForkReturn(void *tableAddr)
 	asmv("swapgs\n");						 /* Swap GS back to the user GS */
 	asmv("sti\n");							 /* Enable interrupts */
 	asmv("sysretq\n");						 /* Return to rcx address in user mode */
-#elif defined(a32)
+#elif defined(__i386__)
 #warning "__LinuxForkReturn not implemented for i386"
 #endif
 	__builtin_unreachable();
@@ -1086,11 +1086,11 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 			  p_Write ? "Write" : "",
 			  (prot & linux_PROT_EXEC) ? "Exec" : "");
 
-#if defined(a64)
+#if defined(__amd64__)
 		CPU::x64::invlpg(addr);
-#elif defined(a32)
+#elif defined(__i386__)
 		CPU::x32::invlpg(addr);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("dsb sy");
 		asmv("tlbi vae1is, %0"
 			 :
@@ -1478,7 +1478,7 @@ static pid_t linux_fork(SysFrm *sf)
 	NewThread->Info.Compatibility = Thread->Info.Compatibility;
 	NewThread->Security.IsCritical = Thread->Security.IsCritical;
 	NewThread->Registers = Thread->Registers;
-#if defined(a64)
+#if defined(__amd64__)
 	NewThread->Registers.rip = (uintptr_t)__LinuxForkReturn;
 	/* For sysretq */
 	NewThread->Registers.rdi = (uintptr_t)NewProcess->PageTable;
@@ -1488,7 +1488,7 @@ static pid_t linux_fork(SysFrm *sf)
 #warning "sys_fork not implemented for other platforms"
 #endif
 
-#ifdef a86
+#if defined(__amd64__) || defined(__i386__)
 	NewThread->GSBase = NewThread->ShadowGSBase;
 	NewThread->ShadowGSBase = Thread->ShadowGSBase;
 	NewThread->FSBase = Thread->FSBase;
@@ -1559,7 +1559,7 @@ static pid_t linux_vfork(SysFrm *sf)
 	NewThread->Info.Compatibility = Thread->Info.Compatibility;
 	NewThread->Security.IsCritical = Thread->Security.IsCritical;
 	NewThread->Registers = Thread->Registers;
-#if defined(a64)
+#if defined(__amd64__)
 	NewThread->Registers.rip = (uintptr_t)__LinuxForkReturn;
 	/* For sysretq */
 	NewThread->Registers.rdi = (uintptr_t)NewProcess->PageTable;
@@ -1569,7 +1569,7 @@ static pid_t linux_vfork(SysFrm *sf)
 #warning "sys_fork not implemented for other platforms"
 #endif
 
-#ifdef a86
+#if defined(__amd64__) || defined(__i386__)
 	NewThread->GSBase = NewThread->ShadowGSBase;
 	NewThread->ShadowGSBase = Thread->ShadowGSBase;
 	NewThread->FSBase = Thread->FSBase;
@@ -2101,11 +2101,11 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 			.nodename = "fennix",
 			.release = KERNEL_VERSION,
 			.version = KERNEL_VERSION,
-#if defined(a64)
+#if defined(__amd64__)
 			.machine = "x86_64",
-#elif defined(a32)
+#elif defined(__i386__)
 			.machine = "i386",
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			.machine = "arm64",
 #elif defined(aa32)
 			.machine = "arm",
@@ -2501,28 +2501,28 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	{
 	case linux_ARCH_SET_GS:
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, addr);
-#elif defined(a32)
+#elif defined(__i386__)
 		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_GS_BASE, addr);
 #endif
 		return 0;
 	}
 	case linux_ARCH_SET_FS:
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, addr);
-#elif defined(a32)
+#elif defined(__i386__)
 		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_FS_BASE, addr);
 #endif
 		return 0;
 	}
 	case linux_ARCH_GET_FS:
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		*r_cst(uint64_t *, addr) =
 			CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
-#elif defined(a32)
+#elif defined(__i386__)
 		*r_cst(uint64_t *, addr) =
 			CPU::x32::rdmsr(CPU::x32::MSRID::MSR_FS_BASE);
 #endif
@@ -2530,10 +2530,10 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	}
 	case linux_ARCH_GET_GS:
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		*r_cst(uint64_t *, addr) =
 			CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
-#elif defined(a32)
+#elif defined(__i386__)
 		*r_cst(uint64_t *, addr) =
 			CPU::x32::rdmsr(CPU::x32::MSRID::MSR_GS_BASE);
 #endif
@@ -4258,7 +4258,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 
 uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	if (Frame->rax > sizeof(LinuxSyscallsTableAMD64) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
@@ -4289,7 +4289,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	debug("< [%ld:\"%s\"] = %ld", Frame->rax, Syscall.Name, sc_ret);
 	return sc_ret;
-#elif defined(a32)
+#elif defined(__i386__)
 	if (Frame->eax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
@@ -4320,13 +4320,13 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	debug("< [%d:\"%s\"] = %d", Frame->eax, Syscall.Name, sc_ret);
 	return sc_ret;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	return -linux_ENOSYS;
 #endif
 
-#if defined(a64)
+#if defined(__amd64__)
 	UNUSED(LinuxSyscallsTableI386);
-#elif defined(a32)
+#elif defined(__i386__)
 	UNUSED(LinuxSyscallsTableAMD64);
 #endif
 }

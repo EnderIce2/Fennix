@@ -108,7 +108,7 @@ namespace Memory
 	{
 		struct
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			uintptr_t Present : 1;			  // 0
 			uintptr_t ReadWrite : 1;		  // 1
 			uintptr_t UserSupervisor : 1;	  // 2
@@ -131,7 +131,7 @@ namespace Memory
 			uintptr_t Available9 : 1;		  // 58
 			uintptr_t ProtectionKey : 4;	  // 59-62
 			uintptr_t ExecuteDisable : 1;	  // 63
-#elif defined(a32)
+#elif defined(__i386__)
 			uintptr_t Present : 1;			  // 0
 			uintptr_t ReadWrite : 1;		  // 1
 			uintptr_t UserSupervisor : 1;	  // 2
@@ -145,7 +145,7 @@ namespace Memory
 			uintptr_t KernelReserve : 1;	  // 10
 			uintptr_t Available2 : 1;		  // 11
 			uintptr_t Address : 20;			  // 12-31
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		};
 		uintptr_t raw = 0;
@@ -153,15 +153,15 @@ namespace Memory
 		/** @brief Set Address */
 		void SetAddress(uintptr_t _Address)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
-#elif defined(a32)
+#elif defined(__i386__)
 			_Address &= 0x000FFFFF;
 			this->raw &= 0xFFC00003;
 			this->raw |= (_Address << 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
@@ -171,11 +171,11 @@ namespace Memory
 		/** @brief Get Address */
 		uintptr_t GetAddress()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(a32)
+#elif defined(__i386__)
 			return ((uintptr_t)(this->raw & 0x003FFFFF000) >> 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
@@ -183,17 +183,17 @@ namespace Memory
 
 	struct __packed PageTableEntryPtr
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		PageTableEntry Entries[512];
-#elif defined(a32)
+#elif defined(__i386__)
 		PageTableEntry Entries[1024];
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 	};
 
 	union __packed PageDirectoryEntry
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		struct
 		{
 			uintptr_t Present : 1;		  // 0
@@ -250,7 +250,7 @@ namespace Memory
 			uintptr_t ProtectionKey : 4;	  // 59-62
 			uintptr_t ExecuteDisable : 1;	  // 63
 		} TwoMiB;
-#elif defined(a32)
+#elif defined(__i386__)
 		struct
 		{
 			uintptr_t Present : 1;		  // 0
@@ -287,22 +287,22 @@ namespace Memory
 			uintptr_t Reserved0 : 1;		  // 21
 			uintptr_t Address1 : 10;		  // 22-31
 		} FourMiB;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		uintptr_t raw = 0;
 
 		/** @brief Set PageTableEntryPtr address */
 		void SetAddress(uintptr_t _Address)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
-#elif defined(a32)
+#elif defined(__i386__)
 			_Address &= 0x000FFFFF;
 			this->raw &= 0xFFC00003;
 			this->raw |= (_Address << 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
@@ -312,11 +312,11 @@ namespace Memory
 		/** @brief Get PageTableEntryPtr address */
 		uintptr_t GetAddress()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(a32)
+#elif defined(__i386__)
 			return ((uintptr_t)(this->raw & 0x003FFFFF000) >> 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
@@ -329,7 +329,7 @@ namespace Memory
 
 	union __packed PageDirectoryPointerTableEntry
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		struct
 		{
 			uintptr_t Present : 1;		  // 0
@@ -386,18 +386,18 @@ namespace Memory
 			uintptr_t ProtectionKey : 4;	  // 59-62
 			uintptr_t ExecuteDisable : 1;	  // 63
 		} OneGiB;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		uintptr_t raw = 0;
 
 		/** @brief Set PageDirectoryEntryPtr address */
 		void SetAddress(uintptr_t _Address)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
@@ -407,11 +407,11 @@ namespace Memory
 		/** @brief Get PageDirectoryEntryPtr address */
 		uintptr_t GetAddress()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(a32)
+#elif defined(__i386__)
 			return 0;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
@@ -424,7 +424,7 @@ namespace Memory
 
 	union __packed PageMapLevel4
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		struct
 		{
 			uintptr_t Present : 1;		  // 0
@@ -453,18 +453,18 @@ namespace Memory
 			uintptr_t Available15 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		uintptr_t raw = 0;
 
 		/** @brief Set PageDirectoryPointerTableEntryPtr address */
 		void SetAddress(uintptr_t _Address)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
@@ -474,11 +474,11 @@ namespace Memory
 		/** @brief Get PageDirectoryPointerTableEntryPtr address */
 		uintptr_t GetAddress()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(a32)
+#elif defined(__i386__)
 			return 0;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
@@ -491,7 +491,7 @@ namespace Memory
 
 	union __packed PageMapLevel5
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		struct
 		{
 			uintptr_t Present : 1;		  // 0
@@ -520,18 +520,18 @@ namespace Memory
 			uintptr_t Available14 : 1;	  // 62
 			uintptr_t ExecuteDisable : 1; // 63
 		};
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		uintptr_t raw = 0;
 
 		/** @brief Set PageMapLevel4Ptr address */
 		void SetAddress(uintptr_t _Address)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			_Address &= 0x000000FFFFFFFFFF;
 			this->raw &= 0xFFF0000000000FFF;
 			this->raw |= (_Address << 12);
@@ -541,11 +541,11 @@ namespace Memory
 		/** @brief Get PageMapLevel4Ptr address */
 		uintptr_t GetAddress()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
-#elif defined(a32)
+#elif defined(__i386__)
 			return 0;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
@@ -554,11 +554,11 @@ namespace Memory
 	class PageTable
 	{
 	public:
-#if defined(a64)
+#if defined(__amd64__)
 		PageMapLevel4 Entries[512];
-#elif defined(a32)
+#elif defined(__i386__)
 		PageDirectoryEntry Entries[1024];
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 		/**

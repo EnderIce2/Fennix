@@ -66,15 +66,14 @@ int DriverProbe()
 	 * This function is to test if the driver is compatible
 	 * with the hardware.
 	 * Example: Like if there is a PCI device that the driver
-	 * is for, or a CPU feature that etc.
+	 * is for, or a CPU feature etc.
 	 *
 	 * Return 0 if the driver is compatible with the hardware.
-	 * Otherwise, return a value that is not 0.
 	 *
 	 * Note: In this function you cannot use variables that
 	 * have constructors or destructors. Before DriverEntry,
 	 * the constructors are called and after DriverFinalize,
-	 * the destructors are called.
+	 * the destructors.
 	 */
 
 	return 0;

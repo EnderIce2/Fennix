@@ -11,16 +11,10 @@
     "editor.cursorSmoothCaretAnimation": "on",
     "files.watcherExclude": {
         "**/tools/binutils-gdb/**": true,
-        "**/tools/build-binutilsamd64/**": true,
-        "**/tools/build-binutilsarm64/**": true,
-        "**/tools/build-binutilsi386/**": true,
-        "**/tools/build-gccamd64/**": true,
-        "**/tools/build-gccarm64/**": true,
-        "**/tools/build-gcci386/**": true,
-        "**/tools/cross/**": true,
         "**/tools/gcc/**": true,
         "**/tools/limine/**": true,
         "**/tools/qemu/**": true,
+        "**/tools/cross/**": true,
         "**/doxygen-doc/**": true,
     }
 }

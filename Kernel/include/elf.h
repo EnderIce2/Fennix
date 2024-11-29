@@ -946,7 +946,7 @@ typedef struct
 	char pr_psargs[ELF_PRARGSZ];
 } Elf64_Prpsinfo;
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 typedef Elf64_Addr Elf_Addr;
 typedef Elf64_Half Elf_Half;
 typedef Elf64_Off Elf_Off;
@@ -960,7 +960,7 @@ typedef Elf64_Rel Elf_Rel;
 typedef Elf64_Sym Elf_Sym;
 typedef Elf64_Dyn Elf_Dyn;
 typedef Elf64_Rela Elf_Rela;
-#elif defined(a32)
+#elif defined(__i386__)
 typedef Elf32_Addr Elf_Addr;
 typedef Elf32_Half Elf_Half;
 typedef Elf32_Off Elf_Off;

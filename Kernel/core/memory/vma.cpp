@@ -241,9 +241,9 @@ namespace Memory
 				pte->CopyOnWrite = false;
 				debug("PFA %#lx is CoW (pt %#lx, flags %#lx)",
 					  PFA, this->Table, pte->raw);
-#if defined(a64)
+#if defined(__amd64__)
 				CPU::x64::invlpg((void *)PFA);
-#elif defined(a32)
+#elif defined(__i386__)
 				CPU::x32::invlpg((void *)PFA);
 #endif
 				return true;
@@ -303,7 +303,7 @@ namespace Memory
 				void *AddressToMap = (void *)((uintptr_t)ap.Address + (i * PAGE_SIZE));
 				void *RealAddress = (void *)((uintptr_t)Address + (i * PAGE_SIZE));
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 				PageTableEntry *pte = vmm.GetPTE(AddressToMap);
 				uintptr_t Flags = 0;
 				Flags |= pte->Present ? (uintptr_t)PTFlag::P : 0;

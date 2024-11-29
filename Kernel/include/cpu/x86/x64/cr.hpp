@@ -191,7 +191,7 @@ namespace CPU
 			uint64_t raw;
 		} XCR0;
 
-#if defined(a64)
+#if defined(__amd64__)
 		nsa static inline CR0 readcr0()
 		{
 			uint64_t Result = 0;

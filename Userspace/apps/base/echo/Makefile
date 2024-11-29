@@ -1,7 +1,7 @@
 WORKSPACE := ../../../
 
 # Config file
-include ../$(WORKSPACE)Makefile.conf
+include ../$(WORKSPACE)config.mk
 
 CC = ../$(WORKSPACE)$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
 CPP = ../$(WORKSPACE)$(COMPILER_PATH)/$(COMPILER_ARCH)g++

@@ -31,10 +31,10 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../../../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
-#elif defined(aa64)
+#elif defined(__i386__)
+#elif defined(__aarch64__)
 #endif
 
 #include "../../../kernel.h"

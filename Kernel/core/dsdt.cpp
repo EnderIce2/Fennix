@@ -22,9 +22,9 @@
 #include <smp.hpp>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../arch/amd64/cpu/apic.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
 #endif
 #include "../kernel.h"

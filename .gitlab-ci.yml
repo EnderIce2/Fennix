@@ -87,11 +87,11 @@ build64:
     - make --quiet -C Userspace prepare
     - make --quiet -C Lynx prepare
     - make --quiet -C Kernel prepare
-    - sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
     - make build
     - mv Fennix.iso Fennix-debug.iso
     - make clean
-    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
     - make build
     - mv Fennix.iso Fennix-release.iso
   artifacts:
@@ -111,11 +111,11 @@ build32:
     - make --quiet -C Userspace prepare
     - make --quiet -C Lynx prepare
     - make --quiet -C Kernel prepare
-    - sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
     - make build
     - mv Fennix.iso Fennix-debug.iso
     - make clean
-    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
     - make build
     - mv Fennix.iso Fennix-release.iso
   artifacts:
@@ -134,11 +134,11 @@ buildarm64:
     - make --quiet -C Userspace prepare
     - make --quiet -C Lynx prepare
     - make --quiet -C Kernel prepare
-    - sed -i 's/.*OSARCH = .*/OSARCH = arm64/' ./Makefile.conf && cat Makefile.conf | grep OSARCH
+    - sed -i 's/.*OSARCH = .*/OSARCH = arm64/' ./config.mk && cat config.mk | grep OSARCH
     - make build
     - mv Fennix.iso Fennix-debug.iso
     - make clean
-    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./Makefile.conf && cat Makefile.conf | grep DEBUG
+    - sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
     - make build
     - mv Fennix.iso Fennix-release.iso
   artifacts:

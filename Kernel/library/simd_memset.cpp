@@ -89,7 +89,7 @@ EXTERNC void *memset_sse4_1(void *dest, int c, size_t n)
 
 EXTERNC void *memset_sse4_2(void *dest, int c, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 
 	if (((uintptr_t)d & 0xF) == 0)

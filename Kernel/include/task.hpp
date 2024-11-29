@@ -355,13 +355,13 @@ namespace Tasking
 		ThreadSignal Signals;
 
 		/* CPU state */
-#if defined(a64)
+#if defined(__amd64__)
 		CPU::x64::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
-#elif defined(a32)
+#elif defined(__i386__)
 		CPU::x32::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		uintptr_t Registers; // TODO
 #endif
 		__aligned(16) CPU::x64::FXState FPU;
@@ -549,11 +549,11 @@ namespace Tasking
 
 		constexpr TaskArchitecture GetKArch()
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			return x64;
-#elif defined(a32)
+#elif defined(__i386__)
 			return x32;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			return ARM64;
 #endif
 		}

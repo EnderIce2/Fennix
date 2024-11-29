@@ -27,13 +27,13 @@
 
 #include "../kernel.h"
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
 #include "../arch/i386/cpu/gdt.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 // #define DEBUG_TASKING 1
@@ -157,7 +157,7 @@ namespace Tasking
 							uintptr_t Arg5, uintptr_t Arg6,
 							void *Function)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		this->Registers.rdi = Arg1;
 		this->Registers.rsi = Arg2;
 		this->Registers.rdx = Arg3;
@@ -166,7 +166,7 @@ namespace Tasking
 		this->Registers.r9 = Arg6;
 		if (Function != nullptr)
 			this->Registers.rip = (uint64_t)Function;
-#elif defined(a32)
+#elif defined(__i386__)
 		this->Registers.eax = Arg1;
 		this->Registers.ebx = Arg2;
 		this->Registers.ecx = Arg3;
@@ -316,11 +316,11 @@ namespace Tasking
 		uintptr_t StackPointerReg = ((uintptr_t)this->Stack->GetStackTop() - SubtractStack);
 		// assert(!(StackPointerReg & 0xF));
 
-#if defined(a64)
+#if defined(__amd64__)
 		this->Registers.rsp = StackPointerReg;
-#elif defined(a32)
+#elif defined(__i386__)
 		this->Registers.esp = StackPointerReg;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		this->Registers.sp = StackPointerReg;
 #endif
 
@@ -338,17 +338,17 @@ namespace Tasking
 		if (Compatibility != Native)
 			return;
 
-#if defined(a64)
+#if defined(__amd64__)
 		this->Registers.rdi = (uintptr_t)argvLen;										// argc
 		this->Registers.rsi = (uintptr_t)(this->Registers.rsp + 8);						// argv
 		this->Registers.rcx = (uintptr_t)envpLen;										// envc
 		this->Registers.rdx = (uintptr_t)(this->Registers.rsp + 8 + (8 * argvLen) + 8); // envp
-#elif defined(a32)
+#elif defined(__i386__)
 		this->Registers.eax = (uintptr_t)argvLen;										// argc
 		this->Registers.ebx = (uintptr_t)(this->Registers.esp + 4);						// argv
 		this->Registers.ecx = (uintptr_t)envpLen;										// envc
 		this->Registers.edx = (uintptr_t)(this->Registers.esp + 4 + (4 * argvLen) + 4); // envp
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		this->Registers.x0 = (uintptr_t)argvLen;									  // argc
 		this->Registers.x1 = (uintptr_t)(this->Registers.sp + 8);					  // argv
 		this->Registers.x2 = (uintptr_t)envpLen;									  // envc
@@ -465,11 +465,11 @@ namespace Tasking
 
 		this->vma = this->Parent->vma;
 
-#if defined(a64)
+#if defined(__amd64__)
 		this->Registers.rip = EntryPoint;
-#elif defined(a32)
+#elif defined(__i386__)
 		this->Registers.eip = EntryPoint;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		this->Registers.pc = EntryPoint;
 #endif
 
@@ -483,7 +483,7 @@ namespace Tasking
 			this->Security.IsCritical = true;
 			this->Stack = new Memory::StackGuard(false, this->vma);
 
-#if defined(a64)
+#if defined(__amd64__)
 			this->ShadowGSBase =
 				CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
 			this->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
@@ -496,7 +496,7 @@ namespace Tasking
 			this->Registers.rflags.AC = 0;
 			this->Registers.rsp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.rsp) = (uintptr_t)ThreadDoExit;
-#elif defined(a32)
+#elif defined(__i386__)
 			this->Registers.cs = GDT_KERNEL_CODE;
 			this->Registers.r3_ss = GDT_KERNEL_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
@@ -505,7 +505,7 @@ namespace Tasking
 			this->Registers.eflags.AC = 0;
 			this->Registers.esp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.esp) = (uintptr_t)ThreadDoExit;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			this->Registers.pc = EntryPoint;
 			this->Registers.sp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.sp) = (uintptr_t)ThreadDoExit;
@@ -534,7 +534,7 @@ namespace Tasking
 
 			gsT->TempStack = 0x0;
 			gsT->t = this;
-#if defined(a64)
+#if defined(__amd64__)
 			this->ShadowGSBase = (uintptr_t)gst.VirtualAddress;
 			this->GSBase = 0;
 			this->FSBase = 0;
@@ -550,7 +550,7 @@ namespace Tasking
 			   an exception. */
 
 			this->SetupUserStack_x86_64(argv, envp, auxv, Compatibility);
-#elif defined(a32)
+#elif defined(__i386__)
 			this->Registers.cs = GDT_USER_CODE;
 			this->Registers.r3_ss = GDT_USER_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
@@ -563,7 +563,7 @@ namespace Tasking
 			   an exception. */
 
 			this->SetupUserStack_x86_32(argv, envp, auxv);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			this->SetupUserStack_aarch64(argv, envp, auxv);
 #endif
 #ifdef DEBUG_TASKING
@@ -612,7 +612,7 @@ namespace Tasking
 		this->FPU.fcw = 0b0000001100111111;
 
 #ifdef DEBUG
-#ifdef a64
+#ifdef __amd64__
 		debug("Thread EntryPoint: %#lx => RIP: %#lx",
 			  this->EntryPoint, this->Registers.rip);
 		if (this->Parent->Security.ExecutionMode == TaskExecutionMode::User)
@@ -623,7 +623,7 @@ namespace Tasking
 			debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx",
 				  this->Stack->GetStackBottom(), this->Stack->GetStackTop(),
 				  this->Registers.rsp);
-#elif defined(a32)
+#elif defined(__i386__)
 		debug("Thread EntryPoint: %#lx => RIP: %#lx",
 			  this->EntryPoint, this->Registers.eip);
 		if (Parent->Security.ExecutionMode == TaskExecutionMode::User)
@@ -634,7 +634,7 @@ namespace Tasking
 			debug("Thread stack region is %#lx-%#lx (K) and rsp is %#lx",
 				  this->Stack->GetStackBottom(), this->Stack->GetStackTop(),
 				  this->Registers.esp);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 		debug("Created %s thread \"%s\"(%d) in process \"%s\"(%d)",
 			  this->Security.ExecutionMode == TaskExecutionMode::User ? "user" : "kernel",

@@ -143,9 +143,9 @@ namespace CPU
 	{
 		do
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asmv("pause");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			asmv("yield");
 #endif
 		} while (Loop);
@@ -156,12 +156,12 @@ namespace CPU
 	 */
 	nsa __noreturn __used inline void Stop()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("CPUStopLoop:\n"
 			 "cli\n"
 			 "hlt\n"
 			 "jmp CPUStopLoop");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("CPUStopLoop:\n"
 			 "cpsid i\n"
 			 "wfe\n"
@@ -178,9 +178,9 @@ namespace CPU
 	{
 		do
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asmv("hlt");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			asmv("wfe");
 #endif
 		} while (Loop);
@@ -431,7 +431,7 @@ namespace CPU
 		 */
 		static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 		{
-#ifdef a32
+#ifdef __i386__
 			asmv("cpuid"
 				 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
 				 : "a"(Function));
@@ -446,7 +446,7 @@ namespace CPU
 
 		nsa static inline void lgdt(void *gdt)
 		{
-#ifdef a32
+#ifdef __i386__
 			asmv("lgdt (%0)"
 				 :
 				 : "r"(gdt));
@@ -457,7 +457,7 @@ namespace CPU
 
 		nsa static inline void lidt(void *idt)
 		{
-#ifdef a32
+#ifdef __i386__
 			asmv("lidt (%0)"
 				 :
 				 : "r"(idt));
@@ -468,7 +468,7 @@ namespace CPU
 
 		nsa static inline void ltr(uint16_t Segment)
 		{
-#ifdef a32
+#ifdef __i386__
 			asmv("ltr %0"
 				 :
 				 : "r"(Segment));
@@ -479,7 +479,7 @@ namespace CPU
 
 		nsa static inline void invlpg(void *Address)
 		{
-#ifdef a32
+#ifdef __i386__
 			asmv("invlpg (%0)"
 				 :
 				 : "r"(Address)
@@ -491,7 +491,7 @@ namespace CPU
 
 		nsa static inline void fxsave(void *FXSaveArea)
 		{
-#ifdef a32
+#ifdef __i386__
 			if (!FXSaveArea)
 				return;
 
@@ -506,7 +506,7 @@ namespace CPU
 
 		nsa static inline void fxrstor(void *FXRstorArea)
 		{
-#ifdef a32
+#ifdef __i386__
 			if (!FXRstorArea)
 				return;
 
@@ -912,7 +912,7 @@ namespace CPU
 
 		nsa static inline void lgdt(void *gdt)
 		{
-#ifdef a64
+#ifdef __amd64__
 			asmv("lgdt (%0)"
 				 :
 				 : "r"(gdt));
@@ -921,7 +921,7 @@ namespace CPU
 
 		nsa static inline void lidt(void *idt)
 		{
-#ifdef a64
+#ifdef __amd64__
 			asmv("lidt (%0)"
 				 :
 				 : "r"(idt));
@@ -930,7 +930,7 @@ namespace CPU
 
 		nsa static inline void ltr(uint16_t Segment)
 		{
-#ifdef a64
+#ifdef __amd64__
 			asmv("ltr %0"
 				 :
 				 : "r"(Segment));
@@ -939,7 +939,7 @@ namespace CPU
 
 		nsa static inline void invlpg(void *Address)
 		{
-#ifdef a64
+#ifdef __amd64__
 			asmv("invlpg (%0)"
 				 :
 				 : "r"(Address)
@@ -958,7 +958,7 @@ namespace CPU
 		 */
 		nsa static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 		{
-#ifdef a64
+#ifdef __amd64__
 			asmv("cpuid"
 				 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
 				 : "a"(Function));
@@ -981,7 +981,7 @@ namespace CPU
 
 		nsa static inline void fxsave(void *FXSaveArea)
 		{
-#ifdef a64
+#ifdef __amd64__
 			if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
 				return;
 
@@ -994,7 +994,7 @@ namespace CPU
 
 		nsa static inline void fxrstor(void *FXRstorArea)
 		{
-#ifdef a64
+#ifdef __amd64__
 			if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
 				return;
 
@@ -1051,7 +1051,7 @@ namespace CPU
 		};
 	}
 
-#if defined(a64)
+#if defined(__amd64__)
 	/**
 	 * CPU trap frame for the current architecture
 	 *
@@ -1060,7 +1060,7 @@ namespace CPU
 	typedef x64::TrapFrame TrapFrame;
 	typedef x64::SchedulerFrame SchedulerFrame;
 	typedef x64::ExceptionFrame ExceptionFrame;
-#elif defined(a32)
+#elif defined(__i386__)
 	/**
 	 * CPU trap frame for the current architecture
 	 *
@@ -1069,7 +1069,7 @@ namespace CPU
 	typedef x32::TrapFrame TrapFrame;
 	typedef x32::SchedulerFrame SchedulerFrame;
 	typedef x32::ExceptionFrame ExceptionFrame;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	/**
 	 * CPU trap frame for the current architecture
 	 *

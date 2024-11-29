@@ -26,10 +26,10 @@ namespace CPU
     {
         nsa static inline void Barrier()
         {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
             asmv("" ::
                      : "memory");
-#elif defined(aa64)
+#elif defined(__aarch64__)
             asmv("dmb ish" ::
                      : "memory");
 #endif
@@ -37,10 +37,10 @@ namespace CPU
 
         nsa static inline void Fence()
         {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
             asmv("mfence" ::
                      : "memory");
-#elif defined(aa64)
+#elif defined(__aarch64__)
             asmv("dmb ish" ::
                      : "memory");
 #endif
@@ -48,10 +48,10 @@ namespace CPU
 
         nsa static inline void StoreFence()
         {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
             asmv("sfence" ::
                      : "memory");
-#elif defined(aa64)
+#elif defined(__aarch64__)
             asmv("dmb ishst" ::
                      : "memory");
 #endif
@@ -59,10 +59,10 @@ namespace CPU
 
         nsa static inline void LoadFence()
         {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
             asmv("lfence" ::
                      : "memory");
-#elif defined(aa64)
+#elif defined(__aarch64__)
             asmv("dmb ishld" ::
                      : "memory");
 #endif

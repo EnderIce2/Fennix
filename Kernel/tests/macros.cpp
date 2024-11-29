@@ -28,23 +28,23 @@
 
 /* static assert, no constructor needed */
 
-#ifdef a64
+#ifdef __amd64__
 #if UINTPTR_MAX != UINT64_MAX
 #error "uintptr_t is not 64-bit!"
 #endif // UINTPTR_MAX != UINT64_MAX
-#endif // a64
+#endif // __amd64__
 
-#ifdef a32
+#ifdef __i386__
 #if UINTPTR_MAX != UINT32_MAX
 #error "uintptr_t is not 32-bit!"
 #endif // UINTPTR_MAX != UINT32_MAX
-#endif // a32
+#endif // __i386__
 
-#ifdef aa64
+#ifdef __aarch64__
 #if UINTPTR_MAX != UINT64_MAX
 #error "uintptr_t is not 64-bit!"
 #endif // UINTPTR_MAX != UINT64_MAX
-#endif // aa64
+#endif // __aarch64__
 
 #ifndef __fennix__
 #error "This compiler is not supported!"

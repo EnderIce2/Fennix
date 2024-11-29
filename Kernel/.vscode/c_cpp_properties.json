@@ -10,8 +10,6 @@
 				"${workspaceFolder}/arch/amd64/include"
 			],
 			"defines": [
-				"a64",
-				"a86",
 				"DEBUG=\"1\""
 			],
 			"forcedInclude": [
@@ -82,8 +80,6 @@
 				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"defines": [
-				"a32",
-				"a86",
 				"DEBUG=\"1\""
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-fennix-gcc",
@@ -154,7 +150,6 @@
 				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"defines": [
-				"aa64",
 				"DEBUG=\"1\""
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/aarch64-fennix-gcc",

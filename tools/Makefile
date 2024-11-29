@@ -2,7 +2,7 @@ WORKING_DIR = $(CURDIR)
 CROSS_DIR=$(WORKING_DIR)/cross
 export PATH := $(CROSS_DIR):$(PATH)
 
-QEMU_VERSION = 8.2.8
+QEMU_VERSION = 9.1.2
 
 all: do_tools do_limine __clone_all do_binutils do_gcc do_qemu
 

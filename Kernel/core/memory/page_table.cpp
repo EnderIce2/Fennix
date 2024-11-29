@@ -9,9 +9,9 @@ namespace Memory
 {
 	void PageTable::Update()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("mov %0, %%cr3" ::"r"(this));
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("msr ttbr0_el1, %0" ::"r"(this));
 #endif
 	}
@@ -24,7 +24,7 @@ namespace Memory
 		memcpy(NewTable, this, sizeof(PageTable));
 
 		debug("Forking page table %#lx to %#lx", this, NewTable);
-#if defined(a64)
+#if defined(__amd64__)
 		for (size_t i = 0; i < sizeof(Entries) / sizeof(Entries[0]); i++)
 		{
 			PageMapLevel4 *PML4 = &Entries[i];

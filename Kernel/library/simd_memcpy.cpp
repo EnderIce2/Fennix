@@ -29,7 +29,7 @@ TODO: Replace these functions with even more optimized versions.
 
 EXTERNC void *memcpy_sse(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -65,13 +65,13 @@ EXTERNC void *memcpy_sse(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }
 
 EXTERNC void *memcpy_sse2(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -107,13 +107,13 @@ EXTERNC void *memcpy_sse2(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }
 
 EXTERNC void *memcpy_sse3(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -149,13 +149,13 @@ EXTERNC void *memcpy_sse3(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }
 
 EXTERNC void *memcpy_ssse3(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -191,13 +191,13 @@ EXTERNC void *memcpy_ssse3(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }
 
 EXTERNC void *memcpy_sse4_1(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -233,13 +233,13 @@ EXTERNC void *memcpy_sse4_1(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }
 
 EXTERNC void *memcpy_sse4_2(void *dest, const void *src, size_t n)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	char *d = (char *)dest;
 	const char *s = (const char *)src;
 
@@ -275,6 +275,6 @@ EXTERNC void *memcpy_sse4_2(void *dest, const void *src, size_t n)
 	}
 
 	memcpy_unsafe(d, s, n);
-#endif // defined(a64)
+#endif // defined(__amd64__)
 	return dest;
 }

@@ -24,7 +24,7 @@ namespace Execute
 	std::vector<Elf64_Shdr> ELFGetSections_x86_64(FileNode *fd,
 												  const char *SectionName)
 	{
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 		std::vector<Elf64_Shdr> Ret;
 
 		Elf64_Ehdr ELFHeader{};
@@ -46,7 +46,7 @@ namespace Execute
 		delete[] SectionHeaders;
 		delete[] SectionNames;
 		return Ret;
-#elif defined(a32)
+#elif defined(__i386__)
 		return {};
 #endif
 	}

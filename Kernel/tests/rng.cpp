@@ -38,7 +38,7 @@ __constructor void TestRandom()
 	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 		RDRANDFlag = 0;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	if (RDRANDFlag)
 	{
 		uintptr_t RDSEEDValue = 0;

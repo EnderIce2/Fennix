@@ -21,10 +21,10 @@
 #include <smp.hpp>
 #include <cpu.hpp>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
-#elif defined(aa64)
+#elif defined(__i386__)
+#elif defined(__aarch64__)
 #endif
 
 #include "../../kernel.h"
@@ -32,26 +32,26 @@
 #ifdef DEBUG
 nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	debug("FS=%#lx GS=%#lx SS=%#lx CS=%#lx DS=%#lx", Frame->fs, Frame->gs, Frame->ss, Frame->cs, Frame->ds);
 	debug("R8=%#lx R9=%#lx R10=%#lx R11=%#lx", Frame->r8, Frame->r9, Frame->r10, Frame->r11);
 	debug("R12=%#lx R13=%#lx R14=%#lx R15=%#lx", Frame->r12, Frame->r13, Frame->r14, Frame->r15);
 	debug("RAX=%#lx RBX=%#lx RCX=%#lx RDX=%#lx", Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx);
 	debug("RSI=%#lx RDI=%#lx RBP=%#lx RSP=%#lx", Frame->rsi, Frame->rdi, Frame->rbp, Frame->rsp);
 	debug("RIP=%#lx RFL=%#lx INT=%#lx ERR=%#lx", Frame->rip, Frame->rflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
-#elif defined(a32)
+#elif defined(__i386__)
 	debug("FS=%#x GS=%#x CS=%#x DS=%#x", Frame->fs, Frame->gs, Frame->cs, Frame->ds);
 	debug("EAX=%#x EBX=%#x ECX=%#x EDX=%#x", Frame->eax, Frame->ebx, Frame->ecx, Frame->edx);
 	debug("ESI=%#x EDI=%#x EBP=%#x ESP=%#x", Frame->esi, Frame->edi, Frame->ebp, Frame->esp);
 	debug("EIP=%#x EFL=%#x INT=%#x ERR=%#x", Frame->eip, Frame->eflags.raw, Frame->InterruptNumber, Frame->ErrorCode);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	debug("CR2=%#lx CR3=%#lx", Frame->cr2, Frame->cr3);
-#endif // defined(a86)
+#endif // defined(__amd64__) || defined(__i386__)
 
-#if defined(a64)
+#if defined(__amd64__)
 	debug("RFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x R3:%#x",
 		  Frame->rflags.CF ? "True " : "False", Frame->rflags.PF ? "True " : "False", Frame->rflags.AF ? "True " : "False", Frame->rflags.ZF ? "True " : "False",
 		  Frame->rflags.SF ? "True " : "False", Frame->rflags.TF ? "True " : "False", Frame->rflags.IF ? "True " : "False", Frame->rflags.DF ? "True " : "False",
@@ -59,7 +59,7 @@ nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 		  Frame->rflags.VM ? "True " : "False", Frame->rflags.AC ? "True " : "False", Frame->rflags.VIF ? "True " : "False", Frame->rflags.VIP ? "True " : "False",
 		  Frame->rflags.ID ? "True " : "False", Frame->rflags.AlwaysOne,
 		  Frame->rflags.Reserved0, Frame->rflags.Reserved1, Frame->rflags.Reserved2, Frame->rflags.Reserved3);
-#elif defined(a32)
+#elif defined(__i386__)
 	debug("EFL: CF:%s PF:%s AF:%s ZF:%s SF:%s TF:%s IF:%s DF:%s OF:%s IOPL:%s NT:%s RF:%s VM:%s AC:%s VIF:%s VIP:%s ID:%s AlwaysOne:%d R0:%#x R1:%#x R2:%#x",
 		  Frame->eflags.CF ? "True " : "False", Frame->eflags.PF ? "True " : "False", Frame->eflags.AF ? "True " : "False", Frame->eflags.ZF ? "True " : "False",
 		  Frame->eflags.SF ? "True " : "False", Frame->eflags.TF ? "True " : "False", Frame->eflags.IF ? "True " : "False", Frame->eflags.DF ? "True " : "False",
@@ -67,7 +67,7 @@ nsa void dbgPrint(CPU::ExceptionFrame *Frame)
 		  Frame->eflags.VM ? "True " : "False", Frame->eflags.AC ? "True " : "False", Frame->eflags.VIF ? "True " : "False", Frame->eflags.VIP ? "True " : "False",
 		  Frame->eflags.ID ? "True " : "False", Frame->eflags.AlwaysOne,
 		  Frame->eflags.Reserved0, Frame->eflags.Reserved1, Frame->eflags.Reserved2);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 }
 #endif

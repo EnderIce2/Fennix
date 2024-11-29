@@ -27,12 +27,12 @@
 
 #include "../kernel.h"
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 // #define DEBUG_TASKING 1

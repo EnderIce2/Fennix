@@ -121,7 +121,7 @@ namespace Xalloc
 	{
 		if (this->SMAPUsed)
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asm volatile("stac" ::
 							 : "cc");
 #endif
@@ -132,7 +132,7 @@ namespace Xalloc
 	{
 		if (this->SMAPUsed)
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asm volatile("clac" ::
 							 : "cc");
 #endif

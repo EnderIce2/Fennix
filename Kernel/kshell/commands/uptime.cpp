@@ -40,11 +40,11 @@ void cmd_uptime(const char *)
 		Minutes %= 60;
 		Hours %= 24;
 
-#if defined(a64)
+#if defined(__amd64__)
 		printf("%ld days, %ld hours, %ld minutes, %ld %s\n",
 			   Days, Hours, Minutes, Seconds,
 			   Seconds == 1 ? "second" : "seconds");
-#elif defined(a32)
+#elif defined(__i386__)
 		printf("%lld days, %lld hours, %lld minutes, %lld %s\n",
 			   Days, Hours, Minutes, Seconds,
 			   Seconds == 1 ? "second" : "seconds");

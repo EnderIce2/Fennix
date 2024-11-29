@@ -24,11 +24,11 @@
 
 #include "../kernel.h"
 
-#if defined(a64)
+#if defined(__amd64__)
 using namespace CPU::x64;
-#elif defined(a32)
+#elif defined(__i386__)
 using namespace CPU::x32;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 namespace CPU
@@ -40,19 +40,19 @@ namespace CPU
 		static char Vendor[13] = {0};
 		if (Vendor[0] != 0)
 			return Vendor;
-#if defined(a64)
+#if defined(__amd64__)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x0, &eax, &ebx, &ecx, &edx);
 		memcpy(Vendor + 0, &ebx, 4);
 		memcpy(Vendor + 4, &edx, 4);
 		memcpy(Vendor + 8, &ecx, 4);
-#elif defined(a32)
+#elif defined(__i386__)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x0, &eax, &ebx, &ecx, &edx);
 		memcpy(Vendor + 0, &ebx, 4);
 		memcpy(Vendor + 4, &edx, 4);
 		memcpy(Vendor + 8, &ecx, 4);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #error "Not implemented"
 #endif
 		return Vendor;
@@ -63,7 +63,7 @@ namespace CPU
 		static char Name[49] = {0};
 		if (Name[0] != 0)
 			return Name;
-#if defined(a64)
+#if defined(__amd64__)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
 		memcpy(Name + 0, &eax, 4);
@@ -80,7 +80,7 @@ namespace CPU
 		memcpy(Name + 36, &ebx, 4);
 		memcpy(Name + 40, &ecx, 4);
 		memcpy(Name + 44, &edx, 4);
-#elif defined(a32)
+#elif defined(__i386__)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x80000002, &eax, &ebx, &ecx, &edx);
 		memcpy(Name + 0, &eax, 4);
@@ -97,7 +97,7 @@ namespace CPU
 		memcpy(Name + 36, &ebx, 4);
 		memcpy(Name + 40, &ecx, 4);
 		memcpy(Name + 44, &edx, 4);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #error "Not implemented"
 #endif
 		return Name;
@@ -108,7 +108,7 @@ namespace CPU
 		static char Hypervisor[13] = {0};
 		if (Hypervisor[0] != 0)
 			return Hypervisor;
-#if defined(a64)
+#if defined(__amd64__)
 		uint32_t eax, ebx, ecx, edx;
 		x64::cpuid(0x1, &eax, &ebx, &ecx, &edx);
 		if (!(ecx & (1 << 31))) /* Intel & AMD are the same */
@@ -124,7 +124,7 @@ namespace CPU
 		memcpy(Hypervisor + 0, &ebx, 4);
 		memcpy(Hypervisor + 4, &ecx, 4);
 		memcpy(Hypervisor + 8, &edx, 4);
-#elif defined(a32)
+#elif defined(__i386__)
 		uint32_t eax, ebx, ecx, edx;
 		x32::cpuid(0x1, &eax, &ebx, &ecx, &edx);
 		if (!(ecx & (1 << 31))) /* Intel & AMD are the same */
@@ -140,7 +140,7 @@ namespace CPU
 		memcpy(Hypervisor + 0, &ebx, 4);
 		memcpy(Hypervisor + 4, &ecx, 4);
 		memcpy(Hypervisor + 8, &edx, 4);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #error "Not implemented"
 #endif
 		return Hypervisor;
@@ -153,17 +153,17 @@ namespace CPU
 		case Check:
 		{
 			uintptr_t Flags;
-#if defined(a64)
+#if defined(__amd64__)
 			asmv("pushfq");
 			asmv("popq %0"
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
-#elif defined(a32)
+#elif defined(__i386__)
 			asmv("pushfl");
 			asmv("popl %0"
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			asmv("mrs %0, cpsr"
 				 : "=r"(Flags));
 			return Flags & (1 << 7);
@@ -171,18 +171,18 @@ namespace CPU
 		}
 		case Enable:
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asmv("sti");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			asmv("cpsie i");
 #endif
 			return true;
 		}
 		case Disable:
 		{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			asmv("cli");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			asmv("cpsid i");
 #endif
 			return true;
@@ -197,7 +197,7 @@ namespace CPU
 	void *PageTable(void *PT)
 	{
 		void *ret;
-#if defined(a64)
+#if defined(__amd64__)
 		asmv("movq %%cr3, %0"
 			 : "=r"(ret));
 
@@ -208,7 +208,7 @@ namespace CPU
 				 : "r"(PT)
 				 : "memory");
 		}
-#elif defined(a32)
+#elif defined(__i386__)
 		asmv("movl %%cr3, %0"
 			 : "=r"(ret));
 
@@ -219,7 +219,7 @@ namespace CPU
 				 : "r"(PT)
 				 : "memory");
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("mrs %0, ttbr0_el1"
 			 : "=r"(ret));
 
@@ -392,13 +392,13 @@ namespace CPU
 	{
 		// TODO: Get the counter from the x2APIC or any other timer that is available. (TSC is not available on all CPUs)
 		uint64_t Counter;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		uint32_t eax, edx;
 		asmv("rdtsc"
 			 : "=a"(eax),
 			   "=d"(edx));
 		Counter = ((uint64_t)eax) | (((uint64_t)edx) << 32);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("mrs %0, cntvct_el0"
 			 : "=r"(Counter));
 #endif
@@ -413,7 +413,7 @@ namespace CPU
 #warning "TODO: Proper SIMD support"
 		return SIMD_NONE;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		static uint64_t SIMDType = SIMD_NONE;
 
 		if (likely(SIMDType != SIMD_NONE))
@@ -495,7 +495,7 @@ namespace CPU
 		}
 
 		debug("No SIMD support.");
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
 		return SIMD_NONE;
 	}
 
@@ -504,7 +504,7 @@ namespace CPU
 		if (unlikely(!SSEEnabled))
 			return false;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
@@ -545,7 +545,7 @@ namespace CPU
 			else if (Type == SIMD_SSE)
 				return cpuid.EDX.SSE;
 		}
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
 		return false;
 	}
 }

@@ -79,13 +79,13 @@ EXTERNC void _KPrint(const char *Format, va_list Args)
 		uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
 		if (Nanoseconds != 0)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
-#elif defined(a32)
+#elif defined(__i386__)
 			printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
 				   Nanoseconds / 10000000, Nanoseconds % 10000000);
 #endif
@@ -143,7 +143,7 @@ EXTERNC NIF void Main()
 	if (DebuggerIsAttached)
 		KPrint("Kernel debugger detected.");
 
-#if defined(a86) && defined(DEBUG)
+#if defined(__amd64__) || defined(__i386__) && defined(DEBUG)
 	uint8_t lpt1 = inb(0x378);
 	uint8_t lpt2 = inb(0x278);
 	uint8_t lpt3 = inb(0x3BC);
@@ -218,9 +218,9 @@ EXTERNC NIF void Main()
 	KPrint("Enabling Interrupts on Bootstrap Processor");
 	Interrupts::Enable(0);
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	PowerManager->InitDSDT();
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 	KPrint("Initializing Timers");
@@ -268,7 +268,7 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	for (CallPtr *fct = __init_array_start; fct != __init_array_end; fct++)
 		(*fct)();
 
-#ifdef a86
+#if defined(__amd64__) || defined(__i386__)
 	if (!bInfo.SMBIOSPtr)
 	{
 		trace("SMBIOS was not provided by the bootloader. Trying to find it manually.");
@@ -327,19 +327,19 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	// void *KernelStackAddress = StackManager.Allocate(STACK_SIZE); /* FIXME: This breaks stl tests, how? */
 	uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
 	debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
-#if defined(a64)
+#if defined(__amd64__)
 	asmv("mov %0, %%rsp"
 		 :
 		 : "r"(KernelStack)
 		 : "memory");
 	asmv("mov $0, %rbp");
-#elif defined(a32)
+#elif defined(__i386__)
 	asmv("mov %0, %%esp"
 		 :
 		 : "r"(KernelStack)
 		 : "memory");
 	asmv("mov $0, %ebp");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #warning "Kernel stack is not set!"
 #endif
 

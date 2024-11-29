@@ -101,10 +101,10 @@ namespace SymbolResolver
 		Elf_Sym *Symbols = nullptr;
 		uint8_t *StringAddress = nullptr;
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 		Elf64_Xword SymbolSize = 0;
 		// Elf64_Xword StringSize = 0;
-#elif defined(a32)
+#elif defined(__i386__)
 		Elf32_Word SymbolSize = 0;
 		// Elf32_Word StringSize = 0;
 #endif
@@ -218,9 +218,9 @@ namespace SymbolResolver
 		}
 		debug("Solving symbols for address: %#llx", ImageAddress);
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 		Elf64_Ehdr *Header = (Elf64_Ehdr *)ImageAddress;
-#elif defined(a32)
+#elif defined(__i386__)
 		Elf32_Ehdr *Header = (Elf32_Ehdr *)ImageAddress;
 #endif
 		if (Header->e_ident[0] != 0x7F &&

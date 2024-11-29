@@ -1100,7 +1100,7 @@ namespace PCI
 
 	Manager::Manager()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (!PowerManager->GetACPI())
 		{
 			error("ACPI not found");
@@ -1127,7 +1127,7 @@ namespace PCI
 			for (uint32_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
 				EnumerateBus(NewDeviceConfig->BaseAddress, Bus, dev);
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		error("PCI not implemented on aarch64");
 #endif
 	}

@@ -28,13 +28,13 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../../arch/amd64/cpu/gdt.hpp"
 #include "../arch/amd64/cpu/apic.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../../arch/i386/cpu/gdt.hpp"
 #include "../arch/i386/cpu/apic.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 #include "../../kernel.h"
@@ -100,7 +100,7 @@ nsa void HaltAllCores()
 	if (SMP::CPUCores <= 1)
 		return;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	if (Interrupts::apic[0] == nullptr)
 		return;
 
@@ -131,7 +131,7 @@ nsa void HaltAllCores()
 			((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
 		}
 	}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 }
 
@@ -187,7 +187,7 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 	ExPrint("\x1b[0m-----------------------------------------------\n");
 	ExPrint("\x1b[30;41mUnrecoverable exception %#lx on CPU %d\n",
 			Frame->InterruptNumber, core->ID);
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",
 			Frame->cr0, Frame->cr2, Frame->cr3, Frame->cr4, Frame->cr8);
 	ExPrint("DR0=%#lx DR1=%#lx DR2=%#lx DR3=%#lx DR6=%#lx DR7=%#lx\n",
@@ -195,29 +195,29 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 	ExPrint("GS=%#lx FS=%#lx ES=%#lx DS=%#lx SS=%#lx CS=%#lx\n",
 			Frame->gs, Frame->fs, Frame->es, Frame->ds, Frame->ss, Frame->cs);
 #endif
-#if defined(a64)
+#if defined(__amd64__)
 	ExPrint("R8=%#lx R9=%#lx R10=%#lx R11=%#lx R12=%#lx R13=%#lx R14=%#lx R15=%#lx\n",
 			Frame->r8, Frame->r9, Frame->r10, Frame->r11, Frame->r12, Frame->r13,
 			Frame->r14, Frame->r15);
 #endif
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("AX=%#lx BX=%#lx CX=%#lx DX=%#lx SI=%#lx DI=%#lx BP=%#lx SP=%#lx\n",
 
-#ifdef a64
+#ifdef __amd64__
 			Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx, Frame->rsi, Frame->rdi,
 			Frame->rbp, Frame->rsp);
 #else
 			Frame->eax, Frame->ebx, Frame->ecx, Frame->edx, Frame->esi, Frame->edi,
 			Frame->ebp, Frame->esp);
-#endif /* a64 */
+#endif /* __amd64__ */
 
 	ExPrint("IP=%#lx FL=%#lx INT=%#lx ERR=%#lx\n",
 
-#ifdef a64
+#ifdef __amd64__
 			Frame->rip, Frame->rflags.raw,
 #else
 			Frame->eip, Frame->eflags.raw,
-#endif /* a64 */
+#endif /* __amd64__ */
 			Frame->InterruptNumber, Frame->ErrorCode);
 #endif /* a86 */
 
@@ -233,14 +233,14 @@ nsa __noreturn void HandleExceptionInsideException(CPU::ExceptionFrame *Frame)
 	ExPrint("\x1b[0m-----------------------------------------------\n");
 	ExPrint("Exception inside exception: %#lx at %#lx\n",
 			Frame->InterruptNumber,
-#if defined(a64)
+#if defined(__amd64__)
 			Frame->rip);
-#elif defined(a32)
+#elif defined(__i386__)
 			Frame->eip);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 			Frame->pc);
 #endif
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",
 			Frame->cr0, Frame->cr2, Frame->cr3, Frame->cr4, Frame->cr8);
 	ExPrint("DR0=%#lx DR1=%#lx DR2=%#lx DR3=%#lx DR6=%#lx DR7=%#lx\n",
@@ -248,29 +248,29 @@ nsa __noreturn void HandleExceptionInsideException(CPU::ExceptionFrame *Frame)
 	ExPrint("GS=%#lx FS=%#lx ES=%#lx DS=%#lx SS=%#lx CS=%#lx\n",
 			Frame->gs, Frame->fs, Frame->es, Frame->ds, Frame->ss, Frame->cs);
 #endif
-#if defined(a64)
+#if defined(__amd64__)
 	ExPrint("R8=%#lx R9=%#lx R10=%#lx R11=%#lx R12=%#lx R13=%#lx R14=%#lx R15=%#lx\n",
 			Frame->r8, Frame->r9, Frame->r10, Frame->r11, Frame->r12, Frame->r13,
 			Frame->r14, Frame->r15);
 #endif
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("AX=%#lx BX=%#lx CX=%#lx DX=%#lx SI=%#lx DI=%#lx BP=%#lx SP=%#lx\n",
 
-#ifdef a64
+#ifdef __amd64__
 			Frame->rax, Frame->rbx, Frame->rcx, Frame->rdx, Frame->rsi, Frame->rdi,
 			Frame->rbp, Frame->rsp);
 #else
 			Frame->eax, Frame->ebx, Frame->ecx, Frame->edx, Frame->esi, Frame->edi,
 			Frame->ebp, Frame->esp);
-#endif /* a64 */
+#endif /* __amd64__ */
 
 	ExPrint("IP=%#lx FL=%#lx INT=%#lx ERR=%#lx\n",
 
-#ifdef a64
+#ifdef __amd64__
 			Frame->rip, Frame->rflags.raw,
 #else
 			Frame->eip, Frame->eflags.raw,
-#endif /* a64 */
+#endif /* __amd64__ */
 			Frame->InterruptNumber, Frame->ErrorCode);
 #endif /* a86 */
 	Display->UpdateBuffer();

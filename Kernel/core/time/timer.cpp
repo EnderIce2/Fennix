@@ -145,7 +145,7 @@ namespace Time
 
 	void time::FindTimers(void *acpi)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		/* TODO: RTC check */
 		/* TODO: PIT check */
 

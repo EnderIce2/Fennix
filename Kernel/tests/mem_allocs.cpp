@@ -126,7 +126,7 @@ extern bool DebuggerIsAttached;
 void TestMemoryAllocation()
 {
 	return; /* Bit annoying to have to wait for this to finish */
-#ifdef a32
+#ifdef __i386__
 	return; /* Not ready for now. */
 #endif
 	if (DebuggerIsAttached)

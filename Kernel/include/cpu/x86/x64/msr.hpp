@@ -401,7 +401,7 @@ namespace CPU
             MSR_CR_PAT_RESET = 0x0007040600070406ULL
         };
 
-#if defined(a64)
+#if defined(__amd64__)
         nsa static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;

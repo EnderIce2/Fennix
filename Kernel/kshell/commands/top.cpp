@@ -45,12 +45,12 @@ void cmd_top(const char *)
 	printf("PID    Name                State    Priority    Memory Usage    CPU Usage\n");
 	foreach (auto Proc in TaskManager->GetProcessList())
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		printf("%-4d %-20s %s       %d           %ld KiB         %ld\n",
 			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
-#elif defined(a32)
+#elif defined(__i386__)
 		printf("%-4d %-20s %s       %d           %lld KiB         %lld\n",
 			   Proc->ID, Proc->Name, TaskStateStrings[Proc->State.load()],
 			   Proc->Info.Priority, TO_KiB(Proc->GetSize()),
@@ -59,12 +59,12 @@ void cmd_top(const char *)
 
 		foreach (auto Thrd in Proc->Threads)
 		{
-#if defined(a64)
+#if defined(__amd64__)
 			printf(" %-4d %-20s %s       %d           %ld KiB         %ld\n",
 				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);
-#elif defined(a32)
+#elif defined(__i386__)
 			printf(" %-4d %-20s %s       %d           %lld KiB         %lld\n",
 				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),

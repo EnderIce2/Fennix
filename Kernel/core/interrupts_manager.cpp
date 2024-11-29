@@ -23,15 +23,15 @@
 #include <vector>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
 #include "../arch/amd64/cpu/idt.hpp"
-#elif defined(a32)
+#elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
 #include "../arch/i386/cpu/gdt.hpp"
 #include "../arch/i386/cpu/idt.hpp"
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 #include "../kernel.h"
@@ -106,15 +106,15 @@ namespace Interrupts
 	std::atomic_uint SortEvents = SORT_START / SORT_DIVIDER;
 	constexpr uint32_t SORT_ITR = (SORT_START * 100) / SORT_DIVIDER;
 
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	/* APIC::APIC */ void *apic[MAX_CPU] = {nullptr};
 	/* APIC::Timer */ void *apicTimer[MAX_CPU] = {nullptr};
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 
 	void Initialize(int Core)
 	{
-#if defined(a64)
+#if defined(__amd64__)
 		GlobalDescriptorTable::Init(Core);
 		InterruptDescriptorTable::Init(Core);
 		CPUData *CoreData = GetCPU(Core);
@@ -133,7 +133,7 @@ namespace Interrupts
 		debug("Stack for core %d is %#lx (Address: %#lx)",
 			  Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
 		InitializeSystemCalls();
-#elif defined(a32)
+#elif defined(__i386__)
 		GlobalDescriptorTable::Init(Core);
 		InterruptDescriptorTable::Init(Core);
 		CPUData *CoreData = GetCPU(Core);
@@ -151,14 +151,14 @@ namespace Interrupts
 		}
 		debug("Stack for core %d is %#lx (Address: %#lx)",
 			  Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		warn("aarch64 is not supported yet");
 #endif
 	}
 
 	void Enable(int Core)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (((ACPI::MADT *)PowerManager->GetMADT())->LAPICAddress != nullptr)
 		{
 			// TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
@@ -171,7 +171,7 @@ namespace Interrupts
 			error("LAPIC not found");
 			// TODO: PIC
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		warn("aarch64 is not supported yet");
 #endif
 		CPU::Interrupts(CPU::Enable);
@@ -180,14 +180,14 @@ namespace Interrupts
 	void InitializeTimer(int Core)
 	{
 		// TODO: This function is called by SMP too. Do not initialize timers that doesn't support multiple cores.
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		if (apic[Core] != nullptr)
 			apicTimer[Core] = new APIC::Timer((APIC::APIC *)apic[Core]);
 		else
 		{
 			fixme("apic not found");
 		}
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		warn("aarch64 is not supported yet");
 #endif
 	}
@@ -333,12 +333,12 @@ namespace Interrupts
 		public:
 			AutoSwitchPageTable()
 			{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 				asmv("mov %%cr3, %0" : "=r"(Original));
 #endif
 				if (likely(Original == KernelPageTable))
 					return;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 				asmv("mov %0, %%cr3" : : "r"(KernelPageTable));
 #endif
 			}
@@ -347,7 +347,7 @@ namespace Interrupts
 			{
 				if (likely(Original == KernelPageTable))
 					return;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 				asmv("mov %0, %%cr3" : : "r"(Original));
 #endif
 			}
@@ -365,7 +365,7 @@ namespace Interrupts
 		while (it != RegisteredEvents.end())
 		{
 			int iEvNum = it->IRQ;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 			iEvNum += CPU::x86::IRQ0;
 #endif
 			if (iEvNum == s_cst(int, Frame->InterruptNumber))
@@ -402,7 +402,7 @@ namespace Interrupts
 	{
 		KernelPageTable->Update();
 		CPU::SchedulerFrame *Frame = (CPU::SchedulerFrame *)Data;
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		assert(Frame->InterruptNumber == CPU::x86::IRQ16);
 #else
 		assert(Frame->InterruptNumber == 16);

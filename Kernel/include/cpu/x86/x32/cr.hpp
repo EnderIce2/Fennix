@@ -141,7 +141,7 @@ namespace CPU
 			};
 			uint32_t raw;
 		} CR4;
-#if defined(a32)
+#if defined(__i386__)
 		nsa static inline CR0 readcr0()
 		{
 			uint32_t Result = 0;

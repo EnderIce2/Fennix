@@ -44,9 +44,9 @@ EXTERNC nsa NIF void __cyg_profile_func_enter(void *Function, void *CallSite)
 		return;
 
 	while (Wait)
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("pause");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("yield");
 #endif
 	Wait = true;
@@ -81,9 +81,9 @@ EXTERNC nsa NIF void __cyg_profile_func_exit(void *Function, void *CallSite)
 		return;
 
 	while (Wait)
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		asmv("pause");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 		asmv("yield");
 #endif
 	Wait = true;

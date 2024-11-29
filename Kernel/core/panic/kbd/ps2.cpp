@@ -28,10 +28,10 @@
 #include <cpu.hpp>
 #include <io.h>
 
-#if defined(a64)
+#if defined(__amd64__)
 #include "../../../arch/amd64/cpu/gdt.hpp"
-#elif defined(a32)
-#elif defined(aa64)
+#elif defined(__i386__)
+#elif defined(__aarch64__)
 #endif
 
 #include "../../../kernel.h"
@@ -107,7 +107,7 @@ nsa static inline int GetLetterFromScanCode(uint8_t ScanCode)
 
 nsa void CrashPS2KeyboardDriver::PS2Wait(bool Output)
 {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	TimeoutCallNumber++;
 	int timeout = 100000;
 	PS2_STATUSES status = {.Raw = inb(PS2_STATUS)};
@@ -153,7 +153,7 @@ nsa CrashPS2KeyboardDriver::CrashPS2KeyboardDriver() : Interrupts::Handler(1) /*
 
 	/* Dots will be printed at the bottom of the screen as a progress bar. */
 	ExPrint("\x1b[%d;%dH", (Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width) - 2, 0);
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 
 	/* Disable port 1 & 2 */
 	{
@@ -355,14 +355,14 @@ nsa CrashPS2KeyboardDriver::CrashPS2KeyboardDriver() : Interrupts::Handler(1) /*
 
 	ExPrint(".");
 
-#endif // defined(a86)
+#endif // defined(__amd64__) || defined(__i386__)
 
 	CPU::Interrupts(CPU::Enable);
 }
 
 nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 {
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 	uint8_t scanCode = inb(PS2_DATA);
 
 	if (scanCode == KEY_D_TAB ||
@@ -412,5 +412,5 @@ nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 		}
 		Display->UpdateBuffer(); /* Update as we type. */
 	}
-#endif // a64 || a32
+#endif // __amd64__ || __i386__
 }

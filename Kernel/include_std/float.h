@@ -19,11 +19,11 @@
 
 /* Stubs */
 #define FLT_RADIX 2
-#if a64
+#if __amd64__
 #define DBL_MANT_DIG 53
 #define DBL_MAX_10_EXP 308
 #define DBL_MAX 1.7976931348623157e+308
-#elif a32
+#elif __i386__
 #define DBL_MANT_DIG 24
 #define DBL_MAX_10_EXP 38
 #define DBL_MAX 3.4028234663852886e+38

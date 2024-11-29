@@ -275,7 +275,7 @@ struct linux_dirent64
 
 struct linux_kstat
 {
-#if defined(a64)
+#if defined(__amd64__)
 	__kernel_ulong_t st_dev;
 	__kernel_ulong_t st_ino;
 	__kernel_ulong_t st_nlink;
@@ -295,7 +295,7 @@ struct linux_kstat
 	__kernel_ulong_t st_ctime_nsec;
 #undef __unused
 	__kernel_long_t __unused[3];
-#elif defined(a32)
+#elif defined(__i386__)
 	unsigned long st_dev;
 	unsigned long st_ino;
 	unsigned short st_mode;

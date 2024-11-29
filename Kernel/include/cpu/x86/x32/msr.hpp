@@ -400,7 +400,7 @@ namespace CPU
             MSR_CR_PAT = 0x00000277,
         };
 
-#if defined(a32)
+#if defined(__i386__)
         nsa static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;

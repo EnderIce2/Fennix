@@ -29,11 +29,11 @@
 
 struct CPUArchData
 {
-#if defined(a64)
+#if defined(__amd64__)
 	__aligned(16) CPU::x64::FXState FPU{};
-#elif defined(a32)
+#elif defined(__i386__)
 	__aligned(16) CPU::x32::FXState FPU{};
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #endif
 };
 

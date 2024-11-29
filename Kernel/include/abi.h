@@ -77,11 +77,11 @@ typedef struct
     } a_un;
 } Elf64_auxv_t;
 
-#if defined(a64)
+#if defined(__amd64__)
 typedef Elf64_auxv_t Elf_auxv_t;
-#elif defined(a32)
+#elif defined(__i386__)
 typedef Elf64_auxv_t Elf_auxv_t;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 typedef Elf64_auxv_t Elf_auxv_t;
 #endif
 

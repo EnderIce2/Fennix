@@ -147,7 +147,7 @@ typedef __SIG_ATOMIC_TYPE__ sig_atomic_t;
 // TODO: ssize_t
 typedef intptr_t ssize_t;
 
-#if defined(a64) || defined(aa64)
+#if defined(__amd64__) || defined(__aarch64__)
 typedef int64_t off_t;
 typedef int64_t off64_t;
 typedef uint32_t mode_t;
@@ -163,7 +163,7 @@ typedef uint32_t uid_t;
 typedef uint32_t gid_t;
 typedef int64_t clock_t;
 typedef int32_t pid_t;
-#elif defined(a32)
+#elif defined(__i386__)
 typedef int32_t off_t;
 typedef long long off64_t;
 typedef __INT32_TYPE__ mode_t;
@@ -303,17 +303,17 @@ public:
 #define WINT_MAX __WINT_MAX__
 #define WINT_MIN __WINT_MIN__
 
-#if defined(a64)
+#if defined(__amd64__)
 #define BREAK __asm__ __volatile__("int $0x3" \
 								   :          \
 								   :          \
 								   : "memory");
-#elif defined(a32)
+#elif defined(__i386__)
 #define BREAK __asm__ __volatile__("int $0x3" \
 								   :          \
 								   :          \
 								   : "memory");
-#elif defined(aa64)
+#elif defined(__aarch64__)
 #define BREAK __asm__ __volatile__("brk #0" \
 								   :        \
 								   :        \

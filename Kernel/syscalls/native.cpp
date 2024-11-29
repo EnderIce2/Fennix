@@ -35,9 +35,9 @@ struct SyscallData
 
 using namespace Memory;
 
-#if defined(a64)
+#if defined(__amd64__)
 typedef long arch_t;
-#elif defined(a32)
+#elif defined(__i386__)
 typedef int arch_t;
 #endif
 
@@ -60,7 +60,7 @@ static SyscallData NativeSyscallsTable[sc_MaxSyscall] = {
 
 uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 {
-#if defined(a64)
+#if defined(__amd64__)
 	if (unlikely(Frame->rax > sc_MaxSyscall))
 	{
 		fixme("Syscall %ld not implemented.", Frame->rax);
@@ -103,7 +103,7 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 	debug("< [%d:\"%s\"] = %d",
 		  Frame->rax, Syscall.Name, sc_ret);
 	return sc_ret;
-#elif defined(a32)
+#elif defined(__i386__)
 	if (unlikely(Frame->eax > sc_MaxSyscall))
 	{
 		fixme("Syscall %ld not implemented.", Frame->eax);
@@ -146,7 +146,7 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 	debug("< [%d:\"%s\"] = %d",
 		  Frame->eax, Syscall.Name, sc_ret);
 	return sc_ret;
-#elif defined(aa64)
+#elif defined(__aarch64__)
 	return -ENOSYS;
 #endif
 }

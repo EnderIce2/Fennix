@@ -28,7 +28,7 @@ namespace Time
 {
 	bool TimeStampCounter::Sleep(size_t Duration, Units Unit)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		uint64_t Target = this->GetCounter() + (Duration * ConvertUnit(Unit)) / this->clk;
 		while (this->GetCounter() < Target)
 			CPU::Pause();
@@ -38,28 +38,28 @@ namespace Time
 
 	uint64_t TimeStampCounter::GetCounter()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		return CPU::Counter();
 #endif
 	}
 
 	uint64_t TimeStampCounter::CalculateTarget(uint64_t Target, Units Unit)
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		return uint64_t((this->GetCounter() + (Target * ConvertUnit(Unit))) / this->clk);
 #endif
 	}
 
 	uint64_t TimeStampCounter::GetNanosecondsSinceClassCreation()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		return uint64_t((this->GetCounter() - this->ClassCreationTime) / this->clk);
 #endif
 	}
 
 	TimeStampCounter::TimeStampCounter()
 	{
-#if defined(a86)
+#if defined(__amd64__) || defined(__i386__)
 		stub; // FIXME: This is not a good way to measure the clock speed
 		uint64_t Start = CPU::Counter();
 		TimeManager->Sleep(1, Units::Milliseconds);
