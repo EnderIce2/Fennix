@@ -5,10 +5,10 @@ default:
 
 S_SOURCES = $(shell find ./ -type f -name '*.S' -not -path "./crt/*")
 C_SOURCES = $(shell find ./ -type f -name '*.c' -not -path "./crt/*")
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./crt/*")
+CXX_SOURCES = $(shell find ./ -type f -name '*.cpp' -not -path "./crt/*")
 HEADERS = $(sort $(dir $(wildcard $(INCLUDE_DIR)/*)))
-OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
-STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
+OBJ = $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o) $(ASM_SOURCES:.asm=.o) $(S_SOURCES:.S=.o) $(PSF_SOURCES:.psf=.o) $(BMP_SOURCES:.bmp=.o)
+STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CXX_SOURCES:.cpp=.su)
 
 LDFLAGS := -fPIC -fPIE -pie -nostdlib -nodefaultlibs -nolibc	\
 	-zmax-page-size=0x1000 -Wl,-Map libkernel.map -shared

@@ -3,10 +3,10 @@ default:
 
 S_SOURCES = $(shell find ./ -type f -name '*.S')
 C_SOURCES = $(shell find ./ -type f -name '*.c')
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp')
+CXX_SOURCES = $(shell find ./ -type f -name '*.cpp')
 HEADERS = $(sort $(dir $(wildcard ../../include/*)))
-OBJ = $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o) $(S_SOURCES:.S=.o)
-STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
+OBJ = $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o) $(S_SOURCES:.S=.o)
+STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CXX_SOURCES:.cpp=.su)
 
 FILENAME = $(notdir $(shell pwd)).drv
 
