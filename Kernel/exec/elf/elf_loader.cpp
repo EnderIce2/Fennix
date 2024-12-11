@@ -811,36 +811,15 @@ namespace Execute
 		Elf32_Ehdr ELFHeader{};
 		fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
 
-		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		const char *ElfInterpPath = nullptr;
-		if (!PhdrINTERP.empty() && ELFHeader.e_type == ET_DYN)
-		{
-			ElfInterpPath = new char[256];
-			fd->Read(ElfInterpPath, 256, PhdrINTERP.front().p_offset);
-			debug("Interpreter: %s", ElfInterpPath);
-			argc++;
-		}
-
 		// ELFargv = new const char *[argc + 2];
 		size_t argv_size = argc + 2 * sizeof(char *);
 		ELFargv = (const char **)TargetProcess->vma->RequestPages(TO_PAGES(argv_size));
 
-		int interAdd = 0;
-		if (ElfInterpPath)
+		for (int i = 0; i < argc; i++)
 		{
-			size_t interp_size = strlen(ElfInterpPath) + 1;
-			ELFargv[0] = (const char *)TargetProcess->vma->RequestPages(TO_PAGES(interp_size));
-			strcpy((char *)ELFargv[0], ElfInterpPath);
-			delete[] ElfInterpPath;
-			interAdd++;
-		}
-
-		for (int i = interAdd; i < argc; i++)
-		{
-			assert(argv[i - interAdd] != nullptr);
-			size_t arg_size = strlen(argv[i - interAdd]) + 1;
+			size_t arg_size = strlen(argv[i]) + 1;
 			ELFargv[i] = (const char *)TargetProcess->vma->RequestPages(TO_PAGES(arg_size));
-			strcpy((char *)ELFargv[i], argv[i - interAdd]);
+			strcpy((char *)ELFargv[i], argv[i]);
 		}
 		ELFargv[argc] = nullptr;
 
