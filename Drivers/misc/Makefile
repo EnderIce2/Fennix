@@ -1,7 +1,9 @@
-build:
-	make -C example build
-	make -C vmware build
+MAKE_TARGETS := build clean
+DIRECTORIES := $(sort $(dir $(wildcard ./*/)))
 
-clean:
-	make -C example clean
-	make -C vmware clean
+.PHONY: $(MAKE_TARGETS) $(DIRECTORIES)
+
+$(MAKE_TARGETS): $(DIRECTORIES)
+
+$(DIRECTORIES):
+	$(MAKE) -C $@ $(MAKECMDGOALS)

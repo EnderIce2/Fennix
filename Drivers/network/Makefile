@@ -1,7 +1,9 @@
-build:
-	make -C e1000 build
-	make -C rtl8139 build
+MAKE_TARGETS := build clean
+DIRECTORIES := $(sort $(dir $(wildcard ./*/)))
 
-clean:
-	make -C e1000 clean
-	make -C rtl8139 clean
+.PHONY: $(MAKE_TARGETS) $(DIRECTORIES)
+
+$(MAKE_TARGETS): $(DIRECTORIES)
+
+$(DIRECTORIES):
+	$(MAKE) -C $@ $(MAKECMDGOALS)

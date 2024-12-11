@@ -1,7 +1,9 @@
-build:
-	make -C ac97 build
-	make -C hda build
+MAKE_TARGETS := build clean
+DIRECTORIES := $(sort $(dir $(wildcard ./*/)))
 
-clean:
-	make -C ac97 clean
-	make -C hda clean
+.PHONY: $(MAKE_TARGETS) $(DIRECTORIES)
+
+$(MAKE_TARGETS): $(DIRECTORIES)
+
+$(DIRECTORIES):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
