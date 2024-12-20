@@ -4259,14 +4259,14 @@ static SyscallData LinuxSyscallsTableI386[] = {
 uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 {
 #if defined(__amd64__)
-	if (Frame->rax > sizeof(LinuxSyscallsTableAMD64) / sizeof(SyscallData))
+	if (Frame->ax > sizeof(LinuxSyscallsTableAMD64) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
-			  Frame->rax);
+			  Frame->ax);
 		return -linux_ENOSYS;
 	}
 
-	SyscallData Syscall = LinuxSyscallsTableAMD64[Frame->rax];
+	SyscallData Syscall = LinuxSyscallsTableAMD64[Frame->ax];
 
 	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
 											  Syscall.Handler);
@@ -4274,20 +4274,20 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	if (unlikely(!call))
 	{
 		fixme("Syscall %s(%d) not implemented",
-			  Syscall.Name, Frame->rax);
+			  Syscall.Name, Frame->ax);
 		return -linux_ENOSYS;
 	}
 
 	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
-		  Frame->rax, Syscall.Name,
-		  Frame->rdi, Frame->rsi, Frame->rdx,
+		  Frame->ax, Syscall.Name,
+		  Frame->di, Frame->si, Frame->dx,
 		  Frame->r10, Frame->r8, Frame->r9);
 
 	long sc_ret = call(Frame,
-					   Frame->rdi, Frame->rsi, Frame->rdx,
+					   Frame->di, Frame->si, Frame->dx,
 					   Frame->r10, Frame->r8, Frame->r9);
 
-	debug("< [%ld:\"%s\"] = %ld", Frame->rax, Syscall.Name, sc_ret);
+	debug("< [%ld:\"%s\"] = %ld", Frame->ax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(__i386__)
 	if (Frame->eax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))

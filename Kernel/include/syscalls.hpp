@@ -31,13 +31,14 @@ typedef struct SyscallsFrame
 	uint64_t r10;
 	uint64_t r9;
 	uint64_t r8;
-	uint64_t rbp;
-	uint64_t rdi;
-	uint64_t rsi;
-	uint64_t rdx;
-	uint64_t rcx;
-	uint64_t rbx;
-	uint64_t rax;
+
+	uint64_t bp;
+	uint64_t di;
+	uint64_t si;
+	uint64_t dx;
+	uint64_t cx;
+	uint64_t bx;
+	uint64_t ax;
 
 	uint64_t ReturnAddress;
 	uint64_t CodeSegment;
@@ -45,13 +46,13 @@ typedef struct SyscallsFrame
 	uint64_t StackPointer;
 	uint64_t StackSegment;
 #elif defined(__i386__)
-	uint32_t ebp;
-	uint32_t edi;
-	uint32_t esi;
-	uint32_t edx;
-	uint32_t ecx;
-	uint32_t ebx;
-	uint32_t eax;
+	uint32_t bp;
+	uint32_t di;
+	uint32_t si;
+	uint32_t dx;
+	uint32_t cx;
+	uint32_t bx;
+	uint32_t ax;
 
 	uint32_t ReturnAddress;
 	uint32_t CodeSegment;
@@ -62,6 +63,83 @@ typedef struct SyscallsFrame
 	uint32_t ReturnAddress;
 	uint32_t StackPointer;
 #endif
+
+	uintptr_t ReturnValue() const
+	{
+#if defined(__amd64__)
+		return ax;
+#elif defined(__i386__)
+		return ax;
+#elif defined(__aarch64__)
+		return x0;
+#endif
+	}
+
+	uintptr_t Arg0() const
+	{
+#if defined(__amd64__)
+		return di;
+#elif defined(__i386__)
+		return di;
+#elif defined(__aarch64__)
+		return x0;
+#endif
+	}
+
+	uintptr_t Arg1() const
+	{
+#if defined(__amd64__)
+		return si;
+#elif defined(__i386__)
+		return cx;
+#elif defined(__aarch64__)
+		return x1;
+#endif
+	}
+
+	uintptr_t Arg2() const
+	{
+#if defined(__amd64__)
+		return dx;
+#elif defined(__i386__)
+		return dx;
+#elif defined(__aarch64__)
+		return x2;
+#endif
+	}
+
+	uintptr_t Arg3() const
+	{
+#if defined(__amd64__)
+		return r10;
+#elif defined(__i386__)
+		return si;
+#elif defined(__aarch64__)
+		return x3;
+#endif
+	}
+
+	uintptr_t Arg4() const
+	{
+#if defined(__amd64__)
+		return r8;
+#elif defined(__i386__)
+		return di;
+#elif defined(__aarch64__)
+		return x4;
+#endif
+	}
+
+	uintptr_t Arg5() const
+	{
+#if defined(__amd64__)
+		return r9;
+#elif defined(__i386__)
+		return bp;
+#elif defined(__aarch64__)
+		return x5;
+#endif
+	}
 } SyscallsFrame;
 #define SysFrm SyscallsFrame
 
