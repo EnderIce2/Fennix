@@ -152,6 +152,10 @@ EXTERNC NIF void Main()
 	uint8_t com2 = inb(0x2F8);
 	uint8_t com3 = inb(0x3E8);
 	uint8_t com4 = inb(0x2E8);
+	uint8_t com5 = inb(0x5F8);
+	uint8_t com6 = inb(0x4F8);
+	uint8_t com7 = inb(0x5E8);
+	uint8_t com8 = inb(0x4E8);
 
 	if (lpt1 != 0xFF)
 		KPrint("LPT1 is present.");
@@ -173,6 +177,18 @@ EXTERNC NIF void Main()
 
 	if (com4 != 0xFF)
 		KPrint("COM4 is present.");
+
+	if (com5 != 0xFF)
+		KPrint("COM5 is present.");
+
+	if (com6 != 0xFF)
+		KPrint("COM6 is present.");
+
+	if (com7 != 0xFF)
+		KPrint("COM7 is present.");
+
+	if (com8 != 0xFF)
+		KPrint("COM8 is present.");
 
 	KPrint("Display: %dx%d %d bpp R:%d %d G:%d %d B:%d %d",
 		   Display->GetFramebufferStruct().Width,
