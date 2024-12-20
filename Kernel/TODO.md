@@ -31,6 +31,8 @@
 - [ ] Fix std::string.
 - [x] Rewrite PS/2 drivers.
 - [ ] Improve signal handling.
+- [ ] Handle empty initrd.
+- [ ] Fix CoW.
 
 - [ ] Improve the way the kernel crashes.
 	- Add panic() function.
