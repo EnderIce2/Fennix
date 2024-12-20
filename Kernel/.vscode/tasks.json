@@ -4,7 +4,7 @@
 		{
 			"label": "launch-qemu",
 			"type": "shell",
-			"command": "make -j$(shell nproc) build && make -C ../ build_image && make -C ../ vscode_debug_only",
+			"command": "make -C ../ build && make -C ../ vscode_debug_only",
 			"isBackground": true,
 			"problemMatcher": [],
 			"group": {

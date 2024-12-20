@@ -2,10 +2,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch QEMU and debug the kernel",
+			"name": "Launch QEMU & debug the kernel",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/fennix.elf",
+			"program": "${workspaceFolder}/../Kernel/fennix.elf",
 			"cwd": "${workspaceFolder}",
 			"args": [],
 			"targetArchitecture": "x64",
@@ -14,6 +14,7 @@
 			"miDebuggerArgs": "",
 			"externalConsole": false,
 			"additionalSOLibSearchPath": "${workspaceFolder}",
+			"internalConsoleOptions": "neverOpen",
 			"customLaunchSetupCommands": [
 				{
 					"text": "target remote localhost:1234",
@@ -31,145 +32,37 @@
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "file ${workspaceFolder}/fennix.elf",
-					"description": "Load binary."
+					"text": "file ${workspaceFolder}/../Kernel/fennix.elf",
+					"description": "Load binary"
 				},
 				{
-					"text": "source ${workspaceFolder}/.gdbinit"
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest",
+					"ignoreFailures": true
+				},
+				{
+					"text": "source ${workspaceFolder}/../tools/.gdbinit"
 				}
 			],
 			"preLaunchTask": "launch-qemu"
 		},
 		{
-			"name": "Attach to a running VM instance",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceFolder}/fennix.elf",
-			"cwd": "${workspaceFolder}",
-			"args": [],
-			"targetArchitecture": "x64",
-			"MIMode": "gdb",
-			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
-			"miDebuggerArgs": "",
-			"externalConsole": false,
-			"additionalSOLibSearchPath": "${workspaceFolder}",
-			"customLaunchSetupCommands": [
-				{
-					"text": "target remote localhost:1234",
-					"description": "Connect to QEMU remote debugger"
-				}
+			"type": "gdb",
+			"request": "attach",
+			"name": "Launch QEMU & attach to gdbserver",
+			"executable": "${workspaceFolder}/../Kernel/fennix.elf",
+			"target": ":1234",
+			"remote": true,
+			"cwd": "${workspaceRoot}",
+			"valuesFormatting": "parseText",
+			"gdbpath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
+			"autorun": [
+				"set auto-load safe-path ${workspaceFolder}",
+				"source ${workspaceFolder}/../tools/.gdbinit",
 			],
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				},
-				{
-					"text": "set breakpoint pending on",
-					"description": "Make breakpoint pending on future shared library load."
-				},
-				{
-					"text": "file ${workspaceFolder}/fennix.elf",
-					"description": "Load binary."
-				},
-				{
-					"text": "source ${workspaceFolder}/.gdbinit"
-				}
-			],
-		},
-		{
-			"name": "Attach to VM w/utest",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceFolder}/fennix.elf",
-			"cwd": "${workspaceFolder}",
-			"args": [],
-			"targetArchitecture": "x64",
-			"MIMode": "gdb",
-			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
-			"miDebuggerArgs": "",
-			"externalConsole": false,
-			"additionalSOLibSearchPath": "${workspaceFolder}",
-			"customLaunchSetupCommands": [
-				{
-					"text": "target remote localhost:1234",
-					"description": "Connect to QEMU remote debugger"
-				}
-			],
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				},
-				{
-					"text": "set breakpoint pending on",
-					"description": "Make breakpoint pending on future shared library load."
-				},
-				{
-					"text": "file ${workspaceFolder}/fennix.elf",
-					"description": "Load binary."
-				},
-				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
-					"description": "Load /bin/utest.",
-					"ignoreFailures": true
-				},
-				{
-					"text": "source ${workspaceFolder}/.gdbinit"
-				}
-			],
-			"preLaunchTask": "launch-qemu",
-		},
-		{
-			"name": "Attach to VM w/utest_linux",
-			"type": "cppdbg",
-			"request": "launch",
-			"program": "${workspaceFolder}/fennix.elf",
-			"cwd": "${workspaceFolder}",
-			"args": [],
-			"targetArchitecture": "x64",
-			"MIMode": "gdb",
-			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
-			"miDebuggerArgs": "",
-			"externalConsole": false,
-			"additionalSOLibSearchPath": "${workspaceFolder}",
-			"customLaunchSetupCommands": [
-				{
-					"text": "target remote localhost:1234",
-					"description": "Connect to QEMU remote debugger"
-				}
-			],
-			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				},
-				{
-					"text": "set breakpoint pending on",
-					"description": "Make breakpoint pending on future shared library load."
-				},
-				{
-					"text": "file ${workspaceFolder}/fennix.elf",
-					"description": "Load binary."
-				},
-				{
-					"text": "set debug-file-directory /usr/lib/debug",
-					"description": "Set debug-file-directory to /usr/lib/debug.",
-					"ignoreFailures": true
-				},
-				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest_linux",
-					"description": "Load /bin/utest_linux.",
-					"ignoreFailures": true
-				},
-				{
-					"text": "source ${workspaceFolder}/.gdbinit"
-				}
-			],
-			"preLaunchTask": "launch-qemu",
+			"internalConsoleOptions": "neverOpen",
+			"printCalls": false,
+			"preLaunchTask": "launch-qemu"
 		},
 	]
 }
