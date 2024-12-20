@@ -221,6 +221,8 @@ enum SymbolTypes
 	STT_HIPROC = 15
 };
 
+#define STN_UNDEF 0
+
 enum SymbolVisibilities
 {
 	STV_DEFAULT = 0,
@@ -801,7 +803,7 @@ typedef struct elf64_sym
 	Elf64_Xword st_size;
 } Elf64_Sym;
 
-struct Elf32_Dyn
+typedef struct
 {
 	Elf32_Sword d_tag;
 	union
@@ -809,9 +811,9 @@ struct Elf32_Dyn
 		Elf32_Word d_val;
 		Elf32_Addr d_ptr;
 	} d_un;
-};
+} Elf32_Dyn;
 
-struct Elf64_Dyn
+typedef struct
 {
 	Elf64_Sxword d_tag;
 	union
@@ -819,7 +821,7 @@ struct Elf64_Dyn
 		Elf64_Xword d_val;
 		Elf64_Addr d_ptr;
 	} d_un;
-};
+} Elf64_Dyn;
 
 typedef struct
 {
