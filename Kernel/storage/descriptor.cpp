@@ -212,6 +212,15 @@ namespace vfs
 		return it->second.Node->Read(buf, count, it->second.Offset);
 	}
 
+	ssize_t FileDescriptorTable::usr_pread(int fd, void *buf, size_t count, off_t offset)
+	{
+		auto it = this->FileMap.find(fd);
+		if (it == this->FileMap.end())
+			ReturnLogError(-EBADF, "Invalid fd %d", fd);
+
+		return it->second.Node->Read(buf, count, offset);
+	}
+
 	ssize_t FileDescriptorTable::usr_write(int fd, const void *buf, size_t count)
 	{
 		auto it = this->FileMap.find(fd);
@@ -219,6 +228,15 @@ namespace vfs
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
 		return it->second.Node->Write(buf, count, it->second.Offset);
+	}
+
+	ssize_t FileDescriptorTable::usr_pwrite(int fd, const void *buf, size_t count, off_t offset)
+	{
+		auto it = this->FileMap.find(fd);
+		if (it == this->FileMap.end())
+			ReturnLogError(-EBADF, "Invalid fd %d", fd);
+
+		return it->second.Node->Write(buf, count, offset);
 	}
 
 	int FileDescriptorTable::usr_close(int fd)

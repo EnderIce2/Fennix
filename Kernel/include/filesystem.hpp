@@ -211,6 +211,8 @@ namespace vfs
 		int usr_creat(const char *pathname, mode_t mode);
 		ssize_t usr_read(int fd, void *buf, size_t count);
 		ssize_t usr_write(int fd, const void *buf, size_t count);
+		ssize_t usr_pread(int fd, void *buf, size_t count, off_t offset);
+		ssize_t usr_pwrite(int fd, const void *buf, size_t count, off_t offset);
 		int usr_close(int fd);
 		off_t usr_lseek(int fd, off_t offset, int whence);
 		int usr_stat(const char *pathname, struct kstat *statbuf);
