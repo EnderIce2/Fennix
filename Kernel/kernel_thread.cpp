@@ -42,7 +42,7 @@ int SpawnInit()
 
 	const char *argv[4] = {
 		Config.InitPath,
-		// "--help",
+		"--kernel",
 		nullptr};
 
 	Tasking::TaskCompatibility compat = Tasking::Native;
