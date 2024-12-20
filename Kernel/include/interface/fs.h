@@ -348,6 +348,7 @@ struct SuperBlockOperations
 	 * Write all pending changes to the disk.
 	 *
 	 * @param Info Inode to synchronize. If NULL, synchronize all inodes.
+	 * @param Node Inode to synchronize.
 	 *
 	 * @return Zero on success, otherwise an error code.
 	 */
