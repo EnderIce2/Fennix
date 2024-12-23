@@ -15,8 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_ERRNO_H__
-#define __FENNIX_KERNEL_ERRNO_H__
+#ifndef __FENNIX_API_ERRNO_H__
+#define __FENNIX_API_ERRNO_H__
 
 /**
  * The documentation for these error codes are from:
@@ -416,8 +416,8 @@ typedef enum
 	 * Not a directory. A component of the specified pathname exists, but
 	 *  it is not a directory, when a directory was expected; or an
 	 *  attempt was made to create a non-directory file, and the specified
-	 *  pathname contains at least one non- <slash> character and ends
-	 *  with one or more trailing <slash> characters.
+	 *  pathname contains at least one non- \<slash\> character and ends
+	 *  with one or more trailing \<slash\> characters.
 	 */
 	ENOTDIR = 57,
 
@@ -588,17 +588,18 @@ typedef enum
 	__ERRNO_MAX
 } KernelErrors;
 
-#include <types.h>
-EXTERNC int *__errno_location(void) __attribute__((const));
-#define errno (*__errno_location())
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+	int *__errno_location(void) __attribute__((const));
 	char *strerror(int errnum);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !__FENNIX_KERNEL_ERRNO_H__
+#define errno (*__errno_location())
+
+#endif // !__FENNIX_API_ERRNO_H__
