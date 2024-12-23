@@ -27,48 +27,9 @@ NewLock(DebuggerLock);
 
 extern bool serialports[8];
 
-EXTERNC NIF void uart_wrapper(char c, void *unused)
+EXTERNC NIF void uart_wrapper(char c, void *)
 {
-	static int once = 0;
-	if (unlikely(!once++))
-	{
-		uint8_t com = inb(0x3F8);
-		if (com != 0xFF)
-		{
-			outb(s_cst(uint16_t, 0x3F8 + 1), 0x00); // Disable all interrupts
-			outb(s_cst(uint16_t, 0x3F8 + 3), 0x80); // Enable DLAB (set baud rate divisor)
-			outb(s_cst(uint16_t, 0x3F8 + 0), 0x1);	// Set divisor to 1 (lo byte) 115200 baud
-			outb(s_cst(uint16_t, 0x3F8 + 1), 0x0);	//                  (hi byte)
-			outb(s_cst(uint16_t, 0x3F8 + 3), 0x03); // 8 bits, no parity, one stop bit
-			outb(s_cst(uint16_t, 0x3F8 + 2), 0xC7); // Enable FIFO, clear them, with 14-byte threshold
-			outb(s_cst(uint16_t, 0x3F8 + 4), 0x0B); // IRQs enabled, RTS/DSR set
-
-			/* FIXME  https://wiki.osdev.org/Serial_Ports */
-			// outb(s_cst(uint16_t, 0x3F8 + 0), 0x1E);
-			// outb(s_cst(uint16_t, 0x3F8 + 0), 0xAE);
-			// Check if the serial port is faulty.
-			// if (inb(s_cst(uint16_t, 0x3F8 + 0)) != 0xAE)
-			// {
-			//     static int once = 0;
-			//     if (!once++)
-			//         warn("Serial port %#llx is faulty.", 0x3F8);
-			//     // serialports[0x3F8] = false; // ignore for now
-			//     // return;
-			// }
-
-			// Set to normal operation mode.
-			outb(s_cst(uint16_t, 0x3F8 + 4), 0x0F);
-			serialports[0] = true;
-		}
-	}
-
-	if (likely(serialports[0]))
-	{
-		while ((inb(s_cst(uint16_t, 0x3F8 + 5)) & 0x20) == 0)
-			;
-		outb(0x3F8, c);
-	}
-	UNUSED(unused);
+	uart.DebugWrite(c);
 }
 
 static inline NIF bool WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, va_list args)

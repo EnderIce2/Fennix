@@ -27,8 +27,6 @@ TODO: This code is a mess. It needs to be cleaned up.
 #include <printf.h>
 #include <lock.hpp>
 
-using namespace UniversalAsynchronousReceiverTransmitter;
-
 NewLock(netdbg_lock);
 
 namespace NetDbg

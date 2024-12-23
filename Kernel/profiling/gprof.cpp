@@ -21,11 +21,9 @@
 
 #include "../kernel.h"
 
-using namespace UniversalAsynchronousReceiverTransmitter;
-
 static inline nsa NIF void gprof_uart_wrapper(char c, void *unused)
 {
-	UART(COM2).Write(c);
+	UNUSED(c);
 	UNUSED(unused);
 }
 

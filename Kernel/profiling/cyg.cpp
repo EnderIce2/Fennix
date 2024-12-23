@@ -25,14 +25,11 @@ bool EnableProfiler = false;
 bool Wait = false;
 unsigned long long LogDepth = 0;
 unsigned int Level = 0;
-using namespace UniversalAsynchronousReceiverTransmitter;
-UART com2(COM2);
 
 static inline nsa NIF void profiler_uart_wrapper(char c, void *unused)
 {
 	bool renable = EnableProfiler;
 	EnableProfiler = false;
-	com2.Write(c);
 	UNUSED(unused);
 	if (renable)
 		EnableProfiler = true;

@@ -23,7 +23,6 @@
 #include <ints.hpp>
 #include <printf.h>
 #include <lock.hpp>
-#include <uart.hpp>
 #include <kcon.hpp>
 #include <debug.h>
 #include <smp.hpp>
@@ -60,6 +59,7 @@ Time::time *TimeManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
 Driver::Manager *DriverManager = nullptr;
+UART::Driver uart;
 
 EXTERNC void putchar(char c)
 {
@@ -67,7 +67,7 @@ EXTERNC void putchar(char c)
 	if (vt != nullptr)
 		vt->Process(c);
 	else
-		UniversalAsynchronousReceiverTransmitter::UART(UniversalAsynchronousReceiverTransmitter::COM1).Write(c);
+		uart.DebugWrite(c);
 }
 
 EXTERNC void _KPrint(const char *Format, va_list Args)

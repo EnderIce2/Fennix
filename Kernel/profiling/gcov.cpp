@@ -21,8 +21,6 @@
 
 #include "../kernel.h"
 
-using namespace UniversalAsynchronousReceiverTransmitter;
-
 #if BITS_PER_LONG >= 64
 typedef long gcov_type;
 #else
@@ -57,7 +55,7 @@ struct gcov_info
 
 static inline nsa NIF void gcov_uart_wrapper(char c, void *unused)
 {
-	UART(COM2).Write(c);
+	UNUSED(c);
 	UNUSED(unused);
 }
 

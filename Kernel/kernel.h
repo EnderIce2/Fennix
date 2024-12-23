@@ -33,6 +33,7 @@
 #include <time.hpp>
 #include <disk.hpp>
 #include <kcon.hpp>
+#include <uart.hpp>
 #include <tty.hpp>
 #include <pci.hpp>
 #include <smp.hpp>
@@ -51,8 +52,8 @@ extern Time::time *TimeManager;
 extern PCI::Manager *PCIManager;
 extern vfs::Virtual *fs;
 extern Tasking::Task *TaskManager;
-
 extern Driver::Manager *DriverManager;
+extern UART::Driver uart;
 
 #endif // __cplusplus
 

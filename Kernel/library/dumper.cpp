@@ -25,8 +25,6 @@
 
 NewLock(DumperLock);
 
-using namespace UniversalAsynchronousReceiverTransmitter;
-
 int vprintf_dumper(const char *format, va_list list) { return vfctprintf(uart_wrapper, NULL, format, list); }
 
 void WriteRaw(const char *format, ...)
