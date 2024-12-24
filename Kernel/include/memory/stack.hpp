@@ -39,7 +39,7 @@ namespace Memory
 		void *StackTop = nullptr;
 		void *StackPhysicalBottom = nullptr;
 		void *StackPhysicalTop = nullptr;
-		uint64_t Size = 0;
+		uint64_t CurrentSize = 0;
 		bool UserMode = false;
 		bool Expanded = false;
 		VirtualMemoryArea *vma = nullptr;
@@ -55,7 +55,7 @@ namespace Memory
 		void Fork(StackGuard *Parent);
 
 		/** For general info */
-		uint64_t GetSize() { return Size; }
+		uint64_t GetSize() { return CurrentSize; }
 
 		/** For general info */
 		bool GetUserMode() { return UserMode; }
