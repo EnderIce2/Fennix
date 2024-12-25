@@ -139,10 +139,14 @@ namespace InterruptDescriptorTable
 			"pushq %r14\n"
 			"pushq %r15\n"
 
-			"movq %ds, %rax\n pushq %rax\n"
-			"movq %es, %rax\n pushq %rax\n"
-			"movq %fs, %rax\n pushq %rax\n"
-			"movq %gs, %rax\n pushq %rax\n"
+			// "movq %ds, %rax\n pushq %rax\n"
+			// "movq %es, %rax\n pushq %rax\n"
+			// "movq %fs, %rax\n pushq %rax\n"
+			// "movq %gs, %rax\n pushq %rax\n"
+			"pushq %rax\n"
+			"pushq %rax\n"
+			"pushq %rax\n"
+			"pushq %rax\n"
 
 			"movq %dr7, %rax\n pushq %rax\n"
 			"movq %dr6, %rax\n pushq %rax\n"
@@ -173,10 +177,14 @@ namespace InterruptDescriptorTable
 			"popq %rax\n movq %rax, %dr6\n"
 			"popq %rax\n movq %rax, %dr7\n"
 
-			"popq %rax\n movq %rax, %gs\n"
-			"popq %rax\n movq %rax, %fs\n"
-			"popq %rax\n movq %rax, %es\n"
-			"popq %rax\n movq %rax, %ds\n"
+			"popq %rax\n"
+			"popq %rax\n"
+			"popq %rax\n"
+			"popq %rax\n"
+			// "popq %rax\n movq %rax, %gs\n"
+			// "popq %rax\n movq %rax, %fs\n"
+			// "popq %rax\n movq %rax, %es\n"
+			// "popq %rax\n movq %rax, %ds\n"
 
 			"popq %r15\n"
 			"popq %r14\n"
@@ -273,13 +281,13 @@ namespace InterruptDescriptorTable
 			/* TODO: Add advanced check so we won't update the cr3 when not needed */
 
 			"movq %cr3, %rax\n pushq %rax\n" /* Push opt */
-			"pushq %rax\n" /* Push ppt */
+			"pushq %rax\n"					 /* Push ppt */
 
 			"movq %rsp, %rdi\n"
 			"call SchedulerInterruptHandler\n"
 
 			"popq %rax\n movq %rax, %cr3\n" /* Restore to ppt */
-			"popq %rax\n" /* Pop opt */
+			"popq %rax\n"					/* Pop opt */
 
 			"popq %r15\n"
 			"popq %r14\n"
