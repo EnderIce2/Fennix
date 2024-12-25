@@ -215,6 +215,14 @@ typedef enum
 	__SYS_X_OK = 3
 } access_flags_t;
 
+typedef enum
+{
+	__SYS_GET_GS = 0,
+	__SYS_SET_GS = 1,
+	__SYS_GET_FS = 2,
+	__SYS_SET_FS = 3,
+} prctl_options_t;
+
 typedef int __SYS_clockid_t;
 typedef unsigned int __SYS_socklen_t;
 
@@ -644,6 +652,27 @@ typedef enum
 	 * - #EINVAL if `sig` is invalid
 	 */
 	SYS_KILL,
+	/**
+	 * @brief Process/Thread Control
+	 *
+	 * @code
+	 * int prctl(prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4);
+	 * @endcode
+	 *
+	 * @details Perform various operations on a process or thread.
+	 *
+	 * @param option Operation to perform
+	 * @param arg1 Argument 1
+	 * @param arg2 Argument 2
+	 * @param arg3 Argument 3
+	 * @param arg4 Argument 4
+	 *
+	 * @return
+	 * - #EOK on success
+	 * - #EINVAL if the operation is invalid
+	 * - #EFAULT if one of the arguments is invalid
+	 */
+	SYS_PRCTL,
 
 	/* Memory */
 

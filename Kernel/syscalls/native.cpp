@@ -184,6 +184,62 @@ static pid_t sys_getppid(SysFrm *Frame) { return -ENOSYS; }
 static pid_t sys_waitpid(pid_t pid, int *wstatus, int options) { return -ENOSYS; }
 static int sys_kill(SysFrm *Frame, pid_t pid, int sig) { return -ENOSYS; }
 
+static int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	switch (option)
+	{
+	case __SYS_GET_GS:
+	{
+		auto arg = vma->UserCheckAndGetAddress((void *)arg1);
+		if (arg == nullptr)
+			return -EFAULT;
+
+#if defined(__amd64__)
+		*r_cst(uintptr_t *, arg) = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
+#elif defined(__i386__)
+		*r_cst(uintptr_t *, arg) = CPU::x32::rdmsr(CPU::x32::MSRID::MSR_GS_BASE);
+#endif
+		return 0;
+	}
+	case __SYS_SET_GS:
+	{
+#if defined(__amd64__)
+		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, arg1);
+#elif defined(__i386__)
+		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_GS_BASE, arg1);
+#endif
+		return 0;
+	}
+	case __SYS_GET_FS:
+	{
+		auto arg = vma->UserCheckAndGetAddress((void *)arg1);
+		if (arg == nullptr)
+			return -EFAULT;
+
+#if defined(__amd64__)
+		*r_cst(uintptr_t *, arg) = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
+#elif defined(__i386__)
+		*r_cst(uintptr_t *, arg) = CPU::x32::rdmsr(CPU::x32::MSRID::MSR_FS_BASE);
+#endif
+		return 0;
+	}
+	case __SYS_SET_FS:
+	{
+#if defined(__amd64__)
+		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, arg1);
+#elif defined(__i386__)
+		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_FS_BASE, arg1);
+#endif
+		return 0;
+	}
+	default:
+		return -EINVAL;
+	}
+}
+
 int sys_brk(SysFrm *Frame, void *end_data);
 void *sys_mmap(SysFrm *Frame, void *addr, size_t length, int prot, int flags, int fd, off_t offset);
 int sys_munmap(SysFrm *Frame, void *addr, size_t length);
@@ -244,6 +300,7 @@ __constructor void __init_native_syscalls(void)
 	scTbl[SYS_GETPPID] = {"SYS_GETPPID", (void *)sys_getppid};
 	scTbl[SYS_WAITPID] = {"SYS_WAITPID", (void *)sys_waitpid};
 	scTbl[SYS_KILL] = {"SYS_KILL", (void *)sys_kill};
+	scTbl[SYS_PRCTL] = {"SYS_PRCTL", (void *)sys_prctl};
 
 	/* Memory */
 	scTbl[SYS_BRK] = {"SYS_BRK", (void *)sys_brk};
