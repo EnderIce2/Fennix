@@ -177,6 +177,15 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 
 #pragma endregion Syscall Wrappers
 
+/**
+ * @brief NULL pointer
+ *
+ * This is a pointer to address 0, which is reserved and cannot be dereferenced.
+ *
+ * @note This macro is defined only for this documentation.
+ */
+#define __SYS_NULL ((void *)0)
+
 typedef enum
 {
 	__SYS_PROT_READ = 0x1,
@@ -414,7 +423,6 @@ typedef enum
 	 * @param fd File descriptor to read from
 	 * @param buf Buffer where data will be stored
 	 * @param count Maximum number of bytes to read
-	 * @param offset Offset in the file
 	 *
 	 * @return
 	 * - Number of bytes read on success
@@ -458,7 +466,6 @@ typedef enum
 	 * @param fd File descriptor to write to
 	 * @param buf Buffer containing data to write
 	 * @param count Number of bytes to write
-	 * @param offset Offset in the file
 	 *
 	 * @return
 	 * - Number of bytes written on success
@@ -500,18 +507,18 @@ typedef enum
 	 * @param pathname Path to the file
 	 * @param flags Flags for file access mode\n
 	 *              Supported values:
-	 *              - #O_RDONLY: Open file for reading only.
-	 *              - #O_WRONLY: Open file for writing only.
-	 *              - #O_RDWR: Open file for reading and writing.
-	 *              - #O_APPEND: Append data to the end of file.
-	 *              - #O_CREAT: Create file if it does not exist.
-	 *              - #O_DSYNC:
-	 *              - #O_EXCL:
-	 *              - #O_NOCTTY:
-	 *              - #O_NONBLOCK:
-	 *              - #O_RSYNC:
-	 *              - #O_SYNC:
-	 *              - #O_TRUNC: Truncate file to zero length.
+	 *              - #__SYS_O_RDONLY: Open file for reading only.
+	 *              - #__SYS_O_WRONLY: Open file for writing only.
+	 *              - #__SYS_O_RDWR: Open file for reading and writing.
+	 *              - #__SYS_O_APPEND: Append data to the end of file.
+	 *              - #__SYS_O_CREAT: Create file if it does not exist.
+	 *              - #__SYS_O_DSYNC:
+	 *              - #__SYS_O_EXCL:
+	 *              - #__SYS_O_NOCTTY:
+	 *              - #__SYS_O_NONBLOCK:
+	 *              - #__SYS_O_RSYNC:
+	 *              - #__SYS_O_SYNC:
+	 *              - #__SYS_O_TRUNC: Truncate file to zero length.
 	 * @param mode Permissions for newly created file (if applicable)
 	 *
 	 * @return
@@ -542,13 +549,14 @@ typedef enum
 	 * @brief Control a device
 	 *
 	 * @code
-	 * int ioctl(int fd, unsigned long request, ...);
+	 * int ioctl(int fd, unsigned long request, void *argp);
 	 * @endcode
 	 *
 	 * @details Manipulates the underlying parameters of a device.
 	 *
 	 * @param fd File descriptor referring to the device
 	 * @param request Device-specific request code
+	 * @param argp Argument for the request
 	 *
 	 * @return
 	 * - #EOK on success
@@ -627,10 +635,10 @@ typedef enum
 	 * @param pathname Path to the file
 	 * @param mode Accessibility check mode\n
 	 *             Supported values:
-	 *             - #F_OK: Check if the file exists
-	 *             - #R_OK: Check if the file is readable
-	 *             - #W_OK: Check if the file is writable
-	 *             - #X_OK: Check if the file is executable
+	 *             - #__SYS_F_OK: Check if the file exists
+	 *             - #__SYS_R_OK: Check if the file is readable
+	 *             - #__SYS_W_OK: Check if the file is writable
+	 *             - #__SYS_X_OK: Check if the file is executable
 	 *
 	 * @return
 	 * - #EOK on success
@@ -847,16 +855,16 @@ typedef enum
 	 * @param length Length of the mapping
 	 * @param prot Desired memory protection\n
 	 *             Supported values:
-	 *             - #PROT_READ: Readable
-	 *             - #PROT_WRITE: Writable
-	 *             - #PROT_EXEC: Executable
-	 *             - #PROT_NONE: No access
+	 *             - #__SYS_PROT_READ: Readable
+	 *             - #__SYS_PROT_WRITE: Writable
+	 *             - #__SYS_PROT_EXEC: Executable
+	 *             - #__SYS_PROT_NONE: No access
 	 * @param flags Mapping options\n
 	 *             Supported values:
-	 *             - #MAP_SHARED: Share memory with other processes
-	 *             - #MAP_PRIVATE: Create a private copy of the file
-	 *             - #MAP_FIXED: Use `addr` as the starting address of the mapping
-	 *             - #MAP_ANONYMOUS: Create an anonymous mapping
+	 *             - #__SYS_MAP_SHARED: Share memory with other processes
+	 *             - #__SYS_MAP_PRIVATE: Create a private copy of the file
+	 *             - #__SYS_MAP_FIXED: Use `addr` as the starting address of the mapping
+	 *             - #__SYS_MAP_ANONYMOUS: Create an anonymous mapping
 	 * @param fd File descriptor for the file to map
 	 * @param offset Offset in the file to start the mapping
 	 *
@@ -1145,7 +1153,7 @@ typedef enum
 	 *
 	 * @return
 	 * - Current time in seconds on success
-	 * - #NULL if `t` is NULL
+	 * - #__SYS_NULL if `t` is NULL
 	 */
 	SYS_TIME = 600,
 	/**
@@ -1216,7 +1224,7 @@ typedef enum
 	 *
 	 * @return
 	 * - Pointer to `buf` on success
-	 * - #NULL on error
+	 * - #__SYS_NULL on error
 	 */
 	SYS_GETCWD = 700,
 	/**
@@ -1362,122 +1370,122 @@ typedef enum
 /** @copydoc SYS_ACCESS */
 #define call_access(pathname, mode) syscall2(SYS_ACCESS, pathname, mode)
 
-/** @copydocSYS_TRUNCATE */
+/** @copydoc SYS_TRUNCATE */
 #define call_truncate(pathname, length) syscall2(SYS_TRUNCATE, pathname, length)
 
-/** @copydoc SYS_SYS_FTRUNCATE */
+/** @copydoc SYS_FTRUNCATE */
 #define call_ftruncate(fd, length) syscall2(SYS_FTRUNCATE, fd, length)
 
 /* Process Control */
 
-/** @copydoc SYS_SYS_EXIT */
+/** @copydoc SYS_EXIT */
 #define call_exit(status) syscall1(SYS_EXIT, status)
 
-/** @copydoc SYS_SYS_FORK */
+/** @copydoc SYS_FORK */
 #define call_fork() syscall0(SYS_FORK)
 
-/** @copydoc SYS_SYS_EXECVE */
+/** @copydoc SYS_EXECVE */
 #define call_execve(pathname, argv, envp) syscall3(SYS_EXECVE, pathname, argv, envp)
 
-/** @copydoc SYS_SYS_GETPID */
+/** @copydoc SYS_GETPID */
 #define call_getpid() syscall0(SYS_GETPID)
 
-/** @copydoc SYS_SYS_GETPPID */
+/** @copydoc SYS_GETPPID */
 #define call_getppid() syscall0(SYS_GETPPID)
 
-/** @copydoc SYS_SYS_WAITPID */
+/** @copydoc SYS_WAITPID */
 #define call_waitpid(pid, wstatus, options) syscall3(SYS_WAITPID, pid, wstatus, options)
 
-/** @copydoc SYS_SYS_KILL */
+/** @copydoc SYS_KILL */
 #define call_kill(pid, sig) syscall2(SYS_KILL, pid, sig)
 
-/** @copydoc SYS_SYS_PRCTL */
+/** @copydoc SYS_PRCTL */
 #define call_prctl(option, arg1, arg2, arg3, arg4) syscall5(SYS_PRCTL, option, arg1, arg2, arg3, arg4)
 
 /* Memory */
 
-/** @copydoc SYS_SYS_BRK */
+/** @copydoc SYS_BRK */
 #define call_brk(end_data) syscall1(SYS_BRK, end_data)
 
-/** @copydoc SYS_SYS_MMAP */
+/** @copydoc SYS_MMAP */
 #define call_mmap(addr, length, prot, flags, fd, offset) syscall6(SYS_MMAP, addr, length, prot, flags, fd, offset)
 
-/** @copydoc SYS_SYS_MUNMAP */
+/** @copydoc SYS_MUNMAP */
 #define call_munmap(addr, length) syscall2(SYS_MUNMAP, addr, length)
 
-/** @copydoc SYS_SYS_MPROTECT */
+/** @copydoc SYS_MPROTECT */
 #define call_mprotect(addr, length, prot) syscall3(SYS_MPROTECT, addr, length, prot)
 
-/** @copydoc SYS_SYS_MADVISE */
+/** @copydoc SYS_MADVISE */
 #define call_madvise(addr, length, advice) syscall3(SYS_MADVISE, addr, length, advice)
 
 /* Communication */
 
-/** @copydoc SYS_SYS_PIPE */
+/** @copydoc SYS_PIPE */
 #define call_pipe(pipefd) syscall1(SYS_PIPE, pipefd)
 
-/** @copydoc SYS_SYS_DUP */
+/** @copydoc SYS_DUP */
 #define call_dup(oldfd) syscall1(SYS_DUP, oldfd)
 
-/** @copydoc SYS_SYS_DUP2 */
+/** @copydoc SYS_DUP2 */
 #define call_dup2(oldfd, newfd) syscall2(SYS_DUP2, oldfd, newfd)
 
-/** @copydoc SYS_SYS_SOCKET */
+/** @copydoc SYS_SOCKET */
 #define call_socket(domain, type, protocol) syscall3(SYS_SOCKET, domain, type, protocol)
 
-/** @copydoc SYS_SYS_BIND */
+/** @copydoc SYS_BIND */
 #define call_bind(sockfd, addr, addrlen) syscall3(SYS_BIND, sockfd, addr, addrlen)
 
-/** @copydoc SYS_SYS_CONNECT */
+/** @copydoc SYS_CONNECT */
 #define call_connect(sockfd, addr, addrlen) syscall3(SYS_CONNECT, sockfd, addr, addrlen)
 
-/** @copydoc SYS_SYS_LISTEN */
+/** @copydoc SYS_LISTEN */
 #define call_listen(sockfd, backlog) syscall2(SYS_LISTEN, sockfd, backlog)
 
-/** @copydoc SYS_SYS_ACCEPT */
+/** @copydoc SYS_ACCEPT */
 #define call_accept(sockfd, addr, addrlen) syscall3(SYS_ACCEPT, sockfd, addr, addrlen)
 
-/** @copydoc SYS_SYS_SEND */
+/** @copydoc SYS_SEND */
 #define call_send(sockfd, buf, len, flags) syscall4(SYS_SEND, sockfd, buf, len, flags)
 
-/** @copydoc SYS_SYS_RECV */
+/** @copydoc SYS_RECV */
 #define call_recv(sockfd, buf, len, flags) syscall4(SYS_RECV, sockfd, buf, len, flags)
 
-/** @copydoc SYS_SYS_SHUTDOWN */
+/** @copydoc SYS_SHUTDOWN */
 #define call_shutdown(sockfd, how) syscall2(SYS_SHUTDOWN, sockfd, how)
 
 /* Time */
 
-/** @copydoc SYS_SYS_TIME */
+/** @copydoc SYS_TIME */
 #define call_time(t) syscall1(SYS_TIME, t)
 
-/** @copydoc SYS_SYS_CLOCK_GETTIME */
+/** @copydoc SYS_CLOCK_GETTIME */
 #define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, clockid, tp)
 
-/** @copydoc SYS_SYS_CLOCK_SETTIME */
+/** @copydoc SYS_CLOCK_SETTIME */
 #define call_clock_settime(clockid, tp) syscall2(SYS_CLOCK_SETTIME, clockid, tp)
 
-/** @copydoc SYS_SYS_NANOSLEEP */
+/** @copydoc SYS_NANOSLEEP */
 #define call_nanosleep(req, rem) syscall2(SYS_NANOSLEEP, req, rem)
 
 /* Miscellaneous */
 
-/** @copydoc SYS_SYS_GETCWD */
+/** @copydoc SYS_GETCWD */
 #define call_getcwd(buf, size) syscall2(SYS_GETCWD, buf, size)
 
-/** @copydoc SYS_SYS_CHDIR */
+/** @copydoc SYS_CHDIR */
 #define call_chdir(path) syscall1(SYS_CHDIR, path)
 
-/** @copydoc SYS_SYS_MKDIR */
+/** @copydoc SYS_MKDIR */
 #define call_mkdir(path, mode) syscall2(SYS_MKDIR, path, mode)
 
-/** @copydoc SYS_SYS_RMDIR */
+/** @copydoc SYS_RMDIR */
 #define call_rmdir(path) syscall1(SYS_RMDIR, path)
 
-/** @copydoc SYS_SYS_UNLINK */
+/** @copydoc SYS_UNLINK */
 #define call_unlink(pathname) syscall1(SYS_UNLINK, pathname)
 
-/** @copydoc SYS_SYS_RENAME */
+/** @copydoc SYS_RENAME */
 #define call_rename(oldpath, newpath) syscall2(SYS_RENAME, oldpath, newpath)
 
 #endif // !__FENNIX_API_SYSCALLS_LIST_H__
