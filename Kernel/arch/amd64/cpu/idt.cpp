@@ -668,7 +668,7 @@ namespace InterruptDescriptorTable
 		SetEntry(0xb, InterruptHandler_0xb, IST1, INTERRUPT_GATE_64BIT, RING0, (!DebuggerIsAttached), GDT_KERNEL_CODE);
 		SetEntry(0xc, InterruptHandler_0xc, IST3, INTERRUPT_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0xd, InterruptHandler_0xd, IST3, INTERRUPT_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
-		SetEntry(0xe, InterruptHandler_0xe, IST3, INTERRUPT_GATE_64BIT, RING0, EnableISRs /* FIXME: CoW? */, GDT_KERNEL_CODE);
+		SetEntry(0xe, InterruptHandler_0xe, IST3, INTERRUPT_GATE_64BIT, RING0, true /* FIXME: CoW? */, GDT_KERNEL_CODE);
 		SetEntry(0xf, InterruptHandler_0xf, IST1, INTERRUPT_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x10, InterruptHandler_0x10, IST1, INTERRUPT_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x11, InterruptHandler_0x11, IST1, INTERRUPT_GATE_64BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
