@@ -234,6 +234,13 @@ typedef enum
 
 typedef enum
 {
+	__SYS_SEEK_SET = 0,
+	__SYS_SEEK_CUR = 1,
+	__SYS_SEEK_END = 2
+} seek_whence_t;
+
+typedef enum
+{
 	__SYS_SIGNULL = 0,
 	/* Process abort signal. */
 	__SYS_SIGABRT = 1,
@@ -685,6 +692,46 @@ typedef enum
 	 * - #EINVAL if `length` is invalid
 	 */
 	SYS_FTRUNCATE,
+	/**
+	 * @brief Get the current file offset
+	 *
+	 * @code
+	 * off_t tell(int fd);
+	 * @endcode
+	 *
+	 * @details Returns the current file offset for the file referred to by `fd`.
+	 *
+	 * @param fd File descriptor
+	 *
+	 * @return
+	 * - Current file offset on success
+	 * - #EBADF if `fd` is not a valid file descriptor
+	 */
+	SYS_TELL,
+	/**
+	 * @brief Set the file offset
+	 *
+	 * @code
+	 * off_t seek(int fd, off_t offset, int whence);
+	 * @endcode
+	 *
+	 * @details Sets the file offset for the file referred to by `fd` to the
+	 * specified `offset` according to the directive `whence`.
+	 *
+	 * @param fd File descriptor
+	 * @param offset Offset to set
+	 * @param whence Directive for setting the offset\n
+	 *               Supported values:
+	 *               - #__SYS_SEEK_SET: Set the offset to `offset` bytes
+	 *               - #__SYS_SEEK_CUR: Set the offset to the current offset plus `offset`
+	 *               - #__SYS_SEEK_END: Set the offset to the size of the file plus `offset`
+	 *
+	 * @return
+	 * - New file offset on success
+	 * - #EBADF if `fd` is not a valid file descriptor
+	 * - #EINVAL if `whence` is invalid
+	 */
+	SYS_SEEK,
 
 	/* Process Control */
 
@@ -1375,6 +1422,12 @@ typedef enum
 
 /** @copydoc SYS_FTRUNCATE */
 #define call_ftruncate(fd, length) syscall2(SYS_FTRUNCATE, (scarg)fd, (scarg)length)
+
+/** @copydoc SYS_TELL */
+#define call_tell(fd) syscall1(SYS_TELL, (scarg)fd)
+
+/** @copydoc SYS_SEEK */
+#define call_seek(fd, offset, whence) syscall3(SYS_SEEK, (scarg)fd, (scarg)offset, (scarg)whence)
 
 /* Process Control */
 

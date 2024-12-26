@@ -159,6 +159,22 @@ static int sys_access(SysFrm *Frame, const char *pathname, int mode)
 static int sys_truncate(SysFrm *Frame, const char *pathname, off_t length) { return -ENOSYS; }
 static int sys_ftruncate(SysFrm *Frame, int fd, off_t length) { return -ENOSYS; }
 
+static int sys_tell(SysFrm *Frame, int fd)
+{
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+
+	return fdt->usr_lseek(fd, 0, SEEK_CUR);
+}
+
+static off_t sys_seek(SysFrm *Frame, int fd, off_t offset, int whence)
+{
+	PCB *pcb = thisProcess;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+
+	return fdt->usr_lseek(fd, offset, whence);
+}
+
 static __noreturn void sys_exit(SysFrm *Frame, int status)
 {
 	TCB *t = thisThread;
@@ -333,6 +349,8 @@ __constructor void __init_native_syscalls(void)
 	scTbl[SYS_ACCESS] = {"SYS_ACCESS", (void *)sys_access};
 	scTbl[SYS_TRUNCATE] = {"SYS_TRUNCATE", (void *)sys_truncate};
 	scTbl[SYS_FTRUNCATE] = {"SYS_FTRUNCATE", (void *)sys_ftruncate};
+	scTbl[SYS_TELL] = {"SYS_TELL", (void *)sys_tell};
+	scTbl[SYS_SEEK] = {"SYS_SEEK", (void *)sys_seek};
 
 	/* Process Control */
 	scTbl[SYS_EXIT] = {"SYS_EXIT", (void *)sys_exit};
