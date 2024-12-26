@@ -223,6 +223,147 @@ typedef enum
 	__SYS_SET_FS = 3,
 } prctl_options_t;
 
+typedef enum
+{
+	__SYS_SIGNULL = 0,
+	/* Process abort signal. */
+	__SYS_SIGABRT = 1,
+	/* Alarm clock. */
+	__SYS_SIGALRM = 2,
+	/* Access to an undefined portion of a memory object. */
+	__SYS_SIGBUS = 3,
+	/* Child process terminated, stopped, or continued. */
+	__SYS_SIGCHLD = 4,
+	/* Continue executing, if stopped. */
+	__SYS_SIGCONT = 5,
+	/* Erroneous arithmetic operation. */
+	__SYS_SIGFPE = 6,
+	/* Hangup. */
+	__SYS_SIGHUP = 7,
+	/* Illegal instruction. */
+	__SYS_SIGILL = 8,
+	/* Terminal interrupt signal. */
+	__SYS_SIGINT = 9,
+	/* Kill (cannot be caught or ignored). */
+	__SYS_SIGKILL = 10,
+	/* Write on a pipe with no one to read it. */
+	__SYS_SIGPIPE = 11,
+	/* Terminal quit signal. */
+	__SYS_SIGQUIT = 12,
+	/* Invalid memory reference. */
+	__SYS_SIGSEGV = 13,
+	/* Stop executing (cannot be caught or ignored). */
+	__SYS_SIGSTOP = 14,
+	/* Termination signal. */
+	__SYS_SIGTERM = 15,
+	/* Terminal stop signal. */
+	__SYS_SIGTSTP = 16,
+	/* Background process attempting read. */
+	__SYS_SIGTTIN = 17,
+	/* Background process attempting write. */
+	__SYS_SIGTTOU = 18,
+	/* User-defined signal 1. */
+	__SYS_SIGUSR1 = 19,
+	/* User-defined signal 2. */
+	__SYS_SIGUSR2 = 20,
+	/* Pollable event. */
+	__SYS_SIGPOLL = 21,
+	/* Profiling timer expired. */
+	__SYS_SIGPROF = 22,
+	/* Bad system call. */
+	__SYS_SIGSYS = 23,
+	/* Trace/breakpoint trap. */
+	__SYS_SIGTRAP = 24,
+	/* High bandwidth data is available at a socket. */
+	__SYS_SIGURG = 25,
+	/* Virtual timer expired. */
+	__SYS_SIGVTALRM = 26,
+	/* CPU time limit exceeded. */
+	__SYS_SIGXCPU = 27,
+	/* File size limit exceeded. */
+	__SYS_SIGXFSZ = 28,
+
+	/**
+	 * Reserved
+	 * These are just to match Linux's signal numbers.
+	 */
+	__SYS_SIGCOMP1 = 29,
+	__SYS_SIGCOMP2 = 30,
+	__SYS_SIGCOMP3 = 31,
+
+	/* Real-time signals. */
+	__SYS_SIGRTMIN = 32,
+	__SYS_SIGRT_1 = 33,
+	__SYS_SIGRT_2 = 34,
+	__SYS_SIGRT_3 = 35,
+	__SYS_SIGRT_4 = 36,
+	__SYS_SIGRT_5 = 37,
+	__SYS_SIGRT_6 = 38,
+	__SYS_SIGRT_7 = 39,
+	__SYS_SIGRT_8 = 40,
+	__SYS_SIGRT_9 = 41,
+	__SYS_SIGRT_10 = 42,
+	__SYS_SIGRT_11 = 43,
+	__SYS_SIGRT_12 = 44,
+	__SYS_SIGRT_13 = 45,
+	__SYS_SIGRT_14 = 46,
+	__SYS_SIGRT_15 = 47,
+	__SYS_SIGRT_16 = 48,
+	__SYS_SIGRT_17 = 49,
+	__SYS_SIGRT_18 = 50,
+	__SYS_SIGRT_19 = 51,
+	__SYS_SIGRT_20 = 52,
+	__SYS_SIGRT_21 = 53,
+	__SYS_SIGRT_22 = 54,
+	__SYS_SIGRT_23 = 55,
+	__SYS_SIGRT_24 = 56,
+	__SYS_SIGRT_25 = 57,
+	__SYS_SIGRT_26 = 58,
+	__SYS_SIGRT_27 = 59,
+	__SYS_SIGRT_28 = 60,
+	__SYS_SIGRT_29 = 61,
+	__SYS_SIGRT_30 = 62,
+	__SYS_SIGRT_31 = 63,
+	__SYS_SIGRTMAX = 64,
+
+	/* Maximum signal number. */
+	__SYS_SIGNAL_MAX = __SYS_SIGRTMAX
+} signal_t;
+
+typedef enum
+{
+	/** Terminate the process. */
+	__SYS_SIG_TERM = 0,
+	/** Ignore the signal. */
+	__SYS_SIG_IGN = 1,
+	/** Continue the process. */
+	__SYS_SIG_CONT = 2,
+	/** Stop the process. */
+	__SYS_SIG_STOP = 3,
+	/** Dump core. */
+	__SYS_SIG_CORE = 4
+} signal_disposition_t;
+
+typedef enum
+{
+	__SYS_SIG_BLOCK = 0,
+	__SYS_SIG_UNBLOCK = 1,
+	__SYS_SIG_SETMASK = 2
+} signal_actions_t;
+
+typedef enum
+{
+	__SYS_SIG_ERR = -1,
+	__SYS_SIG_DFL = 0,
+	___SYS_SIG_IGN = 1
+} signal_action_disposition_t;
+
+#ifndef __cplusplus
+_Static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not match");
+#else
+static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not match");
+#endif
+
 typedef int __SYS_clockid_t;
 typedef unsigned int __SYS_socklen_t;
 

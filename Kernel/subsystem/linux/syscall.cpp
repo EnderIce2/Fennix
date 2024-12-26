@@ -366,8 +366,8 @@ const char *rlimitStr[] = {
 static const struct
 {
 	int linuxSignal;
-	Signals nativeSignal;
-	SignalDispositions nativeDisposition;
+	signal_t nativeSignal;
+	signal_disposition_t nativeDisposition;
 } signalMapping[] = {
 	{linux_SIGHUP, SIGHUP, SIG_TERM},
 	{linux_SIGINT, SIGINT, SIG_TERM},
@@ -535,7 +535,7 @@ inline intptr_t ConvertErrnoToLinux(auto err)
 	return -ret;
 }
 
-int ConvertSignalToLinux(Signals sig)
+int ConvertSignalToLinux(signal_t sig)
 {
 	if (sig >= SIGRTMIN && sig <= SIGRTMAX)
 		return sig; /* We ignore for now */
@@ -552,13 +552,13 @@ int ConvertSignalToLinux(Signals sig)
 	}
 	debug("Unknown signal %d", sig);
 	// assert(!"Unknown signal");
-	return SIG_NULL;
+	return SIGNULL;
 }
 
-Signals ConvertSignalToNative(int sig)
+signal_t ConvertSignalToNative(int sig)
 {
 	if (sig >= linux_SIGRTMIN && sig <= linux_SIGRTMAX)
-		return (Signals)sig; /* We ignore for now */
+		return (signal_t)sig; /* We ignore for now */
 
 	foreach (auto &mapping in signalMapping)
 	{
@@ -572,7 +572,7 @@ Signals ConvertSignalToNative(int sig)
 	}
 	debug("Unknown signal %d", sig);
 	// assert(!"Unknown signal");
-	return SIG_NULL;
+	return SIGNULL;
 }
 
 unsigned long ConvertMaskToNative(unsigned long mask)
@@ -583,7 +583,7 @@ unsigned long ConvertMaskToNative(unsigned long mask)
 		if (mask & (1ul << i))
 		{
 			int sig = ConvertSignalToNative(i + 1);
-			if (unlikely(sig == SIG_NULL))
+			if (unlikely(sig == SIGNULL))
 				continue;
 			ret |= 1ul << (sig - 1);
 		}
@@ -605,8 +605,8 @@ unsigned long ConvertMaskToLinux(unsigned long mask)
 	{
 		if (mask & (1ul << i))
 		{
-			int sig = ConvertSignalToLinux((Signals)(i + 1));
-			if (unlikely(sig == SIG_NULL))
+			int sig = ConvertSignalToLinux((signal_t)(i + 1));
+			if (unlikely(sig == SIGNULL))
 				continue;
 			ret |= 1ul << (sig - 1);
 		}
@@ -1881,8 +1881,8 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 					bool ProcessSignaled = true;
 					bool CoreDumped = true;
 					int TermSignal = child->Signals.GetLastSignal();
-					TermSignal = ConvertSignalToLinux((Signals)TermSignal);
-					assert(TermSignal != SIG_NULL);
+					TermSignal = ConvertSignalToLinux((signal_t)TermSignal);
+					assert(TermSignal != SIGNULL);
 
 					debug("Process returned %d", ExitStatus);
 
@@ -2050,8 +2050,8 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 	if (pid == 0)
 	{
 		bool found = false;
-		Signals nSig = ConvertSignalToNative(sig);
-		assert(nSig != SIG_NULL);
+		signal_t nSig = ConvertSignalToNative(sig);
+		assert(nSig != SIGNULL);
 		foreach (auto proc in pcb->GetContext()->GetProcessList())
 		{
 			if (proc->Security.ProcessGroupID == thisProcess->Security.ProcessGroupID)
@@ -2078,8 +2078,8 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 		return -linux_ENOSYS;
 	}
 
-	Signals nSig = ConvertSignalToNative(sig);
-	assert(nSig != SIG_NULL);
+	signal_t nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIGNULL);
 	return ConvertErrnoToLinux(pcb->SendSignal(nSig));
 }
 
@@ -2676,8 +2676,8 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 
 	if (pOldact)
 	{
-		Signals nSig = ConvertSignalToNative(signum);
-		assert(nSig != SIG_NULL);
+		signal_t nSig = ConvertSignalToNative(signum);
+		assert(nSig != SIGNULL);
 
 		SignalAction nSA{};
 		SetSigActToNative(pOldact, &nSA);
@@ -2696,8 +2696,8 @@ static int linux_sigaction(SysFrm *, int signum, const k_sigaction *act,
 			return -linux_EINVAL;
 		}
 
-		Signals nSig = ConvertSignalToNative(signum);
-		assert(nSig != SIG_NULL);
+		signal_t nSig = ConvertSignalToNative(signum);
+		assert(nSig != SIGNULL);
 
 		SignalAction nSA{};
 		SetSigActToNative(pAct, &nSA);
@@ -2778,8 +2778,8 @@ static int linux_tkill(SysFrm *, int tid, int sig)
 	if (!tcb)
 		return -linux_ESRCH;
 
-	Signals nSig = ConvertSignalToNative(sig);
-	assert(nSig != SIG_NULL);
+	signal_t nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIGNULL);
 	return ConvertErrnoToLinux(tcb->SendSignal(nSig));
 }
 
@@ -3074,8 +3074,8 @@ static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 			return -linux_ESRCH;
 	}
 
-	Signals nSig = ConvertSignalToNative(sig);
-	assert(nSig != SIG_NULL);
+	signal_t nSig = ConvertSignalToNative(sig);
+	assert(nSig != SIGNULL);
 	return ConvertErrnoToLinux(tcb->SendSignal(nSig));
 }
 

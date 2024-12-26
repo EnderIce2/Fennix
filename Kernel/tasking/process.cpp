@@ -59,7 +59,7 @@ namespace Tasking
 
 	int PCB::SendSignal(int sig)
 	{
-		return this->Signals.SendSignal((enum Signals)sig);
+		return this->Signals.SendSignal((signal_t)sig);
 	}
 
 	void PCB::SetState(TaskState state)

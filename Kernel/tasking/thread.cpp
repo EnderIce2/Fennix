@@ -64,7 +64,7 @@ namespace Tasking
 {
 	int TCB::SendSignal(int sig)
 	{
-		return this->Parent->Signals.SendSignal((enum Signals)sig, {0}, this->ID);
+		return this->Parent->Signals.SendSignal((signal_t)sig, {0}, this->ID);
 	}
 
 	void TCB::SetState(TaskState state)

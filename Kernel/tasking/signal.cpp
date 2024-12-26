@@ -112,8 +112,8 @@ extern "C" uintptr_t _sig_linux_trampoline_start, _sig_linux_trampoline_end;
 
 static const struct
 {
-	Signals Signal;
-	SignalDispositions Disposition;
+	signal_t Signal;
+	signal_disposition_t Disposition;
 } SignalDisposition[] = {
 	{SIGHUP, SIG_TERM},
 	{SIGINT, SIG_TERM},
@@ -181,7 +181,7 @@ static const struct
 	{SIGRTMAX, SIG_IGN},
 };
 
-SignalDispositions GetDefaultSignalDisposition(Signals sig)
+signal_disposition_t GetDefaultSignalDisposition(signal_t sig)
 {
 	foreach (auto var in SignalDisposition)
 	{
@@ -194,7 +194,7 @@ SignalDispositions GetDefaultSignalDisposition(Signals sig)
 }
 
 /* subsystem/linux/syscall.cpp */
-extern int ConvertSignalToLinux(Signals sig);
+extern int ConvertSignalToLinux(signal_t sig);
 
 namespace Tasking
 {
@@ -203,7 +203,7 @@ namespace Tasking
 		return ((PCB *)ctx)->Info.Compatibility == Linux;
 	}
 
-	int Signal::MakeExitCode(Signals sig)
+	int Signal::MakeExitCode(signal_t sig)
 	{
 		if (this->LinuxSig())
 			return 128 + ConvertSignalToLinux(sig);
@@ -266,7 +266,7 @@ namespace Tasking
 
 	/* ------------------------------------------------------ */
 
-	int Signal::AddWatcher(Signal *who, Signals sig)
+	int Signal::AddWatcher(Signal *who, signal_t sig)
 	{
 		SignalInfo info;
 		info.sig = sig;
@@ -277,7 +277,7 @@ namespace Tasking
 		return 0;
 	}
 
-	int Signal::RemoveWatcher(Signal *who, Signals sig)
+	int Signal::RemoveWatcher(Signal *who, signal_t sig)
 	{
 		SmartLock(SignalLock);
 		forItr(itr, Watchers)
@@ -292,14 +292,14 @@ namespace Tasking
 		return -ENOENT;
 	}
 
-	int Signal::AddSignal(Signals sig, union sigval val, pid_t tid)
+	int Signal::AddSignal(signal_t sig, union sigval val, pid_t tid)
 	{
 		SignalInfo info{.sig = sig, .val = val, .tid = tid};
 		Queue.push_back(info);
 		return 0;
 	}
 
-	int Signal::RemoveSignal(Signals sig)
+	int Signal::RemoveSignal(signal_t sig)
 	{
 		size_t n = Queue.remove_if([sig](SignalInfo &info)
 								   { return info.sig == sig; });
@@ -332,8 +332,8 @@ namespace Tasking
 				continue;
 			}
 
-			assert(sa[itr->sig].sa_handler.Disposition != SAD_IGN);
-			assert(sa[itr->sig].sa_handler.Disposition != SAD_DFL);
+			assert(sa[itr->sig].sa_handler.Disposition != SIG_IGN);
+			assert(sa[itr->sig].sa_handler.Disposition != SIG_DFL);
 
 			Queue.erase(itr);
 			debug("Signal %s is available", sigStr[itr->sig]);
@@ -357,7 +357,7 @@ namespace Tasking
 
 		SmartLock(SignalLock);
 		SignalInfo sigI = GetAvailableSignal(thread);
-		if (sigI.sig == SIG_NULL)
+		if (sigI.sig == SIGNULL)
 			return false;
 
 		uintptr_t _p_rsp = ((PCB *)ctx)->PageTable->Get(tf->rsp);
@@ -398,7 +398,7 @@ namespace Tasking
 
 		assert(!((uintptr_t)pRsp & 0xF));
 
-		int cSig = LinuxSig() ? ConvertSignalToLinux((Signals)sigI.sig) : sigI.sig;
+		int cSig = LinuxSig() ? ConvertSignalToLinux((signal_t)sigI.sig) : sigI.sig;
 
 #ifdef DEBUG
 		DumpData("Stack Data", (void *)pRsp,
@@ -487,7 +487,7 @@ namespace Tasking
 		/* Return because we will restore at sysretq */
 	}
 
-	int Signal::SetAction(Signals sig, const SignalAction *act)
+	int Signal::SetAction(signal_t sig, const SignalAction *act)
 	{
 		SmartLock(SignalLock);
 		if ((size_t)sig > sizeof(sa) / sizeof(sa[0]))
@@ -496,7 +496,7 @@ namespace Tasking
 			return -EINVAL;
 		}
 
-		if ((long)act->sa_handler.Disposition == SAD_IGN)
+		if ((long)act->sa_handler.Disposition == SIG_IGN)
 		{
 			Disposition[sig] = SIG_IGN;
 			debug("Set disposition for %s to SIG_IGN", sigStr[sig]);
@@ -519,7 +519,7 @@ namespace Tasking
 			}
 		}
 
-		if ((long)act->sa_handler.Disposition == SAD_DFL)
+		if ((long)act->sa_handler.Disposition == SIG_DFL)
 		{
 			Disposition[sig] = GetDefaultSignalDisposition(sig);
 			debug("Set disposition for %s to %s (default)", sigStr[sig],
@@ -536,7 +536,7 @@ namespace Tasking
 		return 0;
 	}
 
-	int Signal::GetAction(Signals sig, SignalAction *act)
+	int Signal::GetAction(signal_t sig, SignalAction *act)
 	{
 		SmartLock(SignalLock);
 		if ((size_t)sig > sizeof(sa) / sizeof(sa[0]))
@@ -554,7 +554,7 @@ namespace Tasking
 		return 0;
 	}
 
-	int Signal::SendSignal(Signals sig, sigval val, pid_t tid)
+	int Signal::SendSignal(signal_t sig, sigval val, pid_t tid)
 	{
 		SmartLock(SignalLock);
 		PCB *pcb = (PCB *)ctx;
@@ -571,7 +571,7 @@ namespace Tasking
 				return -EINVAL;
 			}
 
-			if (sa[sig].sa_handler.Disposition == SAD_IGN)
+			if (sa[sig].sa_handler.Disposition == SIG_IGN)
 			{
 				debug("Ignoring signal %s", sigStr[sig]);
 				return 0;
@@ -706,13 +706,13 @@ namespace Tasking
 		return -EINTR;
 	}
 
-	int Signal::WaitSignal(Signals sig, union sigval *val)
+	int Signal::WaitSignal(signal_t sig, union sigval *val)
 	{
 		assert(!"WaitSignal not implemented");
 		return 0;
 	}
 
-	int Signal::WaitSignalTimeout(Signals sig, union sigval *val, uint64_t timeout)
+	int Signal::WaitSignalTimeout(signal_t sig, union sigval *val, uint64_t timeout)
 	{
 		assert(!"WaitSignalTimeout not implemented");
 		return 0;
@@ -733,7 +733,7 @@ namespace Tasking
 			for (int i = 1; i < SIGNAL_MAX; i++)
 				debug("%s: %s",
 					  sigStr[i],
-					  dispStr[Disposition[(Signals)i]]);
+					  dispStr[Disposition[(signal_t)i]]);
 		}
 #endif
 	}
