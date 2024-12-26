@@ -182,7 +182,49 @@ static int sys_execve(SysFrm *Frame, const char *pathname, char *const argv[], c
 static pid_t sys_getpid(SysFrm *Frame) { return -ENOSYS; }
 static pid_t sys_getppid(SysFrm *Frame) { return -ENOSYS; }
 static pid_t sys_waitpid(pid_t pid, int *wstatus, int options) { return -ENOSYS; }
-static int sys_kill(SysFrm *Frame, pid_t pid, int sig) { return -ENOSYS; }
+
+static int sys_kill(SysFrm *Frame, pid_t pid, int sig)
+{
+	PCB *pcb = thisProcess->GetContext()->GetProcessByID(pid);
+	if (!pcb)
+		return -ESRCH;
+
+	/* TODO: Check permissions */
+
+	if (sig == 0)
+		return 0;
+
+	if (pid == 0)
+	{
+		bool found = false;
+		foreach (auto proc in pcb->GetContext()->GetProcessList())
+		{
+			if (proc->Security.ProcessGroupID == thisProcess->Security.ProcessGroupID)
+			{
+				debug("Sending signal %d to %s(%d)", sig, proc->Name, proc->ID);
+				proc->SendSignal(sig);
+				found = true;
+			}
+		}
+		if (!found)
+			return -ESRCH;
+		return 0;
+	}
+
+	if (pid == -1)
+	{
+		fixme("Sending signal %d to all processes except init", sig);
+		return -ENOSYS;
+	}
+
+	if (pid < -1)
+	{
+		fixme("Sending signal %d to process group %d", sig, pid);
+		return -ENOSYS;
+	}
+
+	return pcb->SendSignal(sig);
+}
 
 static int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4)
 {
