@@ -1331,61 +1331,61 @@ typedef enum
 /* Initialization */
 
 /** @copydoc SYS_API_VERSION */
-#define call_api_version(version) syscall1(SYS_API_VERSION, version)
+#define call_api_version(version) syscall1(SYS_API_VERSION, (scarg)version)
 
 /* I/O */
 
 /** @copydoc SYS_READ */
-#define call_read(fd, buf, count) syscall3(SYS_READ, fd, buf, count)
+#define call_read(fd, buf, count) syscall3(SYS_READ, (scarg)fd, (scarg)buf, (scarg)count)
 
 /** @copydoc SYS_PREAD */
-#define call_pread(fd, buf, count, offset) syscall4(SYS_PREAD, fd, buf, count, offset)
+#define call_pread(fd, buf, count, offset) syscall4(SYS_PREAD, (scarg)fd, (scarg)buf, (scarg)count, (scarg)offset)
 
 /** @copydoc SYS_WRITE */
-#define call_write(fd, buf, count) syscall3(SYS_WRITE, fd, buf, count)
+#define call_write(fd, buf, count) syscall3(SYS_WRITE, (scarg)fd, (scarg)buf, (scarg)count)
 
 /** @copydoc SYS_PWRITE */
-#define call_pwrite(fd, buf, count, offset) syscall4(SYS_PWRITE, fd, buf, count, offset)
+#define call_pwrite(fd, buf, count, offset) syscall4(SYS_PWRITE, (scarg)fd, (scarg)buf, (scarg)count, (scarg)offset)
 
 /** @copydoc SYS_OPEN */
-#define call_open(pathname, flags, mode) syscall3(SYS_OPEN, pathname, flags, mode)
+#define call_open(pathname, flags, mode) syscall3(SYS_OPEN, (scarg)pathname, (scarg)flags, (scarg)mode)
 
 /** @copydoc SYS_CLOSE */
 #define call_close(fd) syscall1(SYS_CLOSE, fd)
 
 /** @copydoc SYS_IOCTL */
-#define call_ioctl(fd, request, argp) syscall3(SYS_IOCTL, fd, request, argp)
+#define call_ioctl(fd, request, argp) syscall3(SYS_IOCTL, (scarg)fd, (scarg)request, (scarg)argp)
 
 /* File Status */
 
 /** @copydoc SYS_STAT */
-#define call_stat(pathname, statbuf) syscall2(SYS_STAT, pathname, statbuf)
+#define call_stat(pathname, statbuf) syscall2(SYS_STAT, (scarg)pathname, (scarg)statbuf)
 
 /** @copydoc SYS_FSTAT */
-#define call_fstat(fd, statbuf) syscall2(SYS_FSTAT, fd, statbuf)
+#define call_fstat(fd, statbuf) syscall2(SYS_FSTAT, (scarg)fd, (scarg)statbuf)
 
 /** @copydoc SYS_LSTAT */
-#define call_lstat(pathname, statbuf) syscall2(SYS_LSTAT, pathname, statbuf)
+#define call_lstat(pathname, statbuf) syscall2(SYS_LSTAT, (scarg)pathname, (scarg)statbuf)
 
 /** @copydoc SYS_ACCESS */
-#define call_access(pathname, mode) syscall2(SYS_ACCESS, pathname, mode)
+#define call_access(pathname, mode) syscall2(SYS_ACCESS, (scarg)pathname, (scarg)mode)
 
 /** @copydoc SYS_TRUNCATE */
-#define call_truncate(pathname, length) syscall2(SYS_TRUNCATE, pathname, length)
+#define call_truncate(pathname, length) syscall2(SYS_TRUNCATE, (scarg)pathname, (scarg)length)
 
 /** @copydoc SYS_FTRUNCATE */
-#define call_ftruncate(fd, length) syscall2(SYS_FTRUNCATE, fd, length)
+#define call_ftruncate(fd, length) syscall2(SYS_FTRUNCATE, (scarg)fd, (scarg)length)
 
 /* Process Control */
 
 /** @copydoc SYS_EXIT */
-#define call_exit(status) syscall1(SYS_EXIT, status)
+#define call_exit(status) syscall1(SYS_EXIT, (scarg)status)
 
 /** @copydoc SYS_FORK */
 #define call_fork() syscall0(SYS_FORK)
 
 /** @copydoc SYS_EXECVE */
-#define call_execve(pathname, argv, envp) syscall3(SYS_EXECVE, pathname, argv, envp)
+#define call_execve(pathname, argv, envp) syscall3(SYS_EXECVE, (scarg)pathname, (scarg)argv, (scarg)envp)
 
 /** @copydoc SYS_GETPID */
 #define call_getpid() syscall0(SYS_GETPID)
@@ -1394,65 +1394,65 @@ typedef enum
 #define call_getppid() syscall0(SYS_GETPPID)
 
 /** @copydoc SYS_WAITPID */
-#define call_waitpid(pid, wstatus, options) syscall3(SYS_WAITPID, pid, wstatus, options)
+#define call_waitpid(pid, wstatus, options) syscall3(SYS_WAITPID, (scarg)pid, (scarg)wstatus, (scarg)options)
 
 /** @copydoc SYS_KILL */
-#define call_kill(pid, sig) syscall2(SYS_KILL, pid, sig)
+#define call_kill(pid, sig) syscall2(SYS_KILL, (scarg)pid, (scarg)sig)
 
 /** @copydoc SYS_PRCTL */
-#define call_prctl(option, arg1, arg2, arg3, arg4) syscall5(SYS_PRCTL, option, arg1, arg2, arg3, arg4)
+#define call_prctl(option, arg1, arg2, arg3, arg4) syscall5(SYS_PRCTL, (scarg)option, (scarg)arg1, (scarg)arg2, (scarg)arg3, (scarg)arg4)
 
 /* Memory */
 
 /** @copydoc SYS_BRK */
-#define call_brk(end_data) syscall1(SYS_BRK, end_data)
+#define call_brk(end_data) syscall1(SYS_BRK, (scarg)end_data)
 
 /** @copydoc SYS_MMAP */
-#define call_mmap(addr, length, prot, flags, fd, offset) syscall6(SYS_MMAP, addr, length, prot, flags, fd, offset)
+#define call_mmap(addr, length, prot, flags, fd, offset) syscall6(SYS_MMAP, (scarg)addr, (scarg)length, (scarg)prot, (scarg)flags, (scarg)fd, (scarg)offset)
 
 /** @copydoc SYS_MUNMAP */
-#define call_munmap(addr, length) syscall2(SYS_MUNMAP, addr, length)
+#define call_munmap(addr, length) syscall2(SYS_MUNMAP, (scarg)addr, (scarg)length)
 
 /** @copydoc SYS_MPROTECT */
-#define call_mprotect(addr, length, prot) syscall3(SYS_MPROTECT, addr, length, prot)
+#define call_mprotect(addr, length, prot) syscall3(SYS_MPROTECT, (scarg)addr, (scarg)length, (scarg)prot)
 
 /** @copydoc SYS_MADVISE */
-#define call_madvise(addr, length, advice) syscall3(SYS_MADVISE, addr, length, advice)
+#define call_madvise(addr, length, advice) syscall3(SYS_MADVISE, (scarg)addr, (scarg)length, (scarg)advice)
 
 /* Communication */
 
 /** @copydoc SYS_PIPE */
-#define call_pipe(pipefd) syscall1(SYS_PIPE, pipefd)
+#define call_pipe(pipefd) syscall1(SYS_PIPE, (scarg)pipefd)
 
 /** @copydoc SYS_DUP */
-#define call_dup(oldfd) syscall1(SYS_DUP, oldfd)
+#define call_dup(oldfd) syscall1(SYS_DUP, (scarg)oldfd)
 
 /** @copydoc SYS_DUP2 */
-#define call_dup2(oldfd, newfd) syscall2(SYS_DUP2, oldfd, newfd)
+#define call_dup2(oldfd, newfd) syscall2(SYS_DUP2, (scarg)oldfd, (scarg)newfd)
 
 /** @copydoc SYS_SOCKET */
-#define call_socket(domain, type, protocol) syscall3(SYS_SOCKET, domain, type, protocol)
+#define call_socket(domain, type, protocol) syscall3(SYS_SOCKET, (scarg)domain, (scarg)type, (scarg)protocol)
 
 /** @copydoc SYS_BIND */
-#define call_bind(sockfd, addr, addrlen) syscall3(SYS_BIND, sockfd, addr, addrlen)
+#define call_bind(sockfd, addr, addrlen) syscall3(SYS_BIND, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
 
 /** @copydoc SYS_CONNECT */
-#define call_connect(sockfd, addr, addrlen) syscall3(SYS_CONNECT, sockfd, addr, addrlen)
+#define call_connect(sockfd, addr, addrlen) syscall3(SYS_CONNECT, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
 
 /** @copydoc SYS_LISTEN */
-#define call_listen(sockfd, backlog) syscall2(SYS_LISTEN, sockfd, backlog)
+#define call_listen(sockfd, backlog) syscall2(SYS_LISTEN, (scarg)sockfd, (scarg)backlog)
 
 /** @copydoc SYS_ACCEPT */
-#define call_accept(sockfd, addr, addrlen) syscall3(SYS_ACCEPT, sockfd, addr, addrlen)
+#define call_accept(sockfd, addr, addrlen) syscall3(SYS_ACCEPT, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
 
 /** @copydoc SYS_SEND */
-#define call_send(sockfd, buf, len, flags) syscall4(SYS_SEND, sockfd, buf, len, flags)
+#define call_send(sockfd, buf, len, flags) syscall4(SYS_SEND, (scarg)sockfd, (scarg)buf, (scarg)len, (scarg)flags)
 
 /** @copydoc SYS_RECV */
-#define call_recv(sockfd, buf, len, flags) syscall4(SYS_RECV, sockfd, buf, len, flags)
+#define call_recv(sockfd, buf, len, flags) syscall4(SYS_RECV, (scarg)sockfd, (scarg)buf, (scarg)len, (scarg)flags)
 
 /** @copydoc SYS_SHUTDOWN */
-#define call_shutdown(sockfd, how) syscall2(SYS_SHUTDOWN, sockfd, how)
+#define call_shutdown(sockfd, how) syscall2(SYS_SHUTDOWN, (scarg)sockfd, (scarg)how)
 
 /* Time */
 
@@ -1460,32 +1460,32 @@ typedef enum
 #define call_time(t) syscall1(SYS_TIME, t)
 
 /** @copydoc SYS_CLOCK_GETTIME */
-#define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, clockid, tp)
+#define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, (scarg)clockid, (scarg)tp)
 
 /** @copydoc SYS_CLOCK_SETTIME */
-#define call_clock_settime(clockid, tp) syscall2(SYS_CLOCK_SETTIME, clockid, tp)
+#define call_clock_settime(clockid, tp) syscall2(SYS_CLOCK_SETTIME, (scarg)clockid, (scarg)tp)
 
 /** @copydoc SYS_NANOSLEEP */
-#define call_nanosleep(req, rem) syscall2(SYS_NANOSLEEP, req, rem)
+#define call_nanosleep(req, rem) syscall2(SYS_NANOSLEEP, (scarg)req, (scarg)rem)
 
 /* Miscellaneous */
 
 /** @copydoc SYS_GETCWD */
-#define call_getcwd(buf, size) syscall2(SYS_GETCWD, buf, size)
+#define call_getcwd(buf, size) syscall2(SYS_GETCWD, (scarg)buf, (scarg)size)
 
 /** @copydoc SYS_CHDIR */
-#define call_chdir(path) syscall1(SYS_CHDIR, path)
+#define call_chdir(path) syscall1(SYS_CHDIR, (scarg)path)
 
 /** @copydoc SYS_MKDIR */
-#define call_mkdir(path, mode) syscall2(SYS_MKDIR, path, mode)
+#define call_mkdir(path, mode) syscall2(SYS_MKDIR, (scarg)path, (scarg)mode)
 
 /** @copydoc SYS_RMDIR */
-#define call_rmdir(path) syscall1(SYS_RMDIR, path)
+#define call_rmdir(path) syscall1(SYS_RMDIR, (scarg)path)
 
 /** @copydoc SYS_UNLINK */
-#define call_unlink(pathname) syscall1(SYS_UNLINK, pathname)
+#define call_unlink(pathname) syscall1(SYS_UNLINK, (scarg)pathname)
 
 /** @copydoc SYS_RENAME */
-#define call_rename(oldpath, newpath) syscall2(SYS_RENAME, oldpath, newpath)
+#define call_rename(oldpath, newpath) syscall2(SYS_RENAME, (scarg)oldpath, (scarg)newpath)
 
 #endif // !__FENNIX_API_SYSCALLS_LIST_H__
