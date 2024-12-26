@@ -177,6 +177,15 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 
 #pragma endregion Syscall Wrappers
 
+/**
+ * @brief NULL pointer
+ *
+ * This is a pointer to address 0, which is reserved and cannot be dereferenced.
+ *
+ * @note This macro is defined only for this documentation.
+ */
+#define __SYS_NULL ((void *)0)
+
 typedef enum
 {
 	__SYS_PROT_READ = 0x1,
@@ -214,6 +223,162 @@ typedef enum
 	__SYS_W_OK = 2,
 	__SYS_X_OK = 3
 } access_flags_t;
+
+typedef enum
+{
+	__SYS_GET_GS = 0,
+	__SYS_SET_GS = 1,
+	__SYS_GET_FS = 2,
+	__SYS_SET_FS = 3,
+} prctl_options_t;
+
+typedef enum
+{
+	__SYS_SEEK_SET = 0,
+	__SYS_SEEK_CUR = 1,
+	__SYS_SEEK_END = 2
+} seek_whence_t;
+
+typedef enum
+{
+	__SYS_SIGNULL = 0,
+	/* Process abort signal. */
+	__SYS_SIGABRT = 1,
+	/* Alarm clock. */
+	__SYS_SIGALRM = 2,
+	/* Access to an undefined portion of a memory object. */
+	__SYS_SIGBUS = 3,
+	/* Child process terminated, stopped, or continued. */
+	__SYS_SIGCHLD = 4,
+	/* Continue executing, if stopped. */
+	__SYS_SIGCONT = 5,
+	/* Erroneous arithmetic operation. */
+	__SYS_SIGFPE = 6,
+	/* Hangup. */
+	__SYS_SIGHUP = 7,
+	/* Illegal instruction. */
+	__SYS_SIGILL = 8,
+	/* Terminal interrupt signal. */
+	__SYS_SIGINT = 9,
+	/* Kill (cannot be caught or ignored). */
+	__SYS_SIGKILL = 10,
+	/* Write on a pipe with no one to read it. */
+	__SYS_SIGPIPE = 11,
+	/* Terminal quit signal. */
+	__SYS_SIGQUIT = 12,
+	/* Invalid memory reference. */
+	__SYS_SIGSEGV = 13,
+	/* Stop executing (cannot be caught or ignored). */
+	__SYS_SIGSTOP = 14,
+	/* Termination signal. */
+	__SYS_SIGTERM = 15,
+	/* Terminal stop signal. */
+	__SYS_SIGTSTP = 16,
+	/* Background process attempting read. */
+	__SYS_SIGTTIN = 17,
+	/* Background process attempting write. */
+	__SYS_SIGTTOU = 18,
+	/* User-defined signal 1. */
+	__SYS_SIGUSR1 = 19,
+	/* User-defined signal 2. */
+	__SYS_SIGUSR2 = 20,
+	/* Pollable event. */
+	__SYS_SIGPOLL = 21,
+	/* Profiling timer expired. */
+	__SYS_SIGPROF = 22,
+	/* Bad system call. */
+	__SYS_SIGSYS = 23,
+	/* Trace/breakpoint trap. */
+	__SYS_SIGTRAP = 24,
+	/* High bandwidth data is available at a socket. */
+	__SYS_SIGURG = 25,
+	/* Virtual timer expired. */
+	__SYS_SIGVTALRM = 26,
+	/* CPU time limit exceeded. */
+	__SYS_SIGXCPU = 27,
+	/* File size limit exceeded. */
+	__SYS_SIGXFSZ = 28,
+
+	/**
+	 * Reserved
+	 * These are just to match Linux's signal numbers.
+	 */
+	__SYS_SIGCOMP1 = 29,
+	__SYS_SIGCOMP2 = 30,
+	__SYS_SIGCOMP3 = 31,
+
+	/* Real-time signals. */
+	__SYS_SIGRTMIN = 32,
+	__SYS_SIGRT_1 = 33,
+	__SYS_SIGRT_2 = 34,
+	__SYS_SIGRT_3 = 35,
+	__SYS_SIGRT_4 = 36,
+	__SYS_SIGRT_5 = 37,
+	__SYS_SIGRT_6 = 38,
+	__SYS_SIGRT_7 = 39,
+	__SYS_SIGRT_8 = 40,
+	__SYS_SIGRT_9 = 41,
+	__SYS_SIGRT_10 = 42,
+	__SYS_SIGRT_11 = 43,
+	__SYS_SIGRT_12 = 44,
+	__SYS_SIGRT_13 = 45,
+	__SYS_SIGRT_14 = 46,
+	__SYS_SIGRT_15 = 47,
+	__SYS_SIGRT_16 = 48,
+	__SYS_SIGRT_17 = 49,
+	__SYS_SIGRT_18 = 50,
+	__SYS_SIGRT_19 = 51,
+	__SYS_SIGRT_20 = 52,
+	__SYS_SIGRT_21 = 53,
+	__SYS_SIGRT_22 = 54,
+	__SYS_SIGRT_23 = 55,
+	__SYS_SIGRT_24 = 56,
+	__SYS_SIGRT_25 = 57,
+	__SYS_SIGRT_26 = 58,
+	__SYS_SIGRT_27 = 59,
+	__SYS_SIGRT_28 = 60,
+	__SYS_SIGRT_29 = 61,
+	__SYS_SIGRT_30 = 62,
+	__SYS_SIGRT_31 = 63,
+	__SYS_SIGRTMAX = 64,
+
+	/* Maximum signal number. */
+	__SYS_SIGNAL_MAX = __SYS_SIGRTMAX
+} signal_t;
+
+typedef enum
+{
+	/** Terminate the process. */
+	__SYS_SIG_TERM = 0,
+	/** Ignore the signal. */
+	__SYS_SIG_IGN = 1,
+	/** Continue the process. */
+	__SYS_SIG_CONT = 2,
+	/** Stop the process. */
+	__SYS_SIG_STOP = 3,
+	/** Dump core. */
+	__SYS_SIG_CORE = 4
+} signal_disposition_t;
+
+typedef enum
+{
+	__SYS_SIG_BLOCK = 0,
+	__SYS_SIG_UNBLOCK = 1,
+	__SYS_SIG_SETMASK = 2
+} signal_actions_t;
+
+typedef enum
+{
+	__SYS_SIG_ERR = -1,
+	__SYS_SIG_DFL = 0,
+	___SYS_SIG_IGN = 1
+} signal_action_disposition_t;
+
+#ifndef __cplusplus
+_Static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not match");
+#else
+static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not match");
+#endif
 
 typedef int __SYS_clockid_t;
 typedef unsigned int __SYS_socklen_t;
@@ -265,7 +430,6 @@ typedef enum
 	 * @param fd File descriptor to read from
 	 * @param buf Buffer where data will be stored
 	 * @param count Maximum number of bytes to read
-	 * @param offset Offset in the file
 	 *
 	 * @return
 	 * - Number of bytes read on success
@@ -309,7 +473,6 @@ typedef enum
 	 * @param fd File descriptor to write to
 	 * @param buf Buffer containing data to write
 	 * @param count Number of bytes to write
-	 * @param offset Offset in the file
 	 *
 	 * @return
 	 * - Number of bytes written on success
@@ -351,18 +514,18 @@ typedef enum
 	 * @param pathname Path to the file
 	 * @param flags Flags for file access mode\n
 	 *              Supported values:
-	 *              - #O_RDONLY: Open file for reading only.
-	 *              - #O_WRONLY: Open file for writing only.
-	 *              - #O_RDWR: Open file for reading and writing.
-	 *              - #O_APPEND: Append data to the end of file.
-	 *              - #O_CREAT: Create file if it does not exist.
-	 *              - #O_DSYNC:
-	 *              - #O_EXCL:
-	 *              - #O_NOCTTY:
-	 *              - #O_NONBLOCK:
-	 *              - #O_RSYNC:
-	 *              - #O_SYNC:
-	 *              - #O_TRUNC: Truncate file to zero length.
+	 *              - #__SYS_O_RDONLY: Open file for reading only.
+	 *              - #__SYS_O_WRONLY: Open file for writing only.
+	 *              - #__SYS_O_RDWR: Open file for reading and writing.
+	 *              - #__SYS_O_APPEND: Append data to the end of file.
+	 *              - #__SYS_O_CREAT: Create file if it does not exist.
+	 *              - #__SYS_O_DSYNC:
+	 *              - #__SYS_O_EXCL:
+	 *              - #__SYS_O_NOCTTY:
+	 *              - #__SYS_O_NONBLOCK:
+	 *              - #__SYS_O_RSYNC:
+	 *              - #__SYS_O_SYNC:
+	 *              - #__SYS_O_TRUNC: Truncate file to zero length.
 	 * @param mode Permissions for newly created file (if applicable)
 	 *
 	 * @return
@@ -393,13 +556,14 @@ typedef enum
 	 * @brief Control a device
 	 *
 	 * @code
-	 * int ioctl(int fd, unsigned long request, ...);
+	 * int ioctl(int fd, unsigned long request, void *argp);
 	 * @endcode
 	 *
 	 * @details Manipulates the underlying parameters of a device.
 	 *
 	 * @param fd File descriptor referring to the device
 	 * @param request Device-specific request code
+	 * @param argp Argument for the request
 	 *
 	 * @return
 	 * - #EOK on success
@@ -478,10 +642,10 @@ typedef enum
 	 * @param pathname Path to the file
 	 * @param mode Accessibility check mode\n
 	 *             Supported values:
-	 *             - #F_OK: Check if the file exists
-	 *             - #R_OK: Check if the file is readable
-	 *             - #W_OK: Check if the file is writable
-	 *             - #X_OK: Check if the file is executable
+	 *             - #__SYS_F_OK: Check if the file exists
+	 *             - #__SYS_R_OK: Check if the file is readable
+	 *             - #__SYS_W_OK: Check if the file is writable
+	 *             - #__SYS_X_OK: Check if the file is executable
 	 *
 	 * @return
 	 * - #EOK on success
@@ -528,6 +692,46 @@ typedef enum
 	 * - #EINVAL if `length` is invalid
 	 */
 	SYS_FTRUNCATE,
+	/**
+	 * @brief Get the current file offset
+	 *
+	 * @code
+	 * off_t tell(int fd);
+	 * @endcode
+	 *
+	 * @details Returns the current file offset for the file referred to by `fd`.
+	 *
+	 * @param fd File descriptor
+	 *
+	 * @return
+	 * - Current file offset on success
+	 * - #EBADF if `fd` is not a valid file descriptor
+	 */
+	SYS_TELL,
+	/**
+	 * @brief Set the file offset
+	 *
+	 * @code
+	 * off_t seek(int fd, off_t offset, int whence);
+	 * @endcode
+	 *
+	 * @details Sets the file offset for the file referred to by `fd` to the
+	 * specified `offset` according to the directive `whence`.
+	 *
+	 * @param fd File descriptor
+	 * @param offset Offset to set
+	 * @param whence Directive for setting the offset\n
+	 *               Supported values:
+	 *               - #__SYS_SEEK_SET: Set the offset to `offset` bytes
+	 *               - #__SYS_SEEK_CUR: Set the offset to the current offset plus `offset`
+	 *               - #__SYS_SEEK_END: Set the offset to the size of the file plus `offset`
+	 *
+	 * @return
+	 * - New file offset on success
+	 * - #EBADF if `fd` is not a valid file descriptor
+	 * - #EINVAL if `whence` is invalid
+	 */
+	SYS_SEEK,
 
 	/* Process Control */
 
@@ -644,6 +848,27 @@ typedef enum
 	 * - #EINVAL if `sig` is invalid
 	 */
 	SYS_KILL,
+	/**
+	 * @brief Process/Thread Control
+	 *
+	 * @code
+	 * int prctl(prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4);
+	 * @endcode
+	 *
+	 * @details Perform various operations on a process or thread.
+	 *
+	 * @param option Operation to perform
+	 * @param arg1 Argument 1
+	 * @param arg2 Argument 2
+	 * @param arg3 Argument 3
+	 * @param arg4 Argument 4
+	 *
+	 * @return
+	 * - #EOK on success
+	 * - #EINVAL if the operation is invalid
+	 * - #EFAULT if one of the arguments is invalid
+	 */
+	SYS_PRCTL,
 
 	/* Memory */
 
@@ -677,16 +902,16 @@ typedef enum
 	 * @param length Length of the mapping
 	 * @param prot Desired memory protection\n
 	 *             Supported values:
-	 *             - #PROT_READ: Readable
-	 *             - #PROT_WRITE: Writable
-	 *             - #PROT_EXEC: Executable
-	 *             - #PROT_NONE: No access
+	 *             - #__SYS_PROT_READ: Readable
+	 *             - #__SYS_PROT_WRITE: Writable
+	 *             - #__SYS_PROT_EXEC: Executable
+	 *             - #__SYS_PROT_NONE: No access
 	 * @param flags Mapping options\n
 	 *             Supported values:
-	 *             - #MAP_SHARED: Share memory with other processes
-	 *             - #MAP_PRIVATE: Create a private copy of the file
-	 *             - #MAP_FIXED: Use `addr` as the starting address of the mapping
-	 *             - #MAP_ANONYMOUS: Create an anonymous mapping
+	 *             - #__SYS_MAP_SHARED: Share memory with other processes
+	 *             - #__SYS_MAP_PRIVATE: Create a private copy of the file
+	 *             - #__SYS_MAP_FIXED: Use `addr` as the starting address of the mapping
+	 *             - #__SYS_MAP_ANONYMOUS: Create an anonymous mapping
 	 * @param fd File descriptor for the file to map
 	 * @param offset Offset in the file to start the mapping
 	 *
@@ -975,7 +1200,7 @@ typedef enum
 	 *
 	 * @return
 	 * - Current time in seconds on success
-	 * - #NULL if `t` is NULL
+	 * - #__SYS_NULL if `t` is NULL
 	 */
 	SYS_TIME = 600,
 	/**
@@ -1046,7 +1271,7 @@ typedef enum
 	 *
 	 * @return
 	 * - Pointer to `buf` on success
-	 * - #NULL on error
+	 * - #__SYS_NULL on error
 	 */
 	SYS_GETCWD = 700,
 	/**
@@ -1149,5 +1374,171 @@ typedef enum
 	 */
 	SYS_MAX
 } syscalls_t;
+
+/* Initialization */
+
+/** @copydoc SYS_API_VERSION */
+#define call_api_version(version) syscall1(SYS_API_VERSION, (scarg)version)
+
+/* I/O */
+
+/** @copydoc SYS_READ */
+#define call_read(fd, buf, count) syscall3(SYS_READ, (scarg)fd, (scarg)buf, (scarg)count)
+
+/** @copydoc SYS_PREAD */
+#define call_pread(fd, buf, count, offset) syscall4(SYS_PREAD, (scarg)fd, (scarg)buf, (scarg)count, (scarg)offset)
+
+/** @copydoc SYS_WRITE */
+#define call_write(fd, buf, count) syscall3(SYS_WRITE, (scarg)fd, (scarg)buf, (scarg)count)
+
+/** @copydoc SYS_PWRITE */
+#define call_pwrite(fd, buf, count, offset) syscall4(SYS_PWRITE, (scarg)fd, (scarg)buf, (scarg)count, (scarg)offset)
+
+/** @copydoc SYS_OPEN */
+#define call_open(pathname, flags, mode) syscall3(SYS_OPEN, (scarg)pathname, (scarg)flags, (scarg)mode)
+
+/** @copydoc SYS_CLOSE */
+#define call_close(fd) syscall1(SYS_CLOSE, fd)
+
+/** @copydoc SYS_IOCTL */
+#define call_ioctl(fd, request, argp) syscall3(SYS_IOCTL, (scarg)fd, (scarg)request, (scarg)argp)
+
+/* File Status */
+
+/** @copydoc SYS_STAT */
+#define call_stat(pathname, statbuf) syscall2(SYS_STAT, (scarg)pathname, (scarg)statbuf)
+
+/** @copydoc SYS_FSTAT */
+#define call_fstat(fd, statbuf) syscall2(SYS_FSTAT, (scarg)fd, (scarg)statbuf)
+
+/** @copydoc SYS_LSTAT */
+#define call_lstat(pathname, statbuf) syscall2(SYS_LSTAT, (scarg)pathname, (scarg)statbuf)
+
+/** @copydoc SYS_ACCESS */
+#define call_access(pathname, mode) syscall2(SYS_ACCESS, (scarg)pathname, (scarg)mode)
+
+/** @copydoc SYS_TRUNCATE */
+#define call_truncate(pathname, length) syscall2(SYS_TRUNCATE, (scarg)pathname, (scarg)length)
+
+/** @copydoc SYS_FTRUNCATE */
+#define call_ftruncate(fd, length) syscall2(SYS_FTRUNCATE, (scarg)fd, (scarg)length)
+
+/** @copydoc SYS_TELL */
+#define call_tell(fd) syscall1(SYS_TELL, (scarg)fd)
+
+/** @copydoc SYS_SEEK */
+#define call_seek(fd, offset, whence) syscall3(SYS_SEEK, (scarg)fd, (scarg)offset, (scarg)whence)
+
+/* Process Control */
+
+/** @copydoc SYS_EXIT */
+#define call_exit(status) syscall1(SYS_EXIT, (scarg)status)
+
+/** @copydoc SYS_FORK */
+#define call_fork() syscall0(SYS_FORK)
+
+/** @copydoc SYS_EXECVE */
+#define call_execve(pathname, argv, envp) syscall3(SYS_EXECVE, (scarg)pathname, (scarg)argv, (scarg)envp)
+
+/** @copydoc SYS_GETPID */
+#define call_getpid() syscall0(SYS_GETPID)
+
+/** @copydoc SYS_GETPPID */
+#define call_getppid() syscall0(SYS_GETPPID)
+
+/** @copydoc SYS_WAITPID */
+#define call_waitpid(pid, wstatus, options) syscall3(SYS_WAITPID, (scarg)pid, (scarg)wstatus, (scarg)options)
+
+/** @copydoc SYS_KILL */
+#define call_kill(pid, sig) syscall2(SYS_KILL, (scarg)pid, (scarg)sig)
+
+/** @copydoc SYS_PRCTL */
+#define call_prctl(option, arg1, arg2, arg3, arg4) syscall5(SYS_PRCTL, (scarg)option, (scarg)arg1, (scarg)arg2, (scarg)arg3, (scarg)arg4)
+
+/* Memory */
+
+/** @copydoc SYS_BRK */
+#define call_brk(end_data) syscall1(SYS_BRK, (scarg)end_data)
+
+/** @copydoc SYS_MMAP */
+#define call_mmap(addr, length, prot, flags, fd, offset) syscall6(SYS_MMAP, (scarg)addr, (scarg)length, (scarg)prot, (scarg)flags, (scarg)fd, (scarg)offset)
+
+/** @copydoc SYS_MUNMAP */
+#define call_munmap(addr, length) syscall2(SYS_MUNMAP, (scarg)addr, (scarg)length)
+
+/** @copydoc SYS_MPROTECT */
+#define call_mprotect(addr, length, prot) syscall3(SYS_MPROTECT, (scarg)addr, (scarg)length, (scarg)prot)
+
+/** @copydoc SYS_MADVISE */
+#define call_madvise(addr, length, advice) syscall3(SYS_MADVISE, (scarg)addr, (scarg)length, (scarg)advice)
+
+/* Communication */
+
+/** @copydoc SYS_PIPE */
+#define call_pipe(pipefd) syscall1(SYS_PIPE, (scarg)pipefd)
+
+/** @copydoc SYS_DUP */
+#define call_dup(oldfd) syscall1(SYS_DUP, (scarg)oldfd)
+
+/** @copydoc SYS_DUP2 */
+#define call_dup2(oldfd, newfd) syscall2(SYS_DUP2, (scarg)oldfd, (scarg)newfd)
+
+/** @copydoc SYS_SOCKET */
+#define call_socket(domain, type, protocol) syscall3(SYS_SOCKET, (scarg)domain, (scarg)type, (scarg)protocol)
+
+/** @copydoc SYS_BIND */
+#define call_bind(sockfd, addr, addrlen) syscall3(SYS_BIND, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
+
+/** @copydoc SYS_CONNECT */
+#define call_connect(sockfd, addr, addrlen) syscall3(SYS_CONNECT, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
+
+/** @copydoc SYS_LISTEN */
+#define call_listen(sockfd, backlog) syscall2(SYS_LISTEN, (scarg)sockfd, (scarg)backlog)
+
+/** @copydoc SYS_ACCEPT */
+#define call_accept(sockfd, addr, addrlen) syscall3(SYS_ACCEPT, (scarg)sockfd, (scarg)addr, (scarg)addrlen)
+
+/** @copydoc SYS_SEND */
+#define call_send(sockfd, buf, len, flags) syscall4(SYS_SEND, (scarg)sockfd, (scarg)buf, (scarg)len, (scarg)flags)
+
+/** @copydoc SYS_RECV */
+#define call_recv(sockfd, buf, len, flags) syscall4(SYS_RECV, (scarg)sockfd, (scarg)buf, (scarg)len, (scarg)flags)
+
+/** @copydoc SYS_SHUTDOWN */
+#define call_shutdown(sockfd, how) syscall2(SYS_SHUTDOWN, (scarg)sockfd, (scarg)how)
+
+/* Time */
+
+/** @copydoc SYS_TIME */
+#define call_time(t) syscall1(SYS_TIME, t)
+
+/** @copydoc SYS_CLOCK_GETTIME */
+#define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, (scarg)clockid, (scarg)tp)
+
+/** @copydoc SYS_CLOCK_SETTIME */
+#define call_clock_settime(clockid, tp) syscall2(SYS_CLOCK_SETTIME, (scarg)clockid, (scarg)tp)
+
+/** @copydoc SYS_NANOSLEEP */
+#define call_nanosleep(req, rem) syscall2(SYS_NANOSLEEP, (scarg)req, (scarg)rem)
+
+/* Miscellaneous */
+
+/** @copydoc SYS_GETCWD */
+#define call_getcwd(buf, size) syscall2(SYS_GETCWD, (scarg)buf, (scarg)size)
+
+/** @copydoc SYS_CHDIR */
+#define call_chdir(path) syscall1(SYS_CHDIR, (scarg)path)
+
+/** @copydoc SYS_MKDIR */
+#define call_mkdir(path, mode) syscall2(SYS_MKDIR, (scarg)path, (scarg)mode)
+
+/** @copydoc SYS_RMDIR */
+#define call_rmdir(path) syscall1(SYS_RMDIR, (scarg)path)
+
+/** @copydoc SYS_UNLINK */
+#define call_unlink(pathname) syscall1(SYS_UNLINK, (scarg)pathname)
+
+/** @copydoc SYS_RENAME */
+#define call_rename(oldpath, newpath) syscall2(SYS_RENAME, (scarg)oldpath, (scarg)newpath)
 
 #endif // !__FENNIX_API_SYSCALLS_LIST_H__
