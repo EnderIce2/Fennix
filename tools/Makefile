@@ -2,7 +2,7 @@ WORKING_DIR = $(CURDIR)
 CROSS_DIR=$(WORKING_DIR)/cross
 export PATH := $(CROSS_DIR):$(PATH)
 
-QEMU_VERSION = 9.1.2
+QEMU_VERSION = 9.2.0
 
 default:
 	$(error Please specify a target)
@@ -11,6 +11,9 @@ all: do_tools do_limine __clone_all do_binutils do_gcc do_qemu
 
 clean:
 	rm -f rep ep
+	rm -rf binutils-gdb
+	rm -rf gcc
+	rm -rf qemu
 
 do_tools:
 	gcc -w ReadEthernetPackets.c -o rep
@@ -27,12 +30,14 @@ endif
 
 __clone_qemu:
 ifeq ("$(wildcard ./qemu)", "")
-	wget https://download.qemu.org/qemu-${QEMU_VERSION}.tar.xz
-	tar xvJf qemu-${QEMU_VERSION}.tar.xz
-	rm -f qemu-${QEMU_VERSION}.tar.xz
-	mv qemu-${QEMU_VERSION} qemu
+	git clone --depth 1 -b v${QEMU_VERSION} --single-branch https://gitlab.com/qemu-project/qemu.git qemu
 else
-	$(info > TOOLS: Skipping downloading qemu because directory already exists.)
+	$(info > TOOLS: Reseting qemu...)
+	cd qemu && \
+	git fetch origin && \
+	git reset --hard v${QEMU_VERSION} && \
+	git clean -dfx
+	$(info > TOOLS: Operation completed for qemu)
 endif
 
 .PHONY: all clean __clone_binutils __clone_gcc __prep_cross __patch_cross __patch_cross_binutils __patch_cross_gcc
@@ -74,6 +79,10 @@ __patch_cross_gcc: __clone_gcc
 	$(info > TOOLS: Running autoconf for gcc/libstdc++-v3)
 	cd gcc/libstdc++-v3 && autoconf
 
+__patch_cross_qemu: __clone_qemu
+	$(info > TOOLS: Patching qemu)
+	cd qemu && git apply ../qemu.patch
+
 __patch_cross: __patch_cross_binutils __patch_cross_gcc
 
 __prep_cross:
@@ -86,6 +95,8 @@ __clone_all_no_qemu: __clone_binutils __clone_gcc
 __clone_all: __clone_qemu __clone_all_no_qemu
 
 do_qemu: __prep_cross
+	$(MAKE) __patch_cross_qemu
+	$(MAKE) __prep_cross
 	cd qemu && \
 	bash ./configure --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu \
 	--prefix="$(CROSS_DIR)" \
