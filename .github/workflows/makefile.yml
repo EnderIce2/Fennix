@@ -16,6 +16,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update System
+        run: sudo apt update
+
       - name: Install Doxygen
         run: sudo apt -y install doxygen make
 
