@@ -125,3 +125,179 @@ index 00000000000..1509ec7fe53
 +GENERATE_SHLIB_SCRIPT=yes
 +GENERATE_PIE_SCRIPT=yes
 +TEXT_START_ADDR=0x400000
+diff --git a/binutils/readelf.c b/binutils/readelf.c
+index 5d1cf9c3..671a8081 100644
+--- a/binutils/readelf.c
++++ b/binutils/readelf.c
+@@ -20909,6 +20909,30 @@ get_gnu_elf_note_type (unsigned e_type)
+     }
+ }
+ 
++static const char *
++get_fnx_elf_note_type (unsigned e_type)
++{
++  /* NB/ Keep this switch statement in sync with print_gnu_note ().  */
++  switch (e_type)
++    {
++    case NT_FNX_ABI_TAG:
++      return _("NT_FNX_ABI_TAG (ABI version tag)");
++    case NT_FNX_VERSION:
++      return _("NT_FNX_VERSION (version)");
++    case NT_FNX_BUILD_ID:
++      return _("NT_FNX_BUILD_ID (unique build ID bitstring)");
++    case NT_FNX_ARCH:
++      return _("NT_FNX_ARCH (architecture)");
++    default:
++      {
++	static char buff[64];
++
++	snprintf (buff, sizeof (buff), _("Unknown note type: (0x%08x)"), e_type);
++	return buff;
++      }
++    }
++}
++
+ static void
+ decode_x86_compat_isa (unsigned int bitmask)
+ {
+@@ -21646,6 +21670,91 @@ print_gnu_note (Filedata * filedata, Elf_Internal_Note *pnote)
+   return true;
+ }
+ 
++static bool
++print_fnx_note (Filedata * filedata, Elf_Internal_Note *pnote)
++{
++  /* NB/ Keep this switch statement in sync with get_fnx_elf_note_type ().  */
++  switch (pnote->type)
++    {
++    case NT_FNX_ABI_TAG:
++      {
++	unsigned int os, major, minor, subminor;
++	const char *osname;
++
++	/* PR 17531: file: 030-599401-0.004.  */
++	if (pnote->descsz < 16)
++	  {
++	    printf (_("    <corrupt GNU_ABI_TAG>\n"));
++	    break;
++	  }
++
++	os = byte_get ((unsigned char *) pnote->descdata, 4);
++	major = byte_get ((unsigned char *) pnote->descdata + 4, 4);
++	minor = byte_get ((unsigned char *) pnote->descdata + 8, 4);
++	subminor = byte_get ((unsigned char *) pnote->descdata + 12, 4);
++
++	switch (os)
++	  {
++	  case FNX_ABI_TAG_FENNIX:
++	    osname = "Fennix";
++	    break;
++	  default:
++	    osname = "Unknown";
++	    break;
++	  }
++
++	printf (_("    OS: %s, ABI: %d.%d.%d\n"), osname,
++		major, minor, subminor);
++      }
++      break;
++
++    case NT_FNX_VERSION:
++      {
++	size_t i;
++
++	printf (_("    Version: "));
++	for (i = 0; i < pnote->descsz && pnote->descdata[i] != '\0'; ++i)
++	  printf ("%c", pnote->descdata[i]);
++	printf ("\n");
++      }
++      break;
++
++    case NT_FNX_BUILD_ID:
++      {
++	size_t i;
++
++	printf (_("    Build ID: "));
++	for (i = 0; i < pnote->descsz; ++i)
++	  printf ("%02x", pnote->descdata[i] & 0xff);
++	printf ("\n");
++      }
++      break;
++
++    case NT_FNX_ARCH:
++      {
++        /* TODO  */
++        printf (_("    Unimplemented NT_FNX_ARCH note\n"));
++      }
++      break;
++
++    default:
++      /* Handle unrecognised types.  An error message should have already been
++	 created by get_gnu_elf_note_type(), so all that we need to do is to
++	 display the data.  */
++      {
++	size_t i;
++
++	printf (_("    Description data: "));
++	for (i = 0; i < pnote->descsz; ++i)
++	  printf ("%02x ", pnote->descdata[i] & 0xff);
++	printf ("\n");
++      }
++      break;
++    }
++
++  return true;
++}
++
+ static const char *
+ get_v850_elf_note_type (enum v850_notes n_type)
+ {
+@@ -22925,6 +23034,10 @@ process_note (Elf_Internal_Note *  pnote,
+     /* GNU-specific object file notes.  */
+     nt = get_gnu_elf_note_type (pnote->type);
+ 
++  else if (startswith (pnote->namedata, "FNX"))
++    /* FNX-specific object file notes.  */
++    nt = get_fnx_elf_note_type (pnote->type);
++
+   else if (startswith (pnote->namedata, "AMDGPU"))
+     /* AMDGPU-specific object file notes.  */
+     nt = get_amdgpu_elf_note_type (pnote->type);
+@@ -22992,6 +23105,8 @@ process_note (Elf_Internal_Note *  pnote,
+     return print_ia64_vms_note (pnote);
+   else if (startswith (pnote->namedata, "GNU"))
+     return print_gnu_note (filedata, pnote);
++  else if (startswith (pnote->namedata, "FNX"))
++    return print_fnx_note (filedata, pnote);
+   else if (startswith (pnote->namedata, "stapsdt"))
+     return print_stapsdt_note (pnote);
+   else if (startswith (pnote->namedata, "CORE"))
+diff --git a/include/elf/common.h b/include/elf/common.h
+index c9920e77..a714bb2a 100644
+--- a/include/elf/common.h
++++ b/include/elf/common.h
+@@ -859,6 +859,15 @@
+ #define NT_ARCH		2		/* Contains an architecture string.  */
+ #define NT_GO_BUILDID	4		/* Contains GO buildid data.  */
+ 
++/* Values for notes in non-core files using name "FNX".  */
++#define NT_FNX_ABI_TAG	1
++#define NT_FNX_VERSION	2
++#define NT_FNX_BUILD_ID	3
++#define NT_FNX_ARCH		4
++
++/* Values used in FNX .note.ABI-tag notes (NT_FNX_ABI_TAG).  */
++#define FNX_ABI_TAG_FENNIX 0
++
+ /* Values for notes in non-core files using name "GNU".  */
+ 
+ #define NT_GNU_ABI_TAG		1
+diff --git a/.gitignore b/.gitignore
+index 0a40764c..9aa17853 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -74,3 +74,4 @@ stamp-*
+ /gmp*
+ /isl*
+ /gettext*
++/__build
