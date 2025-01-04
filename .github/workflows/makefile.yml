@@ -195,7 +195,6 @@ jobs:
         path: Fennix-release.iso
 
   compilearm64:
-    if: ${{ false }} # Disabled until we can get it to work
     name: Build aarch64
     runs-on: ubuntu-latest
     needs: [buildcompiler]
