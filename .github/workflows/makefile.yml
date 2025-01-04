@@ -54,18 +54,28 @@ jobs:
 
     - name: Install GCC Dependencies
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: sudo apt -y install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch autoconf2.69 libtool
+      run: sudo apt -y install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch autoconf2.69 libtool wget dpkg
 
-    - name: Recheck autoconf
+    - name: Check autoconf
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
         if [ "$(autoconf --version | head -n 1 | awk '{print $NF}')" != "2.69" ]; then
           echo "Autoconf version is not 2.69, performing additional steps..."
-          sudo apt -y install wget dpkg
           wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb
           sudo dpkg --force-all -i ./autoconf_2.69-11.1_all.deb
-          wget https://launchpad.net/ubuntu/+archive/primary/+files/automake-1.15_1.15.1-5ubuntu2_all.deb
-          sudo dpkg --force-all -i ./automake-1.15_1.15.1-5ubuntu2_all.deb
+        fi
+
+    - name: Check automake
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        if [ "$(automake --version | head -n 1 | awk '{print $NF}')" != "1.15.1" ]; then
+          echo "Automake version is not 1.15.1, performing additional steps..."
+          wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz
+          tar -xzf automake-1.15.1.tar.gz
+          cd automake-1.15.1
+          ./configure
+          make
+          sudo make install
         fi
 
     - name: Clone All
