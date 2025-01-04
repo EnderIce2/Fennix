@@ -18,29 +18,27 @@ KERNEL_VERSION = dev
 BOOTLOADER = grub
 
 BUILD_KERNEL = 1
-#BUILD_USERSPACE = 1
+BUILD_USERSPACE = 1
 BUILD_DRIVERS = 1
 
 QUIET_BUILD = 1
 
 # The path of the cross-compiler.
-#   Default: $(CURDIR)/tools/cross/
-COMPILER_PATH := $(CURDIR)/tools/cross/
+#   Default: $(CURDIR)/tools/cross
+COMPILER_PATH := $(CURDIR)/tools/cross
 
 # Qemu path. If you want to use the one
 # you have installed in your system, change
-# it to /usr/bin/qemu-system-
+# it to /usr
 # (do not include x86_64 or i386, it will be
 # added automatically depending on the OSARCH)
-#   Default: $(CURDIR)/tools/cross/
-__CONF_QEMU_PATH := $(CURDIR)/tools/cross/
+#   Default: $(CURDIR)/tools/cross
+__CONF_QEMU_PATH := $(CURDIR)/tools/cross
 
 # Set libc to use. Available options:
 #   - internal  - Use the internal libc
 USE_LIBC = internal
 
-# Build all libraries as static libraries.
-USERSPACE_STATIC_LIBS = 0
 
 
 
@@ -57,39 +55,28 @@ USERSPACE_STATIC_LIBS = 0
 
 ifeq ($(OSARCH), amd64)
 COMPILER_ARCH = x86_64
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)bin/qemu-system-x86_64
+__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-x86_64
 else ifeq ($(OSARCH), i386)
 COMPILER_ARCH = i386
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)bin/qemu-system-i386
+__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-i386
 else ifeq ($(OSARCH), aarch64)
 COMPILER_ARCH = aarch64
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)bin/qemu-system-aarch64
+__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-aarch64
 endif
 
 export __CONF_QEMU_PATH
 
-__CONF_CC := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gcc
-__CONF_CXX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-g++
-__CONF_LD := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ld
-__CONF_AS := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-as
-__CONF_NM := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-nm
-__CONF_OBJCOPY := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objcopy
-__CONF_OBJDUMP := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objdump
-__CONF_GDB := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gdb
-
-export __CONF_CC
-export __CONF_CXX
-export __CONF_LD
-export __CONF_AS
-export __CONF_NM
-export __CONF_OBJCOPY
-export __CONF_OBJDUMP
-export __CONF_GDB
+export __CONF_CC := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gcc
+export __CONF_CXX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-g++
+export __CONF_LD := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ld
+export __CONF_AS := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-as
+export __CONF_AR := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ar
+export __CONF_NM := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-nm
+export __CONF_OBJCOPY := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objcopy
+export __CONF_OBJDUMP := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objdump
+export __CONF_GDB := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gdb
 
 export DEBUG
 export OSNAME
 export OSARCH
 export KERNEL_VERSION
-
-undefine COMPILER_PATH
-undefine COMPILER_ARCH

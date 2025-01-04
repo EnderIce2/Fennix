@@ -1,23 +1,14 @@
 default:
 	$(error Do not run this Makefile directly!)
 
-CC := $(__CONF_CC)
-CXX := $(__CONF_CXX)
-LD := $(__CONF_LD)
-AS := $(__CONF_AS)
-OBJDUMP := $(__CONF_OBJDUMP)
+export CC := $(__CONF_CC)
+export CXX := $(__CONF_CXX)
+export LD := $(__CONF_LD)
+export AS := $(__CONF_AS)
+export OBJDUMP := $(__CONF_OBJDUMP)
 
-OUTPUT_DIR := $(CURDIR)/out/
-INCLUDE_DIR := $(CURDIR)/include
-
-export CC
-export CXX
-export LD
-export AS
-export OBJDUMP
-
-export OUTPUT_DIR
-export INCLUDE_DIR
+export OUTPUT_DIR := $(CURDIR)/out/
+export INCLUDE_DIR := $(CURDIR)/include
 
 DRIVER_LDFLAGS = -nostdlib -nodefaultlibs -nolibc -zmax-page-size=0x1000	\
 			-Wl,-Map file.map -fvisibility=hidden -Wl,--dynamic-linker=/boot/fennix.elf

@@ -14,21 +14,20 @@ QEMUFLAGS := -display gtk
 
 ifeq ($(OSARCH), amd64)
 QEMUFLAGS += -device vmware-svga -M q35 \
+			 -monitor pty \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
-			 -device usb-mouse,bus=xhci.0,pcap=mousex.pcap \
-			 -device usb-kbd,bus=xhci.0,pcap=kbdx.pcap \
-			 -device usb-mouse,pcap=mouse.pcap \
-			 -device usb-kbd,pcap=kbd.pcap \
 			 -net user \
 			 -netdev user,id=usernet0 \
 			 -device e1000,netdev=usernet0,mac=00:69:96:00:42:00 \
 			 -object filter-dump,id=usernet0,netdev=usernet0,file=network.dmp,maxlen=1024 \
 			 -serial file:serial.log \
-			 -serial file:profiler.log \
-			 -serial file:serial3.dmp \
+			 -serial file:COM2.dmp \
+			 -serial file:COM3.dmp \
 			 -serial stdio \
-			 -parallel file:parallel.log \
+			 -parallel file:LPT1.dmp \
+			 -parallel file:LPT2.dmp \
+			 -parallel file:LPT3.dmp \
 			 -device ahci,id=ahci \
 			 -drive id=bootdsk,file=$(OSNAME).iso,format=raw,if=none \
 			 -device ide-hd,drive=bootdsk,bus=ahci.0 \
@@ -42,6 +41,7 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), i386)
 QEMUFLAGS += -M q35 \
+			 -monitor pty \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
 			 -device usb-mouse,bus=xhci.0,pcap=mousex.pcap \
@@ -53,10 +53,12 @@ QEMUFLAGS += -M q35 \
 			 -device e1000,netdev=usernet0,mac=00:69:96:00:42:00 \
 			 -object filter-dump,id=usernet0,netdev=usernet0,file=network.dmp,maxlen=1024 \
 			 -serial file:serial.log \
-			 -serial file:profiler.log \
-			 -serial file:serial3.dmp \
+			 -serial file:COM2.dmp \
+			 -serial file:COM3.dmp \
 			 -serial stdio \
-			 -parallel file:parallel.log \
+			 -parallel file:LPT1.dmp \
+			 -parallel file:LPT2.dmp \
+			 -parallel file:LPT3.dmp \
 			 -hda $(OSNAME).iso \
 			 -audiodev pa,id=pa1,server=/run/user/1000/pulse/native \
 			 -machine pcspk-audiodev=pa1 \
@@ -66,10 +68,11 @@ QEMUFLAGS += -M q35 \
 			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), aarch64)
 QEMUFLAGS += -M raspi3b \
+			 -monitor pty \
 			 -cpu cortex-a57 \
 			 -serial file:serial.log \
-			 -serial file:profiler.log \
-			 -serial file:serial3.dmp \
+			 -serial file:COM2.dmp \
+			 -serial file:COM3.dmp \
 			 -serial stdio \
 			 -kernel $(OSNAME).img \
 			 -acpitable file=tools/acpi/SSDT1.dat
@@ -78,9 +81,6 @@ endif
 doxygen:
 	mkdir -p doxygen-doc
 	doxygen Doxyfile
-	doxygen Kernel/Doxyfile
-	doxygen Userspace/Doxyfile
-	doxygen Drivers/Doxyfile
 
 qemu_vdisk:
 ifneq (,$(wildcard ./qemu-disk.qcow2))
@@ -159,7 +159,7 @@ ifeq ($(BOOTLOADER), grub)
 	grub-mkrescue -o $(OSNAME).iso iso_tmp_data
 endif
 ifeq ($(OSARCH), aarch64)
-	$(COMPILER_PATH)/$(COMPILER_ARCH)objcopy Kernel/fennix.elf -O binary $(OSNAME).img
+	$(__CONF_OBJCOPY) Kernel/fennix.elf -O binary $(OSNAME).img
 endif
 
 ifeq ($(OSARCH), amd64)
@@ -170,17 +170,14 @@ endif
 # endif
 
 ifeq ($(OSARCH), amd64)
-QEMU_SMP_DBG = -smp $(shell echo $(shell nproc)/4 | bc)
 QEMU_SMP = -smp $(shell nproc)
 endif
 
 ifeq ($(OSARCH), i386)
-QEMU_SMP_DBG = -smp $(shell echo $(shell nproc)/4 | bc)
 QEMU_SMP = -smp $(shell nproc)
 endif
 
 ifeq ($(OSARCH), aarch64)
-QEMU_SMP_DBG = -smp 4
 QEMU_SMP = -smp 4
 endif
 
@@ -196,17 +193,22 @@ QEMUMEMORY = -m 1G
 endif
 
 clean_logs:
-	rm -f serial.log profiler.log serial3.dmp network.dmp parallel.log mouse.pcap kbd.pcap mousex.pcap kbdx.pcap
+	rm -f serial.log COM2.dmp COM3.dmp \
+		network.dmp \
+		LPT1.dmp LPT2.dmp LPT3.dmp \
+		mouse.pcap kbd.pcap mousex.pcap kbdx.pcap
 
 vscode_debug_only: clean_logs
-	$(QEMU) -S -gdb tcp::1234 -d cpu_reset,int -no-reboot -no-shutdown $(QEMU_UEFI_BIOS) -m 512M $(QEMUFLAGS) $(QEMU_SMP_DBG)
+	$(QEMU) -S -chardev socket,path=/tmp/gdb-fennix,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 \
+	-d cpu_reset,int,unimp,guest_errors,mmu,fpu \
+	-no-reboot -no-shutdown $(QEMU_UEFI_BIOS) \
+	-m 512M $(QEMUFLAGS) -smp 1
 
 vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debug_only
 
 qemu: qemu_vdisk clean_logs
-	touch serial.log parallel.log
+	touch serial.log
 #	x-terminal-emulator -e tail -f serial.log &
-#	x-terminal-emulator -e tail -f parallel.log &
 	$(QEMU) $(QEMU_UEFI_BIOS) -cpu host $(QEMUFLAGS) $(QEMUHWACCELERATION) $(QEMUMEMORY) $(QEMU_SMP)
 
 qemubios: qemu_vdisk clean_logs

@@ -12,22 +12,22 @@ ifeq ($(OSARCH), amd64)
 S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
 s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
 C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
-CPP_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
+CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
 else ifeq ($(OSARCH), i386)
 S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
-CPP_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
+CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
 else ifeq ($(OSARCH), aarch64)
 S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
-CPP_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
+CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
 endif # OSARCH
 
-OBJ = $(BMP_SOURCES:.bmp=.o) $(PSF_SOURCES:.psf=.o) $(s_SOURCES:.s=.o) $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CPP_SOURCES:.cpp=.o)
-STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CPP_SOURCES:.cpp=.su)
-GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CPP_SOURCES:.cpp=.gcno)
+OBJ = $(BMP_SOURCES:.bmp=.o) $(PSF_SOURCES:.psf=.o) $(s_SOURCES:.s=.o) $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
+STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CXX_SOURCES:.cpp=.su)
+GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CXX_SOURCES:.cpp=.gcno)
 
 LDFLAGS = -static -nostdlib -nodefaultlibs -nolibc \
 	-Wl,-static,--no-dynamic-linker,-ztext 	\
