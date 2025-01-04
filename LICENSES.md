@@ -42,7 +42,7 @@ Make sure to read and comply with these licenses before using or redistributing 
 ## rpmalloc
 
 - **License:** The MIT License (MIT) and Public Domain
-- **Location(s):** [https://raw.githubusercontent.com/mjansson/rpmalloc/develop/LICENSE](https://raw.githubusercontent.com/mjansson/rpmalloc/develop/LICENSE)
+- **Location(s):** [Kernel/core/memory/heap_allocators/rpmalloc/LICENSE](Kernel/core/memory/heap_allocators/rpmalloc/LICENSE)
 
 ## ini.h
 
