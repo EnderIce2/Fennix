@@ -32,13 +32,13 @@ var input_8h =
       [ "Device", "de/ded/input_8h.html#ae0e73e3ad012fad295b7bf2d1cc93da9", null ],
       [ "Type", "de/ded/input_8h.html#af15f4807037d91adf5b3223b64e9ad50", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__", "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____", [
+    [ "KeyboardReport.__unnamed6__", "de/ded/input_8h.html#de/da2/unionKeyboardReport_8____unnamed6____", [
       [ "Value", "de/ded/input_8h.html#a689202409e48743b914713f96d93947c", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__.__unnamed15__", "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____", [
+    [ "KeyboardReport.__unnamed6__.__unnamed9__", "de/ded/input_8h.html#d8/dcd/structKeyboardReport_8____unnamed6_____8____unnamed9____", [
       [ "IsScanCode", "de/ded/input_8h.html#aa51f9b08057b8f0bf003cd592bbe248b", null ]
     ] ],
-    [ "InputReport.__unnamed17__", "de/ded/input_8h.html#db/d5d/unionInputReport_8____unnamed17____", [
+    [ "InputReport.__unnamed11__", "de/ded/input_8h.html#d8/dac/unionInputReport_8____unnamed11____", [
       [ "Accelerometer", "de/ded/input_8h.html#ab043bc6d611582087d8bf1790d863d69", null ],
       [ "Gamepad", "de/ded/input_8h.html#a221f6781b4faa2d321ca0d928f518d6e", null ],
       [ "Gyroscope", "de/ded/input_8h.html#abed99e5db57749f375e738c1c0258047", null ],
