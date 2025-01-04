@@ -64,6 +64,8 @@ jobs:
           sudo apt -y install wget dpkg
           wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb
           sudo dpkg --force-all -i ./autoconf_2.69-11.1_all.deb
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/automake-1.15_1.15.1-5ubuntu2_all.deb
+          sudo dpkg --force-all -i ./automake-1.15_1.15.1-5ubuntu2_all.deb
         fi
 
     - name: Clone All
