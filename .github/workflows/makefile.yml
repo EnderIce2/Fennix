@@ -69,13 +69,9 @@ jobs:
         if [ "$(autoconf --version | head -n 1 | awk '{print $NF}')" != "2.69" ]; then
           echo "Autoconf version is not 2.69, performing additional steps..."
           sudo apt --purge remove *autoconf*
-          sudo apt -y install wget tar make
-          wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz
-          tar xvfvz autoconf-2.69.tar.gz
-          cd autoconf-2.69
-          ./configure
-          make
-          sudo make install
+          sudo apt -y install wget dpkg
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb
+          sudo apt -y install ./autoconf_2.69-11.1_all.deb
         fi
 
     - name: Clone All
