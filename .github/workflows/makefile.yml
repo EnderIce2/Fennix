@@ -52,6 +52,13 @@ jobs:
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: sudo apt update
 
+    - name: Purge autoconf
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        sudo apt --purge remove *autoconf*
+        sudo apt autoremove
+        sudo apt clean
+
     - name: Install GCC Dependencies
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: sudo apt -y install build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo libzstd-dev libisl-dev autoconf m4 automake gettext gperf dejagnu guile-3.0 guile-3.0-dev expect tcl autogen tex-common sphinx-common git ssh diffutils patch autoconf2.69
