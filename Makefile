@@ -92,9 +92,12 @@ endif
 # Install necessary packages, build cross-compiler etc...
 tools:
 	make --quiet -C tools all
+
+setup:
 	make --quiet -C Kernel prepare
-	make --quiet -C Userspace prepare
 	make --quiet -C Drivers prepare
+	make --quiet -C Userspace prepare
+	$(MAKE) tools
 
 build: build_kernel build_userspace build_drivers build_image
 
