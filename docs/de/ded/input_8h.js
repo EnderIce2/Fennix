@@ -32,10 +32,10 @@ var input_8h =
       [ "Device", "de/ded/input_8h.html#ae0e73e3ad012fad295b7bf2d1cc93da9", null ],
       [ "Type", "de/ded/input_8h.html#af15f4807037d91adf5b3223b64e9ad50", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__", "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____", [
+    [ "KeyboardReport.__unnamed12__", "de/ded/input_8h.html#db/d65/unionKeyboardReport_8____unnamed12____", [
       [ "Value", "de/ded/input_8h.html#a689202409e48743b914713f96d93947c", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__.__unnamed15__", "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____", [
+    [ "KeyboardReport.__unnamed12__.__unnamed14__", "de/ded/input_8h.html#da/dc5/structKeyboardReport_8____unnamed12_____8____unnamed14____", [
       [ "IsScanCode", "de/ded/input_8h.html#aa51f9b08057b8f0bf003cd592bbe248b", null ]
     ] ],
     [ "InputReport.__unnamed17__", "de/ded/input_8h.html#db/d5d/unionInputReport_8____unnamed17____", [

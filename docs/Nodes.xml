@@ -789,9 +789,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>KeyboardReport.__unnamed13__</Name>
+            <Name>KeyboardReport.__unnamed12__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
+            <Anchor>db/d65/unionKeyboardReport_8____unnamed12____</Anchor>
             <Subnodes>
              <Node>
               <Name>Value</Name>
@@ -801,9 +801,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+            <Name>KeyboardReport.__unnamed12__.__unnamed14__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+            <Anchor>da/dc5/structKeyboardReport_8____unnamed12_____8____unnamed14____</Anchor>
             <Subnodes>
              <Node>
               <Name>IsScanCode</Name>
@@ -3962,9 +3962,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__</Name>
+                    <Name>KeyboardReport.__unnamed12__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
+                    <Anchor>db/d65/unionKeyboardReport_8____unnamed12____</Anchor>
                     <Subnodes>
                      <Node>
                       <Name>Value</Name>
@@ -3974,9 +3974,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+                    <Name>KeyboardReport.__unnamed12__.__unnamed14__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+                    <Anchor>da/dc5/structKeyboardReport_8____unnamed12_____8____unnamed14____</Anchor>
                     <Subnodes>
                      <Node>
                       <Name>IsScanCode</Name>
