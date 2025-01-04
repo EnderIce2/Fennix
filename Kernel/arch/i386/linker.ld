@@ -124,6 +124,5 @@ SECTIONS
 	/DISCARD/ :
 	{
 		*(.comment*)
-		*(.note*)
 	}
 }
