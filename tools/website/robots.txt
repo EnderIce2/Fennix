@@ -1,5 +1,5 @@
 User-agent: *
-Disallow: /userspace/
-Disallow: /drivers/
-Disallow: /kernel/
-Disallow: /fulldoc/
+Disallow: /lang/
+Disallow: /js/
+Disallow: /css/
+Disallow: /images/
