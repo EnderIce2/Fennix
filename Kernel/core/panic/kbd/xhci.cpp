@@ -68,7 +68,7 @@ nsa bool CrashXHCIKeyboardDriver::TakeOwnership()
 
 nsa bool CrashXHCIKeyboardDriver::Initialize()
 {
-	int timeout = 10;
+	// int timeout = 10;
 
 	if (!TakeOwnership())
 	{
@@ -192,7 +192,9 @@ nsa void CrashXHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 	Interrupter->IMAN.IP = 1;
 
 	if (!ops->USBSTS.EINT)
+	{
 		debug("!USBSTS.EINT");
+	}
 	// return;
 
 	ops->USBSTS.EINT = 1;
