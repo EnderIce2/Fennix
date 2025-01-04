@@ -68,10 +68,12 @@ jobs:
       run: |
         if [ "$(autoconf --version | head -n 1 | awk '{print $NF}')" != "2.69" ]; then
           echo "Autoconf version is not 2.69, performing additional steps..."
-          sudo apt --purge remove *autoconf*
+          sudo apt --purge remove *autoconf* *automake*
           sudo apt -y install wget dpkg
           wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb
           sudo apt -y install ./autoconf_2.69-11.1_all.deb
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/automake1.4_1.4-p6-13.1_all.deb
+          sudo apt -y install ./automake1.4_1.4-p6-13.1_all.deb
         fi
 
     - name: Clone All
