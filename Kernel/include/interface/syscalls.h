@@ -198,7 +198,7 @@ typedef enum
 	__SYS_MAP_FIXED = 0x4,
 	__SYS_MAP_ANONYMOUS = 0x8,
 	__SYS_MAP_ANON = __SYS_MAP_ANONYMOUS
-} mmap_flags_t;
+} syscall_mmap_flags_t;
 
 typedef enum
 {
@@ -214,7 +214,7 @@ typedef enum
 	__SYS_O_RSYNC = 0x100,
 	__SYS_O_SYNC = 0x200,
 	__SYS_O_TRUNC = 0x400
-} open_flags_t;
+} syscall_open_flags_t;
 
 typedef enum
 {
@@ -222,7 +222,7 @@ typedef enum
 	__SYS_R_OK = 1,
 	__SYS_W_OK = 2,
 	__SYS_X_OK = 3
-} access_flags_t;
+} syscall_access_flags_t;
 
 typedef enum
 {
@@ -230,14 +230,17 @@ typedef enum
 	__SYS_SET_GS = 1,
 	__SYS_GET_FS = 2,
 	__SYS_SET_FS = 3,
-} prctl_options_t;
+} syscall_prctl_options_t;
+#ifdef __kernel__
+typedef syscall_prctl_options_t prctl_options_t;
+#endif
 
 typedef enum
 {
 	__SYS_SEEK_SET = 0,
 	__SYS_SEEK_CUR = 1,
 	__SYS_SEEK_END = 2
-} seek_whence_t;
+} syscall_seek_whence_t;
 
 typedef enum
 {
@@ -344,7 +347,10 @@ typedef enum
 
 	/* Maximum signal number. */
 	__SYS_SIGNAL_MAX = __SYS_SIGRTMAX
-} signal_t;
+} syscall_signal_t;
+#ifdef __kernel__
+typedef syscall_signal_t signal_t;
+#endif
 
 typedef enum
 {
@@ -358,14 +364,17 @@ typedef enum
 	__SYS_SIG_STOP = 3,
 	/** Dump core. */
 	__SYS_SIG_CORE = 4
-} signal_disposition_t;
+} syscall_signal_disposition_t;
+#ifdef __kernel__
+typedef syscall_signal_disposition_t signal_disposition_t;
+#endif
 
 typedef enum
 {
 	__SYS_SIG_BLOCK = 0,
 	__SYS_SIG_UNBLOCK = 1,
 	__SYS_SIG_SETMASK = 2
-} signal_actions_t;
+} syscall_signal_actions_t;
 
 typedef enum
 {
@@ -376,14 +385,22 @@ typedef enum
 	__SYS_SA_SIGINFO = 4,
 	__SYS_SA_NOCLDWAIT = 2,
 	__SYS_SA_NODEFER = 0x40000000,
-} signal_action_flags_t;
+} syscall_signal_action_flags_t;
 
 typedef enum
 {
 	__SYS_SIG_ERR = -1,
 	__SYS_SIG_DFL = 0,
 	___SYS_SIG_IGN = 1
-} signal_action_disposition_t;
+} syscall_signal_action_disposition_t;
+
+typedef enum
+{
+	__SYS_CLOCK_MONOTONIC = 1,
+	__SYS_CLOCK_PROCESS_CPUTIME_ID = 2,
+	__SYS_CLOCK_REALTIME = 3,
+	__SYS_CLOCK_THREAD_CPUTIME_ID = 4,
+} syscall_clockid_t;
 
 #ifndef __cplusplus
 _Static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not match");
@@ -544,7 +561,7 @@ typedef enum
 	 * - #ENOENT if the file does not exist
 	 * - #EACCES if permissions are insufficient
 	 *
-	 * @see #open_flags_t
+	 * @see #syscall_open_flags_t
 	 */
 	SYS_OPEN,
 	/**
@@ -663,7 +680,7 @@ typedef enum
 	 * - #EACCES if access is denied
 	 * - #ENOENT if the file does not exist
 	 *
-	 * @see #access_flags_t
+	 * @see #syscall_access_flags_t
 	 */
 	SYS_ACCESS,
 	/**
@@ -863,7 +880,7 @@ typedef enum
 	 * @brief Process/Thread Control
 	 *
 	 * @code
-	 * int prctl(prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4);
+	 * int prctl(syscall_prctl_options_t option, unsigned long arg1, unsigned long arg2, unsigned long arg3, unsigned long arg4);
 	 * @endcode
 	 *
 	 * @details Perform various operations on a process or thread.
@@ -939,7 +956,7 @@ typedef enum
 	 *         - #ENXIO
 	 *         - #EOVERFLOW
 	 *
-	 * @see #mmap_flags_t
+	 * @see #syscall_mmap_flags_t
 	 */
 	SYS_MMAP,
 	/**
