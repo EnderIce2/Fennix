@@ -115,14 +115,6 @@
 #define SA_NODEFER 0x40000000
 #define SA_RESETHAND 0x80000000
 
-static_assert(SA_NOCLDSTOP == __SYS_SA_NOCLDSTOP);
-static_assert(SA_NOCLDWAIT == __SYS_SA_NOCLDWAIT);
-static_assert(SA_SIGINFO == __SYS_SA_SIGINFO);
-static_assert(SA_ONSTACK == __SYS_SA_ONSTACK);
-static_assert(SA_RESTART == __SYS_SA_RESTART);
-static_assert(SA_NODEFER == __SYS_SA_NODEFER);
-static_assert(SA_RESETHAND == __SYS_SA_RESETHAND);
-
 #define __SI_PAD_SIZE \
 	(128 - 2 * sizeof(int) - sizeof(long))
 
