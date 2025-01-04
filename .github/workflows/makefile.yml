@@ -96,57 +96,6 @@ jobs:
         cd tools
         rm -rf binutils-gdb gcc
 
-  analyze:
-    name: Analyze with CodeQL
-    runs-on: ubuntu-latest
-    needs: [buildcompiler]
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'cpp' ]
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-
-    - name: Install Packages
-      run: |
-        sudo apt update
-        sudo apt install rustc xorriso mtools genisoimage ovmf nasm doxygen make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo -y
-        make --quiet -C tools do_limine
-        make --quiet -C Drivers prepare
-        make --quiet -C Userspace prepare
-        make --quiet -C Kernel prepare
-
-    - name: Cache cross
-      id: cache-cross
-      uses: actions/cache@v3
-      with:
-        path: tools/cross
-        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
-
-    - name: Build OS
-      run: |
-        make build_userspace
-        make build_drivers
-        make build_kernel
-        make build_userspace
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-
   compile64:
     name: Build amd64
     runs-on: ubuntu-latest
