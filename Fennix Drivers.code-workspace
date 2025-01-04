@@ -6,6 +6,10 @@
 	],
 	"settings": {
 		"terminal.integrated.cwd": "../",
-		"debug.allowBreakpointsEverywhere": true
+		"debug.allowBreakpointsEverywhere": true,
+		"git.alwaysSignOff": true,
+		"git.defaultBranchName": "master",
+		"git.openRepositoryInParentFolders": "always",
+		"C_Cpp.autoAddFileAssociations": false
 	}
 }

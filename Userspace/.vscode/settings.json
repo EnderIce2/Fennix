@@ -1,0 +1,5 @@
+{
+	"git.openRepositoryInParentFolders": "always",
+	"git.alwaysSignOff": true,
+	"git.defaultBranchName": "master"
+}

@@ -1,0 +1,69 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch QEMU & debug the kernel",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/../Kernel/fennix.elf",
+			"cwd": "${workspaceFolder}",
+			"args": [],
+			"targetArchitecture": "x64",
+			"MIMode": "gdb",
+			"miDebuggerServerAddress": "/tmp/gdb-fennix",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
+			"miDebuggerArgs": "",
+			"externalConsole": false,
+			"additionalSOLibSearchPath": "${workspaceFolder}",
+			"internalConsoleOptions": "neverOpen",
+			"customLaunchSetupCommands": [
+				// {
+				// 	"text": "target remote localhost:1234",
+				// 	"description": "Connect to QEMU remote debugger"
+				// }
+			],
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				},
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
+				},
+				{
+					"text": "file ${workspaceFolder}/../Kernel/fennix.elf",
+					"description": "Load binary"
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest",
+					"ignoreFailures": true
+				},
+				{
+					"text": "source ${workspaceFolder}/../tools/.gdbinit"
+				}
+			],
+			"preLaunchTask": "launch-qemu"
+		},
+		{
+			"type": "gdb",
+			"request": "attach",
+			"name": "Launch QEMU & attach to gdbserver",
+			"executable": "${workspaceFolder}/../Kernel/fennix.elf",
+			"target": "/tmp/gdb-fennix",
+			"remote": true,
+			"cwd": "${workspaceRoot}",
+			"valuesFormatting": "parseText",
+			"gdbpath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
+			"autorun": [
+				"set auto-load safe-path ${workspaceFolder}",
+				"source ${workspaceFolder}/../tools/.gdbinit",
+			],
+			"internalConsoleOptions": "neverOpen",
+			"printCalls": false,
+			"preLaunchTask": "launch-qemu"
+		},
+	]
+}

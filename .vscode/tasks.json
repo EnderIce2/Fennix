@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "launch-qemu",
+			"type": "shell",
+			"command": "make -C ../ build && make -C ../ vscode_debug_only",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		}
+	]
+}

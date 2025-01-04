@@ -22,6 +22,10 @@
 		"editor.cursorBlinking": "blink",
 		"editor.cursorSmoothCaretAnimation": "on",
 		"editor.cursorStyle": "line",
-		"editor.cursorWidth": 2
+		"editor.cursorWidth": 2,
+		"git.alwaysSignOff": true,
+		"git.defaultBranchName": "master",
+		"git.openRepositoryInParentFolders": "always",
+		"C_Cpp.autoAddFileAssociations": false
 	}
 }

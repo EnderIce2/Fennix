@@ -1,28 +1,164 @@
 {
-	"Fennix Kernel Header": {
+	"Fennix Userspace C++ Header": {
+		"isFileTemplate": true,
+		"scope": "c,cpp",
 		"prefix": [
 			"head",
 		],
 		"body": [
-			"#ifndef __FENNIX_LIBC_${2:header}_H__",
-			"#define __FENNIX_LIBC_${2:header}_H__",
+			"/*",
+			"\tThis file is part of Fennix Userspace.",
+			"",
+			"\tFennix Userspace is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Userspace is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.",
+			"*/",
+			"",
+			"#pragma once",
+			"",
+			"$0",
+			"",
+			"$1",
+			""
+		],
+		"description": "Create userspace header."
+	},
+	"Fennix Userspace C Header": {
+		"isFileTemplate": true,
+		"scope": "c,cpp",
+		"prefix": [
+			"headc",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Userspace.",
+			"",
+			"\tFennix Userspace is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Userspace is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.",
+			"*/",
+			"",
+			"#ifndef __FENNIX_USERSPACE_${1:header}_H__",
+			"#define __FENNIX_USERSPACE_${1:header}_H__",
 			"",
 			"#include <types.h>",
 			"",
 			"$0",
 			"",
-			"#endif // !__FENNIX_LIBC_${2:header}_H__",
+			"#endif // !__FENNIX_USERSPACE_${1:header}_H__",
 			""
 		],
-		"description": "Create kernel header."
+		"description": "Create userspace header."
 	},
-	"Fennix Kernel brief": {
+	"Fennix C Library Header": {
+		"isFileTemplate": true,
+		"scope": "c,cpp",
 		"prefix": [
-			"brief",
+			"libc",
 		],
 		"body": [
-			"/** @brief $0 */"
+			"/*",
+			"\tThis file is part of Fennix C Library.",
+			"",
+			"\tFennix C Library is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix C Library is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.",
+			"*/",
+			"",
+			"#ifndef _${1:header}_H",
+			"#define _${1:header}_H",
+			"",
+			"#ifdef __cplusplus",
+			"extern \"C\"",
+			"{",
+			"#endif // __cplusplus",
+			"",
+			"$0",
+			"",
+			"#ifdef __cplusplus",
+			"}",
+			"#endif // __cplusplus",
+			"",
+			"#endif // !_${1:header}_H",
+			""
 		],
-		"description": "Create kernel documentation brief."
+		"description": "Create C Library Header."
+	},
+	"Userspace License": {
+		"isFileTemplate": true,
+		"prefix": [
+			"license",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Userspace.",
+			"",
+			"\tFennix Userspace is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Userspace is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.",
+			"*/"
+		],
+		"description": "Create userspace license."
+	},
+	"C Library License": {
+		"isFileTemplate": true,
+		"prefix": [
+			"license_libc",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix C Library.",
+			"",
+			"\tFennix C Library is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix C Library is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.",
+			"*/"
+		],
+		"description": "Create libc license."
 	}
 }
