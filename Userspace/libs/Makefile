@@ -1,5 +1,5 @@
 build:
-#	cp -r include/* ../out/include
+	cp -a $(CURDIR)/include/. $(WORKSPACE_DIR)/out/include
 	make -C libgcc build
 
 clean:

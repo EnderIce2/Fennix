@@ -1,7 +1,9 @@
 #ifndef _LIBALLOC_H
 #define _LIBALLOC_H
 
-#include <types.h>
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdio.h>
 
 /** \defgroup ALLOCHOOKS liballoc hooks
  *
@@ -17,6 +19,7 @@
 // typedef	unsigned long	uintptr_t;
 
 // This lets you prefix malloc and friends
+// #define PREFIX(func) k##func
 #define PREFIX(func) __##func
 
 #ifdef __cplusplus

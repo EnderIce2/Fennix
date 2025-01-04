@@ -1,47 +1,36 @@
-# Config file
-include ../../../config.mk
+default:
+	$(error Do not run this Makefile directly!)
 
-NAME=c
+DYNAMIC_NAME := libc.so
+STATIC_NAME := libc.a
 
-ifeq ($(USERSPACE_STATIC_LIBS), 1)
-OBJECT_NAME := lib$(NAME).a
-else
-OBJECT_NAME := lib$(NAME).so
-endif
+OUTPUT_DIR=$(WORKSPACE_DIR)/out/lib/
+SYSROOT = --sysroot=$(WORKSPACE_DIR)/out/
 
-OUTPUT_DIR=../../out/lib/
-SYSROOT = --sysroot=../../out/
-
-CC = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)gcc
-AS = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)as
-AR = ../../../$(COMPILER_PATH)/$(COMPILER_ARCH)ar
-
-C_SOURCES = $(shell find ./ -type f -name '*.c')
-CPP_SOURCES = $(shell find ./ -type f -name '*.cpp')
 S_SOURCES = $(shell find ./ -type f -name '*.S')
-OBJ = ${C_SOURCES:.c=.o} ${CPP_SOURCES:.cpp=.o} ${S_SOURCES:.S=.o}
+C_SOURCES = $(shell find ./ -type f -name '*.c')
+CXX_SOURCES = $(shell find ./ -type f -name '*.cpp')
+OBJ = ${S_SOURCES:.S=.o} ${C_SOURCES:.c=.o} ${CXX_SOURCES:.cpp=.o}
 
-ifeq ($(OSARCH), amd64)
-ASM_ARCH := elf64
-else ifeq ($(OSARCH), i386)
-ASM_ARCH := elf32
-endif
-
-CFLAGS := -fvisibility=hidden -fPIC -I../include -I../../out/include
+CFLAGS := -fvisibility=hidden -fPIC -I../include -I$(WORKSPACE_DIR)/out/include -DLIBC_GIT_COMMIT='"$(shell git rev-parse HEAD)"'
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm
 endif
 
-build: $(OBJECT_NAME)
+build: $(DYNAMIC_NAME) $(STATIC_NAME)
 
-$(OBJECT_NAME): $(OBJ)
+.PHONY: $(DYNAMIC_NAME) $(STATIC_NAME)
+
+$(DYNAMIC_NAME): $(OBJ)
 	$(info Linking $@)
-ifeq ($(USERSPACE_STATIC_LIBS), 1)
-	$(AR) rcs $(OUTPUT_DIR)$@ $(OBJ)
-else
-	$(CC) -nostdlib -shared -fPIC -fPIE -Wl,-soname,$(OBJECT_NAME) $(SYSROOT) $(OBJ) -o $(OUTPUT_DIR)$@
-endif
+	$(CC) -nostdlib -shared -fPIC -fPIE -e _start -Wl,-soname,$(DYNAMIC_NAME) $(SYSROOT) $(OBJ) -o $(DYNAMIC_NAME)
+	cp $(DYNAMIC_NAME) $(OUTPUT_DIR)$(DYNAMIC_NAME)
+
+$(STATIC_NAME): $(OBJ)
+	$(info Linking $@)
+	$(AR) -rcs $(STATIC_NAME) $(OBJ)
+	cp $(STATIC_NAME) $(OUTPUT_DIR)$(STATIC_NAME)
 
 %.o: %.c
 	$(info Compiling $<)
@@ -56,4 +45,4 @@ endif
 	$(AS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(DYNAMIC_NAME) $(STATIC_NAME)
