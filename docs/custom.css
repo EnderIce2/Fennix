@@ -1,0 +1,11 @@
+html {}
+
+html.dark-mode {
+    color-scheme: dark;
+
+    --primary-color: #c49cfc;
+    --primary-dark-color: #a689eb;
+    --primary-light-color: #9270e4;
+    --primary-lighter-color: #202529;
+    --primary-lightest-color: #242527;
+}

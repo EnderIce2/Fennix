@@ -1,11 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>
-    Hello World!
-  </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="home">Fennix</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
-  Hello World!
+    <header>
+        <img src="assets/logo.png" alt="Fennix Logo">
+        <div class="div-warning">
+            <a data-i18n="warning_message"></a>
+        </div>
+        <div class="div-dropdown">
+            <button class="header-button" onclick="toggleDropdown()">🌐</button>
+            <div class="dropdown-content" id="dropdownMenu">
+                <a href="" onclick="changeLanguage('bg')">Български</a>
+                <a href="" onclick="changeLanguage('de')">Deutsch</a>
+                <a href="" onclick="changeLanguage('en')">English</a>
+                <a href="" onclick="changeLanguage('es')">Español</a>
+                <a href="" onclick="changeLanguage('fr')">Français</a>
+                <a href="" onclick="changeLanguage('hu')">Magyar</a>
+                <a href="" onclick="changeLanguage('it')">Italiano</a>
+                <a href="" onclick="changeLanguage('ja')">日本語</a>
+                <a href="" onclick="changeLanguage('ko')">한국어</a>
+                <a href="" onclick="changeLanguage('pl')">Polski</a>
+                <a href="" onclick="changeLanguage('pt')">Português</a>
+                <a href="" onclick="changeLanguage('ro')">Română</a>
+                <a href="" onclick="changeLanguage('ru')">Русский</a>
+                <a href="" onclick="changeLanguage('tr')">Türkçe</a>
+                <a href="" onclick="changeLanguage('zh-CN')">中文(简体)</a>
+                <a href="" onclick="changeLanguage('zh-TW')">中文(繁體)</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1 data-i18n="welcome_message"></h1>
+        <p data-i18n="welcome_subtitle"></p>
+        <button id="downloadBtn" data-i18n="download_button" onclick="downloadFennix()"></button>
+    </section>
+
+    <section class="screenshot-section">
+        <h2 data-i18n="screenshot_title"></h2>
+        <img data-i18n="screenshot_image" src="assets/images/screenshot-default.png" alt="Fennix Screenshot" class="screenshot">
+    </section>
+
+    <section class="buttons-section">
+        <h2 data-i18n="get_involved"></h2>
+        <button data-i18n="get_involved_btn1" class="button" onclick="window.location.href='https://github.com/EnderIce2/Fennix'"></button>
+        <button data-i18n="get_involved_btn2" class="button" onclick="window.location.href='./docs/index.html'"></button>
+        <button data-i18n="get_involved_btn3" class="button" onclick="window.location.href='./docs/df/d03/md_tools_doxygen_api.html'"></button>
+        <button data-i18n="get_involved_btn4" class="button" onclick="window.location.href='./docs/d9/d7f/md_tools_doxygen_develop.html'"></button>
+    </section>
+
+    <section class="features-section">
+        <h2 data-i18n="features_title"></h2>
+        <div class="features">
+            <div class="card">
+                <h3 data-i18n="card1_title"></h3>
+                <p data-i18n="card1_text"></p>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card2_title"></h3>
+                <p data-i18n="card2_text"></p>
+            </div>
+            <div class="card">
+                <h3 data-i18n="card3_title"></h3>
+                <p data-i18n="card3_text"></p>
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-detail">
+        <img data-i18n="feature1_image" src="assets/images/feature-default.png" alt="Feature 1 Screenshot">
+        <div class="text">
+            <h3 data-i18n="feature1_title"></h3>
+            <p data-i18n="feature1_text"></p>
+        </div>
+    </section>
+
+    <section class="feature-detail">
+        <img data-i18n="feature2_image" src="assets/images/feature-default.png" alt="Feature 2 Screenshot">
+        <div class="text">
+            <h3 data-i18n="feature2_title"></h3>
+            <p data-i18n="feature2_text"></p>
+        </div>
+    </section>
+
+    <section class="feature-detail">
+        <img data-i18n="feature3_image" src="assets/images/feature-default.png" alt="Feature 3 Screenshot">
+        <div class="text">
+            <h3 data-i18n="feature3_title"></h3>
+            <p data-i18n="feature3_text"></p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p data-i18n="footer_text"></p>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
 </body>
+
 </html>

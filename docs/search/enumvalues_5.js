@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['input_5ftype_5faccelerometer_1385',['INPUT_TYPE_ACCELEROMETER',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9ac859a01f69e364cb617975f41fa73aec',1,'device.h']]],
+  ['input_5ftype_5fgamepad_1386',['INPUT_TYPE_GAMEPAD',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9af4697e9a0388204f823debec4e36c847',1,'device.h']]],
+  ['input_5ftype_5fgyroscope_1387',['INPUT_TYPE_GYROSCOPE',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a2495a40f0dffb89073caff0ca2a9ae22',1,'device.h']]],
+  ['input_5ftype_5fjoystick_1388',['INPUT_TYPE_JOYSTICK',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9ad8d1402c0ed0e87e92a51aec23c4e03a',1,'device.h']]],
+  ['input_5ftype_5fkeyboard_1389',['INPUT_TYPE_KEYBOARD',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9ad930e7f402c859a3e4fdc518e76e68a8',1,'device.h']]],
+  ['input_5ftype_5fmagnetometer_1390',['INPUT_TYPE_MAGNETOMETER',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9af13d1e8fb22e12a503839e2c706cf9b4',1,'device.h']]],
+  ['input_5ftype_5fmouse_1391',['INPUT_TYPE_MOUSE',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9ae1b2094865aa96d4b145581521ebf646',1,'device.h']]],
+  ['input_5ftype_5fnone_1392',['INPUT_TYPE_NONE',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9ad7d361aa71f4cf10cc2605513864fdce',1,'device.h']]],
+  ['input_5ftype_5ftouchscreen_1393',['INPUT_TYPE_TOUCHSCREEN',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a018e6200e5c27c2063d433ec4863a710',1,'device.h']]],
+  ['ioctl_5faudio_5fget_5fchannels_1394',['IOCTL_AUDIO_GET_CHANNELS',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa40455b6684cc7554a225ae51072e6e0c',1,'driver.h']]],
+  ['ioctl_5faudio_5fget_5fmute_1395',['IOCTL_AUDIO_GET_MUTE',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa9a91fdb2d867b50a68dc705ee337cb3b',1,'driver.h']]],
+  ['ioctl_5faudio_5fget_5fsample_5frate_1396',['IOCTL_AUDIO_GET_SAMPLE_RATE',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aaf0bb1507f09bee78343863a3f3e01322',1,'driver.h']]],
+  ['ioctl_5faudio_5fget_5fvolume_1397',['IOCTL_AUDIO_GET_VOLUME',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa4dbfe9b3a3e485468a719c4a012be381',1,'driver.h']]],
+  ['ioctl_5faudio_5fset_5fchannels_1398',['IOCTL_AUDIO_SET_CHANNELS',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa8d19c462c4408bf7c9da4c192ddd6855',1,'driver.h']]],
+  ['ioctl_5faudio_5fset_5fmute_1399',['IOCTL_AUDIO_SET_MUTE',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa4f48faa8eab571a3572929599a978eb1',1,'driver.h']]],
+  ['ioctl_5faudio_5fset_5fsample_5frate_1400',['IOCTL_AUDIO_SET_SAMPLE_RATE',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aaefa43bde388b75b0d5c239bbfd8f900a',1,'driver.h']]],
+  ['ioctl_5faudio_5fset_5fvolume_1401',['IOCTL_AUDIO_SET_VOLUME',['../db/de4/driver_8h.html#a61662cd00dc0375eb8d5795fcaba286aa4bb03b6f95fece6ef8f64431bda005b6',1,'driver.h']]],
+  ['ioctl_5fnet_5fget_5fmac_1402',['IOCTL_NET_GET_MAC',['../db/de4/driver_8h.html#a883d45f645482196fd8e144d87ef0ce6a9820f5b81b760592800fbbb83a2e0368',1,'driver.h']]]
+];
