@@ -369,6 +369,17 @@ typedef enum
 
 typedef enum
 {
+	__SYS_SA_NOCLDSTOP = 1,
+	__SYS_SA_ONSTACK = 0x08000000,
+	__SYS_SA_RESETHAND = 0x80000000,
+	__SYS_SA_RESTART = 0x10000000,
+	__SYS_SA_SIGINFO = 4,
+	__SYS_SA_NOCLDWAIT = 2,
+	__SYS_SA_NODEFER = 0x40000000,
+} signal_action_flags_t;
+
+typedef enum
+{
 	__SYS_SIG_ERR = -1,
 	__SYS_SIG_DFL = 0,
 	___SYS_SIG_IGN = 1
