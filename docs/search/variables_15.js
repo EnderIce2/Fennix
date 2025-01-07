@@ -1,7 +1,4 @@
 var searchData=
 [
-  ['x_1129',['X',['../de/ded/input_8h.html#a2034158134bad2907f7aca9f1df5168d',1,'MouseReport::X()'],['../de/ded/input_8h.html#a2d9df0f07baaff3c26b0daf9c3c782de',1,'TouchScreenReport::X()']]],
-  ['xmovement_1130',['XMovement',['../d1/de1/aip_8h.html#a03984accdad77fa5280f8724510170d4',1,'PS2_MOUSE_PACKET']]],
-  ['xoverflow_1131',['XOverflow',['../d1/de1/aip_8h.html#a999196b528952ded86d2ecdd66fd2659',1,'aip.h']]],
-  ['xsign_1132',['XSign',['../d1/de1/aip_8h.html#a8ba513483738e003cc2d949bbc8c87b7',1,'aip.h']]]
+  ['write_0',['write',['../db/de6/structInodeOperations.html#adb7eaaee195090e8d618a6e9c3ca507a',1,'InodeOperations::Write'],['../df/d26/fs_8h.html#a5f5c45d347b3cbe34597e57c04967e8b',1,'Write:&#160;fs.h']]]
 ];

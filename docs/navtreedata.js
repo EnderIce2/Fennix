@@ -26,17 +26,17 @@ var NAVTREE =
 [
   [ "Fennix", "index.html", [
     [ "Welcome to Fennix Documentation", "index.html", null ],
-    [ "API", "df/d03/md_tools_doxygen_api.html", null ],
-    [ "Developing", "d9/d7f/md_tools_doxygen_develop.html", null ],
-    [ "Userspace", "d1/df9/md_Userspace_README.html", null ],
-    [ "Drivers", "d4/d86/md_Drivers_README.html", null ],
-    [ "Kernel", "da/dc9/md_Kernel_README.html", null ],
+    [ "API", "d3/d6c/md_tools_2doxygen_2api.html", null ],
+    [ "Developing", "d1/d02/md_tools_2doxygen_2develop.html", null ],
+    [ "Userspace", "d2/d04/md_Userspace_2README.html", null ],
+    [ "Drivers", "d5/d9b/md_Drivers_2README.html", null ],
+    [ "Kernel", "dd/d35/md_Kernel_2README.html", null ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
       [ "Data Fields", "functions.html", [
-        [ "All", "functions.html", null ],
-        [ "Variables", "functions_vars.html", null ]
+        [ "All", "functions.html", "functions_dup" ],
+        [ "Variables", "functions_vars.html", "functions_vars" ]
       ] ]
     ] ],
     [ "Files", "files.html", [
@@ -58,9 +58,9 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d2/d6e/syscalls_8h.html#a0193a21c57cbbc422674eb1f77366c9aa70dcd8187c58559caf52a8e285e11819",
-"d8/dc2/errno_8h.html#ad50488ed014e017f009e3f18d8593a97aec0aa1bb79e2e55ed6d8c165e0611eca",
+"d8/dc2/errno_8h.html#ad50488ed014e017f009e3f18d8593a97ae63e89f8fc44ef75addd0c1acc9c4828",
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f",
-"df/d26/fs_8h.html#af2c3f075d5c3e40a46da61a9d7a13abc"
+"df/d26/fs_8h.html#af45191ed8ad28ab7a58ee02287609808"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -17,7 +17,7 @@ var driver_8h =
       [ "Name", "db/de4/driver_8h.html#aa4fad96d724cc497931ce8587436bdbe", null ],
       [ "Version", "db/de4/driver_8h.html#a7f2ee0705a9eaf49c4f920d827198530", null ]
     ] ],
-    [ "__DriverVersion", "db/de4/driver_8h.html#d7/d01/struct____DriverInfo_1_1____DriverVersion", [
+    [ "__DriverInfo::__DriverVersion", "db/de4/driver_8h.html#d7/d01/struct____DriverInfo_1_1____DriverVersion", [
       [ "APIVersion", "db/de4/driver_8h.html#af48c5b3ec3ca0917f83accb7464e4b0b", null ],
       [ "Major", "db/de4/driver_8h.html#a662fb62393b6fd7d7ec85f502db44247", null ],
       [ "Minor", "db/de4/driver_8h.html#a3f96d16fb3c6015ab7e0049f6e18834b", null ],

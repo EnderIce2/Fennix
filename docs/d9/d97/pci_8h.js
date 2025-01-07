@@ -88,7 +88,7 @@ var pci_8h =
       [ "PCI_COMMAND_INTX_DISABLE", "d9/d97/pci_8h.html#ab7d0ea17dce7f541574a7f07737fd7a9aff3170b5e4c33261d0f2f060a5b446d6", null ]
     ] ],
     [ "GetBAR", "d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538", null ],
-    [ "GetPCIDevices", "d9/d97/pci_8h.html#a9cecd790737cef4cb188d9f058f238be", null ],
+    [ "GetPCIDevices", "d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546", null ],
     [ "iLine", "d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52", null ],
     [ "InitializePCI", "d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30", null ],
     [ "iPin", "d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4", null ]

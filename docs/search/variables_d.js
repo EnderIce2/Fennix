@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['offset_1079',['Offset',['../df/d26/fs_8h.html#ac7fd076e6f0290af80aee31a0af35b4a',1,'Inode']]],
-  ['open_1080',['Open',['../db/de6/structInodeOperations.html#a869200a6c684532a9a75a05bca1e9270',1,'InodeOperations::Open()'],['../df/d26/fs_8h.html#a38e8576cf8a6210b386212d7b80f42a0',1,'Open():&#160;fs.h']]],
-  ['ops_1081',['Ops',['../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c',1,'FileSystemInfo::Ops()'],['../df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a',1,'Ops():&#160;fs.h']]]
+  ['name_0',['name',['../db/de4/driver_8h.html#aa4fad96d724cc497931ce8587436bdbe',1,'__DriverInfo::Name'],['../df/d26/fs_8h.html#a445b70dc0c2908c5f600c6bc4f60c387',1,'FileSystemInfo::Name'],['../df/d26/fs_8h.html#a760b4e07b204e4852e7fb55e25567623',1,'Name:&#160;fs.h']]],
+  ['next_1',['next',['../db/de4/driver_8h.html#a26d05ed0210d3f4b2e4d882a2c802cbf',1,'__PCIArray::Next'],['../d9/d97/pci_8h.html#a7b0918bb76d5e9399e7d7553b041d669',1,'__attribute__::Next']]]
 ];

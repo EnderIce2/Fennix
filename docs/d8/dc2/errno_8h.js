@@ -86,6 +86,6 @@ var errno_8h =
       [ "EXDEV", "d8/dc2/errno_8h.html#ad50488ed014e017f009e3f18d8593a97a953d85d9cf4a55d49811d920c169eded", null ],
       [ "__ERRNO_MAX", "d8/dc2/errno_8h.html#ad50488ed014e017f009e3f18d8593a97a83fc2238dbcea63c1a4c80c9cbed4fbf", null ]
     ] ],
-    [ "__errno_location", "d8/dc2/errno_8h.html#a249efe5fe35b177224ada753640584fb", null ],
-    [ "strerror", "d8/dc2/errno_8h.html#add46ab98f32b76457852dbb872842bf2", null ]
+    [ "__errno_location", "d8/dc2/errno_8h.html#a9049fd86a1aa08d50029a482471f5fae", null ],
+    [ "strerror", "d8/dc2/errno_8h.html#a4bc5f273980fb0e81e0fc7a4dd3de87e", null ]
 ];

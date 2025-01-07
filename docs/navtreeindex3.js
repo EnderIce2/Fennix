@@ -127,7 +127,6 @@ var NAVTREEINDEX3 =
 "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____":[7,0,1,0,0,6,10],
 "de/ded/input_8h.html#dd/db1/structJoystickReport":[7,0,1,0,0,6,2],
 "de/ded/input_8h_source.html":[7,0,1,0,0,6],
-"df/d03/md_tools_doxygen_api.html":[1],
 "df/d26/fs_8h.html":[7,0,1,0,0,5],
 "df/d26/fs_8h.html#a00f03806ee4724ff3e44372909ab378b":[7,0,1,0,0,5,73],
 "df/d26/fs_8h.html#a01110bf8f909d84aac57bc6c3caf1e11":[7,0,1,0,0,5,38],
@@ -249,5 +248,6 @@ var NAVTREEINDEX3 =
 "df/d26/fs_8h.html#aec9bda2590b6b4ff6433991c57ce60a3":[7,0,1,0,0,5,92],
 "df/d26/fs_8h.html#aef3a1d1ba22c83e30b5c834dd343b2a8":[7,0,1,0,0,5,33],
 "df/d26/fs_8h.html#af0d5a9e82aa0ece31db45ae57b97b5d9":[7,0,1,0,0,5,0,0],
-"df/d26/fs_8h.html#af10a35e3950795d6ee4e07157d000131":[7,0,1,0,0,5,63]
+"df/d26/fs_8h.html#af10a35e3950795d6ee4e07157d000131":[7,0,1,0,0,5,63],
+"df/d26/fs_8h.html#af2c3f075d5c3e40a46da61a9d7a13abc":[7,0,1,0,0,5,94]
 };

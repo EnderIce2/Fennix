@@ -249,7 +249,6 @@ var syscalls_8h =
       [ "SYS_RENAME", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070", null ],
       [ "SYS_MAX", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467", null ]
     ] ],
-    [ "_Static_assert", "d2/d6e/syscalls_8h.html#a008f12a6e5809214fb42b04ae2c406d4", null ],
     [ "syscall0", "d2/d6e/syscalls_8h.html#aead3c4d793ac641f0c76fa3a2884799f", null ],
     [ "syscall1", "d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be", null ],
     [ "syscall2", "d2/d6e/syscalls_8h.html#af2d181ed9821a83ebe9aca04015aea37", null ],
