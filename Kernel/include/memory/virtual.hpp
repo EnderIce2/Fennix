@@ -61,7 +61,7 @@ namespace Memory
 		 * @param Flag Flag to check
 		 * @return true if page has the specified flag, false otherwise.
 		 */
-		bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P);
+		bool Check(void *VirtualAddress, PTFlag Flag = PTFlag::P, MapType Type = MapType::FourKiB);
 
 		/**
 		 * @brief Check if the region has the specified flag.

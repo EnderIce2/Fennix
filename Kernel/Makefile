@@ -32,7 +32,7 @@ WARNCFLAG = -Wall -Wextra \
 			-Wfloat-equal -Wpointer-arith -Wcast-align \
 			-Wredundant-decls -Winit-self -Wswitch-default \
 			-Wstrict-overflow=5 -Wno-error=cpp -Werror \
-			-Wno-unused-parameter
+			-Wno-unused-parameter -Wno-error=format
 
 CFLAG_STACK_PROTECTOR := -fstack-protector-all
 

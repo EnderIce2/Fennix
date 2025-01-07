@@ -14,7 +14,7 @@ export LDFLAGS := --sysroot=$(WORKSPACE_DIR)/out/ \
 export CFLAGS := \
 	--sysroot=$(WORKSPACE_DIR)/out/ \
 	-I$(WORKSPACE_DIR)/out/include \
-	-DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm
+	-DDEBUG -ggdb3 -O0 -fdiagnostics-color=always
 
 else # DEBUG
 

@@ -22,7 +22,7 @@
 
 namespace Memory
 {
-	bool Virtual::Check(void *VirtualAddress, PTFlag Flag)
+	bool Virtual::Check(void *VirtualAddress, PTFlag Flag, MapType Type)
 	{
 		uintptr_t Address = (uintptr_t)VirtualAddress;
 		Address &= 0xFFFFFFFFFFFFF000;

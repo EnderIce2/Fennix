@@ -124,6 +124,7 @@ ElfInfo *SearchLib(char *Path)
 
 __attribute__((naked, used, no_stack_protector)) void _dl_runtime_resolve()
 {
+#if defined(__amd64__)
 	__asm__(
 		"pop %r11\n" /* Pop lazy resolve arguments */
 		"pop %r10\n"
@@ -148,6 +149,11 @@ __attribute__((naked, used, no_stack_protector)) void _dl_runtime_resolve()
 		"pop %rdi\n"
 
 		"jmp *%r11\n"); /* Jump to the return value */
+#elif defined(__i386__)
+#warning "i386 _dl_runtime_resolve not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 }
 
 int RelocateHelper(ElfInfo *Info, Elf_Rela *Rela, short IsRel, void **Relocated);
@@ -561,7 +567,7 @@ int CheckElfEhdr(Elf_Ehdr *ehdr, char *Path)
 	if (ehdr->e_ident[EI_CLASS] != elfClass)
 	{
 		printf("dl: %s is not a %s-bit ELF file\n",
-			   Path, __LP64__ ? "64" : "32");
+			   Path, elfClass == ELFCLASS64 ? "64" : "32");
 		return -EINVAL;
 	}
 
@@ -804,6 +810,7 @@ int RelocateHelper(ElfInfo *Info, Elf_Rela *Rela, short IsRel, void **Relocated)
 		addAddend = 1;
 		break;
 	}
+#if __LP64__
 	case R_DTPMOD64:
 	{
 		printf("dl: i don't know what to do with DTPMOD64\n");
@@ -822,6 +829,7 @@ int RelocateHelper(ElfInfo *Info, Elf_Rela *Rela, short IsRel, void **Relocated)
 		reloc = symAddress + Rela->r_addend;
 		break;
 	}
+#endif // __LP64__
 	default:
 	{
 		printf("dl: Unsupported relocation type %d\n", relType);

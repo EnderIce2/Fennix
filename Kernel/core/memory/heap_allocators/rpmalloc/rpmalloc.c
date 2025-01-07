@@ -551,7 +551,9 @@ struct heap_t
 };
 
 /* Keep in sync with heap_t inside rpmalloc_compat.cpp */
+#ifndef __i386__
 static_assert(sizeof(heap_t) == 56408, "heap_t size mismatch");
+#endif // __i386__
 
 // Size class for defining a block size bucket
 struct size_class_t

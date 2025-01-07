@@ -146,10 +146,10 @@ static_assert(sizeof(blkcnt_t) == 8, "blkcnt_t must be 64 bits");
 #else
 static_assert(sizeof(dev_t) == 4, "dev_t must be 32 bits");
 static_assert(sizeof(ino_t) == 4, "ino_t must be 32 bits");
-static_assert(sizeof(mode_t) == 2, "mode_t must be 16 bits");
-static_assert(sizeof(nlink_t) == 2, "nlink_t must be 16 bits");
-static_assert(sizeof(uid_t) == 2, "uid_t must be 16 bits");
-static_assert(sizeof(gid_t) == 2, "gid_t must be 16 bits");
+static_assert(sizeof(mode_t) == 4, "mode_t must be 32 bits");
+static_assert(sizeof(nlink_t) == 4, "nlink_t must be 32 bits");
+static_assert(sizeof(uid_t) == 4, "uid_t must be 32 bits");
+static_assert(sizeof(gid_t) == 4, "gid_t must be 32 bits");
 static_assert(sizeof(off_t) == 4, "off_t must be 32 bits");
 static_assert(sizeof(time_t) == 4, "time_t must be 32 bits");
 static_assert(sizeof(blksize_t) == 4, "blksize_t must be 32 bits");

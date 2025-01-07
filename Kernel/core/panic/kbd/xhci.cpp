@@ -140,9 +140,9 @@ nsa CrashXHCIKeyboardDriver::CrashXHCIKeyboardDriver(PCIDevice xhci)
 
 		debug("IO %d 64-BIT %d", BAR[0] & 0x1, BAR[0] & 0x4);
 
-		uintptr_t baseAddress = BAR[0];
+		uint64_t baseAddress = BAR[0];
 		if (BAR[0] & 0x4)
-			baseAddress |= (uintptr_t)BAR[1] << 32;
+			baseAddress |= (uint64_t)BAR[1] << 32;
 
 		if (baseAddress & 0x1)
 			baseAddress &= 0xFFFFFFFFFFFFFFFC;
@@ -158,7 +158,7 @@ nsa CrashXHCIKeyboardDriver::CrashXHCIKeyboardDriver(PCIDevice xhci)
 		runtime = (XHCIruntime *)(baseAddress + (caps->RTSOFF & ~0x1F));
 		doorbell = (XHCIdoorbell *)(baseAddress + (caps->DBOFF & ~0x3));
 		uint16_t exCapOffset = caps->HCCPARAMS1.xHCIExtendedCapacitiesPointer << 2;
-		ExtendedCaps = (uintptr_t)caps + exCapOffset;
+		ExtendedCaps = (uint64_t)caps + exCapOffset;
 		debug("ExtendedCaps: %#lx (%#lx + %#lx)", ExtendedCaps, caps, exCapOffset);
 
 #pragma GCC diagnostic push

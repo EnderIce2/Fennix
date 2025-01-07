@@ -236,7 +236,9 @@ namespace Memory
 				assert(pte->Present == true);
 				pte->ReadWrite = sr.Write;
 				pte->UserSupervisor = sr.Read;
+#if defined(__amd64__)
 				pte->ExecuteDisable = sr.Exec;
+#endif
 
 				pte->CopyOnWrite = false;
 				debug("PFA %#lx is CoW (pt %#lx, flags %#lx)",

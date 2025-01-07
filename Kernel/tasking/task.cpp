@@ -222,12 +222,12 @@ namespace Tasking
 		TCB *Task::CreateThread(PCB *Parent, IP EntryPoint,
 								const char **argv, const char **envp,
 								const std::vector<AuxiliaryVector> &auxv,
-								TaskArchitecture arch, TaskCompatibility Compatibility,
+								TaskArchitecture _arch, TaskCompatibility Compatibility,
 								bool ThreadNotReady)
 	{
 		SmartLock(TaskingLock);
 		return new TCB(this, Parent, EntryPoint,
-					   argv, envp, auxv, arch,
+					   argv, envp, auxv, _arch,
 					   Compatibility, ThreadNotReady);
 	}
 

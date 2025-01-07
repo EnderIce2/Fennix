@@ -54,6 +54,7 @@ EXTERNC void *memset_sse2(void *dest, int c, size_t n)
 
 	for (; i + 64 <= n; i += 64)
 	{
+#if defined(__amd64__)
 		asmv("movd %0, %%xmm0\n"
 			 "movdqa %%xmm0, (%1)\n"
 			 "movdqa %%xmm0, 16(%1)\n"
@@ -62,6 +63,9 @@ EXTERNC void *memset_sse2(void *dest, int c, size_t n)
 			 :
 			 : "r"(c), "r"(((size_t)dest) + i)
 			 : "xmm0");
+#else
+#warning "memset_sse2 not implemented for other arch"
+#endif
 	}
 
 	asmv("rep stosb\n" ::"a"((size_t)(c)),

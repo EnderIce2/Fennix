@@ -627,9 +627,15 @@ void SetSigActToNative(const k_sigaction *linux, SignalAction *native)
 	native->Flags = linux->flags;
 	native->Restorer = linux->restorer;
 
+#if defined(__amd64__)
 	unsigned long mask = ((unsigned long)linux->mask[1] << 32) | linux->mask[0];
 	native->Mask = std::bitset<64>(ConvertMaskToNative(mask));
 	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
+#elif defined(__i386__)
+#warning "SetSigActToNative not implemented for i386"
+#elif defined(__aarch64__)
+#warning "SetSigActToNative not implemented for aarch64"
+#endif
 }
 
 void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
@@ -638,12 +644,18 @@ void SetSigActToLinux(const SignalAction *native, k_sigaction *linux)
 	linux->flags = native->Flags;
 	linux->restorer = native->Restorer;
 
+#if defined(__amd64__)
 	unsigned long mask = native->Mask.to_ulong();
 	mask = ConvertMaskToLinux(mask);
 
 	linux->mask[0] = mask & 0xFFFFFFFF;
 	linux->mask[1] = (uint32_t)((mask >> 32) & 0xFFFFFFFF);
 	debug("m0:%#lx m1:%#lx | n:%#lx", linux->mask[0], linux->mask[1], native->Mask);
+#elif defined(__i386__)
+#warning "SetSigActToLinux not implemented for i386"
+#elif defined(__aarch64__)
+#warning "SetSigActToLinux not implemented for aarch64"
+#endif
 }
 
 struct kstat KStatToStat(struct linux_kstat linux_stat)
@@ -2501,41 +2513,31 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	{
 	case linux_ARCH_SET_GS:
 	{
-#if defined(__amd64__)
-		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, addr);
-#elif defined(__i386__)
-		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_GS_BASE, addr);
+#if defined(__amd64__) || defined(__i386__)
+		CPU::x86::wrmsr(CPU::x86::MSRID::MSR_GS_BASE, addr);
 #endif
 		return 0;
 	}
 	case linux_ARCH_SET_FS:
 	{
-#if defined(__amd64__)
-		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, addr);
-#elif defined(__i386__)
-		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_FS_BASE, addr);
+#if defined(__amd64__) || defined(__i386__)
+		CPU::x86::wrmsr(CPU::x86::MSRID::MSR_FS_BASE, addr);
 #endif
 		return 0;
 	}
 	case linux_ARCH_GET_FS:
 	{
-#if defined(__amd64__)
+#if defined(__amd64__) || defined(__i386__)
 		*r_cst(uint64_t *, addr) =
-			CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
-#elif defined(__i386__)
-		*r_cst(uint64_t *, addr) =
-			CPU::x32::rdmsr(CPU::x32::MSRID::MSR_FS_BASE);
+			CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
 #endif
 		return 0;
 	}
 	case linux_ARCH_GET_GS:
 	{
-#if defined(__amd64__)
+#if defined(__amd64__) || defined(__i386__)
 		*r_cst(uint64_t *, addr) =
-			CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
-#elif defined(__i386__)
-		*r_cst(uint64_t *, addr) =
-			CPU::x32::rdmsr(CPU::x32::MSRID::MSR_GS_BASE);
+			CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
 #endif
 		return 0;
 	}
@@ -2899,13 +2901,17 @@ __no_sanitize("undefined") static ssize_t linux_getdents64(SysFrm *,
 	if (pDirp == nullptr)
 		return -linux_EFAULT;
 
-	/* Sanity checks */
+/* Sanity checks */
+#ifdef __LP64__
 	static_assert(sizeof(kdirent) == sizeof(linux_dirent64));
 	static_assert(offsetof(kdirent, d_ino) == offsetof(linux_dirent64, d_ino));
 	static_assert(offsetof(kdirent, d_off) == offsetof(linux_dirent64, d_off));
 	static_assert(offsetof(kdirent, d_reclen) == offsetof(linux_dirent64, d_reclen));
 	static_assert(offsetof(kdirent, d_type) == offsetof(linux_dirent64, d_type));
 	static_assert(offsetof(kdirent, d_name) == offsetof(linux_dirent64, d_name));
+#else
+#warning "Not implemented for 32-bit"
+#endif
 
 	/* The structs are the same, no need for conversion. */
 	ssize_t ret = fildes.Node->ReadDir((struct kdirent *)pDirp, count, fildes.Offset,
@@ -4290,14 +4296,14 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	debug("< [%ld:\"%s\"] = %ld", Frame->ax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(__i386__)
-	if (Frame->eax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))
+	if (Frame->ax > sizeof(LinuxSyscallsTableI386) / sizeof(SyscallData))
 	{
 		fixme("Syscall %d not implemented",
-			  Frame->eax);
+			  Frame->ax);
 		return -linux_ENOSYS;
 	}
 
-	SyscallData Syscall = LinuxSyscallsTableI386[Frame->eax];
+	SyscallData Syscall = LinuxSyscallsTableI386[Frame->ax];
 
 	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
 											  Syscall.Handler);
@@ -4305,20 +4311,20 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 	if (unlikely(!call))
 	{
 		fixme("Syscall %s(%d) not implemented",
-			  Syscall.Name, Frame->eax);
+			  Syscall.Name, Frame->ax);
 		return -linux_ENOSYS;
 	}
 
 	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
-		  Frame->eax, Syscall.Name,
-		  Frame->ebx, Frame->ecx, Frame->edx,
-		  Frame->esi, Frame->edi, Frame->ebp);
+		  Frame->ax, Syscall.Name,
+		  Frame->bx, Frame->cx, Frame->dx,
+		  Frame->si, Frame->di, Frame->bp);
 
 	int sc_ret = call(Frame,
-					  Frame->ebx, Frame->ecx, Frame->edx,
-					  Frame->esi, Frame->edi, Frame->ebp);
+					  Frame->bx, Frame->cx, Frame->dx,
+					  Frame->si, Frame->di, Frame->bp);
 
-	debug("< [%d:\"%s\"] = %d", Frame->eax, Syscall.Name, sc_ret);
+	debug("< [%d:\"%s\"] = %d", Frame->ax, Syscall.Name, sc_ret);
 	return sc_ret;
 #elif defined(__aarch64__)
 	return -linux_ENOSYS;

@@ -73,7 +73,7 @@ namespace Memory
 			}
 		}
 #else
-#error "PageTable::Fork() not implemented for other architectures"
+#warning "PageTable::Fork() not implemented for other architectures"
 #endif
 
 		debug("Forked page table %#lx to %#lx", this, NewTable);

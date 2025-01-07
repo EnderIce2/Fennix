@@ -313,7 +313,7 @@ namespace CPU
 			CoreData->Data.FPU.mxcsr = 0b0001111110000000;
 			CoreData->Data.FPU.mxcsrmask = 0b1111111110111111;
 			CoreData->Data.FPU.fcw = 0b0000001100111111;
-			fxrstor(&CoreData->Data.FPU);
+			CPU::x86::fxrstor(&CoreData->Data.FPU);
 
 			SSEEnableAfter = true;
 		}
@@ -378,7 +378,7 @@ namespace CPU
 		debug("Updated CR4.");
 
 		debug("Enabling PAT support...");
-		wrmsr(MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
+		CPU::x86::wrmsr(CPU::x86::MSR_CR_PAT, 0x6 | (0x0 << 8) | (0x1 << 16));
 		if (!BSP++)
 			trace("Features for BSP initialized.");
 		if (SSEEnableAfter)

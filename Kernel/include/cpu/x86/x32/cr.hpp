@@ -174,14 +174,6 @@ namespace CPU
 			return (CR4){.raw = Result};
 		}
 
-		nsa static inline CR8 readcr8()
-		{
-			uint32_t Result = 0;
-			asmv("mov %%cr8, %[Result]"
-				 : [Result] "=q"(Result));
-			return (CR8){.raw = Result};
-		}
-
 		nsa static inline void writecr0(CR0 ControlRegister)
 		{
 			asmv("mov %[ControlRegister], %%cr0"
@@ -209,14 +201,6 @@ namespace CPU
 		nsa static inline void writecr4(CR4 ControlRegister)
 		{
 			asmv("mov %[ControlRegister], %%cr4"
-				 :
-				 : [ControlRegister] "q"(ControlRegister.raw)
-				 : "memory");
-		}
-
-		nsa static inline void writecr8(CR8 ControlRegister)
-		{
-			asmv("mov %[ControlRegister], %%cr8"
 				 :
 				 : [ControlRegister] "q"(ControlRegister.raw)
 				 : "memory");

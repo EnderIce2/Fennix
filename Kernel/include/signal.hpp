@@ -249,7 +249,7 @@ namespace Tasking
 #else
 			CPU::x32::FXState fx;
 			CPU::x32::SchedulerFrame tf;
-			uintptr_t GSBase, FSBase;
+			uintptr_t GSBase, FSBase, ShadowGSBase;
 #endif
 			sigset_t SignalMask;
 			int Compatibility;
@@ -354,8 +354,8 @@ namespace Tasking
 		int AddSignal(signal_t sig, union sigval val = {0}, pid_t tid = -1);
 		int RemoveSignal(signal_t sig);
 
-		bool HandleSignal(CPU::SchedulerFrame *tf, void *thread);
-		void RestoreHandleSignal(SyscallsFrame *tf, void *thread);
+		arch bool HandleSignal(CPU::SchedulerFrame *tf, void *thread);
+		arch void RestoreHandleSignal(SyscallsFrame *tf, void *thread);
 
 		int SetAction(signal_t sig, const SignalAction *act);
 		int GetAction(signal_t sig, SignalAction *act);

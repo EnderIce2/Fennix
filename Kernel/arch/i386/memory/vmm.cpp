@@ -29,7 +29,7 @@ namespace Memory
 		Address &= 0xFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		PageTableEntryPtr *PTE = nullptr;
 
 		if ((PDE->raw & Flag) > 0)
@@ -54,7 +54,7 @@ namespace Memory
 		Address &= 0xFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		PageTableEntryPtr *PTE = nullptr;
 
 		if (PDE->Present)
@@ -80,7 +80,7 @@ namespace Memory
 
 		PageMapIndexer Index = PageMapIndexer(Address);
 
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		PageTableEntryPtr *PTE = nullptr;
 
 		if (PDE->Present)
@@ -104,7 +104,7 @@ namespace Memory
 		Address &= 0xFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		if (PDE->Present)
 			return PDE;
 		return nullptr;
@@ -116,7 +116,7 @@ namespace Memory
 		Address &= 0xFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		if (!PDE->Present)
 			return nullptr;
 
@@ -130,7 +130,7 @@ namespace Memory
 	void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
-		if (unlikely(!this->Table))
+		if (unlikely(!this->pTable))
 		{
 			error("No page table");
 			return;
@@ -142,7 +142,7 @@ namespace Memory
 		// Clear any flags that are not 1 << 0 (Present) - 1 << 5 (Accessed) because rest are for page table entries only
 		uint64_t DirectoryFlags = Flags & 0x3F;
 
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		if (Type == MapType::FourMiB)
 		{
 			PDE->raw |= (uintptr_t)Flags;
@@ -191,14 +191,14 @@ namespace Memory
 	void Virtual::Unmap(void *VirtualAddress, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
-		if (!this->Table)
+		if (!this->pTable)
 		{
 			error("No page table");
 			return;
 		}
 
 		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
-		PageDirectoryEntry *PDE = &this->Table->Entries[Index.PDEIndex];
+		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		if (!PDE->Present)
 		{
 			warn("Page %#lx not present", PDE->GetAddress());
@@ -222,5 +222,19 @@ namespace Memory
 		PTE.Present = false;
 		PTEPtr->Entries[Index.PTEIndex] = PTE;
 		CPU::x32::invlpg(VirtualAddress);
+	}
+
+	void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	{
+		SmartLock(this->MemoryLock);
+		if (unlikely(!this->pTable))
+		{
+			error("No page table");
+			return;
+		}
+
+#warning "Remap is not properly implemented"
+		this->Unmap(VirtualAddress, Type);
+		this->Map(VirtualAddress, PhysicalAddress, Flags, Type);
 	}
 }

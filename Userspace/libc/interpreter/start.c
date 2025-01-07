@@ -99,6 +99,7 @@ void __fini_print_buffer();
 
 __attribute__((naked, used, no_stack_protector)) void _start()
 {
+#if defined(__amd64__)
 	__asm__(
 		"xorq %rbp, %rbp\n" /* Clear rbp */
 
@@ -125,14 +126,21 @@ __attribute__((naked, used, no_stack_protector)) void _start()
 		"call main\n"		/* Call _dl_main */
 		"movl %eax, %edi\n" /* Move return value to edi */
 		"call _exit\n");	/* Call _exit */
+#elif defined(__i386__)
+#warning "i386 _start not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 }
 
 __attribute__((no_stack_protector)) _Noreturn void _exit(int status)
 {
 	__fini_print_buffer();
 	call_exit(status);
-	/* At this point, the program *SHOULD* have exited. */
+/* At this point, the program *SHOULD* have exited. */
+#if defined(__amd64__) || defined(__i386__)
 	__asm__("ud2\n");
+#endif
 	__builtin_unreachable();
 }
 

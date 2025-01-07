@@ -107,6 +107,8 @@ typedef struct
 #define MESSAGE_RECV_PAYLOAD ToMsg(MSG_RECVPAYLOAD)
 #define MESSAGE_RECV_STATUS ToMsg(MSG_RECVSTATUS)
 
+#if defined(__amd64__)
+
 #define VM_PORT(cmd, in_ebx, isi, idi,          \
 				flags, magic,                   \
 				ax, bx, cx, dx, si, di)         \
@@ -168,6 +170,23 @@ typedef struct
 						   "S"(isi),            \
 						   "D"(idi),            \
 						   "r"(bp) : "memory", "cc")
+
+#elif defined(__i386__)
+
+#define VM_PORT(cmd, in_ebx, isi, idi, \
+				flags, magic,          \
+				ax, bx, cx, dx, si, di)
+
+#define VM_PORT_HB_OUT(cmd, in_ecx, isi, idi, \		
+					   flags,         \
+					   magic, bp, ax, \
+					   bx, cx, dx, si, di)
+
+#define VM_PORT_HB_IN(cmd, in_ecx, isi, idi, \
+					  flags, magic, bp,      \
+					  ax, bx, cx, dx, si, di)
+
+#endif
 
 /* TODO:
 	- use vmcall or vmmcall instead of "out" and "in" if available

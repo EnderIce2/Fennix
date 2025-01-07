@@ -1,28 +1,28 @@
 /*
-	This file is part of Fennix Kernel.
+    This file is part of Fennix Kernel.
 
-	Fennix Kernel is free software: you can redistribute it and/or
-	modify it under the terms of the GNU General Public License as
-	published by the Free Software Foundation, either version 3 of
-	the License, or (at your option) any later version.
+    Fennix Kernel is free software: you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation, either version 3 of
+    the License, or (at your option) any later version.
 
-	Fennix Kernel is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-	GNU General Public License for more details.
+    Fennix Kernel is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
 
-	You should have received a copy of the GNU General Public License
-	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License
+    along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_CPU_x32_MSR_H__
-#define __FENNIX_KERNEL_CPU_x32_MSR_H__
+#ifndef __FENNIX_KERNEL_CPU_x64_MSR_H__
+#define __FENNIX_KERNEL_CPU_x64_MSR_H__
 
 #include <types.h>
 
 namespace CPU
 {
-    namespace x32
+    namespace x86
     {
         enum MSRID
         {
@@ -398,9 +398,29 @@ namespace CPU
             /** @brief Auxiliary TSC (0xC0000103) */
             MSR_TSC_AUX = 0xC0000103,
             MSR_CR_PAT = 0x00000277,
+            MSR_CR_PAT_RESET = 0x0007040600070406ULL
         };
 
-#if defined(__i386__)
+#if defined(__amd64__)
+        nsa static inline uint64_t rdmsr(uint32_t msr)
+        {
+            uint32_t Low, High;
+            asmv("rdmsr"
+                 : "=a"(Low), "=d"(High)
+                 : "c"(msr)
+                 : "memory");
+            return ((uint64_t)Low) | (((uint64_t)High) << 32);
+        }
+
+        nsa static inline void wrmsr(uint32_t msr, uint64_t Value)
+        {
+            uint32_t Low = s_cst(uint32_t, Value), High = s_cst(uint32_t, Value >> 32);
+            asmv("wrmsr"
+                 :
+                 : "c"(msr), "a"(Low), "d"(High)
+                 : "memory");
+        }
+#elif defined(__i386__)
         nsa static inline uint64_t rdmsr(uint32_t msr)
         {
             uint32_t Low, High;
@@ -423,4 +443,4 @@ namespace CPU
     }
 }
 
-#endif // !__FENNIX_KERNEL_CPU_x32_MSR_H__
+#endif // !__FENNIX_KERNEL_CPU_x64_MSR_H__

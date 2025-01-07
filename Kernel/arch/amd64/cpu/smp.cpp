@@ -61,7 +61,7 @@ nsa CPUData *GetCurrentCPU()
 			Memory::SwapPT(KernelPageTable, thisPageTable);
 
 		if (apic->x2APIC)
-			CoreID = int(CPU::x64::rdmsr(CPU::x64::MSR_X2APIC_APICID));
+			CoreID = int(CPU::x86::rdmsr(CPU::x86::MSR_X2APIC_APICID));
 		else
 			CoreID = apic->Read(APIC::APIC_ID) >> 24;
 	}
@@ -151,7 +151,7 @@ namespace SMP
 			debug("Initializing CPU %d", lapic->APICId);
 			uint8_t APIC_ID = 0;
 			if (apic->x2APIC)
-				APIC_ID = uint8_t(CPU::x64::rdmsr(CPU::x64::MSR_X2APIC_APICID));
+				APIC_ID = uint8_t(CPU::x86::rdmsr(CPU::x86::MSR_X2APIC_APICID));
 			else
 				APIC_ID = uint8_t(apic->Read(APIC::APIC_ID) >> 24);
 

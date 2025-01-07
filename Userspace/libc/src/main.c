@@ -114,6 +114,7 @@ void __crt_fini_array(void)
 
 __attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
 {
+#if defined(__amd64__)
 	asm("movq $0, %rbp\n"
 		"pushq %rbp\n"
 		"pushq %rbp\n"
@@ -140,6 +141,11 @@ __attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
 
 		"movl %eax, %edi\n"
 		"call _exit\n");
+#elif defined(__i386__)
+#warning "i386 _start not implemented"
+#else
+#warning "unknown architecture"
+#endif
 }
 
 int main(int argc, char *argv[], char *envp[])

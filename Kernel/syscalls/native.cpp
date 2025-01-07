@@ -255,19 +255,15 @@ static int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, 
 		if (arg == nullptr)
 			return -EFAULT;
 
-#if defined(__amd64__)
-		*r_cst(uintptr_t *, arg) = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
-#elif defined(__i386__)
-		*r_cst(uintptr_t *, arg) = CPU::x32::rdmsr(CPU::x32::MSRID::MSR_GS_BASE);
+#if defined(__amd64__) || defined(__i386__)
+		*r_cst(uintptr_t *, arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
 #endif
 		return 0;
 	}
 	case __SYS_SET_GS:
 	{
-#if defined(__amd64__)
-		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_GS_BASE, arg1);
-#elif defined(__i386__)
-		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_GS_BASE, arg1);
+#if defined(__amd64__) || defined(__i386__)
+		CPU::x86::wrmsr(CPU::x86::MSRID::MSR_GS_BASE, arg1);
 #endif
 		return 0;
 	}
@@ -277,19 +273,15 @@ static int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, 
 		if (arg == nullptr)
 			return -EFAULT;
 
-#if defined(__amd64__)
-		*r_cst(uintptr_t *, arg) = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
-#elif defined(__i386__)
-		*r_cst(uintptr_t *, arg) = CPU::x32::rdmsr(CPU::x32::MSRID::MSR_FS_BASE);
+#if defined(__amd64__) || defined(__i386__)
+		*r_cst(uintptr_t *, arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
 #endif
 		return 0;
 	}
 	case __SYS_SET_FS:
 	{
-#if defined(__amd64__)
-		CPU::x64::wrmsr(CPU::x64::MSRID::MSR_FS_BASE, arg1);
-#elif defined(__i386__)
-		CPU::x32::wrmsr(CPU::x32::MSRID::MSR_FS_BASE, arg1);
+#if defined(__amd64__) || defined(__i386__)
+		CPU::x86::wrmsr(CPU::x86::MSRID::MSR_FS_BASE, arg1);
 #endif
 		return 0;
 	}

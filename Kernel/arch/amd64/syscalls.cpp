@@ -92,8 +92,8 @@ extern "C" __naked __used __no_stack_protector __aligned(16) void SystemCallHand
 
 void InitializeSystemCalls()
 {
-	wrmsr(MSR_EFER, rdmsr(MSR_EFER) | 1);
-	wrmsr(MSR_STAR, ((uint64_t)(GDT_KERNEL_CODE) << 32) | ((uint64_t)(GDT_KERNEL_DATA | 3) << 48));
-	wrmsr(MSR_LSTAR, (uint64_t)SystemCallHandlerStub);
-	wrmsr(MSR_SYSCALL_MASK, (uint64_t)(1 << 9));
+	CPU::x86::wrmsr(CPU::x86::MSR_EFER, CPU::x86::rdmsr(CPU::x86::MSR_EFER) | 1);
+	CPU::x86::wrmsr(CPU::x86::MSR_STAR, ((uint64_t)(GDT_KERNEL_CODE) << 32) | ((uint64_t)(GDT_KERNEL_DATA | 3) << 48));
+	CPU::x86::wrmsr(CPU::x86::MSR_LSTAR, (uint64_t)SystemCallHandlerStub);
+	CPU::x86::wrmsr(CPU::x86::MSR_SYSCALL_MASK, (uint64_t)(1 << 9));
 }

@@ -23,13 +23,13 @@
 #include <cpu/x86/cpuid_intel.hpp>
 #include <cpu/x86/cpuid_amd.hpp>
 #include <cpu/x86/x32/cr.hpp>
-#include <cpu/x86/x32/msr.hpp>
 #include <cpu/x86/x64/cr.hpp>
-#include <cpu/x86/x64/msr.hpp>
 #include <cpu/x86/exceptions.hpp>
 #include <cpu/x86/interrupts.hpp>
 #include <cpu/signatures.hpp>
+#include <cpu/x86/msr.hpp>
 #include <cpu/membar.hpp>
+#include <assert.h>
 #include <cstring>
 
 /**
@@ -211,6 +211,41 @@ namespace CPU
 	/** @brief Get CPU counter value. */
 	uint64_t Counter();
 
+	namespace x86
+	{
+		nsa static inline void fxsave(void *FXSaveArea)
+		{
+			assert(FXSaveArea != nullptr);
+#if defined(__amd64__)
+			asmv("fxsaveq (%0)"
+				 :
+				 : "r"(FXSaveArea)
+				 : "memory");
+#elif defined(__i386__)
+			asmv("fxsave (%0)"
+				 :
+				 : "r"(FXSaveArea)
+				 : "memory");
+#endif
+		}
+
+		nsa static inline void fxrstor(void *FXRstorArea)
+		{
+			assert(FXRstorArea != nullptr);
+#if defined(__amd64__)
+			asmv("fxrstorq (%0)"
+				 :
+				 : "r"(FXRstorArea)
+				 : "memory");
+#elif defined(__i386__)
+			asmv("fxrstor (%0)"
+				 :
+				 : "r"(FXRstorArea)
+				 : "memory");
+#endif
+		}
+	}
+
 	namespace x32
 	{
 		/**
@@ -294,24 +329,83 @@ namespace CPU
 
 		struct TrapFrame
 		{
-			uint32_t edi; // Destination index for string operations
-			uint32_t esi; // Source index for string operations
-			uint32_t ebp; // Base Pointer (meant for stack frames)
-			uint32_t esp; // Stack Pointer
-			uint32_t ebx; // Base
-			uint32_t edx; // Data (commonly extends the A register)
-			uint32_t ecx; // Counter
-			uint32_t eax; // Accumulator
+			uint32_t edi; /* Destination index for string operations */
+			uint32_t esi; /* Source index for string operations */
+			uint32_t ebp; /* Base Pointer (meant for stack frames) */
+			uint32_t ebx; /* Base */
+			uint32_t edx; /* Data (commonly extends the A register) */
+			uint32_t ecx; /* Counter */
+			uint32_t eax; /* Accumulator */
 
-			uint32_t InterruptNumber; // Interrupt Number
-			uint32_t ErrorCode;		  // Error code
+			uint32_t InterruptNumber; /* Interrupt Number */
+			uint32_t ErrorCode;		  /* Error code */
 
-			uint32_t eip;  // Instruction Pointer
-			uint32_t cs;   // Code Segment
-			EFLAGS eflags; // Register Flags
+			uint32_t eip;  /* Instruction Pointer */
+			uint32_t cs;   /* Code Segment */
+			EFLAGS eflags; /* Register Flags */
+			uint32_t esp;  /* Stack Pointer */
+			uint32_t ss;   /* Stack Segment */
+		};
 
-			uint32_t r3_esp; // Stack Pointer
-			uint32_t r3_ss;	 // Stack Segment
+		struct SchedulerFrame
+		{
+			uint32_t ppt; /* Process Page Table */
+			uint32_t opt; /* Original Page Table */
+
+			uint32_t ebp; /* Base Pointer (meant for stack frames) */
+			uint32_t edi; /* Destination index for string operations */
+			uint32_t esi; /* Source index for string operations */
+			uint32_t edx; /* Data (commonly extends the A register) */
+			uint32_t ecx; /* Counter */
+			uint32_t ebx; /* Base */
+			uint32_t eax; /* Accumulator */
+
+			uint32_t InterruptNumber; /* Interrupt Number */
+			uint32_t ErrorCode;		  /* Error code */
+
+			uint32_t eip;  /* Instruction Pointer */
+			uint32_t cs;   /* Code Segment */
+			EFLAGS eflags; /* Register Flags */
+			uint32_t esp;  /* Stack Pointer */
+			uint32_t ss;   /* Stack Segment */
+		};
+
+		struct ExceptionFrame
+		{
+			uint32_t cr0; /* Control Register 0 (system control) */
+			uint32_t cr2; /* Control Register 2 (page fault linear address) */
+			uint32_t cr3; /* Control Register 3 (page directory base) */
+			uint32_t cr4; /* Control Register 4 (system control) */
+			uint32_t cr8; /* Control Register 8 (task priority) */
+
+			uint32_t dr0; /* Debug Register */
+			uint32_t dr1; /* Debug Register */
+			uint32_t dr2; /* Debug Register */
+			uint32_t dr3; /* Debug Register */
+			uint32_t dr6; /* Debug Register */
+			uint32_t dr7; /* Debug Register */
+
+			uint32_t gs; /* General purpose */
+			uint32_t fs; /* General purpose */
+			uint32_t es; /* Extra Segment */
+			uint32_t ds; /* Data Segment */
+
+			uint32_t ebp; /* Base Pointer (meant for stack frames) */
+			uint32_t edi; /* Destination index for string operations */
+			uint32_t esi; /* Source index for string operations */
+			uint32_t edx; /* Data (commonly extends the A register) */
+			uint32_t ecx; /* Counter */
+			uint32_t ebx; /* Base */
+			uint32_t eax; /* Accumulator */
+
+			uint32_t InterruptNumber; /* Interrupt Number */
+			uint32_t ErrorCode;		  /* Error code */
+
+			uint32_t eip;  /* Instruction Pointer */
+			uint32_t cs;   /* Code Segment */
+			EFLAGS eflags; /* Register Flags */
+			uint32_t esp;  /* Stack Pointer */
+			uint32_t ss;   /* Stack Segment */
 		};
 
 		typedef union DR6
@@ -319,27 +413,27 @@ namespace CPU
 			struct
 			{
 				/** @brief Breakpoint #0 Condition Detected */
-				uint64_t B0 : 1;
+				uint32_t B0 : 1;
 				/** @brief Breakpoint #1 Condition Detected */
-				uint64_t B1 : 1;
+				uint32_t B1 : 1;
 				/** @brief Breakpoint #2 Condition Detected */
-				uint64_t B2 : 1;
+				uint32_t B2 : 1;
 				/** @brief Breakpoint #3 Condition Detected */
-				uint64_t B3 : 1;
+				uint32_t B3 : 1;
 				/** @brief Reserved */
-				uint64_t Reserved0 : 8;
+				uint32_t Reserved0 : 8;
 				/** @brief Reserved */
-				uint64_t Reserved1 : 1;
+				uint32_t Reserved1 : 1;
 				/** @brief Breakpoint Debug Access Detected */
-				uint64_t BD : 1;
+				uint32_t BD : 1;
 				/** @brief Breakpoint Single Step */
-				uint64_t BS : 1;
+				uint32_t BS : 1;
 				/** @brief Breakpoint Task Switch */
-				uint64_t BT : 1;
+				uint32_t BT : 1;
 				/** @brief Reserved */
-				uint64_t Reserved2 : 15;
+				uint32_t Reserved2 : 15;
 			};
-			uint64_t raw;
+			uint32_t raw;
 		} DR6;
 
 		typedef union DR7
@@ -977,32 +1071,6 @@ namespace CPU
 			uint32_t eax, ebx, ecx, edx;
 			cpuid(0x0, &eax, &ebx, &ecx, &edx);
 			return eax;
-		}
-
-		nsa static inline void fxsave(void *FXSaveArea)
-		{
-#ifdef __amd64__
-			if (!FXSaveArea || FXSaveArea >= (char *)0xfffffffffffff000)
-				return;
-
-			asmv("fxsaveq (%0)"
-				 :
-				 : "r"(FXSaveArea)
-				 : "memory");
-#endif
-		}
-
-		nsa static inline void fxrstor(void *FXRstorArea)
-		{
-#ifdef __amd64__
-			if (!FXRstorArea || FXRstorArea >= (char *)0xfffffffffffff000)
-				return;
-
-			asmv("fxrstorq (%0)"
-				 :
-				 : "r"(FXRstorArea)
-				 : "memory");
-#endif
 		}
 	}
 

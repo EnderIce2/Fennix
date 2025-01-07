@@ -485,9 +485,9 @@ namespace Tasking
 
 #if defined(__amd64__)
 			this->ShadowGSBase =
-				CPU::x64::rdmsr(CPU::x64::MSRID::MSR_SHADOW_GS_BASE);
-			this->GSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_GS_BASE);
-			this->FSBase = CPU::x64::rdmsr(CPU::x64::MSRID::MSR_FS_BASE);
+				CPU::x86::rdmsr(CPU::x86::MSRID::MSR_SHADOW_GS_BASE);
+			this->GSBase = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
+			this->FSBase = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
 			this->Registers.cs = GDT_KERNEL_CODE;
 			this->Registers.ss = GDT_KERNEL_DATA;
 			this->Registers.rflags.AlwaysOne = 1;
@@ -498,7 +498,7 @@ namespace Tasking
 			POKE(uintptr_t, this->Registers.rsp) = (uintptr_t)ThreadDoExit;
 #elif defined(__i386__)
 			this->Registers.cs = GDT_KERNEL_CODE;
-			this->Registers.r3_ss = GDT_KERNEL_DATA;
+			this->Registers.ss = GDT_KERNEL_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;
@@ -520,7 +520,13 @@ namespace Tasking
 			this->ctx->va.MapTo(gst, this->Parent->PageTable);
 			gsTCB *gsT = (gsTCB *)gst.PhysicalAddress;
 #ifdef DEBUG
+#if defined(__amd64__)
 			gsT->__stub = 0xFFFFFFFFFFFFFFFF;
+#elif defined(__i386__)
+			gsT->__stub = 0xFFFFFFFF;
+#elif defined(__aarch64__)
+			gsT->__stub = 0xFFFFFFFFFFFFFFFF;
+#endif
 #endif
 
 			gsT->ScPages = TO_PAGES(STACK_SIZE);
@@ -552,7 +558,7 @@ namespace Tasking
 			this->SetupUserStack_x86_64(argv, envp, auxv, Compatibility);
 #elif defined(__i386__)
 			this->Registers.cs = GDT_USER_CODE;
-			this->Registers.r3_ss = GDT_USER_DATA;
+			this->Registers.ss = GDT_USER_DATA;
 			this->Registers.eflags.AlwaysOne = 1;
 			this->Registers.eflags.IF = 1;
 			this->Registers.eflags.ID = 1;
@@ -562,9 +568,9 @@ namespace Tasking
 			   is exited or we are going to get
 			   an exception. */
 
-			this->SetupUserStack_x86_32(argv, envp, auxv);
+			this->SetupUserStack_x86_32(argv, envp, auxv, Compatibility);
 #elif defined(__aarch64__)
-			this->SetupUserStack_aarch64(argv, envp, auxv);
+			this->SetupUserStack_aarch64(argv, envp, auxv, Compatibility);
 #endif
 #ifdef DEBUG_TASKING
 			DumpData(this->Name, this->Stack, STACK_SIZE);

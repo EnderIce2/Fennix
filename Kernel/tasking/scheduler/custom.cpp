@@ -195,7 +195,7 @@ namespace Tasking::Scheduler
 
 	void Custom::StartScheduler()
 	{
-#if defined(__amd64__) || defined(__i386__)
+#if defined(__amd64__)
 		if (Interrupts::apicTimer[0])
 		{
 			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
@@ -587,15 +587,11 @@ namespace Tasking::Scheduler
 		else
 		{
 			CurrentCPU->CurrentThread->Registers = *Frame;
-			CPU::x64::fxsave(&CurrentCPU->CurrentThread->FPU);
-#ifdef __amd64__
-			CurrentCPU->CurrentThread->ShadowGSBase = CPU::x64::rdmsr(CPU::x64::MSR_SHADOW_GS_BASE);
-			CurrentCPU->CurrentThread->GSBase = CPU::x64::rdmsr(CPU::x64::MSR_GS_BASE);
-			CurrentCPU->CurrentThread->FSBase = CPU::x64::rdmsr(CPU::x64::MSR_FS_BASE);
-#else
-			CurrentCPU->CurrentThread->ShadowGSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_SHADOW_GS_BASE));
-			CurrentCPU->CurrentThread->GSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_GS_BASE));
-			CurrentCPU->CurrentThread->FSBase = uintptr_t(CPU::x32::rdmsr(CPU::x32::MSR_FS_BASE));
+#if defined(__amd64__) || defined(__i386__)
+			CPU::x86::fxsave(&CurrentCPU->CurrentThread->FPU);
+			CurrentCPU->CurrentThread->ShadowGSBase = CPU::x86::rdmsr(CPU::x86::MSR_SHADOW_GS_BASE);
+			CurrentCPU->CurrentThread->GSBase = CPU::x86::rdmsr(CPU::x86::MSR_GS_BASE);
+			CurrentCPU->CurrentThread->FSBase = CPU::x86::rdmsr(CPU::x86::MSR_FS_BASE);
 #endif
 
 			if (CurrentCPU->CurrentProcess->State.load() == TaskState::Running)
@@ -681,18 +677,12 @@ namespace Tasking::Scheduler
 
 		*Frame = CurrentCPU->CurrentThread->Registers;
 
-#ifdef __amd64__
+#if defined(__amd64__) || defined(__i386__)
 		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
-		CPU::x64::fxrstor(&CurrentCPU->CurrentThread->FPU);
-		CPU::x64::wrmsr(CPU::x64::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
-		CPU::x64::wrmsr(CPU::x64::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
-		CPU::x64::wrmsr(CPU::x64::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
-#else
-		GlobalDescriptorTable::SetKernelStack((void *)((uintptr_t)CurrentCPU->CurrentThread->Stack->GetStackTop()));
-		CPU::x32::fxrstor(&CurrentCPU->CurrentThread->FPU);
-		CPU::x32::wrmsr(CPU::x32::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
-		CPU::x32::wrmsr(CPU::x32::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
-		CPU::x32::wrmsr(CPU::x32::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
+		CPU::x86::fxrstor(&CurrentCPU->CurrentThread->FPU);
+		CPU::x86::wrmsr(CPU::x86::MSR_SHADOW_GS_BASE, CurrentCPU->CurrentThread->ShadowGSBase);
+		CPU::x86::wrmsr(CPU::x86::MSR_GS_BASE, CurrentCPU->CurrentThread->GSBase);
+		CPU::x86::wrmsr(CPU::x86::MSR_FS_BASE, CurrentCPU->CurrentThread->FSBase);
 #endif
 
 		CurrentCPU->CurrentProcess->Signals.HandleSignal(Frame, CurrentCPU->CurrentThread.load());

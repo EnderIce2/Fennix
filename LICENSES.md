@@ -54,6 +54,11 @@ Make sure to read and comply with these licenses before using or redistributing 
 - **License:** Unlicense and 0BSD
 - **Location(s):** [Userspace/libc/interpreter/nanoprintf.h](Userspace/libc/interpreter/nanoprintf.h)
 
+## arith64.c
+
+- **License:** Unlicense
+- **Location(s):** [Userspace/libc/src/arith64.c](Userspace/libc/src/arith64.c)
+
 ---
 
 Please refer to the respective license files for the full text of each license.

@@ -6,7 +6,7 @@ DEBUG = 1
 OSNAME = Fennix
 
 # OS architecture, check AVAILABLE_ARCHS for available options.
-OSARCH = i386
+OSARCH = amd64
 
 # Kernel version.
 KERNEL_VERSION = dev

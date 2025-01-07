@@ -121,9 +121,6 @@ namespace KernelConsole
 
 		switch (Request)
 		{
-		case 0xffffffff80045430: /* FIXME: ???? */
-			debug("???");
-			[[fallthrough]];
 		case TIOCGPTN:
 		{
 			fixme("stub ioctl TIOCGPTN");

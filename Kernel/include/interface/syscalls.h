@@ -33,10 +33,16 @@
 static inline scarg syscall0(scarg syscall)
 {
 	scarg ret;
+#if defined(__amd64__)
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -52,10 +58,16 @@ static inline scarg syscall0(scarg syscall)
 static inline scarg syscall1(scarg syscall, scarg arg1)
 {
 	scarg ret;
+#if defined(__amd64__)
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -72,10 +84,16 @@ static inline scarg syscall1(scarg syscall, scarg arg1)
 static inline scarg syscall2(scarg syscall, scarg arg1, scarg arg2)
 {
 	scarg ret;
+#if defined(__amd64__)
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1), "S"(arg2)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -93,10 +111,16 @@ static inline scarg syscall2(scarg syscall, scarg arg1, scarg arg2)
 static inline scarg syscall3(scarg syscall, scarg arg1, scarg arg2, scarg arg3)
 {
 	scarg ret;
+#if defined(__amd64__)
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -115,11 +139,17 @@ static inline scarg syscall3(scarg syscall, scarg arg1, scarg arg2, scarg arg3)
 static inline scarg syscall4(scarg syscall, scarg arg1, scarg arg2, scarg arg3, scarg arg4)
 {
 	scarg ret;
+#if defined(__amd64__)
 	register scarg r10 __asm__("r10") = arg4;
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -139,12 +169,18 @@ static inline scarg syscall4(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 static inline scarg syscall5(scarg syscall, scarg arg1, scarg arg2, scarg arg3, scarg arg4, scarg arg5)
 {
 	scarg ret;
+#if defined(__amd64__)
 	register scarg r10 __asm__("r10") = arg4;
 	register scarg r8 __asm__("r8") = arg5;
 	__asm__ __volatile__("syscall"
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10), "r"(r8)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 
@@ -165,6 +201,7 @@ static inline scarg syscall5(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, scarg arg4, scarg arg5, scarg arg6)
 {
 	scarg ret;
+#if defined(__amd64__)
 	register scarg r10 __asm__("r10") = arg4;
 	register scarg r8 __asm__("r8") = arg5;
 	register scarg r9 __asm__("r9") = arg6;
@@ -172,6 +209,11 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "=a"(ret)
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10), "r"(r8), "r"(r9)
 						 : "rcx", "r11", "memory");
+#elif defined(__i386__)
+#warning "i386 syscall wrapper not implemented"
+#else
+#error "Unsupported architecture"
+#endif
 	return ret;
 }
 

@@ -55,7 +55,7 @@ nsa CPUData *GetCurrentCPU()
 	if (CPUEnabled.load(std::memory_order_acquire) == true)
 	{
 		if (apic->x2APIC)
-			CoreID = int(CPU::x32::rdmsr(CPU::x32::MSR_X2APIC_APICID));
+			CoreID = int(CPU::x86::rdmsr(CPU::x86::MSR_X2APIC_APICID));
 		else
 			CoreID = apic->Read(APIC::APIC_ID) >> 24;
 	}

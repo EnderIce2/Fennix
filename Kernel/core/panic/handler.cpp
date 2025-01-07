@@ -100,7 +100,7 @@ nsa void HaltAllCores()
 	if (SMP::CPUCores <= 1)
 		return;
 
-#if defined(__amd64__) || defined(__i386__)
+#if defined(__amd64__)
 	if (Interrupts::apic[0] == nullptr)
 		return;
 

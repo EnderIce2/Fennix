@@ -355,11 +355,10 @@ namespace Tasking
 		ThreadSignal Signals;
 
 		/* CPU state */
+		CPU::SchedulerFrame Registers{};
 #if defined(__amd64__)
-		CPU::x64::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(__i386__)
-		CPU::x32::SchedulerFrame Registers{};
 		uintptr_t ShadowGSBase, GSBase, FSBase;
 #elif defined(__aarch64__)
 		uintptr_t Registers; // TODO

@@ -75,7 +75,7 @@ extern "C"
 						 : "dN"(Port), "a"(Data));
 	}
 
-	static inline uint8_t mmioin8(uint64_t Address)
+	static inline uint8_t mmioin8(uintptr_t Address)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -85,7 +85,7 @@ extern "C"
 		return Result;
 	}
 
-	static inline uint16_t mmioin16(uint64_t Address)
+	static inline uint16_t mmioin16(uintptr_t Address)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -95,7 +95,7 @@ extern "C"
 		return Result;
 	}
 
-	static inline uint32_t mmioin32(uint64_t Address)
+	static inline uint32_t mmioin32(uintptr_t Address)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -105,17 +105,17 @@ extern "C"
 		return Result;
 	}
 
-	static inline uint64_t mmioin64(uint64_t Address)
+	static inline uintptr_t mmioin64(uintptr_t Address)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
-		uint64_t Result = *(volatile uint64_t *)Address;
+		uintptr_t Result = *(volatile uintptr_t *)Address;
 		__asm__ volatile("" ::
 							 : "memory");
 		return Result;
 	}
 
-	static inline void mmioout8(uint64_t Address, uint8_t Data)
+	static inline void mmioout8(uintptr_t Address, uint8_t Data)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -124,7 +124,7 @@ extern "C"
 							 : "memory");
 	}
 
-	static inline void mmioout16(uint64_t Address, uint16_t Data)
+	static inline void mmioout16(uintptr_t Address, uint16_t Data)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -133,7 +133,7 @@ extern "C"
 							 : "memory");
 	}
 
-	static inline void mmioout32(uint64_t Address, uint32_t Data)
+	static inline void mmioout32(uintptr_t Address, uint32_t Data)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
@@ -142,11 +142,11 @@ extern "C"
 							 : "memory");
 	}
 
-	static inline void mmioout64(uint64_t Address, uint64_t Data)
+	static inline void mmioout64(uintptr_t Address, uintptr_t Data)
 	{
 		__asm__ volatile("" ::
 							 : "memory");
-		*(volatile uint64_t *)Address = Data;
+		*(volatile uintptr_t *)Address = Data;
 		__asm__ volatile("" ::
 							 : "memory");
 	}
@@ -175,10 +175,10 @@ extern "C"
 						 : "memory");
 	}
 
-	static inline void mmoutq(void *Address, uint64_t Value)
+	static inline void mmoutq(void *Address, uintptr_t Value)
 	{
 		__asm__ volatile("mov %1, %0"
-						 : "=m"((*(uint64_t *)(Address)))
+						 : "=m"((*(uintptr_t *)(Address)))
 						 : "r"(Value)
 						 : "memory");
 	}
@@ -213,12 +213,12 @@ extern "C"
 		return Result;
 	}
 
-	static inline uint64_t mminq(void *Address)
+	static inline uintptr_t mminq(void *Address)
 	{
-		uint64_t Result;
+		uintptr_t Result;
 		__asm__ volatile("mov %1, %0"
 						 : "=r"(Result)
-						 : "m"((*(uint64_t *)(Address)))
+						 : "m"((*(uintptr_t *)(Address)))
 						 : "memory");
 		return Result;
 	}

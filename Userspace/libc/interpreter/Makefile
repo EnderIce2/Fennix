@@ -14,7 +14,7 @@ OBJ = ${S_SOURCES:.S=.o} ${C_SOURCES:.c=.o} ${CXX_SOURCES:.cpp=.o}
 CFLAGS := -fvisibility=hidden -fPIC -I$(WORKSPACE_DIR)/out/include -DLIBC_GIT_COMMIT='"$(shell git rev-parse HEAD)"'
 
 ifeq ($(DEBUG), 1)
-	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fverbose-asm
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always
 endif
 
 build: $(OBJECT_NAME)

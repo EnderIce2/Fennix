@@ -245,8 +245,8 @@ namespace Driver
 		debug("Driver %s has entry point %#lx and base %#lx",
 			  File->Name.c_str(), Drv.EntryPoint, Drv.BaseAddress);
 
-		Elf64_Shdr sht_strtab{};
-		Elf64_Shdr sht_symtab{};
+		Elf_Shdr sht_strtab{};
+		Elf_Shdr sht_symtab{};
 		Elf_Shdr shstrtab{};
 		Elf_Shdr shdr{};
 		__DriverInfo driverInfo{};
