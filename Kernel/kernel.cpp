@@ -365,8 +365,12 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	 * memory management to be initialized first.
 	 */
 	TestMemoryAllocation();
+#if defined(__amd64__)
 	Test_stl();
+#else
+#warning "FIXME: Test_stl() is not implemented for other architectures"
 #endif
+#endif // DEBUG
 	EnableProfiler = true;
 	Main();
 }
