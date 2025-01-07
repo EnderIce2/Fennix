@@ -5,8 +5,8 @@ DEBUG = 1
 # Operating system name.
 OSNAME = Fennix
 
-# OS architecture: amd64, i386, aarch64
-OSARCH = amd64
+# OS architecture, check AVAILABLE_ARCHS for available options.
+OSARCH = i386
 
 # Kernel version.
 KERNEL_VERSION = dev
@@ -53,28 +53,27 @@ USE_LIBC = internal
 # Do not change anything below this line unless
 # you know what you are doing.
 
-ifeq ($(OSARCH), amd64)
-COMPILER_ARCH = x86_64
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-x86_64
-else ifeq ($(OSARCH), i386)
-COMPILER_ARCH = i386
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-i386
-else ifeq ($(OSARCH), aarch64)
-COMPILER_ARCH = aarch64
-__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-aarch64
+# Available architectures. Do not change
+export AVAILABLE_ARCHS := amd64 i386 aarch64
+
+ifneq ($(filter $(OSARCH),$(AVAILABLE_ARCHS)),$(OSARCH))
+$(error OSARCH=$(OSARCH) is not a supported architecture. Choose one of: $(AVAILABLE_ARCHS))
 endif
 
-export __CONF_QEMU_PATH
+ARCH_MAP := amd64=x86_64 i386=i386 aarch64=aarch64
+COMPILER_ARCH := $(patsubst $(OSARCH)=%,%,$(filter $(OSARCH)=%,$(ARCH_MAP)))
+__CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-$(COMPILER_ARCH)
+TOOLCHAIN_PREFIX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-
 
-export __CONF_CC := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gcc
-export __CONF_CXX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-g++
-export __CONF_LD := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ld
-export __CONF_AS := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-as
-export __CONF_AR := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-ar
-export __CONF_NM := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-nm
-export __CONF_OBJCOPY := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objcopy
-export __CONF_OBJDUMP := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-objdump
-export __CONF_GDB := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-gdb
+export __CONF_CC := $(TOOLCHAIN_PREFIX)gcc
+export __CONF_CXX := $(TOOLCHAIN_PREFIX)g++
+export __CONF_LD := $(TOOLCHAIN_PREFIX)ld
+export __CONF_AS := $(TOOLCHAIN_PREFIX)as
+export __CONF_AR := $(TOOLCHAIN_PREFIX)ar
+export __CONF_NM := $(TOOLCHAIN_PREFIX)nm
+export __CONF_OBJCOPY := $(TOOLCHAIN_PREFIX)objcopy
+export __CONF_OBJDUMP := $(TOOLCHAIN_PREFIX)objdump
+export __CONF_GDB := $(TOOLCHAIN_PREFIX)gdb
 
 export DEBUG
 export OSNAME

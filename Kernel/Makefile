@@ -6,24 +6,16 @@ GIT_COMMIT_SHORT = $(shell git rev-parse --short HEAD)
 HEADERS := $(sort $(dir $(wildcard ./include/*))) $(sort $(dir $(wildcard ./include_std/*)))
 INCLUDE_DIR = -I./include -I./include_std
 
-BMP_SOURCES := $(shell find ./ -type f -name '*.bmp')
-PSF_SOURCES := $(shell find ./ -type f -name '*.psf')
-ifeq ($(OSARCH), amd64)
-S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
-s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
-C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
-CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/i386/*" -not -path "./arch/aarch64/*")
-else ifeq ($(OSARCH), i386)
-S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
-s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
-C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
-CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/aarch64/*")
-else ifeq ($(OSARCH), aarch64)
-S_SOURCES := $(shell find ./ -type f -name '*.S' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
-s_SOURCES := $(shell find ./ -type f -name '*.s' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
-C_SOURCES := $(shell find ./ -type f -name '*.c' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
-CXX_SOURCES := $(shell find ./ -type f -name '*.cpp' -not -path "./arch/amd64/*" -not -path "./arch/i386/*")
-endif # OSARCH
+define find-sources
+	$(shell find ./ -type f -name '$1' $(shell echo $(foreach arch,$(filter-out $(OSARCH),$(AVAILABLE_ARCHS)), -not -path \"./arch/$(arch)/*\")) -print0 | xargs -0)
+endef
+
+BMP_SOURCES := $(call find-sources,*.bmp)
+PSF_SOURCES := $(call find-sources,*.psf)
+S_SOURCES := $(call find-sources,*.S)
+s_SOURCES := $(call find-sources,*.s)
+C_SOURCES := $(call find-sources,*.c)
+CXX_SOURCES := $(call find-sources,*.cpp)
 
 OBJ = $(BMP_SOURCES:.bmp=.o) $(PSF_SOURCES:.psf=.o) $(s_SOURCES:.s=.o) $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CXX_SOURCES:.cpp=.su)
