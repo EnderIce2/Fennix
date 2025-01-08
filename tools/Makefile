@@ -2,7 +2,9 @@ WORKING_DIR = $(CURDIR)
 CROSS_DIR=$(WORKING_DIR)/cross
 export PATH := $(CROSS_DIR):$(PATH)
 
-QEMU_VERSION = 9.2.0
+BINUTILS_TAG = binutils-2_43_1
+GCC_TAG = releases/gcc-14.2.0
+QEMU_TAG = v9.2.0
 
 default:
 	$(error Please specify a target)
@@ -30,12 +32,12 @@ endif
 
 __clone_qemu:
 ifeq ("$(wildcard ./qemu)", "")
-	git clone --depth 1 -b v${QEMU_VERSION} --single-branch https://gitlab.com/qemu-project/qemu.git qemu
+	git clone --depth 1 -b ${QEMU_TAG} --single-branch https://gitlab.com/qemu-project/qemu.git qemu
 else
 	$(info > TOOLS: Reseting qemu...)
 	cd qemu && \
 	git fetch origin && \
-	git reset --hard v${QEMU_VERSION} && \
+	git reset --hard ${QEMU_TAG} && \
 	git clean -dfx
 	$(info > TOOLS: Operation completed for qemu)
 endif
@@ -44,24 +46,24 @@ endif
 
 __clone_binutils:
 ifeq ("$(wildcard ./binutils-gdb)", "")
-	git clone --depth 1 -b binutils-2_43_1 --single-branch git://sourceware.org/git/binutils-gdb.git binutils-gdb
+	git clone --depth 1 -b $(BINUTILS_TAG) --single-branch git://sourceware.org/git/binutils-gdb.git binutils-gdb
 else
 	$(info > TOOLS: Reseting binutils-gdb...)
 	cd binutils-gdb && \
 	git fetch origin && \
-	git reset --hard binutils-2_43_1 && \
+	git reset --hard $(BINUTILS_TAG) && \
 	git clean -dfx
 	$(info > TOOLS: Operation completed for binutils-gdb)
 endif
 
 __clone_gcc:
 ifeq ("$(wildcard ./gcc)", "")
-	git clone --depth 1 -b releases/gcc-14.2.0 --single-branch git://gcc.gnu.org/git/gcc.git gcc
+	git clone --depth 1 -b $(GCC_TAG) --single-branch git://gcc.gnu.org/git/gcc.git gcc
 else
 	$(info > TOOLS: Reseting gcc...)
 	cd gcc && \
 	git fetch origin && \
-	git reset --hard releases/gcc-14.2.0 && \
+	git reset --hard $(GCC_TAG) && \
 	git clean -dfx
 	$(info > TOOLS: Operation completed for gcc)
 endif
@@ -94,30 +96,57 @@ __clone_all_no_qemu: __clone_binutils __clone_gcc
 
 __clone_all: __clone_qemu __clone_all_no_qemu
 
-do_qemu: __prep_cross
+cross_dev:
+	$(MAKE) __clone_binutils
+	$(MAKE) __clone_gcc
+	$(MAKE) __clone_qemu
+	$(MAKE) __patch_cross_binutils
+	$(MAKE) __patch_cross_gcc
+	$(MAKE) __patch_cross_qemu
+
+update_patches:
+ifeq ("$(wildcard ./binutils-gdb.patch.bk)", "")
+	mv binutils-gdb.patch binutils-gdb.patch.bk
+endif
+ifeq ("$(wildcard ./gcc.patch.bk)", "")
+	mv gcc.patch gcc.patch.bk
+endif
+ifeq ("$(wildcard ./qemu.patch.bk)", "")
+	mv qemu.patch qemu.patch.bk
+endif
+# binutils-gdb
+	cd binutils-gdb && \
+	git add . && \
+	git diff --cached > ../binutils-gdb.patch
+# gcc
+	cd gcc && \
+	git add . && \
+	git diff --cached > ../gcc.patch
+# qemu
+	cd qemu && \
+	git add . && \
+	git diff --cached > ../qemu.patch
+
+do_qemu:
 	$(MAKE) __patch_cross_qemu
 	$(MAKE) __prep_cross
 	cd qemu && \
-	bash ./configure --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu \
+	bash ./configure --target-list=x86_64-softmmu,i386-softmmu,arm-softmmu,aarch64-softmmu \
 	--prefix="$(CROSS_DIR)" \
 	--enable-gtk --disable-tools \
 	--disable-gio --disable-virtfs --disable-vnc \
 	--disable-opengl && \
 	make --quiet -j$(shell nproc) && make --quiet install
 
-do_binutils:
-# x86_64
-	$(MAKE) __patch_cross_binutils
-	$(MAKE) __prep_cross
+__do_binutils_x86_64:
 	cd binutils-gdb/__build && \
 	../configure --target=x86_64-fennix \
 	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
 	--with-sysroot --enable-shared --disable-werror && \
 	make --quiet all -j$(shell nproc) && \
 	make --quiet install
-# i386
-	$(MAKE) __patch_cross_binutils
-	$(MAKE) __prep_cross
+
+__do_binutils_i386:
 	cd binutils-gdb/__build && \
 	../configure --target=i386-fennix \
 	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
@@ -125,10 +154,37 @@ do_binutils:
 	make --quiet all -j$(shell nproc) && \
 	make --quiet install
 
-do_gcc:
-# x86_64
-	$(MAKE) __patch_cross_gcc
+__do_binutils_arm:
+	cd binutils-gdb/__build && \
+	../configure --target=arm-fennix \
+	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
+	--with-sysroot --enable-shared --disable-werror && \
+	make --quiet all -j$(shell nproc) && \
+	make --quiet install
+
+__do_binutils_aarch64:
+	cd binutils-gdb/__build && \
+	../configure --target=aarch64-fennix \
+	--prefix="$(CROSS_DIR)" --disable-nls --quiet \
+	--with-sysroot --enable-shared --disable-werror && \
+	make --quiet all -j$(shell nproc) && \
+	make --quiet install
+
+__reset_binutils:
+	$(MAKE) __patch_cross_binutils
 	$(MAKE) __prep_cross
+
+do_binutils:
+	$(MAKE) __reset_binutils
+	$(MAKE) __do_binutils_x86_64
+	$(MAKE) __reset_binutils
+	$(MAKE) __do_binutils_i386
+	$(MAKE) __reset_binutils
+	$(MAKE) __do_binutils_arm
+	$(MAKE) __reset_binutils
+	$(MAKE) __do_binutils_aarch64
+
+__do_gcc_x86_64:
 	cd gcc/__build && \
 	../configure --target=x86_64-fennix --quiet \
 	--prefix="$(CROSS_DIR)" --disable-nls --enable-default-pie \
@@ -137,9 +193,8 @@ do_gcc:
 	make --quiet all-target-libgcc -j$(shell nproc) && \
 	make --quiet install-gcc -j$(shell nproc) && \
 	make --quiet install-target-libgcc -j$(shell nproc)
-# i386
-	$(MAKE) __patch_cross_gcc
-	$(MAKE) __prep_cross
+
+__do_gcc_i386:
 	cd gcc/__build && \
 	../configure --target=i386-fennix --quiet \
 	--prefix="$(CROSS_DIR)" --disable-nls --enable-default-pie \
@@ -148,3 +203,37 @@ do_gcc:
 	make --quiet all-target-libgcc -j$(shell nproc) && \
 	make --quiet install-gcc -j$(shell nproc) && \
 	make --quiet install-target-libgcc -j$(shell nproc)
+
+__do_gcc_arm:
+	cd gcc/__build && \
+	../configure --target=arm-fennix --quiet \
+	--prefix="$(CROSS_DIR)" --disable-nls --enable-default-pie \
+	--enable-languages=c,c++ --enable-shared --without-headers && \
+	make --quiet all-gcc -j$(shell nproc) && \
+	make --quiet all-target-libgcc -j$(shell nproc) && \
+	make --quiet install-gcc -j$(shell nproc) && \
+	make --quiet install-target-libgcc -j$(shell nproc)
+
+__do_gcc_aarch64:
+	cd gcc/__build && \
+	../configure --target=aarch64-fennix --quiet \
+	--prefix="$(CROSS_DIR)" --disable-nls --enable-default-pie \
+	--enable-languages=c,c++ --enable-shared --without-headers && \
+	make --quiet all-gcc -j$(shell nproc) && \
+	make --quiet all-target-libgcc -j$(shell nproc) && \
+	make --quiet install-gcc -j$(shell nproc) && \
+	make --quiet install-target-libgcc -j$(shell nproc)
+
+__reset_gcc:
+	$(MAKE) __patch_cross_gcc
+	$(MAKE) __prep_cross
+
+do_gcc:
+	$(MAKE) __reset_gcc
+	$(MAKE) __do_gcc_x86_64
+	$(MAKE) __reset_gcc
+	$(MAKE) __do_gcc_i386
+	$(MAKE) __reset_gcc
+	$(MAKE) __do_gcc_arm
+	$(MAKE) __reset_gcc
+	$(MAKE) __do_gcc_aarch64

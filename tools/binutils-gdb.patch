@@ -1,8 +1,17 @@
+diff --git a/.gitignore b/.gitignore
+index 0a40764c..9aa17853 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -74,3 +74,4 @@ stamp-*
+ /gmp*
+ /isl*
+ /gettext*
++/__build
 diff --git a/bfd/config.bfd b/bfd/config.bfd
-index 6553aac1e99..40429e9bf43 100644
+index 6553aac1..39008568 100644
 --- a/bfd/config.bfd
 +++ b/bfd/config.bfd
-@@ -1502,6 +1502,20 @@ case "${targ}" in
+@@ -1502,6 +1502,31 @@ case "${targ}" in
      ;;
  #endif
  
@@ -12,10 +21,21 @@ index 6553aac1e99..40429e9bf43 100644
 +    targ64_selvecs=x86_64_elf64_vec
 +    ;;
 +
++  arm*-*-fennix*)
++    targ_defvec=arm_elf32_le_vec
++    targ_selvecs="arm_elf32_fdpic_le_vec arm_elf32_be_vec arm_elf32_fdpic_be_vec"
++    ;;
++
 +#ifdef BFD64
 +  x86_64-*-fennix*)
 +    targ_defvec=x86_64_elf64_vec
 +    targ_selvecs=i386_elf32_vec
++    want64=true
++    ;;
++
++  aarch64-*-fennix*)
++    targ_defvec=aarch64_elf64_le_vec
++    targ_selvecs="aarch64_elf64_be_vec arm_elf32_le_vec arm_elf32_be_vec"
 +    want64=true
 +    ;;
 +#endif
@@ -23,110 +43,8 @@ index 6553aac1e99..40429e9bf43 100644
  # END OF targmatch.h
    bpf-*-*)
      echo "*** Configuration $targ is not fully supported." >&2
-diff --git a/config.sub b/config.sub
-index 2c6a07ab3c3..d279b50dc8b 100755
---- a/config.sub
-+++ b/config.sub
-@@ -1768,7 +1768,7 @@ case $os in
- 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
- 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
- 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
--	     | fiwix* | mlibc* | cos* | mbr* | ironclad* )
-+	     | fiwix* | mlibc* | cos* | mbr* | ironclad* | fennix* )
- 		;;
- 	# This one is extra strict with allowed versions
- 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
-diff --git a/gas/configure.tgt b/gas/configure.tgt
-index d58f21873a3..fa4215b9cff 100644
---- a/gas/configure.tgt
-+++ b/gas/configure.tgt
-@@ -267,6 +267,7 @@ case ${generic_target} in
-   i386-*-*nt*)				fmt=coff em=pe ;;
-   i386-*-rdos*)				fmt=elf ;;
-   i386-*-darwin*)			fmt=macho ;;
-+  i386-*-fennix*)			fmt=elf em=gnu ;;
- 
-   ia16-*-elf*)				fmt=elf ;;
- 
-diff --git a/ld/Makefile.am b/ld/Makefile.am
-index 6a9833e5775..fb4f866ef55 100644
---- a/ld/Makefile.am
-+++ b/ld/Makefile.am
-@@ -279,6 +279,7 @@ ALL_EMULATION_SOURCES = \
- 	eelf_i386.c \
- 	eelf_i386_be.c \
- 	eelf_i386_fbsd.c \
-+	eelf_i386_fennix.c \
- 	eelf_i386_haiku.c \
- 	eelf_i386_ldso.c \
- 	eelf_i386_sol2.c \
-@@ -463,6 +464,7 @@ ALL_64_EMULATION_SOURCES = \
- 	eelf_x86_64.c \
- 	eelf_x86_64_cloudabi.c \
- 	eelf_x86_64_fbsd.c \
-+	eelf_x86_64_fennix.c \
- 	eelf_x86_64_haiku.c \
- 	eelf_x86_64_sol2.c \
- 	ehppa64linux.c \
-diff --git a/ld/configure.tgt b/ld/configure.tgt
-index f937f78b876..ea5491a1447 100644
---- a/ld/configure.tgt
-+++ b/ld/configure.tgt
-@@ -409,6 +409,11 @@ i[3-7]86-*-elf* | i[3-7]86-*-rtems* | i[3-7]86-*-genode*)
- i[3-7]86-*-dragonfly*)	targ_emul=elf_i386
- 			targ_extra_emuls="elf_iamcu i386bsd"
- 			;;
-+i[3-7]86-*-fennix*)
-+			targ_emul=elf_i386_fennix
-+			targ_extra_emuls=elf_i386
-+			targ64_extra_emuls="elf_x86_64_fennix elf_x86_64"
-+			;;
- i[3-7]86-*-freebsd* | i[3-7]86-*-kfreebsd*-gnu)
- 			targ_emul=elf_i386_fbsd
- 			targ_extra_emuls="elf_i386 elf_iamcu i386bsd"
-@@ -1045,6 +1050,9 @@ x86_64-*-elf* | x86_64-*-rtems* | x86_64-*-fuchsia* | x86_64-*-genode*)
- x86_64-*-dragonfly*)	targ_emul=elf_x86_64
- 			targ_extra_emuls="elf_i386 elf_iamcu"
- 			;;
-+x86_64-*-fennix*)	targ_emul=elf_x86_64_fennix
-+			targ_extra_emuls="elf_i386_fennix elf_x86_64 elf_i386"
-+			;;
- x86_64-*-freebsd* | x86_64-*-kfreebsd*-gnu)
- 			targ_emul=elf_x86_64_fbsd
- 			targ_extra_emuls="elf_i386_fbsd elf_x86_64 elf_i386 elf_iamcu"
-@@ -1112,6 +1120,10 @@ case "${target}" in
-   NATIVE_LIB_DIRS='/lib /usr/lib /usr/pkg/lib /usr/local/lib'
-   ;;
- 
-+*-*-fennix*)
-+  NATIVE_LIB_DIRS='/lib /usr/lib'
-+  ;;
-+
- *-*-freebsd*)
-   NATIVE_LIB_DIRS='/lib /usr/lib /usr/local/lib'
-   ;;
-diff --git a/ld/emulparams/elf_i386_fennix.sh b/ld/emulparams/elf_i386_fennix.sh
-new file mode 100644
-index 00000000000..19b75a06cf9
---- /dev/null
-+++ b/ld/emulparams/elf_i386_fennix.sh
-@@ -0,0 +1,4 @@
-+source_sh ${srcdir}/emulparams/elf_i386.sh
-+GENERATE_SHLIB_SCRIPT=yes
-+GENERATE_PIE_SCRIPT=yes
-+TEXT_START_ADDR=0x400000
-diff --git a/ld/emulparams/elf_x86_64_fennix.sh b/ld/emulparams/elf_x86_64_fennix.sh
-new file mode 100644
-index 00000000000..1509ec7fe53
---- /dev/null
-+++ b/ld/emulparams/elf_x86_64_fennix.sh
-@@ -0,0 +1,4 @@
-+source_sh ${srcdir}/emulparams/elf_x86_64.sh
-+GENERATE_SHLIB_SCRIPT=yes
-+GENERATE_PIE_SCRIPT=yes
-+TEXT_START_ADDR=0x400000
 diff --git a/binutils/readelf.c b/binutils/readelf.c
-index 5d1cf9c3..671a8081 100644
+index 5d1cf9c3..2606967f 100644
 --- a/binutils/readelf.c
 +++ b/binutils/readelf.c
 @@ -20909,6 +20909,30 @@ get_gnu_elf_note_type (unsigned e_type)
@@ -272,6 +190,47 @@ index 5d1cf9c3..671a8081 100644
    else if (startswith (pnote->namedata, "stapsdt"))
      return print_stapsdt_note (pnote);
    else if (startswith (pnote->namedata, "CORE"))
+diff --git a/config.sub b/config.sub
+index 2c6a07ab..d279b50d 100755
+--- a/config.sub
++++ b/config.sub
+@@ -1768,7 +1768,7 @@ case $os in
+ 	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+ 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | wasi* \
+ 	     | nsk* | powerunix* | genode* | zvmoe* | qnx* | emx* | zephyr* \
+-	     | fiwix* | mlibc* | cos* | mbr* | ironclad* )
++	     | fiwix* | mlibc* | cos* | mbr* | ironclad* | fennix* )
+ 		;;
+ 	# This one is extra strict with allowed versions
+ 	sco3.2v2 | sco3.2v[4-9]* | sco5v6*)
+diff --git a/gas/configure.tgt b/gas/configure.tgt
+index d58f2187..bd76e187 100644
+--- a/gas/configure.tgt
++++ b/gas/configure.tgt
+@@ -127,6 +127,7 @@ generic_target=${cpu_type}-$vendor-$os
+ # Note: This table is alpha-sorted, please try to keep it that way.
+ case ${generic_target} in
+   aarch64*-*-elf*)			fmt=elf;;
++  aarch64*-*-fennix*)			fmt=elf em=gnu ;;
+   aarch64*-*-fuchsia*)			fmt=elf;;
+   aarch64*-*-haiku*)			fmt=elf em=haiku ;;
+   aarch64*-*-genode*)			fmt=elf;;
+@@ -167,6 +168,7 @@ case ${generic_target} in
+   arm-wince-pe | arm-*-wince | arm*-*-mingw32ce* | arm*-*-cegcc*)
+ 					fmt=coff em=wince-pe ;;
+   arm-*-pe)				fmt=coff em=pe ;;
++  arm*-*-fennix*)			fmt=elf em=gnu ;;
+   arm-*-fuchsia*)			fmt=elf ;;
+   arm-*-haiku*)				fmt=elf em=haiku ;;
+ 
+@@ -267,6 +269,7 @@ case ${generic_target} in
+   i386-*-*nt*)				fmt=coff em=pe ;;
+   i386-*-rdos*)				fmt=elf ;;
+   i386-*-darwin*)			fmt=macho ;;
++  i386-*-fennix*)			fmt=elf em=gnu ;;
+ 
+   ia16-*-elf*)				fmt=elf ;;
+ 
 diff --git a/include/elf/common.h b/include/elf/common.h
 index c9920e77..a714bb2a 100644
 --- a/include/elf/common.h
@@ -292,12 +251,147 @@ index c9920e77..a714bb2a 100644
  /* Values for notes in non-core files using name "GNU".  */
  
  #define NT_GNU_ABI_TAG		1
-diff --git a/.gitignore b/.gitignore
-index 0a40764c..9aa17853 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -74,3 +74,4 @@ stamp-*
- /gmp*
- /isl*
- /gettext*
-+/__build
+diff --git a/ld/Makefile.am b/ld/Makefile.am
+index 6a9833e5..bf4c134d 100644
+--- a/ld/Makefile.am
++++ b/ld/Makefile.am
+@@ -165,6 +165,7 @@ ALL_EMULATION_SOURCES = \
+ 	earcv2elfx.c \
+ 	earm_wince_pe.c \
+ 	earmelf.c \
++	earmelf_fennix.c \
+ 	earmelf_fbsd.c \
+ 	earmelf_fuchsia.c \
+ 	earmelf_haiku.c \
+@@ -279,6 +280,7 @@ ALL_EMULATION_SOURCES = \
+ 	eelf_i386.c \
+ 	eelf_i386_be.c \
+ 	eelf_i386_fbsd.c \
++	eelf_i386_fennix.c \
+ 	eelf_i386_haiku.c \
+ 	eelf_i386_ldso.c \
+ 	eelf_i386_sol2.c \
+@@ -383,6 +385,7 @@ ALL_64_EMULATION_SOURCES = \
+ 	eaarch64elf32.c \
+ 	eaarch64elf32b.c \
+ 	eaarch64elfb.c \
++	eaarch64fennix.c \
+ 	eaarch64fbsd.c \
+ 	eaarch64fbsdb.c \
+ 	eaarch64haiku.c \
+@@ -463,6 +466,7 @@ ALL_64_EMULATION_SOURCES = \
+ 	eelf_x86_64.c \
+ 	eelf_x86_64_cloudabi.c \
+ 	eelf_x86_64_fbsd.c \
++	eelf_x86_64_fennix.c \
+ 	eelf_x86_64_haiku.c \
+ 	eelf_x86_64_sol2.c \
+ 	ehppa64linux.c \
+diff --git a/ld/configure.tgt b/ld/configure.tgt
+index f937f78b..3aa8c738 100644
+--- a/ld/configure.tgt
++++ b/ld/configure.tgt
+@@ -92,6 +92,9 @@ aarch64-*-elf | aarch64-*-rtems* | aarch64-*-genode*)
+ aarch64-*-cloudabi*)	targ_emul=aarch64cloudabi
+ 			targ_extra_emuls=aarch64cloudabib
+ 			;;
++aarch64-*-fennix*)	targ_emul=aarch64fennix
++			targ_extra_emuls="aarch64fennixb aarch64elf"
++			;;
+ aarch64-*-freebsd*)	targ_emul=aarch64fbsd
+ 			targ_extra_emuls="aarch64fbsdb aarch64elf"
+ 			;;
+@@ -183,6 +186,10 @@ arm-wince-pe | arm-*-wince | arm*-*-mingw32ce*)
+ arm-*-pe)		targ_emul=armpe
+ 			targ_extra_ofiles="deffilep.o pe-dll.o"
+ 			;;
++arm*-*-fennix*)
++			targ_emul=armelf_fennix
++			targ_extra_emuls="armelfb_fennix armelf"
++			;;
+ arm*b-*-freebsd*)	targ_emul=armelfb_fbsd
+ 			targ_extra_emuls="armelf_fbsd armelf"
+ 			;;
+@@ -409,6 +416,11 @@ i[3-7]86-*-elf* | i[3-7]86-*-rtems* | i[3-7]86-*-genode*)
+ i[3-7]86-*-dragonfly*)	targ_emul=elf_i386
+ 			targ_extra_emuls="elf_iamcu i386bsd"
+ 			;;
++i[3-7]86-*-fennix*)
++			targ_emul=elf_i386_fennix
++			targ_extra_emuls=elf_i386
++			targ64_extra_emuls="elf_x86_64_fennix elf_x86_64"
++			;;
+ i[3-7]86-*-freebsd* | i[3-7]86-*-kfreebsd*-gnu)
+ 			targ_emul=elf_i386_fbsd
+ 			targ_extra_emuls="elf_i386 elf_iamcu i386bsd"
+@@ -1045,6 +1057,9 @@ x86_64-*-elf* | x86_64-*-rtems* | x86_64-*-fuchsia* | x86_64-*-genode*)
+ x86_64-*-dragonfly*)	targ_emul=elf_x86_64
+ 			targ_extra_emuls="elf_i386 elf_iamcu"
+ 			;;
++x86_64-*-fennix*)	targ_emul=elf_x86_64_fennix
++			targ_extra_emuls="elf_i386_fennix elf_x86_64 elf_i386"
++			;;
+ x86_64-*-freebsd* | x86_64-*-kfreebsd*-gnu)
+ 			targ_emul=elf_x86_64_fbsd
+ 			targ_extra_emuls="elf_i386_fbsd elf_x86_64 elf_i386 elf_iamcu"
+@@ -1112,6 +1127,10 @@ case "${target}" in
+   NATIVE_LIB_DIRS='/lib /usr/lib /usr/pkg/lib /usr/local/lib'
+   ;;
+ 
++*-*-fennix*)
++  NATIVE_LIB_DIRS='/lib /usr/lib'
++  ;;
++
+ *-*-freebsd*)
+   NATIVE_LIB_DIRS='/lib /usr/lib /usr/local/lib'
+   ;;
+diff --git a/ld/emulparams/aarch64fennix.sh b/ld/emulparams/aarch64fennix.sh
+new file mode 100644
+index 00000000..ff5d1e20
+--- /dev/null
++++ b/ld/emulparams/aarch64fennix.sh
+@@ -0,0 +1,4 @@
++source_sh ${srcdir}/emulparams/aarch64elf.sh
++
++COMMONPAGESIZE="CONSTANT (COMMONPAGESIZE)"
++TEXT_START_ADDR=0x00400000
+diff --git a/ld/emulparams/armelf_fennix.sh b/ld/emulparams/armelf_fennix.sh
+new file mode 100644
+index 00000000..694377d8
+--- /dev/null
++++ b/ld/emulparams/armelf_fennix.sh
+@@ -0,0 +1,4 @@
++source_sh ${srcdir}/emulparams/armelf.sh
++
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
+diff --git a/ld/emulparams/armelfb_fennix.sh b/ld/emulparams/armelfb_fennix.sh
+new file mode 100644
+index 00000000..694377d8
+--- /dev/null
++++ b/ld/emulparams/armelfb_fennix.sh
+@@ -0,0 +1,4 @@
++source_sh ${srcdir}/emulparams/armelf.sh
++
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
+diff --git a/ld/emulparams/elf_i386_fennix.sh b/ld/emulparams/elf_i386_fennix.sh
+new file mode 100644
+index 00000000..a7210cc0
+--- /dev/null
++++ b/ld/emulparams/elf_i386_fennix.sh
+@@ -0,0 +1,4 @@
++source_sh ${srcdir}/emulparams/elf_i386.sh
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
++TEXT_START_ADDR=0x00400000
+diff --git a/ld/emulparams/elf_x86_64_fennix.sh b/ld/emulparams/elf_x86_64_fennix.sh
+new file mode 100644
+index 00000000..6612131d
+--- /dev/null
++++ b/ld/emulparams/elf_x86_64_fennix.sh
+@@ -0,0 +1,4 @@
++source_sh ${srcdir}/emulparams/elf_x86_64.sh
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
++TEXT_START_ADDR=0x00400000

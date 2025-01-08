@@ -54,13 +54,13 @@ USE_LIBC = internal
 # you know what you are doing.
 
 # Available architectures. Do not change
-export AVAILABLE_ARCHS := amd64 i386 aarch64
+export AVAILABLE_ARCHS := amd64 i386 arm aarch64
 
 ifneq ($(filter $(OSARCH),$(AVAILABLE_ARCHS)),$(OSARCH))
 $(error OSARCH=$(OSARCH) is not a supported architecture. Choose one of: $(AVAILABLE_ARCHS))
 endif
 
-ARCH_MAP := amd64=x86_64 i386=i386 aarch64=aarch64
+ARCH_MAP := amd64=x86_64 i386=i386 arm=arm aarch64=aarch64
 COMPILER_ARCH := $(patsubst $(OSARCH)=%,%,$(filter $(OSARCH)=%,$(ARCH_MAP)))
 __CONF_QEMU_PATH := $(__CONF_QEMU_PATH)/bin/qemu-system-$(COMPILER_ARCH)
 TOOLCHAIN_PREFIX := $(COMPILER_PATH)/bin/$(COMPILER_ARCH)-fennix-

@@ -22,4 +22,6 @@ In this directory, you will find:
 ## Useful links
 
 - [Create git patches](https://stackoverflow.com/a/15438863/9352057)
+- [binutils git tags](https://sourceware.org/git/?p=binutils-gdb.git;a=tags)
+- [gcc git tags](https://gcc.gnu.org/git/?p=gcc.git;a=tags)
 - [QEMU git tags](https://gitlab.com/qemu-project/qemu/-/tags)
