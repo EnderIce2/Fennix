@@ -70,6 +70,110 @@ jobs:
         cd tools
         rm -rf binutils-gdb gcc
 
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    needs: [buildcompiler]
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: c-cpp
+          build-mode: manual
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Check for cache
+      id: check-cache
+      run: |
+        if [ -z "${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}" ]; then
+          echo "No cache found, cancelling job."
+          exit 1
+        fi
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+
+    - if: matrix.build-mode == 'manual'
+      shell: bash
+      run: |
+        echo 'If you are using a "manual" build mode for one or more of the' \
+          'languages you are analyzing, replace this with the commands to build' \
+          'your code, for example:'
+        echo '  make bootstrap'
+        echo '  make release'
+        exit 0
+
+    - name: Install Packages
+      run: |
+        sudo apt update
+        sudo apt -y install rustc xorriso mtools genisoimage ovmf nasm doxygen make gcc-mingw-w64-x86-64 gcc-mingw-w64-i686 mingw-w64 build-essential bison flex libgmp3-dev libmpc-dev libmpfr-dev texinfo
+        make --quiet -C tools do_limine
+        make --quiet -C Drivers prepare
+        make --quiet -C Userspace prepare
+        make --quiet -C Kernel prepare
+
+    - name: Cache cross
+      id: cache-cross
+      uses: actions/cache@v4
+      with:
+        path: tools/cross
+        key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Build OS
+      run: |
+        make build_userspace
+        make build_drivers
+        make build_kernel
+        make build_userspace
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+
+  deploydoc:
+    name: Deploy Documentation to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Update System
+        run: sudo apt update
+
+      - name: Install Doxygen
+        run: sudo apt -y install doxygen make
+
+      - name: Generate Documentation
+        run: make doxygen
+
+      - name: Copy GitHub Pages Website
+        run: cp -r tools/website/* doxygen-doc/
+
+      - name: Deploy documentation
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: doxygen-doc
+
+
   compile_amd64:
     name: Build amd64
     runs-on: ubuntu-latest
