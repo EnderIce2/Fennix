@@ -15,24 +15,32 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include <display.hpp>
+#include <bitmap.hpp>
+#include <convert.h>
+#include <printf.h>
+#include <lock.hpp>
+#include <rand.hpp>
+#include <uart.hpp>
+#include <debug.h>
+#include <smp.hpp>
+#include <cpu.hpp>
+#include <io.h>
 
-/* Stubs */
-#define FLT_RADIX 2
-#if __amd64__
-#define DBL_MANT_DIG 53
-#define DBL_MAX_10_EXP 308
-#define DBL_MAX 1.7976931348623157e+308
-#elif __i386__
-#define DBL_MANT_DIG 24
-#define DBL_MAX_10_EXP 38
-#define DBL_MAX 3.4028234663852886e+38
-#elif __arm__
-#define DBL_MANT_DIG __DBL_MANT_DIG__
-#define DBL_MAX_10_EXP __DBL_MAX_10_EXP__
-#define DBL_MAX __DBL_MAX__
-#elif __aarch64__
-#define DBL_MANT_DIG __DBL_MANT_DIG__
-#define DBL_MAX_10_EXP __DBL_MAX_10_EXP__
-#define DBL_MAX __DBL_MAX__
+#if defined(__amd64__)
+#include "../../arch/amd64/cpu/gdt.hpp"
+#include "../arch/amd64/cpu/apic.hpp"
+#elif defined(__i386__)
+#include "../../arch/i386/cpu/gdt.hpp"
+#include "../arch/i386/cpu/apic.hpp"
+#elif defined(__aarch64__)
 #endif
+
+#include "../../../../kernel.h"
+
+extern void ExPrint(const char *Format, ...);
+
+arch nsa void DisplayDetailsScreen(CPU::ExceptionFrame *Frame)
+{
+	ExPrint("\nException Frame:\n");
+}

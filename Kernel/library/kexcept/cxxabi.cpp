@@ -192,7 +192,9 @@ extern "C" __noreturn void __cxa_throw(void *thrown_object,
 	Exception->terminateHandler = &terminate_header_stub;
 	Exception->unwindHeader.exception_cleanup = &exception_cleanup_stub;
 	INIT_EXCEPTION_CLASS(&Exception->unwindHeader.exception_class);
+#ifndef __arm__
 	Exception->adjustedPtr = thrown_object;
+#endif
 
 	_Unwind_RaiseException(&Exception->unwindHeader);
 	__cxa_begin_catch(&Exception->unwindHeader);

@@ -90,8 +90,8 @@ extern "C"
 	long unsigned strlen_sse4_1(const char s[]);
 	long unsigned strlen_sse4_2(const char s[]);
 
-	long unsigned strlen(const char s[]);
-	int strncmp(const char *s1, const char *s2, unsigned long n);
+	size_t strlen(const char s[]);
+	int strncmp(const char *s1, const char *s2, size_t n);
 	char *strcat_unsafe(char *destination, const char *source);
 	char *strcpy_unsafe(char *destination, const char *source);
 	char *strncpy(char *destination, const char *source, unsigned long num);

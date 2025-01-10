@@ -93,7 +93,7 @@ namespace Memory
 #if defined(__amd64__) || defined(__aarch64__)
 			Elf64_Xword SymbolSize = 0;
 			Elf64_Xword StringSize = 0;
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__arm__)
 			Elf32_Word SymbolSize = 0;
 			Elf32_Word StringSize = 0;
 #endif

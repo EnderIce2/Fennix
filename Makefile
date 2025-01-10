@@ -66,6 +66,15 @@ QEMUFLAGS += -M q35 \
 			 -device intel-hda \
 			 -device ich9-intel-hda \
 			 -acpitable file=tools/acpi/SSDT1.dat
+else ifeq ($(OSARCH), arm)
+QEMUFLAGS += -M raspi2b \
+			 -monitor pty \
+			 -cpu cortex-a15 \
+			 -serial file:serial.log \
+			 -serial file:COM2.dmp \
+			 -serial file:COM3.dmp \
+			 -serial stdio \
+			 -kernel $(OSNAME).img
 else ifeq ($(OSARCH), aarch64)
 QEMUFLAGS += -M raspi3b \
 			 -monitor pty \
@@ -160,7 +169,7 @@ ifeq ($(BOOTLOADER), grub)
 	cp tools/grub.cfg iso_tmp_data/boot/grub/
 	grub-mkrescue -o $(OSNAME).iso iso_tmp_data
 endif
-ifeq ($(OSARCH), aarch64)
+ifneq ($(filter aarch64 arm,$(OSARCH)),)
 	$(__CONF_OBJCOPY) Kernel/fennix.elf -O binary $(OSNAME).img
 endif
 
@@ -179,6 +188,10 @@ ifeq ($(OSARCH), i386)
 QEMU_SMP = -smp $(shell nproc)
 endif
 
+ifeq ($(OSARCH), arm)
+QEMU_SMP = -smp 4
+endif
+
 ifeq ($(OSARCH), aarch64)
 QEMU_SMP = -smp 4
 endif
@@ -189,6 +202,9 @@ QEMUMEMORY = -m 4G
 else ifeq ($(OSARCH), i386)
 QEMUHWACCELERATION = -machine q35 -enable-kvm
 QEMUMEMORY = -m 4G
+else ifeq ($(OSARCH), arm)
+QEMUHWACCELERATION =
+QEMUMEMORY = -m 1G
 else ifeq ($(OSARCH), aarch64)
 QEMUHWACCELERATION =
 QEMUMEMORY = -m 1G

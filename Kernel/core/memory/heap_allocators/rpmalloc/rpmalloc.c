@@ -551,9 +551,9 @@ struct heap_t
 };
 
 /* Keep in sync with heap_t inside rpmalloc_compat.cpp */
-#ifndef __i386__
+#if !defined(__i386__) && !defined(__arm__)
 static_assert(sizeof(heap_t) == 56408, "heap_t size mismatch");
-#endif // __i386__
+#endif // __i386__ || __arm__
 
 // Size class for defining a block size bucket
 struct size_class_t
@@ -3105,7 +3105,11 @@ rpcalloc(size_t num, size_t size)
 {
 	size_t total;
 #if ENABLE_VALIDATE_ARGS
+#ifdef __arm__
+	int err = __builtin_umull_overflow(num, size, (unsigned long *)&total);
+#else
 	int err = __builtin_umull_overflow(num, size, &total);
+#endif
 	assert(!err && (total < MAX_ALLOC_SIZE));
 #else
 	total = num * size;
@@ -3150,7 +3154,11 @@ rpaligned_calloc(size_t alignment, size_t num, size_t size)
 {
 	size_t total;
 #if ENABLE_VALIDATE_ARGS
+#ifdef __arm__
+	int err = __builtin_umull_overflow(num, size, (unsigned long *)&total);
+#else
 	int err = __builtin_umull_overflow(num, size, &total);
+#endif
 	assert(!err && (total < MAX_ALLOC_SIZE));
 #else
 	total = num * size;

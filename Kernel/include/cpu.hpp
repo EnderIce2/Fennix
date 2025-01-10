@@ -1072,6 +1072,72 @@ namespace CPU
 		}
 	}
 
+	namespace arm
+	{
+		struct TrapFrame
+		{
+			uint32_t R0;   /* Register R0 (argument / scratch) */
+			uint32_t R1;   /* Register R1 (argument / scratch) */
+			uint32_t R2;   /* Register R2 (argument / scratch) */
+			uint32_t R3;   /* Register R3 (argument / scratch) */
+			uint32_t R4;   /* Register R4 (callee-saved) */
+			uint32_t R5;   /* Register R5 (callee-saved) */
+			uint32_t R6;   /* Register R6 (callee-saved) */
+			uint32_t R7;   /* Register R7 (callee-saved) */
+			uint32_t R8;   /* Register R8 (callee-saved) */
+			uint32_t R9;   /* Register R9 (platform-specific) */
+			uint32_t R10;  /* Register R10 (callee-saved) */
+			uint32_t FP;   /* Frame Pointer (R11) */
+			uint32_t IP;   /* Intra-Procedure Scratch (R12) */
+			uint32_t SP;   /* Stack Pointer (R13) */
+			uint32_t LR;   /* Link Register (R14) */
+			uint32_t PC;   /* Program Counter (R15) */
+			uint32_t CPSR; /* Current Program Status Register */
+		};
+
+		struct SchedulerFrame
+		{
+			uint32_t R0;   /* Register R0 (argument / scratch) */
+			uint32_t R1;   /* Register R1 (argument / scratch) */
+			uint32_t R2;   /* Register R2 (argument / scratch) */
+			uint32_t R3;   /* Register R3 (argument / scratch) */
+			uint32_t R4;   /* Register R4 (callee-saved) */
+			uint32_t R5;   /* Register R5 (callee-saved) */
+			uint32_t R6;   /* Register R6 (callee-saved) */
+			uint32_t R7;   /* Register R7 (callee-saved) */
+			uint32_t R8;   /* Register R8 (callee-saved) */
+			uint32_t R9;   /* Register R9 (platform-specific) */
+			uint32_t R10;  /* Register R10 (callee-saved) */
+			uint32_t FP;   /* Frame Pointer (R11) */
+			uint32_t IP;   /* Intra-Procedure Scratch (R12) */
+			uint32_t SP;   /* Stack Pointer (R13) */
+			uint32_t LR;   /* Link Register (R14) */
+			uint32_t PC;   /* Program Counter (R15) */
+			uint32_t CPSR; /* Current Program Status Register */
+		};
+
+		struct ExceptionFrame
+		{
+			uint32_t R0;   /* Register R0 (argument / scratch) */
+			uint32_t R1;   /* Register R1 (argument / scratch) */
+			uint32_t R2;   /* Register R2 (argument / scratch) */
+			uint32_t R3;   /* Register R3 (argument / scratch) */
+			uint32_t R4;   /* Register R4 (callee-saved) */
+			uint32_t R5;   /* Register R5 (callee-saved) */
+			uint32_t R6;   /* Register R6 (callee-saved) */
+			uint32_t R7;   /* Register R7 (callee-saved) */
+			uint32_t R8;   /* Register R8 (callee-saved) */
+			uint32_t R9;   /* Register R9 (platform-specific) */
+			uint32_t R10;  /* Register R10 (callee-saved) */
+			uint32_t FP;   /* Frame Pointer (R11) */
+			uint32_t IP;   /* Intra-Procedure Scratch (R12) */
+			uint32_t SP;   /* Stack Pointer (R13) */
+			uint32_t LR;   /* Link Register (R14) */
+			uint32_t PC;   /* Program Counter (R15) */
+			uint32_t CPSR; /* Current Program Status Register */
+		};
+	}
+
 	namespace aarch64
 	{
 		struct TrapFrame
@@ -1123,6 +1189,15 @@ namespace CPU
 	typedef x32::TrapFrame TrapFrame;
 	typedef x32::SchedulerFrame SchedulerFrame;
 	typedef x32::ExceptionFrame ExceptionFrame;
+#elif defined(__arm__)
+	/**
+	 * CPU trap frame for the current architecture
+	 *
+	 * @note This is for arm
+	 */
+	typedef arm::TrapFrame TrapFrame;
+	typedef arm::SchedulerFrame SchedulerFrame;
+	typedef arm::ExceptionFrame ExceptionFrame;
 #elif defined(__aarch64__)
 	/**
 	 * CPU trap frame for the current architecture

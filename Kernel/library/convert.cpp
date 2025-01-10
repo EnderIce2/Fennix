@@ -62,7 +62,7 @@ EXTERNC int strncmp(const char *s1, const char *s2, size_t n)
 	return 0;
 }
 
-EXTERNC long unsigned strlen(const char s[])
+EXTERNC size_t strlen(const char s[])
 {
 	if (Config.SIMD)
 	{

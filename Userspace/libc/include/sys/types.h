@@ -108,7 +108,7 @@ extern "C"
 		char __data;
 	} pthread_barrier_t;
 
-	typedef unsigned long size_t;
+	typedef __SIZE_TYPE__ size_t;
 	typedef long ssize_t;
 
 	typedef long suseconds_t;

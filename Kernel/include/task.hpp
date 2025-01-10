@@ -553,6 +553,8 @@ namespace Tasking
 			return x64;
 #elif defined(__i386__)
 			return x32;
+#elif defined(__arm__)
+			return ARM32;
 #elif defined(__aarch64__)
 			return ARM64;
 #endif

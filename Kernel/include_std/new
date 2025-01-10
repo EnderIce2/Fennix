@@ -79,13 +79,13 @@ namespace std
 
 [[nodiscard]] void *operator new(std::size_t count);
 [[nodiscard]] void *operator new[](std::size_t count);
-// [[nodiscard]] void *operator new(std::size_t count, std::align_val_t al);
-// [[nodiscard]] void *operator new[](std::size_t count, std::align_val_t al);
+[[nodiscard]] void *operator new(std::size_t count, std::align_val_t al);
+[[nodiscard]] void *operator new[](std::size_t count, std::align_val_t al);
 
-// [[nodiscard]] void *operator new(std::size_t count, const std::nothrow_t &tag) noexcept;
-// [[nodiscard]] void *operator new[](std::size_t count, const std::nothrow_t &tag) noexcept;
-// [[nodiscard]] void *operator new(std::size_t count, std::align_val_t al, const std::nothrow_t &) noexcept;
-// [[nodiscard]] void *operator new[](std::size_t count, std::align_val_t al, const std::nothrow_t &) noexcept;
+[[nodiscard]] void *operator new(std::size_t count, const std::nothrow_t &tag) noexcept;
+[[nodiscard]] void *operator new[](std::size_t count, const std::nothrow_t &tag) noexcept;
+[[nodiscard]] void *operator new(std::size_t count, std::align_val_t al, const std::nothrow_t &) noexcept;
+[[nodiscard]] void *operator new[](std::size_t count, std::align_val_t al, const std::nothrow_t &) noexcept;
 
 [[nodiscard]] void *operator new(std::size_t count, void *ptr) noexcept;
 [[nodiscard]] void *operator new[](std::size_t count, void *ptr) noexcept;

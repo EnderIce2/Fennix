@@ -59,7 +59,7 @@
 
 #define USER_STACK_END 0xFFFFEFFF00000000 /* 256 MiB */
 #define USER_STACK_BASE 0xFFFFEFFFFFFF0000
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__arm__)
 #define KERNEL_VMA_OFFSET 0xC0000000
 
 #define USER_ALLOC_BASE 0x80000000

@@ -171,7 +171,7 @@ typedef uint32_t uid_t;
 typedef uint32_t gid_t;
 typedef int64_t clock_t;
 typedef int32_t pid_t;
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__arm__)
 typedef int32_t off_t;
 typedef long long off64_t;
 typedef uint32_t mode_t;

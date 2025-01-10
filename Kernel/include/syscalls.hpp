@@ -67,6 +67,14 @@ typedef struct SyscallsFrame
 	uint64_t ExceptionSyndromeRegister;
 	uint64_t FaultAddressRegister;
 	uint64_t SavedProgramStatusRegister;
+#elif defined(__arm__)
+	uint32_t ReturnAddress; /* r0 */
+	uint32_t x[14];
+	uint32_t StackPointer;
+	uint32_t ExceptionLinkRegister;
+	uint32_t ExceptionSyndromeRegister;
+	uint32_t FaultAddressRegister;
+	uint32_t SavedProgramStatusRegister;
 #endif
 
 	uintptr_t ReturnValue() const

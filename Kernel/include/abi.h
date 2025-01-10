@@ -80,9 +80,11 @@ typedef struct
 #if defined(__amd64__)
 typedef Elf64_auxv_t Elf_auxv_t;
 #elif defined(__i386__)
-typedef Elf64_auxv_t Elf_auxv_t;
+typedef Elf32_auxv_t Elf_auxv_t;
 #elif defined(__aarch64__)
 typedef Elf64_auxv_t Elf_auxv_t;
+#elif defined(__arm__)
+typedef Elf32_auxv_t Elf_auxv_t;
 #endif
 
 typedef struct

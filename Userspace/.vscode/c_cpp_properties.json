@@ -83,6 +83,27 @@
 			]
 		},
 		{
+			"name": "Fennix Arm (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/libc/include/**",
+				"${workspaceFolder}/libs/include/**"
+			],
+			"defines": [
+				"__debug_vscode__",
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/arm-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "linux-gcc-arm",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		},
+		{
 			"name": "Fennix Aarch64 (Linux, GCC, debug)",
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",

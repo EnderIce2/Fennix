@@ -42,8 +42,37 @@ void *operator new[](std::size_t count)
 	throw std::bad_alloc{};
 }
 
-// void *operator new(std::size_t count, std::align_val_t al)
-// void *operator new[](std::size_t count, std::align_val_t al)
+void *operator new(std::size_t count, std::align_val_t al)
+{
+	if (count == 0)
+		++count;
+
+	std::size_t alignment = static_cast<std::size_t>(al);
+	void *ptr = kmalloc(count + alignment - 1 + sizeof(void *));
+	if (!ptr)
+		throw std::bad_alloc{};
+
+	void *aligned_ptr = reinterpret_cast<void *>(
+		(reinterpret_cast<std::size_t>(ptr) + sizeof(void *) + alignment - 1) & ~(alignment - 1));
+	reinterpret_cast<void **>(aligned_ptr)[-1] = ptr;
+	return aligned_ptr;
+}
+
+void *operator new[](std::size_t count, std::align_val_t al)
+{
+	if (count == 0)
+		++count;
+
+	std::size_t alignment = static_cast<std::size_t>(al);
+	void *ptr = kmalloc(count + alignment - 1 + sizeof(void *));
+	if (!ptr)
+		throw std::bad_alloc{};
+
+	void *aligned_ptr = reinterpret_cast<void *>(
+		(reinterpret_cast<std::size_t>(ptr) + sizeof(void *) + alignment - 1) & ~(alignment - 1));
+	reinterpret_cast<void **>(aligned_ptr)[-1] = ptr;
+	return aligned_ptr;
+}
 
 // void *operator new(std::size_t count, const std::nothrow_t &tag)
 // void *operator new[](std::size_t count, const std::nothrow_t &tag)
@@ -62,8 +91,24 @@ void operator delete(void *ptr) noexcept { kfree(ptr); }
 
 void operator delete[](void *ptr) noexcept { kfree(ptr); }
 
-// void operator delete(void *ptr, std::align_val_t al) noexcept
-// void operator delete[](void *ptr, std::align_val_t al) noexcept
+void operator delete(void *ptr, std::align_val_t al) noexcept
+{
+	if (!ptr)
+		return;
+
+	void *original_ptr = reinterpret_cast<void **>(ptr)[-1];
+	kfree(original_ptr);
+}
+
+void operator delete[](void *ptr, std::align_val_t al) noexcept
+{
+	if (!ptr)
+		return;
+
+	void *original_ptr = reinterpret_cast<void **>(ptr)[-1];
+	kfree(original_ptr);
+}
+
 void operator delete(void *ptr, std::size_t) noexcept { kfree(ptr); }
 
 void operator delete[](void *ptr, std::size_t sz) noexcept { kfree(ptr); }

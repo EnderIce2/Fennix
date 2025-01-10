@@ -334,6 +334,24 @@ struct linux_kstat
 	__kernel_ulong_t st_ctime_nsec;
 #undef __unused
 	__kernel_long_t __unused[3];
+#elif defined(__arm__)
+	__kernel_ulong_t st_dev;
+	__kernel_ulong_t st_ino;
+	__kernel_ulong_t st_nlink;
+	unsigned int st_mode;
+	unsigned int st_uid;
+	unsigned int st_gid;
+	unsigned int __pad0;
+	__kernel_ulong_t st_rdev;
+	__kernel_long_t st_size;
+	__kernel_long_t st_blksize;
+	__kernel_long_t st_blocks;
+	__kernel_ulong_t st_atime;
+	__kernel_ulong_t st_atime_nsec;
+	__kernel_ulong_t st_mtime;
+	__kernel_ulong_t st_mtime_nsec;
+	__kernel_ulong_t st_ctime;
+	__kernel_ulong_t st_ctime_nsec;
 #else
 #error "Unsupported architecture"
 #endif
@@ -371,7 +389,7 @@ struct __old_kernel_stat
 	unsigned short st_uid;
 	unsigned short st_gid;
 	unsigned short st_rdev;
-#ifdef __i386__
+#if defined(__i386__) || defined(__arm__)
 	unsigned long st_size;
 	unsigned long st_atime;
 	unsigned long st_mtime;

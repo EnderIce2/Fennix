@@ -68,6 +68,8 @@ __attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
 		"call _exit\n");
 #elif defined(__i386__)
 #warning "i386 _start not implemented"
+#elif defined(__arm__)
+#warning "arm _start not implemented"
 #elif defined(__aarch64__)
 #warning "aarch64 _start not implemented"
 #else

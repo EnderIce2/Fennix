@@ -53,6 +53,10 @@ LDFLAGS += -Tarch/amd64/linker.ld
 else ifeq ($(OSARCH), i386)
 CFLAGS += -march=pentium -m32 -mno-red-zone
 LDFLAGS += -Tarch/i386/linker.ld
+else ifeq ($(OSARCH), arm)
+CFLAGS += -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
+LDFLAGS += -Tarch/arm/linker.ld
+WARNCFLAG += -w
 else ifeq ($(OSARCH), aarch64)
 CFLAGS += -march=armv9.4-a -mtune=cortex-a72 -mlittle-endian -mcmodel=large
 LDFLAGS += -Tarch/aarch64/linker.ld
@@ -67,6 +71,9 @@ ifeq ($(DEBUG), 1)
 ifeq ($(OSARCH), amd64)
 	CFLAGS += -fverbose-asm
 endif # amd64
+ifeq ($(OSARCH), arm)
+	CFLAGS += -fstack-check -fverbose-asm
+endif # arm
 ifeq ($(OSARCH), aarch64)
 	CFLAGS += -fstack-check -fverbose-asm
 endif # aarch64
@@ -119,6 +126,8 @@ ifeq ($(OSARCH), amd64)
 	$(__CONF_OBJCOPY) -O elf64-x86-64 -I binary $< $@
 else ifeq ($(OSARCH), i386)
 	$(__CONF_OBJCOPY) -O elf32-i386 -I binary $< $@
+else ifeq ($(OSARCH), arm)
+	$(__CONF_OBJCOPY) -O elf32-littlearm -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
 	$(__CONF_OBJCOPY) -O elf64-littleaarch64 -I binary $< $@
 endif
@@ -129,6 +138,8 @@ ifeq ($(OSARCH), amd64)
 	$(__CONF_OBJCOPY) -O elf64-x86-64 -I binary $< $@
 else ifeq ($(OSARCH), i386)
 	$(__CONF_OBJCOPY) -O elf32-i386 -I binary $< $@
+else ifeq ($(OSARCH), arm)
+	$(__CONF_OBJCOPY) -O elf32-littlearm -I binary $< $@
 else ifeq ($(OSARCH), aarch64)
 	$(__CONF_OBJCOPY) -O elf64-littlearch64 -I binary $< $@
 endif

@@ -962,7 +962,7 @@ typedef Elf64_Rel Elf_Rel;
 typedef Elf64_Sym Elf_Sym;
 typedef Elf64_Dyn Elf_Dyn;
 typedef Elf64_Rela Elf_Rela;
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__arm__)
 typedef Elf32_Addr Elf_Addr;
 typedef Elf32_Half Elf_Half;
 typedef Elf32_Off Elf_Off;

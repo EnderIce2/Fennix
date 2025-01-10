@@ -189,6 +189,15 @@ enum RelocationTypes
 	R_AARCH64_RELATIVE = 1027,
 	R_AARCH64_TLS_DTPMOD64 = 1028,
 
+	R_ARM_NONE = 0,
+	R_ARM_COPY = 1024,
+	R_ARM_GLOB_DAT = 1025,
+	R_ARM_JUMP_SLOT = 1026,
+	R_ARM_RELATIVE = 1027,
+	R_ARM_TLS_DTPMOD32 = 1028,
+	R_ARM_TLS_DTPOFF32 = 1029,
+	R_ARM_TLS_TPOFF32 = 1030,
+
 #if defined(__x86_64__)
 	R_NONE = R_X86_64_NONE,
 	R_COPY = R_X86_64_COPY,
@@ -216,6 +225,15 @@ enum RelocationTypes
 	R_DTPMOD64 = R_AARCH64_TLS_DTPMOD64,
 	R_DTPOFF64 = R_AARCH64_NONE,
 	R_TPOFF64 = R_AARCH64_NONE,
+#elif defined(__arm__)
+	R_NONE = R_ARM_NONE,
+	R_COPY = R_ARM_COPY,
+	R_GLOB_DAT = R_ARM_GLOB_DAT,
+	R_JMP_SLOT = R_ARM_JUMP_SLOT,
+	R_RELATIVE = R_ARM_RELATIVE,
+	R_DTPMOD64 = R_ARM_TLS_DTPMOD32,
+	R_DTPOFF64 = R_ARM_TLS_DTPOFF32,
+	R_TPOFF64 = R_ARM_TLS_TPOFF32,
 #endif
 };
 
@@ -1002,7 +1020,7 @@ typedef Elf64_Rela Elf_Rela;
 #define ELF_ST_BIND(info) ELF64_ST_BIND(info)
 #define ELF_ST_TYPE(info) ELF64_ST_TYPE(info)
 #define ELF_ST_INFO(bind, type) ELF64_ST_INFO(bind, type)
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__arm__)
 typedef Elf32_Addr Elf_Addr;
 typedef Elf32_Half Elf_Half;
 typedef Elf32_Off Elf_Off;

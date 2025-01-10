@@ -50,7 +50,7 @@ extern "C"
 #define P_tmpdir "/tmp/"
 
 	typedef long fpos_t;
-	typedef unsigned long size_t;
+	typedef __SIZE_TYPE__ size_t;
 
 	struct _IO_FILE
 	{

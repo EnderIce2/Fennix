@@ -46,7 +46,7 @@ extern "C"
 		long rem;
 	} ldiv_t;
 
-	typedef unsigned long size_t;
+	typedef __SIZE_TYPE__ size_t;
 	// typedef __WCHAR_TYPE__ wchar_t;
 
 	long a64l(const char *);

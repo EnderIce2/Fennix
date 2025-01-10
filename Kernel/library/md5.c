@@ -134,7 +134,7 @@ void md5Finalize(MD5Context *ctx)
                    (uint32_t)(ctx->input[(j * 4)]);
     }
     input[14] = (uint32_t)(ctx->size * 8);
-#ifdef __i386__
+#if defined(__i386__) || defined(__arm__)
     input[15] = (uint32_t)((uint64_t)(((uint64_t)ctx->size >> 32) | ((uint64_t)ctx->size << 32)) >> 32);
 #else
     input[15] = (uint32_t)((ctx->size * 8) >> 32);

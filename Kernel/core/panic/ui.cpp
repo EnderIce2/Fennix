@@ -304,12 +304,19 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 			"stub",
 			"stub",
 #warning "aarch64 not implemented"
+#elif defined(__arm__)
+			"stub",
+			"stub",
+#warning "arm not implemented"
 #endif
 #if defined(__amd64__) || defined(__i386__)
 			Frame->InterruptNumber);
 #elif defined(__aarch64__)
 			0);
 #warning "aarch64 not implemented"
+#elif defined(__arm__)
+			0);
+#warning "arm not implemented"
 #endif
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("Cause: %s\n", x86Exceptions[Frame->InterruptNumber].Cause);
@@ -320,6 +327,8 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 			Frame->rip);
 #elif defined(__i386__)
 			Frame->eip);
+#elif defined(__arm__)
+0);
 #elif defined(__aarch64__)
 0);
 #warning "aarch64 not implemented"
