@@ -60,6 +60,8 @@ namespace UART
 		while ((inb(s_cst(uint16_t, COM1 + 5)) & 1) == 0)
 			;
 		return inb(COM1);
+#else
+		return 0;
 #endif
 	}
 
@@ -82,6 +84,8 @@ namespace UART
 		while ((inb(s_cst(uint16_t, COM4 + 5)) & 1) == 0)
 			;
 		return inb(COM4);
+#else
+		return 0;
 #endif
 	}
 

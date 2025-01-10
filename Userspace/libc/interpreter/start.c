@@ -128,6 +128,8 @@ __attribute__((naked, used, no_stack_protector)) void _start()
 		"call _exit\n");	/* Call _exit */
 #elif defined(__i386__)
 #warning "i386 _start not implemented"
+#elif defined(__aarch64__)
+#warning "aarch64 _start not implemented"
 #else
 #error "Unsupported architecture"
 #endif

@@ -151,8 +151,8 @@ __attribute__((naked, used, no_stack_protector)) void _dl_runtime_resolve()
 		"jmp *%r11\n"); /* Jump to the return value */
 #elif defined(__i386__)
 #warning "i386 _dl_runtime_resolve not implemented"
-#else
-#error "Unsupported architecture"
+#elif defined(__aarch64__)
+#warning "aarch64 not implemented"
 #endif
 }
 
@@ -817,6 +817,7 @@ int RelocateHelper(ElfInfo *Info, Elf_Rela *Rela, short IsRel, void **Relocated)
 		reloc = Info->BaseAddress;
 		break;
 	}
+#if defined(__amd64__)
 	case R_DTPOFF64:
 	{
 		printf("dl: i don't know what to do with DTPOFF64\n");
@@ -829,6 +830,7 @@ int RelocateHelper(ElfInfo *Info, Elf_Rela *Rela, short IsRel, void **Relocated)
 		reloc = symAddress + Rela->r_addend;
 		break;
 	}
+#endif
 #endif // __LP64__
 	default:
 	{

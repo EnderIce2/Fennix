@@ -1077,6 +1077,7 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 			return -linux_ENOMEM;
 		}
 
+#if defined(__amd64__) || defined(__i386__)
 		if (!pte->Present ||
 			(!pte->UserSupervisor && p_Read) ||
 			(!pte->ReadWrite && p_Write))
@@ -1089,7 +1090,8 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		// pte->Present = !p_None;
 		pte->UserSupervisor = p_Read;
 		pte->ReadWrite = p_Write;
-		// pte->ExecuteDisable = p_Exec;
+// pte->ExecuteDisable = p_Exec;
+#endif
 
 		debug("Changed permissions of page %#lx to %s %s %s %s",
 			  (void *)i,
@@ -1484,7 +1486,9 @@ static pid_t linux_fork(SysFrm *sf)
 
 	TaskManager->UpdateFrame();
 
+#if defined(__amd64__) || defined(__i386__)
 	NewThread->FPU = Thread->FPU;
+#endif
 	NewThread->Stack->Fork(Thread->Stack);
 	NewThread->Info.Architecture = Thread->Info.Architecture;
 	NewThread->Info.Compatibility = Thread->Info.Compatibility;
@@ -1564,7 +1568,9 @@ static pid_t linux_vfork(SysFrm *sf)
 
 	TaskManager->UpdateFrame();
 
+#if defined(__amd64__) || defined(__i386__)
 	NewThread->FPU = Thread->FPU;
+#endif
 	delete NewThread->Stack;
 	NewThread->Stack = Thread->Stack;
 	NewThread->Info.Architecture = Thread->Info.Architecture;

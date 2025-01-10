@@ -158,38 +158,6 @@
 			"intelliSenseMode": "linux-gcc-arm64",
 			"configurationProvider": "ms-vscode.makefile-tools",
 			"compilerArgs": [
-				// Compiler flags
-				"-pipe",
-				"-fno-builtin",
-				"-msoft-float",
-				"-fPIC",
-				"-Wstack-protector",
-				"-fcoroutines",
-				// Warnings
-				"-Wall",
-				"-Wextra",
-				"-Wfloat-equal",
-				"-Wpointer-arith",
-				"-Wcast-align",
-				"-Wredundant-decls",
-				"-Winit-self",
-				"-Wswitch-default",
-				"-Wstrict-overflow=5",
-				"-Wconversion",
-				// C++ flags
-				"-fno-rtti",
-				"-fno-exceptions",
-				// Linker flags
-				"-T${workspaceFolder}/arch/aarch64/linker.ld",
-				"-fPIC",
-				// Debug flags
-				"-ggdb3",
-				"-O0",
-				"-fdiagnostics-color=always",
-				"-fverbose-asm",
-				"-fstack-usage",
-				"-fstack-check",
-				"-fsanitize=undefined",
 				// VSCode flags
 				"-ffreestanding",
 				"-nostdinc",

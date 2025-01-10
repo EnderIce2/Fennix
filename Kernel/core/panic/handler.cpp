@@ -185,8 +185,10 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 		CPU::Pause();
 
 	ExPrint("\x1b[0m-----------------------------------------------\n");
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("\x1b[30;41mUnrecoverable exception %#lx on CPU %d\n",
 			Frame->InterruptNumber, core->ID);
+#endif
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",
 			Frame->cr0, Frame->cr2, Frame->cr3, Frame->cr4, Frame->cr8);
@@ -222,7 +224,9 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 #endif /* a86 */
 
 	Display->UpdateBuffer();
+#if defined(__amd64__) || defined(__i386__)
 	error("Unrecoverable Exception: %#lx", Frame->InterruptNumber);
+#endif
 
 	UnrecoverableLock.store(false, std::memory_order_release);
 	CPU::Stop();
@@ -231,6 +235,7 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 nsa __noreturn void HandleExceptionInsideException(CPU::ExceptionFrame *Frame)
 {
 	ExPrint("\x1b[0m-----------------------------------------------\n");
+#if defined(__amd64__) || defined(__i386__)
 	ExPrint("Exception inside exception: %#lx at %#lx\n",
 			Frame->InterruptNumber,
 #if defined(__amd64__)
@@ -240,6 +245,7 @@ nsa __noreturn void HandleExceptionInsideException(CPU::ExceptionFrame *Frame)
 #elif defined(__aarch64__)
 			Frame->pc);
 #endif
+#endif // __amd64__ || __i386__
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",
 			Frame->cr0, Frame->cr2, Frame->cr3, Frame->cr4, Frame->cr8);
@@ -285,6 +291,8 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 		do it for us if we return. */
 	CPU::PageTable(KernelPageTable);
 	InitFont();
+
+#if defined(__amd64__) || defined(__i386__)
 
 	/* First check the exception */
 	if (unlikely(Frame->InterruptNumber == CPU::x86::DoubleFault))
@@ -343,6 +351,7 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 
 ExceptionExit:
 	ExceptionLock.store(false, std::memory_order_release);
+#endif
 }
 
 nsa void BaseBufferStackError(bool Stack)

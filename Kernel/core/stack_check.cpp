@@ -67,8 +67,7 @@ EXTERNC __noreturn __no_stack_protector void __stack_chk_fail(void)
 	asmv("movl %%esp, %0"
 		 : "=r"(Stack));
 #elif defined(__aarch64__)
-	asmv("mov %%sp, %0"
-		 : "=r"(Stack));
+#warning "aarch64 not implemented"
 #endif
 	error("Stack address: %#lx", Stack);
 

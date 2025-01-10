@@ -194,6 +194,7 @@ namespace Memory
 	bool VirtualMemoryArea::HandleCoW(uintptr_t PFA)
 	{
 		func("%#lx", PFA);
+#if defined(__amd64__) || defined(__i386__)
 		Virtual vmm(this->Table);
 		PageTableEntry *pte = vmm.GetPTE((void *)PFA);
 
@@ -252,6 +253,9 @@ namespace Memory
 			}
 		}
 
+#else
+#warning "Not implemented"
+#endif
 		debug("%#lx not found in CoW regions", PFA);
 		return false;
 	}
@@ -325,7 +329,7 @@ namespace Memory
 				this->Map(AddressToMap, RealAddress, PAGE_SIZE, Flags);
 				MgrLock.Lock(__FUNCTION__);
 #else
-#error "Not implemented"
+#warning "Not implemented"
 #endif
 			}
 

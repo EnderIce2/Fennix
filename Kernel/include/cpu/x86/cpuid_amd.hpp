@@ -55,13 +55,11 @@ typedef uint64_t cpuid_t;
 #define __amd_cpuid_init(leaf)                                  \
 	CPUID##leaf()                                               \
 	{                                                           \
-		assert(!"cpuid not implemented for this architecture"); \
 	}
 
 #define __amd_cpuid_init2(leaf, leaf2, suffix)                  \
 	CPUID##leaf##suffix()                                       \
 	{                                                           \
-		assert(!"cpuid not implemented for this architecture"); \
 	}
 #endif
 

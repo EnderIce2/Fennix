@@ -96,6 +96,7 @@ bool IsVMwareBackdoorAvailable()
 	cmd.magic = VMWARE_MAGIC;
 	cmd.port = VMWARE_PORT;
 
+#if defined(__amd64__) || defined(__i386__)
 	asmv("in %%dx, %0"
 		 : "+a"(cmd.ax),
 		   "+b"(cmd.bx),
@@ -103,6 +104,7 @@ bool IsVMwareBackdoorAvailable()
 		   "+d"(cmd.dx),
 		   "+S"(cmd.si),
 		   "+D"(cmd.di));
+#endif
 
 	if (cmd.bx != VMWARE_MAGIC || cmd.ax == 0xFFFFFFFF)
 		return false;

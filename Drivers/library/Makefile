@@ -36,7 +36,15 @@ CFLAGS += -pipe -fno-builtin -fPIC
 
 endif
 
-CRT_CFLAGS := -fPIC -fPIE -pie -mno-red-zone -std=c++20 -I$(INCLUDE_DIR)
+CRT_CFLAGS := -fPIC -fPIE -pie -std=c++20 -I$(INCLUDE_DIR)
+
+ifeq ($(OSARCH), amd64)
+CRT_CFLAGS += -mno-red-zone
+else ifeq ($(OSARCH), i386)
+CRT_CFLAGS += -mno-red-zone
+else ifeq ($(OSARCH), aarch64)
+CRT_CFLAGS +=
+endif
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage

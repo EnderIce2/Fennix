@@ -15,30 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
-#include <sys/types.h>
-#include <inttypes.h>
-#include <stddef.h>
-
-#include <fennix/syscalls.h>
-
-export __attribute__((naked, used, no_stack_protector)) void *__tls_get_addr(void *__data)
+double __trunctfdf2(long double a)
 {
-#warning "__tls_get_addr not implemented"
-#if defined(__amd64__) || defined(__i386__)
-	__asm__("ud2");
-#endif
-}
-
-int __init_pthread(void)
-{
-	__pthread *ptr = (__pthread *)call_mmap(0,
-											0x1000,
-											__SYS_PROT_READ | __SYS_PROT_WRITE,
-											__SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE,
-											-1, 0);
-	call_prctl(__SYS_SET_FS, ptr, 0, 0, 0);
-	ptr->Self = ptr;
-	ptr->CurrentError = 0;
-	return 0;
+	return (double)a;
 }

@@ -32,6 +32,7 @@ namespace Power
 			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
 				((ACPI::DSDT *)this->dsdt)->Reboot();
 
+#if defined(__amd64__) || defined(__i386__)
 		asmv("cli");
 		uint8_t temp;
 		do
@@ -41,6 +42,9 @@ namespace Power
 				inb(0x60);
 		} while (((temp) & (1 << (1))) != 0);
 		outb(0x64, 0xFE);
+#elif defined(__aarch64__)
+		warn("aarch64 is not supported yet");
+#endif
 	}
 
 	void Power::Shutdown()
@@ -55,9 +59,11 @@ namespace Power
 		}
 		/* FIXME: Detect emulators and use their shutdown methods */
 #ifdef DEBUG
+#if defined(__amd64__) || defined(__i386__)
 		outl(0xB004, 0x2000); // for qemu
 		outl(0x604, 0x2000);  // if qemu not working, bochs and older versions of qemu
 		outl(0x4004, 0x3400); // virtual box
+#endif
 #endif
 	}
 

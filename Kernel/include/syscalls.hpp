@@ -60,8 +60,13 @@ typedef struct SyscallsFrame
 	uint32_t StackPointer;
 	uint32_t StackSegment;
 #elif defined(__aarch64__)
-	uint32_t ReturnAddress;
-	uint32_t StackPointer;
+	uint64_t ReturnAddress; /* x0 */
+	uint64_t x[30];
+	uint64_t StackPointer;
+	uint64_t ExceptionLinkRegister;
+	uint64_t ExceptionSyndromeRegister;
+	uint64_t FaultAddressRegister;
+	uint64_t SavedProgramStatusRegister;
 #endif
 
 	uintptr_t ReturnValue() const
@@ -71,7 +76,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return ax;
 #elif defined(__aarch64__)
-		return x0;
+		return x[0];
 #endif
 	}
 
@@ -82,7 +87,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return di;
 #elif defined(__aarch64__)
-		return x0;
+		return x[0];
 #endif
 	}
 
@@ -93,7 +98,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return cx;
 #elif defined(__aarch64__)
-		return x1;
+		return x[1];
 #endif
 	}
 
@@ -104,7 +109,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return dx;
 #elif defined(__aarch64__)
-		return x2;
+		return x[2];
 #endif
 	}
 
@@ -115,7 +120,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return si;
 #elif defined(__aarch64__)
-		return x3;
+		return x[3];
 #endif
 	}
 
@@ -126,7 +131,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return di;
 #elif defined(__aarch64__)
-		return x4;
+		return x[4];
 #endif
 	}
 
@@ -137,7 +142,7 @@ typedef struct SyscallsFrame
 #elif defined(__i386__)
 		return bp;
 #elif defined(__aarch64__)
-		return x5;
+		return x[5];
 #endif
 	}
 } SyscallsFrame;

@@ -48,6 +48,8 @@ namespace Time
 		return mminq(&hpet->MainCounterValue);
 #elif defined(__i386__)
 		return mminl(&hpet->MainCounterValue);
+#else
+		return 0;
 #endif
 	}
 
@@ -57,6 +59,8 @@ namespace Time
 		return mminq(&hpet->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
 #elif defined(__i386__)
 		return mminl(&hpet->MainCounterValue) + (Target * ConvertUnit(Unit)) / clk;
+#else
+		return 0;
 #endif
 	}
 
@@ -69,6 +73,8 @@ namespace Time
 
 		Subtraction *= ConvertUnit(Units::Nanoseconds);
 		return uint64_t(Subtraction / this->clk);
+#else
+		return 0;
 #endif
 	}
 

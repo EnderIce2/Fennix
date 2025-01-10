@@ -110,6 +110,8 @@ namespace Interrupts
 	/* APIC::APIC */ void *apic[MAX_CPU] = {nullptr};
 	/* APIC::Timer */ void *apicTimer[MAX_CPU] = {nullptr};
 #elif defined(__aarch64__)
+	/* APIC::APIC */ void *apic[MAX_CPU] = {nullptr};
+	/* APIC::Timer */ void *apicTimer[MAX_CPU] = {nullptr};
 #endif
 
 	void Initialize(int Core)
@@ -264,6 +266,7 @@ namespace Interrupts
 
 	nsa inline void ReturnFromInterrupt()
 	{
+#if defined(__amd64__) || defined(__i386__)
 		CPUData *CoreData = GetCurrentCPU();
 		int Core = CoreData->ID;
 
@@ -299,8 +302,9 @@ namespace Interrupts
 		}
 		else
 			fixme("APIC not found for core %d", Core);
-		// TODO: Handle PIC too
+			// TODO: Handle PIC too
 
+#endif
 		assert(!"EOI not handled.");
 		CPU::Stop();
 	}
@@ -317,24 +321,23 @@ namespace Interrupts
 			{
 #if defined(__amd64__) || defined(__i386__)
 				asmv("mov %%cr3, %0" : "=r"(Original));
-#endif
 				if (likely(Original == KernelPageTable))
 					return;
-#if defined(__amd64__) || defined(__i386__)
 				asmv("mov %0, %%cr3" : : "r"(KernelPageTable));
 #endif
 			}
 
 			~AutoSwitchPageTable()
 			{
+#if defined(__amd64__) || defined(__i386__)
 				if (likely(Original == KernelPageTable))
 					return;
-#if defined(__amd64__) || defined(__i386__)
 				asmv("mov %0, %%cr3" : : "r"(Original));
 #endif
 			}
 		} SwitchPageTable;
 
+#if defined(__amd64__) || defined(__i386__)
 		CPU::TrapFrame *Frame = (CPU::TrapFrame *)Data;
 		// debug("IRQ%ld", Frame->InterruptNumber - 32);
 
@@ -378,10 +381,12 @@ namespace Interrupts
 		}
 
 		ReturnFromInterrupt();
+#endif
 	}
 
 	extern "C" nsa void SchedulerInterruptHandler(void *Data)
 	{
+#if defined(__amd64__) || defined(__i386__)
 		KernelPageTable->Update();
 		CPU::SchedulerFrame *Frame = (CPU::SchedulerFrame *)Data;
 #if defined(__amd64__) || defined(__i386__)
@@ -411,6 +416,7 @@ namespace Interrupts
 		Handler *hnd = (Handler *)it->Data;
 		hnd->OnInterruptReceived(Frame);
 		ReturnFromInterrupt();
+#endif
 	}
 
 	Handler::Handler(int InterruptNumber, bool Critical)
@@ -469,11 +475,15 @@ namespace Interrupts
 
 	void Handler::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
+#if defined(__amd64__) || defined(__i386__)
 		debug("Unhandled interrupt %d", Frame->InterruptNumber);
+#endif
 	}
 
 	void Handler::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
+#if defined(__amd64__) || defined(__i386__)
 		debug("Unhandled scheduler interrupt %d", Frame->InterruptNumber);
+#endif
 	}
 }

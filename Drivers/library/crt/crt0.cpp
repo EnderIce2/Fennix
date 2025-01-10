@@ -73,7 +73,11 @@ DefineFunction(void, KernelPrint, const char *format, ...)
 {
 	__builtin_va_list args;
 	__builtin_va_start(args, format);
+#if defined(__amd64__) || defined(__i386__)
 	__KernelPrint(DriverID, (long)format, (long)args);
+#elif defined(__aarch64__)
+	__KernelPrint(DriverID, (long)format, (long)__builtin_va_arg(args, void *));
+#endif
 	__builtin_va_end(args);
 }
 
@@ -81,7 +85,11 @@ DefineFunction(void, KernelLog, const char *format, ...)
 {
 	__builtin_va_list args;
 	__builtin_va_start(args, format);
+#if defined(__amd64__) || defined(__i386__)
 	__KernelLog(DriverID, (long)format, (long)args);
+#elif defined(__aarch64__)
+	__KernelLog(DriverID, (long)format, (long)__builtin_va_arg(args, void *));
+#endif
 	__builtin_va_end(args);
 }
 

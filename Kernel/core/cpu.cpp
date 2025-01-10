@@ -53,7 +53,7 @@ namespace CPU
 		memcpy(Vendor + 4, &edx, 4);
 		memcpy(Vendor + 8, &ecx, 4);
 #elif defined(__aarch64__)
-#error "Not implemented"
+#warning "aarch64 not implemented"
 #endif
 		return Vendor;
 	}
@@ -98,7 +98,7 @@ namespace CPU
 		memcpy(Name + 40, &ecx, 4);
 		memcpy(Name + 44, &edx, 4);
 #elif defined(__aarch64__)
-#error "Not implemented"
+#warning "aarch64 not implemented"
 #endif
 		return Name;
 	}
@@ -141,7 +141,7 @@ namespace CPU
 		memcpy(Hypervisor + 4, &ecx, 4);
 		memcpy(Hypervisor + 8, &edx, 4);
 #elif defined(__aarch64__)
-#error "Not implemented"
+#warning "aarch64 not implemented"
 #endif
 		return Hypervisor;
 	}
@@ -164,9 +164,8 @@ namespace CPU
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
 #elif defined(__aarch64__)
-			asmv("mrs %0, cpsr"
-				 : "=r"(Flags));
-			return Flags & (1 << 7);
+#warning "aarch64 not implemented"
+			return 0;
 #endif
 		}
 		case Enable:
@@ -174,7 +173,7 @@ namespace CPU
 #if defined(__amd64__) || defined(__i386__)
 			asmv("sti");
 #elif defined(__aarch64__)
-			asmv("cpsie i");
+#warning "aarch64 not implemented"
 #endif
 			return true;
 		}
@@ -183,7 +182,7 @@ namespace CPU
 #if defined(__amd64__) || defined(__i386__)
 			asmv("cli");
 #elif defined(__aarch64__)
-			asmv("cpsid i");
+#warning "aarch64 not implemented"
 #endif
 			return true;
 		}
@@ -225,10 +224,7 @@ namespace CPU
 
 		if (PT)
 		{
-			asmv("msr ttbr0_el1, %0"
-				 :
-				 : "r"(PT)
-				 : "memory");
+#warning "aarch64 not implemented"
 		}
 #endif
 		return ret;
@@ -275,6 +271,7 @@ namespace CPU
 
 	void InitializeFeatures(int Core)
 	{
+#if defined(__amd64__) || defined(__i386__)
 		static int BSP = 0;
 		SupportedFeat feat = GetCPUFeat();
 
@@ -386,6 +383,7 @@ namespace CPU
 			SSEEnabled = true;
 			debug("SSE support enabled.");
 		}
+#endif
 	}
 
 	uint64_t Counter()
@@ -399,8 +397,8 @@ namespace CPU
 			   "=d"(edx));
 		Counter = ((uint64_t)eax) | (((uint64_t)edx) << 32);
 #elif defined(__aarch64__)
-		asmv("mrs %0, cntvct_el0"
-			 : "=r"(Counter));
+#warning "aarch64 not implemented"
+		Counter = 0;
 #endif
 		return Counter;
 	}

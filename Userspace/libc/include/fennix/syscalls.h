@@ -40,6 +40,15 @@ static inline scarg syscall0(scarg syscall)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0");
+	__asm__ __volatile__("svc 0"
+						 : "=r"(x0)
+						 : "r"(x8)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -65,6 +74,15 @@ static inline scarg syscall1(scarg syscall, scarg arg1)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -91,6 +109,16 @@ static inline scarg syscall2(scarg syscall, scarg arg1, scarg arg2)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	register long x1 __asm__("x1") = arg2;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0), "r"(x1)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -118,6 +146,17 @@ static inline scarg syscall3(scarg syscall, scarg arg1, scarg arg2, scarg arg3)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	register long x1 __asm__("x1") = arg2;
+	register long x2 __asm__("x2") = arg3;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -147,6 +186,18 @@ static inline scarg syscall4(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	register long x1 __asm__("x1") = arg2;
+	register long x2 __asm__("x2") = arg3;
+	register long x3 __asm__("x3") = arg4;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -178,6 +229,19 @@ static inline scarg syscall5(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	register long x1 __asm__("x1") = arg2;
+	register long x2 __asm__("x2") = arg3;
+	register long x3 __asm__("x3") = arg4;
+	register long x4 __asm__("x4") = arg5;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3), "r"(x4)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif
@@ -211,6 +275,20 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
 #warning "i386 syscall wrapper not implemented"
+#elif defined(__arm__)
+#warning "arm syscall wrapper not implemented"
+#elif defined(__aarch64__)
+	register long x8 __asm__("x8") = syscall;
+	register long x0 __asm__("x0") = arg1;
+	register long x1 __asm__("x1") = arg2;
+	register long x2 __asm__("x2") = arg3;
+	register long x3 __asm__("x3") = arg4;
+	register long x4 __asm__("x4") = arg5;
+	register long x5 __asm__("x5") = arg6;
+	__asm__ __volatile__("svc 0"
+						 : "=r"(ret)
+						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5)
+						 : "memory", "cc");
 #else
 #error "Unsupported architecture"
 #endif

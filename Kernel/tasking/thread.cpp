@@ -321,7 +321,7 @@ namespace Tasking
 #elif defined(__i386__)
 		this->Registers.esp = StackPointerReg;
 #elif defined(__aarch64__)
-		this->Registers.sp = StackPointerReg;
+#warning "aarch64 not implemented"
 #endif
 
 		if (argvLen > 0)
@@ -349,10 +349,7 @@ namespace Tasking
 		this->Registers.ecx = (uintptr_t)envpLen;										// envc
 		this->Registers.edx = (uintptr_t)(this->Registers.esp + 4 + (4 * argvLen) + 4); // envp
 #elif defined(__aarch64__)
-		this->Registers.x0 = (uintptr_t)argvLen;									  // argc
-		this->Registers.x1 = (uintptr_t)(this->Registers.sp + 8);					  // argv
-		this->Registers.x2 = (uintptr_t)envpLen;									  // envc
-		this->Registers.x3 = (uintptr_t)(this->Registers.sp + 8 + (8 * argvLen) + 8); // envp
+#warning "aarch64 not implemented"
 #endif
 	}
 
@@ -410,8 +407,10 @@ namespace Tasking
 		uintptr_t *pTLSPointer = (uintptr_t *)this->TLS.pBase + this->TLS.Size;
 		*pTLSPointer = this->TLS.pBase + this->TLS.Size;
 
+#if defined(__amd64__) || defined(__i386__)
 		this->GSBase = r_cst(uintptr_t, pTLSPointer);
 		this->FSBase = r_cst(uintptr_t, pTLSPointer);
+#endif
 	}
 
 	TCB::TCB(Task *ctx, PCB *Parent, IP EntryPoint,
@@ -470,7 +469,7 @@ namespace Tasking
 #elif defined(__i386__)
 		this->Registers.eip = EntryPoint;
 #elif defined(__aarch64__)
-		this->Registers.pc = EntryPoint;
+#warning "aarch64 not implemented"
 #endif
 
 		switch (this->Parent->Security.ExecutionMode)
@@ -506,9 +505,7 @@ namespace Tasking
 			this->Registers.esp = ((uintptr_t)this->Stack->GetStackTop());
 			POKE(uintptr_t, this->Registers.esp) = (uintptr_t)ThreadDoExit;
 #elif defined(__aarch64__)
-			this->Registers.pc = EntryPoint;
-			this->Registers.sp = ((uintptr_t)this->Stack->GetStackTop());
-			POKE(uintptr_t, this->Registers.sp) = (uintptr_t)ThreadDoExit;
+#warning "aarch64 not implemented"
 #endif
 			break;
 		}
@@ -612,10 +609,12 @@ namespace Tasking
 			this->Parent->Info.RootNode = this->Info.RootNode;
 		}
 
-		// TODO: Is really a good idea to use the FPU in kernel mode?
+// TODO: Is really a good idea to use the FPU in kernel mode?
+#if defined(__amd64__) || defined(__i386__)
 		this->FPU.mxcsr = 0b0001111110000000;
 		this->FPU.mxcsrmask = 0b1111111110111111;
 		this->FPU.fcw = 0b0000001100111111;
+#endif
 
 #ifdef DEBUG
 #ifdef __amd64__

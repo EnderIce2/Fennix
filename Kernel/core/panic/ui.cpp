@@ -137,9 +137,7 @@ nsa const char *ExGetKSymbol(CPU::ExceptionFrame *Frame)
 		Frame->eip > (uintptr_t)&_kernel_end)
 		return "<OUTSIDE KERNEL>";
 #elif defined(__aarch64__)
-	if (Frame->pc < (uintptr_t)&_kernel_start &&
-		Frame->pc > (uintptr_t)&_kernel_end)
-		return "<OUTSIDE KERNEL>";
+#warning "aarch64 not implemented"
 #endif
 
 #if defined(__amd64__)
@@ -147,7 +145,8 @@ nsa const char *ExGetKSymbol(CPU::ExceptionFrame *Frame)
 #elif defined(__i386__)
 	return ExGetKSymbolByAddress(Frame->eip);
 #elif defined(__aarch64__)
-	return ExGetKSymbolByAddress(Frame->pc);
+#warning "aarch64 not implemented"
+	return "stub";
 #endif
 }
 
@@ -302,9 +301,16 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 			x86Exceptions[Frame->InterruptNumber].Name,
 			x86Exceptions[Frame->InterruptNumber].Mnemonic,
 #elif defined(__aarch64__)
-#error "AA64 not implemented"
+			"stub",
+			"stub",
+#warning "aarch64 not implemented"
 #endif
+#if defined(__amd64__) || defined(__i386__)
 			Frame->InterruptNumber);
+#elif defined(__aarch64__)
+			0);
+#warning "aarch64 not implemented"
+#endif
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("Cause: %s\n", x86Exceptions[Frame->InterruptNumber].Cause);
 #endif
@@ -315,7 +321,8 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 #elif defined(__i386__)
 			Frame->eip);
 #elif defined(__aarch64__)
-			Frame->pc);
+0);
+#warning "aarch64 not implemented"
 #endif
 
 	CPUData *core = GetCurrentCPU();
@@ -342,7 +349,7 @@ arch void DisplayDetailsScreen(CPU::ExceptionFrame *Frame);
 nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 {
 	Memory::Virtual vmm;
-	struct StackFrame *sf;
+	struct StackFrame *sf = nullptr;
 #if defined(__amd64__)
 	sf = (struct StackFrame *)Frame->rbp;
 #elif defined(__i386__)
@@ -353,6 +360,7 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 
 	if (!vmm.Check(sf))
 	{
+#if defined(__amd64__) || defined(__i386__)
 		void *ptr = ((Memory::PageTable *)Frame->cr3)->Get(sf);
 		debug("Virtual pointer %#lx -> %#lx", sf, ptr);
 		if (vmm.Check(ptr))
@@ -362,17 +370,18 @@ nsa void DisplayStackScreen(CPU::ExceptionFrame *Frame)
 			ExPrint("\x1b[31m< No stack trace available. >\x1b[0m\n");
 			return;
 		}
+#endif
 	}
 
 	/* FIXME: Get symbol offset more efficiently */
 
-	uintptr_t fIP;
+	uintptr_t fIP = 0;
 #if defined(__amd64__)
 	fIP = Frame->rip;
 #elif defined(__i386__)
 	fIP = Frame->eip;
 #elif defined(__aarch64__)
-	fIP = Frame->pc;
+#warning "aarch64 not implemented"
 #endif
 
 	ExPrint("%p", (void *)fIP);
@@ -557,6 +566,7 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 	DisplayBottomOverlay();
 
 #ifdef DEBUG
+#if defined(__amd64__) || defined(__i386__)
 	static int once = 0;
 	static uint8_t com4 = 0xFF;
 	if (!once++)
@@ -657,6 +667,7 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 		ExPrint(keyBuf);
 	}
 #endif
+#endif // DEBUG
 	debug("cpu halted");
 	CPU::Halt(true);
 }
@@ -965,8 +976,10 @@ nsa void UserInput(char *Input)
 #ifdef DEBUG
 	else if (strcmp(Input, "pt") == 0)
 	{
-		/* Helpful for qemu "info tlb" command */
+/* Helpful for qemu "info tlb" command */
+#if defined(__amd64__) || defined(__i386__)
 		CPU::PageTable((void *)ExFrame->cr3);
+#endif
 		ExPrint("Here be dragons\n");
 	}
 	else if (strcmp(Input, "ps") == 0)

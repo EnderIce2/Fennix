@@ -104,10 +104,10 @@ index 95c91ee02..cbcaac06b 100644
  	;;
 diff --git a/gcc/config/aarch64/aarch64-fennix.h b/gcc/config/aarch64/aarch64-fennix.h
 new file mode 100644
-index 000000000..dafd8f253
+index 000000000..cf9b0136e
 --- /dev/null
 +++ b/gcc/config/aarch64/aarch64-fennix.h
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,23 @@
 +/* Definitions for AArch64 running Fennix
 +   Copyright (C) 2016-2024 Free Software Foundation, Inc.
 +
@@ -129,17 +129,6 @@ index 000000000..dafd8f253
 +
 +#ifndef GCC_AARCH64_FENNIX_H
 +#define GCC_AARCH64_FENNIX_H
-+
-+// #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
-+
-+// #undef TARGET_BINDS_LOCAL_P
-+// #define TARGET_BINDS_LOCAL_P default_binds_local_p_2
-+
-+// #undef MCOUNT_NAME
-+// #define MCOUNT_NAME ".mcount"
-+
-+// #undef ASM_GENERATE_INTERNAL_LABEL
-+// #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM) sprintf(LABEL, "*.L%s%lu", PREFIX, (unsigned long)(NUM))
 +
 +#endif /* GCC_AARCH64_FENNIX_H */
 diff --git a/gcc/config/aarch64/t-aarch64-fennix b/gcc/config/aarch64/t-aarch64-fennix
@@ -304,14 +293,15 @@ index 000000000..632634dac
 +MULTILIB_OPTIONS += mno-red-zone
 +MULTILIB_DIRNAMES += no-red-zone
 diff --git a/libgcc/config.host b/libgcc/config.host
-index e75a7af64..572fff51e 100644
+index e75a7af64..10d8017b0 100644
 --- a/libgcc/config.host
 +++ b/libgcc/config.host
-@@ -418,6 +418,14 @@ aarch64*-*-elf | aarch64*-*-rtems*)
+@@ -418,6 +418,15 @@ aarch64*-*-elf | aarch64*-*-rtems*)
  	tmake_file="${tmake_file} t-dfprules"
  	md_unwind_header=aarch64/aarch64-unwind.h
  	;;
 +aarch64*-*-fennix*)
++	extra_parts="$extra_parts crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 +	extra_parts="$extra_parts crtfastmath.o"
 +	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 +	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
@@ -322,7 +312,7 @@ index e75a7af64..572fff51e 100644
  aarch64*-*-freebsd*)
  	extra_parts="$extra_parts crtfastmath.o"
  	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
-@@ -512,6 +520,12 @@ arm-wrs-vxworks7*)
+@@ -512,6 +521,13 @@ arm-wrs-vxworks7*)
  	unwind_header=config/arm/unwind-arm.h
  	extra_parts="$extra_parts crti.o crtn.o"
  	;;
@@ -331,11 +321,12 @@ index e75a7af64..572fff51e 100644
 +	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 +	tm_file="${tm_file} arm/bpabi-lib.h"
 +	unwind_header=config/arm/unwind-arm.h
++	extra_parts="$extra_parts crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
 +	;;
  arm*-*-freebsd*)                # ARM FreeBSD EABI
  	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix arm/t-elf"
  	tmake_file="${tmake_file} arm/t-bpabi arm/t-freebsd"
-@@ -760,6 +774,14 @@ x86_64-*-dragonfly*)
+@@ -760,6 +776,14 @@ x86_64-*-dragonfly*)
  	tmake_file="${tmake_file} i386/t-dragonfly i386/t-crtstuff"
  	md_unwind_header=i386/dragonfly-unwind.h
  	;;

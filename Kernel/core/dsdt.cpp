@@ -61,6 +61,7 @@ namespace ACPI
 		debug("SCI Handle Triggered");
 		uint16_t Event = 0;
 		{
+#if defined(__amd64__) || defined(__i386__)
 			uint16_t a = 0, b = 0;
 			if (acpi->FADT->PM1aEventBlock)
 			{
@@ -73,6 +74,7 @@ namespace ACPI
 				outw(s_cst(uint16_t, acpi->FADT->PM1bEventBlock), b);
 			}
 			Event = a | b;
+#endif
 		}
 
 #ifdef DEBUG
@@ -161,6 +163,7 @@ namespace ACPI
 			return;
 		}
 
+#if defined(__amd64__) || defined(__i386__)
 		if (inw(s_cst(uint16_t, PM1a_CNT) & SCI_EN) == 0)
 		{
 			KPrint("ACPI was disabled, enabling...");
@@ -195,6 +198,9 @@ namespace ACPI
 		outw(s_cst(uint16_t, PM1a_CNT), SLP_TYPa | SLP_EN);
 		if (PM1b_CNT)
 			outw(s_cst(uint16_t, PM1b_CNT), SLP_TYPb | SLP_EN);
+#elif defined(__aarch64__)
+		warn("ACPI Shutdown not supported");
+#endif
 	}
 
 	void DSDT::Reboot()
@@ -209,7 +215,11 @@ namespace ACPI
 		}
 		case ACPI_GAS_IO:
 		{
+#if defined(__amd64__) || defined(__i386__)
 			outb(s_cst(uint16_t, acpi->FADT->ResetReg.Address), acpi->FADT->ResetValue);
+#elif defined(__aarch64__)
+			warn("ACPI_GAS_IO not supported");
+#endif
 			break;
 		}
 		case ACPI_GAS_PCI:
@@ -294,6 +304,7 @@ namespace ACPI
 			KPrint("ACPI Shutdown is supported");
 			ACPIShutdownSupported = true;
 
+#if defined(__amd64__) || defined(__i386__)
 			{
 				const uint16_t value = /*ACPI_TIMER |*/ ACPI_BUSMASTER | ACPI_GLOBAL |
 									   ACPI_POWER_BUTTON | ACPI_SLEEP_BUTTON | ACPI_RTC_ALARM |
@@ -322,6 +333,7 @@ namespace ACPI
 			}
 
 			((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, uint8_t(acpi->FADT->SCI_Interrupt), 1);
+#endif
 			return;
 		}
 		warn("Failed to parse _S5_ in ACPI");

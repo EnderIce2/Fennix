@@ -108,8 +108,12 @@ export int pthread_rwlockattr_setpshared(pthread_rwlockattr_t *, int);
 export pthread_t pthread_self(void)
 {
 	pthread_t tid;
+#if defined(__amd64__) || defined(__i386__)
 	__asm__ __volatile__("mov %%fs:0, %0"
 						 : "=r"(tid));
+#elif defined(__aarch64__)
+	tid = 0;
+#endif
 	return tid;
 }
 

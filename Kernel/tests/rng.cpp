@@ -23,6 +23,7 @@
 
 __constructor void TestRandom()
 {
+#if defined(__amd64__) || defined(__i386__)
 	int RDRANDFlag = 0;
 	if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 	{
@@ -38,7 +39,6 @@ __constructor void TestRandom()
 	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 		RDRANDFlag = 0;
 
-#if defined(__amd64__) || defined(__i386__)
 	if (RDRANDFlag)
 	{
 		uintptr_t RDSEEDValue = 0;
@@ -46,7 +46,6 @@ __constructor void TestRandom()
 			 : "=r"(RDSEEDValue));
 		debug("RDSEED: %ld", RDSEEDValue);
 	}
-#endif
 
 	Random::ChangeSeed(0xdeadbeef);
 	uint16_t Seeds16[16];
@@ -61,6 +60,7 @@ __constructor void TestRandom()
 	debug("Random 16: %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld", Seeds16[0], Seeds16[1], Seeds16[2], Seeds16[3], Seeds16[4], Seeds16[5], Seeds16[6], Seeds16[7], Seeds16[8], Seeds16[9], Seeds16[10], Seeds16[11], Seeds16[12], Seeds16[13], Seeds16[14], Seeds16[15]);
 	debug("Random 32: %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld", Seeds32[0], Seeds32[1], Seeds32[2], Seeds32[3], Seeds32[4], Seeds32[5], Seeds32[6], Seeds32[7], Seeds32[8], Seeds32[9], Seeds32[10], Seeds32[11], Seeds32[12], Seeds32[13], Seeds32[14], Seeds32[15]);
 	debug("Random 64: %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld", Seeds64[0], Seeds64[1], Seeds64[2], Seeds64[3], Seeds64[4], Seeds64[5], Seeds64[6], Seeds64[7], Seeds64[8], Seeds64[9], Seeds64[10], Seeds64[11], Seeds64[12], Seeds64[13], Seeds64[14], Seeds64[15]);
+#endif
 }
 
 #endif // DEBUG

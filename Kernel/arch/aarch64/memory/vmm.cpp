@@ -24,17 +24,46 @@ namespace Memory
 {
 	bool Virtual::Check(void *VirtualAddress, PTFlag Flag, MapType Type)
 	{
+#warning "aarch64 not implemented"
+		return 0;
 	}
 
 	void *Virtual::GetPhysical(void *VirtualAddress)
 	{
+#warning "aarch64 not implemented"
+		return nullptr;
+	}
+
+	Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
+	{
+#warning "aarch64 not implemented"
+		return MapType::NoMapType;
+	}
+
+	PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
+	{
+#warning "aarch64 not implemented"
+		return nullptr;
+	}
+
+	PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
+	{
+#warning "aarch64 not implemented"
+		return nullptr;
 	}
 
 	void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
 	{
+#warning "aarch64 not implemented"
 	}
 
 	void Virtual::Unmap(void *VirtualAddress, MapType Type)
 	{
+#warning "aarch64 not implemented"
+	}
+
+	void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	{
+#warning "aarch64 not implemented"
 	}
 }

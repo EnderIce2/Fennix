@@ -74,8 +74,7 @@ QEMUFLAGS += -M raspi3b \
 			 -serial file:COM2.dmp \
 			 -serial file:COM3.dmp \
 			 -serial stdio \
-			 -kernel $(OSNAME).img \
-			 -acpitable file=tools/acpi/SSDT1.dat
+			 -kernel $(OSNAME).img
 endif
 
 doxygen:

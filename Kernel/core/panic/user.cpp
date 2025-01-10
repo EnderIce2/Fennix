@@ -86,6 +86,7 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 #endif
 
 	int sigRet = -1;
+#if defined(__amd64__) || defined(__i386__)
 	switch (Frame->InterruptNumber)
 	{
 	case CPU::x86::PageFault:
@@ -153,6 +154,7 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 		break;
 	}
 	}
+#endif
 
 	if (sigRet == 0)
 	{

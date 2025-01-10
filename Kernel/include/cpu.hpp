@@ -163,8 +163,6 @@ namespace CPU
 			 "jmp CPUStopLoop");
 #elif defined(__aarch64__)
 		asmv("CPUStopLoop:\n"
-			 "cpsid i\n"
-			 "wfe\n"
 			 "wfi\n"
 			 "b CPUStopLoop");
 #endif
@@ -1078,44 +1076,32 @@ namespace CPU
 	{
 		struct TrapFrame
 		{
-			uint64_t x0;  // General purpose
-			uint64_t x1;  // General purpose
-			uint64_t x2;  // General purpose
-			uint64_t x3;  // General purpose
-			uint64_t x4;  // General purpose
-			uint64_t x5;  // General purpose
-			uint64_t x6;  // General purpose
-			uint64_t x7;  // General purpose
-			uint64_t x8;  // General purpose
-			uint64_t x9;  // General purpose
-			uint64_t x10; // General purpose
-			uint64_t x11; // General purpose
-			uint64_t x12; // General purpose
-			uint64_t x13; // General purpose
-			uint64_t x14; // General purpose
-			uint64_t x15; // General purpose
-			uint64_t x16; // General purpose
-			uint64_t x17; // General purpose
-			uint64_t x18; // General purpose
-			uint64_t x19; // General purpose
-			uint64_t x20; // General purpose
-			uint64_t x21; // General purpose
-			uint64_t x22; // General purpose
-			uint64_t x23; // General purpose
-			uint64_t x24; // General purpose
-			uint64_t x25; // General purpose
-			uint64_t x26; // General purpose
-			uint64_t x27; // General purpose
-			uint64_t x28; // General purpose
+			uint64_t x[31];
+			uint64_t SP;   /* Stack Pointer */
+			uint64_t ELR;  /* Exception Link Register */
+			uint64_t ESR;  /* Exception Syndrome Register */
+			uint64_t FAR;  /* Fault Address Register */
+			uint64_t SPSR; /* Saved Program Status Register */
+		};
 
-			uint64_t fp; // Frame Pointer (meant for stack frames)
-			uint64_t lr; // Link Register
+		struct SchedulerFrame
+		{
+			uint64_t x[31];
+			uint64_t SP;   /* Stack Pointer */
+			uint64_t ELR;  /* Exception Link Register */
+			uint64_t ESR;  /* Exception Syndrome Register */
+			uint64_t FAR;  /* Fault Address Register */
+			uint64_t SPSR; /* Saved Program Status Register */
+		};
 
-			uint64_t sp;	 // Stack Pointer
-			uint64_t pc;	 // Program Counter
-			uint64_t pstate; // Processor State (flags)
-			uint64_t esr;	 // Exception Syndrome Register
-			uint64_t far;	 // Fault Address Register
+		struct ExceptionFrame
+		{
+			uint64_t x[31];
+			uint64_t SP;   /* Stack Pointer */
+			uint64_t ELR;  /* Exception Link Register */
+			uint64_t ESR;  /* Exception Syndrome Register */
+			uint64_t FAR;  /* Fault Address Register */
+			uint64_t SPSR; /* Saved Program Status Register */
 		};
 	}
 
@@ -1145,7 +1131,7 @@ namespace CPU
 	 */
 	typedef aarch64::TrapFrame TrapFrame;
 	typedef aarch64::SchedulerFrame SchedulerFrame;
-	typedef aarch64::TrapFrame ExceptionFrame;
+	typedef aarch64::ExceptionFrame ExceptionFrame;
 #endif
 }
 

@@ -15,20 +15,14 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../cmds.hpp"
+.global _sig_native_trampoline_start
+_sig_native_trampoline_start:
 
-#include <filesystem.hpp>
+.global _sig_native_trampoline_end
+_sig_native_trampoline_end:
 
-#include "../../kernel.h"
+.global _sig_linux_trampoline_start
+_sig_linux_trampoline_start:
 
-using namespace vfs;
-
-nsa void cmd_panic(const char *)
-{
-#if defined(__amd64__) || defined(__i386__)
-	asmv("int $0x0");
-#elif defined(__aarch64__)
-	asmv("brk #0");
-#endif
-	__unreachable;
-}
+.global _sig_linux_trampoline_end
+_sig_linux_trampoline_end:

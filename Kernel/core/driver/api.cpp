@@ -76,17 +76,15 @@ namespace v0
 		cs = Flags & (1 << 9);
 		asmv("cli");
 
-#elif defined(__arm__) || defined(__aarch64__)
+		return cs;
 
-		uintptr_t Flags;
-		asmv("mrs %0, cpsr"
-			 : "=r"(Flags));
-		cs = Flags & (1 << 7);
-		asmv("cpsid i");
+#elif defined(__aarch64__)
+
+		stub;
+
+		return 0;
 
 #endif
-
-		return cs;
 	}
 
 	void LeaveCriticalSection(dev_t DriverID, CriticalState PreviousState)
@@ -101,7 +99,7 @@ namespace v0
 #elif defined(__arm__) || defined(__aarch64__)
 
 		if (PreviousState)
-			asmv("cpsie i");
+			stub;
 
 #endif
 	}
@@ -284,15 +282,18 @@ namespace v0
 	{
 		dbg_api("%d, %d", DriverID, IRQ);
 
+#if defined(__amd64__) || defined(__i386__)
 		if (IRQ >= 8)
 			outb(PIC2_CMD, _PIC_EOI);
 		outb(PIC1_CMD, _PIC_EOI);
+#endif
 	}
 
 	void IRQ_MASK(dev_t DriverID, uint8_t IRQ)
 	{
 		dbg_api("%d, %d", DriverID, IRQ);
 
+#if defined(__amd64__) || defined(__i386__)
 		uint16_t port;
 		uint8_t value;
 
@@ -306,12 +307,14 @@ namespace v0
 
 		value = inb(port) | (1 << IRQ);
 		outb(port, value);
+#endif
 	}
 
 	void IRQ_UNMASK(dev_t DriverID, uint8_t IRQ)
 	{
 		dbg_api("%d, %d", DriverID, IRQ);
 
+#if defined(__amd64__) || defined(__i386__)
 		uint16_t port;
 		uint8_t value;
 
@@ -325,12 +328,14 @@ namespace v0
 
 		value = inb(port) & ~(1 << IRQ);
 		outb(port, value);
+#endif
 	}
 
 	void PS2Wait(dev_t DriverID, const bool Output)
 	{
 		dbg_api("%d, %d", DriverID, Output);
 
+#if defined(__amd64__) || defined(__i386__)
 		int Timeout = 100000;
 		PS2_STATUSES Status = {.Raw = inb(PS2_STATUS)};
 		while (Timeout--)
@@ -349,38 +354,51 @@ namespace v0
 		}
 
 		warn("PS/2 controller timeout! (Status: %#x, %d)", Status, Output);
+#endif
 	}
 
 	void PS2WriteCommand(dev_t DriverID, uint8_t Command)
 	{
 		dbg_api("%d, %d", DriverID, Command);
 
+#if defined(__amd64__) || defined(__i386__)
 		WaitInput;
 		outb(PS2_CMD, Command);
+#endif
 	}
 
 	void PS2WriteData(dev_t DriverID, uint8_t Data)
 	{
 		dbg_api("%d, %d", DriverID, Data);
 
+#if defined(__amd64__) || defined(__i386__)
 		WaitInput;
 		outb(PS2_DATA, Data);
+#endif
 	}
 
 	uint8_t PS2ReadData(dev_t DriverID)
 	{
 		dbg_api("%d", DriverID);
 
+#if defined(__amd64__) || defined(__i386__)
 		WaitOutput;
 		return inb(PS2_DATA);
+#elif defined(__aarch64__)
+		return 0;
+#endif
 	}
 
 	uint8_t PS2ReadStatus(dev_t DriverID)
 	{
 		dbg_api("%d", DriverID);
 
+#if defined(__amd64__) || defined(__i386__)
 		WaitOutput;
 		return inb(PS2_STATUS);
+#elif defined(__aarch64__)
+		return 0;
+#endif
 	}
 
 	uint8_t PS2ReadAfterACK(dev_t DriverID)
@@ -388,11 +406,13 @@ namespace v0
 		dbg_api("%d", DriverID);
 
 		uint8_t ret = PS2ReadData(DriverID);
+#if defined(__amd64__) || defined(__i386__)
 		while (ret == PS2_ACK)
 		{
 			WaitOutput;
 			ret = inb(PS2_DATA);
 		}
+#endif
 		return ret;
 	}
 
@@ -400,6 +420,7 @@ namespace v0
 	{
 		dbg_api("%d", DriverID);
 
+#if defined(__amd64__) || defined(__i386__)
 		PS2_STATUSES Status;
 		int timeout = 0x500;
 		while (timeout--)
@@ -409,6 +430,7 @@ namespace v0
 				return;
 			inb(PS2_DATA);
 		}
+#endif
 	}
 
 	int PS2ACKTimeout(dev_t DriverID)

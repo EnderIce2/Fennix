@@ -188,6 +188,8 @@ namespace Execute
 		}
 #elif defined(__i386__)
 		return 0xdead;
+#elif defined(__aarch64__)
+		return 0xdead;
 #endif
 	}
 }

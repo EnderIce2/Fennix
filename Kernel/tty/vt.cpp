@@ -454,6 +454,7 @@ namespace KernelConsole
 	void VirtualTerminal::Process(char c)
 	{
 #ifdef DEBUG
+#if defined(__amd64__) || defined(__i386__)
 		static int once = 0;
 		static uint8_t com4 = 0xFF;
 		if (!once++)
@@ -476,12 +477,13 @@ namespace KernelConsole
 			outb(0x2E8, c);
 		}
 
-		// while (true)
-		// {
-		// 	while ((inb(0x2E8 + 5) & 1) == 0)
-		// 		;
-		// 	outb(0x2E8, inb(0x2E8));
-		// }
+// while (true)
+// {
+// 	while ((inb(0x2E8 + 5) & 1) == 0)
+// 		;
+// 	outb(0x2E8, inb(0x2E8));
+// }
+#endif
 #endif
 
 		ANSIParser *parser = &this->Parser;

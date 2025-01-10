@@ -42,10 +42,12 @@ EXTERNC void *memset_sse2(void *dest, int c, size_t n)
 		i = 0;
 		while (((size_t)dest + i) & (16 - 1) && i < n)
 		{
+#if defined(__amd64__) || defined(__i386__)
 			asmv("stosb\n"
 				 :
 				 : "D"((size_t)dest + i),
 				   "a"(c));
+#endif
 			i++;
 		}
 	}
@@ -68,9 +70,11 @@ EXTERNC void *memset_sse2(void *dest, int c, size_t n)
 #endif
 	}
 
+#if defined(__amd64__) || defined(__i386__)
 	asmv("rep stosb\n" ::"a"((size_t)(c)),
 		 "D"(((size_t)dest) + i),
 		 "c"(n - i));
+#endif
 
 	i += n - i;
 	return (void *)(((size_t)dest) + i);

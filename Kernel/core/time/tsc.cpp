@@ -33,6 +33,8 @@ namespace Time
 		while (this->GetCounter() < Target)
 			CPU::Pause();
 		return true;
+#elif defined(__aarch64__)
+		return 0;
 #endif
 	}
 
@@ -40,6 +42,8 @@ namespace Time
 	{
 #if defined(__amd64__) || defined(__i386__)
 		return CPU::Counter();
+#elif defined(__aarch64__)
+		return 0;
 #endif
 	}
 
@@ -47,6 +51,8 @@ namespace Time
 	{
 #if defined(__amd64__) || defined(__i386__)
 		return uint64_t((this->GetCounter() + (Target * ConvertUnit(Unit))) / this->clk);
+#elif defined(__aarch64__)
+		return 0;
 #endif
 	}
 
@@ -54,6 +60,8 @@ namespace Time
 	{
 #if defined(__amd64__) || defined(__i386__)
 		return uint64_t((this->GetCounter() - this->ClassCreationTime) / this->clk);
+#elif defined(__aarch64__)
+		return 0;
 #endif
 	}
 

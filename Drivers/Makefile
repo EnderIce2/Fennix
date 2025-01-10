@@ -47,12 +47,14 @@ build:
 	cp -rf ../Kernel/include/interface/* include/
 	mkdir -p out
 	make -C library build
+ifneq ($(filter amd64 i386,$(OSARCH)),)
 	make -C audio build
 	make -C input build
 	make -C misc build
 	make -C network build
 	make -C storage build
 	make -C filesystem build
+endif
 
 prepare:
 	$(info Nothing to prepare)
@@ -60,9 +62,11 @@ prepare:
 clean:
 	rm -rf out
 	make -C library clean
+ifneq ($(filter amd64 i386,$(OSARCH)),)
 	make -C audio clean
 	make -C input clean
 	make -C misc clean
 	make -C network clean
 	make -C storage clean
 	make -C filesystem clean
+endif

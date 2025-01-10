@@ -31,6 +31,7 @@ long unsigned __strlen(const char s[])
 {
 	size_t ret = (size_t)s;
 
+#if defined(__amd64__) || defined(__i386__)
 	asmv("._strlenLoop:"
 		 "cmpb $0, 0(%1)\n"
 		 "jz ._strlenExit\n"
@@ -76,6 +77,7 @@ long unsigned __strlen(const char s[])
 		 "._strlenExit:"
 		 "mov %1, %0\n"
 		 : "=r"(ret) : "0"(ret));
+#endif
 
 	return ret - (size_t)s;
 }
@@ -107,7 +109,8 @@ long unsigned strlen_sse4_1(const char s[])
 
 long unsigned strlen_sse4_2(const char s[])
 {
-	size_t ret;
+	size_t ret = 0;
+#if defined(__amd64__) || defined(__i386__)
 	asmv("mov $-16, %0\n"
 		 "pxor %%xmm0, %%xmm0\n"
 		 ".strlen42Loop:"
@@ -117,6 +120,6 @@ long unsigned strlen_sse4_2(const char s[])
 		 "add %2, %0\n"
 		 : "=a"(ret)
 		 : "d"((size_t)s), "c"((size_t)s));
-
+#endif
 	return ret;
 }

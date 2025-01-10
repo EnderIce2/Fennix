@@ -358,12 +358,13 @@ namespace Tasking
 		CPU::SchedulerFrame Registers{};
 #if defined(__amd64__)
 		uintptr_t ShadowGSBase, GSBase, FSBase;
+		__aligned(16) CPU::x64::FXState FPU;
 #elif defined(__i386__)
 		uintptr_t ShadowGSBase, GSBase, FSBase;
-#elif defined(__aarch64__)
-		uintptr_t Registers; // TODO
-#endif
 		__aligned(16) CPU::x64::FXState FPU;
+#elif defined(__aarch64__)
+		uintptr_t __todo; // TODO
+#endif
 
 		/* Info & Security info */
 		struct

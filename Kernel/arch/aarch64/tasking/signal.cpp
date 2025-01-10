@@ -15,20 +15,24 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../cmds.hpp"
+#include <signal.hpp>
+#include <dumper.hpp>
+#include <task.hpp>
+#include <errno.h>
 
-#include <filesystem.hpp>
+/* subsystem/linux/syscall.cpp */
+extern int ConvertSignalToLinux(signal_t sig);
 
-#include "../../kernel.h"
-
-using namespace vfs;
-
-nsa void cmd_panic(const char *)
+namespace Tasking
 {
-#if defined(__amd64__) || defined(__i386__)
-	asmv("int $0x0");
-#elif defined(__aarch64__)
-	asmv("brk #0");
-#endif
-	__unreachable;
+	bool Signal::HandleSignal(CPU::SchedulerFrame *tf, void *thread)
+	{
+#warning "aarch64 not implemented"
+		return false;
+	}
+
+	void Signal::RestoreHandleSignal(SyscallsFrame *sf, void *thread)
+	{
+#warning "aarch64 not implemented"
+	}
 }

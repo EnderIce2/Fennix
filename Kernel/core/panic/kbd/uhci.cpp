@@ -65,7 +65,9 @@ __no_sanitize("undefined") nsa bool CrashUHCIKeyboardDriver::Initialize()
 	/* FIXME: stub */
 
 	debug("Initializing controller");
+#if defined(__amd64__) || defined(__i386__)
 	outw((uint16_t)((uintptr_t)io + 0xC0), 0x8F00); /* Disable Legacy Mode Support */
+#endif
 
 	/* Disable All Interrupts */
 	io->USBINTR.TOCRC = 0;

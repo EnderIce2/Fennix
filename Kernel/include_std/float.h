@@ -27,4 +27,8 @@
 #define DBL_MANT_DIG 24
 #define DBL_MAX_10_EXP 38
 #define DBL_MAX 3.4028234663852886e+38
+#elif __aarch64__
+#define DBL_MANT_DIG __DBL_MANT_DIG__
+#define DBL_MAX_10_EXP __DBL_MAX_10_EXP__
+#define DBL_MAX __DBL_MAX__
 #endif

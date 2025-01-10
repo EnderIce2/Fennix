@@ -36,16 +36,16 @@ public:
 		asmv("mov %0, %%cr3"
 			 :
 			 : "r"(KernelPageTable));
-#endif
 		debug(" +    %#lx %s(%d)", Original,
 			  thisProcess->Name, thisProcess->ID);
+#endif
 	}
 
 	~AutoSwitchPageTable()
 	{
+#if defined(__amd64__) || defined(__i386__)
 		debug("-    %#lx %s(%d)", Original,
 			  thisProcess->Name, thisProcess->ID);
-#if defined(__amd64__) || defined(__i386__)
 		asmv("mov %0, %%cr3"
 			 :
 			 : "r"(Original));

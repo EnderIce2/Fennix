@@ -19,9 +19,8 @@
 
 #include <cpu.hpp>
 
-extern "C" __naked __used __no_stack_protector void SystemCallHandlerStub()
+extern "C" __used __no_stack_protector void SystemCallHandlerStub()
 {
-
 }
 
 extern "C" uint64_t SystemCallsHandler(SyscallsFrame *regs);

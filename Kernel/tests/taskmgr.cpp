@@ -146,6 +146,8 @@ void TaskMgr()
 				   Statuses[State], Proc->Name, StatusesSign[State],
 				   ProcessCpuUsage, Proc->Info.KernelTime, Proc->Info.UserTime);
 #elif defined(__aarch64__)
+			UNUSED(State);
+#warning "aarch64 not implemented"
 #endif
 
 			foreach (auto Thd in Proc->Threads)

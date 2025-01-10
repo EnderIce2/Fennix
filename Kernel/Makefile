@@ -45,16 +45,16 @@ CFLAGS :=										\
 	-DKERNEL_VERSION='"$(KERNEL_VERSION)"'		\
 	-DGIT_COMMIT='"$(GIT_COMMIT)"'				\
 	-DGIT_COMMIT_SHORT='"$(GIT_COMMIT_SHORT)"'	\
-	-fno-pic -fno-pie -mno-red-zone -fno-builtin
+	-fno-pic -fno-pie -fno-builtin
 
 ifeq ($(OSARCH), amd64)
-CFLAGS += -march=core2 -mcmodel=kernel -m64
+CFLAGS += -march=core2 -mcmodel=kernel -m64 -mno-red-zone
 LDFLAGS += -Tarch/amd64/linker.ld
 else ifeq ($(OSARCH), i386)
-CFLAGS += -march=pentium -m32
+CFLAGS += -march=pentium -m32 -mno-red-zone
 LDFLAGS += -Tarch/i386/linker.ld
 else ifeq ($(OSARCH), aarch64)
-CFLAGS +=
+CFLAGS += -march=armv9.4-a -mtune=cortex-a72 -mlittle-endian -mcmodel=large
 LDFLAGS += -Tarch/aarch64/linker.ld
 endif # OSARCH
 
@@ -67,8 +67,8 @@ ifeq ($(DEBUG), 1)
 ifeq ($(OSARCH), amd64)
 	CFLAGS += -fverbose-asm
 endif # amd64
-ifneq ($(OSARCH), aarch64)
-	CFLAGS += -fstack-check
+ifeq ($(OSARCH), aarch64)
+	CFLAGS += -fstack-check -fverbose-asm
 endif # aarch64
 	LDFLAGS += -ggdb3 -O0
 	ASFLAGS += -g --gstabs+ --gdwarf-5 -D

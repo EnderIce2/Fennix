@@ -17,7 +17,7 @@ build: $(OBJ)
 
 %.o: %.c
 	$(info Compiling $<)
-	$(CC) -nostdlib -mno-red-zone -std=c17 -DLIBC_GIT_COMMIT='"$(shell git rev-parse HEAD)"' -c $< -o $@
+	$(CC) -nostdlib -std=c17 -DLIBC_GIT_COMMIT='"$(shell git rev-parse HEAD)"' -c $< -o $@
 
 %.o: %.S
 	$(info Compiling $<)

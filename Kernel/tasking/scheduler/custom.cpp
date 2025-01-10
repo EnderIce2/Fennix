@@ -103,7 +103,11 @@
 #define wut_schedbg(m, ...)
 #endif
 
-__naked __used nsa void __custom_sched_idle_loop()
+#if defined(__amd64__) || defined(__i386__)
+__naked
+#endif
+	__used nsa void
+	__custom_sched_idle_loop()
 {
 #if defined(__amd64__) || defined(__i386__)
 	asmv("IdleLoop:");
@@ -668,10 +672,12 @@ namespace Tasking::Scheduler
 		CurrentCPU->CurrentProcess->State.store(TaskState::Running);
 		CurrentCPU->CurrentThread->State.store(TaskState::Running);
 
+#if defined(__amd64__) || defined(__i386__)
 		if (CurrentCPU->CurrentThread->Registers.cs != GDT_KERNEL_CODE)
 			CurrentCPU->CurrentThread->Registers.ppt = (uint64_t)(void *)CurrentCPU->CurrentProcess->PageTable;
 		else
 			CurrentCPU->CurrentThread->Registers.ppt = (uint64_t)(void *)KernelPageTable;
+#endif
 
 		// if (!SchedulerUpdateTrapFrame) {} // TODO
 
@@ -701,12 +707,14 @@ namespace Tasking::Scheduler
 				  CurrentCPU->CurrentThread->Registers.rip,
 				  CurrentCPU->CurrentThread->Registers.rbp,
 				  CurrentCPU->CurrentThread->Registers.rsp);
-#else
+#elif defined(__i386__)
 			trace("%s[%ld]: EIP=%#lx  EBP=%#lx  ESP=%#lx",
 				  CurrentCPU->CurrentThread->Name, CurrentCPU->CurrentThread->ID,
 				  CurrentCPU->CurrentThread->Registers.eip,
 				  CurrentCPU->CurrentThread->Registers.ebp,
 				  CurrentCPU->CurrentThread->Registers.esp);
+#elif defined(__aarch64__)
+#warning "aarch64 not implemented yet"
 #endif
 		}
 
