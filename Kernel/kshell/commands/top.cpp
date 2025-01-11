@@ -69,6 +69,8 @@ void cmd_top(const char *)
 				   Thrd->ID, Thrd->Name, TaskStateStrings[Thrd->State.load()],
 				   Thrd->Info.Priority, TO_KiB(Thrd->GetSize()),
 				   Thrd->Info.UserTime + Thrd->Info.KernelTime);
+#else
+			UNUSED(Thrd);
 #endif
 		}
 	}

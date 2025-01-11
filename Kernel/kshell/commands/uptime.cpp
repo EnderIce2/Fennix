@@ -48,6 +48,9 @@ void cmd_uptime(const char *)
 		printf("%lld days, %lld hours, %lld minutes, %lld %s\n",
 			   Days, Hours, Minutes, Seconds,
 			   Seconds == 1 ? "second" : "seconds");
+#else
+#warning "not implemented"
+		UNUSED(Days);
 #endif
 	}
 	else

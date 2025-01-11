@@ -173,7 +173,6 @@ jobs:
         with:
           folder: doxygen-doc
 
-
   compile_amd64:
     name: Build amd64
     runs-on: ubuntu-latest

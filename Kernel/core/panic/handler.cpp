@@ -188,6 +188,8 @@ nsa __noreturn void HandleUnrecoverableException(CPU::ExceptionFrame *Frame)
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("\x1b[30;41mUnrecoverable exception %#lx on CPU %d\n",
 			Frame->InterruptNumber, core->ID);
+#else
+	UNUSED(core);
 #endif
 #if defined(__amd64__) || defined(__i386__)
 	ExPrint("CR0=%#lx CR2=%#lx CR3=%#lx CR4=%#lx CR8=%#lx\n",

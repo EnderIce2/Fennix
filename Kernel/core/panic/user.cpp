@@ -154,6 +154,8 @@ nsa bool UserModeExceptionHandler(CPU::ExceptionFrame *Frame)
 		break;
 	}
 	}
+#else
+	UNUSED(proc);
 #endif
 
 	if (sigRet == 0)

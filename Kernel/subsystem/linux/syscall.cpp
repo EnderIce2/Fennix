@@ -1091,6 +1091,9 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		pte->UserSupervisor = p_Read;
 		pte->ReadWrite = p_Write;
 // pte->ExecuteDisable = p_Exec;
+#else
+		UNUSED(p_Read);
+		UNUSED(p_Write);
 #endif
 
 		debug("Changed permissions of page %#lx to %s %s %s %s",
@@ -4332,7 +4335,9 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	debug("< [%d:\"%s\"] = %d", Frame->ax, Syscall.Name, sc_ret);
 	return sc_ret;
-#elif defined(__aarch64__)
+#else
+	UNUSED(LinuxSyscallsTableAMD64);
+	UNUSED(LinuxSyscallsTableI386);
 	return -linux_ENOSYS;
 #endif
 

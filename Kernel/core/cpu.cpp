@@ -163,8 +163,9 @@ namespace CPU
 			asmv("popl %0"
 				 : "=r"(Flags));
 			return Flags & (1 << 9);
-#elif defined(__aarch64__)
-#warning "aarch64 not implemented"
+#else
+#warning "not implemented"
+			UNUSED(Flags);
 			return 0;
 #endif
 		}

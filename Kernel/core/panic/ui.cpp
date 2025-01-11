@@ -328,7 +328,7 @@ nsa void DisplayMainScreen(CPU::ExceptionFrame *Frame)
 #elif defined(__i386__)
 			Frame->eip);
 #elif defined(__arm__)
-0);
+			0);
 #elif defined(__aarch64__)
 0);
 #warning "aarch64 not implemented"
@@ -779,6 +779,9 @@ nsa void DisplayAssertionFailed(const char *File, int Line, const char *Expressi
 	asmv("movl %%cr3, %0" : "=r"(ef.cr3));
 	ef.eip = (uint32_t)fun;
 	ef.ebp = ef.esp = (uint32_t)stk;
+#else
+	UNUSED(fun);
+	UNUSED(stk);
 #endif
 	DisplayStackScreen(&ef);
 

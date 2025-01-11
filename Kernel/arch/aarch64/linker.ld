@@ -15,6 +15,9 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+OUTPUT_FORMAT("elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+
 ENTRY(_start)
 
 SECTIONS

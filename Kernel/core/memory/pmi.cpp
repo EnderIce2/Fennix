@@ -36,7 +36,9 @@ namespace Memory
 		this->PTEIndex = Address & 0x3FF;
 		Address >>= 10;
 		this->PDEIndex = Address & 0x3FF;
-#elif defined(__aarch64__)
+#else
+#warning "not implemented"
+UNUSED(Address);
 #endif
 
 		if (VirtualAddress > PAGE_SIZE)

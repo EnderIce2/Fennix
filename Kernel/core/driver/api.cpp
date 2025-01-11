@@ -80,6 +80,7 @@ namespace v0
 
 #elif defined(__aarch64__)
 
+		UNUSED(cs);
 		stub;
 
 		return 0;

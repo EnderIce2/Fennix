@@ -320,8 +320,9 @@ namespace Tasking
 		this->Registers.rsp = StackPointerReg;
 #elif defined(__i386__)
 		this->Registers.esp = StackPointerReg;
-#elif defined(__aarch64__)
-#warning "aarch64 not implemented"
+#else
+#warning "not implemented"
+		UNUSED(StackPointerReg);
 #endif
 
 		if (argvLen > 0)

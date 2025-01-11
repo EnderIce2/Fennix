@@ -330,6 +330,8 @@ namespace Memory
 				MgrLock.Lock(__FUNCTION__);
 #else
 #warning "Not implemented"
+				UNUSED(AddressToMap);
+				UNUSED(RealAddress);
 #endif
 			}
 
