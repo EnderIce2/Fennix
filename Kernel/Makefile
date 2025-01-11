@@ -54,7 +54,7 @@ else ifeq ($(OSARCH), i386)
 CFLAGS += -march=pentium -m32 -mno-red-zone
 LDFLAGS += -Tarch/i386/linker.ld
 else ifeq ($(OSARCH), arm)
-CFLAGS += -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
+CFLAGS += -march=armv7-a -mfloat-abi=softfp
 LDFLAGS += -Tarch/arm/linker.ld
 WARNCFLAG += -w
 else ifeq ($(OSARCH), aarch64)
