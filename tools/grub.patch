@@ -1,0 +1,9 @@
+diff --git a/.gitignore b/.gitignore
+index 2105d87..58fe53f 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -281,3 +281,4 @@ widthspec.bin
+ /xfs_test
+ /xzcompress_test
+ /zfs_test
++/__build
