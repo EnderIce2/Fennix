@@ -76,9 +76,9 @@ QEMUFLAGS += -M raspi2b \
 			 -serial stdio \
 			 -kernel $(OSNAME).img
 else ifeq ($(OSARCH), aarch64)
-QEMUFLAGS += -M raspi3b \
+QEMUFLAGS += -M raspi4b \
 			 -monitor pty \
-			 -cpu cortex-a57 \
+			 -cpu cortex-a72 \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
 			 -serial file:COM3.dmp \
@@ -207,7 +207,7 @@ QEMUHWACCELERATION =
 QEMUMEMORY = -m 1G
 else ifeq ($(OSARCH), aarch64)
 QEMUHWACCELERATION =
-QEMUMEMORY = -m 1G
+QEMUMEMORY = -m 2G
 endif
 
 clean_logs:
