@@ -199,15 +199,23 @@ endif
 ifeq ($(OSARCH), amd64)
 QEMUHWACCELERATION = -machine q35 -enable-kvm
 QEMUMEMORY = -m 4G
+QEMU_DBG_SMP = -smp 1
+QEMU_DBG_MEMORY = -m 512M
 else ifeq ($(OSARCH), i386)
 QEMUHWACCELERATION = -machine q35 -enable-kvm
 QEMUMEMORY = -m 4G
+QEMU_DBG_SMP = -smp 1
+QEMU_DBG_MEMORY = -m 512M
 else ifeq ($(OSARCH), arm)
 QEMUHWACCELERATION =
 QEMUMEMORY = -m 1G
+QEMU_DBG_SMP = -smp 1
+QEMU_DBG_MEMORY = -m 512M
 else ifeq ($(OSARCH), aarch64)
 QEMUHWACCELERATION =
 QEMUMEMORY = -m 2G
+QEMU_DBG_SMP = -smp 4
+QEMU_DBG_MEMORY = -m 2G
 endif
 
 clean_logs:
@@ -217,10 +225,17 @@ clean_logs:
 		mouse.pcap kbd.pcap mousex.pcap kbdx.pcap
 
 vscode_debug_only: clean_logs
+ifneq ($(filter arm aarch64,$(OSARCH)),)
+	$(QEMU) -S -chardev socket,path=/tmp/gdb-fennix,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 \
+	-d cpu_reset,int,unimp,guest_errors,mmu,fpu \
+	-no-reboot -no-shutdown \
+	$(QEMU_DBG_MEMORY) $(QEMUFLAGS) $(QEMU_DBG_SMP)
+else
 	$(QEMU) -S -chardev socket,path=/tmp/gdb-fennix,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 \
 	-d cpu_reset,int,unimp,guest_errors,mmu,fpu \
 	-no-reboot -no-shutdown $(QEMU_UEFI_BIOS) \
-	-m 512M $(QEMUFLAGS) -smp 1
+	$(QEMU_DBG_MEMORY) $(QEMUFLAGS) $(QEMU_DBG_SMP)
+endif
 
 vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debug_only
 
