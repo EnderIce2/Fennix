@@ -1,0 +1,12 @@
+*
+!/acpi
+!/doxygen
+!/website
+!/Makefile
+!/.gdbinit
+!/*.c
+!/*.cpp
+!/*.cfg
+!/*.md
+!/*.patch
+!/*.gitignore
