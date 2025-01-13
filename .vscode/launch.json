@@ -2,39 +2,105 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch QEMU & debug the kernel",
+			"name": "Debug Kernel (x64)",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/../Kernel/fennix.elf",
 			"cwd": "${workspaceFolder}",
-			"args": [],
 			"targetArchitecture": "x64",
 			"MIMode": "gdb",
 			"miDebuggerServerAddress": "/tmp/gdb-fennix",
 			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gdb",
-			"miDebuggerArgs": "",
 			"externalConsole": false,
-			"additionalSOLibSearchPath": "${workspaceFolder}",
 			"internalConsoleOptions": "neverOpen",
-			"customLaunchSetupCommands": [
-				// {
-				// 	"text": "target remote localhost:1234",
-				// 	"description": "Connect to QEMU remote debugger"
-				// }
-			],
 			"setupCommands": [
-				{
-					"description": "Enable pretty-printing for gdb",
-					"text": "-enable-pretty-printing",
-					"ignoreFailures": true
-				},
 				{
 					"text": "set breakpoint pending on",
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "file ${workspaceFolder}/../Kernel/fennix.elf",
-					"description": "Load binary"
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest",
+					"ignoreFailures": true
+				},
+				{
+					"text": "source ${workspaceFolder}/../tools/.gdbinit"
+				}
+			],
+			"preLaunchTask": "launch-qemu"
+		},
+		{
+			"name": "Debug Kernel (x86)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/../Kernel/fennix.elf",
+			"cwd": "${workspaceFolder}",
+			"targetArchitecture": "x86",
+			"MIMode": "gdb",
+			"miDebuggerServerAddress": "/tmp/gdb-fennix",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/i386-fennix-gdb",
+			"externalConsole": false,
+			"internalConsoleOptions": "neverOpen",
+			"setupCommands": [
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest",
+					"ignoreFailures": true
+				},
+				{
+					"text": "source ${workspaceFolder}/../tools/.gdbinit"
+				}
+			],
+			"preLaunchTask": "launch-qemu"
+		},
+		{
+			"name": "Debug Kernel (arm64)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/../Kernel/fennix.elf",
+			"cwd": "${workspaceFolder}",
+			"targetArchitecture": "arm64",
+			"MIMode": "gdb",
+			"miDebuggerServerAddress": "/tmp/gdb-fennix",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/aarch64-fennix-gdb",
+			"externalConsole": false,
+			"internalConsoleOptions": "neverOpen",
+			"setupCommands": [
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"description": "Load /bin/utest",
+					"ignoreFailures": true
+				},
+				{
+					"text": "source ${workspaceFolder}/../tools/.gdbinit"
+				}
+			],
+			"preLaunchTask": "launch-qemu"
+		},
+		{
+			"name": "Debug Kernel (arm)",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/../Kernel/fennix.elf",
+			"cwd": "${workspaceFolder}",
+			"targetArchitecture": "arm",
+			"MIMode": "gdb",
+			"miDebuggerServerAddress": "/tmp/gdb-fennix",
+			"miDebuggerPath": "${workspaceFolder}/../tools/cross/bin/arm-fennix-gdb",
+			"externalConsole": false,
+			"internalConsoleOptions": "neverOpen",
+			"setupCommands": [
+				{
+					"text": "set breakpoint pending on",
+					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
 					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
@@ -50,7 +116,7 @@
 		{
 			"type": "gdb",
 			"request": "attach",
-			"name": "Launch QEMU & attach to gdbserver",
+			"name": "Launch QEMU & attach to gdbserver (x64)",
 			"executable": "${workspaceFolder}/../Kernel/fennix.elf",
 			"target": "/tmp/gdb-fennix",
 			"remote": true,
