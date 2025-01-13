@@ -15,35 +15,10 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-.section ".bootstrap.boot", "a"
+#include <types.h>
 
-.extern _kernel_bss_start
-.extern _kernel_bss_end
-.extern _kernel_bss_size
-
-.global _start
-_start:
-	/* Keep only the main core */
-	mrs x1, mpidr_el1
-	and x1, x1, #3
-	cbz x1, 2f
-
-	/* Halt */
-1:	wfe
-	b 1b
-
-	/* Initialize the stack */
-2:	ldr x1, =_start
-	mov sp, x1
-
-	/* Clear the BSS */
-	ldr x1, =_kernel_bss_start
-	ldr w2, =_kernel_bss_size
-3:	cbz w2, 4f
-	str xzr, [x1], #8
-	sub w2, w2, #1
-	cbnz w2, 3b
-
-	/* Start the kernel */
-4:	bl _aarch64_start
-	b 1b
+__attribute__((section(".bootstrap.text"))) void _aarch64_start(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
+{
+	while (1)
+		;
+}
