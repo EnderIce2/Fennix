@@ -18,6 +18,7 @@
 
 > [!CAUTION]
 > The project is still in development and is not yet ready for production use.
+>
 > Please use a virtual machine to run the OS.
 
 ## Features
