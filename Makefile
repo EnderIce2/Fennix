@@ -265,3 +265,4 @@ clean: clean_logs
 	make -C Kernel clean
 	make -C Userspace clean
 	make -C Drivers clean
+	make -C Bootloader clean
