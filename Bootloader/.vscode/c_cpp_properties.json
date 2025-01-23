@@ -1,0 +1,184 @@
+{
+	"configurations": [
+		{
+			"name": "Fennix x64 (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/include",
+				"${workspaceFolder}/include/**"
+			],
+			"defines": [
+				"DEBUG=\"1\""
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "gcc-x64",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// Compiler flags
+				"-fno-pic",
+				"-fno-pie",
+				"-mno-red-zone",
+				"-march=core2",
+				"-pipe",
+				"-mcmodel=kernel",
+				"-fno-builtin",
+				"-m64",
+				"-fcoroutines",
+				// Warnings
+				"-Wall",
+				"-Wextra",
+				"-Wfloat-equal",
+				"-Wpointer-arith",
+				"-Wcast-align",
+				"-Wredundant-decls",
+				"-Winit-self",
+				"-Wswitch-default",
+				"-Wstrict-overflow=5",
+				"-Wconversion",
+				// C++ flags
+				"-fno-rtti",
+				"-fno-exceptions",
+				// Linker flags
+				"-T${workspaceFolder}/arch/amd64/linker.ld",
+				"-Wl,-static,--no-dynamic-linker,-ztext",
+				"-nostdlib",
+				"-nodefaultlibs",
+				"-nolibc",
+				"-zmax-page-size=0x1000",
+				"-shared",
+				// Debug flags
+				"-ggdb3",
+				"-O0",
+				"-fdiagnostics-color=always",
+				"-fverbose-asm",
+				"-fstack-usage",
+				"-fstack-check",
+				"-fsanitize=undefined",
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		},
+		{
+			"name": "Fennix x32 (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/include",
+				"${workspaceFolder}/include/**"
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
+			],
+			"defines": [
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "gcc-x86",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// Compiler flags
+				"-fno-pic",
+				"-fno-pie",
+				"-mno-80387",
+				"-mno-mmx",
+				"-mno-3dnow",
+				"-mno-red-zone",
+				"-march=pentium",
+				"-pipe",
+				"-msoft-float",
+				"-fno-builtin",
+				"-m32",
+				"-fcoroutines",
+				// Warnings
+				"-Wall",
+				"-Wextra",
+				"-Wfloat-equal",
+				"-Wpointer-arith",
+				"-Wcast-align",
+				"-Wredundant-decls",
+				"-Winit-self",
+				"-Wswitch-default",
+				"-Wstrict-overflow=5",
+				"-Wconversion",
+				// C++ flags
+				"-fno-rtti",
+				"-fno-exceptions",
+				// Linker flags
+				"-T${workspaceFolder}/arch/i386/linker.ld",
+				"-Wl,-static,--no-dynamic-linker,-ztext",
+				"-nostdlib",
+				"-nodefaultlibs",
+				"-nolibc",
+				"-zmax-page-size=0x1000",
+				"-shared",
+				// Debug flags
+				"-ggdb3",
+				"-O0",
+				"-fdiagnostics-color=always",
+				"-fverbose-asm",
+				"-fstack-usage",
+				"-fstack-check",
+				"-fsanitize=undefined",
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		},
+		{
+			"name": "Fennix Arm (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/include",
+				"${workspaceFolder}/include/**"
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
+			],
+			"defines": [
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/arm-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "linux-gcc-arm",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		},
+		{
+			"name": "Fennix Aarch64 (Linux, GCC, debug)",
+			"includePath": [
+				"${workspaceFolder}/include",
+				"${workspaceFolder}/include/**"
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
+			],
+			"defines": [
+				"DEBUG=\"1\""
+			],
+			"compilerPath": "${workspaceFolder}/../tools/cross/bin/aarch64-fennix-gcc",
+			"cStandard": "c17",
+			"cppStandard": "c++20",
+			"intelliSenseMode": "linux-gcc-arm64",
+			"configurationProvider": "ms-vscode.makefile-tools",
+			"compilerArgs": [
+				// VSCode flags
+				"-ffreestanding",
+				"-nostdinc",
+				"-nostdinc++"
+			]
+		}
+	],
+	"version": 4
+}

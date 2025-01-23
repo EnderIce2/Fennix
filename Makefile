@@ -101,13 +101,17 @@ endif
 tools:
 	make --quiet -C tools all
 
-setup:
+prepare:
 	make --quiet -C Kernel prepare
+	make --quiet -C Bootloader prepare
 	make --quiet -C Drivers prepare
 	make --quiet -C Userspace prepare
+
+setup:
+	$(MAKE) prepare
 	$(MAKE) tools
 
-build: build_kernel build_userspace build_drivers build_image
+build: build_kernel build_bootloader build_userspace build_drivers build_image
 
 dump:
 	make --quiet -C Kernel dump
@@ -123,14 +127,19 @@ ifeq ($(BUILD_KERNEL), 1)
 	make -j$(shell nproc) $(MAKE_QUIET_FLAG) -C Kernel build
 endif
 
-build_userspace:
-ifeq ($(BUILD_USERSPACE), 1)
-	make $(MAKE_QUIET_FLAG) -C Userspace build
+build_bootloader:
+ifeq ($(BUILD_BOOTLOADER), 1)
+	make $(MAKE_QUIET_FLAG) -C Bootloader build
 endif
 
 build_drivers:
 ifeq ($(BUILD_DRIVERS), 1)
 	make $(MAKE_QUIET_FLAG) -C Drivers build
+endif
+
+build_userspace:
+ifeq ($(BUILD_USERSPACE), 1)
+	make $(MAKE_QUIET_FLAG) -C Userspace build
 endif
 
 build_image:
@@ -171,6 +180,7 @@ ifeq ($(BOOTLOADER), grub)
 endif
 ifneq ($(filter aarch64 arm,$(OSARCH)),)
 	$(__CONF_OBJCOPY) Kernel/fennix.elf -O binary $(OSNAME).img
+#	cp Bootloader/boot.bin $(OSNAME).img
 endif
 
 ifeq ($(OSARCH), amd64)

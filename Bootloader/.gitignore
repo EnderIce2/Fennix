@@ -1,0 +1,10 @@
+gnu-efi
+include/*
+!include/stdbool.h
+!include/types.h
+*.o
+*.su
+*.EFI
+*.map
+*.bin
+*.elf

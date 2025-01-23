@@ -8,16 +8,26 @@ OSNAME = Fennix
 # OS architecture, check AVAILABLE_ARCHS for available options.
 OSARCH = amd64
 
+# This variable specifies the board type.
+# It is crucial because the ARM booting process differs significantly from x86.
+#
+# ! This variable is ignored on x86 !
+#
+# Available options are in AVAILABLE_BOARDS.
+BOARD_TYPE := raspi4
+
 # Kernel version.
 KERNEL_VERSION = dev
 
 # Which bootloader to use.
 # Available bootloaders:
+#   - builtin  - Built-in
 #   - grub     - GRUB
 #   - limine   - Limine
 BOOTLOADER = grub
 
 BUILD_KERNEL = 1
+BUILD_BOOTLOADER = 1
 BUILD_USERSPACE = 1
 BUILD_DRIVERS = 1
 
@@ -34,10 +44,6 @@ COMPILER_PATH := $(CURDIR)/tools/cross
 # added automatically depending on the OSARCH)
 #   Default: $(CURDIR)/tools/cross
 __CONF_QEMU_PATH := $(CURDIR)/tools/cross
-
-# Set libc to use. Available options:
-#   - internal  - Use the internal libc
-USE_LIBC = internal
 
 
 
@@ -56,8 +62,22 @@ USE_LIBC = internal
 # Available architectures. Do not change
 export AVAILABLE_ARCHS := amd64 i386 arm aarch64
 
+# Available board types. Do not change
+export AVAILABLE_BOARDS := \
+	raspi0 \
+	raspi1 \
+	raspi2 \
+	raspi3 \
+	raspi4
+
 ifneq ($(filter $(OSARCH),$(AVAILABLE_ARCHS)),$(OSARCH))
 $(error OSARCH=$(OSARCH) is not a supported architecture. Choose one of: $(AVAILABLE_ARCHS))
+endif
+
+ifeq ($(filter amd64 i386,$(OSARCH)),)
+ifneq ($(filter $(BOARD_TYPE),$(AVAILABLE_BOARDS)),$(BOARD_TYPE))
+$(error BOARD_TYPE=$(BOARD_TYPE) is not a supported board type. Choose one of: $(AVAILABLE_BOARDS))
+endif
 endif
 
 ARCH_MAP := amd64=x86_64 i386=i386 arm=arm aarch64=aarch64
@@ -78,4 +98,10 @@ export __CONF_GDB := $(TOOLCHAIN_PREFIX)gdb
 export DEBUG
 export OSNAME
 export OSARCH
+export BOARD_TYPE
 export KERNEL_VERSION
+
+export TOOLCHAIN_AMD64_PREFIX := $(COMPILER_PATH)/bin/x86_64-fennix-
+export TOOLCHAIN_I386_PREFIX := $(COMPILER_PATH)/bin/i386-fennix-
+export TOOLCHAIN_ARM_PREFIX := $(COMPILER_PATH)/bin/arm-fennix-
+export TOOLCHAIN_AARCH64_PREFIX := $(COMPILER_PATH)/bin/aarch64-fennix-
