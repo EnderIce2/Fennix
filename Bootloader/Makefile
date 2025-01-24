@@ -24,12 +24,12 @@ ifeq ("$(wildcard ./gnu-efi)", "")
 	mv ./gnu-efi-$(GNUEFI_RELEASE_VERSION) ./gnu-efi
 	cp -a ./gnu-efi/inc/. ./include
 endif
-	echo "PREPARE > Compiling gnu-efi for x86_64"
-	make -C gnu-efi all ARCH=x86_64 \
-		AR=$(TOOLCHAIN_AMD64_PREFIX)ar \
-		AS=$(TOOLCHAIN_AMD64_PREFIX)as \
-		CC=$(TOOLCHAIN_AMD64_PREFIX)gcc \
-		LD=$(TOOLCHAIN_AMD64_PREFIX)ld
+#	echo "PREPARE > Compiling gnu-efi for x86_64"
+#	make -C gnu-efi all ARCH=x86_64 \
+#		AR=$(TOOLCHAIN_AMD64_PREFIX)ar \
+#		AS=$(TOOLCHAIN_AMD64_PREFIX)as \
+#		CC=$(TOOLCHAIN_AMD64_PREFIX)gcc \
+#		LD=$(TOOLCHAIN_AMD64_PREFIX)ld
 #	echo "PREPARE > Compiling gnu-efi for arm"
 #	make -C gnu-efi all ARCH=arm \
 #		AR=$(TOOLCHAIN_ARM_PREFIX)ar \
