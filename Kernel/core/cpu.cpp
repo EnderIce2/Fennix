@@ -308,9 +308,9 @@ namespace CPU
 			cr4.OSXMMEXCPT = true;
 
 			CPUData *CoreData = GetCPU(Core);
-			CoreData->Data.FPU.mxcsr = 0b0001111110000000;
-			CoreData->Data.FPU.mxcsrmask = 0b1111111110111111;
-			CoreData->Data.FPU.fcw = 0b0000001100111111;
+			CoreData->Data.FPU.MXCSR.raw = 0b0001111110000000;
+			CoreData->Data.FPU.MXCSR_MASK = 0b1111111110111111;
+			CoreData->Data.FPU.FCW.raw = 0b0000001100111111;
 			CPU::x86::fxrstor(&CoreData->Data.FPU);
 
 			SSEEnableAfter = true;

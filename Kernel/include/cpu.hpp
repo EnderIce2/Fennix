@@ -978,27 +978,118 @@ namespace CPU
 
 		struct FXState
 		{
-			/** @brief FPU control word */
-			uint16_t fcw;
-			/** @brief FPU status word */
-			uint16_t fsw;
-			/** @brief FPU tag words */
-			uint8_t ftw;
-			/** @brief Reserved (zero) */
-			uint8_t Reserved;
-			/** @brief FPU opcode */
-			uint16_t fop;
-			/** @brief PFU instruction pointer */
-			uint64_t rip;
-			/** @brief FPU data pointer */
-			uint64_t rdp;
-			/** @brief SSE control register */
-			uint32_t mxcsr;
-			/** @brief SSE control register mask */
-			uint32_t mxcsrmask;
-			/** @brief FPU registers (last 6 bytes reserved) */
+			union
+			{
+				struct
+				{
+					/* #MF Exception Masks */
+					uint16_t IM : 1;		  /** Invalid-Operation Exception Mask */
+					uint16_t DM : 1;		  /** Denormalized-Operand Exception Mask */
+					uint16_t ZM : 1;		  /** Zero-Divide Exception Mask */
+					uint16_t OM : 1;		  /** Overflow Exception Mask */
+					uint16_t UM : 1;		  /** Underflow Exception Mask */
+					uint16_t PM : 1;		  /** Precision Exception Mask */
+					uint16_t __reserved0 : 2; /** Reserved */
+
+					/**
+					 * 00 Single precision
+					 * 01 reserved
+					 * 10 Double precision
+					 * 11 Double-extended precision (default)
+					 */
+					uint16_t PC : 2; /** Precision Control */
+
+					/**
+					 * 00 Round to nearest (default)
+					 * 01 Round down
+					 * 10 Round up
+					 * 11 Round towards zero
+					 */
+					uint16_t RC : 2;		/** Rounding Control */
+					uint16_t Infinity : 1;	/** Infinity Bit (80287 compatibility) */
+					uint16_t Reserved2 : 3; /** Reserved */
+				};
+				uint16_t raw;
+			} FCW; /** FPU Control Word */
+
+			union
+			{
+				struct
+				{
+					uint16_t IE : 1;  /** Invalid-Operation Exception */
+					uint16_t DE : 1;  /** Denormalized-Operand Exception */
+					uint16_t ZE : 1;  /** Zero-Divide Exception */
+					uint16_t OE : 1;  /** Overflow Exception */
+					uint16_t UE : 1;  /** Underflow Exception */
+					uint16_t PE : 1;  /** Precision Exception */
+					uint16_t SF : 1;  /** Stack Fault */
+					uint16_t ES : 1;  /** Exception Status */
+					uint16_t C0 : 1;  /** Condition Code 0 */
+					uint16_t C1 : 1;  /** Condition Code 1 */
+					uint16_t C2 : 1;  /** Condition Code 2 */
+					uint16_t TOP : 3; /** Top of Stack Pointer */
+					uint16_t C3 : 1;  /** Condition Code 3 */
+					uint16_t B : 1;	  /** x87 Floating-Point Unit Busy */
+				};
+				uint16_t raw;
+			} FSW; /** FPU Status Word */
+
+			/**
+			 * Tag Values
+			 *
+			 * 00 = Valid
+			 * 01 = Zero
+			 * 10 = Special
+			 * 11 = Empty
+			 */
+			uint8_t FTW; /** x87 Tag Word */
+
+			uint8_t __reserved0;
+			uint16_t FOP; /** FPU Op Code */
+			uint64_t RIP; /** PFU Instruction Pointer */
+			uint64_t RDP; /** PFU Data Pointer */
+
+			union
+			{
+				struct
+				{
+					/* Exception Flags */
+					uint32_t IE : 1;  /** Invalid-Operation Exception */
+					uint32_t DE : 1;  /** Denormalized-Operand Exception */
+					uint32_t ZE : 1;  /** Zero-Divide Exception */
+					uint32_t OE : 1;  /** Overflow Exception */
+					uint32_t UE : 1;  /** Underflow Exception */
+					uint32_t PE : 1;  /** Precision Exception */
+					uint32_t DAZ : 1; /** Denormals Are Zeros */
+
+					/* Exception Masks */
+					uint32_t IM : 1; /** Invalid-Operation Mask */
+					uint32_t DM : 1; /** Denormalized-Operand Mask */
+					uint32_t ZM : 1; /** Zero-Divide Mask */
+					uint32_t OM : 1; /** Overflow Mask */
+					uint32_t UM : 1; /** Underflow Mask */
+					uint32_t PM : 1; /** Precision Mask */
+
+					/**
+					 * 00 = round to nearest (default)
+					 * 01 = round down
+					 * 10 = round up
+					 * 11 = round toward zero
+					 */
+					uint32_t RC : 2; /** Floating-Point Rounding Control */
+					uint32_t FZ : 1; /** Flush-to-Zero for Masked Underflow */
+					uint32_t __reserved3 : 1;
+					uint32_t MM : 1; /** Misaligned Exception Mask */
+					uint32_t __reserved4 : 14;
+				};
+				uint32_t raw;
+			} MXCSR; /** SSE Control Register */
+
+			uint32_t MXCSR_MASK; /** SSE Control Register Mask */
+
+			/** FPU registers (last 6 bytes reserved) */
 			uint8_t st[8][16];
-			/** @brief XMM registers */
+			/** XMM registers */
 			uint8_t xmm[16][16];
 		} __packed __aligned(16);
 

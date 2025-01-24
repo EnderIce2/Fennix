@@ -612,9 +612,9 @@ namespace Tasking
 
 // TODO: Is really a good idea to use the FPU in kernel mode?
 #if defined(__amd64__) || defined(__i386__)
-		this->FPU.mxcsr = 0b0001111110000000;
-		this->FPU.mxcsrmask = 0b1111111110111111;
-		this->FPU.fcw = 0b0000001100111111;
+		this->FPU.MXCSR.raw = 0b0001111110000000;
+		this->FPU.MXCSR_MASK = 0b1111111110111111;
+		this->FPU.FCW.raw = 0b0000001100111111;
 #endif
 
 #ifdef DEBUG
