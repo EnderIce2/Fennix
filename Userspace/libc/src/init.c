@@ -17,6 +17,8 @@
 
 #include <fennix/syscalls.h>
 
+#include <stdio.h>
+
 int __init_pthread(void);
 void __init_stdio(void);
 
@@ -28,6 +30,8 @@ __attribute__((visibility("default"))) void __libc_init(void)
 
 __attribute__((visibility("default"))) void _exit(int Code)
 {
+	fflush(stdout);
+	fflush(stderr);
 	call_exit(Code);
 	while (1)
 		;
