@@ -45,53 +45,40 @@ namespace UART
 	{
 		if (!DebugAvailable)
 			return;
-#if defined(__amd64__) || defined(__i386__)
 		while ((inb(s_cst(uint16_t, COM1 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
 			;
 		outb(COM1, Char);
-#endif
 	}
 
 	uint8_t Driver::DebugRead()
 	{
 		if (!DebugAvailable)
 			return 0;
-#if defined(__amd64__) || defined(__i386__)
 		while ((inb(s_cst(uint16_t, COM1 + 5)) & 1) == 0)
 			;
 		return inb(COM1);
-#else
-		return 0;
-#endif
 	}
 
 	void Driver::TTYWrite(uint8_t Char)
 	{
 		if (!TTYAvailable)
 			return;
-#if defined(__amd64__) || defined(__i386__)
 		while ((inb(s_cst(uint16_t, COM4 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
 			;
 		outb(COM4, Char);
-#endif
 	}
 
 	uint8_t Driver::TTYRead()
 	{
 		if (!TTYAvailable)
 			return 0;
-#if defined(__amd64__) || defined(__i386__)
 		while ((inb(s_cst(uint16_t, COM4 + 5)) & 1) == 0)
 			;
 		return inb(COM4);
-#else
-		return 0;
-#endif
 	}
 
 	Driver::Driver()
 	{
-#if defined(__amd64__) || defined(__i386__)
 		auto initPort = [](uint16_t Port)
 		{
 			// Initialize the serial port
@@ -133,7 +120,6 @@ namespace UART
 			initPort(COM4);
 			TTYAvailable = true;
 		}
-#endif
 	}
 
 	Driver::~Driver() {}
