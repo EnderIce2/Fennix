@@ -15,6 +15,6 @@ var searchData=
   ['superops_12',['superops',['../df/d26/fs_8h.html#a2b23f750051678a50319f21d04541d66',1,'FileSystemInfo::SuperOps'],['../df/d26/fs_8h.html#af2c3f075d5c3e40a46da61a9d7a13abc',1,'SuperOps:&#160;fs.h']]],
   ['symlink_13',['symlink',['../db/de6/structInodeOperations.html#a530732a5e449903291a39f37b066befd',1,'InodeOperations::SymLink'],['../df/d26/fs_8h.html#a9ca9828444d899586f97c6c9a4d5d5f0',1,'SymLink:&#160;fs.h']]],
   ['synchronize_14',['synchronize',['../d2/d55/structSuperBlockOperations.html#ac57a866f55ed08d2dd2897b27a541eb2',1,'SuperBlockOperations::Synchronize'],['../df/d26/fs_8h.html#a6628c40f84a3148dd825cf9036e66b83',1,'Synchronize:&#160;fs.h']]],
-  ['systemflag_15',['systemflag',['../d1/de1/aip_8h.html#acc8252d0e5a2a96ee791ee05c333bb56',1,'PS2_STATUSES.__unnamed1__::SystemFlag'],['../d1/de1/aip_8h.html#acc8252d0e5a2a96ee791ee05c333bb56',1,'PS2_CONFIGURATION.__unnamed3__::SystemFlag']]],
-  ['systemreset_16',['SystemReset',['../d1/de1/aip_8h.html#a993f0a6346847628c86bbcf1cf306236',1,'PS2_OUTPUT_PORT.__unnamed5__']]]
+  ['systemflag_15',['systemflag',['../d1/de1/aip_8h.html#acc8252d0e5a2a96ee791ee05c333bb56',1,'PS2_STATUSES.__unnamed7__::SystemFlag'],['../d1/de1/aip_8h.html#acc8252d0e5a2a96ee791ee05c333bb56',1,'PS2_CONFIGURATION.__unnamed9__::SystemFlag']]],
+  ['systemreset_16',['SystemReset',['../d1/de1/aip_8h.html#a993f0a6346847628c86bbcf1cf306236',1,'PS2_OUTPUT_PORT.__unnamed11__']]]
 ];

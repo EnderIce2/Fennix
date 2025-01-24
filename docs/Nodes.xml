@@ -688,9 +688,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>InputReport.__unnamed17__</Name>
+            <Name>InputReport.__unnamed5__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>db/d5d/unionInputReport_8____unnamed17____</Anchor>
+            <Anchor>d3/dec/unionInputReport_8____unnamed5____</Anchor>
           <Subnodes>
              <Node>
               <Name>Accelerometer</Name>
@@ -789,9 +789,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>KeyboardReport.__unnamed13__</Name>
+            <Name>KeyboardReport.__unnamed1__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
+            <Anchor>d1/d64/unionKeyboardReport_8____unnamed1____</Anchor>
           <Subnodes>
              <Node>
               <Name>Value</Name>
@@ -801,9 +801,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+            <Name>KeyboardReport.__unnamed1__.__unnamed3__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+            <Anchor>d4/da7/structKeyboardReport_8____unnamed1_____8____unnamed3____</Anchor>
           <Subnodes>
              <Node>
               <Name>IsScanCode</Name>
@@ -974,9 +974,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>PS2_CONFIGURATION.__unnamed3__</Name>
+            <Name>PS2_CONFIGURATION.__unnamed9__</Name>
             <Path>d1/de1/aip_8h.html</Path>
-            <Anchor>d4/dae/structPS2__CONFIGURATION_8____unnamed3____</Anchor>
+            <Anchor>dd/d65/structPS2__CONFIGURATION_8____unnamed9____</Anchor>
           <Subnodes>
              <Node>
               <Name>Port1Clock</Name>
@@ -1033,9 +1033,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>PS2_KBD_TYPEMATIC.__unnamed7__</Name>
+            <Name>PS2_KBD_TYPEMATIC.__unnamed13__</Name>
             <Path>d1/de1/aip_8h.html</Path>
-            <Anchor>db/dee/structPS2__KBD__TYPEMATIC_8____unnamed7____</Anchor>
+            <Anchor>d1/d4c/structPS2__KBD__TYPEMATIC_8____unnamed13____</Anchor>
           <Subnodes>
              <Node>
               <Name>Delay</Name>
@@ -1062,7 +1062,7 @@
              <Node>
               <Name>Base</Name>
               <Path>d1/de1/aip_8h.html</Path>
-              <Anchor>ae07d9573c7ae9aa7d734e43ab74d88b3</Anchor>
+              <Anchor>aa951e9644ee2e5490beedb0df9488d5a</Anchor>
              </Node>
              <Node>
               <Name>XMovement</Name>
@@ -1077,7 +1077,7 @@
              <Node>
               <Name>ZMovement</Name>
               <Path>d1/de1/aip_8h.html</Path>
-              <Anchor>acc274a47b2ec66d6731ec91b274e1423</Anchor>
+              <Anchor>aa2502637e708413d077b2fee35daeb2d</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -1118,9 +1118,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>PS2_OUTPUT_PORT.__unnamed5__</Name>
+            <Name>PS2_OUTPUT_PORT.__unnamed11__</Name>
             <Path>d1/de1/aip_8h.html</Path>
-            <Anchor>de/d3a/structPS2__OUTPUT__PORT_8____unnamed5____</Anchor>
+            <Anchor>db/d00/structPS2__OUTPUT__PORT_8____unnamed11____</Anchor>
           <Subnodes>
              <Node>
               <Name>A20Gate</Name>
@@ -1177,9 +1177,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>PS2_STATUSES.__unnamed1__</Name>
+            <Name>PS2_STATUSES.__unnamed7__</Name>
             <Path>d1/de1/aip_8h.html</Path>
-            <Anchor>dd/d0d/structPS2__STATUSES_8____unnamed1____</Anchor>
+            <Anchor>dd/daa/structPS2__STATUSES_8____unnamed7____</Anchor>
           <Subnodes>
              <Node>
               <Name>CommandData</Name>
@@ -1583,7 +1583,7 @@
                      <Node>
                       <Name>Base</Name>
                       <Path>d1/de1/aip_8h.html</Path>
-                      <Anchor>ae07d9573c7ae9aa7d734e43ab74d88b3</Anchor>
+                      <Anchor>aa951e9644ee2e5490beedb0df9488d5a</Anchor>
                      </Node>
                      <Node>
                       <Name>XMovement</Name>
@@ -1598,14 +1598,14 @@
                      <Node>
                       <Name>ZMovement</Name>
                       <Path>d1/de1/aip_8h.html</Path>
-                      <Anchor>acc274a47b2ec66d6731ec91b274e1423</Anchor>
+                      <Anchor>aa2502637e708413d077b2fee35daeb2d</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>PS2_STATUSES.__unnamed1__</Name>
+                    <Name>PS2_STATUSES.__unnamed7__</Name>
                     <Path>d1/de1/aip_8h.html</Path>
-                    <Anchor>dd/d0d/structPS2__STATUSES_8____unnamed1____</Anchor>
+                    <Anchor>dd/daa/structPS2__STATUSES_8____unnamed7____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>CommandData</Name>
@@ -1650,9 +1650,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>PS2_CONFIGURATION.__unnamed3__</Name>
+                    <Name>PS2_CONFIGURATION.__unnamed9__</Name>
                     <Path>d1/de1/aip_8h.html</Path>
-                    <Anchor>d4/dae/structPS2__CONFIGURATION_8____unnamed3____</Anchor>
+                    <Anchor>dd/d65/structPS2__CONFIGURATION_8____unnamed9____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Port1Clock</Name>
@@ -1697,9 +1697,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>PS2_OUTPUT_PORT.__unnamed5__</Name>
+                    <Name>PS2_OUTPUT_PORT.__unnamed11__</Name>
                     <Path>d1/de1/aip_8h.html</Path>
-                    <Anchor>de/d3a/structPS2__OUTPUT__PORT_8____unnamed5____</Anchor>
+                    <Anchor>db/d00/structPS2__OUTPUT__PORT_8____unnamed11____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>A20Gate</Name>
@@ -1744,9 +1744,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>PS2_KBD_TYPEMATIC.__unnamed7__</Name>
+                    <Name>PS2_KBD_TYPEMATIC.__unnamed13__</Name>
                     <Path>d1/de1/aip_8h.html</Path>
-                    <Anchor>db/dee/structPS2__KBD__TYPEMATIC_8____unnamed7____</Anchor>
+                    <Anchor>d1/d4c/structPS2__KBD__TYPEMATIC_8____unnamed13____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Delay</Name>
@@ -4166,9 +4166,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__</Name>
+                    <Name>KeyboardReport.__unnamed1__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
+                    <Anchor>d1/d64/unionKeyboardReport_8____unnamed1____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Value</Name>
@@ -4178,9 +4178,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+                    <Name>KeyboardReport.__unnamed1__.__unnamed3__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+                    <Anchor>d4/da7/structKeyboardReport_8____unnamed1_____8____unnamed3____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>IsScanCode</Name>
@@ -4190,9 +4190,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>InputReport.__unnamed17__</Name>
+                    <Name>InputReport.__unnamed5__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>db/d5d/unionInputReport_8____unnamed17____</Anchor>
+                    <Anchor>d3/dec/unionInputReport_8____unnamed5____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Accelerometer</Name>

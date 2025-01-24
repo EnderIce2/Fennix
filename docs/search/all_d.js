@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['magnetometer_0',['Magnetometer',['../de/ded/input_8h.html#a9e9fa52e0aa4a2b519f8287760d7c3ac',1,'InputReport.__unnamed17__']]],
+  ['magnetometer_0',['Magnetometer',['../de/ded/input_8h.html#a9e9fa52e0aa4a2b519f8287760d7c3ac',1,'InputReport.__unnamed5__']]],
   ['magnetometerreport_1',['MagnetometerReport',['../de/ded/input_8h.html#d4/d9c/structMagnetometerReport',1,'']]],
   ['major_2',['Major',['../db/de4/driver_8h.html#a662fb62393b6fd7d7ec85f502db44247',1,'__DriverInfo::__DriverVersion']]],
   ['map_5fcache_5fdisable_3',['MAP_CACHE_DISABLE',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aa0da429c07c8ddc3526231587ac4cac41',1,'driver.h']]],
@@ -21,6 +21,6 @@ var searchData=
   ['mkdir_18',['mkdir',['../df/d26/fs_8h.html#a3fbe554d6691bfb88f5b700eb5e2205f',1,'MkDir:&#160;fs.h'],['../db/de6/structInodeOperations.html#a490a002f55d3f99697641d2de8e62ae9',1,'InodeOperations::MkDir']]],
   ['mode_19',['mode',['../df/d26/fs_8h.html#a667a06765053832b0e364d352d331481',1,'Inode::Mode'],['../df/d26/fs_8h.html#af45191ed8ad28ab7a58ee02287609808',1,'kstat::Mode']]],
   ['modifytime_20',['ModifyTime',['../df/d26/fs_8h.html#a9f1f01620d0175f71eff75e384cd9042',1,'kstat']]],
-  ['mouse_21',['Mouse',['../de/ded/input_8h.html#af2a47c6809d88e175dade0ef7b16aa13',1,'InputReport.__unnamed17__']]],
+  ['mouse_21',['Mouse',['../de/ded/input_8h.html#af2a47c6809d88e175dade0ef7b16aa13',1,'InputReport.__unnamed5__']]],
   ['mousereport_22',['MouseReport',['../de/ded/input_8h.html#db/d9a/structMouseReport',1,'']]]
 ];

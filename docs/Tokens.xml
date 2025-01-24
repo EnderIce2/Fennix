@@ -110,7 +110,7 @@
       <Name>A20Gate</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ab24700857c7c1e39353a7d8d12212ee9</Anchor>
@@ -130,7 +130,7 @@
       <Name>Accelerometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>ab043bc6d611582087d8bf1790d863d69</Anchor>
@@ -253,7 +253,7 @@
       <Scope>PS2_MOUSE_PACKET</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
-    <Anchor>ae07d9573c7ae9aa7d734e43ab74d88b3</Anchor>
+    <Anchor>aa951e9644ee2e5490beedb0df9488d5a</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -480,7 +480,7 @@
       <Name>CommandData</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ad3c1a945d3b7f0aa9f0bbcb1bdc77d37</Anchor>
@@ -560,7 +560,7 @@
       <Name>Delay</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_KBD_TYPEMATIC.__unnamed7__</Scope>
+      <Scope>PS2_KBD_TYPEMATIC.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a8f497c1a3d15af9e0c215019f26b887d</Anchor>
@@ -720,7 +720,7 @@
       <Name>Gamepad</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a221f6781b4faa2d321ca0d928f518d6e</Anchor>
@@ -740,7 +740,7 @@
       <Name>Gyroscope</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>abed99e5db57749f375e738c1c0258047</Anchor>
@@ -810,7 +810,7 @@
       <Name>InputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a999955f00254a1ec83b388b8142ac5e6</Anchor>
@@ -930,7 +930,7 @@
       <Name>IsScanCode</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>KeyboardReport.__unnamed13__.__unnamed15__</Scope>
+      <Scope>KeyboardReport.__unnamed1__.__unnamed3__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>aa51f9b08057b8f0bf003cd592bbe248b</Anchor>
@@ -940,7 +940,7 @@
       <Name>Joystick</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a1162b85b7b993e2edf7da29dd8abf7e2</Anchor>
@@ -970,7 +970,7 @@
       <Name>Keyboard</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a6ce4d85a628a88bbdb3ac24a8e5a9c2e</Anchor>
@@ -1030,7 +1030,7 @@
       <Name>Magnetometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a9e9fa52e0aa4a2b519f8287760d7c3ac</Anchor>
@@ -1190,7 +1190,7 @@
       <Name>Mouse</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>af2a47c6809d88e175dade0ef7b16aa13</Anchor>
@@ -1270,7 +1270,7 @@
       <Name>OutputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>aa9b7be021da7a0ec83d707bd42740f3d</Anchor>
@@ -1280,7 +1280,7 @@
       <Name>ParityError</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a63440a36bf6fd0748b3c188f3e9fda78</Anchor>
@@ -1320,7 +1320,7 @@
       <Name>Port1Clock</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a44c6b11fcf9b6a9a6e7fe2a969b58b0f</Anchor>
@@ -1330,7 +1330,7 @@
       <Name>Port1InputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>aba33c9a5143b225eab7df62ac376741f</Anchor>
@@ -1340,7 +1340,7 @@
       <Name>Port1Interrupt</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a78e48bc7d4778ddc8e647ec195da3e1a</Anchor>
@@ -1350,7 +1350,7 @@
       <Name>Port1OutputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>acd4e8faa0cb2df34eef242730f9abbcf</Anchor>
@@ -1360,7 +1360,7 @@
       <Name>Port1Translation</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>af4c84ba01a644fbe45e4b9e09f827168</Anchor>
@@ -1370,7 +1370,7 @@
       <Name>Port2Clock</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>aeeefe959ba7eabe712b1a3039d4d7ec7</Anchor>
@@ -1380,7 +1380,7 @@
       <Name>Port2Clock</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>aeeefe959ba7eabe712b1a3039d4d7ec7</Anchor>
@@ -1390,7 +1390,7 @@
       <Name>Port2Data</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a88d3c2504556b9c06accac2642e8a48b</Anchor>
@@ -1400,7 +1400,7 @@
       <Name>Port2InputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ac2d9dfb2e7ccc41b0869944f6de082e9</Anchor>
@@ -1410,7 +1410,7 @@
       <Name>Port2Interrupt</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ab139fbe5dc1f6fb378c6de7168ad4254</Anchor>
@@ -1420,7 +1420,7 @@
       <Name>Port2OutputBufferFull</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a04a22d5db50e8333c482419e9bbd2d78</Anchor>
@@ -1650,7 +1650,7 @@
       <Name>RepeatRate</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_KBD_TYPEMATIC.__unnamed7__</Scope>
+      <Scope>PS2_KBD_TYPEMATIC.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ab0a4e5ca864ccf625afe5cbd853b490c</Anchor>
@@ -1890,7 +1890,7 @@
       <Name>SystemFlag</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>acc8252d0e5a2a96ee791ee05c333bb56</Anchor>
@@ -1900,7 +1900,7 @@
       <Name>SystemFlag</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>acc8252d0e5a2a96ee791ee05c333bb56</Anchor>
@@ -1910,7 +1910,7 @@
       <Name>SystemReset</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_OUTPUT_PORT.__unnamed5__</Scope>
+      <Scope>PS2_OUTPUT_PORT.__unnamed11__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a993f0a6346847628c86bbcf1cf306236</Anchor>
@@ -1920,7 +1920,7 @@
       <Name>TimeoutError</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a2ce01afd7e833fc13c63448689ea762a</Anchor>
@@ -1930,7 +1930,7 @@
       <Name>TouchScreen</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed5__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a64a952e5a8456c1030ce54bfa07ebb52</Anchor>
@@ -1960,7 +1960,7 @@
       <Name>Unknown1</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a28c5637b237d55031f1b3772d731c041</Anchor>
@@ -1970,7 +1970,7 @@
       <Name>Unknown2</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_STATUSES.__unnamed1__</Scope>
+      <Scope>PS2_STATUSES.__unnamed7__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>afe489f6ef777e98956c00038b863eb0f</Anchor>
@@ -1990,7 +1990,7 @@
       <Name>Value</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>KeyboardReport.__unnamed13__</Scope>
+      <Scope>KeyboardReport.__unnamed1__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a689202409e48743b914713f96d93947c</Anchor>
@@ -2100,7 +2100,7 @@
       <Name>Zero</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_KBD_TYPEMATIC.__unnamed7__</Scope>
+      <Scope>PS2_KBD_TYPEMATIC.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ad7ed4ee1df437474d005188535f74875</Anchor>
@@ -2110,7 +2110,7 @@
       <Name>Zero0</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ad31cba1790c6843a18adfc7ddfcee23e</Anchor>
@@ -2120,7 +2120,7 @@
       <Name>Zero1</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>PS2_CONFIGURATION.__unnamed3__</Scope>
+      <Scope>PS2_CONFIGURATION.__unnamed9__</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>ac1bea7eee679d45845dc20ba9cc0cc20</Anchor>
@@ -2133,7 +2133,7 @@
       <Scope>PS2_MOUSE_PACKET</Scope>
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
-    <Anchor>acc274a47b2ec66d6731ec91b274e1423</Anchor>
+    <Anchor>aa2502637e708413d077b2fee35daeb2d</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
