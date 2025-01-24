@@ -40,9 +40,8 @@ void __crt_fini_array(void)
 __attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
 {
 #if defined(__amd64__)
-	asm("movq $0, %rbp\n"
-		"pushq %rbp\n"
-		"pushq %rbp\n"
+	asm("xor %rbp, %rbp\n"
+		"andq $-16, %rsp\n"
 		"movq %rsp, %rbp\n"
 
 		"pushq %rcx\n"
