@@ -33,49 +33,51 @@ PHDRS
 	bss         PT_LOAD    FLAGS( PF_R | PF_W );
 }
 
+KERNEL_VMA = 0x80000;
+
 SECTIONS
 {
-	. = 0x80000;
+	. = KERNEL_VMA;
 	_bootstrap_start = .;
-	.bootstrap :
+	.bootstrap : AT(ADDR(.bootstrap) - KERNEL_VMA)
 	{
 		*(.bootstrap.boot .bootstrap.boot.*)
 		*(.bootstrap .bootstrap.*)
 	} :bootstrap
 	_bootstrap_end = .;
 
-	_kernel_start = .;
-	_kernel_text_start = .;
-	.text :
+	_kernel_start = ALIGN(CONSTANT(MAXPAGESIZE));
+	_kernel_text_start = ALIGN(CONSTANT(MAXPAGESIZE));
+	.text ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.text) - KERNEL_VMA)
 	{
 		*(.text .text.*)
 	} :text
-	_kernel_text_end = .;
+	_kernel_text_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	_kernel_data_start = .;
-	.data :
+	_kernel_data_start = ALIGN(CONSTANT(MAXPAGESIZE));
+	.data ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.data) - KERNEL_VMA)
 	{
 		*(.data .data.*)
 	} :data
 
-	.eh_frame :
+	.eh_frame : AT(ADDR(.eh_frame) - KERNEL_VMA) ONLY_IF_RW
 	{
 		KEEP (*(.eh_frame .eh_frame.*))
 	} :data
 
-	.gcc_except_table :
+	.gcc_except_table : AT(ADDR(.gcc_except_table) - KERNEL_VMA) ONLY_IF_RW
 	{
 		KEEP (*(.gcc_except_table .gcc_except_table.*))
 	} :data
-	_kernel_data_end = .;
+	_kernel_data_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	_kernel_rodata_start = .;
-	.rodata :
+	_kernel_rodata_start = ALIGN(CONSTANT(MAXPAGESIZE));
+	.rodata ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.rodata) - KERNEL_VMA)
 	{
 		*(.rodata .rodata.*)
 	} :rodata
 
-	.init_array :
+	.init_array ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.init_array) - KERNEL_VMA)
 	{
 		PROVIDE_HIDDEN(__init_array_start = .);
 		KEEP(*(.init_array .ctors))
@@ -83,7 +85,7 @@ SECTIONS
 		PROVIDE_HIDDEN (__init_array_end = .);
 	} :rodata
 
-	.fini_array :
+	.fini_array ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.fini_array) - KERNEL_VMA)
 	{
 		PROVIDE_HIDDEN(__fini_array_start = .);
 		KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
@@ -91,31 +93,31 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 	} :rodata
 
-	.eh_frame_hdr :
+	.eh_frame_hdr : AT(ADDR(.eh_frame_hdr) - KERNEL_VMA)
 	{
 		*(.eh_frame_hdr .eh_frame_hdr.*)
 	} :rodata
 
-	.eh_frame :
+	.eh_frame : AT(ADDR(.eh_frame) - KERNEL_VMA) ONLY_IF_RO
 	{
 		KEEP (*(.eh_frame .eh_frame.*))
 	} :rodata
 
-	.gcc_except_table :
+	.gcc_except_table : AT(ADDR(.gcc_except_table) - KERNEL_VMA) ONLY_IF_RO
 	{
 		KEEP (*(.gcc_except_table .gcc_except_table.*))
 	} :rodata
-	_kernel_rodata_end = .;
+	_kernel_rodata_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	_kernel_bss_start = .;
-	.bss :
+	_kernel_bss_start = ALIGN(CONSTANT(MAXPAGESIZE));
+	.bss ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.bss) - KERNEL_VMA)
 	{
 		*(COMMON)
 		*(.bss .bss.*)
 	} :bss
-	_kernel_bss_end = .;
-	_kernel_bss_size = SIZEOF(.bss);
-	_kernel_end = .;
+	_kernel_bss_end = ALIGN(CONSTANT(MAXPAGESIZE));
+	_kernel_bss_size = _kernel_bss_end - _kernel_bss_start;
+	_kernel_end = ALIGN(CONSTANT(MAXPAGESIZE));
 
 	/DISCARD/ :
 	{
