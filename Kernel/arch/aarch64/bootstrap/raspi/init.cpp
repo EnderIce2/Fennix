@@ -16,9 +16,29 @@
 */
 
 #include <types.h>
+#include <cpu.hpp>
 
-__attribute__((section(".bootstrap.text"))) void _aarch64_start(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
+#include "../../../../kernel.h"
+
+using namespace CPU::aarch64;
+
+extern "C" __attribute__((section(".bootstrap.text"))) void _aarch64_start(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
 {
-	while (1)
-		;
+	MIDR_EL1 reg;
+	asmv("mrs %x0, midr_el1" : "=r"(reg.raw));
+
+	switch (reg.PartNum)
+	{
+	case 0xB76: /* Raspberry Pi 1 */
+	case 0xC07: /* Raspberry Pi 2 */
+	default:	/* Unknown */
+		CPU::Stop();
+	case 0xD03: /* Raspberry Pi 3 */
+		break;
+	case 0xD08: /* Raspberry Pi 4 */
+		break;
+	}
+
+	BootInfo *info = nullptr;
+	Entry(info);
 }
