@@ -1140,6 +1140,48 @@ namespace CPU
 
 	namespace aarch64
 	{
+		typedef union
+		{
+			struct
+			{
+				uint64_t Revision : 4;
+				uint64_t PartNum : 12;
+				uint64_t Architecture : 4;
+
+				/**
+				 * 0b0001  Armv4.
+				 * 0b0010  Armv4T.
+				 * 0b0011  Armv5 (obsolete).
+				 * 0b0100  Armv5T.
+				 * 0b0101  Armv5TE.
+				 * 0b0110  Armv5TEJ.
+				 * 0b0111  Armv6.
+				 * 0b1111  Architectural features are individually identified in the ID_* registers.
+				 */
+				uint64_t Variant : 4;
+
+				/**
+				 * 0x00  Reserved for software use.
+				 * 0x41  Arm Limited.
+				 * 0x42  Broadcom Corporation.
+				 * 0x43  Cavium Inc.
+				 * 0x44  Digital Equipment Corporation.
+				 * 0x46  Fujitsu Ltd.
+				 * 0x49  Infineon Technologies AG.
+				 * 0x4D  Motorola or Freescale Semiconductor Inc.
+				 * 0x4E  NVIDIA Corporation.
+				 * 0x50  Applied Micro Circuits Corporation.
+				 * 0x51  Qualcomm Inc.
+				 * 0x56  Marvell International Ltd.
+				 * 0x69  Intel Corporation.
+				 * 0xC0  Ampere Computing.
+				 */
+				uint64_t Implementer : 8;
+				uint64_t RES0 : 32;
+			};
+			uint64_t raw;
+		} __packed MIDR_EL1;
+
 		struct TrapFrame
 		{
 			uint64_t x[31];
