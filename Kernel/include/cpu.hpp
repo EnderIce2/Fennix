@@ -179,7 +179,7 @@ namespace CPU
 #if defined(__amd64__) || defined(__i386__)
 			asmv("hlt");
 #elif defined(__aarch64__)
-			asmv("wfe");
+			asmv("wfi");
 #endif
 		} while (Loop);
 	}
@@ -323,7 +323,7 @@ namespace CPU
 				uint32_t ID : 1;
 			};
 			uint32_t raw;
-		} EFLAGS;
+		} __packed EFLAGS;
 
 		struct TrapFrame
 		{
@@ -343,7 +343,7 @@ namespace CPU
 			EFLAGS eflags; /* Register Flags */
 			uint32_t esp;  /* Stack Pointer */
 			uint32_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		struct SchedulerFrame
 		{
@@ -366,7 +366,7 @@ namespace CPU
 			EFLAGS eflags; /* Register Flags */
 			uint32_t esp;  /* Stack Pointer */
 			uint32_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		struct ExceptionFrame
 		{
@@ -404,7 +404,7 @@ namespace CPU
 			EFLAGS eflags; /* Register Flags */
 			uint32_t esp;  /* Stack Pointer */
 			uint32_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		typedef union DR6
 		{
@@ -432,7 +432,7 @@ namespace CPU
 				uint32_t Reserved2 : 15;
 			};
 			uint32_t raw;
-		} DR6;
+		} __packed DR6;
 
 		typedef union DR7
 		{
@@ -484,7 +484,7 @@ namespace CPU
 				uint32_t LEN3 : 2;
 			};
 			uint32_t raw;
-		} DR7;
+		} __packed DR7;
 
 		struct FXState
 		{
@@ -702,7 +702,7 @@ namespace CPU
 				uint64_t Reserved3 : 10;
 			};
 			uint64_t raw;
-		} RFLAGS;
+		} __packed RFLAGS;
 
 		struct TrapFrame
 		{
@@ -731,7 +731,7 @@ namespace CPU
 			RFLAGS rflags; /* Register Flags */
 			uint64_t rsp;  /* Stack Pointer */
 			uint64_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		struct SchedulerFrame
 		{
@@ -763,7 +763,7 @@ namespace CPU
 			RFLAGS rflags; /* Register Flags */
 			uint64_t rsp;  /* Stack Pointer */
 			uint64_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		struct ExceptionFrame
 		{
@@ -810,7 +810,7 @@ namespace CPU
 			RFLAGS rflags; /* Register Flags */
 			uint64_t rsp;  /* Stack Pointer */
 			uint64_t ss;   /* Stack Segment */
-		};
+		} __packed;
 
 		typedef union EFER
 		{
@@ -1093,7 +1093,7 @@ namespace CPU
 			uint32_t LR;   /* Link Register (R14) */
 			uint32_t PC;   /* Program Counter (R15) */
 			uint32_t CPSR; /* Current Program Status Register */
-		};
+		} __packed;
 
 		struct SchedulerFrame
 		{
@@ -1114,7 +1114,7 @@ namespace CPU
 			uint32_t LR;   /* Link Register (R14) */
 			uint32_t PC;   /* Program Counter (R15) */
 			uint32_t CPSR; /* Current Program Status Register */
-		};
+		} __packed;
 
 		struct ExceptionFrame
 		{
@@ -1135,7 +1135,7 @@ namespace CPU
 			uint32_t LR;   /* Link Register (R14) */
 			uint32_t PC;   /* Program Counter (R15) */
 			uint32_t CPSR; /* Current Program Status Register */
-		};
+		} __packed;
 	}
 
 	namespace aarch64
@@ -1190,7 +1190,7 @@ namespace CPU
 			uint64_t ESR;  /* Exception Syndrome Register */
 			uint64_t FAR;  /* Fault Address Register */
 			uint64_t SPSR; /* Saved Program Status Register */
-		};
+		} __packed;
 
 		struct SchedulerFrame
 		{
@@ -1200,7 +1200,7 @@ namespace CPU
 			uint64_t ESR;  /* Exception Syndrome Register */
 			uint64_t FAR;  /* Fault Address Register */
 			uint64_t SPSR; /* Saved Program Status Register */
-		};
+		} __packed;
 
 		struct ExceptionFrame
 		{
@@ -1210,7 +1210,7 @@ namespace CPU
 			uint64_t ESR;  /* Exception Syndrome Register */
 			uint64_t FAR;  /* Fault Address Register */
 			uint64_t SPSR; /* Saved Program Status Register */
-		};
+		} __packed;
 	}
 
 #if defined(__amd64__)
