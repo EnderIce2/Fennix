@@ -10,10 +10,10 @@ OBJ = $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 FILENAME = $(notdir $(shell pwd))
 WARNCFLAG = -Wall -Wextra
 
-build: $(FILENAME)
-	cp $(FILENAME) $(WORKSPACE_DIR)/out/bin/$(FILENAME)
+build: $(FILENAME).elf
+	cp $(FILENAME).elf $(WORKSPACE_DIR)/out/bin/$(FILENAME)
 
-$(FILENAME): $(OBJ)
+$(FILENAME).elf: $(OBJ)
 	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(SYSROOT) $(OBJ) -o $@
 
@@ -30,4 +30,4 @@ $(FILENAME): $(OBJ)
 	$(AS) -o $@ $<
 
 clean:
-	rm -f $(OBJ) $(FILENAME)
+	rm -f $(OBJ) $(FILENAME).elf
