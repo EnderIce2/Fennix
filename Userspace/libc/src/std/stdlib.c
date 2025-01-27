@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include "../mem/liballoc_1_1.h"
 
 #define MAX_ATEXIT_FUNCS 32
@@ -31,7 +32,10 @@ export _Noreturn void abort(void)
 	__builtin_unreachable();
 }
 
-export int abs(int);
+export int abs(int i)
+{
+	return (i < 0) ? -i : i;
+}
 
 export int atexit(void (*func)(void))
 {
@@ -62,7 +66,18 @@ export void exit(int status)
 export char *fcvt(double, int, int *, int *);
 export void free(void *ptr) { return PREFIX(free)(ptr); }
 export char *gcvt(double, int, char *);
-export char *getenv(const char *);
+
+export char *getenv(const char *name)
+{
+	for (char **env = environ; *env != 0; ++env)
+	{
+		char *thisEnv = *env;
+		if (strncmp(thisEnv, name, strlen(name)) == 0 && thisEnv[strlen(name)] == '=')
+			return thisEnv + strlen(name) + 1;
+	}
+	return NULL;
+}
+
 export int getsubopt(char **, char *const *, char **);
 export int grantpt(int);
 export char *initstate(unsigned int, char *, size_t);

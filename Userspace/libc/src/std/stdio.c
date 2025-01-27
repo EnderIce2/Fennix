@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <fennix/syscalls.h>
 #include "../print/printf.h"
 
@@ -109,9 +110,54 @@ export int fflush(FILE *stream)
 	return 0;
 }
 
-export int fgetc(FILE *);
+export int fgetc(FILE *stream)
+{
+	if (!stream || !(stream->flags & _i_READ))
+		return EOF;
+
+	if (stream->buffer_pos >= stream->buffer_size)
+	{
+		int res = call_read(stream->fd, stream->buffer, 4096);
+		if (res <= 0)
+		{
+			if (res == 0)
+				stream->eof = 1;
+			else
+				stream->error = 1;
+			return EOF;
+		}
+		stream->buffer_pos = 0;
+		stream->buffer_size = res;
+	}
+
+	return (unsigned char)stream->buffer[stream->buffer_pos++];
+}
+
 export int fgetpos(FILE *restrict, fpos_t *restrict);
-export char *fgets(char *restrict, int, FILE *restrict);
+
+export char *fgets(char *restrict s, int n, FILE *restrict stream)
+{
+	if (!s || n <= 0 || !stream)
+		return NULL;
+
+	int i = 0;
+	while (i < n - 1)
+	{
+		int c = fgetc(stream);
+		if (c == EOF)
+		{
+			if (i == 0)
+				return NULL;
+			break;
+		}
+		s[i++] = (char)c;
+		if (c == '\n')
+			break;
+	}
+	s[i] = '\0';
+	return s;
+}
+
 export int fileno(FILE *);
 export void flockfile(FILE *);
 export FILE *fmemopen(void *restrict, size_t, const char *restrict);
@@ -302,7 +348,15 @@ export ssize_t getdelim(char **restrict, size_t *restrict, int, FILE *restrict);
 export ssize_t getline(char **restrict, size_t *restrict, FILE *restrict);
 export FILE *open_memstream(char **, size_t *);
 export int pclose(FILE *);
-export void perror(const char *);
+
+export void perror(const char *s)
+{
+	fputs(s, stderr);
+	fputs(": ", stderr);
+	fputs(strerror(errno), stderr);
+	fputc('\n', stderr);
+}
+
 export FILE *popen(const char *, const char *);
 
 export int printf(const char *restrict format, ...)
@@ -327,8 +381,25 @@ export void rewind(FILE *);
 export int scanf(const char *restrict, ...);
 export void setbuf(FILE *restrict, char *restrict);
 export int setvbuf(FILE *restrict, char *restrict, int, size_t);
-export int snprintf(char *restrict, size_t, const char *restrict, ...);
-export int sprintf(char *restrict, const char *restrict, ...);
+
+export int snprintf(char *restrict s, size_t n, const char *restrict format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int ret = vsnprintf_(s, n, format, args);
+	va_end(args);
+	return ret;
+}
+
+export int sprintf(char *restrict s, const char *restrict format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int ret = vsprintf_(s, format, args);
+	va_end(args);
+	return ret;
+}
+
 export int sscanf(const char *restrict, const char *restrict, ...);
 export FILE *tmpfile(void);
 export char *tmpnam(char *);

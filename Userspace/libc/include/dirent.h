@@ -59,7 +59,7 @@ extern "C"
 #define DT_TMO
 
 	int alphasort(const struct dirent **, const struct dirent **);
-	int closedir(DIR *);
+	int closedir(DIR *dirp);
 	int dirfd(DIR *);
 	DIR *fdopendir(int);
 	DIR *opendir(const char *);

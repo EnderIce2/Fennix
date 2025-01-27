@@ -91,8 +91,8 @@ extern "C"
 	int fstatat(int, const char *restrict, struct stat *restrict, int);
 	int futimens(int, const struct timespec[2]);
 	int lstat(const char *restrict, struct stat *restrict);
-	int mkdir(const char *, mode_t);
-	int mkdirat(int, const char *, mode_t);
+	int mkdir(const char *path, mode_t mode);
+	int mkdirat(int fd, const char *path, mode_t mode);
 	int mkfifo(const char *, mode_t);
 	int mkfifoat(int, const char *, mode_t);
 	int mknod(const char *, mode_t, dev_t);

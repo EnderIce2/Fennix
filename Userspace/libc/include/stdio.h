@@ -90,9 +90,9 @@ extern "C"
 	int feof(FILE *);
 	int ferror(FILE *);
 	int fflush(FILE *stream);
-	int fgetc(FILE *);
+	int fgetc(FILE *stream);
 	int fgetpos(FILE *restrict, fpos_t *restrict);
-	char *fgets(char *restrict, int, FILE *restrict);
+	char *fgets(char *restrict s, int n, FILE *restrict stream);
 	int fileno(FILE *);
 	void flockfile(FILE *);
 	FILE *fmemopen(void *restrict, size_t, const char *restrict);
@@ -119,7 +119,7 @@ extern "C"
 	ssize_t getline(char **restrict, size_t *restrict, FILE *restrict);
 	FILE *open_memstream(char **, size_t *);
 	int pclose(FILE *);
-	void perror(const char *);
+	void perror(const char *s);
 	FILE *popen(const char *, const char *);
 	int printf(const char *restrict format, ...);
 	int putc(int c, FILE *stream);
@@ -134,8 +134,8 @@ extern "C"
 	int scanf(const char *restrict, ...);
 	void setbuf(FILE *restrict, char *restrict);
 	int setvbuf(FILE *restrict, char *restrict, int, size_t);
-	int snprintf(char *restrict, size_t, const char *restrict, ...);
-	int sprintf(char *restrict, const char *restrict, ...);
+	int snprintf(char *restrict s, size_t n, const char *restrict format, ...);
+	int sprintf(char *restrict s, const char *restrict format, ...);
 	int sscanf(const char *restrict, const char *restrict, ...);
 	FILE *tmpfile(void);
 	char *tmpnam(char *);

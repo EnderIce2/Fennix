@@ -16,13 +16,26 @@
 */
 
 #include <unistd.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <stdio.h>
+#include <string.h>
 #include <fennix/syscalls.h>
 
 export char *optarg;
 export int optind, opterr, optopt;
+export char **environ;
 
 export int access(const char *, int);
-export unsigned int alarm(unsigned int);
+
+export unsigned int alarm(unsigned int seconds)
+{
+	printf("alarm() is unimplemented\n");
+	return __check_errno(-ENOSYS, -1);
+}
+
 export int brk(void *);
 export int chdir(const char *);
 export int chroot(const char *);
@@ -35,17 +48,122 @@ export char *cuserid(char *s);
 export int dup(int);
 export int dup2(int, int);
 export void encrypt(char[64], int);
-export int execl(const char *, const char *, ...);
-export int execle(const char *, const char *, ...);
-export int execlp(const char *, const char *, ...);
-export int execv(const char *, char *const[]);
-export int execve(const char *, char *const[], char *const[]);
-export int execvp(const char *, char *const[]);
+
+export int execl(const char *path, const char *arg0, ...)
+{
+	va_list args;
+	va_start(args, arg0);
+
+	int argc = 1;
+	while (va_arg(args, const char *))
+		argc++;
+	va_end(args);
+
+	char *argv[argc + 1];
+	va_start(args, arg0);
+	argv[0] = (char *)arg0;
+	for (int i = 1; i < argc; i++)
+		argv[i] = va_arg(args, char *);
+
+	argv[argc] = NULL;
+	va_end(args);
+	return execve(path, argv, environ);
+}
+
+export int execle(const char *path, const char *arg0, ...)
+{
+	va_list args;
+	va_start(args, arg0);
+
+	int argc = 1;
+	while (va_arg(args, const char *))
+		argc++;
+	va_end(args);
+
+	char *argv[argc + 1];
+	va_start(args, arg0);
+	argv[0] = (char *)arg0;
+	for (int i = 1; i < argc; i++)
+		argv[i] = va_arg(args, char *);
+
+	argv[argc] = NULL;
+
+	char *const *envp = va_arg(args, char *const *);
+	va_end(args);
+
+	return execve(path, argv, envp);
+}
+
+export int execlp(const char *file, const char *arg0, ...)
+{
+	va_list args;
+	va_start(args, arg0);
+
+	int argc = 1;
+	while (va_arg(args, const char *))
+		argc++;
+
+	va_end(args);
+
+	char *argv[argc + 1];
+	va_start(args, arg0);
+	argv[0] = (char *)arg0;
+	for (int i = 1; i < argc; i++)
+		argv[i] = va_arg(args, char *);
+
+	argv[argc] = NULL;
+	va_end(args);
+
+	return execvp(file, argv);
+}
+
+export int execv(const char *path, char *const argv[])
+{
+	return execve(path, argv, environ);
+}
+
+export int execve(const char *path, char *const argv[], char *const envp[])
+{
+	return __check_errno(call_execve(path, argv, envp), -1);
+}
+
+export int execvp(const char *file, char *const argv[])
+{
+	if (strchr(file, '/'))
+		return execve(file, argv, environ);
+
+	char *path = getenv("PATH");
+	if (!path)
+	{
+		errno = ENOENT;
+		return -1;
+	}
+
+	char *p = strtok(path, ":");
+	while (p)
+	{
+		char fullpath[PATH_MAX];
+		snprintf(fullpath, sizeof(fullpath), "%s/%s", p, file);
+		execve(fullpath, argv, environ);
+		if (errno != ENOENT && errno != ENOTDIR)
+			return -1;
+		p = strtok(NULL, ":");
+	}
+
+	errno = ENOENT;
+	return -1;
+}
+
 export void _exit(int);
 export int fchown(int, uid_t, gid_t);
 export int fchdir(int);
 export int fdatasync(int);
-export pid_t fork(void);
+
+export pid_t fork(void)
+{
+	return __check_errno(call_fork(), -1);
+}
+
 export long int fpathconf(int, int);
 export int fsync(int);
 export int ftruncate(int, off_t);
@@ -79,7 +197,13 @@ export int lockf(int, int, off_t);
 export off_t lseek(int, off_t, int);
 export int nice(int);
 export long int pathconf(const char *, int);
-export int pause(void);
+
+export int pause(void)
+{
+	printf("pause() is unimplemented\n");
+	return __check_errno(-ENOSYS, -1);
+}
+
 export int pipe(int[2]);
 export ssize_t pread(int, void *, size_t, off_t);
 export int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
@@ -95,10 +219,31 @@ export int setregid(gid_t, gid_t);
 export int setreuid(uid_t, uid_t);
 export pid_t setsid(void);
 export int setuid(uid_t);
-export unsigned int sleep(unsigned int);
+
+export unsigned int sleep(unsigned int seconds)
+{
+	unsigned int unslept = alarm(0); /* Cancel any existing alarm */
+	if (unslept > 0)
+	{
+		alarm(unslept); /* Restore the previous alarm if it was set */
+		return unslept;
+	}
+
+	alarm(seconds); /* Set the alarm for the requested sleep time */
+	pause();		/* Suspend execution until a signal is received */
+
+	unslept = alarm(0); /* Cancel the alarm and get the remaining time */
+	return unslept;
+}
+
 export void swab(const void *, void *, ssize_t);
 export int symlink(const char *, const char *);
-export void sync(void);
+
+export void sync(void)
+{
+	printf("sync() is unimplemented\n");
+}
+
 export long int sysconf(int);
 export pid_t tcgetpgrp(int);
 export int tcsetpgrp(int, pid_t);

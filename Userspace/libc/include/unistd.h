@@ -57,9 +57,10 @@ extern "C"
 
 	extern char *optarg;
 	extern int optind, opterr, optopt;
+	extern char **environ;
 
 	int access(const char *, int);
-	unsigned int alarm(unsigned int);
+	unsigned int alarm(unsigned int seconds);
 	int brk(void *);
 	int chdir(const char *);
 	int chroot(const char *);
@@ -72,12 +73,12 @@ extern "C"
 	int dup(int);
 	int dup2(int, int);
 	void encrypt(char[64], int);
-	int execl(const char *, const char *, ...);
-	int execle(const char *, const char *, ...);
-	int execlp(const char *, const char *, ...);
-	int execv(const char *, char *const[]);
-	int execve(const char *, char *const[], char *const[]);
-	int execvp(const char *, char *const[]);
+	int execl(const char *path, const char *arg0, ... /*, (char *)0 */);
+	int execle(const char *path, const char *arg0, ... /*, (char *)0, char *const envp[]*/);
+	int execlp(const char *file, const char *arg0, ... /*, (char *)0 */);
+	int execv(const char *path, char *const argv[]);
+	int execve(const char *path, char *const argv[], char *const envp[]);
+	int execvp(const char *file, char *const argv[]);
 	void _exit(int);
 	int fchown(int, uid_t, gid_t);
 	int fchdir(int);
@@ -128,7 +129,7 @@ extern "C"
 	int setreuid(uid_t, uid_t);
 	pid_t setsid(void);
 	int setuid(uid_t);
-	unsigned int sleep(unsigned int);
+	unsigned int sleep(unsigned int seconds);
 	void swab(const void *, void *, ssize_t);
 	int symlink(const char *, const char *);
 	void sync(void);

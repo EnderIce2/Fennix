@@ -51,7 +51,7 @@ extern "C"
 
 	long a64l(const char *);
 	void abort(void);
-	int abs(int);
+	int abs(int i);
 	int atexit(void (*func)(void));
 	double atof(const char *);
 	int atoi(const char *);
@@ -66,7 +66,7 @@ extern "C"
 	char *fcvt(double, int, int *, int *);
 	void free(void *ptr);
 	char *gcvt(double, int, char *);
-	char *getenv(const char *);
+	char *getenv(const char *name);
 	int getsubopt(char **, char *const *, char **);
 	int grantpt(int);
 	char *initstate(unsigned int, char *, size_t);

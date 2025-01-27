@@ -36,7 +36,7 @@ extern "C"
 	char *stpcpy(char *restrict, const char *restrict);
 	char *stpncpy(char *restrict, const char *restrict, size_t);
 	char *strcat(char *restrict, const char *restrict);
-	char *strchr(const char *, int);
+	char *strchr(const char *s, int c);
 	int strcmp(const char *s1, const char *s2);
 	int strcoll(const char *, const char *);
 	int strcoll_l(const char *, const char *, locale_t);
@@ -48,19 +48,19 @@ extern "C"
 	int strerror_r(int, char *, size_t);
 	size_t strlcat(char *restrict, const char *restrict, size_t);
 	size_t strlcpy(char *restrict, const char *restrict, size_t);
-	size_t strlen(const char *);
+	size_t strlen(const char *s);
 	char *strncat(char *restrict, const char *restrict, size_t);
-	int strncmp(const char *, const char *, size_t);
+	int strncmp(const char *s1, const char *s2, size_t n);
 	char *strncpy(char *restrict, const char *restrict, size_t);
 	char *strndup(const char *, size_t);
 	size_t strnlen(const char *, size_t);
-	char *strpbrk(const char *, const char *);
+	char *strpbrk(const char *s1, const char *s2);
 	char *strrchr(const char *, int);
-	char *strsignal(int);
-	size_t strspn(const char *, const char *);
+	char *strsignal(int signum);
+	size_t strspn(const char *s1, const char *s2);
 	char *strstr(const char *, const char *);
-	char *strtok(char *restrict, const char *restrict);
-	char *strtok_r(char *restrict, const char *restrict, char **restrict);
+	char *strtok(char *restrict s, const char *restrict sep);
+	char *strtok_r(char *restrict s, const char *restrict sep, char **restrict state);
 	size_t strxfrm(char *restrict, const char *restrict, size_t);
 	size_t strxfrm_l(char *restrict, const char *restrict, size_t, locale_t);
 

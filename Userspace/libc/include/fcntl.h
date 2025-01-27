@@ -23,6 +23,8 @@ extern "C"
 {
 #endif // __cplusplus
 
+#include <sys/types.h>
+
 	typedef struct f_owner_ex
 	{
 		int type;  /* Discriminator for pid. */

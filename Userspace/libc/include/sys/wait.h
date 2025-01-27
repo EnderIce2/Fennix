@@ -54,9 +54,9 @@ extern "C"
 	typedef unsigned int id_t;
 	typedef int pid_t;
 
-	pid_t wait(int *);
-	int waitid(idtype_t, id_t, siginfo_t *, int);
-	pid_t waitpid(pid_t, int *, int);
+	pid_t wait(int *stat_loc);
+	int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+	pid_t waitpid(pid_t pid, int *stat_loc, int options);
 
 #ifdef __cplusplus
 }
