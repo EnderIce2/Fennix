@@ -65,7 +65,7 @@ extern "C"
 	int chdir(const char *);
 	int chroot(const char *);
 	int chown(const char *, uid_t, gid_t);
-	int close(int);
+	int close(int fildes);
 	size_t confstr(int, char *, size_t);
 	char *crypt(const char *, const char *);
 	char *ctermid(char *);

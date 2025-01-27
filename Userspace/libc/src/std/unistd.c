@@ -40,7 +40,12 @@ export int brk(void *);
 export int chdir(const char *);
 export int chroot(const char *);
 export int chown(const char *, uid_t, gid_t);
-export int close(int);
+
+export int close(int fildes)
+{
+	return __check_errno(call_close(fildes), -1);
+}
+
 export size_t confstr(int, char *, size_t);
 export char *crypt(const char *, const char *);
 export char *ctermid(char *);

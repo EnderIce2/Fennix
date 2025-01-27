@@ -45,7 +45,12 @@ export int closedir(DIR *dirp)
 	return 0;
 }
 
-export int dirfd(DIR *);
+export int dirfd(DIR *dirp)
+{
+	printf("dirfd() is unimplemented\n");
+	return __check_errno(-ENOSYS, -1);
+}
+
 export DIR *fdopendir(int);
 export DIR *opendir(const char *);
 export ssize_t posix_getdents(int, void *, size_t, int);
