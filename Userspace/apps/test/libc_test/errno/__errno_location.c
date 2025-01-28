@@ -16,3 +16,11 @@
 */
 
 #include <errno.h>
+
+int test___errno_location(void)
+{
+	(*__errno_location()) = ENOENT;
+	if ((*__errno_location()) != ENOENT)
+		return 1;
+	return 0;
+}

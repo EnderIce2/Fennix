@@ -16,3 +16,5 @@
 */
 
 #include <fcntl.h>
+
+int test_posix_fadvise() { return 2; }

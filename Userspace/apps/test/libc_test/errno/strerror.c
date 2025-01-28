@@ -16,3 +16,11 @@
 */
 
 #include <errno.h>
+
+int test_strerror(void)
+{
+	char *enosys = strerror(ENOSYS);
+	if (enosys == ((void *)0))
+		return -1;
+	return 0;
+}

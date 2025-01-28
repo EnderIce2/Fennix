@@ -16,3 +16,5 @@
 */
 
 #include <fcntl.h>
+
+int test_openat() { return 2; }

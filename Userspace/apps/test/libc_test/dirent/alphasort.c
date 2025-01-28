@@ -16,3 +16,5 @@
 */
 
 #include <dirent.h>
+
+int test_alphasort(void) { return 2; }

@@ -16,3 +16,9 @@
 */
 
 #include <assert.h>
+
+int test_assert(void)
+{
+	assert(1 == 1);
+	return 0;
+}

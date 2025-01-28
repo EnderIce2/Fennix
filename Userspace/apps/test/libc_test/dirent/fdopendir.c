@@ -16,3 +16,5 @@
 */
 
 #include <dirent.h>
+
+int test_fdopendir(void) { return 2; }
