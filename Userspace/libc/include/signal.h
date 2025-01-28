@@ -197,14 +197,14 @@ extern "C"
 	int pthread_sigmask(int, const sigset_t *restrict, sigset_t *restrict);
 	int raise(int);
 	int sig2str(int, char *);
-	int sigaction(int, const struct sigaction *restrict, struct sigaction *restrict);
+	int sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact);
 	int sigaddset(sigset_t *, int);
 	int sigaltstack(const stack_t *restrict, stack_t *restrict);
 	int sigdelset(sigset_t *, int);
-	int sigemptyset(sigset_t *);
+	int sigemptyset(sigset_t *set);
 	int sigfillset(sigset_t *);
 	int sigismember(const sigset_t *, int);
-	void (*signal(int, void (*)(int)))(int);
+	void (*signal(int sig, void (*func)(int)))(int);
 	int sigpending(sigset_t *);
 	int sigprocmask(int, const sigset_t *restrict, sigset_t *restrict);
 	int sigqueue(pid_t, int, union sigval);

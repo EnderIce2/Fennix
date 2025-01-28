@@ -16,6 +16,8 @@
 */
 
 #include <signal.h>
+#include <errno.h>
+#include <stdio.h>
 
 export int kill(pid_t pid, int sig)
 {
@@ -29,14 +31,65 @@ export int pthread_kill(pthread_t, int);
 export int pthread_sigmask(int, const sigset_t *restrict, sigset_t *restrict);
 export int raise(int);
 export int sig2str(int, char *);
-export int sigaction(int, const struct sigaction *restrict, struct sigaction *restrict);
+
+export int sigaction(int sig, const struct sigaction *restrict act, struct sigaction *restrict oact)
+{
+	if (sig == SIGKILL || sig == SIGSTOP)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (oact != NULL)
+	{
+		printf("sigaction() is unimplemented\n");
+		// if (syscall3(SYS_RT_SIGACTION, sig, NULL, oact, sizeof(sigset_t)) < 0)
+		return -1;
+	}
+
+	if (act != NULL)
+	{
+		printf("sigaction() is unimplemented\n");
+		// if (syscall3(SYS_RT_SIGACTION, sig, act, NULL, sizeof(sigset_t)) < 0)
+		return -1;
+	}
+
+	return 0;
+}
+
 export int sigaddset(sigset_t *, int);
 export int sigaltstack(const stack_t *restrict, stack_t *restrict);
 export int sigdelset(sigset_t *, int);
-export int sigemptyset(sigset_t *);
+
+export int sigemptyset(sigset_t *set)
+{
+	if (set == NULL)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	*set = 0;
+	return 0;
+}
+
 export int sigfillset(sigset_t *);
 export int sigismember(const sigset_t *, int);
-export void (*signal(int, void (*)(int)))(int);
+
+export void (*signal(int sig, void (*func)(int)))(int)
+{
+	struct sigaction act, oact;
+
+	act.sa_handler = func;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+
+	if (sigaction(sig, &act, &oact) < 0)
+		return SIG_ERR;
+
+	return oact.sa_handler;
+}
+
 export int sigpending(sigset_t *);
 export int sigprocmask(int, const sigset_t *restrict, sigset_t *restrict);
 export int sigqueue(pid_t, int, union sigval);

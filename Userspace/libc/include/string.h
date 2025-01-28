@@ -41,7 +41,7 @@ extern "C"
 	int strcoll(const char *, const char *);
 	int strcoll_l(const char *, const char *, locale_t);
 	char *strcpy(char *restrict, const char *restrict);
-	size_t strcspn(const char *, const char *);
+	size_t strcspn(const char *s1, const char *s2);
 	char *strdup(const char *);
 	char *strerror(int);
 	char *strerror_l(int, locale_t);

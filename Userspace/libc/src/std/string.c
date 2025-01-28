@@ -75,7 +75,24 @@ export int strcmp(const char *s1, const char *s2)
 export int strcoll(const char *, const char *);
 export int strcoll_l(const char *, const char *, locale_t);
 export char *strcpy(char *restrict, const char *restrict);
-export size_t strcspn(const char *, const char *);
+
+export size_t strcspn(const char *s1, const char *s2)
+{
+	const char *p = s1;
+	const char *spanp;
+	char c, sc;
+
+	while ((c = *p++) != 0)
+	{
+		for (spanp = s2; (sc = *spanp++) != 0;)
+		{
+			if (sc == c)
+				return p - 1 - s1;
+		}
+	}
+	return p - 1 - s1;
+}
+
 export char *strdup(const char *);
 export char *strerror(int);
 export char *strerror_l(int, locale_t);
