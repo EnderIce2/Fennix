@@ -1,0 +1,6 @@
+{
+	"libc_test stub macro": {
+		"prefix": "zxc",
+		"body": "int test_$TM_FILENAME_BASE() { return 2; }"
+	},
+}
