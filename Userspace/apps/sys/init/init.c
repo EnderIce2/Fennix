@@ -19,9 +19,51 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
-int main(int, char *[], char *[])
+void StartProcess(const char *program, char *const argv[])
 {
-	printf("Hello, World!\n");
+	pid_t pid = fork();
+	if (pid == 0)
+	{
+		execvp(program, argv);
+		perror("execvp");
+		exit(EXIT_FAILURE);
+	}
+	else if (pid < 0)
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void ReapZombies()
+{
+	while (1)
+	{
+		int status;
+		pid_t pid = waitpid(-1, &status, WNOHANG);
+		if (pid <= 0)
+			break;
+	}
+}
+
+int main()
+{
+	printf("init starting...\n");
+
+	char *shellArgs[] = {"/bin/sh", NULL};
+	StartProcess("/bin/sh", shellArgs);
+
+	// char *dummyServiceArgs[] = {"/usr/bin/dummy_service", NULL};
+	// StartProcess("/usr/bin/dummy_service", dummyServiceArgs);
+
+	while (1)
+	{
+		ReapZombies();
+		sleep(1);
+	}
+
 	return 0;
 }
