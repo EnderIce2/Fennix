@@ -10,7 +10,7 @@ var searchData=
   ['registerfilesystem_7',['RegisterFileSystem',['../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349',1,'fs.h']]],
   ['remove_8',['remove',['../db/de6/structInodeOperations.html#a229c34e01b322f1b9533a049ff1f5cc9',1,'InodeOperations::Remove'],['../df/d26/fs_8h.html#ad985ee5fa0d7e795352935323a07f4a5',1,'Remove:&#160;fs.h']]],
   ['rename_9',['rename',['../db/de6/structInodeOperations.html#a54bbd07bcb9a6143867be3aa05577413',1,'InodeOperations::Rename'],['../df/d26/fs_8h.html#a9441374ba1bef439109da976a8048bb9',1,'Rename:&#160;fs.h']]],
-  ['repeatrate_10',['RepeatRate',['../d1/de1/aip_8h.html#ab0a4e5ca864ccf625afe5cbd853b490c',1,'PS2_KBD_TYPEMATIC.__unnamed13__']]],
+  ['repeatrate_10',['RepeatRate',['../d1/de1/aip_8h.html#ab0a4e5ca864ccf625afe5cbd853b490c',1,'PS2_KBD_TYPEMATIC.__unnamed7__']]],
   ['reportinputevent_11',['ReportInputEvent',['../de/ded/input_8h.html#aba095481bbee5eb8903061ed75aa435d',1,'input.h']]],
   ['reserved_12',['Reserved',['../d9/d97/pci_8h.html#a57e0aa05de0a45d24023e5c56eba520e',1,'__attribute__']]],
   ['reserved0_13',['Reserved0',['../d9/d97/pci_8h.html#a8dcff031235d3326f495f0b2d1db5114',1,'__attribute__']]],

@@ -13,12 +13,12 @@ var aip_8h =
       [ "Raw", "d1/de1/aip_8h.html#a1c786a0ac638f742e31267026602ac54", null ]
     ] ],
     [ "PS2_MOUSE_PACKET", "d1/de1/aip_8h.html#d3/d18/structPS2__MOUSE__PACKET", [
-      [ "Base", "d1/de1/aip_8h.html#aa951e9644ee2e5490beedb0df9488d5a", null ],
+      [ "Base", "d1/de1/aip_8h.html#ae07d9573c7ae9aa7d734e43ab74d88b3", null ],
       [ "XMovement", "d1/de1/aip_8h.html#a03984accdad77fa5280f8724510170d4", null ],
       [ "YMovement", "d1/de1/aip_8h.html#ae7ed739b075fbfcabddfb598f2ebb912", null ],
-      [ "ZMovement", "d1/de1/aip_8h.html#aa2502637e708413d077b2fee35daeb2d", null ]
+      [ "ZMovement", "d1/de1/aip_8h.html#acc274a47b2ec66d6731ec91b274e1423", null ]
     ] ],
-    [ "PS2_STATUSES.__unnamed7__", "d1/de1/aip_8h.html#dd/daa/structPS2__STATUSES_8____unnamed7____", [
+    [ "PS2_STATUSES.__unnamed1__", "d1/de1/aip_8h.html#dd/d0d/structPS2__STATUSES_8____unnamed1____", [
       [ "CommandData", "d1/de1/aip_8h.html#ad3c1a945d3b7f0aa9f0bbcb1bdc77d37", null ],
       [ "InputBufferFull", "d1/de1/aip_8h.html#a999955f00254a1ec83b388b8142ac5e6", null ],
       [ "OutputBufferFull", "d1/de1/aip_8h.html#aa9b7be021da7a0ec83d707bd42740f3d", null ],
@@ -28,7 +28,7 @@ var aip_8h =
       [ "Unknown1", "d1/de1/aip_8h.html#a28c5637b237d55031f1b3772d731c041", null ],
       [ "Unknown2", "d1/de1/aip_8h.html#afe489f6ef777e98956c00038b863eb0f", null ]
     ] ],
-    [ "PS2_CONFIGURATION.__unnamed9__", "d1/de1/aip_8h.html#dd/d65/structPS2__CONFIGURATION_8____unnamed9____", [
+    [ "PS2_CONFIGURATION.__unnamed3__", "d1/de1/aip_8h.html#d4/dae/structPS2__CONFIGURATION_8____unnamed3____", [
       [ "Port1Clock", "d1/de1/aip_8h.html#a44c6b11fcf9b6a9a6e7fe2a969b58b0f", null ],
       [ "Port1Interrupt", "d1/de1/aip_8h.html#a78e48bc7d4778ddc8e647ec195da3e1a", null ],
       [ "Port1Translation", "d1/de1/aip_8h.html#af4c84ba01a644fbe45e4b9e09f827168", null ],
@@ -38,7 +38,7 @@ var aip_8h =
       [ "Zero0", "d1/de1/aip_8h.html#ad31cba1790c6843a18adfc7ddfcee23e", null ],
       [ "Zero1", "d1/de1/aip_8h.html#ac1bea7eee679d45845dc20ba9cc0cc20", null ]
     ] ],
-    [ "PS2_OUTPUT_PORT.__unnamed11__", "d1/de1/aip_8h.html#db/d00/structPS2__OUTPUT__PORT_8____unnamed11____", [
+    [ "PS2_OUTPUT_PORT.__unnamed5__", "d1/de1/aip_8h.html#de/d3a/structPS2__OUTPUT__PORT_8____unnamed5____", [
       [ "A20Gate", "d1/de1/aip_8h.html#ab24700857c7c1e39353a7d8d12212ee9", null ],
       [ "Port1InputBufferFull", "d1/de1/aip_8h.html#aba33c9a5143b225eab7df62ac376741f", null ],
       [ "Port1OutputBufferFull", "d1/de1/aip_8h.html#acd4e8faa0cb2df34eef242730f9abbcf", null ],
@@ -48,7 +48,7 @@ var aip_8h =
       [ "Port2OutputBufferFull", "d1/de1/aip_8h.html#a04a22d5db50e8333c482419e9bbd2d78", null ],
       [ "SystemReset", "d1/de1/aip_8h.html#a993f0a6346847628c86bbcf1cf306236", null ]
     ] ],
-    [ "PS2_KBD_TYPEMATIC.__unnamed13__", "d1/de1/aip_8h.html#d1/d4c/structPS2__KBD__TYPEMATIC_8____unnamed13____", [
+    [ "PS2_KBD_TYPEMATIC.__unnamed7__", "d1/de1/aip_8h.html#db/dee/structPS2__KBD__TYPEMATIC_8____unnamed7____", [
       [ "Delay", "d1/de1/aip_8h.html#a8f497c1a3d15af9e0c215019f26b887d", null ],
       [ "RepeatRate", "d1/de1/aip_8h.html#ab0a4e5ca864ccf625afe5cbd853b490c", null ],
       [ "Zero", "d1/de1/aip_8h.html#ad7ed4ee1df437474d005188535f74875", null ]

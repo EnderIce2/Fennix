@@ -5,7 +5,7 @@ var searchData=
   ['d_5foff_2',['d_off',['../df/d26/fs_8h.html#a883eee0b0e9bc85a6a4c0b81c12d59b4',1,'kdirent']]],
   ['d_5freclen_3',['d_reclen',['../df/d26/fs_8h.html#ab16632cca111e54cdbcb1e3ce465ed3c',1,'kdirent']]],
   ['d_5ftype_4',['d_type',['../df/d26/fs_8h.html#ae62da46e9487a67427fad586aa96806a',1,'kdirent']]],
-  ['delay_5',['Delay',['../d1/de1/aip_8h.html#a8f497c1a3d15af9e0c215019f26b887d',1,'PS2_KBD_TYPEMATIC.__unnamed13__']]],
+  ['delay_5',['Delay',['../d1/de1/aip_8h.html#a8f497c1a3d15af9e0c215019f26b887d',1,'PS2_KBD_TYPEMATIC.__unnamed7__']]],
   ['deleteinode_6',['deleteinode',['../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7',1,'SuperBlockOperations::DeleteInode'],['../df/d26/fs_8h.html#a8ccb8fe8ac70ca2ee378ad8817a381ab',1,'DeleteInode:&#160;fs.h']]],
   ['description_7',['Description',['../db/de4/driver_8h.html#ae899d6a573c8272d7f8c76baf8e3bd72',1,'__DriverInfo']]],
   ['destroy_8',['destroy',['../df/d26/fs_8h.html#a30c9c281e5b2134cc2e763eac5290c61',1,'Destroy:&#160;fs.h'],['../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722',1,'SuperBlockOperations::Destroy']]],
