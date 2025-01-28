@@ -16,7 +16,18 @@ build: $(FILENAME).elf
 # Use static linking
 LDFLAGS += -static -fno-pic -fno-pie -Wl,-static
 
-$(FILENAME).elf: $(OBJ)
+# Use default toolchain if not specified
+CC ?= gcc
+CXX ?= g++
+AS ?= as
+
+build_native: $(FILENAME)_n.elf
+
+run_native:
+	$(MAKE) --quiet -j $(shell nproc) build_native
+	./$(FILENAME)_n.elf
+
+$(FILENAME)_n.elf $(FILENAME).elf: $(OBJ)
 	$(info Linking $@)
 	$(CC) $(LDFLAGS) $(SYSROOT) $(OBJ) -o $@
 
@@ -33,4 +44,4 @@ $(FILENAME).elf: $(OBJ)
 	$(AS) -o $@ $<
 
 clean:
-	rm -f $(OBJ) $(FILENAME).elf
+	rm -f $(OBJ) $(FILENAME).elf $(FILENAME)_n.elf
