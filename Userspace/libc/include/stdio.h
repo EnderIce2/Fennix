@@ -141,7 +141,7 @@ extern "C"
 	char *tmpnam(char *);
 	int ungetc(int, FILE *);
 	int vdprintf(int, const char *restrict, va_list);
-	int vfprintf(FILE *restrict, const char *restrict, va_list);
+	int vfprintf(FILE *restrict stream, const char *restrict format, va_list ap);
 	int vfscanf(FILE *restrict, const char *restrict, va_list);
 	int vprintf(const char *restrict, va_list);
 	int vscanf(const char *restrict, va_list);

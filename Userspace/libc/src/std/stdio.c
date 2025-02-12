@@ -412,7 +412,32 @@ export FILE *tmpfile(void);
 export char *tmpnam(char *);
 export int ungetc(int, FILE *);
 export int vdprintf(int, const char *restrict, va_list);
-export int vfprintf(FILE *restrict, const char *restrict, va_list);
+
+export int vfprintf(FILE *restrict stream, const char *restrict format, va_list ap)
+{
+	if (!stream || !(stream->flags & _i_WRITE))
+		return EOF;
+
+	int ret = vprintf_(format, ap);
+	if (ret < 0)
+	{
+		stream->error = 1;
+		return EOF;
+	}
+
+	const char *p = format;
+	while (*p)
+	{
+		if (fputc(*p++, stream) == EOF)
+		{
+			stream->error = 1;
+			return EOF;
+		}
+	}
+
+	return ret;
+}
+
 export int vfscanf(FILE *restrict, const char *restrict, va_list);
 export int vprintf(const char *restrict, va_list);
 export int vscanf(const char *restrict, va_list);
