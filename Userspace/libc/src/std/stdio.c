@@ -214,7 +214,14 @@ export FILE *fopen(const char *restrict pathname, const char *restrict mode)
 	return file;
 }
 
-export int fprintf(FILE *restrict, const char *restrict, ...);
+export int fprintf(FILE *restrict stream, const char *restrict format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	int ret = vfprintf(stream, format, args);
+	va_end(args);
+	return ret;
+}
 
 export int fputc(int c, FILE *stream)
 {

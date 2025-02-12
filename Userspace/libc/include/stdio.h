@@ -97,7 +97,7 @@ extern "C"
 	void flockfile(FILE *);
 	FILE *fmemopen(void *restrict, size_t, const char *restrict);
 	FILE *fopen(const char *restrict pathname, const char *restrict mode);
-	int fprintf(FILE *restrict, const char *restrict, ...);
+	int fprintf(FILE *restrict stream, const char *restrict format, ...);
 	int fputc(int c, FILE *stream);
 	int fputs(const char *restrict s, FILE *restrict stream);
 	size_t fread(void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
