@@ -96,12 +96,12 @@ extern "C"
 #define POSIX_FADV_SEQUENTIAL
 #define POSIX_FADV_WILLNEED
 
-	int creat(const char *, mode_t);
-	int fcntl(int, int, ...);
-	int open(const char *, int, ...);
-	int openat(int, const char *, int, ...);
-	int posix_fadvise(int, off_t, off_t, int);
-	int posix_fallocate(int, off_t, off_t);
+	int creat(const char *path, mode_t mode);
+	int fcntl(int fildes, int cmd, ...);
+	int open(const char *path, int oflag, ...);
+	int openat(int fd, const char *path, int oflag, ...);
+	int posix_fadvise(int fd, off_t offset, off_t len, int advice);
+	int posix_fallocate(int fd, off_t offset, off_t len);
 
 #ifdef __cplusplus
 }
