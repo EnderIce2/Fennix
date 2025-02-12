@@ -16,5 +16,20 @@
 */
 
 #include <dirent.h>
+#include <stddef.h>
 
-int test_closedir(void) { return 2; }
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/closedir.html */
+
+int test_closedir(void)
+{
+	DIR *dir = opendir(".");
+	if (closedir(dir) != 0)
+		return 0x101;
+
+	if (closedir(NULL) != -1)
+		return 0x102;
+
+	// if (closedir(dir) != -1) /* yeah... this will result in a core dump */
+	// 	return 0x103;
+	return 0;
+}

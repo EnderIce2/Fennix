@@ -17,8 +17,16 @@
 
 #include <assert.h>
 
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/assert.html */
+
 int test_assert(void)
 {
 	assert(1 == 1);
+#define A 1
+#define B 2
+	assert(A != B);
+	assert((A == 1) && (B == 2));
+	assert(1);
+	assert(!0);
 	return 0;
 }

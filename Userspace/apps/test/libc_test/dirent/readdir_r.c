@@ -17,4 +17,9 @@
 
 #include <dirent.h>
 
-int test_readdir_r() { return 2; }
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/readdir_r.html */
+
+int test_readdir_r()
+{
+	return 2;
+}

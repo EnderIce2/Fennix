@@ -16,5 +16,28 @@
 */
 
 #include <dirent.h>
+#include <stddef.h>
+#include <fcntl.h>
 
-int test_fdopendir(void) { return 2; }
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/fdopendir.html */
+
+int test_fdopendir(void)
+{
+	DIR *dir;
+	struct dirent *dp;
+
+	int fd = open(".", O_RDONLY);
+
+	dir = fdopendir(fd);
+	if (dir == NULL)
+		return 0x101;
+
+	dp = readdir(dir);
+	if (dp == NULL)
+		return 0x102;
+
+	if (closedir(dir) != 0)
+		return 0x103;
+
+	return 0;
+}

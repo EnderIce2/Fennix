@@ -16,5 +16,19 @@
 */
 
 #include <dirent.h>
+#include <stddef.h>
 
-int test_dirfd(void) { return 2; }
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/dirfd.html */
+
+int test_dirfd(void)
+{
+	DIR *dir = opendir(".");
+
+	if (dirfd(dir) == -1)
+		return 0x101;
+
+	// if (dirfd(NULL) != -1)
+	// 	return 0x102;
+
+	return 0;
+}

@@ -15,6 +15,32 @@
 	along with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <dirent.h>
+#ifdef __linux__
+#define _DEFAULT_SOURCE 1 /* for alphasort */
+#endif
 
-int test_alphasort(void) { return 2; }
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/alphasort.html */
+
+int test_alphasort(void)
+{
+	struct dirent **namelist;
+	int n = scandir(".", &namelist, NULL, alphasort);
+	if (n < 0)
+	{
+		perror("scandir");
+		return n;
+	}
+
+	for (int i = 0; i < n; i++)
+	{
+		// printf("%s\n", namelist[i]->d_name);
+		free(namelist[i]);
+	}
+
+	free(namelist);
+	return 0;
+}

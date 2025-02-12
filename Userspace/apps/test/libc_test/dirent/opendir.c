@@ -16,5 +16,18 @@
 */
 
 #include <dirent.h>
+#include <stddef.h>
 
-int test_opendir() { return 2; }
+/* https://pubs.opengroup.org/onlinepubs/9799919799/functions/opendir.html */
+
+int test_opendir()
+{
+	DIR *dir = opendir(".");
+	if (dir == NULL)
+		return 0x101;
+
+	if (closedir(dir) != 0)
+		return 0x102;
+
+	return 0;
+}
