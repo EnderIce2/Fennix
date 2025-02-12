@@ -94,6 +94,7 @@ extern "C"
 	gid_t getgid(void);
 	int getgroups(int, gid_t[]);
 	long gethostid(void);
+	int gethostname(char *name, size_t namelen);
 	char *getlogin(void);
 	int getlogin_r(char *, size_t);
 	int getopt(int, char *const[], const char *);

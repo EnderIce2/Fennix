@@ -179,6 +179,25 @@ export uid_t geteuid(void);
 export gid_t getgid(void);
 export int getgroups(int, gid_t[]);
 export long gethostid(void);
+
+export int gethostname(char *name, size_t namelen)
+{
+	if (namelen == 0)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	strncpy(name, "localhost", namelen);
+	if (namelen < strlen("localhost") + 1)
+	{
+		errno = ENAMETOOLONG;
+		return -1;
+	}
+
+	return 0;
+}
+
 export char *getlogin(void);
 export int getlogin_r(char *, size_t);
 export int getopt(int, char *const[], const char *);
