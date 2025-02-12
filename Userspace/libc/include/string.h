@@ -51,7 +51,7 @@ extern "C"
 	size_t strlen(const char *s);
 	char *strncat(char *restrict, const char *restrict, size_t);
 	int strncmp(const char *s1, const char *s2, size_t n);
-	char *strncpy(char *restrict, const char *restrict, size_t);
+	char *strncpy(char *restrict s1, const char *restrict s2, size_t n);
 	char *strndup(const char *, size_t);
 	size_t strnlen(const char *, size_t);
 	char *strpbrk(const char *s1, const char *s2);

@@ -124,7 +124,19 @@ export int strncmp(const char *s1, const char *s2, size_t n)
 	return 0;
 }
 
-export char *strncpy(char *restrict, const char *restrict, size_t);
+export char *strncpy(char *restrict s1, const char *restrict s2, size_t n)
+{
+	char *dest = s1;
+	while (n && (*dest++ = *s2++))
+		n--;
+
+	if (n)
+		while (--n)
+			*dest++ = '\0';
+
+	return s1;
+}
+
 export char *strndup(const char *, size_t);
 export size_t strnlen(const char *, size_t);
 
