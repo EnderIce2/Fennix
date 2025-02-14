@@ -531,6 +531,17 @@ static_assert((int)__SYS_SIG_IGN == (int)___SYS_SIG_IGN, "SIG_IGN values do not 
 typedef int __SYS_clockid_t;
 typedef unsigned int __SYS_socklen_t;
 
+typedef struct FramebufferScreenInfo
+{
+	__UINT32_TYPE__ Width;
+	__UINT32_TYPE__ Height;
+	__UINT32_TYPE__ Pitch;
+	__UINT32_TYPE__ Bpp;
+	__UINT32_TYPE__ Size;
+} FramebufferScreenInfo;
+
+#define FBIOGET_SCREEN_INFO 0xf0
+
 /**
  * @brief List of syscalls
  *
