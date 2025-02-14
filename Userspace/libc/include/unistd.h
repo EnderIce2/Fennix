@@ -116,10 +116,10 @@ extern "C"
 	long int pathconf(const char *, int);
 	int pause(void);
 	int pipe(int[2]);
-	ssize_t pread(int, void *, size_t, off_t);
+	ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
 	int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
-	ssize_t pwrite(int, const void *, size_t, off_t);
-	ssize_t read(int, void *, size_t);
+	ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
+	ssize_t read(int fildes, void *buf, size_t nbyte);
 	int readlink(const char *, char *, size_t);
 	int rmdir(const char *);
 	void *sbrk(intptr_t);
@@ -144,7 +144,7 @@ extern "C"
 	int unlink(const char *);
 	int usleep(useconds_t);
 	pid_t vfork(void);
-	ssize_t write(int, const void *, size_t);
+	ssize_t write(int fildes, const void *buf, size_t nbyte);
 
 #ifdef __cplusplus
 }

@@ -229,10 +229,24 @@ export int pause(void)
 }
 
 export int pipe(int[2]);
-export ssize_t pread(int, void *, size_t, off_t);
+
+export ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset)
+{
+	return __check_errno(call_pread(fildes, buf, nbyte, offset), -1);
+}
+
 export int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
-export ssize_t pwrite(int, const void *, size_t, off_t);
-export ssize_t read(int, void *, size_t);
+
+export ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
+{
+	return __check_errno(call_pwrite(fildes, buf, nbyte, offset), -1);
+}
+
+export ssize_t read(int fildes, void *buf, size_t nbyte)
+{
+	return __check_errno(call_read(fildes, buf, nbyte), -1);
+}
+
 export int readlink(const char *, char *, size_t);
 export int rmdir(const char *);
 export void *sbrk(intptr_t);
@@ -278,4 +292,8 @@ export useconds_t ualarm(useconds_t, useconds_t);
 export int unlink(const char *);
 export int usleep(useconds_t);
 export pid_t vfork(void);
-export ssize_t write(int, const void *, size_t);
+
+export ssize_t write(int fildes, const void *buf, size_t nbyte)
+{
+	return __check_errno(call_write(fildes, buf, nbyte), -1);
+}
