@@ -72,7 +72,17 @@ export int strcmp(const char *s1, const char *s2)
 	return *(unsigned char *)s1 - *(unsigned char *)s2;
 }
 
-export int strcoll(const char *, const char *);
+export int strcoll(const char *s1, const char *s2)
+{
+	while (*s1 && (*s1 == *s2))
+	{
+		s1++;
+		s2++;
+	}
+
+	return *(unsigned char *)s1 - *(unsigned char *)s2;
+}
+
 export int strcoll_l(const char *, const char *, locale_t);
 export char *strcpy(char *restrict, const char *restrict);
 
