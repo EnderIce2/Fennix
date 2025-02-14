@@ -40,7 +40,7 @@ extern "C"
 	int strcmp(const char *s1, const char *s2);
 	int strcoll(const char *s1, const char *s2);
 	int strcoll_l(const char *, const char *, locale_t);
-	char *strcpy(char *restrict, const char *restrict);
+	char *strcpy(char *restrict s1, const char *restrict s2);
 	size_t strcspn(const char *s1, const char *s2);
 	char *strdup(const char *);
 	char *strerror(int);

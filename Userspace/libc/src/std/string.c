@@ -84,7 +84,15 @@ export int strcoll(const char *s1, const char *s2)
 }
 
 export int strcoll_l(const char *, const char *, locale_t);
-export char *strcpy(char *restrict, const char *restrict);
+
+export char *strcpy(char *restrict s1, const char *restrict s2)
+{
+	char *dest = s1;
+	while (*s2)
+		*dest++ = *s2++;
+	*dest = '\0';
+	return s1;
+}
 
 export size_t strcspn(const char *s1, const char *s2)
 {
