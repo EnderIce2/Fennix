@@ -86,11 +86,12 @@ extern "C"
 	long int nrand48(unsigned short int[3]);
 	char *ptsname(int);
 	int putenv(char *);
-	void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
+	void qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *));
 	int rand(void);
 	int rand_r(unsigned int *);
 	long random(void);
-	void *realloc(void *, size_t);
+	void *realloc(void *ptr, size_t size);
+	void *reallocarray(void *ptr, size_t nelem, size_t elsize);
 	char *realpath(const char *, char *);
 	unsigned short int seed48(unsigned short int[3]);
 	void setkey(const char *);

@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "../mem/liballoc_1_1.h"
 
 #define MAX_ATEXIT_FUNCS 32
@@ -97,11 +98,63 @@ export long int mrand48(void);
 export long int nrand48(unsigned short int[3]);
 export char *ptsname(int);
 export int putenv(char *);
-export void qsort(void *, size_t, size_t, int (*)(const void *, const void *));
+
+export void qsort(void *base, size_t nel, size_t width, int (*compar)(const void *, const void *))
+{
+	if (nel < 2 || width == 0)
+		return;
+
+	char *pivot = (char *)base + (nel / 2) * width;
+	char *left = (char *)base;
+	char *right = (char *)base + (nel - 1) * width;
+
+	while (left <= right)
+	{
+		while (compar(left, pivot) < 0)
+			left += width;
+		while (compar(right, pivot) > 0)
+			right -= width;
+
+		if (left <= right)
+		{
+			for (size_t i = 0; i < width; i++)
+			{
+				char tmp = left[i];
+				left[i] = right[i];
+				right[i] = tmp;
+			}
+			left += width;
+			right -= width;
+		}
+	}
+
+	size_t left_size = (right - (char *)base) / width + 1;
+	size_t right_size = nel - left_size - 1;
+
+	qsort(base, left_size, width, compar);
+	qsort(left, right_size, width, compar);
+}
+
 export int rand(void);
 export int rand_r(unsigned int *);
 export long random(void);
-export void *realloc(void *, size_t);
+
+export void *realloc(void *ptr, size_t size)
+{
+	return PREFIX(realloc)(ptr, size);
+}
+
+export void *reallocarray(void *ptr, size_t nelem, size_t elsize)
+{
+	if (nelem && elsize > __SIZE_MAX__ / nelem)
+	{
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	return PREFIX(realloc)(ptr, nelem * elsize);
+}
+
 export char *realpath(const char *, char *);
 export unsigned short int seed48(unsigned short int[3]);
 export void setkey(const char *);
