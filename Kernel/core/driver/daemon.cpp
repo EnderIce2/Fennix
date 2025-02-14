@@ -45,14 +45,19 @@ namespace Driver
 	 *		4 - /dev/random
 	 *		5 - /dev/mem
 	 *		6 - /dev/kcon
-	 *      7 - /dev/tty
-	 *      8 - /dev/ptmx
+	 *		7 - /dev/tty
+	 *		8 - /dev/ptmx
 	 *
 	 * maj = 1
 	 * 	min:
-	 * 		0 - /dev/input/keyboard
-	 * 		1 - /dev/input/mouse
-	 * 		..- /dev/input/eventX
+	 *		0 - /dev/input/keyboard
+	 *		1 - /dev/input/mouse
+	 *		..- /dev/input/eventN
+	 *
+	 * maj = 2
+	 * 	min:
+	 *		0 - /dev/fb0
+	 *		..- /dev/fbN
 	 */
 
 	TTY::PTMXDevice *ptmx = nullptr;
@@ -205,6 +210,16 @@ namespace Driver
 				return -ENOENT;
 			};
 		}
+		case 2:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/fb0 */
+				return -EINVAL;
+			default:
+				return -ENOENT;
+			}
+		}
 		default:
 		{
 			std::unordered_map<dev_t, Driver::DriverObject> &drivers =
@@ -282,6 +297,16 @@ namespace Driver
 			default:
 				return -ENOENT;
 			};
+		}
+		case 2:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/fb0 */
+				return -EINVAL;
+			default:
+				return -ENOENT;
+			}
 		}
 		default:
 		{
@@ -466,6 +491,32 @@ namespace Driver
 			default:
 				return -ENOENT;
 			};
+		}
+		case 2:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0: /* /dev/fb0 */
+			{
+				switch (Request)
+				{
+				case FBIOGET_SCREEN_INFO:
+				{
+					FramebufferScreenInfo *info = (FramebufferScreenInfo *)Argp;
+					info->Width = Display->GetWidth;
+					info->Height = Display->GetHeight;
+					info->Pitch = Display->GetPitch();
+					info->Bpp = Display->GetBitsPerPixel();
+					info->Size = Display->GetSize;
+					return 0;
+				}
+				default:
+					return -ENOSYS;
+				}
+			}
+			default:
+				return -ENOENT;
+			}
 		}
 		default:
 		{
@@ -870,7 +921,6 @@ namespace Driver
 		createDevice(_dev, devNode, "ptmx", 0, MinorID++, mode);
 
 		/* ------------------------------------------------------ */
-
 		MinorID = 0;
 
 		/* c rw- r-- --- */
@@ -886,5 +936,14 @@ namespace Driver
 
 			   S_IFCHR;
 		createDevice(input, devInputNode, "mouse", 1, MinorID++, mode);
+
+		/* ------------------------------------------------------ */
+		MinorID = 0;
+
+		/* c rw- r-- --- */
+		mode = S_IRUSR | S_IWUSR |
+			   S_IRGRP |
+			   S_IFCHR;
+		createDevice(_dev, devNode, "fb0", 2, MinorID++, mode);
 	}
 }
