@@ -15,6 +15,7 @@ build: $(FILENAME).elf
 
 # Use static linking
 LDFLAGS += -static -fno-pic -fno-pie -Wl,-static
+CFLAGS += -ggdb3 -O0 -g -fdiagnostics-color=always
 
 # Use default toolchain if not specified
 CC ?= gcc

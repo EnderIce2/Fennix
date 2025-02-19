@@ -90,6 +90,45 @@ int main(int, char *[])
 	TEST(test_posix_fadvise);
 	TEST(test_posix_fallocate);
 
+	printf("--- string.h ---\n");
+	TEST(test_memccpy);
+	TEST(test_memchr);
+	TEST(test_memcmp);
+	TEST(test_memcpy);
+	TEST(test_memmem);
+	TEST(test_memmove);
+	TEST(test_memset);
+	TEST(test_stpcpy);
+	TEST(test_stpncpy);
+	TEST(test_strcat);
+	TEST(test_strchr);
+	TEST(test_strcmp);
+	TEST(test_strcoll);
+	TEST(test_strcoll_l);
+	TEST(test_strcpy);
+	TEST(test_strcspn);
+	TEST(test_strdup);
+	TEST(test_strerror);
+	TEST(test_strerror_l);
+	TEST(test_strerror_r);
+	TEST(test_strlcat);
+	TEST(test_strlcpy);
+	TEST(test_strlen);
+	TEST(test_strncat);
+	TEST(test_strncmp);
+	TEST(test_strncpy);
+	TEST(test_strndup);
+	TEST(test_strnlen);
+	TEST(test_strpbrk);
+	TEST(test_strrchr);
+	TEST(test_strsignal);
+	TEST(test_strspn);
+	TEST(test_strstr);
+	TEST(test_strtok);
+	TEST(test_strtok_r);
+	TEST(test_strxfrm);
+	TEST(test_strxfrm_l);
+
 	// TEST();
 
 	printf("-------------------------------------------\n");
