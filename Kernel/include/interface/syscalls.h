@@ -540,6 +540,17 @@ typedef struct FramebufferScreenInfo
 	__UINT32_TYPE__ Size;
 } FramebufferScreenInfo;
 
+/**
+ * @brief Get framebuffer screen info
+ *
+ * @code
+ * struct FramebufferScreenInfo info;
+ * int ioctl(fd, FBIOGET_SCREEN_INFO, &info);
+ * @endcode
+ *
+ * @param fd File descriptor of the framebuffer device
+ * @param info Pointer to the framebuffer screen info structure
+ */
 #define FBIOGET_SCREEN_INFO 0xf0
 
 /**
