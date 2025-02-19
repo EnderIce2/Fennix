@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include "../mem/liballoc_1_1.h"
 
 #define MAX_ATEXIT_FUNCS 32
