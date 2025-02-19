@@ -33,6 +33,15 @@ struct termios
 	tcflag_t c_cflag; /* control modes */
 	tcflag_t c_lflag; /* local modes */
 	cc_t c_cc[NCCS];  /* control chars */
+
+	speed_t c_ispeed; /* input speed */
+	speed_t c_ospeed; /* output speed */
+};
+
+struct winsize
+{
+	unsigned short ws_row; /* Rows, in characters */
+	unsigned short ws_col; /* Columns, in characters */
 };
 
 /* Subscript values for c_cc array */
@@ -169,7 +178,9 @@ int tcflow(int fildes, int action);
 int tcflush(int fildes, int queue_selector);
 int tcgetattr(int fildes, struct termios *termios_p);
 pid_t tcgetsid(int fildes);
+int tcgetwinsize(int fildes, struct winsize *winsize_p);
 int tcsendbreak(int fildes, int duration);
 int tcsetattr(int fildes, int optional_actions, struct termios *termios_p);
+int tcsetwinsize(int fildes, const struct winsize *winsize_p);
 
 #endif // _TERMIOS_H
