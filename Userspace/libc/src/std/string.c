@@ -19,6 +19,8 @@
 #include <string.h>
 #include <fennix/syscalls.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 export void *memccpy(void *restrict s1, const void *restrict s2, int c, size_t n)
 {
@@ -145,15 +147,17 @@ export char *stpcpy(char *restrict s1, const char *restrict s2)
 
 export char *stpncpy(char *restrict s1, const char *restrict s2, size_t n)
 {
-	char *dest = s1;
-	while (n && (*dest++ = *s2++))
-		n--;
-
-	if (n)
-		while (--n)
-			*dest++ = '\0';
-
-	return dest - 1;
+	for (int i = 0; i < n; ++i)
+	{
+		char buf = s2[i];
+		s1[i] = buf;
+		if (buf != '\0')
+			continue;
+		for (int j = i + 1; j < n; ++j)
+			s1[j] = '\0';
+		return s1 + i;
+	}
+	return s1 + n;
 }
 
 export char *strcat(char *restrict s1, const char *restrict s2)
@@ -239,172 +243,173 @@ export char *strdup(const char *s)
 	return new_str;
 }
 
-export char *strerror(int errnum)
-{
-	static char unknown_error[32];
-	switch (errnum)
-	{
-	case 0:
-		return "No error";
-	case E2BIG:
-		return "Argument list too long";
-	case EACCES:
-		return "Permission denied";
-	case EADDRINUSE:
-		return "Address in use";
-	case EADDRNOTAVAIL:
-		return "Address not available";
-	case EAFNOSUPPORT:
-		return "Address family not supported";
-	case EAGAIN:
-		return "Resource temporarily unavailable";
-	case EALREADY:
-		return "Connection already in progress";
-	case EBADF:
-		return "Bad file descriptor";
-	case EBADMSG:
-		return "Bad message";
-	case EBUSY:
-		return "Resource busy";
-	case ECANCELED:
-		return "Operation canceled";
-	case ECHILD:
-		return "No child process";
-	case ECONNABORTED:
-		return "Connection aborted";
-	case ECONNREFUSED:
-		return "Connection refused";
-	case ECONNRESET:
-		return "Connection reset";
-	case EDEADLK:
-		return "Resource deadlock would occur";
-	case EDESTADDRREQ:
-		return "Destination address required";
-	case EDOM:
-		return "Domain error";
-	case EEXIST:
-		return "File exists";
-	case EFAULT:
-		return "Bad address";
-	case EFBIG:
-		return "File too large";
-	case EHOSTUNREACH:
-		return "Host is unreachable";
-	case EIDRM:
-		return "Identifier removed";
-	case EILSEQ:
-		return "Illegal byte sequence";
-	case EINPROGRESS:
-		return "Operation in progress";
-	case EINTR:
-		return "Interrupted function call";
-	case EINVAL:
-		return "Invalid argument";
-	case EIO:
-		return "Input/output error";
-	case EISCONN:
-		return "Socket is connected";
-	case EISDIR:
-		return "Is a directory";
-	case ELOOP:
-		return "Symbolic link loop";
-	case EMFILE:
-		return "File descriptor value too large or too many open streams";
-	case EMLINK:
-		return "Too many links";
-	case EMSGSIZE:
-		return "Message too large";
-	case ENAMETOOLONG:
-		return "Filename too long";
-	case ENETDOWN:
-		return "Network is down";
-	case ENETRESET:
-		return "The connection was aborted by the network";
-	case ENETUNREACH:
-		return "Network unreachable";
-	case ENFILE:
-		return "Too many files open in system";
-	case ENOBUFS:
-		return "No buffer space available";
-	case ENODATA:
-		return "No message available";
-	case ENODEV:
-		return "No such device";
-	case ENOENT:
-		return "No such file or directory";
-	case ENOEXEC:
-		return "Executable file format error";
-	case ENOLCK:
-		return "No locks available";
-	case ENOMEM:
-		return "Not enough space";
-	case ENOMSG:
-		return "No message of the desired type";
-	case ENOPROTOOPT:
-		return "Protocol not available";
-	case ENOSPC:
-		return "No space left on device";
-	case ENOSR:
-		return "No STREAM resources";
-	case ENOSTR:
-		return "Not a STREAM";
-	case ENOSYS:
-		return "Functionality not supported";
-	case ENOTCONN:
-		return "Socket not connected";
-	case ENOTDIR:
-		return "Not a directory";
-	case ENOTEMPTY:
-		return "Directory not empty";
-	case ENOTRECOVERABLE:
-		return "State not recoverable";
-	case ENOTSOCK:
-		return "Not a socket";
-	case ENOTSUP:
-		return "Not supported";
-	case ENOTTY:
-		return "Inappropriate I/O control operation";
-	case ENXIO:
-		return "No such device or address";
-	case EOPNOTSUPP:
-		return "Operation not supported on socket";
-	case EOVERFLOW:
-		return "Value too large to be stored in data type";
-	case EOWNERDEAD:
-		return "Previous owner died";
-	case EPERM:
-		return "Operation not permitted";
-	case EPIPE:
-		return "Broken pipe";
-	case EPROTO:
-		return "Protocol error";
-	case EPROTONOSUPPORT:
-		return "Protocol not supported";
-	case EPROTOTYPE:
-		return "Protocol wrong type for socket";
-	case ERANGE:
-		return "Result too large";
-	case EROFS:
-		return "Read-only file system";
-	case ESPIPE:
-		return "Invalid seek";
-	case ESRCH:
-		return "No such process";
-	case ETIME:
-		return "STREAM ioctl() timeout";
-	case ETIMEDOUT:
-		return "Connection timed out";
-	case ETXTBSY:
-		return "Text file busy";
-	case EWOULDBLOCK:
-		return "Operation would block";
-	case EXDEV:
-		return "Improper link";
-	default:
-		snprintf(unknown_error, sizeof(unknown_error), "Unknown error %d", errnum);
-		return unknown_error;
-	}
-}
+/* already defined in src/std/errno.c */
+// export char *strerror(int errnum)
+// {
+// 	static char unknown_error[32];
+// 	switch (errnum)
+// 	{
+// 	case 0:
+// 		return "No error";
+// 	case E2BIG:
+// 		return "Argument list too long";
+// 	case EACCES:
+// 		return "Permission denied";
+// 	case EADDRINUSE:
+// 		return "Address in use";
+// 	case EADDRNOTAVAIL:
+// 		return "Address not available";
+// 	case EAFNOSUPPORT:
+// 		return "Address family not supported";
+// 	case EAGAIN:
+// 		return "Resource temporarily unavailable";
+// 	case EALREADY:
+// 		return "Connection already in progress";
+// 	case EBADF:
+// 		return "Bad file descriptor";
+// 	case EBADMSG:
+// 		return "Bad message";
+// 	case EBUSY:
+// 		return "Resource busy";
+// 	case ECANCELED:
+// 		return "Operation canceled";
+// 	case ECHILD:
+// 		return "No child process";
+// 	case ECONNABORTED:
+// 		return "Connection aborted";
+// 	case ECONNREFUSED:
+// 		return "Connection refused";
+// 	case ECONNRESET:
+// 		return "Connection reset";
+// 	case EDEADLK:
+// 		return "Resource deadlock would occur";
+// 	case EDESTADDRREQ:
+// 		return "Destination address required";
+// 	case EDOM:
+// 		return "Domain error";
+// 	case EEXIST:
+// 		return "File exists";
+// 	case EFAULT:
+// 		return "Bad address";
+// 	case EFBIG:
+// 		return "File too large";
+// 	case EHOSTUNREACH:
+// 		return "Host is unreachable";
+// 	case EIDRM:
+// 		return "Identifier removed";
+// 	case EILSEQ:
+// 		return "Illegal byte sequence";
+// 	case EINPROGRESS:
+// 		return "Operation in progress";
+// 	case EINTR:
+// 		return "Interrupted function call";
+// 	case EINVAL:
+// 		return "Invalid argument";
+// 	case EIO:
+// 		return "Input/output error";
+// 	case EISCONN:
+// 		return "Socket is connected";
+// 	case EISDIR:
+// 		return "Is a directory";
+// 	case ELOOP:
+// 		return "Symbolic link loop";
+// 	case EMFILE:
+// 		return "File descriptor value too large or too many open streams";
+// 	case EMLINK:
+// 		return "Too many links";
+// 	case EMSGSIZE:
+// 		return "Message too large";
+// 	case ENAMETOOLONG:
+// 		return "Filename too long";
+// 	case ENETDOWN:
+// 		return "Network is down";
+// 	case ENETRESET:
+// 		return "The connection was aborted by the network";
+// 	case ENETUNREACH:
+// 		return "Network unreachable";
+// 	case ENFILE:
+// 		return "Too many files open in system";
+// 	case ENOBUFS:
+// 		return "No buffer space available";
+// 	case ENODATA:
+// 		return "No message available";
+// 	case ENODEV:
+// 		return "No such device";
+// 	case ENOENT:
+// 		return "No such file or directory";
+// 	case ENOEXEC:
+// 		return "Executable file format error";
+// 	case ENOLCK:
+// 		return "No locks available";
+// 	case ENOMEM:
+// 		return "Not enough space";
+// 	case ENOMSG:
+// 		return "No message of the desired type";
+// 	case ENOPROTOOPT:
+// 		return "Protocol not available";
+// 	case ENOSPC:
+// 		return "No space left on device";
+// 	case ENOSR:
+// 		return "No STREAM resources";
+// 	case ENOSTR:
+// 		return "Not a STREAM";
+// 	case ENOSYS:
+// 		return "Functionality not supported";
+// 	case ENOTCONN:
+// 		return "Socket not connected";
+// 	case ENOTDIR:
+// 		return "Not a directory";
+// 	case ENOTEMPTY:
+// 		return "Directory not empty";
+// 	case ENOTRECOVERABLE:
+// 		return "State not recoverable";
+// 	case ENOTSOCK:
+// 		return "Not a socket";
+// 	case ENOTSUP:
+// 		return "Not supported";
+// 	case ENOTTY:
+// 		return "Inappropriate I/O control operation";
+// 	case ENXIO:
+// 		return "No such device or address";
+// 	case EOPNOTSUPP:
+// 		return "Operation not supported on socket";
+// 	case EOVERFLOW:
+// 		return "Value too large to be stored in data type";
+// 	case EOWNERDEAD:
+// 		return "Previous owner died";
+// 	case EPERM:
+// 		return "Operation not permitted";
+// 	case EPIPE:
+// 		return "Broken pipe";
+// 	case EPROTO:
+// 		return "Protocol error";
+// 	case EPROTONOSUPPORT:
+// 		return "Protocol not supported";
+// 	case EPROTOTYPE:
+// 		return "Protocol wrong type for socket";
+// 	case ERANGE:
+// 		return "Result too large";
+// 	case EROFS:
+// 		return "Read-only file system";
+// 	case ESPIPE:
+// 		return "Invalid seek";
+// 	case ESRCH:
+// 		return "No such process";
+// 	case ETIME:
+// 		return "STREAM ioctl() timeout";
+// 	case ETIMEDOUT:
+// 		return "Connection timed out";
+// 	case ETXTBSY:
+// 		return "Text file busy";
+// 	case EWOULDBLOCK:
+// 		return "Operation would block";
+// 	case EXDEV:
+// 		return "Improper link";
+// 	default:
+// 		snprintf(unknown_error, sizeof(unknown_error), "Unknown error %d", errnum);
+// 		return unknown_error;
+// 	}
+// }
 
 export char *strerror_l(int errnum, locale_t locale);
 
@@ -558,66 +563,66 @@ export char *strsignal(int signum)
 {
 	switch (signum)
 	{
-	case __SYS_SIGNULL:
+	case SIGNULL:
 		return "NULL signal";
-	case __SYS_SIGABRT:
+	case SIGABRT:
 		return "Aborted";
-	case __SYS_SIGALRM:
+	case SIGALRM:
 		return "Alarm clock";
-	case __SYS_SIGBUS:
+	case SIGBUS:
 		return "Bus error";
-	case __SYS_SIGCHLD:
+	case SIGCHLD:
 		return "Child status changed";
-	case __SYS_SIGCONT:
+	case SIGCONT:
 		return "Continued";
-	case __SYS_SIGFPE:
+	case SIGFPE:
 		return "Arithmetic exception";
-	case __SYS_SIGHUP:
+	case SIGHUP:
 		return "Hangup";
-	case __SYS_SIGILL:
+	case SIGILL:
 		return "Illegal instruction";
-	case __SYS_SIGINT:
+	case SIGINT:
 		return "Interrupt";
-	case __SYS_SIGKILL:
+	case SIGKILL:
 		return "Killed";
-	case __SYS_SIGPIPE:
+	case SIGPIPE:
 		return "Broken pipe";
-	case __SYS_SIGQUIT:
+	case SIGQUIT:
 		return "Quit";
-	case __SYS_SIGSEGV:
+	case SIGSEGV:
 		return "Segmentation fault";
-	case __SYS_SIGSTOP:
+	case SIGSTOP:
 		return "Stopped (signal)";
-	case __SYS_SIGTERM:
+	case SIGTERM:
 		return "Terminated";
-	case __SYS_SIGTSTP:
+	case SIGTSTP:
 		return "Stopped (user)";
-	case __SYS_SIGTTIN:
+	case SIGTTIN:
 		return "Stopped (tty input)";
-	case __SYS_SIGTTOU:
+	case SIGTTOU:
 		return "Stopped (tty output)";
-	case __SYS_SIGUSR1:
+	case SIGUSR1:
 		return "User defined signal 1";
-	case __SYS_SIGUSR2:
+	case SIGUSR2:
 		return "User defined signal 2";
-	case __SYS_SIGPOLL:
+	case SIGPOLL:
 		return "Pollable event occurred";
-	case __SYS_SIGPROF:
+	case SIGPROF:
 		return "Profiling timer expired";
-	case __SYS_SIGSYS:
+	case SIGSYS:
 		return "Bad system call";
-	case __SYS_SIGTRAP:
+	case SIGTRAP:
 		return "Trace/breakpoint trap";
-	case __SYS_SIGURG:
+	case SIGURG:
 		return "Urgent I/O condition";
-	case __SYS_SIGVTALRM:
+	case SIGVTALRM:
 		return "Virtual timer expired";
-	case __SYS_SIGXCPU:
+	case SIGXCPU:
 		return "CPU time limit exceeded";
-	case __SYS_SIGXFSZ:
+	case SIGXFSZ:
 		return "File size limit exceeded";
 	default:
-		return NULL;
+		return "Unknown signal";
 	}
 }
 
