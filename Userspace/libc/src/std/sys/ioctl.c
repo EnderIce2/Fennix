@@ -26,5 +26,5 @@ export int ioctl(int fd, unsigned long op, ...)
 	va_start(args, op);
 	int ret = call_ioctl(fd, op, args);
 	va_end(args);
-	return ret;
+	return __check_errno(ret, -1);
 }
