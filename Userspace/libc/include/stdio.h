@@ -115,7 +115,7 @@ extern "C"
 	int ftrylockfile(FILE *);
 	void funlockfile(FILE *);
 	size_t fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
-	int getc(FILE *);
+	int getc(FILE *stream);
 	int getchar(void);
 	int getc_unlocked(FILE *);
 	int getchar_unlocked(void);

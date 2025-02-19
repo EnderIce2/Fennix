@@ -347,8 +347,16 @@ export size_t fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE 
 	return bytes_written / size;
 }
 
-export int getc(FILE *);
-export int getchar(void);
+export int getc(FILE *stream)
+{
+	return fgetc(stream);
+}
+
+export int getchar(void)
+{
+	return getc(stdin);
+}
+
 export int getc_unlocked(FILE *);
 export int getchar_unlocked(void);
 export ssize_t getdelim(char **restrict, size_t *restrict, int, FILE *restrict);
