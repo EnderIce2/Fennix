@@ -208,11 +208,25 @@ export char *getpass(const char *);
 export pid_t getpgid(pid_t);
 export pid_t getpgrp(void);
 
-export pid_t getpid(void) { return syscall0(SYS_GETPID); }
-export pid_t getppid(void) { return syscall0(SYS_GETPPID); }
+export pid_t getpid(void)
+{
+	return call_getpid();
+}
+
+export pid_t getppid(void)
+{
+	return call_getppid();
+}
 
 export pid_t getsid(pid_t);
-export uid_t getuid(void);
+
+export uid_t getuid(void)
+{
+	/* FIXME: getuid */
+	return 0;
+	// return call_getuid();
+}
+
 export char *getwd(char *);
 export int isatty(int);
 export int lchown(const char *, uid_t, gid_t);
