@@ -47,7 +47,12 @@ export int atexit(void (*func)(void))
 }
 
 export double atof(const char *);
-export int atoi(const char *);
+
+export int atoi(const char *str)
+{
+	return (int)strtol(str, (char **)NULL, 10);
+}
+
 export long int atol(const char *);
 export void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
 export void *calloc(size_t, size_t);
@@ -163,7 +168,166 @@ export void srand(unsigned int);
 export void srand48(long int);
 export void srandom(unsigned);
 export double strtod(const char *, char **);
-export long int strtol(const char *, char **, int);
+
+export long strtol(const char *restrict nptr, char **restrict endptr, int base)
+{
+	const char *s = nptr;
+	long acc = 0;
+	int c;
+	long cutoff;
+	int neg = 0, any, cutlim;
+
+	do
+	{
+		c = *s++;
+	} while (isspace(c));
+
+	if (c == '-')
+	{
+		neg = 1;
+		c = *s++;
+	}
+	else if (c == '+')
+		c = *s++;
+
+	if ((base == 0 || base == 16) && c == '0' && (*s == 'x' || *s == 'X'))
+	{
+		c = s[1];
+		s += 2;
+		base = 16;
+	}
+	else if (base == 0)
+		base = c == '0' ? 8 : 10;
+
+	cutoff = neg ? LONG_MIN : LONG_MAX;
+	cutlim = cutoff % base;
+	cutoff /= base;
+	if (neg)
+	{
+		if (cutlim > 0)
+		{
+			cutlim -= base;
+			cutoff += 1;
+		}
+		cutlim = -cutlim;
+	}
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
+		if (isdigit(c))
+			c -= '0';
+		else if (isalpha(c))
+			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		else
+			break;
+
+		if (c >= base)
+			break;
+
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+			any = -1;
+		else
+		{
+			any = 1;
+			acc *= base;
+			acc += c;
+		}
+	}
+
+	if (any < 0)
+	{
+		acc = neg ? LONG_MIN : LONG_MAX;
+		errno = ERANGE;
+	}
+	else if (neg)
+		acc = -acc;
+
+	if (endptr != 0)
+		*endptr = (char *)(any ? s - 1 : nptr);
+
+	return acc;
+}
+
+export long long strtoll(const char *restrict nptr, char **restrict endptr, int base)
+{
+	const char *s = nptr;
+	long long acc = 0;
+	int c;
+	long long cutoff;
+	int neg = 0, any, cutlim;
+
+	do
+	{
+		c = *s++;
+	} while (isspace(c));
+
+	if (c == '-')
+	{
+		neg = 1;
+		c = *s++;
+	}
+	else if (c == '+')
+		c = *s++;
+
+	if ((base == 0 || base == 16) &&
+		c == '0' && (*s == 'x' || *s == 'X'))
+	{
+		c = s[1];
+		s += 2;
+		base = 16;
+	}
+	else if (base == 0)
+		base = c == '0' ? 8 : 10;
+
+	cutoff = neg ? LLONG_MIN : LLONG_MAX;
+	cutlim = cutoff % base;
+	cutoff /= base;
+	if (neg)
+	{
+		if (cutlim > 0)
+		{
+			cutlim -= base;
+			cutoff += 1;
+		}
+		cutlim = -cutlim;
+	}
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
+		if (isdigit(c))
+			c -= '0';
+		else if (isalpha(c))
+			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		else
+			break;
+
+		if (c >= base)
+			break;
+
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+			any = -1;
+		else
+		{
+			any = 1;
+			acc *= base;
+			acc += c;
+		}
+	}
+
+	if (any < 0)
+	{
+		acc = neg ? LLONG_MIN : LLONG_MAX;
+		errno = ERANGE;
+	}
+	else if (neg)
+		acc = -acc;
+
+	if (endptr != 0)
+		*endptr = (char *)(any ? s - 1 : nptr);
+
+	return acc;
+}
+
 export unsigned long int strtoul(const char *, char **, int);
 export int system(const char *);
 export int ttyslot(void);

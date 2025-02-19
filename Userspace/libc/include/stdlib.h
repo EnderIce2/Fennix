@@ -54,7 +54,7 @@ extern "C"
 	int abs(int i);
 	int atexit(void (*func)(void));
 	double atof(const char *);
-	int atoi(const char *);
+	int atoi(const char *str);
 	long int atol(const char *);
 	void *bsearch(const void *, const void *, size_t, size_t, int (*)(const void *, const void *));
 	void *calloc(size_t, size_t);
@@ -100,7 +100,8 @@ extern "C"
 	void srand48(long int);
 	void srandom(unsigned);
 	double strtod(const char *, char **);
-	long int strtol(const char *, char **, int);
+	long strtol(const char *restrict nptr, char **restrict endptr, int base);
+	long long strtoll(const char *restrict nptr, char **restrict endptr, int base);
 	unsigned long int strtoul(const char *, char **, int);
 	int system(const char *);
 	int ttyslot(void);
