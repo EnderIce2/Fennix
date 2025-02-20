@@ -31,19 +31,35 @@ export int fstat(int fildes, struct stat *buf)
 		return -1;
 	}
 
-	int result = call_fstat(fildes, buf);
-	if (result == -1)
+	return __check_errno(call_fstat(fildes, buf), -1);
+}
+
+export int fstatat(int fd, const char *restrict path, struct stat *restrict buf, int flag)
+{
+	if (fd < 0 || path == NULL || buf == NULL)
 	{
-		errno = result;
+		errno = EBADF;
 		return -1;
 	}
 
-	return 0;
+	/* FIXME: fstatat is not implemented in kernel */
+
+	return __check_errno(ENOSYS, -1);
+	// return__check_errno(call_fstatat(fd, path, buf, flag), -1);
 }
 
-export int fstatat(int, const char *restrict, struct stat *restrict, int);
 export int futimens(int, const struct timespec[2]);
-export int lstat(const char *restrict, struct stat *restrict);
+
+export int lstat(const char *restrict path, struct stat *restrict buf)
+{
+	if (path == NULL || buf == NULL)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	return __check_errno(call_lstat(path, buf), -1);
+}
 
 export int mkdir(const char *path, mode_t mode)
 {
@@ -60,6 +76,17 @@ export int mkfifo(const char *, mode_t);
 export int mkfifoat(int, const char *, mode_t);
 export int mknod(const char *, mode_t, dev_t);
 export int mknodat(int, const char *, mode_t, dev_t);
-export int stat(const char *restrict, struct stat *restrict);
+
+export int stat(const char *restrict path, struct stat *restrict buf)
+{
+	if (path == NULL || buf == NULL)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	return __check_errno(call_stat(path, buf), -1);
+}
+
 export mode_t umask(mode_t);
 export int utimensat(int, const char *, const struct timespec[2], int);

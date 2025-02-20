@@ -88,16 +88,16 @@ extern "C"
 	int fchmod(int, mode_t);
 	int fchmodat(int, const char *, mode_t, int);
 	int fstat(int fildes, struct stat *buf);
-	int fstatat(int, const char *restrict, struct stat *restrict, int);
+	int fstatat(int fd, const char *restrict path, struct stat *restrict buf, int flag);
 	int futimens(int, const struct timespec[2]);
-	int lstat(const char *restrict, struct stat *restrict);
+	int lstat(const char *restrict path, struct stat *restrict buf);
 	int mkdir(const char *path, mode_t mode);
 	int mkdirat(int fd, const char *path, mode_t mode);
 	int mkfifo(const char *, mode_t);
 	int mkfifoat(int, const char *, mode_t);
 	int mknod(const char *, mode_t, dev_t);
 	int mknodat(int, const char *, mode_t, dev_t);
-	int stat(const char *restrict, struct stat *restrict);
+	int stat(const char *restrict path, struct stat *restrict buf);
 	mode_t umask(mode_t);
 	int utimensat(int, const char *, const struct timespec[2], int);
 
