@@ -87,7 +87,7 @@ extern "C"
 	int chmod(const char *, mode_t);
 	int fchmod(int, mode_t);
 	int fchmodat(int, const char *, mode_t, int);
-	int fstat(int, struct stat *);
+	int fstat(int fildes, struct stat *buf);
 	int fstatat(int, const char *restrict, struct stat *restrict, int);
 	int futimens(int, const struct timespec[2]);
 	int lstat(const char *restrict, struct stat *restrict);

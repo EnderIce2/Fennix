@@ -22,7 +22,25 @@
 export int chmod(const char *, mode_t);
 export int fchmod(int, mode_t);
 export int fchmodat(int, const char *, mode_t, int);
-export int fstat(int, struct stat *);
+
+export int fstat(int fildes, struct stat *buf)
+{
+	if (fildes < 0)
+	{
+		errno = EBADF;
+		return -1;
+	}
+
+	int result = call_fstat(fildes, buf);
+	if (result == -1)
+	{
+		errno = result;
+		return -1;
+	}
+
+	return 0;
+}
+
 export int fstatat(int, const char *restrict, struct stat *restrict, int);
 export int futimens(int, const struct timespec[2]);
 export int lstat(const char *restrict, struct stat *restrict);
