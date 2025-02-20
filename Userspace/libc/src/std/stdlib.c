@@ -330,7 +330,56 @@ export long long strtoll(const char *restrict nptr, char **restrict endptr, int 
 }
 
 export unsigned long int strtoul(const char *, char **, int);
-export int system(const char *);
+
+export int system(const char *command)
+{
+	if (command == NULL)
+		return 1;
+
+	pid_t pid;
+	int status;
+	struct sigaction sa, old_int, old_quit;
+	sigset_t new_mask, old_mask;
+
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, &old_int);
+	sigaction(SIGQUIT, &sa, &old_quit);
+
+	sigemptyset(&new_mask);
+	sigaddset(&new_mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &new_mask, &old_mask);
+
+	if ((pid = fork()) == 0)
+	{
+		sigaction(SIGINT, &old_int, NULL);
+		sigaction(SIGQUIT, &old_quit, NULL);
+		sigprocmask(SIG_SETMASK, &old_mask, NULL);
+		execl("/bin/sh", "sh", "-c", command, (char *)0);
+		_exit(127);
+	}
+
+	if (pid == -1)
+		status = -1;
+	else
+	{
+		while (waitpid(pid, &status, 0) == -1)
+		{
+			if (errno != EINTR)
+			{
+				status = -1;
+				break;
+			}
+		}
+	}
+
+	sigaction(SIGINT, &old_int, NULL);
+	sigaction(SIGQUIT, &old_quit, NULL);
+	sigprocmask(SIG_SETMASK, &old_mask, NULL);
+	return status;
+}
+
 export int ttyslot(void);
 export int unlockpt(int);
 export void *valloc(size_t);
