@@ -21,7 +21,7 @@
 
 export int kill(pid_t pid, int sig)
 {
-	return syscall2(SYS_KILL, pid, sig);
+	return call_kill(pid, sig);
 }
 
 export int killpg(pid_t, int);
