@@ -28,7 +28,12 @@ export int killpg(pid_t, int);
 export void psiginfo(const siginfo_t *, const char *);
 export void psignal(int, const char *);
 export int pthread_kill(pthread_t, int);
-export int pthread_sigmask(int, const sigset_t *restrict, sigset_t *restrict);
+
+export int pthread_sigmask(int how, const sigset_t *restrict set, sigset_t *restrict oset)
+{
+	return sigprocmask(how, set, oset);
+}
+
 export int raise(int);
 export int sig2str(int, char *);
 
@@ -57,7 +62,18 @@ export int sigaction(int sig, const struct sigaction *restrict act, struct sigac
 	return 0;
 }
 
-export int sigaddset(sigset_t *, int);
+export int sigaddset(sigset_t *set, int signo)
+{
+	if (set == NULL || signo <= 0 || signo >= SIGNAL_MAX)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	*set |= (1U << (signo - 1));
+	return 0;
+}
+
 export int sigaltstack(const stack_t *restrict, stack_t *restrict);
 export int sigdelset(sigset_t *, int);
 
@@ -73,7 +89,18 @@ export int sigemptyset(sigset_t *set)
 	return 0;
 }
 
-export int sigfillset(sigset_t *);
+export int sigfillset(sigset_t *set)
+{
+	if (set == NULL)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	*set = ~((sigset_t)0);
+	return 0;
+}
+
 export int sigismember(const sigset_t *, int);
 
 export void (*signal(int sig, void (*func)(int)))(int)
@@ -91,7 +118,31 @@ export void (*signal(int sig, void (*func)(int)))(int)
 }
 
 export int sigpending(sigset_t *);
-export int sigprocmask(int, const sigset_t *restrict, sigset_t *restrict);
+
+export int sigprocmask(int how, const sigset_t *restrict set, sigset_t *restrict oset)
+{
+	if (how != SIG_BLOCK && how != SIG_UNBLOCK && how != SIG_SETMASK)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (set != NULL)
+	{
+		if (how == SIG_BLOCK)
+			*oset |= *set;
+		else if (how == SIG_UNBLOCK)
+			*oset &= ~(*set);
+		else if (how == SIG_SETMASK)
+			*oset = *set;
+	}
+
+	if (oset != NULL)
+		*oset = *set;
+
+	return 0;
+}
+
 export int sigqueue(pid_t, int, union sigval);
 export int sigsuspend(const sigset_t *);
 export int sigtimedwait(const sigset_t *restrict, siginfo_t *restrict, const struct timespec *restrict);
