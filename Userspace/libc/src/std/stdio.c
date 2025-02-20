@@ -359,8 +359,64 @@ export int getchar(void)
 
 export int getc_unlocked(FILE *);
 export int getchar_unlocked(void);
-export ssize_t getdelim(char **restrict, size_t *restrict, int, FILE *restrict);
-export ssize_t getline(char **restrict, size_t *restrict, FILE *restrict);
+
+export ssize_t getdelim(char **restrict lineptr, size_t *restrict n, int delimiter, FILE *restrict stream)
+{
+	if (!lineptr || !n || !stream)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	if (!*lineptr)
+	{
+		*n = 128;
+		*lineptr = malloc(*n);
+		if (!*lineptr)
+		{
+			errno = ENOMEM;
+			return -1;
+		}
+	}
+
+	size_t pos = 0;
+	int c;
+
+	while ((c = fgetc(stream)) != EOF)
+	{
+		if (pos + 1 >= *n)
+		{
+			*n *= 2;
+			char *new_lineptr = realloc(*lineptr, *n);
+			if (!new_lineptr)
+			{
+				errno = ENOMEM;
+				return -1;
+			}
+			*lineptr = new_lineptr;
+		}
+
+		(*lineptr)[pos++] = (char)c;
+
+		if (c == delimiter)
+			break;
+	}
+
+	if (ferror(stream))
+		return -1;
+
+	if (pos == 0 && feof(stream))
+		return -1;
+
+	(*lineptr)[pos] = '\0';
+	return pos;
+}
+
+export ssize_t getline(char **restrict lineptr, size_t *restrict n, FILE *restrict stream)
+{
+	return getdelim(lineptr, n, '\n', stream);
+}
+
 export FILE *open_memstream(char **, size_t *);
 export int pclose(FILE *);
 

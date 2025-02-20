@@ -119,8 +119,8 @@ extern "C"
 	int getchar(void);
 	int getc_unlocked(FILE *);
 	int getchar_unlocked(void);
-	ssize_t getdelim(char **restrict, size_t *restrict, int, FILE *restrict);
-	ssize_t getline(char **restrict, size_t *restrict, FILE *restrict);
+	ssize_t getdelim(char **restrict lineptr, size_t *restrict n, int delimiter, FILE *restrict stream);
+	ssize_t getline(char **restrict lineptr, size_t *restrict n, FILE *restrict stream);
 	FILE *open_memstream(char **, size_t *);
 	int pclose(FILE *);
 	void perror(const char *s);
