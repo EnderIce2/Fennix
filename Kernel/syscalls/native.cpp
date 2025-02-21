@@ -398,10 +398,7 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 	}
 
 	SyscallData sc = scTbl[Frame->ReturnValue()];
-
-	uintptr_t (*call)(SysFrm *, uintptr_t, ...) =
-		r_cst(uintptr_t(*)(SysFrm *, uintptr_t, ...),
-			  sc.Handler);
+	uintptr_t (*call)(SysFrm *, uintptr_t, ...) = r_cst(uintptr_t (*)(SysFrm *, uintptr_t, ...), sc.Handler);
 
 	if (unlikely(!call))
 	{
@@ -410,16 +407,15 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 		return -ENOSYS;
 	}
 
-	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )",
-		  Frame->ReturnValue(), sc.Name,
-		  Frame->Arg0(), Frame->Arg1(), Frame->Arg2(),
-		  Frame->Arg3(), Frame->Arg4(), Frame->Arg5());
+	uintptr_t arg0 = Frame->Arg0();
+	uintptr_t arg1 = Frame->Arg1();
+	uintptr_t arg2 = Frame->Arg2();
+	uintptr_t arg3 = Frame->Arg3();
+	uintptr_t arg4 = Frame->Arg4();
+	uintptr_t arg5 = Frame->Arg5();
 
-	long sc_ret = call(Frame,
-					   Frame->Arg0(), Frame->Arg1(), Frame->Arg2(),
-					   Frame->Arg3(), Frame->Arg4(), Frame->Arg5());
-
-	debug("< [%d:\"%s\"] = %ld",
-		  Frame->ReturnValue(), sc.Name, sc_ret);
-	return sc_ret;
+	debug("> [%d:\"%s\"]( %#lx  %#lx  %#lx  %#lx  %#lx  %#lx )", Frame->ReturnValue(), sc.Name, arg0, arg1, arg2, arg3, arg4, arg5);
+	uintptr_t result = call(Frame, arg0, arg1, arg2, arg3, arg4, arg5);
+	debug("< [%d:\"%s\"] = %ld", Frame->ReturnValue(), sc.Name, result);
+	return result;
 }
