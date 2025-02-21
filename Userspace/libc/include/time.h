@@ -59,7 +59,7 @@ extern "C"
 
 	extern int daylight;
 	extern long timezone;
-	extern char *tzname[];
+	extern char *tzname[2];
 
 	char *asctime(const struct tm *);
 	clock_t clock(void);
@@ -71,11 +71,12 @@ extern "C"
 	char *ctime(const time_t *);
 	double difftime(time_t, time_t);
 	struct tm *getdate(const char *);
-	struct tm *gmtime(const time_t *);
-	struct tm *gmtime_r(const time_t *restrict, struct tm *restrict);
-	struct tm *localtime(const time_t *);
-	struct tm *localtime_r(const time_t *restrict, struct tm *restrict);
-	time_t mktime(struct tm *);
+
+	struct tm *gmtime(const time_t *timer);
+	struct tm *gmtime_r(const time_t *restrict timer, struct tm *restrict result);
+	struct tm *localtime(const time_t *timer);
+	struct tm *localtime_r(const time_t *restrict timer, struct tm *restrict result);
+	time_t mktime(struct tm *timeptr);
 	int nanosleep(const struct timespec *, struct timespec *);
 	size_t strftime(char *restrict, size_t, const char *restrict, const struct tm *restrict);
 	size_t strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
