@@ -860,13 +860,46 @@ void fork_bomb_syscall()
 #endif
 }
 
+void TestProcess(const char *program, char *const argv[])
+{
+	printf("testing: %s\n", program);
+	pid_t pid = fork();
+	if (pid == 0)
+	{
+		execvp(program, argv);
+		perror("execvp");
+	}
+	else if (pid < 0)
+		perror("fork");
+	fflush(stderr);
+}
+
+extern int simd_main();
+extern int web_main();
+extern int fb_main();
+
 int main(int argc, char *argv[], char *envp[])
 {
-	if (argv[1] != NULL && strcmp(argv[1], "loop") == 0)
+	if (argv[1] != NULL)
 	{
-		printf("[%d] Looping...\n", getpid());
-		while (1)
-			;
+		if (strcmp(argv[1], "loop") == 0)
+		{
+			printf("[%d] Looping...\n", getpid());
+			while (1)
+				;
+		}
+
+		if (strcmp(argv[1], "--kernel") == 0)
+		{
+			printf("- Starting full tests...\n");
+			TestProcess("/bin/libc_test", NULL);
+			printf("- test: simd");
+			simd_main();
+			printf("- test: web");
+			web_main();
+			printf("- test: framebuffer");
+			fb_main();
+		}
 	}
 
 	printf("- Testing userspace...\n");

@@ -15,7 +15,8 @@
 			"userspace/libc",
 			"userspace/libs/libdemo",
 			"vscode",
-			"userspace/apps/sys/init"
+			"userspace/apps/sys/init",
+			"userspace/apps/test/utest"
 		]
 	}
 }
