@@ -1,0 +1,16 @@
+{
+	"recommendations": [
+		"ms-vscode.cpptools",
+		"maziac.asm-code-lens",
+		"editorconfig.editorconfig",
+		"vivaxy.vscode-conventional-commits",
+		"ms-vscode.hexeditor",
+		"webfreak.debug",
+		"ibm.output-colorizer",
+		"gruntfuggly.todo-tree",
+		"naumovs.color-highlight",
+		"seven1bit.vscode-ext-ansi-color-highlight",
+		"jeff-hykin.better-cpp-syntax",
+		"aaron-bond.better-comments"
+	]
+}

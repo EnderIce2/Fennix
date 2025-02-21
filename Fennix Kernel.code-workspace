@@ -29,7 +29,8 @@
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
 			"kernel/api",
-			"kernel/syscalls"
+			"kernel/syscalls",
+			"vscode"
 		]
 	}
 }
