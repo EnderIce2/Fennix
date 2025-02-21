@@ -41,7 +41,7 @@ void HandleClient(int clientSocket)
 	close(clientSocket);
 }
 
-int main()
+int web_main()
 {
 	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (serverSocket == -1)
