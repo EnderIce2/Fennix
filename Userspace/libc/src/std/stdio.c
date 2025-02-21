@@ -81,8 +81,20 @@ export int fclose(FILE *stream)
 }
 
 export FILE *fdopen(int, const char *);
-export int feof(FILE *);
-export int ferror(FILE *);
+
+export int feof(FILE *stream)
+{
+	if (!stream)
+		return 0;
+	return stream->eof;
+}
+
+export int ferror(FILE *stream)
+{
+	if (!stream)
+		return 0;
+	return stream->error;
+}
 
 export int fflush(FILE *stream)
 {

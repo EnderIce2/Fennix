@@ -91,8 +91,8 @@ extern "C"
 	int dprintf(int, const char *restrict, ...);
 	int fclose(FILE *stream);
 	FILE *fdopen(int, const char *);
-	int feof(FILE *);
-	int ferror(FILE *);
+	int feof(FILE *stream);
+	int ferror(FILE *stream);
 	int fflush(FILE *stream);
 	int fgetc(FILE *stream);
 	int fgetpos(FILE *restrict, fpos_t *restrict);
