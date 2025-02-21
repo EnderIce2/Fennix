@@ -21,9 +21,9 @@
 
 __iptr __check_errno(__iptr status, __iptr err)
 {
-	if (status >= EOK)
+	if ((int)status >= EOK)
 		return status;
-	pthread_self()->CurrentError = status;
+	pthread_self()->CurrentError = (int)status;
 	return err;
 }
 
