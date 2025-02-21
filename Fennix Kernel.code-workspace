@@ -26,6 +26,10 @@
 		"git.alwaysSignOff": true,
 		"git.defaultBranchName": "master",
 		"git.openRepositoryInParentFolders": "always",
-		"C_Cpp.autoAddFileAssociations": false
+		"C_Cpp.autoAddFileAssociations": false,
+		"conventionalCommits.scopes": [
+			"kernel/api",
+			"kernel/syscalls"
+		]
 	}
 }
