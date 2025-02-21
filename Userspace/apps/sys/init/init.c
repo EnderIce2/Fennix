@@ -49,9 +49,21 @@ void ReapZombies()
 	}
 }
 
+void HandleSignal(int signal)
+{
+	if (signal == SIGTERM || signal == SIGINT)
+	{
+		printf("init: received termination signal, shutting down...\n");
+		exit(0);
+	}
+}
+
 int main()
 {
 	printf("init starting...\n");
+
+	signal(SIGTERM, HandleSignal);
+	signal(SIGINT, HandleSignal);
 
 	char *shellArgs[] = {"/bin/sh", NULL};
 	StartProcess("/bin/sh", shellArgs);
