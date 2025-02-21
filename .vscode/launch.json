@@ -48,7 +48,12 @@
 				},
 				{
 					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
-					"description": "Load /bin/utest",
+					"description": "/bin/utest (0x00400000)",
+					"ignoreFailures": true
+				},
+				{
+					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/libc_test",
+					"description": "/bin/libc_test (0x00600000)",
 					"ignoreFailures": true
 				},
 				{

@@ -14,7 +14,7 @@ build: $(FILENAME).elf
 	cp $(FILENAME).elf $(WORKSPACE_DIR)/out/bin/$(FILENAME)
 
 # Use static linking
-LDFLAGS += -static -fno-pic -fno-pie -Wl,-static
+LDFLAGS += -static -fno-pic -fno-pie -Wl,-static -Wl,-Ttext=0x00600000
 CFLAGS += -ggdb3 -O0 -g -fdiagnostics-color=always
 
 # Use default toolchain if not specified
