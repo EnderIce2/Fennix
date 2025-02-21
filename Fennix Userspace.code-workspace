@@ -12,7 +12,9 @@
 		"git.openRepositoryInParentFolders": "always",
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
-			"userspace/libc"
+			"userspace/libc",
+			"userspace/libs/libdemo",
+			"vscode"
 		]
 	}
 }
