@@ -14,7 +14,8 @@
 		"conventionalCommits.scopes": [
 			"userspace/libc",
 			"userspace/libs/libdemo",
-			"vscode"
+			"vscode",
+			"userspace/apps/sys/init"
 		]
 	}
 }
