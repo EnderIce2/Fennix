@@ -76,11 +76,16 @@ export char *gcvt(double, int, char *);
 
 export char *getenv(const char *name)
 {
+	if (name == NULL)
+		return NULL;
+
+	size_t len = strlen(name);
 	for (char **env = environ; *env != 0; ++env)
 	{
 		char *thisEnv = *env;
-		if (strncmp(thisEnv, name, strlen(name)) == 0 && thisEnv[strlen(name)] == '=')
-			return thisEnv + strlen(name) + 1;
+		char cmp = strncmp(thisEnv, name, len) == 0;
+		if (cmp && thisEnv[len] == '=')
+			return thisEnv + len + 1;
 	}
 	return NULL;
 }
