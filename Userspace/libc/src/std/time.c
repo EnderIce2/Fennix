@@ -204,63 +204,62 @@ export int timespec_get(struct timespec *, int);
 export void tzset(void)
 {
 	char *tz = getenv("TZ");
-	if (tz == NULL)
+	if (!tz || tz[0] == '\0')
 	{
 		tzname[0] = "UTC";
 		tzname[1] = "UTC";
-		daylight = 0;
 		timezone = 0;
+		daylight = 0;
+		return;
+	}
+
+	char std[16];
+	int i = 0;
+
+	while (tz[i] && ((tz[i] >= 'A' && tz[i] <= 'Z') || (tz[i] >= 'a' && tz[i] <= 'z')))
+	{
+		std[i] = tz[i];
+		i++;
+	}
+
+	std[i] = '\0';
+	tzname[0] = strdup(std);
+	int sign = 1;
+
+	if (tz[i] == '-')
+	{
+		sign = -1;
+		i++;
+	}
+	else if (tz[i] == '+')
+	{
+		sign = 1;
+		i++;
+	}
+
+	int offset = 0;
+	while (tz[i] && tz[i] >= '0' && tz[i] <= '9')
+	{
+		offset = offset * 10 + (tz[i] - '0');
+		i++;
+	}
+
+	timezone = offset * 3600 * sign;
+	char dst[16];
+	int j = 0;
+
+	if (tz[i] != '\0')
+	{
+		while (tz[i] && ((tz[i] >= 'A' && tz[i] <= 'Z') || (tz[i] >= 'a' && tz[i] <= 'z')))
+			dst[j++] = tz[i++];
+
+		dst[j] = '\0';
+		tzname[1] = strdup(dst);
+		daylight = 1;
 	}
 	else
 	{
-		if (strcmp(tz, "EST5EDT") == 0)
-		{
-			tzname[0] = "EST";
-			tzname[1] = "EDT";
-			daylight = 1;
-			timezone = 5 * 3600;
-		}
-		else if (strcmp(tz, "GMT0") == 0)
-		{
-			tzname[0] = "GMT";
-			tzname[1] = "GMT";
-			daylight = 0;
-			timezone = 0;
-		}
-		else if (strcmp(tz, "JST-9") == 0)
-		{
-			tzname[0] = "JST";
-			tzname[1] = "JST";
-			daylight = 0;
-			timezone = -9 * 3600;
-		}
-		else if (strcmp(tz, "MET-1MEST") == 0)
-		{
-			tzname[0] = "MET";
-			tzname[1] = "MEST";
-			daylight = 1;
-			timezone = -1 * 3600;
-		}
-		else if (strcmp(tz, "MST7MDT") == 0)
-		{
-			tzname[0] = "MST";
-			tzname[1] = "MDT";
-			daylight = 1;
-			timezone = 7 * 3600;
-		}
-		else if (strcmp(tz, "PST8PDT") == 0)
-		{
-			tzname[0] = "PST";
-			tzname[1] = "PDT";
-			daylight = 1;
-			timezone = 8 * 3600;
-		}
-		else
-		{
-			tzname[0] = "UTC";
-			tzname[1] = "UTC";
-			daylight = 0;
-			timezone = 0;
-		}
+		tzname[1] = tzname[0];
+		daylight = 0;
 	}
 }
