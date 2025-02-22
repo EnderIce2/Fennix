@@ -15,14 +15,8 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-typedef void (*fct)(void);
-#define asm __asm__ __volatile__
-__attribute__((__visibility__("hidden"))) extern void (*__preinit_array_start[])(void) __attribute__((weak));
-__attribute__((__visibility__("hidden"))) extern void (*__preinit_array_end[])(void) __attribute__((weak));
-__attribute__((__visibility__("hidden"))) extern void (*__init_array_start[])(void) __attribute__((weak));
-__attribute__((__visibility__("hidden"))) extern void (*__init_array_end[])(void) __attribute__((weak));
-__attribute__((__visibility__("hidden"))) extern void (*__fini_array_start[])(void) __attribute__((weak));
-__attribute__((__visibility__("hidden"))) extern void (*__fini_array_end[])(void) __attribute__((weak));
+#include "../runtime/crt1.c"
+
 const char __interp[] __attribute__((section(".interp"))) = "/lib/ld.so";
 
 #ifndef LIBC_GIT_COMMIT
@@ -53,38 +47,6 @@ const char __interp[] __attribute__((section(".interp"))) = "/lib/ld.so";
 	 CONVERT_TO_BYTE(hex[36], hex[37]), \
 	 CONVERT_TO_BYTE(hex[38], hex[39])}
 
-/* These are declared in GNU ld */
-enum
-{
-	NT_FNX_ABI_TAG = 1,
-	NT_FNX_VERSION = 2,
-	NT_FNX_BUILD_ID = 3,
-	NT_FNX_ARCH = 4
-};
-
-typedef struct Elf_Nhdr
-{
-	__UINT32_TYPE__ n_namesz;
-	__UINT32_TYPE__ n_descsz;
-	__UINT32_TYPE__ n_type;
-	char n_name[];
-} __attribute__((packed)) Elf_Nhdr;
-
-const struct
-{
-	Elf_Nhdr header;
-	char name[4];
-	__UINT32_TYPE__ desc[4];
-} __abi_tag __attribute__((aligned(4), section(".note.ABI-tag"))) = {
-	.header = {
-		.n_namesz = 4,							 /* "FNX" + '\0' */
-		.n_descsz = sizeof(__UINT32_TYPE__) * 4, /* Description Size */
-		.n_type = NT_FNX_ABI_TAG,				 /* Type */
-	},
-	.name = "FNX",
-	.desc = {0, 0, 0, 0},
-};
-
 const struct
 {
 	Elf_Nhdr header;
@@ -99,54 +61,6 @@ const struct
 	.name = "FNX",
 	.desc = HASH_BYTES(LIBC_GIT_COMMIT),
 };
-
-void __crt_init_array(void)
-{
-	for (fct *func = __init_array_start; func != __init_array_end; func++)
-		(*func)();
-}
-
-void __crt_fini_array(void)
-{
-	for (fct *func = __fini_array_start; func != __fini_array_end; func++)
-		(*func)();
-}
-
-__attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
-{
-#if defined(__amd64__)
-	asm("movq $0, %rbp\n"
-		"pushq %rbp\n"
-		"pushq %rbp\n"
-		"movq %rsp, %rbp\n"
-
-		"pushq %rcx\n"
-		"pushq %rdx\n"
-		"pushq %rsi\n"
-		"pushq %rdi\n"
-
-		"call __libc_init\n"
-		"call __crt_init_array\n"
-
-		"popq %rdi\n"
-		"popq %rsi\n"
-		"popq %rdx\n"
-		"popq %rcx\n"
-
-		"call main\n"
-
-		"pushq %rax\n"
-		"call __crt_fini_array\n"
-		"popq %rax\n"
-
-		"movl %eax, %edi\n"
-		"call _exit\n");
-#elif defined(__i386__)
-#warning "i386 _start not implemented"
-#else
-#warning "unknown architecture"
-#endif
-}
 
 int main(int argc, char *argv[], char *envp[])
 {

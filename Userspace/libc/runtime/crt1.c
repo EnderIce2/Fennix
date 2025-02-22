@@ -44,10 +44,12 @@ __attribute__((naked, used, no_stack_protector, section(".text"))) void _start()
 		"andq $-16, %rsp\n"
 		"movq %rsp, %rbp\n"
 
+		"movq %rdx, %rax\n"
 		"pushq %rcx\n"
 		"pushq %rdx\n"
 		"pushq %rsi\n"
 		"pushq %rdi\n"
+		"movq %rax, %rdi\n"
 
 		"call __libc_init\n"
 		"call __crt_init_array\n"

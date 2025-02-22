@@ -21,9 +21,11 @@
 
 int __init_pthread(void);
 void __init_stdio(void);
+extern char **environ;
 
-__attribute__((visibility("default"))) void __libc_init(void)
+__attribute__((visibility("default"))) void __libc_init(const char **env)
 {
+	environ = (char **)env;
 	__init_pthread();
 	__init_stdio();
 }
