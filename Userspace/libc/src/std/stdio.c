@@ -217,7 +217,7 @@ export FILE *fopen(const char *restrict pathname, const char *restrict mode)
 	file->fd = fd;
 	file->buffer = malloc(4096);
 	file->buffer_size = 4096;
-	file->buffer_pos = 0;
+	file->buffer_pos = -1;
 	file->flags = flags;
 	file->error = 0;
 	file->eof = 0;
