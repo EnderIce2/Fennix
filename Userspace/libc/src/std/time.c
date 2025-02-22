@@ -20,6 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int __is_leap(int year)
+{
+	return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+}
+
 export int daylight;
 export long timezone;
 export char *tzname[2];
@@ -43,18 +48,55 @@ export struct tm *gmtime(const time_t *timer)
 
 export struct tm *gmtime_r(const time_t *restrict timer, struct tm *restrict result)
 {
-	if (timer == NULL || result == NULL)
-	{
-		errno = EINVAL;
-		return NULL;
-	}
-
 	time_t t = *timer;
-	struct tm *res = localtime(&t);
-	if (res == NULL)
-		return NULL;
-
-	*result = *res;
+	long days, rem;
+	rem = t % 86400;
+	days = t / 86400;
+	if (rem < 0)
+	{
+		rem += 86400;
+		days--;
+	}
+	result->tm_hour = rem / 3600;
+	rem %= 3600;
+	result->tm_min = rem / 60;
+	result->tm_sec = rem % 60;
+	int wday = (4 + days) % 7;
+	if (wday < 0)
+		wday += 7;
+	result->tm_wday = wday;
+	int year = 1970;
+	while (days < 0 || days >= (__is_leap(year) ? 366 : 365))
+	{
+		int yd = __is_leap(year) ? 366 : 365;
+		if (days >= yd)
+		{
+			days -= yd;
+			year++;
+		}
+		else
+		{
+			year--;
+			days += __is_leap(year) ? 366 : 365;
+		}
+	}
+	result->tm_year = year - 1900;
+	result->tm_yday = days;
+	static const int mdays[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	int mon;
+	for (mon = 0; mon < 12; mon++)
+	{
+		int dim = mdays[mon];
+		if (mon == 1 && __is_leap(year))
+			dim++;
+		if (days >= dim)
+			days -= dim;
+		else
+			break;
+	}
+	result->tm_mon = mon;
+	result->tm_mday = days + 1;
+	result->tm_isdst = 0;
 	result->tm_gmtoff = 0;
 	result->tm_zone = "UTC";
 	return result;
@@ -68,58 +110,83 @@ export struct tm *localtime(const time_t *timer)
 
 export struct tm *localtime_r(const time_t *restrict timer, struct tm *restrict result)
 {
-	if (timer == NULL || result == NULL)
-	{
-		errno = EINVAL;
-		return NULL;
-	}
-
-	tzset();
-	time_t t = *timer;
-	struct tm *gmt = gmtime(&t);
-	if (gmt == NULL)
-		return NULL;
-
-	*result = *gmt;
-	result->tm_isdst = -1;
-	time_t local_time = mktime(result);
-	if (local_time == (time_t)-1)
-		return NULL;
-
-	*result = *localtime(&local_time);
-	return result;
+	time_t t = *timer - timezone;
+	return gmtime_r(&t, result);
 }
 
 export time_t mktime(struct tm *timeptr)
 {
-	time_t result;
+	int sec = timeptr->tm_sec;
+	int min = timeptr->tm_min;
+	int hour = timeptr->tm_hour;
+	int mon = timeptr->tm_mon;
+	int day = timeptr->tm_mday;
+	int year = timeptr->tm_year + 1900;
+	if (sec >= 60 || sec < 0)
+	{
+		min += sec / 60;
+		sec %= 60;
+		if (sec < 0)
+		{
+			sec += 60;
+			min--;
+		}
+	}
+	if (min >= 60 || min < 0)
+	{
+		hour += min / 60;
+		min %= 60;
+		if (min < 0)
+		{
+			min += 60;
+			hour--;
+		}
+	}
+	if (hour >= 24 || hour < 0)
+	{
+		day += hour / 24;
+		hour %= 24;
+		if (hour < 0)
+		{
+			hour += 24;
+			day--;
+		}
+	}
+	if (mon >= 12 || mon < 0)
+	{
+		year += mon / 12;
+		mon %= 12;
+		if (mon < 0)
+		{
+			mon += 12;
+			year--;
+		}
+	}
+	long days = 0;
+	if (year >= 1970)
+	{
+		for (int y = 1970; y < year; y++)
+			days += __is_leap(y) ? 366 : 365;
+	}
+	else
+	{
+		for (int y = year; y < 1970; y++)
+			days -= __is_leap(y) ? 366 : 365;
+	}
+	static const int mdays[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	for (int i = 0; i < mon; i++)
+	{
+		days += mdays[i];
+		if (i == 1 && __is_leap(year))
+			days++;
+	}
+	days += (day - 1);
+	time_t t = days * 86400 + hour * 3600 + min * 60 + sec;
+	t = t + timezone - (timeptr->tm_isdst > 0 ? 3600 : 0);
 	struct tm temp;
-	tzset();
-
-	temp = *timeptr;
-	temp.tm_sec += temp.tm_min * 60 + temp.tm_hour * 3600 + temp.tm_mday * 86400;
-	temp.tm_min = 0;
-	temp.tm_hour = 0;
-	temp.tm_mday = 1;
-	temp.tm_mon = 0;
-	temp.tm_year = 70;
-	temp.tm_isdst = -1;
-
-	result = mktime(&temp);
-	if (result == (time_t)-1)
-		return (time_t)-1;
-
-	result += timeptr->tm_sec + timeptr->tm_min * 60 + timeptr->tm_hour * 3600;
-	result += (timeptr->tm_mday - 1) * 86400;
-	result += (timeptr->tm_mon) * 2629743;
-	result += (timeptr->tm_year - 70) * 31556926;
-
-	struct tm *local_time = localtime(&result);
-	if (local_time == NULL)
-		return (time_t)-1;
-	*timeptr = *local_time;
-
-	return result;
+	localtime_r(&t, &temp);
+	*timeptr = temp;
+	return t;
 }
 
 export int nanosleep(const struct timespec *, struct timespec *);
