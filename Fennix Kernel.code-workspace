@@ -30,7 +30,8 @@
 		"conventionalCommits.scopes": [
 			"kernel/api",
 			"kernel/syscalls",
-			"vscode"
+			"vscode",
+			"kernel"
 		]
 	}
 }
