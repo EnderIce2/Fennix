@@ -1,6 +1,11 @@
 {
 	"libc_test stub macro": {
 		"prefix": "zxc",
-		"body": "int test_$TM_FILENAME_BASE() { return 2; }"
+		"body": [
+			"int test_$TM_FILENAME_BASE()",
+			"{",
+			"\treturn 2;",
+			"}",
+		]
 	},
 }
