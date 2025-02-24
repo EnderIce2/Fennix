@@ -33,11 +33,12 @@
 
 int SpawnInit()
 {
-	const char *envp[5] = {
+	const char *envp[6] = {
 		"PATH=/bin:/usr/bin",
 		"TERM=tty",
 		"HOME=/root",
 		"USER=root",
+		"TZ=UTC",
 		nullptr};
 
 	const char *argv[4] = {
