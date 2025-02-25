@@ -38,6 +38,8 @@ typedef long double double_t;
 #error "Unsupported FLT_EVAL_METHOD"
 #endif
 
+	extern int signgam;
+
 	double acos(double);
 	float acosf(float);
 	double acosh(double);
@@ -68,12 +70,12 @@ typedef long double double_t;
 	double copysign(double, double);
 	float copysignf(float, float);
 	long double copysignl(long double, long double);
-	double cos(double);
-	float cosf(float);
-	double cosh(double);
-	float coshf(float);
-	long double coshl(long double);
-	long double cosl(long double);
+	double cos(double x);
+	float cosf(float x);
+	double cosh(double x);
+	float coshf(float x);
+	long double coshl(long double x);
+	long double cosl(long double x);
 	double erf(double);
 	double erfc(double);
 	float erfcf(float);
@@ -192,12 +194,12 @@ typedef long double double_t;
 	double scalbn(double, int);
 	float scalbnf(float, int);
 	long double scalbnl(long double, int);
-	double sin(double);
-	float sinf(float);
-	double sinh(double);
-	float sinhf(float);
-	long double sinhl(long double);
-	long double sinl(long double);
+	double sin(double x);
+	float sinf(float x);
+	double sinh(double x);
+	float sinhf(float x);
+	long double sinhl(long double x);
+	long double sinl(long double x);
 	double sqrt(double);
 	float sqrtf(float);
 	long double sqrtl(long double);
@@ -216,8 +218,6 @@ typedef long double double_t;
 	double y0(double);
 	double y1(double);
 	double yn(int, double);
-
-	extern int signgam;
 
 #ifdef __cplusplus
 }
