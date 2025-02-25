@@ -14,13 +14,24 @@ build: $(FILENAME).elf
 	cp $(FILENAME).elf $(WORKSPACE_DIR)/out/bin/$(FILENAME)
 
 # Use static linking
-LDFLAGS += -static -fno-pic -fno-pie -Wl,-static -Wl,-Ttext=0x00600000
-CFLAGS += -ggdb3 -O0 -g -fdiagnostics-color=always
+LDFLAGS += -ggdb3 -g -static -fno-pic -fno-pie -Wl,-static -Wl,-Ttext=0x00600000
+CFLAGS += -ggdb3 -g -O0 -fdiagnostics-color=always
 
 # Use default toolchain if not specified
 CC ?= gcc
 CXX ?= g++
 AS ?= as
+GDBSERVER ?= /usr/bin/gdbserver
+
+.PHONY: build_native run_native debug_native log_docker
+
+log_docker:
+#	docker compose logs -f libc_test
+
+debug_native:
+	$(MAKE) --quiet clean
+	$(MAKE) --quiet -j $(shell nproc) build_native
+	$(GDBSERVER) 0.0.0.0:9229 $(CURDIR)/$(FILENAME)_n.elf
 
 build_native: $(FILENAME)_n.elf
 
@@ -30,11 +41,11 @@ run_native:
 
 $(FILENAME)_n.elf $(FILENAME).elf: $(OBJ)
 	$(info Linking $@)
-	$(CC) $(LDFLAGS) $(SYSROOT) $(OBJ) -o $@
+	$(CC) $(LDFLAGS) $(SYSROOT) $(OBJ) -o $@ -lm
 
 %.o: %.c $(HEADERS)
 	$(info Compiling $<)
-	$(CC) $(CFLAGS) $(WARNCFLAG) -std=c17 -c $< -o $@
+	$(CC) $(CFLAGS) $(WARNCFLAG) -std=c17 -c $< -o $@ -lm
 
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
