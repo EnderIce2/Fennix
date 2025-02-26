@@ -12,7 +12,8 @@
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
 			"initrd",
-			"tools"
+			"tools",
+			"devcontainer"
 		]
 	}
 }

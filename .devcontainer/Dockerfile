@@ -2,41 +2,44 @@ FROM mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04
 
 ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 
-# Optionally install the cmake for vcpkg
 COPY ./reinstall-cmake.sh /tmp/
+RUN <<EOF
+if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then
+	chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE};
+fi
+rm -f /tmp/reinstall-cmake.sh
+EOF
 
-RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
-	chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
-	fi \
-	&& rm -f /tmp/reinstall-cmake.sh
-
-# [Optional] Uncomment this section to install additional vcpkg ports.
-# RUN su vscode -c "${VCPKG_ROOT}/vcpkg install <your-port-name-here>"
-
-# [Optional] Uncomment this section to install additional packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+# Update system and set noninteractive env
+RUN export DEBIAN_FRONTEND=noninteractive && apt-get update
 
 # Required packages for building gcc & binutils
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
-	apt-get -y install --no-install-recommends \
+RUN apt-get -y install --no-install-recommends \
 	build-essential \
 	bison \
-	flex
+	flex \
+	libgmp-dev \
+	libmpfr-dev \
+	texinfo \
+	file \
+	sudo
 
 # Required packages for building gcc & binutils
-RUN wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb && \
-	sudo dpkg --force-all -i /tmp/autoconf.deb
+RUN <<EOF
+wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb
+sudo dpkg --force-all -i /tmp/autoconf.deb
+EOF
 
 # Required packages for building gcc & binutils
-RUN wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz && \
-	tar -xzf /tmp/automake.tar.gz -C /tmp && \
-	cd /tmp/automake-1.15.1 && \
-	./configure && make && sudo make install
+RUN <<EOF
+wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz
+tar -xzf /tmp/automake.tar.gz -C /tmp
+cd /tmp/automake-1.15.1
+./configure && make && sudo make install
+EOF
 
 # Required packages for building qemu
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
-	apt-get -y install --no-install-recommends \
+RUN apt-get -y install --no-install-recommends \
 	git \
 	libglib2.0-dev \
 	libfdt-dev \
@@ -71,8 +74,39 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
 	xfslibs-dev \
 	libnfs-dev \
 	libiscsi-dev \
-	python3-venv
+	python3-venv \
+	libslirp-dev \
+	ovmf
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
-	apt-get -y install --no-install-recommends \
+# Required packages for building test apps in userspace
+RUN apt-get -y install --no-install-recommends \
 	mingw-w64
+
+# Required packages for building the OS
+RUN apt-get -y install --no-install-recommends \
+	grub2-common \
+	xorriso \
+	mtools \
+	grub-common \
+	grub-efi-amd64-bin \
+	grub-efi-amd64-signed \
+	grub-gfxpayload-lists \
+	grub-pc-bin \
+	grub-pc \
+	grub2-common
+
+# Configure git
+RUN <<EOF
+git config --global advice.detachedHead false
+git config --global core.autocrlf input
+git config --global init.defaultbranch master
+EOF
+
+# Set display environment variable for QEMU
+ENV DISPLAY=:0
+ENV NO_AT_BRIDGE=1
+
+# Set PATH
+RUN <<EOF
+echo PATH=$PATH:/workspaces/Fennix/cross/bin >> /etc/profile
+EOF

@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "C++",
+	"name": "Fennix",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
@@ -17,11 +17,23 @@
 				"vivaxy.vscode-conventional-commits",
 				"webfreak.debug",
 				"maziac.asm-code-lens",
-				"Seven1bit.vscode-ext-ansi-color-highlight"
+				"Seven1bit.vscode-ext-ansi-color-highlight",
+				"ms-vsliveshare.vsliveshare",
+				"maziac.hex-hover-converter",
+				"ms-vscode.makefile-tools"
 			]
 		}
-	}
-
+	},
+	// From this line below are for qemu, so not that important.
+	"mounts": [
+		"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+		"source=${localEnv:XAUTHORITY},target=/home/vscode/.Xauthority,type=bind,consistency=cached",
+		"source=/dev/kvm,target=/dev/kvm,type=bind,consistency=cached",
+		"source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind,consistency=cached"
+	],
+	"runArgs": [
+		"--privileged"
+	]
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
