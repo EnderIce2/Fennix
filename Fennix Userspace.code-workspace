@@ -17,7 +17,8 @@
 			"vscode",
 			"userspace/apps/sys/init",
 			"userspace/apps/test/utest",
-			"userspace/libs/libm"
+			"userspace/libs/libm",
+			"devcontainer"
 		]
 	}
 }
