@@ -22,7 +22,7 @@ RUN apt-get -y install --no-install-recommends \
 	libmpfr-dev \
 	texinfo \
 	file \
-	sudo
+	python3-dev
 
 # Required packages for building gcc & binutils
 RUN <<EOF
