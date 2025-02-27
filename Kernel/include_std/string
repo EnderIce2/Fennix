@@ -1013,7 +1013,7 @@ namespace std
 			_size = Traits::length(s);
 			_capacity = _size + 1;
 			_data = _alloc.allocate(_capacity);
-			memcpy(_data, s, _size);
+			memcpy(_data, s, _size > 0 ? _size : 1);
 			_data[_size] = '\0';
 			return *this;
 		}
