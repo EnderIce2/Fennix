@@ -2,13 +2,160 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "launch-qemu",
+			"label": "Build Bootloader",
 			"type": "shell",
-			"command": "make -C ../ build && make -C ../ vscode_debug_only",
-			"isBackground": true,
-			"problemMatcher": [],
+			"command": "make -C ../ build_bootloader",
+			"isBackground": false,
 			"group": {
 				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Build Kernel",
+			"type": "shell",
+			"command": "make -C ../ build_kernel",
+			"isBackground": false,
+			"dependsOn": [
+				"Build Bootloader"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Build Drivers",
+			"type": "shell",
+			"command": "make -C ../ build_drivers",
+			"isBackground": false,
+			"dependsOn": [
+				"Build Kernel"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Build Userspace",
+			"type": "shell",
+			"command": "make -C ../ build_userspace",
+			"isBackground": false,
+			"dependsOn": [
+				"Build Drivers"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Build Image",
+			"type": "shell",
+			"command": "make -C ../ build_image",
+			"isBackground": false,
+			"dependsOn": [
+				"Build Userspace"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "launch-qemu",
+			"type": "shell",
+			"command": "make",
+			"args": [
+				"-C",
+				"../",
+				"vscode_debug_only"
+			],
+			"isBackground": true,
+			// "problemMatcher": "$tsc-watch",
+			"problemMatcher": [
+				{
+					"pattern": [
+						{
+							"regexp": ".",
+							"file": 1,
+							"location": 2,
+							"message": 3
+						}
+					],
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": ".",
+						"endsPattern": "CR0 update",
+					}
+				}
+			],
+			"dependsOn": [
+				"Build Image"
+			],
+			"group": {
+				"kind": "test",
 				"isDefault": true
 			},
 			"presentation": {
