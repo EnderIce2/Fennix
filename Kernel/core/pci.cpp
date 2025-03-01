@@ -947,7 +947,7 @@ namespace PCI
 
 					if (BARSize > 0)
 						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-												   BARSize, Memory::RW | Memory::PWT);
+												   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
 				}
 				else if ((BAR[i] & 1) == 1) /* I/O Base */
 				{
@@ -959,7 +959,7 @@ namespace PCI
 
 					if (BARSize > 0)
 						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-												   BARSize, Memory::RW | Memory::PWT);
+												   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
 				}
 			}
 			break;
