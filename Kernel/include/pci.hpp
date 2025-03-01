@@ -232,6 +232,7 @@ namespace PCI
 	public:
 		std::list<PCIDevice> GetDevices() { return Devices; }
 		void MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table);
+		void InitializeDevice(PCIDevice Device, Memory::PageTable *Table);
 		void EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev);
 		void EnumerateDevice(uint64_t BusAddress, uint32_t Device, PCIDevice dev);
 		void EnumerateBus(uint64_t BaseAddress, uint32_t Bus, PCIDevice dev);

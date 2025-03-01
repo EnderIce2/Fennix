@@ -982,6 +982,18 @@ namespace PCI
 		}
 	}
 
+	void Manager::InitializeDevice(PCIDevice Device, Memory::PageTable *Table)
+	{
+		this->MapPCIAddresses(Device, Table);
+
+		PCI::PCIDeviceHeader *Header = Device.Header;
+
+		Header->Command |= PCI_COMMAND_MASTER |
+						   PCI_COMMAND_IO |
+						   PCI_COMMAND_MEMORY;
+		Header->Command &= ~PCI_COMMAND_INTX_DISABLE;
+	}
+
 	void Manager::EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev)
 	{
 		dev.Function = Function;
