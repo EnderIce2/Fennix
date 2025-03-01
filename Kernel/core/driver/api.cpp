@@ -66,12 +66,10 @@ namespace v0
 		uintptr_t Flags;
 #if defined(__x86_64__)
 		asmv("pushfq");
-		asmv("popq %0"
-			 : "=r"(Flags));
+		asmv("popq %0" : "=r"(Flags));
 #else
 		asmv("pushfl");
-		asmv("popl %0"
-			 : "=r"(Flags));
+		asmv("popl %0" : "=r"(Flags));
 #endif
 		cs = Flags & (1 << 9);
 		asmv("cli");
