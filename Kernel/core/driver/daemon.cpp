@@ -766,6 +766,22 @@ namespace Driver
 		return 0;
 	}
 
+	void *Manager::AllocateMemory(dev_t DriverID, size_t Pages)
+	{
+		auto itr = Drivers.find(DriverID);
+		assert(itr != Drivers.end());
+		void *ptr = itr->second.vma->RequestPages(Pages);
+		memset(ptr, 0, FROM_PAGES(Pages));
+		return ptr;
+	}
+
+	void Manager::FreeMemory(dev_t DriverID, void *Pointer, size_t Pages)
+	{
+		auto itr = Drivers.find(DriverID);
+		assert(itr != Drivers.end());
+		itr->second.vma->FreePages(Pointer, Pages);
+	}
+
 	int Manager::ReportInputEvent(dev_t DriverID, InputReport *Report)
 	{
 		std::unordered_map<dev_t, Driver::DriverObject> &drivers =

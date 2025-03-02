@@ -451,29 +451,13 @@ namespace v0
 	void *AllocateMemory(dev_t DriverID, size_t Pages)
 	{
 		dbg_api("%d, %d", DriverID, Pages);
-
-		std::unordered_map<dev_t, Driver::DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(DriverID);
-		assert(itr != Drivers.end());
-
-		void *ptr = itr->second.vma->RequestPages(Pages);
-		memset(ptr, 0, FROM_PAGES(Pages));
-		return ptr;
+		return DriverManager->AllocateMemory(DriverID, Pages);
 	}
 
 	void FreeMemory(dev_t DriverID, void *Pointer, size_t Pages)
 	{
 		dbg_api("%d, %#lx, %d", DriverID, Pointer, Pages);
-
-		std::unordered_map<dev_t, Driver::DriverObject> &Drivers =
-			DriverManager->GetDrivers();
-
-		auto itr = Drivers.find(DriverID);
-		assert(itr != Drivers.end());
-
-		itr->second.vma->FreePages(Pointer, Pages);
+		DriverManager->FreeMemory(DriverID, Pointer, Pages);
 	}
 
 	void *MemoryCopy(dev_t DriverID, void *Destination, const void *Source, size_t Length)

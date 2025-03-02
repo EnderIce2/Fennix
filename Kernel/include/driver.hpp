@@ -153,6 +153,9 @@ namespace Driver
 
 		int UnregisterDevice(dev_t DriverID, dev_t Device);
 
+		void *AllocateMemory(dev_t DriverID, size_t Pages);
+		void FreeMemory(dev_t DriverID, void *Pointer, size_t Pages);
+
 		Manager();
 		~Manager();
 	};
