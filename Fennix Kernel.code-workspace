@@ -33,7 +33,8 @@
 			"vscode",
 			"kernel",
 			"kernel/pci",
-			"kernel/driver"
+			"kernel/driver",
+			"kernel/drivers"
 		]
 	}
 }
