@@ -95,6 +95,7 @@ namespace Driver
 
 
 		int LoadDriverFile(DriverObject &Drv, FileNode *File);
+		void ReloadDriver(dev_t driverID);
 
 		void InitializeDaemonFS();
 

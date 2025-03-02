@@ -31,7 +31,9 @@
 			"kernel/api",
 			"kernel/syscalls",
 			"vscode",
-			"kernel"
+			"kernel",
+			"kernel/pci",
+			"kernel/driver"
 		]
 	}
 }

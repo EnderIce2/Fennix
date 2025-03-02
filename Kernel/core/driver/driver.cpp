@@ -514,6 +514,102 @@ namespace Driver
 		return 0;
 	}
 
+	void Manager::ReloadDriver(dev_t driverID)
+	{
+		auto it = Drivers.find(driverID);
+		if (it == Drivers.end())
+		{
+			error("Driver with ID %d not found", driverID);
+			return;
+		}
+
+		DriverObject &Drv = it->second;
+		if (!Drv.Initialized)
+		{
+			error("Driver %s is not initialized", Drv.Name);
+			return;
+		}
+
+		debug("Reloading driver %s", Drv.Name);
+
+		/* Unload the driver */
+		int err = Drv.Final();
+		if (err < 0)
+		{
+			warn("Failed to unload driver %s: %s", Drv.Name, strerror(err));
+		}
+
+		/* Free resources */
+		Drv.vma->FreeAllPages();
+		delete Drv.vma;
+		delete Drv.InterruptHandlers;
+		delete Drv.DeviceOperations;
+
+		/* Reload the driver */
+		FileNode *drvNode = fs->GetByPath(Drv.Path.c_str(), nullptr);
+		if (!drvNode)
+		{
+			error("Failed to open driver file %s", Drv.Path.c_str());
+			return;
+		}
+
+		DriverObject newDrvObj = {};
+		newDrvObj.IsBuiltIn = false;
+		newDrvObj.BaseAddress = 0;
+		newDrvObj.EntryPoint = 0;
+		newDrvObj.vma = new Memory::VirtualMemoryArea(thisProcess->PageTable);
+		newDrvObj.Path = drvNode->Path;
+		newDrvObj.InterruptHandlers = new std::unordered_map<uint8_t, void *>();
+		newDrvObj.DeviceOperations = new std::unordered_map<dev_t, DriverHandlers>();
+		newDrvObj.ID = driverID;
+
+		err = this->LoadDriverFile(newDrvObj, drvNode);
+		if (err != 0)
+		{
+			error("Failed to load driver %s: %s", drvNode->Path.c_str(), strerror(err));
+			delete newDrvObj.vma;
+			delete newDrvObj.InterruptHandlers;
+			delete newDrvObj.DeviceOperations;
+			return;
+		}
+
+		Drivers[driverID] = newDrvObj;
+
+		/* Initialize the driver */
+		int (*DrvInit)(dev_t) = (int (*)(dev_t))newDrvObj.EntryPoint;
+		newDrvObj.ErrorCode = DrvInit(newDrvObj.ID);
+		if (newDrvObj.ErrorCode < 0)
+		{
+			KPrint("FATAL: _start() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			error("Failed to load driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
+			newDrvObj.vma->FreeAllPages();
+			return;
+		}
+
+		KPrint("Loading driver %s", newDrvObj.Name);
+
+		newDrvObj.ErrorCode = newDrvObj.Probe();
+		if (newDrvObj.ErrorCode < 0)
+		{
+			KPrint("Probe() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			error("Failed to probe driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
+			newDrvObj.vma->FreeAllPages();
+			return;
+		}
+
+		newDrvObj.ErrorCode = newDrvObj.Entry();
+		if (newDrvObj.ErrorCode < 0)
+		{
+			KPrint("Entry() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			error("Failed to initialize driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
+			newDrvObj.vma->FreeAllPages();
+			return;
+		}
+
+		debug("Reloaded driver %s", newDrvObj.Path.c_str());
+		newDrvObj.Initialized = true;
+	}
+
 	Manager::Manager() { this->InitializeDaemonFS(); }
 
 	Manager::~Manager()
