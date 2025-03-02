@@ -1,7 +1,9 @@
-build:
-	make -C ahci build
-	make -C ata build
+MAKE_TARGETS := build clean
+DIRECTORIES := $(sort $(dir $(wildcard ./*/)))
 
-clean:
-	make -C ahci clean
-	make -C ata clean
+.PHONY: $(MAKE_TARGETS) $(DIRECTORIES)
+
+$(MAKE_TARGETS): $(DIRECTORIES)
+
+$(DIRECTORIES):
+	$(MAKE) -C $@ $(MAKECMDGOALS)

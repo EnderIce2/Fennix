@@ -377,7 +377,9 @@ struct FileSystemInfo
 	void *PrivateData;
 } __attribute__((packed));
 
+#ifndef __kernel__
 dev_t RegisterFileSystem(struct FileSystemInfo *Info, struct Inode *Root);
 int UnregisterFileSystem(dev_t Device);
+#endif // !__kernel__
 
 #endif // !__FENNIX_API_FILESYSTEM_H__

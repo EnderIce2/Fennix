@@ -103,6 +103,7 @@ typedef union
 	uint8_t Raw;
 } PS2_OUTPUT_PORT;
 
+#ifndef __kernel__
 void PIC_EOI(uint8_t IRQ);
 void IRQ_MASK(uint8_t IRQ);
 void IRQ_UNMASK(uint8_t IRQ);
@@ -114,10 +115,10 @@ uint8_t PS2ReadStatus();
 uint8_t PS2ReadAfterACK();
 void PS2ClearOutputBuffer();
 int PS2ACKTimeout();
+#endif // !__kernel__
 
 #define WaitOutput PS2Wait(DriverID, true)
 #define WaitInput PS2Wait(DriverID, false)
-
 
 #define PS2_KBD_CMD_SET_LEDS 0xED
 #define PS2_KBD_CMD_ECHO 0xEE
@@ -188,7 +189,6 @@ typedef union
 	};
 	uint8_t Raw;
 } PS2_KBD_TYPEMATIC;
-
 
 #define PS2_MOUSE_CMD_SET_SCALING_1_1 0xE6
 #define PS2_MOUSE_CMD_SET_SCALING_2_1 0xE7

@@ -171,11 +171,13 @@ extern "C"
 {
 #endif
 
+#ifndef __kernel__
 	PCIArray *GetPCIDevices(uint16_t Vendors[], uint16_t Devices[]);
 	void InitializePCI(PCIDevice *Device);
 	uint32_t GetBAR(uint8_t Index, PCIDevice *Device);
 	uint8_t iLine(PCIDevice *Device);
 	uint8_t iPin(PCIDevice *Device);
+#endif // !__kernel__
 
 #ifdef __cplusplus
 }
