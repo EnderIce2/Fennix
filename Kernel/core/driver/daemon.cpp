@@ -653,12 +653,21 @@ namespace Driver
 		fsi->SuperOps = {};
 		fsi->Ops.Lookup = __fs_Lookup;
 		fsi->Ops.Create = __fs_Create;
+		fsi->Ops.Remove = nullptr;
+		fsi->Ops.Rename = nullptr;
 		fsi->Ops.Read = __fs_Read;
 		fsi->Ops.Write = __fs_Write;
+		fsi->Ops.Truncate = nullptr;
 		fsi->Ops.Open = __fs_Open;
 		fsi->Ops.Close = __fs_Close;
 		fsi->Ops.Ioctl = __fs_Ioctl;
 		fsi->Ops.ReadDir = __fs_Readdir;
+		fsi->Ops.MkDir = nullptr;
+		fsi->Ops.RmDir = nullptr;
+		fsi->Ops.SymLink = nullptr;
+		fsi->Ops.ReadLink = nullptr;
+		fsi->Ops.Seek = nullptr;
+		fsi->Ops.Stat = nullptr;
 
 		dev->Device = fs->RegisterFileSystem(fsi, dev);
 		dev->SetDevice(0, MinorID++);
