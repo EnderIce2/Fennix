@@ -32,7 +32,7 @@
 					"text": "source ${workspaceFolder}/../tools/.gdbinit"
 				}
 			],
-			"preLaunchTask": "launch-qemu"
+			"preLaunchTask": "QEMU"
 		},
 		{
 			"name": "Debug Kernel (x86)",
@@ -65,7 +65,7 @@
 					"text": "source ${workspaceFolder}/../tools/.gdbinit"
 				}
 			],
-			"preLaunchTask": "launch-qemu"
+			"preLaunchTask": "QEMU"
 		},
 		{
 			"name": "Debug Kernel (arm64)",
@@ -98,7 +98,7 @@
 					"text": "source ${workspaceFolder}/../tools/.gdbinit"
 				}
 			],
-			"preLaunchTask": "launch-qemu"
+			"preLaunchTask": "QEMU"
 		},
 		{
 			"name": "Debug Kernel (arm)",
@@ -131,7 +131,7 @@
 					"text": "source ${workspaceFolder}/../tools/.gdbinit"
 				}
 			],
-			"preLaunchTask": "launch-qemu"
+			"preLaunchTask": "QEMU"
 		},
 		{
 			"type": "gdb",
@@ -149,7 +149,7 @@
 			],
 			"internalConsoleOptions": "neverOpen",
 			"printCalls": false,
-			"preLaunchTask": "launch-qemu"
+			"preLaunchTask": "QEMU"
 		},
 	]
 }

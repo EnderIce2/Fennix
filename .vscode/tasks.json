@@ -124,7 +124,7 @@
 			}
 		},
 		{
-			"label": "launch-qemu",
+			"label": "QEMU",
 			"type": "shell",
 			"command": "make",
 			"args": [
