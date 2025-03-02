@@ -31,6 +31,24 @@
 static_assert(DTTOIF(DT_FIFO) == S_IFIFO);
 static_assert(IFTODT(S_IFCHR) == DT_CHR);
 
+/**
+ * This macro is used to check if a filesystem operation is available.
+ *
+ * TL;DR
+ *
+ * @code
+ * if FileSystemInfo.Ops.op == nullptr
+ *     return -err
+ * else
+ *     return FileSystemInfo.Ops.op(this->Node, ...);
+ * @endcode
+ *
+ * @param op The operation to check.
+ * @param err The error to return if the operation is not available.
+ * @param ... The arguments to pass to the operation.
+ *
+ * @return The result of the operation.
+ */
 #define __check_op(op, err, ...) \
 	if (fsi->Ops.op == nullptr)  \
 		return -err;             \
