@@ -105,10 +105,10 @@ namespace KernelConsole
 		debug("string: \"%*s\"", Size, buf);
 		for (size_t i = 0; i < Size; i++)
 		{
-			if (this->TerminalConfig.c_lflag & ICANON)
-				this->Process(buf[i]);
-			else
-				this->Append(buf[i]);
+			// if (this->TerminalConfig.c_lflag & ICANON)
+			this->Process(buf[i]);
+			// else
+			// 	this->Append(buf[i]);
 		}
 
 		debug("ret %ld", Size);
