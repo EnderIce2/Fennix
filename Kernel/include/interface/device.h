@@ -69,7 +69,10 @@ typedef enum
 	BLOCK_TYPE_FLOPPY = DEVICE_TYPE_BLOCK + 128,
 } DeviceType;
 
+#ifndef __kernel__
+EXTERNC dev_t CreateDeviceFile(const char *name, mode_t mode, const struct InodeOperations *Operations);
 EXTERNC dev_t RegisterDevice(DeviceType Type, const struct InodeOperations *Operations);
 EXTERNC int UnregisterDevice(dev_t Device);
+#endif // !__kernel__
 
 #endif // !__FENNIX_API_DEVICE_H__

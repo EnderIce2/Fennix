@@ -15,6 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#define NO_API_IN_HEADER 1
 #include <driver.hpp>
 #include <interface/driver.h>
 #include <interface/fs.h>

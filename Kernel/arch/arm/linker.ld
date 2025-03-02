@@ -58,6 +58,14 @@ SECTIONS
 	}
 	. = ALIGN(4096);
 
+	.builtin_drivers :
+	{
+		__kernel_builtin_drivers_start = .;
+		KEEP(*(SORT(.builtin_drivers.*)))
+		KEEP(*(.builtin_drivers))
+		__kernel_builtin_drivers_end = .;
+	}
+
 	.init_array :
 	{
 		PROVIDE_HIDDEN(__init_array_start = .);

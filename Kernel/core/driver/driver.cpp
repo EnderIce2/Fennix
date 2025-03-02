@@ -37,6 +37,36 @@ namespace Driver
 	void Manager::PreloadDrivers()
 	{
 		debug("Initializing driver manager");
+
+		auto &bs = __kernel_builtin_drivers_start;
+		auto &be = __kernel_builtin_drivers_end;
+		for (const BuiltInDriver *drv = bs; drv < be; ++drv)
+		{
+			debug("Loading built-in driver %s", drv->Name);
+
+			DriverObject drvObj = {};
+			strncpy(drvObj.Name, drv->Name, sizeof(drvObj.Name));
+			strncpy(drvObj.Description, drv->Description, sizeof(drvObj.Description));
+			strncpy(drvObj.Author, drv->Author, sizeof(drvObj.Author));
+			drvObj.Version.Major = drv->Version.Major;
+			drvObj.Version.Minor = drv->Version.Minor;
+			drvObj.Version.Patch = drv->Version.Patch;
+			drvObj.Entry = drv->Entry;
+			drvObj.Final = drv->Final;
+			drvObj.Panic = drv->Panic;
+			drvObj.Probe = drv->Probe;
+
+			drvObj.IsBuiltIn = true;
+			drvObj.BaseAddress = 0;
+			drvObj.EntryPoint = drv->EntryPoint;
+			drvObj.vma = new Memory::VirtualMemoryArea(thisProcess->PageTable);
+			drvObj.Path = "<builtin>";
+			drvObj.InterruptHandlers = new std::unordered_map<uint8_t, void *>();
+			drvObj.DeviceOperations = new std::unordered_map<dev_t, DriverHandlers>();
+			drvObj.ID = DriverIDCounter;
+			Drivers.insert({DriverIDCounter++, drvObj});
+		}
+
 		const char *DriverDirectory = Config.DriverDirectory;
 		FileNode *drvDirNode = fs->GetByPath(DriverDirectory, nullptr);
 		if (!drvDirNode)
@@ -58,13 +88,15 @@ namespace Driver
 				continue;
 			}
 
-			DriverObject drvObj = {.BaseAddress = 0,
-								   .EntryPoint = 0,
-								   .vma = new Memory::VirtualMemoryArea(thisProcess->PageTable),
-								   .Path = drvNode->Path,
-								   .InterruptHandlers = new std::unordered_map<uint8_t, void *>(),
-								   .DeviceOperations = new std::unordered_map<dev_t, DriverHandlers>(),
-								   .ID = DriverIDCounter};
+			DriverObject drvObj = {};
+			drvObj.IsBuiltIn = false;
+			drvObj.BaseAddress = 0;
+			drvObj.EntryPoint = 0;
+			drvObj.vma = new Memory::VirtualMemoryArea(thisProcess->PageTable);
+			drvObj.Path = drvNode->Path;
+			drvObj.InterruptHandlers = new std::unordered_map<uint8_t, void *>();
+			drvObj.DeviceOperations = new std::unordered_map<dev_t, DriverHandlers>();
+			drvObj.ID = DriverIDCounter;
 
 			int err = this->LoadDriverFile(drvObj, drvNode);
 			debug("err = %d (%s)", err, strerror(err));
@@ -111,7 +143,7 @@ namespace Driver
 				continue;
 			}
 
-			KPrint("Loading driver %s", Drv.Name);
+			KPrint("Loading driver %s (%d)", Drv.Name, Drv.ID);
 
 			debug("Calling Probe()=%#lx on driver %s",
 				  Drv.Probe, Drv.Path.c_str());

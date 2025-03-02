@@ -80,6 +80,14 @@ SECTIONS
 		*(.rodata .rodata.*)
 	} :rodata
 
+	.builtin_drivers ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.builtin_drivers) - KERNEL_VMA)
+	{
+		__kernel_builtin_drivers_start = .;
+		KEEP(*(SORT(.builtin_drivers.*)))
+		KEEP(*(.builtin_drivers))
+		__kernel_builtin_drivers_end = .;
+	} :rodata
+
 	.init_array ALIGN(CONSTANT(MAXPAGESIZE)) : AT(ADDR(.init_array) - KERNEL_VMA)
 	{
 		PROVIDE_HIDDEN(__init_array_start = .);

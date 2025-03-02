@@ -239,6 +239,8 @@ typedef struct
 	};
 } InputReport;
 
+#ifndef __kernel__
 EXTERNC int ReportInputEvent(InputReport *Report);
+#endif // !__kernel__
 
 #endif // !__FENNIX_API_INPUT_H__
