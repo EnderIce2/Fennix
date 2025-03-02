@@ -13,12 +13,12 @@
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
 			"userspace/libc",
-			"userspace/libs/libdemo",
 			"vscode",
 			"userspace/apps/sys/init",
 			"userspace/apps/test/utest",
 			"userspace/libs/libm",
-			"devcontainer"
+			"devcontainer",
+			"userspace/libs"
 		]
 	}
 }
