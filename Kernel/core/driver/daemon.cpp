@@ -90,8 +90,10 @@ namespace Driver
 		_dev->Parent = nullptr;
 		_dev->ParentInode = _Parent;
 		_dev->Name = Name;
+		_dev->Node.Device = Parent->Node.Device;
 		_dev->Node.Mode = Mode;
 		_dev->Node.Index = Parent->Node.Index + Parent->Children.size();
+		_dev->Node.Offset = Parent->Children.size();
 		Parent->Children.push_back(_dev);
 
 		*Result = &_dev->Node;
