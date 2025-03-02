@@ -40,27 +40,13 @@ namespace Driver
 	 *	min:
 	 *		0 - <ROOT>
 	 *		1 - /proc/self
-	 *		2 - /dev/null
-	 *		3 - /dev/zero
-	 *		4 - /dev/random
-	 *		5 - /dev/mem
-	 *		6 - /dev/kcon
-	 *		7 - /dev/tty
-	 *		8 - /dev/ptmx
 	 *
 	 * maj = 1
 	 * 	min:
 	 *		0 - /dev/input/keyboard
 	 *		1 - /dev/input/mouse
 	 *		..- /dev/input/eventN
-	 *
-	 * maj = 2
-	 * 	min:
-	 *		0 - /dev/fb0
-	 *		..- /dev/fbN
 	 */
-
-	TTY::PTMXDevice *ptmx = nullptr;
 
 	int __fs_Lookup(struct Inode *_Parent, const char *Name, struct Inode **Result)
 	{
@@ -117,61 +103,6 @@ namespace Driver
 		func("%#lx %d %d", Node, Size, Offset);
 		switch (Node->GetMajor())
 		{
-		case 0:
-		{
-			switch (Node->GetMinor())
-			{
-			case 2: /* /dev/null */
-			{
-				return 0;
-			}
-			case 3: /* /dev/zero */
-			{
-				if (Size <= 0)
-					return 0;
-
-				memset(Buffer, 0, Size);
-				return Size;
-			}
-			case 4: /* /dev/random */
-			{
-				if (Size <= 0)
-					return 0;
-
-				if (Size < sizeof(uint64_t))
-				{
-					uint8_t *buf = (uint8_t *)Buffer;
-					for (size_t i = 0; i < Size; i++)
-						buf[i] = (uint8_t)(Random::rand16() & 0xFF);
-					return Size;
-				}
-
-				uint64_t *buf = (uint64_t *)Buffer;
-				for (size_t i = 0; i < Size / sizeof(uint64_t); i++)
-					buf[i] = Random::rand64();
-				return Size;
-			}
-			case 5: /* /dev/mem */
-			{
-				stub;
-				return 0;
-			}
-			case 6: /* /dev/kcon */
-				return KernelConsole::CurrentTerminal.load()->Read(Buffer, Size, Offset);
-			case 7: /* /dev/tty */
-			{
-				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
-				if (tty == nullptr)
-					return -ENOTTY;
-				return tty->Read(Buffer, Size, Offset);
-			}
-			case 8: /* /dev/ptmx */
-				return -ENOSYS;
-			default:
-				return -ENOENT;
-			};
-			break;
-		}
 		case 1:
 		{
 			switch (Node->GetMinor())
@@ -210,16 +141,6 @@ namespace Driver
 				return -ENOENT;
 			};
 		}
-		case 2:
-		{
-			switch (Node->GetMinor())
-			{
-			case 0: /* /dev/fb0 */
-				return -EINVAL;
-			default:
-				return -ENOENT;
-			}
-		}
 		default:
 		{
 			std::unordered_map<dev_t, Driver::DriverObject> &drivers =
@@ -246,42 +167,6 @@ namespace Driver
 
 		switch (Node->GetMajor())
 		{
-		case 0:
-		{
-			switch (Node->GetMinor())
-			{
-			case 2: /* /dev/null */
-			{
-				return Size;
-			}
-			case 3: /* /dev/zero */
-			{
-				return Size;
-			}
-			case 4: /* /dev/random */
-			{
-				return Size;
-			}
-			case 5: /* /dev/mem */
-			{
-				stub;
-				return 0;
-			}
-			case 6: /* /dev/kcon */
-				return KernelConsole::CurrentTerminal.load()->Write(Buffer, Size, Offset);
-			case 7: /* /dev/tty */
-			{
-				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
-				if (tty == nullptr)
-					return -ENOTTY;
-				return tty->Write(Buffer, Size, Offset);
-			}
-			case 8: /* /dev/ptmx */
-				return -ENOSYS;
-			default:
-				return -ENOENT;
-			};
-		}
 		case 1:
 		{
 			switch (Node->GetMinor())
@@ -297,16 +182,6 @@ namespace Driver
 			default:
 				return -ENOENT;
 			};
-		}
-		case 2:
-		{
-			switch (Node->GetMinor())
-			{
-			case 0: /* /dev/fb0 */
-				return -EINVAL;
-			default:
-				return -ENOENT;
-			}
 		}
 		default:
 		{
@@ -334,30 +209,6 @@ namespace Driver
 
 		switch (Node->GetMajor())
 		{
-		case 0:
-		{
-			switch (Node->GetMinor())
-			{
-			case 2: /* /dev/null */
-			case 3: /* /dev/zero */
-			case 4: /* /dev/random */
-			case 5: /* /dev/mem */
-				return -ENOSYS;
-			case 6: /* /dev/kcon */
-				return KernelConsole::CurrentTerminal.load()->Open(Flags, Mode);
-			case 7: /* /dev/tty */
-			{
-				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
-				if (tty == nullptr)
-					return -ENOTTY;
-				return tty->Open(Flags, Mode);
-			}
-			case 8: /* /dev/ptmx */
-				return ptmx->Open();
-			default:
-				return -ENOENT;
-			};
-		}
 		case 1:
 		{
 			switch (Node->GetMinor())
@@ -395,30 +246,6 @@ namespace Driver
 
 		switch (Node->GetMajor())
 		{
-		case 0:
-		{
-			switch (Node->GetMinor())
-			{
-			case 2: /* /dev/null */
-			case 3: /* /dev/zero */
-			case 4: /* /dev/random */
-			case 5: /* /dev/mem */
-				return -ENOSYS;
-			case 6: /* /dev/kcon */
-				return KernelConsole::CurrentTerminal.load()->Close();
-			case 7: /* /dev/tty */
-			{
-				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
-				if (tty == nullptr)
-					return -ENOTTY;
-				return tty->Close();
-			}
-			case 8: /* /dev/ptmx */
-				return ptmx->Close();
-			default:
-				return -ENOENT;
-			};
-		}
 		case 1:
 		{
 			switch (Node->GetMinor())
@@ -456,31 +283,6 @@ namespace Driver
 
 		switch (Node->GetMajor())
 		{
-		case 0:
-		{
-			switch (Node->GetMinor())
-			{
-			case 2: /* /dev/null */
-			case 3: /* /dev/zero */
-			case 4: /* /dev/random */
-			case 5: /* /dev/mem */
-				return -ENOSYS;
-			case 6: /* /dev/kcon */
-				return KernelConsole::CurrentTerminal.load()->Ioctl(Request, Argp);
-			case 7: /* /dev/tty */
-			{
-				TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
-				if (tty == nullptr)
-					return -ENOTTY;
-				return tty->Ioctl(Request, Argp);
-			}
-			case 8: /* /dev/ptmx */
-				return -ENOSYS;
-			default:
-				return -ENOENT;
-			};
-			break;
-		}
 		case 1:
 		{
 			switch (Node->GetMinor())
@@ -491,32 +293,6 @@ namespace Driver
 			default:
 				return -ENOENT;
 			};
-		}
-		case 2:
-		{
-			switch (Node->GetMinor())
-			{
-			case 0: /* /dev/fb0 */
-			{
-				switch (Request)
-				{
-				case FBIOGET_SCREEN_INFO:
-				{
-					FramebufferScreenInfo *info = (FramebufferScreenInfo *)Argp;
-					info->Width = Display->GetWidth;
-					info->Height = Display->GetHeight;
-					info->Pitch = Display->GetPitch();
-					info->Bpp = Display->GetBitsPerPixel();
-					info->Size = Display->GetSize;
-					return 0;
-				}
-				default:
-					return -ENOSYS;
-				}
-			}
-			default:
-				return -ENOENT;
-			}
 		}
 		default:
 		{
@@ -717,8 +493,7 @@ namespace Driver
 
 	dev_t Manager::RegisterDevice(dev_t DriverID, DeviceType Type, const InodeOperations *Operations)
 	{
-		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
-			DriverManager->GetDrivers();
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers = DriverManager->GetDrivers();
 		const auto it = drivers.find(DriverID);
 		if (it == drivers.end())
 			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
@@ -786,8 +561,7 @@ namespace Driver
 
 	int Manager::UnregisterDevice(dev_t DriverID, dev_t Device)
 	{
-		std::unordered_map<dev_t, Driver::DriverObject> &drivers =
-			DriverManager->GetDrivers();
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers = DriverManager->GetDrivers();
 		const auto it = drivers.find(DriverID);
 		if (it == drivers.end())
 			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
@@ -857,8 +631,6 @@ namespace Driver
 
 	void Manager::InitializeDaemonFS()
 	{
-		ptmx = new TTY::PTMXDevice;
-
 		dev_t MinorID = 0;
 		DeviceInode *_dev = new DeviceInode;
 		_dev->Name = "dev";
@@ -924,56 +696,6 @@ namespace Driver
 			p1->Children.push_back(device);
 		};
 
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "null", 0, MinorID++, mode);
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "zero", 0, MinorID++, mode);
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IROTH | S_IWOTH |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "random", 0, MinorID++, mode);
-
-		/* c rw- r-- --- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP |
-
-			   S_IFCHR;
-		createDevice(_dev, devNode, "mem", 0, MinorID++, mode);
-
-		/* c rw- r-- --- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP |
-
-			   S_IFCHR;
-		createDevice(_dev, devNode, "kcon", 0, MinorID++, mode);
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IRUSR | S_IWUSR |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "tty", 0, MinorID++, mode);
-
-		/* c rw- rw- rw- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP | S_IWGRP |
-			   S_IRUSR | S_IWUSR |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "ptmx", 0, MinorID++, mode);
-
-		/* ------------------------------------------------------ */
 		MinorID = 0;
 
 		/* c rw- r-- --- */
@@ -989,14 +711,5 @@ namespace Driver
 
 			   S_IFCHR;
 		createDevice(input, devInputNode, "mouse", 1, MinorID++, mode);
-
-		/* ------------------------------------------------------ */
-		MinorID = 0;
-
-		/* c rw- r-- --- */
-		mode = S_IRUSR | S_IWUSR |
-			   S_IRGRP |
-			   S_IFCHR;
-		createDevice(_dev, devNode, "fb0", 2, MinorID++, mode);
 	}
 }
