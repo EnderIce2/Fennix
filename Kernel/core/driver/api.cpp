@@ -682,6 +682,13 @@ namespace v0
 
 	/* --------- */
 
+	dev_t CreateDeviceFile(dev_t DriverID, const char *name, mode_t mode, const InodeOperations *Operations)
+	{
+		dbg_api("%d, %s, %#o, %#lx", DriverID, name, mode, Operations);
+
+		return DriverManager->CreateDeviceFile(DriverID, name, mode, Operations);
+	}
+
 	dev_t RegisterDevice(dev_t DriverID, DeviceType Type, const InodeOperations *Operations)
 	{
 		dbg_api("%d, %d, %#lx", DriverID, Type, Operations);
@@ -765,6 +772,7 @@ static struct APISymbols APISymbols_v0[] = {
 	{"__iLine", (void *)v0::iLine},
 	{"__iPin", (void *)v0::iPin},
 
+	{"__CreateDeviceFile", (void *)v0::CreateDeviceFile},
 	{"__RegisterDevice", (void *)v0::RegisterDevice},
 	{"__UnregisterDevice", (void *)v0::UnregisterDevice},
 	{"__ReportInputEvent", (void *)v0::ReportInputEvent},
