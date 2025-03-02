@@ -887,8 +887,8 @@ namespace PCI
 		{
 			PCIHeader0 *hdr0 = (PCIHeader0 *)Device.Header;
 
-			uint32_t BAR[6];
-			size_t BARsSize[6];
+			uint32_t BAR[6] = {};
+			size_t BARsSize[6] = {};
 
 			BAR[0] = hdr0->BAR0;
 			BAR[1] = hdr0->BAR1;
@@ -909,26 +909,46 @@ namespace PCI
 				size_t size;
 				if ((BAR[i] & 1) == 0) /* Memory Base */
 				{
-					hdr0->BAR0 = 0xFFFFFFFF;
+					hdr0->BAR0 = UINT32_MAX;
 					size = hdr0->BAR0;
 					hdr0->BAR0 = BAR[i];
-					BARsSize[i] = size & (~15);
-					BARsSize[i] = ~BARsSize[i] + 1;
-					BARsSize[i] = BARsSize[i] & 0xFFFFFFFF;
-					debug("BAR%d %#lx size: %d",
-						  i, BAR[i], BARsSize[i]);
+
+					/* FIXME: further testing required */
+					// if ((BAR[i] & 0x6) == 0x4) /* 64-bit address */
+					// {
+					// 	hdr0->BAR1 = UINT32_MAX;
+					// 	size |= ((size_t)hdr0->BAR1 << 32);
+					// 	hdr0->BAR1 = BAR[i + 1];
+					// 	i++; /* Skip the next BAR since it's part of the 64-bit address */
+					// }
+
+					size = size & (~15);
+					size = ~size + 1;
+					size = size & UINT32_MAX;
+					if (size == 0)
+					{
+						warn("BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
+						size++;
+					}
+					BARsSize[i] = size;
 				}
 				else if ((BAR[i] & 1) == 1) /* I/O Base */
 				{
-					hdr0->BAR1 = 0xFFFFFFFF;
+					hdr0->BAR1 = UINT32_MAX;
 					size = hdr0->BAR1;
 					hdr0->BAR1 = BAR[i];
-					BARsSize[i] = size & (~3);
-					BARsSize[i] = ~BARsSize[i] + 1;
-					BARsSize[i] = BARsSize[i] & 0xFFFF;
-					debug("BAR%d %#lx size: %d",
-						  i, BAR[i], BARsSize[i]);
+
+					size = size & (~3);
+					size = ~size + 1;
+					size = size & UINT16_MAX;
+					if (size == 0)
+					{
+						warn("BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
+						size++;
+					}
+					BARsSize[i] = size;
 				}
+				debug("BAR%d %#lx size: %zu", i, BAR[i], BARsSize[i]);
 			}
 
 			/* Mapping the BARs */
@@ -942,24 +962,20 @@ namespace PCI
 					uintptr_t BARBase = BAR[i] & (~15);
 					size_t BARSize = BARsSize[i];
 
-					debug("Mapping BAR%d %#lx-%#lx",
-						  i, BARBase, BARBase + BARSize);
+					debug("Mapping BAR%d %#lx-%#lx", i, BARBase, BARBase + BARSize);
 
-					if (BARSize > 0)
-						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-												   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
+					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
+											   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
 				}
 				else if ((BAR[i] & 1) == 1) /* I/O Base */
 				{
 					uintptr_t BARBase = BAR[i] & (~3);
 					size_t BARSize = BARsSize[i];
 
-					debug("Mapping BAR%d %#x-%#x",
-						  i, BARBase, BARBase + BARSize);
+					debug("Mapping BAR%d %#x-%#x", i, BARBase, BARBase + BARSize);
 
-					if (BARSize > 0)
-						Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-												   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
+					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
+											   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
 				}
 			}
 			break;
