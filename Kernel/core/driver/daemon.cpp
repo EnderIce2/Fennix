@@ -747,6 +747,43 @@ namespace Driver
 		ReturnLogError(-1, "No available slots for device %d", DriverID);
 	}
 
+	dev_t Manager::CreateDeviceFile(dev_t DriverID, const char *name, mode_t mode, const InodeOperations *Operations)
+	{
+		std::unordered_map<dev_t, Driver::DriverObject> &drivers = DriverManager->GetDrivers();
+		const auto it = drivers.find(DriverID);
+		if (it == drivers.end())
+			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
+		const Driver::DriverObject *drv = &it->second;
+
+		auto dop = drv->DeviceOperations;
+		for (size_t i = 0; i < 128; i++)
+		{
+			const auto dOps = dop->find(i);
+			if (dOps != dop->end())
+				continue;
+
+			FileNode *node = fs->GetByPath(name, devNode);
+			if (node)
+				ReturnLogError(-EEXIST, "Device file %s already exists", name);
+
+			node = fs->Create(devNode, name, mode);
+			if (node == nullptr)
+				ReturnLogError(-ENOMEM, "Failed to create device file %s", name);
+
+			node->Node->SetDevice(DriverID, i);
+
+			DriverHandlers dh{};
+			dh.Ops = Operations;
+			dh.Node = node->Node;
+			dh.InputReports = new RingBuffer<InputReport>(16);
+			dop->insert({i, std::move(dh)});
+			return i;
+		}
+
+		ReturnLogError(-1, "No available slots for device %d", DriverID);
+		return -1; /* -Werror=return-type */
+	}
+
 	int Manager::UnregisterDevice(dev_t DriverID, dev_t Device)
 	{
 		std::unordered_map<dev_t, Driver::DriverObject> &drivers =

@@ -149,6 +149,8 @@ namespace Driver
 		 */
 		dev_t CreateIncrementalDevice(dev_t DriverID, const std::string &Prefix, mode_t Mode, InodeOperations *Ops);
 
+		dev_t CreateDeviceFile(dev_t DriverID, const char *name, mode_t mode, const InodeOperations *Operations);
+
 		dev_t RegisterDevice(dev_t DriverID, DeviceType Type, const InodeOperations *Operations);
 		int ReportInputEvent(dev_t DriverID, InputReport *Report);
 
