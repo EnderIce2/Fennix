@@ -21,6 +21,7 @@
 __attribute__((noreturn)) __attribute__((no_stack_protector)) void __stack_chk_fail(void)
 {
 	_exit(0xbeef);
+	__builtin_unreachable();
 }
 
 int sample_test_pass()
