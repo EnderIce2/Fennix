@@ -24,22 +24,21 @@ __attribute__((noreturn)) __attribute__((no_stack_protector)) void __stack_chk_f
 	__builtin_unreachable();
 }
 
-int sample_test_pass()
-{
-	return 0;
-}
+int sample_test_pass() { return 0; }
+int sample_test_fail() { return 1; }
 
-int sample_test_fail()
+/* this function is more for debugger */
+void __test_prefix(const char *func)
 {
-	return 1;
+	printf("Testing \033[1;30m%s\033[0m...", func);
+	fflush(stdout);
 }
 
 #define TEST(func)                                           \
 	do                                                       \
 	{                                                        \
-		printf("Testing \033[1;30m%s\033[0m...", #func);     \
-		fflush(stdout);                                      \
-		int func(void); /* Declare the function */           \
+		__test_prefix(#func);                                \
+		int func(void);                                      \
 		int result = func();                                 \
 		if (result == 0)                                     \
 			printf("\033[0;32m PASS (%d)\033[0m\n", result); \

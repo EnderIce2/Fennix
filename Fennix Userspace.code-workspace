@@ -15,10 +15,10 @@
 			"userspace/libc",
 			"vscode",
 			"userspace/apps/sys/init",
-			"userspace/apps/test/utest",
 			"userspace/libs/libm",
 			"devcontainer",
-			"userspace/libs"
+			"userspace/libs",
+			"userspace/apps/test"
 		]
 	}
 }
