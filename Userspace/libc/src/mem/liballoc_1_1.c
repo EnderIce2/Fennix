@@ -1,5 +1,9 @@
 #include "liballoc_1_1.h"
 
+/* comment these to print debug info */
+#undef DEBUG
+#undef INFO
+
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION "1.1"
