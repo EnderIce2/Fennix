@@ -455,7 +455,15 @@ export int putc(int c, FILE *stream) { return fputc(c, stream); }
 export int putchar(int c) { return putc(c, stdout); }
 export int putc_unlocked(int c, FILE *stream) { return fputc(c, stream); }
 export int putchar_unlocked(int c) { return putc_unlocked(c, stdout); }
-export int puts(const char *s) { return fputs(s, stdout); }
+
+export int puts(const char *s)
+{
+	if (fputs(s, stdout) == EOF)
+		return EOF;
+	if (fputc('\n', stdout) == EOF)
+		return EOF;
+	return 0;
+}
 
 export int remove(const char *);
 export int rename(const char *, const char *);
