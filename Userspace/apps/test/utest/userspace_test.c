@@ -145,6 +145,7 @@ void test_passwd()
 		// printf("gecos: %s\n", p->pw_gecos);
 		printf("dir: %s\n", p->pw_dir);
 		printf("shell: %s\n", p->pw_shell);
+		fflush(stdout);
 	}
 }
 
@@ -230,11 +231,11 @@ void test_time()
 	printf("- Testing time\n");
 
 	struct tm time = {0};
-	int Year = 2024;
-	int Month = 1;
-	int Day = 1;
-	int Hour = 0;
-	int Minute = 0;
+	int Year = 2012;
+	int Month = 6;
+	int Day = 9;
+	int Hour = 4;
+	int Minute = 2;
 	int Second = 0;
 
 	time.tm_year = Year - 1900;
@@ -250,7 +251,9 @@ void test_time()
 	time_t t = mktime(&time);
 	if (t != (time_t)-1)
 	{
-		// stime(&t);
+#ifndef __fennix__
+		stime(&t);
+#endif
 	}
 	else
 	{
@@ -258,6 +261,24 @@ void test_time()
 		fflush(stdout);
 		fflush(stderr);
 	}
+
+	time_t now = t;
+	struct tm t1;
+	gmtime_r(&now, &t1);
+	printf("UTC: %d-%02d-%02d %02d:%02d:%02d\n", t1.tm_year + 1900, t1.tm_mon + 1, t1.tm_mday, t1.tm_hour, t1.tm_min, t1.tm_sec);
+	struct tm t2;
+	localtime_r(&now, &t2);
+	printf("Local: %d-%02d-%02d %02d:%02d:%02d\n", t2.tm_year + 1900, t2.tm_mon + 1, t2.tm_mday, t2.tm_hour, t2.tm_min, t2.tm_sec);
+	struct tm t3 = t2;
+	time_t t_val = mktime(&t3);
+	printf("mktime: %ld\n", (long)t_val);
+
+	tzset();
+	printf("tzname[0]: %s\n", tzname[0]);
+	printf("tzname[1]: %s\n", tzname[1]);
+	printf("timezone: %ld\n", timezone);
+	printf("daylight: %d\n", daylight);
+	fflush(stdout);
 }
 
 void test_args(int argc, char *argv[], char *envp[])
@@ -401,29 +422,31 @@ void test_stat()
 
 void test_ptmx()
 {
-	// printf("- Testing PTMX\n");
+#ifndef __fennix__
+	printf("- Testing PTMX\n");
 
-	// int master, slave;
-	// char buffer[256];
+	int master, slave;
+	char buffer[256];
 
-	// if (openpty(&master, &slave, NULL, NULL, NULL) == -1)
-	// {
-	// 	perror("openpty");
-	// 	fflush(stdout);
-	// 	fflush(stderr);
-	// 	return;
-	// }
+	if (openpty(&master, &slave, NULL, NULL, NULL) == -1)
+	{
+		perror("openpty");
+		fflush(stdout);
+		fflush(stderr);
+		return;
+	}
 
-	// write(master, "Hello, pty!\n", 12);
-	// ssize_t bytesRead = read(slave, buffer, sizeof(buffer));
-	// if (bytesRead > 0)
-	// {
-	// 	buffer[bytesRead] = '\0';
-	// 	printf("Received from pty: %s", buffer);
-	// }
+	write(master, "Hello, pty!\n", 12);
+	ssize_t bytesRead = read(slave, buffer, sizeof(buffer));
+	if (bytesRead > 0)
+	{
+		buffer[bytesRead] = '\0';
+		printf("Received from pty: %s", buffer);
+	}
 
-	// close(master);
-	// close(slave);
+	close(master);
+	close(slave);
+#endif
 }
 
 void test_system()
@@ -860,6 +883,12 @@ void fork_bomb_syscall()
 #endif
 }
 
+int fill_stack(void *p)
+{
+	__attribute__((used)) char buf[512];
+	return fill_stack(buf);
+}
+
 void TestProcess(const char *program, char *const argv[])
 {
 	printf("testing: %s\n", program);
@@ -871,7 +900,6 @@ void TestProcess(const char *program, char *const argv[])
 	}
 	else if (pid < 0)
 		perror("fork");
-	fflush(stderr);
 }
 
 extern int simd_main();
@@ -893,11 +921,13 @@ int main(int argc, char *argv[], char *envp[])
 		{
 			printf("- Starting full tests...\n");
 			TestProcess("/bin/libc_test", NULL);
-			printf("- test: simd");
+			printf("- test: simd\n");
 			simd_main();
-			printf("- test: web");
+			printf("- test: web\n");
 			web_main();
-			printf("- test: framebuffer");
+			// while (1)
+			// 	;
+			printf("- test: framebuffer\n");
 			fb_main();
 		}
 	}
@@ -905,6 +935,7 @@ int main(int argc, char *argv[], char *envp[])
 	printf("- Testing userspace...\n");
 
 	// printf("Press RETURN to start tests...\n");
+	// fflush(stdout);
 	// char key = 0;
 	// while (key != '\n' && key != '\r')
 	// 	key = getchar();
@@ -913,11 +944,14 @@ int main(int argc, char *argv[], char *envp[])
 	// fork_bomb();
 	// fork_bomb_syscall();
 
+	// fill_stack();
 	// test_stdin();
 	// test_stdio();
 	test_unaligned();
 	test_passwd();
+#ifndef __fennix__
 	test_brk();
+#endif
 	test_time();
 	test_signal();
 	test_ptmx();
