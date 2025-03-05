@@ -39,7 +39,10 @@ static inline scarg syscall0(scarg syscall)
 						 : "a"(syscall)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -73,7 +76,10 @@ static inline scarg syscall1(scarg syscall, scarg arg1)
 						 : "a"(syscall), "D"(arg1)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -108,7 +114,10 @@ static inline scarg syscall2(scarg syscall, scarg arg1, scarg arg2)
 						 : "a"(syscall), "D"(arg1), "S"(arg2)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1), "c"(arg2)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -145,7 +154,10 @@ static inline scarg syscall3(scarg syscall, scarg arg1, scarg arg2, scarg arg3)
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -185,7 +197,10 @@ static inline scarg syscall4(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -228,7 +243,10 @@ static inline scarg syscall5(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10), "r"(r8)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4), "D"(arg5)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
@@ -274,7 +292,10 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "D"(arg1), "S"(arg2), "d"(arg3), "r"(r10), "r"(r8), "r"(r9)
 						 : "rcx", "r11", "memory");
 #elif defined(__i386__)
-#warning "i386 syscall wrapper not implemented"
+	__asm__ __volatile__("int $0x30"
+						 : "=a"(ret)
+						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4), "D"(arg5), "g"(arg6)
+						 : "memory");
 #elif defined(__arm__)
 #warning "arm syscall wrapper not implemented"
 #elif defined(__aarch64__)
