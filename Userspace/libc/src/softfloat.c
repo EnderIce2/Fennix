@@ -312,3 +312,8 @@ struct udivmod_result __aeabi_uldivmod(__UINT64_TYPE__ numerator, __UINT64_TYPE_
 	result.quot = __udivmoddi4(numerator, denominator, &result.rem);
 	return result;
 }
+
+int __aeabi_dcmpun(aeabi_double_t a, aeabi_double_t b)
+{
+	return __unorddf2(a.d, b.d);
+}
