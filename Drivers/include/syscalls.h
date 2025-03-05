@@ -22,6 +22,27 @@
 
 #define scarg __UINTPTR_TYPE__
 
+#ifdef __arm__
+#ifdef __thumb__
+#define __thumb_r7
+#define __arm_call(...)
+#warning "arm thumb code not implemented"
+#else /* __thumb__ */
+#define __thumb_r7 __asm__("r7")
+#define __arm_call(...)                \
+	__asm__ __volatile__("svc 0"       \
+						 : "=r"(r0)    \
+						 : __VA_ARGS__ \
+						 : "memory")
+#endif /* __thumb__ */
+
+#ifdef __thumb2__
+#define __r7_operand "rI"(r7)
+#else /* __thumb2__ */
+#define __r7_operand "r"(r7)
+#endif /* __thumb2__ */
+#endif /* __arm__ */
+
 /**
  * @brief Syscall wrapper with 0 arguments
  *
@@ -44,10 +65,12 @@ static inline scarg syscall0(scarg syscall)
 						 : "a"(syscall)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0");
+	__arm_call(__r7_operand);
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0");
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0");
 	__asm__ __volatile__("svc 0"
 						 : "=r"(x0)
 						 : "r"(x8)
@@ -81,10 +104,12 @@ static inline scarg syscall1(scarg syscall, scarg arg1)
 						 : "a"(syscall), "b"(arg1)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	__arm_call(__r7_operand, "0"(r0));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0)
@@ -119,11 +144,14 @@ static inline scarg syscall2(scarg syscall, scarg arg1, scarg arg2)
 						 : "a"(syscall), "b"(arg1), "c"(arg2)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	register scarg r1 __asm__("r1") = arg2;
+	__arm_call(__r7_operand, "0"(r0), "r"(r1));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
-	register long x1 __asm__("x1") = arg2;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
+	register scarg x1 __asm__("x1") = arg2;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0), "r"(x1)
@@ -159,12 +187,16 @@ static inline scarg syscall3(scarg syscall, scarg arg1, scarg arg2, scarg arg3)
 						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	register scarg r1 __asm__("r1") = arg2;
+	register scarg r2 __asm__("r2") = arg3;
+	__arm_call(__r7_operand, "0"(r0), "r"(r1), "r"(r2));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
-	register long x1 __asm__("x1") = arg2;
-	register long x2 __asm__("x2") = arg3;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
+	register scarg x1 __asm__("x1") = arg2;
+	register scarg x2 __asm__("x2") = arg3;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2)
@@ -202,13 +234,18 @@ static inline scarg syscall4(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	register scarg r1 __asm__("r1") = arg2;
+	register scarg r2 __asm__("r2") = arg3;
+	register scarg r3 __asm__("r3") = arg4;
+	__arm_call(__r7_operand, "0"(r0), "r"(r1), "r"(r2), "r"(r3));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
-	register long x1 __asm__("x1") = arg2;
-	register long x2 __asm__("x2") = arg3;
-	register long x3 __asm__("x3") = arg4;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
+	register scarg x1 __asm__("x1") = arg2;
+	register scarg x2 __asm__("x2") = arg3;
+	register scarg x3 __asm__("x3") = arg4;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3)
@@ -248,14 +285,20 @@ static inline scarg syscall5(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4), "D"(arg5)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	register scarg r1 __asm__("r1") = arg2;
+	register scarg r2 __asm__("r2") = arg3;
+	register scarg r3 __asm__("r3") = arg4;
+	register scarg r4 __asm__("r4") = arg5;
+	__arm_call(__r7_operand, "0"(r0), "r"(r1), "r"(r2), "r"(r3), "r"(r4));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
-	register long x1 __asm__("x1") = arg2;
-	register long x2 __asm__("x2") = arg3;
-	register long x3 __asm__("x3") = arg4;
-	register long x4 __asm__("x4") = arg5;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
+	register scarg x1 __asm__("x1") = arg2;
+	register scarg x2 __asm__("x2") = arg3;
+	register scarg x3 __asm__("x3") = arg4;
+	register scarg x4 __asm__("x4") = arg5;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3), "r"(x4)
@@ -297,15 +340,22 @@ static inline scarg syscall6(scarg syscall, scarg arg1, scarg arg2, scarg arg3, 
 						 : "a"(syscall), "b"(arg1), "c"(arg2), "d"(arg3), "S"(arg4), "D"(arg5), "g"(arg6)
 						 : "memory");
 #elif defined(__arm__)
-#warning "arm syscall wrapper not implemented"
+	register scarg r7 __thumb_r7 = syscall;
+	register scarg r0 __asm__("r0") = arg1;
+	register scarg r1 __asm__("r1") = arg2;
+	register scarg r2 __asm__("r2") = arg3;
+	register scarg r3 __asm__("r3") = arg4;
+	register scarg r4 __asm__("r4") = arg5;
+	register scarg r5 __asm__("r5") = arg6;
+	__arm_call(__r7_operand, "0"(r0), "r"(r1), "r"(r2), "r"(r3), "r"(r4), "r"(r5));
 #elif defined(__aarch64__)
-	register long x8 __asm__("x8") = syscall;
-	register long x0 __asm__("x0") = arg1;
-	register long x1 __asm__("x1") = arg2;
-	register long x2 __asm__("x2") = arg3;
-	register long x3 __asm__("x3") = arg4;
-	register long x4 __asm__("x4") = arg5;
-	register long x5 __asm__("x5") = arg6;
+	register scarg x8 __asm__("x8") = syscall;
+	register scarg x0 __asm__("x0") = arg1;
+	register scarg x1 __asm__("x1") = arg2;
+	register scarg x2 __asm__("x2") = arg3;
+	register scarg x3 __asm__("x3") = arg4;
+	register scarg x4 __asm__("x4") = arg5;
+	register scarg x5 __asm__("x5") = arg6;
 	__asm__ __volatile__("svc 0"
 						 : "=r"(ret)
 						 : "r"(x8), "0"(x0), "r"(x1), "r"(x2), "r"(x3), "r"(x4), "r"(x5)
