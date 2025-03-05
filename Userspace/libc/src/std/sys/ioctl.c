@@ -22,9 +22,11 @@
 
 export int ioctl(int fd, unsigned long op, ...)
 {
+	void *arg;
 	va_list args;
 	va_start(args, op);
-	int ret = call_ioctl(fd, op, args);
+	arg = va_arg(args, void *);
 	va_end(args);
+	int ret = call_ioctl(fd, op, arg);
 	return __check_errno(ret, -1);
 }
