@@ -255,7 +255,7 @@ typedef long double double_t;
 	double round(double x);
 	float roundf(float x);
 	long double roundl(long double x);
-	double scalb(double x, double y);
+	double scalb(double x, double n);
 	double scalbln(double x, long n);
 	float scalblnf(float x, long n);
 	long double scalblnl(long double x, long n);
