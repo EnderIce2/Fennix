@@ -15,6 +15,8 @@
 	along with Fennix Drivers. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if defined(__amd64__) || defined(__i386__)
+
 #include <driver.hpp>
 #include <io.h>
 
@@ -645,3 +647,5 @@ namespace Driver::AdvancedIntegratedPeripheral
 	// 	ExPrint(keyBuf);
 	// }
 }
+
+#endif

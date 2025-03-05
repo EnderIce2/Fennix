@@ -15,6 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if defined(__amd64__) || defined(__i386__)
+
 #include <driver.hpp>
 #include <interface/aip.h>
 #include <cpu.hpp>
@@ -258,3 +260,5 @@ namespace Driver::AdvancedIntegratedPeripheral
 							Panic,
 							Probe);
 }
+
+#endif

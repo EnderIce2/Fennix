@@ -15,6 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if defined(__amd64__) || defined(__i386__)
+
 #include <driver.hpp>
 #include <cpu.hpp>
 #include <pci.hpp>
@@ -818,3 +820,5 @@ namespace Driver::AC97
 							Panic,
 							Probe);
 }
+
+#endif

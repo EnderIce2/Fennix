@@ -15,6 +15,8 @@
 	along with Fennix Drivers. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#if defined(__amd64__) || defined(__i386__)
+
 #include "aip.hpp"
 
 #include <driver.hpp>
@@ -261,3 +263,5 @@ namespace Driver::AdvancedIntegratedPeripheral
 		return 0;
 	}
 }
+
+#endif
