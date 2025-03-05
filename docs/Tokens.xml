@@ -42,6 +42,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>FramebufferScreenInfo</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>InodeOperations</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -294,6 +304,16 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>aac2e36f2ffad2d048f6d1d3f988765ef</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Bpp</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ac91da2207de81f799c9e67d918e6f89c</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -784,6 +804,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>ac3db7471bb58aeb50cd8a4ff20b972f8</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Height</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a19d0c3a8e1f310af3ea7b1edc623f3e5</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1317,6 +1347,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Pitch</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a32c1b38cd63a88753f65c06e495ab546</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Port1Clock</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1787,6 +1827,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Size</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>af8c41bf2049e422f416725a921a4abaa</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>StartBus</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2014,6 +2064,16 @@
     </TokenIdentifier>
     <Path>db/de4/driver_8h.html</Path>
     <Anchor>a7f2ee0705a9eaf49c4f920d827198530</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Width</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>FramebufferScreenInfo</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a13cd8b19c0885b5346f14d355ac94f92</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4207,6 +4267,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>CreateDeviceFile</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>db/de9/device_8h.html</Path>
+    <Anchor>a81032d8e1f8ee1ac7436d8d48ea605f9</Anchor>
+    <DeclaredIn>device.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>DeleteInode</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -5557,6 +5627,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>FBIOGET_SCREEN_INFO</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a6c1209ea4c2dba6d6c19a607f04167a6</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Flags</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -5564,6 +5644,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ac3e60a9fc42fb6c0b656191ebb1d658b</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>FramebufferScreenInfo</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ab0f3fa6738fe8413c73638b07582dcf3</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

@@ -63,5 +63,6 @@ var searchData=
   ['command_60',['Command',['../d9/d97/pci_8h.html#af7007d29612482dce21e79e4db0fd2b8',1,'__attribute__']]],
   ['commanddata_61',['CommandData',['../d1/de1/aip_8h.html#ad3c1a945d3b7f0aa9f0bbcb1bdc77d37',1,'PS2_STATUSES.__unnamed1__']]],
   ['config_62',['Config',['../d9/d97/pci_8h.html#aae7dbeb87dc97e9e2b3befb18fe075af',1,'__attribute__']]],
-  ['create_63',['create',['../db/de6/structInodeOperations.html#abed9ba869733a00a02a41a3ea9765bda',1,'InodeOperations::Create'],['../df/d26/fs_8h.html#a2e6d2e5dc031b51fc6f466515b4d3b3e',1,'Create:&#160;fs.h']]]
+  ['create_63',['create',['../db/de6/structInodeOperations.html#abed9ba869733a00a02a41a3ea9765bda',1,'InodeOperations::Create'],['../df/d26/fs_8h.html#a2e6d2e5dc031b51fc6f466515b4d3b3e',1,'Create:&#160;fs.h']]],
+  ['createdevicefile_64',['CreateDeviceFile',['../db/de9/device_8h.html#a81032d8e1f8ee1ac7436d8d48ea605f9',1,'device.h']]]
 ];

@@ -1,5 +1,12 @@
 var syscalls_8h =
 [
+    [ "FramebufferScreenInfo", "d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo", [
+      [ "Bpp", "d2/d6e/syscalls_8h.html#ac91da2207de81f799c9e67d918e6f89c", null ],
+      [ "Height", "d2/d6e/syscalls_8h.html#a19d0c3a8e1f310af3ea7b1edc623f3e5", null ],
+      [ "Pitch", "d2/d6e/syscalls_8h.html#a32c1b38cd63a88753f65c06e495ab546", null ],
+      [ "Size", "d2/d6e/syscalls_8h.html#af8c41bf2049e422f416725a921a4abaa", null ],
+      [ "Width", "d2/d6e/syscalls_8h.html#a13cd8b19c0885b5346f14d355ac94f92", null ]
+    ] ],
     [ "__SYS_NULL", "d2/d6e/syscalls_8h.html#a3405b025dbfa88c47279ae6b526076a8", null ],
     [ "call_accept", "d2/d6e/syscalls_8h.html#ab4949d314d72ceada64d99a9ffd5980d", null ],
     [ "call_access", "d2/d6e/syscalls_8h.html#a6a0f9ef9d1b0b7c090ee0fca1c8b4b71", null ],
@@ -51,9 +58,11 @@ var syscalls_8h =
     [ "call_unlink", "d2/d6e/syscalls_8h.html#a03284d10556fe1599ae976558367f7ff", null ],
     [ "call_waitpid", "d2/d6e/syscalls_8h.html#a48f9ddd0dba233df029622ea3e2545ae", null ],
     [ "call_write", "d2/d6e/syscalls_8h.html#ab1e6a38710527adb8e6c0b2ad416d6f9", null ],
+    [ "FBIOGET_SCREEN_INFO", "d2/d6e/syscalls_8h.html#a6c1209ea4c2dba6d6c19a607f04167a6", null ],
     [ "scarg", "d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5", null ],
     [ "__SYS_clockid_t", "d2/d6e/syscalls_8h.html#af9a5a44da34f40560c289e5f60642791", null ],
     [ "__SYS_socklen_t", "d2/d6e/syscalls_8h.html#a26c7083c9eaca35069347ed4e00813fd", null ],
+    [ "FramebufferScreenInfo", "d2/d6e/syscalls_8h.html#ab0f3fa6738fe8413c73638b07582dcf3", null ],
     [ "syscall_access_flags_t", "d2/d6e/syscalls_8h.html#a1b1a32a2c40ebd73520ed18f3dc1f2ad", [
       [ "__SYS_F_OK", "d2/d6e/syscalls_8h.html#a1b1a32a2c40ebd73520ed18f3dc1f2ada68325a692768209f82f82e5187e7996f", null ],
       [ "__SYS_R_OK", "d2/d6e/syscalls_8h.html#a1b1a32a2c40ebd73520ed18f3dc1f2ada3fc442c04460febe06f1d09dd396debb", null ],

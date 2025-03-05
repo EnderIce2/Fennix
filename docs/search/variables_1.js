@@ -11,11 +11,12 @@ var searchData=
   ['bist_8',['BIST',['../d9/d97/pci_8h.html#acafc473c7069fdd698c0b5742656100b',1,'__attribute__']]],
   ['blocks_9',['Blocks',['../df/d26/fs_8h.html#a4e032619e90e03194c162718a33f09a0',1,'kstat']]],
   ['blocksize_10',['BlockSize',['../df/d26/fs_8h.html#aac2e36f2ffad2d048f6d1d3f988765ef',1,'kstat']]],
-  ['bridgecontrol_11',['BridgeControl',['../d9/d97/pci_8h.html#a6653a1245e72768cd03bb1f8ff843371',1,'__attribute__']]],
-  ['bus_12',['Bus',['../d9/d97/pci_8h.html#aaf31a37199f9d24bad5f7c0bf66206ba',1,'__attribute__']]],
-  ['button4_13',['button4',['../de/ded/input_8h.html#a3c70979d62bde7107ffc6452b4d197d0',1,'MouseReport::Button4'],['../d1/de1/aip_8h.html#a985d3c1b1bb78dcb532adda850db8e71',1,'Button4:&#160;aip.h']]],
-  ['button5_14',['button5',['../de/ded/input_8h.html#a7fe6c9da952ca97bdaf1fd657c5e4682',1,'MouseReport::Button5'],['../d1/de1/aip_8h.html#a51b10f759e11e22a2df18e78164340d2',1,'Button5:&#160;aip.h']]],
-  ['button6_15',['Button6',['../de/ded/input_8h.html#a5610542c386b7f777ccb943d75922ec7',1,'MouseReport']]],
-  ['button7_16',['Button7',['../de/ded/input_8h.html#a98581074c8ffe2ba11636e831fce7672',1,'MouseReport']]],
-  ['button8_17',['Button8',['../de/ded/input_8h.html#acde82f4d1fa67e06bc3a59eb6cc2a44c',1,'MouseReport']]]
+  ['bpp_11',['Bpp',['../d2/d6e/syscalls_8h.html#ac91da2207de81f799c9e67d918e6f89c',1,'FramebufferScreenInfo']]],
+  ['bridgecontrol_12',['BridgeControl',['../d9/d97/pci_8h.html#a6653a1245e72768cd03bb1f8ff843371',1,'__attribute__']]],
+  ['bus_13',['Bus',['../d9/d97/pci_8h.html#aaf31a37199f9d24bad5f7c0bf66206ba',1,'__attribute__']]],
+  ['button4_14',['button4',['../de/ded/input_8h.html#a3c70979d62bde7107ffc6452b4d197d0',1,'MouseReport::Button4'],['../d1/de1/aip_8h.html#a985d3c1b1bb78dcb532adda850db8e71',1,'Button4:&#160;aip.h']]],
+  ['button5_15',['button5',['../de/ded/input_8h.html#a7fe6c9da952ca97bdaf1fd657c5e4682',1,'MouseReport::Button5'],['../d1/de1/aip_8h.html#a51b10f759e11e22a2df18e78164340d2',1,'Button5:&#160;aip.h']]],
+  ['button6_16',['Button6',['../de/ded/input_8h.html#a5610542c386b7f777ccb943d75922ec7',1,'MouseReport']]],
+  ['button7_17',['Button7',['../de/ded/input_8h.html#a98581074c8ffe2ba11636e831fce7672',1,'MouseReport']]],
+  ['button8_18',['Button8',['../de/ded/input_8h.html#acde82f4d1fa67e06bc3a59eb6cc2a44c',1,'MouseReport']]]
 ];

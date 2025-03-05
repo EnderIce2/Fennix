@@ -4,7 +4,7 @@ var searchData=
   ['secondarylatencytimer_1',['SecondaryLatencyTimer',['../d9/d97/pci_8h.html#a9e87a8ae25ff0e2fe4b703e596af2a2f',1,'__attribute__']]],
   ['secondarystatus_2',['SecondaryStatus',['../d9/d97/pci_8h.html#afc237a8d3aa6077c476f9a206332c95b',1,'__attribute__']]],
   ['seek_3',['seek',['../db/de6/structInodeOperations.html#ae49064b9b56c095e3104fd73e19e7c7e',1,'InodeOperations::Seek'],['../df/d26/fs_8h.html#aec9bda2590b6b4ff6433991c57ce60a3',1,'Seek:&#160;fs.h']]],
-  ['size_4',['Size',['../df/d26/fs_8h.html#a5f3da9475a138d8a510be43e53dd20b6',1,'kstat']]],
+  ['size_4',['size',['../df/d26/fs_8h.html#a5f3da9475a138d8a510be43e53dd20b6',1,'kstat::Size'],['../d2/d6e/syscalls_8h.html#af8c41bf2049e422f416725a921a4abaa',1,'FramebufferScreenInfo::Size']]],
   ['startbus_5',['StartBus',['../d9/d97/pci_8h.html#a92d65982de9305ea623f88b7327d0b17',1,'__attribute__']]],
   ['stat_6',['stat',['../db/de6/structInodeOperations.html#ace503c1be6e9452757578cad84370016',1,'InodeOperations::Stat'],['../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1',1,'Stat:&#160;fs.h']]],
   ['status_7',['Status',['../d9/d97/pci_8h.html#a270c129ca1e262678d41858be07aa7ca',1,'__attribute__']]],

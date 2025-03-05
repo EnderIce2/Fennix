@@ -35,6 +35,7 @@ var device_8h =
       [ "BLOCK_TYPE_CDROM", "db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9aa8025a033e9ea17e9a5462ec140770fc", null ],
       [ "BLOCK_TYPE_FLOPPY", "db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9afe0cf24d007913eabf7353d7cf13498c", null ]
     ] ],
+    [ "CreateDeviceFile", "db/de9/device_8h.html#a81032d8e1f8ee1ac7436d8d48ea605f9", null ],
     [ "RegisterDevice", "db/de9/device_8h.html#a6fa54b6c61e3ac1a932decf111303bb9", null ],
     [ "UnregisterDevice", "db/de9/device_8h.html#a0ebb7111c50f31c0740b2caa2c56ff41", null ]
 ];

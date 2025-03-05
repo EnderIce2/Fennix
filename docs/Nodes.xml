@@ -523,6 +523,38 @@
             </Subnodes>
            </Node>
            <Node>
+            <Name>FramebufferScreenInfo</Name>
+            <Path>d2/d6e/syscalls_8h.html</Path>
+            <Anchor>db/dc6/structFramebufferScreenInfo</Anchor>
+          <Subnodes>
+             <Node>
+              <Name>Bpp</Name>
+              <Path>d2/d6e/syscalls_8h.html</Path>
+              <Anchor>ac91da2207de81f799c9e67d918e6f89c</Anchor>
+             </Node>
+             <Node>
+              <Name>Height</Name>
+              <Path>d2/d6e/syscalls_8h.html</Path>
+              <Anchor>a19d0c3a8e1f310af3ea7b1edc623f3e5</Anchor>
+             </Node>
+             <Node>
+              <Name>Pitch</Name>
+              <Path>d2/d6e/syscalls_8h.html</Path>
+              <Anchor>a32c1b38cd63a88753f65c06e495ab546</Anchor>
+             </Node>
+             <Node>
+              <Name>Size</Name>
+              <Path>d2/d6e/syscalls_8h.html</Path>
+              <Anchor>af8c41bf2049e422f416725a921a4abaa</Anchor>
+             </Node>
+             <Node>
+              <Name>Width</Name>
+              <Path>d2/d6e/syscalls_8h.html</Path>
+              <Anchor>a13cd8b19c0885b5346f14d355ac94f92</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
             <Name>GamepadReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d6/dda/structGamepadReport</Anchor>
@@ -2566,6 +2598,11 @@
                       <Anchor>ad258d4c51629346fceac4679b3209ad9afe0cf24d007913eabf7353d7cf13498c</Anchor>
                      </Node>
                     </Subnodes>
+                   </Node>
+                   <Node>
+                    <Name>CreateDeviceFile</Name>
+                    <Path>db/de9/device_8h.html</Path>
+                    <Anchor>a81032d8e1f8ee1ac7436d8d48ea605f9</Anchor>
                    </Node>
                    <Node>
                     <Name>RegisterDevice</Name>
@@ -5344,6 +5381,38 @@
                   <Path>d2/d6e/syscalls_8h.html</Path>
                 <Subnodes>
                    <Node>
+                    <Name>FramebufferScreenInfo</Name>
+                    <Path>d2/d6e/syscalls_8h.html</Path>
+                    <Anchor>db/dc6/structFramebufferScreenInfo</Anchor>
+                  <Subnodes>
+                     <Node>
+                      <Name>Bpp</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>ac91da2207de81f799c9e67d918e6f89c</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Height</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>a19d0c3a8e1f310af3ea7b1edc623f3e5</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Pitch</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>a32c1b38cd63a88753f65c06e495ab546</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Size</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>af8c41bf2049e422f416725a921a4abaa</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Width</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>a13cd8b19c0885b5346f14d355ac94f92</Anchor>
+                     </Node>
+                    </Subnodes>
+                   </Node>
+                   <Node>
                     <Name>__SYS_NULL</Name>
                     <Path>d2/d6e/syscalls_8h.html</Path>
                     <Anchor>a3405b025dbfa88c47279ae6b526076a8</Anchor>
@@ -5599,6 +5668,11 @@
                     <Anchor>ab1e6a38710527adb8e6c0b2ad416d6f9</Anchor>
                    </Node>
                    <Node>
+                    <Name>FBIOGET_SCREEN_INFO</Name>
+                    <Path>d2/d6e/syscalls_8h.html</Path>
+                    <Anchor>a6c1209ea4c2dba6d6c19a607f04167a6</Anchor>
+                   </Node>
+                   <Node>
                     <Name>scarg</Name>
                     <Path>d2/d6e/syscalls_8h.html</Path>
                     <Anchor>a2984c669d1ae3cd90f938b1d11823ed5</Anchor>
@@ -5612,6 +5686,11 @@
                     <Name>__SYS_socklen_t</Name>
                     <Path>d2/d6e/syscalls_8h.html</Path>
                     <Anchor>a26c7083c9eaca35069347ed4e00813fd</Anchor>
+                   </Node>
+                   <Node>
+                    <Name>FramebufferScreenInfo</Name>
+                    <Path>d2/d6e/syscalls_8h.html</Path>
+                    <Anchor>ab0f3fa6738fe8413c73638b07582dcf3</Anchor>
                    </Node>
                    <Node>
                     <Name>syscall_access_flags_t</Name>

@@ -5,6 +5,7 @@ var annotated_dup =
     [ "__PCIArray", "db/de4/driver_8h.html#df/d8a/struct____PCIArray", "db/de4/driver_8h_df/d8a/struct____PCIArray" ],
     [ "AccelerometerReport", "de/ded/input_8h.html#d8/d16/structAccelerometerReport", null ],
     [ "FileSystemInfo", "df/d26/fs_8h.html#de/d99/structFileSystemInfo", "df/d26/fs_8h_de/d99/structFileSystemInfo" ],
+    [ "FramebufferScreenInfo", "d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo", "d2/d6e/syscalls_8h_db/dc6/structFramebufferScreenInfo" ],
     [ "GamepadReport", "de/ded/input_8h.html#d6/dda/structGamepadReport", null ],
     [ "GyroscopeReport", "de/ded/input_8h.html#d4/daf/structGyroscopeReport", null ],
     [ "Inode", "df/d26/fs_8h.html#d6/d59/structInode", "df/d26/fs_8h_d6/d59/structInode" ],

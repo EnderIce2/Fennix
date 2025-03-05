@@ -282,17 +282,19 @@ $(document).ready(function(){initNavTree('d9/d97/pci_8h_source.html','../../'); 
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>{</div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span> </div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546">  174</a></span>    PCIArray *<a class="code hl_function" href="../../d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546">GetPCIDevices</a>(uint16_t Vendors[], uint16_t Devices[]);</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30">  175</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="../../d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30">InitializePCI</a>(PCIDevice *Device);</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538">  176</a></span>    uint32_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538">GetBAR</a>(uint8_t Index, PCIDevice *Device);</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52">  177</a></span>    uint8_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52">iLine</a>(PCIDevice *Device);</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4">  178</a></span>    uint8_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4">iPin</a>(PCIDevice *Device);</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span> </div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>}</div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_PCI_H__</span></div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span><span class="preprocessor">#ifndef __kernel__</span></div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546">  175</a></span>    PCIArray *<a class="code hl_function" href="../../d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546">GetPCIDevices</a>(uint16_t Vendors[], uint16_t Devices[]);</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30">  176</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="../../d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30">InitializePCI</a>(PCIDevice *Device);</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538">  177</a></span>    uint32_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538">GetBAR</a>(uint8_t Index, PCIDevice *Device);</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52">  178</a></span>    uint8_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52">iLine</a>(PCIDevice *Device);</div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno"><a class="line" href="../../d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4">  179</a></span>    uint8_t <a class="code hl_function" href="../../d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4">iPin</a>(PCIDevice *Device);</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span><span class="preprocessor">#endif </span><span class="comment">// !__kernel__</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span> </div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>}</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span> </div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_PCI_H__</span></div>
 <div class="ttc" id="apci_8h_html_a007ba82f5fce2b96997b593d172e38c9"><div class="ttname"><a href="../../d9/d97/pci_8h.html#a007ba82f5fce2b96997b593d172e38c9">__attribute__::IOLimit</a></div><div class="ttdeci">uint8_t IOLimit</div><div class="ttdef"><b>Definition</b> <a href="../../d9/d97/pci_8h_source.html#l00099">pci.h:99</a></div></div>
 <div class="ttc" id="apci_8h_html_a0431a9ef3a084679c298017c6acfee3e"><div class="ttname"><a href="../../d9/d97/pci_8h.html#a0431a9ef3a084679c298017c6acfee3e">__attribute__::PCIbusNumber</a></div><div class="ttdeci">uint8_t PCIbusNumber</div><div class="ttdef"><b>Definition</b> <a href="../../d9/d97/pci_8h_source.html#l00125">pci.h:125</a></div></div>
 <div class="ttc" id="apci_8h_html_a04b76a03bca66e34b60f344d030ae68c"><div class="ttname"><a href="../../d9/d97/pci_8h.html#a04b76a03bca66e34b60f344d030ae68c">__attribute__::SubsystemVendorID</a></div><div class="ttdeci">uint16_t SubsystemVendorID</div><div class="ttdef"><b>Definition</b> <a href="../../d9/d97/pci_8h_source.html#l00076">pci.h:76</a></div></div>
@@ -389,7 +391,7 @@ $(document).ready(function(){initNavTree('d9/d97/pci_8h_source.html','../../'); 
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../d9/d97/pci_8h.html">pci.h</a></li>
-    <li class="footer">Generated on Tue Jan 28 2025 10:31:29 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Mar 5 2025 04:24:44 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

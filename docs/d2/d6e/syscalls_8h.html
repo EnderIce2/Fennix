@@ -109,6 +109,7 @@ $(document).ready(function(){initNavTree('d2/d6e/syscalls_8h.html','../../'); in
 
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
@@ -119,6 +120,11 @@ $(document).ready(function(){initNavTree('d2/d6e/syscalls_8h.html','../../'); in
 
 <p><a href="../../d2/d6e/syscalls_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:db/dc6/structFramebufferScreenInfo" id="r_db/dc6/structFramebufferScreenInfo"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a></td></tr>
+<tr class="separator:db/dc6/structFramebufferScreenInfo"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a2984c669d1ae3cd90f938b1d11823ed5" id="r_a2984c669d1ae3cd90f938b1d11823ed5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>&#160;&#160;&#160;__UINTPTR_TYPE__</td></tr>
@@ -126,6 +132,9 @@ Macros</h2></td></tr>
 <tr class="memitem:a3405b025dbfa88c47279ae6b526076a8" id="r_a3405b025dbfa88c47279ae6b526076a8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a3405b025dbfa88c47279ae6b526076a8">__SYS_NULL</a>&#160;&#160;&#160;((void *)0)</td></tr>
 <tr class="memdesc:a3405b025dbfa88c47279ae6b526076a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">NULL pointer.  <br /></td></tr>
 <tr class="separator:a3405b025dbfa88c47279ae6b526076a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c1209ea4c2dba6d6c19a607f04167a6" id="r_a6c1209ea4c2dba6d6c19a607f04167a6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a6c1209ea4c2dba6d6c19a607f04167a6">FBIOGET_SCREEN_INFO</a>&#160;&#160;&#160;0xf0</td></tr>
+<tr class="memdesc:a6c1209ea4c2dba6d6c19a607f04167a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get framebuffer screen info.  <br /></td></tr>
+<tr class="separator:a6c1209ea4c2dba6d6c19a607f04167a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6eb871383ed7cc0552c9652dd6aebf55" id="r_a6eb871383ed7cc0552c9652dd6aebf55"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a6eb871383ed7cc0552c9652dd6aebf55">call_api_version</a>(version)&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be">syscall1</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63">SYS_API_VERSION</a>, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)version)</td></tr>
 <tr class="memdesc:a6eb871383ed7cc0552c9652dd6aebf55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set syscall version.    <br /></td></tr>
 <tr class="separator:a6eb871383ed7cc0552c9652dd6aebf55"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -283,6 +292,8 @@ Typedefs</h2></td></tr>
 <tr class="separator:af9a5a44da34f40560c289e5f60642791"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26c7083c9eaca35069347ed4e00813fd" id="r_a26c7083c9eaca35069347ed4e00813fd"><td class="memItemLeft" align="right" valign="top">typedef unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a26c7083c9eaca35069347ed4e00813fd">__SYS_socklen_t</a></td></tr>
 <tr class="separator:a26c7083c9eaca35069347ed4e00813fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0f3fa6738fe8413c73638b07582dcf3" id="r_ab0f3fa6738fe8413c73638b07582dcf3"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#ab0f3fa6738fe8413c73638b07582dcf3">FramebufferScreenInfo</a></td></tr>
+<tr class="separator:ab0f3fa6738fe8413c73638b07582dcf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -553,6 +564,56 @@ Functions</h2></td></tr>
 <tr class="memdesc:a6f2f390222fc28bbd48023e2da1d4de1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Syscall wrapper with 6 arguments.  <br /></td></tr>
 <tr class="separator:a6f2f390222fc28bbd48023e2da1d4de1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<hr/><h2 class="groupheader">Data Structure Documentation</h2>
+<a name="db/dc6/structFramebufferScreenInfo" id="db/dc6/structFramebufferScreenInfo"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#db/dc6/structFramebufferScreenInfo">&#9670;&#160;</a></span>FramebufferScreenInfo</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct FramebufferScreenInfo</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock">
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l00534">534</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="ac91da2207de81f799c9e67d918e6f89c" name="ac91da2207de81f799c9e67d918e6f89c"></a>__UINT32_TYPE__</td>
+<td class="fieldname">
+Bpp</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a19d0c3a8e1f310af3ea7b1edc623f3e5" name="a19d0c3a8e1f310af3ea7b1edc623f3e5"></a>__UINT32_TYPE__</td>
+<td class="fieldname">
+Height</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a32c1b38cd63a88753f65c06e495ab546" name="a32c1b38cd63a88753f65c06e495ab546"></a>__UINT32_TYPE__</td>
+<td class="fieldname">
+Pitch</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="af8c41bf2049e422f416725a921a4abaa" name="af8c41bf2049e422f416725a921a4abaa"></a>__UINT32_TYPE__</td>
+<td class="fieldname">
+Size</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a13cd8b19c0885b5346f14d355ac94f92" name="a13cd8b19c0885b5346f14d355ac94f92"></a>__UINT32_TYPE__</td>
+<td class="fieldname">
+Width</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a3405b025dbfa88c47279ae6b526076a8" name="a3405b025dbfa88c47279ae6b526076a8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3405b025dbfa88c47279ae6b526076a8">&#9670;&#160;</a></span>__SYS_NULL</h2>
@@ -623,7 +684,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01647">1647</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01669">1669</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -678,7 +739,7 @@ Functions</h2></td></tr>
 </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d2/d6e/syscalls_8h.html#a1b1a32a2c40ebd73520ed18f3dc1f2ad">syscall_access_flags_t</a>   </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01566">1566</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01588">1588</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -714,7 +775,7 @@ Functions</h2></td></tr>
 </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>If this syscall is not used, the latest version will be used.   </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01529">1529</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01551">1551</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -767,7 +828,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01638">1638</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01660">1660</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -802,7 +863,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01609">1609</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01631">1631</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -838,7 +899,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01678">1678</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01700">1700</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -884,7 +945,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01664">1664</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01686">1686</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -930,7 +991,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01667">1667</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01689">1689</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -965,7 +1026,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01549">1549</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01571">1571</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1018,7 +1079,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01641">1641</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01663">1663</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1053,7 +1114,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01629">1629</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01651">1651</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1100,7 +1161,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01632">1632</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01654">1654</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1154,7 +1215,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01589">1589</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01611">1611</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1185,7 +1246,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>This function does not return.   </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01583">1583</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01605">1605</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1214,7 +1275,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01586">1586</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01608">1608</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1261,7 +1322,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01560">1560</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01582">1582</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1308,7 +1369,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01572">1572</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01594">1594</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1354,7 +1415,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01675">1675</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01697">1697</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1381,7 +1442,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01592">1592</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01614">1614</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1408,7 +1469,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01595">1595</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01617">1617</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1462,7 +1523,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01552">1552</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01574">1574</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1509,7 +1570,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01601">1601</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01623">1623</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1555,7 +1616,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01644">1644</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01666">1666</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1602,7 +1663,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01563">1563</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01585">1585</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1655,7 +1716,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01621">1621</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01643">1643</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1702,7 +1763,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01681">1681</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01703">1703</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1800,7 +1861,7 @@ Functions</h2></td></tr>
 </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d2/d6e/syscalls_8h.html#a945e4d9673e31d88d60aa0eab78053d2">syscall_mmap_flags_t</a>   </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01612">1612</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01634">1634</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1853,7 +1914,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01618">1618</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01640">1640</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1900,7 +1961,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01615">1615</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01637">1637</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -1946,7 +2007,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01670">1670</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01692">1692</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2016,7 +2077,7 @@ Functions</h2></td></tr>
 </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d2/d6e/syscalls_8h.html#a0193a21c57cbbc422674eb1f77366c9a">syscall_open_flags_t</a>   </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01546">1546</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01568">1568</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2051,7 +2112,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01626">1626</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01648">1648</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2120,7 +2181,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01604">1604</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01626">1626</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2182,7 +2243,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01537">1537</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01559">1559</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2243,7 +2304,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01543">1543</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01565">1565</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2298,7 +2359,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01534">1534</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01556">1556</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2358,7 +2419,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01653">1653</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01675">1675</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2405,7 +2466,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01690">1690</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01712">1712</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2440,7 +2501,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01684">1684</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01706">1706</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2500,7 +2561,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01578">1578</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01600">1600</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2560,7 +2621,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01650">1650</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01672">1672</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2606,7 +2667,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01656">1656</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01678">1678</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2659,7 +2720,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01635">1635</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01657">1657</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2706,7 +2767,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01557">1557</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01579">1579</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2741,7 +2802,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01575">1575</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01597">1597</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2776,7 +2837,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01661">1661</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01683">1683</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2823,7 +2884,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01569">1569</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01591">1591</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2859,7 +2920,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01687">1687</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01709">1709</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2912,7 +2973,7 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01598">1598</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01620">1620</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -2967,7 +3028,36 @@ Functions</h2></td></tr>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01540">1540</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l01562">1562</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+
+</div>
+</div>
+<a id="a6c1209ea4c2dba6d6c19a607f04167a6" name="a6c1209ea4c2dba6d6c19a607f04167a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c1209ea4c2dba6d6c19a607f04167a6">&#9670;&#160;</a></span>FBIOGET_SCREEN_INFO</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define FBIOGET_SCREEN_INFO&#160;&#160;&#160;0xf0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get framebuffer screen info. </p>
+<div class="fragment"><div class="line"><span class="keyword">struct </span><a class="code hl_struct" href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a> info;</div>
+<div class="line"><span class="keywordtype">int</span> ioctl(fd, <a class="code hl_define" href="../../d2/d6e/syscalls_8h.html#a6c1209ea4c2dba6d6c19a607f04167a6">FBIOGET_SCREEN_INFO</a>, &amp;info);</div>
+<div class="ttc" id="asyscalls_8h_html_a6c1209ea4c2dba6d6c19a607f04167a6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a6c1209ea4c2dba6d6c19a607f04167a6">FBIOGET_SCREEN_INFO</a></div><div class="ttdeci">#define FBIOGET_SCREEN_INFO</div><div class="ttdoc">Get framebuffer screen info.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00554">syscalls.h:554</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_db/dc6/structFramebufferScreenInfo"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a></div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00534">syscalls.h:535</a></div></div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fd</td><td>File descriptor of the framebuffer device </td></tr>
+    <tr><td class="paramname">info</td><td>Pointer to the framebuffer screen info structure </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l00554">554</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
 
 </div>
 </div>
@@ -3017,6 +3107,20 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l00532">532</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+
+</div>
+</div>
+<a id="ab0f3fa6738fe8413c73638b07582dcf3" name="ab0f3fa6738fe8413c73638b07582dcf3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0f3fa6738fe8413c73638b07582dcf3">&#9670;&#160;</a></span>FramebufferScreenInfo</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a> <a class="el" href="../../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo">FramebufferScreenInfo</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -4544,136 +4648,136 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l00540">540</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  541</span>{</div>
-<div class="line"><span class="lineno">  542</span>    <span class="comment">/* Initialization */</span></div>
-<div class="line"><span class="lineno">  543</span> </div>
-<div class="line"><span class="lineno">  564</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63">SYS_API_VERSION</a> = 0,</div>
+<p class="definition">Definition at line <a class="el" href="../../d2/d6e/syscalls_8h_source.html#l00562">562</a> of file <a class="el" href="../../d2/d6e/syscalls_8h_source.html">syscalls.h</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  563</span>{</div>
+<div class="line"><span class="lineno">  564</span>    <span class="comment">/* Initialization */</span></div>
 <div class="line"><span class="lineno">  565</span> </div>
-<div class="line"><span class="lineno">  566</span>    <span class="comment">/* I/O */</span></div>
-<div class="line"><span class="lineno">  567</span> </div>
-<div class="line"><span class="lineno">  588</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c">SYS_READ</a> = 100,</div>
-<div class="line"><span class="lineno">  610</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913">SYS_PREAD</a>,</div>
-<div class="line"><span class="lineno">  631</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a">SYS_WRITE</a>,</div>
-<div class="line"><span class="lineno">  652</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304">SYS_PWRITE</a>,</div>
-<div class="line"><span class="lineno">  686</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b">SYS_OPEN</a>,</div>
-<div class="line"><span class="lineno">  702</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff">SYS_CLOSE</a>,</div>
-<div class="line"><span class="lineno">  721</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3">SYS_IOCTL</a>,</div>
-<div class="line"><span class="lineno">  722</span> </div>
-<div class="line"><span class="lineno">  723</span>    <span class="comment">/* File Status */</span></div>
-<div class="line"><span class="lineno">  724</span> </div>
-<div class="line"><span class="lineno">  742</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295">SYS_STAT</a> = 200,</div>
-<div class="line"><span class="lineno">  760</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed">SYS_FSTAT</a>,</div>
-<div class="line"><span class="lineno">  779</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db">SYS_LSTAT</a>,</div>
-<div class="line"><span class="lineno">  805</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34">SYS_ACCESS</a>,</div>
-<div class="line"><span class="lineno">  824</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87">SYS_TRUNCATE</a>,</div>
-<div class="line"><span class="lineno">  842</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90">SYS_FTRUNCATE</a>,</div>
-<div class="line"><span class="lineno">  858</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562">SYS_TELL</a>,</div>
-<div class="line"><span class="lineno">  882</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5">SYS_SEEK</a>,</div>
-<div class="line"><span class="lineno">  883</span> </div>
-<div class="line"><span class="lineno">  884</span>    <span class="comment">/* Process Control */</span></div>
-<div class="line"><span class="lineno">  885</span> </div>
-<div class="line"><span class="lineno">  900</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0">SYS_EXIT</a> = 300,</div>
-<div class="line"><span class="lineno">  916</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4">SYS_FORK</a>,</div>
-<div class="line"><span class="lineno">  936</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0">SYS_EXECVE</a>,</div>
-<div class="line"><span class="lineno">  949</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac">SYS_GETPID</a>,</div>
-<div class="line"><span class="lineno">  962</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf">SYS_GETPPID</a>,</div>
-<div class="line"><span class="lineno">  980</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d">SYS_WAITPID</a>,</div>
-<div class="line"><span class="lineno">  998</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d">SYS_KILL</a>,</div>
-<div class="line"><span class="lineno"> 1019</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b">SYS_PRCTL</a>,</div>
-<div class="line"><span class="lineno"> 1020</span> </div>
-<div class="line"><span class="lineno"> 1021</span>    <span class="comment">/* Memory */</span></div>
-<div class="line"><span class="lineno"> 1022</span> </div>
-<div class="line"><span class="lineno"> 1038</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00">SYS_BRK</a> = 400,</div>
-<div class="line"><span class="lineno"> 1081</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5">SYS_MMAP</a>,</div>
-<div class="line"><span class="lineno"> 1099</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a">SYS_MUNMAP</a>,</div>
-<div class="line"><span class="lineno"> 1117</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e">SYS_MPROTECT</a>,</div>
-<div class="line"><span class="lineno"> 1136</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56">SYS_MADVISE</a>,</div>
-<div class="line"><span class="lineno"> 1137</span> </div>
-<div class="line"><span class="lineno"> 1138</span>    <span class="comment">/* Communication */</span></div>
-<div class="line"><span class="lineno"> 1139</span> </div>
-<div class="line"><span class="lineno"> 1156</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6">SYS_PIPE</a> = 500,</div>
-<div class="line"><span class="lineno"> 1172</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b">SYS_DUP</a>,</div>
-<div class="line"><span class="lineno"> 1190</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12">SYS_DUP2</a>,</div>
-<div class="line"><span class="lineno"> 1208</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565">SYS_SOCKET</a>,</div>
-<div class="line"><span class="lineno"> 1226</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6">SYS_BIND</a>,</div>
-<div class="line"><span class="lineno"> 1244</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da">SYS_CONNECT</a>,</div>
-<div class="line"><span class="lineno"> 1261</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d">SYS_LISTEN</a>,</div>
-<div class="line"><span class="lineno"> 1279</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922">SYS_ACCEPT</a>,</div>
-<div class="line"><span class="lineno"> 1298</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3">SYS_SEND</a>,</div>
-<div class="line"><span class="lineno"> 1317</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92">SYS_RECV</a>,</div>
-<div class="line"><span class="lineno"> 1334</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b">SYS_SHUTDOWN</a>,</div>
-<div class="line"><span class="lineno"> 1335</span> </div>
-<div class="line"><span class="lineno"> 1336</span>    <span class="comment">/* Time */</span></div>
-<div class="line"><span class="lineno"> 1337</span> </div>
-<div class="line"><span class="lineno"> 1353</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a> = 600,</div>
-<div class="line"><span class="lineno"> 1370</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3">SYS_CLOCK_GETTIME</a>,</div>
-<div class="line"><span class="lineno"> 1387</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f">SYS_CLOCK_SETTIME</a>,</div>
-<div class="line"><span class="lineno"> 1404</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc">SYS_NANOSLEEP</a>,</div>
-<div class="line"><span class="lineno"> 1405</span> </div>
-<div class="line"><span class="lineno"> 1406</span>    <span class="comment">/* Miscellaneous */</span></div>
-<div class="line"><span class="lineno"> 1407</span> </div>
-<div class="line"><span class="lineno"> 1424</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3">SYS_GETCWD</a> = 700,</div>
-<div class="line"><span class="lineno"> 1441</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9">SYS_CHDIR</a>,</div>
-<div class="line"><span class="lineno"> 1459</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134">SYS_MKDIR</a>,</div>
-<div class="line"><span class="lineno"> 1475</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129">SYS_RMDIR</a>,</div>
-<div class="line"><span class="lineno"> 1492</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52">SYS_UNLINK</a>,</div>
-<div class="line"><span class="lineno"> 1510</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070">SYS_RENAME</a>,</div>
-<div class="line"><span class="lineno"> 1511</span> </div>
-<div class="line"><span class="lineno"> 1523</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467">SYS_MAX</a></div>
-<div class="line"><span class="lineno"> 1524</span>} <a class="code hl_enumeration" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475">syscalls_t</a>;</div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475">syscalls_t</a></div><div class="ttdeci">syscalls_t</div><div class="ttdoc">List of syscalls.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00540">syscalls.h:541</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52">SYS_UNLINK</a></div><div class="ttdeci">@ SYS_UNLINK</div><div class="ttdoc">Remove a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01492">syscalls.h:1492</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5">SYS_MMAP</a></div><div class="ttdeci">@ SYS_MMAP</div><div class="ttdoc">Map files or devices into memory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01081">syscalls.h:1081</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b">SYS_SHUTDOWN</a></div><div class="ttdeci">@ SYS_SHUTDOWN</div><div class="ttdoc">Shut down part of a full-duplex connection.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01334">syscalls.h:1334</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92">SYS_RECV</a></div><div class="ttdeci">@ SYS_RECV</div><div class="ttdoc">Receive data on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01317">syscalls.h:1317</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467">SYS_MAX</a></div><div class="ttdeci">@ SYS_MAX</div><div class="ttdoc">Max number of syscalls.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01524">syscalls.h:1523</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295">SYS_STAT</a></div><div class="ttdeci">@ SYS_STAT</div><div class="ttdoc">Retrieve file status.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00742">syscalls.h:742</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a">SYS_WRITE</a></div><div class="ttdeci">@ SYS_WRITE</div><div class="ttdoc">Write to a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00631">syscalls.h:631</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc">SYS_NANOSLEEP</a></div><div class="ttdeci">@ SYS_NANOSLEEP</div><div class="ttdoc">Sleep for a specified time.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01404">syscalls.h:1404</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562">SYS_TELL</a></div><div class="ttdeci">@ SYS_TELL</div><div class="ttdoc">Get the current file offset.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00858">syscalls.h:858</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87">SYS_TRUNCATE</a></div><div class="ttdeci">@ SYS_TRUNCATE</div><div class="ttdoc">Change the size of a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00824">syscalls.h:824</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6">SYS_PIPE</a></div><div class="ttdeci">@ SYS_PIPE</div><div class="ttdoc">Create a pipe.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01156">syscalls.h:1156</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129">SYS_RMDIR</a></div><div class="ttdeci">@ SYS_RMDIR</div><div class="ttdoc">Remove an empty directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01475">syscalls.h:1475</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c">SYS_READ</a></div><div class="ttdeci">@ SYS_READ</div><div class="ttdoc">Read from a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00588">syscalls.h:588</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf">SYS_GETPPID</a></div><div class="ttdeci">@ SYS_GETPPID</div><div class="ttdoc">Get the parent process ID.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00962">syscalls.h:962</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff">SYS_CLOSE</a></div><div class="ttdeci">@ SYS_CLOSE</div><div class="ttdoc">Close a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00702">syscalls.h:702</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56">SYS_MADVISE</a></div><div class="ttdeci">@ SYS_MADVISE</div><div class="ttdoc">Provide advice about memory usage.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01136">syscalls.h:1136</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0">SYS_EXECVE</a></div><div class="ttdeci">@ SYS_EXECVE</div><div class="ttdoc">Execute a program.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00936">syscalls.h:936</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d">SYS_LISTEN</a></div><div class="ttdeci">@ SYS_LISTEN</div><div class="ttdoc">Listen for incoming connections on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01261">syscalls.h:1261</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d">SYS_WAITPID</a></div><div class="ttdeci">@ SYS_WAITPID</div><div class="ttdoc">Wait for a child process to change state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00980">syscalls.h:980</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00">SYS_BRK</a></div><div class="ttdeci">@ SYS_BRK</div><div class="ttdoc">Set the program break.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01038">syscalls.h:1038</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a">SYS_MUNMAP</a></div><div class="ttdeci">@ SYS_MUNMAP</div><div class="ttdoc">Unmap a mapped memory region.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01099">syscalls.h:1099</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0">SYS_EXIT</a></div><div class="ttdeci">@ SYS_EXIT</div><div class="ttdoc">Terminate the calling process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00900">syscalls.h:900</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b">SYS_OPEN</a></div><div class="ttdeci">@ SYS_OPEN</div><div class="ttdoc">Open a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00686">syscalls.h:686</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da">SYS_CONNECT</a></div><div class="ttdeci">@ SYS_CONNECT</div><div class="ttdoc">Connect to a remote address.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01244">syscalls.h:1244</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3">SYS_IOCTL</a></div><div class="ttdeci">@ SYS_IOCTL</div><div class="ttdoc">Control a device.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00721">syscalls.h:721</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913">SYS_PREAD</a></div><div class="ttdeci">@ SYS_PREAD</div><div class="ttdoc">Read from a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00610">syscalls.h:610</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070">SYS_RENAME</a></div><div class="ttdeci">@ SYS_RENAME</div><div class="ttdoc">Rename a file or directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01510">syscalls.h:1510</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac">SYS_GETPID</a></div><div class="ttdeci">@ SYS_GETPID</div><div class="ttdoc">Get the process ID of the calling process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00949">syscalls.h:949</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed">SYS_FSTAT</a></div><div class="ttdeci">@ SYS_FSTAT</div><div class="ttdoc">Retrieve file status for an open file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00760">syscalls.h:760</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304">SYS_PWRITE</a></div><div class="ttdeci">@ SYS_PWRITE</div><div class="ttdoc">Write to a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00652">syscalls.h:652</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6">SYS_BIND</a></div><div class="ttdeci">@ SYS_BIND</div><div class="ttdoc">Bind a socket to a local address.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01226">syscalls.h:1226</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a></div><div class="ttdeci">@ SYS_TIME</div><div class="ttdoc">Get the current time.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01353">syscalls.h:1353</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b">SYS_DUP</a></div><div class="ttdeci">@ SYS_DUP</div><div class="ttdoc">Duplicate a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01172">syscalls.h:1172</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565">SYS_SOCKET</a></div><div class="ttdeci">@ SYS_SOCKET</div><div class="ttdoc">Create an endpoint for communication.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01208">syscalls.h:1208</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f">SYS_CLOCK_SETTIME</a></div><div class="ttdeci">@ SYS_CLOCK_SETTIME</div><div class="ttdoc">Set the current time of a specific clock.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01387">syscalls.h:1387</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63">SYS_API_VERSION</a></div><div class="ttdeci">@ SYS_API_VERSION</div><div class="ttdoc">Set syscall version.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00564">syscalls.h:564</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4">SYS_FORK</a></div><div class="ttdeci">@ SYS_FORK</div><div class="ttdoc">Create a child process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00916">syscalls.h:916</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3">SYS_SEND</a></div><div class="ttdeci">@ SYS_SEND</div><div class="ttdoc">Send data on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01298">syscalls.h:1298</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b">SYS_PRCTL</a></div><div class="ttdeci">@ SYS_PRCTL</div><div class="ttdoc">Process/Thread Control.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01019">syscalls.h:1019</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db">SYS_LSTAT</a></div><div class="ttdeci">@ SYS_LSTAT</div><div class="ttdoc">Retrieve file status with symbolic link resolution.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00779">syscalls.h:779</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12">SYS_DUP2</a></div><div class="ttdeci">@ SYS_DUP2</div><div class="ttdoc">Duplicate a file descriptor to a specific value.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01190">syscalls.h:1190</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d">SYS_KILL</a></div><div class="ttdeci">@ SYS_KILL</div><div class="ttdoc">Send a signal to a process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00998">syscalls.h:998</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e">SYS_MPROTECT</a></div><div class="ttdeci">@ SYS_MPROTECT</div><div class="ttdoc">Change memory protection.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01117">syscalls.h:1117</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134">SYS_MKDIR</a></div><div class="ttdeci">@ SYS_MKDIR</div><div class="ttdoc">Create a new directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01459">syscalls.h:1459</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9">SYS_CHDIR</a></div><div class="ttdeci">@ SYS_CHDIR</div><div class="ttdoc">Change the current working directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01441">syscalls.h:1441</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922">SYS_ACCEPT</a></div><div class="ttdeci">@ SYS_ACCEPT</div><div class="ttdoc">Accept an incoming connection on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01279">syscalls.h:1279</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90">SYS_FTRUNCATE</a></div><div class="ttdeci">@ SYS_FTRUNCATE</div><div class="ttdoc">Change the size of a file referred by a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00842">syscalls.h:842</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5">SYS_SEEK</a></div><div class="ttdeci">@ SYS_SEEK</div><div class="ttdoc">Set the file offset.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00882">syscalls.h:882</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3">SYS_GETCWD</a></div><div class="ttdeci">@ SYS_GETCWD</div><div class="ttdoc">Get the current working directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01424">syscalls.h:1424</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3">SYS_CLOCK_GETTIME</a></div><div class="ttdeci">@ SYS_CLOCK_GETTIME</div><div class="ttdoc">Get the current time of a specific clock.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01370">syscalls.h:1370</a></div></div>
-<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34">SYS_ACCESS</a></div><div class="ttdeci">@ SYS_ACCESS</div><div class="ttdoc">Check a file's accessibility.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00805">syscalls.h:805</a></div></div>
+<div class="line"><span class="lineno">  586</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63">SYS_API_VERSION</a> = 0,</div>
+<div class="line"><span class="lineno">  587</span> </div>
+<div class="line"><span class="lineno">  588</span>    <span class="comment">/* I/O */</span></div>
+<div class="line"><span class="lineno">  589</span> </div>
+<div class="line"><span class="lineno">  610</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c">SYS_READ</a> = 100,</div>
+<div class="line"><span class="lineno">  632</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913">SYS_PREAD</a>,</div>
+<div class="line"><span class="lineno">  653</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a">SYS_WRITE</a>,</div>
+<div class="line"><span class="lineno">  674</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304">SYS_PWRITE</a>,</div>
+<div class="line"><span class="lineno">  708</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b">SYS_OPEN</a>,</div>
+<div class="line"><span class="lineno">  724</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff">SYS_CLOSE</a>,</div>
+<div class="line"><span class="lineno">  743</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3">SYS_IOCTL</a>,</div>
+<div class="line"><span class="lineno">  744</span> </div>
+<div class="line"><span class="lineno">  745</span>    <span class="comment">/* File Status */</span></div>
+<div class="line"><span class="lineno">  746</span> </div>
+<div class="line"><span class="lineno">  764</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295">SYS_STAT</a> = 200,</div>
+<div class="line"><span class="lineno">  782</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed">SYS_FSTAT</a>,</div>
+<div class="line"><span class="lineno">  801</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db">SYS_LSTAT</a>,</div>
+<div class="line"><span class="lineno">  827</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34">SYS_ACCESS</a>,</div>
+<div class="line"><span class="lineno">  846</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87">SYS_TRUNCATE</a>,</div>
+<div class="line"><span class="lineno">  864</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90">SYS_FTRUNCATE</a>,</div>
+<div class="line"><span class="lineno">  880</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562">SYS_TELL</a>,</div>
+<div class="line"><span class="lineno">  904</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5">SYS_SEEK</a>,</div>
+<div class="line"><span class="lineno">  905</span> </div>
+<div class="line"><span class="lineno">  906</span>    <span class="comment">/* Process Control */</span></div>
+<div class="line"><span class="lineno">  907</span> </div>
+<div class="line"><span class="lineno">  922</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0">SYS_EXIT</a> = 300,</div>
+<div class="line"><span class="lineno">  938</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4">SYS_FORK</a>,</div>
+<div class="line"><span class="lineno">  958</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0">SYS_EXECVE</a>,</div>
+<div class="line"><span class="lineno">  971</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac">SYS_GETPID</a>,</div>
+<div class="line"><span class="lineno">  984</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf">SYS_GETPPID</a>,</div>
+<div class="line"><span class="lineno"> 1002</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d">SYS_WAITPID</a>,</div>
+<div class="line"><span class="lineno"> 1020</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d">SYS_KILL</a>,</div>
+<div class="line"><span class="lineno"> 1041</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b">SYS_PRCTL</a>,</div>
+<div class="line"><span class="lineno"> 1042</span> </div>
+<div class="line"><span class="lineno"> 1043</span>    <span class="comment">/* Memory */</span></div>
+<div class="line"><span class="lineno"> 1044</span> </div>
+<div class="line"><span class="lineno"> 1060</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00">SYS_BRK</a> = 400,</div>
+<div class="line"><span class="lineno"> 1103</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5">SYS_MMAP</a>,</div>
+<div class="line"><span class="lineno"> 1121</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a">SYS_MUNMAP</a>,</div>
+<div class="line"><span class="lineno"> 1139</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e">SYS_MPROTECT</a>,</div>
+<div class="line"><span class="lineno"> 1158</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56">SYS_MADVISE</a>,</div>
+<div class="line"><span class="lineno"> 1159</span> </div>
+<div class="line"><span class="lineno"> 1160</span>    <span class="comment">/* Communication */</span></div>
+<div class="line"><span class="lineno"> 1161</span> </div>
+<div class="line"><span class="lineno"> 1178</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6">SYS_PIPE</a> = 500,</div>
+<div class="line"><span class="lineno"> 1194</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b">SYS_DUP</a>,</div>
+<div class="line"><span class="lineno"> 1212</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12">SYS_DUP2</a>,</div>
+<div class="line"><span class="lineno"> 1230</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565">SYS_SOCKET</a>,</div>
+<div class="line"><span class="lineno"> 1248</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6">SYS_BIND</a>,</div>
+<div class="line"><span class="lineno"> 1266</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da">SYS_CONNECT</a>,</div>
+<div class="line"><span class="lineno"> 1283</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d">SYS_LISTEN</a>,</div>
+<div class="line"><span class="lineno"> 1301</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922">SYS_ACCEPT</a>,</div>
+<div class="line"><span class="lineno"> 1320</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3">SYS_SEND</a>,</div>
+<div class="line"><span class="lineno"> 1339</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92">SYS_RECV</a>,</div>
+<div class="line"><span class="lineno"> 1356</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b">SYS_SHUTDOWN</a>,</div>
+<div class="line"><span class="lineno"> 1357</span> </div>
+<div class="line"><span class="lineno"> 1358</span>    <span class="comment">/* Time */</span></div>
+<div class="line"><span class="lineno"> 1359</span> </div>
+<div class="line"><span class="lineno"> 1375</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a> = 600,</div>
+<div class="line"><span class="lineno"> 1392</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3">SYS_CLOCK_GETTIME</a>,</div>
+<div class="line"><span class="lineno"> 1409</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f">SYS_CLOCK_SETTIME</a>,</div>
+<div class="line"><span class="lineno"> 1426</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc">SYS_NANOSLEEP</a>,</div>
+<div class="line"><span class="lineno"> 1427</span> </div>
+<div class="line"><span class="lineno"> 1428</span>    <span class="comment">/* Miscellaneous */</span></div>
+<div class="line"><span class="lineno"> 1429</span> </div>
+<div class="line"><span class="lineno"> 1446</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3">SYS_GETCWD</a> = 700,</div>
+<div class="line"><span class="lineno"> 1463</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9">SYS_CHDIR</a>,</div>
+<div class="line"><span class="lineno"> 1481</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134">SYS_MKDIR</a>,</div>
+<div class="line"><span class="lineno"> 1497</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129">SYS_RMDIR</a>,</div>
+<div class="line"><span class="lineno"> 1514</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52">SYS_UNLINK</a>,</div>
+<div class="line"><span class="lineno"> 1532</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070">SYS_RENAME</a>,</div>
+<div class="line"><span class="lineno"> 1533</span> </div>
+<div class="line"><span class="lineno"> 1545</span>    <a class="code hl_enumvalue" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467">SYS_MAX</a></div>
+<div class="line"><span class="lineno"> 1546</span>} <a class="code hl_enumeration" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475">syscalls_t</a>;</div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475">syscalls_t</a></div><div class="ttdeci">syscalls_t</div><div class="ttdoc">List of syscalls.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00562">syscalls.h:563</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52">SYS_UNLINK</a></div><div class="ttdeci">@ SYS_UNLINK</div><div class="ttdoc">Remove a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01514">syscalls.h:1514</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a0bf8291cce29f3ac2170f29ea7dd47b5">SYS_MMAP</a></div><div class="ttdeci">@ SYS_MMAP</div><div class="ttdoc">Map files or devices into memory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01103">syscalls.h:1103</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b">SYS_SHUTDOWN</a></div><div class="ttdeci">@ SYS_SHUTDOWN</div><div class="ttdoc">Shut down part of a full-duplex connection.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01356">syscalls.h:1356</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a1720401053b898a8bf3dcfb317177f92">SYS_RECV</a></div><div class="ttdeci">@ SYS_RECV</div><div class="ttdoc">Receive data on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01339">syscalls.h:1339</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467">SYS_MAX</a></div><div class="ttdeci">@ SYS_MAX</div><div class="ttdoc">Max number of syscalls.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01546">syscalls.h:1545</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295">SYS_STAT</a></div><div class="ttdeci">@ SYS_STAT</div><div class="ttdoc">Retrieve file status.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00764">syscalls.h:764</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a">SYS_WRITE</a></div><div class="ttdeci">@ SYS_WRITE</div><div class="ttdoc">Write to a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00653">syscalls.h:653</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a24801336da12e183e9f7369929403dcc">SYS_NANOSLEEP</a></div><div class="ttdeci">@ SYS_NANOSLEEP</div><div class="ttdoc">Sleep for a specified time.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01426">syscalls.h:1426</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a2631f9ef6705cd9cf4412200ad849562">SYS_TELL</a></div><div class="ttdeci">@ SYS_TELL</div><div class="ttdoc">Get the current file offset.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00880">syscalls.h:880</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87">SYS_TRUNCATE</a></div><div class="ttdeci">@ SYS_TRUNCATE</div><div class="ttdoc">Change the size of a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00846">syscalls.h:846</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3acf4a71d88cc862a0658242dead53a6">SYS_PIPE</a></div><div class="ttdeci">@ SYS_PIPE</div><div class="ttdoc">Create a pipe.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01178">syscalls.h:1178</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129">SYS_RMDIR</a></div><div class="ttdeci">@ SYS_RMDIR</div><div class="ttdoc">Remove an empty directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01497">syscalls.h:1497</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c">SYS_READ</a></div><div class="ttdeci">@ SYS_READ</div><div class="ttdoc">Read from a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00610">syscalls.h:610</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4e23d089b5f8fed749cb53f59598abdf">SYS_GETPPID</a></div><div class="ttdeci">@ SYS_GETPPID</div><div class="ttdoc">Get the parent process ID.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00984">syscalls.h:984</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff">SYS_CLOSE</a></div><div class="ttdeci">@ SYS_CLOSE</div><div class="ttdoc">Close a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00724">syscalls.h:724</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f918d4cac4b4d333d84ee542be1bc56">SYS_MADVISE</a></div><div class="ttdeci">@ SYS_MADVISE</div><div class="ttdoc">Provide advice about memory usage.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01158">syscalls.h:1158</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4f984b2a0091bc5cf43b16d9f552d8b0">SYS_EXECVE</a></div><div class="ttdeci">@ SYS_EXECVE</div><div class="ttdoc">Execute a program.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00958">syscalls.h:958</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a562ed65372714f7e4c5572315a7c167d">SYS_LISTEN</a></div><div class="ttdeci">@ SYS_LISTEN</div><div class="ttdoc">Listen for incoming connections on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01283">syscalls.h:1283</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a5a6f6c87bd05e48271e33a417949e50d">SYS_WAITPID</a></div><div class="ttdeci">@ SYS_WAITPID</div><div class="ttdoc">Wait for a child process to change state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01002">syscalls.h:1002</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a703d692921e591b0b3557cdc6ce59d00">SYS_BRK</a></div><div class="ttdeci">@ SYS_BRK</div><div class="ttdoc">Set the program break.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01060">syscalls.h:1060</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a717f2545ddb56410e4d8cfee61804f9a">SYS_MUNMAP</a></div><div class="ttdeci">@ SYS_MUNMAP</div><div class="ttdoc">Unmap a mapped memory region.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01121">syscalls.h:1121</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0">SYS_EXIT</a></div><div class="ttdeci">@ SYS_EXIT</div><div class="ttdoc">Terminate the calling process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00922">syscalls.h:922</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b">SYS_OPEN</a></div><div class="ttdeci">@ SYS_OPEN</div><div class="ttdoc">Open a file.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00708">syscalls.h:708</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a7e371dd4c93ab5da4ba7fc43190854da">SYS_CONNECT</a></div><div class="ttdeci">@ SYS_CONNECT</div><div class="ttdoc">Connect to a remote address.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01266">syscalls.h:1266</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3">SYS_IOCTL</a></div><div class="ttdeci">@ SYS_IOCTL</div><div class="ttdoc">Control a device.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00743">syscalls.h:743</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913">SYS_PREAD</a></div><div class="ttdeci">@ SYS_PREAD</div><div class="ttdoc">Read from a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00632">syscalls.h:632</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070">SYS_RENAME</a></div><div class="ttdeci">@ SYS_RENAME</div><div class="ttdoc">Rename a file or directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01532">syscalls.h:1532</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9b92ce5fe8c3234567e66468f7e0b0ac">SYS_GETPID</a></div><div class="ttdeci">@ SYS_GETPID</div><div class="ttdoc">Get the process ID of the calling process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00971">syscalls.h:971</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed">SYS_FSTAT</a></div><div class="ttdeci">@ SYS_FSTAT</div><div class="ttdoc">Retrieve file status for an open file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00782">syscalls.h:782</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aa5a64eca97ae4dd219cffd47e15ba304">SYS_PWRITE</a></div><div class="ttdeci">@ SYS_PWRITE</div><div class="ttdoc">Write to a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00674">syscalls.h:674</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aadd4b2ee6e285f1cdceb922153439cb6">SYS_BIND</a></div><div class="ttdeci">@ SYS_BIND</div><div class="ttdoc">Bind a socket to a local address.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01248">syscalls.h:1248</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a></div><div class="ttdeci">@ SYS_TIME</div><div class="ttdoc">Get the current time.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01375">syscalls.h:1375</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abd3ecae381917894d4ee7e046098d92b">SYS_DUP</a></div><div class="ttdeci">@ SYS_DUP</div><div class="ttdoc">Duplicate a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01194">syscalls.h:1194</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475abe5c17c613d11aa27284fd72beddc565">SYS_SOCKET</a></div><div class="ttdeci">@ SYS_SOCKET</div><div class="ttdoc">Create an endpoint for communication.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01230">syscalls.h:1230</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac129a01854188b0c904df610d2b7625f">SYS_CLOCK_SETTIME</a></div><div class="ttdeci">@ SYS_CLOCK_SETTIME</div><div class="ttdoc">Set the current time of a specific clock.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01409">syscalls.h:1409</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63">SYS_API_VERSION</a></div><div class="ttdeci">@ SYS_API_VERSION</div><div class="ttdoc">Set syscall version.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00586">syscalls.h:586</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac3a57410b6fffcce73bfb7e24d3114d4">SYS_FORK</a></div><div class="ttdeci">@ SYS_FORK</div><div class="ttdoc">Create a child process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00938">syscalls.h:938</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac522069f16915646ffbdae9125f35bd3">SYS_SEND</a></div><div class="ttdeci">@ SYS_SEND</div><div class="ttdoc">Send data on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01320">syscalls.h:1320</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aca57fa1afb6918b76dbb5ca5022a332b">SYS_PRCTL</a></div><div class="ttdeci">@ SYS_PRCTL</div><div class="ttdoc">Process/Thread Control.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01041">syscalls.h:1041</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db">SYS_LSTAT</a></div><div class="ttdeci">@ SYS_LSTAT</div><div class="ttdoc">Retrieve file status with symbolic link resolution.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00801">syscalls.h:801</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad4afff6762d2b1857eb6a2d12cf02e12">SYS_DUP2</a></div><div class="ttdeci">@ SYS_DUP2</div><div class="ttdoc">Duplicate a file descriptor to a specific value.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01212">syscalls.h:1212</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475adcb0fd36e26a450036a9ffc9a4684d0d">SYS_KILL</a></div><div class="ttdeci">@ SYS_KILL</div><div class="ttdoc">Send a signal to a process.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01020">syscalls.h:1020</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae00ea5b5cd3c5c47fefc074582862a5e">SYS_MPROTECT</a></div><div class="ttdeci">@ SYS_MPROTECT</div><div class="ttdoc">Change memory protection.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01139">syscalls.h:1139</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae11dfaa2891b82ce7a8b78f206143134">SYS_MKDIR</a></div><div class="ttdeci">@ SYS_MKDIR</div><div class="ttdoc">Create a new directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01481">syscalls.h:1481</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ae13f4e994c54e2eadeb2bcb4c6d674d9">SYS_CHDIR</a></div><div class="ttdeci">@ SYS_CHDIR</div><div class="ttdoc">Change the current working directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01463">syscalls.h:1463</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aed7430abb1d08e81f1ec2ca177e77922">SYS_ACCEPT</a></div><div class="ttdeci">@ SYS_ACCEPT</div><div class="ttdoc">Accept an incoming connection on a socket.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01301">syscalls.h:1301</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475af79ab24b82124b99a9604e75718ffc90">SYS_FTRUNCATE</a></div><div class="ttdeci">@ SYS_FTRUNCATE</div><div class="ttdoc">Change the size of a file referred by a file descriptor.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00864">syscalls.h:864</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afa8515947b5e6c63e44b5dd012db2bb5">SYS_SEEK</a></div><div class="ttdeci">@ SYS_SEEK</div><div class="ttdoc">Set the file offset.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00904">syscalls.h:904</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afd137443e8199b2b992598ce81ba71e3">SYS_GETCWD</a></div><div class="ttdeci">@ SYS_GETCWD</div><div class="ttdoc">Get the current working directory.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01446">syscalls.h:1446</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3">SYS_CLOCK_GETTIME</a></div><div class="ttdeci">@ SYS_CLOCK_GETTIME</div><div class="ttdoc">Get the current time of a specific clock.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l01392">syscalls.h:1392</a></div></div>
+<div class="ttc" id="asyscalls_8h_html_a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34"><div class="ttname"><a href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afe0f493ba67b1251f4b6e473dd470a34">SYS_ACCESS</a></div><div class="ttdeci">@ SYS_ACCESS</div><div class="ttdoc">Check a file's accessibility.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d6e/syscalls_8h_source.html#l00827">syscalls.h:827</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -5318,7 +5422,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../d2/d6e/syscalls_8h.html">syscalls.h</a></li>
-    <li class="footer">Generated on Tue Jan 28 2025 10:31:29 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Mar 5 2025 04:24:44 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

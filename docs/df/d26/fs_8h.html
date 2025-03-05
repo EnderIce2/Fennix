@@ -914,10 +914,12 @@ SuperOps</td>
 <div class="line"><span class="lineno">  376</span>    <span class="keywordtype">void</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#afed4851539e0eb74fbd4cc4c0dca8abd">PrivateData</a>;</div>
 <div class="line"><span class="lineno">  377</span>} <a class="code hl_struct" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a>((packed));</div>
 <div class="line"><span class="lineno">  378</span> </div>
-<div class="line"><span class="lineno">  379</span>dev_t <a class="code hl_function" href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a>(<span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root);</div>
-<div class="line"><span class="lineno">  380</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a>(dev_t Device);</div>
-<div class="line"><span class="lineno">  381</span> </div>
-<div class="line"><span class="lineno">  382</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_FILESYSTEM_H__</span></div>
+<div class="line"><span class="lineno">  379</span><span class="preprocessor">#ifndef __kernel__</span></div>
+<div class="line"><span class="lineno">  380</span>dev_t <a class="code hl_function" href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a>(<span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root);</div>
+<div class="line"><span class="lineno">  381</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a>(dev_t Device);</div>
+<div class="line"><span class="lineno">  382</span><span class="preprocessor">#endif </span><span class="comment">// !__kernel__</span></div>
+<div class="line"><span class="lineno">  383</span> </div>
+<div class="line"><span class="lineno">  384</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_FILESYSTEM_H__</span></div>
 <div class="ttc" id="afs_8h_html_a00f03806ee4724ff3e44372909ab378b"><div class="ttname"><a href="../../df/d26/fs_8h.html#a00f03806ee4724ff3e44372909ab378b">Close</a></div><div class="ttdeci">int(* Close)(struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00008">fs.h:8</a></div></div>
 <div class="ttc" id="afs_8h_html_a06cb5aab7b0f464f7575b57ddce54f25"><div class="ttname"><a href="../../df/d26/fs_8h.html#a06cb5aab7b0f464f7575b57ddce54f25">ReadLink</a></div><div class="ttdeci">ssize_t(* ReadLink)(struct Inode *Node, char *Buffer, size_t Size)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00014">fs.h:14</a></div></div>
 <div class="ttc" id="afs_8h_html_a0a6fc17bb00ffe199d7899d5ce623be4"><div class="ttname"><a href="../../df/d26/fs_8h.html#a0a6fc17bb00ffe199d7899d5ce623be4">ReadDir</a></div><div class="ttdeci">ssize_t(* ReadDir)(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00010">fs.h:10</a></div></div>
@@ -2706,7 +2708,7 @@ SuperOps</td>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../df/d26/fs_8h.html">fs.h</a></li>
-    <li class="footer">Generated on Tue Jan 28 2025 10:31:29 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Wed Mar 5 2025 04:24:44 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>
