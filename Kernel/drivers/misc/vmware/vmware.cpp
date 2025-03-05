@@ -180,6 +180,8 @@ namespace Driver::VMwareToolBox
 
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wunused-variable"
 
 #define VM_PORT(cmd, in_ebx, isi, idi, \
 				flags, magic,          \
