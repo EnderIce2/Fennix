@@ -176,6 +176,9 @@ namespace Driver::VMwareToolBox
 
 #elif defined(__i386__)
 
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma GCC diagnostic ignored "-Wuninitialized"
+
 #define VM_PORT(cmd, in_ebx, isi, idi, \
 				flags, magic,          \
 				ax, bx, cx, dx, si, di)
