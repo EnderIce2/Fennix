@@ -24,7 +24,7 @@ build: $(DYNAMIC_NAME) $(STATIC_NAME)
 
 $(DYNAMIC_NAME): $(OBJ)
 	$(info Linking $@)
-	$(CC) -nostdlib -shared -fPIC -fPIE -e _start -Wl,-soname,$(DYNAMIC_NAME) $(SYSROOT) $(OBJ) -o $(DYNAMIC_NAME)
+	$(CC) -nostdlib -shared -fPIC -fPIE -e _start -Wl,-soname,$(DYNAMIC_NAME) $(SYSROOT) $(OBJ) -o $(DYNAMIC_NAME) -lgcc
 	cp $(DYNAMIC_NAME) $(OUTPUT_DIR)$(DYNAMIC_NAME)
 
 $(STATIC_NAME): $(OBJ)
