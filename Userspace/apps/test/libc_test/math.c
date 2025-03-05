@@ -15,36 +15,84 @@
 	along with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef __fennix__
+#define _GNU_SOURCE
+#endif
+
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
 
 int test_acos()
 {
-	double result = acos(0.5);
-	double expected_result = 1.0471975511965976;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = acos(0.5);
+	double expected_result1 = 1.0471975511965976;
+	double result2 = acos(-0.5);
+	double expected_result2 = 2.0943951023931957;
+	double result3 = acos(1.0);
+	double expected_result3 = 0.0;
+	double result4 = acos(-1.0);
+	double expected_result4 = M_PI;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_acosf()
 {
-	float result = acosf(0.5f);
-	float expected_result = 1.0471975f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = acosf(0.5f);
+	float expected_result1 = 1.0471975f;
+	float result2 = acosf(-0.5f);
+	float expected_result2 = 2.0943951f;
+	float result3 = acosf(1.0f);
+	float expected_result3 = 0.0f;
+	float result4 = acosf(-1.0f);
+	float expected_result4 = (float)M_PI;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_acosh()
 {
-	double result = acosh(1.5);
-	double expected_result = 0.9624236501192069;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = acosh(1.5);
+	double expected_result1 = 0.9624236501192069;
+	double result2 = acosh(2.0);
+	double expected_result2 = 1.3169578969248166;
+	double result3 = acosh(3.0);
+	double expected_result3 = 1.762747174039086;
+	double result4 = acosh(10.0);
+	double expected_result4 = 2.993222846126381;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_acoshf()
 {
-	float result = acoshf(1.5f);
-	float expected_result = 0.9624237f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = acoshf(1.5f);
+	float expected_result1 = 0.9624237f;
+	float result2 = acoshf(2.0f);
+	float expected_result2 = 1.3169579f;
+	float result3 = acoshf(3.0f);
+	float expected_result3 = 1.7627472f;
+	float result4 = acoshf(10.0f);
+	float expected_result4 = 2.9932228f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_acoshl()
@@ -63,16 +111,38 @@ int test_acosl()
 
 int test_asin()
 {
-	double result = asin(0.5);
-	double expected_result = 0.5235987755982989;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = asin(0.5);
+	double expected_result1 = 0.5235987755982989;
+	double result2 = asin(-0.5);
+	double expected_result2 = -0.5235987755982989;
+	double result3 = asin(1.0);
+	double expected_result3 = 1.5707963267948966;
+	double result4 = asin(-1.0);
+	double expected_result4 = -1.5707963267948966;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_asinf()
 {
-	float result = asinf(0.5f);
-	float expected_result = 0.5235988f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = asinf(0.5f);
+	float expected_result1 = 0.5235988f;
+	float result2 = asinf(-0.5f);
+	float expected_result2 = -0.5235988f;
+	float result3 = asinf(1.0f);
+	float expected_result3 = 1.5707964f;
+	float result4 = asinf(-1.0f);
+	float expected_result4 = -1.5707964f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_asinh()
@@ -105,9 +175,20 @@ int test_asinl()
 
 int test_atan()
 {
-	double result = atan(1.0);
-	double expected_result = 0.7853981633974483;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = atan(1.0);
+	double expected_result1 = 0.7853981633974483;
+	double result2 = atan(0.0);
+	double expected_result2 = 0.0;
+	double result3 = atan(-1.0);
+	double expected_result3 = -0.7853981633974483;
+	double result4 = atan(10.0);
+	double expected_result4 = 1.4711276743037347;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_atan2()
@@ -133,9 +214,20 @@ int test_atan2l()
 
 int test_atanf()
 {
-	float result = atanf(1.0f);
-	float expected_result = 0.7853982f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = atanf(1.0f);
+	float expected_result1 = 0.7853982f;
+	float result2 = atanf(0.0f);
+	float expected_result2 = 0.0f;
+	float result3 = atanf(-1.0f);
+	float expected_result3 = -0.7853982f;
+	float result4 = atanf(10.0f);
+	float expected_result4 = 1.4711277f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_atanh()
@@ -231,16 +323,38 @@ int test_copysignl()
 
 int test_cos()
 {
-	double result = cos(0.0);
-	double expected_result = 1.0;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = cos(0.0);
+	double expected_result1 = 1.0;
+	double result2 = cos(M_PI / 2);
+	double expected_result2 = 0.0;
+	double result3 = cos(M_PI);
+	double expected_result3 = -1.0;
+	double result4 = cos(3 * M_PI / 2);
+	double expected_result4 = 0.0;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_cosf()
 {
-	float result = cosf(0.0f);
-	float expected_result = 1.0f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = cosf(0.0f);
+	float expected_result1 = 1.0f;
+	float result2 = cosf(M_PI / 2);
+	float expected_result2 = 0.0f;
+	float result3 = cosf(M_PI);
+	float expected_result3 = -1.0f;
+	float result4 = cosf(3 * M_PI / 2);
+	float expected_result4 = 0.0f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_cosh()
@@ -315,9 +429,20 @@ int test_erfl()
 
 int test_exp()
 {
-	double result = exp(1.0);
-	double expected_result = 2.718281828459045;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = exp(1.0);
+	double expected_result1 = 2.718281828459045;
+	double result2 = exp(0.0);
+	double expected_result2 = 1.0;
+	double result3 = exp(-1.0);
+	double expected_result3 = 0.36787944117144233;
+	double result4 = exp(10.0);
+	double expected_result4 = 22026.465794806718;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_exp2()
@@ -343,9 +468,20 @@ int test_exp2l()
 
 int test_expf()
 {
-	float result = expf(1.0f);
-	float expected_result = 2.7182817f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = expf(1.0f);
+	float expected_result1 = 2.7182817f;
+	float result2 = expf(0.0f);
+	float expected_result2 = 1.0f;
+	float result3 = expf(-1.0f);
+	float expected_result3 = 0.36787945f;
+	float result4 = expf(10.0f);
+	float expected_result4 = 22026.465f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_expl()
@@ -711,9 +847,20 @@ int test_llroundl()
 
 int test_log()
 {
-	double result = log(1.0);
-	double expected_result = 0.0;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = log(1.0);
+	double expected_result1 = 0.0;
+	double result2 = log(M_E);
+	double expected_result2 = 1.0;
+	double result3 = log(10.0);
+	double expected_result3 = 2.302585092994046;
+	double result4 = log(100.0);
+	double expected_result4 = 4.605170185988092;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_log10()
@@ -802,9 +949,20 @@ int test_logbl()
 
 int test_logf()
 {
-	float result = logf(1.0f);
-	float expected_result = 0.0f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = logf(1.0f);
+	float expected_result1 = 0.0f;
+	float result2 = logf(M_E);
+	float expected_result2 = 1.0f;
+	float result3 = logf(10.0f);
+	float expected_result3 = 2.3025851f;
+	float result4 = logf(100.0f);
+	float expected_result4 = 4.6051702f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_logl()
@@ -1141,16 +1299,38 @@ int test_scalbnl()
 
 int test_sin()
 {
-	double result = sin(0.0);
-	double expected_result = 0.0;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = sin(0.0);
+	double expected_result1 = 0.0;
+	double result2 = sin(M_PI / 2);
+	double expected_result2 = 1.0;
+	double result3 = sin(M_PI);
+	double expected_result3 = 0.0;
+	double result4 = sin(3 * M_PI / 2);
+	double expected_result4 = -1.0;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_sinf()
 {
-	float result = sinf(0.0f);
-	float expected_result = 0.0f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = sinf(0.0f);
+	float expected_result1 = 0.0f;
+	float result2 = sinf(M_PI / 2);
+	float expected_result2 = 1.0f;
+	float result3 = sinf(M_PI);
+	float expected_result3 = 0.0f;
+	float result4 = sinf(3 * M_PI / 2);
+	float expected_result4 = -1.0f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_sinh()
@@ -1183,16 +1363,38 @@ int test_sinl()
 
 int test_sqrt()
 {
-	double result = sqrt(16.0);
-	double expected_result = 4.0;
-	return fabs(result - expected_result) < 1e-6 ? 0 : 1;
+	double result1 = sqrt(16.0);
+	double expected_result1 = 4.0;
+	double result2 = sqrt(25.0);
+	double expected_result2 = 5.0;
+	double result3 = sqrt(0.0);
+	double expected_result3 = 0.0;
+	double result4 = sqrt(100.0);
+	double expected_result4 = 10.0;
+	return (fabs(result1 - expected_result1) < 1e-6 &&
+			fabs(result2 - expected_result2) < 1e-6 &&
+			fabs(result3 - expected_result3) < 1e-6 &&
+			fabs(result4 - expected_result4) < 1e-6)
+			   ? 0
+			   : 1;
 }
 
 int test_sqrtf()
 {
-	float result = sqrtf(16.0f);
-	float expected_result = 4.0f;
-	return fabs(result - expected_result) < 1e-6f ? 0 : 1;
+	float result1 = sqrtf(16.0f);
+	float expected_result1 = 4.0f;
+	float result2 = sqrtf(25.0f);
+	float expected_result2 = 5.0f;
+	float result3 = sqrtf(0.0f);
+	float expected_result3 = 0.0f;
+	float result4 = sqrtf(100.0f);
+	float expected_result4 = 10.0f;
+	return (fabs(result1 - expected_result1) < 1e-6f &&
+			fabs(result2 - expected_result2) < 1e-6f &&
+			fabs(result3 - expected_result3) < 1e-6f &&
+			fabs(result4 - expected_result4) < 1e-6f)
+			   ? 0
+			   : 1;
 }
 
 int test_sqrtl()
