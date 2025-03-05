@@ -31,7 +31,7 @@ int sample_test_fail() { return 1; }
 void __test_prefix(const char *func)
 {
 	printf("Testing \033[1;30m%s\033[0m...", func);
-	fflush(stdout);
+	// fflush(stdout);
 }
 
 #define TEST(func)                                           \
@@ -46,8 +46,8 @@ void __test_prefix(const char *func)
 		{                                                    \
 			printf("\033[0;31m FAIL (%d)\033[0m\n", result); \
 			failed_tests[failed_count++] = #func;            \
+			fflush(stdout);                                  \
 		}                                                    \
-		fflush(stdout);                                      \
 		total_tests++;                                       \
 	} while (0)
 
