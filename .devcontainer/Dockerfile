@@ -82,7 +82,7 @@ RUN apt-get -y install --no-install-recommends \
 RUN apt-get -y install --no-install-recommends \
 	mingw-w64
 
-# Required packages for building the OS
+# Required packages for building the OS and misc
 RUN apt-get -y install --no-install-recommends \
 	grub2-common \
 	xorriso \
@@ -93,7 +93,11 @@ RUN apt-get -y install --no-install-recommends \
 	grub-gfxpayload-lists \
 	grub-pc-bin \
 	grub-pc \
-	grub2-common
+	grub2-common \
+	pip
+
+# Install git-cliff
+RUN pip install git-cliff --break-system-packages
 
 # Configure git
 RUN <<EOF

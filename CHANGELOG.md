@@ -1,0 +1,1803 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## Unreleased
+
+### <!-- 0 -->🚀 Features
+
+- *(initrd)* Add /etc/hosts file
+- *(kernel)* Add stub device /dev/fb0
+- *(kernel/api)* Implement i386 syscall wrappers
+- *(kernel/api)* Implement arm syscall wrappers
+- *(kernel/driver)* Add ReloadDriver method to manage driver reloading
+- *(kernel/driver)* Add CreateDeviceFile method
+- *(kernel/driver)* Add CreateDeviceFile function in the API
+- *(kernel/driver)* Implement built-in driver support
+- *(kernel/drivers)* Migrate drivers to the kernel
+- *(kernel/pci)* Add device initialization method for PCI devices
+- *(userspace/apps/sys/init)* Handle termination signals for graceful shutdown
+- *(userspace/apps/test)* Update utest
+- *(userspace/apps/test/libc_test)* Add more tests
+- *(userspace/apps/test/libc_test)* Rewrite a lot of the code and improve debugging with vscode using .devcontainer
+- *(userspace/apps/test/utest)* Add TestProcess function for executing test programs
+- *(userspace/libc)* Implement strcpy function
+- *(userspace/libc)* Implement all <string.h> functions
+- *(userspace/libc)* Complete <string.h> implementation
+- *(userspace/libc)* Define file descriptor macros for standard input/output
+- *(userspace/libc)* Add termios header file for terminal I/O control
+- *(userspace/libc)* Extend termios header with input/output speed and winsize structure
+- *(userspace/libc)* Implement getchar() and getc()
+- *(userspace/libc)* Implement <pwd.h> header
+- *(userspace/libc)* Implement getpid, getppid & getuid
+- *(userspace/libc)* Implement atoi, strtol, and strtoll functions in <stdlib.h>
+- *(userspace/libc)* Implement <ctype.h> header
+- *(userspace/libc)* Implement system() function
+- *(userspace/libc)* Implement fstat()
+- *(userspace/libc)* Implement fstatat, lstat & stat
+- *(userspace/libc)* Implement getdelim and getline functions
+- *(userspace/libc)* Implement <time.h> header
+- *(userspace/libc)* Implement feof() and ferror() functions
+- *(userspace/libc)* Add stub termios implementation
+- *(userspace/libc)* Add math stub functions
+- *(userspace/libc)* Update math functions
+- *(userspace/libc)* Implementation <fenv.h> header
+- *(userspace/libc)* Implement <math.h> header
+- *(userspace/libc)* Add experimental __aeabi_dcmpun() function
+- *(userspace/libs/libdemo)* Add template library
+- *(userspace/libs/libm)* Add stub libm
+- *(No Category)* Synchronize syscalls.h
+
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- *(drivers)* Remove drivers that are now in kernel
+- *(kernel)* Add TZ environment variable to init process
+- *(kernel)* Fix empty initialization of std::string (str = "")
+- *(kernel/driver)* Remove unused device handling code in daemon
+- *(kernel/driver)* Node device & offset were not set for new created files under /dev
+- *(kernel/driver)* Set unused file system operation pointers to nullptr
+- *(kernel/pci)* Map BAR address using PWT and PCD flags
+- *(kernel/pci)* Fix MapPCIAddresses when BAR size of zero
+- *(kernel/tty)* Temporal removal of ICANON checking
+- *(userspace/apps/test)* Fix noreturn compiler warning
+- *(userspace/apps/test)* Update expected results for rounding and special functions
+- *(userspace/apps/test)* Adjust fflush(stdout) calls for better output control
+- *(userspace/libc)* Fix error handling in ioctl function
+- *(userspace/libc)* Include <ctype.h> in stdlib.c
+- *(userspace/libc)* Cast status to int in __check_errno for proper error handling
+- *(userspace/libc)* Modify __libc_init and crt0 to initialize "environ"
+- *(userspace/libc)* Fopen should set buffer_pos to -1
+- *(userspace/libc)* Handle NULL input in getenv function
+- *(userspace/libc)* Fix gmtime_r, localtime_r and mktime implementation
+- *(userspace/libc)* Fix tzset() function
+- *(userspace/libc)* Update vscode stub macro with improved formatting
+- *(userspace/libc)* Wrong puts() implementation
+- *(userspace/libc)* Disable debug info in memory allocation functions
+- *(userspace/libc)* Fix wrong implementation of ioctl()
+- *(userspace/libc)* Add libgcc link to fix softfloat
+- *(No Category)* Fixme
+- *(No Category)* Fixme
+- *(No Category)* Correct project name references in license headers
+
+
+### <!-- 10 -->💼 Other
+
+- *(devcontainer)* Improve Dev Container development
+- *(kernel)* Fix compiling issues on i386
+- *(kernel)* Fix compiling issues on arm
+- *(kernel)* Fix i386 build
+- *(tools)* Rewrite makefile to be more efficient and easy to understand
+- *(tools)* Fix gdb error 'Scripting in the "Python" language is not supported in this copy of GDB.'
+- *(userspace)* Update vscode launch configuration and Makefiles for utest and libc_test
+- *(vscode)* Add separated tasks for building bootloader, kernel, drivers, userspace, and image
+- *(No Category)* Initial commit
+- *(No Category)* Delete README.md
+- *(No Category)* Initial commit
+- *(No Category)* Added vscode workspace file
+- *(No Category)* Added submodules
+- *(No Category)* Update README.md
+- *(No Category)* Updated files
+- *(No Category)* Added Drivers repo
+- *(No Category)* Update files
+- *(No Category)* Update files
+- *(No Category)* Update files
+- *(No Category)* Fixed makefile.yml
+- *(No Category)* Replaced "Fennix.iso" to "Fennix.img" for aarch64 image
+- *(No Category)* Update files
+- *(No Category)* Fixed gnu-efi not compiling
+- *(No Category)* Clone limine too
+- *(No Category)* Update submodules
+- *(No Category)* Run prepare on Kernel
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update LICENSE
+- *(No Category)* Update submodules
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update makefile.yml
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update makefile.yml
+- *(No Category)* ISO for old x86 computers (Fennix-legacy.iso)
+- *(No Category)* Update Makefile.conf
+- *(No Category)* Update action version
+- *(No Category)* Fixed Makefile
+- *(No Category)* Update submodules
+- *(No Category)* Update submodules
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update doxygen
+- *(No Category)* Update submodules
+- *(No Category)* Update Doxygen configuration
+- *(No Category)* Update website
+- *(No Category)* Update README.md
+- *(No Category)* Removed code for legacy iso
+- *(No Category)* Update kernel boot arguments
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Should start with quarter of cpu cores
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Fixed i386 and aarch64
+- *(No Category)* Ignore *.fex files
+- *(No Category)* Update submodules
+- *(No Category)* Driver directory can be modified by config
+- *(No Category)* Update bootloader configs
+- *(No Category)* Update configs
+- *(No Category)* Specify location of pulseaudio server in qemu
+- *(No Category)* Update files
+- *(No Category)* Update submodules
+- *(No Category)* Stub
+- *(No Category)* Kernel boot params
+- *(No Category)* Moved vscode workspace file
+- *(No Category)* Update submodules
+- *(No Category)* Updated Makefile
+- *(No Category)* Updated kernel configs
+- *(No Category)* Update submodules
+- *(No Category)* Profiler bash
+- *(No Category)* Added "profiler.log" on COM2
+- *(No Category)* Install rustc package too
+- *(No Category)* Fixed Makefile variable
+- *(No Category)* Change video device to vmware-svga
+- *(No Category)* Compile the OS specific toolchain
+- *(No Category)* Update Makefile.conf
+- *(No Category)* "cp" didn't copied .git
+- *(No Category)* Toolchain
+- *(No Category)* Remove files inside sys too
+- *(No Category)* Updated config
+- *(No Category)* Update submodules
+- *(No Category)* Ignore .so libraries
+- *(No Category)* Updated Fex file viewer
+- *(No Category)* Remove elf files too from drivers directory
+- *(No Category)* Updated submodules
+- *(No Category)* Compile 32 bit versions of the toolchain
+- *(No Category)* Build Userspace & Drivers only on x64
+- *(No Category)* Update submodules
+- *(No Category)* Forgot to clone gcc and binutils
+- *(No Category)* Updated github workflows
+- *(No Category)* Remove .so & .a files from /system directory
+- *(No Category)* Added tailserial.sh
+- *(No Category)* Updated Makefile
+- *(No Category)* Update submodules
+- *(No Category)* Created /system/config/ntp
+- *(No Category)* Updated submodules
+- *(No Category)* Compile without debugging enabled
+- *(No Category)* Serial null for COM3 and COM4
+- *(No Category)* Updated initrd
+- *(No Category)* Update submodules
+- *(No Category)* Update submodules
+- *(No Category)* Dump serial 3 and 4 too
+- *(No Category)* Ignore .dmp files
+- *(No Category)* Update submodules
+- *(No Category)* Update submodules
+- *(No Category)* Use Xalloc as memory allocator
+- *(No Category)* Disable VMware mouse driver
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Fixed ConvertFromUnix()
+- *(No Category)* Ignore *.log.* files too
+- *(No Category)* Added PS/2 mouse driver
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update bootloader configs
+- *(No Category)* Update vscode configs
+- *(No Category)* X32 kernel is now compiling
+- *(No Category)* Hopefully this will fix "No space left on device" in gh actions
+- *(No Category)* Updated configs
+- *(No Category)* Updated recovery screen
+- *(No Category)* Added music samples
+- *(No Category)* Update workspaces
+- *(No Category)* Added AC'97 audio driver
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Dummy audio
+- *(No Category)* Renamed serial3.log to memtrk.dmp
+- *(No Category)* Update submodules
+- *(No Category)* Update configs
+- *(No Category)* Debugging with 1GB of ram
+- *(No Category)* Update submodules
+- *(No Category)* Update .gitlab-ci.yml file
+- *(No Category)* Tzdata needs interactive configuration
+- *(No Category)* Testing kernel compiling
+- *(No Category)* Add __clone_all_no_qemu
+- *(No Category)* Use __clone_all_no_qemu to clone repos
+- *(No Category)* Add stub ExtMemDbg program
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Change BOOTLOADER options
+- *(No Category)* Update ExtMemTrk code
+- *(No Category)* Remove NEWLIB
+- *(No Category)* Add driver config
+- *(No Category)* Update submodules
+- *(No Category)* Add bootanim frames
+- *(No Category)* Add bootanim.tar.gz
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update grub config
+- *(No Category)* Support i386
+- *(No Category)* Remove pcm files
+- *(No Category)* Update grub config
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Add options to disable compilation for kernel, userspace or drivers
+- *(No Category)* Fix 32 bit job
+- *(No Category)* Add space between the equal
+- *(No Category)* Remove useless bootanim frames
+- *(No Category)* Update submodules
+- *(No Category)* Update submodules
+- *(No Category)* Update github workflow
+- *(No Category)* Do not compile ExtMemDbg
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update configs
+- *(No Category)* Update submodules
+- *(No Category)* Update github workflow
+- *(No Category)* Update limine.cfg
+- *(No Category)* Update kernel cmdline
+- *(No Category)* Update submodules
+- *(No Category)* Update filesystem structure
+- *(No Category)* Update submodules
+- *(No Category)* Update Userspace submodule
+- *(No Category)* Fix duplicate recipe in Makefile
+- *(No Category)* Update paths
+- *(No Category)* Update OS
+- *(No Category)* Update submodules
+- *(No Category)* Fix github workflow
+- *(No Category)* Add meson, gcc-10 & g++-10
+- *(No Category)* Update OS
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update Kernel submodule
+- *(No Category)* Update config
+- *(No Category)* Removed memtrk
+- *(No Category)* Add parallel.log
+- *(No Category)* Update kernel
+- *(No Category)* Update Modules
+- *(No Category)* Update Userspace
+- *(No Category)* Update submodules
+- *(No Category)* Add robots.txt
+- *(No Category)* Update initrd
+- *(No Category)* Add shebang
+- *(No Category)* Update Makefile
+- *(No Category)* Update submodules
+- *(No Category)* Update files
+- *(No Category)* Update tool dependencies in Makefile
+- *(No Category)* Update Makefile to disable NLS for cross-compilation
+- *(No Category)* Enable default PIE for cross-compilation
+- *(No Category)* Add *.qcow2 to .gitignore
+- *(No Category)* Update qemu-disk.img to qemu-disk.qcow2 in Makefile
+- *(No Category)* Add .gitkeep file to initrd/var/panic directory
+- *(No Category)* Remove --ioc=true from kernel command line
+- *(No Category)* Update submodules
+- *(No Category)* Update submodules
+- *(No Category)* Add SSDT1.dat
+- *(No Category)* Merge remote-tracking branch 'Fennix/master'
+- *(No Category)* Delete .gitmodules
+- *(No Category)* Initial commit
+- *(No Category)* Update README.md
+- *(No Category)* Updated files
+- *(No Category)* Update files
+- *(No Category)* Update files
+- *(No Category)* Download font
+- *(No Category)* Added "-fpermissive" as temporal workaround
+- *(No Category)* Update .gitignore
+- *(No Category)* Implemented a kinda broken tty
+- *(No Category)* CMOS clock
+- *(No Category)* Replaced memcpy, memset & memmove with one in musl lib
+- *(No Category)* Fixed display (still slower than I wanted to be)
+- *(No Category)* Implemented CPU::Vendor, CPU::Name & CPU::Hypervisor but not tested enough
+- *(No Category)* Added elf symbols resolver
+- *(No Category)* Implemented GDT & IDT
+- *(No Category)* Removed test code
+- *(No Category)* Stub files for other architectures
+- *(No Category)* I686 now compiles (but not booting)
+- *(No Category)* Aarch64 now compiles
+- *(No Category)* Update files
+- *(No Category)* Update files
+- *(No Category)* Added PCI support
+- *(No Category)* Implemented shutdown & reboot
+- *(No Category)* Trace PCI devices on kernel framebuffer
+- *(No Category)* Added more PCI descriptors
+- *(No Category)* Color support
+- *(No Category)* Added Kprint in kernel.h
+- *(No Category)* Update LICENSE
+- *(No Category)* Added APIC & SMP stub
+- *(No Category)* Compile fix
+- *(No Category)* Trampoline can't be compiled.
+- *(No Category)* Forgot _kernel_start
+- *(No Category)* Compile fix
+- *(No Category)* Fixed .asm file not being able to be linked
+- *(No Category)* Fixed cpu info
+- *(No Category)* Added CPU vendors and signatures and read/write CR*
+- *(No Category)* Enable CPU features like SSE
+- *(No Category)* Added SMP support
+- *(No Category)* Added syscalls stub
+- *(No Category)* Fixing SMP stub for x32 and arm64
+- *(No Category)* Fixed "unknown pseudo-op: `.loop'"
+- *(No Category)* Update HPETHeader
+- *(No Category)* Kernel boots with multiboot2
+- *(No Category)* Updated kernel entry names
+- *(No Category)* Added "Loading..." text at boot
+- *(No Category)* Multiboot2Initializator stub
+- *(No Category)* Update binfo.h
+- *(No Category)* Workaround for VirtualBox
+- *(No Category)* Fixed SMP core detection
+- *(No Category)* Moved Initialization code
+- *(No Category)* Update comment
+- *(No Category)* Do not include system include
+- *(No Category)* Implemented interrupts handler & stub crash screen
+- *(No Category)* Fix for display uart printing colors
+- *(No Category)* Removed unused code
+- *(No Category)* Forgot "if (WriteToUART)"
+- *(No Category)* Added no_stack_protector attribute to functions
+- *(No Category)* Small fixes for crash handler
+- *(No Category)* Do not print to UART directly
+- *(No Category)* Fixed interrupt handler manager
+- *(No Category)* Fixes for x32
+- *(No Category)* Implemented PIC (untested code)
+- *(No Category)* APIC implementation (not working as expected)
+- *(No Category)* Fixed compiling for x32 & arm64
+- *(No Category)* Create flawfinder.yml
+- *(No Category)* Comparison of narrow type with wide type in loop condition
+- *(No Category)* Update doxygen
+- *(No Category)* Update Doxygen
+- *(No Category)* Optimize CPU functions
+- *(No Category)* APIC interrupts working
+- *(No Category)* Do not log the debugger output
+- *(No Category)* APIC should be fixed
+- *(No Category)* Change printing colors
+- *(No Category)* 32bit boot using multiboot2
+- *(No Category)* 32bit booting working
+- *(No Category)* X32 still not working (TODO: do 1:1 page mapping, except for kernel)
+- *(No Category)* Update files
+- *(No Category)* Moved arm64Entry
+- *(No Category)* Replaced string to convert
+- *(No Category)* Added cargs lib
+- *(No Category)* Added better kernel arguments reading
+- *(No Category)* Enable SSE compiling
+- *(No Category)* Fix SMP
+- *(No Category)* More work on system calls
+- *(No Category)* Update files
+- *(No Category)* Changed SMP code
+- *(No Category)* Changed SMP code and CPU sets a new stack
+- *(No Category)* Better printing on SMP status
+- *(No Category)* Moved syscalls file
+- *(No Category)* Stub tasking files
+- *(No Category)* More tasking stub
+- *(No Category)* Implemented SmartCriticalSection
+- *(No Category)* Added CurrentProcess & CurrentThread to the CPU data
+- *(No Category)* More tasking stubs
+- *(No Category)* Fixed compilation issues
+- *(No Category)* Fixed compilation issues on x32
+- *(No Category)* Fixed compilation issues on aarch64
+- *(No Category)* More tasking implementation
+- *(No Category)* Fixed "_ZnwmSt11align_val_t" compiler error
+- *(No Category)* Updated tasking
+- *(No Category)* Update Task.cpp
+- *(No Category)* KernelShutdownThread stub
+- *(No Category)* Update files
+- *(No Category)* No_stack_protector attribute to assembly functions
+- *(No Category)* Added memory barriers
+- *(No Category)* Added LVTTimer union structure
+- *(No Category)* Added APIC_BASE structure
+- *(No Category)* Moved IOAPICVersion
+- *(No Category)* Fixed timer calibration
+- *(No Category)* Improved APIC (more human readable)
+- *(No Category)* Added InterruptCommandRegisterHigh for future use
+- *(No Category)* Added IOAPIC redirect structure
+- *(No Category)* Update APIC according to Intel manual (2.4.3 Interrupt Command Register)
+- *(No Category)* Renamed enum
+- *(No Category)* Split IOAPICRedirectEntry
+- *(No Category)* Fix for APIC
+- *(No Category)* Fixed tasking
+- *(No Category)* Divide ticks in OneShot
+- *(No Category)* Commented debug code
+- *(No Category)* Added SetBufferCursor
+- *(No Category)* Multitasking test code
+- *(No Category)* Added GetBufferCursor
+- *(No Category)* Fixed printing in test code
+- *(No Category)* Fixed DSDT
+- *(No Category)* Renamed enums
+- *(No Category)* IPC stub
+- *(No Category)* Updated Testing code
+- *(No Category)* Update files
+- *(No Category)* Get current process if the Parent is null
+- *(No Category)* Added atmoic helper header
+- *(No Category)* Changed how lock works (now it's assembly spinlock)
+- *(No Category)* Removed unused header
+- *(No Category)* Lock "FunctionName" should not be initialized
+- *(No Category)* Added random number generator
+- *(No Category)* Removed "\n"
+- *(No Category)* Half-implemented process security
+- *(No Category)* Added IPC for processes
+- *(No Category)* Improved CPU functions
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Update files
+- *(No Category)* Revert and ignore the compiler warning
+- *(No Category)* Fixes for Tasking
+- *(No Category)* Added writecr3 to scheduler
+- *(No Category)* Updated cpu related stuff
+- *(No Category)* Updated cpuid structures
+- *(No Category)* Fixed cpuid structs
+- *(No Category)* Added cpuid 0x40000000 struct
+- *(No Category)* Updated CPU.cpp
+- *(No Category)* Fxsave/fxrstor stub
+- *(No Category)* Divide one-shot by 128
+- *(No Category)* Added smart pointer header
+- *(No Category)* Added cwalk library
+- *(No Category)* Suppress vscode llvm warnings
+- *(No Category)* Strcmp() doesn't get it right
+- *(No Category)* Do not divide the APIC if we are debugging
+- *(No Category)* Clear new allocated memory
+- *(No Category)* Added filesystem
+- *(No Category)* Updated directory name
+- *(No Category)* Comparison of narrow type with wide type in loop condition
+- *(No Category)* Fixed compilation failing on i386
+- *(No Category)* Fixed compilation failing on aarch64
+- *(No Category)* Move stack tracing to it's own function
+- *(No Category)* Show a number when printing a potential deadlock
+- *(No Category)* Added Counter() function to CPU
+- *(No Category)* Improved tasking
+- *(No Category)* Set the timer to OneShot mode
+- *(No Category)* Added Fex header
+- *(No Category)* Added driver API header
+- *(No Category)* Implemented driver support (bad but works)
+- *(No Category)* Updated driver API
+- *(No Category)* Added support for multiple vendors on one driver
+- *(No Category)* Updated Driver API
+- *(No Category)* Disk drivers are now loading
+- *(No Category)* Updated DiskCallback
+- *(No Category)* Added Check() function
+- *(No Category)* Check if the page is present when we trace frames
+- *(No Category)* Driver directory can be modified by config
+- *(No Category)* Removed debug messages in Check()
+- *(No Category)* Added fetch and better disk callback
+- *(No Category)* Added IOCB function
+- *(No Category)* Implemented partition detection
+- *(No Category)* Implemented data() to vector
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Todo
+- *(No Category)* Added --init arg
+- *(No Category)* Userspace process creation stub
+- *(No Category)* Update DAPI
+- *(No Category)* Added dumper library
+- *(No Category)* Added stub code for kernel API
+- *(No Category)* Added lock to dumper lib
+- *(No Category)* Update files
+- *(No Category)* Pointer should have void* as argument
+- *(No Category)* Updated memory initializator
+- *(No Category)* Fixed some issues on crash handler when an user process crashes
+- *(No Category)* Fixed issue when sometimes initializing drivers can crash the system
+- *(No Category)* Added "no_stack_protector" to functions inside cpu.hpp
+- *(No Category)* Added CriticalSection
+- *(No Category)* Updated memory initializator
+- *(No Category)* Updated tasking functions
+- *(No Category)* Added usermode process creation (currently broken)
+- *(No Category)* Todo
+- *(No Category)* Perform CPU sleep when using Sleep() function
+- *(No Category)* If a wrong color is specified, set the color value to 0xFFFFFF
+- *(No Category)* Optimize
+- *(No Category)* Updated memory mapping functions
+- *(No Category)* Updated Kernel.cpp
+- *(No Category)* Updated GDT code
+- *(No Category)* Updated GDT code
+- *(No Category)* Update API
+- *(No Category)* Support multiple interrupt hooks
+- *(No Category)* Interrupt driver stub
+- *(No Category)* Delete hook if the driver fails
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Simple crc32 implementation
+- *(No Category)* Added MD5 checksum (https://github.com/Zunawe/md5-c)
+- *(No Category)* Show MD5 and Length
+- *(No Category)* Fixed compiler warning
+- *(No Category)* Forgot new line
+- *(No Category)* Updated driver loader
+- *(No Category)* KernelMainThread should have the lowest priority
+- *(No Category)* Fixed memory leak
+- *(No Category)* Added implementation of critical thread/process
+- *(No Category)* Implemented fxsr
+- *(No Category)* Updated GDT & IDT
+- *(No Category)* Removed limine.h and use one inside tools/limine
+- *(No Category)* SetKernelStack should have no_stack_protector attribute
+- *(No Category)* Added Schedule()
+- *(No Category)* Rewrite tss
+- *(No Category)* Loaded image should have RW flag
+- *(No Category)* Optimization
+- *(No Category)* Disable SMEP and SMAP for now
+- *(No Category)* Fixed usermode apps crashing
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Update KThread.cpp
+- *(No Category)* Fix for crash handler
+- *(No Category)* Updated lock
+- *(No Category)* Do not trace icr registers
+- *(No Category)* Fix multicore tasking deadlock
+- *(No Category)* Cld
+- *(No Category)* Update file loading
+- *(No Category)* Kernel now boots on BIOS systems
+- *(No Category)* If empty, set default
+- *(No Category)* Syscalls didn't worked because I'm dumb...
+- *(No Category)* Stability fixes (i hope); attempt to implement argc, argv, envp, auxv; Syscalls
+- *(No Category)* Kernel no longer crashes when trying to read symbols
+- *(No Category)* Forgot initializator
+- *(No Category)* Runtime stuff
+- *(No Category)* Better address check
+- *(No Category)* Added GetBuffer()
+- *(No Category)* Improved crash screen
+- *(No Category)* Few improvements for crash screen
+- *(No Category)* Debugging is now easier
+- *(No Category)* Moved vscode workspace file
+- *(No Category)* Kernel & User time stub
+- *(No Category)* Kernel now compiles on x32
+- *(No Category)* Forgot to remove -w flag
+- *(No Category)* Forgot vs settings too (ノ_<。)
+- *(No Category)* Typo
+- *(No Category)* Better lock
+- *(No Category)* Code fixes and stability
+- *(No Category)* TODO
+- *(No Category)* Syscalls working as expected
+- *(No Category)* Do not stop the scheduler at the beginning of the crash handler
+- *(No Category)* Get cpu data too
+- *(No Category)* Show cpu data info on details screen
+- *(No Category)* Moved backspace() & append()
+- *(No Category)* Trying to fix user stack
+- *(No Category)* Better(?) stack guard
+- *(No Category)* Added ubsan
+- *(No Category)* Updated cxxabi
+- *(No Category)* Updated ubsan
+- *(No Category)* More work on cxxabi
+- *(No Category)* Stop tasking when stack guard fails
+- *(No Category)* Check if CPU 0 is active too
+- *(No Category)* ‘noreturn’ function does return
+- *(No Category)* IPC implementation
+- *(No Category)* Not useful
+- *(No Category)* Update files
+- *(No Category)* Oh my god how stupid I can be sometimes
+- *(No Category)* Get SMBIOS from bootloader
+- *(No Category)* SMBIOS support
+- *(No Category)* Oops!
+- *(No Category)* Removed debugging code
+- *(No Category)* Updated lock
+- *(No Category)* Hope now scheduler won't crash at IPC Service
+- *(No Category)* Stack guard implementation
+- *(No Category)* Forgot to resume the stopped process
+- *(No Category)* Changed a lot of files. Summary: profiler support; "SafeFunction"; UnlockDeadLock kernel config; Code optimization & more
+- *(No Category)* Removed unused extern variable declaration
+- *(No Category)* Rust support
+- *(No Category)* Isalpha, isupper & strtol implementation
+- *(No Category)* Enable Global Pages
+- *(No Category)* Added tlb & bitmap commands
+- *(No Category)* Memory related code optimization
+- *(No Category)* Oops, SetFlag() should not clear the entire data
+- *(No Category)* Apply code from memory-test branch
+- *(No Category)* Small fixes
+- *(No Category)* How did I made this stupid mistake?
+- *(No Category)* GetAddress() should be bit shifted
+- *(No Category)* Print more info
+- *(No Category)* Map address 0x0 to an empty page
+- *(No Category)* Add flags to all page directories (as Intel 317080-003 doc says)
+- *(No Category)* KPT global variable
+- *(No Category)* Typo
+- *(No Category)* Revert "Typo"
+
+This reverts commit 7c079633f64f2698771d1b5908303273b92bac60.
+- *(No Category)* Added crX command in crash handler
+- *(No Category)* Typo
+- *(No Category)* Create codeql.yml
+- *(No Category)* Create codacy.yml
+- *(No Category)* Delete codeql.yml
+- *(No Category)* Merge branch 'main' of https://github.com/Fennix-Project/Kernel
+- *(No Category)* Fixed wrong stack pointer & new tss command for crash screen
+- *(No Category)* Updated argv and envp in tasking
+- *(No Category)* Added dump command
+- *(No Category)* Implemented strtoul, isdelim and strtok
+- *(No Category)* Fixed bug
+- *(No Category)* Implemented strtoul, isdelim and strtok
+- *(No Category)* Fixed vmm mapped framebuffer to the wrong address
+- *(No Category)* TODO
+- *(No Category)* Improved symbol table + every process have one allocated
+- *(No Category)* Fixed arguments for thread
+- *(No Category)* Mapping IO Base and Memory Base (TODO: Map all memory base length)
+- *(No Category)* Fixed Spawn()
+- *(No Category)* Added "-Wstack-protector" flag
+- *(No Category)* Do not read the header if it's not "PT_LOAD"
+- *(No Category)* QoL
+- *(No Category)* Implemented memory tracker
+- *(No Category)* Updated syscalls
+- *(No Category)* Replaced "schedbg" to "trace"
+- *(No Category)* Updated process debug info trace
+- *(No Category)* Memset was clearing process data from memory
+- *(No Category)* Fixed ELF loading (global variables are not initialized)
+- *(No Category)* Fixed syscalls
+- *(No Category)* Check if the page is mapped
+- *(No Category)* Removed debug flags for init process
+- *(No Category)* KernelCTL stub syscall
+- *(No Category)* RIP history implementation for broken stacks
+- *(No Category)* Dynamic ELF stub
+- *(No Category)* Updated StackGuard
+- *(No Category)* Thread arguments are now available from it's stack
+- *(No Category)* Updated Driver API
+- *(No Category)* Stop all drivers on shutdown / crash
+- *(No Category)* Typo
+- *(No Category)* Updated driver shutdown
+- *(No Category)* Updated Fex header
+- *(No Category)* Updated driver loading code
+- *(No Category)* Fixed broken driver unloading on shutdown/crash
+- *(No Category)* Added "UnloadDriver" function
+- *(No Category)* Memory Tracker: If PageTable is nullptr, read the current one
+- *(No Category)* Updated Driver API
+- *(No Category)* Improved driver loading/unloading
+- *(No Category)* :OnInterruptReceived should have SafeFunction macro
+- *(No Category)* Clang-diagnostic-unknown-attributes
+- *(No Category)* Added BREAK macro
+- *(No Category)* Added "mem" command
+- *(No Category)* Naming convention
+- *(No Category)* Updated UBSAN
+- *(No Category)* Fixed RIP tracing
+- *(No Category)* Updated bitmap command
+- *(No Category)* Updated the random number generator
+- *(No Category)* Test the random number generator
+- *(No Category)* Updated stack guard
+- *(No Category)* Print type sizes
+- *(No Category)* Updated types
+- *(No Category)* Compiles on x86 but everything is broken
+- *(No Category)* First unlock and then enable interrupts
+- *(No Category)* Updated TaskStateSegment structure
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Do not print debug and ubsan if DEBUG is not enabled
+- *(No Category)* Fix "KPT = KernelPageTable;" in wrong place
+- *(No Category)* Wrong strcmp usage
+- *(No Category)* Removed -g flag
+- *(No Category)* Renamed PCI devices
+- *(No Category)* TODO
+- *(No Category)* VirtualBox now works with SMP enabled
+- *(No Category)* Forgot "\"
+- *(No Category)* TODO
+- *(No Category)* Security fix
+- *(No Category)* Progress on loading shared objects
+- *(No Category)* More work on ELF interpreter implementation
+- *(No Category)* Added stub syscalls
+- *(No Category)* Forgot to remove test code
+- *(No Category)* Renamed "Tracker" to "MemMgr" because it could be used for shared memory and more useful features
+- *(No Category)* Updated driver API for network talking
+- *(No Category)* Updated note
+- *(No Category)* Crash on check fail
+- *(No Category)* Wrong value for HPET
+- *(No Category)* Updated DriverAPI functions
+- *(No Category)* Implemented sleep for threads🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+- *(No Category)* 🎉Implemented networking🎉
+- *(No Category)* APIC timer should tick every 1ms
+- *(No Category)* Improved checks for WakeUpThreads
+- *(No Category)* TODO
+- *(No Category)* Updated memory manager
+- *(No Category)* Added DrawString in Display
+- *(No Category)* Very simple GUI stub
+- *(No Category)* Get current thread
+- *(No Category)* Recovery stub
+- *(No Category)* Fixed tasking SSE
+- *(No Category)* Moved std stuff to std.h
+- *(No Category)* Added sqrtf
+- *(No Category)* Cxxabi stuff
+- *(No Category)* Scheduler optimizations
+- *(No Category)* Replaced "%x" with "%lx"
+- *(No Category)* Check for pointers
+- *(No Category)* Call BeforeShutdown before shutting down
+- *(No Category)* Improved shutting down procedure
+- *(No Category)* Fixed compiler warnings
+- *(No Category)* Added GetBitsPerPixel & GetPitch
+- *(No Category)* This just slows down
+- *(No Category)* Oops
+- *(No Category)* Float stuff
+- *(No Category)* Rewrote GUI implementation
+- *(No Category)* Fixed resize
+- *(No Category)* Set a minimum for resizing a window
+- *(No Category)* Updated notes
+- *(No Category)* More optimization for GUI
+- *(No Category)* Updated Makefile
+- *(No Category)* Check SIMD implementation
+- *(No Category)* Kernel now uses SSE instructions properly
+- *(No Category)* Renamed memcpy.c file
+- *(No Category)* Moved SIMD mem* functions to separate files
+- *(No Category)* Updated kernel fonts
+- *(No Category)* Fixed memset sse
+- *(No Category)* Support even older CPUs
+- *(No Category)* Removed soft-float flag
+- *(No Category)* More checks for SSE
+- *(No Category)* Implement a faster mem*
+- *(No Category)* Implemented simple GUI
+- *(No Category)* Drivers were not removed
+- *(No Category)* Fixed tasking when a thread is sleeping
+- *(No Category)* TODO
+- *(No Category)* Rewrote  "u8ToHexString" & "u32ToHexString"
+- *(No Category)* Renamed print functions
+- *(No Category)* Updated PCI debug log
+- *(No Category)* Updated driver loading
+- *(No Category)* Implemented "ConvertFromUnix" (not sure if it's right but I guess it works?)
+- *(No Category)* Updated network related code so now it should work as expected
+- *(No Category)* Forgot commenting DEBUG_NETWORK
+- *(No Category)* Shut up UBSAN
+- *(No Category)* Added "DoNotCreatePageTable" boolean to CreateProcess
+- *(No Category)* More stable GetPathFromNode
+- *(No Category)* Reduced frame tracing count
+- *(No Category)* T1
+- *(No Category)* Added string class
+- *(No Category)* Updated vscode recommendations
+- *(No Category)* Naming convention
+- *(No Category)* Added timeout lock
+- *(No Category)* Added "AddSymbol"
+- *(No Category)* Updated crash screen
+- *(No Category)* Updated kernel (tl;dr: improved filesystem, tasking, loading files, etc..)
+- *(No Category)* Create a thread instead of a new process
+- *(No Category)* Security fix for allocating pages for user-mode
+- *(No Category)* IPC stub
+- *(No Category)* Added GetProcessByID and GetThreadByID
+- *(No Category)* Updated atomic implementation
+- *(No Category)* Updated lock to use atomic operations
+- *(No Category)* Renamed "snprintf_" to "snprintf"
+- *(No Category)* Schedule() should fire faster
+- *(No Category)* Updated on screen debug task manager
+- *(No Category)* Moved SyscallsLock
+- *(No Category)* Display functions are now in a file
+- *(No Category)* Updated IPC
+- *(No Category)* Added stub interpreter support
+- *(No Category)* Debug task manager process
+- *(No Category)* Added -> operator
+- *(No Category)* Debug messages for memory allocation
+- *(No Category)* Fix memory deadlocks
+- *(No Category)* Fixed kernel hang on IPC wait
+- *(No Category)* Renamed enum, oops
+- *(No Category)* Added GetSchedulerTicks()
+- *(No Category)* Debug what destructors are called
+- *(No Category)* Added SetText()
+- *(No Category)* Optimize GetCurrentCPU
+- *(No Category)* Optimize smp GetCurrentCPU()
+- *(No Category)* Mem* check operations now tell where it failed
+- *(No Category)* Changed scheduler priorities
+- *(No Category)* Stop if HPET is not found
+- *(No Category)* Wrong API doc
+- *(No Category)* Added "uartmemdmp" command
+- *(No Category)* Optimize Scroll() function
+- *(No Category)* Fixed screen printing bug
+- *(No Category)* Compiler warning
+- *(No Category)* Added __sync marco
+- *(No Category)* RemoveAll should not have any stack protection or sanitization
+- *(No Category)* Ubsan
+- *(No Category)* Show more debug messages
+- *(No Category)* Atomic default value 0
+- *(No Category)* Update Vector code
+- *(No Category)* Debug messages for memory allocation
+- *(No Category)* CurrentThread/Process should be atomic
+- *(No Category)* Added ForceUnlock boolean
+- *(No Category)* Use correct instruction
+- *(No Category)* Replaced "__sync_synchronize" with "__sync"
+- *(No Category)* Added int1 and int3 marco
+- *(No Category)* Fixed race condition
+- *(No Category)* Spinlocked uart
+- *(No Category)* Signal all cores to stop on exception
+- *(No Category)* Removed messages
+- *(No Category)* Added KCTL_IS_CRITICAL
+- *(No Category)* Added StackPointer* for lock
+- *(No Category)* Fixed race conditions
+- *(No Category)* Removed useless text
+- *(No Category)* Fixed keyboard interrupt
+- *(No Category)* Put CPU namespaces in separate files to make cpu.hpp smaller
+- *(No Category)* Fixed excessive padding
+- *(No Category)* Added GetLocksCount()
+- *(No Category)* Show error code
+- *(No Category)* Reimplemented Xalloc from scratch
+- *(No Category)* Fixed deadlock
+- *(No Category)* Simple CPU affinity system
+- *(No Category)* FIXME
+- *(No Category)* Redirect IRQs to BSP
+- *(No Category)* Fixed ConvertFromUnix()
+- *(No Category)* Fixed compiler warning
+- *(No Category)* Set baud rate to 115200
+- *(No Category)* Create a null element and return it
+- *(No Category)* Use vector instead of hashmap
+- *(No Category)* Added last task ticks counter
+- *(No Category)* Init task firstly needs to be critical
+- *(No Category)* Wrong calculation for last task ticks
+- *(No Category)* Renamed "__no_instrument_function"
+- *(No Category)* Optimize
+- *(No Category)* Renamed "interrupts.hpp" to "ints.hpp"
+- *(No Category)* Updated driver API
+- *(No Category)* Print on screen if HPET is missing
+- *(No Category)* Use bigger random numbers for stack guard
+- *(No Category)* Updated FexExtended structure
+- *(No Category)* Support multiple registered interrupt handlers
+- *(No Category)* Updated driver loading code
+- *(No Category)* Updated fetching mouse procedure
+- *(No Category)* FIXME
+- *(No Category)* Updated vscode config
+- *(No Category)* Async power commands
+- *(No Category)* Added memory block checks
+- *(No Category)* Debug messages
+- *(No Category)* Arch macro
+- *(No Category)* Added vscode configurations
+- *(No Category)* X32 is now compiling
+- *(No Category)* Cpptools intellisense didn't worked as expected
+- *(No Category)* #ifndef __SIG_ATOMIC_TYPE__
+- *(No Category)* FIXME
+- *(No Category)* Use "int3" for debug interrupt
+- *(No Category)* Moved smart lock
+- *(No Category)* Fix x64 cpptools
+- *(No Category)* Zero tss stack tables
+- *(No Category)* Added new kernel param
+- *(No Category)* Added "SetTitle"
+- *(No Category)* Added debug window
+- *(No Category)* Added "ReplaceFont"
+- *(No Category)* Optimized GUI
+- *(No Category)* Added more debug info
+- *(No Category)* Fixing null pointer access
+- *(No Category)* Fixed PCI BAR mapping
+- *(No Category)* Return directly the driver error code
+- *(No Category)* Changed "struct KernelCallback" to be an union
+- *(No Category)* Updated FexDriverInputTypes
+- *(No Category)* Updated driver API
+- *(No Category)* Improved log
+- *(No Category)* Added Xalloc_StopOnFail
+- *(No Category)* Fix FROM_PAGES macro calculation
+- *(No Category)* Updated driver API code
+- *(No Category)* Fix wrong driver conflict detection
+- *(No Category)* Audio debug
+- *(No Category)* FIXME
+- *(No Category)* Changed API doc
+- *(No Category)* Added volume changing
+- *(No Category)* Fixed wrong position for label
+- *(No Category)* Forgot to clear KCallback after configuration
+- *(No Category)* Added memory tracker to serial port
+- *(No Category)* Small optimization
+- *(No Category)* Added SIMD option in kernel arguments
+- *(No Category)* Renamed vars
+- *(No Category)* Added DebuggerIsAttached
+- *(No Category)* UART io functions should be inline
+- *(No Category)* Do not disable interrupts
+- *(No Category)* Update debugging code
+- *(No Category)* Fix for SIMD not being initialized
+- *(No Category)* Prevent dangling pointer
+- *(No Category)* Stub code
+- *(No Category)* Moved interrupts manager file
+- *(No Category)* Add tracker to paging allocation
+- *(No Category)* Update external memory tracker messages
+- *(No Category)* Implement Display::SetBrightness
+- *(No Category)* Add Display::SetBrightness test button inside debug window
+- *(No Category)* Update credits & references
+- *(No Category)* Add __no_debug, __target and __min_vector_width
+- *(No Category)* Stub intrinsics header
+- *(No Category)* Add documentation for CreateBuffer
+- *(No Category)* X32 kernel failed to build
+- *(No Category)* X32 kernel failed to build
+- *(No Category)* Move bootloader code to a separate directory
+- *(No Category)* Revert "Fix: x32 kernel failed to build"
+
+This reverts commit 930b11a4003d5fb5411099c1e20e1f12a7ce0506.
+- *(No Category)* Add spinlock to BeforeShutdown()
+- *(No Category)* Update external memory tracker logging
+- *(No Category)* Add warn message when trying to free an already freed page
+- *(No Category)* For Virtual() use KernelPageTable as page table
+- *(No Category)* Replace SmartCriticalSection with SmartLock
+- *(No Category)* Add Sleep syscall
+- *(No Category)* Wrong arguments for warn message
+- *(No Category)* Disable interrupts on Reboot / Shutdown buttons
+- *(No Category)* Display how many bytes are allocated
+- *(No Category)* Add InterpreterIPCData
+- *(No Category)* Fix wrong MemoryImage address given to the elf interpreter
+- *(No Category)* Send ElfFile too
+- *(No Category)* Specify the invalid address
+- *(No Category)* Add more tables to ACPI SearchTables()
+- *(No Category)* Cwk_path_get_extension's length should not point to nullptr
+- *(No Category)* Allocate argv and envp
+- *(No Category)* Update ubsan blacklist
+- *(No Category)* Add log2
+- *(No Category)* Not a good idea to spam NIST with NTP requests
+- *(No Category)* Rename iterator class
+- *(No Category)* Add vector and string to std class
+- *(No Category)* Rename smart pointers
+- *(No Category)* Add smart pointers to std
+- *(No Category)* Rename std functions to match the standard
+- *(No Category)* Rename arm include directory
+- *(No Category)* Update Driver API header
+- *(No Category)* Update Fex header
+- *(No Category)* Change Interrupts::Handler
+- *(No Category)* Update shared_ptr function names
+- *(No Category)* Update driver loading procedure
+- *(No Category)* Remove broken code
+- *(No Category)* Add GetKernelStack
+- *(No Category)* Show address in error message
+- *(No Category)* SwapPage should be after loop
+- *(No Category)* Detect earlier if TCG processor is present
+- *(No Category)* Better deadlock message
+- *(No Category)* Map kernel file too
+- *(No Category)* Use physical address for Kernel.FileBase
+- *(No Category)* Improve exception message
+- *(No Category)* QoL improvements
+- *(No Category)* Add stb headers
+- *(No Category)* Add stub headers
+- *(No Category)* Fix isdelim
+- *(No Category)* Rename "vfs" to "vfs_ctx" inside USTAR class
+- *(No Category)* Add backtrace log inside deadlocks
+- *(No Category)* Document ID inside RFLAGS
+- *(No Category)* Check if CreateThread() has a valid parent
+- *(No Category)* Directly return the fs root if the path is "/"
+- *(No Category)* Rename heap allocation function
+- *(No Category)* Add an argument parser
+- *(No Category)* Add BootAnimation
+- *(No Category)* More debug messages
+- *(No Category)* Boot screen & change shutting down/rebooting procedure
+- *(No Category)* Fix logic in conditional statement inside sys_print
+- *(No Category)* Add SetDoNotScroll
+- *(No Category)* Ignore frame-address warning
+- *(No Category)* Refactor driver file creation to use structured binding
+- *(No Category)* Comment PRINT_BACKTRACE
+- *(No Category)* Test TO_PAGES and FROM_PAGES macros
+- *(No Category)* Do not loop if the next hook is null
+- *(No Category)* Process cleanup should be done by a thread
+- *(No Category)* Change display buffer
+- *(No Category)* CheckSIMD should use flags
+- *(No Category)* Update TODO
+- *(No Category)* QoL improvements
+- *(No Category)* Unhook interrupts from every driver on crash
+- *(No Category)* Fix kernel mapping
+- *(No Category)* Move PEXIT and TEXIT to task.hpp
+- *(No Category)* Rename thread
+- *(No Category)* Check if Display is valid
+- *(No Category)* Add test for memory operations
+- *(No Category)* Support i386
+- *(No Category)* Change audio test file
+- *(No Category)* Add FramebufferType
+- *(No Category)* Add stub headers
+- *(No Category)* Implement strcasecmp, wcslen and wcsrtombs
+- *(No Category)* Add Virtual::GetPhysical()
+- *(No Category)* Crash screen: Frames tab should get physical address of rbp on usermode threads
+- *(No Category)* Interpreter thread should exit after sending IPC data
+- *(No Category)* Implementation for userspace interpreter
+- *(No Category)* Add BSD license to the API headers
+- *(No Category)* Change LICENSE file to GPL-3.0
+- *(No Category)* Added license headers to all project files
+- *(No Category)* Wrong block comment for nasm files
+- *(No Category)* Move syscall handler to SystemCalls.cpp
+- *(No Category)* Remove codacy workflow
+- *(No Category)* Do not compile mem operations on non-debug env
+- *(No Category)* Render only 26 frames from bootanim
+- *(No Category)* Enable compilation of project on AArch64 architecture
+- *(No Category)* Update TODOs
+- *(No Category)* Make aarch64 compilable
+- *(No Category)* Make rsp to be at physical address
+- *(No Category)* Update AMD's cpuid unions based on #40332 (Vol. 3 Appendix E.3)
+- *(No Category)* Move hypervisor cpuid structs to a separate file
+- *(No Category)* Fix compilation issues
+- *(No Category)* Add 2MB and 1GB PAGE_SIZE macro
+- *(No Category)* Add Get() function for every cpuid struct
+- *(No Category)* Fix ubsan blacklist
+- *(No Category)* Add support for 2MB and 1GB map
+- *(No Category)* Optimize memory mapping
+- *(No Category)* Replace __attribute__ with a macro from types.h
+- *(No Category)* Fix compilation issues on i386 and aarch64
+- *(No Category)* QoL and bug fixes
+- *(No Category)* Implement std::atomic and remove the old implementation Atomic and rename vector.hpp to vector
+- *(No Category)* Sleep between frames to have a constant frame rate
+- *(No Category)* Test assert macro
+- *(No Category)* Move all std related headers to "include_std"
+- *(No Category)* Refactored code to use {} initialization instead of dynamic allocation with 'new' in disk manager class
+- *(No Category)* Use an enum to specify what ist to use
+- *(No Category)* Fix kernel crash after an interrupt occurs on the BSP
+- *(No Category)* Kernel processes should have IsCritical flag enabled by default
+- *(No Category)* Rename kernel files
+- *(No Category)* Default scheduler should be multi
+- *(No Category)* Optimize memory usage
+- *(No Category)* Organize driver binding files
+- *(No Category)* Optimize RNG functions
+- *(No Category)* Reserve all pages and then unreserve available pages
+- *(No Category)* Better debug info
+- *(No Category)* Fix bug causing vector removal to skip elements
+- *(No Category)* Update todo
+- *(No Category)* Update syscall doc functions
+- *(No Category)* Fix elf loading
+- *(No Category)* Rework virtual filesystem implementation
+- *(No Category)* Implement file syscalls
+- *(No Category)* Update init envp
+- *(No Category)* Update kernelctl syscall
+- *(No Category)* Update timing implementation
+- *(No Category)* Reserve more pages for SMP trampoline
+- *(No Category)* Add TSC timer stub
+- *(No Category)* Fix compiler warnings
+- *(No Category)* Change "GetMillisecondsSinceClassCreation" to "GetNanosecondsSinceClassCreation"
+- *(No Category)* Display seconds since boot in kernel messages
+- *(No Category)* Fix a bug where GetCurrentProcess returned null inside DSDT
+- *(No Category)* QoL improvements
+- *(No Category)* Fix i386 and aarch64 compilation issues
+- *(No Category)* Add UserTime and KernelTime tracker
+- *(No Category)* Bug fixes
+- *(No Category)* Wrong SMBIOSProcessorInformation structure
+- *(No Category)* Update TODO
+- *(No Category)* Remove multiboot2 boot code
+- *(No Category)* Add Elf32_Phdr
+- *(No Category)* Fix flawfinder workflow
+- *(No Category)* Fork() stub and QoL improvements
+- *(No Category)* Make sure InterpreterPath has \0 character by default
+- *(No Category)* Do not accept invalid kernel private object
+- *(No Category)* Fix InitDSDT called while APIC wasn't initialized
+- *(No Category)* Save/Restore shadow GS too while scheduling tasks
+- *(No Category)* Make syscall handler stub easier to debug
+- *(No Category)* Check if the thread pointer is valid before accessing it's data
+- *(No Category)* Add syscalls test
+- *(No Category)* Fix compiler warning on syscall functions
+- *(No Category)* Rewrite syscall stub and SyscallsFrame structure
+- *(No Category)* More progress on fork() support
+- *(No Category)* Print backtrace on deadlocks
+- *(No Category)* Track which core was used to schedule
+- *(No Category)* Implement file seek
+- *(No Category)* Update errno macros
+- *(No Category)* Fix compiler warnings
+- *(No Category)* Add process cwd
+- *(No Category)* Add PathIsRelative()
+- *(No Category)* Check if path is relative
+- *(No Category)* Rewrite the linker script
+- *(No Category)* Add stub multiboot headers
+- *(No Category)* Add checks for invalid addresses
+- *(No Category)* Create a new stack for kernel and update BootInfo structure before anything else
+- *(No Category)* Remove unnecessary code
+- *(No Category)* Fix kernel section are not aligned
+- *(No Category)* Update linker for i386
+- *(No Category)* Update multiboot stubs
+- *(No Category)* Implement mb2 stub support
+- *(No Category)* Stub support mb2 for i386
+- *(No Category)* Request 1280x720x32 framebuffer
+- *(No Category)* Add ROUND_UP and ROUND_DOWN
+- *(No Category)* Add support for multiboot2
+- *(No Category)* Reduce stack usage for memory operations test
+- *(No Category)* Do not request a specific resolution
+- *(No Category)* Update Intel's CPUID structs
+- *(No Category)* Make kernel to boot in x32
+- *(No Category)* Create an empty root if initrd failed to be loaded
+- *(No Category)* Fix aarch64
+- *(No Category)* Do not spam "No mouse driver found." in logs
+- *(No Category)* Fix wrong module size
+- *(No Category)* Check for ACPI pointer in x64 too
+- *(No Category)* Fix condition
+- *(No Category)* Fix broken GPT structure
+- *(No Category)* Fix partition naming
+- *(No Category)* Remove EFER from x32
+- *(No Category)* Fix type sizes
+- *(No Category)* Fix compiling issues for aarch64
+- *(No Category)* Add implementation for GDT & IDT on x32 and QoL fixes
+- *(No Category)* Ignore UBSAN messages in liballoc_1_1.c
+- *(No Category)* Remove limine_terminal_request
+- *(No Category)* Move drivers to kernel
+- *(No Category)* Show partition type
+- *(No Category)* Fix GUI windows
+- *(No Category)* Rename file
+- *(No Category)* Update filesystem structure
+- *(No Category)* Update vscode config
+- *(No Category)* Fix fork() syscall
+- *(No Category)* Return if /modules doesn't exist
+- *(No Category)* Add alloc functions to stdlib header
+- *(No Category)* Update ustar functions
+- *(No Category)* Update issues list
+- *(No Category)* Add cmath header
+- *(No Category)* Do not make modules mandatory
+- *(No Category)* Kernel shell stub
+- *(No Category)* Update kernel
+- *(No Category)* Update debug macros
+- *(No Category)* Fix sleep syscall
+- *(No Category)* Update crash keyboard driver
+- *(No Category)* Update kernel
+- *(No Category)* Fix compilation on Release mode
+- *(No Category)* Removal of NASM support and migration of .asm files to .s
+- *(No Category)* Update kernel code
+- *(No Category)* Fix 32-bit compilation
+- *(No Category)* Fix broken 32-bit kernel
+- *(No Category)* Show available LPT and COM ports
+- *(No Category)* Rework IDT
+- *(No Category)* Ignore unused parameters warning
+- *(No Category)* Move ACPI and DSDT files to Core directory
+- *(No Category)* Fix compiler issues in 32-bit
+- *(No Category)* Update GDT & IDT structures
+- *(No Category)* Fix wrong char in sc_ascii_high
+- *(No Category)* Test code for tasking
+- *(No Category)* Rework for APIC & added support for x2APIC
+- *(No Category)* Fully copy function names
+- *(No Category)* Hide repetitive debug messages
+- *(No Category)* Half working elf loader
+- *(No Category)* Fix x32 compilation
+- *(No Category)* Various QoL changes
+- *(No Category)* Initialize CPU feature first before doing anything
+- *(No Category)* Show info about the framebuffer on screen
+- *(No Category)* Simplify Display::Print
+- *(No Category)* Add support for legacy Multiboot aka Multiboot1
+- *(No Category)* Search for SMBIOS & RSDP if the bootloader doesn't provide them
+- *(No Category)* Do not enable cr4.FSGSBASE
+- *(No Category)* First parse the params
+- *(No Category)* Tasking is now working under 32-bit
+- *(No Category)* Restructured and rewritten entire codebase
+- *(No Category)* Fix elf binaries were loaded wrongly
+- *(No Category)* Update std headers
+- *(No Category)* Update std headers
+- *(No Category)* Fix unqualified call to 'std::move'
+- *(No Category)* GetCurrentCPU reporting wrong ID
+- *(No Category)* ISR 0x1 should have RING3
+- *(No Category)* Use /bin/utest instead of init for debugging
+- *(No Category)* Fix IsVirtualizedEnvironment()
+- *(No Category)* Add missing license note
+- *(No Category)* Update kernel
+- *(No Category)* Refactor ELFObject class and remove unused functions
+- *(No Category)* Add CheckRegion function
+- *(No Category)* Fix issue with reading ELF header
+- *(No Category)* Update crash handler to include exception address and symbol in trace output
+- *(No Category)* Refactor GetAllocatedPagesList and GetSharedRegions to return references
+- *(No Category)* Refactor VirtualMemoryArea::Fork to use auto&
+- *(No Category)* Implement file mapping functionality in linux_mmap()
+- *(No Category)* Update CPU::TrapFrame in crash handler functions
+- *(No Category)* Add additional general purpose registers to TrapFrame struct
+- *(No Category)* Use gradient for top bar
+- *(No Category)* Fix CPU functions for aarch64
+- *(No Category)* Remove __naked attribute from Stop() function
+- *(No Category)* Refactor code to improve performance and readability
+- *(No Category)* Rename "SafeFunction" macro to "NoSecurityAnalysis"
+- *(No Category)* Refactor display.hpp
+- *(No Category)* Declare all Tamsyn font files to display.cpp
+- *(No Category)* Add resize(size_t, const T &) function to vector class
+- *(No Category)* Add fill() function to std::algorithm
+- *(No Category)* Remove on-screen task manager code
+- *(No Category)* Update display buffer handling
+- *(No Category)* Move font declarations to display.hpp
+- *(No Category)* Add CrashFont initialization
+- *(No Category)* Add ExceptionFrame structure
+- *(No Category)* Fix ExceptionHandlerStub to work with CPU::ExceptionFrame
+- *(No Category)* Refactor ExceptionHandler
+- *(No Category)* Add PrintString()
+- *(No Category)* Fix uninitialized variables
+- *(No Category)* Fix comment space
+- *(No Category)* Add IgnoreSpecialChars parameter to Print and PrintString functions
+- *(No Category)* Fix InterruptFrames for aarch64
+- *(No Category)* Add compiler check for __fennix__
+- *(No Category)* Add GetDefaultFont() method to Display class
+- *(No Category)* Refactor Timer::OnInterruptReceived method signature
+- *(No Category)* Remove unnecessary calls to CPUID.Get()
+- *(No Category)* Add minimum resolution check for display
+- *(No Category)* Refactor ls command
+- *(No Category)* Update CreateIfNotExists function signature
+- *(No Category)* Update color codes for different node types in ls command
+- *(No Category)* Refactor kernel shell code
+- *(No Category)* Invoke #DE in cmd_panic()
+- *(No Category)* Change the IDT table to use interrupt gate
+- *(No Category)* Fix cpuid 0x7 for AMD
+- *(No Category)* Fix memory allocation exploit (driver mapped with user flag)
+- *(No Category)* Update CR register flags documentation
+- *(No Category)* Update CPU prevention features
+- *(No Category)* Do not map the framebuffer with user flag
+- *(No Category)* Remove ELFSymbolTable from PCB
+- *(No Category)* Revamped kernel panic functions with significant improvements
+- *(No Category)* Fix DisplayProcessScreen function to show ready threads, add note for hidden processes
+- *(No Category)* Add "screen" command to panic UI
+- *(No Category)* Refactor lsacpi command to print ACPI table information
+- *(No Category)* Update ACPI print format
+- *(No Category)* Remove unnecessary newline character in cmd_lsacpi function
+- *(No Category)* Update lsacpi command to print table length
+- *(No Category)* Add dump command in kernel shell
+- *(No Category)* Add experimental insert() function to string class
+- *(No Category)* Add GetPixel and DrawRectangle functions to Display class
+- *(No Category)* Add std::thread implementation
+- *(No Category)* Add cursor blinking functionality
+- *(No Category)* Fix KEY_SLASH character
+- *(No Category)* Implement blinking cursor and text modification functionality
+- *(No Category)* Add support for DEL key
+- *(No Category)* Refactor task scheduler
+- *(No Category)* Implement GetIdle function in Custom scheduler
+- *(No Category)* Revise PID and TID generation to align with standards
+- *(No Category)* Fix call instruction in signal_trampoline.s
+- *(No Category)* Replace debug statement with KPrint
+- *(No Category)* Add check for empty drivers list and print message if no drivers to load
+- *(No Category)* Check USTAR archive validation in KernelVFS()
+- *(No Category)* Update error colors
+- *(No Category)* Add AC flag initialization to thread context
+- *(No Category)* Add <utility> header to include_std/list
+- *(No Category)* Add ExGetKSymbolByAddress function to retrieve kernel symbols by address
+- *(No Category)* Add InitTrampoline and HasPendingSignal function
+- *(No Category)* Handle signal interruptions during sleep
+- *(No Category)* Workaround for QEMU TCG crash
+- *(No Category)* Fix memory access issues in linux_execve function
+- *(No Category)* Fix incorrect condition in HandleException function
+- *(No Category)* Refactor stack pointer alignment in thread.cpp
+- *(No Category)* Refactor stack handling in thread.cpp
+- *(No Category)* Add getgid, geteuid, getegid & stub access for Linux syscalls
+- *(No Category)* Fix stack align
+- *(No Category)* Update print statement
+- *(No Category)* Update Linux fork and execve functions
+- *(No Category)* Update DisplayProcessScreen function to include executable name
+- *(No Category)* Add pow and fabs to cmath
+- *(No Category)* Add Flags field to gsTCB struct
+- *(No Category)* Update TODO.md
+- *(No Category)* Add more page fault details
+- *(No Category)* Update DisplayDetailsScreen to include CopyOnWrite flag in page table entry
+- *(No Category)* Refactor node creation logic
+- *(No Category)* Refactor file creation logic
+- *(No Category)* Refactor gsTCB struct for debugging and update usage in related files
+- *(No Category)* Remove unused code and debug information
+- *(No Category)* Update CR8 structure
+- *(No Category)* Refactor code to use tab spaces
+- *(No Category)* Add clamp function to <algorithm>
+- *(No Category)* Refactor BaseBufferStackError function
+- *(No Category)* Refactor interrupt handling code
+- *(No Category)* Rename TPL to TPR in used.cpp
+- *(No Category)* Refactor MainInterruptHandler
+- *(No Category)* Update page table in __stack_chk_fail and __chk_fail functions
+- *(No Category)* Fix typo in help command
+- *(No Category)* Check Display class in InitFont()
+- *(No Category)* Add char_traits stub class to <string>
+- *(No Category)* Rename string class to basic_string
+- *(No Category)* Add std::bitset implementation
+- *(No Category)* Add bitset test code
+- *(No Category)* Refactor Check and CheckRegion functions in virtual.hpp
+- *(No Category)* Refactor memory allocation implementation and add KernelReserve flag to memory mappings
+- *(No Category)* Update TODO.md
+- *(No Category)* Update logging
+- *(No Category)* Update debug messages
+- *(No Category)* Remove unnecessary command line arguments in SpawnInit function
+- *(No Category)* Add debug statements for read and write operations
+- *(No Category)* Implement clock_nanosleep syscall
+- *(No Category)* Add check for file existence in linux_access function
+- *(No Category)* Implement pread64 and pwrite64 syscalls
+- *(No Category)* Add stubs for setting RLIMIT_NOFILE and RLIMIT_STACK
+- *(No Category)* Implement linux_openat syscall
+- *(No Category)* Fix execve and cleanup code
+- *(No Category)* Implement linux_getcwd syscall
+- *(No Category)* Update linux_getcwd and implement linux_setpgid syscall
+- *(No Category)* Add stub implementation for getpgid syscall
+- *(No Category)* Refactor Signal handling code
+- *(No Category)* Fix file open error handling
+- *(No Category)* Add stub TIOCGPGRP and TIOCSPGRP
+- *(No Category)* Add stub for setting RLIMIT_NPROC
+- *(No Category)* Add more debug messages for Signal
+- *(No Category)* Fix before panic framebuffer
+- *(No Category)* Clear CR2 if the page fault is handled
+- *(No Category)* Refactor stack expansion and stack fork implementation
+- *(No Category)* Add std::initializer_list implementation
+- *(No Category)* Add initializer_list constructor to unordered_map
+- *(No Category)* Add return values to remove and remove_if functions
+- *(No Category)* Update algorithm functions template parameter names
+- *(No Category)* Add GetThread() function to PCB class
+- *(No Category)* Implement linux_tkill syscall
+- *(No Category)* Add stub for F_GETFL
+- *(No Category)* Fix linux_stat
+- *(No Category)* Add RLIMIT_FSIZE stub
+- *(No Category)* Rework signal handling code
+- *(No Category)* Update Xalloc configuration
+- *(No Category)* Add ptr_t class to types.h
+- *(No Category)* Implement VirtualAllocation class
+- *(No Category)* Fix release compilation
+- *(No Category)* Fix page table update bug in scheduler
+- *(No Category)* Fix key event handling
+- *(No Category)* Add linux_getrusage and linux_setitimer syscall implementation
+- *(No Category)* Update error message
+- *(No Category)* Fix file mode in statbuf structure
+- *(No Category)* Add stub for F_GETFL and F_SETFL
+- *(No Category)* Allow kernel shell to execute binaries
+- *(No Category)* Fix signals from exception handler
+- *(No Category)* Fix RawKeyQueue empty check
+- *(No Category)* Fix memory leak in linux_openat function
+- *(No Category)* Fix linux_newfstatat function to correctly handle absolute paths
+- *(No Category)* Fix linux_newfstatat
+
+"If pathname is absolute, then dirfd is ignored."
+- *(No Category)* Fix data type definitions
+- *(No Category)* Update fdt stat to include file timestamps
+- *(No Category)* Fix stat in linux
+- *(No Category)* Implement process file mode creation mask
+- *(No Category)* Add linux_umask syscall implementation
+- *(No Category)* Fix file creation and append functionality
+- *(No Category)* Add stub F_DUPFD_CLOEXEC and add more cases in linux_fcntl
+- *(No Category)* Refactor debug print statements in user.cpp
+- *(No Category)* Refactor Node constructor
+- *(No Category)* Fix linux_stat, linux_fstat & linux_lstat
+- *(No Category)* Comment debug statements in ustar.cpp and node.cpp
+- *(No Category)* Fix handling of symbolic links in cd and ls commands
+- *(No Category)* Check for /bin directory existence and use /usr/bin as fallback
+- *(No Category)* Refactor USTAR class and comments in FAT header
+- *(No Category)* Remove redundant file operation functions
+- *(No Category)* Rename files with reference and descriptor code
+- *(No Category)* Rename struct "stat" to "kstat"
+- *(No Category)* Fix warning "ignoring changed section attributes for .text"
+- *(No Category)* Refactor panic handler and assertion failed display functions
+- *(No Category)* Implement process resource limits
+- *(No Category)* Add null check in isempty function
+- *(No Category)* Refactor lock related code
+- *(No Category)* Update STL headers
+- *(No Category)* Refactor RNG code
+- *(No Category)* Fix RDSEEDFlag assignment
+- *(No Category)* Implement operator delete with alignment support
+- *(No Category)* Refactor filesystem & stl code
+- *(No Category)* Fix missing member initialization
+- *(No Category)* Return proper errno for null inode operations
+- *(No Category)* Update ELF header
+- *(No Category)* Remove unnecessary variable assignment
+- *(No Category)* Add strrchr implementation
+- *(No Category)* Reset cursor position after print
+- *(No Category)* Fix broken iterator for unordered_map
+- *(No Category)* Fix driver implementation
+- *(No Category)* Fix memory corruption in USTAR::SymLink
+- *(No Category)* Refactored linux_getpid for easier debugging
+- *(No Category)* Add more debug messages
+- *(No Category)* Remove unused SmartHeap class
+- *(No Category)* Fix iterator type mismatch in basic_string::erase functions
+- *(No Category)* Reformat comments in interrupts.hpp
+- *(No Category)* Update kernel api
+- *(No Category)* Update debug messages for getcwd linux syscall
+- *(No Category)* Add debug message for GetBinaryType
+- *(No Category)* Implement Virtual Terminal and fix /dev/kcon
+- *(No Category)* Fix the order of variables Cols and Rows
+
+typo
+- *(No Category)* Fix missing offset for /dev files
+- *(No Category)* Fix readdir inside /dev
+- *(No Category)* Add chdir() syscall implementation
+- *(No Category)* Update chdir() implementation
+
+Use SetWorkingDirectory()
+- *(No Category)* Return if Length == 0 in DumpData
+- *(No Category)* Fix broken process limits implementation
+- *(No Category)* Add stub vfork() function
+- *(No Category)* Dump read() & write() content in debug output
+- *(No Category)* Implement GetName() & GetPath() in FileNode class
+- *(No Category)* Fix returning wrong errno code on errors
+- *(No Category)* Fix wrong file type in RegisterBlockDevice()
+- *(No Category)* Add "KernelData" variable inside Inode structure
+- *(No Category)* Add TIOCGSID macro
+- *(No Category)* Fix GetRoot(), CacheRecursiveSearch() and root identifier
+- *(No Category)* Fix kcon & tty implementation; Add stub ptmx
+- *(No Category)* Check if process has an associated terminal
+- *(No Category)* Update error messages
+- *(No Category)* Implement fchdir() syscall
+- *(No Category)* Fix std::string push_back()
+- *(No Category)* Fix potential Use-After-Free vulnerability in std::string
+- *(No Category)* Add more debug messages
+- *(No Category)* Remove pragma "STDC FENV_ACCESS"
+- *(No Category)* Fix newfstatat() syscall
+- *(No Category)* Fix ustar ReadDir() wrong d_type
+- *(No Category)* Correct struct linux_dirent64 variables
+- *(No Category)* Add more debug messages for newfstatat syscall
+- *(No Category)* Implement getdents64() syscall
+- *(No Category)* Implement sched_setaffinity() and sched_getaffinity() syscalls
+- *(No Category)* Simplified interrupt event check logic in MainInterruptHandler
+- *(No Category)* Fix incorrect buffer read size in VirtualTerminal
+- *(No Category)* Add documentation to RingBuffer class
+- *(No Category)* Fix code style in linux_execve() function
+- *(No Category)* Implement new process state
+- *(No Category)* Disable stack protector for __LinuxForkReturn()
+- *(No Category)* Implement vfork() syscall
+- *(No Category)* Fix search for binaries in /usr/bin/
+- *(No Category)* Check for absolute path
+- *(No Category)* Remove redundant SwapPT in linux_getrandom()
+- *(No Category)* Refactor PS/2 keyboard initialization code
+- *(No Category)* Refactor SwapPT class
+- *(No Category)* Remove redundant code
+- *(No Category)* Add kernel stack manager
+- *(No Category)* Update MainInterruptHandler
+- *(No Category)* Add stub code for UHCI, EHCI & XHCI controllers
+- *(No Category)* Update headers
+- *(No Category)* Implement coroutines
+- *(No Category)* Check if CurrentProcess & CurrentThread are valid before showing info
+- *(No Category)* Fix page table switch for scheduler
+- *(No Category)* Kernel threads require more memory for stack
+- *(No Category)* Switch page table in MainInterruptHandler()
+- *(No Category)* Fix memory mapping in KernelPageTable
+- *(No Category)* Remove annoying and useless messages in Unmap()
+- *(No Category)* Fix debug messages for syscalls
+- *(No Category)* Add more debug messages for CoW related functions
+- *(No Category)* Add stub madvise() syscall
+- *(No Category)* Check for null pointer first
+- *(No Category)* Do not free tty
+- *(No Category)* Correctly align memory using .p_align
+- *(No Category)* Move everything to ./subsystem/linux/*
+- *(No Category)* Merge remote-tracking branch 'Kernel/master'
+- *(No Category)* Initial commit
+- *(No Category)* Update files
+- *(No Category)* Update LICENSE
+- *(No Category)* Update doxygen
+- *(No Category)* Update Doxygen
+- *(No Category)* Added drivers
+- *(No Category)* Added virtio network stub driver
+- *(No Category)* Added AHCI driver stub
+- *(No Category)* Updated driver header
+- *(No Category)* Added AHCI driver
+- *(No Category)* Updated AHCI driver
+- *(No Category)* Updated drivers
+- *(No Category)* Update driver
+- *(No Category)* Added ATA driver stub
+- *(No Category)* Forgot ATA driver
+- *(No Category)* Return NOT_AVAILABLE instead of false
+- *(No Category)* Few improvements on AHCI driver
+- *(No Category)* Moved vscode workspace file
+- *(No Category)* Added VMware mouse driver
+- *(No Category)* Updated code
+- *(No Category)* Update drivers
+- *(No Category)* Added network fetch cb
+- *(No Category)* Updated Makefile
+- *(No Category)* Renamed file
+- *(No Category)* VirtualBox mouse stub driver
+- *(No Category)* Forgot to clear the Interrupt Mask
+- *(No Category)* Hopefully the E1000 stops
+- *(No Category)* Updated intel network driver
+- *(No Category)* Removed "-fno-rtti" flag
+- *(No Category)* VMware Mouse driver is causing a stack corruption
+- *(No Category)* Update mouse drivers
+- *(No Category)* Added PS/2 mouse driver
+- *(No Category)* Renamed "Disk" to "Storage"
+- *(No Category)* Updated PCI header
+- *(No Category)* Typo
+- *(No Category)* Typo
+- *(No Category)* Added vscode config
+- *(No Category)* Implemented AC'97 audio driver
+- *(No Category)* Fixed volume
+- *(No Category)* Interrupts are not working as expected
+- *(No Category)* Wrong size
+- *(No Category)* Remove "--quiet" flag
+- *(No Category)* Fix compiler warnings
+- *(No Category)* Update drivers after the new DAPI
+- *(No Category)* Remove AC'97 test code
+- *(No Category)* Support i386
+- *(No Category)* Check if ATA is present
+- *(No Category)* Do not load AHCI driver if the debugger is attached
+- *(No Category)* Update filesystem structure
+- *(No Category)* Update paths
+- *(No Category)* Update vscode config
+- *(No Category)* Update modules
+- *(No Category)* Update example module
+- *(No Category)* Update drivers
+- *(No Category)* Add ATA_CMD_IDENTIFY and SATA SDD detection
+- *(No Category)* Check checksum signature before reading the data
+- *(No Category)* Remove unused swap() lambda
+- *(No Category)* Add GetCurrentProcess function and update KillThread signature
+- *(No Category)* Fix driver implementation
+- *(No Category)* Update kernel API
+- *(No Category)* Add stub RS-232 implementation
+- *(No Category)* Update headers
+- *(No Category)* Merge remote-tracking branch 'Drivers/master'
+- *(No Category)* Initial commit
+- *(No Category)* Update README.md
+- *(No Category)* Updated files
+- *(No Category)* Update files
+- *(No Category)* Updated Makefile
+- *(No Category)* Update LICENSE
+- *(No Category)* Update doxygen
+- *(No Category)* Update Doxygen
+- *(No Category)* Update files
+- *(No Category)* Update files
+- *(No Category)* Update libc
+- *(No Category)* Update init
+- *(No Category)* Syscall stub
+- *(No Category)* Update libc
+- *(No Category)* Update crti & crtn
+- *(No Category)* Moved vscode workspace file
+- *(No Category)* Updated crts
+- *(No Category)* Builtin-declaration-mismatch
+- *(No Category)* Added libssp
+- *(No Category)* Added stack guard
+- *(No Category)* Updated libc
+- *(No Category)* Removed "_init" from crt
+- *(No Category)* Update include directory
+- *(No Category)* Toolchain
+- *(No Category)* Added stub newlib and mlibc
+- *(No Category)* "hlt" causes GPF
+- *(No Category)* Push envc & envp
+- *(No Category)* Fix envp
+- *(No Category)* Fixed crash
+- *(No Category)* Typo
+- *(No Category)* Updated libs
+- *(No Category)* Updated libc
+- *(No Category)* Updated init
+- *(No Category)* Fixed header conflict
+- *(No Category)* Libsys stub
+- *(No Category)* Updated libs
+- *(No Category)* Updated init app
+- *(No Category)* Updated userspace
+- *(No Category)* ELF Interpreter stub
+- *(No Category)* Updated Makefile
+- *(No Category)* Stub
+- *(No Category)* Wrong casting
+- *(No Category)* Update init
+- *(No Category)* Sleep before checking again if the thread is critical
+- *(No Category)* Add doomgeneric
+- *(No Category)* Remove "--quiet" flag
+- *(No Category)* Update vscode-cpptools config
+- *(No Category)* Update doomgeneric submodule
+- *(No Category)* Remove "--quiet" flag
+- *(No Category)* Do not compile doomgeneric yet
+- *(No Category)* Add missing libc headers
+- *(No Category)* Add InterpreterIPCData
+- *(No Category)* Almost working elf interpreter
+- *(No Category)* Make sure the code won't continue after exit syscall
+- *(No Category)* Include only mlibc
+- *(No Category)* Typo
+- *(No Category)* Support i386
+- *(No Category)* Update KCtl enum
+- *(No Category)* Update ELF interpreter
+- *(No Category)* Update mlibc submodule
+- *(No Category)* Fix elf interpreter and clean up the code
+- *(No Category)* Do not build with SIMD support
+- *(No Category)* Disable SIMD in printf functions
+- *(No Category)* Fix functions visibility
+- *(No Category)* Reset the color to #CCCCCC
+- *(No Category)* Update license year
+- *(No Category)* Fix stub lib
+- *(No Category)* Fix elf interpreter (less broken)
+- *(No Category)* Fix elf interpreter
+- *(No Category)* Fix multiple bugs throughout the codebase
+- *(No Category)* Fix wrong file syscall usage
+- *(No Category)* Update sysbase.h
+- *(No Category)* Compile doom
+- *(No Category)* Update libc implementation
+- *(No Category)* Update doomgeneric submodule
+- *(No Category)* Fix compiler warning
+- *(No Category)* Fix std file operations
+- *(No Category)* Cleanup init
+- *(No Category)* Create "bin" directory
+- *(No Category)* Update echo program
+- *(No Category)* Stub shell
+- *(No Category)* Update libs header path
+- *(No Category)* Update libc
+- *(No Category)* Update init code
+- *(No Category)* Workaround for errno
+- *(No Category)* Cleanup code
+- *(No Category)* If filename is invalid, fopen should return NULL
+- *(No Category)* Exit on fork() failure
+- *(No Category)* Update doomgeneric submodule
+- *(No Category)* Add gdb for init.elf
+- *(No Category)* Implement fseek
+- *(No Category)* Update libc
+- *(No Category)* Update doomgeneric submodule
+- *(No Category)* Add doom.elf to vscode debug
+- *(No Category)* Update libc
+- *(No Category)* Update libc
+- *(No Category)* Update filesystem structure
+- *(No Category)* Update doomgeneric submodule
+- *(No Category)* Update paths
+- *(No Category)* Update vscode configs
+- *(No Category)* Update userspace
+- *(No Category)* Update mlibc
+- *(No Category)* Update libc
+- *(No Category)* Update echo
+- *(No Category)* Update userspace
+- *(No Category)* Update userspace for mlibc support
+- *(No Category)* Update userspace
+- *(No Category)* Enable debugging in musl
+- *(No Category)* Update userspace
+- *(No Category)* Update userspace
+- *(No Category)* Fix build order in Makefile
+- *(No Category)* Add test_unaligned function to userspace_test.c
+- *(No Category)* Fix signal handling in utest
+- *(No Category)* Update file and directory paths
+- *(No Category)* Fix buffer overflow
+- *(No Category)* Update userspace test
+- *(No Category)* Add test_stdin function
+- *(No Category)* Add test_stat function
+- *(No Category)* Update userspace
+- *(No Category)* Merge remote-tracking branch 'Userspace/master'
+- *(No Category)* Initial commit
+- *(No Category)* Update README.md
+- *(No Category)* Updated files
+- *(No Category)* Updated Makefile
+- *(No Category)* Update LICENSE
+- *(No Category)* Added vscode workspace file
+- *(No Category)* Code stub
+- *(No Category)* Working on memory mapping
+- *(No Category)* Update doxygen
+- *(No Category)* Update Doxygen
+- *(No Category)* Moved vscode workspace file
+- *(No Category)* Add vscode cpp properties
+- *(No Category)* Test kernel bootstrap
+- *(No Category)* Debug memory usage before jumping to kernel
+- *(No Category)* Update loader
+- *(No Category)* Revert changes
+- *(No Category)* Update filesystem structure
+- *(No Category)* Update kernel file name
+- *(No Category)* Update Doxyfile with new file paths
+- *(No Category)* Merge remote-tracking branch 'Lynx/master'
+- *(No Category)* Update .gitmodules
+- *(No Category)* Remove submodule
+- *(No Category)* Update ELFObject()
+- *(No Category)* Add COM5-8 checks
+- *(No Category)* Update elf.h
+- *(No Category)* Update interface headers
+- *(No Category)* Update syscall header
+- *(No Category)* Implement usr_pread/pwrite in FDT
+- *(No Category)* Add experimental native system calls
+- *(No Category)* Refactor code
+- *(No Category)* Update include headers
+- *(No Category)* Fix stack guard expansion
+- *(No Category)* Implement sys_prctl syscall
+- *(No Category)* Fix ExceptionHandlerStub setting fs & gs to 0
+- *(No Category)* Update headers for syscalls.h changes
+- *(No Category)* Implement sys_kill syscall
+- *(No Category)* Add macros for syscalls
+- *(No Category)* Fix doxygen documentation
+- *(No Category)* Add conversion for syscall macros
+- *(No Category)* Implement sys_tell & sys_seek
+- *(No Category)* Keep #PF handling always enabled
+- *(No Category)* Update syscalls.h
+- *(No Category)* Add .note section
+- *(No Category)* Add signal_action_flags_t structure
+- *(No Category)* Remove .note section from discard list
+- *(No Category)* Add syscall_clockid_t and fix enum names
+- *(No Category)* Remove redundant static assertions for signal flags
+- *(No Category)* Update syscalls.h
+- *(No Category)* Update configuration files
+- *(No Category)* Rewrite everything
+- *(No Category)* Rewrite the website
+- *(No Category)* Fix release compilation on amd64
+- *(No Category)* Create sonarcloud.yml
+- *(No Category)* Merge branch 'master' of https://github.com/EnderIce2/Fennix
+- *(No Category)* Fix boot on i386
+- *(No Category)* Update architecture support and improve toolchain configuration
+- *(No Category)* Add ARM build support
+- *(No Category)* Move obsolete CodeQL and documentation workflows to makefile.yml
+- *(No Category)* Add aarch64 architecture support
+- *(No Category)* Add arm architecture support
+- *(No Category)* Use --no-install-recommends for apt installs in workflows
+- *(No Category)* Update QEMU configuration for aarch64 to use raspi4b
+- *(No Category)* Update debug configuration for aarch64
+- *(No Category)* Update debug configurations
+- *(No Category)* Update boot code and linker script for aarch64
+- *(No Category)* Add support for GRUB in the build process
+- *(No Category)* Refine .gitignore rules for tools directory
+- *(No Category)* Add initial Bootloader implementation
+- *(No Category)* Add Makefile templates for Bootloader firmware across architectures
+- *(No Category)* Add Bootloader clean target to Makefile
+- *(No Category)* Add MIDR_EL1 union for AArch64 CPU identification
+- *(No Category)* Update CPU structures with __packed attribute for alignment
+- *(No Category)* Move UART code in each arch subdir
+- *(No Category)* Update linker script for AArch64
+- *(No Category)* Refactor aarch64 boot code
+- *(No Category)* Comment out gnu-efi compilation for now because it breaks workflows
+- *(No Category)* Add SIMD test application
+- *(No Category)* Simplify SIMD test application assembly code
+- *(No Category)* Refactor FPU state structure for improved clarity and consistency
+- *(No Category)* Include crt1.c to streamline startup code
+- *(No Category)* Fix stack alignment
+- *(No Category)* Flush stdout & stderr on exit
+- *(No Category)* Update Makefiles
+- *(No Category)* Add stub libc test program
+- *(No Category)* Comment out build and linking commands in Makefile
+- *(No Category)* Implement std more functions
+- *(No Category)* Add return statement to main function
+- *(No Category)* Implement close() & dirfd()
+- *(No Category)* Include stdio.h in dirent.c
+- *(No Category)* Add VSCode snippets and workspace configuration
+- *(No Category)* Add native build target and default toolchain configuration
+- *(No Category)* Add test functions for various libc components
+- *(No Category)* Implement sigaction(), sigemptyset(), signal() & strcspn()
+- *(No Category)* Add sh program
+- *(No Category)* Dummy code
+- *(No Category)* Implement strncpy function
+- *(No Category)* Implement fprintf function
+- *(No Category)* Implement vfprintf function
+- *(No Category)* Add uname command
+- *(No Category)* Add ioctl function
+- *(No Category)* Update function signatures in fcntl.h
+- *(No Category)* Implement <sys/fcntl>
+- *(No Category)* Add stub gethostname function
+- *(No Category)* Add stub uname function
+- *(No Category)* Implement more tests in libc_test
+- *(No Category)* Add web server test program
+- *(No Category)* Add <arpa/inet.h>
+- *(No Category)* Add <netinet/in.h> header for IPv4 and IPv6 support
+- *(No Category)* Add <sys/uio.h> header for vector I/O operations
+- *(No Category)* Implement alphasort, fdopendir, opendir, posix_getdents, readdir & scandir
+- *(No Category)* Implement read, pread, write & pwrite
+- *(No Category)* Add <sys/socket.h> for socket programming support
+- *(No Category)* Implement strcoll()
+- *(No Category)* Implement qsort, realloc and reallocarray functions in stdlib
+
+
+### <!-- 2 -->🚜 Refactor
+
+- *(driver/api)* Fix formatting
+- *(driver/api)* Delegate memory allocation and deallocation to DriverManager
+- *(kernel/pci)* Simplify PCI device initialization by delegating to PCIManager
+- *(kernel/syscalls)* Simplify argument handling in HandleNativeSyscalls
+- *(tests)* Remove obsolete SIMD and web test files
+- *(userspace/apps/test)* :recycle: move all functions in one file
+- *(userspace/apps/test/libc_test)* Remove deprecated string test files
+- *(userspace/libc)* Replace syscall2 with call_kill in kill function
+- *(userspace/libc)* Implement pthread_sigmask, sigaddset, sigfillset & sigprocmask
+- *(userspace/libs)* Rename libdemo to libexample
+- *(No Category)* Streamline source file discovery in Makefile and update OSARCH handling in config.mk
+- *(No Category)* Fix build on i386
+- *(No Category)* Fix softfloat on aarch64 and arm
+- *(No Category)* Fix release building for aarch64 and arm
+
+
+### <!-- 3 -->📚 Documentation
+
+- *(kernel)* Short doc for __check_op macro
+- *(kernel/api)* Add documentation for FBIOGET_SCREEN_INFO
+- *(syscalls)* Add documentation for FBIOGET_SCREEN_INFO ioctl
+- *(No Category)* Remove .dockerignore, Dockerfile, and compose.yaml
+- *(No Category)* Update README.md
+
+
+### <!-- 6 -->🧪 Testing
+
+- *(userspace/apps/test)* Expand math function tests for accuracy
+- *(No Category)* Test
+
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- *(devcontainer)* Rename dev container (libc_test)
+- *(userspace/libc)* Update vscode workspace config
+- *(vscode)* Add conventional commit scopes for kernel
+- *(vscode)* Add recommended extensions for improved development experience
+- *(vscode)* Add more conventional commit scopes for userspace
+- *(vscode)* Add userspace/apps/sys/init to conventional commit scopes
+- *(vscode)* Add 'kernel' scope to conventional commits
+- *(vscode)* Add Dev Container
+- *(vscode)* Update launch configuration to include libc_test
+- *(vscode)* Rename preLaunchTask from launch-qemu to QEMU
+- *(No Category)* Update vscode boilerplates
+- *(No Category)* Update vscode debug configurations
+- *(No Category)* Fix build process
+- *(No Category)* Add experimental docker build
+- *(No Category)* Fix workflow error "this file was generated for autoconf 2.69"
+- *(No Category)* (Again) Fix workflow error
+- *(No Category)* Fix workflow error
+- *(No Category)* TODO: Fix workflows
+- *(No Category)* Remove sudo & change "apt-get" to "apt"
+- *(No Category)* Revert last change
+- *(No Category)* General cleanup
+- *(No Category)* Update vscode workspace files
+- *(No Category)* Update codebase
+- *(No Category)* Update makefiles & macros
+- *(No Category)* Update driver makefiles
+- *(No Category)* Update makefiles
+- *(No Category)* Update makefiles
+- *(No Category)* Update vscode config
+- *(No Category)* Update TODO.md
+- *(No Category)* Add patch for qemu
+- *(No Category)* Update workflows
+- *(No Category)* Delete tailprofiler.sh and tailserial.sh scripts
+- *(No Category)* Update makefiles and doxygen
+- *(No Category)* Update markdown files
+- *(No Category)* Update GCC dependencies in GitHub Actions workflow
+- *(No Category)* Purge autoconf before installing GCC dependencies in workflow
+- *(No Category)* Enhance GCC installation workflow with autoconf recheck and libtool addition
+- *(No Category)* Fix typo in package installation command in makefile.yml
+- *(No Category)* Update autoconf installation method in workflow to use Debian package
+- *(No Category)* Update autoconf workflow to also purge and install automake
+- *(No Category)* Update makefile.yml to install automake alongside autoconf
+- *(No Category)* Remove autoconf purge step and adjust installation method for autoconf
+- *(No Category)* Update autoconf installation command to use dpkg with force option
+- *(No Category)* Add automake installation to makefile.yml workflow
+- *(No Category)* Enhance makefile.yml to recheck and install specific versions of automake and autoconf
+- *(No Category)* Update flawfinder scan minimum level from 4 to 5 in makefile.yml
+- *(No Category)* Remove Flawfinder analysis steps from makefile.yml workflow
+- *(No Category)* Remove CodeQL analysis steps from makefile.yml workflow
+- *(No Category)* Allow aarch64 build job
+- *(No Category)* Add CodeQL advanced analysis workflow
+- *(No Category)* Todo
+- *(No Category)* Migrate documentation deployment to a new workflow
+- *(No Category)* Rename workflow from 'Build OS' to 'Deploy Documentation'
+- *(No Category)* Upgrade actions/checkout, actions/cache, and actions/upload-artifact to v4
+- *(No Category)* Add LICENSE file for rpmalloc
+- *(No Category)* Remove SonarCloud workflow configuration
+- *(No Category)* Add .editorconfig files for consistent coding styles
+- *(No Category)* Add newline at end of c_boilerplates.code-snippets
+- *(No Category)* Standardize indentation for CMake files
+- *(No Category)* Experimental change to workflows to use dev container
+- *(No Category)* Potential fix for Dev Container issues
+- *(No Category)* Fix "touch: cannot touch '/run/user/1000/pulse/native': No such file or directory"
+- *(No Category)* Fix ci
+- *(No Category)* Fix limine in ci build
+- *(No Category)* Add "push: never" to devcontainers/ci
+
+
+<!-- generated by git-cliff -->

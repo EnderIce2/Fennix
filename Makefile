@@ -177,6 +177,9 @@ ci-build:
 	mkdir -p artifacts
 	mv Fennix-*.iso artifacts/
 
+changelog:
+	git cliff > CHANGELOG.md
+
 ifeq ($(QUIET_BUILD), 1)
 MAKE_QUIET_FLAG = --quiet
 endif
