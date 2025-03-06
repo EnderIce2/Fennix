@@ -47,6 +47,13 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
+    - name: Prepare Environment for Dev Container
+      run: |
+        sudo mkdir -p /tmp/.X11-unix
+        sudo touch /tmp/.Xauthority
+        sudo touch /run/user/1000/pulse/native
+        echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
+
     - name: Run make ci-setup in dev container
       if: steps.cache-cross.outputs.cache-hit != 'true'
       uses: devcontainers/ci@v0.3
@@ -145,6 +152,13 @@ jobs:
       with:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
+
+    - name: Prepare Environment for Dev Container
+      run: |
+        sudo mkdir -p /tmp/.X11-unix
+        sudo touch /tmp/.Xauthority
+        sudo touch /run/user/1000/pulse/native
+        echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
 
     - name: Run make ci-build in dev container
       uses: devcontainers/ci@v0.3
