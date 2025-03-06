@@ -165,6 +165,7 @@ jobs:
     - name: Run make ci-build in dev container
       uses: devcontainers/ci@v0.3
       with:
+        push: never
         runCmd: /usr/bin/make ci-build
 
     - name: Upload Artifact
