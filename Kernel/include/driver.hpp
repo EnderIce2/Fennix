@@ -187,6 +187,8 @@ namespace Driver
 		void FreeMemory(dev_t DriverID, void *Pointer, size_t Pages);
 
 		Manager();
+
+	private:
 		~Manager();
 	};
 

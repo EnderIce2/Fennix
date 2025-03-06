@@ -344,16 +344,10 @@ EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
 	uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
 	debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
 #if defined(__amd64__)
-	asmv("mov %0, %%rsp"
-		 :
-		 : "r"(KernelStack)
-		 : "memory");
+	asmv("mov %0, %%rsp" : : "r"(KernelStack) : "memory");
 	asmv("mov $0, %rbp");
 #elif defined(__i386__)
-	asmv("mov %0, %%esp"
-		 :
-		 : "r"(KernelStack)
-		 : "memory");
+	asmv("mov %0, %%esp" : : "r"(KernelStack) : "memory");
 	asmv("mov $0, %ebp");
 #else
 #warning "Kernel stack is not set!"
@@ -391,7 +385,7 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 
 	KPrint("Unloading all drivers");
 	if (DriverManager)
-		delete DriverManager, DriverManager = nullptr;
+		DriverManager->UnloadAllDrivers();
 
 	KPrint("Stopping scheduling");
 	if (TaskManager && !TaskManager->IsPanic())
