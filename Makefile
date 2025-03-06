@@ -128,6 +128,9 @@ ci-setup:
 	$(MAKE) --quiet -C tools ci
 
 ci-build:
+# Prepare
+	$(MAKE) prepare
+	$(MAKE) --quiet -C tools do_limine
 # amd64
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
