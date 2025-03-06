@@ -2,6 +2,78 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Clean",
+			"type": "shell",
+			"command": "make clean",
+			"isBackground": false,
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "never",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Build",
+			"type": "shell",
+			"command": "make build",
+			"isBackground": false,
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Run",
+			"type": "shell",
+			"command": "make qemu",
+			"isBackground": false,
+			"dependsOn": [
+				"Build"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
 			"label": "Build Bootloader",
 			"type": "shell",
 			"command": "make -C ../ build_bootloader",
