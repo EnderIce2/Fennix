@@ -14,6 +14,7 @@ default:
 	$(error Please specify a target)
 
 all: do_tools do_limine __clone_qemu __clone_all_no_qemu do_binutils do_gcc do_qemu
+ci: do_tools do_limine __clone_all_no_qemu do_binutils do_gcc
 
 clean:
 	rm -f rep ep
@@ -147,8 +148,8 @@ __do_binutils:
 	--disable-tls \
 	--disable-pie \
 	&& \
-	make --quiet all -j$(shell nproc) && \
-	make --quiet install
+	$(MAKE) --quiet all -j$(shell nproc) && \
+	$(MAKE) --quiet install
 
 __do_gcc:
 	mkdir -p $(GCC_CLONE_PATH)/__build
@@ -166,10 +167,10 @@ __do_gcc:
 	--disable-tls \
 	--disable-pie \
 	&& \
-	make --quiet all-gcc -j$(shell nproc) && \
-	make --quiet all-target-libgcc -j$(shell nproc) && \
-	make --quiet install-gcc -j$(shell nproc) && \
-	make --quiet install-target-libgcc -j$(shell nproc)
+	$(MAKE) --quiet all-gcc -j$(shell nproc) && \
+	$(MAKE) --quiet all-target-libgcc -j$(shell nproc) && \
+	$(MAKE) --quiet install-gcc -j$(shell nproc) && \
+	$(MAKE) --quiet install-target-libgcc -j$(shell nproc)
 
 do_binutils:
 	$(MAKE) __do_binutils BUILD_TARGET="x86_64-fennix"
@@ -196,5 +197,5 @@ do_qemu:
 	--disable-vnc \
 	--disable-opengl \
 	&& \
-	make --quiet -j$(shell nproc) && \
-	make --quiet install
+	$(MAKE) --quiet -j$(shell nproc) && \
+	$(MAKE) --quiet install

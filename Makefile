@@ -1,7 +1,7 @@
 
 include config.mk
 
-.PHONY: default tools clean
+.PHONY: default tools clean ci-build
 
 # First rule
 default:
@@ -99,13 +99,13 @@ endif
 
 # Install necessary packages, build cross-compiler etc...
 tools:
-	make --quiet -C tools all
+	$(MAKE) --quiet -C tools all
 
 prepare:
-	make --quiet -C Kernel prepare
-	make --quiet -C Bootloader prepare
-	make --quiet -C Drivers prepare
-	make --quiet -C Userspace prepare
+	$(MAKE) --quiet -C Kernel prepare
+	$(MAKE) --quiet -C Bootloader prepare
+	$(MAKE) --quiet -C Drivers prepare
+	$(MAKE) --quiet -C Userspace prepare
 
 setup:
 	$(MAKE) prepare
@@ -114,9 +114,65 @@ setup:
 build: build_kernel build_bootloader build_userspace build_drivers build_image
 
 dump:
-	make --quiet -C Kernel dump
+	$(MAKE) --quiet -C Kernel dump
 
 rebuild: clean build
+
+__ci-build-set-release:
+	sed -i 's/.*DEBUG = .*/DEBUG = 0/' ./config.mk && cat config.mk | grep DEBUG
+
+__ci-build-set-debug:
+	sed -i 's/.*DEBUG = .*/DEBUG = 1/' ./config.mk && cat config.mk | grep DEBUG
+
+ci-setup:
+	$(MAKE) --quiet -C tools ci
+
+ci-build:
+# amd64
+	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
+	$(MAKE) build
+	mv Fennix.iso Fennix-amd64-debug.iso
+	$(MAKE) clean
+	$(MAKE) __ci-build-set-release
+	$(MAKE) build
+	mv Fennix.iso Fennix-amd64-release.iso
+	$(MAKE) clean
+# i386
+	$(MAKE) __ci-build-set-debug
+	sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
+	$(MAKE) build
+	mv Fennix.iso Fennix-i386-debug.iso
+	$(MAKE) clean
+	$(MAKE) __ci-build-set-release
+	$(MAKE) build
+	mv Fennix.iso Fennix-i386-release.iso
+	$(MAKE) clean
+# ARM
+	$(MAKE) __ci-build-set-debug
+	sed -i 's/.*OSARCH = .*/OSARCH = arm/' ./config.mk && cat config.mk | grep OSARCH
+	$(MAKE) build
+	mv Fennix.iso Fennix-arm-debug.iso
+	$(MAKE) clean
+	$(MAKE) __ci-build-set-release
+	$(MAKE) build
+	mv Fennix.iso Fennix-arm-release.iso
+	$(MAKE) clean
+# AArch64
+	$(MAKE) __ci-build-set-debug
+	sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
+	$(MAKE) build
+	mv Fennix.iso Fennix-aarch64-debug.iso
+	$(MAKE) clean
+	$(MAKE) __ci-build-set-release
+	$(MAKE) build
+	mv Fennix.iso Fennix-aarch64-release.iso
+	$(MAKE) clean
+# Restore original config
+	$(MAKE) __ci-build-set-debug
+	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
+# Move all files to artifacts directory
+	mkdir -p artifacts
+	mv Fennix-*.iso artifacts/
 
 ifeq ($(QUIET_BUILD), 1)
 MAKE_QUIET_FLAG = --quiet
@@ -124,22 +180,22 @@ endif
 
 build_kernel:
 ifeq ($(BUILD_KERNEL), 1)
-	make -j$(shell nproc) $(MAKE_QUIET_FLAG) -C Kernel build
+	$(MAKE) -j$(shell nproc) $(MAKE_QUIET_FLAG) -C Kernel build
 endif
 
 build_bootloader:
 ifeq ($(BUILD_BOOTLOADER), 1)
-	make $(MAKE_QUIET_FLAG) -C Bootloader build
+	$(MAKE) $(MAKE_QUIET_FLAG) -C Bootloader build
 endif
 
 build_drivers:
 ifeq ($(BUILD_DRIVERS), 1)
-	make $(MAKE_QUIET_FLAG) -C Drivers build
+	$(MAKE) $(MAKE_QUIET_FLAG) -C Drivers build
 endif
 
 build_userspace:
 ifeq ($(BUILD_USERSPACE), 1)
-	make $(MAKE_QUIET_FLAG) -C Userspace build
+	$(MAKE) $(MAKE_QUIET_FLAG) -C Userspace build
 endif
 
 build_image:
@@ -262,7 +318,7 @@ run: build qemu
 clean: clean_logs
 	rm -rf doxygen-doc iso_tmp_data initrd_tmp_data
 	rm -f initrd.tar $(OSNAME).iso $(OSNAME).img
-	make -C Kernel clean
-	make -C Userspace clean
-	make -C Drivers clean
-	make -C Bootloader clean
+	$(MAKE) -C Kernel clean
+	$(MAKE) -C Userspace clean
+	$(MAKE) -C Drivers clean
+	$(MAKE) -C Bootloader clean
