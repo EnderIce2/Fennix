@@ -1,0 +1,33 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - tools/website/**
+      - Kernel/include/interface/**
+      - Doxyfile
+
+jobs:
+  deploydoc:
+    name: Deploy Website to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code 🛎️
+        uses: actions/checkout@v4
+
+      - name: Install Doxygen 📦
+        run: |
+          sudo apt update
+          sudo apt --no-install-recommends -y install doxygen make
+
+      - name: Generate Documentation 📚
+        run: make doxygen
+
+      - name: Copy GitHub Pages Website 📁
+        run: cp -r tools/website/* doxygen-doc/
+
+      - name: Deploy documentation 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: doxygen-doc
