@@ -175,7 +175,9 @@ ci-build:
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 # Move all files to artifacts directory
 	mkdir -p artifacts
-	mv Fennix-*.iso artifacts/
+	$(MAKE) changelog
+	cp -f CHANGELOG.md artifacts/
+	mv -f Fennix-*.iso artifacts/
 
 changelog:
 	git cliff > CHANGELOG.md
