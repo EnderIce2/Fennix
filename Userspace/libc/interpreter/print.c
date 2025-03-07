@@ -76,7 +76,7 @@ int puts(const char *s)
 	int len = strlen(s);
 	memcpy(print_buffer + print_buffer_offset, s, len);
 	print_buffer_offset += len;
-	print_buffer[print_buffer_offset++] = '\0';
+	print_buffer[print_buffer_offset++] = '\n';
 	flush_buffer();
 	return len + 1;
 }
