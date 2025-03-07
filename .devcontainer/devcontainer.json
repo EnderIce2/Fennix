@@ -26,26 +26,23 @@
 	},
 	// From this line below are for qemu, so not that important.
 	"mounts": [
-		"source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-		"source=${localEnv:XAUTHORITY},target=/home/vscode/.Xauthority,type=bind,consistency=cached",
-		"source=/dev/kvm,target=/dev/kvm,type=bind,consistency=cached",
-		"source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind,consistency=cached"
+		{
+			"source": "/tmp/.X11-unix",
+			"target": "/tmp/.X11-unix",
+			"type": "bind"
+		},
+		{
+			"source": "${localEnv:XAUTHORITY}",
+			"target": "/home/vscode/.Xauthority",
+			"type": "bind"
+		},
+		{
+			"source": "/run/user/1000/pulse/native",
+			"target": "/run/user/1000/pulse/native",
+			"type": "bind"
+		}
 	],
 	"runArgs": [
 		"--privileged"
 	]
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "gcc -v",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
 }
