@@ -111,6 +111,9 @@ setup:
 	$(MAKE) prepare
 	$(MAKE) tools
 
+setup-no-qemu:
+	$(MAKE) --quiet -C tools ci
+
 build: build_kernel build_bootloader build_userspace build_drivers build_image
 
 dump:
@@ -312,6 +315,8 @@ else
 endif
 
 vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debug_only
+
+debug: vscode_debug
 
 qemu: qemu_vdisk clean_logs
 	touch serial.log
