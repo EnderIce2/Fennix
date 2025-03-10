@@ -15,6 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <sys/ioctl.h>
 #include <termios.h>
 #include <errno.h>
 
