@@ -20,19 +20,37 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <fennix/syscalls.h>
 
 export int uname(struct utsname *name)
 {
 	if (name == NULL)
+	{
+		errno = EINVAL;
 		return -1;
+	}
+
+	struct kutsname kname;
+	int result = call_uname(&kname);
+	if (result == 0)
+	{
+		strcpy(name->sysname, kname.sysname);
+		strcpy(name->release, kname.release);
+		strcpy(name->version, kname.version);
+		strcpy(name->machine, kname.machine);
+	}
+	else
+	{
+		errno = result;
+		return -1;
+	}
 
 	if (gethostname(name->nodename, sizeof(name->nodename)) != 0)
+	{
+		errno = EIO;
 		return -1;
-
-	strcpy(name->sysname, "Fennix");
-	strcpy(name->release, "1.0.0");
-	strcpy(name->version, "Fennix Version 1.0.0");
-	strcpy(name->machine, "x86_64");
+	}
 
 	return 0;
 }
