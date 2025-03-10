@@ -9,6 +9,6 @@
 #define __kernel__ 1
 #define KERNEL_NAME "Fennix"
 #define KERNEL_ARCH "amd64"
-#define KERNEL_VERSION "1.0"
+#define KERNEL_VERSION "1.0.0"
 #define GIT_COMMIT "0000000000000000000000000000000000000000"
 #define GIT_COMMIT_SHORT "0000000"

@@ -17,7 +17,7 @@ OSARCH = amd64
 BOARD_TYPE := raspi4
 
 # Kernel version.
-KERNEL_VERSION = dev
+KERNEL_VERSION = 0.0.1
 
 # Which bootloader to use.
 # Available bootloaders:

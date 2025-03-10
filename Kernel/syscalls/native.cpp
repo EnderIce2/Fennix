@@ -212,6 +212,54 @@ static int sys_rmdir(SysFrm *Frame, const char *path) { return -ENOSYS; }
 static int sys_unlink(SysFrm *Frame, const char *pathname) { return -ENOSYS; }
 static int sys_rename(SysFrm *Frame, const char *oldpath, const char *newpath) { return -ENOSYS; }
 
+static int sys_uname(SysFrm *Frame, struct kutsname *buf)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	struct kutsname *pBuf = vma->UserCheckAndGetAddress(buf, sizeof(struct kutsname));
+	if (pBuf == nullptr)
+		return -EFAULT;
+
+	strncpy(pBuf->sysname, KERNEL_NAME, sizeof(pBuf->sysname));
+
+	char release[sizeof(pBuf->release)];
+	sprintf(release, "%s", KERNEL_VERSION);
+	strncpy(pBuf->release, release, sizeof(pBuf->release));
+
+	char version[sizeof(pBuf->version)];
+
+	bool isDebug = false;
+#ifdef DEBUG
+	isDebug = true;
+#endif
+
+	sprintf(version, "FNX-v%s-%s %s %s %s %s",
+			KERNEL_VERSION, GIT_COMMIT_SHORT,
+			isDebug ? "DEBUG" : "RELEASE",
+			__DATE__, __TIME__, __VERSION__);
+	strncpy(pBuf->version, version, sizeof(pBuf->version));
+
+#if defined(__amd64__)
+	const char *osarch = "x86_64";
+#elif defined(__i386__)
+	const char *osarch = "i386";
+#elif defined(__aarch64__)
+	const char *osarch = "aarch64";
+#elif defined(__arm__)
+	const char *osarch = "arm";
+#else
+	const char *osarch = "unknown";
+#endif
+
+	strncpy(pBuf->machine, osarch, sizeof(pBuf->machine));
+
+	debug("%s %s %s %s", pBuf->sysname, pBuf->release,
+		  pBuf->version, pBuf->machine);
+
+	return 0;
+}
+
 static SyscallData scTbl[SYS_MAX] = {};
 __constructor void __init_native_syscalls(void)
 {
@@ -281,6 +329,7 @@ __constructor void __init_native_syscalls(void)
 	scTbl[SYS_RMDIR] = {"SYS_RMDIR", (void *)sys_rmdir};
 	scTbl[SYS_UNLINK] = {"SYS_UNLINK", (void *)sys_unlink};
 	scTbl[SYS_RENAME] = {"SYS_RENAME", (void *)sys_rename};
+	scTbl[SYS_UNAME] = {"SYS_UNAME", (void *)sys_uname};
 }
 
 uintptr_t HandleNativeSyscalls(SysFrm *Frame)

@@ -624,6 +624,14 @@ typedef struct FramebufferScreenInfo
  */
 #define FBIOGET_SCREEN_INFO 0xf0
 
+struct kutsname
+{
+	char sysname[65];
+	char release[65];
+	char version[65];
+	char machine[65];
+};
+
 /**
  * @brief List of syscalls
  *
@@ -1601,6 +1609,22 @@ typedef enum
 	 * - #EACCES if permission is denied
 	 */
 	SYS_RENAME,
+	/**
+	 * @brief Get unix name information
+	 *
+	 * @code
+	 * int uname(struct kutsname *buf);
+	 * @endcode
+	 *
+	 * @details Retrieves information about the operating system.
+	 *
+	 * @param buf Pointer to `kutsname` structure to store information
+	 *
+	 * @return
+	 * - #EOK on success
+	 * - #EFAULT if `buf` is outside accessible address space
+	 */
+	SYS_UNAME,
 
 	/**
 	 * @brief Max number of syscalls
@@ -1781,5 +1805,8 @@ typedef enum
 
 /** @copydoc SYS_RENAME */
 #define call_rename(oldpath, newpath) syscall2(SYS_RENAME, (scarg)oldpath, (scarg)newpath)
+
+/** @copydoc SYS_UNAME */
+#define call_uname(buf) syscall1(SYS_UNAME, (scarg)buf)
 
 #endif // !__FENNIX_API_SYSCALLS_LIST_H__
