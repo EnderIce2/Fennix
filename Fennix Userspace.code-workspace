@@ -20,7 +20,8 @@
 			"userspace/libs",
 			"userspace/apps/test",
 			"userspace/apps/usr",
-			"userspace"
+			"userspace",
+			"coreutils"
 		]
 	}
 }

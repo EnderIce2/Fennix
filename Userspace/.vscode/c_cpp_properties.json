@@ -4,6 +4,7 @@
 			"name": "Fennix x64 (Linux, GCC, debug)",
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
+				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**"
 			],
 			"defines": [
@@ -45,6 +46,7 @@
 			"name": "Fennix x32 (Linux, GCC, debug)",
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
+				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**"
 			],
 			"defines": [
@@ -86,6 +88,7 @@
 			"name": "Fennix Arm (Linux, GCC, debug)",
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
+				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**"
 			],
 			"defines": [
@@ -107,6 +110,7 @@
 			"name": "Fennix Aarch64 (Linux, GCC, debug)",
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
+				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**"
 			],
 			"defines": [

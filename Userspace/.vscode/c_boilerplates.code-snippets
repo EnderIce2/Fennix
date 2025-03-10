@@ -160,5 +160,30 @@
 			"*/"
 		],
 		"description": "Create libc license."
+	},
+	"Core Utilities License": {
+		"isFileTemplate": true,
+		"prefix": [
+			"license_coreutils",
+		],
+		"body": [
+			"/*",
+			"\tThis file is part of Fennix Core Utilities.",
+			"",
+			"\tFennix Core Utilities is free software: you can redistribute it and/or",
+			"\tmodify it under the terms of the GNU General Public License as",
+			"\tpublished by the Free Software Foundation, either version 3 of",
+			"\tthe License, or (at your option) any later version.",
+			"",
+			"\tFennix Core Utilities is distributed in the hope that it will be useful,",
+			"\tbut WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"\tMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"\tGNU General Public License for more details.",
+			"",
+			"\tYou should have received a copy of the GNU General Public License",
+			"\talong with Fennix Core Utilities. If not, see <https://www.gnu.org/licenses/>.",
+			"*/"
+		],
+		"description": "Create coreutils license."
 	}
 }

@@ -37,9 +37,22 @@ create_out:
 	mkdir -p out/usr/include
 	cp $(WORKSPACE_DIR)/../Kernel/include/interface/*  $(WORKSPACE_DIR)/out/include/fennix/
 
+build_coreutils:
+	mkdir -p cache/coreutils
+	cd cache/coreutils && \
+	cmake $(WORKSPACE_DIR)/coreutils \
+	-DCMAKE_INSTALL_PREFIX:PATH=$(WORKSPACE_DIR)/out \
+	-DCMAKE_SYSROOT=$(WORKSPACE_DIR)/out \
+	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
+	-DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
+	&& \
+	make -j$(shell nproc) && \
+	make install
+
 build: create_out
 	make -C libc build
 	make -C libs build
+	$(MAKE) build_coreutils
 	make -C apps build
 
 prepare:
