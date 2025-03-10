@@ -19,7 +19,8 @@
 			"devcontainer",
 			"userspace/libs",
 			"userspace/apps/test",
-			"userspace/apps/usr"
+			"userspace/apps/usr",
+			"userspace"
 		]
 	}
 }
