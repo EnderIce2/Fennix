@@ -94,7 +94,8 @@ RUN apt-get -y install --no-install-recommends \
 	grub-pc-bin \
 	grub-pc \
 	grub2-common \
-	pip
+	pip \
+	cmake
 
 # Install git-cliff
 RUN pip install git-cliff --break-system-packages
