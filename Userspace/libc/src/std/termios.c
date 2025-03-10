@@ -19,16 +19,6 @@
 #include <termios.h>
 #include <errno.h>
 
-/* FIXME: Not implemented! Stub code! */
-#define TCSBRK 0
-#define TCGETS 0
-#define TIOCGSID 0
-#define TIOCGWINSZ 0
-#define TCSETS 0
-#define TCSETSW 0
-#define TCSETSF 0
-#define TIOCSWINSZ 0
-
 export speed_t cfgetispeed(const struct termios *termios_p)
 {
 	return termios_p->c_ispeed;
