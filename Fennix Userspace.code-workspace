@@ -18,7 +18,8 @@
 			"userspace/libs/libm",
 			"devcontainer",
 			"userspace/libs",
-			"userspace/apps/test"
+			"userspace/apps/test",
+			"userspace/apps/usr"
 		]
 	}
 }

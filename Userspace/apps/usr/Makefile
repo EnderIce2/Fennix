@@ -1,0 +1,9 @@
+MAKE_TARGETS := build clean
+DIRECTORIES := $(sort $(dir $(wildcard ./*/)))
+
+.PHONY: $(MAKE_TARGETS) $(DIRECTORIES)
+
+$(MAKE_TARGETS): $(DIRECTORIES)
+
+$(DIRECTORIES):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
