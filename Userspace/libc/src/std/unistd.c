@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fennix/syscalls.h>
+#include <fcntl.h>
 
 export char *optarg;
 export int optind, opterr, optopt;
@@ -183,16 +184,30 @@ export long gethostid(void);
 export int gethostname(char *name, size_t namelen)
 {
 	if (namelen == 0)
-	{
-		errno = EINVAL;
 		return -1;
+
+	char *hostname = getenv("HOSTNAME");
+	if (hostname)
+	{
+		strncpy(name, hostname, namelen);
+		return 0;
 	}
 
-	strncpy(name, "localhost", namelen);
-	if (namelen < strlen("localhost") + 1)
-	{
-		errno = ENAMETOOLONG;
+	int fd = open("/etc/hostname", O_RDONLY);
+	if (fd == -1)
 		return -1;
+
+	int result = read(fd, name, namelen);
+	close(fd);
+	if (result == -1)
+		return -1;
+
+	for (int i = 0; i < namelen; i++)
+	{
+		if (name[i] == '\n' || name[i] == '\r')
+			name[i] = '\0';
+		else if (name[i] < ' ' || name[i] > '~')
+			name[i] = '\0';
 	}
 
 	return 0;
