@@ -12,16 +12,16 @@
 		"git.openRepositoryInParentFolders": "always",
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
+			"userspace",
 			"userspace/libc",
-			"vscode",
-			"userspace/apps/sys/init",
-			"userspace/libs/libm",
-			"devcontainer",
+			"userspace/coreutils",
+			"userspace/apps",
 			"userspace/libs",
+			"userspace/apps/sys",
 			"userspace/apps/test",
 			"userspace/apps/usr",
-			"userspace",
-			"coreutils"
+			"devcontainer",
+			"vscode"
 		]
 	}
 }
