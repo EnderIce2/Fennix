@@ -18,7 +18,7 @@
 #ifndef _TERMIOS_H
 #define _TERMIOS_H
 
-#include <sys/ioctl.h>
+#include <sys/types.h>
 
 typedef unsigned char cc_t;
 typedef unsigned int speed_t;
