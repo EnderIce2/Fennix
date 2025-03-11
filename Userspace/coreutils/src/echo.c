@@ -15,11 +15,12 @@
 	along with Fennix Core Utilities. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <coreutils.h>
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include <coreutils.h>
 
 void PrintHelp()
 {

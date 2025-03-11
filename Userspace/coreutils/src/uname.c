@@ -15,11 +15,30 @@
 	along with Fennix Core Utilities. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <coreutils.h>
+
 #include <stdio.h>
-#include <sys/utsname.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
+#include <sys/utsname.h>
+
+typedef union
+{
+	struct
+	{
+		uint8_t KernelName : 1;
+		uint8_t NodeName : 1;
+		uint8_t KernelRelease : 1;
+		uint8_t KernelVersion : 1;
+		uint8_t Machine : 1;
+		uint8_t Processor : 1;
+		uint8_t HardwarePlatform : 1;
+		uint8_t OperatingSystem : 1;
+	};
+	uint8_t raw;
+} UnameFlags;
 
 const char *GetOperatingSystemName(const char *sysname)
 {
@@ -118,6 +137,7 @@ void PrintUsage()
 	printf("  -i, --hardware-platform  display the hardware platform (non-portable)\n");
 	printf("  -o, --operating-system   display the operating system\n");
 	printf("      --help               show this help message and exit\n");
+	printf("      --version            output version information and exit\n");
 }
 
 int main(int argc, char *argv[])
@@ -129,46 +149,43 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	bool print_all = false;
-	bool print_kernel_name = false;
-	bool print_nodename = false;
-	bool print_kernel_release = false;
-	bool print_kernel_version = false;
-	bool print_machine = false;
-	bool print_processor = false;
-	bool print_hardware_platform = false;
-	bool print_operating_system = false;
+	UnameFlags flags = {0};
 
 	if (argc == 1)
-		print_kernel_name = true;
+		flags.KernelName = 1;
 	else
 	{
 		for (int i = 1; i < argc; i++)
 		{
 			if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
 			{
-				print_all = true;
+				flags.raw = 0xFF;
 				break;
 			}
 			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--kernel-name") == 0)
-				print_kernel_name = true;
+				flags.KernelName = 1;
 			else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--nodename") == 0)
-				print_nodename = true;
+				flags.NodeName = 1;
 			else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--kernel-release") == 0)
-				print_kernel_release = true;
+				flags.KernelRelease = 1;
 			else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--kernel-version") == 0)
-				print_kernel_version = true;
+				flags.KernelVersion = 1;
 			else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--machine") == 0)
-				print_machine = true;
+				flags.Machine = 1;
 			else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--processor") == 0)
-				print_processor = true;
+				flags.Processor = 1;
 			else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--hardware-platform") == 0)
-				print_hardware_platform = true;
+				flags.HardwarePlatform = 1;
 			else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--operating-system") == 0)
-				print_operating_system = true;
+				flags.OperatingSystem = 1;
 			else if (strcmp(argv[i], "--help") == 0)
 			{
 				PrintUsage();
+				exit(EXIT_SUCCESS);
+			}
+			else if (strcmp(argv[i], "--version") == 0)
+			{
+				PRINTF_VERSION;
 				exit(EXIT_SUCCESS);
 			}
 			else
@@ -180,22 +197,25 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (print_all || print_kernel_name)
-		printf("%s ", buffer.sysname);
-	if (print_all || print_nodename)
-		printf("%s ", buffer.nodename);
-	if (print_all || print_kernel_release)
-		printf("%s ", buffer.release);
-	if (print_all || print_kernel_version)
-		printf("%s ", buffer.version);
-	if (print_all || print_machine)
-		printf("%s ", buffer.machine);
-	if (print_all || print_processor)
-		printf("%s ", GetProcessorType(buffer.machine));
-	if (print_all || print_hardware_platform)
-		printf("%s ", GetHardwarePlatform(buffer.machine));
-	if (print_all || print_operating_system)
-		printf("%s ", GetOperatingSystemName(buffer.sysname));
-	printf("\n");
+	bool first = true;
+#define PRINT_IF(flag, value) \
+	if (flags.flag)           \
+	{                         \
+		if (!first)           \
+			putchar(' ');     \
+		printf("%s", value);  \
+		first = false;        \
+	}
+
+	PRINT_IF(KernelName, buffer.sysname);
+	PRINT_IF(NodeName, buffer.nodename);
+	PRINT_IF(KernelRelease, buffer.release);
+	PRINT_IF(KernelVersion, buffer.version);
+	PRINT_IF(Machine, buffer.machine);
+	PRINT_IF(Processor, GetProcessorType(buffer.machine));
+	PRINT_IF(HardwarePlatform, GetHardwarePlatform(buffer.machine));
+	PRINT_IF(OperatingSystem, GetOperatingSystemName(buffer.sysname));
+
+	putchar('\n');
 	return 0;
 }
