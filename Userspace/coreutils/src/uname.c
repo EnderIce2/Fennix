@@ -162,21 +162,58 @@ int main(int argc, char *argv[])
 				flags.raw = 0xFF;
 				break;
 			}
-			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--kernel-name") == 0)
+			else if (argv[i][0] == '-' && argv[i][1] != '\0')
+			{
+				for (size_t j = 1; j < strlen(argv[i]); j++)
+				{
+					switch (argv[i][j])
+					{
+					case 's':
+						flags.KernelName = 1;
+						break;
+					case 'n':
+						flags.NodeName = 1;
+						break;
+					case 'r':
+						flags.KernelRelease = 1;
+						break;
+					case 'v':
+						flags.KernelVersion = 1;
+						break;
+					case 'm':
+						flags.Machine = 1;
+						break;
+					case 'p':
+						flags.Processor = 1;
+						break;
+					case 'i':
+						flags.HardwarePlatform = 1;
+						break;
+					case 'o':
+						flags.OperatingSystem = 1;
+						break;
+					default:
+						fprintf(stderr, "uname: invalid option -- '%c'\n", argv[i][j]);
+						PrintUsage();
+						exit(EXIT_FAILURE);
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--kernel-name") == 0)
 				flags.KernelName = 1;
-			else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--nodename") == 0)
+			else if (strcmp(argv[i], "--nodename") == 0)
 				flags.NodeName = 1;
-			else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--kernel-release") == 0)
+			else if (strcmp(argv[i], "--kernel-release") == 0)
 				flags.KernelRelease = 1;
-			else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--kernel-version") == 0)
+			else if (strcmp(argv[i], "--kernel-version") == 0)
 				flags.KernelVersion = 1;
-			else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--machine") == 0)
+			else if (strcmp(argv[i], "--machine") == 0)
 				flags.Machine = 1;
-			else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--processor") == 0)
+			else if (strcmp(argv[i], "--processor") == 0)
 				flags.Processor = 1;
-			else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--hardware-platform") == 0)
+			else if (strcmp(argv[i], "--hardware-platform") == 0)
 				flags.HardwarePlatform = 1;
-			else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--operating-system") == 0)
+			else if (strcmp(argv[i], "--operating-system") == 0)
 				flags.OperatingSystem = 1;
 			else if (strcmp(argv[i], "--help") == 0)
 			{
