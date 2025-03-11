@@ -1,18 +1,18 @@
 /*
-	This file is part of Fennix Userspace.
+	This file is part of Fennix Core Utilities.
 
-	Fennix Userspace is free software: you can redistribute it and/or
+	Fennix Core Utilities is free software: you can redistribute it and/or
 	modify it under the terms of the GNU General Public License as
 	published by the Free Software Foundation, either version 3 of
 	the License, or (at your option) any later version.
 
-	Fennix Userspace is distributed in the hope that it will be useful,
+	Fennix Core Utilities is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	GNU General Public License for more details.
 
 	You should have received a copy of the GNU General Public License
-	along with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.
+	along with Fennix Core Utilities. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
@@ -21,7 +21,89 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-void print_usage()
+const char *GetOperatingSystemName(const char *sysname)
+{
+	if (strcmp(sysname, "Fennix") == 0)
+		return "Fennix";
+	if (strncmp(sysname, "Linux", 5) == 0)
+		return "GNU/Linux";
+	if (strncmp(sysname, "Darwin", 6) == 0)
+		return "macOS";
+	if (strncmp(sysname, "FreeBSD", 7) == 0)
+		return "FreeBSD";
+	if (strncmp(sysname, "NetBSD", 6) == 0)
+		return "NetBSD";
+	if (strncmp(sysname, "OpenBSD", 7) == 0)
+		return "OpenBSD";
+	if (strncmp(sysname, "DragonFly", 9) == 0)
+		return "DragonFly BSD";
+	if (strncmp(sysname, "SunOS", 5) == 0)
+		return "SunOS";
+	if (strncmp(sysname, "AIX", 3) == 0)
+		return "AIX";
+	if (strncmp(sysname, "HP-UX", 5) == 0)
+		return "HP-UX";
+	if (strncmp(sysname, "GNU", 3) == 0)
+		return "GNU";
+	if (strncmp(sysname, "Minix", 5) == 0)
+		return "Minix";
+	if (strncmp(sysname, "QNX", 3) == 0)
+		return "QNX";
+	if (strncmp(sysname, "Haiku", 5) == 0)
+		return "Haiku";
+	if (strncmp(sysname, "OS/2", 4) == 0)
+		return "OS/2";
+
+	return sysname;
+}
+
+const char *GetProcessorType(const char *machine)
+{
+	if (strcmp(machine, "x86_64") == 0)
+		return "x86_64";
+	if (strcmp(machine, "i686") == 0 || strcmp(machine, "i386") == 0)
+		return "i686";
+	if (strncmp(machine, "arm", 3) == 0)
+		return "arm";
+	if (strncmp(machine, "aarch64", 7) == 0)
+		return "aarch64";
+	if (strncmp(machine, "riscv64", 7) == 0)
+		return "riscv64";
+	if (strncmp(machine, "mips", 4) == 0)
+		return "mips";
+	if (strncmp(machine, "powerpc", 7) == 0)
+		return "powerpc";
+	if (strncmp(machine, "sparc", 5) == 0)
+		return "sparc";
+
+	return "unknown";
+}
+
+const char *GetHardwarePlatform(const char *machine)
+{
+	if (strcmp(machine, "x86_64") == 0)
+		return "x86_64";
+	if (strcmp(machine, "i686") == 0 || strcmp(machine, "i386") == 0)
+		return "pc";
+	if (strncmp(machine, "arm", 3) == 0)
+		return "arm";
+	if (strncmp(machine, "aarch64", 7) == 0)
+		return "aarch64";
+	if (strncmp(machine, "riscv64", 7) == 0)
+		return "riscv64";
+	if (strncmp(machine, "mips", 4) == 0)
+		return "mips";
+	if (strncmp(machine, "powerpc64le", 11) == 0)
+		return "ppc64le";
+	if (strncmp(machine, "powerpc", 7) == 0)
+		return "powerpc";
+	if (strncmp(machine, "sparc", 5) == 0)
+		return "sparc";
+
+	return "unknown";
+}
+
+void PrintUsage()
 {
 	printf("Usage: uname [OPTION]...\n");
 	printf("Display specific system information. With no OPTION, defaults to -s.\n\n");
@@ -86,13 +168,13 @@ int main(int argc, char *argv[])
 				print_operating_system = true;
 			else if (strcmp(argv[i], "--help") == 0)
 			{
-				print_usage();
+				PrintUsage();
 				exit(EXIT_SUCCESS);
 			}
 			else
 			{
 				fprintf(stderr, "uname: invalid option -- '%s'\n", argv[i]);
-				print_usage();
+				PrintUsage();
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -109,11 +191,11 @@ int main(int argc, char *argv[])
 	if (print_all || print_machine)
 		printf("%s ", buffer.machine);
 	if (print_all || print_processor)
-		printf("%s ", buffer.machine); /* FIXME */
+		printf("%s ", GetProcessorType(buffer.machine));
 	if (print_all || print_hardware_platform)
-		printf("%s ", buffer.machine); /* FIXME */
+		printf("%s ", GetHardwarePlatform(buffer.machine));
 	if (print_all || print_operating_system)
-		printf("%s ", buffer.sysname); /* FIXME */
+		printf("%s ", GetOperatingSystemName(buffer.sysname));
 	printf("\n");
 	return 0;
 }
