@@ -883,9 +883,12 @@ void fork_bomb_syscall()
 #endif
 }
 
+volatile int __dummy = 0;
 int fill_stack(void *p)
 {
-	__attribute__((used)) char buf[512];
+	if (__dummy == 1)
+		return (int)(__UINTPTR_TYPE__)p;
+	char buf[512];
 	return fill_stack(buf);
 }
 
