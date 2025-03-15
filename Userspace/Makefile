@@ -35,7 +35,7 @@ create_out:
 	mkdir -p out/usr/share/doc
 	mkdir -p out/usr/share/info
 	mkdir -p out/usr/include
-	cp $(WORKSPACE_DIR)/../Kernel/include/interface/*  $(WORKSPACE_DIR)/out/include/fennix/
+	cp $(WORKSPACE_DIR)/../Kernel/include/interface/* $(WORKSPACE_DIR)/out/include/fennix/
 
 build_coreutils:
 	mkdir -p cache/coreutils
@@ -49,8 +49,23 @@ build_coreutils:
 	make -j$(shell nproc) && \
 	make install
 
+build_libc:
+	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/errno.h $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/errno.h
+	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/syscalls.h $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/syscalls.h
+	mkdir -p cache/libc
+	cd cache/libc && \
+	cmake $(WORKSPACE_DIR)/libc \
+	-DCMAKE_INSTALL_PREFIX:PATH=$(WORKSPACE_DIR)/out \
+	-DCMAKE_SYSROOT=$(WORKSPACE_DIR)/out \
+	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
+	-DTARGET_OS=fennix \
+	-DTARGET_ARCH=$(OSARCH) \
+	&& \
+	make -j$(shell nproc) && \
+	make install
+
 build: create_out
-	make -C libc build
+	$(MAKE) build_libc
 	make -C libs build
 	$(MAKE) build_coreutils
 	make -C apps build
@@ -62,6 +77,5 @@ clean:
 	rm -rf out cache
 	mkdir -p cache
 	touch cache/.gitkeep
-	make -C libc clean
 	make -C libs clean
 	make -C apps clean

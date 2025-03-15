@@ -15,8 +15,7 @@
 	along with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
-
+#include <bits/libc.h>
 #include <stdio.h>
 
 int __init_pthread(void);
@@ -34,7 +33,7 @@ __attribute__((visibility("default"))) void _exit(int Code)
 {
 	fflush(stdout);
 	fflush(stderr);
-	call_exit(Code);
+	sysdep(Exit)(Code);
 	while (1)
 		;
 }

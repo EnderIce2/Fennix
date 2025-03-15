@@ -20,6 +20,7 @@
 #include <float.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <bits/libc.h>
 #include <fenv.h>
 
 export int signgam;

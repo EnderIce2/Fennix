@@ -15,8 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_API_SYSCALLS_LIST_H__
-#define __FENNIX_API_SYSCALLS_LIST_H__
+#ifndef __FENNIX_API_SYSTEM_CALLS_LIST_H__
+#define __FENNIX_API_SYSTEM_CALLS_LIST_H__
 
 #pragma region Syscall Wrappers
 
@@ -1809,4 +1809,4 @@ typedef enum
 /** @copydoc SYS_UNAME */
 #define call_uname(buf) syscall1(SYS_UNAME, (scarg)buf)
 
-#endif // !__FENNIX_API_SYSCALLS_LIST_H__
+#endif // !__FENNIX_API_SYSTEM_CALLS_LIST_H__

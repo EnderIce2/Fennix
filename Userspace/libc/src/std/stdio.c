@@ -19,7 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
+#include <fcntl.h>
 #include "../print/printf.h"
 
 struct _IO_FILE *_i_open_files[256];
@@ -74,7 +75,7 @@ export int fclose(FILE *stream)
 	if (stream->buffer)
 		free(stream->buffer);
 
-	call_close(stream->fd);
+	sysdep(Close)(stream->fd);
 	_i_open_files[stream->fd] = NULL;
 	free(stream);
 	return 0;
@@ -105,7 +106,7 @@ export int fflush(FILE *stream)
 	{
 		if (stream->buffer_pos > 0)
 		{
-			ssize_t written = call_write(stream->fd, stream->buffer, stream->buffer_pos);
+			ssize_t written = sysdep(Write)(stream->fd, stream->buffer, stream->buffer_pos);
 			if (written < 0)
 			{
 				stream->error = 1;
@@ -129,7 +130,7 @@ export int fgetc(FILE *stream)
 
 	if (stream->buffer_pos >= stream->buffer_size)
 	{
-		int res = call_read(stream->fd, stream->buffer, 4096);
+		int res = sysdep(Read)(stream->fd, stream->buffer, 4096);
 		if (res <= 0)
 		{
 			if (res == 0)
@@ -180,33 +181,33 @@ export FILE *fopen(const char *restrict pathname, const char *restrict mode)
 	mode_t perm = 0;
 
 	if (strcmp(mode, "r") == 0)
-		flags = __SYS_O_RDONLY;
+		flags = O_RDONLY;
 	else if (strcmp(mode, "r+") == 0)
-		flags = __SYS_O_RDWR;
+		flags = O_RDWR;
 	else if (strcmp(mode, "w") == 0)
 	{
-		flags = __SYS_O_WRONLY | __SYS_O_CREAT | __SYS_O_TRUNC;
+		flags = O_WRONLY | O_CREAT | O_TRUNC;
 		perm = 0644;
 	}
 	else if (strcmp(mode, "w+") == 0)
 	{
-		flags = __SYS_O_RDWR | __SYS_O_CREAT | __SYS_O_TRUNC;
+		flags = O_RDWR | O_CREAT | O_TRUNC;
 		perm = 0644;
 	}
 	else if (strcmp(mode, "a") == 0)
 	{
-		flags = __SYS_O_WRONLY | __SYS_O_CREAT | __SYS_O_APPEND;
+		flags = O_WRONLY | O_CREAT | O_APPEND;
 		perm = 0644;
 	}
 	else if (strcmp(mode, "a+") == 0)
 	{
-		flags = __SYS_O_RDWR | __SYS_O_CREAT | __SYS_O_APPEND;
+		flags = O_RDWR | O_CREAT | O_APPEND;
 		perm = 0644;
 	}
 	else
 		return NULL;
 
-	int fd = call_open(pathname, flags, perm);
+	int fd = sysdep(Open)(pathname, flags, perm);
 	if (fd < 0)
 		return NULL;
 
@@ -274,7 +275,7 @@ export size_t fread(void *restrict ptr, size_t size, size_t nitems, FILE *restri
 	{
 		if (stream->buffer_pos >= stream->buffer_size)
 		{
-			int res = call_read(stream->fd, stream->buffer, stream->buffer_size);
+			int res = sysdep(Read)(stream->fd, stream->buffer, stream->buffer_size);
 			if (res <= 0)
 			{
 				if (res == 0)
@@ -305,7 +306,7 @@ export int fscanf(FILE *restrict, const char *restrict, ...);
 
 export int fseek(FILE *stream, long offset, int whence)
 {
-	int res = call_seek(stream->fd, offset, whence);
+	int res = sysdep(Seek)(stream->fd, offset, whence);
 	if (res < 0)
 	{
 		stream->error = 1;
@@ -321,7 +322,7 @@ export int fsetpos(FILE *, const fpos_t *);
 
 export long ftell(FILE *stream)
 {
-	return call_tell(stream->fd);
+	return sysdep(Tell)(stream->fd);
 }
 
 export off_t ftello(FILE *);
@@ -347,7 +348,7 @@ export size_t fwrite(const void *restrict ptr, size_t size, size_t nitems, FILE 
 
 		if (stream->buffer_pos == stream->buffer_size)
 		{
-			if (call_write(stream->fd, stream->buffer, stream->buffer_size) != stream->buffer_size)
+			if (sysdep(Write)(stream->fd, stream->buffer, stream->buffer_size) != stream->buffer_size)
 			{
 				stream->error = 1;
 				break;

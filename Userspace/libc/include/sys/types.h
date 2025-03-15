@@ -30,10 +30,6 @@ extern "C"
 #define restrict __restrict__
 #endif // restrict
 
-#ifndef export
-#define export __attribute__((__visibility__("default")))
-#endif // export
-
 	typedef long blkcnt_t;
 
 	typedef long blksize_t;

@@ -15,7 +15,7 @@
 	along with Fennix Userspace. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <sys/types.h>
+#include <bits/libc.h>
 
 export int foo()
 {

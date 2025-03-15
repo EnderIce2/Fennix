@@ -15,7 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 
 // const char __interp[] __attribute__((section(".interp"))) = "/boot/fennix.elf";
 
@@ -97,54 +97,11 @@ const struct
 void __init_print_buffer();
 void __fini_print_buffer();
 
-__attribute__((naked, used, no_stack_protector)) void _start()
-{
-#if defined(__amd64__)
-	__asm__(
-		"xorq %rbp, %rbp\n" /* Clear rbp */
-
-		"push %rdi\n"
-		"push %rsi\n"
-		"push %rdx\n"
-		"push %rcx\n"
-		"push %r8\n"
-		"push %r9\n"
-
-		"call __init_print_buffer\n" /* Call __init_print_buffer */
-		"call _dl_preload\n"		 /* Call _dl_preload */
-		"movl %eax, %edi\n"			 /* Move return value to edi */
-		"cmp $0, %edi\n"			 /* Check if return value is 0 */
-		"jne _exit\n"				 /* If not, jump to _exit */
-
-		"pop %r9\n"
-		"pop %r8\n"
-		"pop %rcx\n"
-		"pop %rdx\n"
-		"pop %rsi\n"
-		"pop %rdi\n"
-
-		"call main\n"		/* Call _dl_main */
-		"movl %eax, %edi\n" /* Move return value to edi */
-		"call _exit\n");	/* Call _exit */
-#elif defined(__i386__)
-#warning "i386 _start not implemented"
-#elif defined(__arm__)
-#warning "arm _start not implemented"
-#elif defined(__aarch64__)
-#warning "aarch64 _start not implemented"
-#else
-#error "Unsupported architecture"
-#endif
-}
-
 __attribute__((no_stack_protector)) _Noreturn void _exit(int status)
 {
 	__fini_print_buffer();
-	call_exit(status);
-/* At this point, the program *SHOULD* have exited. */
-#if defined(__amd64__) || defined(__i386__)
-	__asm__("ud2\n");
-#endif
+	sysdep(Exit)(status);
+	/* At this point, the program *SHOULD* have exited. */
 	__builtin_unreachable();
 }
 

@@ -15,11 +15,14 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <limits.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 #include "elf.h"
@@ -167,9 +170,15 @@ __attribute__((noinline)) void *_dl_fixup(ElfInfo *Info, long RelIndex)
 	return ret;
 }
 
+#ifdef __fennix__
+#include <fennix/syscalls.h>
+#endif
+
 int _dl_preload()
 {
+#ifdef __fennix__
 	call_api_version(0);
+#endif
 
 	/* TODO: Do aditional checks for miscellaneous things */
 
@@ -353,16 +362,16 @@ void ProcessNeededLibraries(Elf_Dyn *elem, ElfInfo *Info)
 	strcpy(fullLibPath, "/lib/");
 	strcat(fullLibPath, libPath);
 	/* TODO: more checks and also check environment variables */
-	if (call_access(fullLibPath, __SYS_F_OK) != 0)
+	if (sysdep(Access)(fullLibPath, F_OK) != 0)
 	{
 		printf("dl: Can't access %s\n", fullLibPath);
 		return;
 	}
 
-	int fd = call_open(fullLibPath, __SYS_O_RDONLY, 0644);
+	int fd = sysdep(Open)(fullLibPath, O_RDONLY, 0644);
 	int status = LoadElf(fd, fullLibPath, &info);
 	elem->d_un.d_ptr = (uintptr_t)info; /* if LoadElf fails, info will still be NULL */
-	call_close(fd);
+	sysdep(Close)(fd);
 	if (status < 0) /* announce that LoadElf failed */
 		printf("dl: Can't load %s\n", fullLibPath);
 }
@@ -431,7 +440,7 @@ int LoadElfPhdrDYN(int fd, ElfInfo *Info)
 
 	for (Elf_Half i = 0; i < header.e_phnum; i++)
 	{
-		ssize_t read = call_pread(fd, &phdr, sizeof(Elf_Phdr), header.e_phoff + (header.e_phentsize * i));
+		ssize_t read = sysdep(PRead)(fd, &phdr, sizeof(Elf_Phdr), header.e_phoff + (header.e_phentsize * i));
 		if (read != sizeof(Elf_Phdr))
 		{
 			printf("dl: Can't read program header %d\n", i);
@@ -450,23 +459,23 @@ int LoadElfPhdrDYN(int fd, ElfInfo *Info)
 
 			int mmapProt = 0;
 			if (phdr.p_flags & PF_X)
-				mmapProt |= __SYS_PROT_EXEC;
+				mmapProt |= PROT_EXEC;
 			if (phdr.p_flags & PF_W)
-				mmapProt |= __SYS_PROT_WRITE;
+				mmapProt |= PROT_WRITE;
 			if (phdr.p_flags & PF_R)
-				mmapProt |= __SYS_PROT_READ;
+				mmapProt |= PROT_READ;
 
 			off_t sectionOffset = ALIGN_DOWN(phdr.p_vaddr, phdr.p_align);
 			size_t sectionSize = ALIGN_UP(phdr.p_memsz + (phdr.p_vaddr - sectionOffset), phdr.p_align);
-			uintptr_t section = call_mmap(base + sectionOffset,
-										  sectionSize, mmapProt,
-										  __SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE | __SYS_MAP_FIXED,
-										  -1, 0);
+			uintptr_t section = (uintptr_t)sysdep(MemoryMap)((void *)(base + sectionOffset),
+															 sectionSize, mmapProt,
+															 MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
+															 -1, 0);
 			sectionOffset = phdr.p_vaddr - ALIGN_DOWN(phdr.p_vaddr, phdr.p_align);
 
 			if (phdr.p_filesz > 0)
 			{
-				ssize_t read = call_pread(fd, section + sectionOffset, phdr.p_filesz, phdr.p_offset);
+				ssize_t read = sysdep(PRead)(fd, (void *)(section + sectionOffset), phdr.p_filesz, phdr.p_offset);
 				if (read != phdr.p_filesz)
 				{
 					printf("dl: Can't read segment %d in PT_LOAD\n", i);
@@ -495,15 +504,15 @@ int LoadElfPhdrDYN(int fd, ElfInfo *Info)
 			{
 				int mmapProt = 0;
 				if (phdr.p_flags & PF_X)
-					mmapProt |= __SYS_PROT_EXEC;
+					mmapProt |= PROT_EXEC;
 				if (phdr.p_flags & PF_W)
-					mmapProt |= __SYS_PROT_WRITE;
+					mmapProt |= PROT_WRITE;
 				if (phdr.p_flags & PF_R)
-					mmapProt |= __SYS_PROT_READ;
+					mmapProt |= PROT_READ;
 
-				dynamicTable = (Elf_Dyn *)call_mmap(0, ALIGN_UP(phdr.p_memsz, phdr.p_align),
-													mmapProt, __SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE | __SYS_MAP_FIXED,
-													-1, 0);
+				dynamicTable = (Elf_Dyn *)sysdep(MemoryMap)(0, ALIGN_UP(phdr.p_memsz, phdr.p_align),
+															mmapProt, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
+															-1, 0);
 
 				if ((intptr_t)dynamicTable <= 0)
 				{
@@ -511,7 +520,7 @@ int LoadElfPhdrDYN(int fd, ElfInfo *Info)
 					return (int)(uintptr_t)dynamicTable;
 				}
 
-				read = call_pread(fd, dynamicTable, phdr.p_memsz, phdr.p_offset);
+				read = sysdep(PRead)(fd, dynamicTable, phdr.p_memsz, phdr.p_offset);
 				if (read != phdr.p_memsz)
 				{
 					printf("dl: Can't read PT_DYNAMIC\n");
@@ -598,7 +607,7 @@ int LoadElf(int fd, char *Path, ElfInfo **Out)
 	}
 
 	Elf_Ehdr header;
-	call_pread(fd, &header, sizeof(Elf_Ehdr), 0);
+	sysdep(PRead)(fd, &header, sizeof(Elf_Ehdr), 0);
 
 	int status = CheckElfEhdr(&header, Path);
 	if (status != 0)
@@ -606,11 +615,11 @@ int LoadElf(int fd, char *Path, ElfInfo **Out)
 
 	info = AllocateLib();
 	info->Header = header;
-	info->Path = (char *)call_mmap(0,
-								   ALIGN_UP(strlen(Path) + 1, 0x1000 /* TODO: get page size from kernel */),
-								   __SYS_PROT_READ,
-								   __SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE,
-								   -1, 0);
+	info->Path = (char *)sysdep(MemoryMap)(0,
+										   ALIGN_UP(strlen(Path) + 1, 0x1000 /* TODO: get page size from kernel */),
+										   PROT_READ,
+										   MAP_ANONYMOUS | MAP_PRIVATE,
+										   -1, 0);
 	if ((intptr_t)info->Path <= 0)
 	{
 		printf("dl: Can't allocate memory for path\n");
@@ -648,7 +657,7 @@ int LoadElf(int fd, char *Path, ElfInfo **Out)
 
 	if (status < 0)
 	{
-		call_munmap((uintptr_t)info->Path, ALIGN_UP(strlen(Path) + 1, 0x1000));
+		sysdep(MemoryUnmap)((void *)info->Path, ALIGN_UP(strlen(Path) + 1, 0x1000));
 		FreeLib(info);
 		return status;
 	}
@@ -956,18 +965,18 @@ int _dl_main(int argc, char *argv[], char *envp[])
 {
 	char *path = argv[0];
 	ElfInfo *info = NULL;
-	if (call_access(path, __SYS_F_OK) < 0)
+	if (sysdep(Access)(path, F_OK) < 0)
 	{
 		printf("dl: Can't access file %s\n", path);
 		return -EACCES;
 	}
 
-	int fd = call_open(path, __SYS_O_RDONLY, 0644);
+	int fd = sysdep(Open)(path, O_RDONLY, 0644);
 	int status = LoadElf(fd, path, &info);
 	if (status < 0)
 	{
 		printf("%s: Can't load ELF file\n", path);
-		call_close(fd);
+		sysdep(Close)(fd);
 		return status;
 	}
 
@@ -975,11 +984,11 @@ int _dl_main(int argc, char *argv[], char *envp[])
 	if (status < 0)
 	{
 		printf("%s: Can't relocate ELF file\n", path);
-		call_close(fd);
+		sysdep(Close)(fd);
 		return status;
 	}
 
-	call_close(fd);
+	sysdep(Close)(fd);
 	Elf_Addr entry = info->BaseAddress + info->Header.e_entry;
 	return ((int (*)(int, char *[], char *[]))entry)(argc, argv, envp);
 }

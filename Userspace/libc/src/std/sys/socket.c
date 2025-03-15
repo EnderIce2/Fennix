@@ -17,23 +17,23 @@
 
 #include <sys/socket.h>
 #include <errno.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 
 export int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len)
 {
-	return __check_errno(call_accept(socket, address, address_len), -1);
+	return __check_errno(sysdep(Accept)(socket, address, address_len), -1);
 }
 
 export int accept4(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len, int flag);
 
 export int bind(int socket, const struct sockaddr *address, socklen_t address_len)
 {
-	return __check_errno(call_bind(socket, address, address_len), -1);
+	return __check_errno(sysdep(Bind)(socket, address, address_len), -1);
 }
 
 export int connect(int socket, const struct sockaddr *address, socklen_t address_len)
 {
-	return __check_errno(call_connect(socket, address, address_len), -1);
+	return __check_errno(sysdep(Connect)(socket, address, address_len), -1);
 }
 
 export int getpeername(int, struct sockaddr *restrict, socklen_t *restrict);
@@ -42,7 +42,7 @@ export int getsockopt(int, int, int, void *restrict, socklen_t *restrict);
 
 export int listen(int socket, int backlog)
 {
-	return __check_errno(call_listen(socket, backlog), -1);
+	return __check_errno(sysdep(Listen)(socket, backlog), -1);
 }
 
 export ssize_t recv(int, void *, size_t, int);
@@ -57,7 +57,7 @@ export int sockatmark(int);
 
 export int socket(int domain, int type, int protocol)
 {
-	return __check_errno(call_socket(domain, type, protocol), -1);
+	return __check_errno(sysdep(Socket)(domain, type, protocol), -1);
 }
 
 export int socketpair(int, int, int, int[2]);

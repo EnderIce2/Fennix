@@ -16,7 +16,7 @@
 */
 
 #include <sys/wait.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -34,5 +34,5 @@ export int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options)
 
 export pid_t waitpid(pid_t pid, int *stat_loc, int options)
 {
-	return __check_errno(call_waitpid(pid, stat_loc, options), -1);
+	return __check_errno(sysdep(WaitProcessID)(pid, stat_loc, options), -1);
 }

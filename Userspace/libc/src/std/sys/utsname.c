@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 
 export int uname(struct utsname *name)
 {
@@ -31,16 +31,8 @@ export int uname(struct utsname *name)
 		return -1;
 	}
 
-	struct kutsname kname;
-	int result = call_uname(&kname);
-	if (result == 0)
-	{
-		strcpy(name->sysname, kname.sysname);
-		strcpy(name->release, kname.release);
-		strcpy(name->version, kname.version);
-		strcpy(name->machine, kname.machine);
-	}
-	else
+	int result = sysdep(UnixName)(name);
+	if (result != 0)
 	{
 		errno = result;
 		return -1;

@@ -16,7 +16,7 @@
 */
 
 #include <sys/mman.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <errno.h>
 
 export int mlock(const void *, size_t);
@@ -24,12 +24,12 @@ export int mlockall(int);
 
 export void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 {
-	return (void *)__check_errno((__iptr)call_mmap(addr, len, prot, flags, fildes, off), (__iptr)MAP_FAILED);
+	return (void *)__check_errno((__iptr)sysdep(MemoryMap)(addr, len, prot, flags, fildes, off), (__iptr)MAP_FAILED);
 }
 
 export int mprotect(void *addr, size_t len, int prot)
 {
-	return __check_errno(call_mprotect(addr, len, prot), -1);
+	return __check_errno(sysdep(MemoryProtect)(addr, len, prot), -1);
 }
 
 export int msync(void *, size_t, int);
@@ -38,7 +38,7 @@ export int munlockall(void);
 
 export int munmap(void *addr, size_t len)
 {
-	return __check_errno(call_munmap(addr, len), -1);
+	return __check_errno(sysdep(MemoryUnmap)(addr, len), -1);
 }
 
 export int posix_madvise(void *, size_t, int);

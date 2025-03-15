@@ -15,8 +15,8 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <bits/libc.h>
 #include <fcntl.h>
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -37,7 +37,7 @@ export int open(const char *path, int oflag, ...)
 		mode = va_arg(args, mode_t);
 		va_end(args);
 	}
-	return __check_errno(call_open(path, oflag, mode), -1);
+	return __check_errno(sysdep(Open)(path, oflag, mode), -1);
 }
 
 export int openat(int fd, const char *path, int oflag, ...);

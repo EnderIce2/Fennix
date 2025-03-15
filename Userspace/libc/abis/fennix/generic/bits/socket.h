@@ -15,30 +15,20 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
-#include <sys/types.h>
-#include <inttypes.h>
-#include <stddef.h>
+#ifndef __BITS_SOCKET_H
+#define __BITS_SOCKET_H
 
-#include <fennix/syscalls.h>
+#define __socklen_t_defined
+typedef __UINT32_TYPE__ socklen_t;
 
-export __attribute__((naked, used, no_stack_protector)) void *__tls_get_addr(void *__data)
+#define __sa_family_t_defined
+typedef unsigned int sa_family_t;
+
+#define __sockaddr_defined
+struct sockaddr
 {
-#warning "__tls_get_addr not implemented"
-#if defined(__amd64__) || defined(__i386__)
-	__asm__("ud2");
-#endif
-}
+	sa_family_t sa_family;
+	char sa_data[14];
+};
 
-int __init_pthread(void)
-{
-	__pthread *ptr = (__pthread *)call_mmap(0,
-											0x1000,
-											__SYS_PROT_READ | __SYS_PROT_WRITE,
-											__SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE,
-											-1, 0);
-	call_prctl(__SYS_SET_FS, ptr, 0, 0, 0);
-	ptr->Self = ptr;
-	ptr->CurrentError = 0;
-	return 0;
-}
+#endif // __BITS_SOCKET_H

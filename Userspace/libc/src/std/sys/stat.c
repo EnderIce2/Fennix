@@ -15,6 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <bits/libc.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdio.h>
@@ -31,7 +32,7 @@ export int fstat(int fildes, struct stat *buf)
 		return -1;
 	}
 
-	return __check_errno(call_fstat(fildes, buf), -1);
+	return __check_errno(sysdep(FStat)(fildes, buf), -1);
 }
 
 export int fstatat(int fd, const char *restrict path, struct stat *restrict buf, int flag)
@@ -58,12 +59,12 @@ export int lstat(const char *restrict path, struct stat *restrict buf)
 		return -1;
 	}
 
-	return __check_errno(call_lstat(path, buf), -1);
+	return __check_errno(sysdep(LStat)(path, buf), -1);
 }
 
 export int mkdir(const char *path, mode_t mode)
 {
-	return __check_errno(call_mkdir(path, mode), -1);
+	return __check_errno(sysdep(MakeDirectory)(path, mode), -1);
 }
 
 export int mkdirat(int fd, const char *path, mode_t mode)
@@ -85,7 +86,7 @@ export int stat(const char *restrict path, struct stat *restrict buf)
 		return -1;
 	}
 
-	return __check_errno(call_stat(path, buf), -1);
+	return __check_errno(sysdep(Stat)(path, buf), -1);
 }
 
 export mode_t umask(mode_t);

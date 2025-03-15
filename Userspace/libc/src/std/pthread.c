@@ -15,6 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <bits/libc.h>
 #include <pthread.h>
 #include <errno.h>
 

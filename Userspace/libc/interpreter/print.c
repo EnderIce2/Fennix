@@ -17,7 +17,8 @@
 
 #include <stddef.h>
 #include <stdarg.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
+#include <sys/mman.h>
 
 #include "elf.h"
 #include "misc.h"
@@ -31,7 +32,7 @@ void flush_buffer()
 {
 	if (print_buffer_offset > 0)
 	{
-		call_write(1, print_buffer, print_buffer_offset);
+		sysdep(Write)(1, print_buffer, print_buffer_offset);
 		print_buffer_offset = 0;
 	}
 }
@@ -45,11 +46,11 @@ void print_wrapper(int c, void *)
 
 void __init_print_buffer()
 {
-	print_buffer = (char *)call_mmap(0,
-									 0x1000,
-									 __SYS_PROT_READ | __SYS_PROT_WRITE,
-									 __SYS_MAP_PRIVATE | __SYS_MAP_ANONYMOUS,
-									 -1, 0);
+	print_buffer = (char *)sysdep(MemoryMap)(0,
+											 0x1000,
+											 PROT_READ | PROT_WRITE,
+											 MAP_PRIVATE | MAP_ANONYMOUS,
+											 -1, 0);
 	print_buffer_size = 0x1000;
 	print_buffer_offset = 0;
 }
@@ -58,7 +59,7 @@ void __fini_print_buffer()
 {
 	flush_buffer();
 	if (print_buffer != NULL)
-		call_munmap(print_buffer, 0x1000);
+		sysdep(MemoryUnmap)(print_buffer, 0x1000);
 	print_buffer = NULL;
 }
 

@@ -21,15 +21,26 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <bits/socket.h>
 
-typedef uint32_t socklen_t;
+#ifndef __socklen_t_defined
+#define __socklen_t_defined
+typedef __UINT32_TYPE__ socklen_t;
+#endif
+
+#ifndef __sa_family_t_defined
+#define __sa_family_t_defined
 typedef unsigned int sa_family_t;
+#endif
 
+#ifndef __sockaddr_defined
+#define __sockaddr_defined
 struct sockaddr
 {
 	sa_family_t sa_family;
 	char sa_data[14];
 };
+#endif
 
 #define _SS_MAXSIZE 128
 #define _SS_ALIGNSIZE (sizeof(int64_t))

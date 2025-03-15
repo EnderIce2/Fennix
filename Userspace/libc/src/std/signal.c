@@ -15,13 +15,14 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <bits/libc.h>
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
 
 export int kill(pid_t pid, int sig)
 {
-	return call_kill(pid, sig);
+	return sysdep(Kill)(pid, sig);
 }
 
 export int killpg(pid_t, int);

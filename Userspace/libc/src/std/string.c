@@ -17,7 +17,7 @@
 
 #include <sys/types.h>
 #include <string.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>

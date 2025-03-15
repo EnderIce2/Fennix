@@ -15,7 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
+#include <bits/syscalls.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <signal.h>
@@ -38,7 +38,7 @@ static_assert(__SYS_W_OK == W_OK);
 static_assert(__SYS_X_OK == X_OK);
 
 static_assert(sizeof(__SYS_clockid_t) == sizeof(clockid_t));
-// static_assert(sizeof(__SYS_socklen_t) == sizeof(socklen_t));
+static_assert(sizeof(__SYS_socklen_t) == sizeof(socklen_t));
 
 static_assert(__SYS_SEEK_SET == SEEK_SET);
 static_assert(__SYS_SEEK_CUR == SEEK_CUR);

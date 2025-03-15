@@ -20,4 +20,18 @@
 
 #include <interface/errno.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+	int *__errno_location(void) __attribute__((const));
+	char *strerror(int errnum);
+
+#ifdef __cplusplus
+}
+#endif
+
+#define errno (*__errno_location())
+
 #endif // !__FENNIX_KERNEL_STD_ERRNO_H__

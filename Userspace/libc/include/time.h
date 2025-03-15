@@ -25,7 +25,7 @@ extern "C"
 
 #include <bits/types/timespec.h>
 #include <sys/types.h>
-#include <signal.h>
+#include <bits/types/signal.h>
 #include <locale.h>
 
 	typedef struct tm

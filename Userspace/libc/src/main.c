@@ -15,8 +15,6 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "../runtime/crt1.c"
-
 const char __interp[] __attribute__((section(".interp"))) = "/lib/ld.so";
 
 #ifndef LIBC_GIT_COMMIT
@@ -46,6 +44,23 @@ const char __interp[] __attribute__((section(".interp"))) = "/lib/ld.so";
 	 CONVERT_TO_BYTE(hex[34], hex[35]), \
 	 CONVERT_TO_BYTE(hex[36], hex[37]), \
 	 CONVERT_TO_BYTE(hex[38], hex[39])}
+
+typedef struct Elf_Nhdr
+{
+	__UINT32_TYPE__ n_namesz;
+	__UINT32_TYPE__ n_descsz;
+	__UINT32_TYPE__ n_type;
+	char n_name[];
+} __attribute__((packed)) Elf_Nhdr;
+
+/* These are declared in GNU ld */
+enum
+{
+	NT_FNX_ABI_TAG = 1,
+	NT_FNX_VERSION = 2,
+	NT_FNX_BUILD_ID = 3,
+	NT_FNX_ARCH = 4
+};
 
 const struct
 {

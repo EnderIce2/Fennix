@@ -15,7 +15,7 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <stddef.h>

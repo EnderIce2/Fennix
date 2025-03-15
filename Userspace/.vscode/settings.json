@@ -1,5 +1,6 @@
 {
 	"git.openRepositoryInParentFolders": "always",
 	"git.alwaysSignOff": true,
-	"git.defaultBranchName": "master"
+	"git.defaultBranchName": "master",
+	"cmake.ignoreCMakeListsMissing": true
 }

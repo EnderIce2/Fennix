@@ -15,8 +15,9 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <errno.h>
@@ -39,7 +40,7 @@ MemoryBlock *memory_pool = NULL;
 void *request_page(size_t size)
 {
 	size_t aligned_size = (size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-	void *addr = (void *)call_mmap(NULL, aligned_size, __SYS_PROT_READ | __SYS_PROT_WRITE, __SYS_MAP_ANONYMOUS | __SYS_MAP_PRIVATE, -1, 0);
+	void *addr = (void *)sysdep(MemoryMap)(NULL, aligned_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if ((intptr_t)addr < 0)
 		return NULL;
 	return addr;
@@ -48,7 +49,7 @@ void *request_page(size_t size)
 void free_page(void *addr, size_t size)
 {
 	size_t aligned_size = (size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
-	call_munmap(addr, aligned_size);
+	sysdep(MemoryUnmap)(addr, aligned_size);
 }
 
 MemoryBlock *allocate_block(size_t slot_size)

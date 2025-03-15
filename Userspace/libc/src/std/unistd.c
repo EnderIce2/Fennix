@@ -22,7 +22,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <fcntl.h>
 
 export char *optarg;
@@ -44,7 +44,7 @@ export int chown(const char *, uid_t, gid_t);
 
 export int close(int fildes)
 {
-	return __check_errno(call_close(fildes), -1);
+	return __check_errno(sysdep(Close)(fildes), -1);
 }
 
 export size_t confstr(int, char *, size_t);
@@ -130,7 +130,7 @@ export int execv(const char *path, char *const argv[])
 
 export int execve(const char *path, char *const argv[], char *const envp[])
 {
-	return __check_errno(call_execve(path, argv, envp), -1);
+	return __check_errno(sysdep(Execve)(path, argv, envp), -1);
 }
 
 export int execvp(const char *file, char *const argv[])
@@ -167,7 +167,7 @@ export int fdatasync(int);
 
 export pid_t fork(void)
 {
-	return __check_errno(call_fork(), -1);
+	return __check_errno(sysdep(Fork)(), -1);
 }
 
 export long int fpathconf(int, int);
@@ -225,12 +225,12 @@ export pid_t getpgrp(void);
 
 export pid_t getpid(void)
 {
-	return call_getpid();
+	return sysdep(GetProcessID)();
 }
 
 export pid_t getppid(void)
 {
-	return call_getppid();
+	return sysdep(GetParentProcessID)();
 }
 
 export pid_t getsid(pid_t);
@@ -261,19 +261,19 @@ export int pipe(int[2]);
 
 export ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset)
 {
-	return __check_errno(call_pread(fildes, buf, nbyte, offset), -1);
+	return __check_errno(sysdep(PRead)(fildes, buf, nbyte, offset), -1);
 }
 
 export int pthread_atfork(void (*)(void), void (*)(void), void (*)(void));
 
 export ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
 {
-	return __check_errno(call_pwrite(fildes, buf, nbyte, offset), -1);
+	return __check_errno(sysdep(PWrite)(fildes, buf, nbyte, offset), -1);
 }
 
 export ssize_t read(int fildes, void *buf, size_t nbyte)
 {
-	return __check_errno(call_read(fildes, buf, nbyte), -1);
+	return __check_errno(sysdep(Read)(fildes, buf, nbyte), -1);
 }
 
 export int readlink(const char *, char *, size_t);
@@ -324,5 +324,5 @@ export pid_t vfork(void);
 
 export ssize_t write(int fildes, const void *buf, size_t nbyte)
 {
-	return __check_errno(call_write(fildes, buf, nbyte), -1);
+	return __check_errno(sysdep(Write)(fildes, buf, nbyte), -1);
 }

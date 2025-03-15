@@ -15,9 +15,14 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <bits/libc.h>
 #include <sys/types.h>
 #include <pthread.h>
 #include <errno.h>
+
+#ifndef EOK
+#define EOK 0
+#endif
 
 __iptr __check_errno(__iptr status, __iptr err)
 {
@@ -36,9 +41,6 @@ export char *strerror(int errnum)
 {
 	if (errnum < 0)
 		errnum = -errnum;
-
-	if (errnum > __ERRNO_MAX)
-		return (char *)"Not a valid error number";
 
 	switch (errnum)
 	{

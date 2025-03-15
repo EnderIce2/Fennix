@@ -16,7 +16,7 @@
 */
 
 #include <sys/ioctl.h>
-#include <fennix/syscalls.h>
+#include <bits/libc.h>
 #include <stdarg.h>
 #include <errno.h>
 
@@ -27,6 +27,6 @@ export int ioctl(int fd, unsigned long op, ...)
 	va_start(args, op);
 	arg = va_arg(args, void *);
 	va_end(args);
-	int ret = call_ioctl(fd, op, arg);
+	int ret = sysdep(IOControl)(fd, op, arg);
 	return __check_errno(ret, -1);
 }
