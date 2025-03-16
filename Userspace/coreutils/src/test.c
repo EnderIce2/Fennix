@@ -95,7 +95,10 @@ static int TestInteger(const char *n1, const char *op, const char *n2)
 
 int main(int argc, char *argv[])
 {
-	int isBracketForm = strcmp(argv[0], "[") == 0;
+	char *base = strrchr(argv[0], '/');
+	base = base ? base + 1 : argv[0];
+	int isBracketForm = (strcmp(base, "[") == 0);
+
 	if (isBracketForm)
 	{
 		if (argc < 2 || strcmp(argv[argc - 1], "]") != 0)
@@ -108,21 +111,28 @@ int main(int argc, char *argv[])
 
 	if (argc == 1)
 		return 1;
+
 	if (argc == 2)
 		return argv[1][0] ? 0 : 1;
+
 	if (argc == 3)
 	{
 		if (!strcmp(argv[1], "!"))
 			return argv[2][0] ? 1 : 0;
+
 		return TestFile(argv[2], argv[1][1]);
 	}
+
 	if (argc == 4)
 	{
 		if (!strcmp(argv[1], "!"))
 			return !main(3, &argv[1]);
-		if (strchr("=!\"><", argv[2][0]))
+
+		if (strchr("=!<>", argv[2][0]))
 			return TestString(argv[1], argv[2], argv[3]);
+
 		return TestInteger(argv[1], argv[2], argv[3]);
 	}
+
 	return 2;
 }
