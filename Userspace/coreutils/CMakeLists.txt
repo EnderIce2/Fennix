@@ -49,3 +49,11 @@ foreach(name IN LISTS GROUP_MAP_)
   )
   install(TARGETS ${name} DESTINATION bin)
 endforeach()
+
+if(UNIX AND TARGET test)
+  install(CODE "execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink 
+                test 
+                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/[\"
+    )")
+endif()
