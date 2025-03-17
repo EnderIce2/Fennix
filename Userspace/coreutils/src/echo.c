@@ -24,6 +24,14 @@
 
 void PrintHelp()
 {
+	/**
+	 * POSIX specification for echo specifies that
+	 * "Implementations shall not support any options."
+	 * but i will do this anyway.
+	 *
+	 * https://pubs.opengroup.org/onlinepubs/9799919799/utilities/echo.html
+	 */
+
 	printf("Usage: echo [OPTION]... [STRING]...\n");
 	printf("Echo the STRING(s) to standard output.\n\n");
 	printf("  -n          do not output the trailing newline\n");
