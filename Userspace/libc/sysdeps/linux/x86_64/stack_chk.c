@@ -15,20 +15,8 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _BITS_SOCKET_H
-#define _BITS_SOCKET_H
-
-#define __socklen_t_defined
-typedef __UINT32_TYPE__ socklen_t;
-
-#define __sa_family_t_defined
-typedef unsigned int sa_family_t;
-
-#define __sockaddr_defined
-struct sockaddr
+__attribute__((noreturn)) __attribute__((no_stack_protector)) __attribute__((weak)) void __stack_chk_fail(void)
 {
-	sa_family_t sa_family;
-	char sa_data[14];
-};
-
-#endif // _BITS_SOCKET_H
+	_exit(0xbeef);
+	__builtin_unreachable();
+}

@@ -65,6 +65,14 @@ export int sigaction(int sig, const struct sigaction *restrict act, struct sigac
 
 export int sigaddset(sigset_t *set, int signo)
 {
+#ifndef SIGNAL_MAX
+#ifdef NSIG
+#define SIGNAL_MAX NSIG
+#else
+#error "NSIG is not defined"
+#endif // NSIG
+#endif // SIGNAL_MAX
+
 	if (set == NULL || signo <= 0 || signo >= SIGNAL_MAX)
 	{
 		errno = EINVAL;

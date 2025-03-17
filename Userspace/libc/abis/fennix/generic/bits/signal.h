@@ -15,8 +15,8 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __BITS_SIGNAL_H
-#define __BITS_SIGNAL_H
+#ifndef _BITS_SIGNAL_H
+#define _BITS_SIGNAL_H
 
 #include <bits/syscalls.h>
 
@@ -121,4 +121,4 @@
 
 typedef unsigned long sigset_t;
 
-#endif // __BITS_SIGNAL_H
+#endif // _BITS_SIGNAL_H

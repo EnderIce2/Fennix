@@ -5,11 +5,15 @@
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
-				"${workspaceFolder}/libs/include/**"
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/out/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
 				"DEBUG=\"1\""
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/x86_64-fennix-gcc",
 			"cStandard": "c17",
@@ -47,11 +51,15 @@
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
-				"${workspaceFolder}/libs/include/**"
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/out/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
 				"DEBUG=\"1\""
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/i386-fennix-gcc",
 			"cStandard": "c17",
@@ -89,11 +97,15 @@
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
-				"${workspaceFolder}/libs/include/**"
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/out/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
 				"DEBUG=\"1\""
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/arm-fennix-gcc",
 			"cStandard": "c17",
@@ -111,11 +123,15 @@
 			"includePath": [
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
-				"${workspaceFolder}/libs/include/**"
+				"${workspaceFolder}/libs/include/**",
+				"${workspaceFolder}/out/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
 				"DEBUG=\"1\""
+			],
+			"forcedInclude": [
+				"${workspaceFolder}/.vscode/preinclude.h"
 			],
 			"compilerPath": "${workspaceFolder}/../tools/cross/bin/aarch64-fennix-gcc",
 			"cStandard": "c17",

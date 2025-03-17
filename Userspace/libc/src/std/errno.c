@@ -166,8 +166,10 @@ export char *strerror(int errnum)
 		return (char *)"State not recoverable";
 	case ENOTSOCK:
 		return (char *)"Not a socket";
+#if ENOTSUP != EOPNOTSUPP
 	case ENOTSUP:
 		return (char *)"Not supported";
+#endif
 	case ENOTTY:
 		return (char *)"Inappropriate I/O control operation";
 	case ENXIO:

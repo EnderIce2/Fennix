@@ -79,3 +79,4 @@ clean:
 	touch cache/.gitkeep
 	make -C libs clean
 	make -C apps clean
+	make -C docker clean

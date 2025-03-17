@@ -42,14 +42,14 @@ extern "C"
 		blkcnt_t st_blocks;		 /* Number of blocks allocated for this object. */
 	};
 
-#define S_IFMT
-#define S_IFBLK
-#define S_IFCHR
-#define S_IFIFO
-#define S_IFREG
-#define S_IFDIR
-#define S_IFLNK
-#define S_IFSOCK
+#define S_IFMT 0170000
+#define S_IFBLK 0060000
+#define S_IFCHR 0020000
+#define S_IFIFO 0010000
+#define S_IFREG 0100000
+#define S_IFDIR 0040000
+#define S_IFLNK 0120000
+#define S_IFSOCK 0140000
 
 #define S_IRWXU 0700
 #define S_IRUSR 0400
@@ -68,21 +68,21 @@ extern "C"
 #define S_ISGID 02000
 #define S_ISVTX 01000
 
-#define S_ISBLK(m)
-#define S_ISCHR(m)
-#define S_ISDIR(m)
-#define S_ISFIFO(m)
-#define S_ISREG(m)
-#define S_ISLNK(m)
-#define S_ISSOCK(m)
+#define S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
+#define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#define S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
+#define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
 
-#define S_TYPEISMQ(buf)
-#define S_TYPEISSEM(buf)
-#define S_TYPEISSHM(buf)
-#define S_TYPEISTMO(buf)
+#define S_TYPEISMQ(buf) 0
+#define S_TYPEISSEM(buf) 0
+#define S_TYPEISSHM(buf) 0
+#define S_TYPEISTMO(buf) 0
 
-#define UTIME_NOW
-#define UTIME_OMIT
+#define UTIME_NOW 0x3fffffff
+#define UTIME_OMIT 0x3ffffffe
 
 	int chmod(const char *, mode_t);
 	int fchmod(int, mode_t);

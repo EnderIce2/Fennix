@@ -287,6 +287,10 @@ typedef long double double_t;
 	double y1(double x);
 	double yn(int n, double x);
 
+	void sincos(double x, double *s, double *c);
+	void sincosf(float x, float *s, float *c);
+	void sincosl(long double x, long double *s, long double *c);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

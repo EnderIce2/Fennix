@@ -6,3 +6,4 @@
 #undef __APPLE__
 #undef __clang__
 #define __vscode__ 1
+#define FENNIX_DYNAMIC_LOADER 1

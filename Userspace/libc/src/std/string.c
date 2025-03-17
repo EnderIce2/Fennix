@@ -563,8 +563,10 @@ export char *strsignal(int signum)
 {
 	switch (signum)
 	{
+#ifdef SIGNULL
 	case SIGNULL:
 		return "NULL signal";
+#endif
 	case SIGABRT:
 		return "Aborted";
 	case SIGALRM:

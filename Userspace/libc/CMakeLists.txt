@@ -5,22 +5,39 @@ project(FennixCLibrary VERSION 1.0.0)
 if(NOT DEFINED ENV{WORKSPACE_DIR})
   set(STANDALONE_BUILD ON)
   message(STATUS "Compiling standalone")
-  set(CMAKE_INSTALL_PREFIX "/usr")
+
+  if(NOT DEFINED ENV{CMAKE_INSTALL_PREFIX})
+    set(CMAKE_INSTALL_PREFIX "/usr")
+    message(STATUS "Using default install prefix: /usr")
+  else()
+    message(STATUS "Using custom install prefix: $ENV{CMAKE_INSTALL_PREFIX}")
+  endif()
+
 else()
   set(STANDALONE_BUILD OFF)
-  set(CMAKE_INSTALL_PREFIX "$ENV{WORKSPACE_DIR}/out")
   message(STATUS "Compiling within workspace")
+
+  if(NOT DEFINED ENV{CMAKE_INSTALL_PREFIX})
+    set(CMAKE_INSTALL_PREFIX "$ENV{WORKSPACE_DIR}/out")
+    message(STATUS "Using default install prefix: $ENV{WORKSPACE_DIR}/out")
+  else()
+    message(STATUS "Using custom install prefix: $ENV{CMAKE_INSTALL_PREFIX}")
+  endif()
+
   try_compile(
     WORKSPACE_TEST
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/workspace_test.c
     CMAKE_FLAGS "-DCMAKE_C_COMPILER=$ENV{CC} -DCMAKE_CXX_COMPILER=$ENV{CXX} -DCMAKE_ASM_COMPILER=$ENV{AS} -DCMAKE_AR=$ENV{AR} -DCMAKE_LINKER=$ENV{LD}"
-    OUTPUT_VARIABLE OUTPUT)
+    OUTPUT_VARIABLE OUTPUT
+  )
+
   if(NOT WORKSPACE_TEST)
     message(FATAL_ERROR "Workspace test failed: ${OUTPUT}")
   else()
     message(STATUS "Workspace test passed")
   endif()
+
 endif()
 
 if(NOT DEFINED TARGET_OS)
@@ -102,3 +119,26 @@ install(DIRECTORY ${ABIS_PATH}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
   FILES_MATCHING
   PATTERN "*")
+
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+  install(CODE "execute_process(
+  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+          /lib/ld.so 
+          \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/ld-linux-x86-64.so.2\"
+)")
+  install(CODE "execute_process(
+  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+          /lib/ld.so 
+          \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib64/ld-linux-x86-64.so.2\"
+)")
+  install(CODE "execute_process(
+  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+          /lib/libc.so 
+          \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib/libc.so.6\"
+)")
+  install(CODE "execute_process(
+  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+          /lib/libc.so 
+          \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/lib64/libc.so.6\"
+)")
+endif()

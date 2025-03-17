@@ -15,20 +15,10 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _BITS_SOCKET_H
-#define _BITS_SOCKET_H
+#include <bits/syscalls.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <signal.h>
+#include <time.h>
 
-#define __socklen_t_defined
-typedef __UINT32_TYPE__ socklen_t;
-
-#define __sa_family_t_defined
-typedef unsigned int sa_family_t;
-
-#define __sockaddr_defined
-struct sockaddr
-{
-	sa_family_t sa_family;
-	char sa_data[14];
-};
-
-#endif // _BITS_SOCKET_H
+// static_assert( == );
