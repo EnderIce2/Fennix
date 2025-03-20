@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(FennixCoreUtilities VERSION 1.0.0)
+project(FennixCoreUtilities VERSION 0.0.1)
 
 if(NOT DEFINED ENV{WORKSPACE_DIR})
   set(STANDALONE_BUILD ON)

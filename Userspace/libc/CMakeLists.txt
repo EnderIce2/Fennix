@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-project(FennixCLibrary VERSION 1.0.0)
+project(FennixCLibrary VERSION 0.0.1)
 
 if(NOT DEFINED ENV{WORKSPACE_DIR})
   set(STANDALONE_BUILD ON)
