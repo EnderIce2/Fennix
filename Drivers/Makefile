@@ -43,30 +43,37 @@ endif
 export DRIVER_LDFLAGS
 export DRIVER_CFLAGS
 
+copy_driver_signatures:
+	@echo "const char *trusted_drivers[] = {" > $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
+	@find $(OUTPUT_DIR) -name "*.drv" -exec sha512sum {} \; | awk '{gsub(/.*\//, "", $$2); gsub(/\./, "_", $$2); sub(/_drv$$/, "_drv", $$2); print "\"" $$1 "\"," }' >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
+	@echo "};" >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
+	@echo "const __SIZE_TYPE__ trusted_drivers_count = sizeof(trusted_drivers) / sizeof(trusted_drivers[0]);" >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
+
 build:
 	cp -rf ../Kernel/include/interface/* include/
 	mkdir -p out
-	make -C library build
+	$(MAKE) -C library build
 ifneq ($(filter amd64 i386,$(OSARCH)),)
-	make -C audio build
-	make -C input build
-	make -C misc build
-	make -C network build
-	make -C storage build
-	make -C filesystem build
+	$(MAKE) -C audio build
+	$(MAKE) -C input build
+	$(MAKE) -C misc build
+	$(MAKE) -C network build
+	$(MAKE) -C storage build
+	$(MAKE) -C filesystem build
 endif
+	$(MAKE) copy_driver_signatures
 
 prepare:
 	$(info Nothing to prepare)
 
 clean:
 	rm -rf out
-	make -C library clean
+	$(MAKE) -C library clean
 ifneq ($(filter amd64 i386,$(OSARCH)),)
-	make -C audio clean
-	make -C input clean
-	make -C misc clean
-	make -C network clean
-	make -C storage clean
-	make -C filesystem clean
+	$(MAKE) -C audio clean
+	$(MAKE) -C input clean
+	$(MAKE) -C misc clean
+	$(MAKE) -C network clean
+	$(MAKE) -C storage clean
+	$(MAKE) -C filesystem clean
 endif
