@@ -413,12 +413,6 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 }
 #pragma GCC diagnostic pop
 
-EXTERNC void TaskingPanic()
-{
-	if (TaskManager)
-		TaskManager->Panic();
-}
-
 #define HEX_DIGIT(c) (((c) >= '0' && (c) <= '9') ? ((c) - '0') : ((c) - 'a' + 10))
 #define CONVERT_TO_BYTE(h, l) ((HEX_DIGIT(h) << 4) | HEX_DIGIT(l))
 #define HASH_BYTES(hex)                 \

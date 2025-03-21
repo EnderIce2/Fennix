@@ -62,7 +62,6 @@ EXTERNC void _KPrint(const char *Format, va_list Args);
 EXTERNC void KPrint(const char *Format, ...);
 EXTERNC void Entry(struct BootInfo *Info);
 EXTERNC void BeforeShutdown(bool Reboot);
-EXTERNC void TaskingPanic();
 
 EXTERNC void KernelVFS();
 EXTERNC void KernelMainThread();
