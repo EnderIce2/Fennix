@@ -122,6 +122,7 @@ namespace Driver
 		FileNode *devNode = nullptr;
 		FileNode *devInputNode = nullptr;
 
+		bool IsDriverTrusted(FileNode *File);
 		int LoadDriverFile(DriverObject &Drv, FileNode *File);
 		void ReloadDriver(dev_t driverID);
 

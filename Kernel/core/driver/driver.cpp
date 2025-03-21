@@ -26,14 +26,48 @@
 #include <exec.hpp>
 #include <rand.hpp>
 #include <cwalk.h>
+#include <sha512.h>
 #include <md5.h>
 
 #include "../../kernel.h"
 
 using namespace vfs;
 
+extern const char *trusted_drivers[];
+extern const __SIZE_TYPE__ trusted_drivers_count;
+
 namespace Driver
 {
+	bool Manager::IsDriverTrusted(FileNode *File)
+	{
+		kstat st;
+		File->Stat(&st);
+		std::unique_ptr<uint8_t[]> ptr(new uint8_t[st.Size]);
+		File->Read(ptr.get(), st.Size, 0);
+		uint8_t *sha = sha512_sum(ptr.get(), st.Size);
+		char hash_str[129];
+		for (int j = 0; j < 64; j++)
+			sprintf(hash_str + j * 2, "%02x", sha[j]);
+		hash_str[128] = '\0';
+
+		for (__SIZE_TYPE__ i = 0; i < trusted_drivers_count; i++)
+		{
+			if (strcmp(hash_str, trusted_drivers[i]) == 0)
+			{
+				kfree(sha);
+				return true;
+			}
+			else
+			{
+				trace("Expected \"%s\" but got \"%s\" for driver %s",
+					  trusted_drivers[i], hash_str, File->GetName().c_str());
+			}
+		}
+
+		kfree(sha);
+		return false;
+	}
+
 	void Manager::PreloadDrivers()
 	{
 		debug("Initializing driver manager");
@@ -87,7 +121,14 @@ namespace Driver
 
 			if (Execute::GetBinaryType(drvNode->Path) != Execute::BinTypeELF)
 			{
-				error("Driver %s is not an ELF binary", drvNode->Path.c_str());
+				error("Driver %s is not an ELF binary", drvNode->GetPath().c_str());
+				continue;
+			}
+
+			if (!IsDriverTrusted(drvNode))
+			{
+				error("Driver %s is not trusted", drvNode->GetName().c_str());
+				KPrint("%s is not in the list of trusted drivers", drvNode->GetName().c_str());
 				continue;
 			}
 
