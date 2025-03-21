@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['map_5fcache_5fdisable_0',['MAP_CACHE_DISABLE',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aa0da429c07c8ddc3526231587ac4cac41',1,'driver.h']]],
-  ['map_5fpresent_1',['MAP_PRESENT',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aac6561ce1d7eedab3962cfca17c460341',1,'driver.h']]],
-  ['map_5fuser_2',['MAP_USER',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aaf80f9130d5cda510347a1e3ef55e076c',1,'driver.h']]],
-  ['map_5fwrite_3',['MAP_WRITE',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aaaa41d0a3e439a73337b62bc352495571',1,'driver.h']]],
-  ['map_5fwrite_5fthrough_4',['MAP_WRITE_THROUGH',['../db/de4/driver_8h.html#ac0416d24abd7b108d48d16eb4e913e8aa46b21613d1139b1262129a7791500e40',1,'driver.h']]]
+  ['network_5ftype_5fbluetooth_0',['NETWORK_TYPE_BLUETOOTH',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a3ab73e55d010169e03e01ae78841257e',1,'device.h']]],
+  ['network_5ftype_5fethernet_1',['NETWORK_TYPE_ETHERNET',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9adb66e74a951b1fa7596d1aa9b5a45a94',1,'device.h']]],
+  ['network_5ftype_5fnone_2',['NETWORK_TYPE_NONE',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a6ab07b3c02c4acfe712c682717fe04e9',1,'device.h']]],
+  ['network_5ftype_5fuart_3',['NETWORK_TYPE_UART',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a863b60e41cf98be72a86c3be2fe88769',1,'device.h']]],
+  ['network_5ftype_5fwifi_4',['NETWORK_TYPE_WIFI',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a906975273f9583ef293a59c70a133675',1,'device.h']]]
 ];

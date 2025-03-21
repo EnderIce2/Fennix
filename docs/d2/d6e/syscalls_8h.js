@@ -7,6 +7,12 @@ var syscalls_8h =
       [ "Size", "d2/d6e/syscalls_8h.html#af8c41bf2049e422f416725a921a4abaa", null ],
       [ "Width", "d2/d6e/syscalls_8h.html#a13cd8b19c0885b5346f14d355ac94f92", null ]
     ] ],
+    [ "kutsname", "d2/d6e/syscalls_8h.html#de/d36/structkutsname", [
+      [ "machine", "d2/d6e/syscalls_8h.html#a20d3a892e2fc1e8d4c6b7beb5c532280", null ],
+      [ "release", "d2/d6e/syscalls_8h.html#a183ff0be4b883eafe77a233e13af1447", null ],
+      [ "sysname", "d2/d6e/syscalls_8h.html#a17c25c334ed5c0f04a629ff78a68750e", null ],
+      [ "version", "d2/d6e/syscalls_8h.html#ab0d51c806d74e4ec305829e807f58033", null ]
+    ] ],
     [ "__SYS_NULL", "d2/d6e/syscalls_8h.html#a3405b025dbfa88c47279ae6b526076a8", null ],
     [ "call_accept", "d2/d6e/syscalls_8h.html#ab4949d314d72ceada64d99a9ffd5980d", null ],
     [ "call_access", "d2/d6e/syscalls_8h.html#a6a0f9ef9d1b0b7c090ee0fca1c8b4b71", null ],
@@ -22,6 +28,7 @@ var syscalls_8h =
     [ "call_dup2", "d2/d6e/syscalls_8h.html#ad2932c5044a784dcc0413c1364a51da6", null ],
     [ "call_execve", "d2/d6e/syscalls_8h.html#a9b22610937180ca7ba25ef597eb8cb58", null ],
     [ "call_exit", "d2/d6e/syscalls_8h.html#afe03e96b528279b23c2ae501a509eac3", null ],
+    [ "call_fcntl", "d2/d6e/syscalls_8h.html#ad5f61efb0c501cd880f75fd72caab158", null ],
     [ "call_fork", "d2/d6e/syscalls_8h.html#afda32e401a3f5d39d85a6a4bc6b52089", null ],
     [ "call_fstat", "d2/d6e/syscalls_8h.html#a073897bf4cec6ecf22703ed7735f866b", null ],
     [ "call_ftruncate", "d2/d6e/syscalls_8h.html#ac7545a17f1b8654d78afb2000e93119b", null ],
@@ -55,6 +62,7 @@ var syscalls_8h =
     [ "call_tell", "d2/d6e/syscalls_8h.html#a42b50361d2152d92f41f741d64ab30bc", null ],
     [ "call_time", "d2/d6e/syscalls_8h.html#a7dca41af6f47ad7fb6eaa65e55b98090", null ],
     [ "call_truncate", "d2/d6e/syscalls_8h.html#adc22de2ff267771d8ac633e948f28eff", null ],
+    [ "call_uname", "d2/d6e/syscalls_8h.html#ac41c5281321b5dd26f252c2a0cc514f9", null ],
     [ "call_unlink", "d2/d6e/syscalls_8h.html#a03284d10556fe1599ae976558367f7ff", null ],
     [ "call_waitpid", "d2/d6e/syscalls_8h.html#a48f9ddd0dba233df029622ea3e2545ae", null ],
     [ "call_write", "d2/d6e/syscalls_8h.html#ab1e6a38710527adb8e6c0b2ad416d6f9", null ],
@@ -214,6 +222,7 @@ var syscalls_8h =
       [ "SYS_OPEN", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a76bb1866304712aa5b41d989fbdfbc8b", null ],
       [ "SYS_CLOSE", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a4ef77fc1f4b0824d318a2a851a24ffff", null ],
       [ "SYS_IOCTL", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8362fcf9e42a5f1edb952129002d87a3", null ],
+      [ "SYS_FCNTL", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab605c2d0a485f8a779dbed0443978c6e", null ],
       [ "SYS_STAT", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a22801e7695ca6349080d79bee2c8b295", null ],
       [ "SYS_FSTAT", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a9cd60f4852cb73b296171894bd7d30ed", null ],
       [ "SYS_LSTAT", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ad06d5e126a93d184ec20e2389a7388db", null ],
@@ -256,6 +265,7 @@ var syscalls_8h =
       [ "SYS_RMDIR", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a3dbee6f3879ca6740bc582b722416129", null ],
       [ "SYS_UNLINK", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a071e0d689876d4e3e8d0d7f42a69ef52", null ],
       [ "SYS_RENAME", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070", null ],
+      [ "SYS_UNAME", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a0bd7927735338c7d132db0bdce9176a3", null ],
       [ "SYS_MAX", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a17cb58707f83b65f30ccb17805b7c467", null ]
     ] ],
     [ "syscall0", "d2/d6e/syscalls_8h.html#aead3c4d793ac641f0c76fa3a2884799f", null ],

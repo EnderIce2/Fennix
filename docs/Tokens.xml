@@ -32,6 +32,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>f_owner_ex</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>f_owner_ex</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>FileSystemInfo</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -1007,6 +1017,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>l_len</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>flock</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>af5dc2da04cf2af6e5b77018f9cdce489</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>l_pid</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>flock</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a5e84556aa660bd41cc8b8d862a547887</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>l_start</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>flock</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a692ebc7782fe6a11c9de67d7fd20cc8f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>l_type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>flock</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a24ceb1a44b2a5912f6f8b50195ed7fbe</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>l_whence</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>flock</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>acea10bfe92ee06d519c4850739924198</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>LatencyTimer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1054,6 +1114,16 @@
     </TokenIdentifier>
     <Path>db/de6/structInodeOperations.html</Path>
     <Anchor>a7f143243e5be1fc608f99072d3c93cb5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>machine</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>kutsname</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a20d3a892e2fc1e8d4c6b7beb5c532280</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1344,6 +1414,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>adeb7419d0ada1e37f2f4e4c7e9a291b2</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>pid</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>f_owner_ex</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>af64f49cc3f3024dce2031477aa13d8f7</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1667,6 +1747,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>release</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>kutsname</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a183ff0be4b883eafe77a233e13af1447</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Remove</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1937,6 +2027,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>sysname</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>kutsname</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a17c25c334ed5c0f04a629ff78a68750e</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>SystemFlag</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2007,6 +2107,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>f_owner_ex</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>afd32d7286d5aba4fb1ba922d58591997</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Unknown1</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2064,6 +2174,16 @@
     </TokenIdentifier>
     <Path>db/de4/driver_8h.html</Path>
     <Anchor>a7f2ee0705a9eaf49c4f920d827198530</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>version</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>kutsname</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ab0d51c806d74e4ec305829e807f58033</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2214,26 +2334,6 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ae9d1c84bd8c5ad87f19dc53750668f1b</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__errno_location</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>a9049fd86a1aa08d50029a482471f5fae</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__ERRNO_MAX</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a83fc2238dbcea63c1a4c80c9cbed4fbf</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3507,6 +3607,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>AT_EACCESS</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>afba18be015711a5c496d49a1387bd412</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>AT_FDCWD</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a301749b9aa4b9416c329bb8b19345216</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>AT_REMOVEDIR</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a18f47dae5e59e6683441ef49754fe068</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>AT_SYMLINK_FOLLOW</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a0517ad09fa61307dd14718334b60f36e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>AT_SYMLINK_NOFOLLOW</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ad623014f05ffb83df42ba96900fcd62e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>AUDIO_TYPE_DSP</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -3887,6 +4037,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>call_fcntl</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ad5f61efb0c501cd880f75fd72caab158</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>call_fork</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -4213,6 +4373,16 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>adc22de2ff267771d8ac633e948f28eff</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>call_uname</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ac41c5281321b5dd26f252c2a0cc514f9</Anchor>
     <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>
@@ -4798,832 +4968,1052 @@
   <Token>
     <TokenIdentifier>
       <Name>E2BIG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a755e0cbde2880a406893ad61304bac29</Anchor>
+    <Anchor>aba8481985c201ff726f349d7f2d09895</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EACCES</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5fa7d65262e81125cecb27e80a26ce98</Anchor>
+    <Anchor>ac2a2e9fa555401f94478f74e01868032</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EADDRINUSE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ad548cedfda5ba4616d0fde82324255ff</Anchor>
+    <Anchor>a61676e39b42371c65c3b960a91887b03</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EADDRNOTAVAIL</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6594d1afb31b5df1fd182ffc4a579825</Anchor>
+    <Anchor>a556612e55358838192165684c971a44f</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EAFNOSUPPORT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af62fac9f9f3d0c943aebe13fe4454b90</Anchor>
+    <Anchor>a4c3a793b4d51cb7dd020af92e536fe21</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EAGAIN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4bde0de54c0b708a605ed5095959c14e</Anchor>
+    <Anchor>af0fac1cea1165b4debec7f686edf3313</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EALREADY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af23579d62edd5369d0b84bae3b5cde0e</Anchor>
+    <Anchor>aa4ccb54aa806de3e41a8515f06db85d4</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EBADF</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a87d4476eed38f45439e257081c9de369</Anchor>
+    <Anchor>ac54507d66b43ad12f9356257323c0018</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EBADMSG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a952ba8aa5afef31b7893ed91ae13a56c</Anchor>
+    <Anchor>a251e9b536ed96ccb16aa28ca2d5bd656</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EBUSY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9e2f813a51a5763a892f4b1783778e4b</Anchor>
+    <Anchor>a8368025077a0385849d6817b2007c095</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ECANCELED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aecdbf1cf773129356f3656ad079a9b6d</Anchor>
+    <Anchor>a9532d840ef91fd8e1ecc5d7ca7cbf212</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ECHILD</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae63e89f8fc44ef75addd0c1acc9c4828</Anchor>
+    <Anchor>a47b42c351e0e011a048058d224205c0f</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ECONNABORTED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a66f47bfe33ca509b71b4a458e325a61e</Anchor>
+    <Anchor>a45342991e001e28bbf87916d92b7e09a</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ECONNREFUSED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0cca36575629367b103c06ad37e87ae5</Anchor>
+    <Anchor>aad88020b394ef1aa4af2f4ef9b4c8b39</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ECONNRESET</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4e14cf97a773954d485b89f11a19847c</Anchor>
+    <Anchor>add4258b08af02fbe4590fbaae7260037</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EDEADLK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4354eedf02712f4da46f9d2d93d0b7ba</Anchor>
+    <Anchor>a55cc70ce0ba661298f3c412095dfeeb6</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EDESTADDRREQ</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac5081340c6eb96ed42707c416b79c42c</Anchor>
+    <Anchor>a0e416d3478cf030e37e90c55d68ad97a</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EDOM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a21e6505c229a4508912c375435eb86a8</Anchor>
+    <Anchor>a5fe247e079b591a68e0fdbf7caec5b70</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EDQUOT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a869a0f4812d43a9954478c34b40272d7</Anchor>
+    <Anchor>aa5a48566b00cf9062d9deeeb0682cdaf</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EEXIST</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a523e02a73d840e490c14a179a997627e</Anchor>
+    <Anchor>a0a3bef9e5c47e42917692b5dae3b5498</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EFAULT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af740610de680c2861ac4042ad4485d15</Anchor>
+    <Anchor>a3f317946e043623f9d6b93dbf60e6316</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EFBIG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3d9f70d8ebd10e9d4aa420b9cb22cb53</Anchor>
+    <Anchor>af5401a500939ed1812c04ca200b95eef</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EHOSTUNREACH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a7b8a711683f597c7d3cfded8c093b561</Anchor>
+    <Anchor>a53e186028fc992c3341ccb0d4d239b24</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EIDRM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af0a873a5b5152a51b7110685bf25f1fb</Anchor>
+    <Anchor>ad9913290fef890d46a6b7e8b4bfb1c29</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EILSEQ</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9fa1b21135895d33c089fb7dc6a83299</Anchor>
+    <Anchor>ac6c071293826a4e66a717bb38db7794d</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EINPROGRESS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af94bb1d045fb2b32521d78638f398774</Anchor>
+    <Anchor>a6c045d5be06e715cc335784a7320714e</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EINTR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a8cc241d56d59d11ceea8efc37bec8ed4</Anchor>
+    <Anchor>a46b83d9f6c23b1b65a8cecfd775ddaed</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EINVAL</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a7bfd237190819a0a272db7b0aa61d5c8</Anchor>
+    <Anchor>a2d1678d5a7cc8ce499643f3b8957def4</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EIO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6d2c32b1730ea078f2802b34b1258a4c</Anchor>
+    <Anchor>a70979f50f9c83e5aebab3d6a1bd4cf35</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EISCONN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2a3c7318b234b28732402f2aa0985608</Anchor>
+    <Anchor>a164ca8549da7a385e2fe1cba823b9eaf</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EISDIR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6a73363cf3fa4dc0d77c4cb3b9d83321</Anchor>
+    <Anchor>ae22c3a1e0a38f3896de238cc30d0e19b</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ELOOP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac39a4aaab7efc4f82deef26b159f650c</Anchor>
+    <Anchor>a2f78c246352d2bf2f19dc5d43da2f0c9</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EMFILE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0191be5a8b35e30991789c9fe4b2c4cf</Anchor>
+    <Anchor>a64a75c174882ddbfa726c7fd040f87a1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EMLINK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae8a4cdbd60a66eb9705bcb0a655e94fe</Anchor>
+    <Anchor>a97f59fa1a5a2f61b792c1b9dfc218072</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EMSGSIZE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a050b91a2bb2c009f29daf3cfc68662d2</Anchor>
+    <Anchor>ae37becfaa095a9df5c5c788bce5aa06f</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EMULTIHOP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9a7661317bd3e06c9832fd577e71c070</Anchor>
+    <Anchor>a4d7b69d7ce0dfa0a9b998403b4ffe226</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENAMETOOLONG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abf7123a05c2949f1ca60f7531a98eac5</Anchor>
+    <Anchor>a41d5ab3a8a05f9c5eab536c9cfba305b</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENETDOWN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aedf779faac43fb7d61e2698c26dabe66</Anchor>
+    <Anchor>aac51995026fa19cdd0ad84a272304af0</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENETRESET</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a98fef4acde132e6013ae485b5edb87ca</Anchor>
+    <Anchor>a92750db73ff8e83591c977bbb3a5bea1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENETUNREACH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a321006da98fc55c478824c20f277e8a9</Anchor>
+    <Anchor>a3f91f1ad503432783c7a5d1481b45419</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENFILE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af8ee28f2eeab568a1b641f6ffc1f90a8</Anchor>
+    <Anchor>a5554094b3fb4bb6ebeb0157cb3f82a55</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOBUFS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97adb0b80c8583489ffb5ea6e4851257c2d</Anchor>
+    <Anchor>a9e655f47bfd914a1174f281fc31cf63d</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENODATA</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2f378a9bec5216faa8bbeb957699087d</Anchor>
+    <Anchor>a0030614bc864d1b24eaedd71585acc27</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENODEV</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae350307a3417656c8cabc816ba8d07cd</Anchor>
+    <Anchor>ab9b8cc17d1947160d13faaba7a18d6d1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOENT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a996f6f948b613bccc738ff8517413c1a</Anchor>
+    <Anchor>a03e689f378f643d16ea7537918528a48</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOEXEC</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97adabd09d64c920a9a75f60165fda651d5</Anchor>
+    <Anchor>a4d0b1b435ec441e7d50a430b83df5832</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOLCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6c7a7b800587aa21ff4e27cbf5c6063a</Anchor>
+    <Anchor>a65e1a7bda392be276a701988d0604e63</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOLINK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae03745405147f3877f03656e8c81ef67</Anchor>
+    <Anchor>add4408349a756880be9d91efadb8aed0</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOMEM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aec0aa1bb79e2e55ed6d8c165e0611eca</Anchor>
+    <Anchor>a6a05c923dad0c1208043e9c20a58c8e5</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOMSG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a32b6f198494024989c8fc04700962321</Anchor>
+    <Anchor>ae40596feaa3f66f5440b485bf7c1c2d1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOPROTOOPT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97acf88ad2711a584e6c5e238ca83d49c2f</Anchor>
+    <Anchor>acd570f8ab92198653b4459773dc3bca3</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOSPC</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2b5265f4c8556b15ec913f61caade1eb</Anchor>
+    <Anchor>a088abe8bad2df798edad3053d719b937</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOSR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a69f5babc32dadf40b348312b714ba7b7</Anchor>
+    <Anchor>ad88bc6ea94ec1a5e91d3651677d85c00</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOSTR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abbaf73e419ff754319cf3f5661165a04</Anchor>
+    <Anchor>a7cea86ddbdacae0b391674e680f17bdb</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOSYS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abd287bcdb80bb2a0c41269b9adcb9d77</Anchor>
+    <Anchor>a43785b9969e0bd1af532dbde06c5540b</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTCONN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0790cde76b0760730a7713d1cd45fa1e</Anchor>
+    <Anchor>af23e48762a0676f49d480db91cfd5e4b</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTDIR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a8cd7a7b948ee085bbaeb2a210b412d6e</Anchor>
+    <Anchor>a9262fb92f7ef662d0bdd577912a5b101</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTEMPTY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac7790808f596b839c654353c46f51b1d</Anchor>
+    <Anchor>aa0f602f3fd369a6fede82190710b9c5c</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTRECOVERABLE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3ece9f34788a53298f9947938fda6188</Anchor>
+    <Anchor>ac69acb8e9e296867cc3f9fdf4223d05d</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTSOCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0c268fa36b3506d95c9952978c9d5c8a</Anchor>
+    <Anchor>ae34fa7a550ac1c415daa2e114a1c0f38</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTSUP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5fc84b720f60aa7c7ad7d81c6ce016e2</Anchor>
+    <Anchor>a91457bbf35f0f1085619a99423bb1f33</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENOTTY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af3dc036138d242739c3dbe36c5dfa095</Anchor>
+    <Anchor>ac3daf409082bb528032f4452a81e1034</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ENXIO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1c0d17ac093eff038b479dba021361bb</Anchor>
+    <Anchor>a2b3884b11e4932bd372bb6d899d6fbfe</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EOK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1c6a3022e8b55d43daf722d13d7e0669</Anchor>
+    <Anchor>acf2e4414e0bf0d331a111e70f9317434</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EOPNOTSUPP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9f56b39cf6cd1ed2925c744f8aa6d1a9</Anchor>
+    <Anchor>a4b807895c74cea4d0302bf27725d4b9d</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EOVERFLOW</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aca0f39f6e98ddddb61280b52e5019811</Anchor>
+    <Anchor>a888552a5e3c78b5883904cf5d55244ab</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EOWNERDEAD</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aeef97437f479cb21b90ba0152259c2bd</Anchor>
+    <Anchor>af3f021d87caf24b44761036578c7beae</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EPERM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a156dcc38d9ba0765c6150544963ed267</Anchor>
+    <Anchor>add669d31505a077f769cff8e66c780b3</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EPIPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae573afaecfe768915268b5c70823ee70</Anchor>
+    <Anchor>a5f8d33deb08fa27c04897b278ac7f965</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EPROTO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5c8efc06d148e59e785dcf21d3740281</Anchor>
+    <Anchor>a5a92de56e8ebe19cbd8a2ce8c80ad03e</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EPROTONOSUPPORT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a933e67dfd289987e67b2c92726e5b04a</Anchor>
+    <Anchor>ad581c46fdd4dee9419f60eaff40415e7</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EPROTOTYPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aafca50a7ae5ee2078ef31de91e791afc</Anchor>
+    <Anchor>ae6014faa948366b8321d755204acf755</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ERANGE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3ffb99860526d55ef132365553694c3d</Anchor>
+    <Anchor>aa1591a4f3a86360108de5b9ba34980ca</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EROFS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a56198247acea7520ae5c6005fbe76a31</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>errno</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ab03f640d90fbc5bcb75285d08a0f25ed</Anchor>
+    <Anchor>acb02bb67dddd7ca8cf82634a0781d58d</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ESPIPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9e5433f0863ce3470329184a3ee495a7</Anchor>
+    <Anchor>a0e42d4f9fecdcf5fcca2b333252173c3</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ESRCH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4e376a13d0c1557d399f473218915625</Anchor>
+    <Anchor>a462e47a8af6288232a5df548221ada4c</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ESTALE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6fafeac69bf3b8355640b41d81bbda1a</Anchor>
+    <Anchor>a09e189d2214d9fe2847d27bf270ca1d7</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ETIME</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1907b734e86b9b33b50f0213a482cd14</Anchor>
+    <Anchor>ab59cf3c65eaf836d5c647fa2a24ca649</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ETIMEDOUT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5bc83024c53898aafcb1b6faf0f73ac4</Anchor>
+    <Anchor>a597718e59a8fc9c4d4ab63f5a34e28b1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>ETXTBSY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a83ea4e18eaac3a62036e1b5723d6e353</Anchor>
+    <Anchor>aaed12e82224923d599b6f1939c8e0971</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EWOULDBLOCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a53ef8719226a5fd7be8af74be6de2bfc</Anchor>
+    <Anchor>a4a3a0b3605fd3b2336455062ee8e25f0</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>EXDEV</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
     </TokenIdentifier>
     <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a953d85d9cf4a55d49811d920c169eded</Anchor>
+    <Anchor>a3396cf9fb0ff5af3a18dd2a2bbdb21e1</Anchor>
     <DeclaredIn>errno.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_DUPFD</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ab93a8621587aba90181efd7d3aeea67e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_DUPFD_CLOEXEC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>af532232f0b65dc6296aedd2b60de7285</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_DUPFD_CLOFORK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a6ef080a3e6218fde5d2457dbd560f7f4</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_GETFD</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>abc11141031604fb22b8e3a201155cbb3</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_GETFL</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a025fad21a889c79f02ec53abe3526c32</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_GETLK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a2c3005e07f9aedb5d77856d13c3e40c4</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_GETOWN</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>aa76959dcf54457a81c4cdf7789ba73e4</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_GETOWN_EX</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a93853ac9fe27cbd3b0f01a85aa757307</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_OFD_GETLK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a1564b73f59286bbf0999706304f87c6c</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_OFD_SETLK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a4fc21528a6ce28d77a755f391568e1b4</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_OFD_SETLKW</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a1538d86465f1f7057703c9c5e7a0f5b5</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>f_owner_ex</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a8e2aa946075a3f83381371f61ca71a74</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_OWNER_PGRP</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ad0a5636b8c5e66572f423f3cf4351cf8</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_OWNER_PID</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a0def4a47951ccbb2414661ee00ff96ba</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_RDLCK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a1dfb7f83dd3989782404c0204484655b</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETFD</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ad27227e8d87b844648f07d66da38bb3f</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETFL</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>af2939853c650561d3495ed40f68f6249</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETLK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a68a7fc570f2fc271acc5358a6418504e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETLKW</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>aabb866cd0cf7ed3544dfc335e0e360fd</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETOWN</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a10e6ca002b56361c5adb1e66a8a4917d</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_SETOWN_EX</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>adc1650d605443666b5301529250beaf8</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_UNLCK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a2ace36798dbaef59cf9c99a4bf14fb96</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>F_WRLCK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a708b81093fd9c80a2adc260b3e9ca623</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5637,6 +6027,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>FD_CLOEXEC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a7e7a00c884ea124bb9f687b16cb5db9b</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>FD_CLOFORK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a33f5960552a23f65499b00d963c5a4b6</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Flags</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -5644,6 +6054,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ac3e60a9fc42fb6c0b656191ebb1d658b</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>flock</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ae572f48acec92feb49790f2328bc2e0e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5984,846 +6404,6 @@
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>abb94e8ea4110b1505f8722d697697eea</Anchor>
     <DeclaredIn>aip.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>KernelErrors</Name>
-      <APILanguage>c</APILanguage>
-      <Type>enum</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EOK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1c6a3022e8b55d43daf722d13d7e0669</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>E2BIG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a755e0cbde2880a406893ad61304bac29</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EACCES</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5fa7d65262e81125cecb27e80a26ce98</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EADDRINUSE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ad548cedfda5ba4616d0fde82324255ff</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EADDRNOTAVAIL</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6594d1afb31b5df1fd182ffc4a579825</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EAFNOSUPPORT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af62fac9f9f3d0c943aebe13fe4454b90</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EAGAIN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4bde0de54c0b708a605ed5095959c14e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EALREADY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af23579d62edd5369d0b84bae3b5cde0e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EBADF</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a87d4476eed38f45439e257081c9de369</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EBADMSG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a952ba8aa5afef31b7893ed91ae13a56c</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EBUSY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9e2f813a51a5763a892f4b1783778e4b</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ECANCELED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aecdbf1cf773129356f3656ad079a9b6d</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ECHILD</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae63e89f8fc44ef75addd0c1acc9c4828</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ECONNABORTED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a66f47bfe33ca509b71b4a458e325a61e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ECONNREFUSED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0cca36575629367b103c06ad37e87ae5</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ECONNRESET</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4e14cf97a773954d485b89f11a19847c</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EDEADLK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4354eedf02712f4da46f9d2d93d0b7ba</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EDESTADDRREQ</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac5081340c6eb96ed42707c416b79c42c</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EDOM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a21e6505c229a4508912c375435eb86a8</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EDQUOT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a869a0f4812d43a9954478c34b40272d7</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EEXIST</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a523e02a73d840e490c14a179a997627e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EFAULT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af740610de680c2861ac4042ad4485d15</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EFBIG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3d9f70d8ebd10e9d4aa420b9cb22cb53</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EHOSTUNREACH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a7b8a711683f597c7d3cfded8c093b561</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EIDRM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af0a873a5b5152a51b7110685bf25f1fb</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EILSEQ</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9fa1b21135895d33c089fb7dc6a83299</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EINPROGRESS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af94bb1d045fb2b32521d78638f398774</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EINTR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a8cc241d56d59d11ceea8efc37bec8ed4</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EINVAL</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a7bfd237190819a0a272db7b0aa61d5c8</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EIO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6d2c32b1730ea078f2802b34b1258a4c</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EISCONN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2a3c7318b234b28732402f2aa0985608</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EISDIR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6a73363cf3fa4dc0d77c4cb3b9d83321</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ELOOP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac39a4aaab7efc4f82deef26b159f650c</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EMFILE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0191be5a8b35e30991789c9fe4b2c4cf</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EMLINK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae8a4cdbd60a66eb9705bcb0a655e94fe</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EMSGSIZE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a050b91a2bb2c009f29daf3cfc68662d2</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EMULTIHOP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9a7661317bd3e06c9832fd577e71c070</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENAMETOOLONG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abf7123a05c2949f1ca60f7531a98eac5</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENETDOWN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aedf779faac43fb7d61e2698c26dabe66</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENETRESET</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a98fef4acde132e6013ae485b5edb87ca</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENETUNREACH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a321006da98fc55c478824c20f277e8a9</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENFILE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af8ee28f2eeab568a1b641f6ffc1f90a8</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOBUFS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97adb0b80c8583489ffb5ea6e4851257c2d</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENODATA</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2f378a9bec5216faa8bbeb957699087d</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENODEV</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae350307a3417656c8cabc816ba8d07cd</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOENT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a996f6f948b613bccc738ff8517413c1a</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOEXEC</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97adabd09d64c920a9a75f60165fda651d5</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOLCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6c7a7b800587aa21ff4e27cbf5c6063a</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOLINK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae03745405147f3877f03656e8c81ef67</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOMEM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aec0aa1bb79e2e55ed6d8c165e0611eca</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOMSG</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a32b6f198494024989c8fc04700962321</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOPROTOOPT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97acf88ad2711a584e6c5e238ca83d49c2f</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOSPC</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a2b5265f4c8556b15ec913f61caade1eb</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOSR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a69f5babc32dadf40b348312b714ba7b7</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOSTR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abbaf73e419ff754319cf3f5661165a04</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOSYS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97abd287bcdb80bb2a0c41269b9adcb9d77</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTCONN</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0790cde76b0760730a7713d1cd45fa1e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTDIR</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a8cd7a7b948ee085bbaeb2a210b412d6e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTEMPTY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ac7790808f596b839c654353c46f51b1d</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTRECOVERABLE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3ece9f34788a53298f9947938fda6188</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTSOCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a0c268fa36b3506d95c9952978c9d5c8a</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTSUP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5fc84b720f60aa7c7ad7d81c6ce016e2</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENOTTY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97af3dc036138d242739c3dbe36c5dfa095</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENXIO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1c0d17ac093eff038b479dba021361bb</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EOPNOTSUPP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9f56b39cf6cd1ed2925c744f8aa6d1a9</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EOVERFLOW</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aca0f39f6e98ddddb61280b52e5019811</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EOWNERDEAD</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aeef97437f479cb21b90ba0152259c2bd</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EPERM</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a156dcc38d9ba0765c6150544963ed267</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EPIPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97ae573afaecfe768915268b5c70823ee70</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EPROTO</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5c8efc06d148e59e785dcf21d3740281</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EPROTONOSUPPORT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a933e67dfd289987e67b2c92726e5b04a</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EPROTOTYPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97aafca50a7ae5ee2078ef31de91e791afc</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ERANGE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a3ffb99860526d55ef132365553694c3d</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EROFS</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a56198247acea7520ae5c6005fbe76a31</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ESPIPE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a9e5433f0863ce3470329184a3ee495a7</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ESRCH</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a4e376a13d0c1557d399f473218915625</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ESTALE</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a6fafeac69bf3b8355640b41d81bbda1a</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ETIME</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a1907b734e86b9b33b50f0213a482cd14</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ETIMEDOUT</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a5bc83024c53898aafcb1b6faf0f73ac4</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ETXTBSY</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a83ea4e18eaac3a62036e1b5723d6e353</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EWOULDBLOCK</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a53ef8719226a5fd7be8af74be6de2bfc</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EXDEV</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a953d85d9cf4a55d49811d920c169eded</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__ERRNO_MAX</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>ad50488ed014e017f009e3f18d8593a97a83fc2238dbcea63c1a4c80c9cbed4fbf</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9517,13 +9097,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>O_ACCMODE</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a4dc4d45e07d2abc899bcaf04b2846a87</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>O_APPEND</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>ae036f789407d21f07b211552d67b3214</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9531,9 +9121,19 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>ad6d8fbe4e494b4dbe051612572d3f757</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_CLOFORK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a1783d59f495ce350c1ed3e1724265ed5</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9541,9 +9141,29 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>a1cf6b1de1fffedaa1d26b189e9a8d2cc</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_DIRECTORY</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a6afd3dd2f570069804b40e6aa24fc966</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_DSYNC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>af63e33218e573b9461b5f17d0ea79f2a</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9551,9 +9171,29 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>a9f5acfe79fafe14b6694447bd0e9f10b</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_EXEC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a459542206659fbe295eb4183f8b8f06c</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_NOCTTY</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a2e375ab32c7ef4581b026be28e4cc116</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9561,9 +9201,19 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>a82d4d551b214905742c9e045185d352a</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_NONBLOCK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a39d33ce33804efd4d52606d59071c6d8</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9571,9 +9221,9 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>a7a68c9ffaac7dbcd652225dd7c06a54b</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9581,9 +9231,39 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>abb0586253488ee61072b73557eeb873b</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_RSYNC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ac9cf617d7c8fba45a5062f1f7322e6f8</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_SEARCH</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>ac7984b2eaa7166aea31f0c4f6c91fb2d</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_SYNC</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>aae85139bfa94236d126bb1e3b772998f</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9591,9 +9271,19 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>ad1d67e453fb3031f40f8cd3403773813</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>O_TTY_INIT</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a0ee7b090d0fd09015039f6325118400f</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9601,9 +9291,9 @@
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
     </TokenIdentifier>
-    <Path>df/d26/fs_8h.html</Path>
+    <Path>d7/d9f/fcntl_8h.html</Path>
     <Anchor>a11b644a8526139c4cc1850dac1271ced</Anchor>
-    <DeclaredIn>fs.h</DeclaredIn>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9974,6 +9664,66 @@
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a08e984e6a1417b7b6e89c6232ce00905</Anchor>
     <DeclaredIn>aip.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_DONTNEED</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a088883d3ba2ef3135e249427b897c650</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_NOREUSE</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a4e3faf88d9b26f7cff31148b4f484149</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_NORMAL</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>afa2732611a1cf71fcf542361a97a4745</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_RANDOM</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>aae17e2b1aa1265c588e04df5ec81c3d1</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_SEQUENTIAL</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a997e00c0569d307a3f01a2f21517ee84</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>POSIX_FADV_WILLNEED</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>a4ba20512b0198da87b7d5176767ec29e</Anchor>
+    <DeclaredIn>fcntl.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11577,16 +11327,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>strerror</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>d8/dc2/errno_8h.html</Path>
-    <Anchor>a4bc5f273980fb0e81e0fc7a4dd3de87e</Anchor>
-    <DeclaredIn>errno.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>SuperOps</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -11763,6 +11503,16 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>a58e578ea55e3e184c5ed9206edc2a475a74a69836031dd122d4be1f1163aa0fb0</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SYS_FCNTL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475ab605c2d0a485f8a779dbed0443978c6e</Anchor>
     <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>
@@ -12103,6 +11853,16 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>a58e578ea55e3e184c5ed9206edc2a475a3143effcc56daa891323d837b6ad7f87</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SYS_UNAME</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475a0bd7927735338c7d132db0bdce9176a3</Anchor>
     <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>
@@ -13607,6 +13367,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>SYS_FCNTL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475ab605c2d0a485f8a779dbed0443978c6e</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>SYS_STAT</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -14023,6 +13793,16 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>a58e578ea55e3e184c5ed9206edc2a475a8bc81dcca6643d269fcc1bd19162f070</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SYS_UNAME</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475a0bd7927735338c7d132db0bdce9176a3</Anchor>
     <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>
