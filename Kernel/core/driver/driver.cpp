@@ -82,6 +82,9 @@ namespace Driver
 			if (!drvNode->IsRegularFile())
 				continue;
 
+			if (std::string(drvNode->Path).find(".drv") == std::string::npos)
+				continue;
+
 			if (Execute::GetBinaryType(drvNode->Path) != Execute::BinTypeELF)
 			{
 				error("Driver %s is not an ELF binary", drvNode->Path.c_str());
