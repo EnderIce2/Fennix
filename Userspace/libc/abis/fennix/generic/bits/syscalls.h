@@ -18,6 +18,16 @@
 #ifndef __FENNIX_API_SYSTEM_CALLS_LIST_H__
 #define __FENNIX_API_SYSTEM_CALLS_LIST_H__
 
+#if __has_include(<interface/fcntl.h>)
+#include <interface/fcntl.h>
+#else
+#include <fcntl.h>
+#endif
+
+#ifndef __fennix__
+#error "__fennix__ not defined"
+#endif
+
 #pragma region Syscall Wrappers
 
 #define scarg __UINTPTR_TYPE__
@@ -393,18 +403,18 @@ typedef enum
 
 typedef enum
 {
-	__SYS_O_RDONLY = 0x1,
-	__SYS_O_WRONLY = 0x2,
-	__SYS_O_RDWR = 0x3,
-	__SYS_O_APPEND = 0x4,
-	__SYS_O_CREAT = 0x8,
-	__SYS_O_DSYNC = 0x10,
-	__SYS_O_EXCL = 0x20,
-	__SYS_O_NOCTTY = 0x40,
-	__SYS_O_NONBLOCK = 0x80,
-	__SYS_O_RSYNC = 0x100,
-	__SYS_O_SYNC = 0x200,
-	__SYS_O_TRUNC = 0x400
+	__SYS_O_RDONLY = O_RDONLY,
+	__SYS_O_WRONLY = O_WRONLY,
+	__SYS_O_RDWR = O_RDWR,
+	__SYS_O_APPEND = O_APPEND,
+	__SYS_O_CREAT = O_CREAT,
+	__SYS_O_DSYNC = O_DSYNC,
+	__SYS_O_EXCL = O_EXCL,
+	__SYS_O_NOCTTY = O_NOCTTY,
+	__SYS_O_NONBLOCK = O_NONBLOCK,
+	__SYS_O_RSYNC = O_RSYNC,
+	__SYS_O_SYNC = O_SYNC,
+	__SYS_O_TRUNC = O_TRUNC
 } syscall_open_flags_t;
 
 typedef enum

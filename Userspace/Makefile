@@ -49,9 +49,14 @@ build_coreutils:
 	make -j$(shell nproc) && \
 	make install
 
+define copy_generic_header
+	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/$(1) $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/$(1)
+endef
+
 build_libc:
-	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/errno.h $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/errno.h
-	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/syscalls.h $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/syscalls.h
+	$(call copy_generic_header,errno.h)
+	$(call copy_generic_header,syscalls.h)
+	$(call copy_generic_header,fcntl.h)
 	mkdir -p cache/libc
 	cd cache/libc && \
 	cmake $(WORKSPACE_DIR)/libc \
