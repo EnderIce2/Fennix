@@ -201,7 +201,7 @@ typedef unsigned long timeu64_t;
 typedef int clockid_t;
 typedef long time64_t;
 
-struct f_owner_ex
+struct linux_f_owner_ex
 {
 	int type;
 	pid_t pid;
