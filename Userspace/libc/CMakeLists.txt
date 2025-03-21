@@ -120,7 +120,7 @@ install(DIRECTORY ${ABIS_PATH}/
   FILES_MATCHING
   PATTERN "*")
 
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+if(TARGET_OS STREQUAL "Linux")
   install(CODE "execute_process(
   COMMAND ${CMAKE_COMMAND} -E create_symlink 
           /lib/ld.so 
