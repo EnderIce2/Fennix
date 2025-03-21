@@ -28,59 +28,61 @@ typedef union
 {
 	struct
 	{
-		uint8_t KernelName : 1;
-		uint8_t NodeName : 1;
-		uint8_t KernelRelease : 1;
-		uint8_t KernelVersion : 1;
-		uint8_t Machine : 1;
-		uint8_t Processor : 1;
-		uint8_t HardwarePlatform : 1;
-		uint8_t OperatingSystem : 1;
+		uint8_t kernelName : 1;
+		uint8_t nodeName : 1;
+		uint8_t kernelRelease : 1;
+		uint8_t kernelVersion : 1;
+		uint8_t machine : 1;
+		uint8_t processor : 1;
+		uint8_t hardwarePlatform : 1;
+		uint8_t operatingSystem : 1;
 	};
 	uint8_t raw;
 } UnameFlags;
 
-const char *GetOperatingSystemName(const char *sysname)
+const char *GetOperatingSystemName(const char *systemName)
 {
-	if (strcmp(sysname, "Fennix") == 0)
+	if (strcmp(systemName, "Fennix") == 0)
 		return "Fennix";
-	if (strncmp(sysname, "Linux", 5) == 0)
+	if (strncmp(systemName, "Linux", 5) == 0)
 		return "GNU/Linux";
-	if (strncmp(sysname, "Darwin", 6) == 0)
+	if (strncmp(systemName, "Darwin", 6) == 0)
 		return "macOS";
-	if (strncmp(sysname, "FreeBSD", 7) == 0)
+	if (strncmp(systemName, "FreeBSD", 7) == 0)
 		return "FreeBSD";
-	if (strncmp(sysname, "NetBSD", 6) == 0)
+	if (strncmp(systemName, "NetBSD", 6) == 0)
 		return "NetBSD";
-	if (strncmp(sysname, "OpenBSD", 7) == 0)
+	if (strncmp(systemName, "OpenBSD", 7) == 0)
 		return "OpenBSD";
-	if (strncmp(sysname, "DragonFly", 9) == 0)
+	if (strncmp(systemName, "DragonFly", 9) == 0)
 		return "DragonFly BSD";
-	if (strncmp(sysname, "SunOS", 5) == 0)
+	if (strncmp(systemName, "SunOS", 5) == 0)
 		return "SunOS";
-	if (strncmp(sysname, "AIX", 3) == 0)
+	if (strncmp(systemName, "AIX", 3) == 0)
 		return "AIX";
-	if (strncmp(sysname, "HP-UX", 5) == 0)
+	if (strncmp(systemName, "HP-UX", 5) == 0)
 		return "HP-UX";
-	if (strncmp(sysname, "GNU", 3) == 0)
+	if (strncmp(systemName, "GNU", 3) == 0)
 		return "GNU";
-	if (strncmp(sysname, "Minix", 5) == 0)
+	if (strncmp(systemName, "Minix", 5) == 0)
 		return "Minix";
-	if (strncmp(sysname, "QNX", 3) == 0)
+	if (strncmp(systemName, "QNX", 3) == 0)
 		return "QNX";
-	if (strncmp(sysname, "Haiku", 5) == 0)
+	if (strncmp(systemName, "Haiku", 5) == 0)
 		return "Haiku";
-	if (strncmp(sysname, "OS/2", 4) == 0)
+	if (strncmp(systemName, "OS/2", 4) == 0)
 		return "OS/2";
 
-	return sysname;
+	return systemName;
 }
 
 const char *GetProcessorType(const char *machine)
 {
 	if (strcmp(machine, "x86_64") == 0)
 		return "x86_64";
-	if (strcmp(machine, "i686") == 0 || strcmp(machine, "i386") == 0)
+	if (strcmp(machine, "i386") == 0)
+		return "i386";
+	if (strcmp(machine, "i686") == 0)
 		return "i686";
 	if (strncmp(machine, "arm", 3) == 0)
 		return "arm";
@@ -149,88 +151,88 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	UnameFlags flags = {0};
-
 	if (argc == 1)
-		flags.KernelName = 1;
-	else
 	{
-		for (int i = 1; i < argc; i++)
+		printf("%s\n", buffer.sysname);
+		return 0;
+	}
+
+	UnameFlags flags = {0};
+	for (int i = 1; i < argc; i++)
+	{
+		if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
 		{
-			if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
+			flags.raw = 0xFF;
+			break;
+		}
+		else if (argv[i][0] == '-' && argv[i][1] != '\0')
+		{
+			for (size_t j = 1; j < strlen(argv[i]); j++)
 			{
-				flags.raw = 0xFF;
-				break;
-			}
-			else if (argv[i][0] == '-' && argv[i][1] != '\0')
-			{
-				for (size_t j = 1; j < strlen(argv[i]); j++)
+				switch (argv[i][j])
 				{
-					switch (argv[i][j])
-					{
-					case 's':
-						flags.KernelName = 1;
-						break;
-					case 'n':
-						flags.NodeName = 1;
-						break;
-					case 'r':
-						flags.KernelRelease = 1;
-						break;
-					case 'v':
-						flags.KernelVersion = 1;
-						break;
-					case 'm':
-						flags.Machine = 1;
-						break;
-					case 'p':
-						flags.Processor = 1;
-						break;
-					case 'i':
-						flags.HardwarePlatform = 1;
-						break;
-					case 'o':
-						flags.OperatingSystem = 1;
-						break;
-					default:
-						fprintf(stderr, "uname: invalid option -- '%c'\n", argv[i][j]);
-						PrintUsage();
-						exit(EXIT_FAILURE);
-					}
+				case 's':
+					flags.kernelName = 1;
+					break;
+				case 'n':
+					flags.nodeName = 1;
+					break;
+				case 'r':
+					flags.kernelRelease = 1;
+					break;
+				case 'v':
+					flags.kernelVersion = 1;
+					break;
+				case 'm':
+					flags.machine = 1;
+					break;
+				case 'p':
+					flags.processor = 1;
+					break;
+				case 'i':
+					flags.hardwarePlatform = 1;
+					break;
+				case 'o':
+					flags.operatingSystem = 1;
+					break;
+				default:
+					fprintf(stderr, "uname: invalid option -- '%c'\n", argv[i][j]);
+					PrintUsage();
+					exit(EXIT_FAILURE);
 				}
 			}
-			else if (strcmp(argv[i], "--kernel-name") == 0)
-				flags.KernelName = 1;
-			else if (strcmp(argv[i], "--nodename") == 0)
-				flags.NodeName = 1;
-			else if (strcmp(argv[i], "--kernel-release") == 0)
-				flags.KernelRelease = 1;
-			else if (strcmp(argv[i], "--kernel-version") == 0)
-				flags.KernelVersion = 1;
-			else if (strcmp(argv[i], "--machine") == 0)
-				flags.Machine = 1;
-			else if (strcmp(argv[i], "--processor") == 0)
-				flags.Processor = 1;
-			else if (strcmp(argv[i], "--hardware-platform") == 0)
-				flags.HardwarePlatform = 1;
-			else if (strcmp(argv[i], "--operating-system") == 0)
-				flags.OperatingSystem = 1;
-			else if (strcmp(argv[i], "--help") == 0)
-			{
-				PrintUsage();
-				exit(EXIT_SUCCESS);
-			}
-			else if (strcmp(argv[i], "--version") == 0)
-			{
-				PRINTF_VERSION;
-				exit(EXIT_SUCCESS);
-			}
-			else
-			{
-				fprintf(stderr, "uname: invalid option -- '%s'\n", argv[i]);
-				PrintUsage();
-				exit(EXIT_FAILURE);
-			}
+		}
+		else if (strcmp(argv[i], "--kernel-name") == 0)
+			flags.kernelName = 1;
+		else if (strcmp(argv[i], "--nodename") == 0)
+			flags.nodeName = 1;
+		else if (strcmp(argv[i], "--kernel-release") == 0)
+			flags.kernelRelease = 1;
+		else if (strcmp(argv[i], "--kernel-version") == 0)
+			flags.kernelVersion = 1;
+		else if (strcmp(argv[i], "--machine") == 0)
+			flags.machine = 1;
+		else if (strcmp(argv[i], "--processor") == 0)
+			flags.processor = 1;
+		else if (strcmp(argv[i], "--hardware-platform") == 0)
+			flags.hardwarePlatform = 1;
+		else if (strcmp(argv[i], "--operating-system") == 0)
+			flags.operatingSystem = 1;
+		else if (strcmp(argv[i], "--help") == 0)
+		{
+			PrintUsage();
+			exit(EXIT_SUCCESS);
+		}
+		else if (strcmp(argv[i], "--version") == 0)
+		{
+			PRINTF_VERSION;
+			exit(EXIT_SUCCESS);
+		}
+		else
+		{
+			fprintf(stderr, "uname: invalid option -- '%s'\n", argv[i]);
+			PrintUsage();
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -244,14 +246,14 @@ int main(int argc, char *argv[])
 		first = false;        \
 	}
 
-	PRINT_IF(KernelName, buffer.sysname);
-	PRINT_IF(NodeName, buffer.nodename);
-	PRINT_IF(KernelRelease, buffer.release);
-	PRINT_IF(KernelVersion, buffer.version);
-	PRINT_IF(Machine, buffer.machine);
-	PRINT_IF(Processor, GetProcessorType(buffer.machine));
-	PRINT_IF(HardwarePlatform, GetHardwarePlatform(buffer.machine));
-	PRINT_IF(OperatingSystem, GetOperatingSystemName(buffer.sysname));
+	PRINT_IF(kernelName, buffer.sysname);
+	PRINT_IF(nodeName, buffer.nodename);
+	PRINT_IF(kernelRelease, buffer.release);
+	PRINT_IF(kernelVersion, buffer.version);
+	PRINT_IF(machine, buffer.machine);
+	PRINT_IF(processor, GetProcessorType(buffer.machine));
+	PRINT_IF(hardwarePlatform, GetHardwarePlatform(buffer.machine));
+	PRINT_IF(operatingSystem, GetOperatingSystemName(buffer.sysname));
 
 	putchar('\n');
 	return 0;

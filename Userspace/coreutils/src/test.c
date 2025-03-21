@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-static int TestFile(const char *path, char mode)
+int TestFile(const char *path, char mode)
 {
 	struct stat st;
 	if (stat(path, &st) != 0)
@@ -62,7 +62,7 @@ static int TestFile(const char *path, char mode)
 	}
 }
 
-static int TestString(const char *s1, const char *op, const char *s2)
+int TestString(const char *s1, const char *op, const char *s2)
 {
 	if (!strcmp(op, "="))
 		return strcmp(s1, s2) == 0 ? 0 : 1;
@@ -75,7 +75,7 @@ static int TestString(const char *s1, const char *op, const char *s2)
 	return 2;
 }
 
-static int TestInteger(const char *n1, const char *op, const char *n2)
+int TestInteger(const char *n1, const char *op, const char *n2)
 {
 	int i1 = atoi(n1), i2 = atoi(n2);
 	if (!strcmp(op, "-eq"))
@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
 {
 	char *base = strrchr(argv[0], '/');
 	base = base ? base + 1 : argv[0];
-	int isBracketForm = (strcmp(base, "[") == 0);
 
+	int isBracketForm = (strcmp(base, "[") == 0);
 	if (isBracketForm)
 	{
 		if (argc < 2 || strcmp(argv[argc - 1], "]") != 0)

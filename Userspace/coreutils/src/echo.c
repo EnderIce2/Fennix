@@ -52,7 +52,7 @@ void PrintHelp()
 	printf("  \\v  vertical tab\n");
 }
 
-static void PrintEscaped(const char *str)
+void PrintEscaped(const char *str)
 {
 	while (*str)
 	{
@@ -89,9 +89,8 @@ static void PrintEscaped(const char *str)
 			{
 				int octal = 0;
 				for (int i = 0; i < 3 && *str >= '0' && *str <= '7'; i++, str++)
-				{
 					octal = octal * 8 + (*str - '0');
-				}
+
 				putchar(octal);
 				str--;
 				break;
@@ -122,9 +121,7 @@ static void PrintEscaped(const char *str)
 			}
 		}
 		else
-		{
 			putchar(*str);
-		}
 		str++;
 	}
 }
@@ -132,8 +129,8 @@ static void PrintEscaped(const char *str)
 int main(int argc, char *argv[])
 {
 	bool newline = true;
-	bool interpret_escapes = false;
-	int arg_start = 1;
+	bool interpretEscapes = false;
+	int argStart = 1;
 
 	if (argc == 2)
 	{
@@ -160,25 +157,23 @@ int main(int argc, char *argv[])
 					if (argv[i][j] == 'n')
 						newline = false;
 					else if (argv[i][j] == 'e')
-						interpret_escapes = true;
+						interpretEscapes = true;
 					else if (argv[i][j] == 'E')
-						interpret_escapes = false;
+						interpretEscapes = false;
 					else
-						goto print_args;
+						goto printArgs;
 				}
-				arg_start++;
+				argStart++;
 			}
 			else
-			{
 				break;
-			}
 		}
 	}
 
-print_args:
-	for (int i = arg_start; i < argc; i++)
+printArgs:
+	for (int i = argStart; i < argc; i++)
 	{
-		if (interpret_escapes)
+		if (interpretEscapes)
 			PrintEscaped(argv[i]);
 		else
 			fputs(argv[i], stdout);

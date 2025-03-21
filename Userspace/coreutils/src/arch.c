@@ -41,29 +41,28 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc == 1)
-		printf("%s\n", buffer.machine);
-	else
 	{
-		for (int i = 1; i < argc; i++)
-		{
-			if (strcmp(argv[i], "--help") == 0)
-			{
-				PrintUsage();
-				exit(EXIT_SUCCESS);
-			}
-			else if (strcmp(argv[1], "--version") == 0)
-			{
-				PRINTF_VERSION;
-				exit(EXIT_SUCCESS);
-			}
-			else
-			{
-				fprintf(stderr, "uname: invalid option -- '%s'\n", argv[i]);
-				PrintUsage();
-				exit(EXIT_FAILURE);
-			}
-		}
+		printf("%s\n", buffer.machine);
+		return 0;
 	}
 
+	for (int i = 1; i < argc; i++)
+	{
+		if (strcmp(argv[i], "--help") == 0)
+		{
+			PrintUsage();
+			exit(EXIT_SUCCESS);
+		}
+		else if (strcmp(argv[1], "--version") == 0)
+		{
+			PRINTF_VERSION;
+			exit(EXIT_SUCCESS);
+		}
+		else
+		{
+			fprintf(stderr, "uname: invalid option -- '%s'\n", argv[i]);
+			exit(EXIT_FAILURE);
+		}
+	}
 	return 0;
 }

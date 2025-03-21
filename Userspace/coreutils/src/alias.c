@@ -22,32 +22,32 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-typedef struct alias_t
+typedef struct AliasData
 {
 	char *name;
 	char *value;
-	struct alias_t *next;
-} alias_t;
+	struct AliasData *next;
+} AliasData;
 
-alias_t *aliases = NULL;
+AliasData *Aliases = NULL;
 
 void FreeAliases()
 {
-	alias_t *current = aliases;
+	AliasData *current = Aliases;
 	while (current != NULL)
 	{
-		alias_t *next = current->next;
+		AliasData *next = current->next;
 		free(current->name);
 		free(current->value);
 		free(current);
 		current = next;
 	}
-	aliases = NULL;
+	Aliases = NULL;
 }
 
-alias_t *FindAlias(const char *name)
+AliasData *FindAlias(const char *name)
 {
-	alias_t *current = aliases;
+	AliasData *current = Aliases;
 	while (current != NULL)
 	{
 		if (strcmp(current->name, name) == 0)
@@ -59,7 +59,7 @@ alias_t *FindAlias(const char *name)
 
 void AddAlias(const char *name, const char *value)
 {
-	alias_t *existing = FindAlias(name);
+	AliasData *existing = FindAlias(name);
 	if (existing)
 	{
 		free(existing->value);
@@ -67,11 +67,11 @@ void AddAlias(const char *name, const char *value)
 		return;
 	}
 
-	alias_t *new_alias = malloc(sizeof(alias_t));
+	AliasData *new_alias = malloc(sizeof(AliasData));
 	new_alias->name = strdup(name);
 	new_alias->value = strdup(value);
-	new_alias->next = aliases;
-	aliases = new_alias;
+	new_alias->next = Aliases;
+	Aliases = new_alias;
 }
 
 int ReadAliases(const char *filename)
@@ -92,8 +92,8 @@ int ReadAliases(const char *filename)
 		char *eq = strchr(line, '=');
 		if (!eq)
 			continue;
-		*eq = '\0';
 
+		*eq = '\0';
 		AddAlias(line, eq + 1);
 	}
 
@@ -111,7 +111,7 @@ int WriteAliases(const char *filename)
 		return -1;
 	}
 
-	alias_t *current = aliases;
+	AliasData *current = Aliases;
 	while (current)
 	{
 		fprintf(file, "%s=%s\n", current->name, current->value);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 	int status = 0;
 	if (argc == 1)
 	{
-		alias_t *current = aliases;
+		AliasData *current = Aliases;
 		while (current)
 		{
 			char *q = QuoteValue(current->value);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 			}
 			else
 			{
-				alias_t *a = FindAlias(arg);
+				AliasData *a = FindAlias(arg);
 				if (a)
 				{
 					char *q = QuoteValue(a->value);
