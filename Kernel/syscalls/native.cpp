@@ -135,6 +135,7 @@ static int sys_close(SysFrm *Frame, int fd)
 }
 
 static int sys_ioctl(SysFrm *Frame, int fd, unsigned long request, void *argp) { return -ENOSYS; }
+static int sys_fcntl(SysFrm *Frame, int fd, int cmd, void *arg) { return -ENOSYS; }
 static int sys_stat(SysFrm *Frame, const char *pathname, struct stat *statbuf) { return -ENOSYS; }
 static int sys_fstat(SysFrm *Frame, int fd, struct stat *statbuf) { return -ENOSYS; }
 static int sys_lstat(SysFrm *Frame, const char *pathname, struct stat *statbuf) { return -ENOSYS; }
@@ -275,6 +276,7 @@ __constructor void __init_native_syscalls(void)
 	scTbl[SYS_OPEN] = {"SYS_OPEN", (void *)sys_open};
 	scTbl[SYS_CLOSE] = {"SYS_CLOSE", (void *)sys_close};
 	scTbl[SYS_IOCTL] = {"SYS_IOCTL", (void *)sys_ioctl};
+	scTbl[SYS_FCNTL] = {"SYS_FCNTL", (void *)sys_fcntl};
 
 	/* File Status */
 	scTbl[SYS_STAT] = {"SYS_STAT", (void *)sys_stat};

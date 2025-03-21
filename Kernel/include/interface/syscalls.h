@@ -830,6 +830,25 @@ typedef enum
 	 * - #EINVAL if the request is invalid
 	 */
 	SYS_IOCTL,
+	/**
+	 * @brief Function control
+	 *
+	 * @code
+	 * int fcntl(int fd, int cmd, void *arg);
+	 * @endcode
+	 *
+	 * @details Manipulates the underlying parameters of a device.
+	 *
+	 * @param fd File descriptor referring to the device
+	 * @param cmd Device-specific request code
+	 * @param arg Argument for the request
+	 *
+	 * @return
+	 * - #EOK on success
+	 * - #EBADF if `fd` is not valid
+	 * - #EINVAL if the request is invalid
+	 */
+	SYS_FCNTL,
 
 	/* File Status */
 
@@ -1677,6 +1696,9 @@ typedef enum
 
 /** @copydoc SYS_IOCTL */
 #define call_ioctl(fd, request, argp) syscall3(SYS_IOCTL, (scarg)fd, (scarg)request, (scarg)argp)
+
+/** @copydoc SYS_FCNTL */
+#define call_fcntl(fd, cmd, arg) syscall3(SYS_FCNTL, (scarg)fd, (scarg)cmd, (scarg)arg)
 
 /* File Status */
 
