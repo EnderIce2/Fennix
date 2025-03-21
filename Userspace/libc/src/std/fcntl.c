@@ -25,7 +25,14 @@
 
 export int creat(const char *path, mode_t mode) { return open(path, O_WRONLY | O_CREAT | O_TRUNC, mode); }
 
-export int fcntl(int fildes, int cmd, ...);
+export int fcntl(int fildes, int cmd, ...)
+{
+	va_list args;
+	va_start(args, cmd);
+	void *arg = va_arg(args, void *);
+	va_end(args);
+	return __check_errno(sysdep(FileControl)(fildes, cmd, arg), -1);
+}
 
 export int open(const char *path, int oflag, ...)
 {

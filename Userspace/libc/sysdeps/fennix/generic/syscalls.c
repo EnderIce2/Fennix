@@ -189,3 +189,23 @@ int sysdep(ProcessControl)(unsigned long Option, unsigned long Arg1, unsigned lo
 {
 	return call_prctl(Option, Arg1, Arg2, Arg3, Arg4);
 }
+
+int sysdep(ChangeDirectory)(const char *Pathname)
+{
+	return call_chdir(Pathname);
+}
+
+char *sysdep(GetWorkingDirectory)(char *Buffer, size_t Size)
+{
+	return (char *)call_getcwd(Buffer, Size);
+}
+
+int sysdep(Brk)(void *Address)
+{
+	return call_brk(Address);
+}
+
+int sysdep(FileControl)(int Descriptor, int Command, void *Arg)
+{
+	return call_fcntl(Descriptor, Command, Arg);
+}

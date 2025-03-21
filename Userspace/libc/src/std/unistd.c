@@ -40,8 +40,16 @@ export unsigned int alarm(unsigned int seconds)
 	return __check_errno(-ENOSYS, -1);
 }
 
-export int brk(void *);
-export int chdir(const char *);
+export int brk(void *addr)
+{
+	return __check_errno(sysdep(Brk)(addr), -1);
+}
+
+export int chdir(const char *path)
+{
+	return __check_errno(sysdep(ChangeDirectory)(path), -1);
+}
+
 export int chroot(const char *);
 export int chown(const char *, uid_t, gid_t);
 
@@ -176,7 +184,12 @@ export pid_t fork(void)
 export long int fpathconf(int, int);
 export int fsync(int);
 export int ftruncate(int, off_t);
-export char *getcwd(char *, size_t);
+
+export char *getcwd(char *buf, size_t size)
+{
+	return (char *)__check_errno((__iptr)sysdep(GetWorkingDirectory)(buf, size), (__iptr)NULL);
+}
+
 export int getdtablesize(void);
 export gid_t getegid(void);
 export uid_t geteuid(void);
@@ -281,7 +294,7 @@ export ssize_t read(int fildes, void *buf, size_t nbyte)
 
 export int readlink(const char *, char *, size_t);
 export int rmdir(const char *);
-export void *sbrk(intptr_t);
+export void *sbrk(intptr_t incr);
 export int setgid(gid_t);
 export int setpgid(pid_t, pid_t);
 export pid_t setpgrp(void);

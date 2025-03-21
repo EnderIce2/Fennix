@@ -61,8 +61,8 @@ extern "C"
 
 	int access(const char *path, int amode);
 	unsigned int alarm(unsigned int seconds);
-	int brk(void *);
-	int chdir(const char *);
+	int brk(void *addr);
+	int chdir(const char *path);
 	int chroot(const char *);
 	int chown(const char *, uid_t, gid_t);
 	int close(int fildes);
@@ -87,7 +87,7 @@ extern "C"
 	long int fpathconf(int, int);
 	int fsync(int);
 	int ftruncate(int, off_t);
-	char *getcwd(char *, size_t);
+	char *getcwd(char *buf, size_t size);
 	int getdtablesize(void);
 	gid_t getegid(void);
 	uid_t geteuid(void);
@@ -122,7 +122,7 @@ extern "C"
 	ssize_t read(int fildes, void *buf, size_t nbyte);
 	int readlink(const char *, char *, size_t);
 	int rmdir(const char *);
-	void *sbrk(intptr_t);
+	void *sbrk(intptr_t incr);
 	int setgid(gid_t);
 	int setpgid(pid_t, pid_t);
 	pid_t setpgrp(void);

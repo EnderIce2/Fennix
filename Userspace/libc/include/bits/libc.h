@@ -66,5 +66,9 @@ int sysdep(LStat)(const char *Pathname, struct stat *Statbuf);
 int sysdep(Truncate)(const char *Pathname, off_t Length);
 int sysdep(MakeDirectory)(const char *Pathname, mode_t Mode);
 int sysdep(ProcessControl)(unsigned long Option, unsigned long Arg1, unsigned long Arg2, unsigned long Arg3, unsigned long Arg4);
+int sysdep(ChangeDirectory)(const char *Pathname);
+char *sysdep(GetWorkingDirectory)(char *Buffer, size_t Size);
+int sysdep(Brk)(void *Address);
+int sysdep(FileControl)(int Descriptor, int Command, void *Arg);
 
 #endif // FENNIX_BITS_LIBC_H
