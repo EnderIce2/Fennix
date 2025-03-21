@@ -95,16 +95,6 @@
 /** Other:   X */
 #define S_IXOTH 0001
 
-#define O_RDONLY 00
-#define O_WRONLY 01
-#define O_RDWR 02
-#define O_CREAT 0100
-#define O_EXCL 0200
-#define O_TRUNC 01000
-#define O_APPEND 02000
-#define O_NOFOLLOW 0400000
-#define O_CLOEXEC 02000000
-
 #define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #define S_ISCHR(mode) (((mode) & S_IFMT) == S_IFCHR)
 #define S_ISBLK(mode) (((mode) & S_IFMT) == S_IFBLK)
