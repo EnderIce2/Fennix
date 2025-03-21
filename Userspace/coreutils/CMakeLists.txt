@@ -57,3 +57,11 @@ if(UNIX AND TARGET test)
                 \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/[\"
     )")
 endif()
+
+if(UNIX AND TARGET sh)
+  install(CODE "execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink 
+                sh 
+                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/fsh\"
+    )")
+endif()
