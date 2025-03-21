@@ -29,7 +29,10 @@ export char *optarg;
 export int optind, opterr, optopt;
 export char **environ;
 
-export int access(const char *, int);
+export int access(const char *path, int amode)
+{
+	return __check_errno(sysdep(Access)(path, amode), -1);
+}
 
 export unsigned int alarm(unsigned int seconds)
 {

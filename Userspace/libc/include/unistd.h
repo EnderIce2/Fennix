@@ -59,7 +59,7 @@ extern "C"
 	extern int optind, opterr, optopt;
 	extern char **environ;
 
-	int access(const char *, int);
+	int access(const char *path, int amode);
 	unsigned int alarm(unsigned int seconds);
 	int brk(void *);
 	int chdir(const char *);
