@@ -117,7 +117,7 @@ EXTERNC void KPrint(const char *Format, ...)
 #endif
 }
 
-EXTERNC NIF void Main()
+EXTERNC NIF cold void Main()
 {
 	Display = new Video::Display(bInfo.Framebuffer[0]);
 	KernelConsole::EarlyInit();
@@ -265,7 +265,7 @@ typedef void (*CallPtr)(void);
 extern CallPtr __init_array_start[0], __init_array_end[0];
 extern CallPtr __fini_array_start[0], __fini_array_end[0];
 
-EXTERNC __no_stack_protector NIF void Entry(BootInfo *Info)
+EXTERNC __no_stack_protector NIF cold void Entry(BootInfo *Info)
 {
 	trace("Hello, World!");
 

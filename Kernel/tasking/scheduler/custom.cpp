@@ -234,7 +234,7 @@ namespace Tasking::Scheduler
 #endif
 	}
 
-	void Custom::Yield()
+	hot void Custom::Yield()
 	{
 		/* This will trigger the IRQ16
 		instantly so we won't execute
@@ -272,7 +272,7 @@ namespace Tasking::Scheduler
 
 	/* --------------------------------------------------------------- */
 
-	nsa void Custom::OneShot(int TimeSlice)
+	hot nsa void Custom::OneShot(int TimeSlice)
 	{
 		if (TimeSlice == 0)
 			TimeSlice = Tasking::TaskPriority::Normal;
@@ -288,7 +288,7 @@ namespace Tasking::Scheduler
 #endif
 	}
 
-	nsa void Custom::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
+	hot nsa void Custom::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
 	{
 		UNUSED(Core);
 		uint64_t CurrentTime = TimeManager->GetCounter();
@@ -301,7 +301,7 @@ namespace Tasking::Scheduler
 			Info->KernelTime += TimePassed;
 	}
 
-	nsa NIF bool Custom::FindNewProcess(void *CPUDataPointer)
+	hot nsa NIF bool Custom::FindNewProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 		fnp_schedbg("%d processes", ProcessList.size());
@@ -348,7 +348,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	nsa NIF bool Custom::GetNextAvailableThread(void *CPUDataPointer)
+	hot nsa NIF bool Custom::GetNextAvailableThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -397,7 +397,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	nsa NIF bool Custom::GetNextAvailableProcess(void *CPUDataPointer)
+	hot nsa NIF bool Custom::GetNextAvailableProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -445,7 +445,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	nsa NIF bool Custom::SchedulerSearchProcessThread(void *CPUDataPointer)
+	hot nsa NIF bool Custom::SchedulerSearchProcessThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -564,7 +564,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	nsa NIF void Custom::Schedule(CPU::SchedulerFrame *Frame)
+	hot nsa NIF void Custom::Schedule(CPU::SchedulerFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -721,7 +721,7 @@ namespace Tasking::Scheduler
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
 	}
 
-	nsa NIF void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
+	hot nsa NIF void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);

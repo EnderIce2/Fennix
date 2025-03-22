@@ -31,7 +31,7 @@
 #include <vm.hpp>
 #include <vector>
 
-int SpawnInit()
+cold int SpawnInit()
 {
 	const char *envp[6] = {
 		"PATH=/bin:/usr/bin",
@@ -54,7 +54,7 @@ int SpawnInit()
 						  nullptr, false, compat, true);
 }
 
-void KernelMainThread()
+cold void KernelMainThread()
 {
 	thisThread->SetPriority(Tasking::Critical);
 
@@ -129,7 +129,7 @@ Exit:
 }
 
 NewLock(ShutdownLock);
-void __no_stack_protector KernelShutdownThread(bool Reboot)
+cold void __no_stack_protector KernelShutdownThread(bool Reboot)
 {
 	SmartLock(ShutdownLock);
 	debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");

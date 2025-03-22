@@ -264,7 +264,7 @@ namespace Interrupts
 		warn("IRQ%d not found.", InterruptNumber);
 	}
 
-	nsa inline void ReturnFromInterrupt()
+	nsa hot inline void ReturnFromInterrupt()
 	{
 #if defined(__amd64__) || defined(__i386__)
 		CPUData *CoreData = GetCurrentCPU();
@@ -309,7 +309,7 @@ namespace Interrupts
 		CPU::Stop();
 	}
 
-	extern "C" nsa void MainInterruptHandler(void *Data)
+	extern "C" nsa hot void MainInterruptHandler(void *Data)
 	{
 		class AutoSwitchPageTable
 		{
@@ -384,7 +384,7 @@ namespace Interrupts
 #endif
 	}
 
-	extern "C" nsa void SchedulerInterruptHandler(void *Data)
+	extern "C" nsa hot void SchedulerInterruptHandler(void *Data)
 	{
 #if defined(__amd64__) || defined(__i386__)
 		KernelPageTable->Update();
