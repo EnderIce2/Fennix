@@ -31,7 +31,7 @@ foreach(file ${SINGLE_SOURCE})
     PROGRAM_NAME="${name}"
     PROGRAM_VERSION="${PROJECT_VERSION}"
   )
-  install(TARGETS ${name} DESTINATION bin)
+  install(TARGETS ${name} DESTINATION ${CMAKE_INSTALL_PREFIX}/sys/bin)
 endforeach()
 
 file(GLOB_RECURSE GROUP_SOURCES "src/*/*.c")
@@ -47,14 +47,14 @@ foreach(name IN LISTS GROUP_MAP_)
     PROGRAM_NAME="${name}"
     PROGRAM_VERSION="${PROJECT_VERSION}"
   )
-  install(TARGETS ${name} DESTINATION bin)
+  install(TARGETS ${name} DESTINATION ${CMAKE_INSTALL_PREFIX}/sys/bin)
 endforeach()
 
 if(UNIX AND TARGET test)
   install(CODE "execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink 
                 test 
-                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/[\"
+                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/sys/bin/[\"
     )")
 endif()
 
@@ -62,6 +62,6 @@ if(UNIX AND TARGET sh)
   install(CODE "execute_process(
         COMMAND ${CMAKE_COMMAND} -E create_symlink 
                 sh 
-                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/fsh\"
+                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/sys/bin/fsh\"
     )")
 endif()

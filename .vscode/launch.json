@@ -19,12 +19,12 @@
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/utest",
 					"description": "/bin/utest (0x00400000)",
 					"ignoreFailures": true
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/libc_test",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/libc_test",
 					"description": "/bin/libc_test (0x00600000)",
 					"ignoreFailures": true
 				},
@@ -52,12 +52,12 @@
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/utest",
 					"description": "/bin/utest (0x00400000)",
 					"ignoreFailures": true
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/libc_test",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/libc_test",
 					"description": "/bin/libc_test (0x00600000)",
 					"ignoreFailures": true
 				},
@@ -85,12 +85,12 @@
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/utest",
 					"description": "/bin/utest (0x00400000)",
 					"ignoreFailures": true
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/libc_test",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/libc_test",
 					"description": "/bin/libc_test (0x00600000)",
 					"ignoreFailures": true
 				},
@@ -118,12 +118,12 @@
 					"description": "Make breakpoint pending on future shared library load."
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/utest",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/utest",
 					"description": "/bin/utest (0x00400000)",
 					"ignoreFailures": true
 				},
 				{
-					"text": "add-symbol-file ${workspaceFolder}/../initrd_tmp_data/bin/libc_test",
+					"text": "add-symbol-file ${workspaceFolder}/../tmp_rootfs/bin/libc_test",
 					"description": "/bin/libc_test (0x00600000)",
 					"ignoreFailures": true
 				},

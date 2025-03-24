@@ -107,9 +107,40 @@ prepare:
 	$(MAKE) --quiet -C Drivers prepare
 	$(MAKE) --quiet -C Userspace prepare
 
+MKDIR_ROOTFS = mkdir -p rootfs
+mkdir_rootfs:
+	$(MKDIR_ROOTFS)/home/root/apps/
+	$(MKDIR_ROOTFS)/home/root/cfg/
+	$(MKDIR_ROOTFS)/home/root/cache/
+	$(MKDIR_ROOTFS)/home/root/trash/
+	$(MKDIR_ROOTFS)/home/root/desktop/
+	$(MKDIR_ROOTFS)/home/root/documents/
+	$(MKDIR_ROOTFS)/home/root/downloads/
+	$(MKDIR_ROOTFS)/home/root/music/
+	$(MKDIR_ROOTFS)/home/root/pictures/
+	$(MKDIR_ROOTFS)/home/root/videos/
+	$(MKDIR_ROOTFS)/home/root/templates/
+
+	$(MKDIR_ROOTFS)/sys/bin/
+	$(MKDIR_ROOTFS)/sys/lib/
+	$(MKDIR_ROOTFS)/sys/drv/
+	$(MKDIR_ROOTFS)/sys/svc/
+	$(MKDIR_ROOTFS)/sys/cfg/
+	$(MKDIR_ROOTFS)/sys/inc/
+	$(MKDIR_ROOTFS)/sys/res/
+	$(MKDIR_ROOTFS)/sys/log/panic/
+
+	$(MKDIR_ROOTFS)/usr/bin/
+	$(MKDIR_ROOTFS)/usr/lib/
+	$(MKDIR_ROOTFS)/usr/share/
+	$(MKDIR_ROOTFS)/usr/include/
+
+	$(MKDIR_ROOTFS)/tmp/
+
 setup:
 	$(MAKE) prepare
 	$(MAKE) tools
+	$(MAKE) mkdir_rootfs
 
 setup-no-qemu:
 	$(MAKE) --quiet -C tools ci
@@ -211,16 +242,21 @@ endif
 
 build_image:
 	mkdir -p iso_tmp_data
-	mkdir -p initrd_tmp_data
-	cp -r rootfs/* initrd_tmp_data/
+	mkdir -p tmp_rootfs
+	cp -r rootfs/* tmp_rootfs/
 ifeq ($(BUILD_DRIVERS), 1)
-	cp -r Drivers/out/* initrd_tmp_data/usr/lib/drivers/
+	cp -r Drivers/out/* tmp_rootfs/sys/drv/
 endif
 ifeq ($(BUILD_USERSPACE), 1)
-	cp -r Userspace/out/* initrd_tmp_data/
+	cp -r Userspace/out/* tmp_rootfs/
 endif
-#	tar czf rootfs.tar -C initrd_tmp_data/ ./ --format=ustar
-	tar cf rootfs.tar -C initrd_tmp_data/ ./ --format=ustar
+	chmod -R 755 tmp_rootfs/sys/
+	chmod -R 755 tmp_rootfs/usr/
+	chmod 755 tmp_rootfs/home/
+	chmod -R 750 tmp_rootfs/home/root/
+	chmod -R 777 tmp_rootfs/tmp/
+#	tar czf rootfs.tar -C tmp_rootfs/ --owner=0 --group=0 ./ --format=ustar
+	tar cf rootfs.tar -C tmp_rootfs/ --owner=0 --group=0 ./ --format=ustar
 	cp Kernel/fennix.elf rootfs.tar \
 		iso_tmp_data/
 ifeq ($(BOOTLOADER), limine)
@@ -329,7 +365,7 @@ qemubios: qemu_vdisk clean_logs
 run: build qemu
 
 clean: clean_logs
-	rm -rf doxygen-doc iso_tmp_data initrd_tmp_data
+	rm -rf doxygen-doc iso_tmp_data tmp_rootfs
 	rm -f rootfs.tar $(OSNAME).iso $(OSNAME).img
 	$(MAKE) -C Kernel clean
 	$(MAKE) -C Userspace clean

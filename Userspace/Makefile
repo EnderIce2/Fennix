@@ -13,7 +13,8 @@ export LDFLAGS := --sysroot=$(WORKSPACE_DIR)/out/ \
 	-ggdb3 -O0
 export CFLAGS := \
 	--sysroot=$(WORKSPACE_DIR)/out/ \
-	-I$(WORKSPACE_DIR)/out/include \
+	-I$(WORKSPACE_DIR)/out/sys/inc \
+	-I$(WORKSPACE_DIR)/out/usr/include \
 	-DDEBUG -ggdb3 -O0 -fdiagnostics-color=always
 
 else # DEBUG
@@ -21,22 +22,22 @@ else # DEBUG
 export LDFLAGS := --sysroot=$(WORKSPACE_DIR)/out/
 export CFLAGS := \
 	--sysroot=$(WORKSPACE_DIR)/out/ \
-	-I$(WORKSPACE_DIR)/out/include
+	-I$(WORKSPACE_DIR)/out/sys/inc \
+	-I$(WORKSPACE_DIR)/out/usr/include
 
 endif # DEBUG
 
 create_out:
 	rm -rf out
-	mkdir -p out
-	mkdir -p out/bin
-	mkdir -p out/lib
-	mkdir -p out/include/fennix
+	mkdir -p out/sys/bin
+	mkdir -p out/sys/lib
+	mkdir -p out/sys/inc/fennix
 	mkdir -p out/usr/bin
 	mkdir -p out/usr/lib
+	mkdir -p out/usr/include
 	mkdir -p out/usr/share/doc
 	mkdir -p out/usr/share/info
-	mkdir -p out/usr/include
-	cp $(WORKSPACE_DIR)/../Kernel/include/interface/* $(WORKSPACE_DIR)/out/include/fennix/
+	cp $(WORKSPACE_DIR)/../Kernel/include/interface/* $(WORKSPACE_DIR)/out/sys/inc/fennix/
 
 build_coreutils:
 	mkdir -p cache/coreutils
@@ -44,8 +45,8 @@ build_coreutils:
 	cmake $(WORKSPACE_DIR)/coreutils \
 	-DCMAKE_INSTALL_PREFIX:PATH=$(WORKSPACE_DIR)/out \
 	-DCMAKE_SYSROOT=$(WORKSPACE_DIR)/out \
-	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
-	-DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
+	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/sys/inc $(WORKSPACE_DIR)/out/usr/include \
+	-DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/sys/inc $(WORKSPACE_DIR)/out/usr/include \
 	&& \
 	$(MAKE) -j$(shell nproc) && \
 	$(MAKE) install
@@ -63,7 +64,7 @@ build_libc:
 	cmake $(WORKSPACE_DIR)/libc \
 	-DCMAKE_INSTALL_PREFIX:PATH=$(WORKSPACE_DIR)/out \
 	-DCMAKE_SYSROOT=$(WORKSPACE_DIR)/out \
-	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
+	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/sys/inc $(WORKSPACE_DIR)/out/usr/include \
 	-DTARGET_OS=fennix \
 	-DTARGET_ARCH=$(OSARCH) \
 	&& \

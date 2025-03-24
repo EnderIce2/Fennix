@@ -86,7 +86,6 @@ __patch_cross_gcc: __clone_gcc
 	$(info > TOOLS: Running autoconf for gcc/libstdc++-v3)
 	cd $(GCC_CLONE_PATH)/libstdc++-v3 && autoconf
 
-
 __patch_cross_qemu: __clone_qemu
 	$(info > TOOLS: Patching qemu)
 	cd $(QEMU_CLONE_PATH) && git apply $(CURDIR)/qemu.patch
@@ -166,6 +165,10 @@ __do_gcc:
 	--enable-static-link \
 	--disable-tls \
 	--disable-pie \
+	--enable-libada \
+	--enable-libgm2 \
+	--enable-libssp \
+	--enable-libstdcxx \
 	&& \
 	$(MAKE) --quiet all-gcc -j$(shell nproc) && \
 	$(MAKE) --quiet all-target-libgcc -j$(shell nproc) && \

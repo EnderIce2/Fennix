@@ -26,7 +26,7 @@ extern "C"
 #include <sys/types.h>
 
 	/**
-	 * /etc/passwd
+	 * /sys/cfg/passwd
 	 *    name:passwd:uid:gid:gecos:dir:shell
 	 *
 	 * Example

@@ -6,7 +6,7 @@
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**",
-				"${workspaceFolder}/out/include/**"
+				"${workspaceFolder}/out/usr/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
@@ -52,7 +52,7 @@
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**",
-				"${workspaceFolder}/out/include/**"
+				"${workspaceFolder}/out/usr/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
@@ -98,7 +98,7 @@
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**",
-				"${workspaceFolder}/out/include/**"
+				"${workspaceFolder}/out/usr/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",
@@ -124,7 +124,7 @@
 				"${workspaceFolder}/libc/include/**",
 				"${workspaceFolder}/coreutils/include/**",
 				"${workspaceFolder}/libs/include/**",
-				"${workspaceFolder}/out/include/**"
+				"${workspaceFolder}/out/usr/include/**"
 			],
 			"defines": [
 				"__debug_vscode__",

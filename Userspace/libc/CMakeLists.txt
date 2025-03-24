@@ -7,8 +7,8 @@ if(NOT DEFINED ENV{WORKSPACE_DIR})
   message(STATUS "Compiling standalone")
 
   if(NOT DEFINED ENV{CMAKE_INSTALL_PREFIX})
-    set(CMAKE_INSTALL_PREFIX "/usr")
-    message(STATUS "Using default install prefix: /usr")
+    set(CMAKE_INSTALL_PREFIX "/")
+    message(STATUS "Using default install prefix: /")
   else()
     message(STATUS "Using custom install prefix: $ENV{CMAKE_INSTALL_PREFIX}")
   endif()
@@ -18,8 +18,8 @@ else()
   message(STATUS "Compiling within workspace")
 
   if(NOT DEFINED ENV{CMAKE_INSTALL_PREFIX})
-    set(CMAKE_INSTALL_PREFIX "$ENV{WORKSPACE_DIR}/out")
-    message(STATUS "Using default install prefix: $ENV{WORKSPACE_DIR}/out")
+    set(CMAKE_INSTALL_PREFIX "$ENV{WORKSPACE_DIR}/out/sys")
+    message(STATUS "Using default install prefix: $ENV{WORKSPACE_DIR}/out/sys")
   else()
     message(STATUS "Using custom install prefix: $ENV{CMAKE_INSTALL_PREFIX}")
   endif()
@@ -105,18 +105,24 @@ add_subdirectory(interpreter)
 add_subdirectory(src)
 add_subdirectory(libs)
 
+if(DEFINED ENV{WORKSPACE_DIR})
+  set(INC_OUTPUT "inc")
+else()
+  set(INC_OUTPUT "include")
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-  DESTINATION include
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${INC_OUTPUT}
   FILES_MATCHING
   PATTERN "*")
 
 install(DIRECTORY ${ABIS_GENERIC}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${INC_OUTPUT}
   FILES_MATCHING
   PATTERN "*")
 
 install(DIRECTORY ${ABIS_PATH}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${INC_OUTPUT}
   FILES_MATCHING
   PATTERN "*")
 

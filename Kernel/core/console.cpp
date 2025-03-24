@@ -130,7 +130,7 @@ namespace KernelConsole
 
 	bool SetTheme(std::string Theme)
 	{
-		FileNode *rn = fs->GetByPath("/etc/term", thisProcess->Info.RootNode);
+		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
 		if (rn == nullptr)
 			return false;
 
@@ -274,7 +274,7 @@ namespace KernelConsole
 
 	void LateInit()
 	{
-		FileNode *rn = fs->GetByPath("/etc/term", thisProcess->Info.RootNode);
+		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
 		if (rn == nullptr)
 			return;
 

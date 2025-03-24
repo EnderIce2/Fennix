@@ -16,5 +16,6 @@
         "**/tools/qemu/**": true,
         "**/tools/cross/**": true,
         "**/doxygen-doc/**": true,
-    }
+    },
+    "cmake.ignoreCMakeListsMissing": true
 }

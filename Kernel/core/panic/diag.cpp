@@ -115,10 +115,10 @@ nsa void DiagnosticDataCollection()
 				  S_IROTH |
 				  S_IFDIR;
 
-	FileNode *panicDir = fs->ForceCreate(nullptr, "/var/panic", mode);
+	FileNode *panicDir = fs->ForceCreate(nullptr, "/sys/log/panic", mode);
 	if (!panicDir)
 	{
-		ExPrint("\x1b[0;30;41mFailed to create /var/panic\x1b[0m\n");
+		ExPrint("\x1b[0;30;41mFailed to create /sys/log/panic\x1b[0m\n");
 		Display->UpdateBuffer();
 		return;
 	}
@@ -145,6 +145,6 @@ nsa void DiagnosticDataCollection()
 	if (!WriteDiagDataToNode(dumpFile))
 		return;
 
-	ExPrint("You can find the diagnostic file in /var/panic/%s\n", filename);
+	ExPrint("You can find the diagnostic file in /sys/log/panic/%s\n", filename);
 	Display->UpdateBuffer();
 }

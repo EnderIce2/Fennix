@@ -41,8 +41,8 @@ __aligned(16) BootInfo bInfo{};
 struct KernelConfig Config = {
 	.AllocatorType = Memory::liballoc11,
 	.SchedulerType = Multi,
-	.DriverDirectory = {'/', 'u', 's', 'r', '/', 'l', 'i', 'b', '/', 'd', 'r', 'i', 'v', 'e', 'r', 's', '\0'},
-	.InitPath = {'/', 'b', 'i', 'n', '/', 'i', 'n', 'i', 't', '\0'},
+	.DriverDirectory = {'/', 's', 'y', 's', '/', 'd', 'r', 'v', '\0'},
+	.InitPath = {'/', 's', 'y', 's', '/', 'b', 'i', 'n', '/', 'i', 'n', 'i', 't', '\0'},
 	.UseLinuxSyscalls = false,
 	.InterruptsOnCrash = true,
 	.Cores = 0,

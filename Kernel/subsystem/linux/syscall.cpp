@@ -2133,7 +2133,7 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 #endif
 		};
 
-	FileNode *rn = fs->GetByPath("/etc/cross/linux", pcb->Info.RootNode);
+	FileNode *rn = fs->GetByPath("/sys/cfg/cross/linux", pcb->Info.RootNode);
 	if (rn)
 	{
 		struct kstat st
@@ -2177,7 +2177,7 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 		delete[] sh;
 	}
 	else
-		warn("Couldn't open /etc/cross/linux");
+		warn("Couldn't open /sys/cfg/cross/linux");
 
 	memcpy(pBuf, &uname, sizeof(struct utsname));
 	return 0;
