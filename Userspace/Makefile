@@ -32,6 +32,7 @@ create_out:
 	mkdir -p out/lib
 	mkdir -p out/include/fennix
 	mkdir -p out/usr/bin
+	mkdir -p out/usr/lib
 	mkdir -p out/usr/share/doc
 	mkdir -p out/usr/share/info
 	mkdir -p out/usr/include
@@ -46,8 +47,8 @@ build_coreutils:
 	-DCMAKE_C_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
 	-DCMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES=$(WORKSPACE_DIR)/out/include \
 	&& \
-	make -j$(shell nproc) && \
-	make install
+	$(MAKE) -j$(shell nproc) && \
+	$(MAKE) install
 
 define copy_generic_header
 	cp -f $(WORKSPACE_DIR)/../Kernel/include/interface/$(1) $(WORKSPACE_DIR)/libc/abis/fennix/generic/bits/$(1)
@@ -66,22 +67,22 @@ build_libc:
 	-DTARGET_OS=fennix \
 	-DTARGET_ARCH=$(OSARCH) \
 	&& \
-	make -j$(shell nproc) && \
-	make install
+	$(MAKE) -j$(shell nproc) && \
+	$(MAKE) install
 
 build: create_out
 	$(MAKE) build_libc
-	make -C libs build
+	$(MAKE) -C libs build
 	$(MAKE) build_coreutils
-	make -C apps build
+	$(MAKE) -C apps build
 
 prepare:
-	$(info Nothing to prepare)
+	$(MAKE) -C libs prepare
 
 clean:
 	rm -rf out cache
 	mkdir -p cache
 	touch cache/.gitkeep
-	make -C libs clean
-	make -C apps clean
-	make -C docker clean
+	$(MAKE) -C libs clean
+	$(MAKE) -C apps clean
+	$(MAKE) -C docker clean

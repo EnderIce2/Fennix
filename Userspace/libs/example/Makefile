@@ -1,8 +1,8 @@
 default:
 	$(error Do not run this Makefile directly!)
 
-DYNAMIC_NAME := $(notdir $(shell pwd)).so
-STATIC_NAME := $(notdir $(shell pwd)).a
+DYNAMIC_NAME := lib$(notdir $(shell pwd)).so
+STATIC_NAME := lib$(notdir $(shell pwd)).a
 
 OUTPUT_DIR=$(WORKSPACE_DIR)/out/lib/
 SYSROOT = --sysroot=$(WORKSPACE_DIR)/out/
