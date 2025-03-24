@@ -80,7 +80,9 @@ RUN apt-get -y install --no-install-recommends \
 
 # Required packages for building test apps in userspace
 RUN apt-get -y install --no-install-recommends \
-	mingw-w64
+	mingw-w64 \
+	libtool \
+	libltdl-dev
 
 # Required packages for building the OS and misc
 RUN apt-get -y install --no-install-recommends \
