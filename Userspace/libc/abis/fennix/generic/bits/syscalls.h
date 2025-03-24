@@ -1807,7 +1807,7 @@ typedef enum
 /* Time */
 
 /** @copydoc SYS_TIME */
-#define call_time(t) syscall1(SYS_TIME, t)
+#define call_time(t) syscall1(SYS_TIME, (scarg)t)
 
 /** @copydoc SYS_CLOCK_GETTIME */
 #define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, (scarg)clockid, (scarg)tp)

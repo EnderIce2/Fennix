@@ -30,12 +30,29 @@ export long timezone;
 export char *tzname[2];
 
 export char *asctime(const struct tm *);
-export clock_t clock(void);
+
+export clock_t clock(void)
+{
+	clock_t processor_time = sysdep(Clock)();
+	if (processor_time == (clock_t)-1)
+	{
+		errno = EOVERFLOW;
+		return (clock_t)-1;
+	}
+	return processor_time;
+}
+
 export int clock_getcpuclockid(pid_t, clockid_t *);
-export int clock_getres(clockid_t, struct timespec *);
-export int clock_gettime(clockid_t, struct timespec *);
+export int clock_getres(clockid_t clock_id, struct timespec *res);
+
+export int clock_gettime(clockid_t clock_id, struct timespec *tp)
+{
+	return sysdep(ClockGetTime)(clock_id, tp);
+}
+
 export int clock_nanosleep(clockid_t, int, const struct timespec *, struct timespec *);
-export int clock_settime(clockid_t, const struct timespec *);
+export int clock_settime(clockid_t clock_id, const struct timespec *tp);
+;
 export char *ctime(const time_t *);
 export double difftime(time_t, time_t);
 export struct tm *getdate(const char *);
@@ -193,7 +210,20 @@ export int nanosleep(const struct timespec *, struct timespec *);
 export size_t strftime(char *restrict, size_t, const char *restrict, const struct tm *restrict);
 export size_t strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 export char *strptime(const char *restrict, const char *restrict, struct tm *restrict);
-export time_t time(time_t *);
+
+export time_t time(time_t *tloc)
+{
+	time_t current_time = sysdep(Time)();
+	if (current_time == (time_t)-1)
+	{
+		errno = EOVERFLOW;
+		return (time_t)-1;
+	}
+	if (tloc)
+		*tloc = current_time;
+	return current_time;
+}
+
 export int timer_create(clockid_t, struct sigevent *restrict, timer_t *restrict);
 export int timer_delete(timer_t);
 export int timer_getoverrun(timer_t);

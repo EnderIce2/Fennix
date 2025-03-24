@@ -19,6 +19,8 @@
 #include <bits/libc.h>
 #include <string.h>
 
+extern int printf(const char *restrict format, ...);
+
 void sysdep(Exit)(int Status)
 {
 	call_exit(Status);
@@ -208,4 +210,30 @@ int sysdep(Brk)(void *Address)
 int sysdep(FileControl)(int Descriptor, int Command, void *Arg)
 {
 	return call_fcntl(Descriptor, Command, Arg);
+}
+
+int sysdep(ClockGetTime)(clockid_t ClockID, struct timespec *TP)
+{
+	return call_clock_gettime(ClockID, TP);
+}
+
+time_t sysdep(Time)(void)
+{
+	return call_time(NULL);
+}
+
+clock_t sysdep(Clock)()
+{
+	printf("sysdep(Clock): unimplemented\n");
+	return 0;
+}
+
+int sysdep(RemoveDirectory)(const char *Pathname)
+{
+	return call_rmdir(Pathname);
+}
+
+int sysdep(Unlink)(const char *Pathname)
+{
+	return call_unlink(Pathname);
 }

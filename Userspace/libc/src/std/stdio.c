@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #include <bits/libc.h>
 #include <fcntl.h>
 #include "../print/printf.h"
@@ -466,7 +467,24 @@ export int puts(const char *s)
 	return 0;
 }
 
-export int remove(const char *);
+export int remove(const char *path)
+{
+	if (!path)
+	{
+		errno = EINVAL;
+		return -1;
+	}
+
+	struct stat path_stat;
+	if (sysdep(Stat)(path, &path_stat) < 0)
+		return -1;
+
+	if (S_ISDIR(path_stat.st_mode))
+		return sysdep(RemoveDirectory)(path);
+	else
+		return sysdep(Unlink)(path);
+}
+
 export int rename(const char *, const char *);
 export int renameat(int, const char *, int, const char *);
 export void rewind(FILE *);
@@ -492,7 +510,117 @@ export int sprintf(char *restrict s, const char *restrict format, ...)
 	return ret;
 }
 
-export int sscanf(const char *restrict, const char *restrict, ...);
+export int sscanf(const char *restrict s, const char *restrict format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	const char *p = format;
+	int matchedItems = 0;
+
+	while (*p)
+	{
+		if (isspace(*p))
+		{
+			while (isspace(*p))
+				p++;
+			while (isspace(*s))
+				s++;
+		}
+		else if (*p == '%')
+		{
+			p++;
+			if (*p == '\0')
+				break;
+
+			int suppress_assignment = 0;
+			if (*p == '*')
+			{
+				suppress_assignment = 1;
+				p++;
+			}
+
+			int width = 0;
+			while (isdigit(*p))
+			{
+				width = width * 10 + (*p - '0');
+				p++;
+			}
+
+			char specifier = *p++;
+			if (specifier == '\0')
+				break;
+
+			if (specifier == 'd' || specifier == 'i')
+			{
+				int value = 0;
+				while (isdigit(*s) || (*s == '-' && value == 0))
+				{
+					if (*s == '-')
+					{
+						s++;
+						continue;
+					}
+					value = value * 10 + (*s - '0');
+					s++;
+				}
+				if (!suppress_assignment)
+				{
+					int *arg = va_arg(args, int *);
+					*arg = value;
+					matchedItems++;
+				}
+			}
+			else if (specifier == 's')
+			{
+				char *str = va_arg(args, char *);
+				while (*s && !isspace(*s) && (width == 0 || width-- > 0))
+				{
+					if (!suppress_assignment)
+						*str++ = *s;
+					s++;
+				}
+				if (!suppress_assignment)
+					*str = '\0';
+				matchedItems++;
+			}
+			else if (specifier == 'c')
+			{
+				char *ch = va_arg(args, char *);
+				if (*s && (width == 0 || width-- > 0))
+				{
+					if (!suppress_assignment)
+						*ch = *s;
+					s++;
+					matchedItems++;
+				}
+			}
+			else if (specifier == '%')
+			{
+				if (*s == '%')
+					s++;
+				else
+					break;
+			}
+			else
+				break;
+		}
+		else
+		{
+			if (*s == *p)
+			{
+				s++;
+				p++;
+			}
+			else
+				break;
+		}
+	}
+
+	va_end(args);
+	return matchedItems;
+}
+
 export FILE *tmpfile(void);
 export char *tmpnam(char *);
 export int ungetc(int, FILE *);
@@ -526,6 +654,14 @@ export int vfprintf(FILE *restrict stream, const char *restrict format, va_list 
 export int vfscanf(FILE *restrict, const char *restrict, va_list);
 export int vprintf(const char *restrict, va_list);
 export int vscanf(const char *restrict, va_list);
-export int vsnprintf(char *restrict, size_t, const char *restrict, va_list);
+
+export int vsnprintf(char *restrict s, size_t n, const char *restrict format, va_list ap)
+{
+	int ret = vsnprintf_(s, n, format, ap);
+	if (ret < 0)
+		return ret;
+	return ret;
+}
+
 export int vsprintf(char *restrict, const char *restrict, va_list);
 export int vsscanf(const char *restrict, const char *restrict, va_list);

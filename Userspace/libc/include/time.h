@@ -49,7 +49,7 @@ extern "C"
 		struct timespec it_value;	 /* Timer expiration. */
 	} itimerspec;
 
-#define CLOCKS_PER_SEC
+#define CLOCKS_PER_SEC 1000000
 #define TIME_UTC
 #define CLOCK_MONOTONIC __SYS_CLOCK_MONOTONIC
 #define CLOCK_PROCESS_CPUTIME_ID __SYS_CLOCK_PROCESS_CPUTIME_ID
@@ -64,10 +64,10 @@ extern "C"
 	char *asctime(const struct tm *);
 	clock_t clock(void);
 	int clock_getcpuclockid(pid_t, clockid_t *);
-	int clock_getres(clockid_t, struct timespec *);
-	int clock_gettime(clockid_t, struct timespec *);
+	int clock_getres(clockid_t clock_id, struct timespec *res);
+	int clock_gettime(clockid_t clock_id, struct timespec *tp);
 	int clock_nanosleep(clockid_t, int, const struct timespec *, struct timespec *);
-	int clock_settime(clockid_t, const struct timespec *);
+	int clock_settime(clockid_t clock_id, const struct timespec *tp);
 	char *ctime(const time_t *);
 	double difftime(time_t, time_t);
 	struct tm *getdate(const char *);
@@ -81,7 +81,7 @@ extern "C"
 	size_t strftime(char *restrict, size_t, const char *restrict, const struct tm *restrict);
 	size_t strftime_l(char *restrict, size_t, const char *restrict, const struct tm *restrict, locale_t);
 	char *strptime(const char *restrict, const char *restrict, struct tm *restrict);
-	time_t time(time_t *);
+	time_t time(time_t *tloc);
 	int timer_create(clockid_t, struct sigevent *restrict, timer_t *restrict);
 	int timer_delete(timer_t);
 	int timer_getoverrun(timer_t);

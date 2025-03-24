@@ -106,7 +106,7 @@ extern "C"
 	int fputs(const char *restrict s, FILE *restrict stream);
 	size_t fread(void *restrict ptr, size_t size, size_t nitems, FILE *restrict stream);
 	FILE *freopen(const char *restrict, const char *restrict, FILE *restrict);
-	int fscanf(FILE *restrict, const char *restrict, ...);
+	int fscanf(FILE *restrict stream, const char *restrict format, ...);
 	int fseek(FILE *stream, long offset, int whence);
 	int fseeko(FILE *, off_t, int);
 	int fsetpos(FILE *, const fpos_t *);
@@ -131,16 +131,16 @@ extern "C"
 	int putc_unlocked(int c, FILE *stream);
 	int putchar_unlocked(int c);
 	int puts(const char *s);
-	int remove(const char *);
+	int remove(const char *path);
 	int rename(const char *, const char *);
 	int renameat(int, const char *, int, const char *);
 	void rewind(FILE *);
-	int scanf(const char *restrict, ...);
+	int scanf(const char *restrict format, ...);
 	void setbuf(FILE *restrict, char *restrict);
 	int setvbuf(FILE *restrict, char *restrict, int, size_t);
 	int snprintf(char *restrict s, size_t n, const char *restrict format, ...);
 	int sprintf(char *restrict s, const char *restrict format, ...);
-	int sscanf(const char *restrict, const char *restrict, ...);
+	int sscanf(const char *restrict s, const char *restrict format, ...);
 	FILE *tmpfile(void);
 	char *tmpnam(char *);
 	int ungetc(int, FILE *);
@@ -149,7 +149,7 @@ extern "C"
 	int vfscanf(FILE *restrict, const char *restrict, va_list);
 	int vprintf(const char *restrict, va_list);
 	int vscanf(const char *restrict, va_list);
-	int vsnprintf(char *restrict, size_t, const char *restrict, va_list);
+	int vsnprintf(char *restrict s, size_t n, const char *restrict format, va_list ap);
 	int vsprintf(char *restrict, const char *restrict, va_list);
 	int vsscanf(const char *restrict, const char *restrict, va_list);
 

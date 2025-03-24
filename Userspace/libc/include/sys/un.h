@@ -15,24 +15,17 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _BITS_SOCKET_H
-#define _BITS_SOCKET_H
+#ifndef _SYS_UN_H
+#define _SYS_UN_H
 
-#define __socklen_t_defined
-typedef __UINT32_TYPE__ socklen_t;
+#include <sys/socket.h>
 
-#define __sa_family_t_defined
-typedef unsigned int sa_family_t;
+#define SUN_PATH_SIZE 108
 
-#define __sockaddr_defined
-struct sockaddr
+struct sockaddr_un
 {
-	sa_family_t sa_family;
-	char sa_data[14];
+	sa_family_t sun_family;		  /* Address family */
+	char sun_path[SUN_PATH_SIZE]; /* Socket pathname storage */
 };
 
-#ifdef _GNU_SOURCE
-#define SO_PEERCRED 0x1029
-#endif
-
-#endif // _BITS_SOCKET_H
+#endif // _SYS_UN_H

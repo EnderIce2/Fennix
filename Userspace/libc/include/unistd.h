@@ -121,7 +121,7 @@ extern "C"
 	ssize_t pwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
 	ssize_t read(int fildes, void *buf, size_t nbyte);
 	int readlink(const char *, char *, size_t);
-	int rmdir(const char *);
+	int rmdir(const char *path);
 	void *sbrk(intptr_t incr);
 	int setgid(gid_t);
 	int setpgid(pid_t, pid_t);
@@ -141,7 +141,7 @@ extern "C"
 	char *ttyname(int);
 	int ttyname_r(int, char *, size_t);
 	useconds_t ualarm(useconds_t, useconds_t);
-	int unlink(const char *);
+	int unlink(const char *path);
 	int usleep(useconds_t);
 	pid_t vfork(void);
 	ssize_t write(int fildes, const void *buf, size_t nbyte);

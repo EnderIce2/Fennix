@@ -27,6 +27,8 @@ extern "C"
 #define NULL ((void *)0)
 #endif
 
+#define offsetof(TYPE, MEMBER) ((size_t)&((TYPE *)0)->MEMBER)
+
 	typedef struct
 	{
 		long long __a;

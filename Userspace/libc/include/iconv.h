@@ -15,24 +15,15 @@
 	along with Fennix C Library. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _BITS_SOCKET_H
-#define _BITS_SOCKET_H
+#ifndef _ICONV_H
+#define _ICONV_H
 
-#define __socklen_t_defined
-typedef __UINT32_TYPE__ socklen_t;
+#include <stddef.h>
 
-#define __sa_family_t_defined
-typedef unsigned int sa_family_t;
+typedef void *iconv_t;
 
-#define __sockaddr_defined
-struct sockaddr
-{
-	sa_family_t sa_family;
-	char sa_data[14];
-};
+iconv_t iconv_open(const char *tocode, const char *fromcode);
+size_t iconv(iconv_t cd, char **restrict inbuf, size_t *restrict inbytesleft, char **restrict outbuf, size_t *restrict outbytesleft);
+int iconv_close(iconv_t cd);
 
-#ifdef _GNU_SOURCE
-#define SO_PEERCRED 0x1029
-#endif
-
-#endif // _BITS_SOCKET_H
+#endif // _ICONV_H

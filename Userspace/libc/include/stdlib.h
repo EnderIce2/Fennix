@@ -102,7 +102,8 @@ extern "C"
 	double strtod(const char *, char **);
 	long strtol(const char *restrict nptr, char **restrict endptr, int base);
 	long long strtoll(const char *restrict nptr, char **restrict endptr, int base);
-	unsigned long int strtoul(const char *, char **, int);
+	unsigned long int strtoul(const char *restrict str, char **restrict endptr, int base);
+	unsigned long long strtoull(const char *restrict str, char **restrict endptr, int base);
 	int system(const char *command);
 	int ttyslot(void);
 	int unlockpt(int);

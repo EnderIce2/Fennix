@@ -293,7 +293,12 @@ export ssize_t read(int fildes, void *buf, size_t nbyte)
 }
 
 export int readlink(const char *, char *, size_t);
-export int rmdir(const char *);
+
+export int rmdir(const char *path)
+{
+	return __check_errno(sysdep(RemoveDirectory)(path), -1);
+}
+
 export void *sbrk(intptr_t incr);
 export int setgid(gid_t);
 export int setpgid(pid_t, pid_t);
@@ -334,7 +339,12 @@ export int truncate(const char *, off_t);
 export char *ttyname(int);
 export int ttyname_r(int, char *, size_t);
 export useconds_t ualarm(useconds_t, useconds_t);
-export int unlink(const char *);
+
+export int unlink(const char *path)
+{
+	return __check_errno(sysdep(Unlink)(path), -1);
+}
+
 export int usleep(useconds_t);
 export pid_t vfork(void);
 

@@ -70,5 +70,10 @@ int sysdep(ChangeDirectory)(const char *Pathname);
 char *sysdep(GetWorkingDirectory)(char *Buffer, size_t Size);
 int sysdep(Brk)(void *Address);
 int sysdep(FileControl)(int Descriptor, int Command, void *Arg);
+int sysdep(ClockGetTime)(clockid_t ClockID, struct timespec *TP);
+time_t sysdep(Time)(void);
+clock_t sysdep(Clock)(void);
+int sysdep(RemoveDirectory)(const char *Pathname);
+int sysdep(Unlink)(const char *Pathname);
 
 #endif // FENNIX_BITS_LIBC_H

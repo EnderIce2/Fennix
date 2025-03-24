@@ -334,7 +334,161 @@ export long long strtoll(const char *restrict nptr, char **restrict endptr, int 
 	return acc;
 }
 
-export unsigned long int strtoul(const char *, char **, int);
+export unsigned long int strtoul(const char *restrict str, char **restrict endptr, int base)
+{
+	const char *s = str;
+	unsigned long acc = 0;
+	int c;
+	unsigned long cutoff;
+	int any, cutlim;
+
+	if (base < 0 || base == 1 || base > 36)
+	{
+		errno = EINVAL;
+		if (endptr)
+			*endptr = (char *)str;
+		return 0;
+	}
+
+	while (isspace((unsigned char)*s))
+		s++;
+
+	if (*s == '+')
+		s++;
+	else if (*s == '-')
+	{
+		errno = EINVAL;
+		if (endptr)
+			*endptr = (char *)str;
+		return 0;
+	}
+
+	if ((base == 0 || base == 16) && *s == '0' && (s[1] == 'x' || s[1] == 'X'))
+	{
+		s += 2;
+		base = 16;
+	}
+	else if (base == 0)
+		base = *s == '0' ? 8 : 10;
+
+	cutoff = ULONG_MAX / base;
+	cutlim = ULONG_MAX % base;
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
+		if (isdigit(c))
+			c -= '0';
+		else if (isalpha(c))
+			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		else
+			break;
+
+		if (c >= base)
+			break;
+
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+			any = -1;
+		else
+		{
+			any = 1;
+			acc *= base;
+			acc += c;
+		}
+	}
+
+	if (any < 0)
+	{
+		acc = ULONG_MAX;
+		errno = ERANGE;
+	}
+	else if (any == 0)
+	{
+		errno = EINVAL;
+	}
+
+	if (endptr)
+		*endptr = (char *)(any ? s - 1 : str);
+
+	return acc;
+}
+
+export unsigned long long strtoull(const char *restrict str, char **restrict endptr, int base)
+{
+	const char *s = str;
+	unsigned long long acc = 0;
+	int c;
+	unsigned long long cutoff;
+	int any, cutlim;
+
+	if (base < 0 || base == 1 || base > 36)
+	{
+		errno = EINVAL;
+		if (endptr)
+			*endptr = (char *)str;
+		return 0;
+	}
+
+	while (isspace((unsigned char)*s))
+		s++;
+
+	if (*s == '+')
+		s++;
+	else if (*s == '-')
+	{
+		errno = EINVAL;
+		if (endptr)
+			*endptr = (char *)str;
+		return 0;
+	}
+
+	if ((base == 0 || base == 16) && *s == '0' && (s[1] == 'x' || s[1] == 'X'))
+	{
+		s += 2;
+		base = 16;
+	}
+	else if (base == 0)
+		base = *s == '0' ? 8 : 10;
+
+	cutoff = ULLONG_MAX / base;
+	cutlim = ULLONG_MAX % base;
+
+	for (acc = 0, any = 0;; c = *s++)
+	{
+		if (isdigit(c))
+			c -= '0';
+		else if (isalpha(c))
+			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
+		else
+			break;
+
+		if (c >= base)
+			break;
+
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
+			any = -1;
+		else
+		{
+			any = 1;
+			acc *= base;
+			acc += c;
+		}
+	}
+
+	if (any < 0)
+	{
+		acc = ULLONG_MAX;
+		errno = ERANGE;
+	}
+	else if (any == 0)
+	{
+		errno = EINVAL;
+	}
+
+	if (endptr)
+		*endptr = (char *)(any ? s - 1 : str);
+
+	return acc;
+}
 
 export int system(const char *command)
 {
