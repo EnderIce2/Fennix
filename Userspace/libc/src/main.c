@@ -67,7 +67,7 @@ const struct
 	Elf_Nhdr header;
 	char name[4];
 	__UINT8_TYPE__ desc[20];
-} __build_id __attribute__((aligned(4), section(".note.build-id"))) = {
+} __build_id __attribute__((used, aligned(4), section(".note.build-id"))) = {
 	.header = {
 		.n_namesz = 4,							 /* "FNX" + '\0' */
 		.n_descsz = sizeof(__UINT8_TYPE__) * 20, /* Description Size */
