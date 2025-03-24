@@ -48,7 +48,7 @@ struct KernelConfig Config = {
 	.Cores = 0,
 	.IOAPICInterruptCore = 0,
 	.UnlockDeadLock = false,
-	.SIMD = false,
+	.SIMD = true,
 	.Quiet = false,
 };
 
