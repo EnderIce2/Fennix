@@ -1,10 +1,10 @@
 iso_tmp_data
 artifacts
 initrd_tmp_data
-initrd/usr/include/*
-!initrd/usr/include/.gitkeep
+rootfs/usr/include/*
+!rootfs/usr/include/.gitkeep
 doxygen-doc
-initrd.tar
+rootfs.tar
 .dccache
 *.log
 *.log.*

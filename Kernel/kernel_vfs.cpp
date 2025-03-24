@@ -31,10 +31,10 @@ void SearchForInitrd()
 		if (!initrdAddress)
 			continue;
 
-		if (strcmp(bInfo.Modules[i].CommandLine, "initrd") != 0)
+		if (strcmp(bInfo.Modules[i].CommandLine, "rootfs") != 0)
 			continue;
 
-		KPrint("initrd found at %#lx", initrdAddress);
+		KPrint("rootfs found at %#lx", initrdAddress);
 
 		Memory::Virtual vmm;
 		if (!vmm.Check((void *)initrdAddress))

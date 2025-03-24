@@ -212,16 +212,16 @@ endif
 build_image:
 	mkdir -p iso_tmp_data
 	mkdir -p initrd_tmp_data
-	cp -r initrd/* initrd_tmp_data/
+	cp -r rootfs/* initrd_tmp_data/
 ifeq ($(BUILD_DRIVERS), 1)
 	cp -r Drivers/out/* initrd_tmp_data/usr/lib/drivers/
 endif
 ifeq ($(BUILD_USERSPACE), 1)
 	cp -r Userspace/out/* initrd_tmp_data/
 endif
-#	tar czf initrd.tar -C initrd_tmp_data/ ./ --format=ustar
-	tar cf initrd.tar -C initrd_tmp_data/ ./ --format=ustar
-	cp Kernel/fennix.elf initrd.tar \
+#	tar czf rootfs.tar -C initrd_tmp_data/ ./ --format=ustar
+	tar cf rootfs.tar -C initrd_tmp_data/ ./ --format=ustar
+	cp Kernel/fennix.elf rootfs.tar \
 		iso_tmp_data/
 ifeq ($(BOOTLOADER), limine)
 	cp tools/limine.cfg tools/limine/limine-bios.sys \
@@ -330,7 +330,7 @@ run: build qemu
 
 clean: clean_logs
 	rm -rf doxygen-doc iso_tmp_data initrd_tmp_data
-	rm -f initrd.tar $(OSNAME).iso $(OSNAME).img
+	rm -f rootfs.tar $(OSNAME).iso $(OSNAME).img
 	$(MAKE) -C Kernel clean
 	$(MAKE) -C Userspace clean
 	$(MAKE) -C Drivers clean

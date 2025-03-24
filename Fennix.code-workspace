@@ -11,7 +11,7 @@
 		"git.openRepositoryInParentFolders": "always",
 		"C_Cpp.autoAddFileAssociations": false,
 		"conventionalCommits.scopes": [
-			"initrd",
+			"rootfs",
 			"tools",
 			"devcontainer"
 		]

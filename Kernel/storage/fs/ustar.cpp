@@ -843,9 +843,9 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
 	ustar->DeviceID = fs->EarlyReserveDevice();
 	ustar->ReadArchive(Address, Size);
 
-	Inode *initrd = nullptr;
-	ustar->Lookup(nullptr, "/", &initrd);
-	assert(initrd != nullptr);
+	Inode *rootfs = nullptr;
+	ustar->Lookup(nullptr, "/", &rootfs);
+	assert(rootfs != nullptr);
 
 	FileSystemInfo *fsi = new FileSystemInfo;
 	fsi->Name = "ustar";
@@ -861,8 +861,8 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
 	fsi->Ops.ReadLink = __ustar_ReadLink;
 	fsi->Ops.Stat = __ustar_Stat;
 	fsi->PrivateData = ustar;
-	fs->LateRegisterFileSystem(ustar->DeviceID, fsi, initrd);
+	fs->LateRegisterFileSystem(ustar->DeviceID, fsi, rootfs);
 
-	fs->AddRoot(initrd);
+	fs->AddRoot(rootfs);
 	return true;
 }
