@@ -875,7 +875,7 @@ $(document).ready(function(){initNavTree('d2/d6e/syscalls_8h_source.html','../..
 <div class="line"><a id="l01806" name="l01806"></a><span class="lineno"> 1806</span> </div>
 <div class="line"><a id="l01807" name="l01807"></a><span class="lineno"> 1807</span><span class="comment">/* Time */</span></div>
 <div class="line"><a id="l01808" name="l01808"></a><span class="lineno"> 1808</span> </div>
-<div class="line"><a id="l01810" name="l01810"></a><span class="lineno"><a class="line" href="../../d2/d6e/syscalls_8h.html#a7dca41af6f47ad7fb6eaa65e55b98090"> 1810</a></span><span class="preprocessor">#define call_time(t) syscall1(SYS_TIME, t)</span></div>
+<div class="line"><a id="l01810" name="l01810"></a><span class="lineno"><a class="line" href="../../d2/d6e/syscalls_8h.html#a7dca41af6f47ad7fb6eaa65e55b98090"> 1810</a></span><span class="preprocessor">#define call_time(t) syscall1(SYS_TIME, (scarg)t)</span></div>
 <div class="line"><a id="l01811" name="l01811"></a><span class="lineno"> 1811</span> </div>
 <div class="line"><a id="l01813" name="l01813"></a><span class="lineno"><a class="line" href="../../d2/d6e/syscalls_8h.html#aa4aef47cfee0d7f7008fe0bcc7ea49f5"> 1813</a></span><span class="preprocessor">#define call_clock_gettime(clockid, tp) syscall2(SYS_CLOCK_GETTIME, (scarg)clockid, (scarg)tp)</span></div>
 <div class="line"><a id="l01814" name="l01814"></a><span class="lineno"> 1814</span> </div>
@@ -1125,7 +1125,7 @@ $(document).ready(function(){initNavTree('d2/d6e/syscalls_8h_source.html','../..
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../d2/d6e/syscalls_8h.html">syscalls.h</a></li>
-    <li class="footer">Generated on Fri Mar 21 2025 23:00:07 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Tue Mar 25 2025 15:19:42 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

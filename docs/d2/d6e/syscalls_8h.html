@@ -260,7 +260,7 @@ Macros</h2></td></tr>
 <tr class="memitem:ae903ef0bc831567ed65a7d46ab53740e" id="r_ae903ef0bc831567ed65a7d46ab53740e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#ae903ef0bc831567ed65a7d46ab53740e">call_shutdown</a>(sockfd,  how)&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#af2d181ed9821a83ebe9aca04015aea37">syscall2</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a102cf235c599812d4980229622566c4b">SYS_SHUTDOWN</a>, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)sockfd, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)how)</td></tr>
 <tr class="memdesc:ae903ef0bc831567ed65a7d46ab53740e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shut down part of a full-duplex connection.    <br /></td></tr>
 <tr class="separator:ae903ef0bc831567ed65a7d46ab53740e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dca41af6f47ad7fb6eaa65e55b98090" id="r_a7dca41af6f47ad7fb6eaa65e55b98090"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a7dca41af6f47ad7fb6eaa65e55b98090">call_time</a>(t)&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be">syscall1</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a>, t)</td></tr>
+<tr class="memitem:a7dca41af6f47ad7fb6eaa65e55b98090" id="r_a7dca41af6f47ad7fb6eaa65e55b98090"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#a7dca41af6f47ad7fb6eaa65e55b98090">call_time</a>(t)&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be">syscall1</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a>, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)t)</td></tr>
 <tr class="memdesc:a7dca41af6f47ad7fb6eaa65e55b98090"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current time.    <br /></td></tr>
 <tr class="separator:a7dca41af6f47ad7fb6eaa65e55b98090"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4aef47cfee0d7f7008fe0bcc7ea49f5" id="r_aa4aef47cfee0d7f7008fe0bcc7ea49f5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6e/syscalls_8h.html#aa4aef47cfee0d7f7008fe0bcc7ea49f5">call_clock_gettime</a>(clockid,  tp)&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#af2d181ed9821a83ebe9aca04015aea37">syscall2</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475afdb86817db91283df9efacae029a67e3">SYS_CLOCK_GETTIME</a>, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)clockid, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)tp)</td></tr>
@@ -2925,7 +2925,7 @@ version[65]</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">t</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be">syscall1</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a>, t)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be">syscall1</a>(<a class="el" href="../../d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ab1f7c9a1b1b4d17774c344ca325b1bb6">SYS_TIME</a>, (<a class="el" href="../../d2/d6e/syscalls_8h.html#a2984c669d1ae3cd90f938b1d11823ed5">scarg</a>)t)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -5665,7 +5665,7 @@ version[65]</td>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../d2/d6e/syscalls_8h.html">syscalls.h</a></li>
-    <li class="footer">Generated on Fri Mar 21 2025 23:00:07 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Tue Mar 25 2025 15:19:42 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>
