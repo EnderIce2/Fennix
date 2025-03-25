@@ -337,7 +337,12 @@ clean_logs:
 		LPT1.dmp LPT2.dmp LPT3.dmp \
 		mouse.pcap kbd.pcap mousex.pcap kbdx.pcap
 
-vscode_debug_only: clean_logs
+check_chmod_kvm:
+ifeq ($(CHMOD_KVM), 1)
+	sudo chmod 666 /dev/kvm
+endif
+
+vscode_debug_only: clean_logs check_chmod_kvm
 ifneq ($(filter arm aarch64,$(OSARCH)),)
 	$(QEMU) -S -chardev socket,path=/tmp/gdb-fennix,server=on,wait=off,id=gdb0 -gdb chardev:gdb0 \
 	-d cpu_reset,int,unimp,guest_errors,mmu,fpu \
