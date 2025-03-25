@@ -219,7 +219,7 @@
 					"background": {
 						"activeOnStart": true,
 						"beginsPattern": ".",
-						"endsPattern": "CR0 update",
+						"endsPattern": "CPU Reset",
 					}
 				}
 			],
