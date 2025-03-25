@@ -354,12 +354,12 @@ vscode_debug: build_kernel build_userspace build_drivers build_image vscode_debu
 
 debug: vscode_debug
 
-qemu: qemu_vdisk clean_logs
+qemu: qemu_vdisk clean_logs check_chmod_kvm
 	touch serial.log
 #	x-terminal-emulator -e tail -f serial.log &
 	$(QEMU) $(QEMU_UEFI_BIOS) -cpu host $(QEMUFLAGS) $(QEMUHWACCELERATION) $(QEMUMEMORY) $(QEMU_SMP)
 
-qemubios: qemu_vdisk clean_logs
+qemubios: qemu_vdisk clean_logs check_chmod_kvm
 	$(QEMU) -cpu host $(QEMUFLAGS) $(QEMUHWACCELERATION) $(QEMUMEMORY) $(QEMU_SMP)
 
 run: build qemu

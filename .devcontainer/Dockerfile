@@ -120,3 +120,5 @@ ENV NO_AT_BRIDGE=1
 RUN <<EOF
 echo PATH=$PATH:/workspaces/Fennix/cross/bin >> /etc/profile
 EOF
+
+ENV CHMOD_KVM=1

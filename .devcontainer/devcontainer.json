@@ -32,7 +32,7 @@
 			"type": "bind"
 		},
 		{
-			"source": "${localEnv:XAUTHORITY}",
+			"source": "${env:XAUTHORITY}",
 			"target": "/home/vscode/.Xauthority",
 			"type": "bind"
 		},
@@ -44,6 +44,5 @@
 	],
 	"runArgs": [
 		"--privileged"
-	],
-	"postAttachCommand": "sudo chmod 666 /dev/kvm"
+	]
 }
