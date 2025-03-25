@@ -30,7 +30,7 @@ do_tools:
 
 do_limine:
 ifeq ("$(wildcard ./limine)", "")
-	git clone https://github.com/limine-bootloader/limine.git --branch=v6.x-branch-binary --depth=1 limine
+	git clone https://github.com/limine-bootloader/limine.git --branch=v9.x-binary --depth=1 limine
 else
 	$(info > TOOLS: Skipping cloning limine because directory already exists.)
 endif

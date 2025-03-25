@@ -46,8 +46,16 @@ SECTIONS
 		*(.bootstrap .bootstrap.*)
 	} :bootstrap
 	_bootstrap_end = ALIGN(CONSTANT(MAXPAGESIZE));
-
 	. += KERNEL_VMA;
+
+	/* . += KERNEL_VMA;
+	_bootstrap_start = .;
+    .limine_requests : {
+        KEEP(*(.limine_requests_start))
+        KEEP(*(.limine_requests))
+        KEEP(*(.limine_requests_end))
+    } :bootstrap
+	_bootstrap_end = ALIGN(CONSTANT(MAXPAGESIZE)); */
 
 	_kernel_start = ALIGN(CONSTANT(MAXPAGESIZE));
 	_kernel_text_start = ALIGN(CONSTANT(MAXPAGESIZE));

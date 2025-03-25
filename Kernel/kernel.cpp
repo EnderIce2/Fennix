@@ -267,22 +267,14 @@ extern CallPtr __fini_array_start[0], __fini_array_end[0];
 
 EXTERNC __no_stack_protector NIF cold void Entry(BootInfo *Info)
 {
-	trace("Hello, World!");
-
-	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
-	{
-		info("\n\n----------------------------------------\nDEBUGGER DETECTED\n----------------------------------------\n\n");
-		DebuggerIsAttached = true;
-	}
-
 	memcpy(&bInfo, Info, sizeof(BootInfo));
-	debug("BootInfo structure is at %p", &bInfo);
 
 	// https://wiki.osdev.org/Calling_Global_Constructors
-	trace("There are %d constructors to call",
-		  __init_array_end - __init_array_start);
 	for (CallPtr *fct = __init_array_start; fct != __init_array_end; fct++)
 		(*fct)();
+	trace("Total constructors called: %d", __init_array_end - __init_array_start);
+	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
+		DebuggerIsAttached = true;
 
 #if defined(__amd64__) || defined(__i386__)
 	if (!bInfo.SMBIOSPtr)

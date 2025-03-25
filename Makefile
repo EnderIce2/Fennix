@@ -14,7 +14,6 @@ QEMUFLAGS := -display gtk
 
 ifeq ($(OSARCH), amd64)
 QEMUFLAGS += -device vmware-svga -M q35 \
-			 -monitor pty \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
 			 -net user \
@@ -41,7 +40,6 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), i386)
 QEMUFLAGS += -M q35 \
-			 -monitor pty \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
 			 -device usb-mouse,bus=xhci.0,pcap=mousex.pcap \
@@ -68,7 +66,6 @@ QEMUFLAGS += -M q35 \
 			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), arm)
 QEMUFLAGS += -M raspi2b \
-			 -monitor pty \
 			 -cpu cortex-a15 \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
@@ -77,7 +74,6 @@ QEMUFLAGS += -M raspi2b \
 			 -kernel $(OSNAME).img
 else ifeq ($(OSARCH), aarch64)
 QEMUFLAGS += -M raspi4b \
-			 -monitor pty \
 			 -cpu cortex-a72 \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
@@ -260,17 +256,21 @@ endif
 	cp Kernel/fennix.elf rootfs.tar \
 		iso_tmp_data/
 ifeq ($(BOOTLOADER), limine)
-	cp tools/limine.cfg tools/limine/limine-bios.sys \
-						tools/limine/limine-bios-cd.bin \
-						tools/limine/limine-uefi-cd.bin \
-						iso_tmp_data/
+	cp  tools/limine.conf \
+		tools/limine/limine-bios.sys \
+		tools/limine/limine-bios-cd.bin \
+		tools/limine/limine-uefi-cd.bin \
+		iso_tmp_data/
 	mkdir -p iso_tmp_data/EFI/BOOT
-	cp  tools/limine/BOOTX64.EFI \
+	cp  tools/limine/BOOTAA64.EFI \
 		tools/limine/BOOTIA32.EFI \
+		tools/limine/BOOTLOONGARCH64.EFI \
+		tools/limine/BOOTRISCV64.EFI \
+		tools/limine/BOOTX64.EFI \
 		iso_tmp_data/EFI/BOOT/
-	xorriso -as mkisofs -quiet -b limine-bios-cd.bin \
-		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		--efi-boot limine-uefi-cd.bin -V FENNIX \
+	xorriso -as mkisofs -R -r -J -b limine-bios-cd.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+		-apm-block-size 2048 --efi-boot limine-uefi-cd.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		iso_tmp_data -o $(OSNAME).iso
 endif
@@ -332,7 +332,7 @@ QEMU_DBG_MEMORY = -m 2G
 endif
 
 clean_logs:
-	rm -f serial.log COM2.dmp COM3.dmp \
+	rm -f serial.log COM2.dmp COM3.dmp COM4.dmp \
 		network.dmp \
 		LPT1.dmp LPT2.dmp LPT3.dmp \
 		mouse.pcap kbd.pcap mousex.pcap kbdx.pcap

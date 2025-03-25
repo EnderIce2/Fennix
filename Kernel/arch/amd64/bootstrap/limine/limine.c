@@ -25,33 +25,41 @@
 
 void InitLimine();
 
-static volatile struct limine_entry_point_request EntryPointRequest = {
+#define LIMREQ __attribute__((used, section(".limine_requests"))) static volatile
+#define LIMREQ_S __attribute__((used, section(".limine_requests_start"))) static volatile
+#define LIMREQ_E __attribute__((used, section(".limine_requests_end"))) static volatile
+
+LIMREQ LIMINE_BASE_REVISION(3);
+LIMREQ_S LIMINE_REQUESTS_START_MARKER;
+LIMREQ_E LIMINE_REQUESTS_END_MARKER;
+
+LIMREQ struct limine_entry_point_request EntryPointRequest = {
 	.id = LIMINE_ENTRY_POINT_REQUEST,
 	.revision = 0,
 	.response = NULL,
 	.entry = InitLimine};
-static volatile struct limine_bootloader_info_request BootloaderInfoRequest = {
+LIMREQ struct limine_bootloader_info_request BootloaderInfoRequest = {
 	.id = LIMINE_BOOTLOADER_INFO_REQUEST,
 	.revision = 0};
-static volatile struct limine_framebuffer_request FramebufferRequest = {
+LIMREQ struct limine_framebuffer_request FramebufferRequest = {
 	.id = LIMINE_FRAMEBUFFER_REQUEST,
 	.revision = 0};
-static volatile struct limine_memmap_request MemmapRequest = {
+LIMREQ struct limine_memmap_request MemmapRequest = {
 	.id = LIMINE_MEMMAP_REQUEST,
 	.revision = 0};
-static volatile struct limine_kernel_address_request KernelAddressRequest = {
+LIMREQ struct limine_kernel_address_request KernelAddressRequest = {
 	.id = LIMINE_KERNEL_ADDRESS_REQUEST,
 	.revision = 0};
-static volatile struct limine_rsdp_request RsdpRequest = {
+LIMREQ struct limine_rsdp_request RsdpRequest = {
 	.id = LIMINE_RSDP_REQUEST,
 	.revision = 0};
-static volatile struct limine_kernel_file_request KernelFileRequest = {
+LIMREQ struct limine_kernel_file_request KernelFileRequest = {
 	.id = LIMINE_KERNEL_FILE_REQUEST,
 	.revision = 0};
-static volatile struct limine_module_request ModuleRequest = {
+LIMREQ struct limine_module_request ModuleRequest = {
 	.id = LIMINE_MODULE_REQUEST,
 	.revision = 0};
-static volatile struct limine_smbios_request SmbiosRequest = {
+LIMREQ struct limine_smbios_request SmbiosRequest = {
 	.id = LIMINE_SMBIOS_REQUEST,
 	.revision = 0};
 
