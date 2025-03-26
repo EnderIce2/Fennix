@@ -62,6 +62,8 @@ Follow the coding style used in the repository to ensure consistency. Adhere to:
 - Start function and global declaration names with an uppercase letter.
 - Start local variable names with a lowercase letter.
 - Maintain consistent formatting and commenting guidelines.
+- Commit messages must follow [Conventional Commits](https://conventionalcommits.org).
+- Release versions must follow [Semantic Versioning](https://semver.org).
 
 Refer to the [style guide document](STYLE_GUIDE.md) if available.
 
