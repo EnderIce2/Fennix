@@ -59,6 +59,10 @@ Make sure to read and comply with these licenses before using or redistributing 
 - **License:** Unlicense
 - **Location(s):** [Userspace/libc/src/arith64.c](Userspace/libc/src/arith64.c)
 
+## utf8.h
+- **License:** Unlicense
+- **Location(s):** [Kernel/include/utf8.h](Kernel/include/utf8.h)
+
 ---
 
 Please refer to the respective license files for the full text of each license.
