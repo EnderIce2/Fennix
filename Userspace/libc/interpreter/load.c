@@ -22,6 +22,8 @@
 #include <stddef.h>
 #include <limits.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -359,15 +361,63 @@ void ProcessNeededLibraries(Elf_Dyn *elem, ElfInfo *Info)
 	ElfInfo *info = NULL;
 
 	char fullLibPath[PATH_MAX];
-	strcpy(fullLibPath, "/lib/");
-	strcat(fullLibPath, libPath);
-	/* TODO: more checks and also check environment variables */
-	if (sysdep(Access)(fullLibPath, F_OK) != 0)
+	int found = 0;
+
+	char *ldLibPath = getenv("LD_LIBRARY_PATH");
+	if (ldLibPath)
 	{
-		printf("dl: Can't access %s\n", fullLibPath);
+		char *pathCopy = strdup(ldLibPath);
+		char *path = strtok(pathCopy, ":");
+
+		while (path)
+		{
+			strcpy(fullLibPath, path);
+			if (fullLibPath[strlen(fullLibPath) - 1] != '/')
+				strcat(fullLibPath, "/");
+			strcat(fullLibPath, libPath);
+
+			if (sysdep(Access)(fullLibPath, F_OK) == 0)
+			{
+				found = 1;
+				break;
+			}
+
+			path = strtok(NULL, ":");
+		}
+
+		free(pathCopy);
+		if (found)
+			goto load_lib;
+	}
+
+	const char *standardPaths[] = {
+		"/sys/lib/",
+		"/usr/lib/",
+		"/lib/",
+		"/usr/local/lib/",
+		"/usr/local/lib64/",
+		"/usr/lib64/",
+		"/lib64/"};
+
+	for (size_t i = 0; i < sizeof(standardPaths) / sizeof(standardPaths[0]); i++)
+	{
+		strcpy(fullLibPath, standardPaths[i]);
+		strcat(fullLibPath, libPath);
+
+		if (sysdep(Access)(fullLibPath, F_OK) == 0)
+		{
+			found = 1;
+			break;
+		}
+	}
+
+	if (!found)
+	{
+		printf("dl: Library %s not found in search paths\n", libPath);
 		return;
 	}
 
+load_lib:
 	int fd = sysdep(Open)(fullLibPath, O_RDONLY, 0644);
 	int status = LoadElf(fd, fullLibPath, &info);
 	elem->d_un.d_ptr = (uintptr_t)info; /* if LoadElf fails, info will still be NULL */

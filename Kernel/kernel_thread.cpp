@@ -33,8 +33,9 @@
 
 cold int SpawnInit()
 {
-	const char *envp[6] = {
+	const char *envp[7] = {
 		"PATH=/bin:/usr/bin",
+		"LD_LIBRARY_PATH=/sys/lib:/usr/lib",
 		"TERM=tty",
 		"HOME=/root",
 		"USER=root",
