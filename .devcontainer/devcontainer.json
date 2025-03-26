@@ -32,7 +32,7 @@
 			"type": "bind"
 		},
 		{
-			"source": "${env:XAUTHORITY}",
+			"source": "${localEnv:XAUTHORITY}",
 			"target": "/home/vscode/.Xauthority",
 			"type": "bind"
 		},
