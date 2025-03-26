@@ -6,21 +6,45 @@ All notable changes to this project will be documented in this file.
 
 ### <!-- 0 -->🚀 Features
 
+- *(coreutils)* Implement coreutils and compile it using cmake
+- *(devcontainer)* Install meson in Dockerfile
+- *(devcontainer)* Add libtool and libltdl-dev packages
 - *(initrd)* Add /etc/hosts file
 - *(kernel)* Add stub device /dev/fb0
+- *(kernel)* Add SHA-512 implementation
+- *(kernel)* Move kernel note to a separate file
+- *(kernel)* Add hot and cold attributes to optimize function performance
+- *(kernel)* Enable SIMD by default
+- *(kernel)* Update limine
+- *(kernel)* Add KERNEL_HHDM_OFFSET macro
+- *(kernel)* Add <utf8.h> header
 - *(kernel/api)* Implement i386 syscall wrappers
 - *(kernel/api)* Implement arm syscall wrappers
+- *(kernel/api)* Add fcntl.h
 - *(kernel/driver)* Add ReloadDriver method to manage driver reloading
 - *(kernel/driver)* Add CreateDeviceFile method
 - *(kernel/driver)* Add CreateDeviceFile function in the API
 - *(kernel/driver)* Implement built-in driver support
+- *(kernel/driver)* Implement driver sha512 verification
 - *(kernel/drivers)* Migrate drivers to the kernel
+- *(kernel/drivers)* Add trusted drivers list
 - *(kernel/pci)* Add device initialization method for PCI devices
+- *(kernel/syscalls)* Implement sys_fork()
+- *(kernel/syscalls)* Implement uname syscall
+- *(kernel/syscalls)* Add fcntl() syscall
+- *(userspace)* Add dummy libstdc++ library
 - *(userspace/apps/sys/init)* Handle termination signals for graceful shutdown
 - *(userspace/apps/test)* Update utest
 - *(userspace/apps/test/libc_test)* Add more tests
 - *(userspace/apps/test/libc_test)* Rewrite a lot of the code and improve debugging with vscode using .devcontainer
 - *(userspace/apps/test/utest)* Add TestProcess function for executing test programs
+- *(userspace/apps/usr)* Stub implementation for mdview
+- *(userspace/coreutils)* Implement arch command
+- *(userspace/coreutils)* Add test command
+- *(userspace/coreutils)* Add stub "admin" command
+- *(userspace/coreutils)* Add alias command
+- *(userspace/coreutils)* Add stub "sh" command
+- *(userspace/coreutils)* Improve fennix shell implementation
 - *(userspace/libc)* Implement strcpy function
 - *(userspace/libc)* Implement all <string.h> functions
 - *(userspace/libc)* Complete <string.h> implementation
@@ -44,25 +68,45 @@ All notable changes to this project will be documented in this file.
 - *(userspace/libc)* Implementation <fenv.h> header
 - *(userspace/libc)* Implement <math.h> header
 - *(userspace/libc)* Add experimental __aeabi_dcmpun() function
+- *(userspace/libc)* Define TIOC*WINSZ constants in <sys/ioctl.h>
+- *(userspace/libc)* Add <regex.h> header
+- *(userspace/libc)* Add <getopt.h> header
+- *(userspace/libc)* Support for linux target
+- *(userspace/libc)* Implement access()
+- *(userspace/libc)* Implement brk(), chdir() and getcwd()
+- *(userspace/libc)* Implement functions for porting apps
+- *(userspace/libs)* Add libexpat, libffi and libxml2
 - *(userspace/libs/libdemo)* Add template library
 - *(userspace/libs/libm)* Add stub libm
 - *(No Category)* Synchronize syscalls.h
+- *(No Category)* Add /etc/hostname file
 
 
 ### <!-- 1 -->🐛 Bug Fixes
 
+- *(devcontainer)* Qemu cannot access /dev/kvm "failed to initialize kvm: Permission denied"
+- *(devcontainer)* Update XAUTHORITY source to use localEnv
 - *(drivers)* Remove drivers that are now in kernel
 - *(kernel)* Add TZ environment variable to init process
 - *(kernel)* Fix empty initialization of std::string (str = "")
+- *(kernel)* Crash on ACPI shutdown/reboot
+- *(kernel)* Compilation issues due to header changes
+- *(kernel)* Add LD_LIBRARY_PATH
 - *(kernel/driver)* Remove unused device handling code in daemon
 - *(kernel/driver)* Node device & offset were not set for new created files under /dev
 - *(kernel/driver)* Set unused file system operation pointers to nullptr
+- *(kernel/driver)* Filter out non-.drv files in driver loading
 - *(kernel/pci)* Map BAR address using PWT and PCD flags
 - *(kernel/pci)* Fix MapPCIAddresses when BAR size of zero
+- *(kernel/syscalls)* Cast syscall arguments to scarg type for call_time
 - *(kernel/tty)* Temporal removal of ICANON checking
+- *(userspace)* Change version of libc and coreutils
 - *(userspace/apps/test)* Fix noreturn compiler warning
 - *(userspace/apps/test)* Update expected results for rounding and special functions
 - *(userspace/apps/test)* Adjust fflush(stdout) calls for better output control
+- *(userspace/apps/test)* Make gcc shut up about "infinite recursion detected"
+- *(userspace/coreutils)* Handle combined uname options (-sv, -np, etc.)
+- *(userspace/coreutils)* Fix test command to correctly detect the bracket
 - *(userspace/libc)* Fix error handling in ioctl function
 - *(userspace/libc)* Include <ctype.h> in stdlib.c
 - *(userspace/libc)* Cast status to int in __check_errno for proper error handling
@@ -76,20 +120,33 @@ All notable changes to this project will be documented in this file.
 - *(userspace/libc)* Disable debug info in memory allocation functions
 - *(userspace/libc)* Fix wrong implementation of ioctl()
 - *(userspace/libc)* Add libgcc link to fix softfloat
+- *(userspace/libc)* Fix puts() in interpreter
+- *(userspace/libc)* Missing include <sys/ioctl.h>
+- *(userspace/libc)* Remove stub macros in termios.c
+- *(userspace/libc)* Implement gethostname()
+- *(userspace/libc)* Implement uname()
+- *(userspace/libc)* Add .gitkeep to arch directories
+- *(userspace/libc)* Mark ABI and build ID notes as used to prevent optimization removal
+- *(vscode)* Problem matcher lagging the interface
 - *(No Category)* Fixme
 - *(No Category)* Fixme
 - *(No Category)* Correct project name references in license headers
+- *(No Category)* Accidentally hit CTRL+Z
 
 
 ### <!-- 10 -->💼 Other
 
 - *(devcontainer)* Improve Dev Container development
+- *(devcontainer)* Potential fix for "failed to initialize kvm: Permission denied"
+- *(devcontainer)* Install cmake too
 - *(kernel)* Fix compiling issues on i386
 - *(kernel)* Fix compiling issues on arm
 - *(kernel)* Fix i386 build
 - *(tools)* Rewrite makefile to be more efficient and easy to understand
 - *(tools)* Fix gdb error 'Scripting in the "Python" language is not supported in this copy of GDB.'
 - *(userspace)* Update vscode launch configuration and Makefiles for utest and libc_test
+- *(userspace/coreutils)* Generate symlink "[" on install
+- *(userspace/libc)* Correctly detect linux in cmake
 - *(vscode)* Add separated tasks for building bootloader, kernel, drivers, userspace, and image
 - *(No Category)* Initial commit
 - *(No Category)* Delete README.md
@@ -1696,17 +1753,26 @@ Use SetWorkingDirectory()
 - *(No Category)* Add <sys/socket.h> for socket programming support
 - *(No Category)* Implement strcoll()
 - *(No Category)* Implement qsort, realloc and reallocarray functions in stdlib
+- *(No Category)* Add Clean, Build & Run tasks for vscode
 
 
 ### <!-- 2 -->🚜 Refactor
 
 - *(driver/api)* Fix formatting
 - *(driver/api)* Delegate memory allocation and deallocation to DriverManager
+- *(kernel)* Remove unused TaskingPanic() function
 - *(kernel/pci)* Simplify PCI device initialization by delegating to PCIManager
 - *(kernel/syscalls)* Simplify argument handling in HandleNativeSyscalls
+- *(rootfs)* Change "initrd" to "rootfs"
+- *(rootfs)* Reorganize file structure and remove unnecessary .gitkeep files
 - *(tests)* Remove obsolete SIMD and web test files
+- *(tools)* Update boot configurations
+- *(userspace)* Move uname program to coreutils
+- *(userspace)* Build using cmake
 - *(userspace/apps/test)* :recycle: move all functions in one file
 - *(userspace/apps/test/libc_test)* Remove deprecated string test files
+- *(userspace/coreutils)* Improve uname command
+- *(userspace/coreutils)* Change code style
 - *(userspace/libc)* Replace syscall2 with call_kill in kill function
 - *(userspace/libc)* Implement pthread_sigmask, sigaddset, sigfillset & sigprocmask
 - *(userspace/libs)* Rename libdemo to libexample
@@ -1714,6 +1780,7 @@ Use SetWorkingDirectory()
 - *(No Category)* Fix build on i386
 - *(No Category)* Fix softfloat on aarch64 and arm
 - *(No Category)* Fix release building for aarch64 and arm
+- *(No Category)* Sync headers
 
 
 ### <!-- 3 -->📚 Documentation
@@ -1723,6 +1790,14 @@ Use SetWorkingDirectory()
 - *(syscalls)* Add documentation for FBIOGET_SCREEN_INFO ioctl
 - *(No Category)* Remove .dockerignore, Dockerfile, and compose.yaml
 - *(No Category)* Update README.md
+- *(No Category)* Update build instructions
+- *(No Category)* Add note in echo.c PrintHelp()
+- *(No Category)* Update contributing guidelines for commit messages and versioning
+
+
+### <!-- 5 -->🎨 Styling
+
+- *(kernel)* Format document
 
 
 ### <!-- 6 -->🧪 Testing
@@ -1734,6 +1809,8 @@ Use SetWorkingDirectory()
 ### <!-- 7 -->⚙️ Miscellaneous Tasks
 
 - *(devcontainer)* Rename dev container (libc_test)
+- *(devcontainer)* Cleanup devcontainer.json file
+- *(userspace/coreutils)* Update .gitignore
 - *(userspace/libc)* Update vscode workspace config
 - *(vscode)* Add conventional commit scopes for kernel
 - *(vscode)* Add recommended extensions for improved development experience
@@ -1798,6 +1875,9 @@ Use SetWorkingDirectory()
 - *(No Category)* Fix ci
 - *(No Category)* Fix limine in ci build
 - *(No Category)* Add "push: never" to devcontainers/ci
+- *(No Category)* Add git-cliff
+- *(No Category)* Add CHANGELOG.md in artifacts
+- *(No Category)* Separate github pages deploy workflow
 
 
 <!-- generated by git-cliff -->
