@@ -36,7 +36,7 @@ using Tasking::PCB;
 using Tasking::TCB;
 
 static int sys_api_version(SysFrm *Frame, int version) { return 0; }
-static int sys_dummy(SysFrm *Frame) { return 0; }
+static int sys_debug_report(SysFrm *Frame) { return 0; }
 
 static ssize_t sys_read(SysFrm *Frame, int fildes, void *buf, size_t nbyte)
 {
@@ -264,74 +264,77 @@ static int sys_uname(SysFrm *Frame, struct kutsname *buf)
 static SyscallData scTbl[SYS_MAX] = {};
 __constructor void __init_native_syscalls(void)
 {
+#define init_syscall(name, func) \
+	scTbl[name] = {#name, (void *)func}
+
 	/* Initialization */
-	scTbl[SYS_API_VERSION] = {"SYS_API_VERSION", (void *)sys_api_version};
-	scTbl[1] = {"dummy", (void *)sys_dummy};
+	init_syscall(SYS_API_VERSION, sys_api_version);
+	init_syscall(SYS_DEBUG_REPORT, sys_debug_report);
 
 	/* I/O */
-	scTbl[SYS_READ] = {"SYS_READ", (void *)sys_read};
-	scTbl[SYS_PREAD] = {"SYS_PREAD", (void *)sys_pread};
-	scTbl[SYS_WRITE] = {"SYS_WRITE", (void *)sys_write};
-	scTbl[SYS_PWRITE] = {"SYS_PWRITE", (void *)sys_pwrite};
-	scTbl[SYS_OPEN] = {"SYS_OPEN", (void *)sys_open};
-	scTbl[SYS_CLOSE] = {"SYS_CLOSE", (void *)sys_close};
-	scTbl[SYS_IOCTL] = {"SYS_IOCTL", (void *)sys_ioctl};
-	scTbl[SYS_FCNTL] = {"SYS_FCNTL", (void *)sys_fcntl};
+	init_syscall(SYS_READ, sys_read);
+	init_syscall(SYS_PREAD, sys_pread);
+	init_syscall(SYS_WRITE, sys_write);
+	init_syscall(SYS_PWRITE, sys_pwrite);
+	init_syscall(SYS_OPEN, sys_open);
+	init_syscall(SYS_CLOSE, sys_close);
+	init_syscall(SYS_IOCTL, sys_ioctl);
+	init_syscall(SYS_FCNTL, sys_fcntl);
 
 	/* File Status */
-	scTbl[SYS_STAT] = {"SYS_STAT", (void *)sys_stat};
-	scTbl[SYS_FSTAT] = {"SYS_FSTAT", (void *)sys_fstat};
-	scTbl[SYS_LSTAT] = {"SYS_LSTAT", (void *)sys_lstat};
-	scTbl[SYS_ACCESS] = {"SYS_ACCESS", (void *)sys_access};
-	scTbl[SYS_TRUNCATE] = {"SYS_TRUNCATE", (void *)sys_truncate};
-	scTbl[SYS_FTRUNCATE] = {"SYS_FTRUNCATE", (void *)sys_ftruncate};
-	scTbl[SYS_TELL] = {"SYS_TELL", (void *)sys_tell};
-	scTbl[SYS_SEEK] = {"SYS_SEEK", (void *)sys_seek};
+	init_syscall(SYS_STAT, sys_stat);
+	init_syscall(SYS_FSTAT, sys_fstat);
+	init_syscall(SYS_LSTAT, sys_lstat);
+	init_syscall(SYS_ACCESS, sys_access);
+	init_syscall(SYS_TRUNCATE, sys_truncate);
+	init_syscall(SYS_FTRUNCATE, sys_ftruncate);
+	init_syscall(SYS_TELL, sys_tell);
+	init_syscall(SYS_SEEK, sys_seek);
 
 	/* Process Control */
-	scTbl[SYS_EXIT] = {"SYS_EXIT", (void *)sys_exit};
-	scTbl[SYS_FORK] = {"SYS_FORK", (void *)sys_fork};
-	scTbl[SYS_EXECVE] = {"SYS_EXECVE", (void *)sys_execve};
-	scTbl[SYS_GETPID] = {"SYS_GETPID", (void *)sys_getpid};
-	scTbl[SYS_GETPPID] = {"SYS_GETPPID", (void *)sys_getppid};
-	scTbl[SYS_WAITPID] = {"SYS_WAITPID", (void *)sys_waitpid};
-	scTbl[SYS_KILL] = {"SYS_KILL", (void *)sys_kill};
-	scTbl[SYS_PRCTL] = {"SYS_PRCTL", (void *)sys_prctl};
+	init_syscall(SYS_EXIT, sys_exit);
+	init_syscall(SYS_FORK, sys_fork);
+	init_syscall(SYS_EXECVE, sys_execve);
+	init_syscall(SYS_GETPID, sys_getpid);
+	init_syscall(SYS_GETPPID, sys_getppid);
+	init_syscall(SYS_WAITPID, sys_waitpid);
+	init_syscall(SYS_KILL, sys_kill);
+	init_syscall(SYS_PRCTL, sys_prctl);
 
 	/* Memory */
-	scTbl[SYS_BRK] = {"SYS_BRK", (void *)sys_brk};
-	scTbl[SYS_MMAP] = {"SYS_MMAP", (void *)sys_mmap};
-	scTbl[SYS_MUNMAP] = {"SYS_MUNMAP", (void *)sys_munmap};
-	scTbl[SYS_MPROTECT] = {"SYS_MPROTECT", (void *)sys_mprotect};
-	scTbl[SYS_MADVISE] = {"SYS_MADVISE", (void *)sys_madvise};
+	init_syscall(SYS_BRK, sys_brk);
+	init_syscall(SYS_MMAP, sys_mmap);
+	init_syscall(SYS_MUNMAP, sys_munmap);
+	init_syscall(SYS_MPROTECT, sys_mprotect);
+	init_syscall(SYS_MADVISE, sys_madvise);
 
 	/* Communication */
-	scTbl[SYS_PIPE] = {"SYS_PIPE", (void *)sys_pipe};
-	scTbl[SYS_DUP] = {"SYS_DUP", (void *)sys_dup};
-	scTbl[SYS_DUP2] = {"SYS_DUP2", (void *)sys_dup2};
-	scTbl[SYS_SOCKET] = {"SYS_SOCKET", (void *)sys_socket};
-	scTbl[SYS_BIND] = {"SYS_BIND", (void *)sys_bind};
-	scTbl[SYS_CONNECT] = {"SYS_CONNECT", (void *)sys_connect};
-	scTbl[SYS_LISTEN] = {"SYS_LISTEN", (void *)sys_listen};
-	scTbl[SYS_ACCEPT] = {"SYS_ACCEPT", (void *)sys_accept};
-	scTbl[SYS_SEND] = {"SYS_SEND", (void *)sys_send};
-	scTbl[SYS_RECV] = {"SYS_RECV", (void *)sys_recv};
-	scTbl[SYS_SHUTDOWN] = {"SYS_SHUTDOWN", (void *)sys_shutdown};
+	init_syscall(SYS_PIPE, sys_pipe);
+	init_syscall(SYS_DUP, sys_dup);
+	init_syscall(SYS_DUP2, sys_dup2);
+	init_syscall(SYS_SOCKET, sys_socket);
+	init_syscall(SYS_BIND, sys_bind);
+	init_syscall(SYS_CONNECT, sys_connect);
+	init_syscall(SYS_LISTEN, sys_listen);
+	init_syscall(SYS_ACCEPT, sys_accept);
+	init_syscall(SYS_SEND, sys_send);
+	init_syscall(SYS_RECV, sys_recv);
+	init_syscall(SYS_SHUTDOWN, sys_shutdown);
 
 	/* Time */
-	scTbl[SYS_TIME] = {"SYS_TIME", (void *)sys_time};
-	scTbl[SYS_CLOCK_GETTIME] = {"SYS_CLOCK_GETTIME", (void *)sys_clock_gettime};
-	scTbl[SYS_CLOCK_SETTIME] = {"SYS_CLOCK_SETTIME", (void *)sys_clock_settime};
-	scTbl[SYS_NANOSLEEP] = {"SYS_NANOSLEEP", (void *)sys_nanosleep};
+	init_syscall(SYS_TIME, sys_time);
+	init_syscall(SYS_CLOCK_GETTIME, sys_clock_gettime);
+	init_syscall(SYS_CLOCK_SETTIME, sys_clock_settime);
+	init_syscall(SYS_NANOSLEEP, sys_nanosleep);
 
 	/* Miscellaneous */
-	scTbl[SYS_GETCWD] = {"SYS_GETCWD", (void *)sys_getcwd};
-	scTbl[SYS_CHDIR] = {"SYS_CHDIR", (void *)sys_chdir};
-	scTbl[SYS_MKDIR] = {"SYS_MKDIR", (void *)sys_mkdir};
-	scTbl[SYS_RMDIR] = {"SYS_RMDIR", (void *)sys_rmdir};
-	scTbl[SYS_UNLINK] = {"SYS_UNLINK", (void *)sys_unlink};
-	scTbl[SYS_RENAME] = {"SYS_RENAME", (void *)sys_rename};
-	scTbl[SYS_UNAME] = {"SYS_UNAME", (void *)sys_uname};
+	init_syscall(SYS_GETCWD, sys_getcwd);
+	init_syscall(SYS_CHDIR, sys_chdir);
+	init_syscall(SYS_MKDIR, sys_mkdir);
+	init_syscall(SYS_RMDIR, sys_rmdir);
+	init_syscall(SYS_UNLINK, sys_unlink);
+	init_syscall(SYS_RENAME, sys_rename);
+	init_syscall(SYS_UNAME, sys_uname);
 }
 
 uintptr_t HandleNativeSyscalls(SysFrm *Frame)
