@@ -65,7 +65,7 @@ static struct cag_option ConfigOptions[] = {
 	 .access_letters = "yY",
 	 .access_name = "linux",
 	 .value_name = "BOOL",
-	 .description = "Use Linux syscalls by default"},
+	 .description = "Use Linux Subsystem"},
 
 	{.identifier = 'l',
 	 .access_letters = NULL,
@@ -99,21 +99,11 @@ static struct cag_option ConfigOptions[] = {
 
 void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 {
-	if (ConfigString == NULL ||
-		strlen(ConfigString) == 0)
-	{
-		KPrint("Empty kernel parameters!");
+	assert(ConfigString != NULL && ModConfig != NULL);
+	if (strlen(ConfigString) == 0)
 		return;
-	}
-
-	if (ModConfig == NULL)
-	{
-		KPrint("ModConfig is NULL!");
-		return;
-	}
 
 	KPrint("Kernel parameters: %s", ConfigString);
-	debug("Kernel parameters: %s", ConfigString);
 
 	char *argv[32];
 	int argc = 0;
@@ -214,9 +204,9 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0
-				? ModConfig->UseLinuxSyscalls = true
-				: ModConfig->UseLinuxSyscalls = false;
-			KPrint("Use Linux syscalls by default: %s", value);
+				? ModConfig->LinuxSubsystem = true
+				: ModConfig->LinuxSubsystem = false;
+			KPrint("Use Linux Subsystem by default: %s", value);
 			break;
 		}
 		case 'o':
@@ -255,9 +245,9 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		}
 		case 'h':
 		{
-			KPrint("\n---------------------------------------------------------------------------\nUsage: fennix.elf [OPTION]...\nKernel configuration.");
-			cag_option_print(ConfigOptions, CAG_ARRAY_SIZE(ConfigOptions),
-							 nullptr);
+			KPrint("Usage: fennix.elf [OPTION]...");
+			KPrint("Fennix Kernel v%s", KERNEL_VERSION);
+			cag_option_print(ConfigOptions, CAG_ARRAY_SIZE(ConfigOptions), nullptr);
 			KPrint("\x1b[1;31;41mSystem Halted.");
 			CPU::Stop();
 		}

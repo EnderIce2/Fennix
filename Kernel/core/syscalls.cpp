@@ -64,7 +64,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 	Tasking::TaskInfo *Ttinfo = &thisThread->Info;
 	uintptr_t ret;
 
-	if (Config.UseLinuxSyscalls)
+	if (Config.LinuxSubsystem)
 	{
 		ret = HandleLinuxSyscalls(Frame);
 		goto Ret;

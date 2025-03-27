@@ -33,7 +33,7 @@ struct KernelConfig
 	bool SchedulerType;
 	char DriverDirectory[256];
 	char InitPath[256];
-	bool UseLinuxSyscalls;
+	bool LinuxSubsystem;
 	bool InterruptsOnCrash;
 	int Cores;
 	int IOAPICInterruptCore;

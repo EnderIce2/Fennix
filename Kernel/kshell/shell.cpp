@@ -600,7 +600,7 @@ void KShellThread()
 			}
 
 			Tasking::TaskCompatibility compat = Tasking::Native;
-			if (Config.UseLinuxSyscalls)
+			if (Config.LinuxSubsystem)
 				compat = Tasking::Linux;
 
 			int ret = Execute::Spawn((char *)path.c_str(), argv, envp,

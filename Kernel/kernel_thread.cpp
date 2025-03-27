@@ -48,7 +48,7 @@ cold int SpawnInit()
 		nullptr};
 
 	Tasking::TaskCompatibility compat = Tasking::Native;
-	if (Config.UseLinuxSyscalls)
+	if (Config.LinuxSubsystem)
 		compat = Tasking::Linux;
 
 	return Execute::Spawn(Config.InitPath, argv, envp,
