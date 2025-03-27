@@ -174,8 +174,7 @@ namespace Tasking::Scheduler
 
 	void Custom::StartIdleProcess()
 	{
-		IdleProcess = ctx->CreateProcess(nullptr, (char *)"Idle",
-										 TaskExecutionMode::Kernel, true);
+		IdleProcess = ctx->GetKernelProcess();
 		for (int i = 0; i < SMP::CPUCores; i++)
 		{
 			TCB *thd = ctx->CreateThread(IdleProcess, IP(__custom_sched_idle_loop));
