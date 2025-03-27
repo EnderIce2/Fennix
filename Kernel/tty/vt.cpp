@@ -176,7 +176,11 @@ namespace KernelConsole
 			debug("returning sid %d", thisProcess->Security.SessionID);
 			return 0;
 		}
-
+		case TIOCSCTTY:
+		{
+			fixme("stub ioctl TIOCSCTTY");
+			return 0;
+		}
 		default:
 		{
 			debug("Unknown ioctl %#lx", Request);
