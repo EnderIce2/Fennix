@@ -33,7 +33,7 @@
 
 cold int SpawnInit()
 {
-	const char *envp[7] = {
+	const char *envp[] = {
 		"PATH=/bin:/usr/bin",
 		"LD_LIBRARY_PATH=/sys/lib:/usr/lib",
 		"TERM=tty",
@@ -42,9 +42,8 @@ cold int SpawnInit()
 		"TZ=UTC",
 		nullptr};
 
-	const char *argv[4] = {
+	const char *argv[] = {
 		Config.InitPath,
-		"--kernel",
 		nullptr};
 
 	Tasking::TaskCompatibility compat = Tasking::Native;
