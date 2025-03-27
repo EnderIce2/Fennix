@@ -33,10 +33,14 @@ SOFTWARE.
 #ifndef CAG_LIBRARY_H
 #define CAG_LIBRARY_H
 
-#include <types.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
 
-typedef unsigned int FILE; // TODO: Implement FILE
-
+/**
+ * The following defines CAG_EXPORT and CAG_IMPORT which are required to export
+ * shared library functions.
+ */
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define CAG_EXPORT __declspec(dllexport)
 #define CAG_IMPORT __declspec(dllimport)
@@ -48,6 +52,10 @@ typedef unsigned int FILE; // TODO: Implement FILE
 #define CAG_IMPORT
 #endif
 
+/**
+ * This block defines CAG_PUBLIC, which only uses CAG_EXPORT and CAG_IMPORT if
+ * the cargs is compiled as a shared library.
+ */
 #if defined(CAG_SHARED)
 #if defined(CAG_EXPORTS)
 #define CAG_PUBLIC CAG_EXPORT
@@ -56,6 +64,16 @@ typedef unsigned int FILE; // TODO: Implement FILE
 #endif
 #else
 #define CAG_PUBLIC
+#endif
+
+/**
+ * This block defines CAG_DEPRECATED which can be used to deprecate library
+ * functions including a comment on the deprecation.
+ */
+#if (!__cplusplus && __STDC_VERSION__ >= 202311L) || (__cplusplus >= 201402L)
+#define CAG_DEPRECATED(comment) [[deprecated(comment)]]
+#else
+#define CAG_DEPRECATED(comment)
 #endif
 
 #ifdef __cplusplus
@@ -88,28 +106,23 @@ extern "C"
 		char **argv;
 		int index;
 		int inner_index;
+		int error_index;
+		char error_letter;
 		bool forced_end;
 		char identifier;
 		char *value;
 	} cag_option_context;
 
+	/**
+	 * Prototype for printer used in cag_option_printer. For example fprintf have
+	 * same prototype
+	 */
+	typedef int (*cag_printer)(void *ctx, const char *fmt, ...);
+
 /**
  * This is just a small macro which calculates the size of an array.
  */
 #define CAG_ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
-	/**
-	 * @brief Prints all options to the terminal.
-	 *
-	 * This function prints all options to the terminal. This can be used to
-	 * generate the output for a "--help" option.
-	 *
-	 * @param options The options which will be printed.
-	 * @param option_count The option count which will be printed.
-	 * @param destination The destination where the output will be printed.
-	 */
-	CAG_PUBLIC void cag_option_print(const cag_option *options, size_t option_count,
-									 FILE *destination);
 
 	/**
 	 * @brief Prepare argument options context for parsing.
@@ -125,8 +138,8 @@ extern "C"
 	 * @param argc The amount of arguments the user supplied in the main function.
 	 * @param argv A pointer to the arguments of the main function.
 	 */
-	CAG_PUBLIC void cag_option_prepare(cag_option_context *context,
-									   const cag_option *options, size_t option_count, int argc, char **argv);
+	CAG_PUBLIC void cag_option_init(cag_option_context *context,
+									const cag_option *options, size_t option_count, int argc, char **argv);
 
 	/**
 	 * @brief Fetches an option from the argument list.
@@ -154,7 +167,7 @@ extern "C"
 	 * @param context The context from which the option was fetched.
 	 * @return Returns the identifier of the option.
 	 */
-	CAG_PUBLIC char cag_option_get(const cag_option_context *context);
+	CAG_PUBLIC char cag_option_get_identifier(const cag_option_context *context);
 
 	/**
 	 * @brief Gets the value from the option.
@@ -179,6 +192,105 @@ extern "C"
 	 * @return Returns the current index of the context.
 	 */
 	CAG_PUBLIC int cag_option_get_index(const cag_option_context *context);
+
+	/**
+	 * @brief Retrieves the index of an invalid option.
+	 *
+	 * This function retrieves the index of an invalid option if the provided option
+	 * does not match any of the options specified in the `cag_option` list. This is
+	 * particularly useful when detailed information about an invalid option is
+	 * required.
+	 *
+	 * @param context Pointer to the context from which the option was fetched.
+	 * @return Returns the index of the invalid option, or -1 if it is not invalid.
+	 */
+	CAG_PUBLIC int cag_option_get_error_index(const cag_option_context *context);
+
+	/**
+	 * @brief Retrieves the letter character of the invalid option.
+	 *
+	 * This function retrieves the character of the invalid option character
+	 * if the provided option does not match any of the options specified in the
+	 * `cag_option` list.
+	 *
+	 * @param context Pointer to the context from which the option was fetched.
+	 * @return Returns the letter that was unknown, or 0 otherwise.
+	 */
+	CAG_PUBLIC char cag_option_get_error_letter(const cag_option_context *context);
+
+/**
+ * @brief Prints the error associated with the invalid option to the specified
+ * destination.
+ *
+ * This function prints information about the error associated with the invalid
+ * option to the specified destination (such as a file stream). It helps in
+ * displaying the error of the current context.
+ *
+ * @param context Pointer to the context from which the option was fetched.
+ * @param destination Pointer to the file stream where the error information
+ * will be printed.
+ */
+#ifndef CAG_NO_FILE
+	CAG_PUBLIC void cag_option_print_error(const cag_option_context *context,
+										   FILE *destination);
+#endif
+
+	/**
+	 * @brief Prints the error associated with the invalid option using user
+	 * callback.
+	 *
+	 * This function prints information about the error associated with the invalid
+	 * option using user callback. Callback prototype is same with fprintf. It helps
+	 * in displaying the error of the current context.
+	 *
+	 * @param context Pointer to the context from which the option was fetched.
+	 * @param printer The printer callback function. For example fprintf.
+	 * @param printer_ctx The parameter for printer callback. For example fprintf
+	 * could use parameter stderr.
+	 */
+	CAG_PUBLIC void cag_option_printer_error(const cag_option_context *context,
+											 cag_printer printer, void *printer_ctx);
+
+/**
+ * @brief Prints all options to the terminal.
+ *
+ * This function prints all options to the terminal. This can be used to
+ * generate the output for a "--help" option.
+ *
+ * @param options The options which will be printed.
+ * @param option_count The option count which will be printed.
+ * @param destination The destination where the output will be printed.
+ */
+#ifndef CAG_NO_FILE
+	CAG_PUBLIC void cag_option_print(const cag_option *options, size_t option_count,
+									 FILE *destination);
+#endif
+
+	/**
+	 * @brief Prints all options using user callback.
+	 *
+	 * This function prints all options using user callback. This can be used to
+	 * generate the output for a "--help" option.
+	 * Using user callback is useful in tiny system without FILE support
+	 *
+	 * @param options The options which will be printed.
+	 * @param option_count The option count which will be printed.
+	 * @param destination The destination where the output will be printed.
+	 * @param printer The printer callback function. For example fprintf.
+	 * @param printer_ctx The parameter for printer callback. For example fprintf
+	 * could use parameter stderr.
+	 */
+	CAG_PUBLIC void cag_option_printer(const cag_option *options,
+									   size_t option_count, cag_printer printer, void *printer_ctx);
+
+	CAG_DEPRECATED(
+		"cag_option_prepare has been deprecated. Use cag_option_init instead.")
+	CAG_PUBLIC void cag_option_prepare(cag_option_context *context,
+									   const cag_option *options, size_t option_count, int argc, char **argv);
+
+	CAG_DEPRECATED(
+		"cag_option_get has been deprecated. Use cag_option_get_identifier instead.")
+	CAG_PUBLIC char cag_option_get(const cag_option_context *context);
 
 #ifdef __cplusplus
 } // extern "C"

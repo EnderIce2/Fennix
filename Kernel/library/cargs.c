@@ -27,22 +27,24 @@ SOFTWARE.
 
 #include <assert.h>
 #include <cargs.h>
-#include <convert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #define CAG_OPTION_PRINT_DISTANCE 4
 #define CAG_OPTION_PRINT_MIN_INDENTION 20
 
 static void cag_option_print_value(const cag_option *option,
-								   size_t *accessor_length, FILE *destination)
+								   size_t *accessor_length, cag_printer printer, void *printer_ctx)
 {
 	if (option->value_name != NULL)
 	{
-		*accessor_length += fprintf(destination, "=%s", option->value_name);
+		*accessor_length += printer(printer_ctx, "=%s", option->value_name);
 	}
 }
 
 static void cag_option_print_letters(const cag_option *option, bool *first,
-									 size_t *accessor_length, FILE *destination)
+									 size_t *accessor_length, cag_printer printer, void *printer_ctx)
 {
 	const char *access_letter;
 	access_letter = option->access_letters;
@@ -52,12 +54,12 @@ static void cag_option_print_letters(const cag_option *option, bool *first,
 		{
 			if (*first)
 			{
-				*accessor_length += fprintf(destination, "-%c", *access_letter);
+				*accessor_length += printer(printer_ctx, "-%c", *access_letter);
 				*first = false;
 			}
 			else
 			{
-				*accessor_length += fprintf(destination, ", -%c", *access_letter);
+				*accessor_length += printer(printer_ctx, ", -%c", *access_letter);
 			}
 			++access_letter;
 		}
@@ -65,17 +67,18 @@ static void cag_option_print_letters(const cag_option *option, bool *first,
 }
 
 static void cag_option_print_name(const cag_option *option, bool *first,
-								  size_t *accessor_length, FILE *destination)
+								  size_t *accessor_length, cag_printer printer, void *printer_ctx)
 {
 	if (option->access_name != NULL)
 	{
 		if (*first)
 		{
-			*accessor_length += fprintf(destination, "--%s", option->access_name);
+			*accessor_length += printer(printer_ctx, "--%s", option->access_name);
+			*first = false;
 		}
 		else
 		{
-			*accessor_length += fprintf(destination, ", --%s", option->access_name);
+			*accessor_length += printer(printer_ctx, ", --%s", option->access_name);
 		}
 	}
 }
@@ -119,41 +122,8 @@ static size_t cag_option_get_print_indention(const cag_option *options,
 	return result;
 }
 
-void cag_option_print(const cag_option *options, size_t option_count,
-					  FILE *destination)
-{
-	size_t option_index, indention, i, accessor_length;
-	const cag_option *option;
-	bool first;
-
-	indention = cag_option_get_print_indention(options, option_count);
-
-	for (option_index = 0; option_index < option_count; ++option_index)
-	{
-		option = &options[option_index];
-		accessor_length = 0;
-		first = true;
-
-		fputs("  ", destination);
-
-		cag_option_print_letters(option, &first, &accessor_length, destination);
-		cag_option_print_name(option, &first, &accessor_length, destination);
-		cag_option_print_value(option, &accessor_length, destination);
-
-		for (i = accessor_length; i < indention; ++i)
-		{
-			fputs(" ", destination);
-		}
-
-		fputs(" ", destination);
-		fputs(option->description, destination);
-
-		fprintf(destination, "\n");
-	}
-}
-
-void cag_option_prepare(cag_option_context *context, const cag_option *options,
-						size_t option_count, int argc, char **argv)
+void cag_option_init(cag_option_context *context, const cag_option *options,
+					 size_t option_count, int argc, char **argv)
 {
 	// This just initialized the values to the beginning of all the arguments.
 	context->options = options;
@@ -163,6 +133,8 @@ void cag_option_prepare(cag_option_context *context, const cag_option *options,
 	context->index = 1;
 	context->inner_index = 0;
 	context->forced_end = false;
+	context->error_index = -1;
+	context->error_letter = 0;
 }
 
 static const cag_option *cag_option_find_by_name(cag_option_context *context,
@@ -187,7 +159,7 @@ static const cag_option *cag_option_find_by_name(cag_option_context *context,
 		// Try to compare the name of the access name. We can use the name_size or
 		// this comparison, since we are guaranteed to have null-terminated access
 		// names.
-		if (strncmp(option->access_name, name, name_size) == 0)
+		if (strncmp(option->access_name, name, name_size) == 0 && option->access_name[name_size] == '\0')
 		{
 			return option;
 		}
@@ -289,21 +261,21 @@ static void cag_option_parse_access_name(cag_option_context *context, char **c)
 	// this option has one or not. Since we don't set any identifier specifically,
 	// it will remain '?' within the context.
 	option = cag_option_find_by_name(context, n, (size_t)(*c - n));
-	if (option == NULL)
+	if (option != NULL)
 	{
-		// Since this option is invalid, we will move on to the next index. There is
-		// nothing we can do about this.
-		++context->index;
-		return;
+		// We found an option and now we can specify the identifier within the
+		// context.
+		context->identifier = option->identifier;
+
+		// And now we try to parse the value. This function will also check whether
+		// this option is actually supposed to have a value.
+		cag_option_parse_value(context, option, c);
 	}
-
-	// We found an option and now we can specify the identifier within the
-	// context.
-	context->identifier = option->identifier;
-
-	// And now we try to parse the value. This function will also check whether
-	// this option is actually supposed to have a value.
-	cag_option_parse_value(context, option, c);
+	else
+	{
+		// Remember the error index so that we can print a error message.
+		context->error_index = context->index;
+	}
 
 	// And finally we move on to the next index.
 	++context->index;
@@ -313,8 +285,9 @@ static void cag_option_parse_access_letter(cag_option_context *context,
 										   char **c)
 {
 	const cag_option *option;
-	char *n = *c;
-	char *v;
+	char *n, *v, letter;
+
+	n = *c;
 
 	// Figure out which option this letter belongs to. This might return NULL if
 	// the letter is not registered, which means the user supplied an unknown
@@ -322,22 +295,24 @@ static void cag_option_parse_access_letter(cag_option_context *context,
 	// option. We have to skip the value parsing since we don't know whether the
 	// user thinks this option has one or not. Since we don't set any identifier
 	// specifically, it will remain '?' within the context.
-	option = cag_option_find_by_letter(context, n[context->inner_index]);
+	letter = n[context->inner_index];
+	option = cag_option_find_by_letter(context, letter);
+	v = &n[++context->inner_index];
 	if (option == NULL)
 	{
-		++context->index;
-		context->inner_index = 0;
-		return;
+		context->error_index = context->index;
+		context->error_letter = letter;
 	}
+	else
+	{
+		// We found an option and now we can specify the identifier within the
+		// context.
+		context->identifier = option->identifier;
 
-	// We found an option and now we can specify the identifier within the
-	// context.
-	context->identifier = option->identifier;
-
-	// And now we try to parse the value. This function will also check whether
-	// this option is actually supposed to have a value.
-	v = &n[++context->inner_index];
-	cag_option_parse_value(context, option, &v);
+		// And now we try to parse the value. This function will also check whether
+		// this option is actually supposed to have a value.
+		cag_option_parse_value(context, option, &v);
+	}
 
 	// Check whether we reached the end of this option argument.
 	if (*v == '\0')
@@ -351,18 +326,24 @@ static void cag_option_shift(cag_option_context *context, int start, int option,
 							 int end)
 {
 	char *tmp;
-	int a_index, shift_index, shift_count, left_index, right_index;
+	int a_index, shift_index, left_shift, right_shift, target_index, source_index;
 
-	shift_count = option - start;
+	// The block between start and option will be shifted to the end, and the
+	// order of everything will be preserved. Left shift is the amount of indexes
+	// the block between option and end will shift towards the start, and right
+	// shift is the amount of indexes the block between start and option will be
+	// shifted towards the end.
+	left_shift = option - start;
+	right_shift = end - option;
 
 	// There is no shift is required if the start and the option have the same
 	// index.
-	if (shift_count == 0)
+	if (left_shift == 0)
 	{
 		return;
 	}
 
-	// Lets loop through the option strings first, which we will move towards the
+	// Let's loop through the option strings first, which we will move towards the
 	// beginning.
 	for (a_index = option; a_index < end; ++a_index)
 	{
@@ -372,20 +353,33 @@ static void cag_option_shift(cag_option_context *context, int start, int option,
 
 		// Let's loop over all option values and shift them one towards the end.
 		// This will override the option value we just stored temporarily.
-		for (shift_index = 0; shift_index < shift_count; ++shift_index)
+		for (shift_index = 0; shift_index < left_shift; ++shift_index)
 		{
-			left_index = a_index - shift_index;
-			right_index = a_index - shift_index - 1;
-			context->argv[left_index] = context->argv[right_index];
+			target_index = a_index - shift_index;
+			source_index = a_index - shift_index - 1;
+			context->argv[target_index] = context->argv[source_index];
 		}
 
 		// Now restore the saved option value at the beginning.
-		context->argv[a_index - shift_count] = tmp;
+		context->argv[a_index - left_shift] = tmp;
 	}
 
 	// The new index will be before all non-option values, in such a way that they
 	// all will be moved again in the next fetch call.
-	context->index = end - shift_count;
+	context->index = end - left_shift;
+
+	// The error index may have changed, we need to fix that as well.
+	if (context->error_index >= start)
+	{
+		if (context->error_index < option)
+		{
+			context->error_index += right_shift;
+		}
+		else if (context->error_index < end)
+		{
+			context->error_index -= left_shift;
+		}
+	}
 }
 
 static bool cag_option_is_argument_string(const char *c)
@@ -395,17 +389,22 @@ static bool cag_option_is_argument_string(const char *c)
 
 static int cag_option_find_next(cag_option_context *context)
 {
-	int next_index, next_option_index;
+	// Prepare to search the next option at the next index.
+	int next_index;
 	char *c;
 
-	// Prepare to search the next option at the next index.
 	next_index = context->index;
-	next_option_index = next_index;
 
-	// Grab a pointer to the string and verify that it is not the end. If it is
-	// the end, we have to return false to indicate that we finished.
-	c = context->argv[next_option_index];
-	if (context->forced_end || c == NULL || (uintptr_t)c == (uintptr_t)0xfffffffffffff000 /* TODO: workaround */)
+	// Let's verify that it is not the end If it is
+	// the end we have to return -1 to indicate that we finished.
+	if (next_index >= context->argc)
+	{
+		return -1;
+	}
+
+	// Grab a pointer to the argument string.
+	c = context->argv[next_index];
+	if (context->forced_end || c == NULL)
 	{
 		return -1;
 	}
@@ -415,18 +414,23 @@ static int cag_option_find_next(cag_option_context *context)
 	// as an option neither.
 	while (!cag_option_is_argument_string(c))
 	{
-		c = context->argv[++next_option_index];
-		if (c == NULL)
+		if (++next_index >= context->argc)
 		{
 			// We reached the end and did not find any argument anymore. Let's tell
 			// our caller that we reached the end.
+			return -1;
+		}
+
+		c = context->argv[next_index];
+		if (c == NULL)
+		{
 			return -1;
 		}
 	}
 
 	// Indicate that we found an option which can be processed. The index of the
 	// next option will be returned.
-	return next_option_index;
+	return next_index;
 }
 
 bool cag_option_fetch(cag_option_context *context)
@@ -439,6 +443,8 @@ bool cag_option_fetch(cag_option_context *context)
 	// parameter from the previous option to this one.
 	context->identifier = '?';
 	context->value = NULL;
+	context->error_index = -1;
+	context->error_letter = 0;
 
 	// Check whether there are any options left to parse and remember the old
 	// index as well as the new index. In the end we will move the option junk to
@@ -493,7 +499,7 @@ bool cag_option_fetch(cag_option_context *context)
 	return context->forced_end == false;
 }
 
-char cag_option_get(const cag_option_context *context)
+char cag_option_get_identifier(const cag_option_context *context)
 {
 	// We just return the identifier here.
 	return context->identifier;
@@ -509,4 +515,99 @@ int cag_option_get_index(const cag_option_context *context)
 {
 	// Either we point to a value item,
 	return context->index;
+}
+
+CAG_PUBLIC int cag_option_get_error_index(const cag_option_context *context)
+{
+	// This is set
+	return context->error_index;
+}
+
+CAG_PUBLIC char cag_option_get_error_letter(const cag_option_context *context)
+{
+	// This is set to the unknown option letter if it was parsed.
+	return context->error_letter;
+}
+
+CAG_PUBLIC void cag_option_printer_error(const cag_option_context *context,
+										 cag_printer printer, void *printer_ctx)
+{
+	int error_index;
+	char error_letter;
+
+	error_index = cag_option_get_error_index(context);
+	if (error_index < 0)
+	{
+		return;
+	}
+
+	error_letter = cag_option_get_error_letter(context);
+	if (error_letter)
+	{
+		printer(printer_ctx, "Unknown option '%c' in '%s'.\n", error_letter,
+				context->argv[error_index]);
+	}
+	else
+	{
+		printer(printer_ctx, "Unknown option '%s'.\n", context->argv[error_index]);
+	}
+}
+
+CAG_PUBLIC void cag_option_printer(const cag_option *options,
+								   size_t option_count, cag_printer printer, void *printer_ctx)
+{
+	size_t option_index, indention, i, accessor_length;
+	const cag_option *option;
+	bool first;
+
+	indention = cag_option_get_print_indention(options, option_count);
+
+	for (option_index = 0; option_index < option_count; ++option_index)
+	{
+		option = &options[option_index];
+		accessor_length = 0;
+		first = true;
+
+		printer(printer_ctx, "  ");
+
+		cag_option_print_letters(option, &first, &accessor_length, printer,
+								 printer_ctx);
+		cag_option_print_name(option, &first, &accessor_length, printer,
+							  printer_ctx);
+		cag_option_print_value(option, &accessor_length, printer, printer_ctx);
+
+		for (i = accessor_length; i < indention; ++i)
+		{
+			printer(printer_ctx, " ");
+		}
+
+		printer(printer_ctx, " %s\n", option->description);
+	}
+}
+
+#ifndef CAG_NO_FILE
+CAG_PUBLIC void cag_option_print_error(const cag_option_context *context,
+									   FILE *destination)
+{
+	cag_option_printer_error(context, (cag_printer)fprintf, destination);
+}
+#endif
+
+#ifndef CAG_NO_FILE
+void cag_option_print(const cag_option *options, size_t option_count,
+					  FILE *destination)
+{
+	cag_option_printer(options, option_count, (cag_printer)fprintf, destination);
+}
+#endif
+
+void cag_option_prepare(cag_option_context *context, const cag_option *options,
+						size_t option_count, int argc, char **argv)
+{
+	cag_option_init(context, options, option_count, argc, argv);
+}
+
+char cag_option_get(const cag_option_context *context)
+{
+	return cag_option_get_identifier(context);
 }
