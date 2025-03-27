@@ -1146,9 +1146,13 @@ static int linux_ioctl(SysFrm *, int fd, unsigned long request, void *argp)
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 	Memory::VirtualMemoryArea *vma = pcb->vma;
 
-	auto pArgp = vma->UserCheckAndGetAddress(argp);
-	if (pArgp == nullptr)
-		return -linux_EFAULT;
+	void *pArgp = nullptr;
+	if (argp != nullptr)
+	{
+		pArgp = vma->UserCheckAndGetAddress(argp);
+		if (pArgp == nullptr)
+			return -linux_EFAULT;
+	}
 
 	int ret = ConvertErrnoToLinux(fdt->usr_ioctl(fd, request, pArgp));
 	return ret;
