@@ -1109,10 +1109,7 @@ static int linux_mprotect(SysFrm *, void *addr, size_t len, int prot)
 		CPU::x32::invlpg(addr);
 #elif defined(__aarch64__)
 		asmv("dsb sy");
-		asmv("tlbi vae1is, %0"
-			 :
-			 : "r"(addr)
-			 : "memory");
+		asmv("tlbi vae1is, %0" : : "r"(addr) : "memory");
 		asmv("dsb sy");
 		asmv("isb");
 #endif
@@ -2136,9 +2133,7 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 	FileNode *rn = fs->GetByPath("/sys/cfg/cross/linux", pcb->Info.RootNode);
 	if (rn)
 	{
-		struct kstat st
-		{
-		};
+		struct kstat st{};
 		rn->Stat(&st);
 
 		char *sh = new char[st.Size];
@@ -2366,6 +2361,57 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 		return -linux_EINVAL;
 
 	return ConvertErrnoToLinux(node->ReadLink(pBuf, bufsiz));
+}
+
+static int linux_fchmod(SysFrm *, int fd, mode_t mode)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+
+	if (fdt->FileMap.find(fd) == fdt->FileMap.end())
+		return -linux_EBADF;
+
+	struct kstat stat;
+	int ret = fdt->usr_fstat(fd, &stat);
+	if (ret < 0)
+		return ret;
+
+	if (stat.UserID != pcb->Security.Effective.UserID)
+		return -linux_EPERM;
+
+	/* TODO: check if FS is read-only: -linux_EROFS */
+
+	mode_t current = pcb->FileDescriptors->FileMap[fd].Mode;
+	mode_t newMode = (current & ~07777) | (mode & 07777);
+
+	/* TODO: add CAP_FSETID check */
+	if (stat.GroupID != pcb->Security.Effective.GroupID)
+		newMode &= ~S_ISGID;
+
+	/* FIXME: actually write to FS; maybe with fdt->usr_chmod or similar? */
+	pcb->FileDescriptors->FileMap[fd].Mode = newMode;
+	return 0;
+}
+
+static int linux_chmod(SysFrm *sf, const char *pathname, mode_t mode)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	const char *pPathname = vma->UserCheckAndGetAddress(pathname);
+	if (pPathname == nullptr)
+		return -linux_EFAULT;
+
+	FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+	if (!node)
+		return -linux_ENOENT;
+
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	int fd = fdt->usr_open(pPathname, O_RDONLY, 0);
+	int ret = linux_fchmod(sf, fd, mode);
+	fdt->usr_close(fd);
+	return ret;
 }
 
 static mode_t linux_umask(SysFrm *, mode_t mask)
@@ -3462,8 +3508,8 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_unlink] = {"unlink", (void *)nullptr},
 	[__NR_amd64_symlink] = {"symlink", (void *)nullptr},
 	[__NR_amd64_readlink] = {"readlink", (void *)linux_readlink},
-	[__NR_amd64_chmod] = {"chmod", (void *)nullptr},
-	[__NR_amd64_fchmod] = {"fchmod", (void *)nullptr},
+	[__NR_amd64_chmod] = {"chmod", (void *)linux_chmod},
+	[__NR_amd64_fchmod] = {"fchmod", (void *)linux_fchmod},
 	[__NR_amd64_chown] = {"chown", (void *)nullptr},
 	[__NR_amd64_fchown] = {"fchown", (void *)nullptr},
 	[__NR_amd64_lchown] = {"lchown", (void *)nullptr},
@@ -3837,7 +3883,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_chdir] = {"chdir", (void *)linux_chdir},
 	[__NR_i386_time] = {"time", (void *)nullptr},
 	[__NR_i386_mknod] = {"mknod", (void *)nullptr},
-	[__NR_i386_chmod] = {"chmod", (void *)nullptr},
+	[__NR_i386_chmod] = {"chmod", (void *)linux_chmod},
 	[__NR_i386_lchown] = {"lchown", (void *)nullptr},
 	[__NR_i386_break] = {"break", (void *)nullptr},
 	[__NR_i386_oldstat] = {"oldstat", (void *)nullptr},
@@ -3916,7 +3962,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_munmap] = {"munmap", (void *)linux_munmap},
 	[__NR_i386_truncate] = {"truncate", (void *)nullptr},
 	[__NR_i386_ftruncate] = {"ftruncate", (void *)nullptr},
-	[__NR_i386_fchmod] = {"fchmod", (void *)nullptr},
+	[__NR_i386_fchmod] = {"fchmod", (void *)linux_fchmod},
 	[__NR_i386_fchown] = {"fchown", (void *)nullptr},
 	[__NR_i386_getpriority] = {"getpriority", (void *)nullptr},
 	[__NR_i386_setpriority] = {"setpriority", (void *)nullptr},
