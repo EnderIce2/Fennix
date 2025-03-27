@@ -157,37 +157,39 @@ namespace Execute
 					if (ProgramHeader.p_memsz == 0)
 						continue;
 
-					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz), true);
-					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, ProgramHeader.p_align);
-					uintptr_t SegDestOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
+					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz + (ProgramHeader.p_vaddr % PAGE_SIZE)), true);
+					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
+					uintptr_t destOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
 
-					vmm.Map(vAddr, pAddr,
-							ALIGN_UP(ProgramHeader.p_memsz, ProgramHeader.p_align),
-							Memory::RW | Memory::US);
+					size_t totalSize = ALIGN_UP(destOffset + ProgramHeader.p_memsz, PAGE_SIZE);
+					vmm.Map(vAddr, pAddr, totalSize, Memory::RW | Memory::US);
 
-					debug("Mapped %#lx to %#lx (%ld bytes)",
-						  vAddr, pAddr, ProgramHeader.p_memsz);
-					debug("Segment Offset is %#lx", SegDestOffset);
+					debug("Mapped %#lx-%#lx to %#lx-%#lx (%#lx bytes)",
+						  uintptr_t(pAddr), uintptr_t(pAddr) + totalSize,
+						  uintptr_t(vAddr), uintptr_t(vAddr) + totalSize, totalSize);
+					debug("Segment Offset is %#lx", destOffset);
 
 					debug("Copying PT_LOAD to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
-						  uintptr_t(pAddr) + SegDestOffset,
-						  uintptr_t(pAddr) + SegDestOffset + ProgramHeader.p_memsz,
+						  uintptr_t(pAddr) + destOffset,
+						  uintptr_t(pAddr) + destOffset + ProgramHeader.p_memsz,
 						  ProgramHeader.p_vaddr,
 						  ProgramHeader.p_vaddr + ProgramHeader.p_memsz,
 						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
 
 					if (ProgramHeader.p_filesz > 0)
 					{
-						debug("%d %#lx %d", ProgramHeader.p_offset, (uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz);
-						fd->Read((uint8_t *)pAddr + SegDestOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
+						debug("%d %#lx %d", ProgramHeader.p_offset, (uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz);
+						fd->Read((uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
 					{
-						void *zAddr = (void *)(uintptr_t(pAddr) + SegDestOffset + ProgramHeader.p_filesz);
+						void *zAddr = (void *)(uintptr_t(pAddr) + destOffset + ProgramHeader.p_filesz);
 
-						debug("Zeroing %d bytes at %#lx",
-							  ProgramHeader.p_memsz - ProgramHeader.p_filesz, zAddr);
+						debug("Zeroing %d bytes at %#lx (%#lx-%#lx)",
+							  ProgramHeader.p_memsz - ProgramHeader.p_filesz, zAddr,
+							  ProgramHeader.p_vaddr + ProgramHeader.p_filesz,
+							  ProgramHeader.p_vaddr + ProgramHeader.p_memsz);
 
 						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
 					}
@@ -259,28 +261,56 @@ namespace Execute
 					debug("ELFProgramHeaders: %#lx", ELFProgramHeaders);
 					break;
 				}
-				case 0x6474E550: /* PT_GNU_EH_FRAME */
+				case PT_GNU_EH_FRAME:
 				{
 					fixme("PT_GNU_EH_FRAME");
 					break;
 				}
-				case 0x6474e551: /* PT_GNU_STACK */
+				case PT_GNU_STACK:
 				{
-					fixme("PT_GNU_STACK");
+					Elf_Phdr gnuStack = ProgramHeader;
+					fixme("EXSTACK: %d", gnuStack.p_flags & PF_X);
 					break;
 				}
-				case 0x6474e552: /* PT_GNU_RELRO */
+				case PT_GNU_RELRO:
 				{
 					fixme("PT_GNU_RELRO");
 					break;
 				}
-				case 0x6474e553: /* PT_GNU_PROPERTY */
+				case PT_GNU_PROPERTY:
 				{
-					fixme("PT_GNU_PROPERTY");
+					Elf64_Nhdr NoteHeader;
+					fd->Read(&NoteHeader, sizeof(Elf64_Nhdr), ProgramHeader.p_offset);
+
+#define NT_GNU_PROPERTY_TYPE_0 5
+					if (NoteHeader.n_type == NT_GNU_PROPERTY_TYPE_0)
+					{
+						char noteName[0x400];
+						fd->Read(noteName, NoteHeader.n_namesz, ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
+						noteName[NoteHeader.n_namesz - 1] = '\0';
+
+						if (strcmp(noteName, "GNU") == 0)
+						{
+							debug("GNU Property Note found");
+						}
+						else
+						{
+							warn("Unexpected note name in PT_GNU_PROPERTY: %s", noteName);
+						}
+					}
+					else
+					{
+						warn("Unhandled note type in PT_GNU_PROPERTY: %#lx", NoteHeader.n_type);
+					}
 					break;
 				}
 				case PT_INTERP:
 					break;
+				case PT_LOPROC ... PT_HIPROC:
+				{
+					debug("i guess i ignore this? %#lx", ProgramHeader.p_type);
+					break;
+				}
 				default:
 				{
 					fixme("Unhandled program header type: %#lx",
