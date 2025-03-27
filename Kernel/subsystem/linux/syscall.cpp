@@ -2689,7 +2689,15 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 		break;
 	}
 	case linux_LINUX_REBOOT_CMD_CAD_ON:
+	{
+		fixme("Enable reboot on Ctrl+Alt+Del");
+		return 0;
+	}
 	case linux_LINUX_REBOOT_CMD_CAD_OFF:
+	{
+		fixme("Disable reboot on Ctrl+Alt+Del");
+		return 0;
+	}
 	case linux_LINUX_REBOOT_CMD_SW_SUSPEND:
 	case linux_LINUX_REBOOT_CMD_KEXEC:
 	{
