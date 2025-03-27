@@ -241,8 +241,14 @@ enum SegmentTypes
 	PT_SHLIB = 5,
 	PT_PHDR = 6,
 	PT_TLS = 7,
+	PT_LOOS = 0x60000000, /* OS-specific */
+	PT_HIOS = 0x6fffffff, /* OS-specific */
 	PT_LOPROC = 0x70000000,
 	PT_HIPROC = 0x7fffffff,
+	PT_GNU_EH_FRAME = (PT_LOOS + 0x474e550),
+	PT_GNU_STACK = (PT_LOOS + 0x474e551),
+	PT_GNU_RELRO = (PT_LOOS + 0x474e552),
+	PT_GNU_PROPERTY = (PT_LOOS + 0x474e553)
 };
 
 enum DynamicArrayTags

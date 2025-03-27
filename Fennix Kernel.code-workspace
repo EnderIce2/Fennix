@@ -34,7 +34,8 @@
 			"kernel",
 			"kernel/pci",
 			"kernel/driver",
-			"kernel/drivers"
+			"kernel/drivers",
+			"kernel/elf"
 		]
 	}
 }
