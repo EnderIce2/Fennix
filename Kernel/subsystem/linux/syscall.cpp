@@ -1614,9 +1614,7 @@ static pid_t linux_vfork(SysFrm *sf)
 	return (int)NewProcess->ID;
 }
 
-__no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname,
-												   char *const argv[],
-												   char *const envp[])
+__no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathname, char *const argv[], char *const envp[])
 {
 	/* FIXME: exec doesn't follow the UNIX standard
 		The pid, open files, etc. should be preserved */
@@ -1762,13 +1760,66 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		}
 		safeArgv[i] = nullptr;
 
-		return ConvertErrnoToLinux(linux_execve(sf, safeArgv[0],
-												(char *const *)safeArgv,
-												(char *const *)safeEnvp));
+		debug("calling linux_execve with %s", safeArgv[0]);
+
+		PCB *newPcb = TaskManager->CreateProcess(pcb, safeArgv[0], Tasking::TaskExecutionMode::User, false, pcb->Security.Real.UserID, pcb->Security.Real.GroupID);
+		if (!newPcb)
+		{
+			error("Failed to create process for interpreter");
+			return -linux_EAGAIN;
+		}
+
+		newPcb->Security = pcb->Security;
+		newPcb->Info = pcb->Info;
+		newPcb->FileDescriptors = pcb->FileDescriptors;
+		newPcb->CWD = pcb->CWD;
+		newPcb->PageTable = pcb->PageTable;
+		newPcb->vma = pcb->vma;
+		newPcb->ProgramBreak = pcb->ProgramBreak;
+
+		char **newArgv = (char **)newPcb->vma->RequestPages(TO_PAGES(i * sizeof(char *)));
+		char **newEnvp = (char **)newPcb->vma->RequestPages(TO_PAGES(envpLen * sizeof(char *)));
+
+		for (int j = 0; j < i; j++)
+		{
+			size_t len = strlen(safeArgv[j]);
+			char *newArg = (char *)newPcb->vma->RequestPages(TO_PAGES(len));
+			memcpy(newArg, safeArgv[j], len);
+			newArg[len] = '\0';
+			newArgv[j] = newArg;
+		}
+		newArgv[i] = nullptr;
+
+		for (int j = 0; j < envpLen; j++)
+		{
+			size_t len = strlen(safeEnvp[j]);
+			char *newEnv = (char *)newPcb->vma->RequestPages(TO_PAGES(len));
+			memcpy(newEnv, safeEnvp[j], len);
+			newEnv[len] = '\0';
+			newEnvp[j] = newEnv;
+		}
+		newEnvp[envpLen] = nullptr;
+
+		int ret = Execute::Spawn((char *)safeArgv[0], (const char **)newArgv, (const char **)newEnvp,
+								 newPcb, true, newPcb->Info.Compatibility);
+
+		if (ret < 0)
+		{
+			error("Failed to spawn interpreter");
+			return ConvertErrnoToLinux(ret);
+		}
+
+		GetCurrentCPU()->CurrentProcess = newPcb;
+		GetCurrentCPU()->CurrentThread = newPcb->Threads[0];
+
+		while (true)
+			newPcb->GetContext()->Yield();
+		__builtin_unreachable();
 	}
 
 	if (pcb->Linux.vforked)
 	{
+		debug("vforked: %s", pPathname);
 		CriticalSection cs;
 
 		pcb->Linux.CallingThread->SetState(Tasking::Ready);
@@ -1777,14 +1828,11 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		pcb->PageTable = KernelPageTable->Fork();
 		pcb->vma = new Memory::VirtualMemoryArea(pcb->PageTable);
 		pcb->ProgramBreak = new Memory::ProgramBreak(pcb->PageTable, pcb->vma);
-		// tcb->Stack = new Memory::StackGuard(true, pcb->vma);
 	}
 
-	int ret = Execute::Spawn((char *)pPathname,
-							 (const char **)safeArgv,
-							 (const char **)safeEnvp,
-							 pcb, true,
-							 pcb->Info.Compatibility);
+	debug("spawn(%s %#lx %#lx %#lx %d %d)", pPathname, safeArgv, safeEnvp, pcb, true, pcb->Info.Compatibility);
+	int ret = Execute::Spawn((char *)pPathname, (const char **)safeArgv, (const char **)safeEnvp,
+							 pcb, true, pcb->Info.Compatibility);
 
 	if (ret < 0)
 	{
