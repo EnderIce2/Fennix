@@ -126,16 +126,14 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 	debug("argc = %d", argc);
 #endif
 
-	char identifier;
-	const char *value;
 	cag_option_context context;
+	cag_option_init(&context, ConfigOptions, CAG_ARRAY_SIZE(ConfigOptions), argc, argv);
+	context.index = 0; /* We don't have the standard argv[0] == <program name> */
 
-	cag_option_prepare(&context, ConfigOptions,
-					   CAG_ARRAY_SIZE(ConfigOptions), argc, argv);
-
+	const char *value;
 	while (cag_option_fetch(&context))
 	{
-		identifier = cag_option_get(&context);
+		char identifier = cag_option_get_identifier(&context);
 		switch (identifier)
 		{
 		case 'a':
@@ -263,11 +261,10 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			KPrint("\x1b[1;31;41mSystem Halted.");
 			CPU::Stop();
 		}
+		case '?':
 		default:
-		{
-			KPrint("\x1b[31mUnknown option: %c", identifier);
+			cag_option_print_error(&context, stdout);
 			break;
-		}
 		}
 	}
 	debug("Config loaded");
