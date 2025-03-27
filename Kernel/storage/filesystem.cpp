@@ -161,6 +161,7 @@ namespace vfs
 		}
 
 		Inode *Node = NULL;
+		bool readSymlinks = true; /* FIXME: implement */
 		do
 		{
 			auto it = DeviceMap.find(__Parent->Node->Device);
@@ -169,6 +170,22 @@ namespace vfs
 
 			if (it->second.fsi->Ops.Lookup == NULL)
 				ReturnLogError(nullptr, "Lookup not supported for %d", it->first);
+
+			if (readSymlinks && __Parent->IsSymbolicLink())
+			{
+				if (it->second.fsi->Ops.ReadLink == NULL)
+					ReturnLogError(nullptr, "Readlink not supported for %d", it->first);
+
+				char buffer[256];
+				int ret = it->second.fsi->Ops.ReadLink(__Parent->Node, buffer, sizeof(buffer));
+				if (ret < 0)
+					ReturnLogError(nullptr, "Readlink for \"%s\"(%d) failed with %d", __Parent->Path.c_str(), it->first, ret);
+
+				FileNode *target = this->GetByPath(buffer, __Parent->Parent ? __Parent->Parent : __Parent);
+				if (target == nullptr)
+					ReturnLogError(nullptr, "Failed to find target for \"%s\"", __Parent->Path.c_str());
+				__Parent = target;
+			}
 
 			std::string segmentName(segment.begin, segment.size);
 			int ret = it->second.fsi->Ops.Lookup(__Parent->Node, segmentName.c_str(), &Node);

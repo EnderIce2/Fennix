@@ -40,9 +40,20 @@ namespace Execute
 			return -ENOENT;
 
 		if (!fd->IsRegularFile())
-			return -ENOEXEC;
+		{
+			if (fd->IsSymbolicLink())
+			{
+				char buffer[512];
+				fd->ReadLink(buffer, sizeof(buffer));
+				fd = fs->GetByPath(buffer, fd->Parent);
+				if (fd == nullptr)
+					return -ENOENT;
+			}
+			else
+				return -ENOEXEC;
+		}
 
-		switch (GetBinaryType(Path))
+		switch (GetBinaryType(fd))
 		{
 		case BinaryType::BinTypeELF:
 		{

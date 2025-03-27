@@ -389,7 +389,7 @@ namespace vfs
 			Size = strlen(node->Header->link);
 
 		strncpy(Buffer, node->Header->link, Size);
-		debug("Read %d bytes from %d", Size, Node->Index);
+		debug("Read %d bytes from %d: \"%s\"", Size, Node->Index, Buffer);
 		return Size;
 	}
 

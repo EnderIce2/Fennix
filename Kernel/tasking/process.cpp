@@ -113,6 +113,12 @@ namespace Tasking
 		trace("Setting exe %s to %s",
 			  this->Name, path);
 		Executable = fs->GetByPath(path, ProcDirectory);
+		if (Executable->IsSymbolicLink())
+		{
+			char buffer[512];
+			Executable->ReadLink(buffer, sizeof(buffer));
+			Executable = fs->GetByPath(buffer, Executable->Parent);
+		}
 		FileNode *exe = fs->GetByPath("exe", ProcDirectory);
 		if (exe)
 			fs->Remove(exe);

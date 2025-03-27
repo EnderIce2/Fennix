@@ -100,6 +100,12 @@ namespace Execute
 	BinaryType GetBinaryType(std::string Path)
 	{
 		FileNode *node = fs->GetByPath(Path.c_str(), nullptr);
+		if (node->IsSymbolicLink())
+		{
+			char buffer[512];
+			node->ReadLink(buffer, sizeof(buffer));
+			node = fs->GetByPath(buffer, node->Parent);
+		}
 		debug("Checking binary type of %s (returning %p)", Path.c_str(), node);
 		assert(node != nullptr);
 		return GetBinaryType(node);

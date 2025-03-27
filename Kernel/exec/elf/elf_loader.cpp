@@ -335,6 +335,13 @@ namespace Execute
 			}
 			else
 			{
+				if (ifd->IsSymbolicLink())
+				{
+					char buffer[512];
+					ifd->ReadLink(buffer, sizeof(buffer));
+					ifd = fs->GetByPath(buffer, ifd->Parent);
+				}
+
 				debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
 				if (GetBinaryType(interpreterPath) != BinTypeELF)
 				{
@@ -798,6 +805,14 @@ namespace Execute
 			error("Failed to open %s, errno: %d", AbsolutePath.c_str(), fd);
 			return;
 		}
+
+		if (fd->IsSymbolicLink())
+		{
+			char buffer[512];
+			fd->ReadLink(buffer, sizeof(buffer));
+			fd = fs->GetByPath(buffer, fd->Parent);
+		}
+
 		debug("Opened %s", AbsolutePath.c_str());
 
 		int argc = 0;
