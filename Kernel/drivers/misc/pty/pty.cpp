@@ -156,7 +156,7 @@ namespace Driver::TeleTypeDevices
 			   S_IRGRP |
 
 			   S_IFCHR;
-		ids.kcon = DriverManager->CreateDeviceFile(DriverID, "kcon", mode, &ops);
+		ids.kcon = DriverManager->CreateDeviceFile(DriverID, "console", mode, &ops);
 
 		/* c rw- rw- rw- */
 		mode = S_IRUSR | S_IWUSR |

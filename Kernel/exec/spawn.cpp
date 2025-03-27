@@ -173,13 +173,13 @@ namespace Execute
 				Process->tty = KernelConsole::CurrentTerminal.load();
 
 			if (!ForkStdio(Parent->stdin))
-				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+				fdt->usr_open("/dev/console", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			if (!ForkStdio(Parent->stdout))
-				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+				fdt->usr_open("/dev/console", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			if (!ForkStdio(Parent->stderr))
-				fdt->usr_open("/dev/kcon", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+				fdt->usr_open("/dev/console", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 
 			TCB *Thread = nullptr;
 			{
