@@ -15,22 +15,45 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-// #include <future>
-// #include <thread>
-// #include <assert.h>
+#include <future>
+#include <thread>
+#include <assert.h>
 
 void test_stl_future()
 {
-	// 	{
-	// 		std::future<int> f = std::async(std::launch::async, []
-	// 										{
-	// 			for (uint64_t i = 0; i < 100000; ++i);
-	// 			return 1; });
+	// {
+	// 	std::packaged_task<int()> task([]
+	// 								   { return 7; });
+	// 	std::future<int> f1 = task.get_future();
+	// 	std::thread t(std::move(task));
 
-	// 		debug("waiting for future");
-	// 		int result = f.get();
-	// 		debug("future result is %d", result);
-	// 	}
+	// 	std::future<int> f2 = std::async(std::launch::async, []
+	// 									 { return 8; });
+
+	// 	std::promise<int> p;
+	// 	std::future<int> f3 = p.get_future();
+	// 	std::thread([&p]
+	// 				{ p.set_value_at_thread_exit(9); })
+	// 		.detach();
+
+	// 	debug("Waiting for futures...");
+	// 	f1.wait();
+	// 	f2.wait();
+	// 	f3.wait();
+	// 	debug("results: %d %d %d", f1.get(), f2.get(), f3.get());
+	// 	t.join();
+	// }
+
+	// {
+	// 	std::future<int> f = std::async(std::launch::async, []
+	// 									{
+	// 		for (uint64_t i = 0; i < 100000; ++i);
+	// 		return 1; });
+
+	// 	debug("waiting for future");
+	// 	int result = f.get();
+	// 	debug("future result is %d", result);
+	// }
 
 	// 	{
 	// 		std::promise<int> p;
@@ -57,16 +80,16 @@ void test_stl_future()
 	// 		assert(future.get() == 42);
 	// 	}
 
-	// 	{
-	// 		std::promise<int> p;
-	// 		std::future<int> f = p.get_future();
-	// 		std::shared_future<int> sf = f.share();
+	// {
+	// 	std::promise<int> p;
+	// 	std::future<int> f = p.get_future();
+	// 	std::shared_future<int> sf = f.share();
 
-	// 		p.set_value(42);
+	// 	p.set_value(42);
 
-	// 		assert(sf.get() == 42);
-	// 		assert(sf.get() == 42);
-	// 	}
+	// 	assert(sf.get() == 42);
+	// 	assert(sf.get() == 42);
+	// }
 
 	// 	{
 	// 		std::promise<int> p;

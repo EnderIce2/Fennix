@@ -67,7 +67,7 @@ ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
 #	CFLAGS += -pg
 #	CFLAGS += -finstrument-functions
-	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage -fsanitize=undefined
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage -fsanitize=undefined -fdiagnostics-all-candidates
 ifeq ($(OSARCH), amd64)
 	CFLAGS += -fverbose-asm
 endif # amd64

@@ -15,9 +15,13 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-// #include <future>
+#include <future>
 
 namespace std
 {
-
+	const error_category &future_category() noexcept
+	{
+		static const error_category cat;
+		return cat;
+	}
 }

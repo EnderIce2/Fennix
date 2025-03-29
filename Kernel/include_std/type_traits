@@ -691,6 +691,6 @@ namespace std
 	template <class T>
 	using result_of_t = typename result_of<T>::type;
 
-	// template <class F, class... ArgTypes>
-	// using invoke_result_t = typename invoke_result<F, ArgTypes...>::type;
+	template <class F, class... ArgTypes>
+	using invoke_result_t = typename invoke_result<F, ArgTypes...>::type;
 }

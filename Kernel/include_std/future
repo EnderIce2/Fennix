@@ -57,11 +57,7 @@ namespace std
 	};
 	error_condition make_error_condition(future_errc e) noexcept;
 
-	const error_category &future_category() noexcept
-	{
-		static const error_category cat;
-		return cat;
-	}
+	const error_category &future_category() noexcept;
 
 	inline std::error_code make_error_code(future_errc e) noexcept
 	{
@@ -155,13 +151,16 @@ namespace std
 	template <class R>
 	class promise
 	{
+	private:
 	public:
-		promise();
+		promise() = default;
+
 		template <class Allocator>
 		promise(allocator_arg_t, const Allocator &a);
-		promise(promise &&rhs) noexcept;
+
+		promise(promise &&rhs) noexcept = default;
 		promise(const promise &) = delete;
-		~promise();
+		~promise() = default;
 
 		promise &operator=(promise &&rhs) noexcept;
 		promise &operator=(const promise &) = delete;
@@ -176,7 +175,11 @@ namespace std
 
 		void set_exception(exception_ptr p);
 
-		void set_value_at_thread_exit(/* see description */);
+		void set_value_at_thread_exit(const R &value);
+		void set_value_at_thread_exit(R &&value);
+		void set_value_at_thread_exit(R &value);
+		void set_value_at_thread_exit();
+
 		void set_exception_at_thread_exit(exception_ptr p);
 	};
 
