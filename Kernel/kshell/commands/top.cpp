@@ -43,7 +43,7 @@ const char *TaskStateStrings[] = {
 void cmd_top(const char *)
 {
 	printf("PID    Name                State    Priority    Memory Usage    CPU Usage\n");
-	foreach (auto Proc in TaskManager->GetProcessList())
+	for (auto Proc : TaskManager->GetProcessList())
 	{
 #if defined(__amd64__)
 		printf("%-4d %-20s %s       %d           %ld KiB         %ld\n",
@@ -57,7 +57,7 @@ void cmd_top(const char *)
 			   Proc->Info.UserTime + Proc->Info.KernelTime);
 #endif
 
-		foreach (auto Thrd in Proc->Threads)
+		for (auto Thrd : Proc->Threads)
 		{
 #if defined(__amd64__)
 			printf(" %-4d %-20s %s       %d           %ld KiB         %ld\n",

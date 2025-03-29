@@ -176,7 +176,7 @@ static const struct
 
 signal_disposition_t GetDefaultSignalDisposition(signal_t sig)
 {
-	foreach (auto var in SignalDisposition)
+	for (auto var : SignalDisposition)
 	{
 		if (var.Signal == sig)
 			return var.Disposition;
@@ -519,7 +519,7 @@ namespace Tasking
 		debug("Signal %s(%d) completed", sigStr[sig], sig);
 		if (Disposition[sig] != SIG_IGN)
 		{
-			foreach (auto info in Watchers)
+			for (auto info : Watchers)
 			{
 				Signal *who = (Signal *)info.val.sival_ptr;
 				assert(who != nullptr);

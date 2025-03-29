@@ -54,9 +54,6 @@
 #define ilp inf_loop; /* Used for debugging */
 
 #ifdef __cplusplus
-#define foreach for
-#define in :
-
 #define forItr(itr, container)         \
 	for (auto itr = container.begin(); \
 		 itr != container.end(); ++itr)

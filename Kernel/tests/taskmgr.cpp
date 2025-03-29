@@ -131,7 +131,7 @@ void TaskMgr()
 		// Display->SetBufferCursor(0, 0);
 		printf("\eF02C21Task Manager\n");
 		static uint64_t OldSystemTime = 0;
-		foreach (auto Proc in TaskManager->GetProcessList())
+		for (auto Proc : TaskManager->GetProcessList())
 		{
 			if (!Proc)
 				continue;
@@ -150,7 +150,7 @@ void TaskMgr()
 #warning "aarch64 not implemented"
 #endif
 
-			foreach (auto Thd in Proc->Threads)
+			for (auto Thd : Proc->Threads)
 			{
 				if (!Thd)
 					continue;

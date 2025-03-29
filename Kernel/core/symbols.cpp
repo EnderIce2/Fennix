@@ -324,7 +324,7 @@ namespace SymbolResolver
 		debug("- %#lx", this);
 		debug("Freeing %d symbols",
 			  this->SymTable.size());
-		foreach (auto tbl in this->SymTable)
+		for (auto tbl : this->SymTable)
 			delete[] tbl.FunctionName;
 	}
 }

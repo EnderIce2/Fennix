@@ -86,7 +86,7 @@ namespace vfs
 		struct kdirent *ent = nullptr;
 		vfsInode *Node = (vfsInode *)_Node;
 		off_t entries = 0;
-		foreach (const auto &Root in Node->Children)
+		for (const auto &Root : Node->Children)
 		{
 			if (entries >= Entries)
 				break;

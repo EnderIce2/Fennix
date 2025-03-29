@@ -140,7 +140,7 @@ namespace Tasking::Scheduler
 			return true;
 		}
 
-		foreach (TCB *Thread in Process->Threads)
+		for (TCB *Thread : Process->Threads)
 		{
 			if (Thread->State == Terminated)
 				RemoveThread(Thread);
@@ -151,7 +151,7 @@ namespace Tasking::Scheduler
 
 	PCB *Custom::GetProcessByID(TID ID)
 	{
-		foreach (auto p in ProcessList)
+		for (auto p : ProcessList)
 		{
 			if (p->ID == ID)
 				return p;
@@ -164,7 +164,7 @@ namespace Tasking::Scheduler
 		if (unlikely(Parent == nullptr))
 			return nullptr;
 
-		foreach (auto t in Parent->Threads)
+		for (auto t : Parent->Threads)
 		{
 			if (t->ID == ID)
 				return t;
@@ -305,11 +305,11 @@ namespace Tasking::Scheduler
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 		fnp_schedbg("%d processes", ProcessList.size());
 #ifdef DEBUG_FIND_NEW_PROCESS
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 			fnp_schedbg("Process %d %s", process->ID,
 						process->Name);
 #endif
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 		{
 			switch (process->State.load())
 			{
@@ -330,7 +330,7 @@ namespace Tasking::Scheduler
 				continue;
 			}
 
-			foreach (auto thread in process->Threads)
+			for (auto thread : process->Threads)
 			{
 				if (thread->State.load() != TaskState::Ready)
 					continue;
@@ -401,7 +401,7 @@ namespace Tasking::Scheduler
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
 		bool Skip = true;
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 		{
 			if (process == CurrentCPU->CurrentProcess.load())
 			{
@@ -422,7 +422,7 @@ namespace Tasking::Scheduler
 				continue;
 			}
 
-			foreach (auto thread in process->Threads)
+			for (auto thread : process->Threads)
 			{
 				if (thread->State.load() != TaskState::Ready)
 				{
@@ -448,7 +448,7 @@ namespace Tasking::Scheduler
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 		{
 			if (process->State.load() != TaskState::Ready)
 			{
@@ -456,7 +456,7 @@ namespace Tasking::Scheduler
 				continue;
 			}
 
-			foreach (auto thread in process->Threads)
+			for (auto thread : process->Threads)
 			{
 				if (thread->State.load() != TaskState::Ready)
 				{
@@ -479,7 +479,7 @@ namespace Tasking::Scheduler
 
 	nsa NIF void Custom::UpdateProcessState()
 	{
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 		{
 			if (process->State.load() == TaskState::Terminated)
 				continue;
@@ -491,7 +491,7 @@ namespace Tasking::Scheduler
 			}
 
 			bool AllThreadsSleeping = true;
-			foreach (auto thread in process->Threads)
+			for (auto thread : process->Threads)
 			{
 				if (thread->State.load() == TaskState::Terminated)
 					continue;
@@ -512,7 +512,7 @@ namespace Tasking::Scheduler
 
 	nsa NIF void Custom::WakeUpThreads()
 	{
-		foreach (auto process in ProcessList)
+		for (auto process : ProcessList)
 		{
 			Tasking::TaskState pState = process->State.load();
 			if (pState != TaskState::Ready &&
@@ -520,7 +520,7 @@ namespace Tasking::Scheduler
 				pState != TaskState::Blocked)
 				continue;
 
-			foreach (auto thread in process->Threads)
+			for (auto thread : process->Threads)
 			{
 				if (likely(thread->State.load() != TaskState::Sleeping))
 					continue;
@@ -546,7 +546,7 @@ namespace Tasking::Scheduler
 
 	nsa NIF void Custom::CleanupTerminated()
 	{
-		foreach (auto pcb in ProcessList)
+		for (auto pcb : ProcessList)
 		{
 			if (pcb->State.load() == TaskState::Terminated)
 			{
@@ -555,7 +555,7 @@ namespace Tasking::Scheduler
 				continue;
 			}
 
-			foreach (TCB *tcb in pcb->Threads)
+			for (TCB *tcb : pcb->Threads)
 			{
 				if (tcb->State == Terminated)
 					delete tcb;
@@ -736,9 +736,9 @@ namespace Tasking::Scheduler
 
 	Custom::~Custom()
 	{
-		foreach (PCB *Process in ProcessList)
+		for (PCB *Process : ProcessList)
 		{
-			foreach (TCB *Thread in Process->Threads)
+			for (TCB *Thread : Process->Threads)
 			{
 				if (Thread == GetCurrentCPU()->CurrentThread.load())
 					continue;
@@ -756,7 +756,7 @@ namespace Tasking::Scheduler
 		{
 			trace("Waiting for %d processes to terminate", this->GetProcessList().size());
 			int NotTerminated = 0;
-			foreach (PCB *Process in this->GetProcessList())
+			for (PCB *Process : this->GetProcessList())
 			{
 				trace("Process %s(%d) is still running (or waiting to be removed state %#lx)",
 					  Process->Name, Process->ID, Process->State);

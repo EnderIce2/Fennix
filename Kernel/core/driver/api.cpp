@@ -571,7 +571,7 @@ namespace v0
 		__PCIArray *head = nullptr;
 		__PCIArray *array = nullptr;
 
-		foreach (auto &dev in Devices)
+		for (auto &dev : Devices)
 		{
 			/* TODO: optimize memory allocation */
 			PCI::PCIDevice *dptr = (PCI::PCIDevice *)vma->RequestPages(TO_PAGES(sizeof(PCI::PCIDevice)));

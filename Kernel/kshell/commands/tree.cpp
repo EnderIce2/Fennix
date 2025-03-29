@@ -23,7 +23,7 @@
 
 void tree_loop(FileNode *rootNode, int depth = 0)
 {
-	// foreach (auto Child in rootNode->GetChildren(true))
+	// for (auto Child : rootNode->GetChildren(true))
 	// {
 	// 	Display->UpdateBuffer();
 	// 	if (Child->Stat.IsType(DIRECTORY) || Child->Stat.IsType(MOUNTPOINT))

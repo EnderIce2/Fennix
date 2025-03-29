@@ -31,7 +31,7 @@ void killChildren(Tasking::PCB *pcb)
 
 	std::vector<Tasking::PCB *> children = pcb->Children;
 
-	foreach (auto child in children)
+	for (auto child : children)
 	{
 		if (child->State.load() == Tasking::Terminated)
 		{

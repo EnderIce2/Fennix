@@ -88,22 +88,22 @@ namespace NetworkEthernet
 			switch (b16(Packet->Header.Type))
 			{
 			case TYPE_IPV4:
-				foreach (auto e in RegisteredEvents)
+				for (auto e : RegisteredEvents)
 					if (e.Type == TYPE_IPV4)
 						Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
 				break;
 			case TYPE_ARP:
-				foreach (auto e in RegisteredEvents)
+				for (auto e : RegisteredEvents)
 					if (e.Type == TYPE_ARP)
 						Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
 				break;
 			case TYPE_RARP:
-				foreach (auto e in RegisteredEvents)
+				for (auto e : RegisteredEvents)
 					if (e.Type == TYPE_RARP)
 						Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
 				break;
 			case TYPE_IPV6:
-				foreach (auto e in RegisteredEvents)
+				for (auto e : RegisteredEvents)
 					if (e.Type == TYPE_IPV6)
 						Reply = e.Ptr->OnEthernetPacketReceived((uint8_t *)Packet->Data, Length);
 				break;

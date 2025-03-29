@@ -35,7 +35,7 @@ void cmd_modinfo(const char *args)
 	if (drivers.find(id) == drivers.end())
 	{
 		bool found = false;
-		foreach (auto var in drivers)
+		for (auto var : drivers)
 		{
 			if (strcmp(var.second.Name, args) == 0)
 			{
@@ -70,7 +70,7 @@ void cmd_modinfo(const char *args)
 	printf(" Path: %s\n", drv.Path.c_str());
 	printf(" Used Memory: %ld KiB\n", TO_KiB(drv.vma->GetAllocatedMemorySize()));
 	printf(" Used IRQs:%s\n", drv.InterruptHandlers->empty() ? " none" : "");
-	foreach (auto var in *drv.InterruptHandlers)
+	for (auto var : *drv.InterruptHandlers)
 	{
 		printf("  IRQ%-2d: %#lx\n",
 			   var.first, (uintptr_t)var.second);

@@ -966,7 +966,7 @@ namespace Driver::AHCI
 		// ctx->Device->Header->Command |= PCI::PCI_COMMAND_INTX_DISABLE;
 
 		// std::list<PCI::PCIDevice> Devices = PCIManager->FindPCIDevice(VendorIDs, DeviceIDs);
-		// foreach (auto dev in Devices)
+		// for (auto dev : Devices)
 		// 	Interrupts::RemoveHandler(OnInterruptReceived, iLine(dev));
 		return 0;
 	}

@@ -191,7 +191,7 @@ namespace Interrupts
 					void *ctx, bool Critical)
 	{
 		/* Just log a warning if the interrupt is already registered. */
-		foreach (auto ev in RegisteredEvents)
+		for (auto ev : RegisteredEvents)
 		{
 			if (ev.IRQ == InterruptNumber &&
 				ev.Callback == Callback)
@@ -279,7 +279,7 @@ namespace Interrupts
 								  { return a.Priority < b.Priority; });
 
 #ifdef DEBUG
-			foreach (auto ev in RegisteredEvents)
+			for (auto ev : RegisteredEvents)
 			{
 				void *fct = ev.IsHandler
 								? ev.Data
@@ -421,7 +421,7 @@ namespace Interrupts
 
 	Handler::Handler(int InterruptNumber, bool Critical)
 	{
-		foreach (auto ev in RegisteredEvents)
+		for (auto ev : RegisteredEvents)
 		{
 			if (ev.IRQ == InterruptNumber)
 			{

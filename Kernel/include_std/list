@@ -216,7 +216,7 @@ namespace std
 
 		list(std::initializer_list<T> init, const Allocator &alloc = Allocator())
 		{
-			foreach (const_reference value in init)
+			for (const_reference value : init)
 				push_back(value);
 		}
 
@@ -250,7 +250,7 @@ namespace std
 		list &operator=(std::initializer_list<T> ilist)
 		{
 			clear();
-			foreach (const_reference value in ilist)
+			for (const_reference value : ilist)
 				push_back(value);
 			return *this;
 		}
@@ -273,7 +273,7 @@ namespace std
 		void assign(std::initializer_list<T> ilist)
 		{
 			clear();
-			foreach (const_reference value in ilist)
+			for (const_reference value : ilist)
 				push_back(value);
 		}
 
@@ -443,7 +443,7 @@ namespace std
 		iterator insert(const_iterator pos, std::initializer_list<T> ilist)
 		{
 			iterator ret;
-			foreach (const_reference value in ilist)
+			for (const_reference value : ilist)
 				ret = insert(pos, value);
 			return ret;
 		}

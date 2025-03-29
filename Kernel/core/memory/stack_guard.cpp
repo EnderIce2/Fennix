@@ -79,7 +79,7 @@ namespace Memory
 		this->Expanded = Parent->Expanded;
 
 		std::list<AllocatedPages> ParentAllocatedPages = Parent->GetAllocatedPages();
-		foreach (auto Page in ParentAllocatedPages)
+		for (auto Page : ParentAllocatedPages)
 		{
 			void *NewPhysical = vma->RequestPages(1);
 			debug("Forking address %#lx to %#lx", Page.PhysicalAddress, NewPhysical);

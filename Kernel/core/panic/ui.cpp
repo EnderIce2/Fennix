@@ -489,12 +489,12 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 	bool pRdy = false;
 	bool showNote = false;
 	/* FIXME: This is slow */
-	foreach (auto Process in Plist)
+	for (auto Process : Plist)
 	{
 		bool ignore = true;
 		if (Process->State == Tasking::Ready && IgnoreReady)
 		{
-			foreach (auto Thread in Process->Threads)
+			for (auto Thread : Process->Threads)
 			{
 				if (Thread->State == Tasking::Ready)
 					continue;
@@ -522,7 +522,7 @@ nsa void DisplayProcessScreen(CPU::ExceptionFrame *Frame, bool IgnoreReady = tru
 					: "none");
 
 		bool tRdy = false;
-		foreach (auto Thread in Process->Threads)
+		for (auto Thread : Process->Threads)
 		{
 			if (Thread->State == Tasking::Ready && IgnoreReady)
 			{

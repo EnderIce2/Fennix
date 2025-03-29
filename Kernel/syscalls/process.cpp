@@ -178,7 +178,7 @@ int sys_kill(SysFrm *Frame, pid_t pid, int sig)
 	if (pid == 0)
 	{
 		bool found = false;
-		foreach (auto proc in pcb->GetContext()->GetProcessList())
+		for (auto proc : pcb->GetContext()->GetProcessList())
 		{
 			if (proc->Security.ProcessGroupID == thisProcess->Security.ProcessGroupID)
 			{

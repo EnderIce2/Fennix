@@ -28,6 +28,6 @@ using namespace Tasking;
 void cmd_ps(const char *)
 {
 	printf("PID  Name\n");
-	foreach (auto p in TaskManager->GetProcessList())
+	for (auto p : TaskManager->GetProcessList())
 		printf("%d   %s\n", p->ID, p->Name);
 }

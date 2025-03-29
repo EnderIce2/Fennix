@@ -27,7 +27,7 @@ using namespace Tasking;
 
 void cmd_killall(const char *args)
 {
-	foreach (auto Proc in TaskManager->GetProcessList())
+	for (auto Proc : TaskManager->GetProcessList())
 	{
 		if (strcmp(Proc->Name, args) == 0)
 		{

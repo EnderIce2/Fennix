@@ -112,7 +112,7 @@ namespace Execute
 				CriticalSection cs;
 
 				Process = Parent;
-				foreach (auto tcb in Process->Threads)
+				for (auto tcb : Process->Threads)
 				{
 					debug("Deleting thread %d", tcb->ID);
 					// delete tcb;
@@ -153,7 +153,7 @@ namespace Execute
 				if (unlikely(SearchNode == nullptr))
 					return false;
 
-				foreach (const auto &ffd in pfdt->FileMap)
+				for (const auto &ffd : pfdt->FileMap)
 				{
 					if (ffd.second.Flags & O_CLOEXEC)
 						continue;

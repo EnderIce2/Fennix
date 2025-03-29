@@ -38,7 +38,7 @@ namespace Execute
 			return Ret;
 		}
 
-		foreach (auto Phdr in DYNAMICPhdrs)
+		for (auto Phdr : DYNAMICPhdrs)
 		{
 			Elf64_Dyn Dynamic{};
 			for (size_t i = 0; i < Phdr.p_filesz / sizeof(Elf64_Dyn); i++)

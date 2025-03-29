@@ -477,7 +477,7 @@ namespace std
 
 		void clear() noexcept
 		{
-			foreach (auto &bucket in buckets)
+			for (auto &bucket : buckets)
 				bucket.clear();
 			elementsCount = 0;
 		}
@@ -589,7 +589,7 @@ namespace std
 
 		void insert(std::initializer_list<value_type> ilist)
 		{
-			foreach (const auto &value in ilist)
+			for (const auto &value : ilist)
 				insert(value);
 		}
 

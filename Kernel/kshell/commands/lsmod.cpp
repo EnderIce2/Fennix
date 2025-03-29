@@ -26,7 +26,7 @@ void cmd_lsmod(const char *)
 
 	printf("DRIVER          |    ID | INIT | MEMORY\n");
 
-	foreach (auto &drv in drivers)
+	for (auto &drv : drivers)
 	{
 		printf("%-15s | %5ld |  %s   | %ld KiB\n",
 			   drv.second.Name,

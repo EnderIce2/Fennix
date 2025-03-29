@@ -25,14 +25,14 @@ namespace Random
 
 	__constructor void InitRandomSeed()
 	{
-		if (std::strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 		{
-			if (std::strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+			if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 			{
 				CPU::x86::AMD::CPUID0x00000007_ECX_0 cpuid;
 				RDSEEDFlag = cpuid.EBX.RDSEED;
 			}
-			else if (std::strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+			else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 			{
 				CPU::x86::Intel::CPUID0x00000007_0 cpuid;
 				RDSEEDFlag = cpuid.EBX.RDSEED;
@@ -41,14 +41,14 @@ namespace Random
 		else
 			RDSEEDFlag = false;
 
-		if (std::strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
+		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 		{
-			if (std::strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+			if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 			{
 				CPU::x86::AMD::CPUID0x00000001 cpuid;
 				RDRANDFlag = cpuid.ECX.RDRAND;
 			}
-			else if (std::strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+			else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 			{
 				CPU::x86::Intel::CPUID0x00000001 cpuid;
 				RDRANDFlag = cpuid.ECX.RDRAND;

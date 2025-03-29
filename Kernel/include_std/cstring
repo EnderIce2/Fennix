@@ -17,12 +17,8 @@
 
 #pragma once
 
+#include <convert.h>
+
 namespace std
 {
-	int strcmp(const char *lhs, const char *rhs)
-	{
-		for (; *lhs == *rhs && *lhs; lhs++, rhs++)
-			;
-		return *(unsigned char *)lhs - *(unsigned char *)rhs;
-	}
 }

@@ -82,7 +82,7 @@ namespace Memory
 		func("%#lx, %lld", Address, Count);
 
 		SmartLock(MgrLock);
-		foreach (auto &apl in AllocatedPagesList)
+		for (auto &apl : AllocatedPagesList)
 		{
 			if (apl.VirtualAddress != Address)
 				continue;
@@ -128,7 +128,7 @@ namespace Memory
 		/* No need to remap pages, the page table will be destroyed */
 
 		Virtual vmm(this->Table);
-		foreach (auto ap in AllocatedPagesList)
+		for (auto ap : AllocatedPagesList)
 		{
 			KernelAllocator.FreePages(ap.PhysicalAddress, ap.PageCount);
 

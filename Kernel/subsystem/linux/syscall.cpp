@@ -540,7 +540,7 @@ int ConvertSignalToLinux(signal_t sig)
 	if (sig >= SIGRTMIN && sig <= SIGRTMAX)
 		return sig; /* We ignore for now */
 
-	foreach (auto &mapping in signalMapping)
+	for (auto &mapping : signalMapping)
 	{
 		if (mapping.nativeSignal == sig)
 		{
@@ -560,7 +560,7 @@ signal_t ConvertSignalToNative(int sig)
 	if (sig >= linux_SIGRTMIN && sig <= linux_SIGRTMAX)
 		return (signal_t)sig; /* We ignore for now */
 
-	foreach (auto &mapping in signalMapping)
+	for (auto &mapping : signalMapping)
 	{
 		if (mapping.linuxSignal == sig)
 		{
@@ -2035,7 +2035,7 @@ static pid_t linux_wait4(SysFrm *, pid_t pid, int *wstatus,
 	}
 
 #ifdef DEBUG
-	foreach (auto child in pcb->Children)
+	for (auto child : pcb->Children)
 		debug("Child: %s(%d)", child->Name, child->ID);
 #endif
 
@@ -2122,7 +2122,7 @@ static int linux_kill(SysFrm *, pid_t pid, int sig)
 		bool found = false;
 		signal_t nSig = ConvertSignalToNative(sig);
 		assert(nSig != SIGNULL);
-		foreach (auto proc in pcb->GetContext()->GetProcessList())
+		for (auto proc : pcb->GetContext()->GetProcessList())
 		{
 			if (proc->Security.ProcessGroupID == thisProcess->Security.ProcessGroupID)
 			{
@@ -2507,7 +2507,7 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 		size_t uTime = 0;
 		size_t _maxrss = 0;
 
-		foreach (auto child in pcb->Children)
+		for (auto child : pcb->Children)
 		{
 			kTime += child->Info.KernelTime;
 			uTime += child->Info.UserTime;
@@ -3181,7 +3181,7 @@ static int linux_tgkill(SysFrm *sf, pid_t tgid, pid_t tid, int sig)
 		debug("Invalid tgid %d tid %d", tgid, tid);
 
 		tcb = nullptr;
-		foreach (auto t in thisProcess->Threads)
+		for (auto t : thisProcess->Threads)
 		{
 			if (t->Linux.tgid == tgid)
 			{

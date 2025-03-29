@@ -268,7 +268,7 @@ namespace Tasking
 			auxv_array.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
 
 		/* Store auxillary vector */
-		foreach (AuxiliaryVector av in auxv_array)
+		for (AuxiliaryVector av : auxv_array)
 		{
 			/* Subtract the size of the auxillary vector */
 			Stack64 -= sizeof(Elf_auxv_t) / sizeof(uintptr_t);

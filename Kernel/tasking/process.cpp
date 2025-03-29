@@ -295,7 +295,7 @@ namespace Tasking
 		}
 
 		/* Exit all children processes */
-		foreach (auto pcb in this->Children)
+		for (auto pcb : this->Children)
 		{
 			if (pcb == nullptr)
 			{
@@ -309,7 +309,7 @@ namespace Tasking
 		}
 
 		/* Exit all threads */
-		foreach (auto tcb in this->Threads)
+		for (auto tcb : this->Threads)
 		{
 			if (tcb == nullptr)
 			{

@@ -40,7 +40,7 @@ namespace NetworkInterfaceManager
 		/* KernelCallback */
 		// if (DriverManager->GetModules().size() > 0)
 		// {
-		// 	foreach (auto Driver in DriverManager->GetModules())
+		// 	for (auto Driver : DriverManager->GetModules())
 		// 		if (((FexExtended *)Driver.ExtendedHeaderAddress)->Driver.Type == FexDriverType::FexDriverType_Network)
 		// 			this->FetchNetworkCards(Driver.modUniqueID);
 		// }
@@ -81,7 +81,7 @@ namespace NetworkInterfaceManager
 		Iface->DriverID = modUniqueID;
 		Interfaces.push_back(Iface);
 
-		foreach (auto var in RegisteredEvents)
+		for (auto var : RegisteredEvents)
 			var->OnInterfaceAdded(Iface);
 
 		debug("Network Card: %s; MAC: %#lx", Iface->Name, Iface->MAC.ToHex());
@@ -97,7 +97,7 @@ namespace NetworkInterfaceManager
 	{
 		thisThread->SetPriority(Tasking::TaskPriority::Critical);
 		DeviceInterface *DefaultDevice = nullptr;
-		foreach (auto inf in Interfaces)
+		for (auto inf : Interfaces)
 		{
 			if (inf)
 			{
@@ -183,7 +183,7 @@ namespace NetworkInterfaceManager
 
 	void NetworkInterface::DrvSend(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 	{
-		// foreach (auto inf in this->Interfaces)
+		// for (auto inf : this->Interfaces)
 		// 	if (inf->DriverID == DriverID)
 		// 		NIManager->Send(inf, Data, Size);
 		assert(!"Function not implemented");
@@ -191,7 +191,7 @@ namespace NetworkInterfaceManager
 
 	void NetworkInterface::DrvReceive(unsigned int DriverID, unsigned char *Data, unsigned short Size)
 	{
-		// foreach (auto inf in this->Interfaces)
+		// for (auto inf : this->Interfaces)
 		// 	if (inf->DriverID == DriverID)
 		// 		NIManager->Receive(inf, Data, Size);
 		assert(!"Function not implemented");
@@ -210,13 +210,13 @@ namespace NetworkInterfaceManager
 		// DriverManager->IOCB(Interface->DriverID, &cb);
 
 		vma->FreePages(DataToBeSent, TO_PAGES(Length + 1));
-		foreach (auto ev in RegisteredEvents)
+		for (auto ev : RegisteredEvents)
 			ev->OnInterfaceSent(Interface, Data, Length);
 	}
 
 	void NetworkInterface::Receive(DeviceInterface *Interface, uint8_t *Data, size_t Length)
 	{
-		foreach (auto re in RegisteredEvents)
+		for (auto re : RegisteredEvents)
 			re->OnInterfaceReceived(Interface, Data, Length);
 	}
 

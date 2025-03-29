@@ -29,7 +29,7 @@ namespace Memory
 	{
 		SmartLock(MgrLock);
 		uint64_t Size = 0;
-		foreach (auto ap in AllocatedPagesList)
+		for (auto ap : AllocatedPagesList)
 			Size += ap.PageCount;
 		return FROM_PAGES(Size);
 	}
@@ -214,7 +214,7 @@ namespace Memory
 			return false;
 		}
 
-		foreach (auto sr in SharedRegions)
+		for (auto sr : SharedRegions)
 		{
 			uintptr_t Start = (uintptr_t)sr.Address;
 			uintptr_t End = (uintptr_t)sr.Address + sr.Length;
@@ -263,7 +263,7 @@ namespace Memory
 	void VirtualMemoryArea::FreeAllPages()
 	{
 		SmartLock(MgrLock);
-		foreach (auto ap in AllocatedPagesList)
+		for (auto ap : AllocatedPagesList)
 		{
 			KernelAllocator.FreePages(ap.Address, ap.PageCount);
 			Virtual vmm(this->Table);
@@ -287,7 +287,7 @@ namespace Memory
 
 		Virtual vmm(this->Table);
 		SmartLock(MgrLock);
-		foreach (auto &ap in Parent->AllocatedPagesList)
+		for (auto &ap : Parent->AllocatedPagesList)
 		{
 			if (ap.Protected)
 			{
@@ -339,7 +339,7 @@ namespace Memory
 				  (uintptr_t)ap.Address + (ap.PageCount * PAGE_SIZE));
 		}
 
-		foreach (auto &sr in Parent->SharedRegions)
+		for (auto &sr : Parent->SharedRegions)
 		{
 			MgrLock.Unlock();
 			void *Address = this->CreateCoWRegion(sr.Address, sr.Length,
@@ -496,7 +496,7 @@ namespace Memory
 		/* No need to remap pages, the page table will be destroyed */
 
 		SmartLock(MgrLock);
-		foreach (auto ap in AllocatedPagesList)
+		for (auto ap : AllocatedPagesList)
 			KernelAllocator.FreePages(ap.Address, ap.PageCount);
 	}
 }

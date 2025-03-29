@@ -110,7 +110,7 @@ namespace Driver
 			return;
 		}
 
-		foreach (const auto &drvNode in drvDirNode->Children)
+		for (const auto &drvNode : drvDirNode->Children)
 		{
 			debug("Checking driver %s", drvNode->Path.c_str());
 			if (!drvNode->IsRegularFile())
@@ -169,7 +169,7 @@ namespace Driver
 			return;
 		}
 
-		foreach (auto &var in Drivers)
+		for (auto &var : Drivers)
 		{
 			DriverObject &Drv = var.second;
 
@@ -224,7 +224,7 @@ namespace Driver
 
 	void Manager::UnloadAllDrivers()
 	{
-		foreach (auto &var in Drivers)
+		for (auto &var : Drivers)
 		{
 			DriverObject *Drv = &var.second;
 			if (!Drv->Initialized)
@@ -240,7 +240,7 @@ namespace Driver
 
 			if (!Drv->InterruptHandlers->empty())
 			{
-				foreach (auto &rInt in * Drv->InterruptHandlers)
+				for (auto &rInt : *Drv->InterruptHandlers)
 				{
 					Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))rInt.second);
 				}
@@ -256,7 +256,7 @@ namespace Driver
 		if (Drivers.size() == 0)
 			return;
 
-		foreach (auto Driver in Drivers)
+		for (auto Driver : Drivers)
 		{
 			if (!Driver.second.Initialized)
 				continue;

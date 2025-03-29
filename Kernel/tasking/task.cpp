@@ -201,7 +201,7 @@ namespace Tasking
 			  GetCurrentProcess()->Name, GetCurrentProcess()->ID,
 			  GetCurrentThread()->Name, GetCurrentThread()->ID);
 
-		foreach (auto pcb in((Scheduler::Base *)Scheduler)->GetProcessList())
+		for (auto pcb : ((Scheduler::Base *)Scheduler)->GetProcessList())
 		{
 			if (pcb->State == TaskState::Terminated ||
 				pcb->State == TaskState::Zombie)

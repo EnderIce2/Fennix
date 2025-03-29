@@ -84,7 +84,7 @@ namespace Execute
 		// AT_MINSIGSTKSZ 51
 
 #ifdef DEBUG
-		foreach (auto var in Elfauxv)
+		for (auto var : Elfauxv)
 		{
 			debug("auxv: %ld %#lx",
 				  var.archaux.a_type,
@@ -103,7 +103,7 @@ namespace Execute
 	{
 #if defined(__amd64__)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		foreach (auto Interp in PhdrINTERP)
+		for (auto Interp : PhdrINTERP)
 		{
 			std::string interpreterPath;
 			interpreterPath.resize(256);
@@ -350,7 +350,7 @@ namespace Execute
 	{
 #if defined(__amd64__)
 		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		foreach (auto Interp in PhdrINTERP)
+		for (auto Interp : PhdrINTERP)
 		{
 			std::string interpreterPath;
 			interpreterPath.resize(256);

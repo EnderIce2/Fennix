@@ -29,7 +29,7 @@ void cmd_lspci(const char *args)
 	{
 		if (IF_ARG("-i") || IF_ARG("--info"))
 		{
-			foreach (auto Device in PCIManager->GetDevices())
+			for (auto Device : PCIManager->GetDevices())
 			{
 				const char *HdrType;
 				switch (Device.Header->HeaderType)
@@ -65,7 +65,7 @@ void cmd_lspci(const char *args)
 		}
 	}
 
-	foreach (auto Device in PCIManager->GetDevices())
+	for (auto Device : PCIManager->GetDevices())
 	{
 		printf("%02x:%02x.%d: %s:  %s  %s\n",
 			   Device.Bus,

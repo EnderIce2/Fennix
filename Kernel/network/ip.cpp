@@ -86,7 +86,7 @@ namespace NetworkIPv4
 			if (TotalLength > Length)
 				TotalLength = Length;
 
-			foreach (auto Event in RegisteredEvents)
+			for (auto Event : RegisteredEvents)
 				if (Packet->Header.Protocol == Event->GetProtocol())
 				{
 					InternetProtocol SourceIP;

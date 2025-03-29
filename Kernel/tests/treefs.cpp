@@ -24,7 +24,7 @@
 void TreeFS(FileNode *node, int Depth)
 {
 	return;
-	// foreach (auto Chld in node->GetChildren(true))
+	// for (auto Chld : node->GetChildren(true))
 	// {
 	// 	printf("%*c %s\eFFFFFF\n", Depth, ' ', Chld->FileName);
 

@@ -1079,7 +1079,7 @@ namespace PCI
 	std::list<PCIDevice> Manager::FindPCIDevice(uint8_t Class, uint8_t Subclass, uint8_t ProgIF)
 	{
 		std::list<PCIDevice> DeviceFound;
-		foreach (auto dev in Devices)
+		for (auto dev : Devices)
 		{
 			if (dev.Header->Class == Class &&
 				dev.Header->Subclass == Subclass &&
@@ -1094,7 +1094,7 @@ namespace PCI
 	std::list<PCIDevice> Manager::FindPCIDevice(uint16_t VendorID, uint16_t DeviceID)
 	{
 		std::list<PCIDevice> DeviceFound;
-		foreach (auto dev in Devices)
+		for (auto dev : Devices)
 		{
 			if (dev.Header->VendorID == VendorID &&
 				dev.Header->DeviceID == DeviceID)
@@ -1109,11 +1109,11 @@ namespace PCI
 												std::list<uint16_t> DeviceIDs)
 	{
 		std::list<PCIDevice> DeviceFound;
-		foreach (auto dev in Devices)
+		for (auto dev : Devices)
 		{
-			foreach (auto VendorID in VendorIDs)
+			for (auto VendorID : VendorIDs)
 			{
-				foreach (auto DeviceID in DeviceIDs)
+				for (auto DeviceID : DeviceIDs)
 				{
 					if (dev.Header->VendorID == VendorID &&
 						dev.Header->DeviceID == DeviceID)
