@@ -15,8 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_EXCEPTION_H__
-#define __FENNIX_KERNEL_EXCEPTION_H__
+#pragma once
 
 #include <types.h>
 
@@ -36,12 +35,15 @@ namespace std
 	typedef void (*unexpected_handler)();
 
 	[[noreturn]] void terminate() noexcept;
-	std::terminate_handler set_terminate(std::terminate_handler f) noexcept;
-	std::terminate_handler get_terminate() noexcept;
+	terminate_handler set_terminate(terminate_handler f) noexcept;
+	terminate_handler get_terminate() noexcept;
 
 	[[noreturn]] void unexpected();
-	std::unexpected_handler set_unexpected(std::unexpected_handler f) noexcept;
-	std::unexpected_handler get_unexpected() noexcept;
-}
+	unexpected_handler set_unexpected(unexpected_handler f) noexcept;
+	unexpected_handler get_unexpected() noexcept;
 
-#endif // !__FENNIX_KERNEL_EXCEPTION_H__
+	using exception_ptr = uintptr_t;
+
+	template <class E>
+	std::exception_ptr make_exception_ptr(E e) noexcept;
+}

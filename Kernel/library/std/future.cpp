@@ -15,14 +15,9 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+// #include <future>
 
 namespace std
 {
-	int strcmp(const char *lhs, const char *rhs)
-	{
-		for (; *lhs == *rhs && *lhs; lhs++, rhs++)
-			;
-		return *(unsigned char *)lhs - *(unsigned char *)rhs;
-	}
+
 }

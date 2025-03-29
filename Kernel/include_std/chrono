@@ -1,0 +1,119 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <ratio>
+#include <type_traits>
+
+namespace std
+{
+	namespace chrono
+	{
+		template <class Rep, class Period = std::ratio<1>>
+		class duration
+		{
+		private:
+			Rep rep_;
+			std::ratio<Period::num, Period::denom> period_;
+
+		public:
+			constexpr duration() = default;
+			duration(const duration &) = default;
+
+			template <class Rep2>
+			constexpr explicit duration(const Rep2 &r);
+
+			template <class Rep2, class Period2>
+			constexpr duration(const duration<Rep2, Period2> &d);
+
+			duration &operator=(const duration &other) = default;
+
+			constexpr Rep count() const;
+			static constexpr duration zero() noexcept;
+			static constexpr duration min() noexcept;
+			static constexpr duration max() noexcept;
+			constexpr std::common_type_t<duration> operator+() const;
+			constexpr std::common_type_t<duration> operator-() const;
+
+			constexpr duration operator++(int) { return duration(rep_++); }
+			constexpr duration operator--(int) { return duration(rep_--); }
+
+			constexpr duration &operator++()
+			{
+				++rep_;
+				return *this;
+			}
+
+			constexpr duration &operator--()
+			{
+				--rep_;
+				return *this;
+			}
+
+			constexpr duration &operator+=(const duration &d)
+			{
+				rep_ += d.count();
+				return *this;
+			}
+
+			constexpr duration &operator-=(const duration &d)
+			{
+				rep_ -= d.count();
+				return *this;
+			}
+
+			constexpr duration &operator*=(const Rep &rhs)
+			{
+				rep_ *= rhs;
+				return *this;
+			}
+
+			constexpr duration &operator/=(const Rep &rhs)
+			{
+				rep_ /= rhs;
+				return *this;
+			}
+
+			constexpr duration &operator%=(const Rep &rhs)
+			{
+				rep_ %= rhs;
+				return *this;
+			}
+
+			constexpr duration &operator%=(const duration &rhs)
+			{
+				rep_ %= rhs.count();
+				return *this;
+			}
+		};
+
+		template <class Clock, class Duration = typename Clock::duration>
+		class time_point;
+
+		using nanoseconds = std::chrono::duration<int64_t, std::nano>;
+		using microseconds = std::chrono::duration<int64_t, std::micro>;
+		using milliseconds = std::chrono::duration<int64_t, std::milli>;
+		using seconds = std::chrono::duration<int64_t>;
+		using minutes = std::chrono::duration<int64_t, std::ratio<60>>;
+		using hours = std::chrono::duration<int64_t, std::ratio<3600>>;
+		using days = std::chrono::duration<int64_t, std::ratio<86400>>;
+		using weeks = std::chrono::duration<int64_t, std::ratio<604800>>;
+		using months = std::chrono::duration<int64_t, std::ratio<2629746>>;
+		using years = std::chrono::duration<int64_t, std::ratio<31556952>>;
+	}
+}

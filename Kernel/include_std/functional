@@ -259,4 +259,10 @@ namespace std
 			return lhs < rhs;
 		}
 	};
+
+	template <class F, class... Args>
+	constexpr typename std::result_of<F()>::type bind(F &&f, Args &&...args);
+
+	template <class R, class F, class... Args>
+	constexpr R bind(F &&f, Args &&...args);
 }

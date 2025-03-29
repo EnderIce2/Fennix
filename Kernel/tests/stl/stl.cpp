@@ -25,6 +25,7 @@ void test_stl_vector();
 void test_stl_bitset();
 void test_stl_string();
 void test_stl_unordered_map() {}
+void test_stl_future();
 
 void Test_stl()
 {
@@ -36,6 +37,7 @@ void Test_stl()
 	test_stl_bitset();
 	test_stl_string();
 	test_stl_unordered_map();
+	test_stl_future();
 }
 
 #endif // DEBUG

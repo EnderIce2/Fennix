@@ -1,0 +1,276 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <atomic>
+#include <chrono>
+#include <exception>
+#include <mutex>
+#include <thread>
+#include <type_traits>
+#include <system_error>
+#include <utility>
+#include <cstdint>
+#include <memory>
+
+namespace std
+{
+	enum class future_errc
+	{
+		broken_promise = 0,
+		future_already_retrieved = 1,
+		promise_already_satisfied = 2,
+		no_state = 3
+	};
+
+	enum class launch : std::uint_least8_t
+	{
+		async = 0,
+		deferred = 1,
+	};
+
+	enum class future_status
+	{
+		ready,
+		timeout,
+		deferred
+	};
+
+	template <>
+	struct is_error_code_enum<future_errc> : public true_type
+	{
+	};
+	error_condition make_error_condition(future_errc e) noexcept;
+
+	const error_category &future_category() noexcept
+	{
+		static const error_category cat;
+		return cat;
+	}
+
+	inline std::error_code make_error_code(future_errc e) noexcept
+	{
+		return std::error_code(static_cast<int>(e), future_category());
+	}
+
+	class future_error;
+
+	template <class R>
+	class promise;
+	template <class R>
+	class promise<R &>;
+	template <>
+	class promise<void>;
+
+	template <class R>
+	void swap(promise<R> &x, promise<R> &y) noexcept;
+
+	template <class R, class Alloc>
+	struct uses_allocator<promise<R>, Alloc>;
+
+	template <class R>
+	class future;
+	template <class R>
+	class future<R &>;
+	template <>
+	class future<void>;
+
+	template <class R>
+	class shared_future;
+	template <class R>
+	class shared_future<R &>;
+	template <>
+	class shared_future<void>;
+
+	template <class>
+	class packaged_task; // not defined
+
+	template <class R, class... ArgTypes>
+	class packaged_task<R(ArgTypes...)>;
+
+	template <class R, class... ArgTypes>
+	void swap(packaged_task<R(ArgTypes...)> &, packaged_task<R(ArgTypes...)> &) noexcept;
+
+	template <class Fn, class... Args>
+	future<typename result_of<Fn(Args...)>::type> async(launch policy, Fn &&fn, Args &&...args)
+	{
+		using ReturnType = std::invoke_result_t<std::decay_t<Fn>, std::decay_t<Args>...>;
+
+		if (policy == std::launch::async)
+		{
+			auto task = std::make_shared<std::packaged_task<ReturnType()>>(
+				std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
+
+			std::future<ReturnType> future = task->get_future();
+			std::thread([task]()
+						{ (*task)(); })
+				.detach();
+
+			return future;
+		}
+		else if (policy == std::launch::deferred)
+		{
+			return std::async(std::launch::deferred, std::forward<Fn>(fn), std::forward<Args>(args)...);
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid launch policy");
+		}
+	}
+
+	template <class Fn, class... Args>
+	future<typename result_of<Fn(Args...)>::type> async(Fn &&fn, Args &&...args)
+	{
+		return async(std::launch::async /* | std::launch::deferred*/, std::forward<Fn>(fn), std::forward<Args>(args)...);
+	}
+
+	class future_error : public logic_error
+	{
+	private:
+		error_code ec_;
+
+	public:
+		future_error(const future_error &other) noexcept;
+		explicit future_error(std::future_errc ec);
+		future_error &operator=(const future_error &other) noexcept;
+		const std::error_code &code() const noexcept;
+		virtual const char *what() const noexcept;
+	};
+
+	template <class R>
+	class promise
+	{
+	public:
+		promise();
+		template <class Allocator>
+		promise(allocator_arg_t, const Allocator &a);
+		promise(promise &&rhs) noexcept;
+		promise(const promise &) = delete;
+		~promise();
+
+		promise &operator=(promise &&rhs) noexcept;
+		promise &operator=(const promise &) = delete;
+		void swap(promise &other) noexcept;
+
+		future<R> get_future();
+
+		void set_value(const R &value);
+		void set_value(R &&value);
+		void set_value(R &value);
+		void set_value();
+
+		void set_exception(exception_ptr p);
+
+		void set_value_at_thread_exit(/* see description */);
+		void set_exception_at_thread_exit(exception_ptr p);
+	};
+
+	template <class R>
+	void swap(promise<R> &x, promise<R> &y) noexcept;
+
+	template <class R, class Alloc>
+	struct uses_allocator<promise<R>, Alloc>;
+
+	template <class R>
+	class future
+	{
+	public:
+		future() noexcept;
+		future(future &&) noexcept;
+		future(const future &) = delete;
+		~future();
+		future &operator=(const future &) = delete;
+		future &operator=(future &&) noexcept;
+		shared_future<R> share() noexcept;
+
+		R get();
+		// R &get();
+		// void get();
+
+		bool valid() const noexcept;
+
+		void wait() const;
+		template <class Rep, class Period>
+		future_status wait_for(const chrono::duration<Rep, Period> &rel_time) const;
+		template <class Clock, class Duration>
+		future_status wait_until(const chrono::time_point<Clock, Duration> &abs_time) const;
+	};
+
+	template <class R>
+	class shared_future
+	{
+	public:
+		shared_future() noexcept;
+		shared_future(const shared_future &rhs) noexcept;
+		shared_future(future<R> &&) noexcept;
+		shared_future(shared_future &&rhs) noexcept;
+		~shared_future();
+		shared_future &operator=(const shared_future &rhs) noexcept;
+		shared_future &operator=(shared_future &&rhs) noexcept;
+
+		const R &get() const;
+		// R &get() const;
+		// void get() const;
+
+		bool valid() const noexcept;
+
+		void wait() const;
+		template <class Rep, class Period>
+		future_status wait_for(const chrono::duration<Rep, Period> &rel_time) const;
+		template <class Clock, class Duration>
+		future_status wait_until(const chrono::time_point<Clock, Duration> &abs_time) const;
+	};
+
+	template <class>
+	class packaged_task;
+
+	template <class R, class... ArgTypes>
+	class packaged_task<R(ArgTypes...)>
+	{
+	public:
+		packaged_task() noexcept;
+		template <class F>
+		explicit packaged_task(F &&f);
+		~packaged_task();
+
+		packaged_task(const packaged_task &) = delete;
+		packaged_task &operator=(const packaged_task &) = delete;
+
+		packaged_task(packaged_task &&rhs) noexcept;
+		packaged_task &operator=(packaged_task &&rhs) noexcept;
+		void swap(packaged_task &other) noexcept;
+
+		bool valid() const noexcept;
+
+		future<R> get_future();
+
+		void operator()(ArgTypes...);
+		void make_ready_at_thread_exit(ArgTypes...);
+
+		void reset();
+	};
+
+	template <class R, class... ArgTypes>
+	packaged_task(R (*)(ArgTypes...)) -> packaged_task<R(ArgTypes...)>;
+
+	// template <class F>
+	// packaged_task(F) -> packaged_task<???>;
+
+	template <class R, class... ArgTypes>
+	void swap(packaged_task<R(ArgTypes...)> &x, packaged_task<R(ArgTypes...)> &y) noexcept;
+}

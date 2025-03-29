@@ -28,7 +28,7 @@
 
 namespace std
 {
-	namespace __memory__detail
+	namespace detail
 	{
 		template <class>
 		constexpr bool is_unbounded_array_v = false;
@@ -516,14 +516,14 @@ namespace std
 	}
 
 	template <class T>
-	std::enable_if_t<__memory__detail::is_unbounded_array_v<T>, std::unique_ptr<T>>
+	std::enable_if_t<detail::is_unbounded_array_v<T>, std::unique_ptr<T>>
 	make_unique(std::size_t n)
 	{
 		return std::unique_ptr<T>(new std::remove_extent_t<T>[n]());
 	}
 
 	template <class T, class... Args>
-	std::enable_if_t<__memory__detail::is_bounded_array_v<T>> make_unique(Args &&...) = delete;
+	std::enable_if_t<detail::is_bounded_array_v<T>> make_unique(Args &&...) = delete;
 
 	template <class T>
 		requires(!std::is_array_v<T>)
@@ -603,4 +603,162 @@ namespace std
 	{
 		lhs.swap(rhs);
 	}
+
+	template <class T, class Alloc>
+	struct uses_allocator : std::integral_constant<bool, false>
+	{
+	};
+
+	template <class T, class Alloc>
+	constexpr bool uses_allocator_v = uses_allocator<T, Alloc>::value;
+
+	struct allocator_arg_t
+	{
+		explicit allocator_arg_t() = default;
+	};
+
+	constexpr std::allocator_arg_t allocator_arg{};
+
+	template <class T>
+	class auto_ptr;
+
+	template <>
+	class auto_ptr<void>;
+
+	template <class T>
+	class weak_ptr;
+
+	template <class T>
+	class shared_ptr
+	{
+	public:
+		using weak_type = std::weak_ptr<T>;
+		using element_type = std::remove_extent_t<T>;
+
+		constexpr shared_ptr() noexcept;
+		constexpr shared_ptr(std::nullptr_t) noexcept;
+
+		template <class Y>
+		explicit shared_ptr(Y *ptr);
+
+		template <class Y, class Deleter>
+		shared_ptr(Y *ptr, Deleter d);
+
+		template <class Deleter>
+		shared_ptr(std::nullptr_t ptr, Deleter d);
+
+		template <class Y, class Deleter, class Alloc>
+		shared_ptr(Y *ptr, Deleter d, Alloc alloc);
+
+		template <class Deleter, class Alloc>
+		shared_ptr(std::nullptr_t ptr, Deleter d, Alloc alloc);
+
+		template <class Y>
+		shared_ptr(const shared_ptr<Y> &r, element_type *ptr) noexcept;
+
+		template <class Y>
+		shared_ptr(shared_ptr<Y> &&r, element_type *ptr) noexcept;
+
+		shared_ptr(const shared_ptr &r) noexcept;
+
+		template <class Y>
+		shared_ptr(const shared_ptr<Y> &r) noexcept;
+
+		shared_ptr(shared_ptr &&r) noexcept;
+
+		template <class Y>
+		shared_ptr(shared_ptr<Y> &&r) noexcept;
+
+		template <class Y>
+		explicit shared_ptr(const std::weak_ptr<Y> &r);
+
+		template <class Y>
+		shared_ptr(std::auto_ptr<Y> &&r);
+
+		template <class Y, class Deleter>
+		shared_ptr(std::unique_ptr<Y, Deleter> &&r);
+
+		~shared_ptr();
+
+		shared_ptr &operator=(const shared_ptr &r) noexcept;
+
+		template <class Y>
+		shared_ptr &operator=(const shared_ptr<Y> &r) noexcept;
+
+		shared_ptr &operator=(shared_ptr &&r) noexcept;
+
+		template <class Y>
+		shared_ptr &operator=(shared_ptr<Y> &&r) noexcept;
+
+		template <class Y>
+		shared_ptr &operator=(std::auto_ptr<Y> &&r);
+
+		template <class Y, class Deleter>
+		shared_ptr &operator=(std::unique_ptr<Y, Deleter> &&r);
+
+		void reset() noexcept;
+
+		template <class Y>
+		void reset(Y *ptr);
+
+		template <class Y, class Deleter>
+		void reset(Y *ptr, Deleter d);
+
+		template <class Y, class Deleter, class Alloc>
+		void reset(Y *ptr, Deleter d, Alloc alloc);
+
+		void swap(shared_ptr &r) noexcept;
+
+		T *get() const noexcept;
+
+		// element_type *get() const noexcept;
+
+		T &operator*() const noexcept;
+
+		T *operator->() const noexcept;
+
+		element_type &operator[](std::ptrdiff_t idx) const;
+
+		long use_count() const noexcept;
+
+		bool unique() const noexcept;
+
+		explicit operator bool() const noexcept { return get() != nullptr; }
+
+		template <class Y>
+		bool owner_before(const shared_ptr<Y> &other) const noexcept;
+
+		template <class Y>
+		bool owner_before(const std::weak_ptr<Y> &other) const noexcept;
+
+		std::size_t owner_hash() const noexcept;
+
+		template <class Y>
+		bool owner_equal(const std::shared_ptr<Y> &other) const noexcept;
+
+		template <class Y>
+		bool owner_equal(const std::weak_ptr<Y> &other) const noexcept;
+	};
+
+	template <class T, class... Args>
+	shared_ptr<T> make_shared(Args &&...args);
+
+	template <class T>
+	shared_ptr<T> make_shared(std::size_t N);
+
+	template <class T>
+	shared_ptr<T> make_shared();
+
+	template <class T>
+	shared_ptr<T> make_shared(std::size_t N, const std::remove_extent_t<T> &u);
+
+	template <class T>
+	shared_ptr<T> make_shared(const std::remove_extent_t<T> &u);
+
+	template <class T>
+	shared_ptr<T> make_shared_for_overwrite();
+
+	template <class T>
+	shared_ptr<T> make_shared_for_overwrite(std::size_t N);
+
 }

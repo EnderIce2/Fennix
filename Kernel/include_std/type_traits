@@ -290,7 +290,7 @@ namespace std
 		reinterpret_cast<T>(t);
 		f(0);
 		p + t;
-	} > {};
+	}>{};
 
 	template <class T>
 	constexpr bool is_integral_v = is_integral<T>::value;
@@ -659,4 +659,38 @@ namespace std
 
 	template <class... T>
 	using common_type_t = typename common_type<T...>::type;
+
+	namespace detail
+	{
+		template <class T>
+		constexpr T &&__result_of_forward(std::remove_reference_t<T> &t) noexcept
+		{
+			return static_cast<T &&>(t);
+		}
+
+		template <class F, class... ArgTypes>
+		auto INVOKE(F &&f, ArgTypes &&...args)
+			-> decltype(__result_of_forward<F>(f)(__result_of_forward<ArgTypes>(args)...))
+		{
+			return __result_of_forward<F>(f)(__result_of_forward<ArgTypes>(args)...);
+		}
+	}
+
+	template <class>
+	class result_of;
+
+	template <class F, class... ArgTypes>
+	struct result_of<F(ArgTypes...)>
+	{
+		using type = decltype(detail::INVOKE(std::declval<F>(), std::declval<ArgTypes>()...));
+	};
+
+	template <class F, class... ArgTypes>
+	struct invoke_result;
+
+	template <class T>
+	using result_of_t = typename result_of<T>::type;
+
+	// template <class F, class... ArgTypes>
+	// using invoke_result_t = typename invoke_result<F, ArgTypes...>::type;
 }
