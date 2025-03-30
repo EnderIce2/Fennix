@@ -15,9 +15,14 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
+#ifndef __cpp_impl_coroutine
+#error "kernel requires -fcoroutines"
+#endif
+
 namespace std
 {
-#if __cpp_impl_coroutine
 	namespace detail
 	{
 		template <class, class...>
@@ -183,7 +188,4 @@ namespace std
 		constexpr void await_suspend(coroutine_handle<>) const noexcept {}
 		constexpr void await_resume() const noexcept {}
 	};
-#else
-#error "kernel requires -fcoroutines"
-#endif
 }
