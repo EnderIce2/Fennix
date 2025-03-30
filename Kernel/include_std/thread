@@ -21,6 +21,7 @@
 #include <task.hpp>
 #include <debug.h>
 #include <smp.hpp>
+#include <chrono>
 
 extern Tasking::Task *TaskManager;
 
@@ -32,6 +33,8 @@ namespace std
 		Tasking::TCB *Task = nullptr;
 
 	public:
+		using id = Tasking::TCB *;
+
 		thread() = default;
 		thread(const thread &) = delete;
 		thread(thread &&) = delete;
@@ -78,4 +81,20 @@ namespace std
 			return Task;
 		}
 	};
+
+	namespace this_thread
+	{
+		thread::id get_id() noexcept;
+
+		void yield() noexcept;
+
+		template <class Clock, class Duration>
+		void sleep_until(const chrono::time_point<Clock, Duration> &abs_time);
+
+		template <class Rep, class Period>
+		void sleep_for(const chrono::duration<Rep, Period> &rel_time)
+		{
+			TaskManager->Sleep(chrono::duration_cast<std::chrono::milliseconds>(rel_time).count());
+		}
+	}
 }

@@ -36,14 +36,15 @@ namespace std
 			duration(const duration &) = default;
 
 			template <class Rep2>
-			constexpr explicit duration(const Rep2 &r);
+			constexpr explicit duration(const Rep2 &r) { rep_ = r; }
 
 			template <class Rep2, class Period2>
 			constexpr duration(const duration<Rep2, Period2> &d);
 
 			duration &operator=(const duration &other) = default;
 
-			constexpr Rep count() const;
+			constexpr Rep count() const { return rep_; }
+
 			static constexpr duration zero() noexcept;
 			static constexpr duration min() noexcept;
 			static constexpr duration max() noexcept;
@@ -115,5 +116,11 @@ namespace std
 		using weeks = std::chrono::duration<int64_t, std::ratio<604800>>;
 		using months = std::chrono::duration<int64_t, std::ratio<2629746>>;
 		using years = std::chrono::duration<int64_t, std::ratio<31556952>>;
+
+		template <class ToDuration, class Rep, class Period>
+		constexpr ToDuration duration_cast(const std::chrono::duration<Rep, Period> &d)
+		{
+			return ToDuration(d.count());
+		}
 	}
 }
