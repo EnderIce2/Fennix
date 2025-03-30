@@ -377,7 +377,10 @@ namespace Tasking::Scheduler
 				}
 
 				if (nextThread->Info.Affinity[CurrentCPU->ID] == false)
-					continue;
+				{
+					TempIndex++;
+					goto RetryAnotherThread;
+				}
 
 				CurrentCPU->CurrentThread = nextThread;
 				gnat_schedbg("[thd 0 -> end] Scheduling thread %d parent of %s->%d Procs %d",
