@@ -674,6 +674,8 @@ typedef enum
 	 */
 	SYS_API_VERSION = 0,
 
+	SYS_DEBUG_REPORT = 1,
+
 	/* I/O */
 
 	/**
