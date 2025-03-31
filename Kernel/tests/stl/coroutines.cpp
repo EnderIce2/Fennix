@@ -24,6 +24,7 @@
 #include "../kernel.h"
 
 #include <coroutine>
+#include <thread>
 
 /* https://gist.github.com/Qix-/caa277fbf1a4e6ca55a27f2242df3b9a */
 
@@ -58,13 +59,129 @@ struct resumable::promise_type
 	auto initial_suspend() { return std::suspend_always(); }
 	auto final_suspend() noexcept { return std::suspend_always(); }
 	void return_void() {}
-	void unhandled_exception() { assert(!"std::terminate();"); }
+	void unhandled_exception() { std::terminate(); }
 };
 
 resumable foo()
 {
 	debug("await start");
 	co_await std::suspend_always();
+	debug("done");
+}
+
+/* ===================================================================== */
+
+struct Generator
+{
+	struct promise_type
+	{
+		int current_value;
+
+		Generator get_return_object()
+		{
+			return Generator{std::coroutine_handle<promise_type>::from_promise(*this)};
+		}
+
+		std::suspend_always initial_suspend()
+		{
+			return {};
+		}
+
+		std::suspend_always final_suspend() noexcept
+		{
+			return {};
+		}
+
+		void return_void()
+		{
+		}
+
+		std::suspend_always yield_value(int value)
+		{
+			current_value = value;
+			return {};
+		}
+
+		void unhandled_exception()
+		{
+			std::terminate();
+		}
+	};
+
+	std::coroutine_handle<promise_type> handle;
+
+	Generator(std::coroutine_handle<promise_type> h) : handle(h) {}
+
+	~Generator()
+	{
+		if (handle)
+			handle.destroy();
+	}
+
+	bool next()
+	{
+		if (!handle || handle.done())
+			return false;
+
+		handle.resume();
+		return true;
+	}
+
+	int value() const
+	{
+		int ret = handle.promise().current_value;
+		return ret;
+	}
+};
+
+Generator CountToThree()
+{
+	debug("1");
+	co_yield 1;
+	debug("2");
+	co_yield 2;
+	debug("3");
+	co_yield 3;
+	debug("end");
+}
+
+/* ===================================================================== */
+
+struct Task
+{
+	struct promise_type
+	{
+		Task get_return_object() { return Task{std::coroutine_handle<promise_type>::from_promise(*this)}; }
+		std::suspend_never initial_suspend() { return {}; }
+		std::suspend_never final_suspend() noexcept { return {}; }
+		void return_void() {}
+		void unhandled_exception() { std::terminate(); }
+	};
+
+	std::coroutine_handle<promise_type> handle;
+	Task(std::coroutine_handle<promise_type> h) : handle(h) {}
+	~Task()
+	{
+		if (handle)
+			handle.destroy();
+	}
+};
+
+struct Awaiter
+{
+	bool await_ready() { return false; }
+	void await_suspend(std::coroutine_handle<> h)
+	{
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		h.resume();
+	}
+	void await_resume() {}
+};
+
+Task AsyncFunc()
+{
+	debug("waiting");
+	co_await Awaiter{};
 	debug("done");
 }
 
@@ -120,7 +237,7 @@ public:
 
 		void unhandled_exception()
 		{
-			assert("std::terminate();");
+			std::terminate();
 		}
 	};
 
@@ -145,6 +262,17 @@ void coroutineTest()
 	/* Example of syscall using coroutine */
 	auto task = perform_syscall();
 	task.handle.resume();
+
+	/* async task */
+	AsyncFunc();
+
+	/* generator */
+	auto gen = CountToThree();
+	while (gen.next())
+	{
+		auto a = gen.value();
+		debug("%d", a);
+	}
 
 	/* Example of coroutine */
 	auto p = foo();
