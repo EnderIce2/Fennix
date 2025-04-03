@@ -2547,6 +2547,38 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 	return 0;
 }
 
+static int linux_sysinfo(SysFrm *, struct sysinfo *info)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pInfo = vma->UserCheckAndGetAddress(info);
+	if (pInfo == nullptr)
+		return -linux_EFAULT;
+
+	uint64_t nano = TimeManager->GetNanosecondsSinceClassCreation();
+	if (nano != 0)
+		nano /= 10000000;
+
+	pInfo->uptime = nano;
+	pInfo->loads[0] = 0;
+	pInfo->loads[1] = 0;
+	pInfo->loads[2] = 0;
+	pInfo->totalram = KernelAllocator.GetTotalMemory() - KernelAllocator.GetReservedMemory();
+	pInfo->freeram = KernelAllocator.GetFreeMemory();
+	pInfo->sharedram = 0;
+	pInfo->bufferram = 0;
+	pInfo->totalswap = 0;
+	pInfo->freeswap = 0;
+	pInfo->procs = TaskManager->GetProcessList().size();
+	pInfo->totalhigh = 0;
+	pInfo->freehigh = 0;
+	pInfo->mem_unit = 1;
+	if (sizeof(pInfo->_f) != 0)
+		memset(pInfo->_f, 0, sizeof(pInfo->_f));
+	return 0;
+}
+
 static int linux_syslog(SysFrm *, int type, char *bufp, int size)
 {
 	PCB *pcb = thisProcess;
@@ -3629,7 +3661,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_gettimeofday] = {"gettimeofday", (void *)nullptr},
 	[__NR_amd64_getrlimit] = {"getrlimit", (void *)nullptr},
 	[__NR_amd64_getrusage] = {"getrusage", (void *)linux_getrusage},
-	[__NR_amd64_sysinfo] = {"sysinfo", (void *)nullptr},
+	[__NR_amd64_sysinfo] = {"sysinfo", (void *)linux_sysinfo},
 	[__NR_amd64_times] = {"times", (void *)nullptr},
 	[__NR_amd64_ptrace] = {"ptrace", (void *)nullptr},
 	[__NR_amd64_getuid] = {"getuid", (void *)linux_getuid},
@@ -4096,7 +4128,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_vm86old] = {"vm86old", (void *)nullptr},
 	[__NR_i386_wait4] = {"wait4", (void *)linux_wait4},
 	[__NR_i386_swapoff] = {"swapoff", (void *)nullptr},
-	[__NR_i386_sysinfo] = {"sysinfo", (void *)nullptr},
+	[__NR_i386_sysinfo] = {"sysinfo", (void *)linux_sysinfo},
 	[__NR_i386_ipc] = {"ipc", (void *)nullptr},
 	[__NR_i386_fsync] = {"fsync", (void *)nullptr},
 	[__NR_i386_sigreturn] = {"sigreturn", (void *)nullptr},
