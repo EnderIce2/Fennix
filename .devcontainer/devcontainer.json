@@ -43,6 +43,7 @@
 		}
 	],
 	"runArgs": [
-		"--privileged"
+		"--privileged",
+		"--network=host"
 	]
 }
