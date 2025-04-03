@@ -160,6 +160,7 @@ ci-setup:
 ci-build:
 # Prepare
 	$(MAKE) prepare
+	$(MAKE) mkdir_rootfs
 	$(MAKE) --quiet -C tools do_limine
 # amd64
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
