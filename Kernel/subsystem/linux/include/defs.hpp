@@ -193,6 +193,18 @@
 #define linux_RUSAGE_CHILDREN (-1)
 #define linux_RUSAGE_THREAD 1
 
+#define linux_SYSLOG_ACTION_CLOSE 0
+#define linux_SYSLOG_ACTION_OPEN 1
+#define linux_SYSLOG_ACTION_READ 2
+#define linux_SYSLOG_ACTION_READ_ALL 3
+#define linux_SYSLOG_ACTION_READ_CLEAR 4
+#define linux_SYSLOG_ACTION_CLEAR 5
+#define linux_SYSLOG_ACTION_CONSOLE_OFF 6
+#define linux_SYSLOG_ACTION_CONSOLE_ON 7
+#define linux_SYSLOG_ACTION_CONSOLE_LEVEL 8
+#define linux_SYSLOG_ACTION_SIZE_UNREAD 9
+#define linux_SYSLOG_ACTION_SIZE_BUFFER 10
+
 typedef long __kernel_long_t;
 typedef unsigned long __kernel_ulong_t;
 typedef long __kernel_old_time_t;

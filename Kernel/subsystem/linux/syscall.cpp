@@ -2547,6 +2547,58 @@ static int linux_getrusage(SysFrm *, int who, struct rusage *usage)
 	return 0;
 }
 
+static int linux_syslog(SysFrm *, int type, char *bufp, int size)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pbufp = vma->UserCheckAndGetAddress(bufp);
+	if (pbufp == nullptr)
+		return -linux_EFAULT;
+
+	switch (type)
+	{
+	case linux_SYSLOG_ACTION_CLOSE:
+		/* NOP */
+		return 0;
+	case linux_SYSLOG_ACTION_OPEN:
+		/* NOP */
+		return 0;
+	case linux_SYSLOG_ACTION_READ:
+	{
+		fixme("SYSLOG_ACTION_READ not implemented");
+		const char dummy[12] = "stub string";
+		memcpy(pbufp, dummy, sizeof(dummy));
+		return sizeof(dummy);
+	}
+	case linux_SYSLOG_ACTION_READ_ALL:
+	{
+		fixme("SYSLOG_ACTION_READ_ALL not implemented");
+		const char dummy[12] = "stub string";
+		memcpy(pbufp, dummy, sizeof(dummy));
+		return sizeof(dummy);
+	}
+	case linux_SYSLOG_ACTION_READ_CLEAR:
+	{
+		fixme("SYSLOG_ACTION_READ_CLEAR not implemented");
+		const char dummy[12] = "stub string";
+		memcpy(pbufp, dummy, sizeof(dummy));
+		return sizeof(dummy);
+	}
+	case linux_SYSLOG_ACTION_CLEAR:
+	case linux_SYSLOG_ACTION_CONSOLE_OFF:
+	case linux_SYSLOG_ACTION_CONSOLE_ON:
+	case linux_SYSLOG_ACTION_CONSOLE_LEVEL:
+	case linux_SYSLOG_ACTION_SIZE_UNREAD:
+	case linux_SYSLOG_ACTION_SIZE_BUFFER:
+	default:
+		break;
+	}
+
+	fixme("stub syslog");
+	return 0;
+}
+
 static uid_t linux_getuid(SysFrm *)
 {
 	return thisProcess->Security.Real.UserID;
@@ -3581,7 +3633,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_times] = {"times", (void *)nullptr},
 	[__NR_amd64_ptrace] = {"ptrace", (void *)nullptr},
 	[__NR_amd64_getuid] = {"getuid", (void *)linux_getuid},
-	[__NR_amd64_syslog] = {"syslog", (void *)nullptr},
+	[__NR_amd64_syslog] = {"syslog", (void *)linux_syslog},
 	[__NR_amd64_getgid] = {"getgid", (void *)linux_getgid},
 	[__NR_amd64_setuid] = {"setuid", (void *)nullptr},
 	[__NR_amd64_setgid] = {"setgid", (void *)nullptr},
@@ -4031,7 +4083,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_fstatfs] = {"fstatfs", (void *)nullptr},
 	[__NR_i386_ioperm] = {"ioperm", (void *)nullptr},
 	[__NR_i386_socketcall] = {"socketcall", (void *)nullptr},
-	[__NR_i386_syslog] = {"syslog", (void *)nullptr},
+	[__NR_i386_syslog] = {"syslog", (void *)linux_syslog},
 	[__NR_i386_setitimer] = {"setitimer", (void *)linux_setitimer},
 	[__NR_i386_getitimer] = {"getitimer", (void *)nullptr},
 	[__NR_i386_stat] = {"stat", (void *)linux_stat},
