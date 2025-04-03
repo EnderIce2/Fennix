@@ -67,7 +67,8 @@ ifeq ($(DEBUG), 1)
 #	CFLAGS += --coverage
 #	CFLAGS += -pg
 #	CFLAGS += -finstrument-functions
-	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage -fsanitize=undefined -fdiagnostics-all-candidates
+	CFLAGS += -DDEBUG -ggdb3 -O0 -fdiagnostics-color=always -fstack-usage -fsanitize=undefined
+	CXXFLAGS += -fdiagnostics-all-candidates
 ifeq ($(OSARCH), amd64)
 	CFLAGS += -fverbose-asm
 endif # amd64
@@ -111,7 +112,7 @@ $(KERNEL_FILENAME): $(OBJ)
 # https://gcc.gnu.org/projects/cxx-status.html
 %.o: %.cpp $(HEADERS)
 	$(info Compiling $<)
-	$(__CONF_CXX) $(CFLAGS) -fcoroutines $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
+	$(__CONF_CXX) $(CFLAGS) $(CXXFLAGS) -fcoroutines $(CFLAG_STACK_PROTECTOR) $(WARNCFLAG) -std=c++20 -c $< -o $@ -fno-rtti
 
 %.o: %.S
 	$(info Compiling $<)
