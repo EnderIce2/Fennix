@@ -24,20 +24,6 @@ RUN apt-get -y install --no-install-recommends \
 	file \
 	python3-dev
 
-# Required packages for building gcc & binutils
-RUN <<EOF
-wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb
-sudo dpkg --force-all -i /tmp/autoconf.deb
-EOF
-
-# Required packages for building gcc & binutils
-RUN <<EOF
-wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz
-tar -xzf /tmp/automake.tar.gz -C /tmp
-cd /tmp/automake-1.15.1
-./configure && make && sudo make install
-EOF
-
 # Required packages for building qemu
 RUN apt-get -y install --no-install-recommends \
 	git \
@@ -122,3 +108,20 @@ echo PATH=$PATH:/workspaces/Fennix/cross/bin >> /etc/profile
 EOF
 
 ENV CHMOD_KVM=1
+
+# Remove autoconf & automake
+RUN sudo apt-get -y remove autoconf automake
+
+# Required packages for building gcc & binutils
+RUN <<EOF
+wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb
+sudo dpkg --force-all -i /tmp/autoconf.deb
+EOF
+
+# Required packages for building gcc & binutils
+RUN <<EOF
+wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz
+tar -xzf /tmp/automake.tar.gz -C /tmp
+cd /tmp/automake-1.15.1
+./configure && make && sudo make install
+EOF
