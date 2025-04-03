@@ -169,11 +169,14 @@ __do_gcc:
 	--enable-libgm2 \
 	--enable-libssp \
 	--enable-libstdcxx \
+	--disable-hosted-libstdcxx \
 	&& \
 	$(MAKE) --quiet all-gcc -j$(shell nproc) && \
 	$(MAKE) --quiet all-target-libgcc -j$(shell nproc) && \
+	$(MAKE) --quiet all-target-libstdc++-v3 -j$(shell nproc) && \
 	$(MAKE) --quiet install-gcc -j$(shell nproc) && \
-	$(MAKE) --quiet install-target-libgcc -j$(shell nproc)
+	$(MAKE) --quiet install-target-libgcc -j$(shell nproc) && \
+	$(MAKE) --quiet install-target-libstdc++-v3 -j$(shell nproc)
 
 do_binutils:
 	$(MAKE) __do_binutils BUILD_TARGET="x86_64-fennix"
