@@ -21,31 +21,26 @@
 
 namespace Execute
 {
-	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(FileNode *fd,
-													SegmentTypes Tag)
+	std::vector<Elf_Phdr> ELFGetSymbolType(FileNode *fd, SegmentTypes Tag)
 	{
-#if defined(__amd64__) || defined(__aarch64__)
-		std::vector<Elf64_Phdr> Ret;
+		std::vector<Elf_Phdr> ret;
 
-		Elf64_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
+		Elf_Ehdr ehdr{};
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
-		Elf64_Phdr ProgramHeaders{};
-		fd->Read(&ProgramHeaders, sizeof(Elf64_Phdr), ELFHeader.e_phoff);
+		Elf_Phdr phdr{};
+		fd->Read(&phdr, sizeof(Elf_Phdr), ehdr.e_phoff);
 
-		off_t currentOffset = ELFHeader.e_phoff;
-		for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
+		off_t off = ehdr.e_phoff;
+		for (Elf_Half i = 0; i < ehdr.e_phnum; i++)
 		{
-			if (ProgramHeaders.p_type == Tag)
-				Ret.push_back(ProgramHeaders);
+			if (phdr.p_type == Tag)
+				ret.push_back(phdr);
 
-			currentOffset += sizeof(Elf64_Phdr);
-			fd->Read(&ProgramHeaders, sizeof(Elf64_Phdr), currentOffset);
+			off += sizeof(Elf_Phdr);
+			fd->Read(&phdr, sizeof(Elf_Phdr), off);
 		}
 
-		return Ret;
-#elif defined(__i386__)
-		return {};
-#endif
+		return ret;
 	}
 }

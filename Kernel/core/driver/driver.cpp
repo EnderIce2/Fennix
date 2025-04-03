@@ -517,11 +517,11 @@ namespace Driver
 					{
 						AssertReturnError(pltrelSize != nullptr, -ENOEXEC);
 
-						std::vector<Elf64_Dyn> symtab = Execute::ELFGetDynamicTag_x86_64(File, DT_SYMTAB);
+						std::vector<Elf64_Dyn> symtab = Execute::ELFGetDynamicTag(File, DT_SYMTAB);
 						Elf64_Sym *symbols = (Elf64_Sym *)((uintptr_t)Drv.BaseAddress + symtab[0].d_un.d_ptr);
 
-						std::vector<Elf64_Dyn> StrTab = Execute::ELFGetDynamicTag_x86_64(File, DT_STRTAB);
-						char *DynStr = (char *)((uintptr_t)Drv.BaseAddress + StrTab[0].d_un.d_ptr);
+						std::vector<Elf64_Dyn> StrTab = Execute::ELFGetDynamicTag(File, DT_STRTAB);
+						char *dynStr = (char *)((uintptr_t)Drv.BaseAddress + StrTab[0].d_un.d_ptr);
 
 						Elf64_Rela *rela = (Elf64_Rela *)(Drv.BaseAddress + dyn->d_un.d_ptr);
 						for (size_t i = 0; i < (pltrelSize->d_un.d_val / sizeof(Elf64_Rela)); i++)
@@ -536,7 +536,7 @@ namespace Driver
 								Elf64_Xword symIndex = ELF64_R_SYM(r->r_info);
 								Elf64_Sym *sym = symbols + symIndex;
 
-								const char *symName = DynStr + sym->st_name;
+								const char *symName = dynStr + sym->st_name;
 								debug("Resolving symbol %s", symName);
 
 								*reloc = (uintptr_t)GetSymbolByName(symName, driverInfo.Version.APIVersion);

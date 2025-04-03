@@ -32,7 +32,7 @@ using namespace vfs;
 
 namespace Execute
 {
-	void ELFObject::GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma, FileNode *fd, Elf64_Ehdr ELFHeader, uintptr_t EntryPoint, uintptr_t BaseAddress)
+	void ELFObject::GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma, FileNode *fd, Elf_Ehdr ELFHeader, uintptr_t EntryPoint, uintptr_t BaseAddress)
 	{
 		char *aux_platform = (char *)vma->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
@@ -393,109 +393,100 @@ namespace Execute
 
 	void ELFObject::LoadExec(FileNode *fd, PCB *TargetProcess)
 	{
-		Elf_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
-		uintptr_t EntryPoint = ELFHeader.e_entry;
-		debug("Entry point is %#lx", EntryPoint);
+		Elf_Ehdr ehdr{};
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		uintptr_t entry = ehdr.e_entry;
+		debug("Entry point is %#lx", entry);
 
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
 		debug("Target process page table is %#lx", TargetProcess->PageTable);
 
-		uintptr_t BaseAddress = 0;
-		this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
+		uintptr_t base = 0;
+		this->LoadSegments(fd, TargetProcess, ehdr, base);
 
-		debug("Entry Point: %#lx", EntryPoint);
+		debug("Entry Point: %#lx", entry);
 
-		this->GenerateAuxiliaryVector(vma, fd, ELFHeader, EntryPoint, 0);
+		this->GenerateAuxiliaryVector(vma, fd, ehdr, entry, 0);
 
-		this->ip = EntryPoint;
+		this->ip = entry;
 		this->IsElfValid = true;
 	}
 
 	void ELFObject::LoadDyn(FileNode *fd, PCB *TargetProcess)
 	{
-		Elf_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
-		uintptr_t EntryPoint = ELFHeader.e_entry;
-		debug("Entry point is %#lx", EntryPoint);
+		Elf_Ehdr ehdr{};
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		uintptr_t entry = ehdr.e_entry;
+		debug("Entry point is %#lx", entry);
 
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
-		uintptr_t BaseAddress = 0;
-		this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
-		EntryPoint += BaseAddress;
-		debug("The new ep is %#lx", EntryPoint);
+		uintptr_t base = 0;
+		this->LoadSegments(fd, TargetProcess, ehdr, base);
+		entry += base;
+		debug("The new ep is %#lx", entry);
 
 		/* ------------------------------------------------------------------------ */
 
-		debug("Entry Point: %#lx", EntryPoint);
+		debug("Entry Point: %#lx", entry);
 
-		this->GenerateAuxiliaryVector(vma, fd, ELFHeader, EntryPoint, BaseAddress);
+		this->GenerateAuxiliaryVector(vma, fd, ehdr, entry, base);
 
-		this->ip = EntryPoint;
+		this->ip = entry;
 		this->IsElfValid = true;
 
-		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		for (auto Interp : PhdrINTERP)
+		Elf_Phdr interp = ELFGetSymbolType(fd, PT_INTERP).front();
+		std::string interpreterPath;
+		interpreterPath.resize(256);
+		fd->Read(interpreterPath.data(), 256, interp.p_offset);
+		debug("Interpreter: %s", interpreterPath.c_str());
+
+		FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
+		if (ifd == nullptr)
 		{
-			std::string interpreterPath;
-			interpreterPath.resize(256);
-			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
-			debug("Interpreter: %s", (const char *)interpreterPath.c_str());
-
-			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
-			if (ifd == nullptr)
-			{
-				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
-				continue;
-			}
-			else
-			{
-				if (ifd->IsSymbolicLink())
-				{
-					char buffer[512];
-					ifd->ReadLink(buffer, sizeof(buffer));
-					ifd = fs->GetByPath(buffer, ifd->Parent);
-				}
-
-				debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
-				if (GetBinaryType(interpreterPath) != BinTypeELF)
-				{
-					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
-					continue;
-				}
-
-				if (LoadInterpreter(ifd, TargetProcess))
-				{
-					debug("Interpreter loaded successfully");
-					return;
-				}
-			}
+			warn("Failed to open interpreter file: %s", interpreterPath.c_str());
+			return;
 		}
+
+		if (ifd->IsSymbolicLink())
+		{
+			char buffer[512];
+			ifd->ReadLink(buffer, sizeof(buffer));
+			ifd = fs->GetByPath(buffer, ifd->Parent);
+		}
+
+		debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
+		if (GetBinaryType(interpreterPath) != BinTypeELF)
+		{
+			warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
+			return;
+		}
+
+		LoadInterpreter(ifd, TargetProcess);
 	}
 
 	bool ELFObject::LoadInterpreter(FileNode *fd, PCB *TargetProcess)
 	{
-		Elf_Ehdr ELFHeader;
-		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
+		Elf_Ehdr ehdr;
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
-		switch (ELFHeader.e_type)
+		switch (ehdr.e_type)
 		{
 		case ET_EXEC:
-			assert(ELFHeader.e_type != ET_EXEC);
+			assert(ehdr.e_type != ET_EXEC);
 			break;
 		case ET_DYN:
 		{
-			uintptr_t BaseAddress = 0;
-			this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
-			this->ip = BaseAddress + ELFHeader.e_entry;
+			uintptr_t base = 0;
+			this->LoadSegments(fd, TargetProcess, ehdr, base);
+			this->ip = base + ehdr.e_entry;
 			for (auto &&aux : Elfauxv)
 			{
 				if (aux.archaux.a_type != AT_BASE)
 					continue;
 
-				aux.archaux.a_un.a_val = BaseAddress;
+				aux.archaux.a_un.a_val = base;
 				break;
 			}
 
@@ -505,12 +496,12 @@ namespace Execute
 		case ET_REL:
 		case ET_NONE:
 		{
-			warn("Ignoring interpreter: %s (reason: ET_ is %#lx)", fd->Path.c_str(), ELFHeader.e_type);
+			warn("Ignoring interpreter: %s (reason: ET_ is %#lx)", fd->Path.c_str(), ehdr.e_type);
 			break;
 		}
 		default:
 		{
-			error("Unknown ELF Type: %d", ELFHeader.e_type);
+			error("Unknown ELF Type: %d", ehdr.e_type);
 			break;
 		}
 		}
@@ -549,8 +540,8 @@ namespace Execute
 		while (envp[envc] != nullptr)
 			envc++;
 
-		Elf_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
+		Elf_Ehdr ehdr{};
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
 		// ELFargv = new const char *[argc + 2];
 		size_t argv_size = argc + 2 * sizeof(char *);
@@ -576,7 +567,7 @@ namespace Execute
 		}
 		ELFenvp[envc] = nullptr;
 
-		switch (ELFHeader.e_type)
+		switch (ehdr.e_type)
 		{
 		case ET_REL:
 		{
@@ -585,7 +576,7 @@ namespace Execute
 		}
 		case ET_EXEC:
 		{
-			switch (ELFHeader.e_machine)
+			switch (ehdr.e_machine)
 			{
 			case EM_386:
 			case EM_X86_64:
@@ -594,14 +585,14 @@ namespace Execute
 				this->LoadExec(fd, TargetProcess);
 				break;
 			default:
-				error("Unknown architecture: %d", ELFHeader.e_machine);
+				error("Unknown architecture: %d", ehdr.e_machine);
 				break;
 			}
 			break;
 		}
 		case ET_DYN:
 		{
-			switch (ELFHeader.e_machine)
+			switch (ehdr.e_machine)
 			{
 			case EM_386:
 			case EM_X86_64:
@@ -610,7 +601,7 @@ namespace Execute
 				this->LoadDyn(fd, TargetProcess);
 				break;
 			default:
-				error("Unknown architecture: %d", ELFHeader.e_machine);
+				error("Unknown architecture: %d", ehdr.e_machine);
 				break;
 			}
 			break;
@@ -623,7 +614,7 @@ namespace Execute
 		case ET_NONE:
 		default:
 		{
-			error("Unknown ELF Type: %d", ELFHeader.e_type);
+			error("Unknown ELF Type: %d", ehdr.e_type);
 			break;
 		}
 		}

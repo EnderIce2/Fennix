@@ -21,42 +21,31 @@
 
 namespace Execute
 {
-	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(FileNode *fd,
-												   DynamicArrayTags Tag)
+	std::vector<Elf_Dyn> ELFGetDynamicTag(FileNode *fd, DynamicArrayTags Tag)
 	{
-#if defined(__amd64__) || defined(__aarch64__)
-		std::vector<Elf64_Dyn> Ret;
+		std::vector<Elf_Dyn> ret;
+		std::vector<Elf_Phdr> phdrs = ELFGetSymbolType(fd, PT_DYNAMIC);
 
-		Elf64_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
-
-		std::vector<Elf64_Phdr> DYNAMICPhdrs = ELFGetSymbolType_x86_64(fd, PT_DYNAMIC);
-
-		if (DYNAMICPhdrs.size() < 1)
+		if (phdrs.size() < 1)
 		{
-			error("No dynamic phdrs found.");
-			return Ret;
+			debug("No dynamic phdrs found.");
+			return ret;
 		}
 
-		for (auto Phdr : DYNAMICPhdrs)
+		for (auto phdr : phdrs)
 		{
-			Elf64_Dyn Dynamic{};
-			for (size_t i = 0; i < Phdr.p_filesz / sizeof(Elf64_Dyn); i++)
+			Elf_Dyn dyn{};
+			for (size_t i = 0; i < phdr.p_filesz / sizeof(Elf_Dyn); i++)
 			{
-				fd->Read(&Dynamic, sizeof(Elf64_Dyn), Phdr.p_offset + (i * sizeof(Elf64_Dyn)));
-
-				if (Dynamic.d_tag != Tag)
+				fd->Read(&dyn, sizeof(Elf_Dyn), phdr.p_offset + (i * sizeof(Elf_Dyn)));
+				if (dyn.d_tag != Tag)
 					continue;
 
-				debug("Found dynamic tag %d at %#lx [d_val: %#lx]",
-					  Tag, &Dynamic, Dynamic.d_un.d_val);
-				Ret.push_back(Dynamic);
+				debug("Found dynamic tag %d at %#lx [d_val: %#lx]", Tag, &dyn, dyn.d_un.d_val);
+				ret.push_back(dyn);
 			}
 		}
 
-		return Ret;
-#elif defined(__i386__)
-		return {};
-#endif
+		return ret;
 	}
 }

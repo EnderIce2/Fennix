@@ -39,23 +39,6 @@ namespace Execute
 		BinTypeUnknown
 	};
 
-	struct SharedLibrary
-	{
-		char Identifier[64];
-		char Path[256];
-		uint64_t Timeout;
-		int RefCount;
-
-		uintptr_t MemoryImage;
-		size_t Length;
-	};
-
-	struct MmImage
-	{
-		void *Physical;
-		void *Virtual;
-	};
-
 	class ELFObject
 	{
 	private:
@@ -67,7 +50,7 @@ namespace Execute
 		void *ELFProgramHeaders;
 
 		void GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma,
-									 FileNode *fd, Elf64_Ehdr ELFHeader,
+									 FileNode *fd, Elf_Ehdr ELFHeader,
 									 uintptr_t EntryPoint,
 									 uintptr_t BaseAddress);
 
@@ -100,22 +83,17 @@ namespace Execute
 			  bool Critical = false);
 
 	bool ELFIs64(void *Header);
-	Elf64_Shdr *GetELFSheader(Elf64_Ehdr *Header);
-	Elf64_Shdr *GetELFSection(Elf64_Ehdr *Header, uint64_t Index);
-	char *GetELFStringTable(Elf64_Ehdr *Header);
-	char *ELFLookupString(Elf64_Ehdr *Header, uintptr_t Offset);
-	Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, std::string Name);
-	Elf64_Sym ELFLookupSymbol(FileNode *fd, std::string Name);
-	uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index);
+	Elf_Shdr *GetELFSheader(Elf_Ehdr *Header);
+	Elf_Shdr *GetELFSection(Elf_Ehdr *Header, uintptr_t Index);
+	char *GetELFStringTable(Elf_Ehdr *Header);
+	char *ELFLookupString(Elf_Ehdr *Header, uintptr_t Offset);
+	Elf_Sym *ELFLookupSymbol(Elf_Ehdr *Header, std::string Name);
+	Elf_Sym ELFLookupSymbol(FileNode *fd, std::string Name);
+	uintptr_t ELFGetSymbolValue(Elf_Ehdr *Header, uintptr_t Table, uintptr_t Index);
 
-	std::vector<Elf64_Phdr> ELFGetSymbolType_x86_64(FileNode *fd, SegmentTypes Tag);
-	std::vector<Elf32_Phdr> ELFGetSymbolType_x86_32(FileNode *fd, SegmentTypes Tag);
-
-	std::vector<Elf64_Shdr> ELFGetSections_x86_64(FileNode *fd, std::string SectionName);
-	std::vector<Elf32_Shdr> ELFGetSections_x86_32(FileNode *fd, std::string SectionName);
-
-	std::vector<Elf64_Dyn> ELFGetDynamicTag_x86_64(FileNode *fd, DynamicArrayTags Tag);
-	std::vector<Elf32_Dyn> ELFGetDynamicTag_x86_32(FileNode *fd, DynamicArrayTags Tag);
+	std::vector<Elf_Phdr> ELFGetSymbolType(FileNode *fd, SegmentTypes Tag);
+	std::vector<Elf_Shdr> ELFGetSections(FileNode *fd, std::string SectionName);
+	std::vector<Elf_Dyn> ELFGetDynamicTag(FileNode *fd, DynamicArrayTags Tag);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__

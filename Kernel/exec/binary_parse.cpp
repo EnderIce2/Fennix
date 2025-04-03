@@ -28,73 +28,73 @@ namespace Execute
 	BinaryType GetBinaryType(FileNode *Node)
 	{
 		debug("Checking binary type of %s", Node->Path.c_str());
-		BinaryType Type;
+		BinaryType type;
 
 		if (Node == nullptr)
 			ReturnLogError((BinaryType)-ENOENT, "Node is null");
 
-		Elf32_Ehdr ELFHeader;
-		Node->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
+		Elf_Ehdr ehdr;
+		Node->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
-		mach_header MachHeader;
-		Node->Read(&MachHeader, sizeof(mach_header), 0);
+		mach_header mach;
+		Node->Read(&mach, sizeof(mach_header), 0);
 
-		IMAGE_DOS_HEADER MZHeader;
-		Node->Read(&MZHeader, sizeof(IMAGE_DOS_HEADER), 0);
+		IMAGE_DOS_HEADER mz;
+		Node->Read(&mz, sizeof(IMAGE_DOS_HEADER), 0);
 
 		/* Check ELF header. */
-		if (ELFHeader.e_ident[EI_MAG0] == ELFMAG0 &&
-			ELFHeader.e_ident[EI_MAG1] == ELFMAG1 &&
-			ELFHeader.e_ident[EI_MAG2] == ELFMAG2 &&
-			ELFHeader.e_ident[EI_MAG3] == ELFMAG3)
+		if (ehdr.e_ident[EI_MAG0] == ELFMAG0 &&
+			ehdr.e_ident[EI_MAG1] == ELFMAG1 &&
+			ehdr.e_ident[EI_MAG2] == ELFMAG2 &&
+			ehdr.e_ident[EI_MAG3] == ELFMAG3)
 		{
 			debug("Image - ELF");
-			Type = BinaryType::BinTypeELF;
+			type = BinaryType::BinTypeELF;
 			goto Success;
 		}
 
-		if (MachHeader.magic == MH_MAGIC || MachHeader.magic == MH_CIGAM)
+		if (mach.magic == MH_MAGIC || mach.magic == MH_CIGAM)
 		{
 			debug("Image - Mach-O");
-			Type = BinaryType::BinTypeMachO;
+			type = BinaryType::BinTypeMachO;
 			goto Success;
 		}
 
 		/* Check MZ header. */
-		else if (MZHeader.e_magic == IMAGE_DOS_SIGNATURE)
+		else if (mz.e_magic == IMAGE_DOS_SIGNATURE)
 		{
-			IMAGE_NT_HEADERS PEHeader;
-			Node->Read(&PEHeader, sizeof(IMAGE_NT_HEADERS), MZHeader.e_lfanew);
+			IMAGE_NT_HEADERS pe;
+			Node->Read(&pe, sizeof(IMAGE_NT_HEADERS), mz.e_lfanew);
 
-			IMAGE_OS2_HEADER NEHeader;
-			Node->Read(&NEHeader, sizeof(IMAGE_OS2_HEADER), MZHeader.e_lfanew);
+			IMAGE_OS2_HEADER ne;
+			Node->Read(&ne, sizeof(IMAGE_OS2_HEADER), mz.e_lfanew);
 
 			/* TODO: LE, EDOS */
-			if (PEHeader.Signature == IMAGE_NT_SIGNATURE)
+			if (pe.Signature == IMAGE_NT_SIGNATURE)
 			{
 				debug("Image - PE");
-				Type = BinaryType::BinTypePE;
+				type = BinaryType::BinTypePE;
 				goto Success;
 			}
-			else if (NEHeader.ne_magic == IMAGE_OS2_SIGNATURE)
+			else if (ne.ne_magic == IMAGE_OS2_SIGNATURE)
 			{
 				debug("Image - NE");
-				Type = BinaryType::BinTypeNE;
+				type = BinaryType::BinTypeNE;
 				goto Success;
 			}
 			else
 			{
 				debug("Image - MZ");
-				Type = BinaryType::BinTypeMZ;
+				type = BinaryType::BinTypeMZ;
 				goto Success;
 			}
 		}
 
 		/* ... */
 
-		Type = BinaryType::BinTypeUnknown;
+		type = BinaryType::BinTypeUnknown;
 	Success:
-		return Type;
+		return type;
 	}
 
 	BinaryType GetBinaryType(std::string Path)

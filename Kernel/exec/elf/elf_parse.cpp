@@ -25,52 +25,52 @@ namespace Execute
 {
 	bool ELFIs64(void *Header)
 	{
-		Elf32_Ehdr *ELFHeader = (Elf32_Ehdr *)Header;
-		if (ELFHeader->e_ident[EI_CLASS] == ELFCLASS64)
+		Elf_Ehdr *ehdr = (Elf_Ehdr *)Header;
+		if (ehdr->e_ident[EI_CLASS] == ELFCLASS64)
 			return true;
 		return false;
 	}
 
 	/* Originally from https://wiki.osdev.org/ELF_Tutorial */
 
-	Elf64_Shdr *GetELFSheader(Elf64_Ehdr *Header)
+	Elf_Shdr *GetELFSheader(Elf_Ehdr *Header)
 	{
-		return (Elf64_Shdr *)((uintptr_t)Header + Header->e_shoff);
+		return (Elf_Shdr *)((uintptr_t)Header + Header->e_shoff);
 	}
 
-	Elf64_Shdr *GetELFSection(Elf64_Ehdr *Header, uint64_t Index)
+	Elf_Shdr *GetELFSection(Elf_Ehdr *Header, uintptr_t Index)
 	{
 		return &GetELFSheader(Header)[Index];
 	}
 
-	char *GetELFStringTable(Elf64_Ehdr *Header)
+	char *GetELFStringTable(Elf_Ehdr *Header)
 	{
 		if (Header->e_shstrndx == SHN_UNDEF)
 			return nullptr;
 		return (char *)Header + GetELFSection(Header, Header->e_shstrndx)->sh_offset;
 	}
 
-	char *ELFLookupString(Elf64_Ehdr *Header, uintptr_t Offset)
+	char *ELFLookupString(Elf_Ehdr *Header, uintptr_t Offset)
 	{
-		char *StringTable = GetELFStringTable(Header);
-		if (StringTable == nullptr)
+		char *table = GetELFStringTable(Header);
+		if (table == nullptr)
 			return nullptr;
-		return StringTable + Offset;
+		return table + Offset;
 	}
 
-	Elf64_Sym *ELFLookupSymbol(Elf64_Ehdr *Header, std::string Name)
+	Elf_Sym *ELFLookupSymbol(Elf_Ehdr *Header, std::string Name)
 	{
-		Elf64_Shdr *SymbolTable = nullptr;
-		Elf64_Shdr *StringTable = nullptr;
+		Elf_Shdr *symTable = nullptr;
+		Elf_Shdr *stringTable = nullptr;
 
-		for (Elf64_Half i = 0; i < Header->e_shnum; i++)
+		for (Elf_Half i = 0; i < Header->e_shnum; i++)
 		{
-			Elf64_Shdr *shdr = GetELFSection(Header, i);
+			Elf_Shdr *shdr = GetELFSection(Header, i);
 			switch (shdr->sh_type)
 			{
 			case SHT_SYMTAB:
-				SymbolTable = shdr;
-				StringTable = GetELFSection(Header, shdr->sh_link);
+				symTable = shdr;
+				stringTable = GetELFSection(Header, shdr->sh_link);
 				break;
 			default:
 			{
@@ -79,117 +79,108 @@ namespace Execute
 			}
 		}
 
-		if (SymbolTable == nullptr || StringTable == nullptr)
+		if (symTable == nullptr || stringTable == nullptr)
 			return nullptr;
 
-		for (size_t i = 0; i < (SymbolTable->sh_size / sizeof(Elf64_Sym)); i++)
+		for (size_t i = 0; i < (symTable->sh_size / sizeof(Elf_Sym)); i++)
 		{
-			Elf64_Sym *Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
-			char *String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
+			Elf_Sym *sym = (Elf_Sym *)((uintptr_t)Header + symTable->sh_offset + (i * sizeof(Elf_Sym)));
+			char *String = (char *)((uintptr_t)Header + stringTable->sh_offset + sym->st_name);
 			if (strcmp(String, Name.c_str()) == 0)
-				return Symbol;
+				return sym;
 		}
 		return nullptr;
 	}
 
-	Elf64_Sym ELFLookupSymbol(FileNode *fd, std::string Name)
+	Elf_Sym ELFLookupSymbol(FileNode *fd, std::string Name)
 	{
-#if defined(__amd64__)
-		Elf64_Ehdr Header{};
-		fd->Read(&Header, sizeof(Elf64_Ehdr), 0);
+		Elf_Ehdr ehdr{};
+		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
-		Elf64_Shdr SymbolTable{};
-		Elf64_Shdr StringTable{};
+		Elf_Shdr symTable{};
+		Elf_Shdr stringTable{};
 
-		for (Elf64_Half i = 0; i < Header.e_shnum; i++)
+		for (Elf64_Half i = 0; i < ehdr.e_shnum; i++)
 		{
-			Elf64_Shdr shdr;
-			fd->Read(&shdr, sizeof(Elf64_Shdr), Header.e_shoff + (i * sizeof(Elf64_Shdr)));
+			Elf_Shdr shdr;
+			fd->Read(&shdr, sizeof(Elf_Shdr), ehdr.e_shoff + (i * sizeof(Elf_Shdr)));
 
 			switch (shdr.sh_type)
 			{
 			case SHT_SYMTAB:
-				SymbolTable = shdr;
-				fd->Read(&StringTable, sizeof(Elf64_Shdr), Header.e_shoff + (shdr.sh_link * sizeof(Elf64_Shdr)));
+				symTable = shdr;
+				fd->Read(&stringTable, sizeof(Elf_Shdr), ehdr.e_shoff + (shdr.sh_link * sizeof(Elf_Shdr)));
 				break;
 			default:
-			{
 				break;
-			}
 			}
 		}
 
-		if (SymbolTable.sh_name == 0 || StringTable.sh_name == 0)
+		if (symTable.sh_name == 0 || stringTable.sh_name == 0)
 		{
 			error("Symbol table not found.");
 			return {};
 		}
 
-		for (size_t i = 0; i < (SymbolTable.sh_size / sizeof(Elf64_Sym)); i++)
+		for (size_t i = 0; i < (symTable.sh_size / sizeof(Elf_Sym)); i++)
 		{
-			// Elf64_Sym *Symbol = (Elf64_Sym *)((uintptr_t)Header + SymbolTable->sh_offset + (i * sizeof(Elf64_Sym)));
-			Elf64_Sym Symbol;
-			fd->Read(&Symbol, sizeof(Elf64_Sym), SymbolTable.sh_offset + (i * sizeof(Elf64_Sym)));
+			// Elf_Sym *sym = (Elf_Sym *)((uintptr_t)Header + symTable->sh_offset + (i * sizeof(Elf_Sym)));
+			Elf_Sym sym;
+			fd->Read(&sym, sizeof(Elf_Sym), symTable.sh_offset + (i * sizeof(Elf_Sym)));
 
-			// char *String = (char *)((uintptr_t)Header + StringTable->sh_offset + Symbol->st_name);
-			char String[256];
-			fd->Read(&String, sizeof(String), StringTable.sh_offset + Symbol.st_name);
+			// char *str = (char *)((uintptr_t)Header + stringTable->sh_offset + sym->st_name);
+			char str[256];
+			fd->Read(&str, sizeof(str), stringTable.sh_offset + sym.st_name);
 
-			if (strcmp(String, Name.c_str()) == 0)
-				return Symbol;
+			if (strcmp(str, Name.c_str()) == 0)
+				return sym;
 		}
 		error("Symbol not found.");
-#endif
 		return {};
 	}
 
-	uintptr_t ELFGetSymbolValue(Elf64_Ehdr *Header, uint64_t Table, uint64_t Index)
+	uintptr_t ELFGetSymbolValue(Elf_Ehdr *Header, uintptr_t Table, uintptr_t Index)
 	{
-#if defined(__amd64__)
 		if (Table == SHN_UNDEF || Index == SHN_UNDEF)
 			return 0;
-		Elf64_Shdr *SymbolTable = GetELFSection(Header, Table);
 
-		uint64_t STEntries = SymbolTable->sh_size / SymbolTable->sh_entsize;
-		if (Index >= STEntries)
+		Elf_Shdr *symTable = GetELFSection(Header, Table);
+
+		uintptr_t entries = symTable->sh_size / symTable->sh_entsize;
+		if (Index >= entries)
 		{
 			error("Symbol index out of range %d-%u.", Table, Index);
-			return 0xdead;
+			return -1;
 		}
 
-		uint64_t SymbolAddress = (uint64_t)Header + SymbolTable->sh_offset;
-		Elf64_Sym *Symbol = &((Elf64_Sym *)SymbolAddress)[Index];
+		uintptr_t symbolPtr = (uintptr_t)Header + symTable->sh_offset;
+		Elf_Sym *sym = &((Elf_Sym *)symbolPtr)[Index];
 
-		if (Symbol->st_shndx == SHN_UNDEF)
+		if (sym->st_shndx == SHN_UNDEF)
 		{
-			Elf64_Shdr *StringTable = GetELFSection(Header, SymbolTable->sh_link);
-			const char *Name = (const char *)Header + StringTable->sh_offset + Symbol->st_name;
+			Elf_Shdr *stringTable = GetELFSection(Header, symTable->sh_link);
+			const char *name = (const char *)Header + stringTable->sh_offset + sym->st_name;
 
-			void *Target = (void *)ELFLookupSymbol(Header, Name)->st_value;
-			if (Target == nullptr)
+			void *target = (void *)ELFLookupSymbol(Header, name)->st_value;
+			if (target == nullptr)
 			{
-				if (ELF64_ST_BIND(Symbol->st_info) & STB_WEAK)
+				if (ELF64_ST_BIND(sym->st_info) & STB_WEAK)
 					return 0;
 				else
 				{
-					error("Undefined external symbol \"%s\".", Name);
-					return 0xdead;
+					error("Undefined external symbol \"%s\".", name);
+					return -1;
 				}
 			}
 			else
-				return (uintptr_t)Target;
+				return (uintptr_t)target;
 		}
-		else if (Symbol->st_shndx == SHN_ABS)
-			return Symbol->st_value;
+		else if (sym->st_shndx == SHN_ABS)
+			return sym->st_value;
 		else
 		{
-			Elf64_Shdr *Target = GetELFSection(Header, Symbol->st_shndx);
-			return (uintptr_t)Header + Symbol->st_value + Target->sh_offset;
+			Elf_Shdr *shdr = GetELFSection(Header, sym->st_shndx);
+			return (uintptr_t)Header + sym->st_value + shdr->sh_offset;
 		}
-#elif defined(__i386__)
-		return 0xdead;
-#elif defined(__aarch64__)
-		return 0xdead;
-#endif
 	}
 }
