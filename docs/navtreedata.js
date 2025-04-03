@@ -58,9 +58,9 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d2/d6e/syscalls_8h.html#a0193a21c57cbbc422674eb1f77366c9aa70dcd8187c58559caf52a8e285e11819",
-"d7/d9f/fcntl_8h.html#af532232f0b65dc6296aedd2b60de7285",
-"db/de9/device_8h.html#a6fa54b6c61e3ac1a932decf111303bb9",
-"df/d26/fs_8h.html#a564f699164b986ac3358ce6acde557e5"
+"d7/d9f/fcntl_8h.html#af2939853c650561d3495ed40f68f6249",
+"db/de9/device_8h.html#a0ebb7111c50f31c0740b2caa2c56ff41",
+"df/d26/fs_8h.html#a5303f49f26293acdb9533756c78322fb"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

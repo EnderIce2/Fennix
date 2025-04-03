@@ -6761,6 +6761,11 @@
                       <Anchor>a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63</Anchor>
                      </Node>
                      <Node>
+                      <Name>SYS_DEBUG_REPORT</Name>
+                      <Path>d2/d6e/syscalls_8h.html</Path>
+                      <Anchor>a58e578ea55e3e184c5ed9206edc2a475aecff11d2b9e05f56161294b39930d93c</Anchor>
+                     </Node>
+                     <Node>
                       <Name>SYS_READ</Name>
                       <Path>d2/d6e/syscalls_8h.html</Path>
                       <Anchor>a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c</Anchor>

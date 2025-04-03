@@ -11467,6 +11467,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>SYS_DEBUG_REPORT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475aecff11d2b9e05f56161294b39930d93c</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>SYS_DUP</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -13293,6 +13303,16 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63</Anchor>
+    <DeclaredIn>syscalls.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SYS_DEBUG_REPORT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>a58e578ea55e3e184c5ed9206edc2a475aecff11d2b9e05f56161294b39930d93c</Anchor>
     <DeclaredIn>syscalls.h</DeclaredIn>
   </Token>
   <Token>

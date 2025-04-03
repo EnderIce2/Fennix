@@ -215,6 +215,7 @@ var syscalls_8h =
     ] ],
     [ "syscalls_t", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475", [
       [ "SYS_API_VERSION", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475ac2ca54c74e420ed680425b97a8cbfe63", null ],
+      [ "SYS_DEBUG_REPORT", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475aecff11d2b9e05f56161294b39930d93c", null ],
       [ "SYS_READ", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a49214d5519a62b4bf0ace2d61cc9602c", null ],
       [ "SYS_PREAD", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a84f788734a50fa391db1f461e88e8913", null ],
       [ "SYS_WRITE", "d2/d6e/syscalls_8h.html#a58e578ea55e3e184c5ed9206edc2a475a228e81db8f7c6d61b19e40eca4f7a95a", null ],
