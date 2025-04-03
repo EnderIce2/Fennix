@@ -3141,7 +3141,7 @@ __no_sanitize("undefined") static ssize_t linux_getdents64(SysFrm *,
 		}
 	}
 #endif
-	return ret;
+	return ConvertErrnoToLinux(ret);
 }
 
 static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
