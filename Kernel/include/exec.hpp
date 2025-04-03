@@ -66,20 +66,15 @@ namespace Execute
 		Tasking::IP ip;
 		void *ELFProgramHeaders;
 
-		void GenerateAuxiliaryVector_x86_32(Memory::VirtualMemoryArea *vma,
-											FileNode *fd, Elf32_Ehdr ELFHeader,
-											uint32_t EntryPoint,
-											uint32_t BaseAddress);
+		void GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma,
+									 FileNode *fd, Elf64_Ehdr ELFHeader,
+									 uintptr_t EntryPoint,
+									 uintptr_t BaseAddress);
 
-		void GenerateAuxiliaryVector_x86_64(Memory::VirtualMemoryArea *vma,
-											FileNode *fd, Elf64_Ehdr ELFHeader,
-											uint64_t EntryPoint,
-											uint64_t BaseAddress);
+		void LoadSegments(FileNode *fd, Tasking::PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress);
 
-		void LoadExec_x86_32(FileNode *fd, Tasking::PCB *TargetProcess);
-		void LoadExec_x86_64(FileNode *fd, Tasking::PCB *TargetProcess);
-		void LoadDyn_x86_32(FileNode *fd, Tasking::PCB *TargetProcess);
-		void LoadDyn_x86_64(FileNode *fd, Tasking::PCB *TargetProcess);
+		void LoadExec(FileNode *fd, Tasking::PCB *TargetProcess);
+		void LoadDyn(FileNode *fd, Tasking::PCB *TargetProcess);
 		bool LoadInterpreter(FileNode *fd, Tasking::PCB *TargetProcess);
 
 	public:

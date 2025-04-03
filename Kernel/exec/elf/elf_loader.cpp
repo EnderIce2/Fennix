@@ -32,53 +32,39 @@ using namespace vfs;
 
 namespace Execute
 {
-	void ELFObject::GenerateAuxiliaryVector_x86_32(Memory::VirtualMemoryArea *vma,
-												   FileNode *fd,
-												   Elf32_Ehdr ELFHeader,
-												   uint32_t EntryPoint,
-												   uint32_t BaseAddress)
+	void ELFObject::GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma, FileNode *fd, Elf64_Ehdr ELFHeader, uintptr_t EntryPoint, uintptr_t BaseAddress)
 	{
-		assert(!"Function not implemented");
-	}
-
-	void ELFObject::GenerateAuxiliaryVector_x86_64(Memory::VirtualMemoryArea *vma,
-												   FileNode *fd,
-												   Elf64_Ehdr ELFHeader,
-												   uint64_t EntryPoint,
-												   uint64_t BaseAddress)
-	{
-#if defined(__amd64__)
 		char *aux_platform = (char *)vma->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
 
 		void *execfn_str = vma->RequestPages(TO_PAGES(fd->Path.size() + 1), true);
 		strcpy((char *)execfn_str, fd->Path.c_str());
 		void *at_random = vma->RequestPages(1, true);
-		*(uint64_t *)at_random = Random::rand16();
+		*(uintptr_t *)at_random = Random::rand16();
 
 		Elfauxv.push_back({.archaux = {.a_type = AT_NULL, .a_un = {.a_val = 0}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uint64_t)aux_platform}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uint64_t)execfn_str}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PLATFORM, .a_un = {.a_val = (uintptr_t)aux_platform}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_EXECFN, .a_un = {.a_val = (uintptr_t)execfn_str}}});
 		// AT_HWCAP2 26
-		Elfauxv.push_back({.archaux = {.a_type = AT_RANDOM, .a_un = {.a_val = (uint64_t)at_random}}});
-		Elfauxv.push_back({.archaux = {.a_type = AT_SECURE, .a_un = {.a_val = (uint64_t)0}}}); /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uint64_t)0}}});   /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uint64_t)0}}});	   /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uint64_t)0}}});   /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uint64_t)0}}});	   /* FIXME */
-		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uint64_t)EntryPoint}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_RANDOM, .a_un = {.a_val = (uintptr_t)at_random}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_SECURE, .a_un = {.a_val = (uintptr_t)0}}}); /* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_EGID, .a_un = {.a_val = (uintptr_t)0}}});	/* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_GID, .a_un = {.a_val = (uintptr_t)0}}});	/* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_EUID, .a_un = {.a_val = (uintptr_t)0}}});	/* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_UID, .a_un = {.a_val = (uintptr_t)0}}});	/* FIXME */
+		Elfauxv.push_back({.archaux = {.a_type = AT_ENTRY, .a_un = {.a_val = (uintptr_t)EntryPoint}}});
 		// AT_FLAGS 8
-		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uint64_t)BaseAddress}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_BASE, .a_un = {.a_val = (uintptr_t)BaseAddress}}});
 
 		if (ELFProgramHeaders)
 		{
-			Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uint64_t)ELFHeader.e_phnum}}});
-			Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uint64_t)ELFHeader.e_phentsize}}});
-			Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uint64_t)ELFProgramHeaders}}});
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHNUM, .a_un = {.a_val = (uintptr_t)ELFHeader.e_phnum}}});
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHENT, .a_un = {.a_val = (uintptr_t)ELFHeader.e_phentsize}}});
+			Elfauxv.push_back({.archaux = {.a_type = AT_PHDR, .a_un = {.a_val = (uintptr_t)ELFProgramHeaders}}});
 		}
 
 		// AT_CLKTCK 17
-		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uint64_t)PAGE_SIZE}}});
+		Elfauxv.push_back({.archaux = {.a_type = AT_PAGESZ, .a_un = {.a_val = (uintptr_t)PAGE_SIZE}}});
 		// AT_HWCAP 16
 		// AT_SYSINFO_EHDR 33
 		// AT_MINSIGSTKSZ 51
@@ -91,323 +77,23 @@ namespace Execute
 				  var.archaux.a_un.a_val);
 		}
 #endif
-#endif
 	}
 
-	void ELFObject::LoadExec_x86_32(FileNode *, PCB *)
+	void ELFObject::LoadSegments(FileNode *fd, PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress)
 	{
-		assert(!"Function not implemented");
-	}
-
-	void ELFObject::LoadExec_x86_64(FileNode *fd, PCB *TargetProcess)
-	{
-#if defined(__amd64__)
-		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		for (auto Interp : PhdrINTERP)
-		{
-			std::string interpreterPath;
-			interpreterPath.resize(256);
-			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
-			debug("Interpreter: %s", interpreterPath.c_str());
-
-			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
-			if (ifd == nullptr)
-			{
-				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
-				continue;
-			}
-			else
-			{
-				if (GetBinaryType(interpreterPath) != BinTypeELF)
-				{
-					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
-					continue;
-				}
-
-				if (LoadInterpreter(ifd, TargetProcess))
-				{
-					/* FIXME: specify argv[1] as the location for the interpreter */
-
-					debug("Interpreter loaded successfully");
-					return;
-				}
-			}
-		}
-
-		Elf64_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
-		uintptr_t EntryPoint = ELFHeader.e_entry;
-		debug("Entry point is %#lx", EntryPoint);
-
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
-		debug("Target process page table is %#lx", TargetProcess->PageTable);
+		Elf_Phdr ProgramBreakHeader{};
+		Elf_Phdr ProgramHeader;
 
-		/* Copy segments into memory */
+		if (ELFHeader.e_type == ET_DYN)
 		{
-			Elf64_Phdr ProgramBreakHeader{};
-			Elf64_Phdr ProgramHeader;
-			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
-			{
-				fd->Read(&ProgramHeader, sizeof(Elf64_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)));
-				switch (ProgramHeader.p_type)
-				{
-				case PT_LOAD:
-				{
-					if (ProgramHeader.p_memsz == 0)
-						continue;
-
-					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz + (ProgramHeader.p_vaddr % PAGE_SIZE)), true);
-					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
-					uintptr_t destOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
-
-					size_t totalSize = ALIGN_UP(destOffset + ProgramHeader.p_memsz, PAGE_SIZE);
-					vmm.Map(vAddr, pAddr, totalSize, Memory::RW | Memory::US);
-
-					debug("Mapped %#lx-%#lx to %#lx-%#lx (%#lx bytes)",
-						  uintptr_t(pAddr), uintptr_t(pAddr) + totalSize,
-						  uintptr_t(vAddr), uintptr_t(vAddr) + totalSize, totalSize);
-					debug("Segment Offset is %#lx", destOffset);
-
-					debug("Copying PT_LOAD to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
-						  uintptr_t(pAddr) + destOffset,
-						  uintptr_t(pAddr) + destOffset + ProgramHeader.p_memsz,
-						  ProgramHeader.p_vaddr,
-						  ProgramHeader.p_vaddr + ProgramHeader.p_memsz,
-						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
-
-					if (ProgramHeader.p_filesz > 0)
-					{
-						debug("%d %#lx %d", ProgramHeader.p_offset, (uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz);
-						fd->Read((uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
-					}
-
-					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
-					{
-						void *zAddr = (void *)(uintptr_t(pAddr) + destOffset + ProgramHeader.p_filesz);
-
-						debug("Zeroing %d bytes at %#lx (%#lx-%#lx)",
-							  ProgramHeader.p_memsz - ProgramHeader.p_filesz, zAddr,
-							  ProgramHeader.p_vaddr + ProgramHeader.p_filesz,
-							  ProgramHeader.p_vaddr + ProgramHeader.p_memsz);
-
-						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
-					}
-					ProgramBreakHeader = ProgramHeader;
-					break;
-				}
-				case PT_NOTE:
-				{
-					Elf64_Nhdr NoteHeader;
-					fd->Read(&NoteHeader, sizeof(Elf64_Nhdr), ProgramHeader.p_offset);
-
-					switch (NoteHeader.n_type)
-					{
-					case NT_PRSTATUS:
-					{
-						Elf64_Prstatus prstatus;
-						fd->Read(&prstatus, sizeof(Elf64_Prstatus), ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
-						debug("PRSTATUS: %#lx", prstatus.pr_reg[0]);
-						break;
-					}
-					case NT_PRPSINFO:
-					{
-						Elf64_Prpsinfo prpsinfo;
-						fd->Read(&prpsinfo, sizeof(Elf64_Prpsinfo), ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
-						debug("PRPSINFO: %s", prpsinfo.pr_fname);
-						break;
-					}
-					case NT_PLATFORM:
-					{
-						char platform[256];
-						fd->Read(&platform, sizeof(platform), ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
-						debug("PLATFORM: %s", platform);
-						break;
-					}
-					case NT_AUXV:
-					{
-						Elf64_auxv_t auxv;
-						fd->Read(&auxv, sizeof(Elf64_auxv_t), ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
-						debug("AUXV: %#lx", auxv.a_un.a_val);
-						break;
-					}
-					default:
-					{
-						fixme("Unhandled note type: %#lx", NoteHeader.n_type);
-						break;
-					}
-					}
-					break;
-				}
-				case PT_TLS:
-				{
-					size_t tlsSize = ProgramHeader.p_memsz;
-					debug("TLS Size: %ld (%ld pages)",
-						  tlsSize, TO_PAGES(tlsSize));
-					void *tlsMemory = vma->RequestPages(TO_PAGES(tlsSize));
-					fd->Read(tlsMemory, tlsSize, ProgramHeader.p_offset);
-					TargetProcess->TLS = {
-						.pBase = uintptr_t(tlsMemory),
-						.vBase = ProgramHeader.p_vaddr,
-						.Align = ProgramHeader.p_align,
-						.Size = ProgramHeader.p_memsz,
-						.fSize = ProgramHeader.p_filesz,
-					};
-					break;
-				}
-				case PT_PHDR:
-				{
-					ELFProgramHeaders = (void *)ProgramHeader.p_vaddr;
-					debug("ELFProgramHeaders: %#lx", ELFProgramHeaders);
-					break;
-				}
-				case PT_GNU_EH_FRAME:
-				{
-					fixme("PT_GNU_EH_FRAME");
-					break;
-				}
-				case PT_GNU_STACK:
-				{
-					Elf_Phdr gnuStack = ProgramHeader;
-					fixme("EXSTACK: %d", gnuStack.p_flags & PF_X);
-					break;
-				}
-				case PT_GNU_RELRO:
-				{
-					fixme("PT_GNU_RELRO");
-					break;
-				}
-				case PT_GNU_PROPERTY:
-				{
-					Elf64_Nhdr NoteHeader;
-					fd->Read(&NoteHeader, sizeof(Elf64_Nhdr), ProgramHeader.p_offset);
-
-#define NT_GNU_PROPERTY_TYPE_0 5
-					if (NoteHeader.n_type == NT_GNU_PROPERTY_TYPE_0)
-					{
-						char noteName[0x400];
-						fd->Read(noteName, NoteHeader.n_namesz, ProgramHeader.p_offset + sizeof(Elf64_Nhdr));
-						noteName[NoteHeader.n_namesz - 1] = '\0';
-
-						if (strcmp(noteName, "GNU") == 0)
-						{
-							debug("GNU Property Note found");
-						}
-						else
-						{
-							warn("Unexpected note name in PT_GNU_PROPERTY: %s", noteName);
-						}
-					}
-					else
-					{
-						warn("Unhandled note type in PT_GNU_PROPERTY: %#lx", NoteHeader.n_type);
-					}
-					break;
-				}
-				case PT_INTERP:
-					break;
-				case PT_LOPROC ... PT_HIPROC:
-				{
-					debug("i guess i ignore this? %#lx", ProgramHeader.p_type);
-					break;
-				}
-				default:
-				{
-					fixme("Unhandled program header type: %#lx",
-						  ProgramHeader.p_type);
-					break;
-				}
-				}
-			}
-
-			if (!ELFProgramHeaders)
-				fixme("ELFProgramHeaders is null");
-
-			/* Set program break */
-			uintptr_t ProgramBreak = ROUND_UP(ProgramBreakHeader.p_vaddr +
-												  ProgramBreakHeader.p_memsz,
-											  PAGE_SIZE);
-
-			TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
-		}
-
-		debug("Entry Point: %#lx", EntryPoint);
-
-		this->GenerateAuxiliaryVector_x86_64(vma, fd, ELFHeader,
-											 EntryPoint, 0);
-
-		this->ip = EntryPoint;
-		this->IsElfValid = true;
-#endif
-	}
-
-	void ELFObject::LoadDyn_x86_32(FileNode *, PCB *)
-	{
-		assert(!"Function not implemented");
-	}
-
-	void ELFObject::LoadDyn_x86_64(FileNode *fd, PCB *TargetProcess)
-	{
-#if defined(__amd64__)
-		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
-		for (auto Interp : PhdrINTERP)
-		{
-			std::string interpreterPath;
-			interpreterPath.resize(256);
-			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
-			debug("Interpreter: %s", (const char *)interpreterPath.c_str());
-
-			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
-			if (ifd == nullptr)
-			{
-				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
-				continue;
-			}
-			else
-			{
-				if (ifd->IsSymbolicLink())
-				{
-					char buffer[512];
-					ifd->ReadLink(buffer, sizeof(buffer));
-					ifd = fs->GetByPath(buffer, ifd->Parent);
-				}
-
-				debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
-				if (GetBinaryType(interpreterPath) != BinTypeELF)
-				{
-					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
-					continue;
-				}
-
-				if (LoadInterpreter(ifd, TargetProcess))
-				{
-					debug("Interpreter loaded successfully");
-					return;
-				}
-			}
-		}
-
-		Elf64_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf64_Ehdr), 0);
-		uintptr_t EntryPoint = ELFHeader.e_entry;
-		debug("Entry point is %#lx", EntryPoint);
-
-		Memory::Virtual vmm(TargetProcess->PageTable);
-		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
-		uintptr_t BaseAddress = 0;
-
-		/* Copy segments into memory */
-		{
-			Elf64_Phdr ProgramBreakHeader{};
-			Elf64_Phdr ProgramHeader;
-
 			size_t SegmentsSize = 0;
-			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
+			for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				fd->Read(&ProgramHeader, sizeof(Elf64_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)));
+				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 
-				if (ProgramHeader.p_type == PT_LOAD ||
-					ProgramHeader.p_type == PT_DYNAMIC)
+				if (ProgramHeader.p_type == PT_LOAD || ProgramHeader.p_type == PT_DYNAMIC)
 				{
 					if (SegmentsSize < ProgramHeader.p_vaddr + ProgramHeader.p_memsz)
 					{
@@ -422,13 +108,12 @@ namespace Execute
 				complex calculations & allocations */
 			void *SegmentsAddress = vma->RequestPages(TO_PAGES(SegmentsSize) + 1, true);
 			BaseAddress = (uintptr_t)SegmentsAddress;
-			debug("BaseAddress: %#lx, End: %#lx (%#lx)", BaseAddress,
-				  BaseAddress + FROM_PAGES(TO_PAGES(SegmentsSize)),
-				  SegmentsSize);
+			debug("BaseAddress: %#lx, End: %#lx (%#lx)", BaseAddress, BaseAddress + FROM_PAGES(TO_PAGES(SegmentsSize)), SegmentsSize);
+			ProgramBreakHeader.p_vaddr += BaseAddress;
 
-			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
+			for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				fd->Read(&ProgramHeader, sizeof(Elf64_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf64_Phdr)));
+				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 
 				switch (ProgramHeader.p_type)
 				{
@@ -522,293 +207,307 @@ namespace Execute
 
 			if (!ELFProgramHeaders)
 				ELFProgramHeaders = (void *)(BaseAddress + ELFHeader.e_phoff);
+		}
+		else if (ELFHeader.e_type == ET_EXEC)
+		{
+			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
+			{
+				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+				switch (ProgramHeader.p_type)
+				{
+				case PT_LOAD:
+				{
+					if (ProgramHeader.p_memsz == 0)
+						continue;
 
-			/* Set program break */
-			uintptr_t ProgramBreak = ROUND_UP(BaseAddress +
-												  ProgramBreakHeader.p_vaddr +
-												  ProgramBreakHeader.p_memsz,
-											  PAGE_SIZE);
+					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz + (ProgramHeader.p_vaddr % PAGE_SIZE)), true);
+					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
+					uintptr_t destOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
 
-			TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
+					size_t totalSize = ALIGN_UP(destOffset + ProgramHeader.p_memsz, PAGE_SIZE);
+					vmm.Map(vAddr, pAddr, totalSize, Memory::RW | Memory::US);
+
+					debug("Mapped %#lx-%#lx to %#lx-%#lx (%#lx bytes)",
+						  uintptr_t(pAddr), uintptr_t(pAddr) + totalSize,
+						  uintptr_t(vAddr), uintptr_t(vAddr) + totalSize, totalSize);
+					debug("Segment Offset is %#lx", destOffset);
+
+					debug("Copying PT_LOAD to p: %#lx-%#lx; v: %#lx-%#lx (%ld file bytes, %ld mem bytes)",
+						  uintptr_t(pAddr) + destOffset,
+						  uintptr_t(pAddr) + destOffset + ProgramHeader.p_memsz,
+						  ProgramHeader.p_vaddr,
+						  ProgramHeader.p_vaddr + ProgramHeader.p_memsz,
+						  ProgramHeader.p_filesz, ProgramHeader.p_memsz);
+
+					if (ProgramHeader.p_filesz > 0)
+					{
+						debug("%d %#lx %d", ProgramHeader.p_offset, (uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz);
+						fd->Read((uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
+					}
+
+					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
+					{
+						void *zAddr = (void *)(uintptr_t(pAddr) + destOffset + ProgramHeader.p_filesz);
+
+						debug("Zeroing %d bytes at %#lx (%#lx-%#lx)",
+							  ProgramHeader.p_memsz - ProgramHeader.p_filesz, zAddr,
+							  ProgramHeader.p_vaddr + ProgramHeader.p_filesz,
+							  ProgramHeader.p_vaddr + ProgramHeader.p_memsz);
+
+						memset(zAddr, 0, ProgramHeader.p_memsz - ProgramHeader.p_filesz);
+					}
+					ProgramBreakHeader = ProgramHeader;
+					break;
+				}
+				case PT_NOTE:
+				{
+					Elf_Nhdr NoteHeader;
+					fd->Read(&NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
+
+					switch (NoteHeader.n_type)
+					{
+					case NT_PRSTATUS:
+					{
+						Elf_Prstatus prstatus;
+						fd->Read(&prstatus, sizeof(Elf_Prstatus), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						debug("PRSTATUS: %#lx", prstatus.pr_reg[0]);
+						break;
+					}
+					case NT_PRPSINFO:
+					{
+						Elf_Prpsinfo prpsinfo;
+						fd->Read(&prpsinfo, sizeof(Elf_Prpsinfo), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						debug("PRPSINFO: %s", prpsinfo.pr_fname);
+						break;
+					}
+					case NT_PLATFORM:
+					{
+						char platform[256];
+						fd->Read(&platform, sizeof(platform), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						debug("PLATFORM: %s", platform);
+						break;
+					}
+					case NT_AUXV:
+					{
+						Elf_auxv_t auxv;
+						fd->Read(&auxv, sizeof(Elf_auxv_t), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						debug("AUXV: %#lx", auxv.a_un.a_val);
+						break;
+					}
+					default:
+					{
+						fixme("Unhandled note type: %#lx", NoteHeader.n_type);
+						break;
+					}
+					}
+					break;
+				}
+				case PT_TLS:
+				{
+					size_t tlsSize = ProgramHeader.p_memsz;
+					debug("TLS Size: %ld (%ld pages)",
+						  tlsSize, TO_PAGES(tlsSize));
+					void *tlsMemory = vma->RequestPages(TO_PAGES(tlsSize));
+					fd->Read(tlsMemory, tlsSize, ProgramHeader.p_offset);
+					TargetProcess->TLS = {
+						.pBase = uintptr_t(tlsMemory),
+						.vBase = ProgramHeader.p_vaddr,
+						.Align = ProgramHeader.p_align,
+						.Size = ProgramHeader.p_memsz,
+						.fSize = ProgramHeader.p_filesz,
+					};
+					break;
+				}
+				case PT_PHDR:
+				{
+					ELFProgramHeaders = (void *)ProgramHeader.p_vaddr;
+					debug("ELFProgramHeaders: %#lx", ELFProgramHeaders);
+					break;
+				}
+				case PT_GNU_EH_FRAME:
+				{
+					fixme("PT_GNU_EH_FRAME");
+					break;
+				}
+				case PT_GNU_STACK:
+				{
+					Elf_Phdr gnuStack = ProgramHeader;
+					fixme("EXSTACK: %d", gnuStack.p_flags & PF_X);
+					break;
+				}
+				case PT_GNU_RELRO:
+				{
+					fixme("PT_GNU_RELRO");
+					break;
+				}
+				case PT_GNU_PROPERTY:
+				{
+					Elf_Nhdr NoteHeader;
+					fd->Read(&NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
+
+					if (NoteHeader.n_type == NT_GNU_PROPERTY_TYPE_0)
+					{
+						char noteName[0x400];
+						fd->Read(noteName, NoteHeader.n_namesz, ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						noteName[NoteHeader.n_namesz - 1] = '\0';
+
+						if (strcmp(noteName, "GNU") == 0)
+						{
+							debug("GNU Property Note found");
+						}
+						else
+						{
+							warn("Unexpected note name in PT_GNU_PROPERTY: %s", noteName);
+						}
+					}
+					else
+					{
+						warn("Unhandled note type in PT_GNU_PROPERTY: %#lx", NoteHeader.n_type);
+					}
+					break;
+				}
+				case PT_INTERP:
+					break;
+				case PT_LOPROC ... PT_HIPROC:
+				{
+					debug("i guess i ignore this? %#lx", ProgramHeader.p_type);
+					break;
+				}
+				default:
+				{
+					fixme("Unhandled program header type: %#lx",
+						  ProgramHeader.p_type);
+					break;
+				}
+				}
+			}
+
+			if (!ELFProgramHeaders)
+				fixme("ELFProgramHeaders is null");
 		}
 
+		/* Set program break */
+		uintptr_t ProgramBreak = ROUND_UP(ProgramBreakHeader.p_vaddr + ProgramBreakHeader.p_memsz, PAGE_SIZE);
+		TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
+	}
+
+	void ELFObject::LoadExec(FileNode *fd, PCB *TargetProcess)
+	{
+		Elf_Ehdr ELFHeader{};
+		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
+		uintptr_t EntryPoint = ELFHeader.e_entry;
+		debug("Entry point is %#lx", EntryPoint);
+
+		Memory::Virtual vmm(TargetProcess->PageTable);
+		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
+		debug("Target process page table is %#lx", TargetProcess->PageTable);
+
+		uintptr_t BaseAddress = 0;
+		this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
+
+		debug("Entry Point: %#lx", EntryPoint);
+
+		this->GenerateAuxiliaryVector(vma, fd, ELFHeader, EntryPoint, 0);
+
+		this->ip = EntryPoint;
+		this->IsElfValid = true;
+	}
+
+	void ELFObject::LoadDyn(FileNode *fd, PCB *TargetProcess)
+	{
+		Elf_Ehdr ELFHeader{};
+		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
+		uintptr_t EntryPoint = ELFHeader.e_entry;
+		debug("Entry point is %#lx", EntryPoint);
+
+		Memory::Virtual vmm(TargetProcess->PageTable);
+		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
+		uintptr_t BaseAddress = 0;
+		this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
 		EntryPoint += BaseAddress;
 		debug("The new ep is %#lx", EntryPoint);
-
-		// std::vector<Elf64_Dyn> JmpRel = ELFGetDynamicTag_x86_64(fd, DT_JMPREL);
-		// std::vector<Elf64_Dyn> SymTab = ELFGetDynamicTag_x86_64(fd, DT_SYMTAB);
-		// std::vector<Elf64_Dyn> StrTab = ELFGetDynamicTag_x86_64(fd, DT_STRTAB);
-		// std::vector<Elf64_Dyn> RelaDyn = ELFGetDynamicTag_x86_64(fd, DT_RELA);
-		// std::vector<Elf64_Dyn> RelaDynSize = ELFGetDynamicTag_x86_64(fd, DT_RELASZ);
-		// size_t JmpRelSize = JmpRel.size();
-		// size_t SymTabSize = SymTab.size();
-		// size_t StrTabSize = StrTab.size();
-		// size_t RelaDynSize_v = RelaDyn.size();
-		// if (JmpRelSize < 1)
-		// {
-		// 	debug("No DT_JMPREL");
-		// }
-		// if (SymTabSize < 1)
-		// {
-		// 	debug("No DT_SYMTAB");
-		// }
-		// if (StrTabSize < 1)
-		// {
-		// 	debug("No DT_STRTAB");
-		// }
-		// if (RelaDynSize_v < 1)
-		// {
-		// 	debug("No DT_RELA");
-		// }
-		// if (RelaDynSize[0].d_un.d_val < 1)
-		// {
-		// 	debug("DT_RELASZ is < 1");
-		// }
-		// if (JmpRelSize > 0 && SymTabSize > 0 && StrTabSize > 0)
-		// {
-		// 	debug("JmpRel: %#lx, SymTab: %#lx, StrTab: %#lx",
-		// 		  JmpRel[0].d_un.d_ptr, SymTab[0].d_un.d_ptr,
-		// 		  StrTab[0].d_un.d_ptr);
-		// 	Elf64_Rela *_JmpRel = (Elf64_Rela *)((uintptr_t)BaseAddress + JmpRel[0].d_un.d_ptr);
-		// 	Elf64_Sym *_SymTab = (Elf64_Sym *)((uintptr_t)BaseAddress + SymTab[0].d_un.d_ptr);
-		// 	char *_DynStr = (char *)((uintptr_t)BaseAddress + StrTab[0].d_un.d_ptr);
-		// 	Elf64_Rela *_RelaDyn = (Elf64_Rela *)((uintptr_t)BaseAddress + RelaDyn[0].d_un.d_ptr);
-		// 	Elf64_Shdr shdr;
-		// 	for (Elf64_Half i = 0; i < ELFHeader.e_shnum; i++)
-		// 	{
-		// 		fd->Read(&shdr, sizeof(Elf64_Shdr), ELFHeader.e_shoff + i * sizeof(Elf64_Shdr));
-		// 		char sectionName[32];
-		// 		Elf64_Shdr n_shdr;
-		// 		fd->Read(&n_shdr, sizeof(Elf64_Shdr), ELFHeader.e_shoff + ELFHeader.e_shstrndx * sizeof(Elf64_Shdr));
-		// 		fd->Read(sectionName, sizeof(sectionName), n_shdr.sh_offset + shdr.sh_name);
-		// 		debug("shdr: %s", sectionName);
-		// 		if (strcmp(sectionName, ".rela.plt") == 0)
-		// 		{
-		// 			// .rela.plt
-		// 			// R_X86_64_JUMP_SLOT
-		// 			Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
-		// 			for (Elf64_Xword i = 0; i < numEntries; i++)
-		// 			{
-		// 				Elf64_Addr *GOTEntry = (Elf64_Addr *)(shdr.sh_addr +
-		// 													  BaseAddress +
-		// 													  i * sizeof(Elf64_Addr));
-		// 				Elf64_Rela *Rel = _JmpRel + i;
-		// 				Elf64_Xword RelType = ELF64_R_TYPE(Rel->r_info);
-		// 				switch (RelType)
-		// 				{
-		// 				case R_X86_64_JUMP_SLOT:
-		// 				{
-		// 					Elf64_Xword SymIndex = ELF64_R_SYM(Rel->r_info);
-		// 					Elf64_Sym *Sym = _SymTab + SymIndex;
-		// 					if (Sym->st_name)
-		// 					{
-		// 						char *SymName = _DynStr + Sym->st_name;
-		// 						debug("SymName: %s", SymName);
-		// 						Elf64_Sym LibSym = ELFLookupSymbol(fd, SymName);
-		// 						if (LibSym.st_value)
-		// 						{
-		// 							*GOTEntry = (Elf64_Addr)(BaseAddress + LibSym.st_value);
-		// 							debug("GOT[%ld](%#lx): %#lx",
-		// 								  i, uintptr_t(GOTEntry) - BaseAddress,
-		// 								  *GOTEntry);
-		// 						}
-		// 					}
-		// 					continue;
-		// 				}
-		// 				default:
-		// 				{
-		// 					fixme("Unhandled relocation type: %#lx", RelType);
-		// 					break;
-		// 				}
-		// 				}
-		// 			}
-		// 		}
-		// 		else if (strcmp(sectionName, ".rela.dyn") == 0)
-		// 		{
-		// 			// .rela.dyn
-		// 			// R_X86_64_RELATIVE
-		// 			// R_X86_64_GLOB_DAT
-		// 			if (RelaDynSize_v < 1 || RelaDynSize[0].d_un.d_val < 1)
-		// 				continue;
-		// 			Elf64_Xword numRelaDynEntries = RelaDynSize[0].d_un.d_val / sizeof(Elf64_Rela);
-		// 			for (Elf64_Xword i = 0; i < numRelaDynEntries; i++)
-		// 			{
-		// 				Elf64_Rela *Rel = _RelaDyn + i;
-		// 				Elf64_Addr *GOTEntry = (Elf64_Addr *)(Rel->r_offset + BaseAddress);
-		// 				Elf64_Xword RelType = ELF64_R_TYPE(Rel->r_info);
-		// 				switch (RelType)
-		// 				{
-		// 				case R_X86_64_RELATIVE:
-		// 				{
-		// 					*GOTEntry = (Elf64_Addr)(BaseAddress + Rel->r_addend);
-		// 					debug("GOT[%ld](%#lx): %#lx (R_X86_64_RELATIVE)",
-		// 						  i, uintptr_t(GOTEntry) - BaseAddress,
-		// 						  *GOTEntry);
-		// 					break;
-		// 				}
-		// 				case R_X86_64_GLOB_DAT:
-		// 				{
-		// 					Elf64_Xword SymIndex = ELF64_R_SYM(Rel->r_info);
-		// 					Elf64_Sym *Sym = _SymTab + SymIndex;
-		// 					if (Sym->st_name)
-		// 					{
-		// 						char *SymName = _DynStr + Sym->st_name;
-		// 						debug("SymName: %s", SymName);
-		// 						Elf64_Sym LibSym = ELFLookupSymbol(fd, SymName);
-		// 						if (LibSym.st_value)
-		// 						{
-		// 							*GOTEntry = (Elf64_Addr)(BaseAddress + LibSym.st_value);
-		// 							debug("GOT[%ld](%#lx): %#lx (R_X86_64_GLOB_DAT)",
-		// 								  i, uintptr_t(GOTEntry) - BaseAddress,
-		// 								  *GOTEntry);
-		// 						}
-		// 					}
-		// 					break;
-		// 				}
-		// 				default:
-		// 				{
-		// 					fixme("Unhandled relocation type: %#lx", RelType);
-		// 					break;
-		// 				}
-		// 				}
-		// 			}
-		// 		}
-		// 		else if (strcmp(sectionName, ".dynsym") == 0)
-		// 		{
-		// 			// .dynsym
-		// 			// STT_OBJECT
-		// 			Elf64_Sym *SymArray = (Elf64_Sym *)(shdr.sh_addr + BaseAddress);
-		// 			Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
-		// 			debug("start %#lx (off %#lx), entries %ld",
-		// 				  SymArray, shdr.sh_addr, numEntries);
-		// 			for (Elf64_Xword j = 0; j < numEntries; j++)
-		// 			{
-		// 				Elf64_Sym Sym = SymArray[j];
-		// 				if (Sym.st_shndx == SHN_UNDEF)
-		// 					continue;
-		// 				if (Sym.st_value == 0)
-		// 					continue;
-		// 				unsigned char SymType = ELF64_ST_TYPE(Sym.st_info);
-		// 				if (SymType == STT_OBJECT)
-		// 				{
-		// 					Elf64_Addr *GOTEntry = (Elf64_Addr *)(Sym.st_value + BaseAddress);
-		// 					*GOTEntry = (Elf64_Addr)(BaseAddress + Sym.st_value);
-		// 					debug("%ld: \"%s\" %#lx -> %#lx", j,
-		// 						  _DynStr + Sym.st_name,
-		// 						  uintptr_t(GOTEntry) - BaseAddress,
-		// 						  *GOTEntry);
-		// 				}
-		// 			}
-		// 		}
-		// 		else if (strcmp(sectionName, ".symtab") == 0)
-		// 		{
-		// 			// .symtab
-		// 			// STT_OBJECT
-		// 			Elf64_Xword numEntries = shdr.sh_size / shdr.sh_entsize;
-		// 			Elf64_Sym *SymArray = new Elf64_Sym[numEntries];
-		// 			fd->Read(SymArray, shdr.sh_size, shdr.sh_offset);
-		// 			debug("start %#lx (off %#lx), entries %ld",
-		// 				  SymArray, shdr.sh_addr, numEntries);
-		// 			for (Elf64_Xword j = 0; j < numEntries; j++)
-		// 			{
-		// 				Elf64_Sym Sym = SymArray[j];
-		// 				if (Sym.st_shndx == SHN_UNDEF)
-		// 					continue;
-		// 				if (Sym.st_value == 0)
-		// 					continue;
-		// 				unsigned char SymType = ELF64_ST_TYPE(Sym.st_info);
-		// 				if (SymType == STT_OBJECT)
-		// 				{
-		// 					Elf64_Addr *GOTEntry = (Elf64_Addr *)(Sym.st_value + BaseAddress);
-		// 					*GOTEntry = (Elf64_Addr)(BaseAddress + Sym.st_value);
-		// 					debug("%ld: \"<fixme>\" %#lx -> %#lx", j,
-		// 						  /*_DynStr + Sym.st_name,*/
-		// 						  uintptr_t(GOTEntry) - BaseAddress,
-		// 						  *GOTEntry);
-		// 				}
-		// 			}
-		// 			delete[] SymArray;
-		// 		}
-		// 		// if (shdr.sh_type == SHT_PROGBITS &&
-		// 		// 	(shdr.sh_flags & SHF_WRITE) &&
-		// 		// 	(shdr.sh_flags & SHF_ALLOC))
-		// 	}
-		// }
 
 		/* ------------------------------------------------------------------------ */
 
 		debug("Entry Point: %#lx", EntryPoint);
 
-		this->GenerateAuxiliaryVector_x86_64(vma, fd, ELFHeader,
-											 EntryPoint, BaseAddress);
+		this->GenerateAuxiliaryVector(vma, fd, ELFHeader, EntryPoint, BaseAddress);
 
 		this->ip = EntryPoint;
 		this->IsElfValid = true;
-#endif
+
+		std::vector<Elf64_Phdr> PhdrINTERP = ELFGetSymbolType_x86_64(fd, PT_INTERP);
+		for (auto Interp : PhdrINTERP)
+		{
+			std::string interpreterPath;
+			interpreterPath.resize(256);
+			fd->Read(interpreterPath.data(), 256, Interp.p_offset);
+			debug("Interpreter: %s", (const char *)interpreterPath.c_str());
+
+			FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
+			if (ifd == nullptr)
+			{
+				warn("Failed to open interpreter file: %s", interpreterPath.c_str());
+				continue;
+			}
+			else
+			{
+				if (ifd->IsSymbolicLink())
+				{
+					char buffer[512];
+					ifd->ReadLink(buffer, sizeof(buffer));
+					ifd = fs->GetByPath(buffer, ifd->Parent);
+				}
+
+				debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
+				if (GetBinaryType(interpreterPath) != BinTypeELF)
+				{
+					warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
+					continue;
+				}
+
+				if (LoadInterpreter(ifd, TargetProcess))
+				{
+					debug("Interpreter loaded successfully");
+					return;
+				}
+			}
+		}
 	}
 
 	bool ELFObject::LoadInterpreter(FileNode *fd, PCB *TargetProcess)
 	{
-		Elf32_Ehdr ELFHeader;
-		fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
+		Elf_Ehdr ELFHeader;
+		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
 
 		switch (ELFHeader.e_type)
 		{
-		case ET_REL:
-		{
-			fixme("ET_REL not implemented");
-			break;
-		}
 		case ET_EXEC:
-		{
-			switch (ELFHeader.e_machine)
-			{
-			case EM_386:
-				this->LoadExec_x86_32(fd, TargetProcess);
-				return true;
-			case EM_X86_64:
-				this->LoadExec_x86_64(fd, TargetProcess);
-				return true;
-			case EM_ARM:
-				error("ARM is not supported yet!");
-				break;
-			case EM_AARCH64:
-				error("ARM64 is not supported yet!");
-				break;
-			default:
-				error("Unknown architecture: %d", ELFHeader.e_machine);
-				break;
-			}
+			assert(ELFHeader.e_type != ET_EXEC);
 			break;
-		}
 		case ET_DYN:
 		{
-			switch (ELFHeader.e_machine)
+			uintptr_t BaseAddress = 0;
+			this->LoadSegments(fd, TargetProcess, ELFHeader, BaseAddress);
+			this->ip = BaseAddress + ELFHeader.e_entry;
+			for (auto &&aux : Elfauxv)
 			{
-			case EM_386:
-				this->LoadDyn_x86_32(fd, TargetProcess);
-				return true;
-			case EM_X86_64:
-				this->LoadDyn_x86_64(fd, TargetProcess);
-				return true;
-			case EM_ARM:
-				error("ARM is not supported yet!");
-				break;
-			case EM_AARCH64:
-				error("ARM64 is not supported yet!");
-				break;
-			default:
-				error("Unknown architecture: %d", ELFHeader.e_machine);
+				if (aux.archaux.a_type != AT_BASE)
+					continue;
+
+				aux.archaux.a_un.a_val = BaseAddress;
 				break;
 			}
-			break;
+
+			return true;
 		}
 		case ET_CORE:
+		case ET_REL:
+		case ET_NONE:
 		{
-			fixme("ET_CORE not implemented");
+			warn("Ignoring interpreter: %s (reason: ET_ is %#lx)", fd->Path.c_str(), ELFHeader.e_type);
 			break;
 		}
-		case ET_NONE:
 		default:
 		{
 			error("Unknown ELF Type: %d", ELFHeader.e_type);
@@ -818,10 +517,7 @@ namespace Execute
 		return false;
 	}
 
-	ELFObject::ELFObject(std::string AbsolutePath,
-						 PCB *TargetProcess,
-						 const char **argv,
-						 const char **envp)
+	ELFObject::ELFObject(std::string AbsolutePath, PCB *TargetProcess, const char **argv, const char **envp)
 	{
 		if (GetBinaryType(AbsolutePath) != BinaryType::BinTypeELF)
 		{
@@ -853,8 +549,8 @@ namespace Execute
 		while (envp[envc] != nullptr)
 			envc++;
 
-		Elf32_Ehdr ELFHeader{};
-		fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
+		Elf_Ehdr ELFHeader{};
+		fd->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
 
 		// ELFargv = new const char *[argc + 2];
 		size_t argv_size = argc + 2 * sizeof(char *);
@@ -892,16 +588,10 @@ namespace Execute
 			switch (ELFHeader.e_machine)
 			{
 			case EM_386:
-				this->LoadExec_x86_32(fd, TargetProcess);
-				break;
 			case EM_X86_64:
-				this->LoadExec_x86_64(fd, TargetProcess);
-				break;
 			case EM_ARM:
-				error("ARM is not supported yet!");
-				break;
 			case EM_AARCH64:
-				error("ARM64 is not supported yet!");
+				this->LoadExec(fd, TargetProcess);
 				break;
 			default:
 				error("Unknown architecture: %d", ELFHeader.e_machine);
@@ -914,16 +604,10 @@ namespace Execute
 			switch (ELFHeader.e_machine)
 			{
 			case EM_386:
-				this->LoadDyn_x86_32(fd, TargetProcess);
-				break;
 			case EM_X86_64:
-				this->LoadDyn_x86_64(fd, TargetProcess);
-				break;
 			case EM_ARM:
-				error("ARM is not supported yet!");
-				break;
 			case EM_AARCH64:
-				error("ARM64 is not supported yet!");
+				this->LoadDyn(fd, TargetProcess);
 				break;
 			default:
 				error("Unknown architecture: %d", ELFHeader.e_machine);

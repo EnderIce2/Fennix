@@ -689,6 +689,8 @@ enum SpecialSections
 #define NT_MIPS_MSA 0x802
 #define NT_VERSION 1
 
+#define NT_GNU_PROPERTY_TYPE_0 5
+
 typedef struct elf32_hdr
 {
 	unsigned char e_ident[EI_NIDENT];
@@ -968,6 +970,9 @@ typedef Elf64_Rel Elf_Rel;
 typedef Elf64_Sym Elf_Sym;
 typedef Elf64_Dyn Elf_Dyn;
 typedef Elf64_Rela Elf_Rela;
+typedef Elf64_Nhdr Elf_Nhdr;
+typedef Elf64_Prstatus Elf_Prstatus;
+typedef Elf64_Prpsinfo Elf_Prpsinfo;
 #elif defined(__i386__) || defined(__arm__)
 typedef Elf32_Addr Elf_Addr;
 typedef Elf32_Half Elf_Half;
@@ -982,6 +987,9 @@ typedef Elf32_Rel Elf_Rel;
 typedef Elf32_Sym Elf_Sym;
 typedef Elf32_Dyn Elf_Dyn;
 typedef Elf32_Rela Elf_Rela;
+typedef Elf32_Nhdr Elf_Nhdr;
+typedef Elf32_Prstatus Elf_Prstatus;
+typedef Elf32_Prpsinfo Elf_Prpsinfo;
 #endif
 
 #endif // !__FENNIX_KERNEL_ELF_H__
