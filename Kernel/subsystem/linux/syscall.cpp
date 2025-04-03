@@ -2418,7 +2418,6 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 static int linux_fchmod(SysFrm *, int fd, mode_t mode)
 {
 	PCB *pcb = thisProcess;
-	Memory::VirtualMemoryArea *vma = pcb->vma;
 	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
 
 	if (fdt->FileMap.find(fd) == fdt->FileMap.end())
