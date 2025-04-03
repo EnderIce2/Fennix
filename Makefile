@@ -155,6 +155,8 @@ __ci-build-set-debug:
 	sed -i 's/.*DEBUG = .*/DEBUG = 1/' ./config.mk && cat config.mk | grep DEBUG
 
 ci-setup:
+	$(MAKE) prepare
+	$(MAKE) mkdir_rootfs
 	$(MAKE) --quiet -C tools ci
 
 ci-build:
