@@ -77,7 +77,7 @@ namespace Execute
 	BinaryType GetBinaryType(FileNode *Path);
 	BinaryType GetBinaryType(std::string Path);
 
-	int Spawn(char *Path, const char **argv, const char **envp,
+	int Spawn(const char *Path, const char **argv, const char **envp,
 			  Tasking::PCB *Parent = nullptr, bool Fork = false,
 			  Tasking::TaskCompatibility Compatibility = Tasking::Native,
 			  bool Critical = false);

@@ -30,7 +30,7 @@ using namespace Tasking;
 
 namespace Execute
 {
-	int Spawn(char *Path, const char **argv, const char **envp,
+	int Spawn(const char *Path, const char **argv, const char **envp,
 			  Tasking::PCB *Parent, bool Fork,
 			  Tasking::TaskCompatibility Compatibility,
 			  bool Critical)
