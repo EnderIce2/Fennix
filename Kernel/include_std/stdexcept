@@ -84,6 +84,14 @@ namespace std
 
 	class runtime_error : public exception
 	{
+	private:
+		__simple_string what_arg;
+
+	public:
+		// runtime_error(const std::string &what_arg);
+		runtime_error(const char *what_arg) : what_arg(what_arg) {}
+		runtime_error(const runtime_error &other) : what_arg(other.what_arg) {}
+		runtime_error &operator=(const runtime_error &other) = default;
 	};
 
 	class logic_error : public exception
@@ -125,5 +133,14 @@ namespace std
 		invalid_argument(const char *what_arg) : logic_error(what_arg) {}
 		invalid_argument(const invalid_argument &other) = default;
 		invalid_argument &operator=(const invalid_argument &other) = default;
+	};
+
+	class length_error : public logic_error
+	{
+	public:
+		// length_error(const std::string &what_arg);
+		length_error(const char *what_arg) : logic_error(what_arg) {}
+		length_error(const length_error &other) : logic_error(other) {}
+		length_error &operator=(const length_error &other) = default;
 	};
 }
