@@ -37,7 +37,9 @@
 			"kernel/drivers",
 			"kernel/elf",
 			"kernel/scheduler",
-			"kernel/tty"
+			"kernel/tty",
+			"kernel/std",
+			"kernel/vfs"
 		]
 	}
 }

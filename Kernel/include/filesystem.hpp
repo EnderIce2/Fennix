@@ -161,7 +161,11 @@ namespace vfs
 		int UnregisterFileSystem(dev_t Device);
 
 		void AddRoot(Inode *Root);
+		void AddRootAt(Inode *Root, size_t Index);
+		bool SetRootAt(Inode *Root, size_t Index);
+		void RemoveRoot(Inode *Root);
 		FileNode *GetRoot(size_t Index);
+		bool RootExists(size_t Index);
 
 		FileNode *Create(FileNode *Parent, const char *Name, mode_t Mode);
 		FileNode *ForceCreate(FileNode *Parent, const char *Name, mode_t Mode);

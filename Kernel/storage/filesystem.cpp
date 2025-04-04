@@ -37,6 +37,43 @@ namespace vfs
 		FileSystemRoots->Children.push_back(Root);
 	}
 
+	void Virtual::AddRootAt(Inode *Root, size_t Index)
+	{
+		SmartLock(VirtualLock);
+		if (Index >= FileSystemRoots->Children.size())
+			FileSystemRoots->Children.resize(Index + 1);
+
+		FileSystemRoots->Children[Index] = Root;
+		if (FileSystemRoots->Children[Index] == nullptr)
+			FileSystemRoots->Children[Index] = Root;
+		else
+			debug("Root %ld already exists", Index);
+	}
+
+	bool Virtual::SetRootAt(Inode *Root, size_t Index)
+	{
+		SmartLock(VirtualLock);
+		assert(Index < FileSystemRoots->Children.size());
+
+		if (FileSystemRoots->Children[Index] != nullptr)
+			return false;
+		FileSystemRoots->Children[Index] = Root;
+		return true;
+	}
+
+	void Virtual::RemoveRoot(Inode *Root)
+	{
+		SmartLock(VirtualLock);
+		for (size_t i = 0; i < FileSystemRoots->Children.size(); i++)
+		{
+			if (FileSystemRoots->Children[i] != Root)
+				continue;
+			FileSystemRoots->Children[i] = nullptr;
+			break;
+		}
+		debug("removed root %p", Root);
+	}
+
 	FileNode *Virtual::GetRoot(size_t Index)
 	{
 		assert(Index < FileSystemRoots->Children.size());
@@ -46,11 +83,19 @@ namespace vfs
 			return it->second;
 
 		Inode *rootNode = FileSystemRoots->Children[Index];
+		assert(rootNode != nullptr);
 		char rootName[128]{};
 		snprintf(rootName, sizeof(rootName), "\x06root-%ld\x06", Index);
 		FileNode *ret = this->CreateCacheNode(nullptr, rootNode, rootName, 0);
 		FileRoots.insert({Index, ret});
 		return ret;
+	}
+
+	bool Virtual::RootExists(size_t Index)
+	{
+		if (Index >= FileSystemRoots->Children.size())
+			return false;
+		return FileSystemRoots->Children[Index] != nullptr;
 	}
 
 	FileNode *Virtual::Create(FileNode *Parent, const char *Name, mode_t Mode)
