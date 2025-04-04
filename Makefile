@@ -314,7 +314,7 @@ ifeq ($(OSARCH), amd64)
 QEMUHWACCELERATION = -machine q35 -enable-kvm
 QEMUMEMORY = -m 4G
 QEMU_DBG_SMP = -smp 1
-QEMU_DBG_MEMORY = -m 512M
+QEMU_DBG_MEMORY = -m 1G
 else ifeq ($(OSARCH), i386)
 QEMUHWACCELERATION = -machine q35 -enable-kvm
 QEMUMEMORY = -m 4G
