@@ -24,7 +24,7 @@ namespace std
 	class exception
 	{
 	public:
-		exception() noexcept {}
+		exception() noexcept = default;
 		exception(const exception &) noexcept = default;
 		virtual ~exception() noexcept = default;
 		exception &operator=(const exception &) noexcept = default;
