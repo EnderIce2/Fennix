@@ -693,4 +693,32 @@ namespace std
 
 	template <class F, class... ArgTypes>
 	using invoke_result_t = typename invoke_result<F, ArgTypes...>::type;
+
+	template <class T>
+	struct is_pointer : std::false_type
+	{
+	};
+
+	template <class T>
+	struct is_pointer<T *> : std::true_type
+	{
+	};
+
+	template <class T>
+	struct is_pointer<T *const> : std::true_type
+	{
+	};
+
+	template <class T>
+	struct is_pointer<T *volatile> : std::true_type
+	{
+	};
+
+	template <class T>
+	struct is_pointer<T *const volatile> : std::true_type
+	{
+	};
+
+	template <class T>
+	constexpr bool is_pointer_v = is_pointer<T>::value;
 }
