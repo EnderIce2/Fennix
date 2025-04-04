@@ -1,0 +1,112 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <initializer_list>
+#include <cstddef>
+#include <iterator>
+#include <algorithm>
+#include <stdexcept>
+
+namespace std
+{
+	template <class T, std::size_t N>
+	struct array
+	{
+	public:
+		using value_type = T;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using pointer = value_type *;
+		using const_pointer = const value_type *;
+
+		using iterator = value_type *;
+		using const_iterator = const value_type *;
+		// using reverse_iterator = std::reverse_iterator<iterator>;
+		// using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	private:
+		value_type ptr[N]{};
+
+	public:
+		constexpr array() = default;
+
+		constexpr array(std::initializer_list<T> list)
+		{
+			if (list.size() != N)
+				throw std::length_error("array initializer_list size mismatch");
+			std::copy(list.begin(), list.end(), ptr);
+		}
+
+		constexpr reference at(size_type pos)
+		{
+			if (pos >= size())
+				throw std::out_of_range("array::at: index out of range");
+			return this->operator[](pos);
+		}
+
+		constexpr const_reference at(size_type pos) const
+		{
+			if (pos >= size())
+				throw std::out_of_range("array::at: index out of range");
+			return this->operator[](pos);
+		}
+
+		constexpr reference operator[](size_type pos) { return *(begin() + pos); }
+		constexpr const_reference operator[](size_type pos) const { return *(begin() + pos); }
+		constexpr reference front() { return *begin(); }
+		constexpr const_reference front() const { return *begin(); }
+		reference back() { return *(end() - 1); }
+		const_reference back() const { return *(end() - 1); }
+		constexpr T *data() noexcept { return ptr; }
+		constexpr const T *data() const noexcept { return ptr; }
+		constexpr iterator begin() noexcept { return ptr; }
+		constexpr const_iterator begin() const noexcept { return ptr; }
+		constexpr const_iterator cbegin() const noexcept { return ptr; }
+		constexpr iterator end() noexcept { return ptr + N; }
+		constexpr const_iterator end() const noexcept { return ptr + N; }
+		constexpr const_iterator cend() const noexcept { return ptr + N; }
+		// constexpr reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+		// constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+		// constexpr const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+		// constexpr reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
+		// constexpr const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+		// constexpr const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
+		constexpr bool empty() const noexcept { return begin() == end(); }
+		constexpr size_type size() const noexcept { return /*std::distance(begin(), end());*/ N; }
+		constexpr size_type max_size() const noexcept { return N; }
+
+		constexpr void fill(const T &value)
+		{
+			for (size_type i = 0; i < N; ++i)
+				ptr[i] = value;
+		}
+
+		constexpr void swap(array &other) noexcept(std::is_nothrow_swappable_v<T>)
+		{
+			for (size_type i = 0; i < N; ++i)
+			{
+				auto tmp = ptr[i];
+				ptr[i] = other.ptr[i];
+				other.ptr[i] = tmp;
+			}
+		}
+	};
+}
