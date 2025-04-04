@@ -603,8 +603,7 @@ void KShellThread()
 			if (Config.LinuxSubsystem)
 				compat = Tasking::Linux;
 
-			int ret = Execute::Spawn((char *)path.c_str(), argv, envp,
-									 nullptr, false, compat, false);
+			int ret = Execute::Spawn(path.c_str(), argv, envp, nullptr, false, compat, false);
 			if (argv[1])
 				delete argv[1];
 			delete argv;
