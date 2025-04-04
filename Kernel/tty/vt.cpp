@@ -143,6 +143,12 @@ namespace KernelConsole
 			*t = TerminalConfig;
 			return 0;
 		}
+		case TCSETS:
+		{
+			struct termios *t = (struct termios *)Argp;
+			TerminalConfig = *t;
+			return 0;
+		}
 		case TCSETSW:
 		{
 			debug("draining output buffer...");
