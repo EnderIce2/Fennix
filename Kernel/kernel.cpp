@@ -191,19 +191,14 @@ EXTERNC NIF cold void Main()
 		KPrint("COM8 is present.");
 
 	KPrint("Display: %dx%d %d bpp R:%d %d G:%d %d B:%d %d",
-		   Display->GetFramebufferStruct().Width,
-		   Display->GetFramebufferStruct().Height,
+		   Display->GetFramebufferStruct().Width, Display->GetFramebufferStruct().Height,
 		   Display->GetFramebufferStruct().BitsPerPixel,
-		   Display->GetFramebufferStruct().RedMaskSize,
-		   Display->GetFramebufferStruct().RedMaskShift,
-		   Display->GetFramebufferStruct().GreenMaskSize,
-		   Display->GetFramebufferStruct().GreenMaskShift,
-		   Display->GetFramebufferStruct().BlueMaskSize,
-		   Display->GetFramebufferStruct().BlueMaskShift);
+		   Display->GetFramebufferStruct().RedMaskSize, Display->GetFramebufferStruct().RedMaskShift,
+		   Display->GetFramebufferStruct().GreenMaskSize, Display->GetFramebufferStruct().GreenMaskShift,
+		   Display->GetFramebufferStruct().BlueMaskSize, Display->GetFramebufferStruct().BlueMaskShift);
 
-	KPrint("%lld MiB / %lld MiB (%lld MiB reserved)",
-		   TO_MiB(KernelAllocator.GetUsedMemory()),
-		   TO_MiB(KernelAllocator.GetTotalMemory()),
+	KPrint("%lld MiB / %lld MiB (%lld MiB reserved)", TO_MiB(KernelAllocator.GetUsedMemory()),
+		   TO_MiB(KernelAllocator.GetTotalMemory() - KernelAllocator.GetReservedMemory()),
 		   TO_MiB(KernelAllocator.GetReservedMemory()));
 #endif
 
@@ -219,8 +214,7 @@ EXTERNC NIF cold void Main()
 	Interrupts::Initialize(0);
 
 	KPrint("Loading Kernel Symbols");
-	KernelSymbolTable =
-		new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
+	KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
 
 	if (!KernelSymbolTable->SymTableExists)
 		KernelSymbolTable->AddSymbolInfoFromGRUB(bInfo.Kernel.Symbols.Num,
