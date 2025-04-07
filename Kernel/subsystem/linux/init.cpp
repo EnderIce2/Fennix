@@ -16,3 +16,12 @@
 */
 
 #include "../../kernel.h"
+
+namespace Subsystem::Linux
+{
+	bool Initialized = false;
+
+	void InitializeSubSystem()
+	{
+	}
+}

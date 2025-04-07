@@ -16,3 +16,12 @@
 */
 
 #include "../../kernel.h"
+
+namespace Subsystem::Windows
+{
+	bool Initialized = false;
+
+	void InitializeSubSystem()
+	{
+	}
+}
