@@ -264,7 +264,7 @@ namespace Memory
 			uintptr_t Index = ((uintptr_t)Address + (t * PAGE_SIZE)) / PAGE_SIZE;
 
 			if (unlikely(PageBitmap[Index] == true))
-				return;
+				continue;
 
 			if (PageBitmap.Set(Index, true))
 			{

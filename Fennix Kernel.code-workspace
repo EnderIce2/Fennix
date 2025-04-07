@@ -22,7 +22,8 @@
 			"kernel/scheduler",
 			"kernel/tty",
 			"kernel/std",
-			"kernel/vfs"
+			"kernel/vfs",
+			"kernel/memory"
 		]
 	}
 }
