@@ -80,12 +80,9 @@ namespace Memory
 		{
 			char *sections = r_cst(char *, bInfo.Kernel.Symbols.Sections);
 			debug("Reserving sections region %#lx-%#lx...",
-				  sections,
-				  (void *)((uintptr_t)sections + bInfo.Kernel.Symbols.EntSize *
-													 bInfo.Kernel.Symbols.Num));
+				  sections, (uintptr_t)sections + bInfo.Kernel.Symbols.EntSize * bInfo.Kernel.Symbols.Num);
 
-			this->ReservePages(sections, TO_PAGES(bInfo.Kernel.Symbols.EntSize *
-												  bInfo.Kernel.Symbols.Num));
+			this->ReservePages(sections, TO_PAGES(bInfo.Kernel.Symbols.EntSize * bInfo.Kernel.Symbols.Num));
 
 			Elf_Sym *Symbols = nullptr;
 			uint8_t *StringAddress = nullptr;
@@ -101,11 +98,9 @@ namespace Memory
 			for (size_t i = 0; i < bInfo.Kernel.Symbols.Num; ++i)
 			{
 				Elf_Shdr *sym = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize * i];
-				Elf_Shdr *str = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize *
-													  sym->sh_link];
+				Elf_Shdr *str = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize * sym->sh_link];
 
-				if (sym->sh_type == SHT_SYMTAB &&
-					str->sh_type == SHT_STRTAB)
+				if (sym->sh_type == SHT_SYMTAB && str->sh_type == SHT_STRTAB)
 				{
 					Symbols = (Elf_Sym *)sym->sh_addr;
 					StringAddress = (uint8_t *)str->sh_addr;
@@ -145,8 +140,7 @@ namespace Memory
 				  bInfo.Modules[i].Address,
 				  (void *)((uintptr_t)bInfo.Modules[i].Address + bInfo.Modules[i].Size));
 
-			this->ReservePages((void *)bInfo.Modules[i].Address,
-							   TO_PAGES(bInfo.Modules[i].Size));
+			this->ReservePages((void *)bInfo.Modules[i].Address, TO_PAGES(bInfo.Modules[i].Size));
 		}
 
 #if defined(__amd64__) || defined(__i386__)

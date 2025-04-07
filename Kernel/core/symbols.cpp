@@ -18,6 +18,7 @@
 #include <symbols.hpp>
 #include <memory.hpp>
 #include <convert.h>
+#include <algorithm>
 #include <debug.h>
 #include <elf.h>
 
@@ -115,8 +116,7 @@ namespace SymbolResolver
 			Elf_Shdr *sym = (Elf_Shdr *)&sections[EntSize * i];
 			Elf_Shdr *str = (Elf_Shdr *)&sections[EntSize * sym->sh_link];
 
-			if (sym->sh_type == SHT_SYMTAB &&
-				str->sh_type == SHT_STRTAB)
+			if (sym->sh_type == SHT_SYMTAB && str->sh_type == SHT_STRTAB)
 			{
 				Symbols = (Elf_Sym *)sym->sh_addr;
 				StringAddress = (uint8_t *)str->sh_addr;
@@ -124,9 +124,7 @@ namespace SymbolResolver
 				// StringSize = (int)str->sh_size;
 				// TotalEntries = Section.sh_size / sizeof(Elf64_Sym)
 				TotalEntries = sym->sh_size / sym->sh_entsize;
-				trace("Symbol table found, %d entries",
-					  SymbolSize / sym->sh_entsize);
-				UNUSED(SymbolSize);
+				trace("Symbol table found, %d entries", SymbolSize / sym->sh_entsize);
 				break;
 			}
 		}
@@ -138,12 +136,19 @@ namespace SymbolResolver
 			{
 				MinimumIndex = i;
 				for (Index = i + 1; Index < TotalEntries; Index++)
-					if (Symbols[Index].st_value < Symbols[MinimumIndex].st_value)
+				{
+					bool condition = Symbols[Index].st_value < Symbols[MinimumIndex].st_value;
+					if (condition)
 						MinimumIndex = Index;
+				}
+
 				Elf_Sym tmp = Symbols[MinimumIndex];
 				Symbols[MinimumIndex] = Symbols[i];
 				Symbols[i] = tmp;
 			}
+
+			// std::sort(Symbols, Symbols + TotalEntries, [](const Elf_Sym &a, const Elf_Sym &b)
+			// 		  { return a.st_value < b.st_value; });
 
 			while (Symbols[0].st_value == 0)
 			{
@@ -159,8 +164,7 @@ namespace SymbolResolver
 				return;
 			}
 
-			trace("Symbol table loaded, %d entries (%ld KiB)",
-				  TotalEntries, TO_KiB(TotalEntries * sizeof(SymbolTable)));
+			trace("Symbol table loaded, %d entries (%ld KiB)", TotalEntries, TO_KiB(TotalEntries * sizeof(SymbolTable)));
 			Elf_Sym *sym;
 			const char *name;
 			Memory::Virtual vmm;
