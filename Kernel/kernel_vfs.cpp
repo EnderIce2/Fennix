@@ -26,26 +26,26 @@ void SearchForInitrd()
 {
 	for (size_t i = 0; i < MAX_MODULES; i++)
 	{
-		uintptr_t initrdAddress = (uintptr_t)bInfo.Modules[i].Address;
+		uintptr_t moduleAddress = (uintptr_t)bInfo.Modules[i].Address;
+		size_t moduleSize = bInfo.Modules[i].Size;
+		const char *moduleCommand = bInfo.Modules[i].CommandLine;
 
-		if (!initrdAddress)
+		if (moduleAddress == 0)
 			continue;
-
-		if (strcmp(bInfo.Modules[i].CommandLine, "rootfs") != 0)
-			continue;
-
-		KPrint("rootfs found at %#lx", initrdAddress);
 
 		Memory::Virtual vmm;
-		if (!vmm.Check((void *)initrdAddress))
+		if (!vmm.CheckRegion((void *)moduleAddress, moduleSize))
 		{
-			warn("Initrd is not mapped!");
-			vmm.Map((void *)initrdAddress, (void *)initrdAddress,
-					bInfo.Modules[i].Size, Memory::RW);
+			warn("module entry is not mapped!");
+			vmm.Map((void *)moduleAddress, (void *)moduleAddress, moduleSize, Memory::RW);
 		}
 
-		if (TestAndInitializeUSTAR(initrdAddress, bInfo.Modules[i].Size))
-			continue; /* Maybe add another root? */
+		if (strcmp(moduleCommand, "rootfs") == 0)
+		{
+			KPrint("rootfs found at %#lx", moduleAddress);
+			if (TestAndInitializeUSTAR(moduleAddress, moduleSize, 0))
+				continue;
+		}
 	}
 }
 

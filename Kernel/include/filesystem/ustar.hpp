@@ -127,11 +127,11 @@ namespace vfs
 		bool TestArchive(uintptr_t Address);
 		void ReadArchive(uintptr_t Address, size_t Size);
 
-		USTAR(){};
-		~USTAR(){};
+		USTAR() = default;
+		~USTAR() = default;
 	};
 }
 
-bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size);
+bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size, size_t Index);
 
 #endif // !__FENNIX_KERNEL_FILESYSTEM_USTAR_H__

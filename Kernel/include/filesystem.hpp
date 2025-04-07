@@ -139,6 +139,14 @@ namespace vfs
 
 	public:
 		vfsInode *FileSystemRoots = nullptr;
+
+		/**
+		 * Default reserved roots:
+		 *
+		 * 0 - Native
+		 * 1 - Linux
+		 * 2 - Windows
+		 */
 		std::unordered_map<ino_t, FileNode *> FileRoots;
 
 		bool PathIsRelative(const char *Path);

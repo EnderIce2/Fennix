@@ -31,30 +31,72 @@
 #include <vm.hpp>
 #include <vector>
 
-cold int SpawnInit()
+int SpawnNativeInit()
+{
+	const char *envp[] = {
+		"PATH=/sys/bin:/usr/bin",
+		"LD_LIBRARY_PATH=/sys/lib:/usr/lib",
+		"TERM=tty",
+		"HOME=/home/root",
+		"USER=root",
+		"TZ=UTC",
+		nullptr};
+
+	const char *argv[] = {Config.InitPath, nullptr};
+
+	return Execute::Spawn(Config.InitPath, argv, envp, nullptr, false, Tasking::Native, true);
+}
+
+int SpawnLinuxInit()
 {
 	const char *envp[] = {
 		"PATH=/bin:/usr/bin",
-		"LD_LIBRARY_PATH=/sys/lib:/usr/lib",
+		"LD_LIBRARY_PATH=/lib:/usr/lib",
 		"TERM=tty",
 		"HOME=/root",
 		"USER=root",
 		"TZ=UTC",
 		nullptr};
 
-	const char *argv[] = {
-		Config.InitPath,
-		nullptr};
+	std::string init = Config.InitPath;
+	std::vector<std::string> fallbackPaths = {
+		init,
+		"/bin/init",
+		"/sbin/init",
+		"/system/init",
+		"/usr/bin/init",
+		"/boot/init",
+		"/startup/init"};
 
-	Tasking::TaskCompatibility compat = Tasking::Native;
-	if (Config.LinuxSubsystem)
-		compat = Tasking::Linux;
+	const char *foundPath = nullptr;
+	for (const std::string &path : fallbackPaths)
+	{
+		if (!fs->PathExists(path.c_str(), fs->GetRoot(1)))
+			continue;
 
-	return Execute::Spawn(Config.InitPath, argv, envp,
-						  nullptr, false, compat, true);
+		foundPath = path.c_str();
+		break;
+	}
+
+	if (!foundPath)
+	{
+		error("No valid init found in fallback paths");
+		return -ENOENT;
+	}
+
+	const char *argv[] = {foundPath, nullptr};
+	return Execute::Spawn(foundPath, argv, envp, nullptr, false, Tasking::Linux, true);
 }
 
-cold void KernelMainThread()
+int SpawnInit()
+{
+	if (Config.LinuxSubsystem)
+		return SpawnLinuxInit();
+	else
+		return SpawnNativeInit();
+}
+
+void KernelMainThread()
 {
 	thisThread->SetPriority(Tasking::Critical);
 
@@ -129,7 +171,7 @@ Exit:
 }
 
 NewLock(ShutdownLock);
-cold void __no_stack_protector KernelShutdownThread(bool Reboot)
+void __no_stack_protector KernelShutdownThread(bool Reboot)
 {
 	SmartLock(ShutdownLock);
 	debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");

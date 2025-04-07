@@ -16,7 +16,6 @@
 */
 
 #include <filesystem/ustar.hpp>
-
 #include <memory.hpp>
 #include <functional>
 #include <debug.h>
@@ -160,10 +159,14 @@ namespace vfs
 		node->Name.assign(basename, length);
 		node->Path.assign(Name, strlen(Name));
 
-		Files.insert(std::make_pair(NextInode, node));
-		*Result = &Files.at(NextInode)->Node;
+		auto &&file = Files.insert(std::make_pair(NextInode, node));
+		assert(file.second == true);
+		*Result = &file.first->second->Node;
 		if (Parent)
-			Parent->Children.push_back(Files.at(NextInode));
+		{
+			Parent->Children.push_back(file.first->second);
+			file.first->second->Parent = Parent;
+		}
 		NextInode++;
 		return 0;
 	}
@@ -491,6 +494,10 @@ namespace vfs
 		FileHeader *header = (FileHeader *)Address;
 		if (strncmp(header->signature, TMAGIC, TMAGLEN) != 0)
 		{
+			/* For some reason if GRUB inflates the archive, the magic is "ustar  " */
+			if (strncmp(header->signature, TMAGIC, TMAGLEN - 1) == 0)
+				return true;
+
 			error("Invalid signature!");
 			return false;
 		}
@@ -564,7 +571,7 @@ namespace vfs
 
 		FileHeader *header = (FileHeader *)Address;
 
-		debug("USTAR signature valid! Name:%s Signature:%s Mode:%d Size:%lu",
+		debug("USTAR signature valid! Name:\"%s\" Signature:\"%s\" Mode:%d Size:%lu",
 			  header->name, header->signature, StringToInt(header->mode), header->size);
 
 		Memory::Virtual vmm;
@@ -577,7 +584,7 @@ namespace vfs
 				return;
 			}
 
-			if (strncmp(header->signature, TMAGIC, TMAGLEN) != 0)
+			if (strncmp(header->signature, TMAGIC, TMAGLEN - 1) != 0)
 				break;
 			// debug("\"%s\"", header->name);
 
@@ -817,13 +824,13 @@ O2 int __ustar_Stat(struct Inode *Node, kstat *Stat)
 	return ((vfs::USTAR *)Node->PrivateData)->Stat(Node, Stat);
 }
 
-int __ustar_DestroyInode(FileSystemInfo *Info, Inode *Node)
+O2 int __ustar_DestroyInode(FileSystemInfo *Info, Inode *Node)
 {
 	((vfs::USTAR::USTARInode *)Node)->Deleted = true;
 	return 0;
 }
 
-int __ustar_Destroy(FileSystemInfo *fsi)
+O2 int __ustar_Destroy(FileSystemInfo *fsi)
 {
 	assert(fsi->PrivateData);
 	delete (vfs::USTAR *)fsi->PrivateData;
@@ -831,7 +838,7 @@ int __ustar_Destroy(FileSystemInfo *fsi)
 	return 0;
 }
 
-bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
+bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size, size_t Index)
 {
 	vfs::USTAR *ustar = new vfs::USTAR();
 	if (!ustar->TestArchive(Address))
@@ -863,6 +870,6 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size)
 	fsi->PrivateData = ustar;
 	fs->LateRegisterFileSystem(ustar->DeviceID, fsi, rootfs);
 
-	fs->AddRoot(rootfs);
+	fs->AddRootAt(rootfs, Index);
 	return true;
 }
