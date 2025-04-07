@@ -43,7 +43,6 @@ namespace vfs
 		if (Index >= FileSystemRoots->Children.size())
 			FileSystemRoots->Children.resize(Index + 1);
 
-		FileSystemRoots->Children[Index] = Root;
 		if (FileSystemRoots->Children[Index] == nullptr)
 			FileSystemRoots->Children[Index] = Root;
 		else
@@ -56,7 +55,10 @@ namespace vfs
 		assert(Index < FileSystemRoots->Children.size());
 
 		if (FileSystemRoots->Children[Index] != nullptr)
+		{
+			debug("Root %ld already exists", Index);
 			return false;
+		}
 		FileSystemRoots->Children[Index] = Root;
 		return true;
 	}
