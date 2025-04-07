@@ -146,4 +146,4 @@ namespace vfs
 	};
 }
 
-bool MountRAMFS(Inode *Parent, const char *Name, size_t Index)
+bool MountRAMFS(Inode *Parent, const char *Name, size_t Index);
