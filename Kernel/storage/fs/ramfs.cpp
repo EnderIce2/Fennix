@@ -91,9 +91,9 @@ namespace vfs
 		node->Name.assign(basename, length);
 		node->Mode = Mode;
 
-		auto &&file = Files.insert(std::make_pair(NextInode, node));
+		auto file = Files.insert(std::make_pair(NextInode, node));
 		assert(file.second == true);
-		*Result = &file.first->second->Node;
+		*Result = &Files.at(NextInode)->Node;
 		if (Parent)
 			Parent->AddChild(node);
 		NextInode++;

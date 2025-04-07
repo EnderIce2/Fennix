@@ -159,13 +159,13 @@ namespace vfs
 		node->Name.assign(basename, length);
 		node->Path.assign(Name, strlen(Name));
 
-		auto &&file = Files.insert(std::make_pair(NextInode, node));
+		auto file = Files.insert(std::make_pair(NextInode, node));
 		assert(file.second == true);
-		*Result = &file.first->second->Node;
+		*Result = &Files.at(NextInode)->Node;
 		if (Parent)
 		{
-			Parent->Children.push_back(file.first->second);
-			file.first->second->Parent = Parent;
+			Parent->Children.push_back(Files.at(NextInode));
+			Files.at(NextInode)->Parent = Parent;
 		}
 		NextInode++;
 		return 0;
