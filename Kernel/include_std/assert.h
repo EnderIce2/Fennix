@@ -34,15 +34,6 @@ EXTERNC void __attribute__((noreturn)) HandleAssertionFailed(const char *File, i
 		}                                                  \
 	} while (0)
 
-#define assert_allow_continue(x)                 \
-	do                                           \
-	{                                            \
-		if (__builtin_expect(!!(!(x)), 0))       \
-		{                                        \
-			error("Assertion failed! [%s]", #x); \
-		}                                        \
-	} while (0)
-
 #if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
 #define static_assert _Static_assert
 #endif
