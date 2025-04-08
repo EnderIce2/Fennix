@@ -28,8 +28,7 @@
 
 namespace Memory
 {
-	__no_sanitize("alignment") void Physical::FindBitmapRegion(uintptr_t &BitmapAddress,
-															   size_t &BitmapAddressSize)
+	__no_sanitize("alignment") void Physical::FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize)
 	{
 		size_t BitmapSize = (size_t)(bInfo.Memory.Size / PAGE_SIZE) / 8 + 1;
 
@@ -47,24 +46,19 @@ namespace Memory
 		uintptr_t RSDPStart = 0x0;
 		uintptr_t RSDPEnd = 0x0;
 
-		if (bInfo.Kernel.Symbols.Num &&
-			bInfo.Kernel.Symbols.EntSize &&
-			bInfo.Kernel.Symbols.Shndx)
+		if (bInfo.Kernel.Symbols.Num && bInfo.Kernel.Symbols.EntSize && bInfo.Kernel.Symbols.Shndx)
 		{
 			char *sections = r_cst(char *, bInfo.Kernel.Symbols.Sections);
 
 			SectionsStart = (uintptr_t)sections;
-			SectionsEnd = (uintptr_t)sections + bInfo.Kernel.Symbols.EntSize *
-													bInfo.Kernel.Symbols.Num;
+			SectionsEnd = (uintptr_t)sections + bInfo.Kernel.Symbols.EntSize * bInfo.Kernel.Symbols.Num;
 
 			for (size_t i = 0; i < bInfo.Kernel.Symbols.Num; ++i)
 			{
 				Elf_Shdr *sym = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize * i];
-				Elf_Shdr *str = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize *
-													  sym->sh_link];
+				Elf_Shdr *str = (Elf_Shdr *)&sections[bInfo.Kernel.Symbols.EntSize * sym->sh_link];
 
-				if (sym->sh_type == SHT_SYMTAB &&
-					str->sh_type == SHT_STRTAB)
+				if (sym->sh_type == SHT_SYMTAB && str->sh_type == SHT_STRTAB)
 				{
 					Symbols = (uintptr_t)sym->sh_addr;
 					StringAddress = (uintptr_t)str->sh_addr;
@@ -95,8 +89,7 @@ namespace Memory
 
 			if (Memory::Virtual().Check(ACPIPtr))
 			{
-				size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
-									(XSDT ? 8 : 4));
+				size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) / (XSDT ? 8 : 4));
 				debug("There are %d ACPI tables", TableSize);
 			}
 #endif
@@ -131,6 +124,7 @@ namespace Memory
 				{
 					uintptr_t Start;
 					uintptr_t End;
+					char Description[16];
 				};
 
 				auto SortAddresses = [](AddrRange *Array, size_t n)
@@ -151,61 +145,57 @@ namespace Memory
 
 				AddrRange PtrArray[] =
 					{
-						{KernelStart,
-						 KernelEnd},
-						{SectionsStart,
-						 SectionsEnd},
-						{Symbols,
-						 Symbols + SymbolSize},
-						{StringAddress,
-						 StringAddress + StringSize},
-						{RSDPStart,
-						 RSDPEnd},
-						{(uintptr_t)bInfo.Kernel.FileBase,
-						 (uintptr_t)bInfo.Kernel.FileBase + bInfo.Kernel.Size},
-						{(uintptr_t)bInfo.Modules[0].Address,
-						 (uintptr_t)bInfo.Modules[0].Address + bInfo.Modules[0].Size},
-						{(uintptr_t)bInfo.Modules[1].Address,
-						 (uintptr_t)bInfo.Modules[1].Address + bInfo.Modules[1].Size},
-						{(uintptr_t)bInfo.Modules[2].Address,
-						 (uintptr_t)bInfo.Modules[2].Address + bInfo.Modules[2].Size},
-						{(uintptr_t)bInfo.Modules[3].Address,
-						 (uintptr_t)bInfo.Modules[3].Address + bInfo.Modules[3].Size},
+						{KernelStart, KernelEnd, "kernel"},
+						{SectionsStart, SectionsEnd, "sections"},
+						{Symbols, Symbols + SymbolSize, "symbols"},
+						{StringAddress, StringAddress + StringSize, "string"},
+						{RSDPStart, RSDPEnd, "rsdp"},
+						{(uintptr_t)bInfo.Kernel.FileBase, (uintptr_t)bInfo.Kernel.FileBase + bInfo.Kernel.Size, "file"},
+						{(uintptr_t)bInfo.Modules[0].Address, (uintptr_t)bInfo.Modules[0].Address + bInfo.Modules[0].Size, "module 0"},
+						{(uintptr_t)bInfo.Modules[1].Address, (uintptr_t)bInfo.Modules[1].Address + bInfo.Modules[1].Size, "module 1"},
+						{(uintptr_t)bInfo.Modules[2].Address, (uintptr_t)bInfo.Modules[2].Address + bInfo.Modules[2].Size, "module 2"},
+						{(uintptr_t)bInfo.Modules[3].Address, (uintptr_t)bInfo.Modules[3].Address + bInfo.Modules[3].Size, "module 3"},
 						/* MAX_MODULES == 4 */
 					};
 
 				SortAddresses(PtrArray, sizeof(PtrArray) / sizeof(PtrArray[0]));
 
+				uintptr_t MaxEnd = RegionAddress;
 				for (size_t i = 0; i < sizeof(PtrArray) / sizeof(PtrArray[0]); i++)
 				{
 					if (PtrArray[i].Start == 0x0)
+					{
+						debug("skipping %#lx %zu %s", PtrArray[i].Start, i, PtrArray[i].Description);
 						continue;
+					}
 
 					uintptr_t Start = PtrArray[i].Start;
 					uintptr_t End = PtrArray[i].End;
-					debug("%#lx - %#lx", Start, End);
+					debug("[%s] %#lx - %#lx", PtrArray[i].Description, Start, End);
 
-					if (RegionAddress >= Start &&
-						End <= (RegionAddress + RegionSize))
+					if ((Start < (RegionAddress + RegionSize)) && (End > RegionAddress))
 					{
-						BitmapAddress = End;
-						BitmapAddressSize = RegionSize - (End - RegionAddress);
+						if (End > MaxEnd)
+							MaxEnd = End;
 					}
 				}
 
-				if ((BitmapSize + 0x100) > BitmapAddressSize)
+				if (MaxEnd >= RegionAddress && MaxEnd < (RegionAddress + RegionSize))
 				{
-					debug("Region %p-%p (%d MiB) is too small for bitmap.",
-						  (void *)BitmapAddress,
-						  (void *)(BitmapAddress + BitmapAddressSize),
-						  TO_MiB(BitmapAddressSize));
-					continue;
-				}
+					BitmapAddress = MaxEnd;
+					BitmapAddressSize = RegionAddress + RegionSize - MaxEnd;
 
-				debug("Found free memory for bitmap: %p (%d MiB)",
-					  (void *)BitmapAddress,
-					  TO_MiB(BitmapAddressSize));
-				break;
+					debug("BitmapAddress = %#lx; Size = %zu", BitmapAddress, BitmapAddressSize);
+
+					if ((BitmapSize + 0x100) > BitmapAddressSize)
+					{
+						debug("Region %#lx-%#lx (%d MiB) is too small for bitmap.", BitmapAddress, BitmapAddress + BitmapAddressSize, TO_MiB(BitmapAddressSize));
+						continue;
+					}
+
+					debug("Found free memory for bitmap: %#lx (%d MiB)", BitmapAddress, TO_MiB(BitmapAddressSize));
+					break;
+				}
 			}
 		}
 	}

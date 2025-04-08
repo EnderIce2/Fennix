@@ -340,7 +340,7 @@ NIF void InitializeMemoryManagement()
 	KernelAllocator.Init();
 	debug("Memory Info:\n\n%lld MiB / %lld MiB (%lld MiB reserved)\n",
 		  TO_MiB(KernelAllocator.GetUsedMemory()),
-		  TO_MiB(KernelAllocator.GetTotalMemory()),
+		  TO_MiB(KernelAllocator.GetTotalMemory() - KernelAllocator.GetReservedMemory()),
 		  TO_MiB(KernelAllocator.GetReservedMemory()));
 
 	/* -- Debugging --
@@ -361,8 +361,7 @@ NIF void InitializeMemoryManagement()
 
 	CreatePageTable(KernelPageTable);
 
-	trace("Applying new page table from address %#lx",
-		  KernelPageTable);
+	trace("Applying new page table from address %#lx", KernelPageTable);
 	CPU::PageTable(KernelPageTable);
 	debug("Page table updated.");
 

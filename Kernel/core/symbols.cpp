@@ -184,7 +184,7 @@ namespace SymbolResolver
 
 				if (unlikely(sym->st_name == (Elf_Word)-1 || sym->st_value == (Elf_Addr)-1 || sym->st_size == (uintptr_t)-1))
 				{
-					error("Symbol %d is invalid", i);
+					error("Symbol %d is invalid; ptr:%#lx", i, sym);
 					continue;
 				}
 

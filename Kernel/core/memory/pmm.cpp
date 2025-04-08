@@ -322,8 +322,7 @@ namespace Memory
 		SmartLock(this->MemoryLock);
 
 		uint64_t MemorySize = bInfo.Memory.Size;
-		debug("Memory size: %lld bytes (%ld pages)",
-			  MemorySize, TO_PAGES(MemorySize));
+		debug("Memory size: %lld bytes (%ld pages)", MemorySize, TO_PAGES(MemorySize));
 		TotalMemory.store(MemorySize);
 		FreeMemory.store(MemorySize);
 
@@ -338,16 +337,10 @@ namespace Memory
 			CPU::Stop();
 		}
 
-		debug("Initializing Bitmap at %p-%p (%d Bytes)",
-			  BitmapAddress,
-			  (void *)(BitmapAddress + BitmapSize),
-			  BitmapSize);
-
+		debug("Initializing Bitmap at %#lx-%#lx (%zu Bytes)", BitmapAddress, BitmapAddress + BitmapSize, BitmapSize);
 		PageBitmap.Size = BitmapSize;
 		PageBitmap.Buffer = (uint8_t *)BitmapAddress;
-		for (size_t i = 0; i < BitmapSize; i++)
-			*(uint8_t *)(PageBitmap.Buffer + i) = 0;
-
+		memset((void *)BitmapAddress, 0, BitmapSize);
 		ReserveEssentials();
 	}
 
