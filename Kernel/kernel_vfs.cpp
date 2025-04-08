@@ -49,7 +49,7 @@ void SearchForInitrd()
 	}
 }
 
-EXTERNC NIF void KernelVFS()
+EXTERNC nif void KernelVFS()
 {
 	KPrint("Initializing Virtual File System");
 

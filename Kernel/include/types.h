@@ -461,7 +461,7 @@ typedef uint48_t uint_fast48_t;
 #define NoSecurityAnalysis __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_sanitize_thread
 #define nsa NoSecurityAnalysis
 
-#define NIF __no_instrument_function
+#define nif __no_instrument_function
 
 #define int3                    \
 	__asm__ __volatile__("int3" \

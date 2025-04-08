@@ -27,12 +27,12 @@ NewLock(DebuggerLock);
 
 extern bool serialports[8];
 
-EXTERNC NIF void uart_wrapper(char c, void *)
+EXTERNC nif void uart_wrapper(char c, void *)
 {
 	uart.DebugWrite(c);
 }
 
-static inline NIF bool WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, va_list args)
+static inline nif bool WritePrefix(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, va_list args)
 {
 	const char *DbgLvlString;
 	switch (Level)
@@ -79,7 +79,7 @@ static inline NIF bool WritePrefix(DebugLevel Level, const char *File, int Line,
 
 namespace SysDbg
 {
-	NIF void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+	nif void Write(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 	{
 		va_list args;
 		va_start(args, Format);
@@ -92,7 +92,7 @@ namespace SysDbg
 		va_end(args);
 	}
 
-	NIF void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+	nif void WriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 	{
 		va_list args;
 		va_start(args, Format);
@@ -106,7 +106,7 @@ namespace SysDbg
 		uart_wrapper('\n', nullptr);
 	}
 
-	NIF void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+	nif void LockedWrite(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 	{
 		SmartTimeoutLock(DebuggerLock, 1000);
 		va_list args;
@@ -120,7 +120,7 @@ namespace SysDbg
 		va_end(args);
 	}
 
-	NIF void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+	nif void LockedWriteLine(DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 	{
 		SmartTimeoutLock(DebuggerLock, 1000);
 		va_list args;
@@ -137,7 +137,7 @@ namespace SysDbg
 }
 
 // C compatibility
-extern "C" NIF void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" nif void SysDbgWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
 	va_list args;
 	va_start(args, Format);
@@ -151,7 +151,7 @@ extern "C" NIF void SysDbgWrite(enum DebugLevel Level, const char *File, int Lin
 }
 
 // C compatibility
-extern "C" NIF void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" nif void SysDbgWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
 	va_list args;
 	va_start(args, Format);
@@ -166,7 +166,7 @@ extern "C" NIF void SysDbgWriteLine(enum DebugLevel Level, const char *File, int
 }
 
 // C compatibility
-extern "C" NIF void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" nif void SysDbgLockedWrite(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
 	SmartTimeoutLock(DebuggerLock, 1000);
 	va_list args;
@@ -181,7 +181,7 @@ extern "C" NIF void SysDbgLockedWrite(enum DebugLevel Level, const char *File, i
 }
 
 // C compatibility
-extern "C" NIF void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
+extern "C" nif void SysDbgLockedWriteLine(enum DebugLevel Level, const char *File, int Line, const char *Function, const char *Format, ...)
 {
 	SmartTimeoutLock(DebuggerLock, 1000);
 	va_list args;

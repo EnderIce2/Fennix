@@ -33,7 +33,6 @@
 #include "tests/t.h"
 
 bool DebuggerIsAttached = false;
-extern bool EnableProfiler;
 NewLock(KernelLock);
 
 __aligned(16) BootInfo bInfo{};
@@ -117,7 +116,7 @@ EXTERNC void KPrint(const char *Format, ...)
 #endif
 }
 
-EXTERNC NIF cold void Main()
+EXTERNC nif cold void Main()
 {
 	Display = new Video::Display(bInfo.Framebuffer[0]);
 	KernelConsole::EarlyInit();
@@ -259,7 +258,7 @@ typedef void (*CallPtr)(void);
 extern CallPtr __init_array_start[0], __init_array_end[0];
 extern CallPtr __fini_array_start[0], __fini_array_end[0];
 
-EXTERNC __no_stack_protector NIF cold void Entry(BootInfo *Info)
+EXTERNC __no_stack_protector nif cold void Entry(BootInfo *Info)
 {
 	memcpy(&bInfo, Info, sizeof(BootInfo));
 
@@ -352,7 +351,6 @@ EXTERNC __no_stack_protector NIF cold void Entry(BootInfo *Info)
 #warning "FIXME: Test_stl() is not implemented for other architectures"
 #endif
 #endif // DEBUG
-	EnableProfiler = true;
 	Main();
 }
 

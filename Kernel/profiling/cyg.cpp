@@ -16,95 +16,15 @@
 */
 
 #include <types.h>
-#include <printf.h>
-#include <uart.hpp>
 
-#include "../kernel.h"
-
-bool EnableProfiler = false;
-bool Wait = false;
-unsigned long long LogDepth = 0;
-unsigned int Level = 0;
-
-static inline nsa NIF void profiler_uart_wrapper(char c, void *unused)
+EXTERNC nsa nif void __cyg_profile_func_enter(void *this_fn, void *call_site)
 {
-	bool renable = EnableProfiler;
-	EnableProfiler = false;
-	UNUSED(unused);
-	if (renable)
-		EnableProfiler = true;
+	UNUSED(this_fn);
+	UNUSED(call_site);
 }
 
-EXTERNC nsa NIF void __cyg_profile_func_enter(void *Function, void *CallSite)
+EXTERNC nsa nif void __cyg_profile_func_exit(void *this_fn, void *call_site)
 {
-	if (!EnableProfiler)
-		return;
-
-	while (Wait)
-#if defined(__amd64__) || defined(__i386__)
-		asmv("pause");
-#elif defined(__aarch64__)
-		asmv("yield");
-#endif
-	Wait = true;
-
-	if (Level > 40)
-		Level--;
-
-	Level++;
-
-	if (!KernelSymbolTable)
-		fctprintf(profiler_uart_wrapper, nullptr, "%lld [%02d]: \033[42m->\033[0m%*c \033[33m%p\033[0m  -  \033[33m%p\033[0m\n",
-				  LogDepth++,
-				  Level - 1,
-				  Level,
-				  ' ',
-				  Function,
-				  CallSite);
-	else
-		fctprintf(profiler_uart_wrapper, nullptr, "%lld [%02d]: \033[42m->\033[0m%*c \033[33m%s\033[0m  -  \033[33m%s\033[0m\n",
-				  LogDepth++,
-				  Level - 1,
-				  Level,
-				  ' ',
-				  KernelSymbolTable->GetSymbol((uintptr_t)Function),
-				  KernelSymbolTable->GetSymbol((uintptr_t)CallSite));
-	Wait = false;
-}
-
-EXTERNC nsa NIF void __cyg_profile_func_exit(void *Function, void *CallSite)
-{
-	if (!EnableProfiler)
-		return;
-
-	while (Wait)
-#if defined(__amd64__) || defined(__i386__)
-		asmv("pause");
-#elif defined(__aarch64__)
-		asmv("yield");
-#endif
-	Wait = true;
-
-	if (Level > 40)
-		Level--;
-
-	Level--;
-
-	if (!KernelSymbolTable)
-		fctprintf(profiler_uart_wrapper, nullptr, "%lld [%02d]: \033[41m<-\033[0m%*c \033[33m%p\033[0m  -  \033[33m%p\033[0m\n",
-				  LogDepth++,
-				  Level - 1,
-				  Level,
-				  ' ',
-				  Function,
-				  CallSite);
-	else
-		fctprintf(profiler_uart_wrapper, nullptr, "%lld [%02d]: \033[41m<-\033[0m%*c \033[33m%s\033[0m  -  \033[33m%s\033[0m\n",
-				  LogDepth++,
-				  Level - 1,
-				  Level,
-				  ' ',
-				  KernelSymbolTable->GetSymbol((uintptr_t)Function),
-				  KernelSymbolTable->GetSymbol((uintptr_t)CallSite));
-	Wait = false;
+	UNUSED(this_fn);
+	UNUSED(call_site);
 }

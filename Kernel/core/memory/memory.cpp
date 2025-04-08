@@ -52,7 +52,7 @@ Xalloc::V1 *XallocV1Allocator = nullptr;
 Xalloc::V2 *XallocV2Allocator = nullptr;
 
 #ifdef DEBUG
-NIF void tracepagetable(PageTable *pt)
+nif void tracepagetable(PageTable *pt)
 {
 	for (int i = 0; i < 512; i++)
 	{
@@ -71,7 +71,7 @@ NIF void tracepagetable(PageTable *pt)
 }
 #endif
 
-NIF void MapEntries(PageTable *PT)
+nif void MapEntries(PageTable *PT)
 {
 	debug("mapping %d memory entries", bInfo.Memory.Entries);
 	Virtual vmm = Virtual(PT);
@@ -89,7 +89,7 @@ NIF void MapEntries(PageTable *PT)
 	vmm.Unmap((void *)0);
 }
 
-NIF void MapFramebuffer(PageTable *PT)
+nif void MapFramebuffer(PageTable *PT)
 {
 	debug("Mapping Framebuffer");
 	Virtual vmm = Virtual(PT);
@@ -123,7 +123,7 @@ NIF void MapFramebuffer(PageTable *PT)
 	}
 }
 
-NIF void MapKernel(PageTable *PT)
+nif void MapKernel(PageTable *PT)
 {
 	debug("Mapping Kernel");
 
@@ -237,7 +237,7 @@ NIF void MapKernel(PageTable *PT)
 		info("Cannot determine kernel file address. Ignoring.");
 }
 
-NIF void CreatePageTable(PageTable *pt)
+nif void CreatePageTable(PageTable *pt)
 {
 	static int check_cpuid = 0;
 
@@ -286,7 +286,7 @@ NIF void CreatePageTable(PageTable *pt)
 #endif
 }
 
-NIF void InitializeMemoryManagement()
+nif void InitializeMemoryManagement()
 {
 #ifdef DEBUG
 #ifndef __i386__

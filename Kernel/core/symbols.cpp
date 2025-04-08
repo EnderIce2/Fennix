@@ -26,7 +26,7 @@
 
 namespace SymbolResolver
 {
-	const NIF char *Symbols::GetSymbol(uintptr_t Address)
+	const nif char *Symbols::GetSymbol(uintptr_t Address)
 	{
 		SymbolTable Result{};
 

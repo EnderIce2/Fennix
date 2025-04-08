@@ -300,7 +300,7 @@ namespace Tasking::Scheduler
 			Info->KernelTime += TimePassed;
 	}
 
-	hot nsa NIF bool Custom::FindNewProcess(void *CPUDataPointer)
+	hot nsa nif bool Custom::FindNewProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 		fnp_schedbg("%d processes", ProcessList.size());
@@ -347,7 +347,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	hot nsa NIF bool Custom::GetNextAvailableThread(void *CPUDataPointer)
+	hot nsa nif bool Custom::GetNextAvailableThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -399,7 +399,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	hot nsa NIF bool Custom::GetNextAvailableProcess(void *CPUDataPointer)
+	hot nsa nif bool Custom::GetNextAvailableProcess(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -447,7 +447,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	hot nsa NIF bool Custom::SchedulerSearchProcessThread(void *CPUDataPointer)
+	hot nsa nif bool Custom::SchedulerSearchProcessThread(void *CPUDataPointer)
 	{
 		CPUData *CurrentCPU = (CPUData *)CPUDataPointer;
 
@@ -480,7 +480,7 @@ namespace Tasking::Scheduler
 		return false;
 	}
 
-	nsa NIF void Custom::UpdateProcessState()
+	nsa nif void Custom::UpdateProcessState()
 	{
 		for (auto process : ProcessList)
 		{
@@ -513,7 +513,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	nsa NIF void Custom::WakeUpThreads()
+	nsa nif void Custom::WakeUpThreads()
 	{
 		for (auto process : ProcessList)
 		{
@@ -547,7 +547,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	nsa NIF void Custom::CleanupTerminated()
+	nsa nif void Custom::CleanupTerminated()
 	{
 		for (auto pcb : ProcessList)
 		{
@@ -566,7 +566,7 @@ namespace Tasking::Scheduler
 		}
 	}
 
-	hot nsa NIF void Custom::Schedule(CPU::SchedulerFrame *Frame)
+	hot nsa nif void Custom::Schedule(CPU::SchedulerFrame *Frame)
 	{
 		if (unlikely(StopScheduler))
 		{
@@ -723,7 +723,7 @@ namespace Tasking::Scheduler
 		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
 	}
 
-	hot nsa NIF void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
+	hot nsa nif void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);

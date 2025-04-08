@@ -16,10 +16,6 @@
 */
 
 #include <types.h>
-#include <printf.h>
-#include <uart.hpp>
-
-#include "../kernel.h"
 
 #if BITS_PER_LONG >= 64
 typedef long gcov_type;
@@ -53,33 +49,26 @@ struct gcov_info
 	struct gcov_ctr_info counts[0];
 };
 
-static inline nsa NIF void gcov_uart_wrapper(char c, void *unused)
+EXTERNC nsa nif void __gcov_init(gcov_info *info)
 {
-	UNUSED(c);
-	UNUSED(unused);
+	UNUSED(info);
 }
 
-// TODO: Implement
-
-EXTERNC nsa NIF void __gcov_init(gcov_info *p __unused)
+EXTERNC nsa nif void __gcov_exit(void)
 {
 }
 
-EXTERNC nsa NIF void __gcov_exit(void)
+EXTERNC nsa nif void __gcov_flush(void)
 {
 }
 
-EXTERNC nsa NIF void __gcov_flush(void)
-{
-}
-
-EXTERNC nsa NIF void __gcov_merge_add(gcov_type *counters, unsigned int n_counters)
+EXTERNC nsa nif void __gcov_merge_add(gcov_type *counters, unsigned int n_counters)
 {
 	UNUSED(counters);
 	UNUSED(n_counters);
 }
 
-EXTERNC nsa NIF void __gcov_merge_single(gcov_type *counters, unsigned int n_counters)
+EXTERNC nsa nif void __gcov_merge_single(gcov_type *counters, unsigned int n_counters)
 {
 	UNUSED(counters);
 	UNUSED(n_counters);

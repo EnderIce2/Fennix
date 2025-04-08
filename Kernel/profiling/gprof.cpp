@@ -16,18 +16,8 @@
 */
 
 #include <types.h>
-#include <printf.h>
-#include <uart.hpp>
 
-#include "../kernel.h"
-
-static inline nsa NIF void gprof_uart_wrapper(char c, void *unused)
-{
-	UNUSED(c);
-	UNUSED(unused);
-}
-
-EXTERNC nsa NIF void mcount(unsigned long frompc, unsigned long selfpc)
+EXTERNC nsa nif void mcount(void *frompc, size_t selfpc)
 {
 	// TODO: Implement
 	/* https://docs.kernel.org/trace/ftrace-design.html */
