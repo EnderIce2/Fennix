@@ -21,6 +21,7 @@
 #endif
 
 #include <filesystem/ustar.hpp>
+#include <subsystems.hpp>
 #include <kshell.hpp>
 #include <power.hpp>
 #include <lock.hpp>
@@ -69,12 +70,13 @@ int SpawnLinuxInit()
 		"/startup/init"};
 
 	const char *foundPath = nullptr;
+	FileNode *root = fs->GetRoot(1);
 	for (const std::string &path : fallbackPaths)
 	{
-		if (!fs->PathExists(path.c_str(), fs->GetRoot(1)))
+		const char *str = path.c_str();
+		if (!fs->PathExists(str, root))
 			continue;
-
-		foundPath = path.c_str();
+		foundPath = str;
 		break;
 	}
 
@@ -135,6 +137,10 @@ void KernelMainThread()
 	// 	->Rename("Kernel Shell");
 #endif
 
+	KPrint("Loading Subsystems");
+	Subsystem::Linux::InitializeSubSystem();
+	Subsystem::Windows::InitializeSubSystem();
+
 	KPrint("Executing %s", Config.InitPath);
 	int ExitCode = -1;
 	Tasking::PCB *initProc;
@@ -164,9 +170,7 @@ Exit:
 
 	KPrint("Dropping to kernel shell");
 	TaskManager->Sleep(1000);
-	TaskManager->CreateThread(thisProcess,
-							  Tasking::IP(KShellThread))
-		->Rename("Kernel Shell");
+	TaskManager->CreateThread(thisProcess, Tasking::IP(KShellThread))->Rename("Kernel Shell");
 	CPU::Halt(true);
 }
 

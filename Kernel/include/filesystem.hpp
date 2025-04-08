@@ -132,7 +132,7 @@ namespace vfs
 
 		FileNode *CacheSearchReturnLast(FileNode *Parent, const char **Path);
 		FileNode *CacheRecursiveSearch(FileNode *Root, const char *NameOrPath, bool IsName);
-		FileNode *CacheLookup(const char *Path);
+		FileNode *CacheLookup(FileNode *Parent, const char *Path);
 		FileNode *CreateCacheNode(FileNode *Parent, Inode *Node, const char *Name, mode_t Mode);
 
 		int RemoveCacheNode(FileNode *Node);

@@ -15,6 +15,8 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <filesystem/ramfs.hpp>
+
 #include "../../kernel.h"
 
 namespace Subsystem::Windows
@@ -23,5 +25,17 @@ namespace Subsystem::Windows
 
 	void InitializeSubSystem()
 	{
+		if (fs->RootExists(2) == false)
+		{
+			FileNode *nmnt = fs->GetByPath("/mnt", fs->GetRoot(0));
+			assert(MountRAMFS(nmnt, "windows", 2));
+			FileNode *win = fs->GetRoot(2);
+
+			FileNode *windows = fs->ForceCreate(win, "Windows", 0755);
+			FileNode *programFiles = fs->ForceCreate(windows, "Program Files", 0755);
+			FileNode *programFilesX86 = fs->ForceCreate(windows, "Program Files (x86)", 0755);
+			FileNode *programData = fs->ForceCreate(windows, "ProgramData", 0755);
+			FileNode *users = fs->ForceCreate(windows, "Users", 0755);
+		}
 	}
 }

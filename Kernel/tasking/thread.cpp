@@ -588,20 +588,18 @@ namespace Tasking
 		switch (Compatibility)
 		{
 		case TaskCompatibility::Native:
-			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[0];
+			this->Info.RootNode = fs->GetRoot(0);
 			break;
 		case TaskCompatibility::Linux:
-			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[1];
+			this->Info.RootNode = fs->GetRoot(1);
 			break;
 		case TaskCompatibility::Windows:
-			// this->Info.RootNode = fs->FileSystemRoots->GetChildren()[2];
+			this->Info.RootNode = fs->GetRoot(2);
 			break;
 		default:
 			assert(!"Invalid compatibility mode");
 			break;
 		}
-		/* FIXME */
-		this->Info.RootNode = fs->GetRoot(0);
 
 		if (this->Parent->Threads.size() == 0)
 		{

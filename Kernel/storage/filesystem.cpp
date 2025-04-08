@@ -137,14 +137,22 @@ namespace vfs
 	{
 		char *path = strdup(Path);
 		char *lastSlash = strrchr(path, '/');
-		if (lastSlash == path)
-			lastSlash++;
-		*lastSlash = '\0';
+		if (lastSlash)
+		{
+			if (lastSlash == path)
+				lastSlash++;
+			*lastSlash = '\0';
+		}
 
 		FileNode *parentNode = this->GetByPath(path, Parent);
+		if (parentNode == nullptr && Parent != nullptr)
+			parentNode = Parent;
 		free(path);
 		lastSlash = strrchr(Path, '/');
-		lastSlash++;
+		if (lastSlash)
+			lastSlash++;
+		else
+			lastSlash = (char *)Path;
 		return this->CreateCacheNode(parentNode, Node, lastSlash, Node->Mode);
 	}
 
@@ -160,8 +168,13 @@ namespace vfs
 	FileNode *Virtual::GetByPath(const char *Path, FileNode *Parent)
 	{
 		debug("GetByPath: %s", Path);
-		if (Parent == nullptr || this->PathIsAbsolute(Path))
-			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
+		if (Parent == nullptr)
+		{
+			if (fs->PathIsRelative(Path))
+				Parent = thisProcess ? thisProcess->CWD : thisProcess->Info.RootNode;
+			else
+				Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
+		}
 
 		if (strcmp(Path, ".") == 0)
 			return Parent;
@@ -214,6 +227,7 @@ namespace vfs
 			auto it = DeviceMap.find(__Parent->Node->Device);
 			if (unlikely(it == DeviceMap.end()))
 				ReturnLogError(nullptr, "Device %d not found", __Parent->Node->Device);
+			debug("found fs %s", it->second.fsi->Name);
 
 			if (it->second.fsi->Ops.Lookup == NULL)
 				ReturnLogError(nullptr, "Lookup not supported for %d", it->first);
@@ -321,7 +335,7 @@ namespace vfs
 
 	bool Virtual::PathExists(const char *Path, FileNode *Parent)
 	{
-		FileNode *fn = this->CacheLookup(Path);
+		FileNode *fn = this->CacheLookup(Parent, Path);
 		if (fn)
 			return true;
 

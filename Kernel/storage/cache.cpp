@@ -175,12 +175,13 @@ namespace vfs
 		return nullptr;
 	}
 
-	FileNode *Virtual::CacheLookup(const char *Path)
+	FileNode *Virtual::CacheLookup(FileNode *Parent, const char *Path)
 	{
 		debug("Cache lookup for \"%s\"", Path);
-		FileNode *rootNode = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
+		if (Parent == nullptr)
+			Parent = thisProcess ? thisProcess->Info.RootNode : this->GetRoot(0);
 
-		FileNode *ret = CacheRecursiveSearch(rootNode, Path, false);
+		FileNode *ret = CacheRecursiveSearch(Parent, Path, false);
 		if (ret)
 			return ret;
 

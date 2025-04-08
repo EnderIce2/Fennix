@@ -131,6 +131,7 @@ namespace vfs
 	public:
 		dev_t DeviceID = -1;
 		ino_t NextInode = 0;
+		std::string RootName;
 
 		int Lookup(struct Inode *Parent, const char *Name, struct Inode **Result);
 		int Create(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result);
@@ -146,4 +147,4 @@ namespace vfs
 	};
 }
 
-bool MountRAMFS(Inode *Parent, const char *Name, size_t Index);
+bool MountRAMFS(FileNode *Parent, const char *Name, size_t Index);

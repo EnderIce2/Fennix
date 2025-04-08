@@ -33,7 +33,7 @@ namespace vfs
 		cwk_path_get_basename(Name, &basename, &length);
 		if (basename == NULL)
 		{
-			if (strcmp(Name, "/") == 0)
+			if (strcmp(Name, RootName.c_str()) == 0)
 			{
 				auto &it = Files.at(0);
 				*Result = &it->Node;
@@ -90,6 +90,7 @@ namespace vfs
 		RAMFSInode *node = new RAMFSInode;
 		node->Name.assign(basename, length);
 		node->Mode = Mode;
+		node->Node = inode;
 
 		auto file = Files.insert(std::make_pair(NextInode, node));
 		assert(file.second == true);
@@ -383,25 +384,15 @@ O2 int __ramfs_Destroy(FileSystemInfo *fsi)
 	return 0;
 }
 
-bool MountRAMFS(Inode *Parent, const char *Name, size_t Index)
+bool MountRAMFS(FileNode *Parent, const char *Name, size_t Index)
 {
 	vfs::RAMFS *ramfs = new vfs::RAMFS;
 	ramfs->DeviceID = fs->EarlyReserveDevice();
-
-	if (Parent == nullptr)
-	{
-		ramfs->Create(nullptr, Name, S_IFDIR | 0755, &Parent);
-		if (Parent == nullptr)
-		{
-			error("Failed to create root inode");
-			delete ramfs;
-			return false;
-		}
-	}
+	ramfs->RootName.assign(Name);
 
 	FileSystemInfo *fsi = new FileSystemInfo;
 	fsi->Name = "ramfs";
-	fsi->RootName = "/";
+	fsi->RootName = Name;
 	fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 	fsi->SuperOps.DeleteInode = __ramfs_DestroyInode;
 	fsi->SuperOps.Destroy = __ramfs_Destroy;
@@ -415,7 +406,12 @@ bool MountRAMFS(Inode *Parent, const char *Name, size_t Index)
 	fsi->Ops.Stat = __ramfs_Stat;
 	fsi->PrivateData = ramfs;
 
-	fs->LateRegisterFileSystem(ramfs->DeviceID, fsi, Parent);
-	fs->AddRootAt(Parent, Index);
+	Inode *root = nullptr;
+	ramfs->Create(nullptr, Name, S_IFDIR | 0755, &root);
+
+	fs->LateRegisterFileSystem(ramfs->DeviceID, fsi, root);
+	fs->AddRootAt(root, Index);
+
+	fs->Mount(Parent, root, Name);
 	return true;
 }
