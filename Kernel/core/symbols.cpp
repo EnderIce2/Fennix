@@ -131,24 +131,8 @@ namespace SymbolResolver
 
 		if (Symbols != nullptr && StringAddress != nullptr)
 		{
-			size_t Index, MinimumIndex;
-			for (size_t i = 0; i < TotalEntries - 1; i++)
-			{
-				MinimumIndex = i;
-				for (Index = i + 1; Index < TotalEntries; Index++)
-				{
-					bool condition = Symbols[Index].st_value < Symbols[MinimumIndex].st_value;
-					if (condition)
-						MinimumIndex = Index;
-				}
-
-				Elf_Sym tmp = Symbols[MinimumIndex];
-				Symbols[MinimumIndex] = Symbols[i];
-				Symbols[i] = tmp;
-			}
-
-			// std::sort(Symbols, Symbols + TotalEntries, [](const Elf_Sym &a, const Elf_Sym &b)
-			// 		  { return a.st_value < b.st_value; });
+			std::sort(Symbols, Symbols + TotalEntries, [](const Elf_Sym &a, const Elf_Sym &b)
+					  { return a.st_value < b.st_value; });
 
 			while (Symbols[0].st_value == 0)
 			{
