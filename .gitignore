@@ -4,7 +4,7 @@ tmp_rootfs
 rootfs/usr/include/*
 !rootfs/usr/include/.gitkeep
 doxygen-doc
-rootfs.tar
+rootfs.tar.gz
 .dccache
 *.log
 *.log.*

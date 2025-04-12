@@ -259,10 +259,8 @@ endif
 	chmod 755 tmp_rootfs/home/
 	chmod -R 750 tmp_rootfs/home/root/
 	chmod -R 777 tmp_rootfs/tmp/
-#	tar czf rootfs.tar -C tmp_rootfs/ --owner=0 --group=0 ./ --format=ustar
-	tar cf rootfs.tar -C tmp_rootfs/ --owner=0 --group=0 ./ --format=ustar
-	cp Kernel/fennix.elf rootfs.tar \
-		iso_tmp_data/
+	tar czf rootfs.tar.gz -C tmp_rootfs/ --owner=0 --group=0 ./ --format=ustar
+	cp Kernel/fennix.elf rootfs.tar.gz iso_tmp_data/
 ifeq ($(BOOTLOADER), limine)
 	cp  tools/limine.conf \
 		tools/limine/limine-bios.sys \
@@ -379,7 +377,7 @@ run: build qemu
 
 clean: clean_logs
 	rm -rf doxygen-doc iso_tmp_data tmp_rootfs
-	rm -f rootfs.tar $(OSNAME).iso $(OSNAME).img
+	rm -f rootfs.tar.gz $(OSNAME).iso $(OSNAME).img
 	$(MAKE) -C Kernel clean
 	$(MAKE) -C Userspace clean
 	$(MAKE) -C Drivers clean
