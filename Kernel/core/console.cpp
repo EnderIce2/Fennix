@@ -20,6 +20,7 @@
 #include <memory.hpp>
 #include <stropts.h>
 #include <string.h>
+#include <thread>
 #include <ini.h>
 
 #include "../kernel.h"
@@ -112,6 +113,38 @@ namespace KernelConsole
 
 	FontRenderer Renderer;
 
+	ConsoleTerminal *Terminals[16] = {nullptr};
+	std::atomic<ConsoleTerminal *> CurrentTerminal = nullptr;
+
+	void paint_blinker(bool Enable)
+	{
+		if (CurrentTerminal == nullptr)
+			return;
+
+		ConsoleTerminal *term = CurrentTerminal.load();
+		ConsoleTerminal::Blinker *blinker = &term->Blink;
+
+		TerminalCell *cell = term->Term->GetCell(Renderer.Cursor.X + Renderer.Cursor.Y * term->Term->GetWinsize()->ws_row);
+
+		uint32_t bgColor = cell->attr.Bright ? TermBrightColors[cell->attr.Background] : TermColors[cell->attr.Background];
+
+		Renderer.Paint(Renderer.Cursor.X, Renderer.Cursor.Y,
+					   term->Blink.Character,
+					   Enable ? term->Blink.Color : bgColor,
+					   bgColor);
+	}
+
+	void paint_blinker_thread()
+	{
+		bool blink = false;
+		while (true)
+		{
+			paint_blinker(blink);
+			blink = !blink;
+			std::this_thread::sleep_for(std::chrono::milliseconds(CurrentTerminal.load()->Blink.Delay));
+		}
+	}
+
 	void paint_callback(TerminalCell *cell, long x, long y)
 	{
 		if (cell->attr.Bright)
@@ -123,10 +156,8 @@ namespace KernelConsole
 	void cursor_callback(TerminalCursor *cur)
 	{
 		Renderer.Cursor = {cur->X, cur->Y};
+		paint_blinker(false);
 	}
-
-	VirtualTerminal *Terminals[16] = {nullptr};
-	std::atomic<VirtualTerminal *> CurrentTerminal = nullptr;
 
 	bool SetTheme(std::string Theme)
 	{
@@ -267,24 +298,15 @@ namespace KernelConsole
 		size_t Rows = Display->GetWidth / Renderer.CurrentFont->GetInfo().Width;
 		size_t Cols = Display->GetHeight / Renderer.CurrentFont->GetInfo().Height;
 		debug("Terminal size: %ux%u", Rows, Cols);
-		Terminals[0] = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
-		Terminals[0]->Clear(0, 0, Rows, Cols - 1);
+		Terminals[0] = new ConsoleTerminal;
+		Terminals[0]->Term = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
+		Terminals[0]->Term->Clear(0, 0, Rows, Cols - 1);
 		CurrentTerminal.store(Terminals[0], std::memory_order_release);
 	}
 
-	void LateInit()
+	void LoadConsoleConfig(std::string &Config)
 	{
-		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
-		if (rn == nullptr)
-			return;
-
-		kstat st{};
-		rn->Stat(&st);
-
-		char *sh = new char[st.Size];
-		rn->Read(sh, st.Size, 0);
-
-		ini_t *ini = ini_load(sh, NULL);
+		ini_t *ini = ini_load(Config.c_str(), NULL);
 		int general = ini_find_section(ini, "general", NULL);
 		int cursor = ini_find_section(ini, "cursor", NULL);
 		assert(general != INI_NOT_FOUND && cursor != INI_NOT_FOUND);
@@ -292,16 +314,22 @@ namespace KernelConsole
 		int themeIndex = ini_find_property(ini, general, "theme", NULL);
 		assert(themeIndex != INI_NOT_FOUND);
 
-		int cursorColor = ini_find_property(ini, cursor, "color", NULL);
 		int cursorBlink = ini_find_property(ini, cursor, "blink", NULL);
-		assert(cursorColor != INI_NOT_FOUND && cursorBlink != INI_NOT_FOUND);
+		int cursorColor = ini_find_property(ini, cursor, "color", NULL);
+		int cursorChar = ini_find_property(ini, cursor, "char", NULL);
+		int cursorDelay = ini_find_property(ini, cursor, "delay", NULL);
+		assert(cursorBlink != INI_NOT_FOUND && cursorColor != INI_NOT_FOUND && cursorChar != INI_NOT_FOUND && cursorDelay != INI_NOT_FOUND);
 
 		const char *colorThemeStr = ini_property_value(ini, general, themeIndex);
 		const char *cursorColorStr = ini_property_value(ini, cursor, cursorColor);
 		const char *cursorBlinkStr = ini_property_value(ini, cursor, cursorBlink);
+		const char *cursorCharStr = ini_property_value(ini, cursor, cursorChar);
+		const char *cursorDelayStr = ini_property_value(ini, cursor, cursorDelay);
 		debug("colorThemeStr=%s", colorThemeStr);
-		debug("cursorColorStr=%s", cursorColorStr);
 		debug("cursorBlinkStr=%s", cursorBlinkStr);
+		debug("cursorColorStr=%s", cursorColorStr);
+		debug("cursorCharStr=%s", cursorCharStr);
+		debug("cursorDelayStr=%s", cursorDelayStr);
 
 		auto getColorComponent = [](const char *str, int &index) -> int
 		{
@@ -335,11 +363,36 @@ namespace KernelConsole
 			uint32_t blinkColor = 0xFFFFFF;
 			if (cursorColorStr != 0)
 				blinkColor = parseColor(cursorColorStr);
-			fixme("cursor blink with colors %X", blinkColor);
+			debug("cursor blink with colors %X and char '%s' and delay %s", blinkColor, cursorCharStr, cursorDelayStr);
+			Terminals[0]->Blink.Enabled = true;
+			Terminals[0]->Blink.Color = blinkColor;
+			Terminals[0]->Blink.Character = *cursorCharStr;
+			Terminals[0]->Blink.Delay = atoi(cursorDelayStr);
 		}
 
 		ini_destroy(ini);
-		delete[] sh;
+	}
+
+	void LateInit()
+	{
+		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
+		if (rn == nullptr)
+			return;
+
+		{
+			kstat st;
+			rn->Stat(&st);
+			std::string cfg;
+			cfg.reserve(st.Size);
+			rn->Read(cfg.data(), st.Size, 0);
+			LoadConsoleConfig(cfg);
+		}
+
+		if (Terminals[0]->Blink.Enabled)
+		{
+			std::thread t = std::thread(paint_blinker_thread);
+			t.detach();
+		}
 
 #ifdef DEBUG
 		// __test_themes();

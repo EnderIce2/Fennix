@@ -84,7 +84,7 @@ void paint_callback(TerminalCell *cell, long x, long y)
 
 nsa void __printfWrapper(char c, void *)
 {
-	KernelConsole::Terminals[15]->Process(c);
+	KernelConsole::Terminals[15]->Term->Process(c);
 }
 
 nsa void ExPrint(const char *Format, ...)
@@ -162,7 +162,8 @@ nsa void InitFont()
 	{
 		size_t Cols = Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width;
 		size_t Rows = Display->GetHeight / CrashFontRenderer.CurrentFont->GetInfo().Height;
-		Terminals[15] = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
+		Terminals[15] = new ConsoleTerminal;
+		Terminals[15]->Term = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
 	}
 }
 
@@ -372,7 +373,8 @@ nsa void BaseBufferStackError(bool Stack)
 	{
 		size_t Cols = Display->GetWidth / CrashFontRenderer.CurrentFont->GetInfo().Width;
 		size_t Rows = Display->GetHeight / CrashFontRenderer.CurrentFont->GetInfo().Height;
-		Terminals[15] = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
+		Terminals[15] = new ConsoleTerminal;
+		Terminals[15]->Term = new VirtualTerminal(Cols, Rows, Display->GetWidth, Display->GetHeight, paint_callback, nullptr);
 	}
 
 	ExceptionLock.store(true, std::memory_order_release);

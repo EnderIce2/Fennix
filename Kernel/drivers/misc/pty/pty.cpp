@@ -37,7 +37,7 @@ namespace Driver::TeleTypeDevices
 	{
 		dev_t min = Node->GetMinor();
 		if (min == ids.kcon)
-			return KernelConsole::CurrentTerminal.load()->Open(Flags, Mode);
+			return KernelConsole::CurrentTerminal.load()->Term->Open(Flags, Mode);
 		else if (min == ids.tty)
 		{
 			TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
@@ -55,7 +55,7 @@ namespace Driver::TeleTypeDevices
 	{
 		dev_t min = Node->GetMinor();
 		if (min == ids.kcon)
-			return KernelConsole::CurrentTerminal.load()->Close();
+			return KernelConsole::CurrentTerminal.load()->Term->Close();
 		else if (min == ids.tty)
 		{
 			TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
@@ -73,7 +73,7 @@ namespace Driver::TeleTypeDevices
 	{
 		dev_t min = Node->GetMinor();
 		if (min == ids.kcon)
-			return KernelConsole::CurrentTerminal.load()->Ioctl(Request, Argp);
+			return KernelConsole::CurrentTerminal.load()->Term->Ioctl(Request, Argp);
 		else if (min == ids.tty)
 		{
 			TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
@@ -91,7 +91,7 @@ namespace Driver::TeleTypeDevices
 	{
 		dev_t min = Node->GetMinor();
 		if (min == ids.kcon)
-			return KernelConsole::CurrentTerminal.load()->Read(Buffer, Size, Offset);
+			return KernelConsole::CurrentTerminal.load()->Term->Read(Buffer, Size, Offset);
 		else if (min == ids.tty)
 		{
 			TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;
@@ -109,7 +109,7 @@ namespace Driver::TeleTypeDevices
 	{
 		dev_t min = Node->GetMinor();
 		if (min == ids.kcon)
-			return KernelConsole::CurrentTerminal.load()->Write(Buffer, Size, Offset);
+			return KernelConsole::CurrentTerminal.load()->Term->Write(Buffer, Size, Offset);
 		else if (min == ids.tty)
 		{
 			TTY::TeletypeDriver *tty = (TTY::TeletypeDriver *)thisProcess->tty;

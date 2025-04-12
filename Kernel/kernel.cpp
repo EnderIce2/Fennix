@@ -62,7 +62,7 @@ UART::Driver uart;
 
 EXTERNC void putchar(char c)
 {
-	KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
+	KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
 	if (vt != nullptr)
 		vt->Process(c);
 	else

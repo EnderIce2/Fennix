@@ -2,8 +2,10 @@
 theme=vga
 
 [cursor]
-color=255,255,255
 blink=true
+color=244,244,244
+char=_
+delay=250
 
 [vga]
 color0=0,0,0:133,133,133

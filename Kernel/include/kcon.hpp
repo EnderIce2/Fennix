@@ -126,10 +126,24 @@ namespace KernelConsole
 		void csi_cha(ANSIArgument *Args, int ArgsCount);
 		void Process(char c);
 
+		TerminalCell *GetCell(size_t index) { return &Cells[index]; }
+
 		VirtualTerminal(unsigned short Rows, unsigned short Columns,
 						unsigned short XPixels, unsigned short YPixels,
 						PaintCallback Paint, CursorCallback Print);
 		~VirtualTerminal();
+	};
+
+	struct ConsoleTerminal
+	{
+		VirtualTerminal *Term = nullptr;
+		struct Blinker
+		{
+			bool Enabled = false;
+			uint32_t Color = 0x000000;
+			char Character = '\0';
+			int Delay = 500;
+		} Blink;
 	};
 
 	/**
@@ -138,8 +152,8 @@ namespace KernelConsole
 	 * ...
 	 * 15 - Panic
 	 */
-	extern VirtualTerminal *Terminals[16];
-	extern std::atomic<VirtualTerminal *> CurrentTerminal;
+	extern ConsoleTerminal *Terminals[16];
+	extern std::atomic<ConsoleTerminal *> CurrentTerminal;
 	extern int TermColors[];
 	extern int TermBrightColors[];
 

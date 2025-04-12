@@ -282,7 +282,7 @@ namespace Tasking
 
 		/* FIXME: DON'T DELETE THE TTY
 			spawn.cpp is using this as workaround
-		 tty == KernelConsole::CurrentTerminal.load();
+		 tty == KernelConsole::CurrentTerminal.load()->Term;
 		 */
 
 		/* If we own the pointer to the

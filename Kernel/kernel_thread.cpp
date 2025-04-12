@@ -152,8 +152,7 @@ void KernelMainThread()
 		goto Exit;
 	}
 
-	KPrint("Waiting for \x1b[32m%s\x1b[0m to start...",
-		   Config.InitPath);
+	KPrint("Waiting for init program to start...");
 	thisThread->SetPriority(Tasking::Idle);
 
 	initProc = TaskManager->GetProcessByID(tid);

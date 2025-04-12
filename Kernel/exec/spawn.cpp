@@ -170,7 +170,7 @@ namespace Execute
 
 			fixme("remove workarounds for stdio and tty");
 			if (!Parent->tty)
-				Process->tty = KernelConsole::CurrentTerminal.load();
+				Process->tty = KernelConsole::CurrentTerminal.load()->Term;
 
 			if (!ForkStdio(Parent->stdin))
 				fdt->usr_open("/dev/console", O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
