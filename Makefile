@@ -135,6 +135,7 @@ mkdir_rootfs:
 	$(MKDIR_ROOTFS)/usr/share/
 	$(MKDIR_ROOTFS)/usr/include/
 
+	$(MKDIR_ROOTFS)/mnt/
 	$(MKDIR_ROOTFS)/tmp/
 
 setup:
