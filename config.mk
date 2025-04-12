@@ -100,6 +100,7 @@ export OSNAME
 export OSARCH
 export BOARD_TYPE
 export KERNEL_VERSION
+export QUIET_BUILD
 
 export TOOLCHAIN_AMD64_PREFIX := $(COMPILER_PATH)/bin/x86_64-fennix-
 export TOOLCHAIN_I386_PREFIX := $(COMPILER_PATH)/bin/i386-fennix-

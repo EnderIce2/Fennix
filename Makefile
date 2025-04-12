@@ -82,6 +82,10 @@ QEMUFLAGS += -M raspi4b \
 			 -kernel $(OSNAME).img
 endif
 
+ifeq ($(QUIET_BUILD), 1)
+MAKE_QUIET_FLAG := --quiet
+endif
+
 doxygen:
 	mkdir -p doxygen-doc
 	doxygen Doxyfile
@@ -141,7 +145,13 @@ setup:
 setup-no-qemu:
 	$(MAKE) --quiet -C tools ci
 
-build: build_kernel build_bootloader build_userspace build_drivers build_image
+build:
+	$(MAKE) $(MAKE_QUIET_FLAG) mkdir_rootfs
+	$(MAKE) $(MAKE_QUIET_FLAG) build_kernel
+	$(MAKE) $(MAKE_QUIET_FLAG) build_bootloader
+	$(MAKE) $(MAKE_QUIET_FLAG) build_userspace
+	$(MAKE) $(MAKE_QUIET_FLAG) build_drivers
+	$(MAKE) $(MAKE_QUIET_FLAG) build_image
 
 dump:
 	$(MAKE) --quiet -C Kernel dump
@@ -212,10 +222,6 @@ ci-build:
 
 changelog:
 	git cliff > CHANGELOG.md
-
-ifeq ($(QUIET_BUILD), 1)
-MAKE_QUIET_FLAG = --quiet
-endif
 
 build_kernel:
 ifeq ($(BUILD_KERNEL), 1)
