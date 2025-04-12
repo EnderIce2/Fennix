@@ -148,8 +148,7 @@ void KernelMainThread()
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
-		KPrint("\x1b[1;37;41mFailed to start %s! Error: %s (%d)",
-			   Config.InitPath, strerror(tid), tid);
+		KPrint("\x1b[1;37;41mFailed to start init program! Error: %s (%d)", strerror(tid), tid);
 		goto Exit;
 	}
 
