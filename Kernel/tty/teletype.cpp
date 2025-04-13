@@ -26,6 +26,36 @@
 
 namespace TTY
 {
+	int TeletypeDriver::Open(int Flags, mode_t Mode)
+	{
+		warn("Unimplemented open(%#x, %#x)", Flags, Mode);
+		return -ENOSYS;
+	}
+
+	int TeletypeDriver::Close()
+	{
+		warn("Unimplemented close()");
+		return -ENOSYS;
+	}
+
+	ssize_t TeletypeDriver::Read(void *Buffer, size_t Size, off_t Offset)
+	{
+		warn("Unimplemented read(%#lx, %#lx, %#lx)", Buffer, Size, Offset);
+		return -ENOSYS;
+	}
+
+	ssize_t TeletypeDriver::Write(const void *Buffer, size_t Size, off_t Offset)
+	{
+		warn("Unimplemented write(%#lx, %#lx, %#lx)", Buffer, Size, Offset);
+		return -ENOSYS;
+	}
+
+	int TeletypeDriver::Ioctl(unsigned long Request, void *Argp)
+	{
+		warn("Unimplemented ioctl(%#lx, %#lx)", Request, Argp);
+		return -ENOSYS;
+	}
+
 	TeletypeDriver::TeletypeDriver() : TermBuf(1024)
 	{
 		if (thisProcess)
