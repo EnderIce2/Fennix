@@ -899,6 +899,32 @@ static int linux_lstat(SysFrm *, const char *pathname, struct linux_kstat *statb
 	return ret;
 }
 
+static int linux_poll(SysFrm *, linux_pollfd *fds, nfds_t nfds, int timeout)
+{
+	PCB *pcb = thisProcess;
+	Memory::VirtualMemoryArea *vma = pcb->vma;
+
+	auto pFds = vma->UserCheckAndGetAddress(fds, nfds * sizeof(linux_pollfd));
+	if (pFds == nullptr)
+		return -linux_EFAULT;
+
+	for (int i = 0; i < nfds; i++)
+	{
+		if (pFds[i].fd < 0)
+			return -linux_EBADF;
+
+		debug("poll[%zu].fd=%d .events=%d .revents=%d",
+			  i, pFds[i].fd, pFds[i].events, pFds[i].revents);
+		pFds[i].revents = 0;
+	}
+
+	vfs::FileDescriptorTable *fdt = pcb->FileDescriptors;
+	UNUSED(fdt);
+	UNUSED(timeout);
+	fixme("poll is stub! returning 1");
+	return 1;
+}
+
 // #include "../syscalls.h"
 
 static off_t linux_lseek(SysFrm *, int fd, off_t offset, int whence)
@@ -3568,7 +3594,7 @@ static SyscallData LinuxSyscallsTableAMD64[] = {
 	[__NR_amd64_stat] = {"stat", (void *)linux_stat},
 	[__NR_amd64_fstat] = {"fstat", (void *)linux_fstat},
 	[__NR_amd64_lstat] = {"lstat", (void *)linux_lstat},
-	[__NR_amd64_poll] = {"poll", (void *)nullptr},
+	[__NR_amd64_poll] = {"poll", (void *)linux_poll},
 	[__NR_amd64_lseek] = {"lseek", (void *)linux_lseek},
 	[__NR_amd64_mmap] = {"mmap", (void *)linux_mmap},
 	[__NR_amd64_mprotect] = {"mprotect", (void *)linux_mprotect},
@@ -4179,7 +4205,7 @@ static SyscallData LinuxSyscallsTableI386[] = {
 	[__NR_i386_getresuid] = {"getresuid", (void *)nullptr},
 	[__NR_i386_vm86] = {"vm86", (void *)nullptr},
 	[__NR_i386_query_module] = {"query_module", (void *)nullptr},
-	[__NR_i386_poll] = {"poll", (void *)nullptr},
+	[__NR_i386_poll] = {"poll", (void *)linux_poll},
 	[__NR_i386_nfsservctl] = {"nfsservctl", (void *)nullptr},
 	[__NR_i386_setresgid] = {"setresgid", (void *)nullptr},
 	[__NR_i386_getresgid] = {"getresgid", (void *)nullptr},

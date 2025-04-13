@@ -447,4 +447,26 @@ struct sysinfo
 	char _f[20 - 2 * sizeof(long) - sizeof(int)]; /* Padding to 64 bytes */
 };
 
+struct linux_pollfd
+{
+	int fd;		   /* File Descriptor */
+	short events;  /* Requested Events */
+	short revents; /* Returned Events */
+};
+
+typedef unsigned long nfds_t;
+
+#define linux_POLLIN     0x001
+#define linux_POLLPRI    0x002
+#define linux_POLLOUT    0x004
+#define linux_POLLERR    0x008
+#define linux_POLLHUP    0x010
+#define linux_POLLNVAL   0x020
+#define linux_POLLRDNORM 0x040
+#define linux_POLLRDBAND 0x080
+#define linux_POLLWRNORM 0x100
+#define linux_POLLWRBAND 0x200
+#define linux_POLLMSG    0x400
+#define linux_POLLRDHUP  0x2000
+
 #endif // !__FENNIX_KERNEL_LINUX_DEFS_H__

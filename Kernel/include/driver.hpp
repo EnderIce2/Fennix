@@ -86,6 +86,7 @@ extern const BuiltInDriver __kernel_builtin_drivers_end[];
 namespace Driver
 {
 	char GetScanCode(uint8_t ScanCode, bool Upper);
+	char GetControlCharacter(KeyScanCodes Key);
 	bool IsValidChar(uint8_t ScanCode);
 
 	struct DriverHandlers
