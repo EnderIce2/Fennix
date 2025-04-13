@@ -29,26 +29,27 @@ namespace KernelConsole
 {
 	int VirtualTerminal::Open(int Flags, mode_t Mode)
 	{
-		std::lock_guard<std::mutex> lock(Mutex);
+		std::lock_guard<std::mutex> lock(vt_mutex);
 		stub;
 		return 0;
 	}
 
 	int VirtualTerminal::Close()
 	{
-		std::lock_guard<std::mutex> lock(Mutex);
+		std::lock_guard<std::mutex> lock(vt_mutex);
 		stub;
 		return 0;
 	}
 
 	ssize_t VirtualTerminal::Read(void *Buffer, size_t Size, off_t Offset)
 	{
-		std::lock_guard<std::mutex> lock(Mutex);
+		std::lock_guard<std::mutex> lock(vt_mutex);
 
 		KeyboardReport report{};
 
 		/* FIXME: this is a hack, "static" is not a good idea */
 		static bool upperCase = false;
+		static bool controlKey = false;
 
 	RecheckKeyboard:
 		while (DriverManager->GlobalKeyboardInputReports.Count() == 0)
@@ -64,6 +65,36 @@ namespace KernelConsole
 			else
 				upperCase = false;
 			goto RecheckKeyboard;
+		}
+		else if (pkey == KEY_LEFT_CTRL || pkey == KEY_RIGHT_CTRL)
+		{
+			if (report.Key & KEY_PRESSED)
+				controlKey = true;
+			else
+				controlKey = false;
+			debug("controlKey = %d", controlKey);
+			goto RecheckKeyboard;
+		}
+
+		if (controlKey && this->TerminalConfig.c_lflag & ICANON)
+		{
+			if (report.Key & KEY_PRESSED)
+			{
+				char cc = Driver::GetControlCharacter(report.Key);
+				if (cc == 0x00)
+					goto RecheckKeyboard;
+
+				if (this->TerminalConfig.c_lflag & ECHO)
+				{
+					char c = Driver::GetScanCode(report.Key, true);
+					this->Append('^');
+					this->Append(c);
+					this->Append('\n');
+				}
+
+				this->Process(cc);
+				goto RecheckKeyboard;
+			}
 		}
 
 		if (!(report.Key & KEY_PRESSED))
@@ -99,7 +130,7 @@ namespace KernelConsole
 
 	ssize_t VirtualTerminal::Write(const void *Buffer, size_t Size, off_t Offset)
 	{
-		std::lock_guard<std::mutex> lock(Mutex);
+		std::lock_guard<std::mutex> lock(vt_mutex);
 
 		char *buf = (char *)Buffer;
 		debug("string: \"%*s\"", Size, buf);
@@ -117,7 +148,7 @@ namespace KernelConsole
 
 	int VirtualTerminal::Ioctl(unsigned long Request, void *Argp)
 	{
-		std::lock_guard<std::mutex> lock(Mutex);
+		std::lock_guard<std::mutex> lock(vt_mutex);
 
 		switch (Request)
 		{
@@ -166,14 +197,14 @@ namespace KernelConsole
 		}
 		case TIOCGPGRP:
 		{
-			*((pid_t *)Argp) = thisProcess->Security.ProcessGroupID;
-			debug("returning pgid %d", thisProcess->Security.ProcessGroupID);
+			*((pid_t *)Argp) = this->ProcessGroup;
+			debug("returning pgid %d", this->ProcessGroup);
 			return 0;
 		}
 		case TIOCSPGRP:
 		{
-			thisProcess->Security.ProcessGroupID = *((pid_t *)Argp);
-			debug("updated pgid to %d", thisProcess->Security.ProcessGroupID);
+			this->ProcessGroup = *((pid_t *)Argp);
+			debug("updated pgid to %d", this->ProcessGroup);
 			return 0;
 		}
 		case TIOCGSID:
@@ -461,6 +492,133 @@ namespace KernelConsole
 			CursorCB(&Cursor);
 	}
 
+	void VirtualTerminal::ProcessControlCharacter(char c)
+	{
+		auto ccheck = [&](int v)
+		{
+			return (this->TerminalConfig.c_cc[v] != 0x00 &&
+					this->TerminalConfig.c_cc[v] == c);
+		};
+
+		auto ciflag = [&](int f)
+		{
+			return (this->TerminalConfig.c_iflag & f) != 0;
+		};
+
+		auto clflag = [&](int f)
+		{
+			return (this->TerminalConfig.c_lflag & f) != 0;
+		};
+
+		if (ciflag(IXON) && ccheck(VSTOP))
+		{
+			fixme("flow control: stopping output");
+			return;
+		}
+
+		if (ciflag(IXON) && ccheck(VSTART))
+		{
+			fixme("flow control: resuming output");
+			return;
+		}
+
+		if (clflag(ISIG))
+		{
+			if (ccheck(VINTR))
+			{
+				if (this->ProcessGroup == 0)
+				{
+					debug("Process group is 0!!!");
+					return;
+				}
+
+				for (auto proc : thisProcess->GetContext()->GetProcessList())
+				{
+					if (proc->Security.ProcessGroupID != this->ProcessGroup)
+						continue;
+
+					debug("Sending signal SIGINT to %s(%d)", proc->Name, proc->ID);
+					proc->SendSignal(SIGINT);
+				}
+				return;
+			}
+			else if (ccheck(VQUIT))
+			{
+				if (this->ProcessGroup == 0)
+				{
+					debug("Process group is 0!!!");
+					return;
+				}
+
+				for (auto proc : thisProcess->GetContext()->GetProcessList())
+				{
+					if (proc->Security.ProcessGroupID != this->ProcessGroup)
+						continue;
+
+					debug("Sending signal SIGQUIT to %s(%d)", proc->Name, proc->ID);
+					proc->SendSignal(SIGQUIT);
+				}
+				return;
+			}
+			else if (ccheck(VSUSP))
+			{
+				if (this->ProcessGroup == 0)
+				{
+					debug("Process group is 0!!!");
+					return;
+				}
+
+				for (auto proc : thisProcess->GetContext()->GetProcessList())
+				{
+					if (proc->Security.ProcessGroupID != this->ProcessGroup)
+						continue;
+
+					debug("Sending signal SIGTSTP to %s(%d)", proc->Name, proc->ID);
+					proc->SendSignal(SIGTSTP);
+				}
+				return;
+			}
+		}
+
+		if (c == '\r')
+		{
+			if (ciflag(IGNCR))
+				return;
+			if (ciflag(ICRNL))
+				c = '\n';
+		}
+		else if (c == '\n' && (ciflag(INLCR)))
+			c = '\r';
+
+		if (clflag(ICANON))
+		{
+			if (ccheck(VERASE))
+			{
+				if (this->Cursor.X > 0)
+				{
+					this->Cursor.X--;
+					this->Append('\b');
+					this->Append(' ');
+					this->Append('\b');
+				}
+				return;
+			}
+			else if (ccheck(VKILL))
+			{
+				fixme("clear the current line");
+				return;
+			}
+		}
+
+		if (clflag(ECHO))
+		{
+			if (c == '\n')
+				this->Append('\n');
+			else
+				this->Append(c);
+		}
+	}
+
 	void VirtualTerminal::Process(char c)
 	{
 #ifdef DEBUG
@@ -495,6 +653,15 @@ namespace KernelConsole
 // }
 #endif
 #endif
+
+		if (this->TerminalConfig.c_lflag & ICANON)
+		{
+			if ((c > 0x00 && c <= 0x1F) && c != '\x1b')
+			{
+				this->ProcessControlCharacter(c);
+				return;
+			}
+		}
 
 		ANSIParser *parser = &this->Parser;
 
@@ -636,30 +803,28 @@ namespace KernelConsole
 
 		- ECHO   - Echo input characters
 		- ICANON - Enable canonical input (enable line editing)
+		- ISIG   - Enable signals
 		*/
 		this->TerminalConfig.c_iflag = /*ICRNL |*/ IXON;
 		this->TerminalConfig.c_oflag = OPOST | ONLCR;
 		this->TerminalConfig.c_cflag = CS8 | CREAD | HUPCL;
-		this->TerminalConfig.c_lflag = ECHO | ICANON;
-		this->TerminalConfig.c_lflag &= ~ICANON; /* FIXME: not ready for this yet */
+		this->TerminalConfig.c_lflag = ECHO | ICANON | ISIG;
 
-		this->TerminalConfig.c_cc[VINTR] = 0x03;	/* ^C */
-		this->TerminalConfig.c_cc[VQUIT] = 0x1C;	/* ^\ */
-		this->TerminalConfig.c_cc[VERASE] = 0x7F;	/* DEL */
-		this->TerminalConfig.c_cc[VKILL] = 0x15;	/* ^U */
-		this->TerminalConfig.c_cc[VEOF] = 0x04;		/* ^D */
-		this->TerminalConfig.c_cc[VTIME] = 0;		/* Timeout for non-canonical read */
-		this->TerminalConfig.c_cc[VMIN] = 1;		/* Minimum number of characters for non-canonical read */
-		this->TerminalConfig.c_cc[VSWTC] = 0;		/* ^O */
-		this->TerminalConfig.c_cc[VSTART] = 0x11;	/* ^Q */
-		this->TerminalConfig.c_cc[VSTOP] = 0x13;	/* ^S */
-		this->TerminalConfig.c_cc[VSUSP] = 0x1A;	/* ^Z */
-		this->TerminalConfig.c_cc[VEOL] = 0x00;		/* NUL */
-		this->TerminalConfig.c_cc[VREPRINT] = 0x12; /* ^R */
-		this->TerminalConfig.c_cc[VDISCARD] = 0x14; /* ^T */
-		this->TerminalConfig.c_cc[VWERASE] = 0x17;	/* ^W */
-		this->TerminalConfig.c_cc[VLNEXT] = 0x19;	/* ^Y */
-		this->TerminalConfig.c_cc[VEOL2] = 0x7F;	/* DEL (or sometimes EOF) */
+		this->TerminalConfig.c_cc[VINTR] = 'C' - 0x40;
+		this->TerminalConfig.c_cc[VQUIT] = '\\' - 0x40;
+		this->TerminalConfig.c_cc[VERASE] = '\177';
+		this->TerminalConfig.c_cc[VKILL] = 'U' - 0x40;
+		this->TerminalConfig.c_cc[VEOF] = 'D' - 0x40;
+		this->TerminalConfig.c_cc[VSTART] = 'Q' - 0x40;
+		this->TerminalConfig.c_cc[VSTOP] = 'S' - 0x40;
+		this->TerminalConfig.c_cc[VSUSP] = 'Z' - 0x40;
+		this->TerminalConfig.c_cc[VREPRINT] = 'R' - 0x40;
+		this->TerminalConfig.c_cc[VDISCARD] = 'O' - 0x40;
+		this->TerminalConfig.c_cc[VWERASE] = 'W' - 0x40;
+		this->TerminalConfig.c_cc[VLNEXT] = 'V' - 0x40;
+
+		this->TerminalConfig.c_cc[VTIME] = 0; /* Timeout for non-canonical read */
+		this->TerminalConfig.c_cc[VMIN] = 1;  /* Minimum number of characters for non-canonical read */
 
 		this->Cells = new TerminalCell[Rows * Columns];
 
@@ -667,8 +832,5 @@ namespace KernelConsole
 			  (Rows * Columns) * sizeof(TerminalCell));
 	}
 
-	VirtualTerminal::~VirtualTerminal()
-	{
-		delete[] this->Cells;
-	}
+	VirtualTerminal::~VirtualTerminal() { delete[] this->Cells; }
 }

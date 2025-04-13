@@ -97,7 +97,7 @@ namespace KernelConsole
 		PaintCallback PaintCB = nullptr;
 		CursorCallback CursorCB = nullptr;
 
-		std::mutex Mutex;
+		std::mutex vt_mutex;
 
 	public:
 		termios *GetTermios() { return &this->TerminalConfig; }
@@ -124,6 +124,7 @@ namespace KernelConsole
 		void csi_cnl(ANSIArgument *Args, int ArgsCount);
 		void csi_cpl(ANSIArgument *Args, int ArgsCount);
 		void csi_cha(ANSIArgument *Args, int ArgsCount);
+		void ProcessControlCharacter(char c);
 		void Process(char c);
 
 		TerminalCell *GetCell(size_t index) { return &Cells[index]; }

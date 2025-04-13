@@ -24,16 +24,6 @@
 
 namespace TTY
 {
-	PTMXDevice::PTMXDevice()
-	{
-	}
-
-	PTMXDevice::~PTMXDevice()
-	{
-		for (auto pty : PTYs)
-			delete pty;
-	}
-
 	int PTMXDevice::Open()
 	{
 		stub;

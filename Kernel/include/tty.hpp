@@ -34,8 +34,34 @@ namespace TTY
 	public:
 		TerminalBuffer(size_t Size) : Buffer(Size), ReadIndex(0), WriteIndex(0) {}
 
-		ssize_t Read(char *OutputBuffer, size_t Size);
-		ssize_t Write(const char *InputBuffer, size_t Size);
+		ssize_t Read(char *OutputBuffer, size_t Size)
+		{
+			std::lock_guard<std::mutex> lock(Mutex);
+			size_t bytesRead = 0;
+
+			while (bytesRead < Size && ReadIndex != WriteIndex)
+			{
+				OutputBuffer[bytesRead++] = Buffer[ReadIndex];
+				ReadIndex = (ReadIndex + 1) % Buffer.size();
+			}
+
+			return bytesRead;
+		}
+
+		ssize_t Write(const char *InputBuffer, size_t Size)
+		{
+			std::lock_guard<std::mutex> lock(Mutex);
+			size_t bytesWritten = 0;
+
+			for (size_t i = 0; i < Size; ++i)
+			{
+				Buffer[WriteIndex] = InputBuffer[i];
+				WriteIndex = (WriteIndex + 1) % Buffer.size();
+				bytesWritten++;
+			}
+
+			return bytesWritten;
+		}
 
 		void DrainOutput()
 		{
@@ -57,9 +83,10 @@ namespace TTY
 	class TeletypeDriver
 	{
 	protected:
-		termios TerminalConfig;
-		winsize TerminalSize;
+		termios TerminalConfig{};
+		winsize TerminalSize{};
 		TerminalBuffer TermBuf;
+		pid_t ProcessGroup;
 
 	public:
 		virtual int Open(int Flags, mode_t Mode);
@@ -69,7 +96,7 @@ namespace TTY
 		virtual int Ioctl(unsigned long Request, void *Argp);
 
 		TeletypeDriver();
-		virtual ~TeletypeDriver();
+		virtual ~TeletypeDriver() = default;
 	};
 
 	class PTYDevice
@@ -81,10 +108,18 @@ namespace TTY
 			TerminalBuffer TermBuf;
 
 		public:
-			PTYMaster();
-			~PTYMaster();
-			ssize_t Read(void *Buffer, size_t Size);
-			ssize_t Write(const void *Buffer, size_t Size);
+			PTYMaster() : TermBuf(1024) {}
+			~PTYMaster() = default;
+
+			ssize_t Read(void *Buffer, size_t Size)
+			{
+				return TermBuf.Read((char *)Buffer, Size);
+			}
+
+			ssize_t Write(const void *Buffer, size_t Size)
+			{
+				return TermBuf.Write((const char *)Buffer, Size);
+			}
 		};
 
 		class PTYSlave
@@ -93,22 +128,48 @@ namespace TTY
 			TerminalBuffer TermBuf;
 
 		public:
-			PTYSlave();
-			~PTYSlave();
-			ssize_t Read(void *Buffer, size_t Size);
-			ssize_t Write(const void *Buffer, size_t Size);
+			PTYSlave() : TermBuf(1024) {}
+			~PTYSlave() = default;
+
+			ssize_t Read(void *Buffer, size_t Size)
+			{
+				return TermBuf.Read((char *)Buffer, Size);
+			}
+
+			ssize_t Write(const void *Buffer, size_t Size)
+			{
+				return TermBuf.Write((const char *)Buffer, Size);
+			}
 		};
 
 		PTYMaster Master;
 		PTYSlave Slave;
 
 	public:
-		PTYDevice();
-		~PTYDevice();
-		int Open();
-		int Close();
-		ssize_t Read(void *Buffer, size_t Size);
-		ssize_t Write(const void *Buffer, size_t Size);
+		PTYDevice() : Master(), Slave() {}
+		~PTYDevice() = default;
+
+		int Open()
+		{
+			stub;
+			return -ENOSYS;
+		}
+
+		int Close()
+		{
+			stub;
+			return -ENOSYS;
+		}
+
+		ssize_t Read(void *Buffer, size_t Size)
+		{
+			return Slave.Read(Buffer, Size);
+		}
+
+		ssize_t Write(const void *Buffer, size_t Size)
+		{
+			return Master.Write(Buffer, Size);
+		}
 	};
 
 	class PTMXDevice
@@ -118,8 +179,14 @@ namespace TTY
 		std::mutex PTYMutex;
 
 	public:
-		PTMXDevice();
-		~PTMXDevice();
+		PTMXDevice() = default;
+
+		~PTMXDevice()
+		{
+			for (auto pty : PTYs)
+				delete pty;
+		}
+
 		int Open();
 		int Close();
 		PTYDevice *CreatePTY();

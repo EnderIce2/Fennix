@@ -331,6 +331,80 @@ namespace Driver
 				   : ScanCodeConversionTableLower[ScanCode];
 	}
 
+	char GetControlCharacter(KeyScanCodes ScanCode)
+	{
+		ScanCode = static_cast<KeyScanCodes>(static_cast<int>(ScanCode) & 0x7F); /* Remove KEY_PRESSED bit */
+		switch (ScanCode)
+		{
+		case KEY_2:
+			return 0x00; /* Ctrl-@ (NUL) */
+		case KEY_A:
+			return 0x01; /* Ctrl-A (SOH) */
+		case KEY_B:
+			return 0x02; /* Ctrl-B (STX) */
+		case KEY_C:
+			return 0x03; /* Ctrl-C (ETX) */
+		case KEY_D:
+			return 0x04; /* Ctrl-D (EOT) */
+		case KEY_E:
+			return 0x05; /* Ctrl-E (ENQ) */
+		case KEY_F:
+			return 0x06; /* Ctrl-F (ACK) */
+		case KEY_G:
+			return 0x07; /* Ctrl-G (BEL) */
+		case KEY_H:
+			return 0x08; /* Ctrl-H (BS) */
+		case KEY_I:
+			return 0x09; /* Ctrl-I (HT) */
+		case KEY_J:
+			return 0x0A; /* Ctrl-J (LF) */
+		case KEY_K:
+			return 0x0B; /* Ctrl-K (VT) */
+		case KEY_L:
+			return 0x0C; /* Ctrl-L (FF) */
+		case KEY_M:
+			return 0x0D; /* Ctrl-M (CR) */
+		case KEY_N:
+			return 0x0E; /* Ctrl-N (SO) */
+		case KEY_O:
+			return 0x0F; /* Ctrl-O (SI) */
+		case KEY_P:
+			return 0x10; /* Ctrl-P (DLE) */
+		case KEY_Q:
+			return 0x11; /* Ctrl-Q (DC1) */
+		case KEY_R:
+			return 0x12; /* Ctrl-R (DC2) */
+		case KEY_S:
+			return 0x13; /* Ctrl-S (DC3) */
+		case KEY_T:
+			return 0x14; /* Ctrl-T (DC4) */
+		case KEY_U:
+			return 0x15; /* Ctrl-U (NAK) */
+		case KEY_V:
+			return 0x16; /* Ctrl-V (SYN) */
+		case KEY_W:
+			return 0x17; /* Ctrl-W (ETB) */
+		case KEY_X:
+			return 0x18; /* Ctrl-X (CAN) */
+		case KEY_Y:
+			return 0x19; /* Ctrl-Y (EM) */
+		case KEY_Z:
+			return 0x1A; /* Ctrl-Z (SUB) */
+		case KEY_LEFT_BRACKET:
+			return 0x1B; /* Ctrl-[ (ESC) */
+		case KEY_BACKSLASH:
+			return 0x1C; /* Ctrl-\ (FS) */
+		case KEY_RIGHT_BRACKET:
+			return 0x1D; /* Ctrl-] (GS) */
+		case KEY_6:
+			return 0x1E; /* Ctrl-^ (RS) */
+		case KEY_MINUS:
+			return 0x1F; /* Ctrl-_ (US) */
+		default:
+			return 0x00; /* Not a control character */
+		}
+	}
+
 	bool IsValidChar(uint8_t ScanCode)
 	{
 		ScanCode &= 0x7F; /* Remove KEY_PRESSED bit */
