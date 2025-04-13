@@ -145,6 +145,7 @@ jobs:
         runCmd: /usr/bin/make ci-build
 
     - name: Upload Artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: Fennix
