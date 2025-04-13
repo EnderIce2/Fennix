@@ -122,16 +122,10 @@ namespace KernelConsole
 			return;
 
 		ConsoleTerminal *term = CurrentTerminal.load();
-		ConsoleTerminal::Blinker *blinker = &term->Blink;
-
+		ConsoleTerminal::Blinker &blinker = term->Blink;
 		TerminalCell *cell = term->Term->GetCell(Renderer.Cursor.X + Renderer.Cursor.Y * term->Term->GetWinsize()->ws_row);
-
 		uint32_t bgColor = cell->attr.Bright ? TermBrightColors[cell->attr.Background] : TermColors[cell->attr.Background];
-
-		Renderer.Paint(Renderer.Cursor.X, Renderer.Cursor.Y,
-					   term->Blink.Character,
-					   Enable ? term->Blink.Color : bgColor,
-					   bgColor);
+		Renderer.Paint(Renderer.Cursor.X, Renderer.Cursor.Y, blinker.Character, Enable ? blinker.Color : bgColor, bgColor);
 	}
 
 	void paint_blinker_thread()

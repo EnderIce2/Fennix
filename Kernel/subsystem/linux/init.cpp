@@ -42,6 +42,18 @@ namespace Subsystem::Linux
 			FileNode *mnt = fs->ForceCreate(linux, "mnt", 0755);
 			FileNode *opt = fs->ForceCreate(linux, "opt", 0755);
 			FileNode *proc = fs->ForceCreate(linux, "proc", 0755);
+
+			UNUSED(bin);
+			UNUSED(boot);
+			UNUSED(dev);
+			UNUSED(etc);
+			UNUSED(home);
+			UNUSED(lib);
+			UNUSED(lib64);
+			UNUSED(media);
+			UNUSED(mnt);
+			UNUSED(opt);
+			UNUSED(proc);
 		}
 	}
 }

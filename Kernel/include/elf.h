@@ -327,6 +327,7 @@ enum DynamicArrayTags
 #define ELF32_ST_BIND(info) ((info) >> 4)
 #define ELF32_ST_TYPE(info) ((info) & 0xf)
 #define ELF32_ST_INFO(bind, type) (((bind) << 4) + ((type) & 0xf))
+
 #define ELF64_ST_BIND(info) ((info) >> 4)
 #define ELF64_ST_TYPE(info) ((info) & 0xf)
 #define ELF64_ST_INFO(bind, type) (((bind) << 4) + ((type) & 0xf))
@@ -956,7 +957,7 @@ typedef struct
 	char pr_psargs[ELF_PRARGSZ];
 } Elf64_Prpsinfo;
 
-#if defined(__amd64__) || defined(__aarch64__)
+#ifdef __LP64__
 typedef Elf64_Addr Elf_Addr;
 typedef Elf64_Half Elf_Half;
 typedef Elf64_Off Elf_Off;
@@ -973,7 +974,16 @@ typedef Elf64_Rela Elf_Rela;
 typedef Elf64_Nhdr Elf_Nhdr;
 typedef Elf64_Prstatus Elf_Prstatus;
 typedef Elf64_Prpsinfo Elf_Prpsinfo;
-#elif defined(__i386__) || defined(__arm__)
+typedef Elf64_Xword Elf_Xword;
+
+#define ELF_ST_BIND(info) ELF64_ST_BIND(info)
+#define ELF_ST_TYPE(info) ELF64_ST_TYPE(info)
+#define ELF_ST_INFO(bind, type) ELF64_ST_INFO(bind, type)
+#define ELF_ST_VISIBILITY(o) ELF64_ST_VISIBILITY(o)
+#define ELF_R_SYM(i) ELF64_R_SYM(i)
+#define ELF_R_TYPE(i) ELF64_R_TYPE(i)
+#define ELF_R_INFO(s, t) ELF64_R_INFO(s, t)
+#else
 typedef Elf32_Addr Elf_Addr;
 typedef Elf32_Half Elf_Half;
 typedef Elf32_Off Elf_Off;
@@ -990,6 +1000,15 @@ typedef Elf32_Rela Elf_Rela;
 typedef Elf32_Nhdr Elf_Nhdr;
 typedef Elf32_Prstatus Elf_Prstatus;
 typedef Elf32_Prpsinfo Elf_Prpsinfo;
+typedef Elf32_Word Elf_Xword;
+
+#define ELF_ST_BIND(info) ELF32_ST_BIND(info)
+#define ELF_ST_TYPE(info) ELF32_ST_TYPE(info)
+#define ELF_ST_INFO(bind, type) ELF32_ST_INFO(bind, type)
+#define ELF_ST_VISIBILITY(o) ELF32_ST_VISIBILITY(o)
+#define ELF_R_SYM(i) ELF32_R_SYM(i)
+#define ELF_R_TYPE(i) ELF32_R_TYPE(i)
+#define ELF_R_INFO(s, t) ELF32_R_INFO(s, t)
 #endif
 
 #endif // !__FENNIX_KERNEL_ELF_H__

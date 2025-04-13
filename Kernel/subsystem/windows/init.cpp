@@ -36,6 +36,12 @@ namespace Subsystem::Windows
 			FileNode *programFilesX86 = fs->ForceCreate(windows, "Program Files (x86)", 0755);
 			FileNode *programData = fs->ForceCreate(windows, "ProgramData", 0755);
 			FileNode *users = fs->ForceCreate(windows, "Users", 0755);
+
+			UNUSED(windows);
+			UNUSED(programFiles);
+			UNUSED(programFilesX86);
+			UNUSED(programData);
+			UNUSED(users);
 		}
 	}
 }

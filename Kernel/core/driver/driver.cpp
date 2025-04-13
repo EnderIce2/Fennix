@@ -363,11 +363,11 @@ namespace Driver
 			driverInfo.License = (const char *)(Drv.BaseAddress + (uintptr_t)driverInfo.License);
 		}
 
-		for (size_t h = 0; h < (sht_symtab.sh_size / sizeof(Elf64_Sym)); h++)
+		for (size_t h = 0; h < (sht_symtab.sh_size / sizeof(Elf_Sym)); h++)
 		{
-			Elf64_Sym symEntry{};
-			uintptr_t symOffset = sht_symtab.sh_offset + (h * sizeof(Elf64_Sym));
-			File->Read(&symEntry, sizeof(Elf64_Sym), symOffset);
+			Elf_Sym symEntry{};
+			uintptr_t symOffset = sht_symtab.sh_offset + (h * sizeof(Elf_Sym));
+			File->Read(&symEntry, sizeof(Elf_Sym), symOffset);
 
 			if (symEntry.st_name == 0)
 				continue;
@@ -477,10 +477,10 @@ namespace Driver
 					{
 						AssertReturnError(relaSize != nullptr, -ENOEXEC);
 
-						Elf64_Rela *rela = (Elf64_Rela *)(Drv.BaseAddress + dyn->d_un.d_ptr);
-						for (size_t i = 0; i < (relaSize->d_un.d_val / sizeof(Elf64_Rela)); i++)
+						Elf_Rela *rela = (Elf_Rela *)(Drv.BaseAddress + dyn->d_un.d_ptr);
+						for (size_t i = 0; i < (relaSize->d_un.d_val / sizeof(Elf_Rela)); i++)
 						{
-							Elf64_Rela *r = &rela[i];
+							Elf_Rela *r = &rela[i];
 							uintptr_t *reloc = (uintptr_t *)(Drv.BaseAddress + r->r_offset);
 							uintptr_t relocTarget = 0;
 
@@ -500,8 +500,7 @@ namespace Driver
 							}
 							default:
 							{
-								fixme("Unhandled relocation type: %#lx",
-									  ELF64_R_TYPE(r->r_info));
+								fixme("Unhandled relocation type: %#lx", ELF_R_TYPE(r->r_info));
 								break;
 							}
 							}
@@ -517,24 +516,24 @@ namespace Driver
 					{
 						AssertReturnError(pltrelSize != nullptr, -ENOEXEC);
 
-						std::vector<Elf64_Dyn> symtab = Execute::ELFGetDynamicTag(File, DT_SYMTAB);
-						Elf64_Sym *symbols = (Elf64_Sym *)((uintptr_t)Drv.BaseAddress + symtab[0].d_un.d_ptr);
+						std::vector<Elf_Dyn> symtab = Execute::ELFGetDynamicTag(File, DT_SYMTAB);
+						Elf_Sym *symbols = (Elf_Sym *)((uintptr_t)Drv.BaseAddress + symtab[0].d_un.d_ptr);
 
-						std::vector<Elf64_Dyn> StrTab = Execute::ELFGetDynamicTag(File, DT_STRTAB);
+						std::vector<Elf_Dyn> StrTab = Execute::ELFGetDynamicTag(File, DT_STRTAB);
 						char *dynStr = (char *)((uintptr_t)Drv.BaseAddress + StrTab[0].d_un.d_ptr);
 
-						Elf64_Rela *rela = (Elf64_Rela *)(Drv.BaseAddress + dyn->d_un.d_ptr);
-						for (size_t i = 0; i < (pltrelSize->d_un.d_val / sizeof(Elf64_Rela)); i++)
+						Elf_Rela *rela = (Elf_Rela *)(Drv.BaseAddress + dyn->d_un.d_ptr);
+						for (size_t i = 0; i < (pltrelSize->d_un.d_val / sizeof(Elf_Rela)); i++)
 						{
-							Elf64_Rela *r = &rela[i];
+							Elf_Rela *r = &rela[i];
 							uintptr_t *reloc = (uintptr_t *)(Drv.BaseAddress + r->r_offset);
 
-							switch (ELF64_R_TYPE(r->r_info))
+							switch (ELF_R_TYPE(r->r_info))
 							{
 							case R_X86_64_JUMP_SLOT:
 							{
-								Elf64_Xword symIndex = ELF64_R_SYM(r->r_info);
-								Elf64_Sym *sym = symbols + symIndex;
+								Elf_Xword symIndex = ELF_R_SYM(r->r_info);
+								Elf_Sym *sym = symbols + symIndex;
 
 								const char *symName = dynStr + sym->st_name;
 								debug("Resolving symbol %s", symName);
@@ -544,8 +543,7 @@ namespace Driver
 							}
 							default:
 							{
-								fixme("Unhandled relocation type: %#lx",
-									  ELF64_R_TYPE(r->r_info));
+								fixme("Unhandled relocation type: %#lx", ELF_R_TYPE(r->r_info));
 								break;
 							}
 							}

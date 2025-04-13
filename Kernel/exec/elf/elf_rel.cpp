@@ -65,9 +65,9 @@ namespace Execute
 					uintptr_t *relPtr = (uintptr_t *)(((uintptr_t)BaseImage + target->sh_offset) + rel->r_offset);
 					uintptr_t value = 0;
 
-					if (ELF64_R_SYM(rel->r_info) != SHN_UNDEF)
+					if (ELF_R_SYM(rel->r_info) != SHN_UNDEF)
 					{
-						value = ELFGetSymbolValue(((Elf_Ehdr *)BaseImage), section->sh_link, ELF64_R_SYM(rel->r_info));
+						value = ELFGetSymbolValue(((Elf_Ehdr *)BaseImage), section->sh_link, ELF_R_SYM(rel->r_info));
 						if (value == (uintptr_t)-1)
 							return;
 					}

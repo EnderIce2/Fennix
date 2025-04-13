@@ -6,6 +6,7 @@
 			"type": "shell",
 			"command": "make clean",
 			"isBackground": false,
+			"hide": false,
 			"group": {
 				"kind": "build",
 				"isDefault": false
@@ -29,6 +30,7 @@
 			"type": "shell",
 			"command": "make build",
 			"isBackground": false,
+			"hide": false,
 			"group": {
 				"kind": "build",
 				"isDefault": false
@@ -52,6 +54,7 @@
 			"type": "shell",
 			"command": "make qemu",
 			"isBackground": false,
+			"hide": false,
 			"dependsOn": [
 				"Build"
 			],
@@ -78,6 +81,7 @@
 			"type": "shell",
 			"command": "make -C ../ build_bootloader",
 			"isBackground": false,
+			"hide": true,
 			"group": {
 				"kind": "build",
 				"isDefault": false
@@ -100,6 +104,7 @@
 			"type": "shell",
 			"command": "make -C ../ build_kernel",
 			"isBackground": false,
+			"hide": true,
 			"dependsOn": [
 				"Build Bootloader"
 			],
@@ -125,6 +130,7 @@
 			"type": "shell",
 			"command": "make -C ../ build_drivers",
 			"isBackground": false,
+			"hide": true,
 			"dependsOn": [
 				"Build Kernel"
 			],
@@ -150,6 +156,7 @@
 			"type": "shell",
 			"command": "make -C ../ build_userspace",
 			"isBackground": false,
+			"hide": true,
 			"dependsOn": [
 				"Build Drivers"
 			],
@@ -175,6 +182,7 @@
 			"type": "shell",
 			"command": "make -C ../ build_image",
 			"isBackground": false,
+			"hide": true,
 			"dependsOn": [
 				"Build Userspace"
 			],
@@ -235,6 +243,249 @@
 				"panel": "shared"
 			},
 			"options": {
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI AMD64 Debug",
+			"type": "shell",
+			"command": "make __ci-amd64-debug",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"Clean"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI AMD64 Release",
+			"type": "shell",
+			"command": "make __ci-amd64-release",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI AMD64 Debug"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI i386 Debug",
+			"type": "shell",
+			"command": "make __ci-i386-debug",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI AMD64 Release"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI i386 Release",
+			"type": "shell",
+			"command": "make __ci-i386-release",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI i386 Debug"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI ARM Debug",
+			"type": "shell",
+			"command": "make __ci-arm-debug",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI i386 Release"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI ARM Release",
+			"type": "shell",
+			"command": "make __ci-arm-release",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI ARM Debug"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI AARCH64 Debug",
+			"type": "shell",
+			"command": "make __ci-aarch64-debug",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI ARM Release"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "CI AARCH64 Release",
+			"type": "shell",
+			"command": "make __ci-aarch64-release",
+			"isBackground": false,
+			"hide": true,
+			"dependsOn": [
+				"CI AARCH64 Debug"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
+				"shell": {
+					"executable": "bash",
+					"args": [
+						"-c"
+					]
+				}
+			}
+		},
+		{
+			"label": "Test CI Build",
+			"type": "shell",
+			"command": "make __ci-restore-config",
+			"isBackground": false,
+			"dependsOn": [
+				"CI AARCH64 Release",
+				"clean"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}/../",
 				"shell": {
 					"executable": "bash",
 					"args": [

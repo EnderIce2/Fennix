@@ -46,7 +46,9 @@ namespace vfs
 		if (FileSystemRoots->Children[Index] == nullptr)
 			FileSystemRoots->Children[Index] = Root;
 		else
+		{
 			debug("Root %ld already exists", Index);
+		}
 	}
 
 	bool Virtual::SetRootAt(Inode *Root, size_t Index)

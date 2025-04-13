@@ -168,53 +168,82 @@ __ci-build-set-debug:
 ci-setup:
 	$(MAKE) --quiet -C tools ci
 
-ci-build:
-# Prepare
-	$(MAKE) prepare
-	$(MAKE) mkdir_rootfs
-	$(MAKE) --quiet -C tools do_limine
-# amd64
+__ci-amd64-debug:
+	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-amd64-debug.iso
 	$(MAKE) clean
+
+__ci-amd64-release:
 	$(MAKE) __ci-build-set-release
+	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-amd64-release.iso
 	$(MAKE) clean
-# i386
+
+__ci-i386-debug:
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-i386-debug.iso
 	$(MAKE) clean
+
+__ci-i386-release:
 	$(MAKE) __ci-build-set-release
+	sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-i386-release.iso
 	$(MAKE) clean
-# ARM
+
+__ci-arm-debug:
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = arm/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-arm-debug.iso
 	$(MAKE) clean
+
+__ci-arm-release:
 	$(MAKE) __ci-build-set-release
+	sed -i 's/.*OSARCH = .*/OSARCH = arm/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-arm-release.iso
 	$(MAKE) clean
-# AArch64
+
+__ci-aarch64-debug:
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-aarch64-debug.iso
 	$(MAKE) clean
+
+__ci-aarch64-release:
 	$(MAKE) __ci-build-set-release
+	sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
 	mv Fennix.iso Fennix-aarch64-release.iso
 	$(MAKE) clean
-# Restore original config
+
+__ci-restore-config:
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
+
+ci-build:
+# Prepare
+	$(MAKE) prepare
+	$(MAKE) mkdir_rootfs
+	$(MAKE) --quiet -C tools do_limine
+	$(MAKE) clean
+
+	$(MAKE) __ci-amd64-debug
+	$(MAKE) __ci-amd64-release
+	$(MAKE) __ci-i386-debug
+	$(MAKE) __ci-i386-release
+	$(MAKE) __ci-arm-debug
+	$(MAKE) __ci-arm-release
+	$(MAKE) __ci-aarch64-debug
+	$(MAKE) __ci-aarch64-release
+	$(MAKE) __ci-restore-config
 # Move all files to artifacts directory
 	mkdir -p artifacts
 	$(MAKE) changelog
