@@ -169,6 +169,7 @@ ci-setup:
 	$(MAKE) --quiet -C tools ci
 
 __ci-amd64-debug:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -176,6 +177,7 @@ __ci-amd64-debug:
 	$(MAKE) clean
 
 __ci-amd64-release:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-release
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -183,6 +185,7 @@ __ci-amd64-release:
 	$(MAKE) clean
 
 __ci-i386-debug:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -190,6 +193,7 @@ __ci-i386-debug:
 	$(MAKE) clean
 
 __ci-i386-release:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-release
 	sed -i 's/.*OSARCH = .*/OSARCH = i386/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -197,6 +201,7 @@ __ci-i386-release:
 	$(MAKE) clean
 
 __ci-arm-debug:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = arm/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -204,6 +209,7 @@ __ci-arm-debug:
 	$(MAKE) clean
 
 __ci-arm-release:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-release
 	sed -i 's/.*OSARCH = .*/OSARCH = arm/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -211,6 +217,7 @@ __ci-arm-release:
 	$(MAKE) clean
 
 __ci-aarch64-debug:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -218,6 +225,7 @@ __ci-aarch64-debug:
 	$(MAKE) clean
 
 __ci-aarch64-release:
+	$(MAKE) -C tools do_limine
 	$(MAKE) __ci-build-set-release
 	sed -i 's/.*OSARCH = .*/OSARCH = aarch64/' ./config.mk && cat config.mk | grep OSARCH
 	$(MAKE) build
@@ -238,7 +246,6 @@ ci-build:
 # Prepare
 	$(MAKE) prepare
 	$(MAKE) mkdir_rootfs
-	$(MAKE) --quiet -C tools do_limine
 	$(MAKE) clean
 
 	$(MAKE) __ci-amd64-debug
