@@ -228,6 +228,12 @@ __ci-restore-config:
 	$(MAKE) __ci-build-set-debug
 	sed -i 's/.*OSARCH = .*/OSARCH = amd64/' ./config.mk && cat config.mk | grep OSARCH
 
+__ci-prepare-archive:
+	mkdir -p artifacts
+	$(MAKE) changelog
+	cp -f CHANGELOG.md artifacts/
+	mv -f Fennix-*.iso artifacts/
+
 ci-build:
 # Prepare
 	$(MAKE) prepare
@@ -244,11 +250,7 @@ ci-build:
 	$(MAKE) __ci-aarch64-debug
 	$(MAKE) __ci-aarch64-release
 	$(MAKE) __ci-restore-config
-# Move all files to artifacts directory
-	mkdir -p artifacts
-	$(MAKE) changelog
-	cp -f CHANGELOG.md artifacts/
-	mv -f Fennix-*.iso artifacts/
+	$(MAKE) __ci-prepare-archive
 
 changelog:
 	git cliff > CHANGELOG.md
