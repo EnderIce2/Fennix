@@ -138,11 +138,68 @@ jobs:
         sudo touch /run/user/1000/pulse/native
         echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
 
-    - name: Run make ci-build in dev container
+    - name: Build amd64 debug
+      if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
-        runCmd: /usr/bin/make ci-build
+        runCmd: /usr/bin/make __ci-amd64-debug
+
+    - name: Build amd64 release
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-amd64-release
+
+    - name: Build i386 debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-i386-debug
+
+    - name: Build i386 debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-i386-release
+
+    - name: Build arm debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-arm-debug
+
+    - name: Build arm debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-arm-release
+
+    - name: Build aarch64 debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-aarch64-debug
+
+    - name: Build aarch64 debug
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-aarch64-release
+
+    - name: Build Prepare Archive
+      if: always()
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-prepare-archive
 
     - name: Upload Artifact
       if: always()
