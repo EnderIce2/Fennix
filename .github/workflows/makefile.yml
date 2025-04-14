@@ -138,56 +138,56 @@ jobs:
         sudo touch /run/user/1000/pulse/native
         echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
 
-    - name: Build amd64 debug
+    - name: Build AMD64 Debug
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-amd64-debug
 
-    - name: Build amd64 release
+    - name: Build AMD64 Release
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-amd64-release
 
-    - name: Build i386 debug
+    - name: Build i386 Debug
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-i386-debug
 
-    - name: Build i386 debug
+    - name: Build i386 Release
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-i386-release
 
-    - name: Build arm debug
+    - name: Build ARM Debug
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-arm-debug
 
-    - name: Build arm debug
+    - name: Build ARM Release
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-arm-release
 
-    - name: Build aarch64 debug
+    - name: Build AArch64 Debug
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-aarch64-debug
 
-    - name: Build aarch64 debug
+    - name: Build AArch64 Release
       if: always()
       uses: devcontainers/ci@v0.3
       with:
