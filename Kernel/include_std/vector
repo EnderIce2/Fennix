@@ -784,7 +784,7 @@ namespace std
 		{
 			size_type index = pos - begin();
 			if (_size == _capacity)
-				reserve(_capacity * 2);
+				reserve(_capacity + (_capacity / 2) + 1);
 
 			for (size_type i = _size; i > index; i--)
 				_data[i] = _data[i - 1];
@@ -850,7 +850,7 @@ namespace std
 		{
 			size_type index = pos - begin();
 			if (_size == _capacity)
-				reserve(_capacity * 2);
+				reserve(_capacity + (_capacity / 2) + 1);
 
 			for (size_type i = _size; i > index; i--)
 				_data[i] = _data[i - 1];
@@ -891,7 +891,7 @@ namespace std
 				reserve(sizeof(T) * 2);
 
 			if (_size == _capacity)
-				reserve(_capacity * 2);
+				reserve(_capacity + (_capacity / 2) + 1);
 
 			_data[_size] = value;
 			_size++;
@@ -903,7 +903,7 @@ namespace std
 				reserve(sizeof(T) * 2);
 
 			if (_size == _capacity)
-				reserve(_capacity * 2);
+				reserve(_capacity + (_capacity / 2) + 1);
 
 			_data[_size] = std::move(value);
 			_size++;
@@ -913,7 +913,7 @@ namespace std
 		constexpr reference emplace_back(Args &&...args)
 		{
 			if (_size == _capacity)
-				reserve(_capacity * 2);
+				reserve(_capacity + (_capacity / 2) + 1);
 
 			std::allocator_traits<Allocator>::construct(_alloc, _data + _size, std::forward<Args>(args)...);
 			_size++;
