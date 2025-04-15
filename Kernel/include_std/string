@@ -1579,6 +1579,7 @@ namespace std
 			{
 				std::copy(begin() + index + count, end(), begin() + index);
 				_size -= count;
+				_data[_size] = '\0';
 			}
 
 			return *this;
