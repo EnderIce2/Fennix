@@ -464,7 +464,7 @@ namespace InterruptDescriptorTable
 // #ifdef DEBUG
 		EnableISRs = !DebuggerIsAttached;
 		if (!EnableISRs)
-			KPrint("\x1b[34mThe debugger is attached, disabling all ISRs.");
+			KPrint("\x1b[32mThe debugger is attached, disabling all ISRs.");
 // #endif
 
 		SetEntry(0x0, InterruptHandler_0x0, TRAP_GATE_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
