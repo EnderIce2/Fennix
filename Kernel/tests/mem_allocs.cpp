@@ -23,6 +23,63 @@
 
 #include "../kernel.h"
 
+void test_mem_integrity_2()
+{
+	const size_t BlockCount = 64;
+	const size_t BlockSize = 1024;
+
+	void *blocks[BlockCount];
+
+	for (size_t i = 0; i < BlockCount; ++i)
+	{
+		blocks[i] = kmalloc(BlockSize);
+		assert(blocks[i] != nullptr);
+
+		uint8_t *data = static_cast<uint8_t *>(blocks[i]);
+		for (size_t j = 0; j < BlockSize; ++j)
+			data[j] = static_cast<uint8_t>((i + j) & 0xFF);
+	}
+
+	for (size_t i = 0; i < BlockCount; ++i)
+	{
+		uint8_t *data = static_cast<uint8_t *>(blocks[i]);
+		for (size_t j = 0; j < BlockSize; ++j)
+			assert(data[j] == static_cast<uint8_t>((i + j) & 0xFF));
+	}
+
+	for (size_t i = 0; i < BlockCount; i += 2)
+	{
+		void *newBlock = krealloc(blocks[i], BlockSize * 2);
+		assert(newBlock != nullptr);
+		uint8_t *data = static_cast<uint8_t *>(newBlock);
+
+		for (size_t j = 0; j < BlockSize; ++j)
+			assert(data[j] == static_cast<uint8_t>((i + j) & 0xFF));
+
+		blocks[i] = newBlock;
+	}
+
+	for (size_t i = 0; i < BlockCount; ++i)
+	{
+		if (i % 3 == 0)
+		{
+			kfree(blocks[i]);
+			blocks[i] = nullptr;
+		}
+	}
+
+	void *zblock = kcalloc(128, sizeof(uint64_t));
+	assert(zblock != nullptr);
+	uint64_t *zdata = static_cast<uint64_t *>(zblock);
+	for (size_t i = 0; i < 128; ++i)
+		assert(zdata[i] == 0);
+	kfree(zblock);
+
+	for (size_t i = 0; i < BlockCount; ++i)
+		if (blocks[i])
+			kfree(blocks[i]);
+}
+
 /* Originally from: https://github.com/EnderIce2/FennixProject/blob/main/kernel/test.cpp */
 
 #define MEMTEST_ITERATIONS 1024
@@ -136,6 +193,7 @@ void TestMemoryAllocation()
 	}
 
 	testMemoryIntegrity();
+	test_mem_integrity_2();
 
 	void *tmpAlloc1 = kmalloc(176);
 	void *tmpAlloc2 = kmalloc(511);
