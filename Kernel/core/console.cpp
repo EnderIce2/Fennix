@@ -27,7 +27,7 @@
 
 namespace KernelConsole
 {
-	int TermColors[] = {
+	static int TermColors[] = {
 		[TerminalColor::BLACK] = 0x000000,
 		[TerminalColor::RED] = 0xAA0000,
 		[TerminalColor::GREEN] = 0x00AA00,
@@ -38,7 +38,7 @@ namespace KernelConsole
 		[TerminalColor::GREY] = 0xAAAAAA,
 	};
 
-	int TermBrightColors[] = {
+	static int TermBrightColors[] = {
 		[TerminalColor::BLACK] = 0x858585,
 		[TerminalColor::RED] = 0xFF5555,
 		[TerminalColor::GREEN] = 0x55FF55,

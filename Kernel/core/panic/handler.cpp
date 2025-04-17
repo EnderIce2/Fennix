@@ -52,7 +52,7 @@ void *FbBeforePanic = nullptr;
 size_t FbPagesBeforePanic = 0;
 FontRenderer CrashFontRenderer;
 
-int ExTermColors[] = {
+static int ExTermColors[] = {
 	[TerminalColor::BLACK] = 0x000000,
 	[TerminalColor::RED] = 0xAA0000,
 	[TerminalColor::GREEN] = 0x00AA00,
@@ -63,7 +63,7 @@ int ExTermColors[] = {
 	[TerminalColor::GREY] = 0xAAAAAA,
 };
 
-int ExTermBrightColors[] = {
+static int ExTermBrightColors[] = {
 	[TerminalColor::BLACK] = 0x858585,
 	[TerminalColor::RED] = 0xFF5555,
 	[TerminalColor::GREEN] = 0x55FF55,

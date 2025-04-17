@@ -155,8 +155,6 @@ namespace KernelConsole
 	 */
 	extern ConsoleTerminal *Terminals[16];
 	extern std::atomic<ConsoleTerminal *> CurrentTerminal;
-	extern int TermColors[];
-	extern int TermBrightColors[];
 
 	bool SetTheme(std::string Theme);
 
