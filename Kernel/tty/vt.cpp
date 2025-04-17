@@ -828,8 +828,7 @@ namespace KernelConsole
 
 		this->Cells = new TerminalCell[Rows * Columns];
 
-		debug("Allocated %d bytes for terminal cells",
-			  (Rows * Columns) * sizeof(TerminalCell));
+		debug("Allocated %d entries (%d bytes at %#lx-%#lx for terminal cells)", Rows * Columns, (Rows * Columns) * sizeof(TerminalCell), this->Cells, (char *)this->Cells + (Rows * Columns) * sizeof(TerminalCell));
 	}
 
 	VirtualTerminal::~VirtualTerminal() { delete[] this->Cells; }

@@ -220,6 +220,9 @@ namespace Execute
 					if (ProgramHeader.p_memsz == 0)
 						continue;
 
+					if (BaseAddress == 0)
+						BaseAddress = ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
+
 					void *pAddr = vma->RequestPages(TO_PAGES(ProgramHeader.p_memsz + (ProgramHeader.p_vaddr % PAGE_SIZE)), true);
 					void *vAddr = (void *)ALIGN_DOWN(ProgramHeader.p_vaddr, PAGE_SIZE);
 					uintptr_t destOffset = ProgramHeader.p_vaddr - uintptr_t(vAddr);
@@ -411,6 +414,14 @@ namespace Execute
 
 		this->ip = entry;
 		this->IsElfValid = true;
+
+#ifdef DEBUG
+		std::string sanitizedPath = fd->Path;
+		size_t pos = sanitizedPath.find("\x06root-0\x06");
+		if (pos != std::string::npos)
+			sanitizedPath.erase(pos, std::string("\x06root-0\x06").length());
+		debug("gdb: \"-exec add-symbol-file-all /workspaces/Fennix/tmp_rootfs%s %#lx\" entry:%#lx", sanitizedPath.c_str(), base, entry);
+#endif
 	}
 
 	void ELFObject::LoadDyn(FileNode *fd, PCB *TargetProcess)
@@ -436,7 +447,21 @@ namespace Execute
 		this->ip = entry;
 		this->IsElfValid = true;
 
+#ifdef DEBUG
+		std::string sanitizedPath = fd->Path;
+		size_t pos = sanitizedPath.find("\x06root-0\x06");
+		if (pos != std::string::npos)
+			sanitizedPath.erase(pos, std::string("\x06root-0\x06").length());
+		debug("gdb: \"-exec add-symbol-file-all /workspaces/Fennix/tmp_rootfs%s %#lx\" entry:%#lx", sanitizedPath.c_str(), base, entry);
+#endif
+
 		Elf_Phdr interp = ELFGetSymbolType(fd, PT_INTERP).front();
+		if (interp.p_offset == 0)
+		{
+			debug("No interpreter found");
+			return;
+		}
+
 		std::string interpreterPath;
 		interpreterPath.resize(256);
 		fd->Read(interpreterPath.data(), 256, interp.p_offset);
@@ -489,6 +514,14 @@ namespace Execute
 				aux.archaux.a_un.a_val = base;
 				break;
 			}
+
+#ifdef DEBUG
+			std::string sanitizedPath = fd->Path;
+			size_t pos = sanitizedPath.find("\x06root-0\x06");
+			if (pos != std::string::npos)
+				sanitizedPath.erase(pos, std::string("\x06root-0\x06").length());
+			debug("gdb: \"-exec add-symbol-file-all /workspaces/Fennix/tmp_rootfs%s %#lx\" entry:%#lx", sanitizedPath.c_str(), base, ehdr.e_entry);
+#endif
 
 			return true;
 		}

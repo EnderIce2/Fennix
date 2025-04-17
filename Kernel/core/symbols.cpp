@@ -185,17 +185,13 @@ namespace SymbolResolver
 
 				if (strlen(name) == 0)
 					continue;
-				SymbolTable tbl{};
+				SymbolTable tbl;
 				tbl.Address = sym->st_value;
 				tbl.FunctionName = new char[strlen(name) + 1];
 				strcpy(tbl.FunctionName, name);
 				this->SymTable.push_back(tbl);
 				this->SymbolTableExists = true;
-
-				// debug("Symbol %d: %#lx %s(%#lx)",
-				// 	  i, tbl.Address,
-				// 	  tbl.FunctionName,
-				// 	  name);
+				// debug("Symbol %d: %#lx %s(%#lx)", i, tbl.Address, tbl.FunctionName, name);
 			}
 		}
 	}

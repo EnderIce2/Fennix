@@ -333,7 +333,7 @@ namespace v0
 
 	void PS2Wait(dev_t DriverID, const bool Output)
 	{
-		dbg_api("%d, %d", DriverID, Output);
+		// dbg_api("%d, %d", DriverID, Output);
 
 #if defined(__amd64__) || defined(__i386__)
 		int Timeout = 100000;
@@ -379,7 +379,7 @@ namespace v0
 
 	uint8_t PS2ReadData(dev_t DriverID)
 	{
-		dbg_api("%d", DriverID);
+		// dbg_api("%d", DriverID);
 
 #if defined(__amd64__) || defined(__i386__)
 		WaitOutput;
