@@ -455,13 +455,14 @@ namespace Execute
 		debug("gdb: \"-exec add-symbol-file-all /workspaces/Fennix/tmp_rootfs%s %#lx\" entry:%#lx", sanitizedPath.c_str(), base, entry);
 #endif
 
-		Elf_Phdr interp = ELFGetSymbolType(fd, PT_INTERP).front();
-		if (interp.p_offset == 0)
+		std::vector<Elf_Phdr> interpVec = ELFGetSymbolType(fd, PT_INTERP);
+		if (interpVec.empty())
 		{
 			debug("No interpreter found");
 			return;
 		}
 
+		Elf_Phdr interp = interpVec.front();
 		std::string interpreterPath;
 		interpreterPath.resize(256);
 		fd->Read(interpreterPath.data(), 256, interp.p_offset);
