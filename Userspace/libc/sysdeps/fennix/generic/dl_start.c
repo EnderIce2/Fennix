@@ -16,35 +16,35 @@
 */
 
 #ifdef FENNIX_DYNAMIC_LOADER
+#define _s __asm__ __volatile__
 __attribute__((naked, used, no_stack_protector)) void _dl_start()
 {
 #if defined(__amd64__)
-	__asm__(
-		"xorq %rbp, %rbp\n" /* Clear rbp */
+	_s("xorq %rbp, %rbp\n"); /* Clear rbp */
 
-		"push %rdi\n"
-		"push %rsi\n"
-		"push %rdx\n"
-		"push %rcx\n"
-		"push %r8\n"
-		"push %r9\n"
+	_s("pushq %rdi\n");
+	_s("pushq %rsi\n");
+	_s("pushq %rdx\n");
+	_s("pushq %rcx\n");
+	_s("pushq %r8\n");
+	_s("pushq %r9\n");
 
-		"call __init_print_buffer\n" /* Call __init_print_buffer */
-		"call _dl_preload\n"		 /* Call _dl_preload */
-		"movl %eax, %edi\n"			 /* Move return value to edi */
-		"cmp $0, %edi\n"			 /* Check if return value is 0 */
-		"jne _exit\n"				 /* If not, jump to _exit */
+	_s("call __init_print_buffer\n"); /* Call __init_print_buffer */
+	_s("call _dl_preload\n");		  /* Call _dl_preload */
+	_s("movl %eax, %edi\n");		  /* Move return value to edi */
+	_s("cmp $0, %edi\n");			  /* Check if return value is 0 */
+	_s("jne _exit\n");				  /* If not, jump to _exit */
 
-		"pop %r9\n"
-		"pop %r8\n"
-		"pop %rcx\n"
-		"pop %rdx\n"
-		"pop %rsi\n"
-		"pop %rdi\n"
+	_s("popq %r9\n");
+	_s("popq %r8\n");
+	_s("popq %rcx\n");
+	_s("popq %rdx\n");
+	_s("popq %rsi\n");
+	_s("popq %rdi\n");
 
-		"call main\n"		/* Call _dl_main */
-		"movl %eax, %edi\n" /* Move return value to edi */
-		"call _exit\n");	/* Call _exit */
+	_s("call main\n");		 /* Call _dl_main */
+	_s("movl %eax, %edi\n"); /* Move return value to edi */
+	_s("call _exit\n");		 /* Call _exit */
 #elif defined(__i386__)
 #warning "i386 _start not implemented"
 #elif defined(__arm__)
@@ -55,4 +55,5 @@ __attribute__((naked, used, no_stack_protector)) void _dl_start()
 #error "Unsupported architecture"
 #endif
 }
+#undef _s
 #endif

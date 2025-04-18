@@ -15,6 +15,7 @@ if(GIT_COMMIT)
 endif()
 
 add_compile_definitions(FENNIX_DYNAMIC_LOADER="1")
+add_compile_definitions(PROGRAM_VERSION="${PROJECT_VERSION}")
 
 install(TARGETS ld.so DESTINATION lib)
 target_compile_options(ld.so PRIVATE -fvisibility=hidden -fPIC)

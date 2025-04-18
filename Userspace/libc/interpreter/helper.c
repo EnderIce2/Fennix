@@ -67,6 +67,19 @@ int strcmp(const char *l, const char *r)
 	return *l - *r;
 }
 
+int strncmp(const char *s1, const char *s2, size_t n)
+{
+	for (size_t i = 0; i < n; i++)
+	{
+		char c1 = s1[i], c2 = s2[i];
+		if (c1 != c2)
+			return c1 - c2;
+		if (!c1)
+			return 0;
+	}
+	return 0;
+}
+
 char *strcat(char *dest, const char *src)
 {
 	char *d = dest;
@@ -75,6 +88,115 @@ char *strcat(char *dest, const char *src)
 	while ((*d++ = *src++))
 		;
 	return dest;
+}
+
+char *strrchr(const char *str, int c)
+{
+	const char *last_occurrence = NULL;
+
+	while (*str)
+	{
+		if (*str == (char)c)
+			last_occurrence = str;
+		str++;
+	}
+
+	if (c == '\0')
+		return (char *)str;
+
+	return (char *)last_occurrence;
+}
+
+char *strncpy(char *destination, const char *source, unsigned long num)
+{
+	if (destination == NULL)
+		return NULL;
+
+	char *ptr = destination;
+	while (*source && num--)
+	{
+		*destination = *source;
+		destination++;
+		source++;
+	}
+
+	*destination = '\0';
+	return ptr;
+}
+
+char *strdup(const char *str)
+{
+	char *buf = (char *)mini_malloc(strlen((char *)str) + 1);
+	strncpy(buf, str, strlen(str) + 1);
+	return buf;
+}
+
+unsigned int isdelim(char c, const char *delim)
+{
+	while (*delim != '\0')
+	{
+		if (c == *delim)
+			return 1;
+		delim++;
+	}
+	return 0;
+}
+
+char *strtok(char *src, const char *delim)
+{
+	static char *src1;
+	if (!src)
+		src = src1;
+
+	if (!src)
+		return NULL;
+
+	while (1)
+	{
+		if (isdelim(*src, (char *)delim))
+		{
+			src++;
+			continue;
+		}
+		if (*src == '\0')
+			return NULL;
+
+		break;
+	}
+	char *ret = src;
+	while (1)
+	{
+		if (*src == '\0')
+		{
+			src1 = src;
+			return ret;
+		}
+		if (isdelim(*src, (char *)delim))
+		{
+			*src = '\0';
+			src1 = src + 1;
+			return ret;
+		}
+		src++;
+	}
+	return NULL;
+}
+
+char **environ;
+char *getenv(const char *name)
+{
+	if (name == NULL)
+		return NULL;
+
+	size_t len = strlen(name);
+	for (char **env = environ; *env != 0; ++env)
+	{
+		char *thisEnv = *env;
+		char cmp = strncmp(thisEnv, name, len) == 0;
+		if (cmp && thisEnv[len] == '=')
+			return thisEnv + len + 1;
+	}
+	return NULL;
 }
 
 unsigned long elf_hash(const unsigned char *name)

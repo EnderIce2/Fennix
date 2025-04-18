@@ -385,7 +385,7 @@ void ProcessNeededLibraries(Elf_Dyn *elem, ElfInfo *Info)
 			path = strtok(NULL, ":");
 		}
 
-		free(pathCopy);
+		mini_free(pathCopy);
 		if (found)
 			goto load_lib;
 	}

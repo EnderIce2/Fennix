@@ -17,24 +17,55 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+
+#ifndef PROGRAM_VERSION
+#define PROGRAM_VERSION "<unknown>"
+#endif
 
 int printf(const char *, ...);
 int _dl_main(int, char *[], char *[]);
+
+void print_license()
+{
+	printf("Fennix C Library Interpreter  Copyright (C) %s  EnderIce2\n", (__DATE__ + 7));
+	printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
+	printf("This is free software, and you are welcome to redistribute it\n");
+	printf("under certain conditions.\n");
+}
+
+void print_version()
+{
+	printf("%s\n", PROGRAM_VERSION);
+}
 
 void print_help()
 {
 	printf("Usage: ld.so [options] <program>\n");
 	printf("Options:\n");
 	printf("  --help       Display this help message\n");
+	printf("  --version    Display version information\n");
+	printf("  --license    Display license information\n");
+	printf("\n");
+	print_license();
 }
 
+bool IsManuallyInvoked(const char *argv0)
+{
+	const char *lastSlash = strrchr(argv0, '/');
+	const char *name = lastSlash ? lastSlash + 1 : argv0;
+	/* TODO: check if exe is actually "ld.so" or it has other name */
+	return strcmp(name, "ld.so") == 0;
+}
+
+extern char **environ;
 int main(int argc, char *argv[], char *envp[])
 {
-	if (argc < 2)
+	environ = envp;
+	if (!IsManuallyInvoked(argv[0]))
 	{
-		printf("Error: No program specified.\n");
-		print_help();
-		return -1;
+		int status = _dl_main(argc, argv, envp);
+		return status;
 	}
 
 	for (int i = 1; i < argc; i++)
@@ -44,8 +75,19 @@ int main(int argc, char *argv[], char *envp[])
 			print_help();
 			return 0;
 		}
+		if (strcmp(argv[i], "--version") == 0)
+		{
+			print_version();
+			return 0;
+		}
+		if (strcmp(argv[i], "--license") == 0)
+		{
+			print_license();
+			return 0;
+		}
 	}
 
-	int status = _dl_main(argc, argv, envp);
-	return status;
+	printf("Error: No program specified.\n");
+	printf("Try 'ld.so --help' for more information.\n");
+	return -1;
 }
