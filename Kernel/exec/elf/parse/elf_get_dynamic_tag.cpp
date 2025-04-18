@@ -26,7 +26,7 @@ namespace Execute
 		std::vector<Elf_Dyn> ret;
 		std::vector<Elf_Phdr> phdrs = ELFGetSymbolType(fd, PT_DYNAMIC);
 
-		if (phdrs.size() < 1)
+		if (phdrs.empty())
 		{
 			debug("No dynamic phdrs found.");
 			return ret;
@@ -34,7 +34,7 @@ namespace Execute
 
 		for (auto phdr : phdrs)
 		{
-			Elf_Dyn dyn{};
+			Elf_Dyn dyn;
 			for (size_t i = 0; i < phdr.p_filesz / sizeof(Elf_Dyn); i++)
 			{
 				fd->Read(&dyn, sizeof(Elf_Dyn), phdr.p_offset + (i * sizeof(Elf_Dyn)));

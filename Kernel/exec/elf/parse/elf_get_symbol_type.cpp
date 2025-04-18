@@ -25,10 +25,10 @@ namespace Execute
 	{
 		std::vector<Elf_Phdr> ret;
 
-		Elf_Ehdr ehdr{};
+		Elf_Ehdr ehdr;
 		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
 
-		Elf_Phdr phdr{};
+		Elf_Phdr phdr;
 		fd->Read(&phdr, sizeof(Elf_Phdr), ehdr.e_phoff);
 
 		off_t off = ehdr.e_phoff;
