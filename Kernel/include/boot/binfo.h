@@ -20,24 +20,24 @@
 
 enum MemoryType
 {
-    Unknown_Memory_Type,
-    Usable,
-    Reserved,
-    ACPIReclaimable,
-    ACPINVS,
-    BadMemory,
-    BootloaderReclaimable,
-    KernelAndModules,
-    Framebuffer,
-    Unknown
+	Unknown_Memory_Type,
+	Usable,
+	Reserved,
+	ACPIReclaimable,
+	ACPINVS,
+	BadMemory,
+	BootloaderReclaimable,
+	KernelAndModules,
+	Framebuffer,
+	Unknown
 };
 
 enum FramebufferType
 {
-    Unknown_Framebuffer_Type,
-    Indexed,
-    RGB,
-    EGA
+	Unknown_Framebuffer_Type,
+	Indexed,
+	RGB,
+	EGA
 };
 
 #define MAX_FRAMEBUFFERS 16
@@ -46,110 +46,137 @@ enum FramebufferType
 
 struct BootInfo
 {
-    struct FramebufferInfo
-    {
-        enum FramebufferType Type;
-        void *BaseAddress;
-        __UINT32_TYPE__ Width;
-        __UINT32_TYPE__ Height;
-        __SIZE_TYPE__ Pitch;
-        __UINT16_TYPE__ BitsPerPixel;
-        __UINT8_TYPE__ RedMaskSize;
-        __UINT8_TYPE__ RedMaskShift;
-        __UINT8_TYPE__ GreenMaskSize;
-        __UINT8_TYPE__ GreenMaskShift;
-        __UINT8_TYPE__ BlueMaskSize;
-        __UINT8_TYPE__ BlueMaskShift;
-        void *ExtendedDisplayIdentificationData;
-        __SIZE_TYPE__ EDIDSize;
-    } Framebuffer[MAX_FRAMEBUFFERS];
+	struct FramebufferInfo
+	{
+		enum FramebufferType Type;
+		void *BaseAddress;
+		__UINT32_TYPE__ Width;
+		__UINT32_TYPE__ Height;
+		__SIZE_TYPE__ Pitch;
+		__UINT16_TYPE__ BitsPerPixel;
+		__UINT8_TYPE__ RedMaskSize;
+		__UINT8_TYPE__ RedMaskShift;
+		__UINT8_TYPE__ GreenMaskSize;
+		__UINT8_TYPE__ GreenMaskShift;
+		__UINT8_TYPE__ BlueMaskSize;
+		__UINT8_TYPE__ BlueMaskShift;
+		void *ExtendedDisplayIdentificationData;
+		__SIZE_TYPE__ EDIDSize;
+	} Framebuffer[MAX_FRAMEBUFFERS];
 
-    struct MemoryInfo
-    {
-        struct MemoryEntryInfo
-        {
-            void *BaseAddress;
-            __SIZE_TYPE__ Length;
-            enum MemoryType Type;
-        } Entry[MAX_MEMORY_ENTRIES];
-        __SIZE_TYPE__ Entries;
-        __SIZE_TYPE__ Size;
-    } Memory;
+	struct MemoryInfo
+	{
+		struct MemoryEntryInfo
+		{
+			void *BaseAddress;
+			__SIZE_TYPE__ Length;
+			enum MemoryType Type;
+		} Entry[MAX_MEMORY_ENTRIES];
+		__SIZE_TYPE__ Entries;
+		__SIZE_TYPE__ Size;
+	} Memory;
 
-    struct ModuleInfo
-    {
-        void *Address;
-        char Path[256];
-        char CommandLine[256];
-        __SIZE_TYPE__ Size;
-    } Modules[MAX_MODULES];
+	struct ModuleInfo
+	{
+		void *Address;
+		char Path[256];
+		char CommandLine[256];
+		__SIZE_TYPE__ Size;
+	} Modules[MAX_MODULES];
 
-    struct RSDPInfo
-    {
-        /**
-         * @brief Signature
-         */
-        __UINT8_TYPE__ Signature[8];
-        /**
-         * @brief Checksum
-         */
-        __UINT8_TYPE__ Checksum;
-        /**
-         * @brief OEM ID
-         */
-        __UINT8_TYPE__ OEMID[6];
-        /**
-         * @brief Revision
-         */
-        __UINT8_TYPE__ Revision;
-        /**
-         * @brief Address of the Root System Description Table
-         */
-        __UINT32_TYPE__ RSDTAddress;
-        /* END OF RSDP 1.0 */
+	struct RSDPInfo
+	{
+		/**
+		 * @brief Signature
+		 */
+		__UINT8_TYPE__ Signature[8];
+		/**
+		 * @brief Checksum
+		 */
+		__UINT8_TYPE__ Checksum;
+		/**
+		 * @brief OEM ID
+		 */
+		__UINT8_TYPE__ OEMID[6];
+		/**
+		 * @brief Revision
+		 */
+		__UINT8_TYPE__ Revision;
+		/**
+		 * @brief Address of the Root System Description Table
+		 */
+		__UINT32_TYPE__ RSDTAddress;
+		/* END OF RSDP 1.0 */
 
-        /**
-         * @brief Length
-         */
-        __UINT32_TYPE__ Length;
-        /**
-         * @brief Extended System Descriptor Table
-         */
-        __UINT64_TYPE__ XSDTAddress;
-        /**
-         * @brief Extended checksum
-         */
-        __UINT8_TYPE__ ExtendedChecksum;
-        /**
-         * @brief Reserved
-         */
-        __UINT8_TYPE__ Reserved[3];
-    } __attribute__((packed)) * RSDP;
+		/**
+		 * @brief Length
+		 */
+		__UINT32_TYPE__ Length;
+		/**
+		 * @brief Extended System Descriptor Table
+		 */
+		__UINT64_TYPE__ XSDTAddress;
+		/**
+		 * @brief Extended checksum
+		 */
+		__UINT8_TYPE__ ExtendedChecksum;
+		/**
+		 * @brief Reserved
+		 */
+		__UINT8_TYPE__ Reserved[3];
+	} __attribute__((packed)) * RSDP;
 
-    struct KernelInfo
-    {
-        void *PhysicalBase;
-        void *VirtualBase;
-        void *FileBase;
-        char CommandLine[256];
-        __SIZE_TYPE__ Size;
+	struct KernelInfo
+	{
+		void *PhysicalBase;
+		void *VirtualBase;
+		void *FileBase;
+		char CommandLine[256];
+		__SIZE_TYPE__ Size;
 
-        struct KernelSymbolInfo
-        {
-            __UINT32_TYPE__ Num;
-            __UINT32_TYPE__ EntSize;
-            __UINT32_TYPE__ Shndx;
-            __UINTPTR_TYPE__ Sections;
-        } Symbols;
-    } Kernel;
+		struct KernelSymbolInfo
+		{
+			__UINT32_TYPE__ Num;
+			__UINT32_TYPE__ EntSize;
+			__UINT32_TYPE__ Shndx;
+			__UINTPTR_TYPE__ Sections;
+		} Symbols;
+	} Kernel;
 
-    struct BootloaderInfo
-    {
-        char Name[256];
-        char Version[64];
-    } Bootloader;
+	struct BootloaderInfo
+	{
+		char Name[256];
+		char Version[64];
+	} Bootloader;
 
-    void *SMBIOSPtr;
+	void *SMBIOSPtr;
+
+	struct EFIInfo
+	{
+		union
+		{
+			struct
+			{
+				__UINT8_TYPE__ Enabled : 1;
+				__UINT8_TYPE__ BS : 1;
+				__UINT8_TYPE__ IH : 1;
+				__UINT8_TYPE__ ST : 1;
+				__UINT8_TYPE__ MemoryMap : 1;
+			} __attribute__((packed));
+			__UINT8_TYPE__ raw;
+		} Info;
+
+		struct
+		{
+			void *BaseAddress;
+			__SIZE_TYPE__ DescriptorSize;
+			__SIZE_TYPE__ DescriptorVersion;
+			__SIZE_TYPE__ NumberOfEntries;
+		} MemoryMap;
+
+		void *ImageHandle;
+		void *SystemTable;
+	} EFI;
 };
 
 #endif // !__FENNIX_KERNEL_BOOT_INFO_H__

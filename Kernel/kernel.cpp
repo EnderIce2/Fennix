@@ -27,10 +27,13 @@
 #include <debug.h>
 #include <smp.hpp>
 #include <cargs.h>
+#include <efi.h>
 #include <io.h>
 
 #include "core/smbios.hpp"
 #include "tests/t.h"
+
+EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable);
 
 bool DebuggerIsAttached = false;
 NewLock(KernelLock);
@@ -268,6 +271,9 @@ EXTERNC __no_stack_protector nif cold void Entry(BootInfo *Info)
 	trace("Total constructors called: %d", __init_array_end - __init_array_start);
 	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 		DebuggerIsAttached = true;
+
+	if (bInfo.EFI.Info.IH || bInfo.EFI.Info.ST)
+		efi_main((EFI_HANDLE)bInfo.EFI.ImageHandle, (EFI_SYSTEM_TABLE *)bInfo.EFI.SystemTable);
 
 #if defined(__amd64__) || defined(__i386__)
 	if (!bInfo.SMBIOSPtr)
