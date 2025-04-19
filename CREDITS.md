@@ -120,6 +120,13 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 ## UART
 - [Interfacing the Serial / RS232 Port V5.0](http://www.senet.com.au/~cpeacock)
 
+## UEFI
+- [U-Boot EFI Commands](https://docs.u-boot.org/en/latest/usage/cmd/efi.html)
+- [UEFI Specification 2.10](https://uefi.org/sites/default/files/resources/UEFI_Spec_2_10_Aug29.pdf)
+- [UEFI Boot Process Overview](https://gist.github.com/Velocet/d394281d96191e235ff46a8aa2018d80)
+- [Rust OS Development: UEFI](https://blog.malware.re/2023/09/01/rust-os-part2/index.html)
+- [GUIDs Database](https://github.com/DSecurity/efiSeek/blob/master/data/guids-db.ini)
+
 ---
 
 Special thanks to all contributors and the creators of the referenced projects and resources!

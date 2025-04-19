@@ -24,18 +24,26 @@ extern struct BootInfo bInfo;
 
 VOID SearchSMBIOS(EFI_SYSTEM_TABLE *SystemTable)
 {
-	EFI_GUID Smbios3TableGuid = {0xf2fd1544, 0x9794, 0x4a2c, {0x99, 0x2e, 0xe5, 0xbb, 0xcf, 0x20, 0xe3, 0x94}};
-	EFI_GUID SmbiosTableGuid = {0xEB9D2D31, 0x2D88, 0x11D3, {0x9A, 0x16, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D}};
+	EFI_GUID Smbios3TableGuid = SMBIOS3_TABLE_GUID;
+	EFI_GUID SmbiosTableGuid = SMBIOS_TABLE_GUID;
 
 	for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++)
 	{
 		EFI_CONFIGURATION_TABLE *config = &SystemTable->ConfigurationTable[i];
 
-		if (CompareGuid(&config->VendorGuid, &Smbios3TableGuid) ||
-			CompareGuid(&config->VendorGuid, &SmbiosTableGuid))
+		/* Can a device have multiple smbios tables? If so, use SMBIOS 3.0 over <2.0 */
+
+		if (CompareGuid(&config->VendorGuid, &SmbiosTableGuid))
 		{
 			bInfo.SMBIOSPtr = config->VendorTable;
-			debug("SMBIOS EPS found at address: %#lx", bInfo.SMBIOSPtr);
+			debug("SMBIOS found at address: %#lx", bInfo.SMBIOSPtr);
+			continue;
+		}
+
+		if (CompareGuid(&config->VendorGuid, &Smbios3TableGuid))
+		{
+			bInfo.SMBIOSPtr = config->VendorTable;
+			debug("SMBIOS3 found at address: %#lx", bInfo.SMBIOSPtr);
 			return;
 		}
 	}
@@ -43,8 +51,7 @@ VOID SearchSMBIOS(EFI_SYSTEM_TABLE *SystemTable)
 
 VOID SearchRSDP(EFI_SYSTEM_TABLE *SystemTable)
 {
-	EFI_GUID AcpiTableGuid = {0x8868E871, 0xE4F1, 0x11D3, {0xBC, 0x22, 0x00, 0x80, 0xC7, 0x3C, 0x88, 0x81}};
-
+	EFI_GUID AcpiTableGuid = EFI_ACPI_TABLE_GUID;
 	for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++)
 	{
 		EFI_CONFIGURATION_TABLE *config = &SystemTable->ConfigurationTable[i];
@@ -84,10 +91,27 @@ VOID InitializeMemoryEntries(EFI_MEMORY_DESCRIPTOR *MemoryMap, UINTN NumberOfEnt
 			"MemoryMappedIOPortSpace",
 			"PalCode",
 			"PersistentMemory",
-			"MaxMemoryType"};
+			"MaxMemoryType",
+			"out of bounds?!"};
+
+		size_t type = desc->Type;
+		if (type > sizeof(EFI_MEMORY_TYPE_STRINGS) / sizeof(EFI_MEMORY_TYPE_STRINGS[0]))
+		{
+			type = 16;
+			debug("oh uh, %d is out of bounds!!! t:%#lx p:%#lx v:%#lx n:%lu a:%lx",
+				  i, desc->Type,
+				  desc->PhysicalStart,
+				  desc->VirtualStart,
+				  desc->NumberOfPages,
+				  desc->Attribute);
+		}
 
 		debug("Entry %d: Type: %s, PhysicalStart: %p, VirtualStart: %p, NumberOfPages: %lu, Attribute: %lx",
-			  i, EFI_MEMORY_TYPE_STRINGS[desc->Type], desc->PhysicalStart, desc->VirtualStart, desc->NumberOfPages, desc->Attribute);
+			  i, EFI_MEMORY_TYPE_STRINGS[type],
+			  desc->PhysicalStart,
+			  desc->VirtualStart,
+			  desc->NumberOfPages,
+			  desc->Attribute);
 #endif
 	}
 }
@@ -125,6 +149,90 @@ VOID InitializeMemoryNoBS()
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
+#ifdef DEBUG
+	if (bInfo.EFI.Info.ST)
+	{
+		EFI_GUID EfiAcpi20Table = EFI_ACPI_20_TABLE_GUID;
+		EFI_GUID AcpiTable = ACPI_TABLE_GUID;
+		EFI_GUID SalSystemTable = SAL_SYSTEM_TABLE_GUID;
+		EFI_GUID SmbiosTable = SMBIOS_TABLE_GUID;
+		EFI_GUID Smbios3Table = SMBIOS3_TABLE_GUID;
+		EFI_GUID MpsTable = MPS_TABLE_GUID;
+		EFI_GUID EfiAcpiTable = EFI_ACPI_TABLE_GUID;
+		EFI_GUID EfiLzmaCompressed = EFI_LZMA_COMPRESSED_GUID;
+		EFI_GUID EfiDxeServices = EFI_DXE_SERVICES_GUID;
+		EFI_GUID EfiHobList = EFI_HOB_LIST_GUID;
+		EFI_GUID EfiMemoryType = _EFI_MEMORY_TYPE_GUID;
+		EFI_GUID EfiDebugImageInfoTable = EFI_DEBUG_IMAGE_INFO_TABLE_GUID;
+		EFI_GUID EfiMemStatusCodeRec = EFI_MEM_STATUS_CODE_REC_GUID;
+		EFI_GUID EfiGuidEfiAcpi1 = EFI_GUID_EFI_ACPI1_GUID;
+		EFI_GUID EfiMemoryAttributesTable = EFI_MEMORY_ATTRIBUTES_TABLE_GUID;
+		EFI_GUID EfiHiiDatabaseProtocol = EFI_HII_DATABASE_PROTOCOL_GUID;
+		EFI_GUID EfiHiiConfigRoutingProtocol = EFI_HII_CONFIG_ROUTING_PROTOCOL_GUID;
+		EFI_GUID TCG2FinalEventsTable = TCG2_FINAL_EVENTS_TABLE_GUID;
+		EFI_GUID EfiImageSecurityDatabase = EFI_IMAGE_SECURITY_DATABASE_GUID;
+
+		debug("there are %d configuration tables", SystemTable->NumberOfTableEntries);
+		for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++)
+		{
+			EFI_CONFIGURATION_TABLE *config = &SystemTable->ConfigurationTable[i];
+			EFI_GUID *g = &config->VendorGuid;
+			void *addr = config->VendorTable;
+
+			const char *guid_str = NULL;
+			if (CompareGuid(g, &EfiAcpi20Table))
+				guid_str = "EFI ACPI 2.0 Table";
+			else if (CompareGuid(g, &AcpiTable))
+				guid_str = "ACPI Table";
+			else if (CompareGuid(g, &SalSystemTable))
+				guid_str = "SAL System Table";
+			else if (CompareGuid(g, &SmbiosTable))
+				guid_str = "SMBIOS Table";
+			else if (CompareGuid(g, &Smbios3Table))
+				guid_str = "SMBIOS 3 Table";
+			else if (CompareGuid(g, &MpsTable))
+				guid_str = "MPS Table";
+			else if (CompareGuid(g, &EfiAcpiTable))
+				guid_str = "EFI ACPI Table";
+			else if (CompareGuid(g, &EfiLzmaCompressed))
+				guid_str = "EFI LZMA Compressed";
+			else if (CompareGuid(g, &EfiDxeServices))
+				guid_str = "EFI DXE Services";
+			else if (CompareGuid(g, &EfiHobList))
+				guid_str = "EFI HOB List";
+			else if (CompareGuid(g, &EfiMemoryType))
+				guid_str = "EFI Memory Type";
+			else if (CompareGuid(g, &EfiDebugImageInfoTable))
+				guid_str = "EFI Debug Image Info Table";
+			else if (CompareGuid(g, &EfiMemStatusCodeRec))
+				guid_str = "EFI Memory Status Code Record";
+			else if (CompareGuid(g, &EfiGuidEfiAcpi1))
+				guid_str = "EFI ACPI 1.0 Table";
+			else if (CompareGuid(g, &EfiMemoryAttributesTable))
+				guid_str = "EFI Memory Attributes Table";
+			else if (CompareGuid(g, &EfiHiiDatabaseProtocol))
+				guid_str = "EFI HII Database Protocol";
+			else if (CompareGuid(g, &EfiHiiConfigRoutingProtocol))
+				guid_str = "EFI HII Config Routing Protocol";
+			else if (CompareGuid(g, &TCG2FinalEventsTable))
+				guid_str = "TCG2 Final Events Table";
+			else if (CompareGuid(g, &EfiImageSecurityDatabase))
+				guid_str = "EFI Image Security Database";
+			else
+				guid_str = "(unknown)";
+
+			debug("%016lx  %08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x  %s",
+				  (UINT64)(uintptr_t)addr,
+				  g->Data1, g->Data2, g->Data3,
+				  g->Data4[0], g->Data4[1],
+				  g->Data4[2], g->Data4[3],
+				  g->Data4[4], g->Data4[5],
+				  g->Data4[6], g->Data4[7],
+				  guid_str);
+		}
+	}
+#endif
+
 	if (bInfo.EFI.Info.ST == 1)
 	{
 		SearchSMBIOS(SystemTable);

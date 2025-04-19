@@ -23,7 +23,8 @@
 			"kernel/tty",
 			"kernel/std",
 			"kernel/vfs",
-			"kernel/memory"
+			"kernel/memory",
+			"kernel/efi"
 		]
 	}
 }
