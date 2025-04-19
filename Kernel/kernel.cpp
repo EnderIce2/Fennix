@@ -115,6 +115,10 @@ EXTERNC void KPrint(const char *Format, ...)
 	va_start(args, Format);
 	vfctprintf(uart_wrapper, nullptr, Format, args);
 	va_end(args);
+	uart_wrapper('\x1b', nullptr);
+	uart_wrapper('[', nullptr);
+	uart_wrapper('0', nullptr);
+	uart_wrapper('m', nullptr);
 	uart_wrapper('\n', nullptr);
 #endif
 }
