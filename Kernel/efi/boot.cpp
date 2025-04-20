@@ -150,6 +150,7 @@ VOID InitializeMemoryNoBS()
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
 #ifdef DEBUG
+	debug("efi info: %x", bInfo.EFI.Info.raw);
 	if (bInfo.EFI.Info.ST)
 	{
 		EFI_GUID EfiAcpi20Table = EFI_ACPI_20_TABLE_GUID;
@@ -171,6 +172,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
 		EFI_GUID EfiHiiConfigRoutingProtocol = EFI_HII_CONFIG_ROUTING_PROTOCOL_GUID;
 		EFI_GUID TCG2FinalEventsTable = TCG2_FINAL_EVENTS_TABLE_GUID;
 		EFI_GUID EfiImageSecurityDatabase = EFI_IMAGE_SECURITY_DATABASE_GUID;
+		EFI_GUID EfiSystemResourceTable = EFI_SYSTEM_RESOURCE_TABLE_GUID;
 
 		debug("there are %d configuration tables", SystemTable->NumberOfTableEntries);
 		for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++)
@@ -218,6 +220,8 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
 				guid_str = "TCG2 Final Events Table";
 			else if (CompareGuid(g, &EfiImageSecurityDatabase))
 				guid_str = "EFI Image Security Database";
+			else if (CompareGuid(g, &EfiSystemResourceTable))
+				guid_str = "EFI System Resource Table";
 			else
 				guid_str = "(unknown)";
 

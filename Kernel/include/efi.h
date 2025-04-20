@@ -46,7 +46,8 @@ typedef uint32_t UINT32;
 typedef int64_t INT64;
 typedef uint64_t UINT64;
 typedef int8_t CHAR8;
-typedef uint16_t CHAR16;
+// typedef uint16_t CHAR16;
+typedef wchar_t CHAR16;
 
 typedef void VOID;
 typedef bool BOOLEAN;
@@ -120,7 +121,6 @@ typedef enum
 } EFI_RESET_TYPE;
 
 #include <efi/errors.h>
-#include <efi/tables.h>
 
 struct EFI_OPEN_PROTOCOL_INFORMATION_ENTRY
 {
@@ -197,6 +197,7 @@ typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 typedef struct _EFI_MEMORY_DESCRIPTOR EFI_MEMORY_DESCRIPTOR;
 
 #include <efi/calls.h>
+#include <efi/tables.h>
 
 struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL
 {
