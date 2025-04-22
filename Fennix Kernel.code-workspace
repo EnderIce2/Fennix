@@ -24,7 +24,8 @@
 			"kernel/std",
 			"kernel/vfs",
 			"kernel/memory",
-			"kernel/efi"
+			"kernel/efi",
+			"kernel/bootstrap"
 		]
 	}
 }

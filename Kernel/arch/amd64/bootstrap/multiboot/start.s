@@ -68,8 +68,10 @@ Multiboot_start:
 	je x32Hang
 
 	mov %cr4, %ecx
-	or $0x00000010, %ecx /* PSE */
-	or $0x00000020, %ecx /* PAE  */
+	or $0x10, %ecx  /* PSE */
+	or $0x20, %ecx  /* PAE */
+	or $0x200, %ecx /* OSFXSR */
+	or $0x400, %ecx /* OSXMMEXCPT */
 	mov %ecx, %cr4
 
 	call LoadGDT32
@@ -82,12 +84,14 @@ Multiboot_start:
 	rdmsr
 	or $0x800, %eax /* LME */
 	or $0x100, %eax /* LMA */
-	or $0x1, %eax /* SCE */
+	or $0x1, %eax   /* SCE */
 	wrmsr
 
 	mov %cr0, %ecx
+	and $~0x4, %ecx /* EM */
+	or $0x2, %ecx   /* MP */
 	or $0x80000000, %ecx /* PG */
-	or $0x1, %ecx /* PE */
+	or $0x1, %ecx   /* PE */
 	mov %ecx, %cr0
 
 	lgdt [GDT64.Ptr]
