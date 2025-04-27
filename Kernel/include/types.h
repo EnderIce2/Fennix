@@ -476,12 +476,11 @@ typedef uint48_t uint_fast48_t;
 	*((type *)stack++)
 
 #define ReturnLogError(ret, format, ...) \
+	do                                   \
 	{                                    \
 		trace(format, ##__VA_ARGS__);    \
 		return ret;                      \
-	}                                    \
-	while (0)                            \
-	__builtin_unreachable()
+	} while (0)
 
 #define AssertReturnError(condition, ret)          \
 	do                                             \
