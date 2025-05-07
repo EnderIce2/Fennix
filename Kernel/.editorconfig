@@ -9,5 +9,9 @@ insert_final_newline = true
 indent_style = tab
 indent_size = 4
 
+[*.py]
+indent_size = 4
+indent_style = space
+
 [Makefile]
 indent_style = tab
