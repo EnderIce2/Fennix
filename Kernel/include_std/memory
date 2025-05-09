@@ -632,6 +632,7 @@ namespace std
 		{
 			long ref_count;
 			virtual void destroy() = 0;
+			virtual void *get_ptr() const = 0;
 			control_block_base() : ref_count(1) {}
 			virtual ~control_block_base() = default;
 		};
@@ -642,6 +643,7 @@ namespace std
 			Y *ptr;
 			Deleter deleter;
 			void destroy() override { deleter(ptr); }
+			void *get_ptr() const override { return ptr; }
 			control_block_impl(Y *p, Deleter d) : ptr(p), deleter(d) {}
 			~control_block_impl() override {}
 		};
@@ -650,6 +652,7 @@ namespace std
 		{
 			T *ptr;
 			void destroy() override { delete ptr; }
+			void *get_ptr() const override { return ptr; }
 			control_block_default(T *p) : ptr(p) {}
 			~control_block_default() override {}
 		};
@@ -661,6 +664,7 @@ namespace std
 			Deleter deleter;
 			Alloc alloc;
 			void destroy() override { deleter(ptr); }
+			void *get_ptr() const override { return ptr; }
 			control_block_alloc(Y *p, Deleter d, Alloc a) : ptr(p), deleter(d), alloc(a) {}
 			~control_block_alloc() override {}
 
@@ -854,7 +858,7 @@ namespace std
 			r.cb = tmp;
 		}
 
-		element_type *get() const noexcept { return cb ? static_cast<control_block_default *>(cb)->ptr : nullptr; }
+		element_type *get() const noexcept { return cb ? static_cast<element_type *>(cb->get_ptr()) : nullptr; }
 		T &operator*() const noexcept { return *get(); }
 		T *operator->() const noexcept { return get(); }
 		element_type &operator[](std::ptrdiff_t idx) const { return get()[idx]; }
@@ -890,25 +894,108 @@ namespace std
 	shared_ptr<T> make_shared_for_overwrite(std::size_t N) { return shared_ptr<T>(new T[N]); }
 
 	template <class T, class Alloc, class... Args>
-	shared_ptr<T> allocate_shared(const Alloc &alloc, Args &&...args);
+	shared_ptr<T> allocate_shared(const Alloc &alloc, Args &&...args)
+	{
+		using AllocTraits = std::allocator_traits<Alloc>;
+		using U = typename std::remove_extent<T>::type;
+		Alloc a = alloc;
+		U *ptr = AllocTraits::allocate(a, 1);
+		try
+		{
+			AllocTraits::construct(a, ptr, std::forward<Args>(args)...);
+			return shared_ptr<T>(ptr, [a](U *p) mutable
+								 {
+				AllocTraits::destroy(a, p);
+				AllocTraits::deallocate(a, p, 1); }, a);
+		}
+		catch (...)
+		{
+			AllocTraits::deallocate(a, ptr, 1);
+			throw;
+		}
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N);
+	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N)
+	{
+		using AllocTraits = std::allocator_traits<Alloc>;
+		using U = typename std::remove_extent<T>::type;
+		Alloc a = alloc;
+		U *ptr = AllocTraits::allocate(a, N);
+		try
+		{
+			for (std::size_t i = 0; i < N; ++i)
+				AllocTraits::construct(a, ptr + i);
+			return shared_ptr<T>(ptr, [a, N](U *p) mutable
+								 {
+				for (std::size_t i = 0; i < N; ++i)
+					AllocTraits::destroy(a, p + i);
+				AllocTraits::deallocate(a, p, N); }, a);
+		}
+		catch (...)
+		{
+			AllocTraits::deallocate(a, ptr, N);
+			throw;
+		}
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared(const Alloc &alloc);
+	shared_ptr<T> allocate_shared(const Alloc &alloc)
+	{
+		return allocate_shared<T>(alloc);
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N, const std::remove_extent_t<T> &u);
+	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N, const std::remove_extent_t<T> &u)
+	{
+		using AllocTraits = std::allocator_traits<Alloc>;
+		using U = typename std::remove_extent<T>::type;
+		Alloc a = alloc;
+		U *ptr = AllocTraits::allocate(a, N);
+		try
+		{
+			for (std::size_t i = 0; i < N; ++i)
+				AllocTraits::construct(a, ptr + i, u);
+			return shared_ptr<T>(ptr, [a, N](U *p) mutable
+								 {
+				for (std::size_t i = 0; i < N; ++i)
+					AllocTraits::destroy(a, p + i);
+				AllocTraits::deallocate(a, p, N); }, a);
+		}
+		catch (...)
+		{
+			AllocTraits::deallocate(a, ptr, N);
+			throw;
+		}
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared(const Alloc &alloc, const std::remove_extent_t<T> &u);
+	shared_ptr<T> allocate_shared(const Alloc &alloc, const std::remove_extent_t<T> &u)
+	{
+		return allocate_shared<T>(alloc, 1, u);
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc);
+	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc)
+	{
+		using AllocTraits = std::allocator_traits<Alloc>;
+		using U = typename std::remove_extent<T>::type;
+		Alloc a = alloc;
+		U *ptr = AllocTraits::allocate(a, 1);
+		return shared_ptr<T>(ptr, [a](U *p) mutable
+							 { AllocTraits::deallocate(a, p, 1); }, a);
+	}
 
 	template <class T, class Alloc>
-	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc, std::size_t N);
+	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc, std::size_t N)
+	{
+		using AllocTraits = std::allocator_traits<Alloc>;
+		using U = typename std::remove_extent<T>::type;
+		Alloc a = alloc;
+		U *ptr = AllocTraits::allocate(a, N);
+		return shared_ptr<T>(ptr, [a, N](U *p) mutable
+							 { AllocTraits::deallocate(a, p, N); }, a);
+	}
 
 	template <class T, class U>
 	std::shared_ptr<T> static_pointer_cast(const std::shared_ptr<U> &r) noexcept
@@ -971,7 +1058,7 @@ namespace std
 	}
 
 	template <class Deleter, class T>
-	Deleter *get_deleter(const std::shared_ptr<T> &p) noexcept { return p.get_deleter(); }
+	Deleter *get_deleter(const std::shared_ptr<T> &p) noexcept { return p.cb ? &p.cb->deleter : nullptr; }
 
 	template <class T, class U>
 	bool operator==(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return lhs.get() == rhs.get(); }
