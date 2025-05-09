@@ -19,9 +19,11 @@
 
 #include <type_traits>
 #include <functional>
+#include <iterator>
 #include <cstddef>
 #include <utility>
 #include <limits>
+#include <atomic>
 #include <new>
 
 #include <debug.h>
@@ -620,145 +622,426 @@ namespace std
 	constexpr std::allocator_arg_t allocator_arg{};
 
 	template <class T>
-	class auto_ptr;
-
-	template <>
-	class auto_ptr<void>;
-
-	template <class T>
 	class weak_ptr;
 
 	template <class T>
 	class shared_ptr
 	{
+	private:
+		struct control_block_base
+		{
+			long ref_count;
+			virtual void destroy() = 0;
+			control_block_base() : ref_count(1) {}
+			virtual ~control_block_base() = default;
+		};
+
+		template <class Y, class Deleter>
+		struct control_block_impl : control_block_base
+		{
+			Y *ptr;
+			Deleter deleter;
+			void destroy() override { deleter(ptr); }
+			control_block_impl(Y *p, Deleter d) : ptr(p), deleter(d) {}
+			~control_block_impl() override {}
+		};
+
+		struct control_block_default : control_block_base
+		{
+			T *ptr;
+			void destroy() override { delete ptr; }
+			control_block_default(T *p) : ptr(p) {}
+			~control_block_default() override {}
+		};
+
+		template <class Y, class Deleter, class Alloc>
+		struct control_block_alloc : control_block_base
+		{
+			Y *ptr;
+			Deleter deleter;
+			Alloc alloc;
+			void destroy() override { deleter(ptr); }
+			control_block_alloc(Y *p, Deleter d, Alloc a) : ptr(p), deleter(d), alloc(a) {}
+			~control_block_alloc() override {}
+
+			void *operator new(std::size_t sz, Alloc &a)
+			{
+				using AllocTraits = std::allocator_traits<Alloc>;
+				return AllocTraits::allocate(a, sz);
+			}
+
+			void operator delete(void *p, std::size_t sz)
+			{
+				::operator delete(p);
+			}
+		};
+
+		control_block_base *cb;
+
 	public:
 		using weak_type = std::weak_ptr<T>;
 		using element_type = std::remove_extent_t<T>;
 
-		constexpr shared_ptr() noexcept;
-		constexpr shared_ptr(std::nullptr_t) noexcept;
+		constexpr shared_ptr() noexcept : cb(nullptr) {}
+		constexpr shared_ptr(std::nullptr_t) noexcept : cb(nullptr) {}
 
 		template <class Y>
-		explicit shared_ptr(Y *ptr);
+		explicit shared_ptr(Y *ptr) : cb(ptr ? new control_block_default(ptr) : nullptr) {}
 
 		template <class Y, class Deleter>
-		shared_ptr(Y *ptr, Deleter d);
+		shared_ptr(Y *ptr, Deleter d) : cb(ptr ? new control_block_impl<Y, Deleter>(ptr, d) : nullptr) {}
 
 		template <class Deleter>
-		shared_ptr(std::nullptr_t ptr, Deleter d);
+		shared_ptr(std::nullptr_t ptr, Deleter d) : cb(nullptr) {}
 
 		template <class Y, class Deleter, class Alloc>
-		shared_ptr(Y *ptr, Deleter d, Alloc alloc);
+		shared_ptr(Y *ptr, Deleter d, Alloc alloc)
+			: cb(ptr ? new(alloc) control_block_alloc<Y, Deleter, Alloc>(ptr, d, alloc) : nullptr) {}
 
 		template <class Deleter, class Alloc>
-		shared_ptr(std::nullptr_t ptr, Deleter d, Alloc alloc);
+		shared_ptr(std::nullptr_t ptr, Deleter d, Alloc alloc) : cb(nullptr) {}
 
 		template <class Y>
-		shared_ptr(const shared_ptr<Y> &r, element_type *ptr) noexcept;
+		shared_ptr(const shared_ptr<Y> &r, element_type *ptr) noexcept : cb(r.cb)
+		{
+			if (cb)
+				++cb->ref_count;
+		}
 
 		template <class Y>
-		shared_ptr(shared_ptr<Y> &&r, element_type *ptr) noexcept;
+		shared_ptr(shared_ptr<Y> &&r, element_type *ptr) noexcept : cb(r.cb) { r.cb = nullptr; }
 
-		shared_ptr(const shared_ptr &r) noexcept;
-
-		template <class Y>
-		shared_ptr(const shared_ptr<Y> &r) noexcept;
-
-		shared_ptr(shared_ptr &&r) noexcept;
-
-		template <class Y>
-		shared_ptr(shared_ptr<Y> &&r) noexcept;
+		shared_ptr(const shared_ptr &r) noexcept : cb(r.cb)
+		{
+			if (cb)
+				++cb->ref_count;
+		}
 
 		template <class Y>
-		explicit shared_ptr(const std::weak_ptr<Y> &r);
+		shared_ptr(const shared_ptr<Y> &r) noexcept : cb(r.cb)
+		{
+			if (cb)
+				++cb->ref_count;
+		}
+
+		shared_ptr(shared_ptr &&r) noexcept : cb(r.cb) { r.cb = nullptr; }
 
 		template <class Y>
-		shared_ptr(std::auto_ptr<Y> &&r);
+		shared_ptr(shared_ptr<Y> &&r) noexcept : cb(r.cb) { r.cb = nullptr; }
+
+		template <class Y>
+		explicit shared_ptr(const std::weak_ptr<Y> &r) : cb(nullptr) { /* Not implemented */ }
 
 		template <class Y, class Deleter>
-		shared_ptr(std::unique_ptr<Y, Deleter> &&r);
+		shared_ptr(std::unique_ptr<Y, Deleter> &&r) : cb(r.get() ? new control_block_impl<Y, Deleter>(r.release(), Deleter()) : nullptr) {}
 
-		~shared_ptr();
+		~shared_ptr()
+		{
+			if (cb)
+			{
+				if (--cb->ref_count == 0)
+				{
+					cb->destroy();
+					delete cb;
+				}
+			}
+		}
 
-		shared_ptr &operator=(const shared_ptr &r) noexcept;
+		shared_ptr &operator=(const shared_ptr &r) noexcept
+		{
+			if (this != &r)
+			{
+				if (cb && --cb->ref_count == 0)
+				{
+					cb->destroy();
+					delete cb;
+				}
+				cb = r.cb;
+				if (cb)
+					++cb->ref_count;
+			}
+			return *this;
+		}
 
 		template <class Y>
-		shared_ptr &operator=(const shared_ptr<Y> &r) noexcept;
+		shared_ptr &operator=(const shared_ptr<Y> &r) noexcept
+		{
+			if (cb && --cb->ref_count == 0)
+			{
+				cb->destroy();
+				delete cb;
+			}
+			cb = r.cb;
+			if (cb)
+				++cb->ref_count;
+			return *this;
+		}
 
-		shared_ptr &operator=(shared_ptr &&r) noexcept;
+		shared_ptr &operator=(shared_ptr &&r) noexcept
+		{
+			if (this != &r)
+			{
+				if (cb && --cb->ref_count == 0)
+				{
+					cb->destroy();
+					delete cb;
+				}
+				cb = r.cb;
+				r.cb = nullptr;
+			}
+			return *this;
+		}
 
 		template <class Y>
-		shared_ptr &operator=(shared_ptr<Y> &&r) noexcept;
-
-		template <class Y>
-		shared_ptr &operator=(std::auto_ptr<Y> &&r);
+		shared_ptr &operator=(shared_ptr<Y> &&r) noexcept
+		{
+			if (cb && --cb->ref_count == 0)
+			{
+				cb->destroy();
+				delete cb;
+			}
+			cb = r.cb;
+			r.cb = nullptr;
+			return *this;
+		}
 
 		template <class Y, class Deleter>
-		shared_ptr &operator=(std::unique_ptr<Y, Deleter> &&r);
+		shared_ptr &operator=(std::unique_ptr<Y, Deleter> &&r)
+		{
+			reset(r.get(), Deleter());
+			r.release();
+			return *this;
+		}
 
-		void reset() noexcept;
+		void reset() noexcept
+		{
+			if (cb && --cb->ref_count == 0)
+			{
+				cb->destroy();
+				delete cb;
+			}
+			cb = nullptr;
+		}
 
 		template <class Y>
-		void reset(Y *ptr);
+		void reset(Y *ptr)
+		{
+			reset();
+			if (ptr)
+				cb = new control_block_default(ptr);
+		}
 
 		template <class Y, class Deleter>
-		void reset(Y *ptr, Deleter d);
+		void reset(Y *ptr, Deleter d)
+		{
+			reset();
+			if (ptr)
+				cb = new control_block_impl<Y, Deleter>(ptr, d);
+		}
 
 		template <class Y, class Deleter, class Alloc>
-		void reset(Y *ptr, Deleter d, Alloc alloc);
+		void reset(Y *ptr, Deleter d, Alloc alloc)
+		{
+			reset();
+			if (ptr)
+				cb = new (alloc) control_block_alloc<Y, Deleter, Alloc>(ptr, d, alloc);
+		}
 
-		void swap(shared_ptr &r) noexcept;
+		void swap(shared_ptr &r) noexcept
+		{
+			control_block_base *tmp = cb;
+			cb = r.cb;
+			r.cb = tmp;
+		}
 
-		T *get() const noexcept;
-
-		// element_type *get() const noexcept;
-
-		T &operator*() const noexcept;
-
-		T *operator->() const noexcept;
-
-		element_type &operator[](std::ptrdiff_t idx) const;
-
-		long use_count() const noexcept;
-
-		bool unique() const noexcept;
-
-		explicit operator bool() const noexcept { return get() != nullptr; }
-
-		template <class Y>
-		bool owner_before(const shared_ptr<Y> &other) const noexcept;
+		element_type *get() const noexcept { return cb ? static_cast<control_block_default *>(cb)->ptr : nullptr; }
+		T &operator*() const noexcept { return *get(); }
+		T *operator->() const noexcept { return get(); }
+		element_type &operator[](std::ptrdiff_t idx) const { return get()[idx]; }
+		long use_count() const noexcept { return cb ? cb->ref_count : 0; }
+		explicit operator bool() const noexcept { return cb != nullptr; }
 
 		template <class Y>
-		bool owner_before(const std::weak_ptr<Y> &other) const noexcept;
-
-		std::size_t owner_hash() const noexcept;
+		bool owner_before(const shared_ptr<Y> &other) const noexcept { return cb < other.cb; }
 
 		template <class Y>
-		bool owner_equal(const std::shared_ptr<Y> &other) const noexcept;
-
-		template <class Y>
-		bool owner_equal(const std::weak_ptr<Y> &other) const noexcept;
+		bool owner_before(const std::weak_ptr<Y> &other) const noexcept { return cb < other.cb; }
 	};
 
 	template <class T, class... Args>
-	shared_ptr<T> make_shared(Args &&...args);
+	shared_ptr<T> make_shared(Args &&...args) { return shared_ptr<T>(new T(std::forward<Args>(args)...)); }
 
 	template <class T>
-	shared_ptr<T> make_shared(std::size_t N);
+	shared_ptr<T> make_shared(std::size_t N) { return shared_ptr<T>(new T[N]); }
 
 	template <class T>
-	shared_ptr<T> make_shared();
+	shared_ptr<T> make_shared() { return shared_ptr<T>(new T); }
 
 	template <class T>
-	shared_ptr<T> make_shared(std::size_t N, const std::remove_extent_t<T> &u);
+	shared_ptr<T> make_shared(std::size_t N, const std::remove_extent_t<T> &u) { return shared_ptr<T>(new T[N](u)); }
 
 	template <class T>
-	shared_ptr<T> make_shared(const std::remove_extent_t<T> &u);
+	shared_ptr<T> make_shared(const std::remove_extent_t<T> &u) { return shared_ptr<T>(new T(u)); }
 
 	template <class T>
-	shared_ptr<T> make_shared_for_overwrite();
+	shared_ptr<T> make_shared_for_overwrite() { return shared_ptr<T>(new T); }
 
 	template <class T>
-	shared_ptr<T> make_shared_for_overwrite(std::size_t N);
+	shared_ptr<T> make_shared_for_overwrite(std::size_t N) { return shared_ptr<T>(new T[N]); }
 
+	template <class T, class Alloc, class... Args>
+	shared_ptr<T> allocate_shared(const Alloc &alloc, Args &&...args);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared(const Alloc &alloc);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared(const Alloc &alloc, std::size_t N, const std::remove_extent_t<T> &u);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared(const Alloc &alloc, const std::remove_extent_t<T> &u);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc);
+
+	template <class T, class Alloc>
+	shared_ptr<T> allocate_shared_for_overwrite(const Alloc &alloc, std::size_t N);
+
+	template <class T, class U>
+	std::shared_ptr<T> static_pointer_cast(const std::shared_ptr<U> &r) noexcept
+	{
+		auto p = static_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> static_pointer_cast(std::shared_ptr<U> &&r) noexcept
+	{
+		auto p = static_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> dynamic_pointer_cast(const std::shared_ptr<U> &r) noexcept
+	{
+		if (auto p = dynamic_cast<typename std::shared_ptr<T>::element_type *>(r.get()))
+			return std::shared_ptr<T>{r, p};
+		else
+			return std::shared_ptr<T>{};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> dynamic_pointer_cast(std::shared_ptr<U> &&r) noexcept
+	{
+		if (auto p = dynamic_cast<typename std::shared_ptr<T>::element_type *>(r.get()))
+			return std::shared_ptr<T>{r, p};
+		else
+			return std::shared_ptr<T>{};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> const_pointer_cast(const std::shared_ptr<U> &r) noexcept
+	{
+		auto p = const_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> const_pointer_cast(std::shared_ptr<U> &&r) noexcept
+	{
+		auto p = const_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> reinterpret_pointer_cast(const std::shared_ptr<U> &r) noexcept
+	{
+		auto p = reinterpret_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class T, class U>
+	std::shared_ptr<T> reinterpret_pointer_cast(std::shared_ptr<U> &&r) noexcept
+	{
+		auto p = reinterpret_cast<typename std::shared_ptr<T>::element_type *>(r.get());
+		return std::shared_ptr<T>{r, p};
+	}
+
+	template <class Deleter, class T>
+	Deleter *get_deleter(const std::shared_ptr<T> &p) noexcept { return p.get_deleter(); }
+
+	template <class T, class U>
+	bool operator==(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return lhs.get() == rhs.get(); }
+
+	template <class T, class U>
+	bool operator!=(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return !(lhs == rhs); }
+
+	// template <class T, class U>
+	// bool operator<(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return std::less<V>()(lhs.get(), rhs.get()); }
+
+	template <class T, class U>
+	bool operator>(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return rhs < lhs; }
+
+	template <class T, class U>
+	bool operator<=(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return !(rhs < lhs); }
+
+	template <class T, class U>
+	bool operator>=(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return !(lhs < rhs); }
+
+	// template <class T, class U>
+	// std::strong_ordering operator<=>(const std::shared_ptr<T> &lhs, const std::shared_ptr<U> &rhs) noexcept { return std::compare_three_way{}(x.get(), y.get()); }
+
+	template <class T>
+	bool operator==(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return !lhs; }
+
+	template <class T>
+	bool operator==(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return !rhs; }
+
+	template <class T>
+	bool operator!=(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return (bool)lhs; }
+
+	template <class T>
+	bool operator!=(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return (bool)rhs; }
+
+	// template <class T>
+	// bool operator<(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return std::less<std::shared_ptr<T>::element_type *>()(lhs.get(), nullptr); }
+
+	// template <class T>
+	// bool operator<(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return std::less<std::shared_ptr<T>::element_type *>()(nullptr, rhs.get()); }
+
+	template <class T>
+	bool operator>(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return nullptr < lhs; }
+
+	template <class T>
+	bool operator>(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return rhs < nullptr; }
+
+	template <class T>
+	bool operator<=(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return !(nullptr < lhs); }
+
+	template <class T>
+	bool operator<=(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return !(rhs < nullptr); }
+
+	template <class T>
+	bool operator>=(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return !(lhs < nullptr); }
+
+	template <class T>
+	bool operator>=(std::nullptr_t, const std::shared_ptr<T> &rhs) noexcept { return !(nullptr < rhs); }
+
+	// template <class T>
+	// std::strong_ordering operator<=>(const std::shared_ptr<T> &lhs, std::nullptr_t) noexcept { return std::compare_three_way{}(x.get(), static_cast<std::shared_ptr<T>::element_type*>(nullptr)); }
+
+	// template <class T, class U, class V>
+	// std::basic_ostream<U, V> &operator<<(std::basic_ostream<U, V> &os, const std::shared_ptr<T> &ptr) { return os << ptr.get(); }
+
+	template <class T>
+	void swap(std::shared_ptr<T> &lhs, std::shared_ptr<T> &rhs) noexcept { lhs.swap(rhs); }
+
+	// template <class T>
+	// struct std::atomic<std::shared_ptr<T>>;
+
+	template <class T>
+	struct hash<std::shared_ptr<T>>;
 }
