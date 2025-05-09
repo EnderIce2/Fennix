@@ -17,6 +17,9 @@
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+
 #include <initializer_list>
 #include <algorithm>
 #include <stdexcept>
@@ -1415,6 +1418,9 @@ namespace std
 		{
 			if (_size < _capacity)
 			{
+				if (_size == 0)
+					_size = Traits::length(_data);
+
 				CharT *new_data = _alloc.allocate(_size);
 				memcpy(new_data, _data, _size);
 
@@ -1654,17 +1660,17 @@ namespace std
 		template <class InputIt>
 		constexpr basic_string &append(InputIt first, InputIt last)
 		{
-			// size_type count = distance(first, last);
 			size_type count = last - first;
-			if (count > 0)
-			{
-				size_type new_size = _size + count;
-				if (new_size > _capacity)
-					reserve(new_size);
-				std::copy(first, last, _data + _size);
-				_data[new_size] = '\0';
-				_size = new_size;
-			}
+			size_type old_size = _size;
+			size_type new_size = old_size + count;
+
+			if (new_size + 1 > _capacity)
+				reserve(new_size + 1);
+
+			std::copy(first, last, _data + old_size);
+
+			_size = new_size;
+			_data[_size] = '\0';
 			return *this;
 		}
 
@@ -1825,6 +1831,9 @@ namespace std
 
 		constexpr void resize(size_type count)
 		{
+			if (_size == 0 && _data != nullptr)
+				_size = Traits::length(_data);
+
 			if (count < _size)
 				erase(count);
 			else if (count > _size)
@@ -2476,3 +2485,5 @@ namespace std
 		}
 	}
 }
+
+#pragma GCC diagnostic pop
