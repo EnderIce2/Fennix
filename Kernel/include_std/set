@@ -1,0 +1,280 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <initializer_list>
+#include <functional>
+#include <algorithm>
+#include <memory>
+
+namespace std
+{
+	template <class Key, class Compare = std::less<Key>, class Allocator = std::allocator<Key>>
+	class multiset;
+
+	template <class Key, class Compare = std::less<Key>, class Allocator = std::allocator<Key>>
+	class set
+	{
+	public:
+		template <class Iter, class NodeType>
+		struct __set_return_type
+		{
+			Iter position;
+			bool inserted;
+			NodeType node;
+		};
+
+		using key_type = Key;
+		using value_type = Key;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using key_compare = Compare;
+		using value_compare = Compare;
+		using allocator_type = Allocator;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using pointer = std::allocator_traits<Allocator>::pointer;
+		using const_pointer = std::allocator_traits<Allocator>::const_pointer;
+		using iterator = value_type;
+		using const_iterator = const value_type;
+		using reverse_iterator = std::reverse_iterator<iterator>;
+		using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+		using node_type = std::unique_ptr<value_type>;
+		using insert_return_type = __set_return_type<iterator, node_type>;
+
+	private:
+	public:
+#pragma region Constructors
+
+		set() : set(Compare()) {}
+
+		explicit set(const Compare &comp, const Allocator &alloc = Allocator());
+
+		explicit set(const Allocator &alloc);
+
+		template <class InputIt>
+		set(InputIt first, InputIt last, const Compare &comp = Compare(), const Allocator &alloc = Allocator());
+
+		template <class InputIt>
+		set(InputIt first, InputIt last, const Allocator &alloc) : set(first, last, Compare(), alloc) {}
+
+		set(const set &other);
+
+		set(const set &other, const Allocator &alloc);
+
+		set(set &&other);
+
+		set(set &&other, const Allocator &alloc);
+
+		set(std::initializer_list<value_type> init, const Compare &comp = Compare(), const Allocator &alloc = Allocator());
+
+		set(std::initializer_list<value_type> init, const Allocator &alloc) : set(init, Compare(), alloc) {}
+
+		~set();
+
+#pragma endregion Constructors
+
+#pragma region Assignment
+
+		set &operator=(const set &other);
+
+		set &operator=(set &&other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value && std::is_nothrow_move_assignable<Compare>::value);
+
+		set &operator=(std::initializer_list<value_type> ilist);
+
+		allocator_type get_allocator() const noexcept;
+
+#pragma endregion Assignment
+
+#pragma region Iterators
+
+		iterator begin() noexcept;
+
+		const_iterator begin() const noexcept;
+
+		const_iterator cbegin() const noexcept;
+
+		iterator end() noexcept;
+
+		const_iterator end() const noexcept;
+
+		const_iterator cend() const noexcept;
+
+		reverse_iterator rbegin() noexcept;
+
+		const_reverse_iterator rbegin() const noexcept;
+
+		const_reverse_iterator crbegin() const noexcept;
+
+		reverse_iterator rend() noexcept;
+
+		const_reverse_iterator rend() const noexcept;
+
+		const_reverse_iterator crend() const noexcept;
+
+#pragma endregion Iterators
+
+#pragma region Capacity
+
+		bool empty() const noexcept;
+
+		size_type size() const noexcept;
+
+		size_type max_size() const noexcept;
+
+#pragma endregion Capacity
+
+#pragma region Modifiers
+
+		void clear() noexcept;
+
+		std::pair<iterator, bool> insert(const value_type &value);
+
+		std::pair<iterator, bool> insert(value_type &&value);
+
+		iterator insert(const_iterator pos, const value_type &value);
+
+		iterator insert(const_iterator pos, value_type &&value);
+
+		template <class InputIt>
+		void insert(InputIt first, InputIt last);
+
+		void insert(std::initializer_list<value_type> ilist);
+
+		insert_return_type insert(node_type &&nh);
+
+		iterator insert(const_iterator pos, node_type &&nh);
+
+		template <class... Args>
+		std::pair<iterator, bool> emplace(Args &&...args);
+
+		template <class... Args>
+		iterator emplace_hint(const_iterator hint, Args &&...args);
+
+		iterator erase(const_iterator pos);
+
+		iterator erase(const_iterator first, const_iterator last);
+
+		size_type erase(const Key &key);
+
+		void swap(set &other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value && std::is_nothrow_swappable<Compare>::value);
+
+		node_type extract(const_iterator position);
+
+		node_type extract(const Key &k);
+
+		template <class C2>
+		void merge(std::set<Key, C2, Allocator> &source);
+
+		template <class C2>
+		void merge(std::set<Key, C2, Allocator> &&source);
+
+		template <class C2>
+		void merge(std::multiset<Key, C2, Allocator> &source);
+
+		template <class C2>
+		void merge(std::multiset<Key, C2, Allocator> &&source);
+
+#pragma endregion Modifiers
+
+#pragma region Lookup
+
+		size_type count(const Key &key) const;
+
+		template <class K>
+		size_type count(const K &x) const;
+
+		iterator find(const Key &key);
+
+		const_iterator find(const Key &key) const;
+
+		template <class K>
+		iterator find(const K &x);
+
+		template <class K>
+		const_iterator find(const K &x) const;
+
+		bool contains(const Key &key) const;
+
+		template <class K>
+		bool contains(const K &x) const;
+
+		std::pair<iterator, iterator> equal_range(const Key &key);
+
+		std::pair<const_iterator, const_iterator> equal_range(const Key &key) const;
+
+		template <class K>
+		std::pair<iterator, iterator> equal_range(const K &x);
+
+		template <class K>
+		std::pair<const_iterator, const_iterator> equal_range(const K &x) const;
+
+		iterator lower_bound(const Key &key);
+
+		const_iterator lower_bound(const Key &key) const;
+
+		template <class K>
+		iterator lower_bound(const K &x);
+
+		template <class K>
+		const_iterator lower_bound(const K &x) const;
+
+		iterator upper_bound(const Key &key);
+
+		const_iterator upper_bound(const Key &key) const;
+
+		template <class K>
+		iterator upper_bound(const K &x);
+
+		template <class K>
+		const_iterator upper_bound(const K &x) const;
+
+#pragma endregion Lookup
+
+#pragma region Observers
+
+		key_compare key_comp() const;
+
+		set::value_compare value_comp() const;
+
+#pragma endregion Observers
+	};
+
+	template <class Key, class Compare, class Alloc>
+	bool operator==(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs);
+
+	// template <class Key, class Compare, class Alloc>
+	// std::strong_ordering operator<=>(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs);
+
+	template <class Key, class Compare, class Alloc>
+	void swap(std::set<Key, Compare, Alloc> &lhs, std::set<Key, Compare, Alloc> &rhs) noexcept(noexcept(lhs.swap(rhs)));
+
+	template <class Key, class Compare, class Alloc, class Pred>
+	std::set<Key, Compare, Alloc>::size_type erase_if(std::set<Key, Compare, Alloc> &c, Pred pred)
+	{
+		auto old_size = c.size();
+		for (auto first = c.begin(), last = c.end(); first != last;)
+		{
+			if (pred(*first))
+				first = c.erase(first);
+			else
+				++first;
+		}
+		return old_size - c.size();
+	}
+}
