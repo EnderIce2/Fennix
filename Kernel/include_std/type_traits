@@ -721,4 +721,12 @@ namespace std
 
 	template <class T>
 	constexpr bool is_pointer_v = is_pointer<T>::value;
+
+	template <class T>
+	struct is_floating_point : std::integral_constant<bool, std::is_same<float, typename std::remove_cv<T>::type>::value || std::is_same<double, typename std::remove_cv<T>::type>::value || std::is_same<long double, typename std::remove_cv<T>::type>::value>
+	{
+	};
+
+	template <class T>
+	constexpr bool is_floating_point_v = is_floating_point<T>::value;
 }
