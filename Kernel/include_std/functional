@@ -260,6 +260,28 @@ namespace std
 		}
 	};
 
+	template <typename T>
+	struct less<T *>
+	{
+		constexpr bool operator()(const T *lhs, const T *rhs) const
+		{
+			if (__builtin_is_constant_evaluated())
+				return lhs < rhs;
+			return (uintptr_t)lhs < (uintptr_t)rhs;
+		}
+	};
+
+	template <>
+	class less<void>
+	{
+	public:
+		template <class T, class U>
+		constexpr auto operator()(T &&lhs, U &&rhs) const -> decltype(std::forward<T>(lhs) < std::forward<U>(rhs))
+		{
+			return std::forward<T>(lhs) < std::forward<U>(rhs);
+		}
+	};
+
 	template <class F, class... Args>
 	constexpr typename std::result_of<F()>::type bind(F &&f, Args &&...args);
 
