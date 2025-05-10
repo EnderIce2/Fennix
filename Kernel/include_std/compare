@@ -1,0 +1,295 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <type_traits>
+#include <utility>
+#include <cmath>
+
+namespace std
+{
+	namespace __cmp_dtl
+	{
+		using type = signed char;
+
+		enum order : type
+		{
+			less = -1,
+			equivalent = 0,
+			greater = 1,
+			unordered = 2
+		};
+
+		struct __unspecified
+		{
+			consteval __unspecified(__unspecified *) noexcept {}
+		};
+	};
+
+	class partial_ordering
+	{
+	private:
+		__cmp_dtl::type value;
+
+		constexpr explicit partial_ordering(__cmp_dtl::order v) noexcept : value(__cmp_dtl::type(v)) {}
+
+		friend class weak_ordering;
+		friend class strong_ordering;
+
+	public:
+		static const partial_ordering less;
+		static const partial_ordering equivalent;
+		static const partial_ordering greater;
+		static const partial_ordering unordered;
+
+		friend constexpr bool operator==(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value == 0; }
+		friend constexpr bool operator==(partial_ordering v, partial_ordering w) noexcept = default;
+
+		friend constexpr bool operator<(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value == -1; }
+		friend constexpr bool operator<(__cmp_dtl::__unspecified u, partial_ordering v) noexcept { return v.value == 1; }
+
+		friend constexpr bool operator<=(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value <= 0; }
+		friend constexpr bool operator<=(__cmp_dtl::__unspecified u, partial_ordering v) noexcept { return __cmp_dtl::type(v.value & 1) == v.value; }
+
+		friend constexpr bool operator>(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value == 1; }
+		friend constexpr bool operator>(__cmp_dtl::__unspecified u, partial_ordering v) noexcept { return v.value == -1; }
+
+		friend constexpr bool operator>=(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return __cmp_dtl::type(v.value & 1) == v.value; }
+		friend constexpr bool operator>=(__cmp_dtl::__unspecified u, partial_ordering v) noexcept { return 0 >= v.value; }
+
+		friend constexpr partial_ordering operator<=>(partial_ordering v, __cmp_dtl::__unspecified u) noexcept { return v; }
+		friend constexpr partial_ordering operator<=>(__cmp_dtl::__unspecified u, partial_ordering v) noexcept
+		{
+			if (v.value & 1)
+				return partial_ordering(__cmp_dtl::order(-v.value));
+			else
+				return v;
+		}
+	};
+
+	inline constexpr partial_ordering partial_ordering::less(__cmp_dtl::order::less);
+	inline constexpr partial_ordering partial_ordering::equivalent(__cmp_dtl::order::equivalent);
+	inline constexpr partial_ordering partial_ordering::greater(__cmp_dtl::order::greater);
+	inline constexpr partial_ordering partial_ordering::unordered(__cmp_dtl::order::unordered);
+
+	class weak_ordering
+	{
+	private:
+		__cmp_dtl::type value;
+
+		constexpr explicit weak_ordering(__cmp_dtl::order v) noexcept : value(__cmp_dtl::type(v)) {}
+
+		friend class strong_ordering;
+
+	public:
+		static const weak_ordering less;
+		static const weak_ordering equivalent;
+		static const weak_ordering greater;
+
+		constexpr operator partial_ordering() const noexcept
+		{
+			return partial_ordering(__cmp_dtl::order(value));
+		}
+
+		friend constexpr bool operator==(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value == 0; }
+		friend constexpr bool operator==(weak_ordering v, weak_ordering w) noexcept = default;
+
+		friend constexpr bool operator<(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value < 0; }
+		friend constexpr bool operator<(__cmp_dtl::__unspecified u, weak_ordering v) noexcept { return 0 < v.value; }
+
+		friend constexpr bool operator<=(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value <= 0; }
+		friend constexpr bool operator<=(__cmp_dtl::__unspecified u, weak_ordering v) noexcept { return 0 <= v.value; }
+
+		friend constexpr bool operator>(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value > 0; }
+		friend constexpr bool operator>(__cmp_dtl::__unspecified u, weak_ordering v) noexcept { return 0 > v.value; }
+
+		friend constexpr bool operator>=(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value >= 0; }
+		friend constexpr bool operator>=(__cmp_dtl::__unspecified u, weak_ordering v) noexcept { return 0 >= v.value; }
+
+		friend constexpr weak_ordering operator<=>(weak_ordering v, __cmp_dtl::__unspecified u) noexcept { return v; }
+		friend constexpr weak_ordering operator<=>(__cmp_dtl::__unspecified u, weak_ordering v) noexcept { return weak_ordering(__cmp_dtl::order(-v.value)); }
+	};
+
+	inline constexpr weak_ordering weak_ordering::less(__cmp_dtl::order::less);
+	inline constexpr weak_ordering weak_ordering::equivalent(__cmp_dtl::order::equivalent);
+	inline constexpr weak_ordering weak_ordering::greater(__cmp_dtl::order::greater);
+
+	class strong_ordering
+	{
+	private:
+		__cmp_dtl::type value;
+
+		constexpr explicit strong_ordering(__cmp_dtl::order v) noexcept : value(__cmp_dtl::type(v)) {}
+
+	public:
+		static const strong_ordering less;
+		static const strong_ordering equivalent;
+		static const strong_ordering equal;
+		static const strong_ordering greater;
+
+		constexpr operator partial_ordering() const noexcept
+		{
+			return partial_ordering(__cmp_dtl::order(value));
+		}
+
+		constexpr operator weak_ordering() const noexcept
+		{
+			return weak_ordering(__cmp_dtl::order(value));
+		}
+
+		friend constexpr bool operator==(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value == 0; }
+		friend constexpr bool operator==(strong_ordering v, strong_ordering w) noexcept = default;
+
+		friend constexpr bool operator<(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value < 0; }
+		friend constexpr bool operator<(__cmp_dtl::__unspecified u, strong_ordering v) noexcept { return 0 < v.value; }
+
+		friend constexpr bool operator<=(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value <= 0; }
+		friend constexpr bool operator<=(__cmp_dtl::__unspecified u, strong_ordering v) noexcept { return 0 <= v.value; }
+
+		friend constexpr bool operator>(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value > 0; }
+		friend constexpr bool operator>(__cmp_dtl::__unspecified u, strong_ordering v) noexcept { return 0 > v.value; }
+
+		friend constexpr bool operator>=(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v.value >= 0; }
+		friend constexpr bool operator>=(__cmp_dtl::__unspecified u, strong_ordering v) noexcept { return 0 >= v.value; }
+
+		friend constexpr strong_ordering operator<=>(strong_ordering v, __cmp_dtl::__unspecified u) noexcept { return v; }
+		friend constexpr strong_ordering operator<=>(__cmp_dtl::__unspecified u, strong_ordering v) noexcept { return strong_ordering(__cmp_dtl::order(-v.value)); }
+	};
+
+	inline constexpr strong_ordering strong_ordering::less(__cmp_dtl::order::less);
+	inline constexpr strong_ordering strong_ordering::equivalent(__cmp_dtl::order::equivalent);
+	inline constexpr strong_ordering strong_ordering::equal(__cmp_dtl::order::equivalent);
+	inline constexpr strong_ordering strong_ordering::greater(__cmp_dtl::order::greater);
+
+	constexpr bool is_eq(partial_ordering cmp) noexcept { return cmp == 0; }
+	constexpr bool is_neq(partial_ordering cmp) noexcept { return cmp != 0; }
+	constexpr bool is_lt(partial_ordering cmp) noexcept { return cmp < 0; }
+	constexpr bool is_lteq(partial_ordering cmp) noexcept { return cmp <= 0; }
+	constexpr bool is_gt(partial_ordering cmp) noexcept { return cmp > 0; }
+	constexpr bool is_gteq(partial_ordering cmp) noexcept { return cmp >= 0; }
+
+	namespace detail
+	{
+		template <unsigned int>
+		struct common_cmpcat_base
+		{
+			using type = void;
+		};
+
+		template <>
+		struct common_cmpcat_base<0u>
+		{
+			using type = std::strong_ordering;
+		};
+
+		template <>
+		struct common_cmpcat_base<2u>
+		{
+			using type = std::partial_ordering;
+		};
+
+		template <>
+		struct common_cmpcat_base<4u>
+		{
+			using type = std::weak_ordering;
+		};
+
+		template <>
+		struct common_cmpcat_base<6u>
+		{
+			using type = std::partial_ordering;
+		};
+	}
+
+	template <class... Ts>
+	struct common_comparison_category
+		: detail::common_cmpcat_base<(0u | ... |
+									  (std::is_same_v<Ts, std::strong_ordering>	   ? 0u
+									   : std::is_same_v<Ts, std::weak_ordering>	   ? 4u
+									   : std::is_same_v<Ts, std::partial_ordering> ? 2u
+																				   : 1u))>
+	{
+	};
+
+	template <class... Ts>
+	using common_comparison_category_t = common_comparison_category<Ts...>::type;
+
+	template <class T, class U = T>
+	using compare_three_way_result_t = decltype(std::declval<const std::remove_reference_t<T> &>() <=> std::declval<const std::remove_reference_t<U> &>());
+
+	template <class T, class U = T>
+	struct compare_three_way_result
+	{
+	};
+
+	template <class T, class U>
+		requires requires { typename compare_three_way_result_t<T, U>; }
+	struct compare_three_way_result<T, U>
+	{
+		using type = compare_three_way_result_t<T, U>;
+	};
+
+	struct compare_three_way
+	{
+		template <class T, class U>
+		constexpr auto operator()(T &&t, U &&u) const
+		{
+			return std::forward<T>(t) <=> std::forward<U>(u);
+		}
+
+		using is_transparent = void;
+	};
+
+	inline constexpr struct strong_order_fn
+	{
+	} strong_order;
+
+	inline constexpr struct weak_order_fn
+	{
+	} weak_order;
+
+	inline constexpr struct partial_order_fn
+	{
+	} partial_order;
+
+	inline constexpr struct compare_strong_order_fallback_fn
+	{
+	} compare_strong_order_fallback;
+
+	inline constexpr struct compare_weak_order_fallback_fn
+	{
+	} compare_weak_order_fallback;
+
+	inline constexpr struct compare_partial_order_fallback_fn
+	{
+	} compare_partial_order_fallback;
+
+	inline constexpr struct __SynthThreeWayCompare
+	{
+		template <typename T, typename U>
+		constexpr auto operator()(const T &lhs, const U &rhs) const
+		{
+			if (lhs < rhs)
+				return weak_ordering::less;
+			else if (rhs < lhs)
+				return weak_ordering::greater;
+			else
+				return weak_ordering::equivalent;
+		}
+	} __synth_three_way = {};
+}
