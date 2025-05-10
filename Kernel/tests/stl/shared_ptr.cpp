@@ -42,7 +42,7 @@ struct Deleter
 	}
 };
 
-void test_shared_ptr_bitset()
+void test_stl_shared_ptr()
 {
 	debug("std::shared_ptr  ...");
 
