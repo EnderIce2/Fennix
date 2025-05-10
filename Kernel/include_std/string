@@ -833,7 +833,7 @@ namespace std
 		size_t _capacity;
 
 	public:
-#pragma region Member Functions
+#pragma region Constructors
 
 		basic_string()
 			: _alloc(Allocator()),
@@ -1224,7 +1224,7 @@ namespace std
 			return _alloc;
 		}
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Element Access
 

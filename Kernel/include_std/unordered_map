@@ -367,7 +367,7 @@ namespace std
 		size_type elementsCount = 0;
 
 	public:
-#pragma region Member Functions
+#pragma region Constructors
 
 		unordered_map() = default;
 
@@ -412,7 +412,7 @@ namespace std
 			return allocator_type();
 		}
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Iterators
 

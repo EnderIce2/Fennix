@@ -304,7 +304,7 @@ namespace std
 		pointer _ptr;
 
 	public:
-#pragma region Member Functions
+#pragma region Constructors
 
 		constexpr unique_ptr() noexcept : _ptr(nullptr) {}
 
@@ -352,7 +352,7 @@ namespace std
 
 		unique_ptr &operator=(const unique_ptr &) = delete;
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Modifiers
 
@@ -408,7 +408,7 @@ namespace std
 		pointer _ptr;
 
 	public:
-#pragma region Member Functions
+#pragma region Constructors
 
 		constexpr unique_ptr() noexcept : _ptr(nullptr) {}
 
@@ -459,7 +459,7 @@ namespace std
 
 		unique_ptr &operator=(const unique_ptr &) = delete;
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Modifiers
 

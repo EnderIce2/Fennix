@@ -163,7 +163,7 @@ namespace std
 			bool operator!=(const const_iterator &rhs) const { return _node != rhs._node; }
 		};
 
-#pragma region Member Functions
+#pragma region Constructors
 
 		list()
 		{
@@ -282,7 +282,7 @@ namespace std
 			return alloc;
 		}
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Element Access
 

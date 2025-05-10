@@ -94,7 +94,7 @@ namespace std
 
 #pragma endregion Member types and constants
 
-#pragma region Member Functions
+#pragma region Constructors
 
 	protected:
 		ios_base();
@@ -104,7 +104,7 @@ namespace std
 		virtual ~ios_base() = default;
 		ios_base &operator=(const ios_base &) = delete;
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Formatting
 

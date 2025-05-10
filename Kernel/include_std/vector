@@ -357,7 +357,7 @@ namespace std
 		pointer _data;
 
 	public:
-#pragma region Member Functions
+#pragma region Constructors
 
 		constexpr vector() noexcept(noexcept(Allocator()))
 			: _size(0),
@@ -583,7 +583,7 @@ namespace std
 			return _alloc;
 		}
 
-#pragma endregion Member Functions
+#pragma endregion Constructors
 
 #pragma region Element Access
 
