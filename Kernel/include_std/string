@@ -26,6 +26,7 @@
 #include <convert.h>
 #include <iterator>
 #include <cstddef>
+#include <compare>
 #include <memory>
 #include <ranges>
 
@@ -2265,9 +2266,21 @@ namespace std
 	}
 
 	template <class CharT, class Traits, class Alloc>
+	constexpr auto operator<=>(const std::basic_string<CharT, Traits, Alloc> &lhs, const std::basic_string<CharT, Traits, Alloc> &rhs) noexcept -> decltype(static_cast<weak_ordering>(0 <=> 0))
+	{
+		return static_cast<weak_ordering>(lhs.compare(rhs) <=> 0);
+	}
+
+	template <class CharT, class Traits, class Alloc>
 	constexpr bool operator==(const std::basic_string<CharT, Traits, Alloc> &lhs, const CharT *rhs)
 	{
 		return lhs.compare(rhs) == 0;
+	}
+
+	template <class CharT, class Traits, class Alloc>
+	constexpr auto operator<=>(const std::basic_string<CharT, Traits, Alloc> &lhs, const CharT *rhs) -> decltype(static_cast<weak_ordering>(0 <=> 0))
+	{
+		return static_cast<weak_ordering>(lhs.compare(rhs) <=> 0);
 	}
 
 	template <class CharT, class Traits, class Alloc>
