@@ -17,9 +17,16 @@
 
 #pragma once
 #include <utility>
+#include <cstddef>
 
 namespace std
 {
+	template <typename T>
+	typename std::remove_reference<T>::type &&__algo_move(T &&arg)
+	{
+		return static_cast<typename std::remove_reference<T>::type &&>(arg);
+	}
+
 	template <typename InputIt, typename OutputIt>
 	OutputIt copy(InputIt first, InputIt last, OutputIt result)
 	{
@@ -57,9 +64,9 @@ namespace std
 	template <class T>
 	void swap(T &a, T &b) noexcept(std::is_nothrow_move_constructible<T>::value && std::is_nothrow_move_assignable<T>::value)
 	{
-		T temp = std::move(a);
-		a = std::move(b);
-		b = std::move(temp);
+		T temp = __algo_move(a);
+		a = __algo_move(b);
+		b = __algo_move(temp);
 	}
 
 	template <class T2, std::size_t N>
@@ -180,7 +187,7 @@ namespace std
 		if (first != last)
 			for (ForwardIt i = first; ++i != last;)
 				if (!(*i == value))
-					*first++ = std::move(*i);
+					*first++ = __algo_move(*i);
 		return first;
 	}
 
@@ -191,7 +198,7 @@ namespace std
 		if (first != last)
 			for (ForwardIt i = first; ++i != last;)
 				if (!p(*i))
-					*first++ = std::move(*i);
+					*first++ = __algo_move(*i);
 		return first;
 	}
 
@@ -364,13 +371,35 @@ namespace std
 	void sort(ExecutionPolicy &&policy, RandomIt first, RandomIt last, Compare comp);
 
 	template <class InputIt1, class InputIt2>
-	constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2);
+	constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+	{
+		for (; (first1 != last1) && (first2 != last2); ++first1, (void)++first2)
+		{
+			if (*first1 < *first2)
+				return true;
+			if (*first2 < *first1)
+				return false;
+		}
+
+		return (first1 == last1) && (first2 != last2);
+	}
 
 	template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2>
 	bool lexicographical_compare(ExecutionPolicy &&policy, ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, ForwardIt2 last2);
 
 	template <class InputIt1, class InputIt2, class Compare>
-	constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Compare comp);
+	constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Compare comp)
+	{
+		for (; (first1 != last1) && (first2 != last2); ++first1, (void)++first2)
+		{
+			if (comp(*first1, *first2))
+				return true;
+			if (comp(*first2, *first1))
+				return false;
+		}
+
+		return (first1 == last1) && (first2 != last2);
+	}
 
 	template <class ExecutionPolicy, class ForwardIt1, class ForwardIt2, class Compare>
 	bool lexicographical_compare(ExecutionPolicy &&policy, ForwardIt1 first1, ForwardIt1 last1, ForwardIt2 first2, ForwardIt2 last2, Compare comp);
