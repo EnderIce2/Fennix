@@ -20,7 +20,10 @@
 #include <initializer_list>
 #include <functional>
 #include <algorithm>
+#include <compare>
 #include <memory>
+
+#warning "std::set not implemented; Do not use"
 
 namespace std
 {
@@ -256,13 +259,41 @@ namespace std
 	};
 
 	template <class Key, class Compare, class Alloc>
-	bool operator==(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs);
-
-	// template <class Key, class Compare, class Alloc>
-	// std::strong_ordering operator<=>(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs);
+	bool operator==(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs)
+	{
+		return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
+	}
 
 	template <class Key, class Compare, class Alloc>
-	void swap(std::set<Key, Compare, Alloc> &lhs, std::set<Key, Compare, Alloc> &rhs) noexcept(noexcept(lhs.swap(rhs)));
+	std::strong_ordering operator<=>(const std::set<Key, Compare, Alloc> &lhs, const std::set<Key, Compare, Alloc> &rhs)
+	{
+		// return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), __synth_three_way);
+
+		auto it1 = lhs.begin();
+		auto it2 = rhs.begin();
+		auto end1 = lhs.end();
+		auto end2 = rhs.end();
+
+		while (it1 != end1 && it2 != end2)
+		{
+			if (*it1 < *it2)
+				return std::strong_ordering::less;
+			if (*it2 < *it1)
+				return std::strong_ordering::greater;
+			++it1;
+			++it2;
+		}
+
+		if (it1 == end1 && it2 == end2)
+			return std::strong_ordering::equal;
+		return (it1 == end1) ? std::strong_ordering::less : std::strong_ordering::greater;
+	}
+
+	template <class Key, class Compare, class Alloc>
+	void swap(std::set<Key, Compare, Alloc> &lhs, std::set<Key, Compare, Alloc> &rhs) noexcept(noexcept(lhs.swap(rhs)))
+	{
+		lhs.swap(rhs);
+	}
 
 	template <class Key, class Compare, class Alloc, class Pred>
 	std::set<Key, Compare, Alloc>::size_type erase_if(std::set<Key, Compare, Alloc> &c, Pred pred)

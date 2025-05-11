@@ -28,6 +28,8 @@ void test_stl_unordered_map() {}
 void test_stl_future();
 void test_stl_array();
 void test_stl_shared_ptr();
+void test_stl_set();
+void test_stl_compare();
 
 void Test_stl()
 {
@@ -42,6 +44,8 @@ void Test_stl()
 	test_stl_future();
 	test_stl_array();
 	test_stl_shared_ptr();
+	test_stl_set();
+	test_stl_compare();
 }
 
 #endif // DEBUG
