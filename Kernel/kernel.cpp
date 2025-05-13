@@ -76,23 +76,15 @@ EXTERNC void _KPrint(const char *Format, va_list Args)
 {
 	SmartLock(KernelLock);
 
-	if (TimeManager)
-	{
-		uint64_t Nanoseconds = TimeManager->GetNanosecondsSinceClassCreation();
-		if (Nanoseconds != 0)
-		{
+	uint64_t nano = TimeManager ? TimeManager->GetNanosecondsSinceClassCreation() : 0;
+
 #if defined(__amd64__)
-			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
-				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
 #elif defined(__i386__)
-			printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ",
-				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
 #elif defined(__aarch64__)
-			printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ",
-				   Nanoseconds / 10000000, Nanoseconds % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
 #endif
-		}
-	}
 
 	vprintf(Format, Args);
 	printf("\x1b[0m\n");
