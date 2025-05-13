@@ -322,10 +322,6 @@ struct InodeOperations
 	int (*Stat)(struct Inode *Node, struct kstat *Stat);
 } __attribute__((packed));
 
-#define I_FLAG_ROOT 0x1
-#define I_FLAG_MOUNTPOINT 0x2
-#define I_FLAG_CACHE_KEEP 0x4
-
 struct FileSystemInfo;
 struct SuperBlockOperations
 {
@@ -337,8 +333,8 @@ struct SuperBlockOperations
 	 *
 	 * Write all pending changes to the disk.
 	 *
-	 * @param Info Inode to synchronize. If NULL, synchronize all inodes.
-	 * @param Node Inode to synchronize.
+	 * @param Info Inode to synchronize.
+	 * @param Node Inode to synchronize. If NULL, synchronize all inodes.
 	 *
 	 * @return Zero on success, otherwise an error code.
 	 */
@@ -354,13 +350,50 @@ struct SuperBlockOperations
 	 * @return Zero on success, otherwise an error code.
 	 */
 	int (*Destroy)(struct FileSystemInfo *Info);
+
+	/**
+	 * Probe the filesystem.
+	 *
+	 * Check if the filesystem is supported by the driver.
+	 *
+	 * @param Device Device to probe.
+	 *
+	 * @return Zero on success, otherwise an error code.
+	 */
+	int (*Probe)(void *Device);
+
+	/**
+	 * Mount the filesystem.
+	 *
+	 * Mount the filesystem on the given device.
+	 *
+	 * @param FS Filesystem to mount.
+	 * @param Root Pointer to the root inode.
+	 * @param Device Device to mount.
+	 *
+	 * @return Zero on success, otherwise an error code.
+	 */
+	int (*Mount)(struct FileSystemInfo *FS, struct Inode **Root, void *Device);
+
+	/**
+	 * Unmount the filesystem.
+	 *
+	 * Unmount the filesystem from the given device.
+	 *
+	 * @param FS Filesystem to unmount.
+	 *
+	 * @return Zero on success, otherwise an error code.
+	 */
+	int (*Unmount)(struct FileSystemInfo *FS);
 } __attribute__((packed));
 
 struct FileSystemInfo
 {
 	const char *Name;
-	const char *RootName;
+
 	int Flags;
+	int Capabilities;
+
 	struct SuperBlockOperations SuperOps;
 	struct InodeOperations Ops;
 
@@ -368,6 +401,9 @@ struct FileSystemInfo
 } __attribute__((packed));
 
 #ifndef __kernel__
+dev_t RegisterMountPoint(FileSystemInfo *fsi, Inode *Root);
+int UnregisterMountPoint(dev_t Device);
+
 dev_t RegisterFileSystem(struct FileSystemInfo *Info, struct Inode *Root);
 int UnregisterFileSystem(dev_t Device);
 #endif // !__kernel__

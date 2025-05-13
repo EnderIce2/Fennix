@@ -246,23 +246,222 @@ namespace Tasking
 		debug("Tasking Started");
 	}
 
+	struct TaskNode : public Inode
+	{
+		kstat Stat;
+		Inode *Parent;
+		std::string Name;
+		std::vector<TaskNode *> Children;
+	};
+
+	int __task_Lookup(struct Inode *Parent, const char *Name, struct Inode **Result)
+	{
+		return -ENOSYS;
+	}
+
+	int __task_Create(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result)
+	{
+		TaskNode *p = (TaskNode *)Parent;
+
+		if (!S_ISDIR(p->Mode))
+			return -ENOTDIR;
+
+		TaskNode *newNode = new TaskNode;
+		newNode->Parent = p;
+		newNode->Name = Name;
+		newNode->Mode = Mode;
+		p->Children.push_back(newNode);
+		*Result = newNode;
+		return 0;
+	}
+
+	ssize_t __task_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
+	{
+		return -ENOSYS;
+	}
+
+	ssize_t __task_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
+	{
+		return -ENOSYS;
+	}
+
+	__no_sanitize("alignment") ssize_t __task_Readdir(struct Inode *_Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
+	{
+		auto node = (TaskNode *)_Node;
+		off_t realOffset = Offset;
+		size_t totalSize = 0;
+		uint16_t reclen = 0;
+		struct kdirent *ent = nullptr;
+
+		if (!S_ISDIR(node->Mode))
+			return -ENOTDIR;
+
+		if (Offset == 0)
+		{
+			reclen = (uint16_t)(offsetof(struct kdirent, d_name) + strlen(".") + 1);
+			if (totalSize + reclen > Size)
+				return -EINVAL;
+			ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+			ent->d_ino = node->Index;
+			ent->d_off = 0;
+			ent->d_reclen = reclen;
+			ent->d_type = DT_DIR;
+			strcpy(ent->d_name, ".");
+			totalSize += reclen;
+			Offset++;
+		}
+
+		if (Offset == 1)
+		{
+			reclen = (uint16_t)(offsetof(struct kdirent, d_name) + strlen("..") + 1);
+			if (totalSize + reclen > Size)
+				return totalSize;
+
+			ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+			ent->d_ino = node->Parent ? node->Parent->Index : 0;
+			ent->d_off = 1;
+			ent->d_reclen = reclen;
+			ent->d_type = DT_DIR;
+			strcpy(ent->d_name, "..");
+			totalSize += reclen;
+			Offset++;
+		}
+
+		off_t entryIndex = 0;
+		for (const auto &var : node->Children)
+		{
+			if (entryIndex + 2 < realOffset)
+			{
+				entryIndex++;
+				continue;
+			}
+			if (Entries && entryIndex >= Entries)
+				break;
+
+			reclen = (uint16_t)(offsetof(struct kdirent, d_name) + strlen(var->Name.c_str()) + 1);
+			if (totalSize + reclen > Size)
+				break;
+			ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+			ent->d_ino = var->Index;
+			ent->d_off = entryIndex + 2;
+			ent->d_reclen = reclen;
+			ent->d_type = IFTODT(var->Mode);
+			strcpy(ent->d_name, var->Name.c_str());
+			totalSize += reclen;
+			entryIndex++;
+		}
+
+		if (totalSize + offsetof(struct kdirent, d_name) + 1 > Size)
+			return totalSize;
+
+		ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
+		ent->d_ino = 0;
+		ent->d_off = 0;
+		ent->d_reclen = 0;
+		ent->d_type = DT_UNKNOWN;
+		ent->d_name[0] = '\0';
+		return totalSize;
+	}
+
+	int __task_SymLink(Inode *Parent, const char *Name, const char *Target, Inode **Result)
+	{
+		return -ENOSYS;
+	}
+
+	ssize_t __task_ReadLink(Inode *Node, char *Buffer, size_t Size)
+	{
+		switch (Node->GetMajor())
+		{
+		case 0:
+		{
+			switch (Node->GetMinor())
+			{
+			case 0:
+			{
+				/* FIXME: https://github.com/torvalds/linux/blob/c942a0cd3603e34dd2d7237e064d9318cb7f9654/fs/proc/self.c#L11
+						https://lxr.linux.no/#linux+v3.2.9/fs/proc/base.c#L2482 */
+
+				int ret = snprintf(Buffer, Size, "/proc/%d", thisProcess->ID);
+				debug("ReadLink: %s (%d bytes)", Buffer, ret);
+				return ret;
+			}
+			default:
+				return -ENOENT;
+			}
+		}
+		default:
+			return -ENOENT;
+		}
+	}
+
+	int __task_Stat(struct Inode *Node, kstat *Stat)
+	{
+		TaskNode *node = (TaskNode *)Node;
+		*Stat = node->Stat;
+		return 0;
+	}
+
+	int __task_AllocateInode(struct FileSystemInfo *, struct Inode **Result)
+	{
+		TaskNode *ret = new TaskNode;
+		*Result = (Inode *)ret;
+		return 0;
+	}
+
+	int __task_DeleteInode(struct FileSystemInfo *, struct Inode *Node)
+	{
+		delete Node;
+		return 0;
+	}
+
 	Task::Task(const IP EntryPoint)
 	{
+		Node root = fs->GetRoot(0);
+		FileSystemInfo *fsi = new FileSystemInfo;
+		fsi->Name = "procfs";
+		fsi->SuperOps.AllocateInode = __task_AllocateInode;
+		fsi->SuperOps.DeleteInode = __task_DeleteInode;
+		fsi->Ops.Lookup = __task_Lookup;
+		fsi->Ops.Create = __task_Create;
+		fsi->Ops.Read = __task_Read;
+		fsi->Ops.Write = __task_Write;
+		fsi->Ops.ReadDir = __task_Readdir;
+		fsi->Ops.SymLink = __task_SymLink;
+		fsi->Ops.ReadLink = __task_ReadLink;
+		fsi->Ops.Stat = __task_Stat;
+
+		/* d rwx rwx rwx */
+		mode_t mode = S_IRWXU |
+					  S_IRWXG |
+					  S_IRWXO |
+					  S_IFDIR;
+		TaskNode *inode = new TaskNode;
+		inode->Device = fs->RegisterFileSystem(fsi);
+		inode->Mode = mode;
+		Node proc = fs->Mount(root, inode, "proc", fsi);
+		// proc->fsi = fsi;
+		// inode->Parent = root->inode;
+		// inode->Name = "proc";
+
+		/* l rwx rwx rwx */
+		mode = S_IRWXU |
+			   S_IRWXG |
+			   S_IRWXO |
+			   S_IFLNK;
+		Node self = fs->Create(proc, "self", mode);
+		self->inode->Device = inode->Device;
+		self->inode->SetDevice(0, 0);
+
 		/* I don't know if this is the best way to do this. */
 		Scheduler::Custom *custom_sched = new Scheduler::Custom(this);
 		Scheduler::Base *sched = r_cst(Scheduler::Base *, custom_sched);
 		__sched_ctx = custom_sched;
 		Scheduler = sched;
 
-		KernelProcess = CreateProcess(nullptr, "Kernel",
-									  TaskExecutionMode::Kernel, true);
-		KernelProcess->PageTable = KernelPageTable;
-		TCB *kthrd = CreateThread(KernelProcess, EntryPoint,
-								  nullptr, nullptr,
-								  std::vector<AuxiliaryVector>(), GetKArch());
+		KernelProcess = CreateProcess(nullptr, "Kernel", Kernel, true, 0, 0);
+		TCB *kthrd = CreateThread(KernelProcess, EntryPoint, nullptr, nullptr, {}, GetKArch());
 		kthrd->Rename("Main Thread");
-		debug("Created Kernel Process: %s and Thread: %s",
-			  KernelProcess->Name, kthrd->Name);
+		debug("Created Kernel Process: %s and Thread: %s", KernelProcess->Name, kthrd->Name);
 
 		if (!CPU::Interrupts(CPU::Check))
 		{

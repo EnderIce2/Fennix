@@ -22,7 +22,8 @@
 
 #include <interface/driver.h>
 #include <interface/input.h>
-#include <filesystem.hpp>
+#include <interface/block.h>
+#include <fs/vfs.hpp>
 #include <unordered_map>
 #include <memory.hpp>
 #include <ints.hpp>
@@ -120,17 +121,15 @@ namespace Driver
 		 * 1 - input/... devices
 		 */
 		dev_t DriverIDCounter = 2;
-		FileNode *devNode = nullptr;
-		FileNode *devInputNode = nullptr;
+		Node devNode = nullptr;
+		Node devInputNode = nullptr;
+		Node devBlockNode = nullptr;
 
-		bool IsDriverTrusted(FileNode *File);
-		int LoadDriverFile(DriverObject &Drv, FileNode *File);
+		bool IsDriverTrusted(Node File);
+		int LoadDriverFile(DriverObject &Drv, Node File);
 		void ReloadDriver(dev_t driverID);
 
-		void InitializeDaemonFS();
-
-		dev_t RegisterInputDevice(std::unordered_map<dev_t, DriverHandlers> *, dev_t, size_t, const InodeOperations *);
-		dev_t RegisterBlockDevice(std::unordered_map<dev_t, DriverHandlers> *, dev_t, size_t, const InodeOperations *);
+		void InitializeDeviceDirectory();
 
 	public:
 		RingBuffer<KeyboardReport> GlobalKeyboardInputReports;
@@ -138,11 +137,16 @@ namespace Driver
 
 		struct DeviceInode
 		{
-			struct Inode Node;
-			FileNode *Parent;
+			struct Inode inode;
+			Node Parent;
 			Inode *ParentInode;
 			std::string Name;
 			std::vector<DeviceInode *> Children;
+
+			size_t Size;
+			time_t AccessTime, ModifyTime, ChangeTime;
+			uint32_t BlockSize;
+			uint32_t Blocks;
 		};
 
 		std::unordered_map<dev_t, DriverObject> &
@@ -185,6 +189,9 @@ namespace Driver
 		int ReportInputEvent(dev_t DriverID, InputReport *Report);
 		int UnregisterDevice(dev_t DriverID, dev_t Device);
 
+		dev_t RegisterBlockDevice(dev_t DriverID, struct BlockDevice *Device);
+		int UnregisterBlockDevice(dev_t DriverID, dev_t DeviceID);
+
 		void *AllocateMemory(dev_t DriverID, size_t Pages);
 		void FreeMemory(dev_t DriverID, void *Pointer, size_t Pages);
 
@@ -193,8 +200,6 @@ namespace Driver
 	private:
 		~Manager();
 	};
-
-	void ManagerDaemonWrapper();
 }
 
 void *GetSymbolByName(const char *Name, int Version);
@@ -215,8 +220,11 @@ namespace v0
 	int UnregisterInterruptHandler(dev_t DriverID, uint8_t IRQ, void *Handler);
 	int UnregisterAllInterruptHandlers(dev_t DriverID, void *Handler);
 
-	dev_t RegisterFileSystem(dev_t DriverID, FileSystemInfo *Info, struct Inode *Root);
+	dev_t RegisterFileSystem(dev_t DriverID, FileSystemInfo *Info);
 	int UnregisterFileSystem(dev_t DriverID, dev_t Device);
+
+	dev_t RegisterBlockDevice(dev_t DriverID, struct BlockDevice *Device);
+	int UnregisterBlockDevice(dev_t DriverID, dev_t DeviceID);
 
 	pid_t CreateKernelProcess(dev_t DriverID, const char *Name);
 	pid_t CreateKernelThread(dev_t DriverID, pid_t pId, const char *Name, void *EntryPoint, void *Argument);

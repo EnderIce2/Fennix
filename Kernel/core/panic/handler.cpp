@@ -408,8 +408,7 @@ nsa __noreturn void HandleBufferOverflow()
 	CPU::Stop();
 }
 
-EXTERNC nsa __noreturn void HandleAssertionFailed(const char *File, int Line,
-												  const char *Expression)
+EXTERNC nsa __noreturn void HandleAssertionFailed(const char *File, int Line, const char *Expression)
 {
 	DisplayAssertionFailed(File, Line, Expression);
 	CPU::Stop();

@@ -17,98 +17,60 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 #include "../../kernel.h"
 
 using namespace vfs;
 
-const char *ColorNodeType(FileNode *node)
+const char *ColorNodeType(Node node)
 {
 	if (node->IsRegularFile())
-		return "\x1b[32m";
+		return "\x1b[0m";
 	else if (node->IsDirectory())
-		return "\x1b[34m";
+		return "\x1b[1;34m";
 	else if (node->IsBlockDevice())
-		return "\x1b[33m";
+		return "\x1b[1;33m";
 	else if (node->IsCharacterDevice())
-		return "\x1b[33m";
+		return "\x1b[1;33m";
 	else if (node->IsFIFO())
-		return "\x1b[33m";
+		return "\x1b[0;33m";
 	else if (node->IsSymbolicLink())
-		return "\x1b[35m";
+		return "\x1b[1;36m";
 	else
 		return "\x1b[0m";
 }
 
-__no_sanitize("alignment") size_t MaxNameLength(FileNode *nodes)
+__no_sanitize("alignment") void PrintLS(Node node)
 {
-	size_t maxLength = 0;
-
-	kdirent *dirBuffer = new kdirent[16];
-	ssize_t read = 0;
-	off_t offset = 0;
-	while ((read = nodes->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
-	{
-		if (read / sizeof(kdirent) == 0)
-			break;
-
-		off_t bufOffset = 0;
-		debug("There are %ld entries in this directory", read / sizeof(kdirent));
-		for (size_t i = 0; i < read / sizeof(kdirent); i++)
-		{
-			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
-			if (dirent->d_reclen == 0)
-				break;
-			bufOffset += dirent->d_reclen;
-			maxLength = std::max(maxLength, strlen(dirent->d_name));
-			debug("dirent->d_name: %s (max length: %ld)", dirent->d_name, maxLength);
-		}
-		offset += read / sizeof(kdirent);
-	}
-	delete[] dirBuffer;
-	return maxLength;
-}
-
-__no_sanitize("alignment") void PrintLS(FileNode *node)
-{
-	size_t maxNameLength = MaxNameLength(node);
+	size_t maxNameLength = 0;
 	int count = 0;
 	bool first = true;
 
-	kdirent *dirBuffer = new kdirent[16];
-	ssize_t read = 0;
-	off_t offset = 0;
-	while ((read = node->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
-	{
-		if (read / sizeof(kdirent) == 0)
-			break;
+	std::list<Node> children = fs->ReadDirectory(node);
 
-		off_t bufOffset = 0;
-		for (size_t i = 0; i < read / sizeof(kdirent); i++)
-		{
-			if (count % 5 == 0 && !first)
-				printf("\n");
-			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
-			if (dirent->d_reclen == 0)
-				break;
-			bufOffset += dirent->d_reclen;
-			printf(" %s%-*s ", ColorNodeType(node), (int)maxNameLength, dirent->d_name);
-			count++;
-			first = false;
-		}
-		offset += read / sizeof(kdirent);
+	for (auto &&i : children)
+		std::max(maxNameLength, i->Name.length());
+
+	for (auto &&i : children)
+	{
+		if (count % 5 == 0 && !first)
+			printf("\n");
+
+		printf(" %s%-*s ", ColorNodeType(i), (int)maxNameLength, i->Name.c_str());
+
+		count++;
+		first = false;
 	}
 
 	printf("\x1b[0m\n");
-	delete[] dirBuffer;
 }
 
 void cmd_ls(const char *args)
 {
 	if (args[0] == '\0')
 	{
-		FileNode *rootNode = thisProcess->CWD;
+		Node rootNode = thisProcess->CWD;
 
 		if (rootNode == nullptr)
 			rootNode = fs->GetRoot(0);
@@ -117,7 +79,7 @@ void cmd_ls(const char *args)
 		return;
 	}
 
-	FileNode *thisNode = fs->GetByPath(args, nullptr);
+	Node thisNode = fs->Lookup(thisProcess->CWD, args);
 
 	if (thisNode == nullptr)
 	{

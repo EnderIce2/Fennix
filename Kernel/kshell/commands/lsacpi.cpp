@@ -17,7 +17,7 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <acpi.hpp>
 
 #include "../../kernel.h"

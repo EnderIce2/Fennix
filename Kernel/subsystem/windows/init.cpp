@@ -15,7 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <filesystem/ramfs.hpp>
+#include <fs/ramfs.hpp>
 
 #include "../../kernel.h"
 
@@ -23,25 +23,30 @@ namespace Subsystem::Windows
 {
 	bool Initialized = false;
 
+	void __CreateStubRoot()
+	{
+		Node root = fs->GetRoot(0);
+		Node nmnt = fs->Lookup(root, "/mnt");
+		assert(MountAndRootRAMFS(nmnt, "windows", 2));
+		Node win = fs->GetRoot(2);
+
+		Node windows = fs->Create(win, "Windows", 0755);
+		Node programFiles = fs->Create(windows, "Program Files", 0755);
+		Node programFilesX86 = fs->Create(windows, "Program Files (x86)", 0755);
+		Node programData = fs->Create(windows, "ProgramData", 0755);
+		Node users = fs->Create(windows, "Users", 0755);
+
+		UNUSED(windows);
+		UNUSED(programFiles);
+		UNUSED(programFilesX86);
+		UNUSED(programData);
+		UNUSED(users);
+	}
+
 	void InitializeSubSystem()
 	{
 		if (fs->RootExists(2) == false)
 		{
-			FileNode *nmnt = fs->GetByPath("/mnt", fs->GetRoot(0));
-			assert(MountRAMFS(nmnt, "windows", 2));
-			FileNode *win = fs->GetRoot(2);
-
-			FileNode *windows = fs->ForceCreate(win, "Windows", 0755);
-			FileNode *programFiles = fs->ForceCreate(windows, "Program Files", 0755);
-			FileNode *programFilesX86 = fs->ForceCreate(windows, "Program Files (x86)", 0755);
-			FileNode *programData = fs->ForceCreate(windows, "ProgramData", 0755);
-			FileNode *users = fs->ForceCreate(windows, "Users", 0755);
-
-			UNUSED(windows);
-			UNUSED(programFiles);
-			UNUSED(programFilesX86);
-			UNUSED(programData);
-			UNUSED(users);
 		}
 	}
 }

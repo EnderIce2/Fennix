@@ -20,9 +20,9 @@
 
 #include <types.h>
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
-namespace vfs
+namespace Driver::ExtendedFilesystem
 {
 	class EXT2
 	{

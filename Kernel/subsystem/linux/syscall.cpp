@@ -816,7 +816,7 @@ static int linux_open(SysFrm *sf, const char *pathname, int flags, mode_t mode)
 
 	if (flags & 0200000 /* O_DIRECTORY */)
 	{
-		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+		Node node = fs->Lookup(pcb->CWD, pPathname);
 		if (node == nullptr)
 		{
 			debug("Couldn't find %s", pPathname);
@@ -1313,7 +1313,7 @@ static int linux_access(SysFrm *, const char *pathname, int mode)
 
 	debug("access(%s, %d)", (char *)pPathname, mode);
 
-	if (!fs->PathExists(pPathname, pcb->CWD))
+	if (!fs->Lookup(pcb->CWD, pPathname))
 		return -linux_ENOENT;
 
 	stub;
@@ -1717,7 +1717,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 			safeEnvp[i + 1] = nullptr;
 	}
 
-	FileNode *file = fs->GetByPath(pPathname, pcb->CWD);
+	Node file = fs->Lookup(pcb->CWD, pPathname);
 
 	if (!file)
 	{
@@ -1726,7 +1726,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	}
 
 	char shebangMagic[2]{};
-	file->Read((uint8_t *)shebangMagic, 2, 0);
+	fs->Read(file, (uint8_t *)shebangMagic, 2, 0);
 
 	if (shebangMagic[0] == '#' && shebangMagic[1] == '!')
 	{
@@ -1740,7 +1740,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 		while (true)
 		{
 			char c;
-			if (file->Read((uint8_t *)&c, 1, shebangOffset) == 0)
+			if (fs->Read(file, (uint8_t *)&c, 1, shebangOffset) == 0)
 				break;
 			if (c == '\n' || shebangLength == shebangLengthMax)
 				break;
@@ -1870,7 +1870,7 @@ __no_sanitize("undefined") static int linux_execve(SysFrm *sf, const char *pathn
 	cwk_path_get_basename(pPathname, &baseName, nullptr);
 
 	pcb->Rename(baseName);
-	pcb->SetWorkingDirectory(file->Parent);
+	pcb->SetWorkingDirectory(fs->Convert(file->Parent));
 	pcb->SetExe(pPathname);
 
 	Tasking::Task *ctx = pcb->GetContext();
@@ -2208,14 +2208,15 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 #endif
 		};
 
-	FileNode *rn = fs->GetByPath("/sys/cfg/cross/linux", pcb->Info.RootNode);
+	Node root = fs->GetRoot(0);
+	Node rn = fs->Lookup(root, "/sys/cfg/subsystem/linux");
 	if (rn)
 	{
-		struct kstat st{};
-		rn->Stat(&st);
+		struct kstat st;
+		fs->Stat(rn, &st);
 
 		char *sh = new char[st.Size];
-		rn->Read(sh, st.Size, 0);
+		fs->Read(rn, sh, st.Size, 0);
 
 		ini_t *ini = ini_load(sh, NULL);
 		int section = ini_find_section(ini, "uname", NULL);
@@ -2250,7 +2251,7 @@ static int linux_uname(SysFrm *, struct utsname *buf)
 		delete[] sh;
 	}
 	else
-		warn("Couldn't open /sys/cfg/cross/linux");
+		warn("Couldn't open /sys/cfg/subsystem/linux");
 
 	memcpy(pBuf, &uname, sizeof(struct utsname));
 	return 0;
@@ -2360,7 +2361,7 @@ static int linux_chdir(SysFrm *, const char *path)
 	if (!pPath)
 		return -linux_EFAULT;
 
-	FileNode *n = fs->GetByPath(pPath, pcb->CWD);
+	Node n = fs->Lookup(pcb->CWD, pPath);
 	if (!n)
 		return -linux_ENOENT;
 
@@ -2378,8 +2379,8 @@ static int linux_fchdir(SysFrm *, int fd)
 	if (it == fdt->FileMap.end())
 		return -linux_EBADF;
 
-	pcb->SetWorkingDirectory(it->second.Node);
-	debug("Changed cwd to \"%s\"", it->second.Node->GetPath().c_str());
+	pcb->SetWorkingDirectory(it->second.node);
+	debug("Changed cwd to \"%s\"", it->second.node->GetPath().c_str());
 	return 0;
 }
 
@@ -2395,7 +2396,7 @@ static int linux_mkdir(SysFrm *, const char *pathname, mode_t mode)
 
 	mode &= ~pcb->FileCreationMask & 0777;
 
-	FileNode *n = fs->Create(pcb->CWD, pPathname, mode);
+	Node n = fs->Create(pcb->CWD, pPathname, mode);
 	if (!n)
 		return -linux_EEXIST;
 	return 0;
@@ -2432,13 +2433,13 @@ static ssize_t linux_readlink(SysFrm *, const char *pathname,
 		ReturnLogError(-linux_EBADF, "Invalid fd %d", fd);
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
-	FileNode *node = fildes.Node;
+	Node node = fildes.node;
 	fdt->usr_close(fd);
 
 	if (!node->IsSymbolicLink())
 		return -linux_EINVAL;
 
-	return ConvertErrnoToLinux(node->ReadLink(pBuf, bufsiz));
+	return ConvertErrnoToLinux(fs->ReadLink(node, pBuf, bufsiz));
 }
 
 static int linux_fchmod(SysFrm *, int fd, mode_t mode)
@@ -2480,7 +2481,7 @@ static int linux_chmod(SysFrm *sf, const char *pathname, mode_t mode)
 	if (pPathname == nullptr)
 		return -linux_EFAULT;
 
-	FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+	Node node = fs->Lookup(pcb->CWD, pPathname);
 	if (!node)
 		return -linux_ENOENT;
 
@@ -3114,7 +3115,7 @@ __no_sanitize("undefined") static ssize_t linux_getdents64(SysFrm *,
 	}
 
 	vfs::FileDescriptorTable::Fildes &fildes = it->second;
-	if (!fildes.Node->IsDirectory())
+	if (!fildes.node->IsDirectory())
 	{
 		debug("Not a directory");
 		return -ENOTDIR;
@@ -3138,8 +3139,7 @@ __no_sanitize("undefined") static ssize_t linux_getdents64(SysFrm *,
 #endif
 
 	/* The structs are the same, no need for conversion. */
-	ssize_t ret = fildes.Node->ReadDir((struct kdirent *)pDirp, count, fildes.Offset,
-									   count / sizeof(kdirent));
+	ssize_t ret = fs->ReadDirectory(fildes.node, (struct kdirent *)pDirp, count, fildes.Offset, count / sizeof(kdirent));
 
 	if (ret > 0)
 		fildes.Offset += ret;
@@ -3324,7 +3324,7 @@ static int linux_openat(SysFrm *, int dirfd, const char *pathname, int flags, mo
 
 	if (dirfd == linux_AT_FDCWD)
 	{
-		FileNode *absoluteNode = fs->GetByPath(pPathname, pcb->CWD);
+		Node absoluteNode = fs->Lookup(pcb->CWD, pPathname);
 		if (!absoluteNode)
 			return -linux_ENOENT;
 
@@ -3373,7 +3373,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 	case linux_AT_FDCWD:
 	{
 		debug("dirfd is AT_FDCWD for \"%s\"", pPathname);
-		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+		Node node = fs->Lookup(pcb->CWD, pPathname);
 		if (!node)
 			return -linux_ENOENT;
 
@@ -3390,7 +3390,7 @@ static long linux_newfstatat(SysFrm *, int dirfd, const char *pathname,
 			ReturnLogError(-linux_EBADF, "Invalid fd %d", dirfd);
 
 		vfs::FileDescriptorTable::Fildes &fildes = it->second;
-		FileNode *node = fs->GetByPath(pPathname, fildes.Node);
+		Node node = fs->Lookup(fildes.node, pPathname);
 		debug("node: %s", node->GetPath().c_str());
 		if (!node)
 			return -linux_ENOENT;

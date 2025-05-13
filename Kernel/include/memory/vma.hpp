@@ -19,7 +19,7 @@
 #define __FENNIX_KERNEL_MEMORY_VMA_H__
 
 #include <types.h>
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <bitmap.hpp>
 #include <lock.hpp>
 #include <list>

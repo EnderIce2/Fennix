@@ -20,14 +20,14 @@
 #ifdef DEBUG
 
 #include <types.h>
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 void Test_stl();
 void TestMemoryAllocation();
 void tasking_test_fb();
 void tasking_test_mutex();
 void TaskMgr();
-void TreeFS(FileNode *node, int Depth);
+void TreeFS(Node node, int Depth);
 void TaskHeartbeat();
 void StressKernel();
 void coroutineTest();

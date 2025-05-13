@@ -20,7 +20,7 @@
 #include "tests/t.h"
 #endif
 
-#include <filesystem/ustar.hpp>
+#include <fs/ustar.hpp>
 #include <subsystems.hpp>
 #include <kshell.hpp>
 #include <power.hpp>
@@ -70,11 +70,11 @@ int SpawnLinuxInit()
 		"/startup/init"};
 
 	const char *foundPath = nullptr;
-	FileNode *root = fs->GetRoot(1);
+	Node root = fs->GetRoot(1);
 	for (const std::string &path : fallbackPaths)
 	{
 		const char *str = path.c_str();
-		if (!fs->PathExists(str, root))
+		if (fs->Lookup(root, str) == false)
 			continue;
 		foundPath = str;
 		break;
@@ -123,8 +123,6 @@ void KernelMainThread()
 
 	KPrint("Initializing Driver Manager");
 	DriverManager = new Driver::Manager;
-	TaskManager->CreateThread(thisProcess, Tasking::IP(Driver::ManagerDaemonWrapper))
-		->Rename("Device Service");
 
 	KPrint("Loading Drivers");
 	DriverManager->PreloadDrivers();

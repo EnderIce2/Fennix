@@ -19,7 +19,7 @@
 
 #include <interface/driver.h>
 #include <interface/input.h>
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <driver.hpp>
 #include <lock.hpp>
 #include <exec.hpp>
@@ -88,6 +88,7 @@ void KShellThread()
 
 	KPrint("Starting kernel shell...");
 	thisThread->SetPriority(Tasking::TaskPriority::Normal);
+	thisProcess->CWD = fs->GetRoot(0);
 
 	std::string strBuf = "";
 	std::vector<std::string *> history;
@@ -97,7 +98,8 @@ void KShellThread()
 	bool tabDblPress = false;
 
 	const char *keyDevPath = "/dev/input/keyboard";
-	FileNode *kfd = fs->GetByPath(keyDevPath, fs->GetRoot(0));
+	Node root = fs->GetRoot(0);
+	Node kfd = fs->Lookup(root, keyDevPath);
 	if (kfd == nullptr)
 	{
 		KPrint("Failed to open keyboard device!");
@@ -125,21 +127,20 @@ void KShellThread()
 		debug("clearing strBuf(\"%s\")", strBuf.c_str());
 		strBuf.clear();
 
-		FileNode *cwd = thisProcess->CWD;
+		Node cwd = thisProcess->CWD;
 		if (!cwd)
 			cwd = fs->GetRoot(0);
-		std::string cwdStr = fs->GetByNode(cwd);
-		debug("cwd: %*s", (int)cwdStr.size(), cwdStr.c_str());
+		debug("cwd: %s", cwd->Path.c_str());
 
 		printf("\x1b[1;34m%s@%s:%s$ \x1b[0m",
 			   "kernel", "fennix",
-			   cwdStr.c_str());
+			   cwd->Path.c_str());
 
 		KeyboardReport scBuf{};
 		ssize_t nBytes;
 		while (true)
 		{
-			nBytes = kfd->Read(&scBuf, sizeof(KeyboardReport), 0);
+			nBytes = fs->Read(kfd, &scBuf, sizeof(KeyboardReport), 0);
 			if (nBytes == 0)
 			{
 				debug("Empty read from keyboard device!");
@@ -561,14 +562,14 @@ void KShellThread()
 		if (fs->PathIsRelative(cmd_only.c_str()))
 		{
 			path += cmd_only;
-			if (!fs->PathExists(path.c_str(), nullptr))
+			if (!fs->Lookup(root, path.c_str()))
 				path = "/usr/bin/" + cmd_only;
 		}
 		else
 			path = cmd_only;
 
 		debug("path: %s", path.c_str());
-		if (fs->PathExists(path.c_str(), nullptr))
+		if (fs->Lookup(root, path.c_str()))
 		{
 			const char *envp[5] = {
 				"PATH=/bin:/usr/bin",

@@ -92,10 +92,10 @@ namespace Execute
 		return nullptr;
 	}
 
-	Elf_Sym ELFLookupSymbol(FileNode *fd, std::string Name)
+	Elf_Sym ELFLookupSymbol(Node fd, std::string Name)
 	{
 		Elf_Ehdr ehdr{};
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		Elf_Shdr symTable{};
 		Elf_Shdr stringTable{};
@@ -103,13 +103,13 @@ namespace Execute
 		for (Elf64_Half i = 0; i < ehdr.e_shnum; i++)
 		{
 			Elf_Shdr shdr;
-			fd->Read(&shdr, sizeof(Elf_Shdr), ehdr.e_shoff + (i * sizeof(Elf_Shdr)));
+			fs->Read(fd, &shdr, sizeof(Elf_Shdr), ehdr.e_shoff + (i * sizeof(Elf_Shdr)));
 
 			switch (shdr.sh_type)
 			{
 			case SHT_SYMTAB:
 				symTable = shdr;
-				fd->Read(&stringTable, sizeof(Elf_Shdr), ehdr.e_shoff + (shdr.sh_link * sizeof(Elf_Shdr)));
+				fs->Read(fd, &stringTable, sizeof(Elf_Shdr), ehdr.e_shoff + (shdr.sh_link * sizeof(Elf_Shdr)));
 				break;
 			default:
 				break;
@@ -126,11 +126,11 @@ namespace Execute
 		{
 			// Elf_Sym *sym = (Elf_Sym *)((uintptr_t)Header + symTable->sh_offset + (i * sizeof(Elf_Sym)));
 			Elf_Sym sym;
-			fd->Read(&sym, sizeof(Elf_Sym), symTable.sh_offset + (i * sizeof(Elf_Sym)));
+			fs->Read(fd, &sym, sizeof(Elf_Sym), symTable.sh_offset + (i * sizeof(Elf_Sym)));
 
 			// char *str = (char *)((uintptr_t)Header + stringTable->sh_offset + sym->st_name);
 			char str[256];
-			fd->Read(&str, sizeof(str), stringTable.sh_offset + sym.st_name);
+			fs->Read(fd, &str, sizeof(str), stringTable.sh_offset + sym.st_name);
 
 			if (strcmp(str, Name.c_str()) == 0)
 				return sym;

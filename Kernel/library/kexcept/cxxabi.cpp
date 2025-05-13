@@ -158,11 +158,9 @@ void terminate_header_stub()
 	CPU::Stop(); /* FIXME: Panic */
 }
 
-void exception_cleanup_stub(_Unwind_Reason_Code Code,
-							_Unwind_Exception *Exception)
+void exception_cleanup_stub(_Unwind_Reason_Code Code, _Unwind_Exception *Exception)
 {
-	fixme("exception_cleanup( %d %p ) called.",
-		  Code, Exception);
+	fixme("exception_cleanup( %d %p ) called.", Code, Exception);
 }
 
 extern "C" void *__cxa_allocate_exception(size_t thrown_size) throw()
@@ -175,12 +173,10 @@ extern "C" void *__cxa_allocate_exception(size_t thrown_size) throw()
 	return Exception + 1;
 }
 
-extern "C" __noreturn void __cxa_throw(void *thrown_object,
-									   std::type_info *tinfo,
-									   void (*dest)(void *))
+extern "C" __noreturn void __cxa_throw(void *thrown_object, void *tinfo, void (*dest)(void *))
 {
 	trace("Throwing exception of type \"%s\". ( object: %p, destructor: %p )",
-		  tinfo->name(), thrown_object, dest);
+		  ((std::type_info *)tinfo)->name(), thrown_object, dest);
 
 	__cxa_eh_globals *Globals = __cxa_get_globals();
 	Globals->uncaughtExceptions++;
@@ -218,10 +214,9 @@ extern "C" void __cxa_throw_bad_array_new_length()
 	fixme("__cxa_throw_bad_array_new_length() called.");
 }
 
-extern "C" void __cxa_free_exception(void *thrown_exception)
+extern "C" void __cxa_free_exception(void *thrown_exception) throw()
 {
-	fixme("__cxa_free_exception( %p ) called.",
-		  thrown_exception);
+	fixme("__cxa_free_exception( %p ) called.", thrown_exception);
 }
 
 __extension__ typedef int __guard __attribute__((mode(__DI__)));

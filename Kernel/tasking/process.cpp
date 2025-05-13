@@ -95,34 +95,34 @@ namespace Tasking
 		strcpy((char *)this->Name, name);
 	}
 
-	void PCB::SetWorkingDirectory(FileNode *node)
+	void PCB::SetWorkingDirectory(Node node)
 	{
-		trace("Setting working directory of process %s to %#lx (%s)",
-			  this->Name, node, node->Name.c_str());
-		CWD = node;
-		FileNode *cwd = fs->GetByPath("cwd", ProcDirectory);
+		trace("Setting working directory of process %s", node->Name.c_str());
+		this->CWD = node;
+		Node cwd = fs->Lookup(ProcDirectory, "cwd");
 		if (cwd)
 			fs->Remove(cwd);
-		cwd = fs->CreateLink("cwd", ProcDirectory, node);
+		cwd = fs->CreateLink(ProcDirectory, "cwd", node);
 		if (cwd == nullptr)
 			error("Failed to create cwd link");
 	}
 
 	void PCB::SetExe(const char *path)
 	{
-		trace("Setting exe %s to %s",
-			  this->Name, path);
-		Executable = fs->GetByPath(path, ProcDirectory);
+		trace("Setting exe %s to %s", this->Name, path);
+
+		Executable = fs->Lookup(ProcDirectory, path);
 		if (Executable->IsSymbolicLink())
 		{
 			char buffer[512];
-			Executable->ReadLink(buffer, sizeof(buffer));
-			Executable = fs->GetByPath(buffer, Executable->Parent);
+			fs->ReadLink(Executable, buffer, sizeof(buffer));
+			Executable = fs->Lookup(Executable->Parent, buffer);
 		}
-		FileNode *exe = fs->GetByPath("exe", ProcDirectory);
+
+		Node exe = fs->Lookup(ProcDirectory, "exe");
 		if (exe)
 			fs->Remove(exe);
-		exe = fs->CreateLink("exe", ProcDirectory, path);
+		exe = fs->CreateLink(ProcDirectory, "exe", path);
 		if (exe == nullptr)
 			error("Failed to create exe link");
 	}
@@ -155,7 +155,8 @@ namespace Tasking
 		assert(ExecutionMode >= _ExecuteModeMin);
 		assert(ExecutionMode <= _ExecuteModeMax);
 
-		FileNode *procDir = fs->GetByPath("/proc", nullptr);
+		Node root = fs->GetRoot(0);
+		Node procDir = fs->Lookup(root, "/proc");
 		assert(procDir != nullptr);
 
 		/* d r-x r-x r-x */

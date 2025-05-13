@@ -35,7 +35,13 @@ namespace Execute
 			  Tasking::TaskCompatibility Compatibility,
 			  bool Critical)
 	{
-		FileNode *fd = fs->GetByPath(Path, nullptr);
+		if (Parent == nullptr)
+		{
+			debug("no parent specified, using current process");
+			Parent = thisProcess;
+		}
+
+		Node fd = fs->Lookup(Parent->Info.RootNode, Path);
 		if (fd == nullptr)
 			return -ENOENT;
 
@@ -44,8 +50,8 @@ namespace Execute
 			if (fd->IsSymbolicLink())
 			{
 				char buffer[512];
-				fd->ReadLink(buffer, sizeof(buffer));
-				fd = fs->GetByPath(buffer, fd->Parent);
+				fs->ReadLink(fd, buffer, sizeof(buffer));
+				fd = fs->Lookup(fd->Parent, buffer);
 				if (fd == nullptr)
 					return -ENOENT;
 			}
@@ -61,7 +67,7 @@ namespace Execute
 			const char *BaseName;
 			cwk_path_get_basename(Path, &BaseName, nullptr);
 			Elf32_Ehdr ELFHeader;
-			fd->Read(&ELFHeader, sizeof(Elf32_Ehdr), 0);
+			fs->Read(fd, &ELFHeader, sizeof(Elf32_Ehdr), 0);
 
 			switch (ELFHeader.e_machine)
 			{
@@ -108,7 +114,6 @@ namespace Execute
 			PCB *Process;
 			if (Fork)
 			{
-				assert(Parent != nullptr);
 				CriticalSection cs;
 
 				Process = Parent;
@@ -124,17 +129,13 @@ namespace Execute
 			}
 			else
 			{
-				if (Parent == nullptr)
-					Parent = thisProcess;
-
-				Process = TaskManager->CreateProcess(Parent, BaseName,
-													 TaskExecutionMode::User,
-													 false, 0, 0);
+				Process = TaskManager->CreateProcess(Parent, BaseName, User, false, 0, 0);
 				Process->Info.Compatibility = Compatibility;
 				Process->Info.Architecture = Arch;
 			}
 
-			Process->SetWorkingDirectory(fs->GetByPath(Path, nullptr)->Parent);
+			Node cwdNode = fs->Lookup(Parent->Info.RootNode, Path);
+			Process->SetWorkingDirectory(fs->Convert(cwdNode->Parent));
 			Process->SetExe(Path);
 
 			ELFObject *obj = new ELFObject(Path, Process, argv, envp);
@@ -148,9 +149,9 @@ namespace Execute
 			vfs::FileDescriptorTable *pfdt = Parent->FileDescriptors;
 			vfs::FileDescriptorTable *fdt = Process->FileDescriptors;
 
-			auto ForkStdio = [pfdt, fdt](FileNode *SearchNode)
+			auto ForkStdio = [pfdt, fdt](Node SearchNode)
 			{
-				if (unlikely(SearchNode == nullptr))
+				if (unlikely(SearchNode.get() == nullptr))
 					return false;
 
 				for (const auto &ffd : pfdt->FileMap)
@@ -158,12 +159,11 @@ namespace Execute
 					if (ffd.second.Flags & O_CLOEXEC)
 						continue;
 
-					if (ffd.second.Node == SearchNode)
-					{
-						fdt->usr_open(ffd.second.Node->Path.c_str(),
-									  ffd.second.Flags, ffd.second.Mode);
-						return true;
-					}
+					if (ffd.second.node.get() != SearchNode.get())
+						continue;
+
+					fdt->usr_open(ffd.second.node->Path.c_str(), ffd.second.Flags, ffd.second.Mode);
+					return true;
 				}
 				return false;
 			};

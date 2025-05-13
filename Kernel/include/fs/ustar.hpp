@@ -18,7 +18,7 @@
 #ifndef __FENNIX_KERNEL_FILESYSTEM_USTAR_H__
 #define __FENNIX_KERNEL_FILESYSTEM_USTAR_H__
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 namespace vfs
 {

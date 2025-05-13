@@ -21,7 +21,7 @@
 
 namespace Execute
 {
-	std::vector<Elf_Dyn> ELFGetDynamicTag(FileNode *fd, DynamicArrayTags Tag)
+	std::vector<Elf_Dyn> ELFGetDynamicTag(Node &fd, DynamicArrayTags Tag)
 	{
 		std::vector<Elf_Dyn> ret;
 		std::vector<Elf_Phdr> phdrs = ELFGetSymbolType(fd, PT_DYNAMIC);
@@ -37,7 +37,7 @@ namespace Execute
 			Elf_Dyn dyn;
 			for (size_t i = 0; i < phdr.p_filesz / sizeof(Elf_Dyn); i++)
 			{
-				fd->Read(&dyn, sizeof(Elf_Dyn), phdr.p_offset + (i * sizeof(Elf_Dyn)));
+				fs->Read(fd, &dyn, sizeof(Elf_Dyn), phdr.p_offset + (i * sizeof(Elf_Dyn)));
 				if (dyn.d_tag != Tag)
 					continue;
 

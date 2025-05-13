@@ -16,6 +16,7 @@
 */
 
 #include <driver.hpp>
+#include <interface/block.h>
 #include <cpu.hpp>
 #include <pci.hpp>
 
@@ -572,6 +573,9 @@ namespace Driver::AHCI
 		HBAPort *HBAPortPtr;
 		uint8_t *Buffer;
 		uint8_t PortNumber;
+		uint32_t BlockSize;
+		uint32_t BlockCount;
+		size_t Size;
 		ATA_IDENTIFY *IdentifyData;
 
 		Port(PortType Type, HBAPort *PortPtr, uint8_t PortNumber)
@@ -614,6 +618,7 @@ namespace Driver::AHCI
 
 		void Configure()
 		{
+			debug("Configuring port %d", PortNumber);
 			this->StopCMD();
 			void *CmdBase = v0::AllocateMemory(DriverID, 1);
 			HBAPortPtr->CommandListBase = (uint32_t)(uint64_t)CmdBase;
@@ -639,18 +644,34 @@ namespace Driver::AHCI
 
 			Identify();
 
+			if (IdentifyData->CommandSetSupport.BigLba)
+			{
+				if ((IdentifyData->CommandSetActive.Words119_120Valid & 0x1) != 0)
+				{
+					uint32_t wordsPerLogicalSector = (IdentifyData->WordsPerLogicalSector[1] << 16) | IdentifyData->WordsPerLogicalSector[0];
+					if (wordsPerLogicalSector != 0)
+						this->BlockSize = wordsPerLogicalSector * 2;
+				}
+			}
+			this->BlockSize = 512;
+
+			this->BlockCount = this->IdentifyData->UserAddressableSectors;
+			this->Size = this->BlockCount * this->BlockSize;
+
 			trace("Port %d \"%x %x %x %x\" configured", PortNumber,
 				  HBAPortPtr->Vendor[0], HBAPortPtr->Vendor[1],
 				  HBAPortPtr->Vendor[2], HBAPortPtr->Vendor[3]);
 		}
 
-		bool ReadWrite(uint64_t Sector, uint32_t SectorCount, void *Buffer, bool Write)
+		int ReadWrite(uint64_t Sector, uint32_t SectorCount, void *Buffer, bool Write)
 		{
 			if (this->AHCIPortType == PortType::SATAPI && Write == true)
 			{
 				trace("SATAPI port does not support write.");
-				return false;
+				return ENOTSUP;
 			}
+
+			debug("%s op on port %d, sector %d, count %d", Write ? "Write" : "Read", this->PortNumber, Sector, SectorCount);
 
 			uint32_t SectorL = (uint32_t)Sector;
 			uint32_t SectorH = (uint32_t)(Sector >> 32);
@@ -706,7 +727,7 @@ namespace Driver::AHCI
 			if (spinLock == 1000000)
 			{
 				trace("Port not responding.");
-				return false;
+				return ETIMEDOUT;
 			}
 
 			HBAPortPtr->CommandIssue = 1;
@@ -723,7 +744,7 @@ namespace Driver::AHCI
 					spinLock = 0;
 					retries++;
 					if (retries > 10)
-						return false;
+						return ETIMEDOUT;
 				}
 
 				if (HBAPortPtr->CommandIssue == 0)
@@ -733,11 +754,11 @@ namespace Driver::AHCI
 				if (HBAPortPtr->InterruptStatus & HBA_PxIS_TFES)
 				{
 					trace("Error reading/writing (%d).", Write);
-					return false;
+					return EIO;
 				}
 			}
 
-			return true;
+			return 0;
 		}
 
 		void Identify()
@@ -840,33 +861,60 @@ namespace Driver::AHCI
 		}
 	}
 
-	int Open(struct Inode *, int, mode_t)
-	{
-		return 0;
-	}
-
-	int Close(struct Inode *)
-	{
-		return 0;
-	}
-
 	ssize_t Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
 	{
-		uint64_t sector = Offset / 512;
-		uint32_t sectorCount = uint32_t(Size / 512);
-		int num = Node->GetMinor();
-		bool ok = PortDevices[num]->ReadWrite(sector, sectorCount, Buffer, false);
-		return ok ? Size : 0;
+		Port *port = static_cast<Port *>(Node->PrivateData);
+		if ((Offset % port->BlockSize) != 0 || (Size % port->BlockSize) != 0)
+		{
+			trace("Read offset or size not aligned to block size (BlockSize=%u)", port->BlockSize);
+			return -EINVAL;
+		}
+
+		uint64_t sector = Offset / port->BlockSize;
+		uint32_t sectorCount = uint32_t(Size / port->BlockSize);
+		if (sectorCount == 0)
+		{
+			trace("Attempt to read 0 sectors");
+			return 0;
+		}
+
+		bool status = port->ReadWrite(sector, sectorCount, Buffer, false);
+		if (status != 0)
+		{
+			trace("Error '%s' reading from port %d", strerror(status), port->PortNumber);
+			return status;
+		}
+		return Size;
 	}
 
 	ssize_t Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
 	{
-		uint64_t sector = Offset / 512;
-		uint32_t sectorCount = uint32_t(Size / 512);
-		int num = Node->GetMinor();
-		bool ok = PortDevices[num]->ReadWrite(sector, sectorCount, (void *)Buffer, true);
-		return ok ? Size : 0;
+		Port *port = static_cast<Port *>(Node->PrivateData);
+		if ((Offset % port->BlockSize) != 0 || (Size % port->BlockSize) != 0)
+		{
+			trace("Read offset or size not aligned to block size (BlockSize=%u)", port->BlockSize);
+			return -EINVAL;
+		}
+
+		uint64_t sector = Offset / port->BlockSize;
+		uint32_t sectorCount = uint32_t(Size / port->BlockSize);
+		if (sectorCount == 0)
+		{
+			trace("Attempt to write 0 sectors");
+			return 0;
+		}
+
+		bool status = port->ReadWrite(sector, sectorCount, (void *)Buffer, true);
+		if (status != 0)
+		{
+			trace("Error '%s' writing to port %d", strerror(status), port->PortNumber);
+			return status;
+		}
+		return Size;
 	}
+
+	int Open(struct Inode *, int, mode_t) { return 0; }
+	int Close(struct Inode *) { return 0; }
 
 	const struct InodeOperations ops = {
 		.Lookup = nullptr,
@@ -915,8 +963,18 @@ namespace Driver::AHCI
 				{
 					KPrint("%s drive found at port %d", PortTypeName[portType], i);
 					Port *port = new Port(portType, &hba->Ports[i], i);
-					dev_t ret = v0::RegisterDevice(DriverID, BLOCK_TYPE_HDD, &ops);
+					port->Configure();
+
+					BlockDevice *dev = new BlockDevice;
+					dev->Name = "ahci";
+					dev->BlockSize = port->BlockSize;
+					dev->BlockCount = port->BlockCount;
+					dev->Size = port->Size;
+					dev->Ops = &ops;
+					dev->PrivateData = port;
+					dev_t ret = v0::RegisterBlockDevice(DriverID, dev);
 					PortDevices[ret] = port;
+					debug("Port %d \"%s\" registered as %d", i, port->IdentifyData->ModelNumber, ret);
 					break;
 				}
 				case PortType::SEMB:
@@ -942,10 +1000,6 @@ namespace Driver::AHCI
 			return -ENODEV;
 		}
 
-		trace("Initializing AHCI ports");
-		for (auto &&p : PortDevices)
-			p.second->Configure();
-
 		/* We don't use the interrupt handler now... maybe we will in the future */
 		// RegisterInterruptHandler(iLine(ctx->Device), (void *)OnInterruptReceived);
 
@@ -957,7 +1011,7 @@ namespace Driver::AHCI
 		for (auto &&p : PortDevices)
 		{
 			p.second->StopCMD();
-			v0::UnregisterDevice(DriverID, p.first);
+			v0::UnregisterBlockDevice(DriverID, p.first);
 			delete p.second;
 		}
 

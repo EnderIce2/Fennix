@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <task.hpp>
 #include <errno.h>
 #include <vector>
@@ -50,15 +50,15 @@ namespace Execute
 		void *ELFProgramHeaders;
 
 		void GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma,
-									 FileNode *fd, Elf_Ehdr ELFHeader,
+									 Node &fd, Elf_Ehdr ELFHeader,
 									 uintptr_t EntryPoint,
 									 uintptr_t BaseAddress);
 
-		void LoadSegments(FileNode *fd, Tasking::PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress);
+		void LoadSegments(Node &fd, Tasking::PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress);
 
-		void LoadExec(FileNode *fd, Tasking::PCB *TargetProcess);
-		void LoadDyn(FileNode *fd, Tasking::PCB *TargetProcess);
-		bool LoadInterpreter(FileNode *fd, Tasking::PCB *TargetProcess);
+		void LoadExec(Node &fd, Tasking::PCB *TargetProcess);
+		void LoadDyn(Node &fd, Tasking::PCB *TargetProcess);
+		bool LoadInterpreter(Node &fd, Tasking::PCB *TargetProcess);
 
 	public:
 		decltype(IsElfValid) &IsValid = IsElfValid;
@@ -74,7 +74,7 @@ namespace Execute
 		~ELFObject();
 	};
 
-	BinaryType GetBinaryType(FileNode *Path);
+	BinaryType GetBinaryType(Node &Path);
 	BinaryType GetBinaryType(std::string Path);
 
 	int Spawn(const char *Path, const char **argv, const char **envp,
@@ -88,12 +88,12 @@ namespace Execute
 	char *GetELFStringTable(Elf_Ehdr *Header);
 	char *ELFLookupString(Elf_Ehdr *Header, uintptr_t Offset);
 	Elf_Sym *ELFLookupSymbol(Elf_Ehdr *Header, std::string Name);
-	Elf_Sym ELFLookupSymbol(FileNode *fd, std::string Name);
+	Elf_Sym ELFLookupSymbol(Node &fd, std::string Name);
 	uintptr_t ELFGetSymbolValue(Elf_Ehdr *Header, uintptr_t Table, uintptr_t Index);
 
-	std::vector<Elf_Phdr> ELFGetSymbolType(FileNode *fd, SegmentTypes Tag);
-	std::vector<Elf_Shdr> ELFGetSections(FileNode *fd, std::string SectionName);
-	std::vector<Elf_Dyn> ELFGetDynamicTag(FileNode *fd, DynamicArrayTags Tag);
+	std::vector<Elf_Phdr> ELFGetSymbolType(Node &fd, SegmentTypes Tag);
+	std::vector<Elf_Shdr> ELFGetSections(Node &fd, std::string SectionName);
+	std::vector<Elf_Dyn> ELFGetDynamicTag(Node &fd, DynamicArrayTags Tag);
 }
 
 #endif // !__FENNIX_KERNEL_FILE_EXECUTE_H__

@@ -38,12 +38,12 @@ extern const __SIZE_TYPE__ trusted_drivers_count;
 
 namespace Driver
 {
-	bool Manager::IsDriverTrusted(FileNode *File)
+	bool Manager::IsDriverTrusted(Node File)
 	{
 		kstat st;
-		File->Stat(&st);
+		fs->Stat(File, &st);
 		std::unique_ptr<uint8_t[]> ptr(new uint8_t[st.Size]);
-		File->Read(ptr.get(), st.Size, 0);
+		fs->Read(File, ptr.get(), st.Size, 0);
 		uint8_t *sha = sha512_sum(ptr.get(), st.Size);
 		char hash_str[129];
 		for (int j = 0; j < 64; j++)
@@ -102,7 +102,8 @@ namespace Driver
 		}
 
 		const char *DriverDirectory = Config.DriverDirectory;
-		FileNode *drvDirNode = fs->GetByPath(DriverDirectory, nullptr);
+		Node root = fs->GetRoot(0);
+		Node drvDirNode = fs->Lookup(root, DriverDirectory);
 		if (!drvDirNode)
 		{
 			error("Failed to open driver directory %s", DriverDirectory);
@@ -110,7 +111,7 @@ namespace Driver
 			return;
 		}
 
-		for (const auto &drvNode : drvDirNode->Children)
+		for (const auto &drvNode : fs->ReadDirectory(drvDirNode))
 		{
 			debug("Checking driver %s", drvNode->Path.c_str());
 			if (!drvNode->IsRegularFile())
@@ -273,12 +274,12 @@ namespace Driver
 		}
 	}
 
-	int Manager::LoadDriverFile(DriverObject &Drv, FileNode *File)
+	int Manager::LoadDriverFile(DriverObject &Drv, Node File)
 	{
 		trace("Loading driver %s in memory", File->Name.c_str());
 
 		Elf_Ehdr ELFHeader{};
-		File->Read(&ELFHeader, sizeof(Elf_Ehdr), 0);
+		fs->Read(File, &ELFHeader, sizeof(Elf_Ehdr), 0);
 
 		AssertReturnError(ELFHeader.e_ident[EI_CLASS] == ELFCLASS64, -ENOEXEC);
 		AssertReturnError(ELFHeader.e_ident[EI_DATA] == ELFDATA2LSB, -ENOEXEC);
@@ -295,7 +296,7 @@ namespace Driver
 		Elf_Phdr phdr{};
 		for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 		{
-			File->Read(&phdr, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+			fs->Read(File, &phdr, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 			if (phdr.p_type == PT_LOAD || phdr.p_type == PT_DYNAMIC)
 			{
 				if (segSize < phdr.p_vaddr + phdr.p_memsz)
@@ -306,7 +307,7 @@ namespace Driver
 			if (phdr.p_type == PT_INTERP)
 			{
 				char interp[17];
-				File->Read(interp, sizeof(interp), phdr.p_offset);
+				fs->Read(File, interp, sizeof(interp), phdr.p_offset);
 				if (strncmp(interp, "/boot/fennix.elf", sizeof(interp)) != 0)
 				{
 					error("Interpreter is not /boot/fennix.elf");
@@ -326,13 +327,13 @@ namespace Driver
 		Elf_Shdr shstrtab{};
 		Elf_Shdr shdr{};
 		__DriverInfo driverInfo{};
-		File->Read(&shstrtab, sizeof(Elf_Shdr), ELFHeader.e_shoff + (ELFHeader.e_shstrndx * ELFHeader.e_shentsize));
+		fs->Read(File, &shstrtab, sizeof(Elf_Shdr), ELFHeader.e_shoff + (ELFHeader.e_shstrndx * ELFHeader.e_shentsize));
 		for (Elf_Half i = 0; i < ELFHeader.e_shnum; i++)
 		{
 			if (i == ELFHeader.e_shstrndx)
 				continue;
 
-			File->Read(&shdr, ELFHeader.e_shentsize, ELFHeader.e_shoff + (i * ELFHeader.e_shentsize));
+			fs->Read(File, &shdr, ELFHeader.e_shentsize, ELFHeader.e_shoff + (i * ELFHeader.e_shentsize));
 
 			switch (shdr.sh_type)
 			{
@@ -350,11 +351,11 @@ namespace Driver
 			}
 
 			char symName[16];
-			File->Read(symName, sizeof(symName), shstrtab.sh_offset + shdr.sh_name);
+			fs->Read(File, symName, sizeof(symName), shstrtab.sh_offset + shdr.sh_name);
 			if (strcmp(symName, ".driver.info") != 0)
 				continue;
 
-			File->Read(&driverInfo, sizeof(__DriverInfo), shdr.sh_offset);
+			fs->Read(File, &driverInfo, sizeof(__DriverInfo), shdr.sh_offset);
 
 			/* Perform relocations */
 			driverInfo.Name = (const char *)(Drv.BaseAddress + (uintptr_t)driverInfo.Name);
@@ -367,13 +368,13 @@ namespace Driver
 		{
 			Elf_Sym symEntry{};
 			uintptr_t symOffset = sht_symtab.sh_offset + (h * sizeof(Elf_Sym));
-			File->Read(&symEntry, sizeof(Elf_Sym), symOffset);
+			fs->Read(File, &symEntry, sizeof(Elf_Sym), symOffset);
 
 			if (symEntry.st_name == 0)
 				continue;
 
 			char symName[16];
-			File->Read(symName, sizeof(symName), sht_strtab.sh_offset + symEntry.st_name);
+			fs->Read(File, symName, sizeof(symName), sht_strtab.sh_offset + symEntry.st_name);
 
 			switch (symEntry.st_shndx)
 			{
@@ -405,7 +406,7 @@ namespace Driver
 
 		for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 		{
-			File->Read(&phdr, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+			fs->Read(File, &phdr, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 
 			switch (phdr.p_type)
 			{
@@ -421,7 +422,7 @@ namespace Driver
 					  phdr.p_filesz, phdr.p_memsz);
 
 				if (phdr.p_filesz > 0)
-					File->Read(dest, phdr.p_filesz, phdr.p_offset);
+					fs->Read(File, (void *)dest, phdr.p_filesz, phdr.p_offset);
 
 				if (phdr.p_memsz - phdr.p_filesz > 0)
 				{
@@ -620,7 +621,8 @@ namespace Driver
 		delete Drv.DeviceOperations;
 
 		/* Reload the driver */
-		FileNode *drvNode = fs->GetByPath(Drv.Path.c_str(), nullptr);
+		Node root = fs->GetRoot(0);
+		Node drvNode = fs->Lookup(root, Drv.Path);
 		if (!drvNode)
 		{
 			error("Failed to open driver file %s", Drv.Path.c_str());
@@ -684,7 +686,7 @@ namespace Driver
 		newDrvObj.Initialized = true;
 	}
 
-	Manager::Manager() { this->InitializeDaemonFS(); }
+	Manager::Manager() { this->InitializeDeviceDirectory(); }
 
 	Manager::~Manager()
 	{

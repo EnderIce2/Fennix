@@ -17,7 +17,7 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <acpi.hpp>
 
 #include "../../kernel.h"
@@ -38,8 +38,40 @@ void cmd_dump(const char *args)
 	*strLen = '\0';
 	strLen++;
 
-	void *Address = (void *)strtoul(strAddr, nullptr, 16);
+	void *Address;
 	unsigned long Length = strtoul(strLen, nullptr, 10);
+
+	Node root = fs->GetRoot(0);
+	Node fileNode = fs->Lookup(root, strAddr);
+	if (fileNode && !fileNode->IsDirectory() && !fileNode->IsFIFO() && !fileNode->IsSocket())
+	{
+		kstat stat;
+		int status = fs->Stat(fileNode, &stat);
+		if (status != 0)
+		{
+			printf("cannot get stat: %s\n", strerror(status));
+			return;
+		}
+
+		size_t size = stat.Size > (off_t)Length ? Length : stat.Size;
+		Address = new char[size]; /* FIXME: memory leak */
+		size_t read = fs->Read(fileNode, Address, size, 0);
+		if (read < Length)
+		{
+			debug("clamp %lu to %lu", Length, read);
+			Length = read;
+		}
+	}
+	else
+	{
+		if (fileNode)
+		{
+			printf("file %s cannot be dumped\n", strAddr);
+			return;
+		}
+		Address = (void *)strtoul(strAddr, nullptr, 16);
+		debug("address %s", strAddr);
+	}
 
 	{
 		unsigned char *AddressChar = (unsigned char *)Address;

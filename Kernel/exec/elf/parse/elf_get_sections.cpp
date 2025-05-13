@@ -21,18 +21,18 @@
 
 namespace Execute
 {
-	std::vector<Elf_Shdr> ELFGetSections(FileNode *fd, const char *SectionName)
+	std::vector<Elf_Shdr> ELFGetSections(Node fd, const char *SectionName)
 	{
 		std::vector<Elf_Shdr> ret;
 
 		Elf_Ehdr ehdr;
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		std::unique_ptr<Elf_Shdr[]> sections(new Elf_Shdr[ehdr.e_shnum]);
-		fd->Read(sections.get(), sizeof(Elf_Shdr) * ehdr.e_shnum, ehdr.e_shoff);
+		fs->Read(fd, sections.get(), sizeof(Elf_Shdr) * ehdr.e_shnum, ehdr.e_shoff);
 
 		std::string sectionNames(sections[ehdr.e_shstrndx].sh_size, '\0');
-		fd->Read(sectionNames.data(), sections[ehdr.e_shstrndx].sh_size, sections[ehdr.e_shstrndx].sh_offset);
+		fs->Read(fd, sectionNames.data(), sections[ehdr.e_shstrndx].sh_size, sections[ehdr.e_shstrndx].sh_offset);
 
 		for (Elf_Half i = 0; i < ehdr.e_shnum; ++i)
 		{

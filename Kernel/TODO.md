@@ -9,7 +9,7 @@
 - [ ] ~~Do not map the entire memory. Map only the needed memory address at allocation time.~~ (we just copy the pages for userland, see `Fork()` inside [core/memory/page_table.cpp](core/memory/page_table.cpp))
 - [ ] Implementation of logging (beside serial) with log rotation.
 - [x] Implement a better task manager. (replace struct P/TCB with classes)
-- [ ] Rewrite virtual file system.
+- [x] Rewrite virtual file system.
 - [ ] Colors in crash screen are not following the kernel color scheme.
 - [x] ~~Find a way to add intrinsics.~~ (not feasible, use inline assembly)
 - [ ] Rework PSF1 font loader.

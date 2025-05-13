@@ -191,11 +191,11 @@ namespace v0
 
 	/* --------- */
 
-	dev_t RegisterFileSystem(dev_t DriverID, FileSystemInfo *Info, struct Inode *Root)
+	dev_t RegisterFileSystem(dev_t DriverID, FileSystemInfo *Info)
 	{
-		dbg_api("%d, %#lx, %#lx", DriverID, Info, Root);
+		dbg_api("%d, %#lx", DriverID, Info);
 
-		return fs->RegisterFileSystem(Info, Root);
+		return fs->RegisterFileSystem(Info);
 	}
 
 	int UnregisterFileSystem(dev_t DriverID, dev_t Device)
@@ -710,6 +710,20 @@ namespace v0
 
 		return DriverManager->ReportInputEvent(DriverID, Report);
 	}
+
+	dev_t RegisterBlockDevice(dev_t DriverID, struct BlockDevice *Device)
+	{
+		dbg_api("%d, %#lx", DriverID, Device);
+
+		return DriverManager->RegisterBlockDevice(DriverID, Device);
+	}
+
+	int UnregisterBlockDevice(dev_t DriverID, dev_t DeviceID)
+	{
+		dbg_api("%d, %d", DriverID, DeviceID);
+
+		return DriverManager->UnregisterBlockDevice(DriverID, DeviceID);
+	}
 }
 
 struct APISymbols
@@ -777,6 +791,8 @@ static struct APISymbols APISymbols_v0[] = {
 	{"__RegisterDevice", (void *)v0::RegisterDevice},
 	{"__UnregisterDevice", (void *)v0::UnregisterDevice},
 	{"__ReportInputEvent", (void *)v0::ReportInputEvent},
+	{"__RegisterBlockDevice", (void *)v0::RegisterBlockDevice},
+	{"__UnregisterBlockDevice", (void *)v0::UnregisterBlockDevice},
 };
 
 long __KernelUndefinedFunction(long arg0, long arg1, long arg2, long arg3,

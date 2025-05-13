@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <memory/va.hpp>
 #include <symbols.hpp>
 #include <memory.hpp>
@@ -219,7 +219,7 @@ namespace Tasking
 		TaskArchitecture Architecture = TaskArchitecture::UnknownArchitecture;
 		TaskCompatibility Compatibility = TaskCompatibility::UnknownPlatform;
 		cwk_path_style PathStyle = CWK_STYLE_UNIX;
-		FileNode *RootNode = nullptr;
+		Node RootNode = nullptr;
 	};
 
 	struct ThreadLocalStorage
@@ -445,7 +445,7 @@ namespace Tasking
 		PID ID = -1;
 		const char *Name = nullptr;
 		PCB *Parent = nullptr;
-		FileNode *ProcDirectory = nullptr;
+		Node ProcDirectory = nullptr;
 
 		/* Statuses */
 		std::atomic_int ExitCode;
@@ -489,14 +489,14 @@ namespace Tasking
 		} Linux{};
 
 		/* Filesystem */
-		FileNode *CWD;
-		FileNode *Executable;
+		Node CWD;
+		Node Executable;
 		FileDescriptorTable *FileDescriptors;
 
 		/* stdio */
-		FileNode *stdin;
-		FileNode *stdout;
-		FileNode *stderr;
+		Node stdin;
+		Node stdout;
+		Node stderr;
 		/*TTY::TeletypeDriver*/ void *tty;
 
 		/* Memory */
@@ -521,7 +521,7 @@ namespace Tasking
 		void SetState(TaskState state);
 		void SetExitCode(int code);
 		void Rename(const char *name);
-		void SetWorkingDirectory(FileNode *node);
+		void SetWorkingDirectory(Node node);
 		void SetExe(const char *path);
 		size_t GetSize();
 		TCB *GetThread(TID ID);

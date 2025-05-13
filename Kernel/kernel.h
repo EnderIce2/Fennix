@@ -22,7 +22,7 @@
 
 #include <boot/binfo.h>
 #ifdef __cplusplus
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <display.hpp>
 #include <symbols.hpp>
 #include <kconfig.hpp>

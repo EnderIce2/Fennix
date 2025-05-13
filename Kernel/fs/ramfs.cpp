@@ -15,12 +15,12 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <filesystem/ramfs.hpp>
+#include <fs/ramfs.hpp>
 #include <memory.hpp>
 #include <functional>
 #include <debug.h>
 
-#include "../../kernel.h"
+#include "../kernel.h"
 
 namespace vfs
 {
@@ -81,7 +81,6 @@ namespace vfs
 		inode.Index = NextInode;
 		inode.Offset = 0;
 		inode.PrivateData = this;
-		inode.Flags = I_FLAG_CACHE_KEEP;
 
 		const char *basename;
 		size_t length;
@@ -329,54 +328,54 @@ namespace vfs
 	}
 }
 
-O2 int __ramfs_Lookup(struct Inode *Parent, const char *Name, struct Inode **Result)
+int __ramfs_Lookup(struct Inode *Parent, const char *Name, struct Inode **Result)
 {
 	return ((vfs::RAMFS *)Parent->PrivateData)->Lookup(Parent, Name, Result);
 }
 
-O2 int __ramfs_Create(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result)
+int __ramfs_Create(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result)
 {
 	return ((vfs::RAMFS *)Parent->PrivateData)->Create(Parent, Name, Mode, Result);
 }
 
-O2 ssize_t __ramfs_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
+ssize_t __ramfs_Read(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)
 {
 	return ((vfs::RAMFS *)Node->PrivateData)->Read(Node, Buffer, Size, Offset);
 }
 
-O2 ssize_t __ramfs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
+ssize_t __ramfs_Write(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)
 {
 	return ((vfs::RAMFS *)Node->PrivateData)->Write(Node, Buffer, Size, Offset);
 }
 
-O2 ssize_t __ramfs_Readdir(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
+ssize_t __ramfs_Readdir(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)
 {
 	return ((vfs::RAMFS *)Node->PrivateData)->ReadDir(Node, Buffer, Size, Offset, Entries);
 }
 
-O2 int __ramfs_SymLink(Inode *Parent, const char *Name, const char *Target, Inode **Result)
+int __ramfs_SymLink(Inode *Parent, const char *Name, const char *Target, Inode **Result)
 {
 	return ((vfs::RAMFS *)Parent->PrivateData)->SymLink(Parent, Name, Target, Result);
 }
 
-O2 ssize_t __ramfs_ReadLink(Inode *Node, char *Buffer, size_t Size)
+ssize_t __ramfs_ReadLink(Inode *Node, char *Buffer, size_t Size)
 {
 	return ((vfs::RAMFS *)Node->PrivateData)->ReadLink(Node, Buffer, Size);
 }
 
-O2 int __ramfs_Stat(struct Inode *Node, kstat *Stat)
+int __ramfs_Stat(struct Inode *Node, kstat *Stat)
 {
 	return ((vfs::RAMFS *)Node->PrivateData)->Stat(Node, Stat);
 }
 
-O2 int __ramfs_DestroyInode(FileSystemInfo *Info, Inode *Node)
+int __ramfs_DestroyInode(FileSystemInfo *Info, Inode *Node)
 {
 	vfs::RAMFS::RAMFSInode *inode = (vfs::RAMFS::RAMFSInode *)Node;
 	delete inode;
 	return 0;
 }
 
-O2 int __ramfs_Destroy(FileSystemInfo *fsi)
+int __ramfs_Destroy(FileSystemInfo *fsi)
 {
 	assert(fsi->PrivateData);
 	delete (vfs::RAMFS *)fsi->PrivateData;
@@ -384,16 +383,13 @@ O2 int __ramfs_Destroy(FileSystemInfo *fsi)
 	return 0;
 }
 
-bool MountRAMFS(FileNode *Parent, const char *Name, size_t Index)
+bool MountAndRootRAMFS(Node Parent, const char *Name, size_t Index)
 {
 	vfs::RAMFS *ramfs = new vfs::RAMFS;
-	ramfs->DeviceID = fs->EarlyReserveDevice();
 	ramfs->RootName.assign(Name);
 
 	FileSystemInfo *fsi = new FileSystemInfo;
 	fsi->Name = "ramfs";
-	fsi->RootName = Name;
-	fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 	fsi->SuperOps.DeleteInode = __ramfs_DestroyInode;
 	fsi->SuperOps.Destroy = __ramfs_Destroy;
 	fsi->Ops.Lookup = __ramfs_Lookup;
@@ -405,13 +401,12 @@ bool MountRAMFS(FileNode *Parent, const char *Name, size_t Index)
 	fsi->Ops.ReadLink = __ramfs_ReadLink;
 	fsi->Ops.Stat = __ramfs_Stat;
 	fsi->PrivateData = ramfs;
+	ramfs->DeviceID = fs->RegisterFileSystem(fsi);
 
 	Inode *root = nullptr;
 	ramfs->Create(nullptr, Name, S_IFDIR | 0755, &root);
 
-	fs->LateRegisterFileSystem(ramfs->DeviceID, fsi, root);
-	fs->AddRootAt(root, Index);
-
-	fs->Mount(Parent, root, Name);
+	fs->Mount(Parent, root, Name, fsi);
+	fs->AddRoot(Index, fs->Convert(root));
 	return true;
 }

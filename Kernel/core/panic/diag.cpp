@@ -64,7 +64,7 @@ struct DiagnosticFile
 	} Data;
 };
 
-nsa bool WriteDiagDataToNode(FileNode *node)
+nsa bool WriteDiagDataToNode(Node node)
 {
 	uintptr_t KStart = (uintptr_t)&_kernel_start;
 	uintptr_t kEnd = (uintptr_t)&_kernel_end;
@@ -89,7 +89,7 @@ nsa bool WriteDiagDataToNode(FileNode *node)
 	memcpy(file->Data.KernelMemory, (void *)KStart, kSize);
 
 	ExPrint("Writing to %s\n", node->Path.c_str());
-	size_t w = node->Write(buf, fileSize, 0);
+	size_t w = fs->Write(node, buf, fileSize, 0);
 	if (w != fileSize)
 	{
 		debug("%d out of %d bytes written", w, fileSize);
@@ -115,7 +115,8 @@ nsa void DiagnosticDataCollection()
 				  S_IROTH |
 				  S_IFDIR;
 
-	FileNode *panicDir = fs->ForceCreate(nullptr, "/sys/log/panic", mode);
+	Node root = fs->GetRoot(0);
+	Node panicDir = fs->Create(root, "/sys/log/panic", mode);
 	if (!panicDir)
 	{
 		ExPrint("\x1b[0;30;41mFailed to create /sys/log/panic\x1b[0m\n");
@@ -123,14 +124,14 @@ nsa void DiagnosticDataCollection()
 		return;
 	}
 
-	FileNode *dumpFile;
+	Node dumpFile;
 	Time::Clock clock = Time::ReadClock();
 	char filename[64];
 	for (int i = 0; i < INT32_MAX; i++)
 	{
 		sprintf(filename, "dump-%d-%d-%d-%d.dmp",
 				clock.Year, clock.Month, clock.Day, i);
-		if (fs->PathExists(filename, panicDir))
+		if (fs->Lookup(panicDir, filename))
 			continue;
 
 		mode = S_IRWXU |

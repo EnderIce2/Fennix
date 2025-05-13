@@ -17,7 +17,7 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 #include "../../kernel.h"
 
@@ -28,7 +28,7 @@ void cmd_cat(const char *args)
 	if (args[0] == '\0')
 		return;
 
-	FileNode *node = fs->GetByPath(args, nullptr);
+	Node node = fs->Lookup(thisProcess->CWD, args);
 
 	if (node == nullptr)
 	{
@@ -48,11 +48,11 @@ void cmd_cat(const char *args)
 		return;
 	}
 
-	kstat stat = {};
-	node->Stat(&stat);
+	kstat stat;
+	fs->Stat(node, &stat);
 
 	uint8_t *buffer = new uint8_t[stat.Size + 1];
-	ssize_t rBytes = node->Read(buffer, stat.Size, 0);
+	ssize_t rBytes = fs->Read(node, buffer, stat.Size, 0);
 	if (rBytes > 0)
 		printf("%s\n", buffer);
 	else

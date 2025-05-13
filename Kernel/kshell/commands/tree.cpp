@@ -17,70 +17,38 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 #include "../../kernel.h"
 
-void tree_loop(FileNode *rootNode, int depth = 0)
+// Enhancing the tree_loop function to display a fancier tree structure
+
+__no_sanitize("alignment") void tree_loop(Node rootNode, int depth = 0, std::string prefix = "")
 {
-	// for (auto Child : rootNode->GetChildren(true))
-	// {
-	// 	Display->UpdateBuffer();
-	// 	if (Child->Stat.IsType(DIRECTORY) || Child->Stat.IsType(MOUNTPOINT))
-	// 	{
-	// 		printf("%*s%*s%*s|- %s\n",
-	// 			   depth, "",
-	// 			   depth, "",
-	// 			   depth, "",
-	// 			   Child->FileName);
-	// 		tree_loop(Child, depth + 1);
-	// 	}
-	// 	else
-	// 		printf("%*s%*s%*s|- %s\n",
-	// 			   depth, "",
-	// 			   depth, "",
-	// 			   depth, "",
-	// 			   Child->FileName);
-	// }
+    std::list<Node> children = fs->ReadDirectory(rootNode);
+    size_t count = children.size();
+    size_t index = 0;
 
-	kdirent *dirBuffer = new kdirent[16];
-	ssize_t read = 0;
-	off_t offset = 0;
-	while ((read = rootNode->ReadDir(dirBuffer, sizeof(kdirent) * 16, offset, LONG_MAX)) > 0)
-	{
-		if (read / sizeof(kdirent) == 0)
-			break;
+    for (auto &&child : children)
+    {
+        if (child->Name == "." || child->Name == "..")
+            continue;
 
-		off_t bufOffset = 0;
-		for (size_t i = 0; i < read / sizeof(kdirent); i++)
-		{
-			kdirent *dirent = (kdirent *)((uintptr_t)dirBuffer + bufOffset);
-			if (dirent->d_reclen == 0)
-				break;
-			bufOffset += dirent->d_reclen;
+        bool isLast = (++index == count);
 
-			if (strcmp(dirent->d_name, ".") == 0 || strcmp(dirent->d_name, "..") == 0)
-				continue;
+        printf("%s%s- %s\n", prefix.c_str(), isLast ? "\\" : "|-", child->Name.c_str());
 
-			FileNode *node = fs->GetByPath(dirent->d_name, rootNode);
-			if (node == nullptr)
-				continue;
-
-			for (int i = 0; i < depth; i++)
-				printf("  ");
-			printf("|- %s\n", dirent->d_name);
-
-			if (node->IsDirectory())
-				tree_loop(node, depth + 1);
-		}
-		offset += read;
-	}
-	delete[] dirBuffer;
+        if (child->IsDirectory())
+        {
+            std::string newPrefix = prefix + (isLast ? "  " : "| ");
+            tree_loop(child, depth + 1, newPrefix);
+        }
+    }
 }
 
 void cmd_tree(const char *args)
 {
-	FileNode *rootNode = thisProcess->CWD;
+	Node rootNode = thisProcess->CWD;
 	if (args[0] == '\0')
 	{
 		if (rootNode == nullptr)
@@ -88,7 +56,7 @@ void cmd_tree(const char *args)
 	}
 	else
 	{
-		rootNode = fs->GetByPath(args, nullptr);
+		rootNode = fs->Lookup(thisProcess->CWD, args);
 		if (rootNode == nullptr)
 		{
 			printf("ls: %s: No such file or directory\n", args);

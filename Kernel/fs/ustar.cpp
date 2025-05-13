@@ -15,12 +15,12 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <filesystem/ustar.hpp>
+#include <fs/ustar.hpp>
 #include <memory.hpp>
 #include <functional>
 #include <debug.h>
 
-#include "../../kernel.h"
+#include "../kernel.h"
 
 #define TMAGIC "ustar"
 #define TMAGLEN 6
@@ -32,7 +32,7 @@ namespace vfs
 	int USTAR::Lookup(struct Inode *_Parent, const char *Name, struct Inode **Result)
 	{
 		auto Parent = (USTARInode *)_Parent;
-
+		debug("looking up for %s", Name);
 		const char *basename;
 		size_t length;
 		cwk_path_get_basename(Name, &basename, &length);
@@ -91,7 +91,6 @@ namespace vfs
 		inode.Index = NextInode;
 		inode.Offset = 0;
 		inode.PrivateData = this;
-		inode.Flags = I_FLAG_CACHE_KEEP;
 
 		const char *basename;
 		size_t length;
@@ -217,6 +216,7 @@ namespace vfs
 	{
 		/* FIXME: FIX ALIGNMENT FOR DIRENT! */
 		auto Node = (USTARInode *)_Node;
+		debug("reading directory %s", Node->Path.c_str());
 
 		off_t realOffset = Offset;
 
@@ -237,6 +237,7 @@ namespace vfs
 			ent->d_type = DT_DIR;
 			strcpy(ent->d_name, ".");
 			totalSize += reclen;
+			debug(".");
 		}
 
 		if (Offset <= 1)
@@ -263,6 +264,7 @@ namespace vfs
 			ent->d_type = DT_DIR;
 			strcpy(ent->d_name, "..");
 			totalSize += reclen;
+			debug("..");
 		}
 
 		// off_t entriesSkipped = 0;
@@ -309,10 +311,13 @@ namespace vfs
 			if (var->Deleted)
 				continue;
 
-			reclen = (uint16_t)(offsetof(struct kdirent, d_name) + strlen(var->Name.c_str()) + 1);
+			reclen = (uint16_t)(offsetof(struct kdirent, d_name) + var->Name.size() + 1);
 
-			if (totalSize + reclen >= Size)
+			if (totalSize + reclen > Size)
+			{
+				debug("not enough space for %s (%zu + %zu = %zu > %zu)", var->Name.c_str(), totalSize, reclen, totalSize + reclen, Size);
 				break;
+			}
 
 			ent = (struct kdirent *)((uintptr_t)Buffer + totalSize);
 			ent->d_ino = var->Node.Index;
@@ -349,7 +354,7 @@ namespace vfs
 				break;
 			}
 			strncpy(ent->d_name, var->Name.c_str(), strlen(var->Name.c_str()));
-
+			debug("%s", var->Name.c_str());
 			totalSize += reclen;
 			entries++;
 		}
@@ -601,7 +606,6 @@ namespace vfs
 			uNode.RawDevice = 0;
 			uNode.Index = NextInode;
 			SetMode(uNode, header);
-			uNode.Flags = I_FLAG_CACHE_KEEP;
 			uNode.Offset = 0;
 			uNode.PrivateData = this;
 
@@ -847,17 +851,8 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size, size_t Index)
 		return false;
 	}
 
-	ustar->DeviceID = fs->EarlyReserveDevice();
-	ustar->ReadArchive(Address, Size);
-
-	Inode *rootfs = nullptr;
-	ustar->Lookup(nullptr, "/", &rootfs);
-	assert(rootfs != nullptr);
-
 	FileSystemInfo *fsi = new FileSystemInfo;
 	fsi->Name = "ustar";
-	fsi->RootName = "/";
-	fsi->Flags = I_FLAG_ROOT | I_FLAG_MOUNTPOINT | I_FLAG_CACHE_KEEP;
 	fsi->SuperOps.DeleteInode = __ustar_DestroyInode;
 	fsi->SuperOps.Destroy = __ustar_Destroy;
 	fsi->Ops.Lookup = __ustar_Lookup;
@@ -868,8 +863,23 @@ bool TestAndInitializeUSTAR(uintptr_t Address, size_t Size, size_t Index)
 	fsi->Ops.ReadLink = __ustar_ReadLink;
 	fsi->Ops.Stat = __ustar_Stat;
 	fsi->PrivateData = ustar;
-	fs->LateRegisterFileSystem(ustar->DeviceID, fsi, rootfs);
 
-	fs->AddRootAt(rootfs, Index);
+	ustar->DeviceID = fs->RegisterFileSystem(fsi);
+	ustar->ReadArchive(Address, Size);
+
+	Inode *rootfs = nullptr;
+	ustar->Lookup(nullptr, "/", &rootfs);
+	assert(rootfs != nullptr);
+
+	eNode _node = fs->Convert(rootfs);
+	assert(_node.Error == 0);
+
+	Node node = _node;
+	node->fsi = fsi;
+	node->Flags.MountPoint = true;
+	node->Name = "/";
+	node->Path = "/";
+
+	fs->AddRoot(Index, node);
 	return true;
 }

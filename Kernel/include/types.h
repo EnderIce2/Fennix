@@ -458,6 +458,10 @@ typedef uint48_t uint_fast48_t;
 #define hot __attribute__((hot))
 #define cold __attribute__((cold))
 
+#define OPTIONAL
+#define IN
+#define OUT
+
 #define NoSecurityAnalysis __no_stack_protector __no_sanitize_address __no_sanitize_undefined __no_sanitize_thread
 #define nsa NoSecurityAnalysis
 

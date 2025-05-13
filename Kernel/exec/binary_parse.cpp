@@ -25,7 +25,7 @@
 
 namespace Execute
 {
-	BinaryType GetBinaryType(FileNode *Node)
+	BinaryType GetBinaryType(Node &Node)
 	{
 		debug("Checking binary type of %s", Node->Path.c_str());
 		BinaryType type;
@@ -34,13 +34,13 @@ namespace Execute
 			ReturnLogError((BinaryType)-ENOENT, "Node is null");
 
 		Elf_Ehdr ehdr;
-		Node->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(Node, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		mach_header mach;
-		Node->Read(&mach, sizeof(mach_header), 0);
+		fs->Read(Node, &mach, sizeof(mach_header), 0);
 
 		IMAGE_DOS_HEADER mz;
-		Node->Read(&mz, sizeof(IMAGE_DOS_HEADER), 0);
+		fs->Read(Node, &mz, sizeof(IMAGE_DOS_HEADER), 0);
 
 		/* Check ELF header. */
 		if (ehdr.e_ident[EI_MAG0] == ELFMAG0 &&
@@ -64,10 +64,10 @@ namespace Execute
 		else if (mz.e_magic == IMAGE_DOS_SIGNATURE)
 		{
 			IMAGE_NT_HEADERS pe;
-			Node->Read(&pe, sizeof(IMAGE_NT_HEADERS), mz.e_lfanew);
+			fs->Read(Node, &pe, sizeof(IMAGE_NT_HEADERS), mz.e_lfanew);
 
 			IMAGE_OS2_HEADER ne;
-			Node->Read(&ne, sizeof(IMAGE_OS2_HEADER), mz.e_lfanew);
+			fs->Read(Node, &ne, sizeof(IMAGE_OS2_HEADER), mz.e_lfanew);
 
 			/* TODO: LE, EDOS */
 			if (pe.Signature == IMAGE_NT_SIGNATURE)
@@ -99,14 +99,14 @@ namespace Execute
 
 	BinaryType GetBinaryType(std::string Path)
 	{
-		FileNode *node = fs->GetByPath(Path.c_str(), nullptr);
+		Node node = fs->Lookup(thisProcess->Info.RootNode, Path);
 		if (node->IsSymbolicLink())
 		{
 			char buffer[512];
-			node->ReadLink(buffer, sizeof(buffer));
-			node = fs->GetByPath(buffer, node->Parent);
+			fs->ReadLink(node, buffer, sizeof(buffer));
+			node = fs->Lookup(node->Parent, buffer);
 		}
-		debug("Checking binary type of %s (returning %p)", Path.c_str(), node);
+		debug("Checking binary type of %s (returning %p)", Path.c_str(), node.get());
 		assert(node != nullptr);
 		return GetBinaryType(node);
 	}

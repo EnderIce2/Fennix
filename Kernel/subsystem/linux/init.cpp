@@ -15,45 +15,88 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <filesystem/ramfs.hpp>
+#include <fs/ramfs.hpp>
 
 #include "../../kernel.h"
+#include <fs/ustar.hpp>
+#include <ini.h>
 
 namespace Subsystem::Linux
 {
 	bool Initialized = false;
 
+	void __CreateStubRoot()
+	{
+		Node root = fs->GetRoot(0);
+		Node nmnt = fs->Lookup(root, "/mnt");
+		assert(MountAndRootRAMFS(nmnt, "linux", 1));
+		Node linux = fs->GetRoot(1);
+
+		Node bin = fs->Create(linux, "bin", 0755);
+		Node boot = fs->Create(linux, "boot", 0755);
+		Node dev = fs->Create(linux, "dev", 0755);
+		Node etc = fs->Create(linux, "etc", 0755);
+		Node home = fs->Create(linux, "home", 0755);
+		Node lib = fs->Create(linux, "lib", 0755);
+		Node lib64 = fs->Create(linux, "lib64", 0755);
+		Node media = fs->Create(linux, "media", 0755);
+		Node mnt = fs->Create(linux, "mnt", 0755);
+		Node opt = fs->Create(linux, "opt", 0755);
+		Node proc = fs->Create(linux, "proc", 0755);
+
+		UNUSED(bin);
+		UNUSED(boot);
+		UNUSED(dev);
+		UNUSED(etc);
+		UNUSED(home);
+		UNUSED(lib);
+		UNUSED(lib64);
+		UNUSED(media);
+		UNUSED(mnt);
+		UNUSED(opt);
+		UNUSED(proc);
+	}
+
 	void InitializeSubSystem()
 	{
 		if (fs->RootExists(1) == false)
 		{
-			FileNode *nmnt = fs->GetByPath("/mnt", fs->GetRoot(0));
-			assert(MountRAMFS(nmnt, "linux", 1));
-			FileNode *linux = fs->GetRoot(1);
+			Node root = fs->GetRoot(0);
+			Node cfg = fs->Lookup(root, "/sys/cfg/subsystem/linux");
+			if (cfg)
+			{
+				struct kstat st;
+				fs->Stat(cfg, &st);
 
-			FileNode *bin = fs->ForceCreate(linux, "bin", 0755);
-			FileNode *boot = fs->ForceCreate(linux, "boot", 0755);
-			FileNode *dev = fs->ForceCreate(linux, "dev", 0755);
-			FileNode *etc = fs->ForceCreate(linux, "etc", 0755);
-			FileNode *home = fs->ForceCreate(linux, "home", 0755);
-			FileNode *lib = fs->ForceCreate(linux, "lib", 0755);
-			FileNode *lib64 = fs->ForceCreate(linux, "lib64", 0755);
-			FileNode *media = fs->ForceCreate(linux, "media", 0755);
-			FileNode *mnt = fs->ForceCreate(linux, "mnt", 0755);
-			FileNode *opt = fs->ForceCreate(linux, "opt", 0755);
-			FileNode *proc = fs->ForceCreate(linux, "proc", 0755);
+				std::unique_ptr<char[]> buf(new char[st.Size]);
+				fs->Read(cfg, buf.get(), st.Size, 0);
 
-			UNUSED(bin);
-			UNUSED(boot);
-			UNUSED(dev);
-			UNUSED(etc);
-			UNUSED(home);
-			UNUSED(lib);
-			UNUSED(lib64);
-			UNUSED(media);
-			UNUSED(mnt);
-			UNUSED(opt);
-			UNUSED(proc);
+				ini_t *ini = ini_load(buf.get(), NULL);
+				int section = ini_find_section(ini, "rootfs", NULL);
+				int pathIdx = ini_find_property(ini, section, "path", NULL);
+				const char *uPath = ini_property_value(ini, section, pathIdx);
+				debug("path=%s", uPath);
+				ini_destroy(ini);
+
+				if (fs->Lookup(root, uPath) != false)
+				{
+					root = fs->Lookup(root, uPath);
+
+					// if (TestAndInitializeUSTAR(moduleAddress, moduleSize, 0))
+					// {
+					// }
+				}
+				else
+				{
+					warn("Couldn't find rootfs path %s", uPath);
+					__CreateStubRoot();
+				}
+			}
+			else
+			{
+				warn("Couldn't open /sys/cfg/subsystem/linux");
+				__CreateStubRoot();
+			}
 		}
 	}
 }

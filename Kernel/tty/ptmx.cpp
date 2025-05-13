@@ -16,7 +16,7 @@
 */
 
 #include <tty.hpp>
-#include <filesystem/ioctl.hpp>
+#include <fs/ioctl.hpp>
 #include <smp.hpp>
 #include <errno.h>
 

@@ -17,7 +17,7 @@
 
 #include "../cmds.hpp"
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 #include "../../kernel.h"
 
@@ -28,8 +28,7 @@ void cmd_cd(const char *args)
 	if (args[0] == '\0')
 		return;
 
-	FileNode *node = fs->GetByPath(args, nullptr);
-
+	Node node = fs->Lookup(thisProcess->CWD, args);
 	if (node == nullptr)
 	{
 		printf("cd: %s: No such file or directory\n", args);
@@ -43,4 +42,5 @@ void cmd_cd(const char *args)
 	}
 
 	thisProcess->CWD = node;
+	debug("changed cwd to %s", node->Path.c_str());
 }

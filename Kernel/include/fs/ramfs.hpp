@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <memory.hpp>
 
 namespace vfs
@@ -147,4 +147,4 @@ namespace vfs
 	};
 }
 
-bool MountRAMFS(FileNode *Parent, const char *Name, size_t Index);
+bool MountAndRootRAMFS(Node Parent, const char *Name, size_t Index);

@@ -21,7 +21,7 @@
 
 #include "../kernel.h"
 
-void TreeFS(FileNode *node, int Depth)
+void TreeFS(Node node, int Depth)
 {
 	return;
 	// for (auto Chld : node->GetChildren(true))

@@ -15,7 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 
 #include <convert.h>
 #include <stropts.h>
@@ -47,8 +47,7 @@ namespace vfs
 		return 0;
 	}
 
-	int FileDescriptorTable::AddFileDescriptor(const char *AbsolutePath,
-											   mode_t Mode, int Flags)
+	int FileDescriptorTable::AddFileDescriptor(const char *AbsolutePath, mode_t Mode, int Flags)
 	{
 		Tasking::PCB *pcb = thisProcess;
 
@@ -77,8 +76,7 @@ namespace vfs
 
 			if (Flags & O_RDWR)
 			{
-				if (!(Mode & S_IRUSR) ||
-					!(Mode & S_IWUSR))
+				if (!(Mode & S_IRUSR) || !(Mode & S_IWUSR))
 				{
 					debug("No read/write permission (%d)", Mode);
 					return -EACCES;
@@ -95,12 +93,11 @@ namespace vfs
 
 		if (Flags & O_CREAT)
 		{
-			FileNode *ret = fs->Create(pcb->CWD, AbsolutePath, Mode);
-			if (Flags & O_EXCL && ret == nullptr)
+			eNode ret = fs->Create(pcb->CWD, AbsolutePath, Mode);
+			if (Flags & O_EXCL && ret == false)
 			{
-				debug("%s: File already exists?, returning EEXIST",
-					  AbsolutePath);
-				return -EEXIST;
+				debug("%s: File already exists?, returning %s", AbsolutePath, ret.what());
+				return -ret.Error;
 			}
 		}
 
@@ -109,18 +106,18 @@ namespace vfs
 			fixme("O_CLOEXEC");
 		}
 
-		FileNode *File = fs->GetByPath(AbsolutePath, pcb->CWD);
-
-		if (!File)
+		eNode ret = fs->Lookup(pcb->CWD, AbsolutePath);
+		if (ret == false)
 		{
-			error("Failed to open file %s", AbsolutePath);
-			return -ENOENT;
+			error("Failed to open file %s, %s", AbsolutePath, ret.what());
+			return -ret.Error;
 		}
+		Node node = ret;
 
 		if (Flags & O_TRUNC)
 		{
 			debug("Truncating file %s", AbsolutePath);
-			File->Truncate(0);
+			fs->Truncate(node, 0);
 		}
 
 		Fildes fd{};
@@ -129,13 +126,13 @@ namespace vfs
 		{
 			debug("Appending to file %s", AbsolutePath);
 			struct kstat stat;
-			File->Stat(&stat);
-			fd.Offset = File->Seek(stat.Size);
+			fs->Stat(node, &stat);
+			fd.Offset = fs->Seek(node, stat.Size);
 		}
 
 		fd.Mode = Mode;
 		fd.Flags = Flags;
-		fd.Node = File;
+		fd.node = node;
 
 		int fdn = this->GetFreeFileDescriptor();
 		if (fdn < 0)
@@ -145,9 +142,8 @@ namespace vfs
 
 		char linkName[64];
 		snprintf(linkName, 64, "%d", fdn);
-		assert(fs->CreateLink(linkName, this->fdDir, AbsolutePath) != nullptr);
-
-		File->Open(Flags, Mode);
+		assert(fs->CreateLink(this->fdDir, linkName, AbsolutePath) == true);
+		fs->Open(node, Flags, Mode);
 		return fdn;
 	}
 
@@ -157,7 +153,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", FileDescriptor);
 
-		fs->Remove(it->second.Node);
+		fs->Remove(it->second.node);
 		this->FileMap.erase(it);
 		return 0;
 	}
@@ -209,7 +205,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-		return it->second.Node->Read(buf, count, it->second.Offset);
+		return fs->Read(it->second.node, buf, count, it->second.Offset);
 	}
 
 	ssize_t FileDescriptorTable::usr_pread(int fd, void *buf, size_t count, off_t offset)
@@ -218,7 +214,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-		return it->second.Node->Read(buf, count, offset);
+		return fs->Read(it->second.node, buf, count, offset);
 	}
 
 	ssize_t FileDescriptorTable::usr_write(int fd, const void *buf, size_t count)
@@ -227,7 +223,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-		return it->second.Node->Write(buf, count, it->second.Offset);
+		return fs->Write(it->second.node, buf, count, it->second.Offset);
 	}
 
 	ssize_t FileDescriptorTable::usr_pwrite(int fd, const void *buf, size_t count, off_t offset)
@@ -236,7 +232,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-		return it->second.Node->Write(buf, count, offset);
+		return fs->Write(it->second.node, buf, count, offset);
 	}
 
 	int FileDescriptorTable::usr_close(int fd)
@@ -260,21 +256,19 @@ namespace vfs
 		{
 		case SEEK_SET:
 		{
-			newOffset = it->second.Node->Seek(offset);
+			newOffset = fs->Seek(it->second.node, offset);
 			break;
 		}
 		case SEEK_CUR:
 		{
-			newOffset = it->second.Node->Seek(newOffset + offset);
+			newOffset = fs->Seek(it->second.node, newOffset + offset);
 			break;
 		}
 		case SEEK_END:
 		{
-			struct kstat stat
-			{
-			};
-			it->second.Node->Stat(&stat);
-			newOffset = it->second.Node->Seek(stat.Size + offset);
+			struct kstat stat{};
+			fs->Stat(it->second.node, &stat);
+			newOffset = fs->Seek(it->second.node, stat.Size + offset);
 			break;
 		}
 		default:
@@ -284,48 +278,48 @@ namespace vfs
 		return newOffset;
 	}
 
-	int FileDescriptorTable::usr_stat(const char *pathname,
-									  struct kstat *statbuf)
+	int FileDescriptorTable::usr_stat(const char *pathname, kstat *statbuf)
 	{
-		FileNode *node = fs->GetByPath(pathname, nullptr);
-		if (node == nullptr)
-			ReturnLogError(-ENOENT, "Failed to find %s", pathname);
+		Node root = thisProcess->Info.RootNode;
+		eNode ret = fs->Lookup(root, pathname);
+		if (ret == false)
+			ReturnLogError(-ret.Error, "Error on %s, %s", pathname, ret.what());
+		Node node = ret;
 
 		if (node->IsSymbolicLink())
 		{
 			std::unique_ptr<char[]> buffer(new char[1024]);
-			ssize_t ret = node->ReadLink(buffer.get(), 1024);
-			if (ret < 0)
-				return ret;
+			ssize_t len = fs->ReadLink(node, buffer.get(), 1024);
+			if (len < 0)
+				return len;
 
-			FileNode *target = fs->GetByPath(buffer.get(), nullptr);
-			if (target == nullptr)
-				return -ENOENT;
-
-			return target->Stat(statbuf);
+			ret = fs->Lookup(root, buffer.get());
+			if (ret == false)
+				return -ret.Error;
+			return fs->Stat(ret.Value, statbuf);
 		}
 
-		return node->Stat(statbuf);
+		return fs->Stat(node, statbuf);
 	}
 
-	int FileDescriptorTable::usr_fstat(int fd, struct kstat *statbuf)
+	int FileDescriptorTable::usr_fstat(int fd, kstat *statbuf)
 	{
 		auto it = this->FileMap.find(fd);
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
 		vfs::FileDescriptorTable::Fildes &fildes = it->second;
-
-		return fildes.Node->Stat(statbuf);
+		return fs->Stat(fildes.node, statbuf);
 	}
 
-	int FileDescriptorTable::usr_lstat(const char *pathname,
-									   struct kstat *statbuf)
+	int FileDescriptorTable::usr_lstat(const char *pathname, kstat *statbuf)
 	{
-		FileNode *node = fs->GetByPath(pathname, nullptr);
-		if (node == nullptr)
-			ReturnLogError(-ENOENT, "Failed to find %s", pathname);
-		return node->Stat(statbuf);
+		Node root = thisProcess->Info.RootNode;
+		eNode ret = fs->Lookup(root, pathname);
+		if (ret == false)
+			ReturnLogError(-ret.Error, "Error on %s, %s", pathname, ret.what());
+
+		return fs->Stat(ret.Value, statbuf);
 	}
 
 	int FileDescriptorTable::usr_dup(int oldfd)
@@ -339,7 +333,7 @@ namespace vfs
 			return -EMFILE;
 
 		Fildes new_dfd{};
-		new_dfd.Node = it->second.Node;
+		new_dfd.node = it->second.node;
 		new_dfd.Mode = it->second.Mode;
 
 		this->FileMap.insert({newfd, new_dfd});
@@ -364,7 +358,7 @@ namespace vfs
 		this->usr_close(newfd);
 
 		Fildes new_dfd{};
-		new_dfd.Node = it->second.Node;
+		new_dfd.node = it->second.node;
 		new_dfd.Mode = it->second.Mode;
 
 		this->FileMap.insert({newfd, new_dfd});
@@ -378,7 +372,7 @@ namespace vfs
 		if (it == this->FileMap.end())
 			ReturnLogError(-EBADF, "Invalid fd %d", fd);
 
-		return it->second.Node->Ioctl(request, argp);
+		return fs->Ioctl(it->second.node, request, argp);
 	}
 
 	FileDescriptorTable::FileDescriptorTable(void *_Owner)
@@ -386,11 +380,12 @@ namespace vfs
 	{
 		debug("+ %#lx", this);
 
-		mode_t Mode = S_IXOTH | S_IROTH |
-					  S_IXGRP | S_IRGRP |
-					  S_IXUSR | S_IRUSR |
+		/* d r-x r-x r-x */
+		mode_t Mode = S_IROTH | S_IXOTH |
+					  S_IRGRP | S_IXGRP |
+					  S_IRUSR | S_IXUSR |
 					  S_IFDIR;
-
-		this->fdDir = fs->Create(((Tasking::PCB *)_Owner)->ProcDirectory, "fd", Mode);
+		Tasking::PCB *pcb = (Tasking::PCB *)_Owner;
+		this->fdDir = fs->Create(pcb->ProcDirectory, "fd", Mode);
 	}
 }

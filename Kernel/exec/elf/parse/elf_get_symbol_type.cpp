@@ -21,15 +21,15 @@
 
 namespace Execute
 {
-	std::vector<Elf_Phdr> ELFGetSymbolType(FileNode *fd, SegmentTypes Tag)
+	std::vector<Elf_Phdr> ELFGetSymbolType(Node &fd, SegmentTypes Tag)
 	{
 		std::vector<Elf_Phdr> ret;
 
 		Elf_Ehdr ehdr;
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		Elf_Phdr phdr;
-		fd->Read(&phdr, sizeof(Elf_Phdr), ehdr.e_phoff);
+		fs->Read(fd, &phdr, sizeof(Elf_Phdr), ehdr.e_phoff);
 
 		off_t off = ehdr.e_phoff;
 		for (Elf_Half i = 0; i < ehdr.e_phnum; i++)
@@ -38,7 +38,7 @@ namespace Execute
 				ret.push_back(phdr);
 
 			off += sizeof(Elf_Phdr);
-			fd->Read(&phdr, sizeof(Elf_Phdr), off);
+			fs->Read(fd, &phdr, sizeof(Elf_Phdr), off);
 		}
 
 		return ret;

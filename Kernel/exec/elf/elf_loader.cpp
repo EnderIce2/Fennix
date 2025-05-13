@@ -32,7 +32,7 @@ using namespace vfs;
 
 namespace Execute
 {
-	void ELFObject::GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma, FileNode *fd, Elf_Ehdr ELFHeader, uintptr_t EntryPoint, uintptr_t BaseAddress)
+	void ELFObject::GenerateAuxiliaryVector(Memory::VirtualMemoryArea *vma, Node &fd, Elf_Ehdr ELFHeader, uintptr_t EntryPoint, uintptr_t BaseAddress)
 	{
 		char *aux_platform = (char *)vma->RequestPages(1, true); /* TODO: 4KiB is too much for this */
 		strcpy(aux_platform, "x86_64");
@@ -79,7 +79,7 @@ namespace Execute
 #endif
 	}
 
-	void ELFObject::LoadSegments(FileNode *fd, PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress)
+	void ELFObject::LoadSegments(Node &fd, PCB *TargetProcess, Elf_Ehdr &ELFHeader, uintptr_t &BaseAddress)
 	{
 		Memory::Virtual vmm(TargetProcess->PageTable);
 		Memory::VirtualMemoryArea *vma = TargetProcess->vma;
@@ -91,7 +91,7 @@ namespace Execute
 			size_t SegmentsSize = 0;
 			for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+				fs->Read(fd, &ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 
 				if (ProgramHeader.p_type == PT_LOAD || ProgramHeader.p_type == PT_DYNAMIC)
 				{
@@ -113,7 +113,7 @@ namespace Execute
 
 			for (Elf_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+				fs->Read(fd, &ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 
 				switch (ProgramHeader.p_type)
 				{
@@ -132,7 +132,7 @@ namespace Execute
 
 					if (ProgramHeader.p_filesz > 0)
 					{
-						fd->Read(SegmentDestination, ProgramHeader.p_filesz, ProgramHeader.p_offset);
+						fs->Read(fd, (void *)SegmentDestination, ProgramHeader.p_filesz, ProgramHeader.p_offset);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -158,7 +158,7 @@ namespace Execute
 
 					if (ProgramHeader.p_filesz > 0)
 					{
-						fd->Read(DynamicSegmentDestination, ProgramHeader.p_filesz, ProgramHeader.p_offset);
+						fs->Read(fd, (void *)DynamicSegmentDestination, ProgramHeader.p_filesz, ProgramHeader.p_offset);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -212,7 +212,7 @@ namespace Execute
 		{
 			for (Elf64_Half i = 0; i < ELFHeader.e_phnum; i++)
 			{
-				fd->Read(&ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
+				fs->Read(fd, &ProgramHeader, sizeof(Elf_Phdr), ELFHeader.e_phoff + (i * sizeof(Elf_Phdr)));
 				switch (ProgramHeader.p_type)
 				{
 				case PT_LOAD:
@@ -245,7 +245,7 @@ namespace Execute
 					if (ProgramHeader.p_filesz > 0)
 					{
 						debug("%d %#lx %d", ProgramHeader.p_offset, (uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz);
-						fd->Read((uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
+						fs->Read(fd, (uint8_t *)pAddr + destOffset, ProgramHeader.p_filesz, ProgramHeader.p_offset);
 					}
 
 					if (ProgramHeader.p_memsz - ProgramHeader.p_filesz > 0)
@@ -265,35 +265,35 @@ namespace Execute
 				case PT_NOTE:
 				{
 					Elf_Nhdr NoteHeader;
-					fd->Read(&NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
+					fs->Read(fd, &NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
 
 					switch (NoteHeader.n_type)
 					{
 					case NT_PRSTATUS:
 					{
 						Elf_Prstatus prstatus;
-						fd->Read(&prstatus, sizeof(Elf_Prstatus), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						fs->Read(fd, &prstatus, sizeof(Elf_Prstatus), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
 						debug("PRSTATUS: %#lx", prstatus.pr_reg[0]);
 						break;
 					}
 					case NT_PRPSINFO:
 					{
 						Elf_Prpsinfo prpsinfo;
-						fd->Read(&prpsinfo, sizeof(Elf_Prpsinfo), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						fs->Read(fd, &prpsinfo, sizeof(Elf_Prpsinfo), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
 						debug("PRPSINFO: %s", prpsinfo.pr_fname);
 						break;
 					}
 					case NT_PLATFORM:
 					{
 						char platform[256];
-						fd->Read(&platform, sizeof(platform), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						fs->Read(fd, &platform, sizeof(platform), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
 						debug("PLATFORM: %s", platform);
 						break;
 					}
 					case NT_AUXV:
 					{
 						Elf_auxv_t auxv;
-						fd->Read(&auxv, sizeof(Elf_auxv_t), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						fs->Read(fd, &auxv, sizeof(Elf_auxv_t), ProgramHeader.p_offset + sizeof(Elf_Nhdr));
 						debug("AUXV: %#lx", auxv.a_un.a_val);
 						break;
 					}
@@ -311,7 +311,7 @@ namespace Execute
 					debug("TLS Size: %ld (%ld pages)",
 						  tlsSize, TO_PAGES(tlsSize));
 					void *tlsMemory = vma->RequestPages(TO_PAGES(tlsSize));
-					fd->Read(tlsMemory, tlsSize, ProgramHeader.p_offset);
+					fs->Read(fd, tlsMemory, tlsSize, ProgramHeader.p_offset);
 					TargetProcess->TLS = {
 						.pBase = uintptr_t(tlsMemory),
 						.vBase = ProgramHeader.p_vaddr,
@@ -346,12 +346,12 @@ namespace Execute
 				case PT_GNU_PROPERTY:
 				{
 					Elf_Nhdr NoteHeader;
-					fd->Read(&NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
+					fs->Read(fd, &NoteHeader, sizeof(Elf_Nhdr), ProgramHeader.p_offset);
 
 					if (NoteHeader.n_type == NT_GNU_PROPERTY_TYPE_0)
 					{
 						char noteName[0x400];
-						fd->Read(noteName, NoteHeader.n_namesz, ProgramHeader.p_offset + sizeof(Elf_Nhdr));
+						fs->Read(fd, noteName, NoteHeader.n_namesz, ProgramHeader.p_offset + sizeof(Elf_Nhdr));
 						noteName[NoteHeader.n_namesz - 1] = '\0';
 
 						if (strcmp(noteName, "GNU") == 0)
@@ -394,10 +394,10 @@ namespace Execute
 		TargetProcess->ProgramBreak->InitBrk(ProgramBreak);
 	}
 
-	void ELFObject::LoadExec(FileNode *fd, PCB *TargetProcess)
+	void ELFObject::LoadExec(Node &fd, PCB *TargetProcess)
 	{
 		Elf_Ehdr ehdr{};
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 		uintptr_t entry = ehdr.e_entry;
 		debug("Entry point is %#lx", entry);
 
@@ -424,10 +424,10 @@ namespace Execute
 #endif
 	}
 
-	void ELFObject::LoadDyn(FileNode *fd, PCB *TargetProcess)
+	void ELFObject::LoadDyn(Node &fd, PCB *TargetProcess)
 	{
 		Elf_Ehdr ehdr{};
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 		uintptr_t entry = ehdr.e_entry;
 		debug("Entry point is %#lx", entry);
 
@@ -465,24 +465,25 @@ namespace Execute
 		Elf_Phdr interp = interpVec.front();
 		std::string interpreterPath;
 		interpreterPath.resize(256);
-		fd->Read(interpreterPath.data(), 256, interp.p_offset);
+		fs->Read(fd, interpreterPath.data(), 256, interp.p_offset);
 		debug("Interpreter: %s", interpreterPath.c_str());
 
-		FileNode *ifd = fs->GetByPath(interpreterPath.c_str(), TargetProcess->Info.RootNode);
-		if (ifd == nullptr)
+		eNode ret = fs->Lookup(TargetProcess->Info.RootNode, interpreterPath);
+		if (ret == false)
 		{
-			warn("Failed to open interpreter file: %s", interpreterPath.c_str());
+			warn("Failed to open interpreter file: %s", ret.what());
 			return;
 		}
+		Node ifd = ret;
 
 		if (ifd->IsSymbolicLink())
 		{
 			char buffer[512];
-			ifd->ReadLink(buffer, sizeof(buffer));
-			ifd = fs->GetByPath(buffer, ifd->Parent);
+			fs->ReadLink(ifd, buffer, sizeof(buffer));
+			ifd = fs->Lookup(ifd->Parent, buffer);
 		}
 
-		debug("ifd: %p, interpreter: %s", ifd, interpreterPath.c_str());
+		debug("ifd: %p, interpreter: %s", ifd.get(), interpreterPath.c_str());
 		if (GetBinaryType(interpreterPath) != BinTypeELF)
 		{
 			warn("Interpreter %s is not an ELF file", interpreterPath.c_str());
@@ -492,10 +493,10 @@ namespace Execute
 		LoadInterpreter(ifd, TargetProcess);
 	}
 
-	bool ELFObject::LoadInterpreter(FileNode *fd, PCB *TargetProcess)
+	bool ELFObject::LoadInterpreter(Node &fd, PCB *TargetProcess)
 	{
 		Elf_Ehdr ehdr;
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		switch (ehdr.e_type)
 		{
@@ -550,18 +551,19 @@ namespace Execute
 			return;
 		}
 
-		FileNode *fd = fs->GetByPath(AbsolutePath.c_str(), TargetProcess->Info.RootNode);
-		if (fd == nullptr)
+		eNode ret = fs->Lookup(TargetProcess->Info.RootNode, AbsolutePath);
+		if (ret == false)
 		{
-			error("Failed to open %s, errno: %d", AbsolutePath.c_str(), fd);
+			error("Failed to open %s, errno: %s", AbsolutePath.c_str(), ret.what());
 			return;
 		}
+		Node fd = ret;
 
 		if (fd->IsSymbolicLink())
 		{
 			char buffer[512];
-			fd->ReadLink(buffer, sizeof(buffer));
-			fd = fs->GetByPath(buffer, fd->Parent);
+			fs->ReadLink(fd, buffer, sizeof(buffer));
+			fd = fs->Lookup(fd->Parent, buffer);
 		}
 
 		debug("Opened %s", AbsolutePath.c_str());
@@ -575,7 +577,7 @@ namespace Execute
 			envc++;
 
 		Elf_Ehdr ehdr{};
-		fd->Read(&ehdr, sizeof(Elf_Ehdr), 0);
+		fs->Read(fd, &ehdr, sizeof(Elf_Ehdr), 0);
 
 		// ELFargv = new const char *[argc + 2];
 		size_t argv_size = argc + 2 * sizeof(char *);

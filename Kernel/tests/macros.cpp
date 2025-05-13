@@ -18,11 +18,11 @@
 #ifdef DEBUG
 
 #include <types.h>
-#include <filesystem/ioctl.hpp>
+#include <fs/ioctl.hpp>
 #include <interface/syscalls.h>
 #include <memory/macro.hpp>
 #include <memory/vma.hpp>
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <assert.h>
 #include <debug.h>
 

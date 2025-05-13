@@ -19,7 +19,7 @@
 #define __FENNIX_KERNEL_INTERNAL_MEMORY_H__
 
 #ifdef __cplusplus
-#include <filesystem.hpp>
+#include <fs/vfs.hpp>
 #include <boot/binfo.h>
 #include <bitmap.hpp>
 #include <lock.hpp>

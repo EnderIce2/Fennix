@@ -156,15 +156,15 @@ namespace KernelConsole
 
 	bool SetTheme(std::string Theme)
 	{
-		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
+		Node rn = fs->Lookup(thisProcess->Info.RootNode, "/sys/cfg/term");
 		if (rn == nullptr)
 			return false;
 
-		kstat st{};
-		rn->Stat(&st);
+		kstat st;
+		fs->Stat(rn, &st);
 
 		char *sh = new char[st.Size];
-		rn->Read(sh, st.Size, 0);
+		fs->Read(rn, sh, st.Size, 0);
 
 		ini_t *ini = ini_load(sh, NULL);
 		int themeSection, c0, c1, c2, c3, c4, c5, c6, c7, colorsIdx;
@@ -370,16 +370,16 @@ namespace KernelConsole
 
 	void LateInit()
 	{
-		FileNode *rn = fs->GetByPath("/sys/cfg/term", thisProcess->Info.RootNode);
+		Node rn = fs->Lookup(thisProcess->Info.RootNode, "/sys/cfg/term");
 		if (rn == nullptr)
 			return;
 
 		{
 			kstat st;
-			rn->Stat(&st);
+			fs->Stat(rn, &st);
 			std::string cfg;
-			cfg.reserve(st.Size);
-			rn->Read(cfg.data(), st.Size, 0);
+			cfg.resize(st.Size);
+			fs->Read(rn, cfg.data(), st.Size, 0);
 			LoadConsoleConfig(cfg);
 		}
 

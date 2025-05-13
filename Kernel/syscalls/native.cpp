@@ -109,7 +109,7 @@ static int sys_open(SysFrm *Frame, const char *pathname, int flags, mode_t mode)
 
 	if (flags & 0200000 /* O_DIRECTORY */)
 	{
-		FileNode *node = fs->GetByPath(pPathname, pcb->CWD);
+		Node node = fs->Lookup(pcb->CWD, pPathname);
 		if (node == nullptr)
 		{
 			debug("Couldn't find %s", pPathname);
@@ -150,7 +150,7 @@ static int sys_access(SysFrm *Frame, const char *pathname, int mode)
 
 	debug("access(%s, %d)", (char *)pPathname, mode);
 
-	if (!fs->PathExists(pPathname, pcb->CWD))
+	if (!fs->Lookup(pcb->CWD, pPathname))
 		return -ENOENT;
 
 	stub;
