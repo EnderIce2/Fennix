@@ -17,6 +17,9 @@
 
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 /* This part is from "4.6.1.1 Industry Standard Configuration Tables" */
 
 #define EFI_ACPI_20_TABLE_GUID \
@@ -633,3 +636,5 @@ static EFI_GUID gWindowsUxCapsuleGuid = {0x3b8c8162, 0x188c, 0x46a4, {0xae, 0xc9
 #define UiProtocol gEFiUiInterfaceProtocolGuid
 #define UnicodeCollationProtocol gEfiUnicodeCollationProtocolGuid
 #define Vt100Protocol gEfiVT100Guid
+
+#pragma GCC diagnostic pop

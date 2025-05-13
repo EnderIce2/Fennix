@@ -73,6 +73,7 @@ VOID InitializeMemoryEntries(EFI_MEMORY_DESCRIPTOR *MemoryMap, UINTN NumberOfEnt
 	for (UINTN i = 0; i < NumberOfEntries; i++)
 	{
 		EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR *)((UINT8 *)MemoryMap + i * DescriptorSize);
+		UNUSED(desc);
 
 #ifdef DEBUG
 		const char *EFI_MEMORY_TYPE_STRINGS[] = {
