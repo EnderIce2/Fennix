@@ -391,7 +391,7 @@ namespace Driver
 		dev->Mode = mode;
 
 		FileSystemInfo *fsi = new FileSystemInfo;
-		fsi->Name = "Device Virtual File System";
+		fsi->Name = "devfs";
 		fsi->SuperOps = {};
 		fsi->Ops.Lookup = __fs_Lookup;
 		fsi->Ops.Create = __fs_Create;
