@@ -44,10 +44,20 @@ export DRIVER_LDFLAGS
 export DRIVER_CFLAGS
 
 copy_driver_signatures:
-	@echo "const char *trusted_drivers[] = {" > $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
-	@find $(OUTPUT_DIR) -name "*.drv" -exec sha512sum {} \; | awk '{gsub(/.*\//, "", $$2); gsub(/\./, "_", $$2); sub(/_drv$$/, "_drv", $$2); print "\"" $$1 "\"," }' >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
-	@echo "};" >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
-	@echo "const __SIZE_TYPE__ trusted_drivers_count = sizeof(trusted_drivers) / sizeof(trusted_drivers[0]);" >> $(OUTPUT_DIR)../../Kernel/drivers/trusted.c
+	@TMP_FILE="$(OUTPUT_DIR)../../Kernel/drivers/trusted.c.tmp"; \
+	OUT_FILE="$(OUTPUT_DIR)../../Kernel/drivers/trusted.c"; \
+	mkdir -p $(OUTPUT_DIR)../../Kernel/drivers/; \
+	echo "const char *trusted_drivers[] = {" > $$TMP_FILE; \
+	find $(OUTPUT_DIR) -name "*.drv" -exec sha512sum {} \; | awk '{gsub(/.*\//, "", $$2); gsub(/\./, "_", $$2); sub(/_drv$$/, "_drv", $$2); print "\"" $$1 "\"," }' >> $$TMP_FILE; \
+	echo "};" >> $$TMP_FILE; \
+	echo "const __SIZE_TYPE__ trusted_drivers_count = sizeof(trusted_drivers) / sizeof(trusted_drivers[0]);" >> $$TMP_FILE; \
+	if [ ! -f $$OUT_FILE ] || ! cmp -s $$TMP_FILE $$OUT_FILE; then \
+		mv $$TMP_FILE $$OUT_FILE; \
+		printf '\033[0;32m[trusted.c updated]\033[0m\n'; \
+	else \
+		rm $$TMP_FILE; \
+		printf '\033[0;33m[trusted.c unchanged]\033[0m\n'; \
+	fi
 
 build:
 	cp -rf ../Kernel/include/interface/* include/
