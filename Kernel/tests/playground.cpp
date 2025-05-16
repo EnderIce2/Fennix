@@ -15,24 +15,16 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_non_constructor_tests_H__
-#define __FENNIX_KERNEL_non_constructor_tests_H__
 #ifdef DEBUG
 
-#include <types.h>
-#include <fs/vfs.hpp>
+void __early_playground()
+{
+	/* test code */
+}
 
-void Test_stl();
-void TestMemoryAllocation();
-void tasking_test_fb();
-void tasking_test_mutex();
-void TaskMgr();
-void TreeFS(Node node, int Depth);
-void TaskHeartbeat();
-void StressKernel();
-void coroutineTest();
-void __early_playground();
-void __late_playground();
+void __late_playground()
+{
+	/* test code */
+}
 
 #endif // DEBUG
-#endif // !__FENNIX_KERNEL_non_constructor_tests_H__

@@ -139,6 +139,10 @@ void KernelMainThread()
 	Subsystem::Linux::InitializeSubSystem();
 	Subsystem::Windows::InitializeSubSystem();
 
+#ifdef DEBUG
+	__late_playground();
+#endif
+
 	KPrint("Executing %s", Config.InitPath);
 	int ExitCode = -1;
 	Tasking::PCB *initProc;

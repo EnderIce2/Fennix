@@ -247,6 +247,10 @@ EXTERNC nif cold void Main()
 	KPrint("Initializing Filesystem");
 	KernelVFS();
 
+#ifdef DEBUG
+	__early_playground();
+#endif
+
 	KPrint("\x1b[1;32m################################");
 	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
 	TaskManager->StartScheduler();
