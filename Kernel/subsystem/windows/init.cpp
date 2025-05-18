@@ -18,6 +18,7 @@
 #include <fs/ramfs.hpp>
 
 #include "../../kernel.h"
+#include <ini.h>
 
 namespace Subsystem::Windows
 {
@@ -47,6 +48,50 @@ namespace Subsystem::Windows
 	{
 		if (fs->RootExists(2) == false)
 		{
+			Node root = fs->GetRoot(0);
+			Node cfg = fs->Lookup(root, "/sys/cfg/subsystem/windows");
+			if (cfg)
+			{
+				struct kstat st;
+				fs->Stat(cfg, &st);
+
+				std::unique_ptr<char[]> buf(new char[st.Size]);
+				fs->Read(cfg, buf.get(), st.Size, 0);
+
+				ini_t *ini = ini_load(buf.get(), NULL);
+				int section = ini_find_section(ini, "rootfs", NULL);
+				int pathIdx = ini_find_property(ini, section, "path", NULL);
+				const char *uPath = ini_property_value(ini, section, pathIdx);
+				debug("path=%s", uPath);
+				ini_destroy(ini);
+
+				eNode ret = fs->Lookup(root, uPath);
+				if (ret != false)
+				{
+					Node tar = ret;
+					FileSystemInfo *fsi = fs->Probe(tar);
+					if (fsi == nullptr)
+					{
+						warn("Couldn't probe rootfs %s", uPath);
+						__CreateStubRoot();
+					}
+					else
+					{
+						Node mnt = fs->Lookup(root, "/mnt");
+						auto node = fs->Mount(mnt, "windows", fsi, tar);
+					}
+				}
+				else
+				{
+					warn("Couldn't find rootfs path %s", uPath);
+					__CreateStubRoot();
+				}
+			}
+			else
+			{
+				warn("Couldn't open /sys/cfg/subsystem/windows");
+				__CreateStubRoot();
+			}
 		}
 	}
 }

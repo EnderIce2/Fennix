@@ -18,7 +18,6 @@
 #include <fs/ramfs.hpp>
 
 #include "../../kernel.h"
-#include <fs/ustar.hpp>
 #include <ini.h>
 
 namespace Subsystem::Linux
@@ -78,13 +77,21 @@ namespace Subsystem::Linux
 				debug("path=%s", uPath);
 				ini_destroy(ini);
 
-				if (fs->Lookup(root, uPath) != false)
+				eNode ret = fs->Lookup(root, uPath);
+				if (ret != false)
 				{
-					root = fs->Lookup(root, uPath);
-
-					// if (TestAndInitializeUSTAR(moduleAddress, moduleSize, 0))
-					// {
-					// }
+					Node tar = ret;
+					FileSystemInfo *fsi = fs->Probe(tar);
+					if (fsi == nullptr)
+					{
+						warn("Couldn't probe rootfs %s", uPath);
+						__CreateStubRoot();
+					}
+					else
+					{
+						Node mnt = fs->Lookup(root, "/mnt");
+						auto node = fs->Mount(mnt, "linux", fsi, tar);
+					}
 				}
 				else
 				{

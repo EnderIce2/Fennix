@@ -323,6 +323,28 @@ struct InodeOperations
 } __attribute__((packed));
 
 struct FileSystemInfo;
+
+struct FileSystemDevice
+{
+	struct
+	{
+		/**
+		 * @brief Inode
+		 *
+		 * If the device is a block device, this will be NULL.
+		 */
+		struct Inode *node;
+		struct InodeOperations *ops;
+	} inode;
+
+	/**
+	 * @brief Block Device
+	 *
+	 * If the device is a block device, this will be non-NULL.
+	 */
+	struct BlockDevice *Block;
+};
+
 struct SuperBlockOperations
 {
 	int (*AllocateInode)(struct FileSystemInfo *Info, struct Inode **Result);
@@ -360,7 +382,7 @@ struct SuperBlockOperations
 	 *
 	 * @return Zero on success, otherwise an error code.
 	 */
-	int (*Probe)(void *Device);
+	int (*Probe)(struct FileSystemDevice *Device);
 
 	/**
 	 * Mount the filesystem.
@@ -369,11 +391,11 @@ struct SuperBlockOperations
 	 *
 	 * @param FS Filesystem to mount.
 	 * @param Root Pointer to the root inode.
-	 * @param Device Device to mount.
+	 * @param Device Device to mount. This pointer will be undefined after the function returns!
 	 *
 	 * @return Zero on success, otherwise an error code.
 	 */
-	int (*Mount)(struct FileSystemInfo *FS, struct Inode **Root, void *Device);
+	int (*Mount)(struct FileSystemInfo *FS, struct Inode **Root, struct FileSystemDevice *Device);
 
 	/**
 	 * Unmount the filesystem.

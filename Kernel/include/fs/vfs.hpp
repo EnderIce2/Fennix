@@ -128,25 +128,25 @@ namespace vfs
 
 		/**
 		 * @brief Read directory entries
-		 * 
+		 *
 		 * @note This function includes "." and ".."
-		 * 
-		 * @param Target 
-		 * @param Buffer 
-		 * @param Size 
-		 * @param Offset 
-		 * @param Entries 
-		 * @return 
+		 *
+		 * @param Target
+		 * @param Buffer
+		 * @param Size
+		 * @param Offset
+		 * @param Entries
+		 * @return
 		 */
 		ssize_t ReadDirectory(Node &Target, kdirent *Buffer, size_t Size, off_t Offset, off_t Entries);
 
 		/**
 		 * @brief Read directory entries
-		 * 
+		 *
 		 * @note This function does NOT include "." and ".."
-		 * 
-		 * @param Target 
-		 * @return 
+		 *
+		 * @param Target
+		 * @return
 		 */
 		std::list<Node> ReadDirectory(Node &Target);
 
@@ -165,7 +165,75 @@ namespace vfs
 
 #pragma region Mounting
 
+		FileSystemInfo *Probe(FileSystemDevice *Device);
+
+		FileSystemInfo *Probe(Node &node)
+		{
+			FileSystemDevice dev;
+			dev.inode.node = node->inode;
+			dev.inode.ops = &node->fsi->Ops;
+			dev.Block = nullptr;
+			return this->Probe(&dev);
+		}
+
+		FileSystemInfo *Probe(BlockDevice *Device)
+		{
+			FileSystemDevice dev;
+			dev.inode.node = nullptr;
+			dev.inode.ops = nullptr;
+			dev.Block = Device;
+			return this->Probe(&dev);
+		}
+
+		/**
+		 * @brief Mount a filesystem
+		 *
+		 *
+		 *
+		 * @param Parent Parent Node
+		 * @param inode Inode from the filesystem as root of the mount point
+		 * @param Name Name of the mount point
+		 * @param fsi FileSystemInfo structure
+		 * @return eNode{Node, errno}
+		 */
 		eNode Mount(Node &Parent, Inode *inode, std::string Name, FileSystemInfo *fsi);
+
+		/**
+		 * @brief Mount a filesystem
+		 *
+		 *
+		 *
+		 * @param Parent Parent Node
+		 * @param Name Name of the mount point
+		 * @param fsi FileSystemInfo structure
+		 * @param Device Device to mount
+		 * @return eNode{Node, errno}
+		 */
+		eNode Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, FileSystemDevice *Device);
+
+		/**
+		 * Wrapper for Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, FileSystemDevice *Device)
+		 */
+		eNode Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, Node Device)
+		{
+			FileSystemDevice dev;
+			dev.inode.node = Device->inode;
+			dev.inode.ops = &Device->fsi->Ops;
+			dev.Block = nullptr;
+			return this->Mount(Parent, Name, fsi, &dev);
+		}
+
+		/**
+		 * Wrapper for Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, FileSystemDevice *Device)
+		 */
+		eNode Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, BlockDevice *Device)
+		{
+			FileSystemDevice dev;
+			dev.inode.node = nullptr;
+			dev.inode.ops = nullptr;
+			dev.Block = Device;
+			return this->Mount(Parent, Name, fsi, &dev);
+		}
 
 		int Umount(Node &node);
 		int Umount(Node &Parent, std::string Name);

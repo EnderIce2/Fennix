@@ -524,6 +524,26 @@ namespace vfs
 		return Target->__Close();
 	}
 
+	FileSystemInfo *Virtual::Probe(FileSystemDevice *Device)
+	{
+		for (auto &&i : FileSystems)
+		{
+			if (i.second->SuperOps.Probe == nullptr)
+			{
+				debug("%s does not support probing", i.second->Name);
+				continue;
+			}
+
+			int ret = i.second->SuperOps.Probe(Device);
+			if (ret == 0)
+				return i.second;
+			debug("%s returned %d", i.second->Name, ret);
+		}
+
+		debug("No filesystems matched");
+		return nullptr;
+	}
+
 	eNode Virtual::Mount(Node &Parent, Inode *inode, std::string Name, FileSystemInfo *fsi)
 	{
 		assert(Parent);
@@ -539,6 +559,27 @@ namespace vfs
 		ret->Parent = Parent;
 		Parent->Children.push_back(ret);
 		return {ret, 0};
+	}
+
+	eNode Virtual::Mount(Node &Parent, std::string Name, FileSystemInfo *fsi, FileSystemDevice *Device)
+	{
+		Inode *inode;
+		int ret = fsi->SuperOps.Mount(fsi, &inode, Device);
+		if (ret != 0)
+			return {nullptr, ret};
+
+		return this->Mount(Parent, inode, Name, fsi);
+
+		// Node node = std::make_shared<NodeCache>();
+		// node->inode = nullptr; /* FIXME: ??? */
+		// node->fsi = fsi;
+		// node->Flags.MountPoint = true;
+
+		// node->Name = Name;
+		// node->Path = fs->NormalizePath(Parent, Parent->Path + "/" + Name);
+		// node->Parent = Parent;
+		// Parent->Children.push_back(node);
+		// return {node, 0};
 	}
 
 	int Virtual::Umount(Node &node)
