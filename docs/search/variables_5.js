@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['flags_0',['flags',['../df/d26/fs_8h.html#ab5bfae4f7951e37243599de928130341',1,'Inode::Flags'],['../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82',1,'FileSystemInfo::Flags'],['../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b',1,'Flags:&#160;fs.h']]],
-  ['function_1',['Function',['../d9/d97/pci_8h.html#a41799e343181bb0f313551ceacc1d699',1,'__attribute__']]]
+  ['endbus_0',['EndBus',['../d9/d97/pci_8h.html#a797ba226f98d7684ec7b14d8a7ed0e1a',1,'__attribute__']]],
+  ['expansionrombaseaddress_1',['ExpansionROMBaseAddress',['../d9/d97/pci_8h.html#aae81f3688f91a218026f58f058409ee4',1,'__attribute__']]]
 ];

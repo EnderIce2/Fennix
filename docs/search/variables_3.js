@@ -1,14 +1,18 @@
 var searchData=
 [
-  ['d_5fino_0',['d_ino',['../df/d26/fs_8h.html#aaf47378e1023c469b361bfbfe1e68ec4',1,'kdirent']]],
-  ['d_5fname_1',['d_name',['../df/d26/fs_8h.html#a5a9f69f32f7f6d41513d7093cd06b27b',1,'kdirent']]],
-  ['d_5foff_2',['d_off',['../df/d26/fs_8h.html#a883eee0b0e9bc85a6a4c0b81c12d59b4',1,'kdirent']]],
-  ['d_5freclen_3',['d_reclen',['../df/d26/fs_8h.html#ab16632cca111e54cdbcb1e3ce465ed3c',1,'kdirent']]],
-  ['d_5ftype_4',['d_type',['../df/d26/fs_8h.html#ae62da46e9487a67427fad586aa96806a',1,'kdirent']]],
-  ['delay_5',['Delay',['../d1/de1/aip_8h.html#a8f497c1a3d15af9e0c215019f26b887d',1,'PS2_KBD_TYPEMATIC.__unnamed7__']]],
-  ['deleteinode_6',['deleteinode',['../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7',1,'SuperBlockOperations::DeleteInode'],['../df/d26/fs_8h.html#a8ccb8fe8ac70ca2ee378ad8817a381ab',1,'DeleteInode:&#160;fs.h']]],
-  ['description_7',['Description',['../db/de4/driver_8h.html#ae899d6a573c8272d7f8c76baf8e3bd72',1,'__DriverInfo']]],
-  ['destroy_8',['destroy',['../df/d26/fs_8h.html#a30c9c281e5b2134cc2e763eac5290c61',1,'Destroy:&#160;fs.h'],['../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722',1,'SuperBlockOperations::Destroy']]],
-  ['device_9',['device',['../df/d26/fs_8h.html#a564f699164b986ac3358ce6acde557e5',1,'kstat::Device'],['../df/d26/fs_8h.html#a596b05c30fb6356f46f6c827bdac7fc6',1,'Inode::Device'],['../de/ded/input_8h.html#ae0e73e3ad012fad295b7bf2d1cc93da9',1,'InputReport::Device'],['../d9/d97/pci_8h.html#a70e8123ed01deec0c941aab234c7bb7c',1,'__attribute__::Device'],['../d9/d97/pci_8h.html#a5cef34566c05448ba32fe4c2471f4335',1,'__attribute__::Device'],['../db/de4/driver_8h.html#a9621e2b64bb89fa541c5028c377f4788',1,'__PCIArray::Device']]],
-  ['deviceid_10',['DeviceID',['../d9/d97/pci_8h.html#a98ae6cf864126f6a5e77aafde0b0f2ba',1,'__attribute__']]]
+  ['cachelinesize_0',['CacheLineSize',['../d9/d97/pci_8h.html#a5203ccd0486a21671341f4bb00c89b4b',1,'__attribute__']]],
+  ['capabilities_1',['capabilities',['../df/d26/fs_8h.html#a2574a851a68bf7e94b081586ac0fadd4',1,'FileSystemInfo::Capabilities'],['../df/d26/fs_8h.html#a1e190b7f0133183d91cc71fc8d47ed0c',1,'Capabilities:&#160;fs.h']]],
+  ['capabilitiespointer_2',['CapabilitiesPointer',['../d9/d97/pci_8h.html#a565e69897ebdab337c2c16941cfdf367',1,'__attribute__']]],
+  ['cardbusbusnumber_3',['CardbusBusNumber',['../d9/d97/pci_8h.html#a4faa20cb71d58e436b288f5ed0c7ec3e',1,'__attribute__']]],
+  ['cardbuscispointer_4',['CardbusCISPointer',['../d9/d97/pci_8h.html#a7b43c1b116e3476c2fcb53965149c74d',1,'__attribute__']]],
+  ['cardbuslatencytimer_5',['CardbusLatencyTimer',['../d9/d97/pci_8h.html#a33d7921c39e7383cbb67c6294a43c935',1,'__attribute__']]],
+  ['cardbussocketregistersbaseaddress_6',['CardbusSocketRegistersBaseAddress',['../d9/d97/pci_8h.html#a8d571620f57f70ce64fd15752fe9ac99',1,'__attribute__']]],
+  ['changetime_7',['ChangeTime',['../df/d26/fs_8h.html#a3d80694a7ef662e6e37ef68a5490f6ae',1,'kstat']]],
+  ['character_8',['Character',['../de/ded/input_8h.html#a3c7b23790a7fff8622f8552c7bd1b2f5',1,'KeyboardReport']]],
+  ['class_9',['Class',['../d9/d97/pci_8h.html#a10dff2b27b0c182ac0428796e1ab083d',1,'__attribute__']]],
+  ['close_10',['close',['../db/de6/structInodeOperations.html#ab9c62336bdce356caa7d165b86371e7f',1,'InodeOperations::Close'],['../df/d26/fs_8h.html#a00f03806ee4724ff3e44372909ab378b',1,'Close:&#160;fs.h']]],
+  ['command_11',['Command',['../d9/d97/pci_8h.html#af7007d29612482dce21e79e4db0fd2b8',1,'__attribute__']]],
+  ['commanddata_12',['CommandData',['../d1/de1/aip_8h.html#ad3c1a945d3b7f0aa9f0bbcb1bdc77d37',1,'PS2_STATUSES.__unnamed1__']]],
+  ['config_13',['Config',['../d9/d97/pci_8h.html#aae7dbeb87dc97e9e2b3befb18fe075af',1,'__attribute__']]],
+  ['create_14',['create',['../db/de6/structInodeOperations.html#abed9ba869733a00a02a41a3ea9765bda',1,'InodeOperations::Create'],['../df/d26/fs_8h.html#a2e6d2e5dc031b51fc6f466515b4d3b3e',1,'Create:&#160;fs.h']]]
 ];

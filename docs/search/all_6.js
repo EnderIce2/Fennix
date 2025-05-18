@@ -28,10 +28,12 @@ var searchData=
   ['fd_5fcloexec_25',['FD_CLOEXEC',['../d7/d9f/fcntl_8h.html#a7e7a00c884ea124bb9f687b16cb5db9b',1,'fcntl.h']]],
   ['fd_5fclofork_26',['FD_CLOFORK',['../d7/d9f/fcntl_8h.html#a33f5960552a23f65499b00d963c5a4b6',1,'fcntl.h']]],
   ['fennix_20documentation_27',['Welcome to Fennix Documentation',['../index.html',1,'']]],
-  ['filesysteminfo_28',['FileSystemInfo',['../df/d26/fs_8h.html#de/d99/structFileSystemInfo',1,'']]],
-  ['flags_29',['flags',['../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82',1,'FileSystemInfo::Flags'],['../df/d26/fs_8h.html#ab5bfae4f7951e37243599de928130341',1,'Inode::Flags'],['../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b',1,'Flags:&#160;fs.h']]],
-  ['flock_30',['flock',['../d7/d9f/fcntl_8h.html#d6/df2/structflock',1,'flock'],['../d7/d9f/fcntl_8h.html#ae572f48acec92feb49790f2328bc2e0e',1,'flock:&#160;fcntl.h']]],
-  ['framebufferscreeninfo_31',['framebufferscreeninfo',['../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo',1,'FramebufferScreenInfo'],['../d2/d6e/syscalls_8h.html#ab0f3fa6738fe8413c73638b07582dcf3',1,'FramebufferScreenInfo:&#160;syscalls.h']]],
-  ['fs_2eh_32',['fs.h',['../df/d26/fs_8h.html',1,'']]],
-  ['function_33',['Function',['../d9/d97/pci_8h.html#a41799e343181bb0f313551ceacc1d699',1,'__attribute__']]]
+  ['filesystemdevice_28',['FileSystemDevice',['../df/d26/fs_8h.html#d4/d24/structFileSystemDevice',1,'']]],
+  ['filesystemdevice_2einode_29',['FileSystemDevice.inode',['../df/d26/fs_8h.html#d0/d03/structFileSystemDevice_8inode',1,'']]],
+  ['filesysteminfo_30',['FileSystemInfo',['../df/d26/fs_8h.html#de/d99/structFileSystemInfo',1,'']]],
+  ['flags_31',['flags',['../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82',1,'FileSystemInfo::Flags'],['../df/d26/fs_8h.html#ab5bfae4f7951e37243599de928130341',1,'Inode::Flags'],['../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b',1,'Flags:&#160;fs.h']]],
+  ['flock_32',['flock',['../d7/d9f/fcntl_8h.html#d6/df2/structflock',1,'flock'],['../d7/d9f/fcntl_8h.html#ae572f48acec92feb49790f2328bc2e0e',1,'flock:&#160;fcntl.h']]],
+  ['framebufferscreeninfo_33',['framebufferscreeninfo',['../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo',1,'FramebufferScreenInfo'],['../d2/d6e/syscalls_8h.html#ab0f3fa6738fe8413c73638b07582dcf3',1,'FramebufferScreenInfo:&#160;syscalls.h']]],
+  ['fs_2eh_34',['fs.h',['../df/d26/fs_8h.html',1,'']]],
+  ['function_35',['Function',['../d9/d97/pci_8h.html#a41799e343181bb0f313551ceacc1d699',1,'__attribute__']]]
 ];

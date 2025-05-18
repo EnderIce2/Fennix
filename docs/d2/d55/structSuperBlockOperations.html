@@ -126,10 +126,16 @@ Data Fields</h2></td></tr>
 <tr class="separator:ac57a866f55ed08d2dd2897b27a541eb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5d91cc844c75e8d58ef124a9b2c8722" id="r_ac5d91cc844c75e8d58ef124a9b2c8722"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722">Destroy</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info)</td></tr>
 <tr class="separator:ac5d91cc844c75e8d58ef124a9b2c8722"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8216e560343fe4d60d25d9339369008c" id="r_a8216e560343fe4d60d25d9339369008c"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d55/structSuperBlockOperations.html#a8216e560343fe4d60d25d9339369008c">Probe</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td></tr>
+<tr class="separator:a8216e560343fe4d60d25d9339369008c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7df12971dc1079e22cb77d62743b12c6" id="r_a7df12971dc1079e22cb77d62743b12c6"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d55/structSuperBlockOperations.html#a7df12971dc1079e22cb77d62743b12c6">Mount</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Root, struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td></tr>
+<tr class="separator:a7df12971dc1079e22cb77d62743b12c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5be3ba7b778d10a6333b429bcb7accb7" id="r_a5be3ba7b778d10a6333b429bcb7accb7"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d55/structSuperBlockOperations.html#a5be3ba7b778d10a6333b429bcb7accb7">Unmount</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS)</td></tr>
+<tr class="separator:a5be3ba7b778d10a6333b429bcb7accb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00330">330</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00348">348</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a9b919eaba70c8e9d020930ba97b7df68" name="a9b919eaba70c8e9d020930ba97b7df68"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9b919eaba70c8e9d020930ba97b7df68">&#9670;&#160;</a></span>AllocateInode</h2>
@@ -143,7 +149,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00332">332</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00350">350</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -159,7 +165,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00333">333</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00351">351</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -184,7 +190,59 @@ Data Fields</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00356">356</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00374">374</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="a7df12971dc1079e22cb77d62743b12c6" name="a7df12971dc1079e22cb77d62743b12c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7df12971dc1079e22cb77d62743b12c6">&#9670;&#160;</a></span>Mount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* SuperBlockOperations::Mount) (struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Root, struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mount the filesystem.</p>
+<p>Mount the filesystem on the given device.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">FS</td><td>Filesystem to mount. </td></tr>
+    <tr><td class="paramname">Root</td><td>Pointer to the root inode. </td></tr>
+    <tr><td class="paramname">Device</td><td>Device to mount. This pointer will be undefined after the function returns!</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00398">398</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="a8216e560343fe4d60d25d9339369008c" name="a8216e560343fe4d60d25d9339369008c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8216e560343fe4d60d25d9339369008c">&#9670;&#160;</a></span>Probe</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* SuperBlockOperations::Probe) (struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Probe the filesystem.</p>
+<p>Check if the filesystem is supported by the driver.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Device</td><td>Device to probe.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00385">385</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -203,14 +261,39 @@ Data Fields</h2></td></tr>
 <p>Write all pending changes to the disk.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">Info</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. If NULL, synchronize all inodes. </td></tr>
-    <tr><td class="paramname">Node</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize.</td></tr>
+    <tr><td class="paramname">Info</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. </td></tr>
+    <tr><td class="paramname">Node</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. If NULL, synchronize all inodes.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00345">345</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00363">363</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="a5be3ba7b778d10a6333b429bcb7accb7" name="a5be3ba7b778d10a6333b429bcb7accb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5be3ba7b778d10a6333b429bcb7accb7">&#9670;&#160;</a></span>Unmount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* SuperBlockOperations::Unmount) (struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unmount the filesystem.</p>
+<p>Unmount the filesystem from the given device.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">FS</td><td>Filesystem to unmount.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00409">409</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -223,7 +306,7 @@ Data Fields</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></li>
-    <li class="footer">Generated on Thu Apr 3 2025 07:14:29 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Sun May 18 2025 20:18:23 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

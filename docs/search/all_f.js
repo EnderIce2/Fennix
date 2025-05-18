@@ -22,6 +22,6 @@ var searchData=
   ['o_5fwronly_19',['O_WRONLY',['../d7/d9f/fcntl_8h.html#a11b644a8526139c4cc1850dac1271ced',1,'fcntl.h']]],
   ['offset_20',['Offset',['../df/d26/fs_8h.html#ac7fd076e6f0290af80aee31a0af35b4a',1,'Inode']]],
   ['open_21',['open',['../df/d26/fs_8h.html#a38e8576cf8a6210b386212d7b80f42a0',1,'Open:&#160;fs.h'],['../db/de6/structInodeOperations.html#a869200a6c684532a9a75a05bca1e9270',1,'InodeOperations::Open']]],
-  ['ops_22',['ops',['../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c',1,'FileSystemInfo::Ops'],['../df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a',1,'Ops:&#160;fs.h']]],
+  ['ops_22',['ops',['../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c',1,'FileSystemInfo::Ops'],['../de/d40/block_8h.html#a00ca2ebbf46a93847c9c56f1d9c79772',1,'BlockDevice::Ops'],['../df/d26/fs_8h.html#ae847897826ceb8346eb5141f8c23436a',1,'FileSystemDevice.inode::ops'],['../df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a',1,'Ops:&#160;fs.h']]],
   ['outputbufferfull_23',['OutputBufferFull',['../d1/de1/aip_8h.html#aa9b7be021da7a0ec83d707bd42740f3d',1,'PS2_STATUSES.__unnamed1__']]]
 ];

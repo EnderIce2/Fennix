@@ -40,7 +40,7 @@ var searchData=
   ['seek_5fcur_37',['SEEK_CUR',['../df/d26/fs_8h.html#a4c8d0b76b470ba65a43ca46a88320f39',1,'fs.h']]],
   ['seek_5fend_38',['SEEK_END',['../df/d26/fs_8h.html#ad2a2e6c114780c3071efd24f16c7f7d8',1,'fs.h']]],
   ['seek_5fset_39',['SEEK_SET',['../df/d26/fs_8h.html#a0d112bae8fd35be772185b6ec6bcbe64',1,'fs.h']]],
-  ['size_40',['size',['../d2/d6e/syscalls_8h.html#af8c41bf2049e422f416725a921a4abaa',1,'FramebufferScreenInfo::Size'],['../df/d26/fs_8h.html#a5f3da9475a138d8a510be43e53dd20b6',1,'kstat::Size']]],
+  ['size_40',['size',['../d2/d6e/syscalls_8h.html#af8c41bf2049e422f416725a921a4abaa',1,'FramebufferScreenInfo::Size'],['../df/d26/fs_8h.html#a5f3da9475a138d8a510be43e53dd20b6',1,'kstat::Size'],['../de/d40/block_8h.html#a5c99e12972a959e55d35667b073f0338',1,'BlockDevice::Size']]],
   ['startbus_41',['StartBus',['../d9/d97/pci_8h.html#a92d65982de9305ea623f88b7327d0b17',1,'__attribute__']]],
   ['stat_42',['stat',['../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1',1,'Stat:&#160;fs.h'],['../db/de6/structInodeOperations.html#ace503c1be6e9452757578cad84370016',1,'InodeOperations::Stat']]],
   ['static_5fassert_43',['static_assert',['../df/d26/fs_8h.html#a8a8f6bdc98a851b29a69b484cb1bad98',1,'fs.h']]],

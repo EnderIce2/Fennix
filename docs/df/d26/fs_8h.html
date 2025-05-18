@@ -129,10 +129,14 @@ Data Structures</h2></td></tr>
 <tr class="separator:d6/d59/structInode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:d4/d24/structFileSystemDevice" id="r_d4/d24/structFileSystemDevice"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a></td></tr>
+<tr class="separator:d4/d24/structFileSystemDevice"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:de/d99/structFileSystemInfo" id="r_de/d99/structFileSystemInfo"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a></td></tr>
 <tr class="separator:de/d99/structFileSystemInfo"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:d0/d03/structFileSystemDevice_8inode" id="r_d0/d03/structFileSystemDevice_8inode"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#d0/d03/structFileSystemDevice_8inode">FileSystemDevice.inode</a></td></tr>
+<tr class="separator:d0/d03/structFileSystemDevice_8inode"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -238,17 +242,15 @@ Macros</h2></td></tr>
 <tr class="separator:a270b0fbec1ed39659f47894e379126c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b01f8d41285666c43e975064fb65d40" id="r_a6b01f8d41285666c43e975064fb65d40"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a6b01f8d41285666c43e975064fb65d40">INODE_MINOR</a>(rdev)&#160;&#160;&#160;	((int)((rdev) &amp; 0xFF))</td></tr>
 <tr class="separator:a6b01f8d41285666c43e975064fb65d40"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9efe129617fc26d8dd0a23a07460a6ff" id="r_a9efe129617fc26d8dd0a23a07460a6ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a9efe129617fc26d8dd0a23a07460a6ff">I_FLAG_ROOT</a>&#160;&#160;&#160;0x1</td></tr>
-<tr class="separator:a9efe129617fc26d8dd0a23a07460a6ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86bf9184c4383bd89d2bf950152ca0ab" id="r_a86bf9184c4383bd89d2bf950152ca0ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a86bf9184c4383bd89d2bf950152ca0ab">I_FLAG_MOUNTPOINT</a>&#160;&#160;&#160;0x2</td></tr>
-<tr class="separator:a86bf9184c4383bd89d2bf950152ca0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97c949be3248687daddc322afd1b04cf" id="r_a97c949be3248687daddc322afd1b04cf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a97c949be3248687daddc322afd1b04cf">I_FLAG_CACHE_KEEP</a>&#160;&#160;&#160;0x4</td></tr>
-<tr class="separator:a97c949be3248687daddc322afd1b04cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae9d1c84bd8c5ad87f19dc53750668f1b" id="r_ae9d1c84bd8c5ad87f19dc53750668f1b"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#ae9d1c84bd8c5ad87f19dc53750668f1b">__attribute__</a> ((packed))</td></tr>
-<tr class="separator:ae9d1c84bd8c5ad87f19dc53750668f1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adeee0c5ffa0505b0fb9cbde29aa5a750" id="r_adeee0c5ffa0505b0fb9cbde29aa5a750"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#adeee0c5ffa0505b0fb9cbde29aa5a750">__attribute__</a> ((packed))</td></tr>
+<tr class="separator:adeee0c5ffa0505b0fb9cbde29aa5a750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b8555bbebfe763731f39ba53e9ddc7f" id="r_a0b8555bbebfe763731f39ba53e9ddc7f"><td class="memItemLeft" align="right" valign="top">dev_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f">RegisterMountPoint</a> (<a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *fsi, <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root)</td></tr>
+<tr class="separator:a0b8555bbebfe763731f39ba53e9ddc7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a339c1ed1e08b3248cbaad2b3b63ba86d" id="r_a339c1ed1e08b3248cbaad2b3b63ba86d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a339c1ed1e08b3248cbaad2b3b63ba86d">UnregisterMountPoint</a> (dev_t Device)</td></tr>
+<tr class="separator:a339c1ed1e08b3248cbaad2b3b63ba86d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75f4deeb21caf3c4150e515e19913349" id="r_a75f4deeb21caf3c4150e515e19913349"><td class="memItemLeft" align="right" valign="top">dev_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a> (struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root)</td></tr>
 <tr class="separator:a75f4deeb21caf3c4150e515e19913349"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41338d5d4b70d416fb956287f27773a8" id="r_a41338d5d4b70d416fb956287f27773a8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a> (dev_t Device)</td></tr>
@@ -290,6 +292,8 @@ Variables</h2></td></tr>
 <tr class="separator:aec9bda2590b6b4ff6433991c57ce60a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98adbbae239ee188f2a5cb61d1564ad1" id="r_a98adbbae239ee188f2a5cb61d1564ad1"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1">Stat</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node, struct <a class="el" href="../../df/d26/fs_8h.html#d5/df1/structkstat">kstat</a> *Stat)</td></tr>
 <tr class="separator:a98adbbae239ee188f2a5cb61d1564ad1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21ace075273579727f14d0eefb1b934e" id="r_a21ace075273579727f14d0eefb1b934e"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e">__attribute__</a></td></tr>
+<tr class="separator:a21ace075273579727f14d0eefb1b934e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab39d62bf90b7b74ddff3b22086f40f6" id="r_aab39d62bf90b7b74ddff3b22086f40f6"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#aab39d62bf90b7b74ddff3b22086f40f6">AllocateInode</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Result)</td></tr>
 <tr class="separator:aab39d62bf90b7b74ddff3b22086f40f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ccb8fe8ac70ca2ee378ad8817a381ab" id="r_a8ccb8fe8ac70ca2ee378ad8817a381ab"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a8ccb8fe8ac70ca2ee378ad8817a381ab">DeleteInode</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node)</td></tr>
@@ -298,12 +302,18 @@ Variables</h2></td></tr>
 <tr class="separator:a6628c40f84a3148dd825cf9036e66b83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30c9c281e5b2134cc2e763eac5290c61" id="r_a30c9c281e5b2134cc2e763eac5290c61"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a30c9c281e5b2134cc2e763eac5290c61">Destroy</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info)</td></tr>
 <tr class="separator:a30c9c281e5b2134cc2e763eac5290c61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae79cbe5c8217124106e493f0aeba0705" id="r_ae79cbe5c8217124106e493f0aeba0705"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#ae79cbe5c8217124106e493f0aeba0705">Probe</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td></tr>
+<tr class="separator:ae79cbe5c8217124106e493f0aeba0705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af072945bf898f907662733da42b11a44" id="r_af072945bf898f907662733da42b11a44"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#af072945bf898f907662733da42b11a44">Mount</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Root, struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device)</td></tr>
+<tr class="separator:af072945bf898f907662733da42b11a44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acda6db920995046415a3c843fb6a37a4" id="r_acda6db920995046415a3c843fb6a37a4"><td class="memItemLeft" align="right" valign="top">int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#acda6db920995046415a3c843fb6a37a4">Unmount</a> )(struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS)</td></tr>
+<tr class="separator:acda6db920995046415a3c843fb6a37a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a760b4e07b204e4852e7fb55e25567623" id="r_a760b4e07b204e4852e7fb55e25567623"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a760b4e07b204e4852e7fb55e25567623">Name</a></td></tr>
 <tr class="separator:a760b4e07b204e4852e7fb55e25567623"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d484a9ca884f47f05d568d1743665f7" id="r_a3d484a9ca884f47f05d568d1743665f7"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a3d484a9ca884f47f05d568d1743665f7">RootName</a></td></tr>
-<tr class="separator:a3d484a9ca884f47f05d568d1743665f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3e60a9fc42fb6c0b656191ebb1d658b" id="r_ac3e60a9fc42fb6c0b656191ebb1d658b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b">Flags</a></td></tr>
 <tr class="separator:ac3e60a9fc42fb6c0b656191ebb1d658b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e190b7f0133183d91cc71fc8d47ed0c" id="r_a1e190b7f0133183d91cc71fc8d47ed0c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#a1e190b7f0133183d91cc71fc8d47ed0c">Capabilities</a></td></tr>
+<tr class="separator:a1e190b7f0133183d91cc71fc8d47ed0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2c3f075d5c3e40a46da61a9d7a13abc" id="r_af2c3f075d5c3e40a46da61a9d7a13abc"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#af2c3f075d5c3e40a46da61a9d7a13abc">SuperOps</a></td></tr>
 <tr class="separator:af2c3f075d5c3e40a46da61a9d7a13abc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4f24d5e592caaf588d436302324694a" id="r_aa4f24d5e592caaf588d436302324694a"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a">Ops</a></td></tr>
@@ -545,6 +555,38 @@ RawDevice</td>
 
 </div>
 </div>
+<a name="d4/d24/structFileSystemDevice" id="d4/d24/structFileSystemDevice"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#d4/d24/structFileSystemDevice">&#9670;&#160;</a></span>FileSystemDevice</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct FileSystemDevice</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock">
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00327">327</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="ae311d9d0d76dbba597183a4a934720b4" name="ae311d9d0d76dbba597183a4a934720b4"></a>struct <a class="el" href="../../de/d40/block_8h.html#da/df6/structBlockDevice">BlockDevice</a> *</td>
+<td class="fieldname">
+Block</td>
+<td class="fielddoc">
+Block Device. <p>If the device is a block device, this will be non-NULL. </p>
+</td></tr>
+<tr><td class="fieldtype">
+<a id="ae7fa98dc9b923a5a711d4c9a4fdf36e0" name="ae7fa98dc9b923a5a711d4c9a4fdf36e0"></a>struct <a class="el" href="../../df/d26/fs_8h.html#d0/d03/structFileSystemDevice_8inode">FileSystemDevice.inode</a></td>
+<td class="fieldname">
+inode</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
 <a name="de/d99/structFileSystemInfo" id="de/d99/structFileSystemInfo"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#de/d99/structFileSystemInfo">&#9670;&#160;</a></span>FileSystemInfo</h2>
 
@@ -557,9 +599,15 @@ RawDevice</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00359">359</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00412">412</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a2574a851a68bf7e94b081586ac0fadd4" name="a2574a851a68bf7e94b081586ac0fadd4"></a>int</td>
+<td class="fieldname">
+Capabilities</td>
+<td class="fielddoc">
+</td></tr>
 <tr><td class="fieldtype">
 <a id="a3790269ab0eed561191ef95d65747e82" name="a3790269ab0eed561191ef95d65747e82"></a>int</td>
 <td class="fieldname">
@@ -585,15 +633,41 @@ PrivateData</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
-<a id="ac03af40bdb9327cdf8a3c1c3d8bc4990" name="ac03af40bdb9327cdf8a3c1c3d8bc4990"></a>const char *</td>
-<td class="fieldname">
-RootName</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
 <a id="a2b23f750051678a50319f21d04541d66" name="a2b23f750051678a50319f21d04541d66"></a>struct <a class="el" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></td>
 <td class="fieldname">
 SuperOps</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a name="d0/d03/structFileSystemDevice_8inode" id="d0/d03/structFileSystemDevice_8inode"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#d0/d03/structFileSystemDevice_8inode">&#9670;&#160;</a></span>FileSystemDevice.inode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct FileSystemDevice.inode</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock">
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00329">329</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a36c4536996ca5615dcf9911f068786dc" name="a36c4536996ca5615dcf9911f068786dc"></a>struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *</td>
+<td class="fieldname">
+node</td>
+<td class="fielddoc">
+<a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a>. <p>If the device is a block device, this will be NULL. </p>
+</td></tr>
+<tr><td class="fieldtype">
+<a id="ae847897826ceb8346eb5141f8c23436a" name="ae847897826ceb8346eb5141f8c23436a"></a>struct <a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a> *</td>
+<td class="fieldname">
+ops</td>
 <td class="fielddoc">
 </td></tr>
 </table>
@@ -765,54 +839,6 @@ SuperOps</td>
 
 </div>
 </div>
-<a id="a97c949be3248687daddc322afd1b04cf" name="a97c949be3248687daddc322afd1b04cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97c949be3248687daddc322afd1b04cf">&#9670;&#160;</a></span>I_FLAG_CACHE_KEEP</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define I_FLAG_CACHE_KEEP&#160;&#160;&#160;0x4</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00327">327</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
-
-</div>
-</div>
-<a id="a86bf9184c4383bd89d2bf950152ca0ab" name="a86bf9184c4383bd89d2bf950152ca0ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a86bf9184c4383bd89d2bf950152ca0ab">&#9670;&#160;</a></span>I_FLAG_MOUNTPOINT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define I_FLAG_MOUNTPOINT&#160;&#160;&#160;0x2</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00326">326</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
-
-</div>
-</div>
-<a id="a9efe129617fc26d8dd0a23a07460a6ff" name="a9efe129617fc26d8dd0a23a07460a6ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9efe129617fc26d8dd0a23a07460a6ff">&#9670;&#160;</a></span>I_FLAG_ROOT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define I_FLAG_ROOT&#160;&#160;&#160;0x1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00325">325</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
-
-</div>
-</div>
 <a id="ac1304650d387faf30d7831d2f9f4db3d" name="ac1304650d387faf30d7831d2f9f4db3d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac1304650d387faf30d7831d2f9f4db3d">&#9670;&#160;</a></span>IFTODT</h2>
 
@@ -868,53 +894,77 @@ SuperOps</td>
 <div class="line"><span class="lineno">  319</span>    ssize_t (*<a class="code hl_variable" href="../../df/d26/fs_8h.html#a06cb5aab7b0f464f7575b57ddce54f25">ReadLink</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node, <span class="keywordtype">char</span> *Buffer, <span class="keywordtype">size_t</span> Size);</div>
 <div class="line"><span class="lineno">  320</span>    off_t (*<a class="code hl_variable" href="../../df/d26/fs_8h.html#aec9bda2590b6b4ff6433991c57ce60a3">Seek</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node, off_t <a class="code hl_variable" href="../../df/d26/fs_8h.html#ac7fd076e6f0290af80aee31a0af35b4a">Offset</a>);</div>
 <div class="line"><span class="lineno">  321</span>    int (*<a class="code hl_variable" href="../../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1">Stat</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d5/df1/structkstat">kstat</a> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1">Stat</a>);</div>
-<div class="line"><span class="lineno">  322</span>} <a class="code hl_struct" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a>((packed));</div>
+<div class="line"><span class="lineno">  322</span>} <a class="code hl_variable" href="../../df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e">__attribute__</a>((packed));</div>
 <div class="line"><span class="lineno">  323</span> </div>
-<div class="line"><span class="lineno">  324</span><span class="preprocessor">#define I_FLAG_ROOT 0x1</span></div>
-<div class="line"><span class="lineno">  325</span><span class="preprocessor">#define I_FLAG_MOUNTPOINT 0x2</span></div>
-<div class="line"><span class="lineno">  326</span><span class="preprocessor">#define I_FLAG_CACHE_KEEP 0x4</span></div>
-<div class="line"><span class="lineno">  327</span> </div>
-<div class="line"><span class="lineno">  328</span><span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a>;</div>
-<div class="line"><span class="lineno">  329</span><span class="keyword">struct </span><a class="code hl_struct" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></div>
-<div class="line"><span class="lineno">  330</span>{</div>
-<div class="line"><span class="lineno">  331</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a9b919eaba70c8e9d020930ba97b7df68">AllocateInode</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Result);</div>
-<div class="line"><span class="lineno">  332</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7">DeleteInode</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node);</div>
-<div class="line"><span class="lineno">  333</span> </div>
-<div class="line"><span class="lineno">  344</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#ac57a866f55ed08d2dd2897b27a541eb2">Synchronize</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node);</div>
-<div class="line"><span class="lineno">  345</span> </div>
-<div class="line"><span class="lineno">  355</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722">Destroy</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info);</div>
-<div class="line"><span class="lineno">  356</span>} <a class="code hl_struct" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a>((packed));</div>
-<div class="line"><span class="lineno">  357</span> </div>
-<div class="line"><span class="lineno">  358</span><span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a></div>
-<div class="line"><span class="lineno">  359</span>{</div>
-<div class="line"><span class="lineno">  360</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#a445b70dc0c2908c5f600c6bc4f60c387">Name</a>;</div>
-<div class="line"><span class="lineno">  361</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#ac03af40bdb9327cdf8a3c1c3d8bc4990">RootName</a>;</div>
-<div class="line"><span class="lineno">  362</span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82">Flags</a>;</div>
-<div class="line"><span class="lineno">  363</span>    <span class="keyword">struct </span><a class="code hl_struct" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a2b23f750051678a50319f21d04541d66">SuperOps</a>;</div>
-<div class="line"><span class="lineno">  364</span>    <span class="keyword">struct </span><a class="code hl_struct" href="../../db/de6/structInodeOperations.html">InodeOperations</a> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c">Ops</a>;</div>
-<div class="line"><span class="lineno">  365</span> </div>
-<div class="line"><span class="lineno">  366</span>    <span class="keywordtype">void</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#afed4851539e0eb74fbd4cc4c0dca8abd">PrivateData</a>;</div>
-<div class="line"><span class="lineno">  367</span>} <a class="code hl_struct" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a>((packed));</div>
-<div class="line"><span class="lineno">  368</span> </div>
-<div class="line"><span class="lineno">  369</span><span class="preprocessor">#ifndef __kernel__</span></div>
-<div class="line"><span class="lineno">  370</span>dev_t <a class="code hl_function" href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a>(<span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root);</div>
-<div class="line"><span class="lineno">  371</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a>(dev_t Device);</div>
-<div class="line"><span class="lineno">  372</span><span class="preprocessor">#endif </span><span class="comment">// !__kernel__</span></div>
-<div class="line"><span class="lineno">  373</span> </div>
-<div class="line"><span class="lineno">  374</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_FILESYSTEM_H__</span></div>
+<div class="line"><span class="lineno">  324</span><span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a>;</div>
+<div class="line"><span class="lineno">  325</span> </div>
+<div class="line"><span class="lineno">  326</span><span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a></div>
+<div class="line"><span class="lineno">  327</span>{</div>
+<div class="line"><span class="lineno">  328</span>    <span class="keyword">struct</span></div>
+<div class="line"><span class="lineno">  329</span>    {</div>
+<div class="line"><span class="lineno">  335</span>        <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *node;</div>
+<div class="line"><span class="lineno">  336</span>        <span class="keyword">struct </span><a class="code hl_struct" href="../../db/de6/structInodeOperations.html">InodeOperations</a> *ops;</div>
+<div class="line"><span class="lineno">  337</span>    } <a class="code hl_variable" href="../../df/d26/fs_8h.html#ae7fa98dc9b923a5a711d4c9a4fdf36e0">inode</a>;</div>
+<div class="line"><span class="lineno">  338</span> </div>
+<div class="line"><span class="lineno">  344</span>    <span class="keyword">struct </span><a class="code hl_struct" href="../../de/d40/block_8h.html#da/df6/structBlockDevice">BlockDevice</a> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#ae311d9d0d76dbba597183a4a934720b4">Block</a>;</div>
+<div class="line"><span class="lineno">  345</span>};</div>
+<div class="line"><span class="lineno">  346</span> </div>
+<div class="line"><span class="lineno">  347</span><span class="keyword">struct </span><a class="code hl_struct" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></div>
+<div class="line"><span class="lineno">  348</span>{</div>
+<div class="line"><span class="lineno">  349</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a9b919eaba70c8e9d020930ba97b7df68">AllocateInode</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Result);</div>
+<div class="line"><span class="lineno">  350</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7">DeleteInode</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node);</div>
+<div class="line"><span class="lineno">  351</span> </div>
+<div class="line"><span class="lineno">  362</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#ac57a866f55ed08d2dd2897b27a541eb2">Synchronize</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Node);</div>
+<div class="line"><span class="lineno">  363</span> </div>
+<div class="line"><span class="lineno">  373</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722">Destroy</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info);</div>
+<div class="line"><span class="lineno">  374</span> </div>
+<div class="line"><span class="lineno">  384</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a8216e560343fe4d60d25d9339369008c">Probe</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device);</div>
+<div class="line"><span class="lineno">  385</span> </div>
+<div class="line"><span class="lineno">  397</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a7df12971dc1079e22cb77d62743b12c6">Mount</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Root, <span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device);</div>
+<div class="line"><span class="lineno">  398</span> </div>
+<div class="line"><span class="lineno">  408</span>    int (*<a class="code hl_variable" href="../../d2/d55/structSuperBlockOperations.html#a5be3ba7b778d10a6333b429bcb7accb7">Unmount</a>)(<span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS);</div>
+<div class="line"><span class="lineno">  409</span>} <a class="code hl_variable" href="../../df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e">__attribute__</a>((packed));</div>
+<div class="line"><span class="lineno">  410</span> </div>
+<div class="line"><span class="lineno">  411</span><span class="keyword">struct </span><a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a></div>
+<div class="line"><span class="lineno">  412</span>{</div>
+<div class="line"><span class="lineno">  413</span>    <span class="keyword">const</span> <span class="keywordtype">char</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#a445b70dc0c2908c5f600c6bc4f60c387">Name</a>;</div>
+<div class="line"><span class="lineno">  414</span> </div>
+<div class="line"><span class="lineno">  415</span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82">Flags</a>;</div>
+<div class="line"><span class="lineno">  416</span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a2574a851a68bf7e94b081586ac0fadd4">Capabilities</a>;</div>
+<div class="line"><span class="lineno">  417</span> </div>
+<div class="line"><span class="lineno">  418</span>    <span class="keyword">struct </span><a class="code hl_struct" href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a2b23f750051678a50319f21d04541d66">SuperOps</a>;</div>
+<div class="line"><span class="lineno">  419</span>    <span class="keyword">struct </span><a class="code hl_struct" href="../../db/de6/structInodeOperations.html">InodeOperations</a> <a class="code hl_variable" href="../../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c">Ops</a>;</div>
+<div class="line"><span class="lineno">  420</span> </div>
+<div class="line"><span class="lineno">  421</span>    <span class="keywordtype">void</span> *<a class="code hl_variable" href="../../df/d26/fs_8h.html#afed4851539e0eb74fbd4cc4c0dca8abd">PrivateData</a>;</div>
+<div class="line"><span class="lineno">  422</span>} <a class="code hl_variable" href="../../df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e">__attribute__</a>((packed));</div>
+<div class="line"><span class="lineno">  423</span> </div>
+<div class="line"><span class="lineno">  424</span><span class="preprocessor">#ifndef __kernel__</span></div>
+<div class="line"><span class="lineno">  425</span>dev_t <a class="code hl_function" href="../../df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f">RegisterMountPoint</a>(<a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *fsi, <a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root);</div>
+<div class="line"><span class="lineno">  426</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../df/d26/fs_8h.html#a339c1ed1e08b3248cbaad2b3b63ba86d">UnregisterMountPoint</a>(dev_t Device);</div>
+<div class="line"><span class="lineno">  427</span> </div>
+<div class="line"><span class="lineno">  428</span>dev_t <a class="code hl_function" href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a>(<span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *Info, <span class="keyword">struct</span> <a class="code hl_struct" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *Root);</div>
+<div class="line"><span class="lineno">  429</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a>(dev_t Device);</div>
+<div class="line"><span class="lineno">  430</span><span class="preprocessor">#endif </span><span class="comment">// !__kernel__</span></div>
+<div class="line"><span class="lineno">  431</span> </div>
+<div class="line"><span class="lineno">  432</span><span class="preprocessor">#endif </span><span class="comment">// !__FENNIX_API_FILESYSTEM_H__</span></div>
+<div class="ttc" id="ablock_8h_html_da/df6/structBlockDevice"><div class="ttname"><a href="../../de/d40/block_8h.html#da/df6/structBlockDevice">BlockDevice</a></div><div class="ttdef"><b>Definition</b> <a href="../../de/d40/block_8h_source.html#l00029">block.h:30</a></div></div>
 <div class="ttc" id="afs_8h_html_a00f03806ee4724ff3e44372909ab378b"><div class="ttname"><a href="../../df/d26/fs_8h.html#a00f03806ee4724ff3e44372909ab378b">Close</a></div><div class="ttdeci">int(* Close)(struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00008">fs.h:8</a></div></div>
 <div class="ttc" id="afs_8h_html_a06cb5aab7b0f464f7575b57ddce54f25"><div class="ttname"><a href="../../df/d26/fs_8h.html#a06cb5aab7b0f464f7575b57ddce54f25">ReadLink</a></div><div class="ttdeci">ssize_t(* ReadLink)(struct Inode *Node, char *Buffer, size_t Size)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00014">fs.h:14</a></div></div>
 <div class="ttc" id="afs_8h_html_a0a6fc17bb00ffe199d7899d5ce623be4"><div class="ttname"><a href="../../df/d26/fs_8h.html#a0a6fc17bb00ffe199d7899d5ce623be4">ReadDir</a></div><div class="ttdeci">ssize_t(* ReadDir)(struct Inode *Node, struct kdirent *Buffer, size_t Size, off_t Offset, off_t Entries)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00010">fs.h:10</a></div></div>
+<div class="ttc" id="afs_8h_html_a0b8555bbebfe763731f39ba53e9ddc7f"><div class="ttname"><a href="../../df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f">RegisterMountPoint</a></div><div class="ttdeci">dev_t RegisterMountPoint(FileSystemInfo *fsi, Inode *Root)</div></div>
 <div class="ttc" id="afs_8h_html_a114cd797c14098cceaf2a3dd64629250"><div class="ttname"><a href="../../df/d26/fs_8h.html#a114cd797c14098cceaf2a3dd64629250">Ioctl</a></div><div class="ttdeci">int(* Ioctl)(struct Inode *Node, unsigned long Request, void *Argp)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00009">fs.h:9</a></div></div>
-<div class="ttc" id="afs_8h_html_a2b23f750051678a50319f21d04541d66"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2b23f750051678a50319f21d04541d66">FileSystemInfo::SuperOps</a></div><div class="ttdeci">struct SuperBlockOperations SuperOps</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00364">fs.h:364</a></div></div>
-<div class="ttc" id="afs_8h_html_a2e69ea86f5e1537c9173b961a03bdc0c"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c">FileSystemInfo::Ops</a></div><div class="ttdeci">struct InodeOperations Ops</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00365">fs.h:365</a></div></div>
+<div class="ttc" id="afs_8h_html_a21ace075273579727f14d0eefb1b934e"><div class="ttname"><a href="../../df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e">__attribute__</a></div><div class="ttdeci">struct FileSystemDevice __attribute__</div></div>
+<div class="ttc" id="afs_8h_html_a2574a851a68bf7e94b081586ac0fadd4"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2574a851a68bf7e94b081586ac0fadd4">FileSystemInfo::Capabilities</a></div><div class="ttdeci">int Capabilities</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00417">fs.h:417</a></div></div>
+<div class="ttc" id="afs_8h_html_a2b23f750051678a50319f21d04541d66"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2b23f750051678a50319f21d04541d66">FileSystemInfo::SuperOps</a></div><div class="ttdeci">struct SuperBlockOperations SuperOps</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00419">fs.h:419</a></div></div>
+<div class="ttc" id="afs_8h_html_a2e69ea86f5e1537c9173b961a03bdc0c"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2e69ea86f5e1537c9173b961a03bdc0c">FileSystemInfo::Ops</a></div><div class="ttdeci">struct InodeOperations Ops</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00420">fs.h:420</a></div></div>
 <div class="ttc" id="afs_8h_html_a2e6d2e5dc031b51fc6f466515b4d3b3e"><div class="ttname"><a href="../../df/d26/fs_8h.html#a2e6d2e5dc031b51fc6f466515b4d3b3e">Create</a></div><div class="ttdeci">int(* Create)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00001">fs.h:1</a></div></div>
+<div class="ttc" id="afs_8h_html_a339c1ed1e08b3248cbaad2b3b63ba86d"><div class="ttname"><a href="../../df/d26/fs_8h.html#a339c1ed1e08b3248cbaad2b3b63ba86d">UnregisterMountPoint</a></div><div class="ttdeci">int UnregisterMountPoint(dev_t Device)</div></div>
 <div class="ttc" id="afs_8h_html_a33b8cee8134eca08e6820a62d0dad656"><div class="ttname"><a href="../../df/d26/fs_8h.html#a33b8cee8134eca08e6820a62d0dad656">RmDir</a></div><div class="ttdeci">int(* RmDir)(struct Inode *Parent, const char *Name)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00012">fs.h:12</a></div></div>
-<div class="ttc" id="afs_8h_html_a3790269ab0eed561191ef95d65747e82"><div class="ttname"><a href="../../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82">FileSystemInfo::Flags</a></div><div class="ttdeci">int Flags</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00363">fs.h:363</a></div></div>
+<div class="ttc" id="afs_8h_html_a3790269ab0eed561191ef95d65747e82"><div class="ttname"><a href="../../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82">FileSystemInfo::Flags</a></div><div class="ttdeci">int Flags</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00416">fs.h:416</a></div></div>
 <div class="ttc" id="afs_8h_html_a38e8576cf8a6210b386212d7b80f42a0"><div class="ttname"><a href="../../df/d26/fs_8h.html#a38e8576cf8a6210b386212d7b80f42a0">Open</a></div><div class="ttdeci">int(* Open)(struct Inode *Node, int Flags, mode_t Mode)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00007">fs.h:7</a></div></div>
 <div class="ttc" id="afs_8h_html_a3fbe554d6691bfb88f5b700eb5e2205f"><div class="ttname"><a href="../../df/d26/fs_8h.html#a3fbe554d6691bfb88f5b700eb5e2205f">MkDir</a></div><div class="ttdeci">int(* MkDir)(struct Inode *Parent, const char *Name, mode_t Mode, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00011">fs.h:11</a></div></div>
 <div class="ttc" id="afs_8h_html_a41338d5d4b70d416fb956287f27773a8"><div class="ttname"><a href="../../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8">UnregisterFileSystem</a></div><div class="ttdeci">int UnregisterFileSystem(dev_t Device)</div></div>
-<div class="ttc" id="afs_8h_html_a445b70dc0c2908c5f600c6bc4f60c387"><div class="ttname"><a href="../../df/d26/fs_8h.html#a445b70dc0c2908c5f600c6bc4f60c387">FileSystemInfo::Name</a></div><div class="ttdeci">const char * Name</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00361">fs.h:361</a></div></div>
+<div class="ttc" id="afs_8h_html_a445b70dc0c2908c5f600c6bc4f60c387"><div class="ttname"><a href="../../df/d26/fs_8h.html#a445b70dc0c2908c5f600c6bc4f60c387">FileSystemInfo::Name</a></div><div class="ttdeci">const char * Name</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00414">fs.h:414</a></div></div>
 <div class="ttc" id="afs_8h_html_a5f5c45d347b3cbe34597e57c04967e8b"><div class="ttname"><a href="../../df/d26/fs_8h.html#a5f5c45d347b3cbe34597e57c04967e8b">Write</a></div><div class="ttdeci">ssize_t(* Write)(struct Inode *Node, const void *Buffer, size_t Size, off_t Offset)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00005">fs.h:5</a></div></div>
 <div class="ttc" id="afs_8h_html_a667a06765053832b0e364d352d331481"><div class="ttname"><a href="../../df/d26/fs_8h.html#a667a06765053832b0e364d352d331481">Inode::Mode</a></div><div class="ttdeci">mode_t Mode</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00248">fs.h:248</a></div></div>
 <div class="ttc" id="afs_8h_html_a75f4deeb21caf3c4150e515e19913349"><div class="ttname"><a href="../../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349">RegisterFileSystem</a></div><div class="ttdeci">dev_t RegisterFileSystem(struct FileSystemInfo *Info, struct Inode *Root)</div></div>
@@ -923,25 +973,29 @@ SuperOps</td>
 <div class="ttc" id="afs_8h_html_a98adbbae239ee188f2a5cb61d1564ad1"><div class="ttname"><a href="../../df/d26/fs_8h.html#a98adbbae239ee188f2a5cb61d1564ad1">Stat</a></div><div class="ttdeci">int(* Stat)(struct Inode *Node, struct kstat *Stat)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00016">fs.h:16</a></div></div>
 <div class="ttc" id="afs_8h_html_a9ca9828444d899586f97c6c9a4d5d5f0"><div class="ttname"><a href="../../df/d26/fs_8h.html#a9ca9828444d899586f97c6c9a4d5d5f0">SymLink</a></div><div class="ttdeci">int(* SymLink)(struct Inode *Parent, const char *Name, const char *Target, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00013">fs.h:13</a></div></div>
 <div class="ttc" id="afs_8h_html_aa507e1e28360ed651e2294c1c5f02691"><div class="ttname"><a href="../../df/d26/fs_8h.html#aa507e1e28360ed651e2294c1c5f02691">Truncate</a></div><div class="ttdeci">int(* Truncate)(struct Inode *Node, off_t Size)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00006">fs.h:6</a></div></div>
-<div class="ttc" id="afs_8h_html_ac03af40bdb9327cdf8a3c1c3d8bc4990"><div class="ttname"><a href="../../df/d26/fs_8h.html#ac03af40bdb9327cdf8a3c1c3d8bc4990">FileSystemInfo::RootName</a></div><div class="ttdeci">const char * RootName</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00362">fs.h:362</a></div></div>
 <div class="ttc" id="afs_8h_html_ac3e60a9fc42fb6c0b656191ebb1d658b"><div class="ttname"><a href="../../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b">Flags</a></div><div class="ttdeci">int Flags</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00002">fs.h:2</a></div></div>
 <div class="ttc" id="afs_8h_html_ac4f4d1e97ef1b104e09abccb641e530e"><div class="ttname"><a href="../../df/d26/fs_8h.html#ac4f4d1e97ef1b104e09abccb641e530e">Read</a></div><div class="ttdeci">ssize_t(* Read)(struct Inode *Node, void *Buffer, size_t Size, off_t Offset)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00004">fs.h:4</a></div></div>
 <div class="ttc" id="afs_8h_html_ac677cf5260fef7aeb61ff3ad1bfc0d74"><div class="ttname"><a href="../../df/d26/fs_8h.html#ac677cf5260fef7aeb61ff3ad1bfc0d74">Lookup</a></div><div class="ttdeci">int(* Lookup)(struct Inode *Parent, const char *Name, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00000">fs.h:0</a></div></div>
 <div class="ttc" id="afs_8h_html_ac7fd076e6f0290af80aee31a0af35b4a"><div class="ttname"><a href="../../df/d26/fs_8h.html#ac7fd076e6f0290af80aee31a0af35b4a">Inode::Offset</a></div><div class="ttdeci">off_t Offset</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00250">fs.h:250</a></div></div>
 <div class="ttc" id="afs_8h_html_ad985ee5fa0d7e795352935323a07f4a5"><div class="ttname"><a href="../../df/d26/fs_8h.html#ad985ee5fa0d7e795352935323a07f4a5">Remove</a></div><div class="ttdeci">int(* Remove)(struct Inode *Parent, const char *Name)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00002">fs.h:2</a></div></div>
+<div class="ttc" id="afs_8h_html_ae311d9d0d76dbba597183a4a934720b4"><div class="ttname"><a href="../../df/d26/fs_8h.html#ae311d9d0d76dbba597183a4a934720b4">FileSystemDevice::Block</a></div><div class="ttdeci">struct BlockDevice * Block</div><div class="ttdoc">Block Device.</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00345">fs.h:345</a></div></div>
+<div class="ttc" id="afs_8h_html_ae7fa98dc9b923a5a711d4c9a4fdf36e0"><div class="ttname"><a href="../../df/d26/fs_8h.html#ae7fa98dc9b923a5a711d4c9a4fdf36e0">FileSystemDevice::inode</a></div><div class="ttdeci">struct FileSystemDevice::@16 inode</div></div>
 <div class="ttc" id="afs_8h_html_aec9bda2590b6b4ff6433991c57ce60a3"><div class="ttname"><a href="../../df/d26/fs_8h.html#aec9bda2590b6b4ff6433991c57ce60a3">Seek</a></div><div class="ttdeci">off_t(* Seek)(struct Inode *Node, off_t Offset)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00015">fs.h:15</a></div></div>
-<div class="ttc" id="afs_8h_html_afed4851539e0eb74fbd4cc4c0dca8abd"><div class="ttname"><a href="../../df/d26/fs_8h.html#afed4851539e0eb74fbd4cc4c0dca8abd">FileSystemInfo::PrivateData</a></div><div class="ttdeci">void * PrivateData</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00367">fs.h:367</a></div></div>
+<div class="ttc" id="afs_8h_html_afed4851539e0eb74fbd4cc4c0dca8abd"><div class="ttname"><a href="../../df/d26/fs_8h.html#afed4851539e0eb74fbd4cc4c0dca8abd">FileSystemInfo::PrivateData</a></div><div class="ttdeci">void * PrivateData</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00422">fs.h:422</a></div></div>
+<div class="ttc" id="afs_8h_html_d4/d24/structFileSystemDevice"><div class="ttname"><a href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00327">fs.h:328</a></div></div>
 <div class="ttc" id="afs_8h_html_d5/df1/structkstat"><div class="ttname"><a href="../../df/d26/fs_8h.html#d5/df1/structkstat">kstat</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00151">fs.h:152</a></div></div>
 <div class="ttc" id="afs_8h_html_d6/d59/structInode"><div class="ttname"><a href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00244">fs.h:245</a></div></div>
 <div class="ttc" id="afs_8h_html_d9/ddf/structkdirent"><div class="ttname"><a href="../../df/d26/fs_8h.html#d9/ddf/structkdirent">kdirent</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00235">fs.h:236</a></div></div>
-<div class="ttc" id="afs_8h_html_de/d99/structFileSystemInfo"><div class="ttname"><a href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00359">fs.h:360</a></div></div>
-<div class="ttc" id="apci_8h_html_dd/d3f/struct____attribute____"><div class="ttname"><a href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a></div><div class="ttdef"><b>Definition</b> <a href="../../d9/d97/pci_8h_source.html#l00050">pci.h:51</a></div></div>
+<div class="ttc" id="afs_8h_html_de/d99/structFileSystemInfo"><div class="ttname"><a href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00412">fs.h:413</a></div></div>
 <div class="ttc" id="astructInodeOperations_html"><div class="ttname"><a href="../../db/de6/structInodeOperations.html">InodeOperations</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00304">fs.h:305</a></div></div>
-<div class="ttc" id="astructSuperBlockOperations_html"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00330">fs.h:331</a></div></div>
-<div class="ttc" id="astructSuperBlockOperations_html_a91b8a508085e42bcf27a06058a0fd2f7"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7">SuperBlockOperations::DeleteInode</a></div><div class="ttdeci">int(* DeleteInode)(struct FileSystemInfo *Info, struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00333">fs.h:333</a></div></div>
-<div class="ttc" id="astructSuperBlockOperations_html_a9b919eaba70c8e9d020930ba97b7df68"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a9b919eaba70c8e9d020930ba97b7df68">SuperBlockOperations::AllocateInode</a></div><div class="ttdeci">int(* AllocateInode)(struct FileSystemInfo *Info, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00332">fs.h:332</a></div></div>
-<div class="ttc" id="astructSuperBlockOperations_html_ac57a866f55ed08d2dd2897b27a541eb2"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#ac57a866f55ed08d2dd2897b27a541eb2">SuperBlockOperations::Synchronize</a></div><div class="ttdeci">int(* Synchronize)(struct FileSystemInfo *Info, struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00345">fs.h:345</a></div></div>
-<div class="ttc" id="astructSuperBlockOperations_html_ac5d91cc844c75e8d58ef124a9b2c8722"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722">SuperBlockOperations::Destroy</a></div><div class="ttdeci">int(* Destroy)(struct FileSystemInfo *Info)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00356">fs.h:356</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html">SuperBlockOperations</a></div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00348">fs.h:349</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_a5be3ba7b778d10a6333b429bcb7accb7"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a5be3ba7b778d10a6333b429bcb7accb7">SuperBlockOperations::Unmount</a></div><div class="ttdeci">int(* Unmount)(struct FileSystemInfo *FS)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00409">fs.h:409</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_a7df12971dc1079e22cb77d62743b12c6"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a7df12971dc1079e22cb77d62743b12c6">SuperBlockOperations::Mount</a></div><div class="ttdeci">int(* Mount)(struct FileSystemInfo *FS, struct Inode **Root, struct FileSystemDevice *Device)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00398">fs.h:398</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_a8216e560343fe4d60d25d9339369008c"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a8216e560343fe4d60d25d9339369008c">SuperBlockOperations::Probe</a></div><div class="ttdeci">int(* Probe)(struct FileSystemDevice *Device)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00385">fs.h:385</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_a91b8a508085e42bcf27a06058a0fd2f7"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a91b8a508085e42bcf27a06058a0fd2f7">SuperBlockOperations::DeleteInode</a></div><div class="ttdeci">int(* DeleteInode)(struct FileSystemInfo *Info, struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00351">fs.h:351</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_a9b919eaba70c8e9d020930ba97b7df68"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#a9b919eaba70c8e9d020930ba97b7df68">SuperBlockOperations::AllocateInode</a></div><div class="ttdeci">int(* AllocateInode)(struct FileSystemInfo *Info, struct Inode **Result)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00350">fs.h:350</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_ac57a866f55ed08d2dd2897b27a541eb2"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#ac57a866f55ed08d2dd2897b27a541eb2">SuperBlockOperations::Synchronize</a></div><div class="ttdeci">int(* Synchronize)(struct FileSystemInfo *Info, struct Inode *Node)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00363">fs.h:363</a></div></div>
+<div class="ttc" id="astructSuperBlockOperations_html_ac5d91cc844c75e8d58ef124a9b2c8722"><div class="ttname"><a href="../../d2/d55/structSuperBlockOperations.html#ac5d91cc844c75e8d58ef124a9b2c8722">SuperBlockOperations::Destroy</a></div><div class="ttdeci">int(* Destroy)(struct FileSystemInfo *Info)</div><div class="ttdef"><b>Definition</b> <a href="../../df/d26/fs_8h_source.html#l00374">fs.h:374</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1642,14 +1696,14 @@ SuperOps</td>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ae9d1c84bd8c5ad87f19dc53750668f1b" name="ae9d1c84bd8c5ad87f19dc53750668f1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae9d1c84bd8c5ad87f19dc53750668f1b">&#9670;&#160;</a></span>__attribute__()</h2>
+<a id="adeee0c5ffa0505b0fb9cbde29aa5a750" name="adeee0c5ffa0505b0fb9cbde29aa5a750"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adeee0c5ffa0505b0fb9cbde29aa5a750">&#9670;&#160;</a></span>__attribute__()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> <a class="el" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a> </td>
+          <td class="memname">struct <a class="el" href="../../db/de6/structInodeOperations.html">InodeOperations</a> <a class="el" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a> </td>
           <td>(</td>
           <td class="paramtype">(packed)&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1688,6 +1742,34 @@ SuperOps</td>
 
 </div>
 </div>
+<a id="a0b8555bbebfe763731f39ba53e9ddc7f" name="a0b8555bbebfe763731f39ba53e9ddc7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b8555bbebfe763731f39ba53e9ddc7f">&#9670;&#160;</a></span>RegisterMountPoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">dev_t RegisterMountPoint </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *&#160;</td>
+          <td class="paramname"><em>fsi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> *&#160;</td>
+          <td class="paramname"><em>Root</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a41338d5d4b70d416fb956287f27773a8" name="a41338d5d4b70d416fb956287f27773a8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a41338d5d4b70d416fb956287f27773a8">&#9670;&#160;</a></span>UnregisterFileSystem()</h2>
 
@@ -1706,7 +1788,39 @@ SuperOps</td>
 
 </div>
 </div>
+<a id="a339c1ed1e08b3248cbaad2b3b63ba86d" name="a339c1ed1e08b3248cbaad2b3b63ba86d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a339c1ed1e08b3248cbaad2b3b63ba86d">&#9670;&#160;</a></span>UnregisterMountPoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int UnregisterMountPoint </td>
+          <td>(</td>
+          <td class="paramtype">dev_t&#160;</td>
+          <td class="paramname"><em>Device</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="a21ace075273579727f14d0eefb1b934e" name="a21ace075273579727f14d0eefb1b934e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21ace075273579727f14d0eefb1b934e">&#9670;&#160;</a></span>__attribute__</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> <a class="el" href="../../d9/d97/pci_8h.html#dd/d3f/struct____attribute____">__attribute__</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="aab39d62bf90b7b74ddff3b22086f40f6" name="aab39d62bf90b7b74ddff3b22086f40f6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aab39d62bf90b7b74ddff3b22086f40f6">&#9670;&#160;</a></span>AllocateInode</h2>
 
@@ -1734,6 +1848,22 @@ SuperOps</td>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00000">0</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="a1e190b7f0133183d91cc71fc8d47ed0c" name="a1e190b7f0133183d91cc71fc8d47ed0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e190b7f0133183d91cc71fc8d47ed0c">&#9670;&#160;</a></span>Capabilities</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Capabilities</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00003">3</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -1988,6 +2118,53 @@ SuperOps</td>
 
 </div>
 </div>
+<a id="af072945bf898f907662733da42b11a44" name="af072945bf898f907662733da42b11a44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af072945bf898f907662733da42b11a44">&#9670;&#160;</a></span>Mount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* Mount) (struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS, struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **Root, struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device) </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *&#160;</td>
+          <td class="paramname"><em>FS</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> **&#160;</td>
+          <td class="paramname"><em>Root</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *&#160;</td>
+          <td class="paramname"><em>Device</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mount the filesystem.</p>
+<p>Mount the filesystem on the given device.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">FS</td><td>Filesystem to mount. </td></tr>
+    <tr><td class="paramname">Root</td><td>Pointer to the root inode. </td></tr>
+    <tr><td class="paramname">Device</td><td>Device to mount. This pointer will be undefined after the function returns!</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00048">48</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
 <a id="a760b4e07b204e4852e7fb55e25567623" name="a760b4e07b204e4852e7fb55e25567623"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a760b4e07b204e4852e7fb55e25567623">&#9670;&#160;</a></span>Name</h2>
 
@@ -2052,7 +2229,7 @@ SuperOps</td>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00004">4</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00006">6</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -2068,7 +2245,36 @@ SuperOps</td>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00006">6</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00008">8</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="ae79cbe5c8217124106e493f0aeba0705" name="ae79cbe5c8217124106e493f0aeba0705"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae79cbe5c8217124106e493f0aeba0705">&#9670;&#160;</a></span>Probe</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* Probe) (struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *Device) </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="../../df/d26/fs_8h.html#d4/d24/structFileSystemDevice">FileSystemDevice</a> *&#160;</td>
+          <td class="paramname"><em>Device</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Probe the filesystem.</p>
+<p>Check if the filesystem is supported by the driver.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Device</td><td>Device to probe.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00035">35</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -2294,22 +2500,6 @@ SuperOps</td>
 
 </div>
 </div>
-<a id="a3d484a9ca884f47f05d568d1743665f7" name="a3d484a9ca884f47f05d568d1743665f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d484a9ca884f47f05d568d1743665f7">&#9670;&#160;</a></span>RootName</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* RootName</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00001">1</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
-
-</div>
-</div>
 <a id="aec9bda2590b6b4ff6433991c57ce60a3" name="aec9bda2590b6b4ff6433991c57ce60a3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aec9bda2590b6b4ff6433991c57ce60a3">&#9670;&#160;</a></span>Seek</h2>
 
@@ -2382,7 +2572,7 @@ SuperOps</td>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00003">3</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00005">5</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -2457,8 +2647,8 @@ SuperOps</td>
 <p>Write all pending changes to the disk.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">Info</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. If NULL, synchronize all inodes. </td></tr>
-    <tr><td class="paramname">Node</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize.</td></tr>
+    <tr><td class="paramname">Info</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. </td></tr>
+    <tr><td class="paramname">Node</td><td><a class="el" href="../../df/d26/fs_8h.html#d6/d59/structInode">Inode</a> to synchronize. If NULL, synchronize all inodes.</td></tr>
   </table>
   </dd>
 </dl>
@@ -2495,6 +2685,35 @@ SuperOps</td>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00006">6</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
+
+</div>
+</div>
+<a id="acda6db920995046415a3c843fb6a37a4" name="acda6db920995046415a3c843fb6a37a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acda6db920995046415a3c843fb6a37a4">&#9670;&#160;</a></span>Unmount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* Unmount) (struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *FS) </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="../../df/d26/fs_8h.html#de/d99/structFileSystemInfo">FileSystemInfo</a> *&#160;</td>
+          <td class="paramname"><em>FS</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unmount the filesystem.</p>
+<p>Unmount the filesystem from the given device.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">FS</td><td>Filesystem to unmount.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Zero on success, otherwise an error code. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../df/d26/fs_8h_source.html#l00059">59</a> of file <a class="el" href="../../df/d26/fs_8h_source.html">fs.h</a>.</p>
 
 </div>
 </div>
@@ -2546,7 +2765,7 @@ SuperOps</td>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../df/d26/fs_8h.html">fs.h</a></li>
-    <li class="footer">Generated on Thu Apr 3 2025 07:14:29 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Sun May 18 2025 20:18:23 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>
