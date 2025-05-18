@@ -571,6 +571,7 @@ nsa void DisplayCrashScreen(CPU::ExceptionFrame *Frame)
 
 	DisplayTopOverlay();
 	DisplayMainScreen(Frame);
+	DisplayStackScreen(Frame);
 	InitializeKeyboards();
 	DisplayBottomOverlay();
 
