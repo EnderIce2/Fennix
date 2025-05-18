@@ -86,7 +86,7 @@ namespace ACPI
 			SUBTYPE_SERIAL_RISC_V_SBI_Console = 0x0015,
 
 			SUBTYPE_1394_IEEE1394_HCI = 0x0000,
-			
+
 			SUBTYPE_USB_XHCI = 0x0000,
 			SUBTYPE_USB_EHCI = 0x0001,
 
@@ -193,11 +193,63 @@ namespace ACPI
 		struct BGRTHeader
 		{
 			ACPIHeader Header;
+
+			/**
+			 * Version. This value must be 1.
+			 */
 			uint16_t Version;
-			uint8_t Status;
+
+			/**
+			 * Status of the image
+			 */
+			union
+			{
+				struct
+				{
+					/**
+					 * Indicates that the image graphic is displayed.
+					 */
+					uint8_t Displayed : 1;
+
+					/**
+					 * Orientation
+					 *
+					 * 0b00 - 0˚
+					 * 0b01 - 90˚
+					 * 0b10 - 180˚
+					 * 0b11 - 270˚
+					 */
+					uint8_t OrientationOffset : 2;
+
+					/**
+					 * This field is reserved and must be zero.
+					 */
+					uint8_t Reserved : 5;
+				};
+				uint8_t raw;
+			} Status;
+
+			/**
+			 * Image type
+			 *
+			 * 0 - Bitmap
+			 * 1-255 - Reserved
+			 */
 			uint8_t ImageType;
+
+			/**
+			 * Physical address of the image pointing to firmware's in-memory copy of the image bitmap.
+			 */
 			uint64_t ImageAddress;
+
+			/**
+			 * X-offset of the boot image.
+			 */
 			uint32_t ImageOffsetX;
+
+			/**
+			 * Y-offset of the boot image.
+			 */
 			uint32_t ImageOffsetY;
 		} __packed;
 

@@ -127,6 +127,11 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [Rust OS Development: UEFI](https://blog.malware.re/2023/09/01/rust-os-part2/index.html)
 - [GUIDs Database](https://github.com/DSecurity/efiSeek/blob/master/data/guids-db.ini)
 
+## BGRT
+- [BGRT on OSDev](https://wiki.osdev.org/BGRT)
+- [BMP File Structure @ Gdansk University of Technology](http://www.ue.eti.pg.gda.pl/fpgalab/zadania.spartan3/zad_vga_struktura_pliku_bmp_en.html)
+- [BGRT @ Purdue University](https://engineering.purdue.edu/ece264/16au/hw/HW13)
+
 ---
 
 Special thanks to all contributors and the creators of the referenced projects and resources!
