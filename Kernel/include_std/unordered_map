@@ -908,6 +908,7 @@ namespace std
 				index = hashFunction(key) % buckets.size();
 			}
 
+			bucket = buckets[index];
 			return bucket.back().second;
 		}
 
@@ -934,6 +935,7 @@ namespace std
 				index = hashFunction(key) % buckets.size();
 			}
 
+			bucket = buckets[index];
 			return bucket.back().second;
 		}
 
