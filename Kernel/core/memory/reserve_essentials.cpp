@@ -194,6 +194,15 @@ namespace Memory
 #pragma GCC diagnostic pop
 				this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
 			}
+
+			if (bInfo.EFI.Info.Enabled)
+			{
+				debug("Reserving EFI related...");
+				if (bInfo.EFI.Info.IH)
+					this->ReservePage(bInfo.EFI.ImageHandle);
+				if (bInfo.EFI.Info.ST)
+					this->ReservePage(bInfo.EFI.SystemTable);
+			}
 		}
 #elif defined(__aarch64__)
 #endif

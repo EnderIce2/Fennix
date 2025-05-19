@@ -19,6 +19,7 @@
 
 #include <boot/binfo.h>
 #include <debug.h>
+#include <memory/virtual.hpp>
 
 extern struct BootInfo bInfo;
 
@@ -150,9 +151,14 @@ VOID InitializeMemoryNoBS()
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
+	Memory::Virtual va;
+	bool validST = va.Check(SystemTable);
+	bool validIH = va.Check(ImageHandle);
+	trace("map: ST:%d IH:%d", validST, validIH);
+
 #ifdef DEBUG
 	debug("efi info: %x", bInfo.EFI.Info.raw);
-	if (bInfo.EFI.Info.ST)
+	if (bInfo.EFI.Info.ST && validST)
 	{
 		EFI_GUID EfiAcpi20Table = EFI_ACPI_20_TABLE_GUID;
 		EFI_GUID AcpiTable = ACPI_TABLE_GUID;
@@ -238,7 +244,7 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
 	}
 #endif
 
-	if (bInfo.EFI.Info.ST == 1)
+	if (bInfo.EFI.Info.ST == 1 && validST)
 	{
 		SearchSMBIOS(SystemTable);
 		SearchRSDP(SystemTable);
