@@ -368,7 +368,7 @@ namespace APIC
 			this->lapic->Write(APIC_TDCR, DivideBy128);
 		else
 			this->lapic->Write(APIC_TDCR, DivideBy16);
-		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks * Miliseconds));
+		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks *Miliseconds));
 		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
 	}
 
@@ -383,7 +383,7 @@ namespace APIC
 		this->lapic->Write(APIC_TDCR, Divider);
 		this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 
-		TimeManager->Sleep(1, Time::Units::Milliseconds);
+		TimeManager->Sleep(Time::FromMilliseconds(1));
 
 		// Mask the timer
 		this->lapic->Write(APIC_TIMER, 0x10000 /* LVTTimer.Mask flag */);

@@ -25,6 +25,8 @@
 
 #include "../kernel.h"
 
+using namespace std::chrono_literals;
+
 namespace KernelConsole
 {
 	static int TermColors[] = {

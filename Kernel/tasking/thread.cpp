@@ -650,7 +650,7 @@ namespace Tasking
 		this->AllocatedMemory += strlen(this->Parent->Name) + 1;
 		this->AllocatedMemory += sizeof(Memory::StackGuard);
 
-		this->Info.SpawnTime = TimeManager->GetCounter();
+		this->Info.SpawnTime = TimeManager->GetTimeNs();
 		this->Parent->Threads.push_back(this);
 
 		if (this->Parent->Threads.size() == 1 &&

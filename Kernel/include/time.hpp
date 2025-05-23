@@ -21,9 +21,24 @@
 #include <types.h>
 #include <debug.h>
 #include <cassert>
+#include <vector>
 
 namespace Time
 {
+	class ITimer
+	{
+	protected:
+		uint64_t ClassCreationTime = 0;
+
+	public:
+		virtual const char *Name() const = 0;
+		virtual bool IsAvailable() const = 0;
+		virtual bool SupportsNanoseconds() const = 0;
+		virtual bool Sleep(uint64_t Nanoseconds) = 0;
+		virtual uint64_t GetNanoseconds() = 0;
+		virtual ~ITimer() = default;
+	};
+
 	struct Clock
 	{
 		int Year, Month, Day, Hour, Minute, Second;
@@ -33,138 +48,148 @@ namespace Time
 	Clock ReadClock();
 	Clock ConvertFromUnix(int Timestamp);
 
-	enum Units
+	inline uint64_t FromSeconds(uint64_t Seconds) { return Seconds * 1'000'000'000ULL; }
+	inline uint64_t FromMilliseconds(uint64_t Milliseconds) { return Milliseconds * 1'000'000ULL; }
+
+	inline uint64_t ToSeconds(uint64_t Nanoseconds) { return Nanoseconds / 1'000'000'000ULL; }
+	inline uint64_t ToMilliseconds(uint64_t Nanoseconds) { return Nanoseconds / 1'000'000ULL; }
+
+	class ProgrammableIntervalTimer : public ITimer
 	{
-		Femtoseconds,
-		Picoseconds,
-		Nanoseconds,
-		Microseconds,
-		Milliseconds,
-		Seconds,
-		Minutes,
-		Hours,
-		Days,
-		Months,
-		Years
+	public:
+		const char *Name() const override { return "PIT"; }
+		bool IsAvailable() const override;
+		bool SupportsNanoseconds() const override { return false; }
+
+		bool Sleep(uint64_t Nanoseconds) override;
+		uint64_t GetNanoseconds() override { return 0; }
+
+		ProgrammableIntervalTimer();
+		~ProgrammableIntervalTimer();
 	};
 
-	/** @deprecated this shouldn't be used */
-	inline uint64_t ConvertUnit(const Units Unit)
+	class RealTimeClock : public ITimer
 	{
-		switch (Unit)
-		{
-		case Femtoseconds:
-			return 1;
-		case Picoseconds:
-			return 1000;
-		case Nanoseconds:
-			return 1000000;
-		case Microseconds:
-			return 1000000000;
-		case Milliseconds:
-			return 1000000000000;
-		case Seconds:
-			return 1000000000000000;
-		case Minutes:
-			return 1000000000000000000;
-		// case Hours:
-		//     return 1000000000000000000000;
-		// case Days:
-		//     return 1000000000000000000000000;
-		// case Months:
-		//     return 1000000000000000000000000000;
-		// case Years:
-		//     return 1000000000000000000000000000000;
-		default:
-			assert(!"Invalid time unit");
-		}
-	}
+	public:
+		const char *Name() const override { return "RTC"; }
+		bool IsAvailable() const override;
+		bool SupportsNanoseconds() const override { return false; }
 
-	class HighPrecisionEventTimer
+		bool Sleep(uint64_t Nanoseconds) override;
+		uint64_t GetNanoseconds() override { return 0; }
+
+		RealTimeClock();
+		~RealTimeClock();
+	};
+
+	class HighPrecisionEventTimer : public ITimer
 	{
 	private:
 		struct HPET
 		{
-			uint64_t GeneralCapabilities;
-			uint64_t Reserved0;
-			uint64_t GeneralConfiguration;
-			uint64_t Reserved1;
-			uint64_t GeneralIntStatus;
-			uint64_t Reserved2;
-			uint64_t Reserved3[24];
-			uint64_t MainCounterValue;
-			uint64_t Reserved4;
+			uint64_t CapabilitiesID;
+			uint64_t __reserved0;
+			uint64_t Configuration;
+			uint64_t __reserved1;
+			uint64_t InterruptStatus;
+			uint64_t __reserved2[25];
+			uint64_t MainCounter;
+			uint64_t __reserved3;
 		};
 
-		uint32_t clk = 0;
+		uint64_t Period = 0;
 		HPET *hpet = nullptr;
-		uint64_t ClassCreationTime = 0;
 
 	public:
-		bool Sleep(size_t Duration, Units Unit);
-		uint64_t GetCounter();
-		uint64_t CalculateTarget(uint64_t Target, Units Unit);
-		uint64_t GetNanosecondsSinceClassCreation();
+		const char *Name() const override { return "HPET"; }
+		bool IsAvailable() const override { return hpet != nullptr; }
+		bool SupportsNanoseconds() const override { return true; }
+		bool Sleep(uint64_t Nanoseconds) override;
+		uint64_t GetNanoseconds() override;
 
 		HighPrecisionEventTimer(void *hpet);
 		~HighPrecisionEventTimer();
 	};
 
-	class TimeStampCounter
+	class TimeStampCounter : public ITimer
 	{
 	private:
 		uint64_t clk = 0;
-		uint64_t ClassCreationTime = 0;
 
 	public:
-		bool Sleep(size_t Duration, Units Unit);
-		uint64_t GetCounter();
-		uint64_t CalculateTarget(uint64_t Target, Units Unit);
-		uint64_t GetNanosecondsSinceClassCreation();
+		const char *Name() const override { return "TSC"; }
+		bool IsAvailable() const override { return clk != 0; }
+		bool SupportsNanoseconds() const override { return true; }
+		bool Sleep(uint64_t Nanoseconds) override;
+		uint64_t GetNanoseconds() override;
 
 		TimeStampCounter();
-		~TimeStampCounter();
+		~TimeStampCounter() = default;
 	};
 
-	class time
+	class KVMClock : public ITimer
 	{
-	public:
-		enum TimeActiveTimer
+	private:
+		struct kvm_clock_pairing
 		{
-			NONE = 0b0,
-			RTC = 0b1,
-			PIT = 0b10,
-			HPET = 0b100,
-			ACPI = 0b1000,
-			APIC = 0b10000,
-			TSC = 0b100000
+			int64_t sec;
+			int64_t nsec;
+			uint64_t tsc;
+			uint32_t flags;
+			uint32_t pad[9];
 		};
 
-	private:
-		int SupportedTimers = 0;
-		TimeActiveTimer ActiveTimer = NONE;
+		struct pvclock_vcpu_time_info
+		{
+			uint32_t version;
+			uint32_t pad0;
+			uint64_t tsc_timestamp;
+			uint64_t system_time;
+			uint32_t tsc_to_system_mul;
+			int8_t tsc_shift;
+			uint8_t flags;
+			uint8_t pad[2];
+		};
 
-		HighPrecisionEventTimer *hpet;
-		TimeStampCounter *tsc;
+		struct ms_hyperv_tsc_page
+		{
+			volatile uint32_t tsc_sequence;
+			uint32_t reserved1;
+			volatile uint64_t tsc_scale;
+			volatile int64_t tsc_offset;
+			uint64_t reserved2[509];
+		};
+
+		uint64_t clk = 0;
+		kvm_clock_pairing *Pairing = nullptr;
 
 	public:
-		int GetSupportedTimers() { return SupportedTimers; }
-		TimeActiveTimer GetActiveTimer() { return ActiveTimer; }
-		bool ChangeActiveTimer(TimeActiveTimer Timer)
-		{
-			if (!(SupportedTimers & Timer))
-				return false;
-			ActiveTimer = Timer;
-			return true;
-		}
+		const char *Name() const override { return "KVM"; }
+		bool IsAvailable() const override { return clk != 0; }
+		bool SupportsNanoseconds() const override { return true; }
+		bool Sleep(uint64_t Nanoseconds) override;
+		uint64_t GetNanoseconds() override;
 
-		bool Sleep(size_t Duration, Units Unit);
-		uint64_t GetCounter();
-		uint64_t CalculateTarget(uint64_t Target, Units Unit);
-		uint64_t GetNanosecondsSinceClassCreation();
-		void FindTimers(void *acpi);
-		time();
-		~time();
+		KVMClock();
+		~KVMClock();
+	};
+
+	class Manager
+	{
+	private:
+		void *acpi = nullptr;
+		std::vector<ITimer *> Timers;
+		int ActiveTimer = -1;
+
+	public:
+		void CheckActiveTimer();
+		bool Sleep(uint64_t Nanoseconds);
+		uint64_t GetTimeNs();
+		const char *GetActiveTimerName();
+
+		void InitializeTimers();
+		Manager(void *acpi);
+		~Manager() = delete;
 	};
 }
 

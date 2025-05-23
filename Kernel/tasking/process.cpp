@@ -251,7 +251,7 @@ namespace Tasking
 		this->AllocatedMemory += sizeof(Memory::ProgramBreak);
 		this->AllocatedMemory += sizeof(SymbolResolver::Symbols);
 
-		this->Info.SpawnTime = TimeManager->GetCounter();
+		this->Info.SpawnTime = TimeManager->GetTimeNs();
 
 		if (Parent)
 			Parent->Children.push_back(this);

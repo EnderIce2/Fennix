@@ -59,7 +59,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 		and switch back when this function returns. */
 	AutoSwitchPageTable PageSwitcher;
 
-	uint64_t _ctime = TimeManager->GetCounter();
+	uint64_t _ctime = TimeManager->GetTimeNs();
 	Tasking::TaskInfo *Ptinfo = &thisProcess->Info;
 	Tasking::TaskInfo *Ttinfo = &thisThread->Info;
 	uintptr_t ret;
@@ -97,7 +97,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 	}
 
 Ret:
-	Ptinfo->KernelTime += TimeManager->GetCounter() - _ctime;
-	Ttinfo->KernelTime += TimeManager->GetCounter() - _ctime;
+	Ptinfo->KernelTime += TimeManager->GetTimeNs() - _ctime;
+	Ttinfo->KernelTime += TimeManager->GetTimeNs() - _ctime;
 	return ret;
 }

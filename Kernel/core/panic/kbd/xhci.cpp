@@ -58,7 +58,7 @@ nsa bool CrashXHCIKeyboardDriver::TakeOwnership()
 		return true;
 
 	exCap->USBLEGSUP.OSOwnsHC = 1;
-	TimeManager->Sleep(200, Time::Milliseconds);
+	TimeManager->Sleep(Time::FromMilliseconds(200));
 	if (exCap->USBLEGSUP.BIOSOwnsHC == 0)
 		return true;
 

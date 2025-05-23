@@ -1389,10 +1389,10 @@ static int linux_nanosleep(SysFrm *,
 		  pReq->tv_nsec, pReq->tv_sec);
 
 	uint64_t nanoTime = pReq->tv_nsec;
-	uint64_t secTime = pReq->tv_sec * 1000000000; /* Nano */
+	uint64_t secTime = Time::FromSeconds(pReq->tv_sec);
 
-	uint64_t time = TimeManager->GetCounter();
-	uint64_t sleepTime = TimeManager->CalculateTarget(nanoTime + secTime, Time::Nanoseconds);
+	uint64_t time = TimeManager->GetTimeNs();
+	uint64_t sleepTime = TimeManager->GetTimeNs() + secTime + nanoTime;
 
 	debug("time=%ld secTime=%ld nanoTime=%ld sleepTime=%ld",
 		  time, secTime, nanoTime, sleepTime);
@@ -1406,7 +1406,7 @@ static int linux_nanosleep(SysFrm *,
 		}
 
 		pcb->GetContext()->Yield();
-		time = TimeManager->GetCounter();
+		time = TimeManager->GetTimeNs();
 	}
 	debug("time=     %ld", time);
 	debug("sleepTime=%ld", sleepTime);
@@ -2582,7 +2582,7 @@ static int linux_sysinfo(SysFrm *, struct sysinfo *info)
 	if (pInfo == nullptr)
 		return -linux_EFAULT;
 
-	uint64_t nano = TimeManager->GetNanosecondsSinceClassCreation();
+	uint64_t nano = TimeManager->GetTimeNs();
 	if (nano != 0)
 		nano /= 10000000;
 
@@ -3185,18 +3185,18 @@ static int linux_clock_gettime(SysFrm *, clockid_t clockid, struct timespec *tp)
 	{
 	case linux_CLOCK_REALTIME:
 	{
-		uint64_t time = TimeManager->GetCounter();
-		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
-		pTp->tv_nsec = time / Time::ConvertUnit(Time::Nanoseconds);
+		uint64_t time = TimeManager->GetTimeNs();
+		pTp->tv_sec = Time::ToSeconds(time);
+		pTp->tv_nsec = time;
 		debug("time=%ld sec=%ld nsec=%ld",
 			  time, pTp->tv_sec, pTp->tv_nsec);
 		break;
 	}
 	case linux_CLOCK_MONOTONIC:
 	{
-		uint64_t time = TimeManager->GetCounter();
-		pTp->tv_sec = time / Time::ConvertUnit(Time::Seconds);
-		pTp->tv_nsec = time / Time::ConvertUnit(Time::Nanoseconds);
+		uint64_t time = TimeManager->GetTimeNs();
+		pTp->tv_sec = Time::ToSeconds(time);
+		pTp->tv_nsec = time;
 		debug("time=%ld sec=%ld nsec=%ld",
 			  time, pTp->tv_sec, pTp->tv_nsec);
 		break;
@@ -3244,9 +3244,8 @@ static int linux_clock_nanosleep(SysFrm *, clockid_t clockid, int flags,
 	case linux_CLOCK_REALTIME:
 	case linux_CLOCK_MONOTONIC:
 	{
-		uint64_t time = TimeManager->GetCounter();
-		uint64_t rqTime = pRequest->tv_sec * Time::ConvertUnit(Time::Seconds) +
-						  pRequest->tv_nsec * Time::ConvertUnit(Time::Nanoseconds);
+		uint64_t time = TimeManager->GetTimeNs();
+		uint64_t rqTime = Time::FromSeconds(pRequest->tv_sec) + pRequest->tv_nsec;
 
 		debug("Sleeping for %ld", rqTime - time);
 		if (rqTime > time)

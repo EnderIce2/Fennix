@@ -167,14 +167,14 @@ namespace SMP
 				}
 
 				apic->SendInitIPI(lapic->APICId);
-				TimeManager->Sleep(20, Time::Units::Milliseconds);
+				TimeManager->Sleep(Time::FromMilliseconds(20));
 				apic->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
 				debug("Waiting for CPU %d to load...", lapic->APICId);
 
-				uint64_t Timeout = TimeManager->CalculateTarget(2, Time::Units::Seconds);
+				uint64_t Timeout = TimeManager->GetTimeNs() + Time::FromSeconds(2);
 				while (CPUEnabled.load(std::memory_order_acquire) == false)
 				{
-					if (TimeManager->GetCounter() > Timeout)
+					if (TimeManager->GetTimeNs() > Timeout)
 					{
 						error("CPU %d failed to load!", lapic->APICId);
 						KPrint("\x1b[1;37;41mCPU %d failed to load!",

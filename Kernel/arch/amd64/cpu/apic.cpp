@@ -442,7 +442,7 @@ namespace APIC
 			this->lapic->Write(APIC_TICR, 0xFFFFFFFF);
 		}
 
-		TimeManager->Sleep(1, Time::Units::Milliseconds);
+		TimeManager->Sleep(Time::FromMilliseconds(1));
 
 		// Mask the timer
 		if (this->lapic->x2APIC)

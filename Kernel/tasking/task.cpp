@@ -167,7 +167,7 @@ namespace Tasking
 			this->Yield();
 	}
 
-	void Task::Sleep(uint64_t Milliseconds, bool NoSwitch)
+	void Task::Sleep(uint64_t Nanoseconds, bool NoSwitch)
 	{
 		TCB *thread = this->GetCurrentThread();
 		PCB *process = thread->Parent;
@@ -179,13 +179,11 @@ namespace Tasking
 			if (process->Threads.size() == 1)
 				process->SetState(TaskState::Sleeping);
 
-			thread->Info.SleepUntil =
-				TimeManager->CalculateTarget(Milliseconds,
-											 Time::Units::Milliseconds);
+			thread->Info.SleepUntil = TimeManager->GetTimeNs() + Nanoseconds;
 		}
 
 		// #ifdef DEBUG
-		// 		uint64_t TicksNow = TimeManager->GetCounter();
+		// 		uint64_t TicksNow = TimeManager->GetTimeNs();
 		// #endif
 		// 		debug("Thread \"%s\"(%d) is going to sleep until %llu, current %llu, diff %llu",
 		// 			  thread->Name, thread->ID, thread->Info.SleepUntil,

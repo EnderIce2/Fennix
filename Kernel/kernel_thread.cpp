@@ -169,7 +169,7 @@ Exit:
 		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
 
 	KPrint("Dropping to kernel shell");
-	TaskManager->Sleep(1000);
+	TaskManager->Sleep(Time::FromMilliseconds(1000));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(KShellThread))->Rename("Kernel Shell");
 	CPU::Halt(true);
 }

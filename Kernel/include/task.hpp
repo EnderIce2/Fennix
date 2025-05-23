@@ -626,11 +626,11 @@ namespace Tasking
 		void WaitForThreadStatus(TCB *tcb, TaskState State);
 
 		/**
-		 * Sleep for a given amount of milliseconds
+		 * Sleep for a given amount of nenoseconds
 		 *
-		 * @param Milliseconds Amount of milliseconds to sleep
+		 * @param Nanoseconds Amount of nenoseconds to sleep
 		 */
-		void Sleep(uint64_t Milliseconds, bool NoSwitch = false);
+		void Sleep(uint64_t Nanoseconds, bool NoSwitch = false);
 
 		PCB *CreateProcess(PCB *Parent,
 						   const char *Name,

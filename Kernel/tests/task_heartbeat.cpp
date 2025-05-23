@@ -29,7 +29,7 @@ void TaskHeartbeat()
 	while (true)
 	{
 		debug("Task Heartbeat");
-		TaskManager->Sleep(5000);
+		TaskManager->Sleep(Time::FromMilliseconds(5000));
 	}
 }
 

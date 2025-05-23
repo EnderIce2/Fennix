@@ -273,7 +273,7 @@ namespace v0
 	{
 		dbg_api("%d, %d", DriverID, Milliseconds);
 
-		TaskManager->Sleep(Milliseconds);
+		TaskManager->Sleep(Time::FromMilliseconds(Milliseconds));
 	}
 
 	/* --------- */

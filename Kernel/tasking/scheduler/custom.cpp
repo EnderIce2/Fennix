@@ -290,7 +290,7 @@ namespace Tasking::Scheduler
 	hot nsa void Custom::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
 	{
 		UNUSED(Core);
-		uint64_t CurrentTime = TimeManager->GetCounter();
+		uint64_t CurrentTime = TimeManager->GetTimeNs();
 		uint64_t TimePassed = Info->LastUpdateTime - CurrentTime;
 		Info->LastUpdateTime = CurrentTime;
 
@@ -529,7 +529,7 @@ namespace Tasking::Scheduler
 					continue;
 
 				/* Check if the thread is ready to wake up. */
-				if (unlikely(thread->Info.SleepUntil < TimeManager->GetCounter()))
+				if (unlikely(thread->Info.SleepUntil < TimeManager->GetTimeNs()))
 				{
 					if (pState == TaskState::Sleeping)
 						process->State.store(TaskState::Ready);
@@ -541,7 +541,7 @@ namespace Tasking::Scheduler
 				else
 				{
 					wut_schedbg("Thread \"%s\"(%d) is not ready to wake up. (SleepUntil: %d, Counter: %d)",
-								thread->Name, thread->ID, thread->Info.SleepUntil, TimeManager->GetCounter());
+								thread->Name, thread->ID, thread->Info.SleepUntil, TimeManager->GetTimeNs());
 				}
 			}
 		}
@@ -574,7 +574,7 @@ namespace Tasking::Scheduler
 			return;
 		}
 		bool ProcessNotChanged = false;
-		uint64_t SchedTmpTicks = TimeManager->GetCounter();
+		uint64_t SchedTmpTicks = TimeManager->GetTimeNs();
 		this->LastTaskTicks.store(size_t(SchedTmpTicks - this->SchedulerTicks.load()));
 		CPUData *CurrentCPU = GetCurrentCPU();
 		this->LastCore.store(CurrentCPU->ID);
@@ -621,7 +621,7 @@ namespace Tasking::Scheduler
 				CurrentCPU->CurrentProcess->State.store(TaskState::Running);
 				CurrentCPU->CurrentThread->State.store(TaskState::Running);
 				*Frame = CurrentCPU->CurrentThread->Registers;
-				this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
+				this->SchedulerTicks.store(size_t(TimeManager->GetTimeNs() - SchedTmpTicks));
 				return;
 			}
 
@@ -696,8 +696,8 @@ namespace Tasking::Scheduler
 		CurrentCPU->CurrentProcess->Signals.HandleSignal(Frame, CurrentCPU->CurrentThread.load());
 
 		if (!ProcessNotChanged)
-			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetCounter();
-		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetCounter();
+			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetTimeNs();
+		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetTimeNs();
 		this->OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
 		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled &&
@@ -720,7 +720,7 @@ namespace Tasking::Scheduler
 #endif
 		}
 
-		this->SchedulerTicks.store(size_t(TimeManager->GetCounter() - SchedTmpTicks));
+		this->SchedulerTicks.store(size_t(TimeManager->GetTimeNs() - SchedTmpTicks));
 	}
 
 	hot nsa nif void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
@@ -754,7 +754,7 @@ namespace Tasking::Scheduler
 		}
 
 		debug("Waiting for processes to terminate");
-		uint64_t timeout = TimeManager->CalculateTarget(20, Time::Units::Seconds);
+		uint64_t timeout = TimeManager->GetTimeNs() + Time::FromSeconds(20);
 		while (this->GetProcessList().size() > 0)
 		{
 			trace("Waiting for %d processes to terminate", this->GetProcessList().size());
@@ -780,7 +780,7 @@ namespace Tasking::Scheduler
 				  ctx->GetCurrentProcess()->Name,
 				  ctx->GetCurrentProcess()->ID);
 
-			if (TimeManager->GetCounter() > timeout)
+			if (TimeManager->GetTimeNs() > timeout)
 			{
 				error("Timeout waiting for processes to terminate");
 				break;

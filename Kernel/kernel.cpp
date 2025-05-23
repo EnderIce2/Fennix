@@ -57,7 +57,7 @@ struct KernelConfig Config = {
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
-Time::time *TimeManager = nullptr;
+Time::Manager *TimeManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
 Driver::Manager *DriverManager = nullptr;
@@ -76,14 +76,14 @@ EXTERNC void _KPrint(const char *Format, va_list Args)
 {
 	SmartLock(KernelLock);
 
-	uint64_t nano = TimeManager ? TimeManager->GetNanosecondsSinceClassCreation() : 0;
+	uint64_t nano = TimeManager ? TimeManager->GetTimeNs() : 0;
 
 #if defined(__amd64__)
-	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", Time::ToSeconds(nano), nano % 10000000);
 #elif defined(__i386__)
-	printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%llu.%07llu\x1b[1;30m]\x1b[0m ", Time::ToSeconds(nano), nano % 10000000);
 #elif defined(__aarch64__)
-	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", nano / 10000000, nano % 10000000);
+	printf("\x1b[1;30m[\x1b[1;34m%lu.%07lu\x1b[1;30m]\x1b[0m ", Time::ToSeconds(nano), nano % 10000000);
 #endif
 
 	vprintf(Format, Args);
@@ -232,8 +232,8 @@ EXTERNC nif cold void Main()
 #endif
 
 	KPrint("Initializing Timers");
-	TimeManager = new Time::time;
-	TimeManager->FindTimers(PowerManager->GetACPI());
+	TimeManager = new Time::Manager(PowerManager->GetACPI());
+	TimeManager->InitializeTimers();
 
 	KPrint("Initializing PCI Manager");
 	PCIManager = new PCI::Manager;
@@ -387,12 +387,6 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 	KPrint("Unloading filesystems");
 	if (fs)
 		delete fs, fs = nullptr;
-
-	KPrint("Stopping timers");
-	if (TimeManager)
-		delete TimeManager, TimeManager = nullptr;
-
-	// PowerManager should not be called
 
 	// https://wiki.osdev.org/Calling_Global_Constructors
 	KPrint("Calling destructors");

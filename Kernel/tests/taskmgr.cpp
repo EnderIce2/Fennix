@@ -67,7 +67,7 @@ void TaskMgr_Dummy100Usage()
 void TaskMgr_Dummy0Usage()
 {
 	while (1)
-		TaskManager->Sleep(1000000);
+		TaskManager->Sleep(Time::FromMilliseconds(1000000));
 }
 
 uint64_t GetUsage(uint64_t OldSystemTime, Tasking::TaskInfo *Info)
@@ -75,7 +75,7 @@ uint64_t GetUsage(uint64_t OldSystemTime, Tasking::TaskInfo *Info)
 	/* https://github.com/reactos/reactos/blob/560671a784c1e0e0aa7590df5e0598c1e2f41f5a/base/applications/taskmgr/perfdata.c#L347 */
 	if (Info->OldKernelTime || Info->OldUserTime)
 	{
-		uint64_t SystemTime = TimeManager->GetCounter() - OldSystemTime;
+		uint64_t SystemTime = TimeManager->GetTimeNs() - OldSystemTime;
 		uint64_t CurrentTime = Info->KernelTime + Info->UserTime;
 		uint64_t OldTime = Info->OldKernelTime + Info->OldUserTime;
 		uint64_t CpuUsage = (CurrentTime - OldTime) / SystemTime;
@@ -168,7 +168,7 @@ void TaskMgr()
 #endif
 			}
 		}
-		OldSystemTime = TimeManager->GetCounter();
+		OldSystemTime = TimeManager->GetTimeNs();
 #if defined(__amd64__)
 		register uintptr_t CurrentStackAddress asm("rsp");
 		printf("Sanity: %d, Stack: %#lx", sanity++, CurrentStackAddress);
@@ -185,7 +185,7 @@ void TaskMgr()
 		if (!Config.Quiet)
 			Display->UpdateBuffer();
 
-		TaskManager->Sleep(100);
+		TaskManager->Sleep(Time::FromMilliseconds(100));
 	}
 }
 

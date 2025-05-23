@@ -48,7 +48,7 @@ extern bool DebuggerIsAttached;
 extern Video::Display *Display;
 extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;
-extern Time::time *TimeManager;
+extern Time::Manager *TimeManager;
 extern PCI::Manager *PCIManager;
 extern vfs::Virtual *fs;
 extern Tasking::Task *TaskManager;

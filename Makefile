@@ -14,6 +14,7 @@ QEMUFLAGS := -display gtk
 
 ifeq ($(OSARCH), amd64)
 QEMUFLAGS += -device vmware-svga -M q35 \
+			 -cpu max \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
 			 -net user \
@@ -40,6 +41,7 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -acpitable file=tools/acpi/SSDT1.dat
 else ifeq ($(OSARCH), i386)
 QEMUFLAGS += -M q35 \
+			 -cpu max \
 			 -usb \
 			 -device qemu-xhci,id=xhci \
 			 -device usb-mouse,bus=xhci.0,pcap=mousex.pcap \
