@@ -27,6 +27,9 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 ## CPUID 0x7
 - [CPUID](https://en.wikipedia.org/wiki/CPUID)
 
+## KVM CPUID
+- [kernel.org KVM CPUID](https://www.kernel.org/doc/html/v6.9/virt/kvm/x86/cpuid.html?highlight=cpuid)
+
 ## Network
 - [Beej's Guide to Network Programming](https://web.archive.org/web/20051210132103/http://users.pcnet.ro/dmoroian/beej/Beej.html)
 - [UDP Socket Programming](https://web.archive.org/web/20060229214053/http://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html)
