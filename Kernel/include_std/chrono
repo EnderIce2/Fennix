@@ -28,22 +28,25 @@ namespace std
 		class duration
 		{
 		private:
-			Rep rep_;
-			std::ratio<Period::num, Period::denom> period_;
+			Rep _rep;
+			std::ratio<Period::num, Period::den> _period;
 
 		public:
+			using rep = Rep;
+			using period = Period;
+
 			constexpr duration() = default;
 			duration(const duration &) = default;
 
 			template <class Rep2>
-			constexpr explicit duration(const Rep2 &r) { rep_ = r; }
+			constexpr explicit duration(const Rep2 &r) { _rep = r; }
 
 			template <class Rep2, class Period2>
 			constexpr duration(const duration<Rep2, Period2> &d);
 
 			duration &operator=(const duration &other) = default;
 
-			constexpr Rep count() const { return rep_; }
+			constexpr Rep count() const { return _rep; }
 
 			static constexpr duration zero() noexcept;
 			static constexpr duration min() noexcept;
@@ -51,54 +54,54 @@ namespace std
 			constexpr std::common_type_t<duration> operator+() const;
 			constexpr std::common_type_t<duration> operator-() const;
 
-			constexpr duration operator++(int) { return duration(rep_++); }
-			constexpr duration operator--(int) { return duration(rep_--); }
+			constexpr duration operator++(int) { return duration(_rep++); }
+			constexpr duration operator--(int) { return duration(_rep--); }
 
 			constexpr duration &operator++()
 			{
-				++rep_;
+				++_rep;
 				return *this;
 			}
 
 			constexpr duration &operator--()
 			{
-				--rep_;
+				--_rep;
 				return *this;
 			}
 
 			constexpr duration &operator+=(const duration &d)
 			{
-				rep_ += d.count();
+				_rep += d.count();
 				return *this;
 			}
 
 			constexpr duration &operator-=(const duration &d)
 			{
-				rep_ -= d.count();
+				_rep -= d.count();
 				return *this;
 			}
 
 			constexpr duration &operator*=(const Rep &rhs)
 			{
-				rep_ *= rhs;
+				_rep *= rhs;
 				return *this;
 			}
 
 			constexpr duration &operator/=(const Rep &rhs)
 			{
-				rep_ /= rhs;
+				_rep /= rhs;
 				return *this;
 			}
 
 			constexpr duration &operator%=(const Rep &rhs)
 			{
-				rep_ %= rhs;
+				_rep %= rhs;
 				return *this;
 			}
 
 			constexpr duration &operator%=(const duration &rhs)
 			{
-				rep_ %= rhs.count();
+				_rep %= rhs.count();
 				return *this;
 			}
 		};
@@ -120,7 +123,91 @@ namespace std
 		template <class ToDuration, class Rep, class Period>
 		constexpr ToDuration duration_cast(const std::chrono::duration<Rep, Period> &d)
 		{
-			return ToDuration(d.count());
+			typedef typename ToDuration::rep ToRep;
+			typedef typename ToDuration::period ToPeriod;
+			typedef std::ratio_divide<Period, ToPeriod> CF;
+			typedef typename std::common_type<Rep, ToRep, intmax_t>::type CR;
+			CR cr_count = static_cast<CR>(d.count());
+			CR cr_num = static_cast<CR>(CF::num);
+			CR cr_den = static_cast<CR>(CF::den);
+
+			if constexpr (CF::num == 1 && CF::den == 1)
+				return ToDuration(static_cast<ToRep>(cr_count));
+			else if constexpr (CF::den == 1)
+				return ToDuration(static_cast<ToRep>(cr_count * cr_num));
+			else if constexpr (CF::num == 1)
+				return ToDuration(static_cast<ToRep>(cr_count / cr_den));
+			else
+				return ToDuration(static_cast<ToRep>(cr_count * cr_num / cr_den));
+		}
+	}
+
+	inline namespace literals
+	{
+		inline namespace chrono_literals
+		{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
+			constexpr std::chrono::hours operator""h(unsigned long long h)
+			{
+				return std::chrono::hours(h);
+			}
+
+			constexpr std::chrono::duration<long double, std::ratio<3600, 1>> operator""h(long double h)
+			{
+				return std::chrono::duration<long double, std::ratio<3600, 1>>(h);
+			}
+
+			constexpr std::chrono::minutes operator""min(unsigned long long m)
+			{
+				return std::chrono::minutes(m);
+			}
+
+			constexpr std::chrono::duration<long double, std::ratio<60, 1>> operator""min(long double m)
+			{
+				return std::chrono::duration<long double, std::ratio<60, 1>>(m);
+			}
+
+			constexpr std::chrono::seconds operator""s(unsigned long long s)
+			{
+				return std::chrono::seconds(s);
+			}
+
+			constexpr std::chrono::duration<long double> operator""s(long double s)
+			{
+				return std::chrono::duration<long double>(s);
+			}
+
+			constexpr std::chrono::milliseconds operator""ms(unsigned long long ms)
+			{
+				return std::chrono::milliseconds(ms);
+			}
+
+			constexpr std::chrono::duration<long double, std::milli> operator""ms(long double ms)
+			{
+				return std::chrono::duration<long double, std::milli>(ms);
+			}
+
+			constexpr std::chrono::microseconds operator""us(unsigned long long us)
+			{
+				return std::chrono::microseconds(us);
+			}
+
+			constexpr std::chrono::duration<long double, std::micro> operator""us(long double us)
+			{
+				return std::chrono::duration<long double, std::micro>(us);
+			}
+
+			constexpr std::chrono::nanoseconds operator""ns(unsigned long long ns)
+			{
+				return std::chrono::nanoseconds(ns);
+			}
+
+			constexpr std::chrono::duration<long double, std::nano> operator""ns(long double ns)
+			{
+				return std::chrono::duration<long double, std::nano>(ns);
+			}
+#pragma GCC diagnostic pop
 		}
 	}
 }

@@ -21,6 +21,7 @@
 #include <task.hpp>
 #include <debug.h>
 #include <smp.hpp>
+#include <ostream>
 #include <chrono>
 
 extern Tasking::Task *TaskManager;
@@ -84,17 +85,26 @@ namespace std
 
 	namespace this_thread
 	{
-		thread::id get_id() noexcept;
-
 		void yield() noexcept;
 
-		template <class Clock, class Duration>
-		void sleep_until(const chrono::time_point<Clock, Duration> &abs_time);
+		thread::id get_id() noexcept;
 
 		template <class Rep, class Period>
-		void sleep_for(const chrono::duration<Rep, Period> &rel_time)
+		void sleep_for(const chrono::duration<Rep, Period> &sleep_duration)
 		{
-			TaskManager->Sleep(chrono::duration_cast<std::chrono::milliseconds>(rel_time).count());
+			TaskManager->Sleep(chrono::duration_cast<std::chrono::nanoseconds>(sleep_duration).count());
 		}
+
+		template <class Clock, class Duration>
+		void sleep_until(const std::chrono::time_point<Clock, Duration> &sleep_time)
+		{
+			TaskManager->Sleep(chrono::duration_cast<std::chrono::nanoseconds>(sleep_time - Clock::now()).count());
+		}
+	}
+
+	template <class CharT, class Traits>
+	std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &ost, std::thread::id id)
+	{
+		return ost << id;
 	}
 }
