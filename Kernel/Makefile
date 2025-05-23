@@ -10,14 +10,14 @@ define find-sources
 	$(shell find ./ -type f -name '$1' $(shell echo $(foreach arch,$(filter-out $(OSARCH),$(AVAILABLE_ARCHS)), -not -path \"./arch/$(arch)/*\")) -print0 | xargs -0)
 endef
 
-BMP_SOURCES := $(call find-sources,*.bmp)
+PNG_SOURCES := $(call find-sources,*.png)
 PSF_SOURCES := $(call find-sources,*.psf)
 S_SOURCES := $(call find-sources,*.S)
 s_SOURCES := $(call find-sources,*.s)
 C_SOURCES := $(call find-sources,*.c)
 CXX_SOURCES := $(call find-sources,*.cpp)
 
-OBJ = $(BMP_SOURCES:.bmp=.o) $(PSF_SOURCES:.psf=.o) $(s_SOURCES:.s=.o) $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
+OBJ = $(PNG_SOURCES:.png=.o) $(PSF_SOURCES:.psf=.o) $(s_SOURCES:.s=.o) $(S_SOURCES:.S=.o) $(C_SOURCES:.c=.o) $(CXX_SOURCES:.cpp=.o)
 STACK_USAGE_OBJ = $(C_SOURCES:.c=.su) $(CXX_SOURCES:.cpp=.su)
 GCNO_OBJ = $(C_SOURCES:.c=.gcno) $(CXX_SOURCES:.cpp=.gcno)
 
@@ -134,7 +134,7 @@ else ifeq ($(OSARCH), aarch64)
 endif
 	$(__CONF_NM) $@
 
-%.o: %.bmp
+%.o: %.png
 ifeq ($(OSARCH), amd64)
 	$(__CONF_OBJCOPY) -O elf64-x86-64 -I binary $< $@
 else ifeq ($(OSARCH), i386)
