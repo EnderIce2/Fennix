@@ -75,12 +75,6 @@ namespace Time
 		mmoutl(&this->hpet->Configuration, 1);
 #endif
 
-		for (int i = 0; i < 5; i++)
-		{
-			uint64_t val = mminq(&this->hpet->MainCounter);
-			KPrint("HPET counter test %d: %llu", i, val);
-		}
-
 		uint64_t cfg = mminq(&this->hpet->Configuration);
 		if (!(cfg & 1))
 			warn("HPET counter is not enabled!");
