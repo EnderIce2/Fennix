@@ -897,8 +897,7 @@ namespace PCI
 			BAR[4] = hdr0->BAR4;
 			BAR[5] = hdr0->BAR5;
 
-			debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx",
-				  BAR[0] & 1, BAR[1] & (~3), BAR[0] & (~15));
+			debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx", BAR[0] & 1, BAR[1] & (~3), BAR[0] & (~15));
 
 			/* BARs Size */
 			for (short i = 0; i < 6; i++)
@@ -927,7 +926,7 @@ namespace PCI
 					size = size & UINT32_MAX;
 					if (size == 0)
 					{
-						warn("BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
+						warn("MEM BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
 						size++;
 					}
 					BARsSize[i] = size;
@@ -943,7 +942,7 @@ namespace PCI
 					size = size & UINT16_MAX;
 					if (size == 0)
 					{
-						warn("BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
+						warn("I/O BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
 						size++;
 					}
 					BARsSize[i] = size;
@@ -972,10 +971,7 @@ namespace PCI
 					uintptr_t BARBase = BAR[i] & (~3);
 					size_t BARSize = BARsSize[i];
 
-					debug("Mapping BAR%d %#x-%#x", i, BARBase, BARBase + BARSize);
-
-					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-											   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
+					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, BARBase, BARBase + BARSize);
 				}
 			}
 			break;
