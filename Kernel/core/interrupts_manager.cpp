@@ -302,7 +302,7 @@ namespace Interrupts
 		}
 		else
 			fixme("APIC not found for core %d", Core);
-			// TODO: Handle PIC too
+		// TODO: Handle PIC too
 
 #endif
 		assert(!"EOI not handled.");
@@ -423,11 +423,10 @@ namespace Interrupts
 	{
 		for (auto ev : RegisteredEvents)
 		{
-			if (ev.IRQ == InterruptNumber)
-			{
-				warn("IRQ%d is already registered.",
-					 InterruptNumber);
-			}
+			if (ev.IRQ != InterruptNumber)
+				continue;
+
+			warn("IRQ%d is already registered.", InterruptNumber);
 		}
 
 		this->InterruptNumber = InterruptNumber;
@@ -441,15 +440,12 @@ namespace Interrupts
 			 0,				  /* Priority */
 			 Critical};		  /* Critical */
 		RegisteredEvents.push_back(newEvent);
-		debug("Registered interrupt handler for IRQ%d.",
-			  InterruptNumber);
+		debug("Registered interrupt handler for IRQ%d.", InterruptNumber);
 	}
 
 	Handler::Handler(PCI::PCIDevice Device, bool Critical)
+		: Handler(((PCI::PCIHeader0 *)Device.Header)->InterruptLine, Critical)
 	{
-		PCI::PCIHeader0 *hdr0 =
-			(PCI::PCIHeader0 *)Device.Header;
-		Handler(hdr0->InterruptLine, Critical);
 	}
 
 	Handler::Handler()
@@ -459,16 +455,14 @@ namespace Interrupts
 
 	Handler::~Handler()
 	{
-		debug("Unregistering interrupt handler for IRQ%d.",
-			  this->InterruptNumber);
-
+		debug("Unregistering interrupt handler for IRQ%d.", this->InterruptNumber);
 		forItr(itr, RegisteredEvents)
 		{
-			if (itr->IRQ == this->InterruptNumber)
-			{
-				RegisteredEvents.erase(itr);
-				return;
-			}
+			if (itr->IRQ != this->InterruptNumber)
+				continue;
+
+			RegisteredEvents.erase(itr);
+			return;
 		}
 		warn("Event %d not found.", this->InterruptNumber);
 	}
