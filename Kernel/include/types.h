@@ -245,7 +245,14 @@ public:
 	T operator->() { return ptr; }
 	T operator*() { return *ptr; }
 };
-#endif // __cplusplus
+#endif
+
+/** Usage: int timed_out = 0; whileto(cond, n, timed_out) { ... }
+	Loops while (cond) is true, up to n times, then breaks.
+	Sets timed_out to 1 if the loop exited due to timeout, 0 otherwise. */
+#define whileto(cond, n, timed_out)                                                                                                                \
+	for (int __whileto_count = 0, __whileto_break = 1; __whileto_break && (cond) && __whileto_count < (n); ++__whileto_count, __whileto_break = 1) \
+		for (; __whileto_break; __whileto_break = 0, timed_out = !((cond) && __whileto_count < (n)))
 
 #define INT8_MAX __INT8_MAX__
 #define INT8_MIN (-INT8_MAX - 1)
