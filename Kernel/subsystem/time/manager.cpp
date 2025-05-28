@@ -46,7 +46,6 @@ namespace Time
 			return false;
 
 		this->CheckActiveTimer();
-		debug("sleep for %d ns in timer %s", Nanoseconds, Timers[ActiveTimer]->Name());
 		return Timers[ActiveTimer]->Sleep(Nanoseconds);
 	}
 
