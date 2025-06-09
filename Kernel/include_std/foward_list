@@ -1,0 +1,296 @@
+/*
+	This file is part of Fennix Kernel.
+
+	Fennix Kernel is free software: you can redistribute it and/or
+	modify it under the terms of the GNU General Public License as
+	published by the Free Software Foundation, either version 3 of
+	the License, or (at your option) any later version.
+
+	Fennix Kernel is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include <memory>
+#include <functional>
+#include <initializer_list>
+#include <compare>
+
+namespace std
+{
+	template <class T, class Allocator = std::allocator<T>>
+	class forward_list
+	{
+	public:
+		using value_type = T;
+		using allocator_type = Allocator;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type &;
+		using const_reference = const value_type &;
+		using pointer = std::allocator_traits<Allocator>::pointer;
+		using const_pointer = std::allocator_traits<Allocator>::const_pointer;
+		// using iterator = value_type;
+		// using const_iterator = const value_type;
+
+	private:
+		Allocator Alloc;
+
+		struct node
+		{
+			node *Next;
+			value_type Value;
+		};
+
+		node *Head = nullptr;
+		node *Tail = nullptr;
+
+	public:
+		class iterator
+		{
+			friend class forward_list;
+			node *ptr;
+
+		public:
+			using iterator_category = std::forward_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T *;
+			using reference = T &;
+
+			iterator(node *p = nullptr) : ptr(p) {}
+			reference operator*() const { return ptr->Value; }
+			pointer operator->() const { return &(ptr->Value); }
+
+			iterator &operator++()
+			{
+				ptr = ptr->Next;
+				return *this;
+			}
+
+			iterator operator++(int)
+			{
+				iterator tmp = *this;
+				++(*this);
+				return tmp;
+			}
+
+			bool operator==(const iterator &other) const { return ptr == other.ptr; }
+			bool operator!=(const iterator &other) const { return ptr != other.ptr; }
+		};
+
+		class const_iterator
+		{
+			friend class forward_list;
+			const node *ptr;
+
+		public:
+			using iterator_category = std::forward_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = const T *;
+			using reference = const T &;
+
+			const_iterator(const node *p = nullptr) : ptr(p) {}
+			const_iterator(const iterator &it) : ptr(it.ptr) {}
+			reference operator*() const { return ptr->Value; }
+			pointer operator->() const { return &(ptr->Value); }
+
+			const_iterator &operator++()
+			{
+				ptr = ptr->Next;
+				return *this;
+			}
+
+			const_iterator operator++(int)
+			{
+				const_iterator tmp = *this;
+				++(*this);
+				return tmp;
+			}
+
+			bool operator==(const const_iterator &other) const { return ptr == other.ptr; }
+			bool operator!=(const const_iterator &other) const { return ptr != other.ptr; }
+		};
+
+#pragma region Constructors
+
+		forward_list() : forward_list(Allocator()) {}
+
+		explicit forward_list(const Allocator &alloc);
+
+		explicit forward_list(size_type count, const Allocator &alloc = Allocator());
+
+		forward_list(size_type count, const T &value, const Allocator &alloc = Allocator());
+
+		template <class InputIt>
+		forward_list(InputIt first, InputIt last, const Allocator &alloc = Allocator());
+
+		// template <container - compatible - range<T> R>
+		// forward_list(std::from_range_t, R &&rg, const Allocator &alloc = Allocator());
+
+		forward_list(const forward_list &other);
+		forward_list(forward_list &&other);
+		forward_list(const forward_list &other, const std::type_identity_t<Allocator> &alloc);
+		forward_list(forward_list &&other, const std::type_identity_t<Allocator> &alloc);
+		forward_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+
+		~forward_list() = default;
+
+#pragma endregion Constructors
+
+		forward_list &operator=(const forward_list &other);
+		forward_list &operator=(forward_list &&other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value);
+		forward_list &operator=(std::initializer_list<value_type> ilist);
+
+		void assign(size_type count, const T &value);
+
+		template <class InputIt>
+		void assign(InputIt first, InputIt last);
+
+		void assign(std::initializer_list<T> ilist);
+
+		allocator_type get_allocator() const noexcept { return Alloc; }
+
+#pragma region Element Access
+
+		reference front() { return Head->Value; }
+		const_reference front() const { return Head->Value; }
+
+#pragma endregion Element Access
+
+#pragma region Iterators
+
+		iterator before_begin() noexcept;
+
+		const_iterator before_begin() const noexcept;
+
+		const_iterator cbefore_begin() const noexcept;
+
+		iterator begin() noexcept;
+		const_iterator begin() const noexcept;
+		const_iterator cbegin() const noexcept;
+
+		iterator end() noexcept { return nullptr; }
+		const_iterator end() const noexcept { return nullptr; }
+		const_iterator cend() const noexcept { return nullptr; }
+
+#pragma endregion Iterators
+
+#pragma region Capacity
+
+		bool empty() const noexcept;
+		size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
+
+#pragma endregion Capacity
+
+#pragma region Modifiers
+
+		void clear() noexcept;
+
+		iterator insert_after(const_iterator pos, const T &value);
+
+		iterator insert_after(const_iterator pos, T &&value);
+
+		iterator insert_after(const_iterator pos, size_type count, const T &value);
+
+		template <class InputIt>
+		iterator insert_after(const_iterator pos, InputIt first, InputIt last);
+
+		iterator insert_after(const_iterator pos, std::initializer_list<T> ilist);
+
+		template <class... Args>
+		iterator emplace_after(const_iterator pos, Args &&...args);
+
+		iterator erase_after(const_iterator pos);
+
+		iterator erase_after(const_iterator first, const_iterator last);
+
+		void push_front(const T &value);
+
+		void push_front(T &&value);
+
+		template <class... Args>
+		reference emplace_front(Args &&...args);
+
+		void pop_front();
+
+		void resize(size_type count);
+
+		void resize(size_type count, const value_type &value);
+
+		void swap(forward_list &other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value) { std::swap(Head, other.Head); }
+
+#pragma endregion Modifiers
+
+#pragma region Operations
+
+		void merge(forward_list &other);
+		void merge(forward_list &&other);
+
+		template <class Compare>
+		void merge(forward_list &other, Compare comp);
+
+		template <class Compare>
+		void merge(forward_list &&other, Compare comp);
+
+		void splice_after(const_iterator pos, forward_list &other);
+		void splice_after(const_iterator pos, forward_list &&other);
+		void splice_after(const_iterator pos, forward_list &other, const_iterator it);
+		void splice_after(const_iterator pos, forward_list &&other, const_iterator it);
+		void splice_after(const_iterator pos, forward_list &other, const_iterator first, const_iterator last);
+		void splice_after(const_iterator pos, forward_list &&other, const_iterator first, const_iterator last);
+
+		size_type remove(const T &value);
+
+		template <class UnaryPred>
+		size_type remove_if(UnaryPred p)
+		{
+			size_type count = 0;
+			for (auto it = begin(); it != end();)
+			{
+				auto next = std::next(it);
+				if (p(*it))
+				{
+					it = erase_after(it);
+					++count;
+				}
+				else
+					it = next;
+			}
+			return count;
+		}
+
+		void reverse() noexcept;
+
+		size_type unique();
+
+		template <class BinaryPred>
+		size_type unique(BinaryPred p);
+
+		void sort();
+
+		template <class Compare>
+		void sort(Compare comp);
+
+#pragma endregion Operations
+	};
+
+	template <class T, class Alloc>
+	bool operator==(const std::forward_list<T, Alloc> &lhs, const std::forward_list<T, Alloc> &rhs)
+	{
+		return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	}
+
+	template <class T, class Alloc>
+	auto operator<=>(const std::forward_list<T, Alloc> &lhs, const std::forward_list<T, Alloc> &rhs)
+	{
+		return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), __synth_three_way);
+	}
+}
