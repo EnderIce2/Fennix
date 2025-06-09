@@ -409,4 +409,84 @@ namespace std
 
 	template <class InputIt1, class InputIt2>
 	constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2);
+
+	namespace detail
+	{
+		template <class T = void>
+		struct __algo_less
+		{
+			constexpr bool operator()(const T &lhs, const T &rhs) const
+			{
+				return lhs < rhs;
+			}
+		};
+
+		template <typename T>
+		struct __algo_less<T *>
+		{
+			constexpr bool operator()(const T *lhs, const T *rhs) const
+			{
+				if (__builtin_is_constant_evaluated())
+					return lhs < rhs;
+				return (uintptr_t)lhs < (uintptr_t)rhs;
+			}
+		};
+
+		template <>
+		class __algo_less<void>
+		{
+		public:
+			template <class T, class U>
+			constexpr auto operator()(T &&lhs, U &&rhs) const -> decltype(std::forward<T>(lhs) < std::forward<U>(rhs))
+			{
+				return std::forward<T>(lhs) < std::forward<U>(rhs);
+			}
+		};
+	}
+
+	template <class ForwardIt>
+	ForwardIt is_sorted_until(ForwardIt first, ForwardIt last)
+	{
+		return is_sorted_until(first, last, detail::__algo_less<>());
+	}
+
+	template <class ExecutionPolicy, class ForwardIt>
+	ForwardIt is_sorted_until(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last);
+
+	template <class ForwardIt, class Compare>
+	ForwardIt is_sorted_until(ForwardIt first, ForwardIt last, Compare comp)
+	{
+		if (first == last)
+			return last;
+
+		ForwardIt next = first;
+		while (++next != last)
+		{
+			if (comp(*next, *first))
+				return next;
+			first = next;
+		}
+		return last;
+	}
+
+	template <class ExecutionPolicy, class ForwardIt, class Compare>
+	ForwardIt is_sorted_until(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last, Compare comp);
+
+	template <class ForwardIt>
+	constexpr bool is_sorted(ForwardIt first, ForwardIt last)
+	{
+		return std::is_sorted_until(first, last) == last;
+	}
+
+	template <class ExecutionPolicy, class ForwardIt>
+	bool is_sorted(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last);
+
+	template <class ForwardIt, class Compare>
+	constexpr bool is_sorted(ForwardIt first, ForwardIt last, Compare comp)
+	{
+		return std::is_sorted_until(first, last, comp) == last;
+	}
+
+	template <class ExecutionPolicy, class ForwardIt, class Compare>
+	bool is_sorted(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last, Compare comp);
 }
