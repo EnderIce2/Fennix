@@ -444,15 +444,6 @@ namespace std
 		};
 	}
 
-	template <class ForwardIt>
-	ForwardIt is_sorted_until(ForwardIt first, ForwardIt last)
-	{
-		return is_sorted_until(first, last, detail::__algo_less<>());
-	}
-
-	template <class ExecutionPolicy, class ForwardIt>
-	ForwardIt is_sorted_until(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last);
-
 	template <class ForwardIt, class Compare>
 	ForwardIt is_sorted_until(ForwardIt first, ForwardIt last, Compare comp)
 	{
@@ -468,6 +459,15 @@ namespace std
 		}
 		return last;
 	}
+
+	template <class ForwardIt>
+	ForwardIt is_sorted_until(ForwardIt first, ForwardIt last)
+	{
+		return is_sorted_until(first, last, detail::__algo_less<>());
+	}
+
+	template <class ExecutionPolicy, class ForwardIt>
+	ForwardIt is_sorted_until(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last);
 
 	template <class ExecutionPolicy, class ForwardIt, class Compare>
 	ForwardIt is_sorted_until(ExecutionPolicy &&policy, ForwardIt first, ForwardIt last, Compare comp);
