@@ -21,6 +21,12 @@
 #include <functional>
 #include <initializer_list>
 #include <compare>
+#include <iterator>
+#include <limits>
+#include <utility>
+#include <type_traits>
+#include <algorithm>
+#include <vector>
 
 namespace std
 {
@@ -36,20 +42,86 @@ namespace std
 		using const_reference = const value_type &;
 		using pointer = std::allocator_traits<Allocator>::pointer;
 		using const_pointer = std::allocator_traits<Allocator>::const_pointer;
+		using iterator_category = std::forward_iterator_tag;
 		// using iterator = value_type;
 		// using const_iterator = const value_type;
 
 	private:
-		Allocator Alloc;
-
 		struct node
 		{
 			node *Next;
 			value_type Value;
+
+			template <class... Args>
+			node(node *next, Args &&...args)
+				: Next(next), Value(std::forward<Args>(args)...) {}
 		};
 
-		node *Head = nullptr;
-		node *Tail = nullptr;
+		using node_allocator_type = typename std::allocator_traits<Allocator>::template rebind_alloc<node>;
+		node_allocator_type NodeAlloc;
+		node *Head; /* Points to dummy node (before first element) */
+
+		node *__CreateNode(const T &value)
+		{
+			node *n = std::allocator_traits<node_allocator_type>::allocate(NodeAlloc, 1);
+			try
+			{
+				std::allocator_traits<node_allocator_type>::construct(NodeAlloc, n, nullptr, value);
+			}
+			catch (...)
+			{
+				std::allocator_traits<node_allocator_type>::deallocate(NodeAlloc, n, 1);
+				throw;
+			}
+			return n;
+		}
+
+		node *__CreateNode(T &&value)
+		{
+			node *n = std::allocator_traits<node_allocator_type>::allocate(NodeAlloc, 1);
+			try
+			{
+				std::allocator_traits<node_allocator_type>::construct(NodeAlloc, n, nullptr, std::move(value));
+			}
+			catch (...)
+			{
+				std::allocator_traits<node_allocator_type>::deallocate(NodeAlloc, n, 1);
+				throw;
+			}
+			return n;
+		}
+
+		template <class... Args>
+		node *__CreateNodeEmplace(Args &&...args)
+		{
+			node *n = std::allocator_traits<node_allocator_type>::allocate(NodeAlloc, 1);
+			try
+			{
+				std::allocator_traits<node_allocator_type>::construct(NodeAlloc, n, nullptr, std::forward<Args>(args)...);
+			}
+			catch (...)
+			{
+				std::allocator_traits<node_allocator_type>::deallocate(NodeAlloc, n, 1);
+				throw;
+			}
+			return n;
+		}
+
+		void __DestroyNode(node *n)
+		{
+			std::allocator_traits<node_allocator_type>::destroy(NodeAlloc, n);
+			std::allocator_traits<node_allocator_type>::deallocate(NodeAlloc, n, 1);
+		}
+
+		void __ClearNodes(node *start)
+		{
+			while (start)
+			{
+				node *next = start->Next;
+				__DestroyNode(start);
+				start = next;
+			}
+		}
 
 	public:
 		class iterator
@@ -58,31 +130,39 @@ namespace std
 			node *ptr;
 
 		public:
-			using iterator_category = std::forward_iterator_tag;
-			using value_type = T;
-			using difference_type = std::ptrdiff_t;
-			using pointer = T *;
-			using reference = T &;
+			typedef std::forward_iterator_tag iterator_category;
+			typedef T value_type;
+			typedef std::ptrdiff_t difference_type;
+			typedef T *pointer;
+			typedef T &reference;
+			using self_type = iterator;
 
-			iterator(node *p = nullptr) : ptr(p) {}
-			reference operator*() const { return ptr->Value; }
-			pointer operator->() const { return &(ptr->Value); }
+			iterator() : ptr(nullptr) {}
+			iterator(node *p) : ptr(p) {}
+			iterator(const iterator &other) = default;
+			iterator &operator=(const iterator &other) = default;
+			~iterator() = default;
 
-			iterator &operator++()
+			reference operator*() { return ptr->Value; }
+			pointer operator->() { return &(ptr->Value); }
+			const_reference operator*() const { return ptr->Value; }
+			const_pointer operator->() const { return &(ptr->Value); }
+
+			self_type &operator++()
 			{
 				ptr = ptr->Next;
 				return *this;
 			}
 
-			iterator operator++(int)
+			self_type operator++(int)
 			{
-				iterator tmp = *this;
+				self_type tmp = *this;
 				++(*this);
 				return tmp;
 			}
 
-			bool operator==(const iterator &other) const { return ptr == other.ptr; }
-			bool operator!=(const iterator &other) const { return ptr != other.ptr; }
+			bool operator==(const self_type &other) const { return ptr == other.ptr; }
+			bool operator!=(const self_type &other) const { return ptr != other.ptr; }
 		};
 
 		class const_iterator
@@ -91,193 +171,606 @@ namespace std
 			const node *ptr;
 
 		public:
-			using iterator_category = std::forward_iterator_tag;
-			using value_type = T;
-			using difference_type = std::ptrdiff_t;
-			using pointer = const T *;
-			using reference = const T &;
+			typedef std::forward_iterator_tag iterator_category;
+			typedef T value_type;
+			typedef std::ptrdiff_t difference_type;
+			typedef const T *pointer;
+			typedef const T &reference;
+			using self_type = const_iterator;
 
-			const_iterator(const node *p = nullptr) : ptr(p) {}
+			const_iterator() : ptr(nullptr) {}
+			const_iterator(const node *p) : ptr(p) {}
 			const_iterator(const iterator &it) : ptr(it.ptr) {}
+			const_iterator(const const_iterator &other) = default;
+			const_iterator &operator=(const const_iterator &other) = default;
+			~const_iterator() = default;
+
 			reference operator*() const { return ptr->Value; }
 			pointer operator->() const { return &(ptr->Value); }
 
-			const_iterator &operator++()
+			self_type &operator++()
 			{
 				ptr = ptr->Next;
 				return *this;
 			}
 
-			const_iterator operator++(int)
+			self_type operator++(int)
 			{
-				const_iterator tmp = *this;
+				self_type tmp = *this;
 				++(*this);
 				return tmp;
 			}
 
-			bool operator==(const const_iterator &other) const { return ptr == other.ptr; }
-			bool operator!=(const const_iterator &other) const { return ptr != other.ptr; }
+			bool operator==(const self_type &other) const { return ptr == other.ptr; }
+			bool operator!=(const self_type &other) const { return ptr != other.ptr; }
 		};
 
 #pragma region Constructors
 
-		forward_list() : forward_list(Allocator()) {}
+		forward_list() : NodeAlloc(), Head(__CreateNodeEmplace()) {}
 
-		explicit forward_list(const Allocator &alloc);
+		explicit forward_list(const Allocator &alloc) : NodeAlloc(alloc), Head(__CreateNodeEmplace()) {}
 
-		explicit forward_list(size_type count, const Allocator &alloc = Allocator());
+		explicit forward_list(size_type count, const Allocator &alloc = Allocator())
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (size_type i = 0; i < count; ++i)
+			{
+				cur->Next = __CreateNode(T());
+				cur = cur->Next;
+			}
+		}
 
-		forward_list(size_type count, const T &value, const Allocator &alloc = Allocator());
+		forward_list(size_type count, const T &value, const Allocator &alloc = Allocator())
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (size_type i = 0; i < count; ++i)
+			{
+				cur->Next = __CreateNode(value);
+				cur = cur->Next;
+			}
+		}
 
-		template <class InputIt>
-		forward_list(InputIt first, InputIt last, const Allocator &alloc = Allocator());
+		template <class InputIt, typename = std::enable_if_t<!std::is_integral<InputIt>::value>>
+		forward_list(InputIt first, InputIt last, const Allocator &alloc = Allocator())
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (; first != last; ++first)
+			{
+				cur->Next = __CreateNode(*first);
+				cur = cur->Next;
+			}
+		}
 
-		// template <container - compatible - range<T> R>
-		// forward_list(std::from_range_t, R &&rg, const Allocator &alloc = Allocator());
+		forward_list(const forward_list &other)
+			: NodeAlloc(std::allocator_traits<Allocator>::select_on_container_copy_construction(other.NodeAlloc)), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (node *n = other.Head->Next; n; n = n->Next)
+			{
+				cur->Next = __CreateNode(n->Value);
+				cur = cur->Next;
+			}
+		}
 
-		forward_list(const forward_list &other);
-		forward_list(forward_list &&other);
-		forward_list(const forward_list &other, const std::type_identity_t<Allocator> &alloc);
-		forward_list(forward_list &&other, const std::type_identity_t<Allocator> &alloc);
-		forward_list(std::initializer_list<T> init, const Allocator &alloc = Allocator());
+		forward_list(forward_list &&other)
+			: NodeAlloc(std::move(other.NodeAlloc)), Head(other.Head)
+		{
+			other.Head = nullptr;
+		}
 
-		~forward_list() = default;
+		forward_list(const forward_list &other, const std::type_identity_t<Allocator> &alloc)
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (node *n = other.Head->Next; n; n = n->Next)
+			{
+				cur->Next = __CreateNode(n->Value);
+				cur = cur->Next;
+			}
+		}
+
+		forward_list(forward_list &&other, const std::type_identity_t<Allocator> &alloc)
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			if (other.empty())
+				return;
+
+			node *cur = Head;
+			for (node *n = other.Head->Next; n; n = n->Next)
+			{
+				cur->Next = __CreateNode(std::move(n->Value));
+				cur = cur->Next;
+			}
+			other.clear();
+		}
+
+		forward_list(std::initializer_list<T> init, const Allocator &alloc = Allocator())
+			: NodeAlloc(alloc), Head(__CreateNodeEmplace())
+		{
+			node *cur = Head;
+			for (const auto &v : init)
+			{
+				cur->Next = __CreateNode(v);
+				cur = cur->Next;
+			}
+		}
+
+		~forward_list()
+		{
+			if (Head == nullptr)
+				return;
+
+			clear();
+			__DestroyNode(Head);
+			Head = nullptr;
+		}
 
 #pragma endregion Constructors
 
-		forward_list &operator=(const forward_list &other);
-		forward_list &operator=(forward_list &&other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value);
-		forward_list &operator=(std::initializer_list<value_type> ilist);
+		forward_list &operator=(const forward_list &other)
+		{
+			if (this != &other)
+			{
+				clear();
+				node *cur = Head;
+				for (node *n = other.Head->Next; n; n = n->Next)
+				{
+					cur->Next = __CreateNode(n->Value);
+					cur = cur->Next;
+				}
+			}
+			return *this;
+		}
 
-		void assign(size_type count, const T &value);
+		forward_list &operator=(forward_list &&other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value)
+		{
+			if (this != &other)
+			{
+				clear();
+				__DestroyNode(Head);
+				Head = other.Head;
+				NodeAlloc = std::move(other.NodeAlloc);
+				other.Head = nullptr;
+			}
+			return *this;
+		}
+
+		forward_list &operator=(std::initializer_list<value_type> ilist)
+		{
+			clear();
+			node *cur = Head;
+			for (const auto &v : ilist)
+			{
+				cur->Next = __CreateNode(v);
+				cur = cur->Next;
+			}
+			return *this;
+		}
+
+		void assign(size_type count, const T &value)
+		{
+			clear();
+			node *cur = Head;
+			for (size_type i = 0; i < count; ++i)
+			{
+				cur->Next = __CreateNode(value);
+				cur = cur->Next;
+			}
+		}
 
 		template <class InputIt>
-		void assign(InputIt first, InputIt last);
+		void assign(InputIt first, InputIt last)
+		{
+			clear();
+			node *cur = Head;
+			for (; first != last; ++first)
+			{
+				cur->Next = __CreateNode(*first);
+				cur = cur->Next;
+			}
+		}
 
-		void assign(std::initializer_list<T> ilist);
+		void assign(std::initializer_list<T> ilist)
+		{
+			clear();
+			node *cur = Head;
+			for (const auto &v : ilist)
+			{
+				cur->Next = __CreateNode(v);
+				cur = cur->Next;
+			}
+		}
 
-		allocator_type get_allocator() const noexcept { return Alloc; }
+		allocator_type get_allocator() const noexcept { return allocator_type(NodeAlloc); }
 
 #pragma region Element Access
 
-		reference front() { return Head->Value; }
-		const_reference front() const { return Head->Value; }
+		reference front() { return Head->Next->Value; }
+		const_reference front() const { return Head->Next->Value; }
 
 #pragma endregion Element Access
 
 #pragma region Iterators
 
-		iterator before_begin() noexcept;
+		iterator before_begin() noexcept { return iterator(Head); }
+		const_iterator before_begin() const noexcept { return const_iterator(Head); }
+		const_iterator cbefore_begin() const noexcept { return const_iterator(Head); }
 
-		const_iterator before_begin() const noexcept;
+		iterator begin() noexcept { return iterator(Head->Next); }
+		const_iterator begin() const noexcept { return const_iterator(Head->Next); }
+		const_iterator cbegin() const noexcept { return const_iterator(Head->Next); }
 
-		const_iterator cbefore_begin() const noexcept;
-
-		iterator begin() noexcept;
-		const_iterator begin() const noexcept;
-		const_iterator cbegin() const noexcept;
-
-		iterator end() noexcept { return nullptr; }
-		const_iterator end() const noexcept { return nullptr; }
-		const_iterator cend() const noexcept { return nullptr; }
+		iterator end() noexcept { return iterator(nullptr); }
+		const_iterator end() const noexcept { return const_iterator(nullptr); }
+		const_iterator cend() const noexcept { return const_iterator(nullptr); }
 
 #pragma endregion Iterators
 
 #pragma region Capacity
 
-		bool empty() const noexcept;
+		bool empty() const noexcept { return Head->Next == nullptr; }
 		size_type max_size() const noexcept { return std::numeric_limits<size_type>::max(); }
 
 #pragma endregion Capacity
 
 #pragma region Modifiers
 
-		void clear() noexcept;
+		void clear() noexcept
+		{
+			node *cur = Head->Next;
+			Head->Next = nullptr;
+			__ClearNodes(cur);
+		}
 
-		iterator insert_after(const_iterator pos, const T &value);
+		iterator insert_after(const_iterator pos, const T &value)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *n = __CreateNode(value);
+			n->Next = p->Next;
+			p->Next = n;
+			return iterator(n);
+		}
 
-		iterator insert_after(const_iterator pos, T &&value);
+		iterator insert_after(const_iterator pos, T &&value)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *n = __CreateNode(std::move(value));
+			n->Next = p->Next;
+			p->Next = n;
+			return iterator(n);
+		}
 
-		iterator insert_after(const_iterator pos, size_type count, const T &value);
+		iterator insert_after(const_iterator pos, size_type count, const T &value)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *last = p;
+
+			for (size_type i = 0; i < count; ++i)
+			{
+				node *n = __CreateNode(value);
+				n->Next = last->Next;
+				last->Next = n;
+				last = n;
+			}
+
+			return iterator(last);
+		}
 
 		template <class InputIt>
-		iterator insert_after(const_iterator pos, InputIt first, InputIt last);
+		iterator insert_after(const_iterator pos, InputIt first, InputIt last)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *cur = p;
 
-		iterator insert_after(const_iterator pos, std::initializer_list<T> ilist);
+			for (; first != last; ++first)
+			{
+				node *n = __CreateNode(*first);
+				n->Next = cur->Next;
+				cur->Next = n;
+				cur = n;
+			}
+
+			return iterator(cur);
+		}
+
+		iterator insert_after(const_iterator pos, std::initializer_list<T> ilist)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *cur = p;
+
+			for (const auto &v : ilist)
+			{
+				node *n = __CreateNode(v);
+				n->Next = cur->Next;
+				cur->Next = n;
+				cur = n;
+			}
+
+			return iterator(cur);
+		}
 
 		template <class... Args>
-		iterator emplace_after(const_iterator pos, Args &&...args);
+		iterator emplace_after(const_iterator pos, Args &&...args)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *n = __CreateNodeEmplace(std::forward<Args>(args)...);
+			n->Next = p->Next;
+			p->Next = n;
+			return iterator(n);
+		}
 
-		iterator erase_after(const_iterator pos);
+		iterator erase_after(const_iterator pos)
+		{
+			node *p = const_cast<node *>(pos.ptr);
+			node *to_delete = p->Next;
 
-		iterator erase_after(const_iterator first, const_iterator last);
+			if (to_delete)
+			{
+				p->Next = to_delete->Next;
+				__DestroyNode(to_delete);
+			}
 
-		void push_front(const T &value);
+			return iterator(p->Next);
+		}
 
-		void push_front(T &&value);
+		iterator erase_after(const_iterator first, const_iterator last)
+		{
+			node *p = const_cast<node *>(first.ptr);
+			node *end = const_cast<node *>(last.ptr);
+			node *cur = p->Next;
+
+			while (cur != end)
+			{
+				node *next = cur->Next;
+				__DestroyNode(cur);
+				cur = next;
+			}
+
+			p->Next = end;
+			return iterator(end);
+		}
+
+		void push_front(const T &value) { insert_after(before_begin(), value); }
+		void push_front(T &&value) { insert_after(before_begin(), std::move(value)); }
 
 		template <class... Args>
-		reference emplace_front(Args &&...args);
+		reference emplace_front(Args &&...args)
+		{
+			iterator it = emplace_after(before_begin(), std::forward<Args>(args)...);
+			return *it;
+		}
 
-		void pop_front();
+		void pop_front() { erase_after(before_begin()); }
 
-		void resize(size_type count);
+		void resize(size_type count) { resize(count, T()); }
 
-		void resize(size_type count, const value_type &value);
+		void resize(size_type count, const value_type &value)
+		{
+			node *cur = Head;
+			size_type n = 0;
 
-		void swap(forward_list &other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value) { std::swap(Head, other.Head); }
+			while (cur->Next && n < count)
+			{
+				cur = cur->Next;
+				++n;
+			}
+
+			if (n == count)
+			{
+				/* Remove remaining */
+				__ClearNodes(cur->Next);
+				cur->Next = nullptr;
+			}
+			else
+			{
+				/* Add more */
+				for (; n < count; ++n)
+				{
+					cur->Next = __CreateNode(value);
+					cur = cur->Next;
+				}
+			}
+		}
+
+		void swap(forward_list &other) noexcept(std::allocator_traits<Allocator>::is_always_equal::value)
+		{
+			std::swap(Head, other.Head);
+			/* FIXME FIXME FIXME FIXME */
+			// std::swap(NodeAlloc, other.NodeAlloc);
+		}
 
 #pragma endregion Modifiers
 
 #pragma region Operations
 
-		void merge(forward_list &other);
-		void merge(forward_list &&other);
+		void merge(forward_list &other) { merge(other, std::less<T>()); }
+		void merge(forward_list &&other) { merge(other, std::less<T>()); }
 
 		template <class Compare>
-		void merge(forward_list &other, Compare comp);
+		void merge(forward_list &other, Compare comp)
+		{
+			if (this == &other)
+				return;
+
+			node *this_prev = Head;
+			node *this_cur = Head->Next;
+			node *other_cur = other.Head->Next;
+
+			while (this_cur && other_cur)
+			{
+				if (comp(other_cur->Value, this_cur->Value))
+				{
+					node *next = other_cur->Next;
+					this_prev->Next = other_cur;
+					other_cur->Next = this_cur;
+					this_prev = other_cur;
+					other_cur = next;
+				}
+				else
+				{
+					this_prev = this_cur;
+					this_cur = this_cur->Next;
+				}
+			}
+
+			if (other_cur)
+				this_prev->Next = other_cur;
+
+			other.Head->Next = nullptr;
+		}
 
 		template <class Compare>
-		void merge(forward_list &&other, Compare comp);
+		void merge(forward_list &&other, Compare comp) { merge(other, comp); }
 
-		void splice_after(const_iterator pos, forward_list &other);
-		void splice_after(const_iterator pos, forward_list &&other);
-		void splice_after(const_iterator pos, forward_list &other, const_iterator it);
-		void splice_after(const_iterator pos, forward_list &&other, const_iterator it);
-		void splice_after(const_iterator pos, forward_list &other, const_iterator first, const_iterator last);
-		void splice_after(const_iterator pos, forward_list &&other, const_iterator first, const_iterator last);
+		void splice_after(const_iterator pos, forward_list &other)
+		{
+			if (&other == this || other.empty())
+				return;
+			splice_after(pos, other, other.before_begin(), other.end());
+		}
 
-		size_type remove(const T &value);
+		void splice_after(const_iterator pos, forward_list &&other) { splice_after(pos, other); }
+		void splice_after(const_iterator pos, forward_list &other, const_iterator it) { splice_after(pos, other, it, std::next(it)); }
+		void splice_after(const_iterator pos, forward_list &&other, const_iterator it) { splice_after(pos, other, it); }
+
+		void splice_after(const_iterator pos, forward_list &other, const_iterator first, const_iterator last)
+		{
+			if (first == last)
+				return;
+
+			node *p = const_cast<node *>(pos.ptr);
+			node *f = const_cast<node *>(first.ptr);
+			node *l = const_cast<node *>(last.ptr);
+
+			node *start = f->Next;
+			node *end = start;
+
+			if (!start)
+				return;
+
+			while (end->Next && end->Next != l)
+				end = end->Next;
+
+			f->Next = l;
+			node *after = p->Next;
+			p->Next = start;
+			end->Next = after;
+		}
+
+		void splice_after(const_iterator pos, forward_list &&other, const_iterator first, const_iterator last)
+		{
+			splice_after(pos, other, first, last);
+		}
+
+		size_type remove(const T &value)
+		{
+			size_type count = 0;
+			node *prev = Head;
+			node *cur = Head->Next;
+			while (cur)
+			{
+				if (cur->Value == value)
+				{
+					node *to_delete = cur;
+					prev->Next = cur->Next;
+					cur = cur->Next;
+					__DestroyNode(to_delete);
+					++count;
+				}
+				else
+				{
+					prev = cur;
+					cur = cur->Next;
+				}
+			}
+			return count;
+		}
 
 		template <class UnaryPred>
 		size_type remove_if(UnaryPred p)
 		{
 			size_type count = 0;
-			for (auto it = begin(); it != end();)
+			node *prev = Head;
+			node *cur = Head->Next;
+			while (cur)
 			{
-				auto next = std::next(it);
-				if (p(*it))
+				if (p(cur->Value))
 				{
-					it = erase_after(it);
+					node *to_delete = cur;
+					prev->Next = cur->Next;
+					cur = cur->Next;
+					__DestroyNode(to_delete);
 					++count;
 				}
 				else
-					it = next;
+				{
+					prev = cur;
+					cur = cur->Next;
+				}
 			}
 			return count;
 		}
 
-		void reverse() noexcept;
+		void reverse() noexcept
+		{
+			node *prev = nullptr;
+			node *cur = Head->Next;
+			while (cur)
+			{
+				node *next = cur->Next;
+				cur->Next = prev;
+				prev = cur;
+				cur = next;
+			}
+			Head->Next = prev;
+		}
 
-		size_type unique();
+		size_type unique() { return unique(std::equal_to<T>()); }
 
 		template <class BinaryPred>
-		size_type unique(BinaryPred p);
+		size_type unique(BinaryPred p)
+		{
+			size_type count = 0;
+			node *cur = Head->Next;
+			while (cur && cur->Next)
+			{
+				if (p(cur->Value, cur->Next->Value))
+				{
+					node *to_delete = cur->Next;
+					cur->Next = to_delete->Next;
+					__DestroyNode(to_delete);
+					++count;
+				}
+				else
+					cur = cur->Next;
+			}
+			return count;
+		}
 
-		void sort();
+		void sort() { sort(std::less<T>()); }
 
 		template <class Compare>
-		void sort(Compare comp);
+		void sort(Compare comp)
+		{
+			if (!Head->Next || !Head->Next->Next)
+				return;
+
+			std::vector<T> vec;
+			for (node *cur = Head->Next; cur; cur = cur->Next)
+				vec.push_back(cur->Value);
+
+			std::sort(vec.begin(), vec.end(), comp);
+			node *cur = Head->Next;
+			for (auto &v : vec)
+			{
+				cur->Value = v;
+				cur = cur->Next;
+			}
+		}
 
 #pragma endregion Operations
 	};
