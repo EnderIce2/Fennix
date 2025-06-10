@@ -26,6 +26,8 @@ void test_stl_bitset();
 void test_stl_string();
 void test_stl_unordered_map() {}
 void test_stl_future();
+void test_stl_forward_list();
+void test_stl_is_sorted();
 void test_stl_array();
 void test_stl_shared_ptr();
 void test_stl_set();
@@ -42,6 +44,8 @@ void Test_stl()
 	test_stl_string();
 	test_stl_unordered_map();
 	test_stl_future();
+	test_stl_forward_list();
+	test_stl_is_sorted();
 	test_stl_array();
 	test_stl_shared_ptr();
 	test_stl_set();
