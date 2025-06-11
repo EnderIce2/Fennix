@@ -18,7 +18,6 @@
 #pragma once
 
 #include <type_traits>
-#include <algorithm>
 #include <tuple>
 
 namespace std
