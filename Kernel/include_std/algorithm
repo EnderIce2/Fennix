@@ -428,7 +428,7 @@ namespace std
 			{
 				if (__builtin_is_constant_evaluated())
 					return lhs < rhs;
-				return (uintptr_t)lhs < (uintptr_t)rhs;
+				return (__UINTPTR_TYPE__)lhs < (__UINTPTR_TYPE__)rhs;
 			}
 		};
 
