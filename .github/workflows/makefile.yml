@@ -220,3 +220,6 @@ jobs:
 
     - name: Update Nightly
       run: gh release upload nightly artifacts/* -R ${{github.repository}} --clobber
+
+    env:
+      GH_TOKEN: ${{ github.token }}
