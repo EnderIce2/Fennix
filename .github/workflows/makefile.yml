@@ -137,6 +137,7 @@ jobs:
         sudo touch /tmp/.Xauthority
         sudo touch /run/user/1000/pulse/native
         echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
+        sudo apt install x11-xserver-utils
 
     - name: Build AMD64 Debug
       if: always()
@@ -205,5 +206,21 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: Fennix
+        name: artifacts
         path: artifacts/
+
+  nightly:
+    name: Upload Nightly Build to GitHub Releases
+    runs-on: ubuntu-latest
+    needs: [compile]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Download All Builds
+      uses: actions/download-artifact@v4
+
+    - name: Update Nightly
+      run: gh release upload nightly artifacts/* -R ${{github.repository}} --clobber
