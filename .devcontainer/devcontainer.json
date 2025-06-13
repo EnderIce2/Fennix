@@ -25,7 +25,7 @@
 		}
 	},
 	// From this line below are for qemu, so not that important.
-	"initializeCommand": "xhost +local:docker", // "xhost -local:docker" to disable
+	"initializeCommand": "[ -x \"$(command -v xhost)\" ] && xhost +local:docker || true", // "xhost -local:docker" to disable
 	"mounts": [
 		{
 			"source": "/tmp/.X11-unix",

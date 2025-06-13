@@ -27,7 +27,6 @@ jobs:
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
         sudo touch /run/user/1000/pulse/native
-        sudo apt install x11-xserver-utils
 
     - name: Run make ci-setup in dev container
       if: steps.cache-cross.outputs.cache-hit != 'true'
@@ -134,7 +133,6 @@ jobs:
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
         sudo touch /run/user/1000/pulse/native
-        sudo apt install x11-xserver-utils
 
     - name: Build AMD64 Debug
       if: always()
