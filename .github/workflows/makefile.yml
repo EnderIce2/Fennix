@@ -26,9 +26,8 @@ jobs:
       run: |
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
-        sudo touch /tmp/.Xauthority
         sudo touch /run/user/1000/pulse/native
-        echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
+        sudo apt install x11-xserver-utils
 
     - name: Run make ci-setup in dev container
       if: steps.cache-cross.outputs.cache-hit != 'true'
@@ -134,12 +133,8 @@ jobs:
       run: |
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
-        sudo touch /tmp/.Xauthority
         sudo touch /run/user/1000/pulse/native
-        echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
-
-    - name: Install required packages for Dev Container
-      run: sudo apt install x11-xserver-utils
+        sudo apt install x11-xserver-utils
 
     - name: Build AMD64 Debug
       if: always()
