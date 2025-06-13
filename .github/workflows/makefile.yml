@@ -137,7 +137,9 @@ jobs:
         sudo touch /tmp/.Xauthority
         sudo touch /run/user/1000/pulse/native
         echo "XAUTHORITY=/tmp/.Xauthority" >> $GITHUB_ENV
-        sudo apt install x11-xserver-utils
+
+    - name: Install required packages for Dev Container
+      run: sudo apt install x11-xserver-utils
 
     - name: Build AMD64 Debug
       if: always()
