@@ -245,6 +245,78 @@ public:
 	T operator->() { return ptr; }
 	T operator*() { return *ptr; }
 };
+
+struct ListNode
+{
+	ListNode *Prev;
+	ListNode *Next;
+	ListNode() : Prev(nullptr), Next(nullptr) {}
+
+	/** Remove itself from the list */
+	void Remove()
+	{
+		if (this->Prev)
+			this->Prev->Next = this->Next;
+		if (this->Next)
+			this->Next->Prev = this->Prev;
+		this->Prev = this->Next = nullptr;
+	}
+
+	ListNode *front()
+	{
+		ListNode *node = this;
+		while (node->Prev)
+			node = node->Prev;
+		return node;
+	}
+
+	ListNode *back()
+	{
+		ListNode *node = this;
+		while (node->Next)
+			node = node->Next;
+		return node;
+	}
+
+	ListNode *begin() { return this; }
+	ListNode *end() { return nullptr; }
+
+	ListNode *operator++() { return Next; }
+	ListNode *operator--() { return Prev; }
+};
+
+#define LIST_ENTRY(ptr, type, member) ((type *)((char *)(ptr) - offsetof(type, member)))
+
+inline void ListInit(ListNode *node) { node->Prev = node->Next = nullptr; }
+
+inline void ListInsertAfter(ListNode *pos, ListNode *node)
+{
+	node->Next = pos->Next;
+	node->Prev = pos;
+	if (pos->Next)
+		pos->Next->Prev = node;
+	pos->Next = node;
+}
+
+inline void ListInsertBefore(ListNode *pos, ListNode *node)
+{
+	node->Prev = pos->Prev;
+	node->Next = pos;
+	if (pos->Prev)
+		pos->Prev->Next = node;
+	pos->Prev = node;
+}
+
+inline void ListRemove(ListNode *node)
+{
+	if (node->Prev)
+		node->Prev->Next = node->Next;
+	if (node->Next)
+		node->Next->Prev = node->Prev;
+	node->Prev = node->Next = nullptr;
+}
+
+inline bool ListIsLinked(const ListNode *node) { return node->Prev != nullptr || node->Next != nullptr; }
 #endif
 
 /** Usage: int timed_out = 0; whileto(cond, n, timed_out) { ... }
