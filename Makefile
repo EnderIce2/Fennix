@@ -15,12 +15,37 @@ QEMUFLAGS := -display gtk
 ifeq ($(OSARCH), amd64)
 QEMUFLAGS += -device vmware-svga -M q35 \
 			 -cpu max \
-			 -usb \
+			 \
+			 -device piix3-usb-uhci,id=uhci \
+			 -device usb-mouse,bus=uhci.0,pcap=mouse.pcap \
+			 -device usb-kbd,bus=uhci.0,pcap=kbd.pcap \
+			 -device usb-tablet,bus=uhci.0 \
+			 -device usb-wacom-tablet,bus=uhci.0 \
+			 -device usb-ccid,bus=uhci.0 \
+			 \
+			 -device pci-ohci,id=ohci \
+			 -device usb-mouse,bus=ohci.0 \
+			 -device usb-kbd,bus=ohci.0 \
+			 -device usb-tablet,bus=ohci.0 \
+			 -device usb-wacom-tablet,bus=ohci.0 \
+			 -device usb-ccid,bus=ohci.0 \
+			 \
+			 -device usb-ehci,id=ehci \
+			 -device usb-mouse,bus=ehci.0 \
+			 -device usb-kbd,bus=ehci.0 \
+			 \
 			 -device qemu-xhci,id=xhci \
+			 -device usb-mouse,bus=xhci.0 \
+			 -device usb-kbd,bus=xhci.0 \
+			 -device usb-tablet,bus=xhci.0 \
+			 -device usb-wacom-tablet,bus=xhci.0 \
+			 -device usb-ccid,bus=xhci.0 \
+			 \
 			 -net user \
 			 -netdev user,id=usernet0 \
 			 -device e1000,netdev=usernet0,mac=00:69:96:00:42:00 \
 			 -object filter-dump,id=usernet0,netdev=usernet0,file=network.dmp,maxlen=1024 \
+			 \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
 			 -serial file:COM3.dmp \
@@ -28,6 +53,7 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -parallel file:LPT1.dmp \
 			 -parallel file:LPT2.dmp \
 			 -parallel file:LPT3.dmp \
+			 \
 			 -device ahci,id=ahci \
 			 -drive id=bootdsk,file=$(OSNAME).iso,format=raw,if=none \
 			 -device ide-hd,drive=bootdsk,bus=ahci.0 \
@@ -43,9 +69,11 @@ else ifeq ($(OSARCH), i386)
 QEMUFLAGS += -M q35 \
 			 -cpu max \
 			 -usb \
+			 -device usb-tablet,bus=usb-bus.0,port=1 \
+			 -device usb-hub,bus=usb-bus.0,port=2 \
 			 -device qemu-xhci,id=xhci \
-			 -device usb-mouse,bus=xhci.0,pcap=mousex.pcap \
-			 -device usb-kbd,bus=xhci.0,pcap=kbdx.pcap \
+			 -device usb-mouse,bus=xhci.0 \
+			 -device usb-kbd,bus=xhci.0 \
 			 -device usb-mouse,pcap=mouse.pcap \
 			 -device usb-kbd,pcap=kbd.pcap \
 			 -net user \
@@ -381,7 +409,7 @@ clean_logs:
 	rm -f serial.log COM2.dmp COM3.dmp COM4.dmp \
 		network.dmp \
 		LPT1.dmp LPT2.dmp LPT3.dmp \
-		mouse.pcap kbd.pcap mousex.pcap kbdx.pcap
+		mouse.pcap kbd.pcap
 
 check_chmod_kvm:
 ifeq ($(CHMOD_KVM), 1)
