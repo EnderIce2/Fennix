@@ -36,6 +36,17 @@ EXTERNC int memcmp(const void *vl, const void *vr, size_t n)
 	return n ? *l - *r : 0;
 }
 
+EXTERNC void *memchr(const void *ptr, int ch, size_t count)
+{
+	const unsigned char *p = (unsigned char *)ptr;
+	for (size_t i = 0; i < count; i++)
+	{
+		if (p[i] == ch)
+			return (void *)&p[i];
+	}
+	return NULL;
+}
+
 EXTERNC void backspace(char s[])
 {
 	int len = s_cst(int, strlen(s));

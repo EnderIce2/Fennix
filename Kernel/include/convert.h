@@ -59,6 +59,7 @@ extern "C"
 	void *memset_unsafe(void *dest, int c, size_t n);
 	void *memmove_unsafe(void *dest, const void *src, size_t n);
 	int memcmp(const void *vl, const void *vr, size_t n);
+	void *memchr(const void *ptr, int ch, size_t count);
 
 	void *memcpy_sse(void *dest, const void *src, size_t n);
 	void *memcpy_sse2(void *dest, const void *src, size_t n);
