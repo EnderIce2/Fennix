@@ -177,7 +177,7 @@ namespace Driver
 			debug("Calling driver %s at %#lx", Drv.Path.c_str(), Drv.EntryPoint);
 			int (*DrvInit)(dev_t) = (int (*)(dev_t))Drv.EntryPoint;
 			Drv.ErrorCode = DrvInit(Drv.ID);
-			if (Drv.ErrorCode < 0)
+			if (Drv.ErrorCode != 0)
 			{
 				KPrint("FATAL: _start() failed for %s: %s",
 					   Drv.Name, strerror(Drv.ErrorCode));
@@ -193,7 +193,7 @@ namespace Driver
 			debug("Calling Probe()=%#lx on driver %s",
 				  Drv.Probe, Drv.Path.c_str());
 			Drv.ErrorCode = Drv.Probe();
-			if (Drv.ErrorCode < 0)
+			if (Drv.ErrorCode != 0)
 			{
 				KPrint("Probe() failed for %s: %s",
 					   Drv.Name, strerror(Drv.ErrorCode));
@@ -207,7 +207,7 @@ namespace Driver
 			debug("Calling driver Entry()=%#lx function on driver %s",
 				  Drv.Entry, Drv.Path.c_str());
 			Drv.ErrorCode = Drv.Entry();
-			if (Drv.ErrorCode < 0)
+			if (Drv.ErrorCode != 0)
 			{
 				KPrint("Entry() failed for %s: %s",
 					   Drv.Name, strerror(Drv.ErrorCode));
@@ -233,7 +233,7 @@ namespace Driver
 
 			debug("Unloading driver %s", Drv->Name);
 			int err = Drv->Final();
-			if (err < 0)
+			if (err != 0)
 			{
 				warn("Failed to unload driver %s: %s",
 					 Drv->Name, strerror(err));
@@ -609,7 +609,7 @@ namespace Driver
 
 		/* Unload the driver */
 		int err = Drv.Final();
-		if (err < 0)
+		if (err != 0)
 		{
 			warn("Failed to unload driver %s: %s", Drv.Name, strerror(err));
 		}
@@ -654,7 +654,7 @@ namespace Driver
 		/* Initialize the driver */
 		int (*DrvInit)(dev_t) = (int (*)(dev_t))newDrvObj.EntryPoint;
 		newDrvObj.ErrorCode = DrvInit(newDrvObj.ID);
-		if (newDrvObj.ErrorCode < 0)
+		if (newDrvObj.ErrorCode != 0)
 		{
 			KPrint("FATAL: _start() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to load driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
@@ -665,7 +665,7 @@ namespace Driver
 		KPrint("Loading driver %s", newDrvObj.Name);
 
 		newDrvObj.ErrorCode = newDrvObj.Probe();
-		if (newDrvObj.ErrorCode < 0)
+		if (newDrvObj.ErrorCode != 0)
 		{
 			KPrint("Probe() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to probe driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
@@ -674,7 +674,7 @@ namespace Driver
 		}
 
 		newDrvObj.ErrorCode = newDrvObj.Entry();
-		if (newDrvObj.ErrorCode < 0)
+		if (newDrvObj.ErrorCode != 0)
 		{
 			KPrint("Entry() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to initialize driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
