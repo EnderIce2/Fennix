@@ -575,4 +575,49 @@ typedef uint48_t uint_fast48_t;
 		}                                          \
 	} while (0)
 
+#ifdef __cplusplus
+namespace fnx
+{
+	/**
+	 * Simple spinlock implementation
+	 *
+	 */
+	class spinlock_t
+	{
+	private:
+		bool locked;
+
+	public:
+		Ofast void lock()
+		{
+			while (try_lock())
+			{
+#if defined(__amd64__)
+				asmv("pause" :: : "memory");
+#elif defined(__aarch64__)
+				asmv("yield" :: : "memory");
+#endif
+			}
+		}
+
+		Ofast bool try_lock()
+		{
+			return !__atomic_load_n(&locked, __ATOMIC_RELAXED) && !__atomic_exchange_n(&locked, true, __ATOMIC_ACQUIRE);
+		}
+
+		Ofast void unlock()
+		{
+			__atomic_store_n(&locked, false, __ATOMIC_RELEASE);
+		}
+
+		Ofast spinlock_t()
+		{
+			__atomic_store_n(&locked, false, __ATOMIC_RELAXED);
+		}
+
+		Ofast ~spinlock_t() = default;
+	};
+}
+#endif // __cplusplus
+
 #endif // !__FENNIX_KERNEL_TYPES_H__
