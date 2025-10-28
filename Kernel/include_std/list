@@ -525,24 +525,6 @@ namespace std
 		}
 
 		template <class... Args>
-		void emplace_back(Args &&...args)
-		{
-			assert(sizeof...(args) > 0);
-
-			sl_guard(this->lock);
-
-			node *nNode = new node(T(std::forward<Args>(args)...), tail);
-			if (this->empty())
-				head = tail = nNode;
-			else
-			{
-				tail->next = nNode;
-				tail = nNode;
-			}
-			lSize.fetch_add(1);
-		}
-
-		template <class... Args>
 		reference emplace_back(Args &&...args)
 		{
 			assert(sizeof...(args) > 0);
@@ -604,24 +586,6 @@ namespace std
 
 			node *nNode = new node(std::move(value), nullptr, head);
 			if (empty())
-				head = tail = nNode;
-			else
-			{
-				head->prev = nNode;
-				head = nNode;
-			}
-			lSize.fetch_add(1);
-		}
-
-		template <class... Args>
-		void emplace_front(Args &&...args)
-		{
-			assert(sizeof...(args) > 0);
-
-			sl_guard(this->lock);
-
-			node *nNode = new node(T(std::forward<Args>(args)...), nullptr, head);
-			if (this->empty())
 				head = tail = nNode;
 			else
 			{
