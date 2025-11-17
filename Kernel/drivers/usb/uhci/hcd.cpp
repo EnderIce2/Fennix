@@ -29,6 +29,7 @@ namespace Driver::UniversalHostControllerInterface
 	void HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		USBSTS sts = inw(io + REG_USBSTS);
+		UNUSED(sts);
 		/** FIXME: OnInterruptReceived should be able to return an error */
 	}
 
