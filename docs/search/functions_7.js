@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['unregisterblockdevice_0',['UnregisterBlockDevice',['../de/d40/block_8h.html#aa2fbd9e6d3f42f3c7f94c48795acddad',1,'block.h']]],
-  ['unregisterdevice_1',['UnregisterDevice',['../db/de9/device_8h.html#a0ebb7111c50f31c0740b2caa2c56ff41',1,'device.h']]],
-  ['unregisterfilesystem_2',['UnregisterFileSystem',['../df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8',1,'fs.h']]],
-  ['unregistermountpoint_3',['UnregisterMountPoint',['../df/d26/fs_8h.html#a339c1ed1e08b3248cbaad2b3b63ba86d',1,'fs.h']]]
+  ['registerblockdevice_0',['RegisterBlockDevice',['../de/d40/block_8h.html#a09eca2dff18d5b57780c356d331db570',1,'block.h']]],
+  ['registerdevice_1',['RegisterDevice',['../db/de9/device_8h.html#a6fa54b6c61e3ac1a932decf111303bb9',1,'device.h']]],
+  ['registerfilesystem_2',['RegisterFileSystem',['../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349',1,'fs.h']]],
+  ['registermountpoint_3',['RegisterMountPoint',['../df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f',1,'fs.h']]],
+  ['removecontroller_4',['RemoveController',['../dc/de4/usb_8h.html#a97243f677d54f1623bac8eb59a63a685',1,'usb.h']]],
+  ['reportinputevent_5',['ReportInputEvent',['../de/ded/input_8h.html#aba095481bbee5eb8903061ed75aa435d',1,'input.h']]]
 ];

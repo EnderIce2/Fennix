@@ -11,5 +11,6 @@ var dir_811a06ffcfc34bd0f88967f0406a39f5 =
     [ "input.h", "de/ded/input_8h.html", "de/ded/input_8h" ],
     [ "network.h", "d9/d94/network_8h.html", null ],
     [ "pci.h", "d9/d97/pci_8h.html", "d9/d97/pci_8h" ],
-    [ "syscalls.h", "d2/d6e/syscalls_8h.html", "d2/d6e/syscalls_8h" ]
+    [ "syscalls.h", "d2/d6e/syscalls_8h.html", "d2/d6e/syscalls_8h" ],
+    [ "usb.h", "dc/de4/usb_8h.html", "dc/de4/usb_8h" ]
 ];

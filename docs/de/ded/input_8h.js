@@ -38,7 +38,7 @@ var input_8h =
     [ "KeyboardReport.__unnamed13__.__unnamed15__", "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____", [
       [ "IsScanCode", "de/ded/input_8h.html#aa51f9b08057b8f0bf003cd592bbe248b", null ]
     ] ],
-    [ "InputReport.__unnamed18__", "de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____", [
+    [ "InputReport.__unnamed17__", "de/ded/input_8h.html#db/d5d/unionInputReport_8____unnamed17____", [
       [ "Accelerometer", "de/ded/input_8h.html#ab043bc6d611582087d8bf1790d863d69", null ],
       [ "Gamepad", "de/ded/input_8h.html#a221f6781b4faa2d321ca0d928f518d6e", null ],
       [ "Gyroscope", "de/ded/input_8h.html#abed99e5db57749f375e738c1c0258047", null ],

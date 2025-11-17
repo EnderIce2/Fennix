@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['registerblockdevice_0',['RegisterBlockDevice',['../de/d40/block_8h.html#a09eca2dff18d5b57780c356d331db570',1,'block.h']]],
-  ['registerdevice_1',['RegisterDevice',['../db/de9/device_8h.html#a6fa54b6c61e3ac1a932decf111303bb9',1,'device.h']]],
-  ['registerfilesystem_2',['RegisterFileSystem',['../df/d26/fs_8h.html#a75f4deeb21caf3c4150e515e19913349',1,'fs.h']]],
-  ['registermountpoint_3',['RegisterMountPoint',['../df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f',1,'fs.h']]],
-  ['reportinputevent_4',['ReportInputEvent',['../de/ded/input_8h.html#aba095481bbee5eb8903061ed75aa435d',1,'input.h']]]
+  ['iline_0',['iLine',['../d9/d97/pci_8h.html#a11780e1a6b719257a35670eb14e8ab52',1,'pci.h']]],
+  ['initializepci_1',['InitializePCI',['../d9/d97/pci_8h.html#ad8bb87ffa35f47616595f155ce9a3a30',1,'pci.h']]],
+  ['initializeusbdevice_2',['InitializeUSBDevice',['../dc/de4/usb_8h.html#a5cc862ef229fd932e6486cce101b5a96',1,'usb.h']]],
+  ['ipin_3',['iPin',['../d9/d97/pci_8h.html#a279691b7a82cb0bfa132fb374fe2d7d4',1,'pci.h']]],
+  ['irq_5fmask_4',['IRQ_MASK',['../d1/de1/aip_8h.html#a47eacd96b732a39b728fed2402f9210b',1,'aip.h']]],
+  ['irq_5funmask_5',['IRQ_UNMASK',['../d1/de1/aip_8h.html#abb94e8ea4110b1505f8722d697697eea',1,'aip.h']]]
 ];

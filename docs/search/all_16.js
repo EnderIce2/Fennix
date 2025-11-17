@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['waitinput_0',['WaitInput',['../d1/de1/aip_8h.html#aa964d7c1114a861480b1fea356404cf4',1,'aip.h']]],
-  ['waitoutput_1',['WaitOutput',['../d1/de1/aip_8h.html#a553775c2f7c013ee400dffb01d596328',1,'aip.h']]],
-  ['welcome_20to_20fennix_20documentation_2',['Welcome to Fennix Documentation',['../index.html',1,'']]],
-  ['width_3',['Width',['../d2/d6e/syscalls_8h.html#a13cd8b19c0885b5346f14d355ac94f92',1,'FramebufferScreenInfo']]],
-  ['write_4',['write',['../db/de6/structInodeOperations.html#adb7eaaee195090e8d618a6e9c3ca507a',1,'InodeOperations::Write'],['../df/d26/fs_8h.html#a5f5c45d347b3cbe34597e57c04967e8b',1,'Write:&#160;fs.h']]]
+  ['value_0',['Value',['../de/ded/input_8h.html#a689202409e48743b914713f96d93947c',1,'KeyboardReport.__unnamed13__']]],
+  ['vendorid_1',['VendorID',['../d9/d97/pci_8h.html#aa456187fbe2216e07869e1c7f6d69444',1,'__attribute__']]],
+  ['version_2',['version',['../d2/d6e/syscalls_8h.html#ab0d51c806d74e4ec305829e807f58033',1,'kutsname::version'],['../db/de4/driver_8h.html#a7f2ee0705a9eaf49c4f920d827198530',1,'__DriverInfo::Version']]]
 ];

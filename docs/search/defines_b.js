@@ -1,5 +1,25 @@
 var searchData=
 [
-  ['waitinput_0',['WaitInput',['../d1/de1/aip_8h.html#aa964d7c1114a861480b1fea356404cf4',1,'aip.h']]],
-  ['waitoutput_1',['WaitOutput',['../d1/de1/aip_8h.html#a553775c2f7c013ee400dffb01d596328',1,'aip.h']]]
+  ['usb_5fc_5fhub_5flocal_5fpower_0',['USB_C_HUB_LOCAL_POWER',['../dc/de4/usb_8h.html#a45eabb6a28704d402fd4ab07b3384bd7',1,'usb.h']]],
+  ['usb_5fc_5fhub_5fover_5fcurrent_1',['USB_C_HUB_OVER_CURRENT',['../dc/de4/usb_8h.html#a2817741f45fd3557c8c638982786aec7',1,'usb.h']]],
+  ['usb_5fc_5fport_5fconnection_2',['USB_C_PORT_CONNECTION',['../dc/de4/usb_8h.html#ae7033bc6b6390f18e6914ffc1f351811',1,'usb.h']]],
+  ['usb_5fc_5fport_5fenable_3',['USB_C_PORT_ENABLE',['../dc/de4/usb_8h.html#ae5d24e171a87eecd408aa8194ca317ab',1,'usb.h']]],
+  ['usb_5fc_5fport_5fover_5fcurrent_4',['USB_C_PORT_OVER_CURRENT',['../dc/de4/usb_8h.html#a069b49118f19fb1605bde9e6c854a889',1,'usb.h']]],
+  ['usb_5fc_5fport_5freset_5',['USB_C_PORT_RESET',['../dc/de4/usb_8h.html#ab66fcafc249e68c8ee354024ae5fdedd',1,'usb.h']]],
+  ['usb_5fc_5fport_5fsuspend_6',['USB_C_PORT_SUSPEND',['../dc/de4/usb_8h.html#a6114391b8a80777426c3d2cb206b4e18',1,'usb.h']]],
+  ['usb_5fhub_5fcpi_5fmask_7',['USB_HUB_CPI_MASK',['../dc/de4/usb_8h.html#a177137bf86841723815e2c8227202b12',1,'usb.h']]],
+  ['usb_5fhub_5flpsm_5fmask_8',['USB_HUB_LPSM_MASK',['../dc/de4/usb_8h.html#abeaa6473cedd32a14cb97d92e7b7abd6',1,'usb.h']]],
+  ['usb_5fhub_5fop_5fmask_9',['USB_HUB_OP_MASK',['../dc/de4/usb_8h.html#a54f6df849b80e09bd5529fba9a6045f9',1,'usb.h']]],
+  ['usb_5fhub_5fpis_5fmask_10',['USB_HUB_PIS_MASK',['../dc/de4/usb_8h.html#afc90da66fcc6f85c05cdf6cf528f7a34',1,'usb.h']]],
+  ['usb_5fhub_5ftttt_5fmask_11',['USB_HUB_TTTT_MASK',['../dc/de4/usb_8h.html#aa3287a6307f0d459046eff79602fa59a',1,'usb.h']]],
+  ['usb_5fmax_5fhub_5fports_12',['USB_MAX_HUB_PORTS',['../dc/de4/usb_8h.html#a9452e1d785c8bceca757cee5ac26dcf7',1,'usb.h']]],
+  ['usb_5fport_5fconnection_13',['USB_PORT_CONNECTION',['../dc/de4/usb_8h.html#a17874da149043f9d0223c3dda594516c',1,'usb.h']]],
+  ['usb_5fport_5fenable_14',['USB_PORT_ENABLE',['../dc/de4/usb_8h.html#ac05cf6b7b54ee5081ebe7af4af8f6049',1,'usb.h']]],
+  ['usb_5fport_5findicator_15',['USB_PORT_INDICATOR',['../dc/de4/usb_8h.html#a9f466fa1ec1d78671972b7d3ea43742a',1,'usb.h']]],
+  ['usb_5fport_5flow_5fspeed_16',['USB_PORT_LOW_SPEED',['../dc/de4/usb_8h.html#aef7eb427b5faf4b509d84a5617ae021a',1,'usb.h']]],
+  ['usb_5fport_5fover_5fcurrent_17',['USB_PORT_OVER_CURRENT',['../dc/de4/usb_8h.html#a416dc12bbc849a6c01c2839bb3d75169',1,'usb.h']]],
+  ['usb_5fport_5fpower_18',['USB_PORT_POWER',['../dc/de4/usb_8h.html#a04a1514aeaa9ce999593b8c65776e2bc',1,'usb.h']]],
+  ['usb_5fport_5freset_19',['USB_PORT_RESET',['../dc/de4/usb_8h.html#ae9a73e664716752745e9e364e2f2724f',1,'usb.h']]],
+  ['usb_5fport_5fsuspend_20',['USB_PORT_SUSPEND',['../dc/de4/usb_8h.html#accbf055ff1f2a92b3ce86e07010a836e',1,'usb.h']]],
+  ['usb_5fport_5ftest_21',['USB_PORT_TEST',['../dc/de4/usb_8h.html#adddf813f3b0a4003f4fbdd2b6be290d5',1,'usb.h']]]
 ];

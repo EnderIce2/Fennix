@@ -2,6 +2,15 @@
 <Tokens version="1.0">
   <Token>
     <TokenIdentifier>
+      <Name>.__unnamed24__</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>.__unnamed24__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>__attribute__</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -102,6 +111,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>USBController</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBDevice</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>md_tools_2doxygen_2api</Name>
       <APILanguage>markdown</APILanguage>
     </TokenIdentifier>
@@ -137,6 +166,136 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>__padding</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7a4128300868052c9d861bf750b9e128</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__padding</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController.Flags.__unnamed63__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7a4128300868052c9d861bf750b9e128</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__raw_flags</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer.__unnamed58__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a56c3a34088525abfbee866e9aedc0afe</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed42__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed44__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved0</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved0</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved0</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved0</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved1</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>acd8949ff69e5a2a014100db38cb62a6d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__reserved1</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>acd8949ff69e5a2a014100db38cb62a6d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>A20Gate</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -160,7 +319,7 @@
       <Name>Accelerometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>ab043bc6d611582087d8bf1790d863d69</Anchor>
@@ -174,6 +333,16 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>af0d5a9e82aa0ece31db45ae57b97b5d9</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Address</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a9073cfac60345f3caff7eb080f3d4bd2</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -214,6 +383,26 @@
     </TokenIdentifier>
     <Path>db/de4/driver_8h.html</Path>
     <Anchor>a2d3b49bf3bc9a98b0c5d08152ef20863</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bAlternateSetting</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3a73a20d67d11fe416d495fe0f5b9180</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>BandwidthSize</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBScheduler</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3c2301ad2ec832e62bf33eb5a9332232</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -297,6 +486,246 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>bcdDevice</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3e35db6943aecb2cfc6d5ac7a79e433d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bcdHID</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aeff3ec001e2e5019ed3c0adfada1db5e</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bcdUSB</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8200846129bb5457155ecd06fb632107</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bConfigurationValue</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a571eca96bdc082a0f543d538f9364b34</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bCountryCode</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a40cdd3879a8242069a2288dfbd55a451</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afdaaecdbed6ceeed8fa1c00ccda0f019</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0c11f68ec4aa73ad169bd256e3d4868a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a48ed8ea4e5377ecf915b91191f68f44d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBStringDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9c7bfcea119f2e8c6e6479574fe2b6df</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a14eb413338af04a737f755a6e086346f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4f77361e737f5d37195a104a7f91662d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4fa6df3db874ad680fd165cbf3176ea1</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9a931793877252f591ec3acfd870ed2f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor.Descriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1be7e663900b8515acc8beceffcfe799</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceClass</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1da0d59a6fb222c17cd1c67a41c95358</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceProtocol</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0f441412c29a47efe5af1206f6016e18</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceSubClass</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac59b34bfd0d01c22e1746f6268ae8dab</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bEndpointAddress</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a59c9d6d7afa85916d7f0bb9db3e9e200</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bHubContrCurrent</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6233420b8f5aca92f930e21ba4064022</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceClass</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5746d42f646c2f67a1f13e6cc5bdfca9</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceNumber</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aef00915c027fe0ae167ff377aa188ddf</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceProtocol</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a15d7f87f49519c6a8903105ed06f5fbf</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceSubClass</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8e939c739a9e8a82e7042640fdcfb155</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterval</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2d4445f059ede01afd8a1354110c1135</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>BIST</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -304,6 +733,66 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>acafc473c7069fdd698c0b5742656100b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a12a54b4a54f1329a9a21d7673393ba64</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a54dbfc28459def786be0ec638d544239</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBStringDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae56e4da97c17a087eec3c0b3b9e3505a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9a15739d2f6c429d74c23778512ba423</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8ab3cb955c5ebdeb8c63c1ee13c41eeb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a56634d215f17e2c6f838992efbde7a43</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -357,6 +846,106 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>bmAttributes</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1af43000b59762a4f7992cd5b35368d0</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bmAttributes</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aafbbf43757cbc6475edc68efa125e0df</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bMaxPacketSize0</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a07107e2677bd87dcc8d40819c484caac</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bMaxPower</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af7c5399fffd180e487e268a271d9ccbe</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bmRequestType</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6612ab837c2f2651c9930f0a397f9052</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNbrPorts</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0c989a4e8093845d06e22e60f74490da</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumConfigurations</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a651804256b804bda810bec609fb7d8c2</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumDescriptors</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a240724fe4911909e2a921830399ec8f4</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumEndpoints</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2ade9003a13809759d4adf4c4f299140</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumInterfaces</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af104fb5cf453b65a91ec87e49476152e</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Bpp</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -367,6 +956,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>bPwrOn2PwrGood</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a69817fa077e4aea6b2c9fcd8da77cb71</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bRequest</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac1c4884602b3026a747a33474691d941</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>BridgeControl</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -374,6 +983,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a6653a1245e72768cd03bb1f8ff843371</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Buffer</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9da3ac05368e6e54fcae7b86db18aed7</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -434,6 +1053,106 @@
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>acde82f4d1fa67e06bc3a59eb6cc2a44c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_CONNECTION</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae0c50ce312153bfc94f5c30091d02e1c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_CONNECTION</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae0c50ce312153bfc94f5c30091d02e1c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_ENABLE</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad878656e48dab047c2c29fa61c2d148b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_ENABLE</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad878656e48dab047c2c29fa61c2d148b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_OVER_CURRENT</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2f7cc620f2b1310b1c78c31618bf8259</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_OVER_CURRENT</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2f7cc620f2b1310b1c78c31618bf8259</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_RESET</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a441236095df05d77e2dd236c6c7e4a8f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_RESET</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a441236095df05d77e2dd236c6c7e4a8f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_SUSPEND</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0dccdb7cd734d0a15bb06a9da270cf37</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>C_PORT_SUSPEND</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed56__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0dccdb7cd734d0a15bb06a9da270cf37</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -567,6 +1286,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Completed</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a07ca5050e697392c9ed47e6453f1453f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Config</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -574,6 +1303,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>aae7dbeb87dc97e9e2b3befb18fe075af</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Controller</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a7803921b3f43fbcafeaea299d39432b7</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -637,6 +1376,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Data</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBSchedulerPool</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a51ef2aa9b3ff89b2a1dd4a076632560a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>DataToggle</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>acbc402006f0a63cd61e043b87ff4f665</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Delay</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -664,6 +1423,16 @@
     </TokenIdentifier>
     <Path>db/de4/driver_8h.html</Path>
     <Anchor>ae899d6a573c8272d7f8c76baf8e3bd72</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Descriptor</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHIDDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad15186d21a59126e6f36afef5cfcf050</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -747,6 +1516,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Direction</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a02674a4ef33e11c879283629996c8ff8</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Direction</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed24__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a02674a4ef33e11c879283629996c8ff8</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>EndBus</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -754,6 +1543,36 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a797ba226f98d7684ec7b14d8a7ed0e1a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Endpoint</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa2d654f9f0fd8f315d306b5e9d8c2fc3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Endpoint</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>af67bb52784e2b90bb1609284b87420a2</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>EndpointToggle</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a47750f9619d7f4f7d404e31b0bf5e53a</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -787,6 +1606,36 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Flags</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>a38048090a79b8fc608d713b801632ac3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>FrameList</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBScheduler</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3a808ff3c1f516c9e127896f288a8d38</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Frames</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBScheduler</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad41829b1aaea00f65e918e0b0db89c8c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Function</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -800,7 +1649,7 @@
       <Name>Gamepad</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a221f6781b4faa2d321ca0d928f518d6e</Anchor>
@@ -820,7 +1669,7 @@
       <Name>Gyroscope</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>abed99e5db57749f375e738c1c0258047</Anchor>
@@ -877,6 +1726,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>iConfiguration</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7b7a77ddfa5ebe0ab69d51f985d13a4c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>idProduct</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac58651978f045261d3383bdfab4284fd</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>idVendor</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af61ac811468a966f5795ed6a665b2138</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iInterface</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBInterfaceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adde238d720fcc1f80088cf2f51ba33bb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iManufacturer</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a482e53e3440801d58b5191a6ee3d5c42</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Index</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -903,7 +1802,7 @@
       <Scope>FileSystemDevice</Scope>
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
-    <Anchor>ae7fa98dc9b923a5a711d4c9a4fdf36e0</Anchor>
+    <Anchor>af0cfcefc95bda473c1c09bc1c03ad3c2</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -914,6 +1813,16 @@
     </TokenIdentifier>
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>a999955f00254a1ec83b388b8142ac5e6</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Interface</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>aaaf4bc8f3d54c2320acc155be1491383</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1027,6 +1936,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>iProduct</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af8ed64a18469ab4cd97695c7db10d07a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iSerialNumber</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0b1f8df30afcae25b98c860562ec63a3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>IsScanCode</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1040,7 +1969,7 @@
       <Name>Joystick</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a1162b85b7b993e2edf7da29dd8abf7e2</Anchor>
@@ -1057,6 +1986,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>KernelData</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>aa7533771142b5f1ee4be756cc82e85ac</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Key</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1070,7 +2009,7 @@
       <Name>Keyboard</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a6ce4d85a628a88bbdb3ac24a8e5a9c2e</Anchor>
@@ -1157,6 +2096,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Length</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae9aad70ef64c2e3e7fa185369b2ecdb7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>License</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1177,6 +2126,46 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>LPS</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af0bd8ffe783f0ce4bf0fb76c508284f7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LPS</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed42__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af0bd8ffe783f0ce4bf0fb76c508284f7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LPSC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1d68e7883970b1ca56623cd245b7d368</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LPSC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed44__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1d68e7883970b1ca56623cd245b7d368</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>machine</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1190,7 +2179,7 @@
       <Name>Magnetometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a9e9fa52e0aa4a2b519f8287760d7c3ac</Anchor>
@@ -1214,6 +2203,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a753c2d858d0da969c33264c1b58807d3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>MaxPacketSize</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a63232ecbff4d2af284c6c3e0fb25ef54</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1360,7 +2359,7 @@
       <Name>Mouse</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>af2a47c6809d88e175dade0ef7b16aa13</Anchor>
@@ -1417,6 +2416,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Next</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a586d94a58e222d69b4ea4f5e1574c3ae</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>node</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1424,6 +2433,46 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a36c4536996ca5615dcf9911f068786dc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>OC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a628ac2641a11205611acfdd540e18809</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>OC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed42__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a628ac2641a11205611acfdd540e18809</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>OCC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adcb1c29255ec9645f8be15096fae7b93</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>OCC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed44__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adcb1c29255ec9645f8be15096fae7b93</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1487,6 +2536,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Parent</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a6f58b875f50fd359a1222404806084f6</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>ParityError</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1544,6 +2603,26 @@
     </TokenIdentifier>
     <Path>d2/d6e/syscalls_8h.html</Path>
     <Anchor>a32c1b38cd63a88753f65c06e495ab546</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PollHC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>ae824e20a14d6f2133730c34739b3d5ef</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Port</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>abba3892257b50d3c355e8ae59d9f9e45</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1657,6 +2736,236 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>PORT_CONNECTION</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2a356a25b9433f52530a968d07467fd0</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_CONNECTION</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2a356a25b9433f52530a968d07467fd0</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_ENABLE</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a20173b822ef39347be06ffbd67e59076</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_ENABLE</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a20173b822ef39347be06ffbd67e59076</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_HIGH_SPEED</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aaa11a60607b1ea093393768ae01f6fbc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_HIGH_SPEED</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aaa11a60607b1ea093393768ae01f6fbc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_INDICATOR</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a171c913c4769f9796fc641e5c2f5f94a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_INDICATOR</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a171c913c4769f9796fc641e5c2f5f94a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_LOW_SPEED</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac544781da2685a3fd1177d9f667451fc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_LOW_SPEED</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac544781da2685a3fd1177d9f667451fc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_OVER_CURRENT</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8a68facbf3db3d4fc0570b6ffd9f1bbc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_OVER_CURRENT</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8a68facbf3db3d4fc0570b6ffd9f1bbc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_POWER</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9b975312189761d455c5e668551ea70f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_POWER</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9b975312189761d455c5e668551ea70f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_RESET</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad84e08e2c56048336f54fcc7df90c78a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_RESET</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad84e08e2c56048336f54fcc7df90c78a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_SUSPEND</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a29367fe786d12ede740dcd1d99cf2615</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_SUSPEND</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a29367fe786d12ede740dcd1d99cf2615</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_TEST</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adbb7face025abf9e9e4158160a5b7a45</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PORT_TEST</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed54__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adbb7face025abf9e9e4158160a5b7a45</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PortCtl</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a86e77b4780e45462ac6152ddc02916bc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PortInt</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a72e926d369554b983e2567ba248d88a1</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PortPoll</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a19f7d8bb19189819fef960c78c48375a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>PrefetchableMemoryBase</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1747,6 +3056,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>PrivateData</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>a5435a32c1aa814fa4542b436347faa02</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PrivateData</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a7ae5c24680e464a7b7dd330426bf0545</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Probe</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1764,6 +3093,66 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>af55b38884c985010421d1f7ea4728fc1</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest.bmRequestType</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus.wHubChange</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus.wPortChange</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>raw</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController.Flags</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1877,6 +3266,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Recipient</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5d6103b662f41b07e10687f03aca8fdc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Recipient</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed24__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5d6103b662f41b07e10687f03aca8fdc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>release</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1917,6 +3326,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Request</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a49d73e5aca9a016cefcf26f6c8f75a3e</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Reserved</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1954,6 +3373,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>acf89fc9ee55923d8f97e524e05867464</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>ResetHC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>ad27534d91477cd617ab37e1004bdc460</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2057,6 +3486,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Speed</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>d1/d20/structUSBDevice.html</Path>
+    <Anchor>a99263f287fbfb9c3fb98df4106650abe</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>StartBus</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2064,6 +3503,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a92d65982de9305ea623f88b7327d0b17</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>StartHC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>a70999a1c4371feb66a35691b5af22ab8</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2087,6 +3536,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>StopHC</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>a6ab189ec74b0e8716464f15b3255acfe</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Subclass</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2094,6 +3553,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>aa3f64091ee6527d54908a7a458fa5ebd</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SubFrames</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBScheduler</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aacb7c8684eba642bee6105ac19dd8bf4</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2124,6 +3593,16 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a04b76a03bca66e34b60f344d030ae68c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Success</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a505a83f220c02df2f85c3810cd9ceb38</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2210,7 +3689,7 @@
       <Name>TouchScreen</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a64a952e5a8456c1030ce54bfa07ebb52</Anchor>
@@ -2227,6 +3706,36 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>InputReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>af15f4807037d91adf5b3223b64e9ad50</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa1fa27779242b4902f7ae3bdd5c6d508</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>.__unnamed24__</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa1fa27779242b4902f7ae3bdd5c6d508</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>type</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2237,13 +3746,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Type</Name>
+      <Name>u</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport</Scope>
+      <Scope>USBHubDescriptor</Scope>
     </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>af15f4807037d91adf5b3223b64e9ad50</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>acd96cc6fc64751cd63e500f91d800749</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2307,6 +3816,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>version</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>kutsname</Scope>
+    </TokenIdentifier>
+    <Path>d2/d6e/syscalls_8h.html</Path>
+    <Anchor>ab0d51c806d74e4ec305829e807f58033</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Version</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2317,13 +3836,43 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>version</Name>
+      <Name>wDescriptorLength</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>kutsname</Scope>
+      <Scope>USBHIDDescriptor.Descriptor</Scope>
     </TokenIdentifier>
-    <Path>d2/d6e/syscalls_8h.html</Path>
-    <Anchor>ab0d51c806d74e4ec305829e807f58033</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9829032838ca1cf274402fcea62f51f6</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubChange</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a219b5fcf1790030feba87b4f065495ee</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubCharacteristics</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5fe933a402b573a3fd19fef0eb0250c5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubStatus</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBHubStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aec384788ae5eab823b1ba232163aeb6d</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2337,6 +3886,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>wIndex</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5db347b99175b0ff35f23d221b2f48c4</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a794a3c862bda55462dbb4d4ca88b6249</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wMaxPacketSize</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpointDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1df9f6d514f5167796d4b065f375e39f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wPortChange</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0ca19192e4103e1a34f5243c11b095c1</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wPortStatus</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBPortStatus</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa9314ab632cb04c5620f2544c690e7fa</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Write</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2344,6 +3943,36 @@
     </TokenIdentifier>
     <Path>db/de6/structInodeOperations.html</Path>
     <Anchor>adb7eaaee195090e8d618a6e9c3ca507a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wString</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBStringDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aeff00fa27ebb62fb0422e103413b2aa5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wTotalLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBConfigurationDescriptor</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa556ae2ba2d8cf20d4f6946480cee795</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wValue</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDeviceRequest</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afff5107f4ce4fe3d8159c60c0e5c8259</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2472,8 +4101,18 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
-    <Anchor>a21ace075273579727f14d0eefb1b934e</Anchor>
+    <Anchor>a6755c486906051ec7d4fd52fa1895d51</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__attribute__</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2c72c44796b3644747e576453d00a436</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2484,6 +4123,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>adeee0c5ffa0505b0fb9cbde29aa5a750</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>__attribute__</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9dd15a8a1d9c83addc65a7f90583066b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3717,6 +5366,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>AddController</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4a2f898911dd9b83e0a45e719d279460</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>AllocateInode</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -3947,6 +5606,206 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>bAlternateSetting</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4cdd7aab185365e51a1e722f43073b8c</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bcdDevice</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4ac87bf0a9ee1a9e0eec6d50a8b0e3f9</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bcdHID</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>acf09c753851ce018b81a07325bda9d8e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bcdUSB</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8f2450b83d08617906b5b63640f559af</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bConfigurationValue</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aecb9ae30bca0b044d2941120f21c2b29</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bCountryCode</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a969a604033b72573d59a740badf6920e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescLength</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adf70f906bbfbd0fe462d7c260558bffa</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDescriptorType</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a67d7027b9eb9ed268d28e84fbc675707</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceClass</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab8e1b1fca77a607c39bba2278623d4f4</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceProtocol</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a44e204b5f7158f4048edcb944351ce27</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bDeviceSubClass</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a260eec0b4e7279e6ecae808ca34c2604</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bEndpointAddress</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a527afb0f25cdd442d8d32c7df8e18c45</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bHubContrCurrent</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7755e64b27bd3cfa68d1fdb1b1cb3d15</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bHubHdrDecLat</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adc85813ae572741d39931bbe66ff2ec0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceClass</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae899427763e325f03241afc69a6e1ea0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceNumber</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3d66d88c5e928462aef62633449f1eb0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceProtocol</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6872c4ec51fd061e2955f84d97bea2a7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterfaceSubClass</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3b3919d1203cd42550d77287f7585595</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bInterval</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aff92277eea8536f7de1a88d818c91b9e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bLength</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1deca1f1d6e5815b290e6e1015bce5b8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>BLOCK_TYPE_CDROM</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -4024,6 +5883,116 @@
     <Path>db/de9/device_8h.html</Path>
     <Anchor>ad258d4c51629346fceac4679b3209ad9a95fcb72aaeb1f2119ea4c38f2e70cf2e</Anchor>
     <DeclaredIn>device.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bmAttributes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae7c63b4cda39953db5710012a5d91c6f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bMaxPacketSize0</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a93b2c926b005917cdf2b5e7e4b3f80a2</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bMaxPower</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad3ac74420252d7a6a03e1e9d7b481f9b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bmRequestType</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3239590e1f7aff7e76f44f58d69e9bc5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNbrPorts</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a0f124f6852780f9484b9641e72cc9190</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumConfigurations</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abde4f60e84b2d9b10c27aa23bae62595</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumDescriptors</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a86ff434026085d9c0c751185eb3700c5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumEndpoints</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>acec2e7d68271baace354a0539f3d7e3d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bNumInterfaces</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1ad144333e75b0d867e72f8a337cd510</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bPwrOn2PwrGood</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5aa3533e5cf6dd5076f10b0f85e568bc</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>bRequest</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a1e7be110861bd4ff75c86d5214f31543</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4607,6 +6576,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>CreateUSBDevice</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a903984835c62529b22374233d6011e39</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>DeleteInode</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -4617,6 +6596,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Descriptor</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4b3bbeda6f0879e6c0ff493261f9da58</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Destroy</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -4624,6 +6613,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a30c9c281e5b2134cc2e763eac5290c61</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>DestroyUSBDevice</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad38500e8749ea3efbf3e860448664ac5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4684,6 +6683,16 @@
     <Path>db/de9/device_8h.html</Path>
     <Anchor>ad258d4c51629346fceac4679b3209ad9a5b9aa75488837c7571c1ae795d461fb3</Anchor>
     <DeclaredIn>device.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>DeviceRemovable</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac8ffaa3ae4023b969f1f35e99b9dd66e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6257,6 +8266,136 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>HubClassRequestCodes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_STATUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a03a283e0b85fe419cb7b0d6d487ee1e5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_CLEAR_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a96f4db6a8d9e449ac3a69596b846ae96</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_SET_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a36226f0a60d84b2f7f53d309760ae1d3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a1b9e6d7bf8c078383f15854bc66d8099</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_SET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a48a588590b08622fb277d86a97225384</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_CLEAR_TT_BUFFER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96ad8a99effec44eb959f1784bfc291e908</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_RESET_TT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a3be2f9f0e6ad08fa8ec30710e2d86b64</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_TT_STATE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96ac62b46f0acda847ed5f8fa5163d7552d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_STOP_TT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a455f1d77162e839d444437df045ad28b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iConfiguration</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5ad4440b4eb1935d66b154d274f8a272</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>idProduct</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2cf29745398a958349d784b1911c6b2b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>idVendor</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab393e07556e3858fed36ed2e260d4b4c</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>IFTODT</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -6264,6 +8403,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ac1304650d387faf30d7831d2f9f4db3d</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iInterface</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2e4535908d90f195c6347a91e15b544d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6277,6 +8426,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>iManufacturer</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7ee6ae41b483f3c49d1ddb39a83a8a43</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>InitializePCI</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -6284,6 +8443,16 @@
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>ad8bb87ffa35f47616595f155ce9a3a30</Anchor>
     <DeclaredIn>pci.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>InitializeUSBDevice</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a5cc862ef229fd932e6486cce101b5a96</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6517,6 +8686,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>iProduct</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a77c33850b90ff7617243c40ce61d9168</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>IRQ_MASK</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -6534,6 +8713,16 @@
     <Path>d1/de1/aip_8h.html</Path>
     <Anchor>abb94e8ea4110b1505f8722d697697eea</Anchor>
     <DeclaredIn>aip.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>iSerialNumber</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aeb129fc0d41494f69369da70d73eac11</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9807,6 +11996,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>PortPwrCtrlMask</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6803d10ccddb9227fcfe427724eabf69</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>POSIX_FADV_DONTNEED</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -11054,6 +13253,16 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ad985ee5fa0d7e795352935323a07f4a5</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>RemoveController</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a97243f677d54f1623bac8eb59a63a685</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -14007,6 +16216,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>u</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab53a2fcfa97ab0e1e1e4ee10efdc8b8e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Unmount</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -14057,6 +16276,1676 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>USB_BOS_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faf88442b50772fa2294ce7bc6006279d1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_HUB_LOCAL_POWER</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a45eabb6a28704d402fd4ab07b3384bd7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_HUB_OVER_CURRENT</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2817741f45fd3557c8c638982786aec7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_PORT_CONNECTION</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae7033bc6b6390f18e6914ffc1f351811</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_PORT_ENABLE</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae5d24e171a87eecd408aa8194ca317ab</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_PORT_OVER_CURRENT</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a069b49118f19fb1605bde9e6c854a889</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_PORT_RESET</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab66fcafc249e68c8ee354024ae5fdedd</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_C_PORT_SUSPEND</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6114391b8a80777426c3d2cb206b4e18</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_APPLICATION_SPECIFIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa04ae0ba89ca0c1f970ba594893a1ba1f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_AUDIO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa0dcf405ac9e372d0b5f95c76367a7d8f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_AUDIO_VIDEO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa8ba5001e0533add346275156db361771</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_BILLBOARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa7b2b27823e75546f6e9c6a2d290df88a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_BULK_DISPLAY</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaf3d2b9464c3a2aa35c82f0f3122cd429</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_CDC_DATA</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa8cabb1bf85cf2f7e8cb6b1af4073f4df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_COMMUNICATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfabac8630383704fae40c581ee3e4f01a2</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_CONTENT_SECURITY</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa10c79ed751c4f1f83a16d7e4b865ef59</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_DIAGNOSTIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6648ff49e5eb150702fadd9c46f020f3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_HID</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa30f7bad267a03831092599975e831c08</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_HUB</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaaff6f1f5eee828fce9d50435333b7d93</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_I3C</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6564cd598e30214622387deb63bd57cd</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfad187069faa8c6837439c4ca4b19f2c11</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MASS_STORAGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaea11f2b2eaf8109103420f42e1fafd19</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MCTP_OVER_USB</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa3094c4ef46b7f823583caf41218e4d30</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MISC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa1d3a828ac04ed39708458f0ceed28af3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PERSONAL_HEALTHCARE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6b7849102c94c68b548cacc87807748a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PHYSICAL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa2a9843d0359925718f7ca00020d18c98</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PRINTER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa507d61e36c531b443e53d5056aac5a7f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_SMART_CARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa593efd30d98bf579b1eadc2ff2945b26</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_STILL_IMAGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfab075b61f1bff00d48e4910fe64f515f4</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_TYPE_C_BRIDGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaedba7a6161276adc34ececb8582e5b7e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_VENDOR_SPECIFIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaef6eb65b7e76bcc5bbbb021e071b5daa</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_VIDEO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa281fa214d7c9596fd3df27e3d0d415df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_WIRELESS_CONTROLLER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaf7835e03ba1ae87339700f02ca25f3ac</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLEAR_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77dafc322f59df3e38e4b5c7d69a8c8fac1b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CONFIGURATION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa57e34323b8fea0e3cde22ea176273cba</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEBUG_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa598f2b4a3a535606f1d8945fe7329e51</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_CAPABILITY_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa20d7cb62d20e0049114e3cdf08aa024d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa93936e53e84710db406c492496dd0f9e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_QUALIFIER_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa707e6ffd6abfe64c54ecc722cf9591bd</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_ENDPOINT_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa606aad27928ea715fbd830b71426e90f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_FULL_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328a5fb9d3c9200c000b6b58ea5b48a65f8e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_CONFIGURATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77daf50f8891b93e1facdeeac6551635dec0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da607171374f430021eb01ebf9c662b312</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77daccb2d77fbd2ea0723b9278c7760cdd5b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_STATUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da19e02b9cd52d35505946a2fcf258d009</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa08c3458de3455b37a7b265d11eafa838</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_KEYBOARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2aa2a84c131cd46db6d81b17bebe01925a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_MOUSE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2af8f9d40cd645425836c9d87f51c6ab21</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_NONE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2a1ef1b12789fdfdf59b4aafecc9228deb</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_SUBCLASS_BOOT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09a6fce9f86b57bbc1877bcc9376213b16b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_SUBCLASS_NONE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09abc421968360efc7f4ce4b5042c58980f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HIGH_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328afd47048e6fb70c189d43b5091749eed8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_CLEAR_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a96f4db6a8d9e449ac3a69596b846ae96</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_CLEAR_TT_BUFFER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96ad8a99effec44eb959f1784bfc291e908</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_CPI_MASK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a177137bf86841723815e2c8227202b12</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa9772729fbfde21d3feded659afafc166</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a1b9e6d7bf8c078383f15854bc66d8099</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_STATUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a03a283e0b85fe419cb7b0d6d487ee1e5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_GET_TT_STATE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96ac62b46f0acda847ed5f8fa5163d7552d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_LPSM_MASK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abeaa6473cedd32a14cb97d92e7b7abd6</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_OP_MASK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a54f6df849b80e09bd5529fba9a6045f9</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_PIS_MASK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afc90da66fcc6f85c05cdf6cf528f7a34</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_RESET_TT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a3be2f9f0e6ad08fa8ec30710e2d86b64</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_SET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a48a588590b08622fb277d86a97225384</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_SET_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a36226f0a60d84b2f7f53d309760ae1d3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_STOP_TT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>afe7158cf4d32e5226dc07459d6ebed96a455f1d77162e839d444437df045ad28b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_TTTT_MASK</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aa3287a6307f0d459046eff79602fa59a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_ASSOCIATION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa5e82552dc4ba4a132d6ed229b11ea8ad</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fae47955b80cccb41cd50340d80e0edab8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_POWER_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faef61570f85ea88bae829251111848e63</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_LOW_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328ac99e64cd002ac58256d65b4f67f5d7df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_MAX_HUB_PORTS</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9452e1d785c8bceca757cee5ac26dcf7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_OTG_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa630b5bfe1ba1347227c7dbf73d013d63</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_OTHER_SPEED_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faf5e50326c229399387e5e88b6c7edc68</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PHYSICAL_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa61b2d5316cb568274b025c2c15d0f505</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_CONNECTION</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a17874da149043f9d0223c3dda594516c</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_ENABLE</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac05cf6b7b54ee5081ebe7af4af8f6049</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_INDICATOR</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a9f466fa1ec1d78671972b7d3ea43742a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_LOW_SPEED</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aef7eb427b5faf4b509d84a5617ae021a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_OVER_CURRENT</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a416dc12bbc849a6c01c2839bb3d75169</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_POWER</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a04a1514aeaa9ce999593b8c65776e2bc</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_RESET</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ae9a73e664716752745e9e364e2f2724f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_SUSPEND</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>accbf055ff1f2a92b3ce86e07010a836e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PORT_TEST</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adddf813f3b0a4003f4fbdd2b6be290d5</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REPORT_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa0abdd16c22042db8b7a6eaa00f6a989f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_ADDRESS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da70933e1ff11c5038101e8461fb7483f7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_CONFIGURATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da3221dd1aa206f4e2a2308c2bff6d4ab1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da292d7bfdf2658a4a0cace823723ae095</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da25498c8bf5b04df4934c89cc5c57b162</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da593d3524128ecfdfccba8b85f9691125</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_STRING_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa3ae5e80cb995aa45c71e4932bec6efdc</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPER_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328a11ad77e7cf2cdcccdc5cfcac839a4e04</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faaed466133c3a01a2289fda8b09f1dcbf</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPERSPEED_HUB_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fac135c64982daa7ab72bf903fed45be84</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SYNCH_FRAME</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da90460da08d427f828df2f0479f1b3132</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_UNKNOWN_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328ac831394806c397b64620ffdb74509a52</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBClassCodes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bf</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfad187069faa8c6837439c4ca4b19f2c11</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_AUDIO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa0dcf405ac9e372d0b5f95c76367a7d8f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_COMMUNICATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfabac8630383704fae40c581ee3e4f01a2</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_HID</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa30f7bad267a03831092599975e831c08</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PHYSICAL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa2a9843d0359925718f7ca00020d18c98</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_STILL_IMAGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfab075b61f1bff00d48e4910fe64f515f4</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PRINTER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa507d61e36c531b443e53d5056aac5a7f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MASS_STORAGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaea11f2b2eaf8109103420f42e1fafd19</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_HUB</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaaff6f1f5eee828fce9d50435333b7d93</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_CDC_DATA</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa8cabb1bf85cf2f7e8cb6b1af4073f4df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_SMART_CARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa593efd30d98bf579b1eadc2ff2945b26</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_CONTENT_SECURITY</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa10c79ed751c4f1f83a16d7e4b865ef59</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_VIDEO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa281fa214d7c9596fd3df27e3d0d415df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_PERSONAL_HEALTHCARE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6b7849102c94c68b548cacc87807748a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_AUDIO_VIDEO</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa8ba5001e0533add346275156db361771</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_BILLBOARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa7b2b27823e75546f6e9c6a2d290df88a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_TYPE_C_BRIDGE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaedba7a6161276adc34ececb8582e5b7e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_BULK_DISPLAY</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaf3d2b9464c3a2aa35c82f0f3122cd429</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MCTP_OVER_USB</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa3094c4ef46b7f823583caf41218e4d30</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_I3C</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6564cd598e30214622387deb63bd57cd</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_DIAGNOSTIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa6648ff49e5eb150702fadd9c46f020f3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_WIRELESS_CONTROLLER</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaf7835e03ba1ae87339700f02ca25f3ac</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_MISC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa1d3a828ac04ed39708458f0ceed28af3</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_APPLICATION_SPECIFIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfa04ae0ba89ca0c1f970ba594893a1ba1f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLASS_VENDOR_SPECIFIC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a206439415174f755e07f2aed01aec4bfaef6eb65b7e76bcc5bbbb021e071b5daa</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBHIDProtocolCodes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_NONE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2a1ef1b12789fdfdf59b4aafecc9228deb</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_KEYBOARD</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2aa2a84c131cd46db6d81b17bebe01925a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_PROTOCOL_MOUSE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab5eb0bcd05ae68f9185b4c144822cce2af8f9d40cd645425836c9d87f51c6ab21</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBHIDSubclassCodes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_SUBCLASS_NONE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09abc421968360efc7f4ce4b5042c58980f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_SUBCLASS_BOOT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09a6fce9f86b57bbc1877bcc9376213b16b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBSpeeds</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_UNKNOWN_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328ac831394806c397b64620ffdb74509a52</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_LOW_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328ac99e64cd002ac58256d65b4f67f5d7df</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_FULL_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328a5fb9d3c9200c000b6b58ea5b48a65f8e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HIGH_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328afd47048e6fb70c189d43b5091749eed8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPER_SPEED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a50c6e54ff0af3153d184442bfc7e2328a11ad77e7cf2cdcccdc5cfcac839a4e04</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBStandardDescriptorTypes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa93936e53e84710db406c492496dd0f9e</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CONFIGURATION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa57e34323b8fea0e3cde22ea176273cba</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_STRING_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa3ae5e80cb995aa45c71e4932bec6efdc</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fae47955b80cccb41cd50340d80e0edab8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_ENDPOINT_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa606aad27928ea715fbd830b71426e90f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_QUALIFIER_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa707e6ffd6abfe64c54ecc722cf9591bd</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_OTHER_SPEED_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faf5e50326c229399387e5e88b6c7edc68</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_POWER_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faef61570f85ea88bae829251111848e63</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_OTG_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa630b5bfe1ba1347227c7dbf73d013d63</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEBUG_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa598f2b4a3a535606f1d8945fe7329e51</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_INTERFACE_ASSOCIATION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa5e82552dc4ba4a132d6ed229b11ea8ad</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_BOS_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faf88442b50772fa2294ce7bc6006279d1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_DEVICE_CAPABILITY_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa20d7cb62d20e0049114e3cdf08aa024d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HID_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa08c3458de3455b37a7b265d11eafa838</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REPORT_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa0abdd16c22042db8b7a6eaa00f6a989f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_PHYSICAL_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa61b2d5316cb568274b025c2c15d0f505</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_HUB_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fa9772729fbfde21d3feded659afafc166</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPERSPEED_HUB_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8fac135c64982daa7ab72bf903fed45be84</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SUPERSPEED_ENDPOINT_COMPANION_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>af1d2445ef40a520d1e402cc5cd069c8faaed466133c3a01a2289fda8b09f1dcbf</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBStandardRequestCodes</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77d</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_STATUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da19e02b9cd52d35505946a2fcf258d009</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_CLEAR_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77dafc322f59df3e38e4b5c7d69a8c8fac1b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_FEATURE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da25498c8bf5b04df4934c89cc5c57b162</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_ADDRESS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da70933e1ff11c5038101e8461fb7483f7</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da607171374f430021eb01ebf9c662b312</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_DESCRIPTOR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da292d7bfdf2658a4a0cace823723ae095</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_CONFIGURATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77daf50f8891b93e1facdeeac6551635dec0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_CONFIGURATION</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da3221dd1aa206f4e2a2308c2bff6d4ab1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_GET_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77daccb2d77fbd2ea0723b9278c7760cdd5b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SET_INTERFACE</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da593d3524128ecfdfccba8b85f9691125</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_SYNCH_FRAME</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da90460da08d427f828df2f0479f1b3132</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>WaitInput</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -14077,6 +17966,96 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>wHubChange</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a2a0c477bbf828a8b3a8f3160f03654e9</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubCharacteristics</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a4801dfd24b5876e0cf3f7c9a096f69ac</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubDelay</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a51a07786646661a4d07877edb934e4fb</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wHubStatus</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a66fc152b9f114120893eae6d2d9d3b70</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wIndex</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adc578ce35d89d52deba61ee6f312f177</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wLength</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a496c03443b177fd2e6c93616064d2934</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wMaxPacketSize</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>abcc8edb1d5094ce6a16b42c1a7ae67d8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wPortChange</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab4c17bf5cad71baceceef98d6d0b2aec</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wPortStatus</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a92822edc6d04a4c034833721a628c9ba</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Write</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
@@ -14084,6 +18063,36 @@
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a5f5c45d347b3cbe34597e57c04967e8b</Anchor>
     <DeclaredIn>fs.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wString</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>aebea3a21f860fa17ee661babb9c1170f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wTotalLength</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a866c5d9bb8a60f25805d37b7a5b5f9e8</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>wValue</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a7383d0165ad8eab48aa239c005199121</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

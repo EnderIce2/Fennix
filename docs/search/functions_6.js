@@ -1,10 +1,12 @@
 var searchData=
 [
-  ['syscall0_0',['syscall0',['../d2/d6e/syscalls_8h.html#aead3c4d793ac641f0c76fa3a2884799f',1,'syscalls.h']]],
-  ['syscall1_1',['syscall1',['../d2/d6e/syscalls_8h.html#ad0203a1b8baab624b557c0b1fe4ec8be',1,'syscalls.h']]],
-  ['syscall2_2',['syscall2',['../d2/d6e/syscalls_8h.html#af2d181ed9821a83ebe9aca04015aea37',1,'syscalls.h']]],
-  ['syscall3_3',['syscall3',['../d2/d6e/syscalls_8h.html#af5b89cfe6ca2d013d51a42c614ad3ecf',1,'syscalls.h']]],
-  ['syscall4_4',['syscall4',['../d2/d6e/syscalls_8h.html#ac97df35113f23a8d644853c30a478b2a',1,'syscalls.h']]],
-  ['syscall5_5',['syscall5',['../d2/d6e/syscalls_8h.html#ac49b378966d04712882bbc2d0837de6b',1,'syscalls.h']]],
-  ['syscall6_6',['syscall6',['../d2/d6e/syscalls_8h.html#a6f2f390222fc28bbd48023e2da1d4de1',1,'syscalls.h']]]
+  ['pic_5feoi_0',['PIC_EOI',['../d1/de1/aip_8h.html#a08e984e6a1417b7b6e89c6232ce00905',1,'aip.h']]],
+  ['ps2acktimeout_1',['PS2ACKTimeout',['../d1/de1/aip_8h.html#a38ac8086f1219290834fa333d5f61d61',1,'aip.h']]],
+  ['ps2clearoutputbuffer_2',['PS2ClearOutputBuffer',['../d1/de1/aip_8h.html#ab89ed60f3ef02b78ef5080b0941ed134',1,'aip.h']]],
+  ['ps2readafterack_3',['PS2ReadAfterACK',['../d1/de1/aip_8h.html#a1c1df3cb3ab237cb29864c8d185537f0',1,'aip.h']]],
+  ['ps2readdata_4',['PS2ReadData',['../d1/de1/aip_8h.html#ac52f28bcc38cdcb9e2548528de67dc44',1,'aip.h']]],
+  ['ps2readstatus_5',['PS2ReadStatus',['../d1/de1/aip_8h.html#ab4e5cc3a96dc9f7d922e65241ff53f48',1,'aip.h']]],
+  ['ps2wait_6',['PS2Wait',['../d1/de1/aip_8h.html#af2ae44f829abc7018863d9bf8fb9b859',1,'aip.h']]],
+  ['ps2writecommand_7',['PS2WriteCommand',['../d1/de1/aip_8h.html#a12501e11544172f81587ea9a2cedd7be',1,'aip.h']]],
+  ['ps2writedata_8',['PS2WriteData',['../d1/de1/aip_8h.html#ac722c6485f425b33b023549fa448c112',1,'aip.h']]]
 ];

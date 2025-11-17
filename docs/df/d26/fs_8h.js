@@ -36,7 +36,7 @@ var fs_8h =
     [ "InodeOperations", "db/de6/structInodeOperations.html", "db/de6/structInodeOperations" ],
     [ "FileSystemDevice", "df/d26/fs_8h.html#d4/d24/structFileSystemDevice", [
       [ "Block", "df/d26/fs_8h.html#ae311d9d0d76dbba597183a4a934720b4", null ],
-      [ "inode", "df/d26/fs_8h.html#ae7fa98dc9b923a5a711d4c9a4fdf36e0", null ]
+      [ "inode", "df/d26/fs_8h.html#af0cfcefc95bda473c1c09bc1c03ad3c2", null ]
     ] ],
     [ "SuperBlockOperations", "d2/d55/structSuperBlockOperations.html", "d2/d55/structSuperBlockOperations" ],
     [ "FileSystemInfo", "df/d26/fs_8h.html#de/d99/structFileSystemInfo", [
@@ -107,7 +107,7 @@ var fs_8h =
     [ "RegisterMountPoint", "df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f", null ],
     [ "UnregisterFileSystem", "df/d26/fs_8h.html#a41338d5d4b70d416fb956287f27773a8", null ],
     [ "UnregisterMountPoint", "df/d26/fs_8h.html#a339c1ed1e08b3248cbaad2b3b63ba86d", null ],
-    [ "__attribute__", "df/d26/fs_8h.html#a21ace075273579727f14d0eefb1b934e", null ],
+    [ "__attribute__", "df/d26/fs_8h.html#a6755c486906051ec7d4fd52fa1895d51", null ],
     [ "AllocateInode", "df/d26/fs_8h.html#aab39d62bf90b7b74ddff3b22086f40f6", null ],
     [ "Capabilities", "df/d26/fs_8h.html#a1e190b7f0133183d91cc71fc8d47ed0c", null ],
     [ "Close", "df/d26/fs_8h.html#a00f03806ee4724ff3e44372909ab378b", null ],

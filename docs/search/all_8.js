@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['hardlinks_0',['HardLinks',['../df/d26/fs_8h.html#a90cbd8716158e3d6c367080d81e7327e',1,'kstat']]],
-  ['header_1',['header',['../d9/d97/pci_8h.html#a1da8e906de677a603e3797b8e69aa5b8',1,'__attribute__::Header'],['../d9/d97/pci_8h.html#a52051cdbdf4ecaebc7b7ab353485ce26',1,'__attribute__::Header']]],
-  ['headertype_2',['HeaderType',['../d9/d97/pci_8h.html#ac3db7471bb58aeb50cd8a4ff20b972f8',1,'__attribute__']]],
-  ['height_3',['Height',['../d2/d6e/syscalls_8h.html#a19d0c3a8e1f310af3ea7b1edc623f3e5',1,'FramebufferScreenInfo']]]
+  ['gamepad_0',['Gamepad',['../de/ded/input_8h.html#a221f6781b4faa2d321ca0d928f518d6e',1,'InputReport.__unnamed17__']]],
+  ['gamepadreport_1',['GamepadReport',['../de/ded/input_8h.html#d6/dda/structGamepadReport',1,'']]],
+  ['getbar_2',['GetBAR',['../d9/d97/pci_8h.html#a2cf7e584084dbde4ba2fd692c295a538',1,'pci.h']]],
+  ['getpcidevices_3',['GetPCIDevices',['../d9/d97/pci_8h.html#a287fe4c598591108b24ec4a339e04546',1,'pci.h']]],
+  ['groupid_4',['GroupID',['../df/d26/fs_8h.html#a6df31642b52e126ee6433ae83c5c7df8',1,'kstat']]],
+  ['gyroscope_5',['Gyroscope',['../de/ded/input_8h.html#abed99e5db57749f375e738c1c0258047',1,'InputReport.__unnamed17__']]],
+  ['gyroscopereport_6',['GyroscopeReport',['../de/ded/input_8h.html#d4/daf/structGyroscopeReport',1,'']]]
 ];
