@@ -724,6 +724,41 @@ namespace v0
 
 		return DriverManager->UnregisterBlockDevice(DriverID, DeviceID);
 	}
+
+	USBDevice *CreateUSBDevice(dev_t DriverID)
+	{
+		dbg_api("%d", DriverID);
+
+		return usb->CreateDevice();
+	}
+
+	int DestroyUSBDevice(dev_t DriverID, USBDevice *Device)
+	{
+		dbg_api("%d, %#lx", DriverID, Device);
+
+		return usb->RemoveDevice(Device);
+	}
+
+	int InitializeUSBDevice(dev_t DriverID, USBDevice *Device)
+	{
+		dbg_api("%d, %#lx", DriverID, Device);
+
+		return usb->InitializeDevice(Device);
+	}
+
+	int AddController(dev_t DriverID, USBController *Controller)
+	{
+		dbg_api("%d, %#lx", DriverID, Controller);
+
+		return usb->AddController(Controller);
+	}
+
+	int RemoveController(dev_t DriverID, USBController *Controller)
+	{
+		dbg_api("%d, %#lx", DriverID, Controller);
+
+		return usb->RemoveController(Controller);
+	}
 }
 
 struct APISymbols
@@ -793,6 +828,12 @@ static struct APISymbols APISymbols_v0[] = {
 	{"__ReportInputEvent", (void *)v0::ReportInputEvent},
 	{"__RegisterBlockDevice", (void *)v0::RegisterBlockDevice},
 	{"__UnregisterBlockDevice", (void *)v0::UnregisterBlockDevice},
+
+	{"__CreateUSBDevice", (void *)v0::CreateUSBDevice},
+	{"__DestroyUSBDevice", (void *)v0::DestroyUSBDevice},
+	{"__InitializeUSB", (void *)v0::InitializeUSBDevice},
+	{"__AddController", (void *)v0::AddController},
+	{"__RemoveController", (void *)v0::RemoveController},
 };
 
 long __KernelUndefinedFunction(long arg0, long arg1, long arg2, long arg3,

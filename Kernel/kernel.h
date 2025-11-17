@@ -37,6 +37,7 @@
 #include <tty.hpp>
 #include <pci.hpp>
 #include <smp.hpp>
+#include <usb.hpp>
 #endif
 
 extern struct BootInfo bInfo;
@@ -54,6 +55,7 @@ extern vfs::Virtual *fs;
 extern Tasking::Task *TaskManager;
 extern Driver::Manager *DriverManager;
 extern UART::Driver uart;
+extern UniversalSerialBus::Manager *usb;
 
 #endif // __cplusplus
 

@@ -11,6 +11,7 @@ License information can be found in the [LICENSES.md](LICENSES.md) file.
 - [LemonOS Project](https://github.com/LemonOSProject/LemonOS)
 - [ToaruOS](https://github.com/klange/toaruos)
 - [Various SIMD functions](https://wiki.osdev.org/User:01000101/optlib/)
+- [Measuring Mutexes, Spinlocks and how Bad the Linux Scheduler Really is](https://probablydance.com/2019/12/30/measuring-mutexes-spinlocks-and-how-bad-the-linux-scheduler-really-is/)
 
 ## C++ STL
 - [cppreference.com](https://cppreference.com)

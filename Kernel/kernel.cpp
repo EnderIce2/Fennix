@@ -62,6 +62,7 @@ Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
 Driver::Manager *DriverManager = nullptr;
 UART::Driver uart;
+UniversalSerialBus::Manager *usb = nullptr;
 
 EXTERNC void putchar(char c)
 {
@@ -387,6 +388,10 @@ EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
 	KPrint("Unloading filesystems");
 	if (fs)
 		delete fs, fs = nullptr;
+
+	KPrint("Stopping USB Manager");
+	if (usb)
+		delete usb, usb = nullptr;
 
 	// https://wiki.osdev.org/Calling_Global_Constructors
 	KPrint("Calling destructors");

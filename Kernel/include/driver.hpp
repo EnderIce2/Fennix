@@ -23,6 +23,7 @@
 #include <interface/driver.h>
 #include <interface/input.h>
 #include <interface/block.h>
+#include <interface/usb.h>
 #include <fs/vfs.hpp>
 #include <unordered_map>
 #include <memory.hpp>
@@ -273,6 +274,12 @@ namespace v0
 	dev_t RegisterDevice(dev_t DriverID, DeviceType Type, const InodeOperations *Operations);
 	int UnregisterDevice(dev_t DriverID, dev_t Device);
 	int ReportInputEvent(dev_t DriverID, InputReport *Report);
+
+	USBDevice *CreateUSBDevice(dev_t DriverID);
+	int DestroyUSBDevice(dev_t DriverID, USBDevice *Device);
+	int InitializeUSBDevice(dev_t DriverID, USBDevice *Device);
+	int AddController(dev_t DriverID, USBController *Controller);
+	int RemoveController(dev_t DriverID, USBController *Controller);
 }
 #endif // !NO_API_IN_HEADER
 

@@ -121,6 +121,9 @@ void KernelMainThread()
 	if (IsVirtualizedEnvironment())
 		KPrint("Running in a virtualized environment");
 
+	KPrint("Initializing USB Subsystem");
+	usb = new UniversalSerialBus::Manager;
+
 	KPrint("Initializing Driver Manager");
 	DriverManager = new Driver::Manager;
 

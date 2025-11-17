@@ -21,6 +21,8 @@
 #include <debug.h>
 #include <assert.h>
 
+using namespace fnx;
+
 class __ptr_t_demo
 {
 public:
