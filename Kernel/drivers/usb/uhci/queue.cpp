@@ -17,10 +17,10 @@
 
 #include "uhci.hpp"
 
+extern Driver::Manager *DriverManager;
 namespace Driver::UniversalHostControllerInterface
 {
 	extern dev_t DriverID;
-	extern Driver::Manager *DriverManager;
 
 	Queue::Queue()
 	{
