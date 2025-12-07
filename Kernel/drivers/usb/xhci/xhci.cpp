@@ -59,7 +59,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		if (Devices.empty())
 		{
 			trace("No device found.");
-			return -ENODEV;
+			return ENODEV;
 		}
 		return 0;
 	}
