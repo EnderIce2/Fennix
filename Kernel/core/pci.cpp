@@ -986,7 +986,7 @@ namespace PCI
 		case 0: /* PCI Header 0 */
 		{
 			PCIHeader0 *hdr = (PCIHeader0 *)Device.Header;
-			for (char i = 0; i < 6; i++)
+			for (short i = 0; i < 6; i++)
 			{
 				if (hdr->BAR[i] == 0)
 					continue;
@@ -1017,7 +1017,7 @@ namespace PCI
 		case 1: /* PCI Header 1 (PCI-to-PCI Bridge) */
 		{
 			PCIHeader1 *hdr = (PCIHeader1 *)Device.Header;
-			for (char i = 0; i < 2; i++)
+			for (short i = 0; i < 2; i++)
 			{
 				if (hdr->BAR[i] == 0)
 					continue;
