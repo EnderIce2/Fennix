@@ -997,7 +997,7 @@ namespace PCI
 				if ((hdr->BAR[i] & 1) == 1) /* I/O Base */
 				{
 					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, base, base + size);
-					break;
+					continue;
 				}
 
 				uint32_t flags = Memory::RW;
@@ -1028,7 +1028,7 @@ namespace PCI
 				if ((hdr->BAR[i] & 1) == 1) /* I/O Base */
 				{
 					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, base, base + size);
-					break;
+					continue;
 				}
 
 				uint32_t flags = Memory::RW;
