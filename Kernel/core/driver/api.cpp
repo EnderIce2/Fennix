@@ -622,36 +622,34 @@ namespace v0
 			[[fallthrough]];
 		case 0: /* PCI Header 0 */
 		{
-			PCI::PCIHeader0 *hdr0 =
-				(PCI::PCIHeader0 *)Header;
+			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)Header;
 			switch (i)
 			{
 			case 0:
-				return hdr0->BAR0;
+				return hdr0->BAR[0];
 			case 1:
-				return hdr0->BAR1;
+				return hdr0->BAR[1];
 			case 2:
-				return hdr0->BAR2;
+				return hdr0->BAR[2];
 			case 3:
-				return hdr0->BAR3;
+				return hdr0->BAR[3];
 			case 4:
-				return hdr0->BAR4;
+				return hdr0->BAR[4];
 			case 5:
-				return hdr0->BAR5;
+				return hdr0->BAR[5];
 			default:
 				assert(!"Invalid BAR index");
 			}
 		}
 		case 1: /* PCI Header 1 (PCI-to-PCI Bridge) */
 		{
-			PCI::PCIHeader1 *hdr1 =
-				(PCI::PCIHeader1 *)Header;
+			PCI::PCIHeader1 *hdr1 = (PCI::PCIHeader1 *)Header;
 			switch (i)
 			{
 			case 0:
-				return hdr1->BAR0;
+				return hdr1->BAR[0];
 			case 1:
-				return hdr1->BAR1;
+				return hdr1->BAR[1];
 			default:
 				assert(!"Invalid BAR index");
 			}

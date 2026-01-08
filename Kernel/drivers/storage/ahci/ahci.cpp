@@ -944,7 +944,7 @@ namespace Driver::AHCI
 		{
 			PCIManager->InitializeDevice(dev, KernelPageTable);
 			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
-			HBAMemory *hba = (HBAMemory *)(uintptr_t)hdr0->BAR5;
+			HBAMemory *hba = (HBAMemory *)(uintptr_t)hdr0->BAR[5];
 			uint32_t portsImplemented = hba->PortsImplemented;
 			trace("AHCI ports implemented: %x", portsImplemented);
 

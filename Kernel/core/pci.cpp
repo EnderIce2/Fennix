@@ -858,6 +858,108 @@ namespace PCI
 		}
 	}
 
+	uintptr_t PCIDevice::GetBAR(int8_t Index)
+	{
+		assert(Index >= 0 && Index < 6);
+
+		switch (GetHeaderType())
+		{
+		case 128:
+			warn("Unknown header type %d! Guessing PCI Header 0", GetHeaderType());
+			[[fallthrough]];
+		case 0: /* PCI Header 0 */
+		{
+			PCIHeader0 *hdr = (PCIHeader0 *)Header;
+			uint32_t bar = hdr->BAR[Index];
+			if (bar & 0x1)
+				return bar & 0xFFFFFFFFFFFFFFFC; /* I/O Space */
+
+			if (bar & 0x4) /* 64-bit Memory Space */
+			{
+				uint64_t bar64 = bar;
+				if (Index >= 5)
+					warn("BAR%d is part of a 64-bit address, but it's the last BAR!", Index);
+				else
+					bar64 |= ((uint64_t)hdr->BAR[Index + 1] << 32);
+				return bar64 & 0xFFFFFFFFFFFFFFF0;
+			}
+			else /* 32-bit Memory Space */
+				return bar & 0xFFFFFFFFFFFFFFF0;
+		}
+		case 1: /* PCI Header 1 (PCI-to-PCI Bridge) */
+		{
+			PCIHeader1 *hdr = (PCIHeader1 *)Header;
+			if (Index >= 2)
+			{
+				error("PCI-to-PCI Bridge has only 2 BARs!");
+				return 0;
+			}
+
+			uint32_t bar = hdr->BAR[Index];
+			if (bar & 0x1) /* I/O Space */
+				return bar & 0xFFFFFFFFFFFFFFFC;
+
+			if (bar & 0x4) /* 64-bit Memory Space */
+			{
+				uint64_t bar64 = bar;
+				if (Index >= 1)
+					warn("BAR%d is part of a 64-bit address, but it's the last BAR!", Index);
+				else
+					bar64 |= ((uint64_t)hdr->BAR[Index + 1] << 32);
+				return bar64 & 0xFFFFFFFFFFFFFFF0;
+			}
+			else /* 32-bit Memory Space */
+				return bar & 0xFFFFFFFFFFFFFFF0;
+		}
+		case 2: /* PCI Header 2 (PCI-to-CardBus Bridge) */
+		{
+			PCIHeader2 *hdr = (PCIHeader2 *)Header;
+			/* CardBus bridges have specific memory/IO windows, not standard BARs */
+			if (Index == 0)
+			{
+				uint32_t bar = hdr->CardbusSocketRegistersBaseAddress;
+				if (bar & 0x1) /* I/O Space */
+					return bar & 0xFFFFFFFFFFFFFFFC;
+
+				if (bar & 0x4) /* 64-bit Memory Space */
+				{
+					uint64_t bar64 = bar;
+					warn("CardbusSocketRegistersBaseAddress is 64-bit");
+					return bar64 & 0xFFFFFFFFFFFFFFF0;
+				}
+				else /* 32-bit Memory Space */
+					return bar & 0xFFFFFFFFFFFFFFF0;
+			}
+			else if (Index == 1)
+			{
+				/* LegacyBaseAddress */
+				uint32_t bar = hdr->LegacyBaseAddress;
+				if (bar & 0x1) /* I/O Space */
+					return bar & 0xFFFFFFFFFFFFFFFC;
+
+				if (bar & 0x4) /* 64-bit Memory Space */
+				{
+					uint64_t bar64 = bar;
+					warn("LegacyBaseAddress is 64-bit");
+					return bar64 & 0xFFFFFFFFFFFFFFF0;
+				}
+				else /* 32-bit Memory Space */
+					return bar & 0xFFFFFFFFFFFFFFF0;
+			}
+			else
+			{
+				error("PCI-to-CardBus Bridge has only 2 logical address registers!");
+				return 0;
+			}
+		}
+		default:
+		{
+			error("Unknown header type %d", GetHeaderType());
+			return 0;
+		}
+		}
+	}
+
 #ifdef DEBUG
 	void e(PCIDevice dev)
 	{
@@ -876,119 +978,81 @@ namespace PCI
 
 	void Manager::MapPCIAddresses(PCIDevice Device, Memory::PageTable *Table)
 	{
-		debug("Header Type: %d", Device.Header->HeaderType);
-		switch (Device.Header->HeaderType)
+		switch (Device.GetHeaderType())
 		{
 		case 128:
-			warn("Unknown header type %d! Guessing PCI Header 0",
-				 Device.Header->HeaderType);
+			warn("Unknown header type %d! Guessing PCI Header 0", Device.GetHeaderType());
 			[[fallthrough]];
 		case 0: /* PCI Header 0 */
 		{
-			PCIHeader0 *hdr0 = (PCIHeader0 *)Device.Header;
-
-			uint32_t BAR[6] = {};
-			size_t BARsSize[6] = {};
-
-			BAR[0] = hdr0->BAR0;
-			BAR[1] = hdr0->BAR1;
-			BAR[2] = hdr0->BAR2;
-			BAR[3] = hdr0->BAR3;
-			BAR[4] = hdr0->BAR4;
-			BAR[5] = hdr0->BAR5;
-
-			debug("Type: %d; IOBase: %#lx; MemoryBase: %#lx", BAR[0] & 1, BAR[1] & (~3), BAR[0] & (~15));
-
-			/* BARs Size */
-			for (short i = 0; i < 6; i++)
+			PCIHeader0 *hdr = (PCIHeader0 *)Device.Header;
+			for (char i = 0; i < 6; i++)
 			{
-				if (BAR[i] == 0)
+				if (hdr->BAR[i] == 0)
 					continue;
 
-				size_t size;
-				if ((BAR[i] & 1) == 0) /* Memory Base */
+				uintptr_t base = Device.GetBAR(i);
+				size_t size = hdr->BAR[i].GetSize();
+
+				if ((hdr->BAR[i] & 1) == 1) /* I/O Base */
 				{
-					hdr0->BAR0 = UINT32_MAX;
-					size = hdr0->BAR0;
-					hdr0->BAR0 = BAR[i];
-
-					/* FIXME: further testing required */
-					// if ((BAR[i] & 0x6) == 0x4) /* 64-bit address */
-					// {
-					// 	hdr0->BAR1 = UINT32_MAX;
-					// 	size |= ((size_t)hdr0->BAR1 << 32);
-					// 	hdr0->BAR1 = BAR[i + 1];
-					// 	i++; /* Skip the next BAR since it's part of the 64-bit address */
-					// }
-
-					size = size & (~15);
-					size = ~size + 1;
-					size = size & UINT32_MAX;
-					if (size == 0)
-					{
-						warn("MEM BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
-						size++;
-					}
-					BARsSize[i] = size;
+					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, base, base + size);
+					break;
 				}
-				else if ((BAR[i] & 1) == 1) /* I/O Base */
-				{
-					hdr0->BAR1 = UINT32_MAX;
-					size = hdr0->BAR1;
-					hdr0->BAR1 = BAR[i];
 
-					size = size & (~3);
-					size = ~size + 1;
-					size = size & UINT16_MAX;
-					if (size == 0)
-					{
-						warn("I/O BAR%d size is zero! Device: %#x:%#x", i, Device.Header->VendorID, Device.Header->DeviceID);
-						size++;
-					}
-					BARsSize[i] = size;
-				}
-				debug("BAR%d %#lx size: %zu", i, BAR[i], BARsSize[i]);
-			}
+				uint32_t flags = Memory::RW;
+				if (hdr->BAR[i].Memory.Prefetchable)
+					flags |= Memory::PWT; /* Use write-through for prefetchable regions */
+				else
+					flags |= Memory::PWT | Memory::PCD; /* Uncacheable for non-prefetchable */
 
-			/* Mapping the BARs */
-			for (short i = 0; i < 6; i++)
-			{
-				if (BAR[i] == 0)
-					continue;
+				debug("mapping %s region %#lx-%#lx", hdr->BAR[i].Memory.Prefetchable ? "prefetchable" : "non-prefetchable", base, base + size);
+				Memory::Virtual(Table).Map((void *)base, (void *)base, size, flags);
 
-				if ((BAR[i] & 1) == 0) /* Memory Base */
-				{
-					uintptr_t BARBase = BAR[i] & (~15);
-					size_t BARSize = BARsSize[i];
-
-					debug("Mapping BAR%d %#lx-%#lx", i, BARBase, BARBase + BARSize);
-
-					Memory::Virtual(Table).Map((void *)BARBase, (void *)BARBase,
-											   BARSize, Memory::RW | Memory::PWT | Memory::PCD);
-				}
-				else if ((BAR[i] & 1) == 1) /* I/O Base */
-				{
-					uintptr_t BARBase = BAR[i] & (~3);
-					size_t BARSize = BARsSize[i];
-
-					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, BARBase, BARBase + BARSize);
-				}
+				if ((hdr->BAR[i] & 0x4) == 0x4) /* 64-bit Memory Space */
+					i++;						/* Skip the next BAR as it's part of this 64-bit BAR */
 			}
 			break;
 		}
 		case 1: /* PCI Header 1 (PCI-to-PCI Bridge) */
 		{
-			fixme("PCI Header 1 (PCI-to-PCI Bridge) not implemented yet");
+			PCIHeader1 *hdr = (PCIHeader1 *)Device.Header;
+			for (char i = 0; i < 2; i++)
+			{
+				if (hdr->BAR[i] == 0)
+					continue;
+
+				uintptr_t base = Device.GetBAR(i);
+				size_t size = hdr->BAR[i].GetSize();
+
+				if ((hdr->BAR[i] & 1) == 1) /* I/O Base */
+				{
+					debug("no need to map BAR%d %#x-%#x as it's an I/O space", i, base, base + size);
+					break;
+				}
+
+				uint32_t flags = Memory::RW;
+				if (hdr->BAR[i].Memory.Prefetchable)
+					flags |= Memory::PWT; /* Use write-through for prefetchable regions */
+				else
+					flags |= Memory::PWT | Memory::PCD; /* Uncacheable for non-prefetchable */
+
+				debug("mapping %s region %#lx-%#lx", hdr->BAR[i].Memory.Prefetchable ? "prefetchable" : "non-prefetchable", base, base + size);
+				Memory::Virtual(Table).Map((void *)base, (void *)base, size, flags);
+
+				if ((hdr->BAR[i] & 0x4) == 0x4) /* 64-bit Memory Space */
+					i++;						/* Skip the next BAR as it's part of this 64-bit BAR */
+			}
 			break;
 		}
 		case 2: /* PCI Header 2 (PCI-to-CardBus Bridge) */
 		{
-			fixme("PCI Header 2 (PCI-to-CardBus Bridge) not implemented yet");
+			fixme("Mapping PCI-to-CardBus Bridge BARs is not implemented yet");
 			break;
 		}
 		default:
 		{
-			error("Unknown header type %d", Device.Header->HeaderType);
+			error("Unknown header type %d", Device.GetHeaderType());
 			break;
 		}
 		}
@@ -1101,8 +1165,7 @@ namespace PCI
 		return DeviceFound;
 	}
 
-	std::list<PCIDevice> Manager::FindPCIDevice(std::list<uint16_t> VendorIDs,
-												std::list<uint16_t> DeviceIDs)
+	std::list<PCIDevice> Manager::FindPCIDevice(std::list<uint16_t> VendorIDs, std::list<uint16_t> DeviceIDs)
 	{
 		std::list<PCIDevice> DeviceFound;
 		for (auto dev : Devices)

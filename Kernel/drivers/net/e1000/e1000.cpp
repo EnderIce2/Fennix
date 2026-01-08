@@ -272,8 +272,8 @@ namespace Driver::E1000
 			: Header(_Header),
 			  DeviceID(_DeviceID)
 		{
-			uint32_t PCIBAR0 = Header->BAR0;
-			uint32_t PCIBAR1 = Header->BAR1;
+			uint32_t PCIBAR0 = Header->BAR[0];
+			uint32_t PCIBAR1 = Header->BAR[1];
 			BAR.Type = PCIBAR0 & 1;
 			BAR.IOBase = (uint16_t)(PCIBAR0 & (~3));
 			BAR.MemoryBase = PCIBAR1 & (~15);

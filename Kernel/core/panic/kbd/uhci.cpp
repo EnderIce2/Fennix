@@ -112,12 +112,12 @@ nsa CrashUHCIKeyboardDriver::CrashUHCIKeyboardDriver(PCI::PCIDevice dev)
 		uint32_t BAR[6];
 		size_t BARsSize[6];
 
-		BAR[0] = hdr->BAR0;
-		BAR[1] = hdr->BAR1;
-		BAR[2] = hdr->BAR2;
-		BAR[3] = hdr->BAR3;
-		BAR[4] = hdr->BAR4;
-		BAR[5] = hdr->BAR5;
+		BAR[0] = hdr->BAR[0];
+		BAR[1] = hdr->BAR[1];
+		BAR[2] = hdr->BAR[2];
+		BAR[3] = hdr->BAR[3];
+		BAR[4] = hdr->BAR[4];
+		BAR[5] = hdr->BAR[5];
 
 		/* BARs Size */
 		for (short i = 0; i < 6; i++)
@@ -128,9 +128,9 @@ nsa CrashUHCIKeyboardDriver::CrashUHCIKeyboardDriver(PCI::PCIDevice dev)
 			size_t size;
 			if ((BAR[i] & 1) == 0) /* Memory Base */
 			{
-				hdr->BAR0 = 0xFFFFFFFF;
-				size = hdr->BAR0;
-				hdr->BAR0 = BAR[i];
+				hdr->BAR[0] = 0xFFFFFFFF;
+				size = hdr->BAR[0];
+				hdr->BAR[0] = BAR[i];
 				BARsSize[i] = size & (~15);
 				BARsSize[i] = ~BARsSize[i] + 1;
 				BARsSize[i] = BARsSize[i] & 0xFFFFFFFF;
@@ -139,9 +139,9 @@ nsa CrashUHCIKeyboardDriver::CrashUHCIKeyboardDriver(PCI::PCIDevice dev)
 			}
 			else if ((BAR[i] & 1) == 1) /* I/O Base */
 			{
-				hdr->BAR1 = 0xFFFFFFFF;
-				size = hdr->BAR1;
-				hdr->BAR1 = BAR[i];
+				hdr->BAR[1] = 0xFFFFFFFF;
+				size = hdr->BAR[1];
+				hdr->BAR[1] = BAR[i];
 				BARsSize[i] = size & (~3);
 				BARsSize[i] = ~BARsSize[i] + 1;
 				BARsSize[i] = BARsSize[i] & 0xFFFF;

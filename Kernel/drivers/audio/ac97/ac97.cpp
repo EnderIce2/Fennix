@@ -611,10 +611,10 @@ namespace Driver::AC97
 			: Header(_Header)
 		{
 			/* Native Audio Mixer Base Address */
-			uint32_t PCIBAR0 = Header->BAR0;
+			uint32_t PCIBAR0 = Header->BAR[0];
 
 			/* Native Audio Bus Master Base Address */
-			uint32_t PCIBAR1 = Header->BAR1;
+			uint32_t PCIBAR1 = Header->BAR[1];
 
 			// uint8_t Type = PCIBAR0 & 1;
 			MixerAddress = (uint16_t)(PCIBAR0 & (~3));
@@ -792,7 +792,7 @@ namespace Driver::AC97
 		for (auto &&i : Devices)
 		{
 			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)i.Header;
-			uint8_t type = hdr0->BAR0 & 1;
+			uint8_t type = hdr0->BAR[0] & 1;
 			if (type != 1)
 			{
 				warn("Device %x:%x.%d BAR0 is not I/O.",

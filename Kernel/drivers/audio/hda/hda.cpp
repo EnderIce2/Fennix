@@ -63,7 +63,7 @@ namespace Driver::HighDefinitionAudio
 			  CORB((uint32_t *)(uintptr_t)DriverManager->AllocateMemory(DriverID, 1)),
 			  RIRB((uint64_t *)DriverManager->AllocateMemory(DriverID, 1))
 		{
-			CTL = (ControllerRegisters *)(uintptr_t)Header->BAR0;
+			CTL = (ControllerRegisters *)(uintptr_t)Header->BAR[0];
 			fixme("Unimplemented HDA driver");
 			return;
 			Initialized = true;
@@ -114,7 +114,7 @@ namespace Driver::HighDefinitionAudio
 		for (auto &&dev : Devices)
 		{
 			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
-			uint8_t type = hdr0->BAR0 & 1;
+			uint8_t type = hdr0->BAR[0] & 1;
 			if (type == 1)
 			{
 				debug("Device %x:%x.%d BAR0 is I/O.",
@@ -184,7 +184,7 @@ namespace Driver::HighDefinitionAudio
 		for (auto &&dev : Devices)
 		{
 			PCI::PCIHeader0 *PCIBaseAddress = (PCI::PCIHeader0 *)dev.Header;
-			uint32_t PCIBAR0 = PCIBaseAddress->BAR0;
+			uint32_t PCIBAR0 = PCIBaseAddress->BAR[0];
 			uint8_t Type = PCIBAR0 & 1;
 			if (Type == 1)
 			{

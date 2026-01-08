@@ -124,16 +124,54 @@ namespace PCI
 		uint8_t BIST;
 	} __packed;
 
+	union BaseAddressRegister
+	{
+		struct
+		{
+			uint32_t Type : 1;
+			uint32_t MemoryType : 2;
+			uint32_t Prefetchable : 1;
+			uint32_t Address : 28;
+		} __packed Memory;
+		struct
+		{
+			uint32_t Type : 1;
+			uint32_t Reserved : 1;
+			uint32_t Address : 30;
+		} __packed IO;
+		uint32_t raw;
+
+		operator uint32_t() { return raw; }
+		uint32_t operator=(uint32_t value) { return raw = value; }
+
+		size_t GetSize()
+		{
+			uint32_t original = raw;
+			raw = 0xFFFFFFFF;
+			size_t size;
+			if (raw & 0x1)
+			{
+				size = (~(raw & 0xFFFFFFFC) + 1);
+				goto cleanup;
+			}
+
+			/* not sure if this is right */
+			// if (Memory.MemoryType == 0x2) /* 64-bit */
+			// 	size = (~((static_cast<uint64_t>(raw & 0xFFFFFFF0))) + 1);
+			// else
+			size = (~(raw & 0xFFFFFFF0) + 1); /* 32-bit */
+
+		cleanup:
+			raw = original;
+			return size;
+		}
+	};
+
 	/** PCI Header Type 0 */
 	struct PCIHeader0
 	{
 		PCIDeviceHeader Header;
-		uint32_t BAR0;
-		uint32_t BAR1;
-		uint32_t BAR2;
-		uint32_t BAR3;
-		uint32_t BAR4;
-		uint32_t BAR5;
+		BaseAddressRegister BAR[6];
 		uint32_t CardbusCISPointer;
 		uint16_t SubsystemVendorID;
 		uint16_t SubsystemID;
@@ -152,8 +190,7 @@ namespace PCI
 	struct PCIHeader1
 	{
 		PCIDeviceHeader Header;
-		uint32_t BAR0;
-		uint32_t BAR1;
+		BaseAddressRegister BAR[2];
 		uint8_t PrimaryBusNumber;
 		uint8_t SecondaryBusNumber;
 		uint8_t SubordinateBusNumber;
@@ -222,6 +259,9 @@ namespace PCI
 		uint32_t Bus;
 		uint32_t Device;
 		uint32_t Function;
+
+		uint8_t GetHeaderType() { return Header->HeaderType & 0x7F; }
+		uintptr_t GetBAR(int8_t Index);
 	} __packed;
 
 	class Manager

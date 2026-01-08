@@ -58,11 +58,12 @@ namespace Driver::UniversalHostControllerInterface
 	{
 		for (auto &&dev : Devices)
 		{
+			PCIManager->MapPCIAddresses(dev, KernelPageTable);
 			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
 			hdr0->Header.Command |= PCI::PCI_COMMAND_MASTER | PCI::PCI_COMMAND_IO;
 			hdr0->Header.Command &= ~PCI::PCI_COMMAND_INTX_DISABLE;
 
-			HCD *hc = new HCD(hdr0->BAR4, dev);
+			HCD *hc = new HCD(hdr0->BAR[4], dev);
 			// hc->Flags =
 			hc->StartHC = UHCI_Start;
 			hc->StopHC = UHCI_Stop;

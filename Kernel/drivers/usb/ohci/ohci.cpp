@@ -17,6 +17,8 @@
 
 #if defined(__amd64__) || defined(__i386__)
 
+#include "ohci.hpp"
+
 #include <driver.hpp>
 #include <interface/usb.h>
 #include <cpu.hpp>
@@ -30,13 +32,41 @@ namespace Driver::OpenHostControllerInterface
 {
 	dev_t DriverID;
 
+	int OHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(false); }
+	int OHCI_Stop(struct USBController *d) { return ((HCD *)d)->Stop(); }
+	int OHCI_Reset(struct USBController *d) { return ((HCD *)d)->Reset(); }
+	int OHCI_Poll(struct USBController *d) { return ((HCD *)d)->Poll(); }
+
 	std::list<PCI::PCIDevice> Devices;
+	std::list<HCD *> Controllers;
 	int Entry()
 	{
 		for (auto &&dev : Devices)
 		{
-			PCIManager->InitializeDevice(dev, KernelPageTable);
+			PCIManager->MapPCIAddresses(dev, KernelPageTable);
 			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
+
+			hdr0->Header.Command |= PCI::PCI_COMMAND_MASTER | PCI::PCI_COMMAND_MEMORY;
+			hdr0->Header.Command &= ~PCI::PCI_COMMAND_INTX_DISABLE;
+
+			HCD *hc = new HCD(hdr0->BAR[0] & ~0xF, dev);
+			// hc->Flags =
+			hc->StartHC = OHCI_Start;
+			hc->StopHC = OHCI_Stop;
+			hc->ResetHC = OHCI_Reset;
+			hc->PollHC = OHCI_Poll;
+
+			hc->Reset();
+			if (hc->Start(true) != 0)
+			{
+				error("Failed to start UHCI controller %d:%d:%d", dev.Bus, dev.Device, dev.Function);
+				delete hc;
+				continue;
+			}
+			hc->Detect();
+
+			Controllers.push_back(hc);
+			v0::AddController(DriverID, hc);
 		}
 
 		return 0;
