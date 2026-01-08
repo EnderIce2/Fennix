@@ -21,12 +21,45 @@ namespace Driver::ExtensibleHostControllerInterface
 {
 	extern dev_t DriverID;
 
+	bool HCD::TakeOwnership()
+	{
+		ExtendedCapabilityPointer *ext = (ExtendedCapabilityPointer *)Ext;
+		while (ext->CapabilityID != EXTCAP_USBLegacySupport)
+		{
+			if (ext->NextExtendedCapabilityPointer == 0)
+			{
+				debug("xHCI Legacy Support capability not found");
+				return true;
+			}
+			ext = (ExtendedCapabilityPointer *)((uintptr_t)ext + (ext->NextExtendedCapabilityPointer << 2));
+		}
+		LegacySupportCapability *legacy = (LegacySupportCapability *)ext;
+
+		/* Figure 4-37: OS Ownership State Machine */
+		if (legacy->USBLEGSUP.OSOwnedSemaphore != 1)
+			legacy->USBLEGSUP.OSOwnedSemaphore = 1;
+
+		int timeout = 0;
+		whileto(legacy->USBLEGSUP.BIOSOwnedSemaphore == 1, 1000, timeout);
+		if (timeout)
+		{
+			warn("Timeout waiting for BIOS to release xHCI ownership!");
+			return false;
+		}
+		return true;
+	}
+
 	void HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 	}
 
 	int HCD::Reset()
 	{
+		if (TakeOwnership() == false)
+		{
+			error("Unable to take ownership from BIOS!");
+			return EADDRNOTAVAIL;
+		}
 		return 0;
 	}
 
@@ -55,24 +88,14 @@ namespace Driver::ExtensibleHostControllerInterface
 		  Header(pciHeader)
 	{
 		PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)pciHeader.Header;
-		MMIOBase = hdr0->BAR[0];
-		if (hdr0->BAR[0] & 0x4)
-			MMIOBase |= (uint64_t)hdr0->BAR[1] << 32;
-
-		if (MMIOBase & 0x1)
-			MMIOBase &= 0xFFFFFFFFFFFFFFFC;
-		else
-			MMIOBase &= 0xFFFFFFFFFFFFFFF0;
-		
-		Memory::Virtual vmm;
-		vmm.Map((void *)MMIOBase, (void *)MMIOBase, PAGE_SIZE * 2, Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		MMIOBase = pciHeader.GetBAR(0);
 
 		Cap = (Capability *)MMIOBase;
 		Op = (Operational *)(MMIOBase + Cap->CAPLENGTH);
 		Ports = (PortRegister *)(MMIOBase + Cap->CAPLENGTH + 0x400);
 		Rt = (Runtime *)(MMIOBase + (Cap->RTSOFF & ~0x1F));
 		Db = (Doorbell *)(MMIOBase + (Cap->DBOFF & ~0x3));
-
+		Ext = (ExtendedCapabilityPointer *)(MMIOBase + (Cap->HCCPARAMS1.xHCIExtendedCapacitiesPointer << 2));
 		stub;
 	}
 

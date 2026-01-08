@@ -25,7 +25,8 @@
 			"kernel/vfs",
 			"kernel/memory",
 			"kernel/efi",
-			"kernel/bootstrap"
+			"kernel/bootstrap",
+			"kernel/usb"
 		]
 	}
 }

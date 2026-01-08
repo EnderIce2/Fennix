@@ -42,11 +42,7 @@ namespace Driver::ExtensibleHostControllerInterface
 	{
 		for (auto &&dev : Devices)
 		{
-			PCIManager->MapPCIAddresses(dev, KernelPageTable);
-			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
-
-			hdr0->Header.Command |= PCI::PCI_COMMAND_MASTER | PCI::PCI_COMMAND_MEMORY;
-			hdr0->Header.Command &= ~PCI::PCI_COMMAND_INTX_DISABLE;
+			PCIManager->InitializeDevice(dev, KernelPageTable);
 
 			HCD *hc = new HCD(dev);
 			// hc->Flags =

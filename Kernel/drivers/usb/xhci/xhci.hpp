@@ -22,6 +22,68 @@
 
 namespace Driver::ExtensibleHostControllerInterface
 {
+	/* Table 7-2: xHCI Extended Capability Codes */
+	enum ExtendedCapabilityCodes
+	{
+		/**
+		 * This capability provides the xHCI Pre-OS to OS
+		 * Handoff Synchronization support capability.
+		 */
+		EXTCAP_USBLegacySupport = 1,
+
+		/**
+		 * This capability enumerates the protocols and
+		 * revisions supported by this xHC. At least one of
+		 * these capability structures is required for all xHC
+		 * implementations.
+		 */
+		EXTCAP_SupportedProtocol = 2,
+
+		/**
+		 * This capability is required for all xHC non-PCI
+		 * implementations.
+		 */
+		EXTCAP_ExtendedPowerManagement = 3,
+
+		/**
+		 * This capability is optional-normative for xHC
+		 * implementations that require hardware
+		 * virtualization support.
+		 */
+		EXTCAP_IOVirtualization = 4,
+
+		/**
+		 * Either this or the xHCI Extended Message
+		 * Interrupt capability is required for all xHC non-
+		 * PCI implementations.
+		 */
+		EXTCAP_MessageInterrupt = 5,
+
+		/**
+		 * This capability is optional-normative for xHC
+		 * implementations that require local memory
+		 * support.
+		 */
+		EXTCAP_LocalMemory = 6,
+
+		/**
+		 * This capability is optional-normative for xHC
+		 * implementations and describes the xHCI USB
+		 * Debug Capability.
+		 */
+		EXTCAP_USBDebugCapability = 10,
+
+		/**
+		 * Either this or the xHCI Message Interrupt
+		 * capability is required for all xHC non-PCI
+		 * implementations.
+		 */
+		EXTCAP_ExtendedMessageInterrupt = 17,
+
+		/* 192-155: These IDs are available for vendor
+			specific extensions to the xHCI. */
+	};
+
 	struct Capability
 	{
 		uint8_t CAPLENGTH;	 // 00h - Capability Register Length
@@ -30,7 +92,31 @@ namespace Driver::ExtensibleHostControllerInterface
 		uint32_t HCSPARAMS1; // 04h - Structural Parameters 1
 		uint32_t HCSPARAMS2; // 08h - Structural Parameters 2
 		uint32_t HCSPARAMS3; // 0Ch - Structural Parameters 3
-		uint32_t HCCPARAMS1; // 10h - Capability Parameters 1
+
+		/* Table 5-13: Host Controller Capability 1 Parameters */
+		union
+		{
+			struct
+			{
+				uint32_t AC64 : 1;
+				uint32_t BNC : 1;
+				uint32_t CSZ : 1;
+				uint32_t PPC : 1;
+				uint32_t PIND : 1;
+				uint32_t LHRC : 1;
+				uint32_t LTC : 1;
+				uint32_t NSS : 1;
+				uint32_t PAE : 1;
+				uint32_t SPC : 1;
+				uint32_t SEC : 1;
+				uint32_t CFC : 1;
+				uint32_t MaxPSASize : 4;
+				uint32_t xHCIExtendedCapacitiesPointer : 16;
+
+			} __packed;
+			uint32_t raw;
+		} HCCPARAMS1; // 10h - Capability Parameters 1
+
 		uint32_t DBOFF;		 // 14h - Doorbell Offset
 		uint32_t RTSOFF;	 // 18h - Runtime Register Space Offset
 		uint32_t HCCPARAMS2; // 1Ch - Capability Parameters 2
@@ -49,13 +135,73 @@ namespace Driver::ExtensibleHostControllerInterface
 
 	struct Operational
 	{
-		uint32_t USBCMD;	// 00h - USB Command
-		uint32_t USBSTS;	// 04h - USB Status
-		uint32_t PAGESIZE;	// 08h - Page Size
-		uint32_t rsvd0[2];	// 0C-13h - Reserved
-		uint32_t DNCTRL;	// 14h - Device Notification Control
-		uint32_t CRCR;		// 18h - Command Ring Control
-		uint32_t rsvd1[5];	// 20-2Fh - Reserved
+		/* 5.4.1 USB Command Register */
+		union
+		{
+			struct
+			{
+				uint32_t RS : 1;
+				uint32_t HCRST : 1;
+				uint32_t INTE : 1;
+				uint32_t HSEE : 1;
+				uint32_t __RsvdP0 : 3;
+				uint32_t LHCRST : 1;
+				uint32_t CSS : 1;
+				uint32_t CRS : 1;
+				uint32_t EWE : 1;
+				uint32_t EU3S : 1;
+				uint32_t __RsvdP1 : 1;
+				uint32_t CME : 1;
+				uint32_t ETE : 1;
+				uint32_t TSCEN : 1;
+				uint32_t VTIOEN : 1;
+				uint32_t __RsvdP2 : 15;
+			} __packed;
+			uint32_t raw;
+		} USBCMD; // 00h - USB Command
+
+		/* 5.4.2 USB Status Register */
+		union
+		{
+			struct
+			{
+
+				uint32_t HCH : 1;
+				uint32_t __RsvdZ0 : 1;
+				uint32_t HSE : 1;
+				uint32_t EINT : 1;
+				uint32_t PCB : 1;
+				uint32_t __RsvdZ1 : 3;
+				uint32_t SSS : 1;
+				uint32_t RSS : 1;
+				uint32_t SRE : 1;
+				uint32_t CNR : 1;
+				uint32_t HCE : 1;
+				uint32_t __RsvdZ2 : 18;
+			} __packed;
+			uint32_t raw;
+		} USBSTS; // 04h - USB Status
+
+		uint32_t PAGESIZE; // 08h - Page Size
+		uint32_t rsvd0[2]; // 0C-13h - Reserved
+		uint32_t DNCTRL;   // 14h - Device Notification Control
+
+		/* 5.4.5 Command Ring Control Register */
+		union
+		{
+			struct
+			{
+				uint64_t RCS : 1;
+				uint64_t CS : 1;
+				uint64_t CA : 1;
+				uint64_t CRR : 1;
+				uint64_t __RsvdP0 : 2;
+				uint64_t CRP : 58;
+			} __packed;
+			uint64_t raw;
+		} CRCR; // 18h - Command Ring Control
+
+		uint32_t rsvd1[4];	// 20-2Fh - Reserved
 		uint32_t DCBAAP[2]; // 30h - Device Context Base Address Array Pointer
 		uint32_t CONFIG;	// 38h - Configure
 		uint32_t rsvd2[13]; // 3C-3FFh - Reserved
@@ -89,12 +235,133 @@ namespace Driver::ExtensibleHostControllerInterface
 		uint32_t MFINDEX;  // 0000h - Microframe Index
 		uint32_t rsvd0[7]; // 0004h-001Fh - Reserved
 						   // Interrupter Register Sets at 0020h onwards (IR0-IR1023)
+		struct XHCIinterrupter
+		{
+			union
+			{
+				struct
+				{
+					uint32_t IP : 1;
+					uint32_t IE : 1;
+					uint32_t __reserved0 : 30;
+				} __packed;
+				uint32_t raw;
+			} IMAN;
+			union
+			{
+				struct
+				{
+					uint32_t IMODI : 16;
+					uint32_t IMODC : 16;
+				} __packed;
+				uint32_t raw;
+			} IMOD;
+			union
+			{
+				struct
+				{
+					uint32_t ERSTSZ : 16;
+					uint32_t __reserved0 : 16;
+				} __packed;
+				uint32_t raw;
+			} ERSTSZ;
+			uint32_t __RsvdP;
+			union
+			{
+				struct
+				{
+					uint64_t __reserved0 : 6;
+					uint64_t ERSTBAR : 58;
+				} __packed;
+				uint64_t raw;
+			} ERSTBA;
+			union
+			{
+				struct
+				{
+					uint64_t DESI : 3;
+					uint64_t EHB : 1;
+					uint64_t ERDP : 60;
+				} __packed;
+				uint64_t raw;
+			} ERDP;
+		} Interrupter[] __packed;
+
+		static_assert(offsetof(XHCIinterrupter, IMAN) == 0x00);
+		static_assert(offsetof(XHCIinterrupter, IMOD) == 0x04);
+		static_assert(offsetof(XHCIinterrupter, ERSTSZ) == 0x08);
+		static_assert(offsetof(XHCIinterrupter, __RsvdP) == 0x0C);
+		static_assert(offsetof(XHCIinterrupter, ERSTBA) == 0x10);
+		static_assert(offsetof(XHCIinterrupter, ERDP) == 0x18);
 	} __packed;
 
 	static_assert(offsetof(Runtime, MFINDEX) == 0x0000);
+	static_assert(offsetof(Runtime, Interrupter) == 0x0020);
 
 	struct Doorbell
 	{
+		/* Figure 5-29: Doorbell Register */
+		struct
+		{
+			uint32_t DBTarget : 8;
+			uint32_t __RsvdZ : 8;
+			uint32_t DBTaskID : 16;
+		} __packed;
+		uint32_t raw;
+	} __packed;
+
+	/* Table 7-1: Format of xHCI Extended Capability Pointer Register */
+	union ExtendedCapabilityPointer
+	{
+		struct
+		{
+			uint32_t CapabilityID : 8;
+			uint32_t NextExtendedCapabilityPointer : 8;
+			uint32_t CapabilitySpecific : 16;
+		} __packed;
+		uint32_t raw;
+	};
+
+	/* Table 7-3: HC Extended Capability Registers */
+	struct LegacySupportCapability
+	{
+		/* Table 7-4: USB Legacy Support Extended Capability */
+		union
+		{
+			struct
+			{
+				uint32_t CapabilityID : 8;
+				uint32_t NextCapabilityPointer : 8;
+				uint32_t BIOSOwnedSemaphore : 1;
+				uint32_t __RsvdP0 : 7;
+				uint32_t OSOwnedSemaphore : 1;
+				uint32_t __RsvdP1 : 7;
+			} __packed;
+			uint32_t raw;
+		} USBLEGSUP;
+
+		/* Table 7-5: USB Legacy Support Control/Status */
+		union
+		{
+			struct
+			{
+				uint32_t USBSMIEnable : 1;
+				uint32_t __RsvdP0 : 3;
+				uint32_t SMIOnHostSystemErrorEnable : 1;
+				uint32_t __RsvdP1 : 8;
+				uint32_t SMIOnOSOwnershipEnable : 1;
+				uint32_t SMIOnPCICommandEnable : 1;
+				uint32_t SMIOnBAREnable : 1;
+				uint32_t SMIOnEventInterrupt : 1;
+				uint32_t __RsvdP2 : 3;
+				uint32_t SMIOnHostSystemError : 1;
+				uint32_t __RsvdZ3 : 8;
+				uint32_t SMIOnOSOwnershipChange : 1;
+				uint32_t SMIOnPCICommand : 1;
+				uint32_t SMIOnBAR : 1;
+			} __packed;
+			uint32_t raw;
+		} USBLEGCTLSTS;
 	} __packed;
 
 	class HCD : public Interrupts::Handler, public USBController
@@ -107,8 +374,11 @@ namespace Driver::ExtensibleHostControllerInterface
 		Runtime *Rt;
 		PortRegister *Ports;
 		Doorbell *Db;
+		ExtendedCapabilityPointer *Ext;
 
 		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
+
+		bool TakeOwnership();
 
 	public:
 		int Reset();
