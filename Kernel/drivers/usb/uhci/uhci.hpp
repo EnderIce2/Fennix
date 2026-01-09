@@ -125,7 +125,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint16_t MAXP : 1;
 			uint16_t __reserved0 : 8;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, uint16_t, USBCMD);
+		DEFINE_BITWISE_TYPE(uint16_t, USBCMD);
 	};
 
 	union USBSTS
@@ -140,7 +140,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint16_t HCH : 1;
 			uint16_t __reserved0 : 10;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, uint16_t, USBSTS);
+		DEFINE_BITWISE_TYPE(uint16_t, USBSTS);
 	};
 
 	union USBINTR
@@ -153,7 +153,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint16_t SPIE : 1;
 			uint16_t __reserved0 : 12;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, uint16_t, USBINTR);
+		DEFINE_BITWISE_TYPE(uint16_t, USBINTR);
 	};
 
 	union FRNUM
@@ -163,7 +163,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint16_t FN : 9;
 			uint16_t __reserved0 : 7;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, uint16_t, FRNUM);
+		DEFINE_BITWISE_TYPE(uint16_t, FRNUM);
 	};
 
 	union FLBASEADD
@@ -173,7 +173,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint32_t __reserved0 : 12;
 			uint32_t BA : 20;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint32_t, uint32_t, FLBASEADD);
+		DEFINE_BITWISE_TYPE(uint32_t, FLBASEADD);
 	};
 
 	union SOFMOD
@@ -183,7 +183,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint8_t SOFTVAL : 7;
 			uint8_t __reserved0 : 1;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint8_t, uint8_t, SOFMOD);
+		DEFINE_BITWISE_TYPE(uint8_t, SOFMOD);
 	};
 
 	union PORTSC
@@ -203,7 +203,7 @@ namespace Driver::UniversalHostControllerInterface
 			uint16_t SUS : 1;
 			uint16_t __reserved2 : 3;
 		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, uint16_t, PORTSC);
+		DEFINE_BITWISE_TYPE(uint16_t, PORTSC);
 	};
 
 	union FrameListPointer
@@ -238,7 +238,7 @@ namespace Driver::UniversalHostControllerInterface
 			 */
 			uint32_t FLP : 28;
 		};
-		DEFINE_BITWISE_TYPE(uint32_t, uint32_t, FrameListPointer);
+		DEFINE_BITWISE_TYPE(uint32_t, FrameListPointer);
 	};
 
 	struct TD
@@ -280,7 +280,7 @@ namespace Driver::UniversalHostControllerInterface
 				 */
 				uint32_t LP : 28;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, LINK_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, LINK_UNION);
 		} LINK;
 		static_assert(sizeof(LINK) == sizeof(uint32_t));
 
@@ -387,7 +387,7 @@ namespace Driver::UniversalHostControllerInterface
 
 				uint32_t __reserved1 : 2;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, CS_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, CS_UNION);
 		} CS;
 		static_assert(sizeof(CS) == sizeof(uint32_t));
 
@@ -438,7 +438,7 @@ namespace Driver::UniversalHostControllerInterface
 				 */
 				uint32_t MaxLen : 11;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, TOKEN_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, TOKEN_UNION);
 		} TOKEN;
 		static_assert(sizeof(TOKEN) == sizeof(uint32_t));
 
@@ -451,7 +451,7 @@ namespace Driver::UniversalHostControllerInterface
 				 */
 				uint32_t Addr : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, BUFFER_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, BUFFER_UNION);
 		} BUFFER;
 		static_assert(sizeof(BUFFER) == sizeof(uint32_t));
 
@@ -494,7 +494,7 @@ namespace Driver::UniversalHostControllerInterface
 				 */
 				uint32_t QHLP : 28;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, HEAD_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, HEAD_UNION);
 		} HEAD;
 		static_assert(sizeof(HEAD) == sizeof(uint32_t));
 
@@ -531,7 +531,7 @@ namespace Driver::UniversalHostControllerInterface
 				 */
 				uint32_t QELP : 28;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, ELEMENT_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, ELEMENT_UNION);
 		} ELEMENT;
 		static_assert(sizeof(ELEMENT) == sizeof(uint32_t));
 
@@ -571,9 +571,7 @@ namespace Driver::UniversalHostControllerInterface
 		size_t MaxTDs = 32;
 		QH *CurrentQueue;
 
-
-		
-		public:
+	public:
 		UniversalSerialBus::Scheduler *sched;
 
 		QH *AllocateQueueHead();

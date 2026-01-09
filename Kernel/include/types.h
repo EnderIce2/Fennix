@@ -19,6 +19,7 @@
 #define __FENNIX_KERNEL_TYPES_H__
 
 #include <stdbool.h>
+#include <bw.h>
 
 /**
  * It doesn't do anything.
@@ -258,37 +259,6 @@ inline void ListRemove(ListNode *node)
 }
 
 inline bool ListIsLinked(const ListNode *node) { return node->Prev != nullptr || node->Next != nullptr; }
-
-#define DEFINE_BITWISE_TYPE(RAW_TYPE, OP_TYPE, STRUCT_NAME)                         \
-	RAW_TYPE raw;                                                                   \
-	operator OP_TYPE() { return raw; }                                              \
-	OP_TYPE operator=(OP_TYPE value)                                                \
-	{                                                                               \
-		raw = value;                                                                \
-		return raw;                                                                 \
-	}                                                                               \
-	bool operator==(auto value) { return raw == (OP_TYPE)value; }                   \
-	STRUCT_NAME &operator|=(auto other)                                             \
-	{                                                                               \
-		raw |= (OP_TYPE)other;                                                      \
-		return *this;                                                               \
-	}                                                                               \
-	STRUCT_NAME &operator&=(auto other)                                             \
-	{                                                                               \
-		raw &= (OP_TYPE)other;                                                      \
-		return *this;                                                               \
-	}                                                                               \
-	STRUCT_NAME &operator^=(auto other)                                             \
-	{                                                                               \
-		raw ^= (OP_TYPE)other;                                                      \
-		return *this;                                                               \
-	}                                                                               \
-	STRUCT_NAME operator|(auto other) { return STRUCT_NAME(raw | (OP_TYPE)other); } \
-	STRUCT_NAME operator&(auto other) { return STRUCT_NAME(raw & (OP_TYPE)other); } \
-	STRUCT_NAME operator^(auto other) { return STRUCT_NAME(raw ^ (OP_TYPE)other); } \
-	STRUCT_NAME(OP_TYPE value) { raw = value; }                                     \
-	STRUCT_NAME() { raw = 0; }
-
 #endif
 
 /** Usage: int timed_out = 0; whileto(cond, n, timed_out) { ... }

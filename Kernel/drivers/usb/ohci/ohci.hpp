@@ -66,7 +66,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, LINK_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, LINK_UNION);
 		} LINK;
 		static_assert(sizeof(LINK) == sizeof(uint32_t));
 
@@ -76,7 +76,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, CS_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, CS_UNION);
 		} CS;
 		static_assert(sizeof(CS) == sizeof(uint32_t));
 
@@ -86,7 +86,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, TOKEN_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, TOKEN_UNION);
 		} TOKEN;
 		static_assert(sizeof(TOKEN) == sizeof(uint32_t));
 
@@ -96,7 +96,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, BUFFER_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, BUFFER_UNION);
 		} BUFFER;
 		static_assert(sizeof(BUFFER) == sizeof(uint32_t));
 
@@ -113,7 +113,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, HEAD_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, HEAD_UNION);
 		} HEAD;
 		static_assert(sizeof(HEAD) == sizeof(uint32_t));
 
@@ -123,7 +123,7 @@ namespace Driver::OpenHostControllerInterface
 			{
 				uint32_t unknown : 32;
 			} __packed;
-			DEFINE_BITWISE_TYPE(std::atomic_uint32_t, uint32_t, ELEMENT_UNION);
+			DEFINE_BITWISE_TYPE(uint32_t, ELEMENT_UNION);
 		} ELEMENT;
 		static_assert(sizeof(ELEMENT) == sizeof(uint32_t));
 
