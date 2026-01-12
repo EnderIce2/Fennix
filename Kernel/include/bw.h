@@ -19,6 +19,8 @@
 
 #ifdef __cplusplus
 
+#include <type_traits>
+
 #define DEFINE_BITWISE_TYPE(OP_TYPE, STRUCT_NAME) \
 	volatile OP_TYPE raw;                         \
                                                   \
@@ -79,6 +81,47 @@
 	STRUCT_NAME()                                 \
 	{                                             \
 		raw = 0;                                  \
+	}
+
+#define _BF_MASK(width) ((1ULL << (width)) - 1ULL)
+#define _BF_MASK_SHIFT(width, shift) (_BF_MASK(width) << (shift))
+
+/* Read-Only: type name() const */
+#define BF_RO(type, name, shift, width)                    \
+	inline type name() const                               \
+	{                                                      \
+		return (type)((raw >> (shift)) & _BF_MASK(width)); \
+	}
+
+/* Read-Write: type name() const; void name(type) */
+#define BF_RW(type, name, shift, width)                                                          \
+	inline type name() const                                                                     \
+	{                                                                                            \
+		return (type)((raw >> (shift)) & _BF_MASK(width));                                       \
+	}                                                                                            \
+	inline void name(type v)                                                                     \
+	{                                                                                            \
+		using __raw_t = std::remove_cv_t<decltype(raw)>;                                         \
+		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift);                            \
+		raw = (__raw_t)((raw & ~__mask) | (((__raw_t)v & (__raw_t)_BF_MASK(width)) << (shift))); \
+	}
+
+#define BF_RO_EX(rawmember, type, name, shift, width)            \
+	inline type name() const                                     \
+	{                                                            \
+		return (type)((rawmember >> (shift)) & _BF_MASK(width)); \
+	}
+
+#define BF_RW_EX(rawmember, type, name, shift, width)                                                        \
+	inline type name() const                                                                                 \
+	{                                                                                                        \
+		return (type)((rawmember >> (shift)) & _BF_MASK(width));                                             \
+	}                                                                                                        \
+	inline void name(type v)                                                                                 \
+	{                                                                                                        \
+		using __raw_t = std::remove_cv_t<decltype(rawmember)>;                                               \
+		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift);                                        \
+		rawmember = (__raw_t)((rawmember & ~__mask) | (((__raw_t)v & (__raw_t)_BF_MASK(width)) << (shift))); \
 	}
 
 #endif // __cplusplus
