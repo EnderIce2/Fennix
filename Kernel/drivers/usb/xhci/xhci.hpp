@@ -20,6 +20,8 @@
 #include <driver.hpp>
 #include <usb.hpp>
 
+#include "trb.hpp"
+
 namespace Driver::ExtensibleHostControllerInterface
 {
 	/* Table 7-2: xHCI Extended Capability Codes */
@@ -87,39 +89,87 @@ namespace Driver::ExtensibleHostControllerInterface
 	struct Capability
 	{
 		uint8_t CAPLENGTH;	 // 00h - Capability Register Length
-		uint8_t rsvd0;		 // 01h - Reserved
+		uint8_t __rsvd0;	 // 01h - Reserved
 		uint16_t HCIVERSION; // 02h - Interface Version Number
-		uint32_t HCSPARAMS1; // 04h - Structural Parameters 1
-		uint32_t HCSPARAMS2; // 08h - Structural Parameters 2
-		uint32_t HCSPARAMS3; // 0Ch - Structural Parameters 3
+
+		union HCSPARAMS1_UNION
+		{
+			struct
+			{
+				uint32_t __MaxDeviceSlots : 8;
+				uint32_t __MaxInterrupters : 11;
+				uint32_t __Rsvd : 5;
+				uint32_t __MaxPorts : 8;
+			} __packed;
+			DEFINE_BITWISE_TYPE(uint32_t, HCSPARAMS1_UNION);
+
+			uint8_t MaxDeviceSlots() { return (raw >> 0) & 0xFF; }
+			uint16_t MaxInterrupters() { return (raw >> 8) & 0x7FF; }
+			uint8_t MaxPorts() { return (raw >> 24) & 0xFF; }
+		} HCSPARAMS1; // 04h - Structural Parameters 1
+
+		union HCSPARAMS2_UNION
+		{
+			struct
+			{
+				uint32_t __IsochronousSchedulingThreshold : 4;
+				uint32_t __EventRingSegmentTableMax : 4;
+				uint32_t __Rsvd : 13;
+				uint32_t __MaxScratchpadBuffersHi : 5;
+				uint32_t __ScratchpadRestore : 1;
+				uint32_t __MaxScratchpadBuffersLo : 5;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, HCSPARAMS2_UNION);
+
+			uint8_t IST() { return (raw >> 0) & 0xF; }
+			uint8_t ERSTMax() { return (raw >> 4) & 0xF; }
+			uint8_t SPR() { return (raw >> 26) & 0x1; }
+			uint16_t MaxScratchpadBuffers() { return (((raw >> 21) & 0x1F) << 5) | ((raw >> 27) & 0x1F); }
+		} HCSPARAMS2; // 08h - Structural Parameters 2
+
+		union HCSPARAMS3_UNION
+		{
+			struct
+			{
+				uint32_t __U1DeviceExitLatency : 8;
+				uint32_t __U2DeviceExitLatency : 8;
+				uint32_t __Rsvd : 16;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, HCSPARAMS3_UNION);
+
+			uint8_t U1DeviceExitLatency() { return (raw >> 0) & 0xFF; }
+			uint8_t U2DeviceExitLatency() { return (raw >> 8) & 0xFF; }
+		} HCSPARAMS3; // 0Ch - Structural Parameters 3
 
 		/* Table 5-13: Host Controller Capability 1 Parameters */
 		union HCCPARAMS1_UNION
 		{
 			struct
 			{
-				uint32_t AC64 : 1;
-				uint32_t BNC : 1;
-				uint32_t CSZ : 1;
-				uint32_t PPC : 1;
-				uint32_t PIND : 1;
-				uint32_t LHRC : 1;
-				uint32_t LTC : 1;
-				uint32_t NSS : 1;
-				uint32_t PAE : 1;
-				uint32_t SPC : 1;
-				uint32_t SEC : 1;
-				uint32_t CFC : 1;
-				uint32_t MaxPSASize : 4;
-				uint32_t xHCIExtendedCapacitiesPointer : 16;
+				uint32_t __AC64 : 1;
+				uint32_t __BNC : 1;
+				uint32_t __CSZ : 1;
+				uint32_t __PPC : 1;
+				uint32_t __PIND : 1;
+				uint32_t __LHRC : 1;
+				uint32_t __LTC : 1;
+				uint32_t __NSS : 1;
+				uint32_t __PAE : 1;
+				uint32_t __SPC : 1;
+				uint32_t __SEC : 1;
+				uint32_t __CFC : 1;
+				uint32_t __MaxPSASize : 4;
+				uint32_t __xHCIExtendedCapacitiesPointer : 16;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, HCCPARAMS1_UNION);
+
+			uint16_t GetExtendedCapabilitiesPointer() { return (raw >> 16) & 0xFFFF; }
 		} HCCPARAMS1; // 10h - Capability Parameters 1
 
 		uint32_t DBOFF;		 // 14h - Doorbell Offset
 		uint32_t RTSOFF;	 // 18h - Runtime Register Space Offset
 		uint32_t HCCPARAMS2; // 1Ch - Capability Parameters 2
-		uint32_t rsvd1;		 // CAPLENGTH-20h - Reserved
+		uint32_t __rsvd1;	 // CAPLENGTH-20h - Reserved
 	};
 
 	static_assert(offsetof(Capability, CAPLENGTH) == 0x00);
@@ -139,24 +189,30 @@ namespace Driver::ExtensibleHostControllerInterface
 		{
 			struct
 			{
-				uint32_t RS : 1;
-				uint32_t HCRST : 1;
-				uint32_t INTE : 1;
-				uint32_t HSEE : 1;
+				uint32_t __RS : 1;
+				uint32_t __HCRST : 1;
+				uint32_t __INTE : 1;
+				uint32_t __HSEE : 1;
 				uint32_t __RsvdP0 : 3;
-				uint32_t LHCRST : 1;
-				uint32_t CSS : 1;
-				uint32_t CRS : 1;
-				uint32_t EWE : 1;
-				uint32_t EU3S : 1;
+				uint32_t __LHCRST : 1;
+				uint32_t __CSS : 1;
+				uint32_t __CRS : 1;
+				uint32_t __EWE : 1;
+				uint32_t __EU3S : 1;
 				uint32_t __RsvdP1 : 1;
-				uint32_t CME : 1;
-				uint32_t ETE : 1;
-				uint32_t TSCEN : 1;
-				uint32_t VTIOEN : 1;
+				uint32_t __CME : 1;
+				uint32_t __ETE : 1;
+				uint32_t __TSCEN : 1;
+				uint32_t __VTIOEN : 1;
 				uint32_t __RsvdP2 : 15;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, USBCMD_UNION);
+
+			uint8_t RunStop() { return (raw >> 0) & 0x1; }
+			void RunStop(uint8_t value) { raw = (raw & ~0x1) | (value & 0x1); }
+
+			uint8_t HostControllerReset() { return (raw >> 1) & 0x1; }
+			void HostControllerReset(uint8_t value) { raw = (raw & ~0x2) | ((value & 0x1) << 1); }
 		} USBCMD; // 00h - USB Command
 
 		/* 5.4.2 USB Status Register */
@@ -165,45 +221,63 @@ namespace Driver::ExtensibleHostControllerInterface
 			struct
 			{
 
-				uint32_t HCH : 1;
+				uint32_t __HCH : 1;
 				uint32_t __RsvdZ0 : 1;
-				uint32_t HSE : 1;
-				uint32_t EINT : 1;
-				uint32_t PCB : 1;
+				uint32_t __HSE : 1;
+				uint32_t __EINT : 1;
+				uint32_t __PCB : 1;
 				uint32_t __RsvdZ1 : 3;
-				uint32_t SSS : 1;
-				uint32_t RSS : 1;
-				uint32_t SRE : 1;
-				uint32_t CNR : 1;
-				uint32_t HCE : 1;
+				uint32_t __SSS : 1;
+				uint32_t __RSS : 1;
+				uint32_t __SRE : 1;
+				uint32_t __CNR : 1;
+				uint32_t __HCE : 1;
 				uint32_t __RsvdZ2 : 18;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, USBSTS_UNION);
+
+			uint8_t HCHalted() { return (raw >> 0) & 0x1; }
+
+			uint8_t ControllerNotReady() { return (raw >> 11) & 0x1; }
 		} USBSTS; // 04h - USB Status
 
-		uint32_t PAGESIZE; // 08h - Page Size
-		uint32_t rsvd0[2]; // 0C-13h - Reserved
-		uint32_t DNCTRL;   // 14h - Device Notification Control
+		uint32_t PAGESIZE;	 // 08h - Page Size
+		uint32_t __rsvd0[2]; // 0C-13h - Reserved
+		uint32_t DNCTRL;	 // 14h - Device Notification Control
 
 		/* 5.4.5 Command Ring Control Register */
 		union CRCR_UNION
 		{
 			struct
 			{
-				uint64_t RCS : 1;
-				uint64_t CS : 1;
-				uint64_t CA : 1;
-				uint64_t CRR : 1;
-				uint64_t __RsvdP0 : 2;
-				uint64_t CRP : 58;
+				uint64_t __RCS : 1;
+				uint64_t __CS : 1;
+				uint64_t __CA : 1;
+				uint64_t __CRR : 1;
+				uint64_t __RsvdP : 2;
+				uint64_t __CRP : 58;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint64_t, CRCR_UNION);
+
+			uint8_t RingCycleState() { return (raw >> 0) & 0x1; }
+			void RingCycleState(uint8_t value) { raw = (raw & ~0x1) | (value & 0x1); }
+
+			uint8_t CommandStop() { return (raw >> 1) & 0x1; }
+			void CommandStop(uint8_t value) { raw = (raw & ~0x2) | ((value & 0x1) << 1); }
+
+			uint8_t CommandAbort() { return (raw >> 2) & 0x1; }
+			void CommandAbort(uint8_t value) { raw = (raw & ~0x4) | ((value & 0x1) << 2); }
+
+			uint8_t CommandRingRunning() { return (raw >> 3) & 0x1; }
+
+			uint64_t CommandRingPointer() { return (raw >> 6) & 0x03FFFFFFFFFFFFFFULL; }
+			void CommandRingPointer(uint64_t value) { raw = (raw & 0x3FULL) | (value & 0xFFFFFFFFFFFFFFC0ULL); }
 		} CRCR; // 18h - Command Ring Control
 
-		uint32_t rsvd1[4];	// 20-2Fh - Reserved
-		uint32_t DCBAAP[2]; // 30h - Device Context Base Address Array Pointer
-		uint32_t CONFIG;	// 38h - Configure
-		uint32_t rsvd2[13]; // 3C-3FFh - Reserved
+		uint64_t __rsvd1[2];  // 20-2Fh - Reserved
+		uint64_t DCBAAP;	  // 30h - Device Context Base Address Array Pointer
+		uint32_t CONFIG;	  // 38h - Configure
+		uint32_t __rsvd2[13]; // 3C-3FFh - Reserved
 
 		// Port Register Set at 400-13FFh
 	};
@@ -383,6 +457,28 @@ namespace Driver::ExtensibleHostControllerInterface
 		PortRegister *Ports;
 		Doorbell *Db;
 		ExtendedCapabilityPointer *Ext;
+
+		uint8_t DeviceSlots = 32;
+
+		struct
+		{
+			uint64_t *DCBAAP = 0;
+			uint64_t *ScratchpadBuffers = 0;
+		} Allocations;
+
+		class CommandRing
+		{
+		private:
+			HCD &hc;
+			TRB *Buffer = nullptr;
+			size_t MaxSize = 0;
+
+		public:
+			decltype(Buffer) GetBuffer() { return Buffer; }
+
+			CommandRing(HCD &Controller);
+			~CommandRing();
+		} CmdRing = CommandRing(*this);
 
 		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
 

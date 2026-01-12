@@ -24,14 +24,15 @@ namespace Driver::ExtensibleHostControllerInterface
 	bool HCD::TakeOwnership()
 	{
 		ExtendedCapabilityPointer *ext = (ExtendedCapabilityPointer *)Ext;
-		while (ext->CapabilityID != EXTCAP_USBLegacySupport)
+		while (ext->CapabilityID() != EXTCAP_USBLegacySupport)
 		{
-			if (ext->NextExtendedCapabilityPointer == 0)
+			if (ext->NextExtendedCapabilityPointer() == 0)
 			{
 				debug("xHCI Legacy Support capability not found");
 				return true;
 			}
-			ext = (ExtendedCapabilityPointer *)((uintptr_t)ext + (ext->NextExtendedCapabilityPointer << 2));
+			off_t offset = ext->NextExtendedCapabilityPointer();
+			ext = (ExtendedCapabilityPointer *)((uintptr_t)ext + (offset << 2));
 		}
 		LegacySupportCapability *legacy = (LegacySupportCapability *)ext;
 
@@ -60,6 +61,54 @@ namespace Driver::ExtensibleHostControllerInterface
 			error("Unable to take ownership from BIOS!");
 			return EADDRNOTAVAIL;
 		}
+
+		Op->USBCMD.RunStop(0);
+		int timeout = 0;
+		// whileto(Op->USBSTS.HCHalted() == 1, 1000, timeout) v0::Sleep(DriverID, 1);
+		// if (timeout)
+		// {
+		// 	error("Timeout waiting for xHCI to stop!");
+		// 	return ETIMEDOUT;
+		// }
+
+		Op->USBCMD.HostControllerReset(1);
+		whileto(Op->USBCMD.HostControllerReset() == 1, 1000, timeout) v0::Sleep(DriverID, 1);
+		if (timeout)
+		{
+			error("Timeout waiting for xHCI to reset!");
+			return ETIMEDOUT;
+		}
+		v0::Sleep(DriverID, 10);
+
+		whileto(Op->USBSTS.ControllerNotReady() == 1, 1000, timeout) v0::Sleep(DriverID, 1);
+		if (timeout)
+		{
+			error("Timeout waiting for xHCI to become ready!");
+			return ETIMEDOUT;
+		}
+
+		DeviceSlots = Cap->HCSPARAMS1.MaxDeviceSlots();
+
+		Op->DCBAAP = (uint64_t)Allocations.DCBAAP;
+		memset((void *)Allocations.DCBAAP, 0, PAGE_SIZE);
+
+		uint16_t scratchpadCount = Cap->HCSPARAMS2.MaxScratchpadBuffers();
+		if (scratchpadCount > 0)
+		{
+			if (Allocations.ScratchpadBuffers == 0)
+			{
+				Allocations.ScratchpadBuffers = (uint64_t *)v0::AllocateMemory(DriverID, 1);
+
+				for (uint16_t i = 0; i < Cap->HCSPARAMS2.MaxScratchpadBuffers() && i < PAGE_SIZE / sizeof(uint64_t); i++)
+					Allocations.ScratchpadBuffers[i] = (uint64_t)v0::AllocateMemory(DriverID, 1);
+			}
+
+			Allocations.DCBAAP[0] = (uint64_t)Allocations.ScratchpadBuffers;
+		}
+
+		Op->CRCR.raw = 0;
+		Op->CRCR.CommandRingPointer((uint64_t)CmdRing.GetBuffer());
+
 		return 0;
 	}
 
@@ -87,7 +136,6 @@ namespace Driver::ExtensibleHostControllerInterface
 		: Interrupts::Handler(pciHeader),
 		  Header(pciHeader)
 	{
-		PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)pciHeader.Header;
 		MMIOBase = pciHeader.GetBAR(0);
 
 		Cap = (Capability *)MMIOBase;
@@ -95,8 +143,10 @@ namespace Driver::ExtensibleHostControllerInterface
 		Ports = (PortRegister *)(MMIOBase + Cap->CAPLENGTH + 0x400);
 		Rt = (Runtime *)(MMIOBase + (Cap->RTSOFF & ~0x1F));
 		Db = (Doorbell *)(MMIOBase + (Cap->DBOFF & ~0x3));
-		Ext = (ExtendedCapabilityPointer *)(MMIOBase + (Cap->HCCPARAMS1.xHCIExtendedCapacitiesPointer << 2));
-		stub;
+		off_t extOff = Cap->HCCPARAMS1.GetExtendedCapabilitiesPointer() << 2;
+		Ext = (ExtendedCapabilityPointer *)(MMIOBase + extOff);
+
+		Allocations.DCBAAP = (uint64_t *)v0::AllocateMemory(DriverID, 1);
 	}
 
 	HCD::~HCD()
