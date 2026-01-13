@@ -22,35 +22,19 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
-    - name: Required packages for building gcc & binutils
-      if: steps.cache-cross.outputs.cache-hit != 'true'
+    - name: Prepare Environment for Dev Container
       run: |
-        sudo apt-get -y install --no-install-recommends build-essential bison flex libgmp-dev libmpfr-dev texinfo file python3-dev
+        sudo mkdir -p /tmp/.X11-unix
+        sudo mkdir -p /run/user/1000/pulse
+        sudo touch /run/user/1000/pulse/native
 
-    - name: Required packages for building test apps in userspace
+    - name: Run make ci-setup in dev container
       if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: |
-       sudo  apt-get -y install --no-install-recommends mingw-w64 libtool libltdl-dev
-
-    - name: Required packages for building the OS and misc
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: |
-        sudo apt-get -y install --no-install-recommends grub2-common xorriso mtools grub-common grub-efi-amd64-bin grub-efi-amd64-signed grub-gfxpayload-lists grub-pc-bin grub-pc grub2-common pip cmake
-
-    - name: autoconf_2.69
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: |
-        wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb && dpkg --force-all -i /tmp/autoconf.deb
-
-    - name: automake-1.15.1
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: |
-        wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz && tar -xzf /tmp/automake.tar.gz -C /tmp && cd /tmp/automake-1.15.1 && ./configure && make && sudo make install
-
-    - name: Run make ci-setup
-      if: steps.cache-cross.outputs.cache-hit != 'true'
-      run: |
-        /usr/bin/make ci-setup
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: |
+          /usr/bin/make ci-setup
 
   compile:
     name: Build OS
@@ -69,41 +53,74 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
+    - name: Prepare Environment for Dev Container
+      run: |
+        sudo mkdir -p /tmp/.X11-unix
+        sudo mkdir -p /run/user/1000/pulse
+        sudo touch /run/user/1000/pulse/native
+
     - name: Build AMD64 Debug
       if: always()
-      run: /usr/bin/make __ci-amd64-debug
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-amd64-debug
 
     - name: Build AMD64 Release
       if: always()
-      run: /usr/bin/make __ci-amd64-release
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-amd64-release
 
     - name: Build i386 Debug
       if: always()
-      run: /usr/bin/make __ci-i386-debug
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-i386-debug
 
     - name: Build i386 Release
       if: always()
-      run: /usr/bin/make __ci-i386-release
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-i386-release
 
     - name: Build ARM Debug
       if: always()
-      run: /usr/bin/make __ci-arm-debug
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-arm-debug
 
     - name: Build ARM Release
       if: always()
-      run: /usr/bin/make __ci-arm-release
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-arm-release
 
     - name: Build AArch64 Debug
       if: always()
-      run: /usr/bin/make __ci-aarch64-debug
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-aarch64-debug
 
     - name: Build AArch64 Release
       if: always()
-      run: /usr/bin/make __ci-aarch64-release
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-aarch64-release
 
     - name: Build Prepare Archive
       if: always()
-      run: /usr/bin/make __ci-prepare-archive
+      uses: devcontainers/ci@v0.3
+      with:
+        push: never
+        runCmd: /usr/bin/make __ci-prepare-archive
 
     - name: Upload Artifact
       if: always()
