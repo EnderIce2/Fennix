@@ -25,17 +25,17 @@ jobs:
     - name: Required packages for building gcc & binutils
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
-        apt-get -y install --no-install-recommends build-essential bison flex libgmp-dev libmpfr-dev texinfo file python3-dev
+        sudo apt-get -y install --no-install-recommends build-essential bison flex libgmp-dev libmpfr-dev texinfo file python3-dev
 
     - name: Required packages for building test apps in userspace
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
-        apt-get -y install --no-install-recommends mingw-w64 libtool libltdl-dev
+       sudo  apt-get -y install --no-install-recommends mingw-w64 libtool libltdl-dev
 
     - name: Required packages for building the OS and misc
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
-        apt-get -y install --no-install-recommends grub2-common xorriso mtools grub-common grub-efi-amd64-bin grub-efi-amd64-signed grub-gfxpayload-lists grub-pc-bin grub-pc grub2-common pip cmake
+        sudo apt-get -y install --no-install-recommends grub2-common xorriso mtools grub-common grub-efi-amd64-bin grub-efi-amd64-signed grub-gfxpayload-lists grub-pc-bin grub-pc grub2-common pip cmake
 
     - name: autoconf_2.69
       if: steps.cache-cross.outputs.cache-hit != 'true'
@@ -107,7 +107,7 @@ jobs:
 
     - name: Upload Artifact
       if: always()
-      uses: christopherhx/gitea-upload-artifact@v4
+      uses: actions/gitea-upload-artifact@v4
       with:
         name: artifacts
         path: artifacts/
