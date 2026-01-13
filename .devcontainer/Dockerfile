@@ -91,6 +91,10 @@ RUN pip install git-cliff --break-system-packages
 # Install meson
 RUN pip install meson --break-system-packages
 
+# Install other utilities
+RUN apt-get -y install --no-install-recommends \
+	npm
+
 # Configure git
 RUN <<EOF
 git config --global advice.detachedHead false
