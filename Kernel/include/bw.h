@@ -106,6 +106,31 @@
 		raw = (__raw_t)((raw & ~__mask) | (((__raw_t)v & (__raw_t)_BF_MASK(width)) << (shift))); \
 	}
 
+#define BF_PHYS_RW(type, name, shift, width)                                            \
+	inline type name() const                                                            \
+	{                                                                                   \
+		return (type)(raw & _BF_MASK_SHIFT(width, shift));                              \
+	}                                                                                   \
+	inline void name(type v)                                                            \
+	{                                                                                   \
+		using __raw_t = std::remove_cv_t<decltype(raw)>;                                \
+		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift);                   \
+		/* Folosim & mask în loc de << shift pentru că v este deja o adresă absolută */ \
+		raw = (__raw_t)((raw & ~__mask) | (v & __mask));                                \
+	}
+
+#define BF_PHYS_RW_EX(rawmember, type, name, shift, width)            \
+	inline type name() const                                          \
+	{                                                                 \
+		return (type)(rawmember & _BF_MASK_SHIFT(width, shift));      \
+	}                                                                 \
+	inline void name(type v)                                          \
+	{                                                                 \
+		using __raw_t = std::remove_cv_t<decltype(rawmember)>;        \
+		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift); \
+		rawmember = (__raw_t)((rawmember & ~__mask) | (v & __mask));  \
+	}
+
 #define BF_RO_EX(rawmember, type, name, shift, width)            \
 	inline type name() const                                     \
 	{                                                            \
