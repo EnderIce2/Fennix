@@ -22,6 +22,31 @@ jobs:
         path: tools/cross
         key: ${{ runner.os }}-cross-${{ hashFiles('tools/Makefile') }}
 
+    - name: Required packages for building gcc & binutils
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        apt-get -y install --no-install-recommends build-essential bison flex libgmp-dev libmpfr-dev texinfo file python3-dev
+
+    - name: Required packages for building test apps in userspace
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        apt-get -y install --no-install-recommends mingw-w64 libtool libltdl-dev
+
+    - name: Required packages for building the OS and misc
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        apt-get -y install --no-install-recommends grub2-common xorriso mtools grub-common grub-efi-amd64-bin grub-efi-amd64-signed grub-gfxpayload-lists grub-pc-bin grub-pc grub2-common pip cmake
+
+    - name: autoconf_2.69
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        wget https://launchpad.net/ubuntu/+archive/primary/+files/autoconf_2.69-11.1_all.deb -O /tmp/autoconf.deb && dpkg --force-all -i /tmp/autoconf.deb
+
+    - name: automake-1.15.1
+      if: steps.cache-cross.outputs.cache-hit != 'true'
+      run: |
+        wget https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O /tmp/automake.tar.gz && tar -xzf /tmp/automake.tar.gz -C /tmp && cd /tmp/automake-1.15.1 && ./configure && make && sudo make install
+
     - name: Run make ci-setup
       if: steps.cache-cross.outputs.cache-hit != 'true'
       run: |
@@ -82,27 +107,7 @@ jobs:
 
     - name: Upload Artifact
       if: always()
-      uses: actions/upload-artifact@v6
+      uses: christopherhx/gitea-upload-artifact@v4
       with:
         name: artifacts
         path: artifacts/
-
-  nightly:
-    if: always()
-    name: Upload Nightly Build to GitHub Releases
-    runs-on: ubuntu-latest
-    needs: [compile]
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        submodules: recursive
-        fetch-depth: 0
-
-    - name: Download All Builds
-      uses: actions/download-artifact@v7
-
-    - name: Update Nightly
-      run: gh release upload nightly artifacts/* -R ${{github.repository}} --clobber
-
-    env:
-      GH_TOKEN: ${{ github.token }}
