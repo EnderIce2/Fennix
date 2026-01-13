@@ -60,9 +60,10 @@ namespace Driver::ExtensibleHostControllerInterface
 		TRBT_MFINDEXWrapEvent = 39
 	};
 
+	/* Figure 4-13: TRB Template */
 	struct TRB
 	{
-		uint32_t Parameter[2];
+		uint64_t Parameter;
 		uint32_t Status;
 
 		union CONTROL_UNION
@@ -71,13 +72,17 @@ namespace Driver::ExtensibleHostControllerInterface
 			{
 				uint32_t __C : 1;	// Cycle Bit
 				uint32_t __ENT : 1; // Evaluate Next TRB
-				uint32_t __reserved : 8;
+				uint32_t __unknown : 8;
 				uint32_t __TRBType : 6;
-				uint32_t __control : 16; // IOC, Chain, etc
+				uint32_t __Control : 16; // IOC, Chain, etc
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+
+		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
+		BF_RW_EX(Control.raw, uint8_t, EvaluateNextTRB, 1, 1);
+		BF_RW_EX(Control.raw, uint8_t, TRBType, 10, 6);
+	};
 	static_assert(sizeof(TRB) == 16);
 
 	/* Figure 6-8: Normal TRB */
@@ -113,7 +118,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(NormalTRB) == 16);
 
 	/* Figure 6-9: Setup Stage TRB */
@@ -167,7 +172,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(SetupStageTRB) == 16);
 
 	/* Figure 6-10: Data Stage TRB */
@@ -204,7 +209,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(DataStageTRB) == 16);
 
 	/* Figure 6-11: Status Stage TRB */
@@ -238,7 +243,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(StatusStageTRB) == 16);
 
 	/* Figure 6-12: Isoch TRB */
@@ -283,7 +288,7 @@ namespace Driver::ExtensibleHostControllerInterface
 
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(IsochTRB) == 16);
 
 	/* Figure 6-13: No-Op TRB */
@@ -316,7 +321,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(NoOpTRB) == 16);
 
 	/* Figure 6-14: Transfer Event TRB */
@@ -347,7 +352,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(TransferEventTRB) == 16);
 
 	/* Figure 6-15: Command Completion Event TRB */
@@ -370,14 +375,14 @@ namespace Driver::ExtensibleHostControllerInterface
 			struct
 			{
 				uint32_t __C : 1;		// Cycle Bit
-				uint32_t __RsvdZ0 : 8;	// Reserved
+				uint32_t __RsvdZ : 8;	// Reserved
 				uint32_t __TRBType : 6; // Command Completion Event TRB Type
 				uint32_t __VFID : 8;	// Virtual Function ID
 				uint32_t __SlotID : 8;	// Slot ID
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(CommandCompletionEventTRB) == 16);
 
 	/* Figure 6-16: Port Status Change Event TRB */
@@ -416,7 +421,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(PortStatusChangeEventTRB) == 16);
 
 	/* Figure 6-17: Bandwidth Request Event TRB */
@@ -447,7 +452,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(BandwidthRequestEventTRB) == 16);
 
 	/* Figure 6-18: Doorbell Event TRB */
@@ -487,7 +492,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(DoorbellEventTRB) == 16);
 
 	/* Figure 6-19: Host Controller Event TRB */
@@ -516,7 +521,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(HostControllerEventTRB) == 16);
 
 	/* Figure 6-20: Device Notification Event TRB */
@@ -557,7 +562,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(DeviceNotificationEventTRB) == 16);
 
 	/* Figure 6-21: MFINDEX Wrap Event TRB */
@@ -586,7 +591,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(MFINDEXWrapEventTRB) == 16);
 
 	/* Figure 6-22: No Op Command TRB */
@@ -605,7 +610,10 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+
+		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
+		BF_RW_EX(Control.raw, uint16_t, TRBType, 10, 6);
+	};
 	static_assert(sizeof(NoOpCommandTRB) == 16);
 
 	/* Figure 6-23: Enable Slot Command TRB */
@@ -625,7 +633,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(EnableSlotCommandTRB) == 16);
 
 	/* Figure 6-24: Disable Slot Command TRB */
@@ -645,7 +653,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(DisableSlotCommandTRB) == 16);
 
 	/* Figure 6-25: Address Device Command TRB */
@@ -667,7 +675,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(AddressDeviceCommandTRB) == 16);
 
 	/* Figure 6-26: Configure Endpoint Command TRB */
@@ -689,7 +697,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(ConfigureEndpointCommandTRB) == 16);
 
 	/* Figure 6-27: Evaluate Context Command TRB */
@@ -711,7 +719,7 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(EvaluateContextCommandTRB) == 16);
 
 	/* Figure 6-28: Reset Endpoint Command TRB */
@@ -733,13 +741,23 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
-	} __packed;
+	};
 	static_assert(sizeof(ResetEndpointCommandTRB) == 16);
 
 	/* Figure 6-38: Link TRB */
 	struct LinkTRB
 	{
-		uint64_t RingSegmentPointer;
+		union PARAMETER_UNION
+		{
+			struct
+			{
+				uint32_t __RsvdZ0 : 4;
+				uint32_t __RingSegmentPointerLo : 28;
+			} __packed;
+			DEFINE_BITWISE_TYPE(uint32_t, PARAMETER_UNION);
+		} Parameter;
+
+		uint32_t __RingSegmentPointerHi;
 
 		union STATUS_UNION
 		{
@@ -750,9 +768,6 @@ namespace Driver::ExtensibleHostControllerInterface
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
 		} Status;
-
-		uint16_t InterrupterTarget() { return (Status.raw >> 22) & 0x3FF; }
-		void InterrupterTarget(uint16_t value) { Status.raw = (Status.raw & ~(0x3FF << 22)) | ((value & 0x3FF) << 22); }
 
 		union CONTROL_UNION
 		{
@@ -770,20 +785,23 @@ namespace Driver::ExtensibleHostControllerInterface
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
 		} Control;
 
-		uint8_t CycleBit() { return (Control.raw >> 0) & 0x1; }
-		void CycleBit(uint8_t value) { Control.raw = (Control.raw & ~0x1) | (value & 0x1); }
+		BF_RW_EX(Parameter.raw, uint32_t, RingSegmentPointerLo, 4, 28);
+		BF_RW_EX(Parameter.raw, uint32_t, RingSegmentPointerHi, 28, 4);
 
-		uint8_t ToggleCycle() { return (Control.raw >> 1) & 0x1; }
-		void ToggleCycle(uint8_t value) { Control.raw = (Control.raw & ~(0x1 << 1)) | ((value & 0x1) << 1); }
+		uint64_t RingSegmentPointer() { return (Parameter.raw & 0xFFFFF) | (__RingSegmentPointerHi << 28); }
+		void RingSegmentPointer(uint64_t value)
+		{
+			Parameter.raw = (Parameter.raw & ~0xFFFFF) | (value & 0xFFFFF);
+			__RingSegmentPointerHi = value >> 28;
+		}
 
-		uint8_t ChainBit() { return (Control.raw >> 4) & 0x1; }
-		void ChainBit(uint8_t value) { Control.raw = (Control.raw & ~(0x1 << 4)) | ((value & 0x1) << 4); }
+		BF_RW_EX(Status.raw, uint16_t, InterrupterTarget, 22, 10);
 
-		uint8_t InterruptOnCompletion() { return (Control.raw >> 5) & 0x1; }
-		void InterruptOnCompletion(uint8_t value) { Control.raw = (Control.raw & ~(0x1 << 5)) | ((value & 0x1) << 5); }
-
-		uint8_t TRBType() { return (Control.raw >> 16) & 0x3F; }
-		void TRBType(uint8_t value) { Control.raw = (Control.raw & ~(0x3F << 16)) | ((value & 0x3F) << 16); }
-	} __packed;
+		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
+		BF_RW_EX(Control.raw, uint8_t, ToggleCycle, 1, 1);
+		BF_RW_EX(Control.raw, uint8_t, ChainBit, 4, 1);
+		BF_RW_EX(Control.raw, uint8_t, InterruptOnCompletion, 5, 1);
+		BF_RW_EX(Control.raw, uint8_t, TRBType, 16, 6);
+	};
 	static_assert(sizeof(LinkTRB) == 16);
 }
