@@ -53,12 +53,28 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 		}
 		case MULTIBOOT_TAG_TYPE_MODULE:
 		{
-			multiboot_tag_module *module = (multiboot_tag_module *)Tag;
 			static int module_count = 0;
-			mb2binfo.Modules[module_count].Address = (void *)(uint64_t)module->mod_start;
-			mb2binfo.Modules[module_count].Size = module->mod_end - module->mod_start;
+			if (module_count >= MAX_MODULES)
+			{
+				warn("Too many modules, skipping...");
+				break;
+			}
+
+			multiboot_tag_module *module = (multiboot_tag_module *)Tag;
+
+			mb2binfo.Modules[module_count].Address = (void *)(uintptr_t)module->mod_start;
+			mb2binfo.Modules[module_count].Size = (size_t)(module->mod_end - module->mod_start);
+
 			strncpy(mb2binfo.Modules[module_count].Path, "(null)", 6);
-			strncpy(mb2binfo.Modules[module_count].CommandLine, module->cmdline, strlen(module->cmdline));
+			mb2binfo.Modules[module_count].CommandLine[0] = '\0';
+
+			if (module->cmdline[0] != '\0')
+			{
+				int len = strlen(module->cmdline);
+				if (len > 255)
+					len = 255;
+				strncpy(mb2binfo.Modules[module_count].CommandLine, module->cmdline, len);
+			}
 
 			debug("Module: %s", mb2binfo.Modules[module_count].CommandLine);
 			module_count++;
