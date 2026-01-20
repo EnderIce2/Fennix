@@ -46,6 +46,10 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -device e1000,netdev=usernet0,mac=00:69:96:00:42:00 \
 			 -object filter-dump,id=usernet0,netdev=usernet0,file=network.dmp,maxlen=1024 \
 			 \
+			 -trace usb_uhci_* \
+			 -trace usb_ohci_* \
+			 -trace usb_ehci_* \
+			 -trace usb_xhci_* \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
 			 -serial file:COM3.dmp \
