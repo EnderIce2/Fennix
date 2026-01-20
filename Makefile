@@ -353,7 +353,7 @@ ifeq ($(BOOTLOADER), grub)
 	mkdir -p iso_tmp_data/boot
 	mkdir -p iso_tmp_data/boot/grub
 	cp tools/grub.cfg iso_tmp_data/boot/grub/
-	grub-mkrescue -d /usr/lib/grub/x86_64-efi --modules="efinet net http multiboot2 relocator normal echo" -o $(OSNAME).iso iso_tmp_data
+	grub-mkrescue -d /usr/lib/grub/x86_64-efi -o $(OSNAME).iso iso_tmp_data
 endif
 ifneq ($(filter aarch64 arm,$(OSARCH)),)
 	$(__CONF_OBJCOPY) Kernel/fennix.elf -O binary $(OSNAME).img
