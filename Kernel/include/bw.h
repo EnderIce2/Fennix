@@ -21,6 +21,15 @@
 
 #include <type_traits>
 
+/**
+ * This file has names based on
+ * Table 5-3: Register Attributes
+ * in the eXtensible Host Controller Interface Specification
+ *
+ * I intend to make this as generic as possible, so that
+ *  it can be used for other purposes.
+ */
+
 #define DEFINE_BITWISE_TYPE(OP_TYPE, STRUCT_NAME) \
 	volatile OP_TYPE raw;                         \
                                                   \
@@ -86,19 +95,42 @@
 #define _BF_MASK(width) ((1ULL << (width)) - 1ULL)
 #define _BF_MASK_SHIFT(width, shift) (_BF_MASK(width) << (shift))
 
-/* Read-Only: type name() const */
+/**
+ * Read-only
+ *
+ * Register bits are read-only and may not be altered by software.
+ *
+ * Example:
+ *   BF_RO(uint8_t, SomeFlag, 0, 1);
+ */
 #define BF_RO(type, name, shift, width)                    \
 	inline type name() const                               \
 	{                                                      \
 		return (type)((raw >> (shift)) & _BF_MASK(width)); \
 	}
 
-/* Read-Write: type name() const; void name(type) */
+/**
+ * Sticky - Read-only
+ *
+ * Register bits are read-only and may not be altered by software.
+ * Value is preserved across resets.
+ *
+ * Example:
+ *   BF_ROS(uint8_t, SomeFlag, 0, 1);
+ */
+#define BF_ROS(type, name, shift, width) BF_RO(type, name, shift, width)
+
+/**
+ * Read-Write
+ *
+ * Register bits are read-write and may be either
+ *  set or cleared by software to the desired state.
+ *
+ * Example:
+ *   BF_RW(uint8_t, SomeFlag, 2, 1);
+ */
 #define BF_RW(type, name, shift, width)                                                          \
-	inline type name() const                                                                     \
-	{                                                                                            \
-		return (type)((raw >> (shift)) & _BF_MASK(width));                                       \
-	}                                                                                            \
+	BF_RO(type, name, shift, width)                                                              \
 	inline void name(type v)                                                                     \
 	{                                                                                            \
 		using __raw_t = std::remove_cv_t<decltype(raw)>;                                         \
@@ -106,47 +138,77 @@
 		raw = (__raw_t)((raw & ~__mask) | (((__raw_t)v & (__raw_t)_BF_MASK(width)) << (shift))); \
 	}
 
-#define BF_PHYS_RW(type, name, shift, width)                                            \
-	inline type name() const                                                            \
-	{                                                                                   \
-		return (type)(raw & _BF_MASK_SHIFT(width, shift));                              \
-	}                                                                                   \
-	inline void name(type v)                                                            \
-	{                                                                                   \
-		using __raw_t = std::remove_cv_t<decltype(raw)>;                                \
-		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift);                   \
-		/* Folosim & mask în loc de << shift pentru că v este deja o adresă absolută */ \
-		raw = (__raw_t)((raw & ~__mask) | (v & __mask));                                \
-	}
+/**
+ * Sticky - Read-Write
+ *
+ * Register bits are read-write and may be either
+ *  set or cleared by software to the desired state.
+ * Value is preserved across resets.
+ *
+ * Example:
+ *   BF_RWS(uint8_t, SomeFlag, 4, 1);
+ */
+#define BF_RWS(type, name, shift, width) BF_RW(type, name, shift, width)
 
-#define BF_PHYS_RW_EX(rawmember, type, name, shift, width)            \
+/**
+ * Write-1-to-clear
+ *
+ * Register bits indicate status when read,
+ *  a set bit indicating a status event may be
+ *  cleared by writing a '1'.
+ * Writing a '0' has no effect.
+ *
+ * Example:
+ *   BF_RW1C(uint8_t, SomeFlag, 4, 1);
+ */
+#define BF_RW1C(type, name, shift, width) BF_RW(type, name, shift, width)
+
+/**
+ * Write-1-to-set
+ *
+ * Register bits indicate status when read,
+ *  a clear bit may be set by writing a '1'.
+ * Writing a '0' has no effect.
+ *
+ * Example:
+ *   BF_RW1S(uint8_t, SomeFlag, 4, 1);
+ */
+#define BF_RW1S(type, name, shift, width) BF_RW1C(type, name, shift, width)
+
+/**
+ * Sticky - Write-1-to-clear
+ *
+ * Register bits indicate status when read,
+ *  a set bit indicating a status event may
+ *  be cleared by writing a '1'.
+ * Writing a '0' to RW1CS bits has no effect.
+ * Value is preserved across resets.
+ *
+ * Example:
+ *   BF_RW1CS(uint8_t, SomeFlag, 4, 1);
+ */
+#define BF_RW1CS(type, name, shift, width) BF_RW1C(type, name, shift, width)
+
+/**
+ * Read-Write Operation for Physical Address
+ *
+ * For fields where the value is written raw (no >> shift in getter).
+ * Useful for fields representing physical addresses or pre-shifted values.
+ * Setter writes v masked into the bitfield (v already at bit position).
+ *
+ * Example:
+ *   BF_PHYS_RW(uint64_t, SomePhysField, 6, 58);
+ */
+#define BF_PHYS_RW(type, name, shift, width)                          \
 	inline type name() const                                          \
 	{                                                                 \
-		return (type)(rawmember & _BF_MASK_SHIFT(width, shift));      \
+		return (type)(raw & _BF_MASK_SHIFT(width, shift));            \
 	}                                                                 \
 	inline void name(type v)                                          \
 	{                                                                 \
-		using __raw_t = std::remove_cv_t<decltype(rawmember)>;        \
+		using __raw_t = std::remove_cv_t<decltype(raw)>;              \
 		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift); \
-		rawmember = (__raw_t)((rawmember & ~__mask) | (v & __mask));  \
-	}
-
-#define BF_RO_EX(rawmember, type, name, shift, width)            \
-	inline type name() const                                     \
-	{                                                            \
-		return (type)((rawmember >> (shift)) & _BF_MASK(width)); \
-	}
-
-#define BF_RW_EX(rawmember, type, name, shift, width)                                                        \
-	inline type name() const                                                                                 \
-	{                                                                                                        \
-		return (type)((rawmember >> (shift)) & _BF_MASK(width));                                             \
-	}                                                                                                        \
-	inline void name(type v)                                                                                 \
-	{                                                                                                        \
-		using __raw_t = std::remove_cv_t<decltype(rawmember)>;                                               \
-		const __raw_t __mask = (__raw_t)_BF_MASK_SHIFT(width, shift);                                        \
-		rawmember = (__raw_t)((rawmember & ~__mask) | (((__raw_t)v & (__raw_t)_BF_MASK(width)) << (shift))); \
+		raw = (__raw_t)((raw & ~__mask) | (v & __mask));              \
 	}
 
 #endif // __cplusplus

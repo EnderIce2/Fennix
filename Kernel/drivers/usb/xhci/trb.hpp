@@ -60,6 +60,58 @@ namespace Driver::ExtensibleHostControllerInterface
 		TRBT_MFINDEXWrapEvent = 39
 	};
 
+	/* Table 6-90: TRB Completion Code Definitions */
+	enum TRBCompletionCodes
+	{
+		TRBCC_Invalid = 0,
+		TRBCC_Success = 1,
+		TRBCC_DataBufferError = 2,
+		TRBCC_BabbleDetectedError = 3,
+		TRBCC_USBTransactionError = 4,
+		TRBCC_TRBError = 5,
+		TRBCC_StallError = 6,
+		TRBCC_ResourceError = 7,
+		TRBCC_BandwidthError = 8,
+		TRBCC_NoSlotsAvailableError = 9,
+		TRBCC_InvalidStreamTypeError = 10,
+		TRBCC_SlotNotEnabledError = 11,
+		TRBCC_EndpointNotEnabledError = 12,
+		TRBCC_ShortPacket = 13,
+		TRBCC_RingUnderrun = 14,
+		TRBCC_RingOverrun = 15,
+		TRBCC_VFEventRingFullError = 16,
+		TRBCC_ParameterError = 17,
+		TRBCC_BandwidthOverrunError = 18,
+		TRBCC_ContextStateError = 19,
+		TRBCC_NoPingResponseError = 20,
+		TRBCC_EventRingFullError = 21,
+		TRBCC_IncompatibleDeviceError = 22,
+		TRBCC_MissedServiceError = 23,
+		TRBCC_CommandRingStopped = 24,
+		TRBCC_CommandAborted = 25,
+		TRBCC_Stopped = 26,
+		TRBCC_StoppedLengthInvalid = 27,
+		TRBCC_StoppedShortPacket = 28,
+		TRBCC_MaxExitLatencyTooLargeError = 29,
+		TRBCC_Reserved = 30,
+		TRBCC_IsochBufferOverrun = 31,
+		TRBCC_EventLostError = 32,
+		TRBCC_UndefinedError = 33,
+		TRBCC_InvalidStreamIDError = 34,
+		TRBCC_SecondaryBandwidthError = 35,
+		TRBCC_SplitTransactionError = 36,
+
+		// Range 192 - 223
+		TRBCC_VendorDefinedError_Start = 192,
+		TRBCC_VendorDefinedError_End = 223,
+
+		// Range 224 - 255
+		TRBCC_VendorDefinedInfo_Start = 224,
+		TRBCC_VendorDefinedInfo_End = 255
+	};
+
+	extern const char *TRBCompletionCodeString[];
+
 	/* Figure 4-13: TRB Template */
 	struct TRB
 	{
@@ -77,11 +129,10 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __Control : 16; // IOC, Chain, etc
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint8_t, EvaluateNextTRB, 1, 1);
+			BF_RW(uint8_t, TRBType, 10, 6);
 		} Control;
-
-		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
-		BF_RW_EX(Control.raw, uint8_t, EvaluateNextTRB, 1, 1);
-		BF_RW_EX(Control.raw, uint8_t, TRBType, 10, 6);
 	};
 	static_assert(sizeof(TRB) == 16);
 
@@ -368,6 +419,9 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __CompletionCode : 8;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
+
+			BF_RO(uint32_t, CommandCompletionParameter, 0, 24);
+			BF_RO(uint8_t, CompletionCode, 24, 8);
 		} Status;
 
 		union CONTROL_UNION
@@ -381,6 +435,11 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __SlotID : 8;	// Slot ID
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+
+			BF_RO(uint8_t, CycleBit, 0, 1);
+			BF_RO(uint8_t, TRBType, 10, 6);
+			BF_RO(uint8_t, VirtualFunctionID, 16, 8);
+			BF_RO(uint8_t, SlotID, 24, 8);
 		} Control;
 	};
 	static_assert(sizeof(CommandCompletionEventTRB) == 16);
@@ -609,10 +668,9 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __RsvdZ1 : 16; // Reserved
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint16_t, TRBType, 10, 6);
 		} Control;
-
-		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
-		BF_RW_EX(Control.raw, uint16_t, TRBType, 10, 6);
 	};
 	static_assert(sizeof(NoOpCommandTRB) == 16);
 
@@ -755,6 +813,9 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __RingSegmentPointerLo : 28;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, PARAMETER_UNION);
+
+			BF_RW(uint32_t, RingSegmentPointerLo, 4, 28);
+			BF_RW(uint32_t, RingSegmentPointerHi, 28, 4);
 		} Parameter;
 
 		uint32_t __RingSegmentPointerHi;
@@ -767,6 +828,8 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __InterrupterTarget : 10; // Interrupter Target
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
+
+			BF_RW(uint16_t, InterrupterTarget, 22, 10);
 		} Status;
 
 		union CONTROL_UNION
@@ -783,10 +846,13 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __RsvdZ2 : 16; // Reserved
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
-		} Control;
 
-		BF_RW_EX(Parameter.raw, uint32_t, RingSegmentPointerLo, 4, 28);
-		BF_RW_EX(Parameter.raw, uint32_t, RingSegmentPointerHi, 28, 4);
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint8_t, ToggleCycle, 1, 1);
+			BF_RW(uint8_t, ChainBit, 4, 1);
+			BF_RW(uint8_t, InterruptOnCompletion, 5, 1);
+			BF_RW(uint8_t, TRBType, 16, 6);
+		} Control;
 
 		uint64_t RingSegmentPointer() { return (Parameter.raw & 0xFFFFF) | (__RingSegmentPointerHi << 28); }
 		void RingSegmentPointer(uint64_t value)
@@ -794,14 +860,6 @@ namespace Driver::ExtensibleHostControllerInterface
 			Parameter.raw = (Parameter.raw & ~0xFFFFF) | (value & 0xFFFFF);
 			__RingSegmentPointerHi = value >> 28;
 		}
-
-		BF_RW_EX(Status.raw, uint16_t, InterrupterTarget, 22, 10);
-
-		BF_RW_EX(Control.raw, uint8_t, CycleBit, 0, 1);
-		BF_RW_EX(Control.raw, uint8_t, ToggleCycle, 1, 1);
-		BF_RW_EX(Control.raw, uint8_t, ChainBit, 4, 1);
-		BF_RW_EX(Control.raw, uint8_t, InterruptOnCompletion, 5, 1);
-		BF_RW_EX(Control.raw, uint8_t, TRBType, 16, 6);
 	};
 	static_assert(sizeof(LinkTRB) == 16);
 }

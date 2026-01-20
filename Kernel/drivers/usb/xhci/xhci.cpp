@@ -27,11 +27,13 @@
 extern Driver::Manager *DriverManager;
 extern PCI::Manager *PCIManager;
 
+EXTERNC void KPrint(const char *Format, ...);
+
 namespace Driver::ExtensibleHostControllerInterface
 {
 	dev_t DriverID;
 
-	int OHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(false); }
+	int OHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(); }
 	int OHCI_Stop(struct USBController *d) { return ((HCD *)d)->Stop(); }
 	int OHCI_Reset(struct USBController *d) { return ((HCD *)d)->Reset(); }
 	int OHCI_Poll(struct USBController *d) { return ((HCD *)d)->Poll(); }
@@ -51,14 +53,27 @@ namespace Driver::ExtensibleHostControllerInterface
 			hc->ResetHC = OHCI_Reset;
 			hc->PollHC = OHCI_Poll;
 
-			hc->Reset();
-			if (hc->Start(true) != 0)
+			int ret = hc->Reset();
+			if (ret != 0)
 			{
-				error("Failed to start UHCI controller %d:%d:%d", dev.Bus, dev.Device, dev.Function);
+				KPrint("Failed to reset xHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}
-			hc->Detect();
+			ret = hc->Start();
+			if (ret != 0)
+			{
+				KPrint("Failed to start xHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
+			ret = hc->Detect();
+			if (ret != 0)
+			{
+				KPrint("Failed to detect xHCI devices on controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
 
 			Controllers.push_back(hc);
 			v0::AddController(DriverID, hc);

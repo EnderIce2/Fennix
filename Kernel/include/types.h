@@ -261,7 +261,7 @@ inline void ListRemove(ListNode *node)
 inline bool ListIsLinked(const ListNode *node) { return node->Prev != nullptr || node->Next != nullptr; }
 #endif
 
-/** Usage: int timed_out = 0; whileto(cond, n, timed_out) { ... }
+/** Usage: bool timeout = false; whileto(cond, n, timed_out) { ... }
 	Loops while (cond) is true, up to n times, then breaks.
 	Sets timed_out to 1 if the loop exited due to timeout, 0 otherwise. */
 #define whileto(cond, n, timed_out)                                                                                                                \

@@ -37,7 +37,7 @@ namespace Driver::UniversalHostControllerInterface
 	{
 		outw(io + REG_USBCMD, USBCMD_HCRESET);
 
-		int timeout = 0;
+		bool timeout = false;
 		whileto((inw(io + REG_USBCMD) & USBCMD_HCRESET) != 0, 1000, timeout)
 			CPU::Pause();
 
@@ -66,7 +66,7 @@ namespace Driver::UniversalHostControllerInterface
 		if (WaitForStart == false)
 			return 0;
 
-		int timeout = 0;
+		bool timeout = false;
 		whileto((inw(io + REG_USBSTS) & USBSTS_HCH) != 0, 1000, timeout)
 			CPU::Pause();
 
