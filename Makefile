@@ -50,6 +50,9 @@ QEMUFLAGS += -device vmware-svga -M q35 \
 			 -trace usb_ohci_* \
 			 -trace usb_ehci_* \
 			 -trace usb_xhci_* \
+			 -trace usb_hub_* \
+			 -trace usb_port_* \
+			 -trace ps2_* \
 			 -serial file:serial.log \
 			 -serial file:COM2.dmp \
 			 -serial file:COM3.dmp \
