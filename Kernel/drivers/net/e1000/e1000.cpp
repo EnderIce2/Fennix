@@ -237,7 +237,7 @@ namespace Driver::E1000
 			return 0;
 		}
 
-		void OnInterruptReceived(CPU::TrapFrame *)
+		int OnInterruptReceived(CPU::TrapFrame *)
 		{
 			WriteCMD(REG::IMASK, 0x1);
 			uint32_t status = ReadCMD(0xC0);
@@ -259,6 +259,8 @@ namespace Driver::E1000
 				RXCurrent = (uint16_t)((RXCurrent + 1) % E1000_NUM_RX_DESC);
 				WriteCMD(REG::RXDESCTAIL, OldRXCurrent);
 			}
+
+			return EOK;
 		}
 
 		void Panic()

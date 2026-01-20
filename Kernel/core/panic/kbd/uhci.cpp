@@ -47,8 +47,9 @@ extern void ArrowInput(uint8_t key);
 extern void UserInput(char *Input);
 extern FontRenderer CrashFontRenderer;
 
-nsa void CrashUHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
+nsa int CrashUHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 {
+	return EOK;
 }
 
 __no_sanitize("undefined") nsa bool CrashUHCIKeyboardDriver::Initialize()

@@ -806,7 +806,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		std::shared_ptr<EventRing> EvRing;
 		std::shared_ptr<DoorbellManager> DbManager;
 
-		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
+		int OnInterruptReceived(CPU::TrapFrame *Frame) final;
 
 		bool TakeOwnership();
 		void InitializeProtocols();

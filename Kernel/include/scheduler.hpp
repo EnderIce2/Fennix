@@ -143,7 +143,7 @@ namespace Tasking::Scheduler
 		void CleanupTerminated();
 
 		void Schedule(CPU::SchedulerFrame *Frame);
-		void OnInterruptReceived(CPU::SchedulerFrame *Frame) final;
+		int OnInterruptReceived(CPU::SchedulerFrame *Frame) final;
 
 		Custom(Task *ctx);
 		virtual ~Custom();

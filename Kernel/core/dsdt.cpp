@@ -56,7 +56,7 @@ namespace ACPI
 #define ACPI_GAS_IO 1
 #define ACPI_GAS_PCI 2
 
-	void DSDT::OnInterruptReceived(CPU::TrapFrame *)
+	int DSDT::OnInterruptReceived(CPU::TrapFrame *)
 	{
 		debug("SCI Handle Triggered");
 		uint16_t Event = 0;
@@ -152,6 +152,8 @@ namespace ACPI
 			KPrint("ACPI unknown event %#lx on CPU %d",
 				   Event, GetCurrentCPU()->ID);
 		}
+
+		return EOK;
 	}
 
 	void DSDT::Shutdown()

@@ -163,7 +163,7 @@ namespace Driver::OpenHostControllerInterface
 		OHCIRegisters *regs;
 		PCI::PCIDevice Header;
 
-		void OnInterruptReceived(CPU::TrapFrame *Frame) final;
+		int OnInterruptReceived(CPU::TrapFrame *Frame) final;
 
 	public:
 		Queue *queue = nullptr;

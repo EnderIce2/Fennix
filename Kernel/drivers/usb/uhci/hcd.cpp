@@ -26,11 +26,13 @@ namespace Driver::UniversalHostControllerInterface
 	int UHCI_Port_Control(struct USBDevice *Device, struct USBTransfer *Transfer);
 	int UHCI_Port_Interrupt(struct USBDevice *, struct USBTransfer *);
 
-	void HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
+	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		USBSTS sts = inw(io + REG_USBSTS);
 		UNUSED(sts);
 		/** FIXME: OnInterruptReceived should be able to return an error */
+
+		return EOK;
 	}
 
 	int HCD::Reset()

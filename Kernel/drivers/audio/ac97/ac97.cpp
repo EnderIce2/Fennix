@@ -559,7 +559,7 @@ namespace Driver::AC97
 			return 0;
 		}
 
-		void OnInterruptReceived(CPU::TrapFrame *)
+		int OnInterruptReceived(CPU::TrapFrame *)
 		{
 			uint16_t Status = inw(MixerAddress + PCMOUT_Status);
 			if (Status & TC_IOCInterruptEnable)
@@ -591,6 +591,8 @@ namespace Driver::AC97
 				debug("Unknown interrupt status %#x", Status);
 				outw(MixerAddress + PCMOUT_Status, 0xFFFF);
 			}
+
+			return EOK;
 		}
 
 		void Panic()

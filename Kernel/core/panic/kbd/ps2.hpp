@@ -23,7 +23,7 @@ class CrashPS2KeyboardDriver : public Interrupts::Handler
 {
 private:
 	void PS2Wait(bool Read);
-	void OnInterruptReceived(CPU::TrapFrame *Frame);
+	int OnInterruptReceived(CPU::TrapFrame *Frame);
 
 	int BackSpaceLimit = 0;
 	char UserInputBuffer[256];

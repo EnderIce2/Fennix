@@ -373,7 +373,7 @@ namespace APIC
 	private:
 		APIC *lapic;
 		uint64_t Ticks = 0;
-		void OnInterruptReceived(CPU::TrapFrame *Frame);
+		int OnInterruptReceived(CPU::TrapFrame *Frame);
 
 	public:
 		uint64_t GetTicks() { return Ticks; }

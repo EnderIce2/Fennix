@@ -24,7 +24,7 @@ class CrashEHCIKeyboardDriver : public Interrupts::Handler
 public:
 	PCI::PCIDeviceHeader *Header = nullptr;
 
-	void OnInterruptReceived(CPU::TrapFrame *Frame);
+	int OnInterruptReceived(CPU::TrapFrame *Frame);
 	bool Initialize();
 	CrashEHCIKeyboardDriver(PCI::PCIDevice dev);
 	~CrashEHCIKeyboardDriver() = default;

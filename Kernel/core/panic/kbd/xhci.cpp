@@ -185,7 +185,7 @@ nsa CrashXHCIKeyboardDriver::CrashXHCIKeyboardDriver(PCIDevice xhci)
 	}
 }
 
-nsa void CrashXHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
+nsa int CrashXHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 {
 	debug("Interrupt received");
 
@@ -203,4 +203,6 @@ nsa void CrashXHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 
 	Interrupter->IMAN.IP = 0;
 	ops->USBSTS.EINT = 0;
+
+	return 0;
 }

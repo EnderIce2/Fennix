@@ -47,8 +47,9 @@ extern void ArrowInput(uint8_t key);
 extern void UserInput(char *Input);
 extern FontRenderer CrashFontRenderer;
 
-nsa void CrashEHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
+nsa int CrashEHCIKeyboardDriver::OnInterruptReceived(CPU::TrapFrame *Frame)
 {
+	return EOK;
 }
 
 nsa bool CrashEHCIKeyboardDriver::Initialize()

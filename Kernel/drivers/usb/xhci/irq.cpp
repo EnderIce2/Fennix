@@ -21,7 +21,7 @@ namespace Driver::ExtensibleHostControllerInterface
 {
 	extern dev_t DriverID;
 
-	void HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
+	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		debug("xHCI interrupt received!");
 
@@ -60,5 +60,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		// Op->USBSTS.EventInterrupt(1);
 		Op->USBSTS.raw = (1 << 3);
 		Interrupter->IMAN.InterruptPending(1);
+
+		return EOK;
 	}
 }

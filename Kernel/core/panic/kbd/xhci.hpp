@@ -246,7 +246,7 @@ private:
 	std::vector<XHCIprotocol *> Protocols = {};
 	XHCIruntime::XHCIinterrupter *Interrupter = nullptr;
 
-	void OnInterruptReceived(CPU::TrapFrame *Frame);
+	int OnInterruptReceived(CPU::TrapFrame *Frame);
 	bool TakeOwnership();
 
 public:

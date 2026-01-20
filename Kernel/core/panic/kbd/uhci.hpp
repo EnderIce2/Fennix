@@ -208,7 +208,7 @@ public:
 	IORegisters *io = nullptr;
 	uint32_t *FrameList = nullptr;
 
-	void OnInterruptReceived(CPU::TrapFrame *Frame);
+	int OnInterruptReceived(CPU::TrapFrame *Frame);
 	bool Initialize();
 	CrashUHCIKeyboardDriver(PCI::PCIDevice dev);
 	~CrashUHCIKeyboardDriver() = default;

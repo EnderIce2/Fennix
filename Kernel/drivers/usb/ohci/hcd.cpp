@@ -23,8 +23,9 @@ namespace Driver::OpenHostControllerInterface
 {
 	extern dev_t DriverID;
 
-	void HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
+	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
+		return EOK;
 	}
 
 	int HCD::Reset()

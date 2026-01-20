@@ -77,8 +77,9 @@ namespace Interrupts
 		~Handler();
 
 	public:
-		virtual void OnInterruptReceived(CPU::TrapFrame *Frame);
-		virtual void OnInterruptReceived(CPU::SchedulerFrame *Frame);
+		/** EOK if is good, ENOTSUP if needs it needs to go for other handler */
+		virtual int OnInterruptReceived(CPU::TrapFrame *Frame);
+		virtual int OnInterruptReceived(CPU::SchedulerFrame *Frame);
 	};
 }
 

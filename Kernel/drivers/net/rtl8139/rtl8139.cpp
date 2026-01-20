@@ -91,7 +91,7 @@ namespace Driver::RTL8139
 			return 0;
 		}
 
-		void OnInterruptReceived(CPU::TrapFrame *)
+		int OnInterruptReceived(CPU::TrapFrame *)
 		{
 			/* Acknowledge interrupt */
 			uint16_t status = inw(RegISR);
@@ -121,6 +121,8 @@ namespace Driver::RTL8139
 
 			/* Clear interrupt */
 			outw(RegISR, (RecOK | RecBad | SendOK | SendBad));
+
+			return EOK;
 		}
 
 		void Panic()

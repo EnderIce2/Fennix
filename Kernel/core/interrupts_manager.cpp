@@ -94,7 +94,7 @@ namespace Interrupts
 		 */
 		bool Critical;
 	};
-	std::list<Event> RegisteredEvents;
+	std::vector<Event> RegisteredEvents;
 
 #ifdef DEBUG
 #define SORT_DIVIDER 10
@@ -275,8 +275,9 @@ namespace Interrupts
 		{
 			debug("Sorting events");
 			SortEvents = 0;
-			RegisteredEvents.sort([](const Event &a, const Event &b)
-								  { return a.Priority < b.Priority; });
+			std::sort(RegisteredEvents.begin(), RegisteredEvents.end(),
+					  [](const Event &a, const Event &b)
+					  { return a.Priority > b.Priority; });
 
 #ifdef DEBUG
 			for (auto ev : RegisteredEvents)
@@ -346,40 +347,41 @@ namespace Interrupts
 			CPU::Stop();
 		assert(Frame->InterruptNumber <= CPU::x86::IRQ223);
 
-		auto it = RegisteredEvents.begin();
-		while (it != RegisteredEvents.end())
+		for (auto &&it : RegisteredEvents)
 		{
-			int iEvNum = it->IRQ;
 #if defined(__amd64__) || defined(__i386__)
-			iEvNum += CPU::x86::IRQ0;
+			if ((uintptr_t)it.IRQ + CPU::x86::IRQ0 != Frame->InterruptNumber)
+#else
+			if (it.IRQ != Frame->InterruptNumber)
 #endif
-			if (iEvNum == s_cst(int, Frame->InterruptNumber))
-				break;
-			++it;
-		}
+				continue;
 
-		if (it == RegisteredEvents.end())
-		{
-			warn("IRQ%d is not registered.", Frame->InterruptNumber - 32);
+			it.Priority++;
+
+			if (it.IsHandler)
+			{
+				Handler *hnd = (Handler *)it.Data;
+				int ret = hnd->OnInterruptReceived(Frame);
+				if (ret != EOK)
+				{
+					if (ret == ENOTSUP)
+						continue;
+					warn("Handler for IRQ%d returned error %d", Frame->InterruptNumber - 32, ret);
+				}
+			}
+			else
+			{
+				if (it.Context != nullptr)
+					it.Callback((CPU::TrapFrame *)it.Context);
+				else
+					it.Callback(Frame);
+			}
+
 			ReturnFromInterrupt();
 			return;
 		}
 
-		it->Priority++;
-
-		if (it->IsHandler)
-		{
-			Handler *hnd = (Handler *)it->Data;
-			hnd->OnInterruptReceived(Frame);
-		}
-		else
-		{
-			if (it->Context != nullptr)
-				it->Callback((CPU::TrapFrame *)it->Context);
-			else
-				it->Callback(Frame);
-		}
-
+		warn("IRQ%d is not registered.", Frame->InterruptNumber - 32);
 		ReturnFromInterrupt();
 #endif
 	}
@@ -395,27 +397,27 @@ namespace Interrupts
 		assert(Frame->InterruptNumber == 16);
 #endif
 
-		auto it = std::find_if(RegisteredEvents.begin(), RegisteredEvents.end(),
-							   [](const Event &ev)
-							   {
-								   return ev.IRQ == 16;
-							   });
-
-		if (it == RegisteredEvents.end())
+		for (auto &&it : RegisteredEvents)
 		{
-			warn("Scheduler interrupt is not registered.");
+			if (it.IRQ != 16)
+				continue;
+			assert(it.IsHandler);
+			it.Priority++;
+			Handler *hnd = (Handler *)it.Data;
+			int ret = hnd->OnInterruptReceived(Frame);
+			if (ret != EOK)
+			{
+				if (ret == ENOTSUP)
+					continue;
+			}
 			ReturnFromInterrupt();
-			Frame->ppt = Frame->opt;
-			debug("opt = %#lx", Frame->opt);
 			return;
 		}
-		assert(it->IsHandler);
 
-		it->Priority++;
-
-		Handler *hnd = (Handler *)it->Data;
-		hnd->OnInterruptReceived(Frame);
+		warn("Scheduler interrupt is not registered.");
 		ReturnFromInterrupt();
+		Frame->ppt = Frame->opt;
+		debug("opt = %#lx", Frame->opt);
 #endif
 	}
 
@@ -467,17 +469,19 @@ namespace Interrupts
 		warn("Event %d not found.", this->InterruptNumber);
 	}
 
-	void Handler::OnInterruptReceived(CPU::TrapFrame *Frame)
+	int Handler::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 #if defined(__amd64__) || defined(__i386__)
 		debug("Unhandled interrupt %d", Frame->InterruptNumber);
 #endif
+		return ENOTSUP;
 	}
 
-	void Handler::OnInterruptReceived(CPU::SchedulerFrame *Frame)
+	int Handler::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
 #if defined(__amd64__) || defined(__i386__)
 		debug("Unhandled scheduler interrupt %d", Frame->InterruptNumber);
 #endif
+		return ENOTSUP;
 	}
 }

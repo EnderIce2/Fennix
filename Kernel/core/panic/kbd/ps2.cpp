@@ -360,7 +360,7 @@ nsa CrashPS2KeyboardDriver::CrashPS2KeyboardDriver() : Interrupts::Handler(1) /*
 	CPU::Interrupts(CPU::Enable);
 }
 
-nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
+nsa int CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 {
 #if defined(__amd64__) || defined(__i386__)
 	uint8_t scanCode = inb(PS2_DATA);
@@ -370,7 +370,7 @@ nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 		scanCode == KEY_D_LALT ||
 		scanCode == KEY_U_LCTRL ||
 		scanCode == KEY_U_LALT)
-		return;
+		return EOK;
 
 	switch (scanCode)
 	{
@@ -413,4 +413,6 @@ nsa void CrashPS2KeyboardDriver::OnInterruptReceived(CPU::TrapFrame *)
 		Display->UpdateBuffer(); /* Update as we type. */
 	}
 #endif // __amd64__ || __i386__
+
+	return EOK;
 }

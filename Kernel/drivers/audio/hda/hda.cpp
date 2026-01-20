@@ -50,8 +50,9 @@ namespace Driver::HighDefinitionAudio
 			return 0;
 		}
 
-		void OnInterruptReceived(CPU::TrapFrame *)
+		int OnInterruptReceived(CPU::TrapFrame *)
 		{
+			return EOK;
 		}
 
 		void Panic()

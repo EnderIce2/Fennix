@@ -723,10 +723,11 @@ namespace Tasking::Scheduler
 		this->SchedulerTicks.store(size_t(TimeManager->GetTimeNs() - SchedTmpTicks));
 	}
 
-	hot nsa nif void Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
+	hot nsa nif int Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
 	{
 		SmartCriticalSection(SchedulerLock);
 		this->Schedule(Frame);
+		return EOK;
 	}
 
 	Custom::Custom(Task *ctx) : Base(ctx), Interrupts::Handler(16) /* IRQ16 */
