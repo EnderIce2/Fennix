@@ -38,7 +38,6 @@
 #endif
 
 #include "../../kernel.h"
-#include "kbd/keyboard.hpp"
 
 extern void ExPrint(const char *Format, ...);
 extern void DisplayTopOverlay();
