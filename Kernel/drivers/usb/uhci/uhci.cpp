@@ -56,6 +56,8 @@ namespace Driver::UniversalHostControllerInterface
 	std::list<HCD *> Controllers;
 	int Entry()
 	{
+		return ENOSYS;
+
 		for (auto &&dev : Devices)
 		{
 			PCIManager->MapPCIAddresses(dev, KernelPageTable);
