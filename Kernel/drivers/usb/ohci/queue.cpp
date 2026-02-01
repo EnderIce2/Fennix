@@ -24,16 +24,10 @@ namespace Driver::OpenHostControllerInterface
 
 	Queue::Queue()
 	{
-		this->sched = new UniversalSerialBus::Scheduler(32, 1, 900);
-		auto qhpool = this->sched->CreateNewPool(sizeof(ED), 0x10, 8, offsetof(ED, HEAD), offsetof(ED, ELEMENT), offsetof(ED, __software));
-		auto tdpool = this->sched->CreateNewPool(sizeof(TD), 0x10, 32, offsetof(TD, LINK), offsetof(TD, LINK), offsetof(TD, __software));
-		this->sched->Initialize(0);
-
 		stub;
 	}
 
 	Queue::~Queue()
 	{
-		delete this->sched;
 	}
 }

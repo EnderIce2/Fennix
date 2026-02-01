@@ -19,7 +19,9 @@
 #include <auto_page>
 #include <memory.hpp>
 
-namespace UniversalSerialBus
+#include "uhci.hpp"
+
+namespace Driver::UniversalHostControllerInterface
 {
 	USBSchedulerPool *Scheduler::CreateNewPool(size_t SizeOfDescriptor, int RequredAlignment, size_t Count, off_t Breadth, off_t Depth, off_t Software)
 	{

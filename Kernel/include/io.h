@@ -26,115 +26,83 @@
 extern "C"
 {
 #endif
+
 	static inline uint8_t inb(uint16_t Port)
 	{
 		uint8_t Result;
-		asm("in %%dx, %%al"
-			: "=a"(Result)
-			: "d"(Port));
+		asmv("in %%dx, %%al" : "=a"(Result) : "d"(Port));
 		return Result;
 	}
 
 	static inline uint16_t inw(uint16_t Port)
 	{
 		uint16_t Result;
-		asm("in %%dx, %%ax"
-			: "=a"(Result)
-			: "d"(Port));
+		asmv("in %%dx, %%ax" : "=a"(Result) : "d"(Port));
 		return Result;
 	}
 
 	static inline uint32_t inl(uint16_t Port)
 	{
 		uint32_t Result;
-		asmv("inl %1, %0"
-			 : "=a"(Result)
-			 : "dN"(Port));
+		asmv("inl %1, %0" : "=a"(Result) : "dN"(Port));
 		return Result;
 	}
 
 	static inline void outb(uint16_t Port, uint8_t Data)
 	{
-		asmv("out %%al, %%dx"
-			 :
-			 : "a"(Data), "d"(Port));
+		asmv("out %%al, %%dx" : : "a"(Data), "d"(Port));
 	}
 
 	static inline void outw(uint16_t Port, uint16_t Data)
 	{
-		asmv("out %%ax, %%dx"
-			 :
-			 : "a"(Data), "d"(Port));
+		asmv("out %%ax, %%dx" : : "a"(Data), "d"(Port));
 	}
 
 	static inline void outl(uint16_t Port, uint32_t Data)
 	{
-		asmv("outl %1, %0"
-			 :
-			 : "dN"(Port), "a"(Data));
+		asmv("outl %1, %0" : : "dN"(Port), "a"(Data));
 	}
 
 	static inline void mmoutb(void *Address, uint8_t Value)
 	{
-		asmv("mov %1, %0"
-			 : "=m"((*(uint8_t *)(Address)))
-			 : "r"(Value)
-			 : "memory");
+		asmv("mov %1, %0" : "=m"((*(uint8_t *)(Address))) : "r"(Value) : "memory");
 	}
 
 	static inline void mmoutw(void *Address, uint16_t Value)
 	{
-		asmv("mov %1, %0"
-			 : "=m"((*(uint16_t *)(Address)))
-			 : "r"(Value)
-			 : "memory");
+		asmv("mov %1, %0" : "=m"((*(uint16_t *)(Address))) : "r"(Value) : "memory");
 	}
 
 	static inline void mmoutl(void *Address, uint32_t Value)
 	{
-		asmv("mov %1, %0"
-			 : "=m"((*(uint32_t *)(Address)))
-			 : "r"(Value)
-			 : "memory");
+		asmv("mov %1, %0" : "=m"((*(uint32_t *)(Address))) : "r"(Value) : "memory");
 	}
 
 #if defined(__amd64__)
 	static inline void mmoutq(void *Address, uint64_t Value)
 	{
-		asmv("mov %1, %0"
-			 : "=m"((*(uint64_t *)(Address)))
-			 : "r"(Value)
-			 : "memory");
+		asmv("mov %1, %0" : "=m"((*(uint64_t *)(Address))) : "r"(Value) : "memory");
 	}
 #endif
 
 	static inline uint8_t mminb(void *Address)
 	{
 		uint8_t Result;
-		asmv("mov %1, %0"
-			 : "=r"(Result)
-			 : "m"((*(uint8_t *)(Address)))
-			 : "memory");
+		asmv("mov %1, %0" : "=r"(Result) : "m"((*(uint8_t *)(Address))) : "memory");
 		return Result;
 	}
 
 	static inline uint16_t mminw(void *Address)
 	{
 		uint16_t Result;
-		asmv("mov %1, %0"
-			 : "=r"(Result)
-			 : "m"((*(uint16_t *)(Address)))
-			 : "memory");
+		asmv("mov %1, %0" : "=r"(Result) : "m"((*(uint16_t *)(Address))) : "memory");
 		return Result;
 	}
 
 	static inline uint32_t mminl(void *Address)
 	{
 		uint32_t Result;
-		asmv("mov %1, %0"
-			 : "=r"(Result)
-			 : "m"((*(uint32_t *)(Address)))
-			 : "memory");
+		asmv("mov %1, %0" : "=r"(Result) : "m"((*(uint32_t *)(Address))) : "memory");
 		return Result;
 	}
 
@@ -142,16 +110,210 @@ extern "C"
 	static inline uint64_t mminq(void *Address)
 	{
 		uint64_t Result;
-		asmv("mov %1, %0"
-			 : "=r"(Result)
-			 : "m"((*(uint64_t *)(Address)))
-			 : "memory");
+		asmv("mov %1, %0" : "=r"(Result) : "m"((*(uint64_t *)(Address))) : "memory");
 		return Result;
 	}
 #endif
 
 #ifdef __cplusplus
 }
+
+/* ============================================================ */
+
+#define __IO_READ_DECL(type, name)       \
+	inline type in() const               \
+	{                                    \
+		if constexpr (sizeof(type) == 1) \
+			return inb(port);            \
+		if constexpr (sizeof(type) == 2) \
+			return inw(port);            \
+		else                             \
+			return inl(port);            \
+	}                                    \
+                                         \
+	inline bool has(Flags f) const       \
+	{                                    \
+		return (in() & (type)f) != 0;    \
+	}
+
+#define __IO_WRITE_DECL(type, name)                         \
+	inline void out(type v) const                           \
+	{                                                       \
+		if constexpr (sizeof(type) == 1)                    \
+			outb(port, v);                                  \
+		else if constexpr (sizeof(type) == 2)               \
+			outw(port, v);                                  \
+		else                                                \
+			outl(port, v);                                  \
+	}                                                       \
+                                                            \
+	inline void out(Flags f) const { out((type)f); }        \
+	inline void set(Flags f) const { out(in() | (type)f); } \
+	inline void clr(Flags f) const { out(in() & ~(type)f); }
+
+#define __IO_BASE_DECL(type, name, ...) \
+	enum Flags : type                   \
+	{                                   \
+		__VA_ARGS__                     \
+	};                                  \
+                                        \
+	type port;                          \
+	explicit name() = default;          \
+	explicit name(auto p) : port(p) {}
+
+#define __IO_FLAG_OPS(Enum, type)                   \
+	inline constexpr Enum operator|(Enum a, Enum b) \
+	{                                               \
+		return (Enum)((type)a | (type)b);           \
+	}                                               \
+	inline constexpr Enum operator&(Enum a, Enum b) \
+	{                                               \
+		return (Enum)((type)a & (type)b);           \
+	}                                               \
+	inline constexpr Enum operator~(Enum a)         \
+	{                                               \
+		return (Enum)(~(type)a);                    \
+	}
+
+/* ============================================================ */
+
+/**
+ * Read Only
+ *
+ * Available functions:
+ *   - in()
+ *   - has(Flags f)
+ *
+ */
+#define IO_REG_RO(type, name, ...)              \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_READ_DECL(type, name)              \
+		__IO_WRITE_DECL(type, name)             \
+	}
+
+/**
+ * Read Only
+ *
+ * Available functions:
+ *   - in()
+ *   - has(Flags f)
+ *
+ */
+#define IO_REG_RO_EX(type, name, global, ...)   \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_READ_DECL(type, name)              \
+		__IO_WRITE_DECL(type, name)             \
+	} global;                                   \
+	__IO_FLAG_OPS(name::Flags, type)
+
+/* ============================================================ */
+
+/**
+ * Read/Write
+ *
+ * Available functions:
+ *   - in()
+ *   - out(type v)
+ *   - out(Flags f)
+ *   - set(Flags f)
+ *   - clr(Flags f)
+ *
+ */
+#define IO_REG_RW(type, name, ...)              \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_READ_DECL(type, name)              \
+		__IO_WRITE_DECL(type, name)             \
+	}
+
+/**
+ * Read/Write
+ *
+ * Available functions:
+ *   - in()
+ *   - out(type v)
+ *   - out(Flags f)
+ *   - set(Flags f)
+ *   - clr(Flags f)
+ *
+ */
+#define IO_REG_RW_EX(type, name, global, ...)   \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_READ_DECL(type, name)              \
+		__IO_WRITE_DECL(type, name)             \
+	} global;                                   \
+	__IO_FLAG_OPS(name::Flags, type)
+
+/* ============================================================ */
+
+/**
+ * Write Only
+ *
+ * Available functions:
+ *   - out(type v)
+ *   - out(Flags f)
+ *
+ */
+#define IO_REG_WO(type, name, ...)              \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_WRITE_DECL(type, name)             \
+	}
+
+/**
+ * Write Only
+ *
+ * Available functions:
+ *   - out(type v)
+ *   - out(Flags f)
+ *
+ */
+#define IO_REG_WO_EX(type, name, global, ...)   \
+	struct name                                 \
+	{                                           \
+		__IO_BASE_DECL(type, name, __VA_ARGS__) \
+		__IO_WRITE_DECL(type, name)             \
+	} global;                                   \
+	__IO_FLAG_OPS(name::Flags, type)
+
+/* ============================================================ */
+
+/**
+ * Read/Write Clear
+ *
+ * Writing 1 clears the flag.
+ *
+ * Available functions:
+ *   - in()
+ *   - out(type v)
+ *   - out(Flags f)
+ *
+ * Do not use set() or clr()!
+ */
+#define IO_REG_RWC(type, name, global, ...) IO_REG_RW(type, name, global, __VA_ARGS__)
+
+/**
+ * Read/Write Clear
+ *
+ * Writing 1 clears the flag.
+ *
+ * Available functions:
+ *   - in()
+ *   - out(type v)
+ *   - out(Flags f)
+ *
+ * Do not use set() or clr()!
+ */
+#define IO_REG_RWC_EX(type, name, global, ...) IO_REG_RW_EX(type, name, global, __VA_ARGS__)
+
 #endif
 
 #endif // defined(__amd64__) || defined(__i386__)

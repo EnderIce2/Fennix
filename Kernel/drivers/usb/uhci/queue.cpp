@@ -18,13 +18,14 @@
 #include "uhci.hpp"
 
 extern Driver::Manager *DriverManager;
+
 namespace Driver::UniversalHostControllerInterface
 {
 	extern dev_t DriverID;
 
 	Queue::Queue()
 	{
-		this->sched = new UniversalSerialBus::Scheduler(1024, 1, 900);
+		this->sched = new Scheduler(1024, 1, 900);
 		auto qhpool = this->sched->CreateNewPool(sizeof(QH), 0x10, 8, offsetof(QH, HEAD), offsetof(QH, ELEMENT), offsetof(QH, __software));
 		auto tdpool = this->sched->CreateNewPool(sizeof(TD), 0x10, 32, offsetof(TD, LINK), offsetof(TD, LINK), offsetof(TD, __software));
 		this->sched->Initialize(0);

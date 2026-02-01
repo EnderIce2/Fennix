@@ -111,81 +111,6 @@
 
 namespace Driver::UniversalHostControllerInterface
 {
-	union USBCMD
-	{
-		struct
-		{
-			uint16_t RS : 1;
-			uint16_t HCRESET : 1;
-			uint16_t GRESET : 1;
-			uint16_t EGSM : 1;
-			uint16_t FGR : 1;
-			uint16_t SWDBG : 1;
-			uint16_t CF : 1;
-			uint16_t MAXP : 1;
-			uint16_t __reserved0 : 8;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, USBCMD);
-	};
-
-	union USBSTS
-	{
-		struct
-		{
-			uint16_t USBINT : 1;
-			uint16_t USBERRINT : 1;
-			uint16_t RD : 1;
-			uint16_t HSE : 1;
-			uint16_t HCPE : 1;
-			uint16_t HCH : 1;
-			uint16_t __reserved0 : 10;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, USBSTS);
-	};
-
-	union USBINTR
-	{
-		struct
-		{
-			uint16_t TOCRC : 1;
-			uint16_t RIE : 1;
-			uint16_t IOCE : 1;
-			uint16_t SPIE : 1;
-			uint16_t __reserved0 : 12;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, USBINTR);
-	};
-
-	union FRNUM
-	{
-		struct
-		{
-			uint16_t FN : 9;
-			uint16_t __reserved0 : 7;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, FRNUM);
-	};
-
-	union FLBASEADD
-	{
-		struct
-		{
-			uint32_t __reserved0 : 12;
-			uint32_t BA : 20;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint32_t, FLBASEADD);
-	};
-
-	union SOFMOD
-	{
-		struct
-		{
-			uint8_t SOFTVAL : 7;
-			uint8_t __reserved0 : 1;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint8_t, SOFMOD);
-	};
-
 	union PORTSC
 	{
 		struct
@@ -556,6 +481,50 @@ namespace Driver::UniversalHostControllerInterface
 		~Port();
 	};
 
+	struct USBScheduler
+	{
+		uint32_t *FrameList;
+		size_t Frames;
+		size_t SubFrames;
+		size_t BandwidthSize;
+	};
+
+	struct USBSchedulerPool
+	{
+		uint8_t *Data;
+	};
+
+	class Scheduler : public USBScheduler
+	{
+	private:
+		struct SchedPoolInternal : USBSchedulerPool
+		{
+			fnx::spinlock_t Lock;
+			size_t SizeOfDescriptor;
+			size_t Count;
+			off_t Breadth;
+			off_t Depth;
+			off_t Software;
+
+			void *GetBreadth(off_t Index);
+			void *GetDepth(off_t Index);
+			void *GetSoftware(off_t Index);
+		};
+
+		std::list<SchedPoolInternal> Pools;
+
+	public:
+		USBSchedulerPool *CreateNewPool(size_t SizeOfDescriptor, int RequredAlignment, size_t Count, off_t Breadth, off_t Depth, off_t Software);
+		int GetCurrentFrame();
+
+		int GetPoolElement(USBSchedulerPool *Pool, size_t Index, void **Element);
+		int GetPoolElement(size_t PoolIndex, size_t Index, void **Element);
+
+		bool Initialize(uint32_t FrameListData);
+		Scheduler(size_t NumOfFrames, size_t NumOfSubFrames, size_t MaxBandwidth);
+		~Scheduler();
+	};
+
 	class Queue
 	{
 	private:
@@ -572,7 +541,7 @@ namespace Driver::UniversalHostControllerInterface
 		QH *CurrentQueue;
 
 	public:
-		UniversalSerialBus::Scheduler *sched;
+		Scheduler *sched;
 
 		QH *AllocateQueueHead();
 		int ReleaseQueueHead(QH *qh);
@@ -594,12 +563,12 @@ namespace Driver::UniversalHostControllerInterface
 		Queue *queue = nullptr;
 
 		int Reset();
-		int Start(bool WaitForStart);
+		int Start();
 		int Stop();
 		int Detect();
 		int ProcessQueueHead(QH *qh);
 		int Poll();
-		HCD(uintptr_t base, PCI::PCIDevice &pciHeader);
+		HCD(PCI::PCIDevice &pciHeader);
 		virtual ~HCD();
 	};
 }

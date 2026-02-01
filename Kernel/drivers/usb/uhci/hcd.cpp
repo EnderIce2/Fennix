@@ -23,65 +23,80 @@ namespace Driver::UniversalHostControllerInterface
 {
 	extern dev_t DriverID;
 
+	IO_REG_RW_EX(uint16_t, USBCMD, cmd,
+				 RS = 1u << 0,
+				 HCRESET = 1u << 1,
+				 GRESET = 1u << 2,
+				 EGSM = 1u << 3,
+				 FGR = 1u << 4,
+				 SWDBG = 1u << 5,
+				 CF = 1u << 6,
+				 MAXP = 1u << 7);
+
+	IO_REG_RWC_EX(uint16_t, USBSTS, sts,
+				  USBINT = 1u << 0,
+				  USBERRINT = 1u << 1,
+				  RD = 1u << 2,
+				  HSE = 1u << 3,
+				  HCPE = 1u << 4,
+				  HCH = 1u << 5);
+
+	IO_REG_RW_EX(uint16_t, USBINTR, intr,
+				 TOCRC = 1u << 0,
+				 RIE = 1u << 1,
+				 IOCE = 1u << 2,
+				 SPIE = 1u << 3);
+
 	int UHCI_Port_Control(struct USBDevice *Device, struct USBTransfer *Transfer);
 	int UHCI_Port_Interrupt(struct USBDevice *, struct USBTransfer *);
 
 	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
-		USBSTS sts = inw(io + REG_USBSTS);
-		UNUSED(sts);
-		/** FIXME: OnInterruptReceived should be able to return an error */
-
 		return EOK;
 	}
 
 	int HCD::Reset()
 	{
-		outw(io + REG_USBCMD, USBCMD_HCRESET);
-
+		cmd.out(USBCMD::GRESET);
 		bool timeout = false;
-		whileto((inw(io + REG_USBCMD) & USBCMD_HCRESET) != 0, 1000, timeout)
-			CPU::Pause();
+		whileto(cmd.has(USBCMD::GRESET), 100, timeout)
+			v0::Sleep(DriverID, 10);
+
+		if (timeout)
+			warn("global reset timeout");
+
+		cmd.out(USBCMD::HCRESET);
+		whileto(cmd.has(USBCMD::HCRESET), 100, timeout)
+			v0::Sleep(DriverID, 10);
 
 		if (timeout)
 			warn("reset timeout");
 
-		outw(io + REG_USBCMD, 0);
-		// outw(io + REG_USBSTS, 0xFFFF);
-		outw(io + REG_USBINTR, 0);
-
 		outb(io + REG_SOFMOD, 64); /* Timing Value. 64 = 12000 @ 12MHz */
 		outl(io + REG_FLBASEADD, (uint32_t)(uintptr_t)this->queue->sched->FrameList);
-		outw(io + REG_FRNUM, this->queue->sched->GetCurrentFrame());
+		outw(io + REG_FRNUM, this->queue->sched->GetCurrentFrame() & 0x7FF);
 
-		outw(io + REG_USBINTR, USBINTR_TOCRC | USBINTR_RIE | USBINTR_IOCE | USBINTR_SPIE);
+		intr.out(USBINTR::TOCRC | USBINTR::RIE | USBINTR::IOCE | USBINTR::SPIE);
 		return 0;
 	}
 
-	int HCD::Start(bool WaitForStart)
+	int HCD::Start()
 	{
-		outw(io + REG_USBSTS, 0xFFFF);
-		USBCMD cmd = inw(io + REG_USBCMD);
-		cmd |= USBCMD_CF | USBCMD_RS | USBCMD_MAXP;
-		outw(io + REG_USBCMD, cmd);
+		// outw(io + REG_USBSTS, 0xFFFF);
+		// cmd.set(USBCMD::CF | USBCMD::RS | USBCMD::MAXP);
 
-		if (WaitForStart == false)
-			return 0;
+		// bool timeout = false;
+		// whileto(sts.has(USBSTS::HCH), 1000, timeout)
+		// 	CPU::Pause();
 
-		bool timeout = false;
-		whileto((inw(io + REG_USBSTS) & USBSTS_HCH) != 0, 1000, timeout)
-			CPU::Pause();
-
-		if (timeout)
-			return ETIMEDOUT;
+		// if (timeout)
+		// 	return ETIMEDOUT;
 		return 0;
 	}
 
 	int HCD::Stop()
 	{
-		USBCMD cmd = inw(io + REG_USBCMD);
-		cmd |= USBCMD_RS;
-		outw(io + REG_USBCMD, cmd);
+		cmd.clr(USBCMD::RS);
 		return 0;
 	}
 
@@ -156,9 +171,9 @@ namespace Driver::UniversalHostControllerInterface
 		return 0;
 	}
 
-	HCD::HCD(uintptr_t base, PCI::PCIDevice &pciHeader)
+	HCD::HCD(PCI::PCIDevice &pciHeader)
 		: Interrupts::Handler(pciHeader),
-		  io((uint16_t)base),
+		  io((uint16_t)pciHeader.GetBAR(4)),
 		  Header(pciHeader)
 	{
 		/**
@@ -168,20 +183,17 @@ namespace Driver::UniversalHostControllerInterface
 		 */
 		io &= ~0x1;
 
+		cmd.port = io + REG_USBCMD;
+		sts.port = io + REG_USBSTS;
+		intr.port = io + REG_USBINTR;
+
 		/* More info in UHCI Design Guide 1.1 @ 5.2.1 */
 		outw(io + REG_LEGSUP, 0x2000);
-		if (Header.Header->VendorID == 0x8086)
+		if (Header.IsVendor(PCI::IntelCorporation))
 		{
 			/* Disable non-PME# wakeup on Intel */
 			outw(io + REG_INTEL, 0x0000);
 		}
-
-		outw(io + REG_USBCMD, 0);
-		outw(io + REG_USBINTR, 0);
-
-		outw(io + REG_USBCMD, USBCMD_GRESET);
-		v0::Sleep(DriverID, 100);
-		outw(io + REG_USBCMD, 0);
 
 		queue = new Queue;
 	}

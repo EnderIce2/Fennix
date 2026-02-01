@@ -59,37 +59,6 @@ namespace UniversalSerialBus
 		~Compound();
 	};
 
-	class Scheduler : public USBScheduler
-	{
-	private:
-		struct SchedPoolInternal : USBSchedulerPool
-		{
-			fnx::spinlock_t Lock;
-			size_t SizeOfDescriptor;
-			size_t Count;
-			off_t Breadth;
-			off_t Depth;
-			off_t Software;
-
-			void *GetBreadth(off_t Index);
-			void *GetDepth(off_t Index);
-			void *GetSoftware(off_t Index);
-		};
-
-		std::list<SchedPoolInternal> Pools;
-
-	public:
-		USBSchedulerPool *CreateNewPool(size_t SizeOfDescriptor, int RequredAlignment, size_t Count, off_t Breadth, off_t Depth, off_t Software);
-		int GetCurrentFrame();
-
-		int GetPoolElement(USBSchedulerPool *Pool, size_t Index, void **Element);
-		int GetPoolElement(size_t PoolIndex, size_t Index, void **Element);
-
-		bool Initialize(uint32_t FrameListData);
-		Scheduler(size_t NumOfFrames, size_t NumOfSubFrames, size_t MaxBandwidth);
-		~Scheduler();
-	};
-
 	class Manager
 	{
 	private:

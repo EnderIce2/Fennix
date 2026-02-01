@@ -35,7 +35,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	dev_t DriverID;
 
-	int UHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(false); }
+	int UHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(); }
 	int UHCI_Stop(struct USBController *d) { return ((HCD *)d)->Stop(); }
 	int UHCI_Reset(struct USBController *d) { return ((HCD *)d)->Reset(); }
 	int UHCI_Poll(struct USBController *d) { return ((HCD *)d)->Poll(); }
@@ -56,30 +56,38 @@ namespace Driver::UniversalHostControllerInterface
 	std::list<HCD *> Controllers;
 	int Entry()
 	{
-		return ENOSYS;
-
 		for (auto &&dev : Devices)
 		{
-			PCIManager->MapPCIAddresses(dev, KernelPageTable);
-			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
-			hdr0->Header.Command |= PCI::PCI_COMMAND_MASTER | PCI::PCI_COMMAND_IO;
-			hdr0->Header.Command &= ~PCI::PCI_COMMAND_INTX_DISABLE;
+			PCIManager->InitializeDevice(dev, KernelPageTable);
 
-			HCD *hc = new HCD(hdr0->BAR[4], dev);
+			HCD *hc = new HCD(dev);
 			// hc->Flags =
 			hc->StartHC = UHCI_Start;
 			hc->StopHC = UHCI_Stop;
 			hc->ResetHC = UHCI_Reset;
 			hc->PollHC = UHCI_Poll;
 
-			hc->Reset();
-			if (hc->Start(true) != 0)
+			int ret = hc->Reset();
+			if (ret != 0)
 			{
-				error("Failed to start UHCI controller %d:%d:%d", dev.Bus, dev.Device, dev.Function);
+				KPrint("Failed to reset UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}
-			hc->Detect();
+			ret = hc->Start();
+			if (ret != 0)
+			{
+				KPrint("Failed to start UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
+			ret = hc->Detect();
+			if (ret != 0)
+			{
+				KPrint("Failed to detect UHCI devices on controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
 
 			Controllers.push_back(hc);
 			v0::AddController(DriverID, hc);

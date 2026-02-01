@@ -18,7 +18,9 @@
 #include <usb.hpp>
 #include <auto_page>
 
-namespace UniversalSerialBus
+#include "uhci.hpp"
+
+namespace Driver::UniversalHostControllerInterface
 {
 	void *Scheduler::SchedPoolInternal::GetBreadth(off_t Index)
 	{

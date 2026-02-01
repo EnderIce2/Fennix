@@ -147,8 +147,6 @@ namespace Driver::OpenHostControllerInterface
 		ED *CurrentQueue;
 
 	public:
-		UniversalSerialBus::Scheduler *sched;
-
 		ED *AllocateQueueHead();
 		int ReleaseQueueHead(ED *qh);
 		TD *AllocateTransferDescriptor();

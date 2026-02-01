@@ -460,19 +460,6 @@ struct USBTransfer
 	};
 };
 
-struct USBScheduler
-{
-	uint32_t *FrameList;
-	size_t Frames;
-	size_t SubFrames;
-	size_t BandwidthSize;
-};
-
-struct USBSchedulerPool
-{
-	uint8_t *Data;
-};
-
 struct USBController
 {
 	union

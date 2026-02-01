@@ -26,25 +26,25 @@
 
 namespace PCI
 {
+	enum Vendors
+	{
+		Apple = 0x106B,
+		BusLogic = 0x104B,
+		SymbiosLogic = 0x1000,
+		RedHat = 0x1AF4,
+		REDHat2 = 0x1B36,
+		Realtek = 0x10EC,
+		VirtualBox = 0x80EE,
+		Ensoniq = 0x1274,
+		QEMU = 0x1234,
+		VMware = 0x15AD,
+		IntelCorporation = 0x8086,
+		AdvancedMicroDevices = 0x1022,
+		NVIDIACorporation = 0x10DE
+	};
+
 	namespace Descriptors
 	{
-		enum PCIVendors
-		{
-			Apple = 0x106B,
-			BusLogic = 0x104B,
-			SymbiosLogic = 0x1000,
-			RedHat = 0x1AF4,
-			REDHat2 = 0x1B36,
-			Realtek = 0x10EC,
-			VirtualBox = 0x80EE,
-			Ensoniq = 0x1274,
-			QEMU = 0x1234,
-			VMware = 0x15AD,
-			IntelCorporation = 0x8086,
-			AdvancedMicroDevices = 0x1022,
-			NVIDIACorporation = 0x10DE
-		};
-
 		const char *const DeviceClasses[]{
 			"Unclassified",
 			"Mass Storage Controller",
@@ -262,6 +262,11 @@ namespace PCI
 
 		uint8_t GetHeaderType() { return Header->HeaderType & 0x7F; }
 		uintptr_t GetBAR(int8_t Index);
+
+		uint16_t GetVendorID() { return Header->VendorID; }
+		uint16_t GetDeviceID() { return Header->DeviceID; }
+
+		bool IsVendor(Vendors Vendor) { return Header->VendorID == Vendor; }
 	} __packed;
 
 	class Manager
