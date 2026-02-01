@@ -300,12 +300,16 @@ namespace Driver::ExtensibleHostControllerInterface
 			}
 		}
 
+#ifdef DEBUG
 		NoOpCommandTRB no_op = {};
 		no_op.Control.CycleBit(1);
 		no_op.Control.TRBType(TRBT_NoOpCommand);
 		auto ret = SendCommand((TRB *)&no_op);
-		assert(ret);
-		debug("code: %#lx slot: %#lx", ret->Status.CompletionCode(), ret->Control.SlotID());
+		if (ret == nullptr)
+			error("no-op command timed out!");
+		else
+			info("code: %#lx slot: %#lx", ret->Status.CompletionCode(), ret->Control.SlotID());
+#endif
 		return 0;
 	}
 
