@@ -52,6 +52,39 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
+		uint16_t status = sts.in();
+		if ((status & 0x1F) == 0)
+			return ENOTSUP;
+
+		debug("UHCI Interrupt: USBINT=%d USBERRINT=%d RD=%d HSE=%d HCPE=%d", (status & USBSTS::USBINT) != 0, (status & USBSTS::USBERRINT) != 0, (status & USBSTS::RD) != 0, (status & USBSTS::HSE) != 0, (status & USBSTS::HCPE) != 0);
+
+		switch (status)
+		{
+		case USBSTS::USBERRINT:
+			warn("USB Error Interrupt detected");
+			[[fallthrough]];
+		case USBSTS::USBINT:
+			queue->AdvanceFrame();
+			break;
+		case USBSTS::RD:
+			trace("Resume detected");
+			this->Start();
+			break;
+		case USBSTS::HSE:
+			error("Host System Error detected");
+			this->Reset();
+			this->Start();
+			break;
+		case USBSTS::HCPE:
+			error("Host Controller Process Error detected");
+			assert(!"HCPE error handling not implemented");
+			break;
+		default:
+			assert(!"Unhandled UHCI interrupt type");
+			break;
+		}
+
+		sts.out(USBSTS::USBINT | USBSTS::USBERRINT);
 		return EOK;
 	}
 
@@ -82,15 +115,15 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::Start()
 	{
-		// outw(io + REG_USBSTS, 0xFFFF);
-		// cmd.set(USBCMD::CF | USBCMD::RS | USBCMD::MAXP);
+		outw(io + REG_USBSTS, 0xFFFF);
+		cmd.set(USBCMD::CF | USBCMD::RS | USBCMD::MAXP);
 
-		// bool timeout = false;
-		// whileto(sts.has(USBSTS::HCH), 1000, timeout)
-		// 	CPU::Pause();
+		bool timeout = false;
+		whileto(sts.has(USBSTS::HCH), 1000, timeout)
+			CPU::Pause();
 
-		// if (timeout)
-		// 	return ETIMEDOUT;
+		if (timeout)
+			return ETIMEDOUT;
 		return 0;
 	}
 

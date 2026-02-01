@@ -23,7 +23,13 @@ namespace Driver::UniversalHostControllerInterface
 {
 	extern dev_t DriverID;
 
-	Queue::Queue()
+	void Queue::AdvanceFrame()
+	{
+		uint16_t frnum = inw(base + REG_FRNUM);
+		CurrentFrame += (frnum - CurrentFrame) & 0x7FF;
+	}
+
+	Queue::Queue(uint16_t io) : base(io)
 	{
 		this->sched = new Scheduler(1024, 1, 900);
 		auto qhpool = this->sched->CreateNewPool(sizeof(QH), 0x10, 8, offsetof(QH, HEAD), offsetof(QH, ELEMENT), offsetof(QH, __software));

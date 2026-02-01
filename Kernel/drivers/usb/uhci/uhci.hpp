@@ -540,14 +540,17 @@ namespace Driver::UniversalHostControllerInterface
 		size_t MaxTDs = 32;
 		QH *CurrentQueue;
 
+		uint16_t base;
+
 	public:
 		Scheduler *sched;
 
+		void AdvanceFrame();
 		QH *AllocateQueueHead();
 		int ReleaseQueueHead(QH *qh);
 		TD *AllocateTransferDescriptor();
 		int ReleaseTransferDescriptor(TD *td);
-		Queue();
+		Queue(uint16_t io);
 		~Queue();
 	};
 
