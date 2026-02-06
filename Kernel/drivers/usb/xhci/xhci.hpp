@@ -818,7 +818,10 @@ namespace Driver::ExtensibleHostControllerInterface
 		int Start();
 		int Stop();
 		int Detect();
-		int Poll();
+
+		int Submit(USBDevice *Device, USBRequestBlock *urb);
+		int Cancel(USBDevice *Device, USBRequestBlock *urb);
+
 		HCD(PCI::PCIDevice &pciHeader);
 		virtual ~HCD();
 	};

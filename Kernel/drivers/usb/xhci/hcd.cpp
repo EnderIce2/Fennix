@@ -313,9 +313,14 @@ namespace Driver::ExtensibleHostControllerInterface
 		return 0;
 	}
 
-	int HCD::Poll()
+	int HCD::Submit(USBDevice *Device, USBRequestBlock *urb)
 	{
-		return 0;
+		return ENOSYS;
+	}
+
+	int HCD::Cancel(USBDevice *Device, USBRequestBlock *urb)
+	{
+		return ENOSYS;
 	}
 
 	HCD::HCD(PCI::PCIDevice &pciHeader) : Interrupts::Handler(pciHeader), Header(pciHeader)

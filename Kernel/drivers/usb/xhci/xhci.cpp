@@ -36,6 +36,8 @@ namespace Driver::ExtensibleHostControllerInterface
 	int devStart(struct USBController *d) { return ((HCD *)d)->Start(); }
 	int devStop(struct USBController *d) { return ((HCD *)d)->Stop(); }
 	int devReset(struct USBController *d) { return ((HCD *)d)->Reset(); }
+	int devSubmit(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Submit(dev, urb); }
+	int devCancel(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Cancel(dev, urb); }
 
 	std::list<PCI::PCIDevice> Devices;
 	std::list<HCD *> Controllers;
@@ -49,6 +51,8 @@ namespace Driver::ExtensibleHostControllerInterface
 			hc->StartController = devStart;
 			hc->StopController = devStop;
 			hc->ResetController = devReset;
+			hc->SubmitURB = devSubmit;
+			hc->CancelURB = devCancel;
 
 			int ret = hc->Reset();
 			if (ret != 0)
