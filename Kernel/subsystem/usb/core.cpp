@@ -49,6 +49,13 @@ namespace UniversalSerialBus
 
 	int Manager::InitializeDevice(USBDevice *Device)
 	{
+		Device->NumEndpoints = 0;
+		memset(Device->Endpoints, 0, sizeof(Device->Endpoints));
+
+		USBEndpoint &ep0 = Device->Endpoints[0];
+		ep0.MaxPacketSize = 8;
+		ep0.Type = USB_TRANSFER_CONTROL;
+
 		// auto_page<USBDeviceDescriptor> desc;
 		// auto_page<USBDeviceRequest> req;
 		// auto_page<USBStringDescriptor> dd;
@@ -75,7 +82,7 @@ namespace UniversalSerialBus
 			return result;
 		}
 
-		Device->MaxPacketSize = desc->bMaxPacketSize0;
+		ep0.MaxPacketSize = desc->bMaxPacketSize0;
 		size_t address = USBAddresses++;
 		debug("address: %d", address);
 
@@ -93,7 +100,7 @@ namespace UniversalSerialBus
 			return result;
 		}
 
-		Device->Address = address;
+		ep0.Address = address;
 		TaskManager->Sleep(10);
 
 		req->bmRequestType.Recipient = 0b0;
@@ -207,7 +214,6 @@ namespace UniversalSerialBus
 		Memory::Virtual().Map(configBuf, configBuf, sizeof(uint8_t), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 		uint8_t pickedConfValue = 0;
 		USBInterfaceDescriptor *pickedIntfDesc = nullptr;
-		USBEndpointDescriptor *pickedEndpDesc = nullptr;
 
 		for (uint8_t confIndex = 0; confIndex < desc->bNumConfigurations; ++confIndex)
 		{
@@ -260,19 +266,22 @@ namespace UniversalSerialBus
 				case USB_INTERFACE_DESCRIPTOR:
 				{
 					USBInterfaceDescriptor *intfDesc = (USBInterfaceDescriptor *)data;
-					if (!pickedIntfDesc)
-					{
-						pickedIntfDesc = intfDesc;
-					}
+					Device->Interface = *intfDesc;
+					KPrint("CLASS: %d SUBCLASS: %d PROTOCOL: %d", Device->Interface.bInterfaceClass, Device->Interface.bInterfaceSubClass, Device->Interface.bInterfaceProtocol);
 					break;
 				}
 				case USB_ENDPOINT_DESCRIPTOR:
 				{
-					USBEndpointDescriptor *endpDesc = (USBEndpointDescriptor *)data;
-					if (!pickedEndpDesc)
-					{
-						pickedEndpDesc = endpDesc;
-					}
+					USBEndpointDescriptor *d = (USBEndpointDescriptor *)data;
+					uint8_t epNum = d->bEndpointAddress & 0x0F;
+					USBEndpoint &ep = Device->Endpoints[epNum];
+
+					ep.Address = d->bEndpointAddress;
+					ep.Type = d->bmAttributes & 0x3;
+					ep.MaxPacketSize = d->wMaxPacketSize & 0x7FF;
+					ep.Toggle = 0;
+
+					Device->NumEndpoints++;
 					break;
 				}
 				case USB_HID_DESCRIPTOR:
@@ -294,7 +303,7 @@ namespace UniversalSerialBus
 			}
 		}
 
-		if (pickedConfValue && pickedIntfDesc && pickedEndpDesc)
+		if (pickedConfValue)
 		{
 			req->bmRequestType.Recipient = 0b0;
 			req->bmRequestType.Type = 0b0;
@@ -309,33 +318,34 @@ namespace UniversalSerialBus
 				debug("failed to set configuration: %d", result);
 				return result;
 			}
-
-			Device->Endpoint = *pickedEndpDesc;
-			Device->Interface = *pickedIntfDesc;
-
-			KPrint("CLASS: %d SUBCLASS: %d PROTOCOL: %d", pickedIntfDesc->bInterfaceClass, pickedIntfDesc->bInterfaceSubClass, pickedIntfDesc->bInterfaceProtocol);
-
-			InitializeHub(Device);
-			InitializeMouse(Device);
-			InitializeKeyboard(Device);
-
-			// Device->Controller->PollHC(Device->Controller);
-			// Device->PortPoll(Device);
 		}
+
+		InitializeHub(Device);
+		InitializeMouse(Device);
+		InitializeKeyboard(Device);
 
 		return 0;
 	}
 
+	bool asfdafasf = false;
+	void foobar(USBRequestBlock *) { asfdafasf = true; }
+
 	int Manager::RequestDevice(USBDevice *Device, USBDeviceRequest *Request, void *Buffer)
 	{
-		// auto_page<USBTransfer> transfer;
-		USBTransfer *transfer = (USBTransfer *)KernelAllocator.RequestPages(TO_PAGES(sizeof(USBTransfer)));
-		Memory::Virtual().Map(transfer, transfer, sizeof(USBTransfer), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		// auto_page<USBRequestBlock> transfer;
+		USBRequestBlock *transfer = (USBRequestBlock *)KernelAllocator.RequestPages(TO_PAGES(sizeof(USBRequestBlock)));
+		memset(transfer, 0, sizeof(USBRequestBlock));
+		Memory::Virtual().Map(transfer, transfer, sizeof(USBRequestBlock), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 		transfer->Buffer = Buffer;
 		transfer->Length = Request->wLength;
 		transfer->Request = Request;
-		int result = Device->PortCtl(Device, transfer);
-		bool tr = transfer->Success;
+		transfer->Type = USB_TRANSFER_CONTROL;
+		transfer->Complete = foobar;
+		int result = Device->SubmitRequest(transfer);
+		while (asfdafasf == false)
+			;
+		asfdafasf = false;
+		bool tr = transfer->Status == USB_REQ_SUCCESS;
 		return (result == 0 && tr) ? 0 : (result == 0 ? -EIO : result);
 	}
 
@@ -353,11 +363,6 @@ namespace UniversalSerialBus
 		return 0;
 	}
 
-	Manager::Manager()
-	{
-	}
-
-	Manager::~Manager()
-	{
-	}
+	Manager::Manager() {}
+	Manager::~Manager() {}
 }

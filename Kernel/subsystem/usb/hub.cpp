@@ -205,11 +205,6 @@ namespace UniversalSerialBus
 
 #undef req
 
-	int HubPollStub(USBDevice *Device)
-	{
-		return 0;
-	}
-
 	int HubProbe(Hub *hub, USBHubDescriptor *Descriptor)
 	{
 		if ((Descriptor->wHubCharacteristics & USB_HUB_LPSM_MASK) == 0b01)
@@ -234,16 +229,23 @@ namespace UniversalSerialBus
 			}
 		}
 
-		for (uint8_t port = 0; port < Descriptor->bNbrPorts; port++)
+		auto_page<USBPortStatus> status;
+		for (uint8_t port = 0; port < Descriptor->bNbrPorts; ++port)
 		{
-			auto_page<USBPortStatus> status;
 			Memory::Virtual().Map(status, status, sizeof(USBPortStatus), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 			// USBPortStatus *status = (USBPortStatus *)KernelAllocator.RequestPages(TO_PAGES(sizeof(USBPortStatus)));
 			for (size_t i = 0; i < 16; i++)
 			{
+				int result = hub->SetPortFeature(USB_PORT_RESET, 0, port + 1);
+				if (result != 0)
+				{
+					debug("failed to reset port: %d", result);
+					break;
+				}
+
 				TimeManager->Sleep(Time::FromMilliseconds(100));
 
-				int result = hub->GetPortStatus(port + 1, status);
+				result = hub->GetPortStatus(port + 1, status);
 				if (result != 0)
 				{
 					debug("failed to get status: %d", result);
@@ -283,16 +285,12 @@ namespace UniversalSerialBus
 
 			USBDevice *dev = usb->CreateDevice();
 			*dev = *hub;
-			dev->DataToggle = 0;
 			dev->Parent = hub;
 			dev->KernelData = 0;
 			dev->PrivateData = 0;
 
 			dev->Port = port;
 			dev->Speed = portspeed;
-			dev->MaxPacketSize = 8;
-			dev->Address = 0;
-			dev->PortPoll = HubPollStub;
 
 			usb->InitializeDevice(dev);
 		}

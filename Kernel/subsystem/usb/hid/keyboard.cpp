@@ -22,86 +22,82 @@
 
 namespace UniversalSerialBus
 {
-	USBTransfer *kbt;
-
-	int KeyboardPoll(USBDevice *Device)
+	void OnURBCompleteKeyboard(struct USBRequestBlock *urb)
 	{
-		if (kbt->Completed)
+		if (urb->Status != USB_REQ_SUCCESS)
 		{
-			uint8_t *buf = (uint8_t *)kbt->Buffer;
-			if (kbt->Success)
-			{
-				debug("Keyboard raw data: %02x %02x %02x %02x %02x %02x %02x %02x",
-					  buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
-
-				uint8_t *data = buf;
-				bool error = false;
-				static uint8_t lastData[8];
-
-				// Modifier keys
-				uint32_t modDelta = data[0] ^ lastData[0];
-				for (uint32_t i = 0; i < 8; ++i)
-				{
-					uint32_t mask = 1 << i;
-					if (modDelta & mask)
-					{
-						KPrint("Modifier key %#lx %s", mask << 8, data[0] & mask ? "pressed" : "released");
-					}
-				}
-
-				// Release keys
-				for (uint32_t i = 2; i < 8; ++i)
-				{
-					uint32_t usage = lastData[i];
-
-					if (usage)
-					{
-						if (!memchr(data + 2, usage, 6))
-						{
-							KPrint("Key %#lx released", usage);
-						}
-					}
-				}
-
-				// Press keys
-				for (uint32_t i = 2; i < 8; ++i)
-				{
-					uint32_t usage = data[i];
-
-					if (usage >= 4)
-					{
-						if (!memchr(lastData + 2, usage, 6))
-						{
-							KPrint("Key %#lx pressed", usage);
-						}
-					}
-					else if (usage > 0)
-					{
-						error = true;
-					}
-				}
-
-				// Update keystate
-				if (!error)
-				{
-					memcpy(lastData, data, 8);
-				}
-
-				buf[0] = 0;
-				buf[1] = 0;
-				buf[2] = 0;
-				buf[3] = 0;
-				buf[4] = 0;
-				buf[5] = 0;
-				buf[6] = 0;
-				buf[7] = 0;
-			}
-
-			kbt->Completed = false;
-			Device->PortInt(Device, kbt);
+			urb->Device->SubmitRequest(urb);
+			return;
 		}
 
-		return 0;
+		uint8_t *buf = (uint8_t *)urb->Buffer;
+
+		debug("Keyboard raw data: %02x %02x %02x %02x %02x %02x %02x %02x",
+			  buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+
+		uint8_t *data = buf;
+		bool error = false;
+		static uint8_t lastData[8];
+
+		// Modifier keys
+		uint32_t modDelta = data[0] ^ lastData[0];
+		for (uint32_t i = 0; i < 8; ++i)
+		{
+			uint32_t mask = 1 << i;
+			if (modDelta & mask)
+			{
+				KPrint("Modifier key %#lx %s", mask << 8, data[0] & mask ? "pressed" : "released");
+			}
+		}
+
+		// Release keys
+		for (uint32_t i = 2; i < 8; ++i)
+		{
+			uint32_t usage = lastData[i];
+
+			if (usage)
+			{
+				if (!memchr(data + 2, usage, 6))
+				{
+					KPrint("Key %#lx released", usage);
+				}
+			}
+		}
+
+		// Press keys
+		for (uint32_t i = 2; i < 8; ++i)
+		{
+			uint32_t usage = data[i];
+
+			if (usage >= 4)
+			{
+				if (!memchr(lastData + 2, usage, 6))
+				{
+					KPrint("Key %#lx pressed", usage);
+				}
+			}
+			else if (usage > 0)
+			{
+				error = true;
+			}
+		}
+
+		// Update keystate
+		if (!error)
+		{
+			memcpy(lastData, data, 8);
+		}
+
+		buf[0] = 0;
+		buf[1] = 0;
+		buf[2] = 0;
+		buf[3] = 0;
+		buf[4] = 0;
+		buf[5] = 0;
+		buf[6] = 0;
+		buf[7] = 0;
+
+		urb->Device->SubmitRequest(urb);
 	}
 
 	int InitializeKeyboard(USBDevice *Device)
@@ -127,21 +123,17 @@ namespace UniversalSerialBus
 			return result;
 		}
 
-		Device->PortPoll = KeyboardPoll;
-		kbt = new USBTransfer;
-		kbt->Buffer = KernelAllocator.RequestPage();
-		Memory::Virtual().Map(kbt->Buffer, kbt->Buffer, PAGE_SIZE, Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
-		kbt->Length = 8;
-		kbt->Request = nullptr;
-		kbt->Endpoint = &Device->Endpoint;
-		Device->PortInt(Device, kbt);
-		while (1)
-		{
-			// test code
-			Device->Controller->PollHC(Device->Controller);
-			Device->PortPoll(Device);
-		}
-
+		USBRequestBlock *urb = (USBRequestBlock *)KernelAllocator.RequestPages(TO_PAGES(sizeof(USBRequestBlock)));
+		Memory::Virtual().Map(urb, urb, sizeof(USBRequestBlock), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		urb->Buffer = KernelAllocator.RequestPage();
+		Memory::Virtual().Map(urb->Buffer, urb->Buffer, PAGE_SIZE, Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		urb->Device = Device;
+		urb->Complete = OnURBCompleteKeyboard;
+		urb->EndpointAddress = Device->Endpoints[1].Address;
+		urb->Length = Device->Endpoints[1].MaxPacketSize;
+		urb->Request = nullptr;
+		urb->Type = USB_TRANSFER_INTERRUPT;
+		// Device->SubmitRequest(urb);
 		return 0;
 	}
 }

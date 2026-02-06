@@ -23,33 +23,6 @@ namespace Driver::UniversalHostControllerInterface
 {
 	extern dev_t DriverID;
 
-	IO_REG_RW_EX(uint16_t, USBCMD, cmd,
-				 RS = 1u << 0,
-				 HCRESET = 1u << 1,
-				 GRESET = 1u << 2,
-				 EGSM = 1u << 3,
-				 FGR = 1u << 4,
-				 SWDBG = 1u << 5,
-				 CF = 1u << 6,
-				 MAXP = 1u << 7);
-
-	IO_REG_RWC_EX(uint16_t, USBSTS, sts,
-				  USBINT = 1u << 0,
-				  USBERRINT = 1u << 1,
-				  RD = 1u << 2,
-				  HSE = 1u << 3,
-				  HCPE = 1u << 4,
-				  HCH = 1u << 5);
-
-	IO_REG_RW_EX(uint16_t, USBINTR, intr,
-				 TOCRC = 1u << 0,
-				 RIE = 1u << 1,
-				 IOCE = 1u << 2,
-				 SPIE = 1u << 3);
-
-	int UHCI_Port_Control(struct USBDevice *Device, struct USBTransfer *Transfer);
-	int UHCI_Port_Interrupt(struct USBDevice *, struct USBTransfer *);
-
 	int HCD::OnInterruptReceived(CPU::TrapFrame *Frame)
 	{
 		uint16_t status = sts.in();
@@ -58,33 +31,35 @@ namespace Driver::UniversalHostControllerInterface
 
 		debug("UHCI Interrupt: USBINT=%d USBERRINT=%d RD=%d HSE=%d HCPE=%d", (status & USBSTS::USBINT) != 0, (status & USBSTS::USBERRINT) != 0, (status & USBSTS::RD) != 0, (status & USBSTS::HSE) != 0, (status & USBSTS::HCPE) != 0);
 
-		switch (status)
+		if (sts.has(USBSTS::USBINT))
+			queue->ProcessComplete();
+
+		if (sts.has(USBSTS::USBERRINT))
 		{
-		case USBSTS::USBERRINT:
 			warn("USB Error Interrupt detected");
-			[[fallthrough]];
-		case USBSTS::USBINT:
-			queue->AdvanceFrame();
-			break;
-		case USBSTS::RD:
+			queue->ProcessComplete();
+		}
+
+		if (sts.has(USBSTS::RD))
+		{
 			trace("Resume detected");
 			this->Start();
-			break;
-		case USBSTS::HSE:
+		}
+
+		if (sts.has(USBSTS::HSE))
+		{
 			error("Host System Error detected");
 			this->Reset();
 			this->Start();
-			break;
-		case USBSTS::HCPE:
-			error("Host Controller Process Error detected");
-			assert(!"HCPE error handling not implemented");
-			break;
-		default:
-			assert(!"Unhandled UHCI interrupt type");
-			break;
 		}
 
-		sts.out(USBSTS::USBINT | USBSTS::USBERRINT);
+		if (sts.has(USBSTS::HCPE))
+		{
+			error("Host Controller Process Error detected");
+			assert(!"HCPE error handling not implemented");
+		}
+
+		sts.out(USBSTS::USBINT | USBSTS::USBERRINT | USBSTS::RD | USBSTS::HSE | USBSTS::HCPE);
 		return EOK;
 	}
 
@@ -106,8 +81,8 @@ namespace Driver::UniversalHostControllerInterface
 			warn("reset timeout");
 
 		outb(io + REG_SOFMOD, 64); /* Timing Value. 64 = 12000 @ 12MHz */
-		outl(io + REG_FLBASEADD, (uint32_t)(uintptr_t)this->queue->sched->FrameList);
-		outw(io + REG_FRNUM, this->queue->sched->GetCurrentFrame() & 0x7FF);
+		outl(io + REG_FLBASEADD, (uint32_t)(uintptr_t)this->queue->GetFrameList());
+		outw(io + REG_FRNUM, this->queue->GetCurrentFrame() & 0x7FF);
 
 		intr.out(USBINTR::TOCRC | USBINTR::RIE | USBINTR::IOCE | USBINTR::SPIE);
 		return 0;
@@ -115,7 +90,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::Start()
 	{
-		outw(io + REG_USBSTS, 0xFFFF);
+		sts.out(0xFFFF);
 		cmd.set(USBCMD::CF | USBCMD::RS | USBCMD::MAXP);
 
 		bool timeout = false;
@@ -135,13 +110,10 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::Detect()
 	{
-		PORTSC port1 = inw(io + REG_PORTSC1);
-		PORTSC port2 = inw(io + REG_PORTSC2);
-
-		if (port1.AlwaysOne && port1 != 0xFFFF)
+		if (port1.has(PORTSC::AlwaysOne) && port1.in() != 0xFFFF)
 		{
 			debug("Port 1 is present %#lx", port1);
-			Port *p1 = new Port(io + REG_PORTSC1);
+			Port *p1 = new Port(port1);
 			int ret = p1->Probe();
 			if (ret != 0)
 			{
@@ -155,19 +127,15 @@ namespace Driver::UniversalHostControllerInterface
 				dev->Controller = this;
 				dev->Port = 0;
 				dev->Speed = p1->GetSpeed();
-				dev->MaxPacketSize = 8;
-				dev->Address = 0;
-				dev->PortCtl = UHCI_Port_Control;
-				dev->PortInt = UHCI_Port_Interrupt;
 				v0::InitializeUSBDevice(DriverID, dev);
 				debug("done 1");
 			}
 		}
 
-		if (port2.AlwaysOne && port2 != 0xFFFF)
+		if (port2.has(PORTSC::AlwaysOne) && port2.in() != 0xFFFF)
 		{
 			debug("Port 2 is present %#lx", port2);
-			Port *p2 = new Port(io + REG_PORTSC2);
+			Port *p2 = new Port(port2);
 			int ret = p2->Probe();
 			if (ret != 0)
 			{
@@ -181,10 +149,6 @@ namespace Driver::UniversalHostControllerInterface
 				dev->Controller = this;
 				dev->Port = 1;
 				dev->Speed = p2->GetSpeed();
-				dev->MaxPacketSize = 8;
-				dev->Address = 0;
-				dev->PortCtl = UHCI_Port_Control;
-				dev->PortInt = UHCI_Port_Interrupt;
 				v0::InitializeUSBDevice(DriverID, dev);
 				debug("done 2");
 			}
@@ -192,15 +156,225 @@ namespace Driver::UniversalHostControllerInterface
 		return 0;
 	}
 
-	int HCD::ProcessQueueHead(QH *qh)
+	int HCD::SubmitControl(USBDevice *Device, USBRequestBlock *urb)
 	{
-		stub;
+		urb->Status = USB_REQ_SUCCESS;
+		urb->ActualLength = 0;
+		USBEndpoint &ep = Device->Endpoints[0];
+
+		TD *firstTD = nullptr;
+		TD *prevTD = nullptr;
+
+		/* SETUP packet */
+		{
+			ep.Toggle = 0;
+			TD *td = queue->AllocateTransferDescriptor();
+
+			td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
+			td->CS.Status_ACTIVE(1);
+
+			td->LINK.Terminate(1);
+
+			td->TOKEN.PacketIdentification(TD_PID_SETUP);
+			td->TOKEN.Endpoint(0);
+			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DataToggle(ep.Toggle);
+			td->TOKEN.MaximumLength(sizeof(USBDeviceRequest));
+
+			td->BufferPointer = (uintptr_t)urb->Request;
+			td->URB = urb;
+
+			prevTD = firstTD = td;
+		}
+
+		/* DATA packet */
+		{
+			uint8_t *ptr = (uint8_t *)urb->Buffer;
+			size_t remaining = urb->Length;
+			uint8_t pid = (urb->Request->bmRequestType.raw & 0x80) ? TD_PID_IN : TD_PID_OUT;
+			while (remaining > 0)
+			{
+				ep.Toggle ^= 1; /* flip DATA1/DATA0 */
+				TD *td = queue->AllocateTransferDescriptor();
+				size_t pktSize = std::min((size_t)ep.MaxPacketSize, remaining);
+
+				td->BufferPointer = (uintptr_t)ptr;
+
+				td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
+				td->CS.Status_ACTIVE(1);
+				td->LINK.Terminate(1);
+
+				td->TOKEN.PacketIdentification(pid);
+				td->TOKEN.Endpoint(0);
+				td->TOKEN.DeviceAddress(ep.Address);
+				td->TOKEN.DataToggle(ep.Toggle);
+				td->TOKEN.MaximumLength(pktSize);
+				td->URB = urb;
+
+				prevTD->LINK.Terminate(0);
+				prevTD->LINK.DepthBreadthSelect(1);
+				prevTD->LINK.LinkPointer((uintptr_t)td);
+				prevTD->NextTD = td;
+				prevTD = td;
+
+				ptr += pktSize;
+				remaining -= pktSize;
+			}
+		}
+
+		/* STATUS packet */
+		{
+			ep.Toggle = 1;
+			uint8_t pid = (urb->Request->bmRequestType.raw & 0x80) ? TD_PID_OUT : TD_PID_IN;
+			TD *td = queue->AllocateTransferDescriptor();
+
+			td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
+			td->CS.Status_ACTIVE(1);
+			td->CS.InterruptOnComplete(1);
+
+			td->LINK.Terminate(1);
+
+			td->TOKEN.PacketIdentification(pid);
+			td->TOKEN.Endpoint(0);
+			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DataToggle(ep.Toggle);
+			td->TOKEN.MaximumLength(0);
+
+			td->BufferPointer = 0;
+			td->URB = urb;
+
+			prevTD->LINK.Terminate(0);
+			prevTD->LINK.LinkPointer((uintptr_t)td);
+		}
+
+		urb->PrivateData = firstTD;
+		queue->EnqueueTD(firstTD);
 		return 0;
 	}
 
-	int HCD::Poll()
+	int HCD::SubmitBulk(struct USBDevice *Device, struct USBRequestBlock *urb)
 	{
-		stub;
+		urb->Status = USB_REQ_SUCCESS;
+		urb->ActualLength = 0;
+
+		size_t remaining = urb->Length;
+		uint8_t *ptr = (uint8_t *)urb->Buffer;
+		uint8_t epNum = urb->EndpointAddress & 0x0F;
+		USBEndpoint &ep = Device->Endpoints[epNum];
+
+		TD *firstTD = nullptr;
+		TD *prevTD = nullptr;
+
+		while (remaining > 0)
+		{
+			TD *td = queue->AllocateTransferDescriptor();
+
+			size_t pktSize = std::min((size_t)ep.MaxPacketSize, remaining);
+			uint8_t pid = (urb->EndpointAddress & 0x80) ? TD_PID_IN : TD_PID_OUT;
+			debug("Creating TD: PID=%s, EP=%d, DevAddr=%d, MaxLen=%zu", (pid == TD_PID_IN) ? "IN" : "OUT", epNum, Device->Endpoints[epNum].Address, pktSize);
+
+			td->BufferPointer = (uintptr_t)ptr;
+
+			td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
+			td->CS.Status_ACTIVE(1);
+			td->LINK.Terminate(1);
+
+			td->TOKEN.PacketIdentification(pid);
+			td->TOKEN.Endpoint(epNum);
+			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DataToggle(ep.Toggle);
+			td->TOKEN.MaximumLength(pktSize);
+			td->URB = urb;
+
+			if (!firstTD)
+				firstTD = td;
+			if (prevTD)
+			{
+				prevTD->LINK.Terminate(0);
+				prevTD->LINK.DepthBreadthSelect(1);
+				prevTD->LINK.LinkPointer((uintptr_t)td);
+				prevTD->NextTD = td;
+			}
+
+			prevTD = td;
+
+			ptr += pktSize;
+			remaining -= pktSize;
+			ep.Toggle ^= 1; /* flip DATA0/DATA1 */
+		}
+
+		prevTD->CS.InterruptOnComplete(1);
+		urb->PrivateData = firstTD;
+
+		queue->EnqueueTD(firstTD);
+
+		return 0;
+	}
+
+	int HCD::SubmitInterrupt(struct USBDevice *Device, struct USBRequestBlock *urb)
+	{
+		urb->Status = USB_REQ_SUCCESS;
+		urb->ActualLength = 0;
+
+		uint8_t epNum = urb->EndpointAddress & 0x0F;
+		size_t len = urb->Length;
+		USBEndpoint &ep = Device->Endpoints[epNum];
+
+		TD *td = queue->AllocateTransferDescriptor();
+
+		td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
+		td->CS.Status_ACTIVE(1);
+		td->CS.InterruptOnComplete(1);
+
+		td->LINK.Terminate(1);
+
+		td->TOKEN.PacketIdentification(TD_PID_IN);
+		td->TOKEN.Endpoint(epNum);
+		td->TOKEN.DeviceAddress(ep.Address);
+		td->TOKEN.DataToggle(ep.Toggle);
+		td->TOKEN.MaximumLength(len);
+
+		td->BufferPointer = (uintptr_t)urb->Buffer;
+		td->URB = urb;
+
+		urb->PrivateData = td;
+		queue->EnqueueTD(td);
+		return 0;
+	}
+
+	int HCD::SubmitIsochronous(struct USBDevice *Device, struct USBRequestBlock *urb)
+	{
+		assert(!"Isochronous transfer submission not implemented");
+	}
+
+	int HCD::Submit(struct USBDevice *Device, struct USBRequestBlock *urb)
+	{
+		switch (urb->Type)
+		{
+		case USB_TRANSFER_CONTROL:
+			return SubmitControl(Device, urb);
+		case USB_TRANSFER_BULK:
+			return SubmitBulk(Device, urb);
+		case USB_TRANSFER_INTERRUPT:
+			return SubmitInterrupt(Device, urb);
+		case USB_TRANSFER_ISOCHRONOUS:
+			return SubmitIsochronous(Device, urb);
+		default:
+			return ENOTSUP;
+		}
+	}
+
+	int HCD::Cancel(struct USBDevice *Device, struct USBRequestBlock *urb)
+	{
+		TD *td = (TD *)urb->PrivateData;
+
+		while (td)
+		{
+			td->CS.Status_ACTIVE(0);
+			td = td->NextTD;
+		}
+
+		urb->Status = USB_REQ_CANCELED;
 		return 0;
 	}
 
@@ -219,6 +393,8 @@ namespace Driver::UniversalHostControllerInterface
 		cmd.port = io + REG_USBCMD;
 		sts.port = io + REG_USBSTS;
 		intr.port = io + REG_USBINTR;
+		port1.port = io + REG_PORTSC1;
+		port2.port = io + REG_PORTSC2;
 
 		/* More info in UHCI Design Guide 1.1 @ 5.2.1 */
 		outw(io + REG_LEGSUP, 0x2000);
@@ -228,7 +404,7 @@ namespace Driver::UniversalHostControllerInterface
 			outw(io + REG_INTEL, 0x0000);
 		}
 
-		queue = new Queue;
+		queue = new TransferQueue(io);
 	}
 
 	HCD::~HCD()

@@ -54,15 +54,6 @@
 #define USB_PORT_TEST 21
 #define USB_PORT_INDICATOR 22
 
-enum USBSpeeds
-{
-	USB_UNKNOWN_SPEED = 0,
-	USB_LOW_SPEED,
-	USB_FULL_SPEED,
-	USB_HIGH_SPEED,
-	USB_SUPER_SPEED
-};
-
 /* https://www.usb.org/defined-class-codes */
 enum USBClassCodes
 {
@@ -441,74 +432,94 @@ struct USBPortStatus
 	} wPortChange;
 } __attribute__((packed));
 
-struct USBTransfer
+/* ================================================ */
+
+enum USBSpeeds
+{
+	USB_UNKNOWN_SPEED = 0,
+	USB_LOW_SPEED,
+	USB_FULL_SPEED,
+	USB_HIGH_SPEED,
+	USB_SUPER_SPEED
+};
+
+enum USBRequestStatus
+{
+	USB_REQ_SUCCESS = 0,
+	USB_REQ_STALL,
+	USB_REQ_TIMEOUT,
+	USB_REQ_DISCONNECT,
+	USB_REQ_CRC,
+	USB_REQ_ERROR,
+	USB_REQ_CANCELED
+};
+
+enum USBTransferType
+{
+	USB_TRANSFER_CONTROL,
+	USB_TRANSFER_BULK,
+	USB_TRANSFER_INTERRUPT,
+	USB_TRANSFER_ISOCHRONOUS
+};
+
+struct USBEndpoint
+{
+	uint8_t Address;		/* Endpoint number + direction */
+	uint8_t Type;			/* CONTROL / BULK / INTERRUPT / ISOCHRONOUS */
+	uint16_t MaxPacketSize; /* Only 8, 16, 32 and 64 are valid. */
+	uint8_t Toggle;			/* DATA0/DATA1 toggle */
+};
+
+struct USBRequestBlock
 {
 	void *Buffer;
 	size_t Length;
-	struct USBDeviceRequest *Request;
-	struct USBEndpointDescriptor *Endpoint;
-	union
-	{
-		struct
-		{
-			char EndpointToggle : 1;
-			char Completed : 1;
-			char Success : 1;
-			char __padding : 5;
-		};
-		char __raw_flags;
-	};
+	size_t ActualLength;
+
+	struct USBDevice *Device;
+
+	struct USBDeviceRequest *Request; /* Control Transfers only */
+	uint8_t EndpointAddress;
+	enum USBRequestStatus Status;
+	enum USBTransferType Type;
+
+	void (*Complete)(struct USBRequestBlock *urb);
+	void *CompletionContext;
+	void *PrivateData;
 };
 
 struct USBController
 {
-	union
-	{
-		struct
-		{
-			int __padding : 32;
-		};
-		int raw;
-	} Flags;
+	int (*StartController)(struct USBController *Device);
+	int (*StopController)(struct USBController *Device);
+	int (*ResetController)(struct USBController *Device);
 
-	int (*StartHC)(struct USBController *Device);
-	int (*StopHC)(struct USBController *Device);
-	int (*ResetHC)(struct USBController *Device);
-	int (*PollHC)(struct USBController *Device);
+	int (*SubmitURB)(struct USBDevice *Device, struct USBRequestBlock *urb);
+	int (*CancelURB)(struct USBDevice *Device, struct USBRequestBlock *urb);
 
 	void *PrivateData;
 };
 
 struct USBDevice
 {
-	USBController *Controller;
-	USBEndpointDescriptor Endpoint;
-	USBInterfaceDescriptor Interface;
-	char DataToggle;
+	struct USBController *Controller;
+	struct USBInterfaceDescriptor Interface;
+	struct USBEndpoint Endpoints[16];
+	uint8_t NumEndpoints;
 
 	int Port;
-
 	USBSpeeds Speed;
-
-	/**
-	 * Only 8, 16, 32 and 64 are valid.
-	 */
-	uint8_t MaxPacketSize;
-
-	/**
-	 * Device Address, not a pointer.
-	 */
-	int8_t Address;
 
 	struct USBDevice *Parent;
 	struct USBDevice *Next;
 
-	int (*PortCtl)(struct USBDevice *Device, struct USBTransfer *Transfer);
-	int (*PortInt)(struct USBDevice *Device, struct USBTransfer *Transfer);
-	int (*PortPoll)(struct USBDevice *Device);
-
 	void *KernelData;
 	void *PrivateData;
+
+#ifdef __cplusplus
+	int SubmitRequest(struct USBRequestBlock *urb) { return Controller->SubmitURB(this, urb); }
+	int CancelRequest(struct USBRequestBlock *urb) { return Controller->CancelURB(this, urb); }
+#endif // __cplusplus
 };
 
 #ifndef __kernel__

@@ -33,10 +33,9 @@ namespace Driver::ExtensibleHostControllerInterface
 {
 	dev_t DriverID;
 
-	int OHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(); }
-	int OHCI_Stop(struct USBController *d) { return ((HCD *)d)->Stop(); }
-	int OHCI_Reset(struct USBController *d) { return ((HCD *)d)->Reset(); }
-	int OHCI_Poll(struct USBController *d) { return ((HCD *)d)->Poll(); }
+	int devStart(struct USBController *d) { return ((HCD *)d)->Start(); }
+	int devStop(struct USBController *d) { return ((HCD *)d)->Stop(); }
+	int devReset(struct USBController *d) { return ((HCD *)d)->Reset(); }
 
 	std::list<PCI::PCIDevice> Devices;
 	std::list<HCD *> Controllers;
@@ -47,11 +46,9 @@ namespace Driver::ExtensibleHostControllerInterface
 			PCIManager->InitializeDevice(dev, KernelPageTable);
 
 			HCD *hc = new HCD(dev);
-			// hc->Flags =
-			hc->StartHC = OHCI_Start;
-			hc->StopHC = OHCI_Stop;
-			hc->ResetHC = OHCI_Reset;
-			hc->PollHC = OHCI_Poll;
+			hc->StartController = devStart;
+			hc->StopController = devStop;
+			hc->ResetController = devReset;
 
 			int ret = hc->Reset();
 			if (ret != 0)

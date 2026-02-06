@@ -131,25 +131,25 @@ extern "C"
 			return inl(port);            \
 	}                                    \
                                          \
-	inline bool has(Flags f) const       \
+	inline bool has(auto f) const        \
 	{                                    \
 		return (in() & (type)f) != 0;    \
 	}
 
-#define __IO_WRITE_DECL(type, name)                         \
-	inline void out(type v) const                           \
-	{                                                       \
-		if constexpr (sizeof(type) == 1)                    \
-			outb(port, v);                                  \
-		else if constexpr (sizeof(type) == 2)               \
-			outw(port, v);                                  \
-		else                                                \
-			outl(port, v);                                  \
-	}                                                       \
-                                                            \
-	inline void out(Flags f) const { out((type)f); }        \
-	inline void set(Flags f) const { out(in() | (type)f); } \
-	inline void clr(Flags f) const { out(in() & ~(type)f); }
+#define __IO_WRITE_DECL(type, name)                        \
+	inline void out(type v) const                          \
+	{                                                      \
+		if constexpr (sizeof(type) == 1)                   \
+			outb(port, v);                                 \
+		else if constexpr (sizeof(type) == 2)              \
+			outw(port, v);                                 \
+		else                                               \
+			outl(port, v);                                 \
+	}                                                      \
+                                                           \
+	inline void out(auto f) const { out((type)f); }        \
+	inline void set(auto f) const { out(in() | (type)f); } \
+	inline void clr(auto f) const { out(in() & ~(type)f); }
 
 #define __IO_BASE_DECL(type, name, ...) \
 	enum Flags : type                   \

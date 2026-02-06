@@ -23,63 +23,61 @@ namespace Driver::UniversalHostControllerInterface
 
 	PORTSC Port::Status()
 	{
-		PORTSC sc = inw(PortIO);
-
 		/* This MUST be 1; otherwise something is wrong */
-		assert(sc & PORT_ALWAYS_ONE);
-		return sc;
+		assert(port.has(PORTSC::AlwaysOne));
+		return port;
 	}
 
-	int Port::Clear(PORTSC Change)
+	int Port::Clear(uint16_t Change)
 	{
-		PORTSC sc = Status();
+		uint16_t sc = port.in();
 		sc &= ~Change;
-		sc &= ~(PORT_CSC | PORT_PEC);
-		sc |= (PORT_CSC | PORT_PEC) & Change;
-		outw(PortIO, sc);
+		sc &= ~(PORTSC::CSC | PORTSC::PEC);
+		sc |= (PORTSC::CSC | PORTSC::PEC) & Change;
+		port.out(sc);
 		return 0;
 	}
 
-	int Port::Set(PORTSC Change)
+	int Port::Set(uint16_t Change)
 	{
-		PORTSC sc = Status();
+		uint16_t sc = port.in();
 		sc |= Change;
-		sc &= ~(PORT_CSC | PORT_PEC);
-		outw(PortIO, sc);
+		sc &= ~(PORTSC::CSC | PORTSC::PEC);
+		port.out(sc);
 		return 0;
 	}
 
 	int Port::Reset()
 	{
-		Set(PORT_PR);
+		Set(PORTSC::PR);
 		v0::Sleep(DriverID, 100);
-		Clear(PORT_PR);
+		Clear(PORTSC::PR);
 
 		while (true)
 		{
 			v0::Sleep(DriverID, 50);
-			PORTSC sc = Status();
+			uint16_t sc = port.in();
 
-			if (~sc & PORT_CCS)
+			if (~sc & PORTSC::CCS)
 			{
 				debug("device is not present");
 				return -ENODEV;
 			}
 
-			if (sc & (PORT_CSC | PORT_PEC))
+			if (sc & (PORTSC::CSC | PORTSC::PEC))
 			{
 				debug("status changed");
-				Clear(PORT_CSC | PORT_PEC);
+				Clear(PORTSC::CSC | PORTSC::PEC);
 				continue;
 			}
 
-			if (sc & PORT_PE)
+			if (sc & PORTSC::PE)
 			{
 				debug("port is enabled");
 				break;
 			}
 
-			Set(PORT_PE);
+			Set(PORTSC::PE);
 		}
 		return 0;
 	}
@@ -87,11 +85,11 @@ namespace Driver::UniversalHostControllerInterface
 	int Port::Probe()
 	{
 		Reset();
-		PORTSC sc = Status();
+		uint16_t sc = port.in();
 
-		if (sc & PORT_PE)
+		if (sc & PORTSC::PE)
 		{
-			Speed = (sc & PORT_LSDA) == 1 ? USB_LOW_SPEED : USB_FULL_SPEED;
+			Speed = (sc & PORTSC::LSDA) == 1 ? USB_LOW_SPEED : USB_FULL_SPEED;
 			return 0;
 		}
 
@@ -99,6 +97,6 @@ namespace Driver::UniversalHostControllerInterface
 		return -ENODEV;
 	}
 
-	Port::Port(uint16_t io) : PortIO(io) {}
+	Port::Port(PORTSC io) : port(io) {}
 	Port::~Port() = default;
 }

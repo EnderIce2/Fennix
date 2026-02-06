@@ -111,60 +111,77 @@
 
 namespace Driver::UniversalHostControllerInterface
 {
-	union PORTSC
-	{
-		struct
-		{
-			uint16_t CCS : 1;
-			uint16_t CSC : 1;
-			uint16_t PE : 1;
-			uint16_t PEC : 1;
-			uint16_t LS : 2;
-			uint16_t RD : 1;
-			uint16_t AlwaysOne : 1;
-			uint16_t LSDA : 1;
-			uint16_t PR : 1;
-			uint16_t __reserved1 : 2;
-			uint16_t SUS : 1;
-			uint16_t __reserved2 : 3;
-		} __packed;
-		DEFINE_BITWISE_TYPE(uint16_t, PORTSC);
-	};
+	IO_REG_RW(uint16_t, USBCMD,
+			  RS = 1u << 0,
+			  HCRESET = 1u << 1,
+			  GRESET = 1u << 2,
+			  EGSM = 1u << 3,
+			  FGR = 1u << 4,
+			  SWDBG = 1u << 5,
+			  CF = 1u << 6,
+			  MAXP = 1u << 7);
+
+	IO_REG_RWC(uint16_t, USBSTS,
+			   USBINT = 1u << 0,
+			   USBERRINT = 1u << 1,
+			   RD = 1u << 2,
+			   HSE = 1u << 3,
+			   HCPE = 1u << 4,
+			   HCH = 1u << 5);
+
+	IO_REG_RW(uint16_t, USBINTR,
+			  TOCRC = 1u << 0,
+			  RIE = 1u << 1,
+			  IOCE = 1u << 2,
+			  SPIE = 1u << 3);
+
+	IO_REG_RW(uint16_t, PORTSC,
+			  CCS = 1u << 0,	   /* RO */
+			  CSC = 1u << 1,	   /* R/WC */
+			  PE = 1u << 2,		   /* R/W */
+			  PEC = 1u << 3,	   /* R/WC */
+			  LS_MASK = 3u << 4,   /* RO */
+			  RD = 1u << 6,		   /* R/W */
+			  AlwaysOne = 1u << 7, /* RO */
+			  LSDA = 1u << 8,	   /* RO */
+			  PR = 1u << 9,		   /* R/W */
+			  SUS = 1u << 12);	   /* R/W */
 
 	union FrameListPointer
 	{
 		struct
 		{
-			/**
-			 * Terminate
-			 *
-			 * 0 = Pointer is valid, this bit indicates that this frame has valid entries (QH or TD)
-			 * 1 = Pointer is invalid (empty frame)
-			 */
-			uint32_t T : 1;
-
-			/**
-			 * QH/TD Select
-			 *
-			 * 0 = Pointer points to a TD
-			 * 1 = Pointer points to a QH
-			 */
-			uint32_t Q : 1;
-
-			/**
-			 * Reserved
-			 */
+			uint32_t __T : 1;
+			uint32_t __Q : 1;
 			uint32_t __reserved0 : 2;
-
-			/**
-			 * Frame List Pointer
-			 *
-			 * This field contains the address of the first QH or TD in the frame.
-			 */
-			uint32_t FLP : 28;
-		};
+			uint32_t __FLP : 28;
+		} __packed;
 		DEFINE_BITWISE_TYPE(uint32_t, FrameListPointer);
+
+		/**
+		 * Terminate
+		 *
+		 * 0 = Pointer is valid, this bit indicates that this frame has valid entries (QH or TD)
+		 * 1 = Pointer is invalid (empty frame)
+		 */
+		BF_RW(uint8_t, Terminate, 0, 1);
+
+		/**
+		 * QH/TD Select
+		 *
+		 * 0 = Pointer points to a TD
+		 * 1 = Pointer points to a QH
+		 */
+		BF_RW(uint8_t, QHTDSelect, 1, 1);
+
+		/**
+		 * Frame List Pointer
+		 *
+		 * This field contains the address of the first QH or TD in the frame.
+		 */
+		BF_PHYS_RW(uint32_t, FLP, 4, 28);
 	};
+	static_assert(sizeof(FrameListPointer) == sizeof(uint32_t));
 
 	struct TD
 	{
@@ -172,40 +189,44 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			struct
 			{
-				/**
-				 * Terminate
-				 *
-				 * 0 = Link Pointer field is valid
-				 * 1 = Link Pointer field is not valid
-				 */
-				uint32_t T : 1;
-
-				/**
-				 * QH/TD Select
-				 *
-				 * 0 = TD
-				 * 1 = QH
-				 */
-				uint32_t Q : 1;
-
-				/**
-				 * Depth/Breadth Select
-				 *
-				 * 0 = Breadth first
-				 * 1 = Depth first
-				 */
-				uint32_t Vf : 1;
-
+				uint32_t __T : 1;
+				uint32_t __Q : 1;
+				uint32_t __Vf : 1;
 				uint32_t __reserved0 : 1;
-
-				/**
-				 * Link Pointer
-				 *
-				 * This field points to another TD or QH.
-				 */
-				uint32_t LP : 28;
+				uint32_t __LP : 28;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, LINK_UNION);
+
+			/**
+			 * Terminate
+			 *
+			 * 0 = Link Pointer field is valid
+			 * 1 = Link Pointer field is not valid
+			 */
+			BF_RW(uint8_t, Terminate, 0, 1);
+
+			/**
+			 * QH/TD Select
+			 *
+			 * 0 = TD
+			 * 1 = QH
+			 */
+			BF_RW(uint8_t, QHTDSelect, 1, 1);
+
+			/**
+			 * Depth/Breadth Select
+			 *
+			 * 0 = Breadth first
+			 * 1 = Depth first
+			 */
+			BF_RW(uint8_t, DepthBreadthSelect, 2, 1);
+
+			/**
+			 * Link Pointer
+			 *
+			 * This field points to another TD or QH.
+			 */
+			BF_PHYS_RW(uint32_t, LinkPointer, 4, 28);
 		} LINK;
 		static_assert(sizeof(LINK) == sizeof(uint32_t));
 
@@ -213,18 +234,9 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			struct
 			{
-				/**
-				 * Actual Length
-				 *
-				 * The value is encoded as n-1.
-				 */
-				uint32_t ActLen : 11;
-
+				uint32_t __ActLen : 11;
 				uint32_t __reserved0 : 5;
 
-				/**
-				 * Status field
-				 */
 				union
 				{
 					struct
@@ -234,85 +246,143 @@ namespace Driver::UniversalHostControllerInterface
 						/**
 						 * Set if more than 6 consecutive ones are detected in the received data stream.
 						 */
-						uint8_t BITSTUFF_ERROR : 1;
+						uint8_t __BITSTUFF_ERROR : 1;
 
 						/**
 						 * Set on CRC error or timeout (no response from device/endpoint within protocol-specified time).
 						 */
-						uint8_t CRC_TO_ERROR : 1;
+						uint8_t __CRC_TO_ERROR : 1;
 
 						/**
 						 * Set when a NAK packet is received during the transaction.
 						 */
-						uint8_t NAK_RECEIVED : 1;
+						uint8_t __NAK_RECEIVED : 1;
 
 						/**
 						 * Set when a "babble" is detected during the transaction; also sets STALLED.
 						 */
-						uint8_t BABBLE_DETECTED : 1;
+						uint8_t __BABBLE_DETECTED : 1;
 
 						/**
 						 * Set if Host Controller cannot keep up with data reception (overrun) or supply data fast enough (underrun).
 						 */
-						uint8_t DATA_BUFFER_ERROR : 1;
+						uint8_t __DATA_BUFFER_ERROR : 1;
 
 						/**
 						 * Set by Host Controller to indicate a serious error (e.g., babble, error counter zero, or STALL handshake).
 						 */
-						uint8_t STALLED : 1;
+						uint8_t __STALLED : 1;
 
 						/**
 						 * Set by software to enable execution of a transaction. Cleared by Host Controller when transaction completes or on stall.
 						 */
-						uint8_t ACTIVE : 1;
+						uint8_t __ACTIVE : 1;
 					};
 					uint8_t raw;
 				} STATUS;
 
-				/**
-				 * Interrupt On Complete
-				 *
-				 * 1 = Interrupt on completion
-				 */
-				uint32_t IOC : 1;
-
-				/**
-				 * Isochronous Select
-				 *
-				 * 0 = Non-isochronous Transfer Descriptor
-				 * 1 = Isochronous Transfer Descriptor
-				 */
-				uint32_t IOS : 1;
-
-				/**
-				 * Low Speed Device
-				 *
-				 * 0 = Full speed device
-				 * 1 = Low speed device
-				 */
-				uint32_t LS : 1;
-
-				/**
-				 * 00b = No Error Limit
-				 * 01b = 1 error
-				 * 10b = 2 errors
-				 * 11b = 3 errors
-				 *
-				 * @note check UHCI spec page 28 (3.2.2)
-				 */
-				uint32_t unknown_0 : 2; /* 28:27 missing in the spec @ 3.2.2 */
-
-				/**
-				 * Short Packet Detect
-				 *
-				 * 0 = Disable
-				 * 1 = Enable
-				 */
-				uint32_t SPD : 1;
-
+				uint32_t __IOC : 1;
+				uint32_t __IOS : 1;
+				uint32_t __LS : 1;
+				uint32_t __unknown_0 : 2; /* 28:27 missing in the spec @ 3.2.2 */
+				uint32_t __SPD : 1;
 				uint32_t __reserved1 : 2;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CS_UNION);
+
+			BF_RO(uint16_t, __ActualLength, 0, 11);
+
+			/**
+			 * Actual Length
+			 *
+			 * The value is encoded as n-1.
+			 */
+			inline size_t ActualLength() const
+			{
+				uint16_t v = __ActualLength();
+				return (v == 0x7FF) ? 0 : (v + 1);
+			}
+
+			/**
+			 * Status field
+			 */
+			BF_RO(uint8_t, Status, 16, 8);
+
+			/**
+			 * Set if more than 6 consecutive ones are detected in the received data stream.
+			 */
+			BF_RO(uint8_t, Status_BITSTUFF_ERROR, 17, 1);
+
+			/**
+			 * Set on CRC error or timeout (no response from device/endpoint within protocol-specified time).
+			 */
+			BF_RO(uint8_t, Status_CRC_TO_ERROR, 18, 1);
+
+			/**
+			 * Set when a NAK packet is received during the transaction.
+			 */
+			BF_RO(uint8_t, Status_NAK_RECEIVED, 19, 1);
+
+			/**
+			 * Set when a "babble" is detected during the transaction; also sets STALLED.
+			 */
+			BF_RO(uint8_t, Status_BABBLE_DETECTED, 20, 1);
+
+			/**
+			 * Set if Host Controller cannot keep up with data reception (overrun) or supply data fast enough (underrun).
+			 */
+			BF_RO(uint8_t, Status_DATA_BUFFER_ERROR, 21, 1);
+
+			/**
+			 * Set by Host Controller to indicate a serious error (e.g., babble, error counter zero, or STALL handshake).
+			 */
+			BF_RO(uint8_t, Status_STALLED, 22, 1);
+
+			/**
+			 * Set by software to enable execution of a transaction. Cleared by Host Controller when transaction completes or on stall.
+			 */
+			BF_RW(uint8_t, Status_ACTIVE, 23, 1);
+
+			/**
+			 * Interrupt On Complete
+			 *
+			 * 1 = Interrupt on completion
+			 */
+			BF_RW(uint8_t, InterruptOnComplete, 24, 1);
+
+			/**
+			 * Isochronous Select
+			 *
+			 * 0 = Non-isochronous Transfer Descriptor
+			 * 1 = Isochronous Transfer Descriptor
+			 */
+			BF_RW(uint8_t, IsochronousSelect, 25, 1);
+
+			/**
+			 * Low Speed Device
+			 *
+			 * 0 = Full speed device
+			 * 1 = Low speed device
+			 */
+			BF_RW(uint8_t, LowSpeedDevice, 26, 1);
+
+			/**
+			 * 00b = No Error Limit
+			 * 01b = 1 error
+			 * 10b = 2 errors
+			 * 11b = 3 errors
+			 *
+			 * @note check UHCI spec page 28 (3.2.2)
+			 */
+			BF_RW(uint8_t, ErrorCounter, 27, 2);
+
+			/**
+			 * Short Packet Detect
+			 *
+			 * 0 = Disable
+			 * 1 = Enable
+			 */
+			BF_RW(uint8_t, ShortPacketDetect, 29, 1);
 		} CS;
 		static_assert(sizeof(CS) == sizeof(uint32_t));
 
@@ -320,70 +390,106 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			struct
 			{
-				/**
-				 * Packet Identification
-				 *
-				 * IN = 0x69
-				 * OUT = 0xE1
-				 * SETUP = 0x2D
-				 */
-				uint32_t PID : 8;
-
-				/**
-				 * Device Address
-				 */
-				uint32_t DeviceAddress : 6;
-
-				/**
-				 * Endpoint
-				 */
-				uint32_t EndPt : 4;
-
-				/**
-				 * Data Toggle
-				 *
-				 * 0 = DATA0
-				 * 1 = DATA1
-				 */
-				uint32_t D : 1;
-
+				uint32_t __PID : 8;
+				uint32_t __DeviceAddress : 6;
+				uint32_t __EndPt : 4;
+				uint32_t __D : 1;
 				uint32_t __reserved0 : 1;
-
-				/**
-				 * Maximum Length
-				 *
-				 * 0x000 = 1 byte
-				 * 0x001 = 2 bytes
-				 *      ...
-				 * 0x3FE = 1023 bytes
-				 * 0x3FF = 1024 bytes
-				 *      ...
-				 * 0x4FF = 1280 bytes
-				 * 0x7FF = 0 bytes (Null Data Packet)
-				 */
-				uint32_t MaxLen : 11;
+				uint32_t __MaxLen : 11;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, TOKEN_UNION);
+
+			/**
+			 * Packet Identification
+			 *
+			 * IN = 0x69
+			 * OUT = 0xE1
+			 * SETUP = 0x2D
+			 */
+			BF_RW(uint8_t, PacketIdentification, 0, 8);
+
+			/**
+			 * Device Address
+			 */
+			BF_RW(uint8_t, DeviceAddress, 8, 7);
+
+			/**
+			 * Endpoint
+			 */
+			BF_RW(uint8_t, Endpoint, 15, 4);
+
+			/**
+			 * Data Toggle
+			 *
+			 * 0 = DATA0
+			 * 1 = DATA1
+			 */
+			BF_RW(uint8_t, DataToggle, 19, 1);
+
+			/**
+			 * Maximum Length
+			 *
+			 * 0x000 = 1 byte
+			 * 0x001 = 2 bytes
+			 *      ...
+			 * 0x3FE = 1023 bytes
+			 * 0x3FF = 1024 bytes
+			 *      ...
+			 * 0x4FF = 1280 bytes
+			 * 0x7FF = 0 bytes (Null Data Packet)
+			 */
+			BF_RW(uint16_t, MaximumLengthRaw, 21, 11);
+
+			inline uint16_t MaximumLength() const
+			{
+				uint16_t raw = MaximumLengthRaw();
+				if (raw == 0x7FF)
+					return 0;
+				if (raw < 0x400)
+					return raw + 1;
+				return raw - 0x3FF + 1024;
+			}
+
+			/**
+			 * Maximum Length
+			 *
+			 * 0x000 = 1 byte
+			 * 0x001 = 2 bytes
+			 *      ...
+			 * 0x3FE = 1023 bytes
+			 * 0x3FF = 1024 bytes
+			 *      ...
+			 * 0x4FF = 1280 bytes
+			 * 0x7FF = 0 bytes (Null Data Packet)
+			 */
+			inline void MaximumLength(uint16_t length)
+			{
+				uint16_t raw;
+				if (length == 0)
+					raw = 0x7FF; /* Null Data Packet */
+				else if (length <= 1023)
+					raw = length - 1; /* 0x000-0x3FE = 1-1023 bytes */
+				else if (length <= 1280)
+					raw = (length - 1024) + 1023; /* 0x3FF-0x4FF = 1024-1280 bytes */
+				else
+					raw = 0x4FF; /* Invalid length, clamp to maximum */
+				MaximumLengthRaw(raw);
+			}
 		} TOKEN;
 		static_assert(sizeof(TOKEN) == sizeof(uint32_t));
 
-		union BUFFER_UNION
-		{
-			struct
-			{
-				/**
-				 * Buffer Pointer
-				 */
-				uint32_t Addr : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, BUFFER_UNION);
-		} BUFFER;
-		static_assert(sizeof(BUFFER) == sizeof(uint32_t));
+		/**
+		 * Buffer Pointer
+		 */
+		volatile uint32_t BufferPointer;
 
 		/* The last 4 DWords of the Transfer Descriptor are reserved for use by software.
 			  - UHCI Design Guide 1.1 @ 3.2.5 */
-		uint8_t __software[16];
+		uint8_t __software[0];
+		USBRequestBlock *URB;
+		TD *NextTD;
 	};
+	static_assert(sizeof(TD) == 32);
 
 	struct QH
 	{
@@ -391,35 +497,35 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			struct
 			{
-				/**
-				 * Terminate
-				 *
-				 * 0 = Pointer is valid
-				 * 1 = Last QH
-				 */
-				uint32_t T : 1;
-
-				/**
-				 * QH/TD Select
-				 *
-				 * 0 = TD
-				 * 1 = QH
-				 */
-				uint32_t Q : 1;
-
-				/**
-				 * Must be zero
-				 */
-				uint32_t __reserved0 : 2;
-
-				/**
-				 * Queue Head Link Pointer
-				 *
-				 * This field contains the next data object to be processed in the horizontal list.
-				 */
-				uint32_t QHLP : 28;
+				uint32_t __T : 1;
+				uint32_t __Q : 1;
+				uint32_t __reserved0 : 2; /* Must be zero */
+				uint32_t __QHLP : 28;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, HEAD_UNION);
+
+			/**
+			 * Terminate
+			 *
+			 * 0 = Pointer is valid
+			 * 1 = Last QH
+			 */
+			BF_RW(uint8_t, Terminate, 0, 1);
+
+			/**
+			 * QH/TD Select
+			 *
+			 * 0 = TD
+			 * 1 = QH
+			 */
+			BF_RW(uint8_t, QHTDSelect, 1, 1);
+
+			/**
+			 * Queue Head Link Pointer
+			 *
+			 * This field contains the next data object to be processed in the horizontal list.
+			 */
+			BF_PHYS_RW(uint32_t, QueueHeadLinkPointer, 4, 28);
 		} HEAD;
 		static_assert(sizeof(HEAD) == sizeof(uint32_t));
 
@@ -427,131 +533,94 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			struct
 			{
-				/**
-				 * Terminate
-				 *
-				 * 1 = No valid queue entries
-				 */
-				uint32_t T : 1;
 
-				/**
-				 * QH/TD Select
-				 *
-				 * 0 = TD
-				 * 1 = QH
-				 */
-				uint32_t Q : 1;
-
+				uint32_t __T : 1;
+				uint32_t __Q : 1;
 				uint32_t __reserved0 : 1;
-
-				/**
-				 * Must be zero
-				 */
-				uint32_t __reserved1 : 1;
-
-				/**
-				 * Queue Element Link Pointer
-				 *
-				 * This field contains the address of the next QH or TD.
-				 */
-				uint32_t QELP : 28;
+				uint32_t __reserved1 : 1; /* Must be zero */
+				uint32_t __QELP : 28;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, ELEMENT_UNION);
+
+			/**
+			 * Terminate
+			 *
+			 * 1 = No valid queue entries
+			 */
+			BF_RW(uint8_t, Terminate, 0, 1);
+
+			/**
+			 * QH/TD Select
+			 *
+			 * 0 = TD
+			 * 1 = QH
+			 */
+			BF_RW(uint8_t, QHTDSelect, 1, 1);
+
+			/**
+			 * Queue Element Link Pointer
+			 *
+			 * This field contains the address of the next QH or TD.
+			 */
+			BF_PHYS_RW(uint32_t, QELP, 4, 28);
 		} ELEMENT;
 		static_assert(sizeof(ELEMENT) == sizeof(uint32_t));
 
 		/* same as TD but QH has 64 bytes */
 		uint8_t __software[56];
 	};
+	static_assert(sizeof(QH) == 64);
 
 	class Port
 	{
 	private:
-		uint16_t PortIO;
+		PORTSC port;
 		USBSpeeds Speed;
 
 	public:
 		USBSpeeds GetSpeed() { return Speed; }
 		PORTSC Status();
-		int Clear(PORTSC Change = 0);
-		int Set(PORTSC Change);
+		int Clear(uint16_t Change);
+		int Set(uint16_t Change);
 		int Reset();
 		int Probe();
-		Port(uint16_t io);
+		Port(PORTSC io);
 		~Port();
 	};
 
-	struct USBScheduler
-	{
-		uint32_t *FrameList;
-		size_t Frames;
-		size_t SubFrames;
-		size_t BandwidthSize;
-	};
-
-	struct USBSchedulerPool
-	{
-		uint8_t *Data;
-	};
-
-	class Scheduler : public USBScheduler
-	{
-	private:
-		struct SchedPoolInternal : USBSchedulerPool
-		{
-			fnx::spinlock_t Lock;
-			size_t SizeOfDescriptor;
-			size_t Count;
-			off_t Breadth;
-			off_t Depth;
-			off_t Software;
-
-			void *GetBreadth(off_t Index);
-			void *GetDepth(off_t Index);
-			void *GetSoftware(off_t Index);
-		};
-
-		std::list<SchedPoolInternal> Pools;
-
-	public:
-		USBSchedulerPool *CreateNewPool(size_t SizeOfDescriptor, int RequredAlignment, size_t Count, off_t Breadth, off_t Depth, off_t Software);
-		int GetCurrentFrame();
-
-		int GetPoolElement(USBSchedulerPool *Pool, size_t Index, void **Element);
-		int GetPoolElement(size_t PoolIndex, size_t Index, void **Element);
-
-		bool Initialize(uint32_t FrameListData);
-		Scheduler(size_t NumOfFrames, size_t NumOfSubFrames, size_t MaxBandwidth);
-		~Scheduler();
-	};
-
-	class Queue
+	class TransferQueue
 	{
 	private:
 		TD *TDPool __aligned(0x10);
 		QH *QHPool __aligned(0x10);
 
 		FrameListPointer *FrameList;
-		size_t Frames = 1024;
-		size_t CurrentFrame = 0;
-		size_t Subframes = 1;
-		size_t MaxBandwidth = 900;
-		size_t MaxQHs = 8;
-		size_t MaxTDs = 32;
-		QH *CurrentQueue;
+		uint16_t CurrentFrame = 0;
+
+		bool QHUsed[16];
+		bool TDUsed[64];
+		size_t QHCount = 16;
+		size_t TDCount = 64;
+
+		QH *InterruptQH[9];
+		QH *AsyncQH;
 
 		uint16_t base;
 
 	public:
-		Scheduler *sched;
+		uint32_t *GetFrameList() { return (uint32_t *)FrameList; }
+		uint16_t GetCurrentFrame() { return CurrentFrame; }
 
 		void AdvanceFrame();
+		void ProcessComplete();
+		void EnqueueTD(TD *td);
+
 		QH *AllocateQueueHead();
 		int ReleaseQueueHead(QH *qh);
 		TD *AllocateTransferDescriptor();
 		int ReleaseTransferDescriptor(TD *td);
-		Queue(uint16_t io);
-		~Queue();
+		TransferQueue(uint16_t io);
+		~TransferQueue();
 	};
 
 	class HCD : public Interrupts::Handler, public USBController
@@ -560,17 +629,30 @@ namespace Driver::UniversalHostControllerInterface
 		uint16_t io;
 		PCI::PCIDevice Header;
 
+		USBCMD cmd;
+		USBSTS sts;
+		USBINTR intr;
+		PORTSC port1;
+		PORTSC port2;
+
 		int OnInterruptReceived(CPU::TrapFrame *Frame) final;
 
+		int SubmitControl(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitBulk(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitInterrupt(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitIsochronous(USBDevice *Device, USBRequestBlock *urb);
+
 	public:
-		Queue *queue = nullptr;
+		TransferQueue *queue = nullptr;
 
 		int Reset();
 		int Start();
 		int Stop();
 		int Detect();
-		int ProcessQueueHead(QH *qh);
-		int Poll();
+
+		int Submit(USBDevice *Device, USBRequestBlock *urb);
+		int Cancel(USBDevice *Device, USBRequestBlock *urb);
+
 		HCD(PCI::PCIDevice &pciHeader);
 		virtual ~HCD();
 	};

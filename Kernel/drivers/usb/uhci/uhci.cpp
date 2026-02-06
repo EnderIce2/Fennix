@@ -35,22 +35,11 @@ namespace Driver::UniversalHostControllerInterface
 
 	dev_t DriverID;
 
-	int UHCI_Start(struct USBController *d) { return ((HCD *)d)->Start(); }
-	int UHCI_Stop(struct USBController *d) { return ((HCD *)d)->Stop(); }
-	int UHCI_Reset(struct USBController *d) { return ((HCD *)d)->Reset(); }
-	int UHCI_Poll(struct USBController *d) { return ((HCD *)d)->Poll(); }
-
-	int UHCI_Port_Control(struct USBDevice *Device, struct USBTransfer *Transfer)
-	{
-		stub;
-		return 0;
-	}
-
-	int UHCI_Port_Interrupt(struct USBDevice *Device, struct USBTransfer *Transfer)
-	{
-		stub;
-		return 0;
-	}
+	int devStart(struct USBController *d) { return ((HCD *)d)->Start(); }
+	int devStop(struct USBController *d) { return ((HCD *)d)->Stop(); }
+	int devReset(struct USBController *d) { return ((HCD *)d)->Reset(); }
+	int devSubmit(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Submit(dev, urb); }
+	int devCancel(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Cancel(dev, urb); }
 
 	std::list<PCI::PCIDevice> Devices;
 	std::list<HCD *> Controllers;
@@ -61,11 +50,11 @@ namespace Driver::UniversalHostControllerInterface
 			PCIManager->InitializeDevice(dev, KernelPageTable);
 
 			HCD *hc = new HCD(dev);
-			// hc->Flags =
-			hc->StartHC = UHCI_Start;
-			hc->StopHC = UHCI_Stop;
-			hc->ResetHC = UHCI_Reset;
-			hc->PollHC = UHCI_Poll;
+			hc->StartController = devStart;
+			hc->StopController = devStop;
+			hc->ResetController = devReset;
+			hc->SubmitURB = devSubmit;
+			hc->CancelURB = devCancel;
 
 			int ret = hc->Reset();
 			if (ret != 0)
@@ -108,7 +97,10 @@ namespace Driver::UniversalHostControllerInterface
 
 	int Panic()
 	{
-		return ENOSYS;
+		for (auto &&i : Controllers)
+			i->Stop();
+
+		return EOK;
 	}
 
 	int Probe()
