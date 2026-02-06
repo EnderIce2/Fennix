@@ -2,7 +2,7 @@ var searchData=
 [
   ['kdirent_0',['kdirent',['../df/d26/fs_8h.html#d9/ddf/structkdirent',1,'']]],
   ['kernel_1',['Kernel',['../dd/d35/md_Kernel_2README.html',1,'']]],
-  ['kerneldata_2',['kerneldata',['../df/d26/fs_8h.html#a866fcc7922cd6949f8ee7e41b270fde6',1,'Inode::KernelData'],['../d1/d20/structUSBDevice.html#aa7533771142b5f1ee4be756cc82e85ac',1,'USBDevice::KernelData']]],
+  ['kerneldata_2',['kerneldata',['../df/d26/fs_8h.html#a866fcc7922cd6949f8ee7e41b270fde6',1,'Inode::KernelData'],['../dc/de4/usb_8h.html#aa7533771142b5f1ee4be756cc82e85ac',1,'USBDevice::KernelData']]],
   ['key_3',['Key',['../de/ded/input_8h.html#a173d8f2a67aa82689612753fad2e5095',1,'KeyboardReport']]],
   ['key_5f0_4',['KEY_0',['../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9',1,'input.h']]],
   ['key_5f1_5',['KEY_1',['../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c',1,'input.h']]],
@@ -114,7 +114,7 @@ var searchData=
   ['key_5fx_111',['KEY_X',['../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497',1,'input.h']]],
   ['key_5fy_112',['KEY_Y',['../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3',1,'input.h']]],
   ['key_5fz_113',['KEY_Z',['../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda',1,'input.h']]],
-  ['keyboard_114',['Keyboard',['../de/ded/input_8h.html#a6ce4d85a628a88bbdb3ac24a8e5a9c2e',1,'InputReport.__unnamed17__']]],
+  ['keyboard_114',['Keyboard',['../de/ded/input_8h.html#a6ce4d85a628a88bbdb3ac24a8e5a9c2e',1,'InputReport.__unnamed18__']]],
   ['keyboardreport_115',['KeyboardReport',['../de/ded/input_8h.html#d1/da7/structKeyboardReport',1,'']]],
   ['keyboardreport_2e_5f_5funnamed13_5f_5f_116',['KeyboardReport.__unnamed13__',['../de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____',1,'']]],
   ['keyboardreport_2e_5f_5funnamed13_5f_5f_2e_5f_5funnamed15_5f_5f_117',['KeyboardReport.__unnamed13__.__unnamed15__',['../de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____',1,'']]],

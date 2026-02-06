@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a":[7,0,1,0,0,8,12,38],
+"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61":[7,0,1,0,0,8,12,31],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f":[7,0,1,0,0,8,12,119],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375":[7,0,1,0,0,8,12,43],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5":[7,0,1,0,0,8,12,91],
@@ -80,7 +82,7 @@ var NAVTREEINDEX5 =
 "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____":[7,0,1,0,0,8,9],
 "de/ded/input_8h.html#d6/dda/structGamepadReport":[7,0,1,0,0,8,4],
 "de/ded/input_8h.html#d8/d16/structAccelerometerReport":[7,0,1,0,0,8,5],
-"de/ded/input_8h.html#db/d5d/unionInputReport_8____unnamed17____":[7,0,1,0,0,8,11],
+"de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____":[7,0,1,0,0,8,11],
 "de/ded/input_8h.html#db/d9a/structMouseReport":[7,0,1,0,0,8,1],
 "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____":[7,0,1,0,0,8,10],
 "de/ded/input_8h.html#dd/db1/structJoystickReport":[7,0,1,0,0,8,2],
@@ -168,6 +170,7 @@ var NAVTREEINDEX5 =
 "df/d26/fs_8h.html#a9a122a1f26859b9f6e865623b06b5512":[7,0,1,0,0,7,31],
 "df/d26/fs_8h.html#a9c9e4cc0a8acc43c99ae6c3d972ae2d8":[7,0,1,0,0,7,42],
 "df/d26/fs_8h.html#a9ca9828444d899586f97c6c9a4d5d5f0":[7,0,1,0,0,7,90],
+"df/d26/fs_8h.html#a9cb6446fcc87e134ab6a7a40c6509b39":[7,0,1,0,0,7,4,1],
 "df/d26/fs_8h.html#a9f1f01620d0175f71eff75e384cd9042":[7,0,1,0,0,7,0,10],
 "df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a":[7,0,1,0,0,7,78],
 "df/d26/fs_8h.html#aa507e1e28360ed651e2294c1c5f02691":[7,0,1,0,0,7,92],
@@ -202,7 +205,6 @@ var NAVTREEINDEX5 =
 "df/d26/fs_8h.html#aec9bda2590b6b4ff6433991c57ce60a3":[7,0,1,0,0,7,87],
 "df/d26/fs_8h.html#aef3a1d1ba22c83e30b5c834dd343b2a8":[7,0,1,0,0,7,23],
 "df/d26/fs_8h.html#af072945bf898f907662733da42b11a44":[7,0,1,0,0,7,75],
-"df/d26/fs_8h.html#af0cfcefc95bda473c1c09bc1c03ad3c2":[7,0,1,0,0,7,4,1],
 "df/d26/fs_8h.html#af0d5a9e82aa0ece31db45ae57b97b5d9":[7,0,1,0,0,7,0,0],
 "df/d26/fs_8h.html#af10a35e3950795d6ee4e07157d000131":[7,0,1,0,0,7,53],
 "df/d26/fs_8h.html#af2c3f075d5c3e40a46da61a9d7a13abc":[7,0,1,0,0,7,89],
@@ -247,7 +249,5 @@ var NAVTREEINDEX5 =
 "functions_s.html":[6,2,0,18],
 "functions_t.html":[6,2,0,19],
 "functions_u.html":[6,2,0,20],
-"functions_v.html":[6,2,0,21],
-"functions_vars.html":[6,2,1,0],
-"functions_vars.html":[6,2,1]
+"functions_v.html":[6,2,0,21]
 };

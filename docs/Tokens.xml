@@ -121,12 +121,12 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>USBDevice</Name>
+      <Name>USBRequestBlock</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
-      <Scope>USBDevice</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -163,36 +163,6 @@
       <APILanguage>markdown</APILanguage>
     </TokenIdentifier>
     <Path>dd/d35/md_Kernel_2README.html</Path>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__padding</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a7a4128300868052c9d861bf750b9e128</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__padding</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBController.Flags.__unnamed63__</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a7a4128300868052c9d861bf750b9e128</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>__raw_flags</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBTransfer.__unnamed58__</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a56c3a34088525abfbee866e9aedc0afe</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -319,7 +289,7 @@
       <Name>Accelerometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>ab043bc6d611582087d8bf1790d863d69</Anchor>
@@ -336,13 +306,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>ActualLength</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a74b5de53920468e238f88dab32ffb652</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Address</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBDevice</Scope>
+      <Scope>USBEndpoint</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a9073cfac60345f3caff7eb080f3d4bd2</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ad70d27fc09bf76b2920231e58bffefe1</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -393,16 +373,6 @@
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a3a73a20d67d11fe416d495fe0f5b9180</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>BandwidthSize</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBScheduler</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a3c2301ad2ec832e62bf33eb5a9332232</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -989,10 +959,10 @@
       <Name>Buffer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBTransfer</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a9da3ac05368e6e54fcae7b86db18aed7</Anchor>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a010339f52c437768afc1247fe8068598</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1166,6 +1136,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>CancelURB</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBController</Scope>
+    </TokenIdentifier>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>abd483a952b52c8db907c57e0a39415c9</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>Capabilities</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1286,13 +1266,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Completed</Name>
+      <Name>Complete</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a07ca5050e697392c9ed47e6453f1453f</Anchor>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a85f8a3801424af3f0273571b5d8821ef</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>CompletionContext</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a6a827feabc610265a8877d7acec88387</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1311,8 +1301,8 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a7803921b3f43fbcafeaea299d39432b7</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ab479ed0c9cc301ca9527ff548dc752d1</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1373,26 +1363,6 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>ae62da46e9487a67427fad586aa96806a</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>Data</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBSchedulerPool</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a51ef2aa9b3ff89b2a1dd4a076632560a</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>DataToggle</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBDevice</Scope>
-    </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>acbc402006f0a63cd61e043b87ff4f665</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1506,6 +1476,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Device</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a4119167024babeb70db94824c60b4b79</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>DeviceID</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1546,33 +1526,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Endpoint</Name>
+      <Name>EndpointAddress</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBTransfer</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>aa2d654f9f0fd8f315d306b5e9d8c2fc3</Anchor>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a2453a6b9da82df0cc0f225ee0fde3188</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Endpoint</Name>
+      <Name>Endpoints</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>af67bb52784e2b90bb1609284b87420a2</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>EndpointToggle</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
-    </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a47750f9619d7f4f7d404e31b0bf5e53a</Anchor>
+    <Anchor>aa8a7175c08426e5563a1ede2d9551f15</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1606,36 +1576,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Flags</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBController</Scope>
-    </TokenIdentifier>
-    <Path>d2/d22/structUSBController.html</Path>
-    <Anchor>a38048090a79b8fc608d713b801632ac3</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>FrameList</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBScheduler</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a3a808ff3c1f516c9e127896f288a8d38</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>Frames</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBScheduler</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>ad41829b1aaea00f65e918e0b0db89c8c</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>Function</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1649,7 +1589,7 @@
       <Name>Gamepad</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a221f6781b4faa2d321ca0d928f518d6e</Anchor>
@@ -1669,7 +1609,7 @@
       <Name>Gyroscope</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>abed99e5db57749f375e738c1c0258047</Anchor>
@@ -1802,7 +1742,7 @@
       <Scope>FileSystemDevice</Scope>
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
-    <Anchor>af0cfcefc95bda473c1c09bc1c03ad3c2</Anchor>
+    <Anchor>a9cb6446fcc87e134ab6a7a40c6509b39</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1821,8 +1761,8 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>aaaf4bc8f3d54c2320acc155be1491383</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>ac4e9bdaf238fa57e18f142707bdd4926</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1969,7 +1909,7 @@
       <Name>Joystick</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a1162b85b7b993e2edf7da29dd8abf7e2</Anchor>
@@ -1991,7 +1931,7 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>aa7533771142b5f1ee4be756cc82e85ac</Anchor>
   </Token>
   <Token>
@@ -2009,7 +1949,7 @@
       <Name>Keyboard</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a6ce4d85a628a88bbdb3ac24a8e5a9c2e</Anchor>
@@ -2099,10 +2039,10 @@
       <Name>Length</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBTransfer</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>ae9aad70ef64c2e3e7fa185369b2ecdb7</Anchor>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a57b6a7f579b075374465d1f3b756d882</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2179,7 +2119,7 @@
       <Name>Magnetometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a9e9fa52e0aa4a2b519f8287760d7c3ac</Anchor>
@@ -2209,10 +2149,10 @@
       <Name>MaxPacketSize</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBDevice</Scope>
+      <Scope>USBEndpoint</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a63232ecbff4d2af284c6c3e0fb25ef54</Anchor>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a3b68c1311fbfa4fdb07c0b93044c3aaf</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2359,7 +2299,7 @@
       <Name>Mouse</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>af2a47c6809d88e175dade0ef7b16aa13</Anchor>
@@ -2421,7 +2361,7 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a586d94a58e222d69b4ea4f5e1574c3ae</Anchor>
   </Token>
   <Token>
@@ -2433,6 +2373,16 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a36c4536996ca5615dcf9911f068786dc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>NumEndpoints</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBDevice</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a6fea5894a010feef75595dad690bda1c</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2541,7 +2491,7 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a6f58b875f50fd359a1222404806084f6</Anchor>
   </Token>
   <Token>
@@ -2606,22 +2556,12 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>PollHC</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBController</Scope>
-    </TokenIdentifier>
-    <Path>d2/d22/structUSBController.html</Path>
-    <Anchor>ae824e20a14d6f2133730c34739b3d5ef</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>Port</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>abba3892257b50d3c355e8ae59d9f9e45</Anchor>
   </Token>
   <Token>
@@ -2936,36 +2876,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>PortCtl</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBDevice</Scope>
-    </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a86e77b4780e45462ac6152ddc02916bc</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>PortInt</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBDevice</Scope>
-    </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a72e926d369554b983e2567ba248d88a1</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>PortPoll</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBDevice</Scope>
-    </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
-    <Anchor>a19f7d8bb19189819fef960c78c48375a</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>PrefetchableMemoryBase</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3059,6 +2969,16 @@
       <Name>PrivateData</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a196d52462a431e62b671e8f53965bbce</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>PrivateData</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
       <Scope>USBController</Scope>
     </TokenIdentifier>
     <Path>d2/d22/structUSBController.html</Path>
@@ -3071,7 +2991,7 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a7ae5c24680e464a7b7dd330426bf0545</Anchor>
   </Token>
   <Token>
@@ -3140,16 +3060,6 @@
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBPortStatus.wPortChange</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>raw</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBController.Flags</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>abdd166af3a63f7be696dd17a218a6ffb</Anchor>
@@ -3329,10 +3239,10 @@
       <Name>Request</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBTransfer</Scope>
+      <Scope>USBRequestBlock</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a49d73e5aca9a016cefcf26f6c8f75a3e</Anchor>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>ad7e3d385c2d67393d7775e41939e491d</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3376,13 +3286,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>ResetHC</Name>
+      <Name>ResetController</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBController</Scope>
     </TokenIdentifier>
     <Path>d2/d22/structUSBController.html</Path>
-    <Anchor>ad27534d91477cd617ab37e1004bdc460</Anchor>
+    <Anchor>a485cdee0d37454413c93b826c133ab20</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3491,7 +3401,7 @@
       <Type>data</Type>
       <Scope>USBDevice</Scope>
     </TokenIdentifier>
-    <Path>d1/d20/structUSBDevice.html</Path>
+    <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a99263f287fbfb9c3fb98df4106650abe</Anchor>
   </Token>
   <Token>
@@ -3506,13 +3416,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>StartHC</Name>
+      <Name>StartController</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBController</Scope>
     </TokenIdentifier>
     <Path>d2/d22/structUSBController.html</Path>
-    <Anchor>a70999a1c4371feb66a35691b5af22ab8</Anchor>
+    <Anchor>a593fe29c5a86f8a51d38be112cc6bd44</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3536,13 +3446,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>StopHC</Name>
+      <Name>Status</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a880a432667d72e03ee701f8c7825a5ca</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>StopController</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>USBController</Scope>
     </TokenIdentifier>
     <Path>d2/d22/structUSBController.html</Path>
-    <Anchor>a6ab189ec74b0e8716464f15b3255acfe</Anchor>
+    <Anchor>aac09f27e326c604b0e2418bdbb2f44d8</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3556,13 +3476,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>SubFrames</Name>
+      <Name>SubmitURB</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBScheduler</Scope>
+      <Scope>USBController</Scope>
     </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>aacb7c8684eba642bee6105ac19dd8bf4</Anchor>
+    <Path>d2/d22/structUSBController.html</Path>
+    <Anchor>a7ea8a44e4b6b2eeadb7c67c6f5500fa7</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3593,16 +3513,6 @@
     </TokenIdentifier>
     <Path>d9/d97/pci_8h.html</Path>
     <Anchor>a04b76a03bca66e34b60f344d030ae68c</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>Success</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>USBTransfer.__unnamed58__.__unnamed60__</Scope>
-    </TokenIdentifier>
-    <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a505a83f220c02df2f85c3810cd9ceb38</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3686,10 +3596,20 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Toggle</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpoint</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a721bda02107c83a504123e3dd4f6574f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>TouchScreen</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed17__</Scope>
+      <Scope>InputReport.__unnamed18__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a64a952e5a8456c1030ce54bfa07ebb52</Anchor>
@@ -3713,6 +3633,26 @@
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>af15f4807037d91adf5b3223b64e9ad50</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBEndpoint</Scope>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>adec5b215e44092850096aaa1479bcefd</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>USBRequestBlock</Scope>
+    </TokenIdentifier>
+    <Path>d8/dd1/structUSBRequestBlock.html</Path>
+    <Anchor>a7493b35e13ec1ac41ac5b195c9a3f6d9</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4111,7 +4051,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a2c72c44796b3644747e576453d00a436</Anchor>
+    <Anchor>a0f46789551f5d734accf1f4d909a3ab0</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -17126,6 +17066,76 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>USB_REQ_CANCELED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992aadd66473caa5eb50515d1e224a55c42a</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_CRC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a22e96179e201ce30b85ea2d8550658ab</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_DISCONNECT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a4be0f4856474b485a77f485ae06c3762</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_ERROR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a5fc7b498f68070b47ea99334ff7f1037</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_STALL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a0b6015d698cbfa7f775a5ca702821891</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_SUCCESS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_TIMEOUT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a57844ff6bb0dc6eda1367d98e71b233b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>USB_SET_ADDRESS</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -17222,6 +17232,46 @@
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da90460da08d427f828df2f0479f1b3132</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_BULK</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1af322d1146de1a6f44c7e899e6704d7a0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_CONTROL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1a1196f7cc3861c5726f49a158602167be</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_INTERRUPT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1aa9a91242afb3ab1f0c3d9253c5c07c77</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_ISOCHRONOUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1a8ac358b111749ae49378b76e5e4b485a</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -17562,6 +17612,86 @@
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a279380ccaf2cce9e7d54a87b47c4bd09a6fce9f86b57bbc1877bcc9376213b16b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBRequestStatus</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_SUCCESS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_STALL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a0b6015d698cbfa7f775a5ca702821891</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_TIMEOUT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a57844ff6bb0dc6eda1367d98e71b233b</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_DISCONNECT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a4be0f4856474b485a77f485ae06c3762</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_CRC</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a22e96179e201ce30b85ea2d8550658ab</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_ERROR</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992a5fc7b498f68070b47ea99334ff7f1037</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_CANCELED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992aadd66473caa5eb50515d1e224a55c42a</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -17942,6 +18072,56 @@
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a359a4ff9e10686d9b6622cc2be6ad77da90460da08d427f828df2f0479f1b3132</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USBTransferType</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_CONTROL</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1a1196f7cc3861c5726f49a158602167be</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_BULK</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1af322d1146de1a6f44c7e899e6704d7a0</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_INTERRUPT</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1aa9a91242afb3ab1f0c3d9253c5c07c77</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_TRANSFER_ISOCHRONOUS</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a8fe73c4cce8821a15d01a85c93d755b1a8ac358b111749ae49378b76e5e4b485a</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>

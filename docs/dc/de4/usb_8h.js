@@ -82,23 +82,26 @@ var usb_8h =
       [ "wPortChange", "dc/de4/usb_8h.html#a0ca19192e4103e1a34f5243c11b095c1", null ],
       [ "wPortStatus", "dc/de4/usb_8h.html#aa9314ab632cb04c5620f2544c690e7fa", null ]
     ] ],
-    [ "USBTransfer", "dc/de4/usb_8h.html#d2/d0d/structUSBTransfer", [
-      [ "Buffer", "dc/de4/usb_8h.html#a9da3ac05368e6e54fcae7b86db18aed7", null ],
-      [ "Endpoint", "dc/de4/usb_8h.html#aa2d654f9f0fd8f315d306b5e9d8c2fc3", null ],
-      [ "Length", "dc/de4/usb_8h.html#ae9aad70ef64c2e3e7fa185369b2ecdb7", null ],
-      [ "Request", "dc/de4/usb_8h.html#a49d73e5aca9a016cefcf26f6c8f75a3e", null ]
+    [ "USBEndpoint", "dc/de4/usb_8h.html#d9/d57/structUSBEndpoint", [
+      [ "Address", "dc/de4/usb_8h.html#ad70d27fc09bf76b2920231e58bffefe1", null ],
+      [ "MaxPacketSize", "dc/de4/usb_8h.html#a3b68c1311fbfa4fdb07c0b93044c3aaf", null ],
+      [ "Toggle", "dc/de4/usb_8h.html#a721bda02107c83a504123e3dd4f6574f", null ],
+      [ "Type", "dc/de4/usb_8h.html#adec5b215e44092850096aaa1479bcefd", null ]
     ] ],
-    [ "USBScheduler", "dc/de4/usb_8h.html#d9/dac/structUSBScheduler", [
-      [ "BandwidthSize", "dc/de4/usb_8h.html#a3c2301ad2ec832e62bf33eb5a9332232", null ],
-      [ "FrameList", "dc/de4/usb_8h.html#a3a808ff3c1f516c9e127896f288a8d38", null ],
-      [ "Frames", "dc/de4/usb_8h.html#ad41829b1aaea00f65e918e0b0db89c8c", null ],
-      [ "SubFrames", "dc/de4/usb_8h.html#aacb7c8684eba642bee6105ac19dd8bf4", null ]
-    ] ],
-    [ "USBSchedulerPool", "dc/de4/usb_8h.html#d7/d81/structUSBSchedulerPool", [
-      [ "Data", "dc/de4/usb_8h.html#a51ef2aa9b3ff89b2a1dd4a076632560a", null ]
-    ] ],
+    [ "USBRequestBlock", "d8/dd1/structUSBRequestBlock.html", "d8/dd1/structUSBRequestBlock" ],
     [ "USBController", "d2/d22/structUSBController.html", "d2/d22/structUSBController" ],
-    [ "USBDevice", "d1/d20/structUSBDevice.html", "d1/d20/structUSBDevice" ],
+    [ "USBDevice", "dc/de4/usb_8h.html#d1/d20/structUSBDevice", [
+      [ "Controller", "dc/de4/usb_8h.html#ab479ed0c9cc301ca9527ff548dc752d1", null ],
+      [ "Endpoints", "dc/de4/usb_8h.html#aa8a7175c08426e5563a1ede2d9551f15", null ],
+      [ "Interface", "dc/de4/usb_8h.html#ac4e9bdaf238fa57e18f142707bdd4926", null ],
+      [ "KernelData", "dc/de4/usb_8h.html#aa7533771142b5f1ee4be756cc82e85ac", null ],
+      [ "Next", "dc/de4/usb_8h.html#a586d94a58e222d69b4ea4f5e1574c3ae", null ],
+      [ "NumEndpoints", "dc/de4/usb_8h.html#a6fea5894a010feef75595dad690bda1c", null ],
+      [ "Parent", "dc/de4/usb_8h.html#a6f58b875f50fd359a1222404806084f6", null ],
+      [ "Port", "dc/de4/usb_8h.html#abba3892257b50d3c355e8ae59d9f9e45", null ],
+      [ "PrivateData", "dc/de4/usb_8h.html#a7ae5c24680e464a7b7dd330426bf0545", null ],
+      [ "Speed", "dc/de4/usb_8h.html#a99263f287fbfb9c3fb98df4106650abe", null ]
+    ] ],
     [ "USBDeviceRequest.bmRequestType", "dc/de4/usb_8h.html#df/d0b/unionUSBDeviceRequest_8bmRequestType", [
       [ "raw", "dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb", null ]
     ] ],
@@ -193,21 +196,6 @@ var usb_8h =
       [ "C_PORT_RESET", "dc/de4/usb_8h.html#a441236095df05d77e2dd236c6c7e4a8f", null ],
       [ "C_PORT_SUSPEND", "dc/de4/usb_8h.html#a0dccdb7cd734d0a15bb06a9da270cf37", null ]
     ] ],
-    [ "USBTransfer.__unnamed58__", "dc/de4/usb_8h.html#d1/d2b/unionUSBTransfer_8____unnamed58____", [
-      [ "__raw_flags", "dc/de4/usb_8h.html#a56c3a34088525abfbee866e9aedc0afe", null ]
-    ] ],
-    [ "USBTransfer.__unnamed58__.__unnamed60__", "dc/de4/usb_8h.html#da/de5/structUSBTransfer_8____unnamed58_____8____unnamed60____", [
-      [ "__padding", "dc/de4/usb_8h.html#a7a4128300868052c9d861bf750b9e128", null ],
-      [ "Completed", "dc/de4/usb_8h.html#a07ca5050e697392c9ed47e6453f1453f", null ],
-      [ "EndpointToggle", "dc/de4/usb_8h.html#a47750f9619d7f4f7d404e31b0bf5e53a", null ],
-      [ "Success", "dc/de4/usb_8h.html#a505a83f220c02df2f85c3810cd9ceb38", null ]
-    ] ],
-    [ "USBController.Flags", "dc/de4/usb_8h.html#d7/d77/unionUSBController_8Flags", [
-      [ "raw", "dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb", null ]
-    ] ],
-    [ "USBController.Flags.__unnamed63__", "dc/de4/usb_8h.html#d5/d30/structUSBController_8Flags_8____unnamed63____", [
-      [ "__padding", "dc/de4/usb_8h.html#a7a4128300868052c9d861bf750b9e128", null ]
-    ] ],
     [ "USB_C_HUB_LOCAL_POWER", "dc/de4/usb_8h.html#a45eabb6a28704d402fd4ab07b3384bd7", null ],
     [ "USB_C_HUB_OVER_CURRENT", "dc/de4/usb_8h.html#a2817741f45fd3557c8c638982786aec7", null ],
     [ "USB_C_PORT_CONNECTION", "dc/de4/usb_8h.html#ae7033bc6b6390f18e6914ffc1f351811", null ],
@@ -277,6 +265,15 @@ var usb_8h =
       [ "USB_HID_SUBCLASS_NONE", "dc/de4/usb_8h.html#a279380ccaf2cce9e7d54a87b47c4bd09abc421968360efc7f4ce4b5042c58980f", null ],
       [ "USB_HID_SUBCLASS_BOOT", "dc/de4/usb_8h.html#a279380ccaf2cce9e7d54a87b47c4bd09a6fce9f86b57bbc1877bcc9376213b16b", null ]
     ] ],
+    [ "USBRequestStatus", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992", [
+      [ "USB_REQ_SUCCESS", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f", null ],
+      [ "USB_REQ_STALL", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a0b6015d698cbfa7f775a5ca702821891", null ],
+      [ "USB_REQ_TIMEOUT", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a57844ff6bb0dc6eda1367d98e71b233b", null ],
+      [ "USB_REQ_DISCONNECT", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a4be0f4856474b485a77f485ae06c3762", null ],
+      [ "USB_REQ_CRC", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a22e96179e201ce30b85ea2d8550658ab", null ],
+      [ "USB_REQ_ERROR", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a5fc7b498f68070b47ea99334ff7f1037", null ],
+      [ "USB_REQ_CANCELED", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992aadd66473caa5eb50515d1e224a55c42a", null ]
+    ] ],
     [ "USBSpeeds", "dc/de4/usb_8h.html#a50c6e54ff0af3153d184442bfc7e2328", [
       [ "USB_UNKNOWN_SPEED", "dc/de4/usb_8h.html#a50c6e54ff0af3153d184442bfc7e2328ac831394806c397b64620ffdb74509a52", null ],
       [ "USB_LOW_SPEED", "dc/de4/usb_8h.html#a50c6e54ff0af3153d184442bfc7e2328ac99e64cd002ac58256d65b4f67f5d7df", null ],
@@ -318,13 +315,19 @@ var usb_8h =
       [ "USB_SET_INTERFACE", "dc/de4/usb_8h.html#a359a4ff9e10686d9b6622cc2be6ad77da593d3524128ecfdfccba8b85f9691125", null ],
       [ "USB_SYNCH_FRAME", "dc/de4/usb_8h.html#a359a4ff9e10686d9b6622cc2be6ad77da90460da08d427f828df2f0479f1b3132", null ]
     ] ],
+    [ "USBTransferType", "dc/de4/usb_8h.html#a8fe73c4cce8821a15d01a85c93d755b1", [
+      [ "USB_TRANSFER_CONTROL", "dc/de4/usb_8h.html#a8fe73c4cce8821a15d01a85c93d755b1a1196f7cc3861c5726f49a158602167be", null ],
+      [ "USB_TRANSFER_BULK", "dc/de4/usb_8h.html#a8fe73c4cce8821a15d01a85c93d755b1af322d1146de1a6f44c7e899e6704d7a0", null ],
+      [ "USB_TRANSFER_INTERRUPT", "dc/de4/usb_8h.html#a8fe73c4cce8821a15d01a85c93d755b1aa9a91242afb3ab1f0c3d9253c5c07c77", null ],
+      [ "USB_TRANSFER_ISOCHRONOUS", "dc/de4/usb_8h.html#a8fe73c4cce8821a15d01a85c93d755b1a8ac358b111749ae49378b76e5e4b485a", null ]
+    ] ],
     [ "__attribute__", "dc/de4/usb_8h.html#a9dd15a8a1d9c83addc65a7f90583066b", null ],
     [ "AddController", "dc/de4/usb_8h.html#a4a2f898911dd9b83e0a45e719d279460", null ],
     [ "CreateUSBDevice", "dc/de4/usb_8h.html#a903984835c62529b22374233d6011e39", null ],
     [ "DestroyUSBDevice", "dc/de4/usb_8h.html#ad38500e8749ea3efbf3e860448664ac5", null ],
     [ "InitializeUSBDevice", "dc/de4/usb_8h.html#a5cc862ef229fd932e6486cce101b5a96", null ],
     [ "RemoveController", "dc/de4/usb_8h.html#a97243f677d54f1623bac8eb59a63a685", null ],
-    [ "__attribute__", "dc/de4/usb_8h.html#a2c72c44796b3644747e576453d00a436", null ],
+    [ "__attribute__", "dc/de4/usb_8h.html#a0f46789551f5d734accf1f4d909a3ab0", null ],
     [ "bAlternateSetting", "dc/de4/usb_8h.html#a4cdd7aab185365e51a1e722f43073b8c", null ],
     [ "bcdDevice", "dc/de4/usb_8h.html#a4ac87bf0a9ee1a9e0eec6d50a8b0e3f9", null ],
     [ "bcdHID", "dc/de4/usb_8h.html#acf09c753851ce018b81a07325bda9d8e", null ],

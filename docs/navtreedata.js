@@ -57,12 +57,12 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d2/d6e/syscalls_8h.html#a00cccf768d6a30a87942a42566f93116aa58e01ddafe70f755515769d4257069b",
-"d7/d9f/fcntl_8h.html#a708b81093fd9c80a2adc260b3e9ca623",
-"db/de4/driver_8h.html#af48c5b3ec3ca0917f83accb7464e4b0b",
-"dc/de4/usb_8h.html#aa1fa27779242b4902f7ae3bdd5c6d508",
-"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f",
-"functions_vars_a.html"
+"d2/d6e/syscalls_8h.html#a00cccf768d6a30a87942a42566f93116af50c0466e994551628a79d033ab1e1c3",
+"d7/d9f/fcntl_8h.html#ac9cf617d7c8fba45a5062f1f7322e6f8",
+"db/de4/driver_8h.html#d8/d02/struct____DriverInfo",
+"dc/de4/usb_8h.html#a9b975312189761d455c5e668551ea70f",
+"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a",
+"functions_vars.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

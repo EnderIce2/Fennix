@@ -31,11 +31,9 @@ var searchData=
   ['filesystemdevice_28',['FileSystemDevice',['../df/d26/fs_8h.html#d4/d24/structFileSystemDevice',1,'']]],
   ['filesystemdevice_2einode_29',['FileSystemDevice.inode',['../df/d26/fs_8h.html#d0/d03/structFileSystemDevice_8inode',1,'']]],
   ['filesysteminfo_30',['FileSystemInfo',['../df/d26/fs_8h.html#de/d99/structFileSystemInfo',1,'']]],
-  ['flags_31',['flags',['../d2/d22/structUSBController.html#a38048090a79b8fc608d713b801632ac3',1,'USBController::Flags'],['../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82',1,'FileSystemInfo::Flags'],['../df/d26/fs_8h.html#ab5bfae4f7951e37243599de928130341',1,'Inode::Flags'],['../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b',1,'Flags:&#160;fs.h']]],
+  ['flags_31',['flags',['../df/d26/fs_8h.html#a3790269ab0eed561191ef95d65747e82',1,'FileSystemInfo::Flags'],['../df/d26/fs_8h.html#ab5bfae4f7951e37243599de928130341',1,'Inode::Flags'],['../df/d26/fs_8h.html#ac3e60a9fc42fb6c0b656191ebb1d658b',1,'Flags:&#160;fs.h']]],
   ['flock_32',['flock',['../d7/d9f/fcntl_8h.html#d6/df2/structflock',1,'flock'],['../d7/d9f/fcntl_8h.html#ae572f48acec92feb49790f2328bc2e0e',1,'flock:&#160;fcntl.h']]],
   ['framebufferscreeninfo_33',['framebufferscreeninfo',['../d2/d6e/syscalls_8h.html#db/dc6/structFramebufferScreenInfo',1,'FramebufferScreenInfo'],['../d2/d6e/syscalls_8h.html#ab0f3fa6738fe8413c73638b07582dcf3',1,'FramebufferScreenInfo:&#160;syscalls.h']]],
-  ['framelist_34',['FrameList',['../dc/de4/usb_8h.html#a3a808ff3c1f516c9e127896f288a8d38',1,'USBScheduler']]],
-  ['frames_35',['Frames',['../dc/de4/usb_8h.html#ad41829b1aaea00f65e918e0b0db89c8c',1,'USBScheduler']]],
-  ['fs_2eh_36',['fs.h',['../df/d26/fs_8h.html',1,'']]],
-  ['function_37',['Function',['../d9/d97/pci_8h.html#a41799e343181bb0f313551ceacc1d699',1,'__attribute__']]]
+  ['fs_2eh_34',['fs.h',['../df/d26/fs_8h.html',1,'']]],
+  ['function_35',['Function',['../d9/d97/pci_8h.html#a41799e343181bb0f313551ceacc1d699',1,'__attribute__']]]
 ];

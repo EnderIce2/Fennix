@@ -1,10 +1,10 @@
 var searchData=
 [
   ['machine_0',['machine',['../d2/d6e/syscalls_8h.html#a20d3a892e2fc1e8d4c6b7beb5c532280',1,'kutsname']]],
-  ['magnetometer_1',['Magnetometer',['../de/ded/input_8h.html#a9e9fa52e0aa4a2b519f8287760d7c3ac',1,'InputReport.__unnamed17__']]],
+  ['magnetometer_1',['Magnetometer',['../de/ded/input_8h.html#a9e9fa52e0aa4a2b519f8287760d7c3ac',1,'InputReport.__unnamed18__']]],
   ['major_2',['Major',['../db/de4/driver_8h.html#a662fb62393b6fd7d7ec85f502db44247',1,'__DriverInfo::__DriverVersion']]],
   ['maxlatency_3',['MaxLatency',['../d9/d97/pci_8h.html#a753c2d858d0da969c33264c1b58807d3',1,'__attribute__']]],
-  ['maxpacketsize_4',['MaxPacketSize',['../d1/d20/structUSBDevice.html#a63232ecbff4d2af284c6c3e0fb25ef54',1,'USBDevice']]],
+  ['maxpacketsize_4',['MaxPacketSize',['../dc/de4/usb_8h.html#a3b68c1311fbfa4fdb07c0b93044c3aaf',1,'USBEndpoint']]],
   ['memorybase_5',['MemoryBase',['../d9/d97/pci_8h.html#a12988ca39a1411705fc1ec07e911ea9e',1,'__attribute__']]],
   ['memorybase0_6',['MemoryBase0',['../d9/d97/pci_8h.html#aa0e9d3dfe23309d12ac53048d78612e9',1,'__attribute__']]],
   ['memorybase1_7',['MemoryBase1',['../d9/d97/pci_8h.html#a584e418589203e608af0af71bb48b9a1',1,'__attribute__']]],
@@ -18,5 +18,5 @@ var searchData=
   ['mode_15',['mode',['../df/d26/fs_8h.html#af45191ed8ad28ab7a58ee02287609808',1,'kstat::Mode'],['../df/d26/fs_8h.html#a667a06765053832b0e364d352d331481',1,'Inode::Mode']]],
   ['modifytime_16',['ModifyTime',['../df/d26/fs_8h.html#a9f1f01620d0175f71eff75e384cd9042',1,'kstat']]],
   ['mount_17',['mount',['../d2/d55/structSuperBlockOperations.html#a7df12971dc1079e22cb77d62743b12c6',1,'SuperBlockOperations::Mount'],['../df/d26/fs_8h.html#af072945bf898f907662733da42b11a44',1,'Mount:&#160;fs.h']]],
-  ['mouse_18',['Mouse',['../de/ded/input_8h.html#af2a47c6809d88e175dade0ef7b16aa13',1,'InputReport.__unnamed17__']]]
+  ['mouse_18',['Mouse',['../de/ded/input_8h.html#af2a47c6809d88e175dade0ef7b16aa13',1,'InputReport.__unnamed18__']]]
 ];

@@ -1,5 +1,7 @@
 var NAVTREEINDEX6 =
 {
+"functions_vars.html":[6,2,1],
+"functions_vars.html":[6,2,1,0],
 "functions_vars_a.html":[6,2,1,1],
 "functions_vars_b.html":[6,2,1,2],
 "functions_vars_c.html":[6,2,1,3],

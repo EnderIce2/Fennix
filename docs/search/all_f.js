@@ -8,6 +8,7 @@ var searchData=
   ['network_5ftype_5fnone_5',['NETWORK_TYPE_NONE',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a6ab07b3c02c4acfe712c682717fe04e9',1,'device.h']]],
   ['network_5ftype_5fuart_6',['NETWORK_TYPE_UART',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a863b60e41cf98be72a86c3be2fe88769',1,'device.h']]],
   ['network_5ftype_5fwifi_7',['NETWORK_TYPE_WIFI',['../db/de9/device_8h.html#ad258d4c51629346fceac4679b3209ad9a906975273f9583ef293a59c70a133675',1,'device.h']]],
-  ['next_8',['next',['../db/de4/driver_8h.html#a26d05ed0210d3f4b2e4d882a2c802cbf',1,'__PCIArray::Next'],['../d9/d97/pci_8h.html#a7b0918bb76d5e9399e7d7553b041d669',1,'__attribute__::Next'],['../d1/d20/structUSBDevice.html#a586d94a58e222d69b4ea4f5e1574c3ae',1,'USBDevice::Next']]],
-  ['node_9',['node',['../df/d26/fs_8h.html#a36c4536996ca5615dcf9911f068786dc',1,'FileSystemDevice.inode']]]
+  ['next_8',['next',['../db/de4/driver_8h.html#a26d05ed0210d3f4b2e4d882a2c802cbf',1,'__PCIArray::Next'],['../d9/d97/pci_8h.html#a7b0918bb76d5e9399e7d7553b041d669',1,'__attribute__::Next'],['../dc/de4/usb_8h.html#a586d94a58e222d69b4ea4f5e1574c3ae',1,'USBDevice::Next']]],
+  ['node_9',['node',['../df/d26/fs_8h.html#a36c4536996ca5615dcf9911f068786dc',1,'FileSystemDevice.inode']]],
+  ['numendpoints_10',['NumEndpoints',['../dc/de4/usb_8h.html#a6fea5894a010feef75595dad690bda1c',1,'USBDevice']]]
 ];
