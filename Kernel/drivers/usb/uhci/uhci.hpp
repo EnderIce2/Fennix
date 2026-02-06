@@ -19,6 +19,7 @@
 
 #include <driver.hpp>
 #include <usb.hpp>
+#include <lock.hpp>
 
 #define REG_USBCMD 0x00	   /* USB Command Register (R/W) */
 #define REG_USBSTS 0x02	   /* USB Status Register (R/WC) */
@@ -591,6 +592,8 @@ namespace Driver::UniversalHostControllerInterface
 	class TransferQueue
 	{
 	private:
+		NewLock(lock);
+
 		TD *TDPool __aligned(0x10);
 		QH *QHPool __aligned(0x10);
 

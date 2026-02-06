@@ -31,6 +31,8 @@ namespace Driver::UniversalHostControllerInterface
 
 	void TransferQueue::ProcessComplete()
 	{
+		SmartCriticalSection(lock);
+
 		this->AdvanceFrame();
 		for (size_t i = 0; i < TDCount; i++)
 		{
@@ -45,6 +47,15 @@ namespace Driver::UniversalHostControllerInterface
 			USBRequestBlock *urb = td->URB;
 
 			assert(urb != nullptr);
+			// if (urb == nullptr)
+			// {
+			// 	warn("TD at index %zu has no associated URB", i);
+			// 	lock.Unlock();
+			// 	ReleaseTransferDescriptor(td);
+			// 	lock.Lock(__FUNCTION__);
+			// 	continue;
+			// }
+
 			urb->ActualLength += td->CS.ActualLength();
 
 			if (td->CS.Status_STALLED() || td->CS.Status_CRC_TO_ERROR() || td->CS.Status_DATA_BUFFER_ERROR())
@@ -55,15 +66,23 @@ namespace Driver::UniversalHostControllerInterface
 			if (td->CS.InterruptOnComplete())
 			{
 				if (urb->Complete)
+				{
+					lock.Unlock();
 					urb->Complete(urb);
+					lock.Lock(__FUNCTION__);
+				}
 			}
 
+			lock.Unlock();
 			ReleaseTransferDescriptor(td);
+			lock.Lock(__FUNCTION__);
 		}
 	}
 
 	void TransferQueue::EnqueueTD(TD *td)
 	{
+		SmartCriticalSection(lock);
+
 		if (AsyncQH->ELEMENT.Terminate())
 		{
 			AsyncQH->ELEMENT.QELP((uintptr_t)td);
@@ -84,6 +103,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	QH *TransferQueue::AllocateQueueHead()
 	{
+		SmartCriticalSection(lock);
 		for (size_t i = 0; i < QHCount; i++)
 		{
 			if (!QHUsed[i])
@@ -100,6 +120,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	int TransferQueue::ReleaseQueueHead(QH *qh)
 	{
+		SmartCriticalSection(lock);
 		qh->HEAD = 1;
 		qh->ELEMENT = 1;
 		// qh->HEAD.Terminate(1);
@@ -112,6 +133,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	TD *TransferQueue::AllocateTransferDescriptor()
 	{
+		SmartCriticalSection(lock);
 		for (size_t i = 0; i < TDCount; i++)
 		{
 			if (!TDUsed[i])
@@ -128,6 +150,7 @@ namespace Driver::UniversalHostControllerInterface
 
 	int TransferQueue::ReleaseTransferDescriptor(TD *td)
 	{
+		SmartCriticalSection(lock);
 		// td->LINK.Terminate(1);
 		td->LINK = 1;
 		size_t idx = td - TDPool;
@@ -138,6 +161,8 @@ namespace Driver::UniversalHostControllerInterface
 
 	TransferQueue::TransferQueue(uint16_t io) : base(io)
 	{
+		SmartCriticalSection(lock);
+
 		FrameList = (FrameListPointer *)KernelAllocator.RequestPages(TO_PAGES(1024 * sizeof(uint32_t)));
 		memset(FrameList, 0, 1024 * sizeof(uint32_t));
 		debug("FrameList at %#lx-%#lx", FrameList, (uintptr_t)FrameList + 1024 * sizeof(uint32_t));
@@ -209,5 +234,6 @@ namespace Driver::UniversalHostControllerInterface
 
 	TransferQueue::~TransferQueue()
 	{
+		SmartCriticalSection(lock);
 	}
 }

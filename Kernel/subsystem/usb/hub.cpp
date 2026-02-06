@@ -252,16 +252,12 @@ namespace UniversalSerialBus
 					return result;
 				}
 
-				// uint32_t *buf = status;
-				// uint32_t sta = *buf;
-				// if (~sta & (1 << 0))
 				if (status->wPortStatus.PORT_CONNECTION == 0)
 				{
 					debug("device is NOT present on port %d", port);
 					break;
 				}
 
-				// if (sta & (1 << 1))
 				if (status->wPortStatus.PORT_ENABLE)
 				{
 					debug("port %d enabled", port);
@@ -275,10 +271,6 @@ namespace UniversalSerialBus
 				continue;
 			}
 
-			// uint32_t *__buf = status;
-			// uint32_t sta = *__buf;
-
-			// uint32_t portspeed = (sta & (3 << 9)) >> 9;
 			USBSpeeds portspeed = status->wPortStatus.PORT_LOW_SPEED == 1 ? USB_LOW_SPEED : USB_FULL_SPEED;
 			if (portspeed == USB_FULL_SPEED)
 				portspeed = status->wPortStatus.PORT_HIGH_SPEED == 1 ? USB_HIGH_SPEED : USB_FULL_SPEED;
