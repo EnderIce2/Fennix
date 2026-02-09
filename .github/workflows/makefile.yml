@@ -70,7 +70,7 @@ jobs:
         fi
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
@@ -107,7 +107,7 @@ jobs:
         make build_userspace
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
 
@@ -122,12 +122,13 @@ jobs:
         type: [debug, release]
 
     steps:
-    - uses: actions/checkout@v6
+    - name: Checkout 🛎️
+      uses: actions/checkout@v6
       with:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Cache cross Folder
+    - name: Cache cross Folder 💾
       id: cache-cross
       uses: actions/cache@v5
       with:
@@ -140,20 +141,20 @@ jobs:
         sudo mkdir -p /run/user/1000/pulse
         sudo touch /run/user/1000/pulse/native
 
-    - name: Build Architecture
+    - name: Build 🏗️
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-${{ matrix.arch }}-${{ matrix.type }}
   
-    - name: Build Prepare Archive
+    - name: Build Prepare Archive 📦
       if: always()
       uses: devcontainers/ci@v0.3
       with:
         push: never
         runCmd: /usr/bin/make __ci-prepare-archive
 
-    - name: Upload Artifact
+    - name: Upload Artifact 📁
       if: always()
       uses: actions/upload-artifact@v6
       with:
@@ -166,18 +167,19 @@ jobs:
     runs-on: ubuntu-latest
     needs: [compile]
     steps:
-    - uses: actions/checkout@v6
+    - name: Checkout 🛎️
+      uses: actions/checkout@v6
       with:
         submodules: recursive
         fetch-depth: 0
 
-    - name: Download All Builds
+    - name: Download All Builds 💾
       uses: actions/download-artifact@v7
       with:
         path: artifacts
         merge-multiple: true
 
-    - name: Update Nightly
+    - name: Update Nightly 🚀
       run: gh release upload nightly artifacts/* -R ${{github.repository}} --clobber
 
     env:

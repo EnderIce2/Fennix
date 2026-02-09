@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code 🛎️
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Doxygen 📦
         run: |
-          sudo apt update
-          sudo apt --no-install-recommends -y install doxygen make
+          sudo apt-get update
+          sudo apt-get --no-install-recommends -y install doxygen make
 
       - name: Generate Documentation 📚
         run: make doxygen
