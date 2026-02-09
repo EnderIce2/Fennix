@@ -217,6 +217,8 @@ jobs:
 
     - name: Download All Builds
       uses: actions/download-artifact@v7
+      with:
+        path: artifacts
 
     - name: Update Nightly
       run: gh release upload nightly artifacts/* -R ${{github.repository}} --clobber
