@@ -811,6 +811,11 @@ namespace Driver::ExtensibleHostControllerInterface
 		bool TakeOwnership();
 		void InitializeProtocols();
 
+		int SubmitControl(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitBulk(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitInterrupt(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitIsochronous(USBDevice *Device, USBRequestBlock *urb);
+
 	public:
 		CommandCompletionEventTRB *SendCommand(TRB *trb, size_t TimeoutMs = 500);
 

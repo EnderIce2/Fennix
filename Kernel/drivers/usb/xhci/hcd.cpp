@@ -17,6 +17,8 @@
 
 #include "xhci.hpp"
 
+#include <quirks.hpp>
+
 namespace Driver::ExtensibleHostControllerInterface
 {
 	extern dev_t DriverID;
@@ -263,11 +265,25 @@ namespace Driver::ExtensibleHostControllerInterface
 			error("Timeout waiting for xHCI to start!");
 			return ETIMEDOUT;
 		}
+
+		if (hwquirks::IsQEMU())
+		{
+			// TODO
+		}
+
 		return 0;
 	}
 
 	int HCD::Stop()
 	{
+		Op->USBCMD.RunStop(0);
+		bool timeout = false;
+		whileto(Op->USBSTS.HCHalted() == 0, 1000, timeout) v0::Sleep(DriverID, 10);
+		if (timeout)
+		{
+			error("Timeout waiting for xHCI to stop!");
+			return ETIMEDOUT;
+		}
 		return 0;
 	}
 
@@ -313,9 +329,94 @@ namespace Driver::ExtensibleHostControllerInterface
 		return 0;
 	}
 
+	int HCD::SubmitControl(USBDevice *Device, USBRequestBlock *urb)
+	{
+		uint32_t *transferStatus = (uint32_t *)v0::AllocateMemory(DriverID, 1);
+		*transferStatus = 0;
+		uint8_t *dataBuffer = (uint8_t *)v0::AllocateMemory(DriverID, TO_PAGES(256));
+		memset(dataBuffer, 0, 256);
+
+		SetupStageTRB setup = {};
+		setup.Parameter.raw = *(uint64_t *)urb->Request;
+
+		setup.Status.TRBTransferLength(8);
+		setup.Status.InterrupterTarget(0);
+
+		setup.Control.CycleBit(0);
+		setup.Control.InterruptOnCompletion(0);
+		setup.Control.ImmediateData(1);
+		setup.Control.TRBType(TRBT_SetupStage);
+		setup.Control.TransferType(3);
+
+		DataStageTRB data = {};
+		data.DataBufferPointer = (uintptr_t)dataBuffer;
+
+		data.Status.TRBTransferLength(urb->Length);
+		data.Status.TDSize(0);
+		data.Status.InterrupterTarget(0);
+
+		data.Control.CycleBit(0);
+		data.Control.EvaluateNextTRB(0);
+		data.Control.InterruptOnShortPacket(0);
+		data.Control.NoSnoop(0);
+		data.Control.ChainBit(1);
+		data.Control.InterruptOnCompletion(0);
+		data.Control.ImmediateData(0);
+		data.Control.TRBType(TRBT_DataStage);
+		data.Control.Direction(1);
+
+		EventDataTRB eventData = {};
+		eventData.EventDataPointer = (uintptr_t)transferStatus;
+
+		data.Status.InterrupterTarget(0);
+
+		eventData.Control.CycleBit(0);
+		eventData.Control.EvaluateNextTRB(0);
+		eventData.Control.ChainBit(0);
+		eventData.Control.InterruptOnCompletion(1);
+		eventData.Control.BlockEventInterrupt(0);
+		eventData.Control.TRBType(0);
+
+		CmdRing.EnqueueTRB((TRB *)&setup);
+		CmdRing.EnqueueTRB((TRB *)&data);
+		CmdRing.EnqueueTRB((TRB *)&eventData);
+		DbManager->RingCommand();
+
+		StatusStageTRB status = {};
+
+		return ENOSYS;
+	}
+
+	int HCD::SubmitBulk(USBDevice *Device, USBRequestBlock *urb)
+	{
+		assert(!"Bulk transfer submission not implemented");
+	}
+
+	int HCD::SubmitInterrupt(USBDevice *Device, USBRequestBlock *urb)
+	{
+		assert(!"Interrupt transfer submission not implemented");
+	}
+
+	int HCD::SubmitIsochronous(USBDevice *Device, USBRequestBlock *urb)
+	{
+		assert(!"Isochronous transfer submission not implemented");
+	}
+
 	int HCD::Submit(USBDevice *Device, USBRequestBlock *urb)
 	{
-		return ENOSYS;
+		switch (urb->Type)
+		{
+		case USB_TRANSFER_CONTROL:
+			return SubmitControl(Device, urb);
+		case USB_TRANSFER_BULK:
+			return SubmitBulk(Device, urb);
+		case USB_TRANSFER_INTERRUPT:
+			return SubmitInterrupt(Device, urb);
+		case USB_TRANSFER_ISOCHRONOUS:
+			return SubmitIsochronous(Device, urb);
+		default:
+			return ENOTSUP;
+		}
 	}
 
 	int HCD::Cancel(USBDevice *Device, USBRequestBlock *urb)

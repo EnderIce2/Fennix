@@ -175,26 +175,63 @@ namespace Driver::ExtensibleHostControllerInterface
 	/* Figure 6-9: Setup Stage TRB */
 	struct SetupStageTRB
 	{
-		union PARAM0_UNION
+		/* Figure 4-14: SETUP Data, the Parameter Component of Setup Stage TRB */
+		/* basically this is equal to "USBDeviceRequest" struct inside usb.h */
+		union ParameterComponent
 		{
-			struct
+			struct __req
 			{
-				uint32_t __bmRequestType : 8;
+				union ReqType
+				{
+					struct
+					{
+						uint32_t __Recipient : 5;
+						uint32_t __Type : 2;
+						uint32_t __DTD : 1;
+					} __packed;
+					DEFINE_BITWISE_TYPE(uint8_t, ReqType);
+
+					/**
+					 * Recipient:
+					 *   0 = Device
+					 *   1 = Interface
+					 *   2 = Endpoint
+					 *   3 = Other
+					 *   4-31 = Reserved
+					 */
+					BF_RW(uint8_t, Recipient, 0, 5);
+
+					/**
+					 * Type:
+					 *   0 = Standard
+					 *   1 = Class
+					 *   2 = Vendor
+					 *   3 = Reserved
+					 */
+					BF_RW(uint8_t, Type, 5, 2);
+
+					/**
+					 * Data Transfer Direction:
+					 *   0 = Host to Device
+					 *   1 = Device to Host
+					 */
+					BF_RW(uint8_t, DataTransferDirection, 7, 1);
+				} bmRequestType;
+				// uint32_t __bmRequestType : 8;
 				uint32_t __bRequest : 8;
 				uint32_t __wValue : 16;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, PARAM0_UNION);
-		} Parameter0;
-
-		union PARAM1_UNION
-		{
-			struct
-			{
 				uint32_t __wIndex : 16;
 				uint32_t __wLength : 16;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, PARAM1_UNION);
-		} Parameter1;
+			};
+			DEFINE_BITWISE_TYPE(uint64_t, ParameterComponent);
+
+			// BF_RW(uint8_t, bmRequestType, 0, 8);
+			BF_RW(uint8_t, bRequest, 8, 8);
+			BF_RW(uint16_t, wValue, 16, 16);
+			BF_RW(uint16_t, wIndex, 32, 16);
+			BF_RW(uint16_t, wLength, 48, 16);
+		} Parameter;
+		static_assert(sizeof(ParameterComponent) == 8);
 
 		union STATUS_UNION
 		{
@@ -205,6 +242,9 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __InterrupterTarget : 10;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
+
+			BF_RW(uint32_t, TRBTransferLength, 0, 17);
+			BF_RW(uint16_t, InterrupterTarget, 22, 10);
 		} Status;
 
 		union CONTROL_UNION
@@ -212,7 +252,6 @@ namespace Driver::ExtensibleHostControllerInterface
 			struct
 			{
 				uint32_t __C : 1;		// Cycle Bit
-				uint32_t __ENT : 1;		// Evaluate Next TRB
 				uint32_t __RsvdZ0 : 4;	// Reserved
 				uint32_t __IOC : 1;		// Interrupt on Completion
 				uint32_t __IDT : 1;		// Immediate Data, always 1 for Setup Stage
@@ -222,9 +261,31 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __RsvdZ2 : 12; // Reserved
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint8_t, InterruptOnCompletion, 5, 1);
+			BF_RW(uint8_t, ImmediateData, 6, 1);
+
+			/**
+			 * refer to enum TRBTypeDefinitions
+			 */
+			BF_RW(uint8_t, TRBType, 10, 6);
+
+			/**
+			 * Transfer Type
+			 *
+			 *  0 = No Data Stage
+			 *  1 = Reserved
+			 *  2 = Data Stage OUT
+			 *  3 = Data Stage IN
+			 *
+			 * @note read 4.11.2.2
+			 */
+			BF_RW(uint8_t, TransferType, 16, 2);
 		} Control;
 	};
 	static_assert(sizeof(SetupStageTRB) == 16);
+	typedef SetupStageTRB::ParameterComponent SetupData;
 
 	/* Figure 6-10: Data Stage TRB */
 	struct DataStageTRB
@@ -240,6 +301,10 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __InterrupterTarget : 10;
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
+
+			BF_RW(uint32_t, TRBTransferLength, 0, 17);
+			BF_RW(uint8_t, TDSize, 17, 5);
+			BF_RW(uint16_t, InterrupterTarget, 22, 10);
 		} Status;
 
 		union CONTROL_UNION
@@ -259,6 +324,16 @@ namespace Driver::ExtensibleHostControllerInterface
 				uint32_t __RsvdZ1 : 11; // Reserved
 			} __packed;
 			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint8_t, EvaluateNextTRB, 1, 1);
+			BF_RW(uint8_t, InterruptOnShortPacket, 2, 1);
+			BF_RW(uint8_t, NoSnoop, 3, 1);
+			BF_RW(uint8_t, ChainBit, 4, 1);
+			BF_RW(uint8_t, InterruptOnCompletion, 5, 1);
+			BF_RW(uint8_t, ImmediateData, 6, 1);
+			BF_RW(uint8_t, TRBType, 10, 6);
+			BF_RW(uint8_t, Direction, 16, 1);
 		} Control;
 	};
 	static_assert(sizeof(DataStageTRB) == 16);
