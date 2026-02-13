@@ -15,7 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <quirks.h>
+#include <quirks.hpp>
 
 namespace hwquirks
 {

@@ -19,6 +19,7 @@
 
 #include <power.hpp>
 #include <acpi.hpp>
+#include <quirks.hpp>
 
 #include "../kernel.h"
 
@@ -1068,6 +1069,8 @@ namespace PCI
 						   PCI_COMMAND_IO |
 						   PCI_COMMAND_MEMORY;
 		Header->Command &= ~PCI_COMMAND_INTX_DISABLE;
+
+		hwquirks::ApplyQuirks(Device);
 	}
 
 	void Manager::EnumerateFunction(uint64_t DeviceAddress, uint32_t Function, PCIDevice dev)
