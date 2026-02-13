@@ -375,7 +375,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		eventData.Control.ChainBit(0);
 		eventData.Control.InterruptOnCompletion(1);
 		eventData.Control.BlockEventInterrupt(0);
-		eventData.Control.TRBType(0);
+		eventData.Control.TRBType(TRBT_EventData);
 
 		CmdRing.EnqueueTRB((TRB *)&setup);
 		CmdRing.EnqueueTRB((TRB *)&data);
