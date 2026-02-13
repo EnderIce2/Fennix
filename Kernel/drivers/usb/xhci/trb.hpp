@@ -862,4 +862,47 @@ namespace Driver::ExtensibleHostControllerInterface
 		}
 	};
 	static_assert(sizeof(LinkTRB) == 16);
+
+	/* Figure 6-39: Event Data TRB */
+	struct EventDataTRB
+	{
+		uint64_t EventDataPointer;
+
+		union STATUS_UNION
+		{
+			struct
+			{
+				uint32_t __RsvdZ : 22;
+				uint32_t __InterrupterTarget : 10;
+			} __packed;
+			DEFINE_BITWISE_TYPE(uint32_t, STATUS_UNION);
+
+			BF_RW(uint16_t, InterrupterTarget, 22, 10);
+		} Status;
+
+		union CONTROL_UNION
+		{
+			struct
+			{
+				uint32_t __C : 1;
+				uint32_t __ENT : 1;
+				uint32_t __RsvdZ0 : 2;
+				uint32_t __CH : 1;
+				uint32_t __IOC : 1;
+				uint32_t __RsvdZ1 : 3;
+				uint32_t __BEI : 1;
+				uint32_t __TRBType : 6;
+				uint32_t __RsvdZ2 : 16;
+			} __packed;
+			DEFINE_BITWISE_TYPE(uint32_t, CONTROL_UNION);
+
+			BF_RW(uint8_t, CycleBit, 0, 1);
+			BF_RW(uint8_t, EvaluateNextTRB, 1, 1);
+			BF_RW(uint8_t, ChainBit, 4, 1);
+			BF_RW(uint8_t, InterruptOnCompletion, 5, 1);
+			BF_RW(uint8_t, BlockEventInterrupt, 9, 1);
+			BF_RW(uint8_t, TRBType, 16, 6);
+		} Control;
+	};
+	static_assert(sizeof(EventDataTRB) == 16);
 }
