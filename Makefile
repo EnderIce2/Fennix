@@ -1,7 +1,7 @@
 
 include config.mk
 
-.PHONY: default tools clean ci-build
+.PHONY: default tools clean ci-build build run
 
 # First rule
 default:
