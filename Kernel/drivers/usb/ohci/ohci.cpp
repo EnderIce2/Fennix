@@ -32,9 +32,11 @@ namespace Driver::OpenHostControllerInterface
 {
 	dev_t DriverID;
 
-	int devStart(struct USBController *d) { return ((HCD *)d)->Start(false); }
+	int devStart(struct USBController *d) { return ((HCD *)d)->Start(); }
 	int devStop(struct USBController *d) { return ((HCD *)d)->Stop(); }
 	int devReset(struct USBController *d) { return ((HCD *)d)->Reset(); }
+	int devSubmit(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Submit(dev, urb); }
+	int devCancel(struct USBDevice *dev, struct USBRequestBlock *urb) { return ((HCD *)dev->Controller)->Cancel(dev, urb); }
 
 	std::list<PCI::PCIDevice> Devices;
 	std::list<HCD *> Controllers;
@@ -42,25 +44,36 @@ namespace Driver::OpenHostControllerInterface
 	{
 		for (auto &&dev : Devices)
 		{
-			PCIManager->MapPCIAddresses(dev, KernelPageTable);
-			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
+			PCIManager->InitializeDevice(dev, KernelPageTable);
 
-			hdr0->Header.Command |= PCI::PCI_COMMAND_MASTER | PCI::PCI_COMMAND_MEMORY;
-			hdr0->Header.Command &= ~PCI::PCI_COMMAND_INTX_DISABLE;
-
-			HCD *hc = new HCD(hdr0->BAR[0] & ~0xF, dev);
+			HCD *hc = new HCD(dev);
 			hc->StartController = devStart;
 			hc->StopController = devStop;
 			hc->ResetController = devReset;
+			hc->SubmitURB = devSubmit;
+			hc->CancelURB = devCancel;
 
-			hc->Reset();
-			if (hc->Start(true) != 0)
+			int ret = hc->Reset();
+			if (ret != 0)
 			{
-				error("Failed to start UHCI controller %d:%d:%d", dev.Bus, dev.Device, dev.Function);
+				KPrint("Failed to reset OHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}
-			hc->Detect();
+			ret = hc->Start();
+			if (ret != 0)
+			{
+				KPrint("Failed to start OHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
+			ret = hc->Detect();
+			if (ret != 0)
+			{
+				KPrint("Failed to detect OHCI devices on controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				delete hc;
+				continue;
+			}
 
 			Controllers.push_back(hc);
 			v0::AddController(DriverID, hc);

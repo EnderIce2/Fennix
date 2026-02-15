@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <bw.h>
 #include <driver.hpp>
 #include <usb.hpp>
 
@@ -58,99 +59,160 @@ namespace Driver::OpenHostControllerInterface
 										   // (Port 2 may be unusable depending on silicon)
 	} __packed;
 
+	/* Figure 4-3: Isochronous TD Format */
+	struct ITD
+	{
+		union ITDControl
+		{
+			struct
+			{
+				uint32_t __SF : 16;
+				uint32_t __rsvd0 : 5;
+				uint32_t __DI : 3;
+				uint32_t __FC : 3;
+				uint32_t __rsvd1 : 1;
+				uint32_t __CC : 4;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, ITDControl);
+
+			BF_RW(uint16_t, StartingFrame, 0, 16);
+			BF_RW(uint8_t, DelayInterrupt, 21, 3);
+			BF_RW(uint8_t, FrameCount, 24, 3);
+			BF_RO(uint8_t, ConditionCode, 28, 4);
+		} Control;
+
+		volatile uint32_t BufferPage0;
+		volatile uint32_t NextTD;
+		volatile uint32_t BufferEnd;
+		volatile uint16_t OffsetPSW[8];
+	} __aligned(32);
+
+	static_assert(sizeof(ITD) == 32);
+
 	struct TD
 	{
-		union LINK_UNION
+		union TDControl
 		{
 			struct
 			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, LINK_UNION);
-		} LINK;
-		static_assert(sizeof(LINK) == sizeof(uint32_t));
+				uint32_t __rsvd : 18;
+				uint32_t __R : 1;
+				uint32_t __DP : 2;
+				uint32_t __DI : 3;
+				uint32_t __T : 2;
+				uint32_t __EC : 2;
+				uint32_t __CC : 4;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, TDControl);
 
-		union CS_UNION
-		{
-			struct
-			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, CS_UNION);
-		} CS;
-		static_assert(sizeof(CS) == sizeof(uint32_t));
+			BF_RW(uint8_t, bufferRounding, 18, 1);
 
-		union TOKEN_UNION
-		{
-			struct
-			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, TOKEN_UNION);
-		} TOKEN;
-		static_assert(sizeof(TOKEN) == sizeof(uint32_t));
+			/**
+			 * Direction/PID:
+			 *   00b - SETUP     to endpoint
+			 *   01b - OUT       to endpoint
+			 *   10b - IN      from endpoint
+			 *   11b - Reserved
+			 */
+			BF_RW(uint8_t, DirectionPID, 19, 2);
+			BF_RW(uint8_t, DelayInterrupt, 21, 3);
+			BF_RW(uint8_t, DataToggle, 24, 2);
+			BF_RO(uint8_t, ErrorCount, 26, 2);
+			BF_RO(uint8_t, ConditionCode, 28, 4);
+		} Control;
 
-		union BUFFER_UNION
-		{
-			struct
-			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, BUFFER_UNION);
-		} BUFFER;
-		static_assert(sizeof(BUFFER) == sizeof(uint32_t));
+		volatile uint32_t CurrentBufferPointer;
+		volatile uint32_t NextTD;
+		volatile uint32_t BufferEnd;
+	} __aligned(16);
 
-		/* The last 4 DWords of the Transfer Descriptor are reserved for use by software.
-			  - UHCI Design Guide 1.1 @ 3.2.5 */
-		uint8_t __software[16];
-	};
-
+	/* Table 4-1: Field Definitions for Endpoint Descriptor */
 	struct ED
 	{
-		union HEAD_UNION
+		union EDControl
 		{
 			struct
 			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, HEAD_UNION);
-		} HEAD;
-		static_assert(sizeof(HEAD) == sizeof(uint32_t));
+				uint32_t __FA : 7;
+				uint32_t __EN : 4;
+				uint32_t __D : 2;
+				uint32_t __S : 1;
+				uint32_t __K : 1;
+				uint32_t __F : 1;
+				uint32_t __MPS : 11;
+				uint32_t __rsvd : 5;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, EDControl);
 
-		union ELEMENT_UNION
+			BF_RW(uint8_t, FunctionAddress, 0, 7);
+			BF_RW(uint8_t, EndpointNumber, 7, 4);
+
+			/**
+			 * Direction:
+			 *   00b - Get direction From TD
+			 *   01b - OUT
+			 *   10b - IN
+			 *   11b - Get direction From TD
+			 */
+			BF_RW(uint8_t, Direction, 11, 2);
+			BF_RW(uint8_t, Speed, 13, 1);
+			BF_RW(uint8_t, sKip, 14, 1);
+			BF_RW(uint8_t, Format, 15, 1);
+			BF_RW(uint16_t, MaximumPacketSize, 16, 11);
+		} Control;
+
+		volatile uint32_t TDQueueTailPointer;
+
+		union EDHeadP
 		{
 			struct
 			{
-				uint32_t unknown : 32;
-			} __packed;
-			DEFINE_BITWISE_TYPE(uint32_t, ELEMENT_UNION);
-		} ELEMENT;
-		static_assert(sizeof(ELEMENT) == sizeof(uint32_t));
+				uint32_t __H : 1;
+				uint32_t __C : 1;
+				uint32_t __zero : 2;
+				uint32_t __HeadP : 28;
+			};
+			DEFINE_BITWISE_TYPE(uint32_t, EDHeadP);
 
-		/* same as TD but QH has 64 bytes */
-		uint8_t __software[56];
-	};
+			BF_RW(uint8_t, Halted, 0, 1);
+			BF_RW(uint8_t, toggleCarry, 1, 1);
+			BF_PHYS_RW(uintptr_t, TDQueueHeadPointer, 4, 28);
+		} HeadP;
+		volatile uint32_t NextED;
+	} __aligned(16);
+
+	struct HCCA
+	{
+		uint32_t InterruptTable[32];
+		uint16_t FrameNumber;
+		uint16_t Pad1;
+		uint32_t DoneHead;
+		uint8_t Reserved[116];
+	} __packed __aligned(256);
 
 	class Queue
 	{
 	private:
-		TD *TDPool __aligned(0x10);
-		ED *EDPool __aligned(0x10);
+		TD *TDPool;
+		ITD *ITDPool;
+		ED *EDPool;
 
-		// FrameListPointer *FrameList;
-		size_t Frames = 1024;
-		size_t CurrentFrame = 0;
-		size_t Subframes = 1;
-		size_t MaxBandwidth = 900;
-		size_t MaxQHs = 8;
-		size_t MaxTDs = 32;
-		ED *CurrentQueue;
+		bool TDUsed[64];
+		bool ITDUsed[64];
+		bool EDUsed[32];
+
+		size_t TDCount = 64;
+		size_t EDCount = 32;
 
 	public:
-		ED *AllocateQueueHead();
-		int ReleaseQueueHead(ED *qh);
+		ED *AllocateEndpointDescriptor();
+		int ReleaseEndpointDescriptor(ED *ed);
+
 		TD *AllocateTransferDescriptor();
 		int ReleaseTransferDescriptor(TD *td);
+		ITD *AllocateIsochronousDescriptor();
+		int ReleaseIsochronousDescriptor(ITD *itd);
+
 		Queue();
 		~Queue();
 	};
@@ -159,19 +221,28 @@ namespace Driver::OpenHostControllerInterface
 	{
 	private:
 		OHCIRegisters *regs;
+		HCCA *hcca;
 		PCI::PCIDevice Header;
 
 		int OnInterruptReceived(CPU::TrapFrame *Frame) final;
+
+		int SubmitControl(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitBulk(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitInterrupt(USBDevice *Device, USBRequestBlock *urb);
+		int SubmitIsochronous(USBDevice *Device, USBRequestBlock *urb);
 
 	public:
 		Queue *queue = nullptr;
 
 		int Reset();
-		int Start(bool WaitForStart);
+		int Start();
 		int Stop();
 		int Detect();
-		int Poll();
-		HCD(uintptr_t base, PCI::PCIDevice &pciHeader);
+
+		int Submit(USBDevice *Device, USBRequestBlock *urb);
+		int Cancel(USBDevice *Device, USBRequestBlock *urb);
+
+		HCD(PCI::PCIDevice &pciHeader);
 		virtual ~HCD();
 	};
 }
