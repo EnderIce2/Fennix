@@ -158,9 +158,10 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::SubmitControl(USBDevice *Device, USBRequestBlock *urb)
 	{
-		urb->Status = USB_REQ_SUCCESS;
+		urb->Status = USB_REQ_PENDING;
 		urb->ActualLength = 0;
 		USBEndpoint &ep = Device->Endpoints[0];
+		const uint8_t devAddr = Device->Endpoints[0].Address & 0x7F;
 
 		TD *firstTD = nullptr;
 		TD *prevTD = nullptr;
@@ -169,6 +170,8 @@ namespace Driver::UniversalHostControllerInterface
 		{
 			ep.Toggle = 0;
 			TD *td = queue->AllocateTransferDescriptor();
+			if (!td)
+				return ENOMEM;
 
 			td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
 			td->CS.Status_ACTIVE(1);
@@ -177,7 +180,7 @@ namespace Driver::UniversalHostControllerInterface
 
 			td->TOKEN.PacketIdentification(TD_PID_SETUP);
 			td->TOKEN.Endpoint(0);
-			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DeviceAddress(devAddr);
 			td->TOKEN.DataToggle(ep.Toggle);
 			td->TOKEN.MaximumLength(sizeof(USBDeviceRequest));
 
@@ -196,6 +199,17 @@ namespace Driver::UniversalHostControllerInterface
 			{
 				ep.Toggle ^= 1; /* flip DATA1/DATA0 */
 				TD *td = queue->AllocateTransferDescriptor();
+				if (!td)
+				{
+					TD *cleanup = firstTD;
+					while (cleanup)
+					{
+						TD *next = cleanup->NextTD;
+						queue->ReleaseTransferDescriptor(cleanup);
+						cleanup = next;
+					}
+					return ENOMEM;
+				}
 				size_t pktSize = std::min((size_t)ep.MaxPacketSize, remaining);
 
 				td->BufferPointer = (uintptr_t)ptr;
@@ -206,7 +220,7 @@ namespace Driver::UniversalHostControllerInterface
 
 				td->TOKEN.PacketIdentification(pid);
 				td->TOKEN.Endpoint(0);
-				td->TOKEN.DeviceAddress(ep.Address);
+				td->TOKEN.DeviceAddress(devAddr);
 				td->TOKEN.DataToggle(ep.Toggle);
 				td->TOKEN.MaximumLength(pktSize);
 				td->URB = urb;
@@ -227,6 +241,8 @@ namespace Driver::UniversalHostControllerInterface
 			ep.Toggle = 1;
 			uint8_t pid = (urb->Request->bmRequestType.raw & 0x80) ? TD_PID_OUT : TD_PID_IN;
 			TD *td = queue->AllocateTransferDescriptor();
+			if (!td)
+				return ENOMEM;
 
 			td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
 			td->CS.Status_ACTIVE(1);
@@ -236,7 +252,7 @@ namespace Driver::UniversalHostControllerInterface
 
 			td->TOKEN.PacketIdentification(pid);
 			td->TOKEN.Endpoint(0);
-			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DeviceAddress(devAddr);
 			td->TOKEN.DataToggle(ep.Toggle);
 			td->TOKEN.MaximumLength(0);
 
@@ -245,6 +261,7 @@ namespace Driver::UniversalHostControllerInterface
 
 			prevTD->LINK.Terminate(0);
 			prevTD->LINK.LinkPointer((uintptr_t)td);
+			prevTD->NextTD = td;
 		}
 
 		urb->PrivateData = firstTD;
@@ -254,13 +271,14 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::SubmitBulk(struct USBDevice *Device, struct USBRequestBlock *urb)
 	{
-		urb->Status = USB_REQ_SUCCESS;
+		urb->Status = USB_REQ_PENDING;
 		urb->ActualLength = 0;
 
 		size_t remaining = urb->Length;
 		uint8_t *ptr = (uint8_t *)urb->Buffer;
 		uint8_t epNum = urb->EndpointAddress & 0x0F;
 		USBEndpoint &ep = Device->Endpoints[epNum];
+		const uint8_t devAddr = Device->Endpoints[0].Address & 0x7F;
 
 		TD *firstTD = nullptr;
 		TD *prevTD = nullptr;
@@ -268,6 +286,17 @@ namespace Driver::UniversalHostControllerInterface
 		while (remaining > 0)
 		{
 			TD *td = queue->AllocateTransferDescriptor();
+			if (!td)
+			{
+				TD *cleanup = firstTD;
+				while (cleanup)
+				{
+					TD *next = cleanup->NextTD;
+					queue->ReleaseTransferDescriptor(cleanup);
+					cleanup = next;
+				}
+				return ENOMEM;
+			}
 
 			size_t pktSize = std::min((size_t)ep.MaxPacketSize, remaining);
 			uint8_t pid = (urb->EndpointAddress & 0x80) ? TD_PID_IN : TD_PID_OUT;
@@ -281,7 +310,7 @@ namespace Driver::UniversalHostControllerInterface
 
 			td->TOKEN.PacketIdentification(pid);
 			td->TOKEN.Endpoint(epNum);
-			td->TOKEN.DeviceAddress(ep.Address);
+			td->TOKEN.DeviceAddress(devAddr);
 			td->TOKEN.DataToggle(ep.Toggle);
 			td->TOKEN.MaximumLength(pktSize);
 			td->URB = urb;
@@ -303,6 +332,8 @@ namespace Driver::UniversalHostControllerInterface
 			ep.Toggle ^= 1; /* flip DATA0/DATA1 */
 		}
 
+		if (!prevTD)
+			return EINVAL;
 		prevTD->CS.InterruptOnComplete(1);
 		urb->PrivateData = firstTD;
 
@@ -313,14 +344,17 @@ namespace Driver::UniversalHostControllerInterface
 
 	int HCD::SubmitInterrupt(struct USBDevice *Device, struct USBRequestBlock *urb)
 	{
-		urb->Status = USB_REQ_SUCCESS;
+		urb->Status = USB_REQ_PENDING;
 		urb->ActualLength = 0;
 
 		uint8_t epNum = urb->EndpointAddress & 0x0F;
 		size_t len = urb->Length;
 		USBEndpoint &ep = Device->Endpoints[epNum];
+		const uint8_t devAddr = Device->Endpoints[0].Address & 0x7F;
 
 		TD *td = queue->AllocateTransferDescriptor();
+		if (!td)
+			return ENOMEM;
 
 		td->CS.LowSpeedDevice((Device->Speed == USB_LOW_SPEED) ? 1 : 0);
 		td->CS.Status_ACTIVE(1);
@@ -330,7 +364,7 @@ namespace Driver::UniversalHostControllerInterface
 
 		td->TOKEN.PacketIdentification(TD_PID_IN);
 		td->TOKEN.Endpoint(epNum);
-		td->TOKEN.DeviceAddress(ep.Address);
+		td->TOKEN.DeviceAddress(devAddr);
 		td->TOKEN.DataToggle(ep.Toggle);
 		td->TOKEN.MaximumLength(len);
 

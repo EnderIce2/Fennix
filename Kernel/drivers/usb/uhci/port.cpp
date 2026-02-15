@@ -89,7 +89,7 @@ namespace Driver::UniversalHostControllerInterface
 
 		if (sc & PORTSC::PE)
 		{
-			Speed = (sc & PORTSC::LSDA) == 1 ? USB_LOW_SPEED : USB_FULL_SPEED;
+			Speed = (sc & PORTSC::LSDA) ? USB_LOW_SPEED : USB_FULL_SPEED;
 			return 0;
 		}
 

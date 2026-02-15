@@ -45,23 +45,33 @@ namespace Driver::UniversalHostControllerInterface
 				continue;
 
 			USBRequestBlock *urb = td->URB;
+			if (urb == nullptr)
+			{
+				warn("TD at index %zu has no associated URB; releasing descriptor", i);
+				lock.Unlock();
+				ReleaseTransferDescriptor(td);
+				lock.Lock(__FUNCTION__);
+				continue;
+			}
 
-			assert(urb != nullptr);
-			// if (urb == nullptr)
-			// {
-			// 	warn("TD at index %zu has no associated URB", i);
-			// 	lock.Unlock();
-			// 	ReleaseTransferDescriptor(td);
-			// 	lock.Lock(__FUNCTION__);
-			// 	continue;
-			// }
+			if (urb->Type == USB_TRANSFER_INTERRUPT && td->CS.Status_NAK_RECEIVED())
+			{
+				td->CS.Status_ACTIVE(1);
+				continue;
+			}
 
 			urb->ActualLength += td->CS.ActualLength();
 
-			if (td->CS.Status_STALLED() || td->CS.Status_CRC_TO_ERROR() || td->CS.Status_DATA_BUFFER_ERROR())
+			if (td->CS.Status_STALLED() ||
+				td->CS.Status_CRC_TO_ERROR() ||
+				td->CS.Status_DATA_BUFFER_ERROR() ||
+				td->CS.Status_BABBLE_DETECTED() ||
+				td->CS.Status_BITSTUFF_ERROR())
 			{
 				urb->Status = USB_REQ_ERROR;
 			}
+			else if (urb->Status == USB_REQ_PENDING)
+				urb->Status = USB_REQ_SUCCESS;
 
 			if (td->CS.InterruptOnComplete())
 			{
@@ -141,6 +151,7 @@ namespace Driver::UniversalHostControllerInterface
 				TDUsed[i] = true;
 				TD *td = &TDPool[i];
 				memset(td, 0, sizeof(TD));
+				td->CS.Status_ACTIVE(1);
 				debug("Allocated TD at index %zu (address %#lx)", i, td);
 				return td;
 			}
