@@ -26,7 +26,7 @@ var annotated_dup =
     [ "kdirent", "df/d26/fs_8h.html#d9/ddf/structkdirent", "df/d26/fs_8h_d9/ddf/structkdirent" ],
     [ "KeyboardReport", "de/ded/input_8h.html#d1/da7/structKeyboardReport", "de/ded/input_8h_d1/da7/structKeyboardReport" ],
     [ "KeyboardReport.__unnamed13__", "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____", "de/ded/input_8h_d4/dcb/unionKeyboardReport_8____unnamed13____" ],
-    [ "KeyboardReport.__unnamed13__.__unnamed15__", "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____", "de/ded/input_8h_dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____" ],
+    [ "KeyboardReport.__unnamed13__.__unnamed16__", "de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____", "de/ded/input_8h_d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____" ],
     [ "kstat", "df/d26/fs_8h.html#d5/df1/structkstat", "df/d26/fs_8h_d5/df1/structkstat" ],
     [ "kutsname", "d2/d6e/syscalls_8h.html#de/d36/structkutsname", "d2/d6e/syscalls_8h_de/d36/structkutsname" ],
     [ "MagnetometerReport", "de/ded/input_8h.html#d4/d9c/structMagnetometerReport", null ],

@@ -61,8 +61,8 @@ var NAVTREEINDEX =
 "d7/d9f/fcntl_8h.html#ac9cf617d7c8fba45a5062f1f7322e6f8",
 "db/de4/driver_8h.html#d8/d02/struct____DriverInfo",
 "dc/de4/usb_8h.html#a9b975312189761d455c5e668551ea70f",
-"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a",
-"functions_vars.html"
+"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da",
+"functions_v.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -35,7 +35,7 @@ var input_8h =
     [ "KeyboardReport.__unnamed13__", "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____", [
       [ "Value", "de/ded/input_8h.html#a689202409e48743b914713f96d93947c", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__.__unnamed15__", "de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____", [
+    [ "KeyboardReport.__unnamed13__.__unnamed16__", "de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____", [
       [ "IsScanCode", "de/ded/input_8h.html#aa51f9b08057b8f0bf003cd592bbe248b", null ]
     ] ],
     [ "InputReport.__unnamed18__", "de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____", [

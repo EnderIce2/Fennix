@@ -267,6 +267,7 @@ var usb_8h =
     ] ],
     [ "USBRequestStatus", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992", [
       [ "USB_REQ_SUCCESS", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f", null ],
+      [ "USB_REQ_PENDING", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992ae96198fbd005c6351361e27c611614b1", null ],
       [ "USB_REQ_STALL", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a0b6015d698cbfa7f775a5ca702821891", null ],
       [ "USB_REQ_TIMEOUT", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a57844ff6bb0dc6eda1367d98e71b233b", null ],
       [ "USB_REQ_DISCONNECT", "dc/de4/usb_8h.html#a60cf6b3c71437037ccf5a57e609a9992a4be0f4856474b485a77f485ae06c3762", null ],

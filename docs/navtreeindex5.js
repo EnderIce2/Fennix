@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da":[7,0,1,0,0,8,12,93],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a":[7,0,1,0,0,8,12,38],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61":[7,0,1,0,0,8,12,31],
 "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f":[7,0,1,0,0,8,12,119],
@@ -77,6 +78,7 @@ var NAVTREEINDEX5 =
 "de/ded/input_8h.html#d1/d5b/structInputReport":[7,0,1,0,0,8,8],
 "de/ded/input_8h.html#d1/da7/structKeyboardReport":[7,0,1,0,0,8,0],
 "de/ded/input_8h.html#d1/df2/structTouchScreenReport":[7,0,1,0,0,8,3],
+"de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____":[7,0,1,0,0,8,10],
 "de/ded/input_8h.html#d4/d9c/structMagnetometerReport":[7,0,1,0,0,8,7],
 "de/ded/input_8h.html#d4/daf/structGyroscopeReport":[7,0,1,0,0,8,6],
 "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____":[7,0,1,0,0,8,9],
@@ -84,7 +86,6 @@ var NAVTREEINDEX5 =
 "de/ded/input_8h.html#d8/d16/structAccelerometerReport":[7,0,1,0,0,8,5],
 "de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____":[7,0,1,0,0,8,11],
 "de/ded/input_8h.html#db/d9a/structMouseReport":[7,0,1,0,0,8,1],
-"de/ded/input_8h.html#dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____":[7,0,1,0,0,8,10],
 "de/ded/input_8h.html#dd/db1/structJoystickReport":[7,0,1,0,0,8,2],
 "de/ded/input_8h_source.html":[7,0,1,0,0,8],
 "df/d26/fs_8h.html":[7,0,1,0,0,7],
@@ -96,6 +97,7 @@ var NAVTREEINDEX5 =
 "df/d26/fs_8h.html#a0894ecf497e1e426853b876a47459280":[7,0,1,0,0,7,0,11],
 "df/d26/fs_8h.html#a0a6fc17bb00ffe199d7899d5ce623be4":[7,0,1,0,0,7,82],
 "df/d26/fs_8h.html#a0b8555bbebfe763731f39ba53e9ddc7f":[7,0,1,0,0,7,61],
+"df/d26/fs_8h.html#a0c38798915754857c9a208957799ae01":[7,0,1,0,0,7,4,1],
 "df/d26/fs_8h.html#a0d112bae8fd35be772185b6ec6bcbe64":[7,0,1,0,0,7,56],
 "df/d26/fs_8h.html#a114cd797c14098cceaf2a3dd64629250":[7,0,1,0,0,7,72],
 "df/d26/fs_8h.html#a11fb0652b963a735f3377eb1c9239f2d":[7,0,1,0,0,7,24],
@@ -170,7 +172,6 @@ var NAVTREEINDEX5 =
 "df/d26/fs_8h.html#a9a122a1f26859b9f6e865623b06b5512":[7,0,1,0,0,7,31],
 "df/d26/fs_8h.html#a9c9e4cc0a8acc43c99ae6c3d972ae2d8":[7,0,1,0,0,7,42],
 "df/d26/fs_8h.html#a9ca9828444d899586f97c6c9a4d5d5f0":[7,0,1,0,0,7,90],
-"df/d26/fs_8h.html#a9cb6446fcc87e134ab6a7a40c6509b39":[7,0,1,0,0,7,4,1],
 "df/d26/fs_8h.html#a9f1f01620d0175f71eff75e384cd9042":[7,0,1,0,0,7,0,10],
 "df/d26/fs_8h.html#aa4f24d5e592caaf588d436302324694a":[7,0,1,0,0,7,78],
 "df/d26/fs_8h.html#aa507e1e28360ed651e2294c1c5f02691":[7,0,1,0,0,7,92],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "functions_r.html":[6,2,0,17],
 "functions_s.html":[6,2,0,18],
 "functions_t.html":[6,2,0,19],
-"functions_u.html":[6,2,0,20],
-"functions_v.html":[6,2,0,21]
+"functions_u.html":[6,2,0,20]
 };

@@ -722,7 +722,7 @@
              <Node>
               <Name>inode</Name>
               <Path>df/d26/fs_8h.html</Path>
-              <Anchor>a9cb6446fcc87e134ab6a7a40c6509b39</Anchor>
+              <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -1123,9 +1123,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+            <Name>KeyboardReport.__unnamed13__.__unnamed16__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+            <Anchor>d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____</Anchor>
           <Subnodes>
              <Node>
               <Name>IsScanCode</Name>
@@ -5052,7 +5052,7 @@
                      <Node>
                       <Name>inode</Name>
                       <Path>df/d26/fs_8h.html</Path>
-                      <Anchor>a9cb6446fcc87e134ab6a7a40c6509b39</Anchor>
+                      <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -5753,9 +5753,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__.__unnamed15__</Name>
+                    <Name>KeyboardReport.__unnamed13__.__unnamed16__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>dd/da9/structKeyboardReport_8____unnamed13_____8____unnamed15____</Anchor>
+                    <Anchor>d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>IsScanCode</Name>
@@ -9587,6 +9587,11 @@
                       <Name>USB_REQ_SUCCESS</Name>
                       <Path>dc/de4/usb_8h.html</Path>
                       <Anchor>a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>USB_REQ_PENDING</Name>
+                      <Path>dc/de4/usb_8h.html</Path>
+                      <Anchor>a60cf6b3c71437037ccf5a57e609a9992ae96198fbd005c6351361e27c611614b1</Anchor>
                      </Node>
                      <Node>
                       <Name>USB_REQ_STALL</Name>

@@ -1742,7 +1742,7 @@
       <Scope>FileSystemDevice</Scope>
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
-    <Anchor>a9cb6446fcc87e134ab6a7a40c6509b39</Anchor>
+    <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1899,7 +1899,7 @@
       <Name>IsScanCode</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>KeyboardReport.__unnamed13__.__unnamed15__</Scope>
+      <Scope>KeyboardReport.__unnamed13__.__unnamed16__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>aa51f9b08057b8f0bf003cd592bbe248b</Anchor>
@@ -17106,6 +17106,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>USB_REQ_PENDING</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992ae96198fbd005c6351361e27c611614b1</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>USB_REQ_STALL</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -17632,6 +17642,16 @@
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a60cf6b3c71437037ccf5a57e609a9992a7e0feebf45cb90820c578993dd54f50f</Anchor>
+    <DeclaredIn>usb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>USB_REQ_PENDING</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>dc/de4/usb_8h.html</Path>
+    <Anchor>a60cf6b3c71437037ccf5a57e609a9992ae96198fbd005c6351361e27c611614b1</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
