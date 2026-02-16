@@ -750,7 +750,7 @@ namespace Driver::AC97
 		{
 			PCIManager->InitializeDevice(dev, KernelPageTable);
 			AC97Device *ac97 = new AC97Device((PCI::PCIHeader0 *)dev.Header);
-			dev_t ret = v0::RegisterDevice(DriverID, NETWORK_TYPE_ETHERNET, &ops);
+			dev_t ret = v0::RegisterDevice(DriverID, AUDIO_TYPE_PCM, &ops);
 			Drivers[ret] = ac97;
 		}
 
