@@ -1,8 +1,8 @@
 var input_8h =
 [
     [ "KeyboardReport", "de/ded/input_8h.html#d1/da7/structKeyboardReport", [
-      [ "Character", "de/ded/input_8h.html#a3c7b23790a7fff8622f8552c7bd1b2f5", null ],
-      [ "Key", "de/ded/input_8h.html#a173d8f2a67aa82689612753fad2e5095", null ]
+      [ "Key", "de/ded/input_8h.html#ae806f4d7a120296cc7d1e4b85df6d1ea", null ],
+      [ "Pressed", "de/ded/input_8h.html#a6cf4d0f132d4290ea31f6270c2d4afb5", null ]
     ] ],
     [ "MouseReport", "de/ded/input_8h.html#db/d9a/structMouseReport", [
       [ "Absolute", "de/ded/input_8h.html#a0948c8b288b733578be7105e95b5ac1f", null ],
@@ -14,31 +14,41 @@ var input_8h =
       [ "LeftButton", "de/ded/input_8h.html#a07f571f12b57c589630dcde60ef4e660", null ],
       [ "MiddleButton", "de/ded/input_8h.html#a66947db99db5c8ea44a2b070140f1ef3", null ],
       [ "RightButton", "de/ded/input_8h.html#a2174204a5c5dcc31d54449f3664f3a73", null ],
-      [ "X", "de/ded/input_8h.html#a2034158134bad2907f7aca9f1df5168d", null ],
-      [ "Y", "de/ded/input_8h.html#ad78247604ee68b483bec72e682b1ef71", null ],
+      [ "X", "de/ded/input_8h.html#aa3219895b4b7bac808968dffa6105573", null ],
+      [ "Y", "de/ded/input_8h.html#ab1749d3991172eaa78eec8bce0370882", null ],
       [ "Z", "de/ded/input_8h.html#aa8d96a2473f48cd0f643552256ed37a4", null ]
     ] ],
     [ "JoystickReport", "de/ded/input_8h.html#dd/db1/structJoystickReport", null ],
-    [ "TouchScreenReport", "de/ded/input_8h.html#d1/df2/structTouchScreenReport", [
-      [ "Pressure", "de/ded/input_8h.html#a1b34c3fecf099e318e4e761e49e5a655", null ],
-      [ "X", "de/ded/input_8h.html#a2d9df0f07baaff3c26b0daf9c3c782de", null ],
-      [ "Y", "de/ded/input_8h.html#a791863f8aa872fc18aef188a85436abe", null ]
+    [ "TouchScreenReport", "de/ded/input_8h.html#d1/df2/structTouchScreenReport", null ],
+    [ "GamepadReport", "de/ded/input_8h.html#d6/dda/structGamepadReport", [
+      [ "Buttons", "de/ded/input_8h.html#a19c64e338041aa1015153f467d743095", null ],
+      [ "LeftTrigger", "de/ded/input_8h.html#ae23170622454a01e0addbea4e31618bd", null ],
+      [ "LeftX", "de/ded/input_8h.html#aeed0bf261885fd03488b0a5bc268ff03", null ],
+      [ "LeftY", "de/ded/input_8h.html#a892b64906845331dec6bbfd827abf30c", null ],
+      [ "RightTrigger", "de/ded/input_8h.html#a64c7d2224944fdffaca08eb547aa004c", null ],
+      [ "RightX", "de/ded/input_8h.html#a6c906e95b12502da51f0f6ce505a0c1c", null ],
+      [ "RightY", "de/ded/input_8h.html#a6df5b5be92c0c402aa6578c68be62d23", null ]
     ] ],
-    [ "GamepadReport", "de/ded/input_8h.html#d6/dda/structGamepadReport", null ],
-    [ "AccelerometerReport", "de/ded/input_8h.html#d8/d16/structAccelerometerReport", null ],
-    [ "GyroscopeReport", "de/ded/input_8h.html#d4/daf/structGyroscopeReport", null ],
-    [ "MagnetometerReport", "de/ded/input_8h.html#d4/d9c/structMagnetometerReport", null ],
+    [ "AccelerometerReport", "de/ded/input_8h.html#d8/d16/structAccelerometerReport", [
+      [ "X", "de/ded/input_8h.html#a9bf69417e6baff5a21f69e26db816cf8", null ],
+      [ "Y", "de/ded/input_8h.html#aebbcd9d70f4f3f23d5ed8405e1e265c3", null ],
+      [ "Z", "de/ded/input_8h.html#accd7e1054ac03e55b93fd033b8371b8d", null ]
+    ] ],
+    [ "GyroscopeReport", "de/ded/input_8h.html#d4/daf/structGyroscopeReport", [
+      [ "X", "de/ded/input_8h.html#af38789c55fbcecd45efefb124bba3979", null ],
+      [ "Y", "de/ded/input_8h.html#abf2507b360fbf829f6dc197f505d0eb5", null ],
+      [ "Z", "de/ded/input_8h.html#a76de7c80c1af67413455fcf4d76d691e", null ]
+    ] ],
+    [ "MagnetometerReport", "de/ded/input_8h.html#d4/d9c/structMagnetometerReport", [
+      [ "X", "de/ded/input_8h.html#a6b0fbf3df860ee2028b5204027bc1688", null ],
+      [ "Y", "de/ded/input_8h.html#a314fef6d11fdbcd92e8d2c23ed55a164", null ],
+      [ "Z", "de/ded/input_8h.html#a072fe487c2498b2c7788e6e18769aecb", null ]
+    ] ],
     [ "InputReport", "de/ded/input_8h.html#d1/d5b/structInputReport", [
       [ "Device", "de/ded/input_8h.html#ae0e73e3ad012fad295b7bf2d1cc93da9", null ],
       [ "Type", "de/ded/input_8h.html#af15f4807037d91adf5b3223b64e9ad50", null ]
     ] ],
-    [ "KeyboardReport.__unnamed13__", "de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____", [
-      [ "Value", "de/ded/input_8h.html#a689202409e48743b914713f96d93947c", null ]
-    ] ],
-    [ "KeyboardReport.__unnamed13__.__unnamed16__", "de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____", [
-      [ "IsScanCode", "de/ded/input_8h.html#aa51f9b08057b8f0bf003cd592bbe248b", null ]
-    ] ],
-    [ "InputReport.__unnamed18__", "de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____", [
+    [ "InputReport.__unnamed13__", "de/ded/input_8h.html#de/d5c/unionInputReport_8____unnamed13____", [
       [ "Accelerometer", "de/ded/input_8h.html#ab043bc6d611582087d8bf1790d863d69", null ],
       [ "Gamepad", "de/ded/input_8h.html#a221f6781b4faa2d321ca0d928f518d6e", null ],
       [ "Gyroscope", "de/ded/input_8h.html#abed99e5db57749f375e738c1c0258047", null ],
@@ -172,8 +182,7 @@ var input_8h =
       [ "KEY_MULTIMEDIA_MEDIA_SELECT", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0", null ],
       [ "KEY_ACPI_POWER", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad", null ],
       [ "KEY_ACPI_SLEEP", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd", null ],
-      [ "KEY_ACPI_WAKE", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f", null ],
-      [ "KEY_PRESSED", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7", null ]
+      [ "KEY_ACPI_WAKE", "de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f", null ]
     ] ],
     [ "ReportInputEvent", "de/ded/input_8h.html#aba095481bbee5eb8903061ed75aa435d", null ]
 ];

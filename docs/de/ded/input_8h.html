@@ -138,17 +138,13 @@ Data Structures</h2></td></tr>
 <tr class="separator:d4/d9c/structMagnetometerReport"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:d1/d5b/structInputReport" id="r_d1/d5b/structInputReport"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#d1/d5b/structInputReport">InputReport</a></td></tr>
 <tr class="separator:d1/d5b/structInputReport"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:d4/dcb/unionKeyboardReport_8____unnamed13____" id="r_d4/dcb/unionKeyboardReport_8____unnamed13____"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____">KeyboardReport.__unnamed13__</a></td></tr>
-<tr class="separator:d4/dcb/unionKeyboardReport_8____unnamed13____"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____" id="r_d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____">KeyboardReport.__unnamed13__.__unnamed16__</a></td></tr>
-<tr class="separator:d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:d9/d70/unionInputReport_8____unnamed18____" id="r_d9/d70/unionInputReport_8____unnamed18____"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____">InputReport.__unnamed18__</a></td></tr>
-<tr class="separator:d9/d70/unionInputReport_8____unnamed18____"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:de/d5c/unionInputReport_8____unnamed13____" id="r_de/d5c/unionInputReport_8____unnamed13____"><td class="memItemLeft" align="right" valign="top">union &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#de/d5c/unionInputReport_8____unnamed13____">InputReport.__unnamed13__</a></td></tr>
+<tr class="separator:de/d5c/unionInputReport_8____unnamed13____"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a505d8572bf9cf882f643df6a7f695d35" id="r_a505d8572bf9cf882f643df6a7f695d35"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a> { <br />
-&#160;&#160;<a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a>
+&#160;&#160;<a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a> = 0
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de">KEY_2</a>
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8">KEY_3</a>
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79">KEY_4</a>
@@ -302,8 +298,6 @@ Enumerations</h2></td></tr>
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad">KEY_ACPI_POWER</a>
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd">KEY_ACPI_SLEEP</a>
 , <a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f">KEY_ACPI_WAKE</a>
-, <br />
-&#160;&#160;<a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7">KEY_PRESSED</a> = 0x80
 <br />
  }</td></tr>
 <tr class="separator:a505d8572bf9cf882f643df6a7f695d35"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -326,25 +320,19 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00168">168</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00170">170</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="acd16f2c6202a1b3770ace4fe57e1c2be" name="acd16f2c6202a1b3770ace4fe57e1c2be"></a>union <a class="el" href="../../de/ded/input_8h.html#d4/dcb/unionKeyboardReport_8____unnamed13____">KeyboardReport.__unnamed13__</a></td>
-<td class="fieldname">
-__unnamed__</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a3c7b23790a7fff8622f8552c7bd1b2f5" name="a3c7b23790a7fff8622f8552c7bd1b2f5"></a>unsigned char</td>
-<td class="fieldname">
-Character</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a173d8f2a67aa82689612753fad2e5095" name="a173d8f2a67aa82689612753fad2e5095"></a><a class="el" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a></td>
+<a id="ae806f4d7a120296cc7d1e4b85df6d1ea" name="ae806f4d7a120296cc7d1e4b85df6d1ea"></a>int</td>
 <td class="fieldname">
 Key</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a6cf4d0f132d4290ea31f6270c2d4afb5" name="a6cf4d0f132d4290ea31f6270c2d4afb5"></a>uint8_t</td>
+<td class="fieldname">
+Pressed</td>
 <td class="fielddoc">
 </td></tr>
 </table>
@@ -363,71 +351,71 @@ Key</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00183">183</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00181">181</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
 <a id="a0948c8b288b733578be7105e95b5ac1f" name="a0948c8b288b733578be7105e95b5ac1f"></a>uint8_t</td>
 <td class="fieldname">
-Absolute: 1</td>
+Absolute</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a3c70979d62bde7107ffc6452b4d197d0" name="a3c70979d62bde7107ffc6452b4d197d0"></a>uint8_t</td>
 <td class="fieldname">
-Button4: 1</td>
+Button4</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a7fe6c9da952ca97bdaf1fd657c5e4682" name="a7fe6c9da952ca97bdaf1fd657c5e4682"></a>uint8_t</td>
 <td class="fieldname">
-Button5: 1</td>
+Button5</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a5610542c386b7f777ccb943d75922ec7" name="a5610542c386b7f777ccb943d75922ec7"></a>uint8_t</td>
 <td class="fieldname">
-Button6: 1</td>
+Button6</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a98581074c8ffe2ba11636e831fce7672" name="a98581074c8ffe2ba11636e831fce7672"></a>uint8_t</td>
 <td class="fieldname">
-Button7: 1</td>
+Button7</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="acde82f4d1fa67e06bc3a59eb6cc2a44c" name="acde82f4d1fa67e06bc3a59eb6cc2a44c"></a>uint8_t</td>
 <td class="fieldname">
-Button8: 1</td>
+Button8</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a07f571f12b57c589630dcde60ef4e660" name="a07f571f12b57c589630dcde60ef4e660"></a>uint8_t</td>
 <td class="fieldname">
-LeftButton: 1</td>
+LeftButton</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a66947db99db5c8ea44a2b070140f1ef3" name="a66947db99db5c8ea44a2b070140f1ef3"></a>uint8_t</td>
 <td class="fieldname">
-MiddleButton: 1</td>
+MiddleButton</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
 <a id="a2174204a5c5dcc31d54449f3664f3a73" name="a2174204a5c5dcc31d54449f3664f3a73"></a>uint8_t</td>
 <td class="fieldname">
-RightButton: 1</td>
+RightButton</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
-<a id="a2034158134bad2907f7aca9f1df5168d" name="a2034158134bad2907f7aca9f1df5168d"></a>long</td>
+<a id="aa3219895b4b7bac808968dffa6105573" name="aa3219895b4b7bac808968dffa6105573"></a>int32_t</td>
 <td class="fieldname">
 X</td>
 <td class="fielddoc">
 </td></tr>
 <tr><td class="fieldtype">
-<a id="ad78247604ee68b483bec72e682b1ef71" name="ad78247604ee68b483bec72e682b1ef71"></a>long</td>
+<a id="ab1749d3991172eaa78eec8bce0370882" name="ab1749d3991172eaa78eec8bce0370882"></a>int32_t</td>
 <td class="fieldname">
 Y</td>
 <td class="fielddoc">
@@ -454,7 +442,7 @@ Z</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00198">198</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00199">199</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
 </div>
 </div>
 </div>
@@ -470,29 +458,8 @@ Z</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00202">202</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a1b34c3fecf099e318e4e761e49e5a655" name="a1b34c3fecf099e318e4e761e49e5a655"></a>uint8_t</td>
-<td class="fieldname">
-Pressure</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a2d9df0f07baaff3c26b0daf9c3c782de" name="a2d9df0f07baaff3c26b0daf9c3c782de"></a>uint16_t</td>
-<td class="fieldname">
-X</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a791863f8aa872fc18aef188a85436abe" name="a791863f8aa872fc18aef188a85436abe"></a>uint16_t</td>
-<td class="fieldname">
-Y</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00204">204</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+</div>
 </div>
 </div>
 <a name="d6/dda/structGamepadReport" id="d6/dda/structGamepadReport"></a>
@@ -507,8 +474,53 @@ Y</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00208">208</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00209">209</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a19c64e338041aa1015153f467d743095" name="a19c64e338041aa1015153f467d743095"></a>uint32_t</td>
+<td class="fieldname">
+Buttons</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="ae23170622454a01e0addbea4e31618bd" name="ae23170622454a01e0addbea4e31618bd"></a>uint8_t</td>
+<td class="fieldname">
+LeftTrigger</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="aeed0bf261885fd03488b0a5bc268ff03" name="aeed0bf261885fd03488b0a5bc268ff03"></a>int16_t</td>
+<td class="fieldname">
+LeftX</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a892b64906845331dec6bbfd827abf30c" name="a892b64906845331dec6bbfd827abf30c"></a>int16_t</td>
+<td class="fieldname">
+LeftY</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a64c7d2224944fdffaca08eb547aa004c" name="a64c7d2224944fdffaca08eb547aa004c"></a>uint8_t</td>
+<td class="fieldname">
+RightTrigger</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a6c906e95b12502da51f0f6ce505a0c1c" name="a6c906e95b12502da51f0f6ce505a0c1c"></a>int16_t</td>
+<td class="fieldname">
+RightX</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a6df5b5be92c0c402aa6578c68be62d23" name="a6df5b5be92c0c402aa6578c68be62d23"></a>int16_t</td>
+<td class="fieldname">
+RightY</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
 </div>
 </div>
 <a name="d8/d16/structAccelerometerReport" id="d8/d16/structAccelerometerReport"></a>
@@ -523,8 +535,29 @@ Y</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00212">212</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00223">223</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a9bf69417e6baff5a21f69e26db816cf8" name="a9bf69417e6baff5a21f69e26db816cf8"></a>int32_t</td>
+<td class="fieldname">
+X</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="aebbcd9d70f4f3f23d5ed8405e1e265c3" name="aebbcd9d70f4f3f23d5ed8405e1e265c3"></a>int32_t</td>
+<td class="fieldname">
+Y</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="accd7e1054ac03e55b93fd033b8371b8d" name="accd7e1054ac03e55b93fd033b8371b8d"></a>int32_t</td>
+<td class="fieldname">
+Z</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
 </div>
 </div>
 <a name="d4/daf/structGyroscopeReport" id="d4/daf/structGyroscopeReport"></a>
@@ -539,8 +572,29 @@ Y</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00216">216</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00230">230</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="af38789c55fbcecd45efefb124bba3979" name="af38789c55fbcecd45efefb124bba3979"></a>int32_t</td>
+<td class="fieldname">
+X</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="abf2507b360fbf829f6dc197f505d0eb5" name="abf2507b360fbf829f6dc197f505d0eb5"></a>int32_t</td>
+<td class="fieldname">
+Y</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a76de7c80c1af67413455fcf4d76d691e" name="a76de7c80c1af67413455fcf4d76d691e"></a>int32_t</td>
+<td class="fieldname">
+Z</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
 </div>
 </div>
 <a name="d4/d9c/structMagnetometerReport" id="d4/d9c/structMagnetometerReport"></a>
@@ -555,8 +609,29 @@ Y</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00220">220</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00237">237</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Data Fields</th></tr>
+<tr><td class="fieldtype">
+<a id="a6b0fbf3df860ee2028b5204027bc1688" name="a6b0fbf3df860ee2028b5204027bc1688"></a>int32_t</td>
+<td class="fieldname">
+X</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a314fef6d11fdbcd92e8d2c23ed55a164" name="a314fef6d11fdbcd92e8d2c23ed55a164"></a>int32_t</td>
+<td class="fieldname">
+Y</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a072fe487c2498b2c7788e6e18769aecb" name="a072fe487c2498b2c7788e6e18769aecb"></a>int32_t</td>
+<td class="fieldname">
+Z</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
 </div>
 </div>
 <a name="d1/d5b/structInputReport" id="d1/d5b/structInputReport"></a>
@@ -571,11 +646,11 @@ Y</td>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00224">224</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00244">244</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
-<a id="aaed2ee89d7c595ef488fb56dd262e78d" name="aaed2ee89d7c595ef488fb56dd262e78d"></a>union <a class="el" href="../../de/ded/input_8h.html#d9/d70/unionInputReport_8____unnamed18____">InputReport.__unnamed18__</a></td>
+<a id="a6578815090b330a3c739cbf878d5a09b" name="a6578815090b330a3c739cbf878d5a09b"></a>union <a class="el" href="../../de/ded/input_8h.html#de/d5c/unionInputReport_8____unnamed13____">InputReport.__unnamed13__</a></td>
 <td class="fieldname">
 __unnamed__</td>
 <td class="fielddoc">
@@ -596,75 +671,19 @@ Type</td>
 
 </div>
 </div>
-<a name="d4/dcb/unionKeyboardReport_8____unnamed13____" id="d4/dcb/unionKeyboardReport_8____unnamed13____"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#d4/dcb/unionKeyboardReport_8____unnamed13____">&#9670;&#160;</a></span>KeyboardReport.__unnamed13__</h2>
+<a name="de/d5c/unionInputReport_8____unnamed13____" id="de/d5c/unionInputReport_8____unnamed13____"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#de/d5c/unionInputReport_8____unnamed13____">&#9670;&#160;</a></span>InputReport.__unnamed13__</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">union KeyboardReport.__unnamed13__</td>
+          <td class="memname">union InputReport.__unnamed13__</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00172">172</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a68e3b06335fbcedc7232ab741738269c" name="a68e3b06335fbcedc7232ab741738269c"></a>struct <a class="el" href="../../de/ded/input_8h.html#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____">KeyboardReport.__unnamed13__.__unnamed16__</a></td>
-<td class="fieldname">
-__unnamed__</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a689202409e48743b914713f96d93947c" name="a689202409e48743b914713f96d93947c"></a>char</td>
-<td class="fieldname">
-Value</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
-<a name="d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____" id="d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____">&#9670;&#160;</a></span>KeyboardReport.__unnamed13__.__unnamed16__</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct KeyboardReport.__unnamed13__.__unnamed16__</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00174">174</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="aa51f9b08057b8f0bf003cd592bbe248b" name="aa51f9b08057b8f0bf003cd592bbe248b"></a>char</td>
-<td class="fieldname">
-IsScanCode: 1</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
-<a name="d9/d70/unionInputReport_8____unnamed18____" id="d9/d70/unionInputReport_8____unnamed18____"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#d9/d70/unionInputReport_8____unnamed18____">&#9670;&#160;</a></span>InputReport.__unnamed18__</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">union InputReport.__unnamed18__</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00228">228</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00249">249</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -856,271 +875,267 @@ TouchScreen</td>
 <tr><td class="fieldname"><a id="a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad" name="a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad"></a>KEY_ACPI_POWER&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd" name="a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd"></a>KEY_ACPI_SLEEP&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f" name="a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f"></a>KEY_ACPI_WAKE&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7" name="a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7"></a>KEY_PRESSED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00031">31</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   32</span>{</div>
-<div class="line"><span class="lineno">   33</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a>,</div>
-<div class="line"><span class="lineno">   34</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de">KEY_2</a>,</div>
-<div class="line"><span class="lineno">   35</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8">KEY_3</a>,</div>
-<div class="line"><span class="lineno">   36</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79">KEY_4</a>,</div>
-<div class="line"><span class="lineno">   37</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4">KEY_5</a>,</div>
-<div class="line"><span class="lineno">   38</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be">KEY_6</a>,</div>
-<div class="line"><span class="lineno">   39</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489">KEY_7</a>,</div>
-<div class="line"><span class="lineno">   40</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b">KEY_8</a>,</div>
-<div class="line"><span class="lineno">   41</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611">KEY_9</a>,</div>
-<div class="line"><span class="lineno">   42</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9">KEY_0</a>,</div>
-<div class="line"><span class="lineno">   43</span> </div>
-<div class="line"><span class="lineno">   44</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e">KEY_Q</a>,</div>
-<div class="line"><span class="lineno">   45</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a">KEY_W</a>,</div>
-<div class="line"><span class="lineno">   46</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868">KEY_E</a>,</div>
-<div class="line"><span class="lineno">   47</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff">KEY_R</a>,</div>
-<div class="line"><span class="lineno">   48</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9">KEY_T</a>,</div>
-<div class="line"><span class="lineno">   49</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3">KEY_Y</a>,</div>
-<div class="line"><span class="lineno">   50</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730">KEY_U</a>,</div>
-<div class="line"><span class="lineno">   51</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877">KEY_I</a>,</div>
-<div class="line"><span class="lineno">   52</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290">KEY_O</a>,</div>
-<div class="line"><span class="lineno">   53</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6">KEY_P</a>,</div>
-<div class="line"><span class="lineno">   54</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc">KEY_A</a>,</div>
-<div class="line"><span class="lineno">   55</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5">KEY_S</a>,</div>
-<div class="line"><span class="lineno">   56</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766">KEY_D</a>,</div>
-<div class="line"><span class="lineno">   57</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f">KEY_F</a>,</div>
-<div class="line"><span class="lineno">   58</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601">KEY_G</a>,</div>
-<div class="line"><span class="lineno">   59</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd">KEY_H</a>,</div>
-<div class="line"><span class="lineno">   60</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7">KEY_J</a>,</div>
-<div class="line"><span class="lineno">   61</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6">KEY_K</a>,</div>
-<div class="line"><span class="lineno">   62</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62">KEY_L</a>,</div>
-<div class="line"><span class="lineno">   63</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda">KEY_Z</a>,</div>
-<div class="line"><span class="lineno">   64</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497">KEY_X</a>,</div>
-<div class="line"><span class="lineno">   65</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61">KEY_C</a>,</div>
-<div class="line"><span class="lineno">   66</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe">KEY_V</a>,</div>
-<div class="line"><span class="lineno">   67</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a">KEY_B</a>,</div>
-<div class="line"><span class="lineno">   68</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824">KEY_N</a>,</div>
-<div class="line"><span class="lineno">   69</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327">KEY_M</a>,</div>
-<div class="line"><span class="lineno">   70</span> </div>
-<div class="line"><span class="lineno">   71</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5">KEY_F1</a>,</div>
-<div class="line"><span class="lineno">   72</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a">KEY_F2</a>,</div>
-<div class="line"><span class="lineno">   73</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a">KEY_F3</a>,</div>
-<div class="line"><span class="lineno">   74</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373">KEY_F4</a>,</div>
-<div class="line"><span class="lineno">   75</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f">KEY_F5</a>,</div>
-<div class="line"><span class="lineno">   76</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a">KEY_F6</a>,</div>
-<div class="line"><span class="lineno">   77</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6">KEY_F7</a>,</div>
-<div class="line"><span class="lineno">   78</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375">KEY_F8</a>,</div>
-<div class="line"><span class="lineno">   79</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f">KEY_F9</a>,</div>
-<div class="line"><span class="lineno">   80</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c">KEY_F10</a>,</div>
-<div class="line"><span class="lineno">   81</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1">KEY_F11</a>,</div>
-<div class="line"><span class="lineno">   82</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add">KEY_F12</a>,</div>
-<div class="line"><span class="lineno">   83</span> </div>
-<div class="line"><span class="lineno">   84</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42">KEYPAD_7</a>,</div>
-<div class="line"><span class="lineno">   85</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa">KEYPAD_8</a>,</div>
-<div class="line"><span class="lineno">   86</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c">KEYPAD_9</a>,</div>
-<div class="line"><span class="lineno">   87</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6">KEYPAD_MINUS</a>,</div>
-<div class="line"><span class="lineno">   88</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252">KEYPAD_4</a>,</div>
-<div class="line"><span class="lineno">   89</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4">KEYPAD_5</a>,</div>
-<div class="line"><span class="lineno">   90</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56">KEYPAD_6</a>,</div>
-<div class="line"><span class="lineno">   91</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866">KEYPAD_PLUS</a>,</div>
-<div class="line"><span class="lineno">   92</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812">KEYPAD_1</a>,</div>
-<div class="line"><span class="lineno">   93</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582">KEYPAD_2</a>,</div>
-<div class="line"><span class="lineno">   94</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d">KEYPAD_3</a>,</div>
-<div class="line"><span class="lineno">   95</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44">KEYPAD_0</a>,</div>
-<div class="line"><span class="lineno">   96</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5">KEYPAD_PERIOD</a>,</div>
-<div class="line"><span class="lineno">   97</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0">KEYPAD_RETURN</a>,</div>
-<div class="line"><span class="lineno">   98</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a">KEYPAD_ASTERISK</a>,</div>
-<div class="line"><span class="lineno">   99</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa">KEYPAD_SLASH</a>,</div>
-<div class="line"><span class="lineno">  100</span> </div>
-<div class="line"><span class="lineno">  101</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d">KEY_LEFT_CTRL</a>,</div>
-<div class="line"><span class="lineno">  102</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58">KEY_RIGHT_CTRL</a>,</div>
-<div class="line"><span class="lineno">  103</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a">KEY_LEFT_SHIFT</a>,</div>
-<div class="line"><span class="lineno">  104</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c">KEY_RIGHT_SHIFT</a>,</div>
-<div class="line"><span class="lineno">  105</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71">KEY_LEFT_ALT</a>,</div>
-<div class="line"><span class="lineno">  106</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5">KEY_RIGHT_ALT</a>,</div>
-<div class="line"><span class="lineno">  107</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7">KEY_ESCAPE</a>,</div>
-<div class="line"><span class="lineno">  108</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c">KEY_MINUS</a>,</div>
-<div class="line"><span class="lineno">  109</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b">KEY_EQUAL</a>,</div>
-<div class="line"><span class="lineno">  110</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b">KEY_BACKSPACE</a>,</div>
-<div class="line"><span class="lineno">  111</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c">KEY_TAB</a>,</div>
-<div class="line"><span class="lineno">  112</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52">KEY_LEFT_BRACKET</a>,</div>
-<div class="line"><span class="lineno">  113</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70">KEY_RIGHT_BRACKET</a>,</div>
-<div class="line"><span class="lineno">  114</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0">KEY_RETURN</a>,</div>
-<div class="line"><span class="lineno">  115</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef">KEY_SEMICOLON</a>,</div>
-<div class="line"><span class="lineno">  116</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b">KEY_APOSTROPHE</a>,</div>
-<div class="line"><span class="lineno">  117</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7">KEY_BACK_TICK</a>,</div>
-<div class="line"><span class="lineno">  118</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd">KEY_BACKSLASH</a>,</div>
-<div class="line"><span class="lineno">  119</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3">KEY_COMMA</a>,</div>
-<div class="line"><span class="lineno">  120</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4">KEY_PERIOD</a>,</div>
-<div class="line"><span class="lineno">  121</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f">KEY_SLASH</a>,</div>
-<div class="line"><span class="lineno">  122</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de">KEY_SPACE</a>,</div>
-<div class="line"><span class="lineno">  123</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc">KEY_CAPS_LOCK</a>,</div>
-<div class="line"><span class="lineno">  124</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc">KEY_NUM_LOCK</a>,</div>
-<div class="line"><span class="lineno">  125</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19">KEY_SCROLL_LOCK</a>,</div>
-<div class="line"><span class="lineno">  126</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa">KEY_PRINT_SCREEN</a>,</div>
-<div class="line"><span class="lineno">  127</span> </div>
-<div class="line"><span class="lineno">  128</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7">KEY_HOME</a>,</div>
-<div class="line"><span class="lineno">  129</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5">KEY_UP_ARROW</a>,</div>
-<div class="line"><span class="lineno">  130</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04">KEY_LEFT_ARROW</a>,</div>
-<div class="line"><span class="lineno">  131</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da">KEY_RIGHT_ARROW</a>,</div>
-<div class="line"><span class="lineno">  132</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9">KEY_DOWN_ARROW</a>,</div>
-<div class="line"><span class="lineno">  133</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b">KEY_PAGE_UP</a>,</div>
-<div class="line"><span class="lineno">  134</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639">KEY_PAGE_DOWN</a>,</div>
-<div class="line"><span class="lineno">  135</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403">KEY_END</a>,</div>
-<div class="line"><span class="lineno">  136</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78">KEY_INSERT</a>,</div>
-<div class="line"><span class="lineno">  137</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4">KEY_DELETE</a>,</div>
-<div class="line"><span class="lineno">  138</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae">KEY_LEFT_GUI</a>,</div>
-<div class="line"><span class="lineno">  139</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386">KEY_RIGHT_GUI</a>,</div>
-<div class="line"><span class="lineno">  140</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942">KEY_APPS</a>,</div>
-<div class="line"><span class="lineno">  141</span> </div>
-<div class="line"><span class="lineno">  142</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359">KEY_MULTIMEDIA_PREV_TRACK</a>,</div>
-<div class="line"><span class="lineno">  143</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d">KEY_MULTIMEDIA_NEXT_TRACK</a>,</div>
-<div class="line"><span class="lineno">  144</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18">KEY_MULTIMEDIA_MUTE</a>,</div>
-<div class="line"><span class="lineno">  145</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262">KEY_MULTIMEDIA_CALCULATOR</a>,</div>
-<div class="line"><span class="lineno">  146</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8">KEY_MULTIMEDIA_PLAY</a>,</div>
-<div class="line"><span class="lineno">  147</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645">KEY_MULTIMEDIA_STOP</a>,</div>
-<div class="line"><span class="lineno">  148</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382">KEY_MULTIMEDIA_VOL_DOWN</a>,</div>
-<div class="line"><span class="lineno">  149</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054">KEY_MULTIMEDIA_VOL_UP</a>,</div>
-<div class="line"><span class="lineno">  150</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc">KEY_MULTIMEDIA_WWW_HOME</a>,</div>
-<div class="line"><span class="lineno">  151</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f">KEY_MULTIMEDIA_WWW_SEARCH</a>,</div>
-<div class="line"><span class="lineno">  152</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b">KEY_MULTIMEDIA_WWW_FAVORITES</a>,</div>
-<div class="line"><span class="lineno">  153</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a">KEY_MULTIMEDIA_WWW_REFRESH</a>,</div>
-<div class="line"><span class="lineno">  154</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084">KEY_MULTIMEDIA_WWW_STOP</a>,</div>
-<div class="line"><span class="lineno">  155</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be">KEY_MULTIMEDIA_WWW_FORWARD</a>,</div>
-<div class="line"><span class="lineno">  156</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e">KEY_MULTIMEDIA_WWW_BACK</a>,</div>
-<div class="line"><span class="lineno">  157</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7">KEY_MULTIMEDIA_MY_COMPUTER</a>,</div>
-<div class="line"><span class="lineno">  158</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f">KEY_MULTIMEDIA_EMAIL</a>,</div>
-<div class="line"><span class="lineno">  159</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0">KEY_MULTIMEDIA_MEDIA_SELECT</a>,</div>
-<div class="line"><span class="lineno">  160</span> </div>
-<div class="line"><span class="lineno">  161</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad">KEY_ACPI_POWER</a>,</div>
-<div class="line"><span class="lineno">  162</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd">KEY_ACPI_SLEEP</a>,</div>
-<div class="line"><span class="lineno">  163</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f">KEY_ACPI_WAKE</a>,</div>
+<p class="definition">Definition at line <a class="el" href="../../de/ded/input_8h_source.html#l00034">34</a> of file <a class="el" href="../../de/ded/input_8h_source.html">input.h</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   36</span>{</div>
+<div class="line"><span class="lineno">   37</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a> = 0,</div>
+<div class="line"><span class="lineno">   38</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de">KEY_2</a>,</div>
+<div class="line"><span class="lineno">   39</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8">KEY_3</a>,</div>
+<div class="line"><span class="lineno">   40</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79">KEY_4</a>,</div>
+<div class="line"><span class="lineno">   41</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4">KEY_5</a>,</div>
+<div class="line"><span class="lineno">   42</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be">KEY_6</a>,</div>
+<div class="line"><span class="lineno">   43</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489">KEY_7</a>,</div>
+<div class="line"><span class="lineno">   44</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b">KEY_8</a>,</div>
+<div class="line"><span class="lineno">   45</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611">KEY_9</a>,</div>
+<div class="line"><span class="lineno">   46</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9">KEY_0</a>,</div>
+<div class="line"><span class="lineno">   47</span> </div>
+<div class="line"><span class="lineno">   48</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e">KEY_Q</a>,</div>
+<div class="line"><span class="lineno">   49</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a">KEY_W</a>,</div>
+<div class="line"><span class="lineno">   50</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868">KEY_E</a>,</div>
+<div class="line"><span class="lineno">   51</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff">KEY_R</a>,</div>
+<div class="line"><span class="lineno">   52</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9">KEY_T</a>,</div>
+<div class="line"><span class="lineno">   53</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3">KEY_Y</a>,</div>
+<div class="line"><span class="lineno">   54</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730">KEY_U</a>,</div>
+<div class="line"><span class="lineno">   55</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877">KEY_I</a>,</div>
+<div class="line"><span class="lineno">   56</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290">KEY_O</a>,</div>
+<div class="line"><span class="lineno">   57</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6">KEY_P</a>,</div>
+<div class="line"><span class="lineno">   58</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc">KEY_A</a>,</div>
+<div class="line"><span class="lineno">   59</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5">KEY_S</a>,</div>
+<div class="line"><span class="lineno">   60</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766">KEY_D</a>,</div>
+<div class="line"><span class="lineno">   61</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f">KEY_F</a>,</div>
+<div class="line"><span class="lineno">   62</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601">KEY_G</a>,</div>
+<div class="line"><span class="lineno">   63</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd">KEY_H</a>,</div>
+<div class="line"><span class="lineno">   64</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7">KEY_J</a>,</div>
+<div class="line"><span class="lineno">   65</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6">KEY_K</a>,</div>
+<div class="line"><span class="lineno">   66</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62">KEY_L</a>,</div>
+<div class="line"><span class="lineno">   67</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda">KEY_Z</a>,</div>
+<div class="line"><span class="lineno">   68</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497">KEY_X</a>,</div>
+<div class="line"><span class="lineno">   69</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61">KEY_C</a>,</div>
+<div class="line"><span class="lineno">   70</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe">KEY_V</a>,</div>
+<div class="line"><span class="lineno">   71</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a">KEY_B</a>,</div>
+<div class="line"><span class="lineno">   72</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824">KEY_N</a>,</div>
+<div class="line"><span class="lineno">   73</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327">KEY_M</a>,</div>
+<div class="line"><span class="lineno">   74</span> </div>
+<div class="line"><span class="lineno">   75</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5">KEY_F1</a>,</div>
+<div class="line"><span class="lineno">   76</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a">KEY_F2</a>,</div>
+<div class="line"><span class="lineno">   77</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a">KEY_F3</a>,</div>
+<div class="line"><span class="lineno">   78</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373">KEY_F4</a>,</div>
+<div class="line"><span class="lineno">   79</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f">KEY_F5</a>,</div>
+<div class="line"><span class="lineno">   80</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a">KEY_F6</a>,</div>
+<div class="line"><span class="lineno">   81</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6">KEY_F7</a>,</div>
+<div class="line"><span class="lineno">   82</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375">KEY_F8</a>,</div>
+<div class="line"><span class="lineno">   83</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f">KEY_F9</a>,</div>
+<div class="line"><span class="lineno">   84</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c">KEY_F10</a>,</div>
+<div class="line"><span class="lineno">   85</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1">KEY_F11</a>,</div>
+<div class="line"><span class="lineno">   86</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add">KEY_F12</a>,</div>
+<div class="line"><span class="lineno">   87</span> </div>
+<div class="line"><span class="lineno">   88</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42">KEYPAD_7</a>,</div>
+<div class="line"><span class="lineno">   89</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa">KEYPAD_8</a>,</div>
+<div class="line"><span class="lineno">   90</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c">KEYPAD_9</a>,</div>
+<div class="line"><span class="lineno">   91</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6">KEYPAD_MINUS</a>,</div>
+<div class="line"><span class="lineno">   92</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252">KEYPAD_4</a>,</div>
+<div class="line"><span class="lineno">   93</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4">KEYPAD_5</a>,</div>
+<div class="line"><span class="lineno">   94</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56">KEYPAD_6</a>,</div>
+<div class="line"><span class="lineno">   95</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866">KEYPAD_PLUS</a>,</div>
+<div class="line"><span class="lineno">   96</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812">KEYPAD_1</a>,</div>
+<div class="line"><span class="lineno">   97</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582">KEYPAD_2</a>,</div>
+<div class="line"><span class="lineno">   98</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d">KEYPAD_3</a>,</div>
+<div class="line"><span class="lineno">   99</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44">KEYPAD_0</a>,</div>
+<div class="line"><span class="lineno">  100</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5">KEYPAD_PERIOD</a>,</div>
+<div class="line"><span class="lineno">  101</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0">KEYPAD_RETURN</a>,</div>
+<div class="line"><span class="lineno">  102</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a">KEYPAD_ASTERISK</a>,</div>
+<div class="line"><span class="lineno">  103</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa">KEYPAD_SLASH</a>,</div>
+<div class="line"><span class="lineno">  104</span> </div>
+<div class="line"><span class="lineno">  105</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d">KEY_LEFT_CTRL</a>,</div>
+<div class="line"><span class="lineno">  106</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58">KEY_RIGHT_CTRL</a>,</div>
+<div class="line"><span class="lineno">  107</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a">KEY_LEFT_SHIFT</a>,</div>
+<div class="line"><span class="lineno">  108</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c">KEY_RIGHT_SHIFT</a>,</div>
+<div class="line"><span class="lineno">  109</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71">KEY_LEFT_ALT</a>,</div>
+<div class="line"><span class="lineno">  110</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5">KEY_RIGHT_ALT</a>,</div>
+<div class="line"><span class="lineno">  111</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7">KEY_ESCAPE</a>,</div>
+<div class="line"><span class="lineno">  112</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c">KEY_MINUS</a>,</div>
+<div class="line"><span class="lineno">  113</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b">KEY_EQUAL</a>,</div>
+<div class="line"><span class="lineno">  114</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b">KEY_BACKSPACE</a>,</div>
+<div class="line"><span class="lineno">  115</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c">KEY_TAB</a>,</div>
+<div class="line"><span class="lineno">  116</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52">KEY_LEFT_BRACKET</a>,</div>
+<div class="line"><span class="lineno">  117</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70">KEY_RIGHT_BRACKET</a>,</div>
+<div class="line"><span class="lineno">  118</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0">KEY_RETURN</a>,</div>
+<div class="line"><span class="lineno">  119</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef">KEY_SEMICOLON</a>,</div>
+<div class="line"><span class="lineno">  120</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b">KEY_APOSTROPHE</a>,</div>
+<div class="line"><span class="lineno">  121</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7">KEY_BACK_TICK</a>,</div>
+<div class="line"><span class="lineno">  122</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd">KEY_BACKSLASH</a>,</div>
+<div class="line"><span class="lineno">  123</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3">KEY_COMMA</a>,</div>
+<div class="line"><span class="lineno">  124</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4">KEY_PERIOD</a>,</div>
+<div class="line"><span class="lineno">  125</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f">KEY_SLASH</a>,</div>
+<div class="line"><span class="lineno">  126</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de">KEY_SPACE</a>,</div>
+<div class="line"><span class="lineno">  127</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc">KEY_CAPS_LOCK</a>,</div>
+<div class="line"><span class="lineno">  128</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc">KEY_NUM_LOCK</a>,</div>
+<div class="line"><span class="lineno">  129</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19">KEY_SCROLL_LOCK</a>,</div>
+<div class="line"><span class="lineno">  130</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa">KEY_PRINT_SCREEN</a>,</div>
+<div class="line"><span class="lineno">  131</span> </div>
+<div class="line"><span class="lineno">  132</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7">KEY_HOME</a>,</div>
+<div class="line"><span class="lineno">  133</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5">KEY_UP_ARROW</a>,</div>
+<div class="line"><span class="lineno">  134</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04">KEY_LEFT_ARROW</a>,</div>
+<div class="line"><span class="lineno">  135</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da">KEY_RIGHT_ARROW</a>,</div>
+<div class="line"><span class="lineno">  136</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9">KEY_DOWN_ARROW</a>,</div>
+<div class="line"><span class="lineno">  137</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b">KEY_PAGE_UP</a>,</div>
+<div class="line"><span class="lineno">  138</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639">KEY_PAGE_DOWN</a>,</div>
+<div class="line"><span class="lineno">  139</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403">KEY_END</a>,</div>
+<div class="line"><span class="lineno">  140</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78">KEY_INSERT</a>,</div>
+<div class="line"><span class="lineno">  141</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4">KEY_DELETE</a>,</div>
+<div class="line"><span class="lineno">  142</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae">KEY_LEFT_GUI</a>,</div>
+<div class="line"><span class="lineno">  143</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386">KEY_RIGHT_GUI</a>,</div>
+<div class="line"><span class="lineno">  144</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942">KEY_APPS</a>,</div>
+<div class="line"><span class="lineno">  145</span> </div>
+<div class="line"><span class="lineno">  146</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359">KEY_MULTIMEDIA_PREV_TRACK</a>,</div>
+<div class="line"><span class="lineno">  147</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d">KEY_MULTIMEDIA_NEXT_TRACK</a>,</div>
+<div class="line"><span class="lineno">  148</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18">KEY_MULTIMEDIA_MUTE</a>,</div>
+<div class="line"><span class="lineno">  149</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262">KEY_MULTIMEDIA_CALCULATOR</a>,</div>
+<div class="line"><span class="lineno">  150</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8">KEY_MULTIMEDIA_PLAY</a>,</div>
+<div class="line"><span class="lineno">  151</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645">KEY_MULTIMEDIA_STOP</a>,</div>
+<div class="line"><span class="lineno">  152</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382">KEY_MULTIMEDIA_VOL_DOWN</a>,</div>
+<div class="line"><span class="lineno">  153</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054">KEY_MULTIMEDIA_VOL_UP</a>,</div>
+<div class="line"><span class="lineno">  154</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc">KEY_MULTIMEDIA_WWW_HOME</a>,</div>
+<div class="line"><span class="lineno">  155</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f">KEY_MULTIMEDIA_WWW_SEARCH</a>,</div>
+<div class="line"><span class="lineno">  156</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b">KEY_MULTIMEDIA_WWW_FAVORITES</a>,</div>
+<div class="line"><span class="lineno">  157</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a">KEY_MULTIMEDIA_WWW_REFRESH</a>,</div>
+<div class="line"><span class="lineno">  158</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084">KEY_MULTIMEDIA_WWW_STOP</a>,</div>
+<div class="line"><span class="lineno">  159</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be">KEY_MULTIMEDIA_WWW_FORWARD</a>,</div>
+<div class="line"><span class="lineno">  160</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e">KEY_MULTIMEDIA_WWW_BACK</a>,</div>
+<div class="line"><span class="lineno">  161</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7">KEY_MULTIMEDIA_MY_COMPUTER</a>,</div>
+<div class="line"><span class="lineno">  162</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f">KEY_MULTIMEDIA_EMAIL</a>,</div>
+<div class="line"><span class="lineno">  163</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0">KEY_MULTIMEDIA_MEDIA_SELECT</a>,</div>
 <div class="line"><span class="lineno">  164</span> </div>
-<div class="line"><span class="lineno">  165</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7">KEY_PRESSED</a> = 0x80,</div>
-<div class="line"><span class="lineno">  166</span>} <a class="code hl_enumeration" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a>;</div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a></div><div class="ttdeci">KeyScanCodes</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00031">input.h:32</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc">KEY_MULTIMEDIA_WWW_HOME</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_HOME</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00150">input.h:150</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373">KEY_F4</a></div><div class="ttdeci">@ KEY_F4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00074">input.h:74</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de">KEY_SPACE</a></div><div class="ttdeci">@ KEY_SPACE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00122">input.h:122</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262">KEY_MULTIMEDIA_CALCULATOR</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_CALCULATOR</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00145">input.h:145</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a">KEY_MULTIMEDIA_WWW_REFRESH</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_REFRESH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00153">input.h:153</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52">KEY_LEFT_BRACKET</a></div><div class="ttdeci">@ KEY_LEFT_BRACKET</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00112">input.h:112</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd">KEY_ACPI_SLEEP</a></div><div class="ttdeci">@ KEY_ACPI_SLEEP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00162">input.h:162</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6">KEY_P</a></div><div class="ttdeci">@ KEY_P</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00053">input.h:53</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327">KEY_M</a></div><div class="ttdeci">@ KEY_M</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00069">input.h:69</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a">KEY_B</a></div><div class="ttdeci">@ KEY_B</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00067">input.h:67</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c">KEY_RIGHT_SHIFT</a></div><div class="ttdeci">@ KEY_RIGHT_SHIFT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00104">input.h:104</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f">KEY_F9</a></div><div class="ttdeci">@ KEY_F9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00079">input.h:79</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d">KEYPAD_3</a></div><div class="ttdeci">@ KEYPAD_3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00094">input.h:94</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7">KEY_MULTIMEDIA_MY_COMPUTER</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MY_COMPUTER</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00157">input.h:157</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de">KEY_2</a></div><div class="ttdeci">@ KEY_2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00034">input.h:34</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a">KEY_F6</a></div><div class="ttdeci">@ KEY_F6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00076">input.h:76</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4">KEYPAD_5</a></div><div class="ttdeci">@ KEYPAD_5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00089">input.h:89</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78">KEY_INSERT</a></div><div class="ttdeci">@ KEY_INSERT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00136">input.h:136</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad">KEY_ACPI_POWER</a></div><div class="ttdeci">@ KEY_ACPI_POWER</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00161">input.h:161</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef">KEY_SEMICOLON</a></div><div class="ttdeci">@ KEY_SEMICOLON</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00115">input.h:115</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868">KEY_E</a></div><div class="ttdeci">@ KEY_E</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00046">input.h:46</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877">KEY_I</a></div><div class="ttdeci">@ KEY_I</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00051">input.h:51</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a">KEY_W</a></div><div class="ttdeci">@ KEY_W</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00045">input.h:45</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70">KEY_RIGHT_BRACKET</a></div><div class="ttdeci">@ KEY_RIGHT_BRACKET</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00113">input.h:113</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582">KEYPAD_2</a></div><div class="ttdeci">@ KEYPAD_2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00093">input.h:93</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766">KEY_D</a></div><div class="ttdeci">@ KEY_D</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00056">input.h:56</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be">KEY_6</a></div><div class="ttdeci">@ KEY_6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00038">input.h:38</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6">KEY_F7</a></div><div class="ttdeci">@ KEY_F7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00077">input.h:77</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19">KEY_SCROLL_LOCK</a></div><div class="ttdeci">@ KEY_SCROLL_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00125">input.h:125</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a></div><div class="ttdeci">@ KEY_1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00033">input.h:33</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f">KEY_ACPI_WAKE</a></div><div class="ttdeci">@ KEY_ACPI_WAKE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00163">input.h:163</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7">KEY_ESCAPE</a></div><div class="ttdeci">@ KEY_ESCAPE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00107">input.h:107</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c">KEY_F10</a></div><div class="ttdeci">@ KEY_F10</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00080">input.h:80</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f">KEY_F</a></div><div class="ttdeci">@ KEY_F</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00057">input.h:57</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa">KEY_PRINT_SCREEN</a></div><div class="ttdeci">@ KEY_PRINT_SCREEN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00126">input.h:126</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44">KEYPAD_0</a></div><div class="ttdeci">@ KEYPAD_0</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00095">input.h:95</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd">KEY_H</a></div><div class="ttdeci">@ KEY_H</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00059">input.h:59</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054">KEY_MULTIMEDIA_VOL_UP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_VOL_UP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00149">input.h:149</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71">KEY_LEFT_ALT</a></div><div class="ttdeci">@ KEY_LEFT_ALT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00105">input.h:105</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497">KEY_X</a></div><div class="ttdeci">@ KEY_X</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00064">input.h:64</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56">KEYPAD_6</a></div><div class="ttdeci">@ KEYPAD_6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00090">input.h:90</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601">KEY_G</a></div><div class="ttdeci">@ KEY_G</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00058">input.h:58</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5">KEY_RIGHT_ALT</a></div><div class="ttdeci">@ KEY_RIGHT_ALT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00106">input.h:106</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c">KEYPAD_9</a></div><div class="ttdeci">@ KEYPAD_9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00086">input.h:86</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f">KEY_SLASH</a></div><div class="ttdeci">@ KEY_SLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00121">input.h:121</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3">KEY_Y</a></div><div class="ttdeci">@ KEY_Y</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00049">input.h:49</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a">KEY_LEFT_SHIFT</a></div><div class="ttdeci">@ KEY_LEFT_SHIFT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00103">input.h:103</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942">KEY_APPS</a></div><div class="ttdeci">@ KEY_APPS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00140">input.h:140</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c">KEY_MINUS</a></div><div class="ttdeci">@ KEY_MINUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00108">input.h:108</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611">KEY_9</a></div><div class="ttdeci">@ KEY_9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00041">input.h:41</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c">KEY_TAB</a></div><div class="ttdeci">@ KEY_TAB</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00111">input.h:111</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42">KEYPAD_7</a></div><div class="ttdeci">@ KEYPAD_7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00084">input.h:84</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9">KEY_T</a></div><div class="ttdeci">@ KEY_T</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00048">input.h:48</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04">KEY_LEFT_ARROW</a></div><div class="ttdeci">@ KEY_LEFT_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00130">input.h:130</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9">KEY_DOWN_ARROW</a></div><div class="ttdeci">@ KEY_DOWN_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00132">input.h:132</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae">KEY_LEFT_GUI</a></div><div class="ttdeci">@ KEY_LEFT_GUI</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00138">input.h:138</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f">KEY_F5</a></div><div class="ttdeci">@ KEY_F5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00075">input.h:75</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6">KEY_K</a></div><div class="ttdeci">@ KEY_K</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00061">input.h:61</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9">KEY_0</a></div><div class="ttdeci">@ KEY_0</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00042">input.h:42</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa">KEYPAD_SLASH</a></div><div class="ttdeci">@ KEYPAD_SLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00099">input.h:99</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa">KEYPAD_8</a></div><div class="ttdeci">@ KEYPAD_8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00085">input.h:85</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4">KEY_PERIOD</a></div><div class="ttdeci">@ KEY_PERIOD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00120">input.h:120</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386">KEY_RIGHT_GUI</a></div><div class="ttdeci">@ KEY_RIGHT_GUI</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00139">input.h:139</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add">KEY_F12</a></div><div class="ttdeci">@ KEY_F12</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00082">input.h:82</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866">KEYPAD_PLUS</a></div><div class="ttdeci">@ KEYPAD_PLUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00091">input.h:91</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a">KEY_F2</a></div><div class="ttdeci">@ KEY_F2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00072">input.h:72</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084">KEY_MULTIMEDIA_WWW_STOP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_STOP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00154">input.h:154</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d">KEY_MULTIMEDIA_NEXT_TRACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_NEXT_TRACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00143">input.h:143</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812">KEYPAD_1</a></div><div class="ttdeci">@ KEYPAD_1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00092">input.h:92</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da">KEY_RIGHT_ARROW</a></div><div class="ttdeci">@ KEY_RIGHT_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00131">input.h:131</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a">KEY_F3</a></div><div class="ttdeci">@ KEY_F3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00073">input.h:73</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61">KEY_C</a></div><div class="ttdeci">@ KEY_C</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00065">input.h:65</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f">KEY_MULTIMEDIA_EMAIL</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_EMAIL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00158">input.h:158</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375">KEY_F8</a></div><div class="ttdeci">@ KEY_F8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00078">input.h:78</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5">KEY_UP_ARROW</a></div><div class="ttdeci">@ KEY_UP_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00129">input.h:129</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b">KEY_BACKSPACE</a></div><div class="ttdeci">@ KEY_BACKSPACE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00110">input.h:110</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff">KEY_R</a></div><div class="ttdeci">@ KEY_R</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00047">input.h:47</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824">KEY_N</a></div><div class="ttdeci">@ KEY_N</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00068">input.h:68</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359">KEY_MULTIMEDIA_PREV_TRACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_PREV_TRACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00142">input.h:142</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc">KEY_A</a></div><div class="ttdeci">@ KEY_A</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00054">input.h:54</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403">KEY_END</a></div><div class="ttdeci">@ KEY_END</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00135">input.h:135</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b">KEY_8</a></div><div class="ttdeci">@ KEY_8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00040">input.h:40</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda">KEY_Z</a></div><div class="ttdeci">@ KEY_Z</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00063">input.h:63</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0">KEY_RETURN</a></div><div class="ttdeci">@ KEY_RETURN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00114">input.h:114</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252">KEYPAD_4</a></div><div class="ttdeci">@ KEYPAD_4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00088">input.h:88</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5">KEY_S</a></div><div class="ttdeci">@ KEY_S</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00055">input.h:55</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7">KEY_J</a></div><div class="ttdeci">@ KEY_J</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00060">input.h:60</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc">KEY_CAPS_LOCK</a></div><div class="ttdeci">@ KEY_CAPS_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00123">input.h:123</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7">KEY_PRESSED</a></div><div class="ttdeci">@ KEY_PRESSED</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00165">input.h:165</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e">KEY_Q</a></div><div class="ttdeci">@ KEY_Q</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00044">input.h:44</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0">KEY_MULTIMEDIA_MEDIA_SELECT</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MEDIA_SELECT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00159">input.h:159</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b">KEY_EQUAL</a></div><div class="ttdeci">@ KEY_EQUAL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00109">input.h:109</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be">KEY_MULTIMEDIA_WWW_FORWARD</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_FORWARD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00155">input.h:155</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b">KEY_PAGE_UP</a></div><div class="ttdeci">@ KEY_PAGE_UP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00133">input.h:133</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0">KEYPAD_RETURN</a></div><div class="ttdeci">@ KEYPAD_RETURN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00097">input.h:97</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730">KEY_U</a></div><div class="ttdeci">@ KEY_U</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00050">input.h:50</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d">KEY_LEFT_CTRL</a></div><div class="ttdeci">@ KEY_LEFT_CTRL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00101">input.h:101</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1">KEY_F11</a></div><div class="ttdeci">@ KEY_F11</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00081">input.h:81</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7">KEY_HOME</a></div><div class="ttdeci">@ KEY_HOME</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00128">input.h:128</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5">KEYPAD_PERIOD</a></div><div class="ttdeci">@ KEYPAD_PERIOD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00096">input.h:96</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc">KEY_NUM_LOCK</a></div><div class="ttdeci">@ KEY_NUM_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00124">input.h:124</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639">KEY_PAGE_DOWN</a></div><div class="ttdeci">@ KEY_PAGE_DOWN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00134">input.h:134</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6">KEYPAD_MINUS</a></div><div class="ttdeci">@ KEYPAD_MINUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00087">input.h:87</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382">KEY_MULTIMEDIA_VOL_DOWN</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_VOL_DOWN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00148">input.h:148</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8">KEY_MULTIMEDIA_PLAY</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_PLAY</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00146">input.h:146</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e">KEY_MULTIMEDIA_WWW_BACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_BACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00156">input.h:156</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645">KEY_MULTIMEDIA_STOP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_STOP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00147">input.h:147</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489">KEY_7</a></div><div class="ttdeci">@ KEY_7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00039">input.h:39</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4">KEY_DELETE</a></div><div class="ttdeci">@ KEY_DELETE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00137">input.h:137</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290">KEY_O</a></div><div class="ttdeci">@ KEY_O</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00052">input.h:52</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79">KEY_4</a></div><div class="ttdeci">@ KEY_4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00036">input.h:36</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b">KEY_APOSTROPHE</a></div><div class="ttdeci">@ KEY_APOSTROPHE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00116">input.h:116</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58">KEY_RIGHT_CTRL</a></div><div class="ttdeci">@ KEY_RIGHT_CTRL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00102">input.h:102</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b">KEY_MULTIMEDIA_WWW_FAVORITES</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_FAVORITES</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00152">input.h:152</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62">KEY_L</a></div><div class="ttdeci">@ KEY_L</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00062">input.h:62</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4">KEY_5</a></div><div class="ttdeci">@ KEY_5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00037">input.h:37</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8">KEY_3</a></div><div class="ttdeci">@ KEY_3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00035">input.h:35</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a">KEYPAD_ASTERISK</a></div><div class="ttdeci">@ KEYPAD_ASTERISK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00098">input.h:98</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18">KEY_MULTIMEDIA_MUTE</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MUTE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00144">input.h:144</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd">KEY_BACKSLASH</a></div><div class="ttdeci">@ KEY_BACKSLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00118">input.h:118</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3">KEY_COMMA</a></div><div class="ttdeci">@ KEY_COMMA</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00119">input.h:119</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe">KEY_V</a></div><div class="ttdeci">@ KEY_V</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00066">input.h:66</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f">KEY_MULTIMEDIA_WWW_SEARCH</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_SEARCH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00151">input.h:151</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5">KEY_F1</a></div><div class="ttdeci">@ KEY_F1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00071">input.h:71</a></div></div>
-<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7">KEY_BACK_TICK</a></div><div class="ttdeci">@ KEY_BACK_TICK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00117">input.h:117</a></div></div>
+<div class="line"><span class="lineno">  165</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad">KEY_ACPI_POWER</a>,</div>
+<div class="line"><span class="lineno">  166</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd">KEY_ACPI_SLEEP</a>,</div>
+<div class="line"><span class="lineno">  167</span>    <a class="code hl_enumvalue" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f">KEY_ACPI_WAKE</a>,</div>
+<div class="line"><span class="lineno">  168</span>} <a class="code hl_enumeration" href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a>;</div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35">KeyScanCodes</a></div><div class="ttdeci">KeyScanCodes</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00034">input.h:36</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a001bb38b40d50b1df0025df29c62b0bc">KEY_MULTIMEDIA_WWW_HOME</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_HOME</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00154">input.h:154</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01bce78a73ad136a7b42941297aff373">KEY_F4</a></div><div class="ttdeci">@ KEY_F4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00078">input.h:78</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a01d2889f9a7550008ad6140c41e733de">KEY_SPACE</a></div><div class="ttdeci">@ KEY_SPACE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00126">input.h:126</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a036479cf4e5a2f127dc855fb434ed262">KEY_MULTIMEDIA_CALCULATOR</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_CALCULATOR</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00149">input.h:149</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03ced378b3cbca523c3095795ff13e7a">KEY_MULTIMEDIA_WWW_REFRESH</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_REFRESH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00157">input.h:157</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a03da438c85c9fc0ebda53d0c669d7c52">KEY_LEFT_BRACKET</a></div><div class="ttdeci">@ KEY_LEFT_BRACKET</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00116">input.h:116</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a09755c08fbb78c57e5b3c5063ef0dddd">KEY_ACPI_SLEEP</a></div><div class="ttdeci">@ KEY_ACPI_SLEEP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00166">input.h:166</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0a4c7291c92b7fc84da27a363dc53fa6">KEY_P</a></div><div class="ttdeci">@ KEY_P</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00057">input.h:57</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a0d94112555886427204ad0c0711ca327">KEY_M</a></div><div class="ttdeci">@ KEY_M</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00073">input.h:73</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a10072b5ee7aa1faf316434ecc9e2bb3a">KEY_B</a></div><div class="ttdeci">@ KEY_B</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00071">input.h:71</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a125ed6244c499a097a3e1cb111c8fa9c">KEY_RIGHT_SHIFT</a></div><div class="ttdeci">@ KEY_RIGHT_SHIFT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00108">input.h:108</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a160e82eea885870bfa4924c27040cd7f">KEY_F9</a></div><div class="ttdeci">@ KEY_F9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00083">input.h:83</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a1fa5a87977d8d7beb7da69a477ecac6d">KEYPAD_3</a></div><div class="ttdeci">@ KEYPAD_3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00098">input.h:98</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a20450360e7f24e1d3cf85a349e28bea7">KEY_MULTIMEDIA_MY_COMPUTER</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MY_COMPUTER</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00161">input.h:161</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2333d7c312aa98622c41e74c5d13e8de">KEY_2</a></div><div class="ttdeci">@ KEY_2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00038">input.h:38</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a247a20a9998f080827dd34004abc2f9a">KEY_F6</a></div><div class="ttdeci">@ KEY_F6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00080">input.h:80</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a24d2fa1410977513114492a6405f48d4">KEYPAD_5</a></div><div class="ttdeci">@ KEYPAD_5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00093">input.h:93</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a26f2c18a3a0a7eabf7bd11f0ec93be78">KEY_INSERT</a></div><div class="ttdeci">@ KEY_INSERT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00140">input.h:140</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a298e5b5c0b2a1567403240c1ff7664ad">KEY_ACPI_POWER</a></div><div class="ttdeci">@ KEY_ACPI_POWER</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00165">input.h:165</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2a2ea4c0ed101dcec44d5ec7de0329ef">KEY_SEMICOLON</a></div><div class="ttdeci">@ KEY_SEMICOLON</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00119">input.h:119</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2af9840d90c49239339bfd42f9f32868">KEY_E</a></div><div class="ttdeci">@ KEY_E</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00050">input.h:50</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2c98fd67709a9fd5409498d4f7175877">KEY_I</a></div><div class="ttdeci">@ KEY_I</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00055">input.h:55</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2e6a652ccd7afc5ce75ac4d902b6a60a">KEY_W</a></div><div class="ttdeci">@ KEY_W</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00049">input.h:49</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2ec43a67eb0c7d2b4576708e6d4a6b70">KEY_RIGHT_BRACKET</a></div><div class="ttdeci">@ KEY_RIGHT_BRACKET</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00117">input.h:117</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fa701c65735e0008990a8cfb9fe7582">KEYPAD_2</a></div><div class="ttdeci">@ KEYPAD_2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00097">input.h:97</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fd73a4d527efe137e8f259db2092766">KEY_D</a></div><div class="ttdeci">@ KEY_D</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00060">input.h:60</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a2fe7fe99bcb0fd90bf4234be9e4ce5be">KEY_6</a></div><div class="ttdeci">@ KEY_6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00042">input.h:42</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a07203a0a4f3e996b44e9a4fcfd1c6">KEY_F7</a></div><div class="ttdeci">@ KEY_F7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00081">input.h:81</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a34a1a5fd5080d4e7923d9e93d7b17e19">KEY_SCROLL_LOCK</a></div><div class="ttdeci">@ KEY_SCROLL_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00129">input.h:129</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a35bcc2bc85513df4f3897a9d64a9c51c">KEY_1</a></div><div class="ttdeci">@ KEY_1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00037">input.h:37</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f">KEY_ACPI_WAKE</a></div><div class="ttdeci">@ KEY_ACPI_WAKE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00167">input.h:167</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3a471c8b61a5f730dcbdd50fe53f3ab7">KEY_ESCAPE</a></div><div class="ttdeci">@ KEY_ESCAPE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00111">input.h:111</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3b922025c26b38585ab140c7e40b291c">KEY_F10</a></div><div class="ttdeci">@ KEY_F10</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00084">input.h:84</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3c069efeb1638c2ab0d2a50ff45b529f">KEY_F</a></div><div class="ttdeci">@ KEY_F</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00061">input.h:61</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d24a3f2d5bad01abd32bee373c4e8aa">KEY_PRINT_SCREEN</a></div><div class="ttdeci">@ KEY_PRINT_SCREEN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00130">input.h:130</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a3d4651d86fe7a5cd80bc028a9543ac44">KEYPAD_0</a></div><div class="ttdeci">@ KEYPAD_0</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00099">input.h:99</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a41d1aa573d29ca6a9eb429a680dc53cd">KEY_H</a></div><div class="ttdeci">@ KEY_H</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00063">input.h:63</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a46d6f5a4e2aa153859975c82cace2054">KEY_MULTIMEDIA_VOL_UP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_VOL_UP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00153">input.h:153</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4789cb1577c6b157cca51831266d2e71">KEY_LEFT_ALT</a></div><div class="ttdeci">@ KEY_LEFT_ALT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00109">input.h:109</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a480a807305121d41673b8c208898f497">KEY_X</a></div><div class="ttdeci">@ KEY_X</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00068">input.h:68</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a48412ee9aff955b7013358639e856e56">KEYPAD_6</a></div><div class="ttdeci">@ KEYPAD_6</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00094">input.h:94</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4ec980867be1d5bded2bccdee2ebd601">KEY_G</a></div><div class="ttdeci">@ KEY_G</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00062">input.h:62</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a4f14c2020a65b3498ad86cf66e5f0ed5">KEY_RIGHT_ALT</a></div><div class="ttdeci">@ KEY_RIGHT_ALT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00110">input.h:110</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5143e08e4e00b9bdf04788406524271c">KEYPAD_9</a></div><div class="ttdeci">@ KEYPAD_9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00090">input.h:90</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a54249cfb873b3e7ae0432bbec5bc0d6f">KEY_SLASH</a></div><div class="ttdeci">@ KEY_SLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00125">input.h:125</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d44524b2a6090fa97aa9353d69f67a3">KEY_Y</a></div><div class="ttdeci">@ KEY_Y</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00053">input.h:53</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5d5eb3601a49913c3ab0f9bcbdc5918a">KEY_LEFT_SHIFT</a></div><div class="ttdeci">@ KEY_LEFT_SHIFT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00107">input.h:107</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5ea468d8f6134be615cdb30787560942">KEY_APPS</a></div><div class="ttdeci">@ KEY_APPS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00144">input.h:144</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a5f8f8f15bcfc7a3e745d4b5e0008832c">KEY_MINUS</a></div><div class="ttdeci">@ KEY_MINUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00112">input.h:112</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a601382e2da6215882c129b43b3384611">KEY_9</a></div><div class="ttdeci">@ KEY_9</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00045">input.h:45</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60c75f9c8eded88ef76c0c94da27963c">KEY_TAB</a></div><div class="ttdeci">@ KEY_TAB</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00115">input.h:115</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a60db8fe38855cfe67da704988e66bd42">KEYPAD_7</a></div><div class="ttdeci">@ KEYPAD_7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00088">input.h:88</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6167a8727e73df1eb96f19c2460766c9">KEY_T</a></div><div class="ttdeci">@ KEY_T</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00052">input.h:52</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a647998d2a95d68a66ff9892f96150a04">KEY_LEFT_ARROW</a></div><div class="ttdeci">@ KEY_LEFT_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00134">input.h:134</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a682c2546c34dea8d730992bc1616fca9">KEY_DOWN_ARROW</a></div><div class="ttdeci">@ KEY_DOWN_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00136">input.h:136</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a68d3b17199fbc1595d3d6a5baacb3eae">KEY_LEFT_GUI</a></div><div class="ttdeci">@ KEY_LEFT_GUI</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00142">input.h:142</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6a69ea34f5d1372692bf040637e57c8f">KEY_F5</a></div><div class="ttdeci">@ KEY_F5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00079">input.h:79</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b0799a9923c55f8a73550a371ea69f6">KEY_K</a></div><div class="ttdeci">@ KEY_K</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00065">input.h:65</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6b30f8af6c880e1aca01b91aa13c6ff9">KEY_0</a></div><div class="ttdeci">@ KEY_0</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00046">input.h:46</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a6bf97751aacdc0d683c765c138e4eefa">KEYPAD_SLASH</a></div><div class="ttdeci">@ KEYPAD_SLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00103">input.h:103</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7374278f9996b9a54402de49445da5fa">KEYPAD_8</a></div><div class="ttdeci">@ KEYPAD_8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00089">input.h:89</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a7680b8131b831989b5068d0832b99bd4">KEY_PERIOD</a></div><div class="ttdeci">@ KEY_PERIOD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00124">input.h:124</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a78a9092dfee2fbd8952c3e5ed9d9b386">KEY_RIGHT_GUI</a></div><div class="ttdeci">@ KEY_RIGHT_GUI</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00143">input.h:143</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a835f8397baa58fd73ff9c268d6458add">KEY_F12</a></div><div class="ttdeci">@ KEY_F12</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00086">input.h:86</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8544ec26c470f4395e879462e119f866">KEYPAD_PLUS</a></div><div class="ttdeci">@ KEYPAD_PLUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00095">input.h:95</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a87897fd25282941e1a9bf72b9f64559a">KEY_F2</a></div><div class="ttdeci">@ KEY_F2</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00076">input.h:76</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a8b6e45c995d7f028ca3ad1c56d471084">KEY_MULTIMEDIA_WWW_STOP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_STOP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00158">input.h:158</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a913e5e3fa5470161a89ba9465e7cbc3d">KEY_MULTIMEDIA_NEXT_TRACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_NEXT_TRACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00147">input.h:147</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9159048ef7c917ba00c50e39b14cb812">KEYPAD_1</a></div><div class="ttdeci">@ KEYPAD_1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00096">input.h:96</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a947cc696f802a13d955cb077600299da">KEY_RIGHT_ARROW</a></div><div class="ttdeci">@ KEY_RIGHT_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00135">input.h:135</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a965c99b1f4fc05cec09ef61b0af8e74a">KEY_F3</a></div><div class="ttdeci">@ KEY_F3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00077">input.h:77</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9cabc5fc0d1f7f6a78e78b8ff29dbb61">KEY_C</a></div><div class="ttdeci">@ KEY_C</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00069">input.h:69</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9d4fa545c0b39fcfe7b51bd3cd86d14f">KEY_MULTIMEDIA_EMAIL</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_EMAIL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00162">input.h:162</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35a9eaf4e9e3d8451fd1332c013d12c1375">KEY_F8</a></div><div class="ttdeci">@ KEY_F8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00082">input.h:82</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa35707694e2bab78d36903af6198e6f5">KEY_UP_ARROW</a></div><div class="ttdeci">@ KEY_UP_ARROW</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00133">input.h:133</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3cd0158e01f834cebcfb3fc5578df4b">KEY_BACKSPACE</a></div><div class="ttdeci">@ KEY_BACKSPACE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00114">input.h:114</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa3ec8a2ffd5b0e200db5ebe7b65515ff">KEY_R</a></div><div class="ttdeci">@ KEY_R</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00051">input.h:51</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa606b8c6deaec8077387975d195cd824">KEY_N</a></div><div class="ttdeci">@ KEY_N</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00072">input.h:72</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa61cff07fdbe8117af6a4848c6d64359">KEY_MULTIMEDIA_PREV_TRACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_PREV_TRACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00146">input.h:146</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa7b3a3d0503a46bec51c6e3da95747cc">KEY_A</a></div><div class="ttdeci">@ KEY_A</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00058">input.h:58</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aa8adb6fcb92dec58fb19410eacfdd403">KEY_END</a></div><div class="ttdeci">@ KEY_END</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00139">input.h:139</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aab8917d426f9be27c95c0d3810006d7b">KEY_8</a></div><div class="ttdeci">@ KEY_8</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00044">input.h:44</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aadc60d2de1d019604547c0df88f84cda">KEY_Z</a></div><div class="ttdeci">@ KEY_Z</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00067">input.h:67</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aaefd064b1e5d75c429bed314ac18eba0">KEY_RETURN</a></div><div class="ttdeci">@ KEY_RETURN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00118">input.h:118</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ab6b3b8d9de11f8cc9165d4207e9ba252">KEYPAD_4</a></div><div class="ttdeci">@ KEYPAD_4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00092">input.h:92</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb2f0ce8efc3067757dbf091437f89f5">KEY_S</a></div><div class="ttdeci">@ KEY_S</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00059">input.h:59</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abb3108883bee68e265b554542484c5d7">KEY_J</a></div><div class="ttdeci">@ KEY_J</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00064">input.h:64</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35abc5ade8c1b7fc0d409201d5fc46e02cc">KEY_CAPS_LOCK</a></div><div class="ttdeci">@ KEY_CAPS_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00127">input.h:127</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ac8234231b36474d3666ad56752fe6f5e">KEY_Q</a></div><div class="ttdeci">@ KEY_Q</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00048">input.h:48</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acd1e6a8e9a275766ecc3056ce5ca62b0">KEY_MULTIMEDIA_MEDIA_SELECT</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MEDIA_SELECT</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00163">input.h:163</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acdf916d73b721baa46f5f54bdcc0d39b">KEY_EQUAL</a></div><div class="ttdeci">@ KEY_EQUAL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00113">input.h:113</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35acfa54ab264327853ab499782d0d501be">KEY_MULTIMEDIA_WWW_FORWARD</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_FORWARD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00159">input.h:159</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad435c2e06f3d05728ed52ede8a68295b">KEY_PAGE_UP</a></div><div class="ttdeci">@ KEY_PAGE_UP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00137">input.h:137</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad465cb523017f08e52ec0b3f1f1113f0">KEYPAD_RETURN</a></div><div class="ttdeci">@ KEYPAD_RETURN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00101">input.h:101</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad4961a6c7ea9d008812aaaa8c4ea9730">KEY_U</a></div><div class="ttdeci">@ KEY_U</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00054">input.h:54</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5355d7d2d2582960da81aefe8cd941d">KEY_LEFT_CTRL</a></div><div class="ttdeci">@ KEY_LEFT_CTRL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00105">input.h:105</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad54743bc4e7f9279abf671cc2a091ce1">KEY_F11</a></div><div class="ttdeci">@ KEY_F11</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00085">input.h:85</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad5b83418c285e43af5d3a87b4d4049d7">KEY_HOME</a></div><div class="ttdeci">@ KEY_HOME</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00132">input.h:132</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad6328d80393f645087bb7f1c8662c0a5">KEYPAD_PERIOD</a></div><div class="ttdeci">@ KEYPAD_PERIOD</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00100">input.h:100</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ad8909c03dc1731c8ce83220590f9f9dc">KEY_NUM_LOCK</a></div><div class="ttdeci">@ KEY_NUM_LOCK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00128">input.h:128</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ada883d03c9fb53deb33064a13ca97639">KEY_PAGE_DOWN</a></div><div class="ttdeci">@ KEY_PAGE_DOWN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00138">input.h:138</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35add0c21de9efdf54e63b2a4b574b87ad6">KEYPAD_MINUS</a></div><div class="ttdeci">@ KEYPAD_MINUS</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00091">input.h:91</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ade02591d217cde8a98c3cb0d39cea382">KEY_MULTIMEDIA_VOL_DOWN</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_VOL_DOWN</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00152">input.h:152</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35adef33a2a27e0f4f398492cb6c637aad8">KEY_MULTIMEDIA_PLAY</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_PLAY</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00150">input.h:150</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae10804bfdf98abf5deca974260357e1e">KEY_MULTIMEDIA_WWW_BACK</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_BACK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00160">input.h:160</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae47e18287e9003530a125da277c4a645">KEY_MULTIMEDIA_STOP</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_STOP</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00151">input.h:151</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae78c88108d428cb8066e7a056195f489">KEY_7</a></div><div class="ttdeci">@ KEY_7</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00043">input.h:43</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7a3a4540031b038014294aa6743a7a4">KEY_DELETE</a></div><div class="ttdeci">@ KEY_DELETE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00141">input.h:141</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae7edd672641b587364ea4a0c89388290">KEY_O</a></div><div class="ttdeci">@ KEY_O</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00056">input.h:56</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35ae9f20352b4ef69ae68b9ff44abadfd79">KEY_4</a></div><div class="ttdeci">@ KEY_4</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00040">input.h:40</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb8aae681ab9fbf1111ac69841330e0b">KEY_APOSTROPHE</a></div><div class="ttdeci">@ KEY_APOSTROPHE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00120">input.h:120</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aeb9ff466eebcae7089b92b717e4fad58">KEY_RIGHT_CTRL</a></div><div class="ttdeci">@ KEY_RIGHT_CTRL</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00106">input.h:106</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aec304e52eb0d34ba205a08e84cfea54b">KEY_MULTIMEDIA_WWW_FAVORITES</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_FAVORITES</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00156">input.h:156</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aece16de35a5ea11f9b228c9376bebc62">KEY_L</a></div><div class="ttdeci">@ KEY_L</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00066">input.h:66</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aed864c0209ba46546ba112f6c36e0cc4">KEY_5</a></div><div class="ttdeci">@ KEY_5</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00041">input.h:41</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef054680a9be7da17d196e15aec894f8">KEY_3</a></div><div class="ttdeci">@ KEY_3</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00039">input.h:39</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35aef1c0a79a2202eef39c44461c531b91a">KEYPAD_ASTERISK</a></div><div class="ttdeci">@ KEYPAD_ASTERISK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00102">input.h:102</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af0631f483cbc4b0d22fadc54eae8fc18">KEY_MULTIMEDIA_MUTE</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_MUTE</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00148">input.h:148</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af621aad7268fdcafe3a88bc4de7012cd">KEY_BACKSLASH</a></div><div class="ttdeci">@ KEY_BACKSLASH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00122">input.h:122</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35af92cd55661a716ee7466f960896041e3">KEY_COMMA</a></div><div class="ttdeci">@ KEY_COMMA</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00123">input.h:123</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa1c237398bdfc48e5c1a55ce4a977fe">KEY_V</a></div><div class="ttdeci">@ KEY_V</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00070">input.h:70</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afa4d8c3977d7b7d424119b89bec9c64f">KEY_MULTIMEDIA_WWW_SEARCH</a></div><div class="ttdeci">@ KEY_MULTIMEDIA_WWW_SEARCH</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00155">input.h:155</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35afcf70bc39c0032de8a1c6452ac9860a5">KEY_F1</a></div><div class="ttdeci">@ KEY_F1</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00075">input.h:75</a></div></div>
+<div class="ttc" id="ainput_8h_html_a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7"><div class="ttname"><a href="../../de/ded/input_8h.html#a505d8572bf9cf882f643df6a7f695d35affcb18fb1dbdb1d9b5c9f69408fe37a7">KEY_BACK_TICK</a></div><div class="ttdeci">@ KEY_BACK_TICK</div><div class="ttdef"><b>Definition</b> <a href="../../de/ded/input_8h_source.html#l00121">input.h:121</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -1149,7 +1164,7 @@ TouchScreen</td>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="../../dir_52bed8acfaac088d5968cb2c84d7645d.html">Kernel</a></li><li class="navelem"><a class="el" href="../../dir_2c335c1ccbf6ef7c89cc08c9ed88be2e.html">include</a></li><li class="navelem"><a class="el" href="../../dir_811a06ffcfc34bd0f88967f0406a39f5.html">interface</a></li><li class="navelem"><a class="el" href="../../de/ded/input_8h.html">input.h</a></li>
-    <li class="footer">Generated on Sun Feb 15 2026 16:22:38 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
+    <li class="footer">Generated on Mon Feb 16 2026 15:59:51 for Fennix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.8 </li>
   </ul>
 </div>
 </body>

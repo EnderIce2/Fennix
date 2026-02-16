@@ -1,14 +1,14 @@
 var searchData=
 [
   ['raw_0',['raw',['../dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb',1,'USBHubStatus.wHubStatus::raw'],['../dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb',1,'USBHubStatus.wHubChange::raw'],['../dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb',1,'USBPortStatus.wPortStatus::raw'],['../dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb',1,'USBPortStatus.wPortChange::raw'],['../d1/de1/aip_8h.html#a0aeb1f673a677a69047678d8dc1550d1',1,'PS2_STATUSES::Raw'],['../d1/de1/aip_8h.html#aabcce9d04cf80862c31c591b284ee358',1,'PS2_CONFIGURATION::Raw'],['../d1/de1/aip_8h.html#a6f55d35c117c53b1aa5b104e550674dd',1,'PS2_OUTPUT_PORT::Raw'],['../d1/de1/aip_8h.html#a1c786a0ac638f742e31267026602ac54',1,'PS2_KBD_TYPEMATIC::Raw'],['../d1/de1/aip_8h.html#a65e65c8ab0d8609ce12fc68a03cb8e00',1,'PS2_MOUSE_PACKET.Base::Raw'],['../d1/de1/aip_8h.html#a65e65c8ab0d8609ce12fc68a03cb8e00',1,'PS2_MOUSE_PACKET.ZMovement::Raw'],['../dc/de4/usb_8h.html#abdd166af3a63f7be696dd17a218a6ffb',1,'USBDeviceRequest.bmRequestType::raw']]],
-  ['rawdevice_1',['rawdevice',['../df/d26/fs_8h.html#a138b2f9d3133d7b3aeeec3986d064a7a',1,'Inode::RawDevice'],['../df/d26/fs_8h.html#a0894ecf497e1e426853b876a47459280',1,'kstat::RawDevice']]],
-  ['read_2',['read',['../db/de6/structInodeOperations.html#a1b8ac7df82a22e9ee822c240a79076b4',1,'InodeOperations::Read'],['../df/d26/fs_8h.html#ac4f4d1e97ef1b104e09abccb641e530e',1,'Read:&#160;fs.h']]],
+  ['rawdevice_1',['rawdevice',['../df/d26/fs_8h.html#a0894ecf497e1e426853b876a47459280',1,'kstat::RawDevice'],['../df/d26/fs_8h.html#a138b2f9d3133d7b3aeeec3986d064a7a',1,'Inode::RawDevice']]],
+  ['read_2',['read',['../df/d26/fs_8h.html#ac4f4d1e97ef1b104e09abccb641e530e',1,'Read:&#160;fs.h'],['../db/de6/structInodeOperations.html#a1b8ac7df82a22e9ee822c240a79076b4',1,'InodeOperations::Read']]],
   ['readdir_3',['readdir',['../db/de6/structInodeOperations.html#a033b7baebdcfa352b4d84e4e3c9cee80',1,'InodeOperations::ReadDir'],['../df/d26/fs_8h.html#a0a6fc17bb00ffe199d7899d5ce623be4',1,'ReadDir:&#160;fs.h']]],
   ['readlink_4',['readlink',['../db/de6/structInodeOperations.html#abf61f594d2b1d2a10a995329372c9ed9',1,'InodeOperations::ReadLink'],['../df/d26/fs_8h.html#a06cb5aab7b0f464f7575b57ddce54f25',1,'ReadLink:&#160;fs.h']]],
-  ['recipient_5',['recipient',['../dc/de4/usb_8h.html#a5d6103b662f41b07e10687f03aca8fdc',1,'USBDeviceRequest.bmRequestType.__unnamed21__::Recipient'],['../dc/de4/usb_8h.html#a5d6103b662f41b07e10687f03aca8fdc',1,'.__unnamed24__::Recipient']]],
+  ['recipient_5',['recipient',['../dc/de4/usb_8h.html#a5d6103b662f41b07e10687f03aca8fdc',1,'USBDeviceRequest.bmRequestType.__unnamed17__::Recipient'],['../dc/de4/usb_8h.html#a5d6103b662f41b07e10687f03aca8fdc',1,'.__unnamed20__::Recipient']]],
   ['release_6',['release',['../d2/d6e/syscalls_8h.html#a183ff0be4b883eafe77a233e13af1447',1,'kutsname']]],
   ['remove_7',['remove',['../db/de6/structInodeOperations.html#a229c34e01b322f1b9533a049ff1f5cc9',1,'InodeOperations::Remove'],['../df/d26/fs_8h.html#ad985ee5fa0d7e795352935323a07f4a5',1,'Remove:&#160;fs.h']]],
-  ['rename_8',['rename',['../db/de6/structInodeOperations.html#a54bbd07bcb9a6143867be3aa05577413',1,'InodeOperations::Rename'],['../df/d26/fs_8h.html#a9441374ba1bef439109da976a8048bb9',1,'Rename:&#160;fs.h']]],
+  ['rename_8',['rename',['../df/d26/fs_8h.html#a9441374ba1bef439109da976a8048bb9',1,'Rename:&#160;fs.h'],['../db/de6/structInodeOperations.html#a54bbd07bcb9a6143867be3aa05577413',1,'InodeOperations::Rename']]],
   ['repeatrate_9',['RepeatRate',['../d1/de1/aip_8h.html#ab0a4e5ca864ccf625afe5cbd853b490c',1,'PS2_KBD_TYPEMATIC.__unnamed7__']]],
   ['request_10',['Request',['../d8/dd1/structUSBRequestBlock.html#ad7e3d385c2d67393d7775e41939e491d',1,'USBRequestBlock']]],
   ['reserved_11',['Reserved',['../d9/d97/pci_8h.html#a57e0aa05de0a45d24023e5c56eba520e',1,'__attribute__']]],
@@ -18,5 +18,8 @@ var searchData=
   ['resetcontroller_15',['ResetController',['../d2/d22/structUSBController.html#a485cdee0d37454413c93b826c133ab20',1,'USBController']]],
   ['revisionid_16',['RevisionID',['../d9/d97/pci_8h.html#a11d59d8180946892dd910c63cbe2c261',1,'__attribute__']]],
   ['rightbutton_17',['rightbutton',['../de/ded/input_8h.html#a2174204a5c5dcc31d54449f3664f3a73',1,'MouseReport::RightButton'],['../d1/de1/aip_8h.html#ae720ea34653c53edca8e6006ac14eedb',1,'RightButton:&#160;aip.h']]],
-  ['rmdir_18',['rmdir',['../db/de6/structInodeOperations.html#afb5728ae092216ddd3db335d1173e687',1,'InodeOperations::RmDir'],['../df/d26/fs_8h.html#a33b8cee8134eca08e6820a62d0dad656',1,'RmDir:&#160;fs.h']]]
+  ['righttrigger_18',['RightTrigger',['../de/ded/input_8h.html#a64c7d2224944fdffaca08eb547aa004c',1,'GamepadReport']]],
+  ['rightx_19',['RightX',['../de/ded/input_8h.html#a6c906e95b12502da51f0f6ce505a0c1c',1,'GamepadReport']]],
+  ['righty_20',['RightY',['../de/ded/input_8h.html#a6df5b5be92c0c402aa6578c68be62d23',1,'GamepadReport']]],
+  ['rmdir_21',['rmdir',['../db/de6/structInodeOperations.html#afb5728ae092216ddd3db335d1173e687',1,'InodeOperations::RmDir'],['../df/d26/fs_8h.html#a33b8cee8134eca08e6820a62d0dad656',1,'RmDir:&#160;fs.h']]]
 ];

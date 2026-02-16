@@ -2,10 +2,10 @@
 <Tokens version="1.0">
   <Token>
     <TokenIdentifier>
-      <Name>.__unnamed24__</Name>
+      <Name>.__unnamed20__</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
-      <Scope>.__unnamed24__</Scope>
+      <Scope>.__unnamed20__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
   </Token>
@@ -169,7 +169,7 @@
       <Name>__reserved</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+      <Scope>USBHubStatus.wHubStatus.__unnamed32__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
@@ -179,7 +179,7 @@
       <Name>__reserved</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+      <Scope>USBHubStatus.wHubChange.__unnamed34__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
@@ -189,7 +189,7 @@
       <Name>__reserved</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed42__</Scope>
+      <Scope>.__unnamed38__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
@@ -199,7 +199,7 @@
       <Name>__reserved</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed44__</Scope>
+      <Scope>.__unnamed40__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad07ee03cbfb2ff9b6622e6ea4d91f9f3</Anchor>
@@ -209,7 +209,7 @@
       <Name>__reserved0</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
@@ -219,7 +219,7 @@
       <Name>__reserved0</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
@@ -229,7 +229,7 @@
       <Name>__reserved0</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
@@ -239,7 +239,7 @@
       <Name>__reserved0</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2850bea91b0c551f37f3f5e32a238a21</Anchor>
@@ -249,7 +249,7 @@
       <Name>__reserved1</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>acd8949ff69e5a2a014100db38cb62a6d</Anchor>
@@ -259,7 +259,7 @@
       <Name>__reserved1</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>acd8949ff69e5a2a014100db38cb62a6d</Anchor>
@@ -289,7 +289,7 @@
       <Name>Accelerometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>ab043bc6d611582087d8bf1790d863d69</Anchor>
@@ -862,7 +862,7 @@
       <Scope>USBDeviceRequest</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a6612ab837c2f2651c9930f0a397f9052</Anchor>
+    <Anchor>a12c370e2ab1046c1a0fffdde5feb5517</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1026,10 +1026,20 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>Buttons</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a19c64e338041aa1015153f467d743095</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>C_PORT_CONNECTION</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ae0c50ce312153bfc94f5c30091d02e1c</Anchor>
@@ -1039,7 +1049,7 @@
       <Name>C_PORT_CONNECTION</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ae0c50ce312153bfc94f5c30091d02e1c</Anchor>
@@ -1049,7 +1059,7 @@
       <Name>C_PORT_ENABLE</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad878656e48dab047c2c29fa61c2d148b</Anchor>
@@ -1059,7 +1069,7 @@
       <Name>C_PORT_ENABLE</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad878656e48dab047c2c29fa61c2d148b</Anchor>
@@ -1069,7 +1079,7 @@
       <Name>C_PORT_OVER_CURRENT</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2f7cc620f2b1310b1c78c31618bf8259</Anchor>
@@ -1079,7 +1089,7 @@
       <Name>C_PORT_OVER_CURRENT</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2f7cc620f2b1310b1c78c31618bf8259</Anchor>
@@ -1089,7 +1099,7 @@
       <Name>C_PORT_RESET</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a441236095df05d77e2dd236c6c7e4a8f</Anchor>
@@ -1099,7 +1109,7 @@
       <Name>C_PORT_RESET</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a441236095df05d77e2dd236c6c7e4a8f</Anchor>
@@ -1109,7 +1119,7 @@
       <Name>C_PORT_SUSPEND</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortChange.__unnamed50__</Scope>
+      <Scope>USBPortStatus.wPortChange.__unnamed46__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a0dccdb7cd734d0a15bb06a9da270cf37</Anchor>
@@ -1119,7 +1129,7 @@
       <Name>C_PORT_SUSPEND</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed56__</Scope>
+      <Scope>.__unnamed52__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a0dccdb7cd734d0a15bb06a9da270cf37</Anchor>
@@ -1213,16 +1223,6 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a3d80694a7ef662e6e37ef68a5490f6ae</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>Character</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>KeyboardReport</Scope>
-    </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>a3c7b23790a7fff8622f8552c7bd1b2f5</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1402,7 +1402,7 @@
       <Scope>USBHIDDescriptor</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>ad15186d21a59126e6f36afef5cfcf050</Anchor>
+    <Anchor>a03da6f0d0b37df56696d448f5645caed</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1499,7 +1499,7 @@
       <Name>Direction</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a02674a4ef33e11c879283629996c8ff8</Anchor>
@@ -1509,7 +1509,7 @@
       <Name>Direction</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed24__</Scope>
+      <Scope>.__unnamed20__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a02674a4ef33e11c879283629996c8ff8</Anchor>
@@ -1589,7 +1589,7 @@
       <Name>Gamepad</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a221f6781b4faa2d321ca0d928f518d6e</Anchor>
@@ -1609,7 +1609,7 @@
       <Name>Gyroscope</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>abed99e5db57749f375e738c1c0258047</Anchor>
@@ -1742,7 +1742,7 @@
       <Scope>FileSystemDevice</Scope>
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
-    <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
+    <Anchor>a8bec4f04ae605c9a4695cd78904ddbe3</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1896,20 +1896,10 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>IsScanCode</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>KeyboardReport.__unnamed13__.__unnamed16__</Scope>
-    </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>aa51f9b08057b8f0bf003cd592bbe248b</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>Joystick</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a1162b85b7b993e2edf7da29dd8abf7e2</Anchor>
@@ -1942,14 +1932,14 @@
       <Scope>KeyboardReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>a173d8f2a67aa82689612753fad2e5095</Anchor>
+    <Anchor>ae806f4d7a120296cc7d1e4b85df6d1ea</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>Keyboard</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a6ce4d85a628a88bbdb3ac24a8e5a9c2e</Anchor>
@@ -2026,6 +2016,36 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>LeftTrigger</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>ae23170622454a01e0addbea4e31618bd</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LeftX</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>aeed0bf261885fd03488b0a5bc268ff03</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LeftY</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a892b64906845331dec6bbfd827abf30c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>LegacyBaseAddress</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2069,7 +2089,7 @@
       <Name>LPS</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+      <Scope>USBHubStatus.wHubStatus.__unnamed32__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>af0bd8ffe783f0ce4bf0fb76c508284f7</Anchor>
@@ -2079,7 +2099,7 @@
       <Name>LPS</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed42__</Scope>
+      <Scope>.__unnamed38__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>af0bd8ffe783f0ce4bf0fb76c508284f7</Anchor>
@@ -2089,7 +2109,7 @@
       <Name>LPSC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+      <Scope>USBHubStatus.wHubChange.__unnamed34__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a1d68e7883970b1ca56623cd245b7d368</Anchor>
@@ -2099,7 +2119,7 @@
       <Name>LPSC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed44__</Scope>
+      <Scope>.__unnamed40__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a1d68e7883970b1ca56623cd245b7d368</Anchor>
@@ -2119,7 +2139,7 @@
       <Name>Magnetometer</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a9e9fa52e0aa4a2b519f8287760d7c3ac</Anchor>
@@ -2299,7 +2319,7 @@
       <Name>Mouse</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>af2a47c6809d88e175dade0ef7b16aa13</Anchor>
@@ -2389,7 +2409,7 @@
       <Name>OC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubStatus.__unnamed36__</Scope>
+      <Scope>USBHubStatus.wHubStatus.__unnamed32__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a628ac2641a11205611acfdd540e18809</Anchor>
@@ -2399,7 +2419,7 @@
       <Name>OC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed42__</Scope>
+      <Scope>.__unnamed38__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a628ac2641a11205611acfdd540e18809</Anchor>
@@ -2409,7 +2429,7 @@
       <Name>OCC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBHubStatus.wHubChange.__unnamed38__</Scope>
+      <Scope>USBHubStatus.wHubChange.__unnamed34__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>adcb1c29255ec9645f8be15096fae7b93</Anchor>
@@ -2419,7 +2439,7 @@
       <Name>OCC</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed44__</Scope>
+      <Scope>.__unnamed40__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>adcb1c29255ec9645f8be15096fae7b93</Anchor>
@@ -2679,7 +2699,7 @@
       <Name>PORT_CONNECTION</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2a356a25b9433f52530a968d07467fd0</Anchor>
@@ -2689,7 +2709,7 @@
       <Name>PORT_CONNECTION</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a2a356a25b9433f52530a968d07467fd0</Anchor>
@@ -2699,7 +2719,7 @@
       <Name>PORT_ENABLE</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a20173b822ef39347be06ffbd67e59076</Anchor>
@@ -2709,7 +2729,7 @@
       <Name>PORT_ENABLE</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a20173b822ef39347be06ffbd67e59076</Anchor>
@@ -2719,7 +2739,7 @@
       <Name>PORT_HIGH_SPEED</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>aaa11a60607b1ea093393768ae01f6fbc</Anchor>
@@ -2729,7 +2749,7 @@
       <Name>PORT_HIGH_SPEED</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>aaa11a60607b1ea093393768ae01f6fbc</Anchor>
@@ -2739,7 +2759,7 @@
       <Name>PORT_INDICATOR</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a171c913c4769f9796fc641e5c2f5f94a</Anchor>
@@ -2749,7 +2769,7 @@
       <Name>PORT_INDICATOR</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a171c913c4769f9796fc641e5c2f5f94a</Anchor>
@@ -2759,7 +2779,7 @@
       <Name>PORT_LOW_SPEED</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ac544781da2685a3fd1177d9f667451fc</Anchor>
@@ -2769,7 +2789,7 @@
       <Name>PORT_LOW_SPEED</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ac544781da2685a3fd1177d9f667451fc</Anchor>
@@ -2779,7 +2799,7 @@
       <Name>PORT_OVER_CURRENT</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a8a68facbf3db3d4fc0570b6ffd9f1bbc</Anchor>
@@ -2789,7 +2809,7 @@
       <Name>PORT_OVER_CURRENT</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a8a68facbf3db3d4fc0570b6ffd9f1bbc</Anchor>
@@ -2799,7 +2819,7 @@
       <Name>PORT_POWER</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a9b975312189761d455c5e668551ea70f</Anchor>
@@ -2809,7 +2829,7 @@
       <Name>PORT_POWER</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a9b975312189761d455c5e668551ea70f</Anchor>
@@ -2819,7 +2839,7 @@
       <Name>PORT_RESET</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad84e08e2c56048336f54fcc7df90c78a</Anchor>
@@ -2829,7 +2849,7 @@
       <Name>PORT_RESET</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>ad84e08e2c56048336f54fcc7df90c78a</Anchor>
@@ -2839,7 +2859,7 @@
       <Name>PORT_SUSPEND</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a29367fe786d12ede740dcd1d99cf2615</Anchor>
@@ -2849,7 +2869,7 @@
       <Name>PORT_SUSPEND</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a29367fe786d12ede740dcd1d99cf2615</Anchor>
@@ -2859,7 +2879,7 @@
       <Name>PORT_TEST</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBPortStatus.wPortStatus.__unnamed48__</Scope>
+      <Scope>USBPortStatus.wPortStatus.__unnamed44__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>adbb7face025abf9e9e4158160a5b7a45</Anchor>
@@ -2869,7 +2889,7 @@
       <Name>PORT_TEST</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed54__</Scope>
+      <Scope>.__unnamed50__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>adbb7face025abf9e9e4158160a5b7a45</Anchor>
@@ -2916,13 +2936,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>Pressure</Name>
+      <Name>Pressed</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>TouchScreenReport</Scope>
+      <Scope>KeyboardReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>a1b34c3fecf099e318e4e761e49e5a655</Anchor>
+    <Anchor>a6cf4d0f132d4290ea31f6270c2d4afb5</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3179,7 +3199,7 @@
       <Name>Recipient</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a5d6103b662f41b07e10687f03aca8fdc</Anchor>
@@ -3189,7 +3209,7 @@
       <Name>Recipient</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed24__</Scope>
+      <Scope>.__unnamed20__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>a5d6103b662f41b07e10687f03aca8fdc</Anchor>
@@ -3313,6 +3333,36 @@
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a2174204a5c5dcc31d54449f3664f3a73</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>RightTrigger</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a64c7d2224944fdffaca08eb547aa004c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>RightX</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a6c906e95b12502da51f0f6ce505a0c1c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>RightY</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GamepadReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a6df5b5be92c0c402aa6578c68be62d23</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3609,7 +3659,7 @@
       <Name>TouchScreen</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>InputReport.__unnamed18__</Scope>
+      <Scope>InputReport.__unnamed13__</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a64a952e5a8456c1030ce54bfa07ebb52</Anchor>
@@ -3623,6 +3673,16 @@
     </TokenIdentifier>
     <Path>db/de6/structInodeOperations.html</Path>
     <Anchor>a1636030e07da14031506e2ec85fae4c6</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>type</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>f_owner_ex</Scope>
+    </TokenIdentifier>
+    <Path>d7/d9f/fcntl_8h.html</Path>
+    <Anchor>afd32d7286d5aba4fb1ba922d58591997</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3659,7 +3719,7 @@
       <Name>Type</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>USBDeviceRequest.bmRequestType.__unnamed21__</Scope>
+      <Scope>USBDeviceRequest.bmRequestType.__unnamed17__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>aa1fa27779242b4902f7ae3bdd5c6d508</Anchor>
@@ -3669,20 +3729,10 @@
       <Name>Type</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>.__unnamed24__</Scope>
+      <Scope>.__unnamed20__</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
     <Anchor>aa1fa27779242b4902f7ae3bdd5c6d508</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>type</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>f_owner_ex</Scope>
-    </TokenIdentifier>
-    <Path>d7/d9f/fcntl_8h.html</Path>
-    <Anchor>afd32d7286d5aba4fb1ba922d58591997</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3692,7 +3742,7 @@
       <Scope>USBHubDescriptor</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>acd96cc6fc64751cd63e500f91d800749</Anchor>
+    <Anchor>a900ca1bff68c04899e97ffff989b049a</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3733,16 +3783,6 @@
     </TokenIdentifier>
     <Path>df/d26/fs_8h.html</Path>
     <Anchor>a640517af38108c7ece215fe6789b497a</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>Value</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>KeyboardReport.__unnamed13__</Scope>
-    </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>a689202409e48743b914713f96d93947c</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3792,7 +3832,7 @@
       <Scope>USBHubStatus</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a219b5fcf1790030feba87b4f065495ee</Anchor>
+    <Anchor>a6060ab0a49b0292d94efe9eaff1a5951</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3812,7 +3852,7 @@
       <Scope>USBHubStatus</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>aec384788ae5eab823b1ba232163aeb6d</Anchor>
+    <Anchor>a271a94558ca87274b450baed0e8d7bf1</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3862,7 +3902,7 @@
       <Scope>USBPortStatus</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a0ca19192e4103e1a34f5243c11b095c1</Anchor>
+    <Anchor>af4e9bec224640cf2f9fb3eb10b315457</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3872,7 +3912,7 @@
       <Scope>USBPortStatus</Scope>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>aa9314ab632cb04c5620f2544c690e7fa</Anchor>
+    <Anchor>a31ae13255cdb67e07cda92945803ae17</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3922,17 +3962,37 @@
       <Scope>MouseReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>a2034158134bad2907f7aca9f1df5168d</Anchor>
+    <Anchor>aa3219895b4b7bac808968dffa6105573</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>X</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>TouchScreenReport</Scope>
+      <Scope>AccelerometerReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>a2d9df0f07baaff3c26b0daf9c3c782de</Anchor>
+    <Anchor>a9bf69417e6baff5a21f69e26db816cf8</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>X</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GyroscopeReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>af38789c55fbcecd45efefb124bba3979</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>X</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>MagnetometerReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a6b0fbf3df860ee2028b5204027bc1688</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3952,17 +4012,37 @@
       <Scope>MouseReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>ad78247604ee68b483bec72e682b1ef71</Anchor>
+    <Anchor>ab1749d3991172eaa78eec8bce0370882</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
       <Name>Y</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>TouchScreenReport</Scope>
+      <Scope>AccelerometerReport</Scope>
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
-    <Anchor>a791863f8aa872fc18aef188a85436abe</Anchor>
+    <Anchor>aebbcd9d70f4f3f23d5ed8405e1e265c3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Y</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GyroscopeReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>abf2507b360fbf829f6dc197f505d0eb5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Y</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>MagnetometerReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a314fef6d11fdbcd92e8d2c23ed55a164</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3983,6 +4063,36 @@
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>aa8d96a2473f48cd0f643552256ed37a4</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Z</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>AccelerometerReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>accd7e1054ac03e55b93fd033b8371b8d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Z</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>GyroscopeReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a76de7c80c1af67413455fcf4d76d691e</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>Z</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>MagnetometerReport</Scope>
+    </TokenIdentifier>
+    <Path>de/ded/input_8h.html</Path>
+    <Anchor>a072fe487c2498b2c7788e6e18769aecb</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5861,7 +5971,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a3239590e1f7aff7e76f44f58d69e9bc5</Anchor>
+    <Anchor>a1fb45c38180bf67f6be87ba69f51767d</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -6541,7 +6651,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a4b3bbeda6f0879e6c0ff493261f9da58</Anchor>
+    <Anchor>a88f7cce7b89dc378890059b1377ac1e8</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -9516,16 +9626,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>KEY_PRESSED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7</Anchor>
-    <DeclaredIn>input.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>KEY_PRINT_SCREEN</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -11172,16 +11272,6 @@
     </TokenIdentifier>
     <Path>de/ded/input_8h.html</Path>
     <Anchor>a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f</Anchor>
-    <DeclaredIn>input.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>KEY_PRESSED</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>de/ded/input_8h.html</Path>
-    <Anchor>a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7</Anchor>
     <DeclaredIn>input.h</DeclaredIn>
   </Token>
   <Token>
@@ -16161,7 +16251,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>ab53a2fcfa97ab0e1e1e4ee10efdc8b8e</Anchor>
+    <Anchor>aa24b93ab6e4356aa508f3c530aa20312</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -18171,7 +18261,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a2a0c477bbf828a8b3a8f3160f03654e9</Anchor>
+    <Anchor>a7a3e287b3bcaa3c1e81cc0696576c797</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -18201,7 +18291,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a66fc152b9f114120893eae6d2d9d3b70</Anchor>
+    <Anchor>a30b4856315882c80163667eef569bd78</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -18241,7 +18331,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>ab4c17bf5cad71baceceef98d6d0b2aec</Anchor>
+    <Anchor>a95f8abdfeb160bee442f4e1a655c6a55</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>
@@ -18251,7 +18341,7 @@
       <Type>data</Type>
     </TokenIdentifier>
     <Path>dc/de4/usb_8h.html</Path>
-    <Anchor>a92822edc6d04a4c034833721a628c9ba</Anchor>
+    <Anchor>aa68583e7d8288c9f2ecdeb450806a276</Anchor>
     <DeclaredIn>usb.h</DeclaredIn>
   </Token>
   <Token>

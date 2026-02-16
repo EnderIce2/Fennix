@@ -38,9 +38,9 @@
           <Path>annotated.html</Path>
         <Subnodes>
            <Node>
-            <Name>.__unnamed24__</Name>
+            <Name>.__unnamed20__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d5/d61/struct_8____unnamed24____</Anchor>
+            <Anchor>d9/d38/struct_8____unnamed20____</Anchor>
           <Subnodes>
              <Node>
               <Name>Direction</Name>
@@ -60,9 +60,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>.__unnamed42__</Name>
+            <Name>.__unnamed38__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d2/db4/struct_8____unnamed42____</Anchor>
+            <Anchor>d8/d78/struct_8____unnamed38____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved</Name>
@@ -82,9 +82,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>.__unnamed44__</Name>
+            <Name>.__unnamed40__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d5/da7/struct_8____unnamed44____</Anchor>
+            <Anchor>d7/d4b/struct_8____unnamed40____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved</Name>
@@ -104,9 +104,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>.__unnamed54__</Name>
+            <Name>.__unnamed50__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d3/dd1/struct_8____unnamed54____</Anchor>
+            <Anchor>d8/dc4/struct_8____unnamed50____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved0</Name>
@@ -171,9 +171,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>.__unnamed56__</Name>
+            <Name>.__unnamed52__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>db/d79/struct_8____unnamed56____</Anchor>
+            <Anchor>d4/da7/struct_8____unnamed52____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved0</Name>
@@ -654,6 +654,23 @@
             <Name>AccelerometerReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d8/d16/structAccelerometerReport</Anchor>
+          <Subnodes>
+             <Node>
+              <Name>X</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a9bf69417e6baff5a21f69e26db816cf8</Anchor>
+             </Node>
+             <Node>
+              <Name>Y</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>aebbcd9d70f4f3f23d5ed8405e1e265c3</Anchor>
+             </Node>
+             <Node>
+              <Name>Z</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>accd7e1054ac03e55b93fd033b8371b8d</Anchor>
+             </Node>
+            </Subnodes>
            </Node>
            <Node>
             <Name>BlockDevice</Name>
@@ -722,7 +739,7 @@
              <Node>
               <Name>inode</Name>
               <Path>df/d26/fs_8h.html</Path>
-              <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
+              <Anchor>a8bec4f04ae605c9a4695cd78904ddbe3</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -848,11 +865,65 @@
             <Name>GamepadReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d6/dda/structGamepadReport</Anchor>
+          <Subnodes>
+             <Node>
+              <Name>Buttons</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a19c64e338041aa1015153f467d743095</Anchor>
+             </Node>
+             <Node>
+              <Name>LeftTrigger</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>ae23170622454a01e0addbea4e31618bd</Anchor>
+             </Node>
+             <Node>
+              <Name>LeftX</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>aeed0bf261885fd03488b0a5bc268ff03</Anchor>
+             </Node>
+             <Node>
+              <Name>LeftY</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a892b64906845331dec6bbfd827abf30c</Anchor>
+             </Node>
+             <Node>
+              <Name>RightTrigger</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a64c7d2224944fdffaca08eb547aa004c</Anchor>
+             </Node>
+             <Node>
+              <Name>RightX</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a6c906e95b12502da51f0f6ce505a0c1c</Anchor>
+             </Node>
+             <Node>
+              <Name>RightY</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a6df5b5be92c0c402aa6578c68be62d23</Anchor>
+             </Node>
+            </Subnodes>
            </Node>
            <Node>
             <Name>GyroscopeReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d4/daf/structGyroscopeReport</Anchor>
+          <Subnodes>
+             <Node>
+              <Name>X</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>af38789c55fbcecd45efefb124bba3979</Anchor>
+             </Node>
+             <Node>
+              <Name>Y</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>abf2507b360fbf829f6dc197f505d0eb5</Anchor>
+             </Node>
+             <Node>
+              <Name>Z</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a76de7c80c1af67413455fcf4d76d691e</Anchor>
+             </Node>
+            </Subnodes>
            </Node>
            <Node>
             <Name>Inode</Name>
@@ -1010,9 +1081,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>InputReport.__unnamed18__</Name>
+            <Name>InputReport.__unnamed13__</Name>
             <Path>de/ded/input_8h.html</Path>
-            <Anchor>d9/d70/unionInputReport_8____unnamed18____</Anchor>
+            <Anchor>de/d5c/unionInputReport_8____unnamed13____</Anchor>
           <Subnodes>
              <Node>
               <Name>Accelerometer</Name>
@@ -1099,38 +1170,14 @@
             <Anchor>d1/da7/structKeyboardReport</Anchor>
           <Subnodes>
              <Node>
-              <Name>Character</Name>
-              <Path>de/ded/input_8h.html</Path>
-              <Anchor>a3c7b23790a7fff8622f8552c7bd1b2f5</Anchor>
-             </Node>
-             <Node>
               <Name>Key</Name>
               <Path>de/ded/input_8h.html</Path>
-              <Anchor>a173d8f2a67aa82689612753fad2e5095</Anchor>
+              <Anchor>ae806f4d7a120296cc7d1e4b85df6d1ea</Anchor>
              </Node>
-            </Subnodes>
-           </Node>
-           <Node>
-            <Name>KeyboardReport.__unnamed13__</Name>
-            <Path>de/ded/input_8h.html</Path>
-            <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
-          <Subnodes>
              <Node>
-              <Name>Value</Name>
+              <Name>Pressed</Name>
               <Path>de/ded/input_8h.html</Path>
-              <Anchor>a689202409e48743b914713f96d93947c</Anchor>
-             </Node>
-            </Subnodes>
-           </Node>
-           <Node>
-            <Name>KeyboardReport.__unnamed13__.__unnamed16__</Name>
-            <Path>de/ded/input_8h.html</Path>
-            <Anchor>d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____</Anchor>
-          <Subnodes>
-             <Node>
-              <Name>IsScanCode</Name>
-              <Path>de/ded/input_8h.html</Path>
-              <Anchor>aa51f9b08057b8f0bf003cd592bbe248b</Anchor>
+              <Anchor>a6cf4d0f132d4290ea31f6270c2d4afb5</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -1242,6 +1289,23 @@
             <Name>MagnetometerReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d4/d9c/structMagnetometerReport</Anchor>
+          <Subnodes>
+             <Node>
+              <Name>X</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a6b0fbf3df860ee2028b5204027bc1688</Anchor>
+             </Node>
+             <Node>
+              <Name>Y</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a314fef6d11fdbcd92e8d2c23ed55a164</Anchor>
+             </Node>
+             <Node>
+              <Name>Z</Name>
+              <Path>de/ded/input_8h.html</Path>
+              <Anchor>a072fe487c2498b2c7788e6e18769aecb</Anchor>
+             </Node>
+            </Subnodes>
            </Node>
            <Node>
             <Name>MouseReport</Name>
@@ -1296,12 +1360,12 @@
              <Node>
               <Name>X</Name>
               <Path>de/ded/input_8h.html</Path>
-              <Anchor>a2034158134bad2907f7aca9f1df5168d</Anchor>
+              <Anchor>aa3219895b4b7bac808968dffa6105573</Anchor>
              </Node>
              <Node>
               <Name>Y</Name>
               <Path>de/ded/input_8h.html</Path>
-              <Anchor>ad78247604ee68b483bec72e682b1ef71</Anchor>
+              <Anchor>ab1749d3991172eaa78eec8bce0370882</Anchor>
              </Node>
              <Node>
               <Name>Z</Name>
@@ -1617,23 +1681,6 @@
             <Name>TouchScreenReport</Name>
             <Path>de/ded/input_8h.html</Path>
             <Anchor>d1/df2/structTouchScreenReport</Anchor>
-          <Subnodes>
-             <Node>
-              <Name>Pressure</Name>
-              <Path>de/ded/input_8h.html</Path>
-              <Anchor>a1b34c3fecf099e318e4e761e49e5a655</Anchor>
-             </Node>
-             <Node>
-              <Name>X</Name>
-              <Path>de/ded/input_8h.html</Path>
-              <Anchor>a2d9df0f07baaff3c26b0daf9c3c782de</Anchor>
-             </Node>
-             <Node>
-              <Name>Y</Name>
-              <Path>de/ded/input_8h.html</Path>
-              <Anchor>a791863f8aa872fc18aef188a85436abe</Anchor>
-             </Node>
-            </Subnodes>
            </Node>
            <Node>
             <Name>USBConfigurationDescriptor</Name>
@@ -1860,7 +1907,7 @@
              <Node>
               <Name>bmRequestType</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>a6612ab837c2f2651c9930f0a397f9052</Anchor>
+              <Anchor>a12c370e2ab1046c1a0fffdde5feb5517</Anchor>
              </Node>
              <Node>
               <Name>bRequest</Name>
@@ -1897,9 +1944,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>USBDeviceRequest.bmRequestType.__unnamed21__</Name>
+            <Name>USBDeviceRequest.bmRequestType.__unnamed17__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>da/d31/structUSBDeviceRequest_8bmRequestType_8____unnamed21____</Anchor>
+            <Anchor>df/dc4/structUSBDeviceRequest_8bmRequestType_8____unnamed17____</Anchor>
           <Subnodes>
              <Node>
               <Name>Direction</Name>
@@ -2015,7 +2062,7 @@
              <Node>
               <Name>Descriptor</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>ad15186d21a59126e6f36afef5cfcf050</Anchor>
+              <Anchor>a03da6f0d0b37df56696d448f5645caed</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -2069,7 +2116,7 @@
              <Node>
               <Name>u</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>acd96cc6fc64751cd63e500f91d800749</Anchor>
+              <Anchor>a900ca1bff68c04899e97ffff989b049a</Anchor>
              </Node>
              <Node>
               <Name>wHubCharacteristics</Name>
@@ -2091,12 +2138,12 @@
              <Node>
               <Name>wHubChange</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>a219b5fcf1790030feba87b4f065495ee</Anchor>
+              <Anchor>a6060ab0a49b0292d94efe9eaff1a5951</Anchor>
              </Node>
              <Node>
               <Name>wHubStatus</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>aec384788ae5eab823b1ba232163aeb6d</Anchor>
+              <Anchor>a271a94558ca87274b450baed0e8d7bf1</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -2113,9 +2160,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>USBHubStatus.wHubChange.__unnamed38__</Name>
+            <Name>USBHubStatus.wHubChange.__unnamed34__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d0/dd1/structUSBHubStatus_8wHubChange_8____unnamed38____</Anchor>
+            <Anchor>d7/ddd/structUSBHubStatus_8wHubChange_8____unnamed34____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved</Name>
@@ -2147,9 +2194,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>USBHubStatus.wHubStatus.__unnamed36__</Name>
+            <Name>USBHubStatus.wHubStatus.__unnamed32__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d1/de3/structUSBHubStatus_8wHubStatus_8____unnamed36____</Anchor>
+            <Anchor>d5/dec/structUSBHubStatus_8wHubStatus_8____unnamed32____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved</Name>
@@ -2228,12 +2275,12 @@
              <Node>
               <Name>wPortChange</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>a0ca19192e4103e1a34f5243c11b095c1</Anchor>
+              <Anchor>af4e9bec224640cf2f9fb3eb10b315457</Anchor>
              </Node>
              <Node>
               <Name>wPortStatus</Name>
               <Path>dc/de4/usb_8h.html</Path>
-              <Anchor>aa9314ab632cb04c5620f2544c690e7fa</Anchor>
+              <Anchor>a31ae13255cdb67e07cda92945803ae17</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -2250,9 +2297,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>USBPortStatus.wPortChange.__unnamed50__</Name>
+            <Name>USBPortStatus.wPortChange.__unnamed46__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d4/dd2/structUSBPortStatus_8wPortChange_8____unnamed50____</Anchor>
+            <Anchor>d1/d79/structUSBPortStatus_8wPortChange_8____unnamed46____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved0</Name>
@@ -2299,9 +2346,9 @@
             </Subnodes>
            </Node>
            <Node>
-            <Name>USBPortStatus.wPortStatus.__unnamed48__</Name>
+            <Name>USBPortStatus.wPortStatus.__unnamed44__</Name>
             <Path>dc/de4/usb_8h.html</Path>
-            <Anchor>d4/d51/structUSBPortStatus_8wPortStatus_8____unnamed48____</Anchor>
+            <Anchor>db/d98/structUSBPortStatus_8wPortStatus_8____unnamed44____</Anchor>
           <Subnodes>
              <Node>
               <Name>__reserved0</Name>
@@ -5052,7 +5099,7 @@
                      <Node>
                       <Name>inode</Name>
                       <Path>df/d26/fs_8h.html</Path>
-                      <Anchor>a0c38798915754857c9a208957799ae01</Anchor>
+                      <Anchor>a8bec4f04ae605c9a4695cd78904ddbe3</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -5598,14 +5645,14 @@
                     <Anchor>d1/da7/structKeyboardReport</Anchor>
                   <Subnodes>
                      <Node>
-                      <Name>Character</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a3c7b23790a7fff8622f8552c7bd1b2f5</Anchor>
-                     </Node>
-                     <Node>
                       <Name>Key</Name>
                       <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a173d8f2a67aa82689612753fad2e5095</Anchor>
+                      <Anchor>ae806f4d7a120296cc7d1e4b85df6d1ea</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Pressed</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a6cf4d0f132d4290ea31f6270c2d4afb5</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -5662,12 +5709,12 @@
                      <Node>
                       <Name>X</Name>
                       <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a2034158134bad2907f7aca9f1df5168d</Anchor>
+                      <Anchor>aa3219895b4b7bac808968dffa6105573</Anchor>
                      </Node>
                      <Node>
                       <Name>Y</Name>
                       <Path>de/ded/input_8h.html</Path>
-                      <Anchor>ad78247604ee68b483bec72e682b1ef71</Anchor>
+                      <Anchor>ab1749d3991172eaa78eec8bce0370882</Anchor>
                      </Node>
                      <Node>
                       <Name>Z</Name>
@@ -5685,43 +5732,114 @@
                     <Name>TouchScreenReport</Name>
                     <Path>de/ded/input_8h.html</Path>
                     <Anchor>d1/df2/structTouchScreenReport</Anchor>
-                  <Subnodes>
-                     <Node>
-                      <Name>Pressure</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a1b34c3fecf099e318e4e761e49e5a655</Anchor>
-                     </Node>
-                     <Node>
-                      <Name>X</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a2d9df0f07baaff3c26b0daf9c3c782de</Anchor>
-                     </Node>
-                     <Node>
-                      <Name>Y</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a791863f8aa872fc18aef188a85436abe</Anchor>
-                     </Node>
-                    </Subnodes>
                    </Node>
                    <Node>
                     <Name>GamepadReport</Name>
                     <Path>de/ded/input_8h.html</Path>
                     <Anchor>d6/dda/structGamepadReport</Anchor>
+                  <Subnodes>
+                     <Node>
+                      <Name>Buttons</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a19c64e338041aa1015153f467d743095</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>LeftTrigger</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>ae23170622454a01e0addbea4e31618bd</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>LeftX</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>aeed0bf261885fd03488b0a5bc268ff03</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>LeftY</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a892b64906845331dec6bbfd827abf30c</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>RightTrigger</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a64c7d2224944fdffaca08eb547aa004c</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>RightX</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a6c906e95b12502da51f0f6ce505a0c1c</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>RightY</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a6df5b5be92c0c402aa6578c68be62d23</Anchor>
+                     </Node>
+                    </Subnodes>
                    </Node>
                    <Node>
                     <Name>AccelerometerReport</Name>
                     <Path>de/ded/input_8h.html</Path>
                     <Anchor>d8/d16/structAccelerometerReport</Anchor>
+                  <Subnodes>
+                     <Node>
+                      <Name>X</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a9bf69417e6baff5a21f69e26db816cf8</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Y</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>aebbcd9d70f4f3f23d5ed8405e1e265c3</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Z</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>accd7e1054ac03e55b93fd033b8371b8d</Anchor>
+                     </Node>
+                    </Subnodes>
                    </Node>
                    <Node>
                     <Name>GyroscopeReport</Name>
                     <Path>de/ded/input_8h.html</Path>
                     <Anchor>d4/daf/structGyroscopeReport</Anchor>
+                  <Subnodes>
+                     <Node>
+                      <Name>X</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>af38789c55fbcecd45efefb124bba3979</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Y</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>abf2507b360fbf829f6dc197f505d0eb5</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Z</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a76de7c80c1af67413455fcf4d76d691e</Anchor>
+                     </Node>
+                    </Subnodes>
                    </Node>
                    <Node>
                     <Name>MagnetometerReport</Name>
                     <Path>de/ded/input_8h.html</Path>
                     <Anchor>d4/d9c/structMagnetometerReport</Anchor>
+                  <Subnodes>
+                     <Node>
+                      <Name>X</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a6b0fbf3df860ee2028b5204027bc1688</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Y</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a314fef6d11fdbcd92e8d2c23ed55a164</Anchor>
+                     </Node>
+                     <Node>
+                      <Name>Z</Name>
+                      <Path>de/ded/input_8h.html</Path>
+                      <Anchor>a072fe487c2498b2c7788e6e18769aecb</Anchor>
+                     </Node>
+                    </Subnodes>
                    </Node>
                    <Node>
                     <Name>InputReport</Name>
@@ -5741,33 +5859,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>KeyboardReport.__unnamed13__</Name>
+                    <Name>InputReport.__unnamed13__</Name>
                     <Path>de/ded/input_8h.html</Path>
-                    <Anchor>d4/dcb/unionKeyboardReport_8____unnamed13____</Anchor>
-                  <Subnodes>
-                     <Node>
-                      <Name>Value</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a689202409e48743b914713f96d93947c</Anchor>
-                     </Node>
-                    </Subnodes>
-                   </Node>
-                   <Node>
-                    <Name>KeyboardReport.__unnamed13__.__unnamed16__</Name>
-                    <Path>de/ded/input_8h.html</Path>
-                    <Anchor>d3/d67/structKeyboardReport_8____unnamed13_____8____unnamed16____</Anchor>
-                  <Subnodes>
-                     <Node>
-                      <Name>IsScanCode</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>aa51f9b08057b8f0bf003cd592bbe248b</Anchor>
-                     </Node>
-                    </Subnodes>
-                   </Node>
-                   <Node>
-                    <Name>InputReport.__unnamed18__</Name>
-                    <Path>de/ded/input_8h.html</Path>
-                    <Anchor>d9/d70/unionInputReport_8____unnamed18____</Anchor>
+                    <Anchor>de/d5c/unionInputReport_8____unnamed13____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Accelerometer</Name>
@@ -6435,11 +6529,6 @@
                       <Name>KEY_ACPI_WAKE</Name>
                       <Path>de/ded/input_8h.html</Path>
                       <Anchor>a505d8572bf9cf882f643df6a7f695d35a38e55880dfd22aeee6ece9bc75ccdf7f</Anchor>
-                     </Node>
-                     <Node>
-                      <Name>KEY_PRESSED</Name>
-                      <Path>de/ded/input_8h.html</Path>
-                      <Anchor>a505d8572bf9cf882f643df6a7f695d35ac2439afec39a5b43a1fd36a4316379a7</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -8270,7 +8359,7 @@
                      <Node>
                       <Name>bmRequestType</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>a6612ab837c2f2651c9930f0a397f9052</Anchor>
+                      <Anchor>a12c370e2ab1046c1a0fffdde5feb5517</Anchor>
                      </Node>
                      <Node>
                       <Name>bRequest</Name>
@@ -8562,7 +8651,7 @@
                      <Node>
                       <Name>Descriptor</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>ad15186d21a59126e6f36afef5cfcf050</Anchor>
+                      <Anchor>a03da6f0d0b37df56696d448f5645caed</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -8599,7 +8688,7 @@
                      <Node>
                       <Name>u</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>acd96cc6fc64751cd63e500f91d800749</Anchor>
+                      <Anchor>a900ca1bff68c04899e97ffff989b049a</Anchor>
                      </Node>
                      <Node>
                       <Name>wHubCharacteristics</Name>
@@ -8616,12 +8705,12 @@
                      <Node>
                       <Name>wHubChange</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>a219b5fcf1790030feba87b4f065495ee</Anchor>
+                      <Anchor>a6060ab0a49b0292d94efe9eaff1a5951</Anchor>
                      </Node>
                      <Node>
                       <Name>wHubStatus</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>aec384788ae5eab823b1ba232163aeb6d</Anchor>
+                      <Anchor>a271a94558ca87274b450baed0e8d7bf1</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -8633,12 +8722,12 @@
                      <Node>
                       <Name>wPortChange</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>a0ca19192e4103e1a34f5243c11b095c1</Anchor>
+                      <Anchor>af4e9bec224640cf2f9fb3eb10b315457</Anchor>
                      </Node>
                      <Node>
                       <Name>wPortStatus</Name>
                       <Path>dc/de4/usb_8h.html</Path>
-                      <Anchor>aa9314ab632cb04c5620f2544c690e7fa</Anchor>
+                      <Anchor>a31ae13255cdb67e07cda92945803ae17</Anchor>
                      </Node>
                     </Subnodes>
                    </Node>
@@ -8836,9 +8925,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>USBDeviceRequest.bmRequestType.__unnamed21__</Name>
+                    <Name>USBDeviceRequest.bmRequestType.__unnamed17__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>da/d31/structUSBDeviceRequest_8bmRequestType_8____unnamed21____</Anchor>
+                    <Anchor>df/dc4/structUSBDeviceRequest_8bmRequestType_8____unnamed17____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Direction</Name>
@@ -8858,9 +8947,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>.__unnamed24__</Name>
+                    <Name>.__unnamed20__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d5/d61/struct_8____unnamed24____</Anchor>
+                    <Anchor>d9/d38/struct_8____unnamed20____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>Direction</Name>
@@ -8914,9 +9003,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>USBHubStatus.wHubStatus.__unnamed36__</Name>
+                    <Name>USBHubStatus.wHubStatus.__unnamed32__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d1/de3/structUSBHubStatus_8wHubStatus_8____unnamed36____</Anchor>
+                    <Anchor>d5/dec/structUSBHubStatus_8wHubStatus_8____unnamed32____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved</Name>
@@ -8948,9 +9037,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>USBHubStatus.wHubChange.__unnamed38__</Name>
+                    <Name>USBHubStatus.wHubChange.__unnamed34__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d0/dd1/structUSBHubStatus_8wHubChange_8____unnamed38____</Anchor>
+                    <Anchor>d7/ddd/structUSBHubStatus_8wHubChange_8____unnamed34____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved</Name>
@@ -8970,9 +9059,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>.__unnamed42__</Name>
+                    <Name>.__unnamed38__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d2/db4/struct_8____unnamed42____</Anchor>
+                    <Anchor>d8/d78/struct_8____unnamed38____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved</Name>
@@ -8992,9 +9081,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>.__unnamed44__</Name>
+                    <Name>.__unnamed40__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d5/da7/struct_8____unnamed44____</Anchor>
+                    <Anchor>d7/d4b/struct_8____unnamed40____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved</Name>
@@ -9026,9 +9115,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>USBPortStatus.wPortStatus.__unnamed48__</Name>
+                    <Name>USBPortStatus.wPortStatus.__unnamed44__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d4/d51/structUSBPortStatus_8wPortStatus_8____unnamed48____</Anchor>
+                    <Anchor>db/d98/structUSBPortStatus_8wPortStatus_8____unnamed44____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved0</Name>
@@ -9105,9 +9194,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>USBPortStatus.wPortChange.__unnamed50__</Name>
+                    <Name>USBPortStatus.wPortChange.__unnamed46__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d4/dd2/structUSBPortStatus_8wPortChange_8____unnamed50____</Anchor>
+                    <Anchor>d1/d79/structUSBPortStatus_8wPortChange_8____unnamed46____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved0</Name>
@@ -9142,9 +9231,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>.__unnamed54__</Name>
+                    <Name>.__unnamed50__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>d3/dd1/struct_8____unnamed54____</Anchor>
+                    <Anchor>d8/dc4/struct_8____unnamed50____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved0</Name>
@@ -9209,9 +9298,9 @@
                     </Subnodes>
                    </Node>
                    <Node>
-                    <Name>.__unnamed56__</Name>
+                    <Name>.__unnamed52__</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>db/d79/struct_8____unnamed56____</Anchor>
+                    <Anchor>d4/da7/struct_8____unnamed52____</Anchor>
                   <Subnodes>
                      <Node>
                       <Name>__reserved0</Name>
@@ -10001,7 +10090,7 @@
                    <Node>
                     <Name>bmRequestType</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>a3239590e1f7aff7e76f44f58d69e9bc5</Anchor>
+                    <Anchor>a1fb45c38180bf67f6be87ba69f51767d</Anchor>
                    </Node>
                    <Node>
                     <Name>bNbrPorts</Name>
@@ -10041,7 +10130,7 @@
                    <Node>
                     <Name>Descriptor</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>a4b3bbeda6f0879e6c0ff493261f9da58</Anchor>
+                    <Anchor>a88f7cce7b89dc378890059b1377ac1e8</Anchor>
                    </Node>
                    <Node>
                     <Name>DeviceRemovable</Name>
@@ -10091,12 +10180,12 @@
                    <Node>
                     <Name>u</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>ab53a2fcfa97ab0e1e1e4ee10efdc8b8e</Anchor>
+                    <Anchor>aa24b93ab6e4356aa508f3c530aa20312</Anchor>
                    </Node>
                    <Node>
                     <Name>wHubChange</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>a2a0c477bbf828a8b3a8f3160f03654e9</Anchor>
+                    <Anchor>a7a3e287b3bcaa3c1e81cc0696576c797</Anchor>
                    </Node>
                    <Node>
                     <Name>wHubCharacteristics</Name>
@@ -10111,7 +10200,7 @@
                    <Node>
                     <Name>wHubStatus</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>a66fc152b9f114120893eae6d2d9d3b70</Anchor>
+                    <Anchor>a30b4856315882c80163667eef569bd78</Anchor>
                    </Node>
                    <Node>
                     <Name>wIndex</Name>
@@ -10131,12 +10220,12 @@
                    <Node>
                     <Name>wPortChange</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>ab4c17bf5cad71baceceef98d6d0b2aec</Anchor>
+                    <Anchor>a95f8abdfeb160bee442f4e1a655c6a55</Anchor>
                    </Node>
                    <Node>
                     <Name>wPortStatus</Name>
                     <Path>dc/de4/usb_8h.html</Path>
-                    <Anchor>a92822edc6d04a4c034833721a628c9ba</Anchor>
+                    <Anchor>aa68583e7d8288c9f2ecdeb450806a276</Anchor>
                    </Node>
                    <Node>
                     <Name>wString</Name>

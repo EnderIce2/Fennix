@@ -7,10 +7,13 @@ var searchData=
   ['l_5fwhence_4',['l_whence',['../d7/d9f/fcntl_8h.html#acea10bfe92ee06d519c4850739924198',1,'flock']]],
   ['latencytimer_5',['LatencyTimer',['../d9/d97/pci_8h.html#a3337cb00eab6cb94e1e2939d405f9642',1,'__attribute__']]],
   ['leftbutton_6',['leftbutton',['../de/ded/input_8h.html#a07f571f12b57c589630dcde60ef4e660',1,'MouseReport::LeftButton'],['../d1/de1/aip_8h.html#afed3db2529852271d278ff08791fa996',1,'LeftButton:&#160;aip.h']]],
-  ['legacybaseaddress_7',['LegacyBaseAddress',['../d9/d97/pci_8h.html#a1fd8e7908092abd685bec191512dbf52',1,'__attribute__']]],
-  ['length_8',['Length',['../d8/dd1/structUSBRequestBlock.html#a57b6a7f579b075374465d1f3b756d882',1,'USBRequestBlock']]],
-  ['license_9',['License',['../db/de4/driver_8h.html#ab5668e50b63547b42892315f1f59da77',1,'__DriverInfo']]],
-  ['lookup_10',['lookup',['../db/de6/structInodeOperations.html#a7f143243e5be1fc608f99072d3c93cb5',1,'InodeOperations::Lookup'],['../df/d26/fs_8h.html#ac677cf5260fef7aeb61ff3ad1bfc0d74',1,'Lookup:&#160;fs.h']]],
-  ['lps_11',['lps',['../dc/de4/usb_8h.html#af0bd8ffe783f0ce4bf0fb76c508284f7',1,'USBHubStatus.wHubStatus.__unnamed36__::LPS'],['../dc/de4/usb_8h.html#af0bd8ffe783f0ce4bf0fb76c508284f7',1,'.__unnamed42__::LPS']]],
-  ['lpsc_12',['lpsc',['../dc/de4/usb_8h.html#a1d68e7883970b1ca56623cd245b7d368',1,'USBHubStatus.wHubChange.__unnamed38__::LPSC'],['../dc/de4/usb_8h.html#a1d68e7883970b1ca56623cd245b7d368',1,'.__unnamed44__::LPSC']]]
+  ['lefttrigger_7',['LeftTrigger',['../de/ded/input_8h.html#ae23170622454a01e0addbea4e31618bd',1,'GamepadReport']]],
+  ['leftx_8',['LeftX',['../de/ded/input_8h.html#aeed0bf261885fd03488b0a5bc268ff03',1,'GamepadReport']]],
+  ['lefty_9',['LeftY',['../de/ded/input_8h.html#a892b64906845331dec6bbfd827abf30c',1,'GamepadReport']]],
+  ['legacybaseaddress_10',['LegacyBaseAddress',['../d9/d97/pci_8h.html#a1fd8e7908092abd685bec191512dbf52',1,'__attribute__']]],
+  ['length_11',['Length',['../d8/dd1/structUSBRequestBlock.html#a57b6a7f579b075374465d1f3b756d882',1,'USBRequestBlock']]],
+  ['license_12',['License',['../db/de4/driver_8h.html#ab5668e50b63547b42892315f1f59da77',1,'__DriverInfo']]],
+  ['lookup_13',['lookup',['../db/de6/structInodeOperations.html#a7f143243e5be1fc608f99072d3c93cb5',1,'InodeOperations::Lookup'],['../df/d26/fs_8h.html#ac677cf5260fef7aeb61ff3ad1bfc0d74',1,'Lookup:&#160;fs.h']]],
+  ['lps_14',['lps',['../dc/de4/usb_8h.html#af0bd8ffe783f0ce4bf0fb76c508284f7',1,'USBHubStatus.wHubStatus.__unnamed32__::LPS'],['../dc/de4/usb_8h.html#af0bd8ffe783f0ce4bf0fb76c508284f7',1,'.__unnamed38__::LPS']]],
+  ['lpsc_15',['lpsc',['../dc/de4/usb_8h.html#a1d68e7883970b1ca56623cd245b7d368',1,'USBHubStatus.wHubChange.__unnamed34__::LPSC'],['../dc/de4/usb_8h.html#a1d68e7883970b1ca56623cd245b7d368',1,'.__unnamed40__::LPSC']]]
 ];
