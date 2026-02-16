@@ -154,12 +154,12 @@ void KShellThread()
 			}
 
 			const KeyScanCodes &sc = scBuf.Key;
-			switch (sc & ~KEY_PRESSED)
+			switch (sc)
 			{
 			case KEY_LEFT_CTRL:
 			case KEY_RIGHT_CTRL:
 			{
-				if (sc & KEY_PRESSED)
+				if (scBuf.Pressed)
 					ctrlDown = true;
 				else
 					ctrlDown = false;
@@ -168,7 +168,7 @@ void KShellThread()
 			case KEY_LEFT_SHIFT:
 			case KEY_RIGHT_SHIFT:
 			{
-				if (sc & KEY_PRESSED)
+				if (scBuf.Pressed)
 					upperCase = true;
 				else
 					upperCase = false;
@@ -176,7 +176,7 @@ void KShellThread()
 			}
 			case KEY_TAB:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (!tabDblPress)
@@ -211,7 +211,7 @@ void KShellThread()
 			}
 			case KEY_BACKSPACE:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (bsCount == 0)
@@ -242,7 +242,7 @@ void KShellThread()
 			}
 			case KEY_DELETE:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (bsCount == 0)
@@ -266,7 +266,7 @@ void KShellThread()
 			}
 			case KEY_UP_ARROW:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (history.size() == 0 ||
@@ -291,7 +291,7 @@ void KShellThread()
 			}
 			case KEY_DOWN_ARROW:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (history.size() == 0 ||
@@ -325,7 +325,7 @@ void KShellThread()
 			}
 			case KEY_LEFT_ARROW:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (seekCount == 0)
@@ -359,7 +359,7 @@ void KShellThread()
 			}
 			case KEY_RIGHT_ARROW:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (seekCount == bsCount)
@@ -391,7 +391,7 @@ void KShellThread()
 			}
 			case KEY_HOME:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (homeX == 0 || homeY == 0)
@@ -404,7 +404,7 @@ void KShellThread()
 			}
 			case KEY_END:
 			{
-				if (!(sc & KEY_PRESSED))
+				if (!(scBuf.Pressed))
 					continue;
 
 				if (unseekX == 0 || unseekY == 0)
@@ -418,7 +418,7 @@ void KShellThread()
 				break;
 			}
 
-			if (!(sc & KEY_PRESSED))
+			if (!(scBuf.Pressed))
 				continue;
 
 			if (!Driver::IsValidChar(sc))

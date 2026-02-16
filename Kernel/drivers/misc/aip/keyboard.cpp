@@ -41,8 +41,7 @@ namespace Driver::AdvancedIntegratedPeripheral
 		kir.Type = INPUT_TYPE_KEYBOARD;
 		kir.Device = Device;
 		kir.Keyboard.Key = (KeyScanCodes)(ScanCode);
-		kir.Keyboard.Key = (KeyScanCodes)((int)kir.Keyboard.Key | (Pressed ? KEY_PRESSED : 0));
-		// kir.Keyboard.Key |= Pressed ? KEY_PRESSED : 0;
+		kir.Keyboard.Pressed = Pressed;
 		v0::ReportInputEvent(DriverID, &kir);
 		return 0;
 	}

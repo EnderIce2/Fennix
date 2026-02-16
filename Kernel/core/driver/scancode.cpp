@@ -318,7 +318,6 @@ namespace Driver
 {
 	char GetScanCode(uint8_t ScanCode, bool Upper)
 	{
-		ScanCode &= 0x7F; /* Remove KEY_PRESSED bit */
 		if (ScanCode >= sizeof(ScanCodeConversionTableLower))
 		{
 			warn("Unknown scancode %x", ScanCode);
@@ -333,7 +332,6 @@ namespace Driver
 
 	char GetControlCharacter(KeyScanCodes ScanCode)
 	{
-		ScanCode = static_cast<KeyScanCodes>(static_cast<int>(ScanCode) & 0x7F); /* Remove KEY_PRESSED bit */
 		switch (ScanCode)
 		{
 		case KEY_2:
@@ -407,7 +405,6 @@ namespace Driver
 
 	bool IsValidChar(uint8_t ScanCode)
 	{
-		ScanCode &= 0x7F; /* Remove KEY_PRESSED bit */
 		if (ScanCode >= sizeof(ScanCodeConversionTableLower))
 			return false;
 

@@ -22,6 +22,17 @@
 
 namespace UniversalSerialBus
 {
+	InputReport kir = {};
+	int ReportKeyboardEvent(uint32_t Key, uint8_t Pressed)
+	{
+		kir.Type = INPUT_TYPE_KEYBOARD;
+		// kir.Device = Device;
+		kir.Keyboard.Key = (KeyScanCodes)(Key);
+		kir.Keyboard.Pressed = Pressed;
+		// v0::ReportInputEvent(DriverID, &kir);
+		return 0;
+	}
+
 	void OnURBCompleteKeyboard(struct USBRequestBlock *urb)
 	{
 		if (urb->Status != USB_REQ_SUCCESS)

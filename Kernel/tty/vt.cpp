@@ -57,10 +57,10 @@ namespace KernelConsole
 
 		DriverManager->GlobalKeyboardInputReports.Read(&report, 1);
 
-		int pkey = report.Key & ~KEY_PRESSED;
+		int pkey = report.Key;
 		if (pkey == KEY_LEFT_SHIFT || pkey == KEY_RIGHT_SHIFT)
 		{
-			if (report.Key & KEY_PRESSED)
+			if (report.Pressed)
 				upperCase = true;
 			else
 				upperCase = false;
@@ -68,7 +68,7 @@ namespace KernelConsole
 		}
 		else if (pkey == KEY_LEFT_CTRL || pkey == KEY_RIGHT_CTRL)
 		{
-			if (report.Key & KEY_PRESSED)
+			if (report.Pressed)
 				controlKey = true;
 			else
 				controlKey = false;
@@ -78,7 +78,7 @@ namespace KernelConsole
 
 		if (controlKey && this->TerminalConfig.c_lflag & ICANON)
 		{
-			if (report.Key & KEY_PRESSED)
+			if (report.Pressed)
 			{
 				char cc = Driver::GetControlCharacter(report.Key);
 				if (cc == 0x00)
@@ -97,7 +97,7 @@ namespace KernelConsole
 			}
 		}
 
-		if (!(report.Key & KEY_PRESSED))
+		if (!(report.Pressed))
 			goto RecheckKeyboard;
 
 		if (!Driver::IsValidChar(report.Key))

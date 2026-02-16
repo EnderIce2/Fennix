@@ -22,6 +22,23 @@
 
 namespace UniversalSerialBus
 {
+	InputReport mir = {};
+	int ReportMouseEvent(uint32_t Key, uint8_t Pressed)
+	{
+		mir.Type = INPUT_TYPE_MOUSE;
+		// mir.Device = MouseDevID;
+		// mir.Mouse.LeftButton = Packet.Base.LeftButton;
+		// mir.Mouse.RightButton = Packet.Base.RightButton;
+		// mir.Mouse.MiddleButton = Packet.Base.MiddleButton;
+		// mir.Mouse.Button4 = Packet.ZMovement.Button4;
+		// mir.Mouse.Button5 = Packet.ZMovement.Button5;
+		// mir.Mouse.X = X;
+		// mir.Mouse.Y = -Y;
+		// mir.Mouse.Z = Packet.ZMovement.Z;
+		// v0::ReportInputEvent(DriverID, &mir);
+		return 0;
+	}
+
 	void OnURBCompleteMouse(struct USBRequestBlock *urb)
 	{
 		if (urb->Status != USB_REQ_SUCCESS)

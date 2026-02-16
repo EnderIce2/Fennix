@@ -28,9 +28,13 @@
 
 struct InodeOperations;
 
+#ifdef __cplusplus
+typedef enum : int
+#else
 typedef enum
+#endif // __cplusplus
 {
-	KEY_1,
+	KEY_1 = 0,
 	KEY_2,
 	KEY_3,
 	KEY_4,
@@ -161,70 +165,87 @@ typedef enum
 	KEY_ACPI_POWER,
 	KEY_ACPI_SLEEP,
 	KEY_ACPI_WAKE,
-
-	KEY_PRESSED = 0x80,
 } KeyScanCodes;
 
 typedef struct
 {
+#ifdef __cplusplus
 	KeyScanCodes Key;
+#else
+	int Key;
+#endif // __cplusplus
 
-	union
-	{
-		struct
-		{
-			char IsScanCode : 1;
-		};
-		char Value;
-	};
-	unsigned char Character;
+	uint8_t Pressed;
 } KeyboardReport;
 
 typedef struct
 {
-	long X, Y;
+	int32_t X, Y;
 	int8_t Z;
-	uint8_t Absolute : 1;
-	uint8_t LeftButton : 1;
-	uint8_t RightButton : 1;
-	uint8_t MiddleButton : 1;
-	uint8_t Button4 : 1;
-	uint8_t Button5 : 1;
-	uint8_t Button6 : 1;
-	uint8_t Button7 : 1;
-	uint8_t Button8 : 1;
+
+	uint8_t Absolute;
+
+	uint8_t LeftButton;
+	uint8_t RightButton;
+	uint8_t MiddleButton;
+
+	uint8_t Button4;
+	uint8_t Button5;
+	uint8_t Button6;
+	uint8_t Button7;
+	uint8_t Button8;
 } MouseReport;
 
 typedef struct
 {
+	/* TODO */
 } JoystickReport;
 
 typedef struct
 {
-	uint16_t X, Y;
-	uint8_t Pressure;
+	/* TODO */
 } TouchScreenReport;
 
 typedef struct
 {
+	int16_t LeftX;
+	int16_t LeftY;
+
+	int16_t RightX;
+	int16_t RightY;
+
+	uint8_t LeftTrigger;
+	uint8_t RightTrigger;
+
+	uint32_t Buttons;
 } GamepadReport;
 
 typedef struct
 {
+	int32_t X;
+	int32_t Y;
+	int32_t Z;
 } AccelerometerReport;
 
 typedef struct
 {
+	int32_t X;
+	int32_t Y;
+	int32_t Z;
 } GyroscopeReport;
 
 typedef struct
 {
+	int32_t X;
+	int32_t Y;
+	int32_t Z;
 } MagnetometerReport;
 
 typedef struct
 {
 	DeviceType Type;
 	dev_t Device;
+
 	union
 	{
 		KeyboardReport Keyboard;
