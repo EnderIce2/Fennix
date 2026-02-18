@@ -448,8 +448,7 @@ namespace Driver::UnixStandardTAR
 					warn("Failed to read header for %s at offset %ld", var->Name.c_str(), var->HeaderOffset);
 					continue;
 				}
-				size_t fileSize = GetSize(header.size);
-				debug("Entry: %s, typeflag: %c, size: %zu, offset: %ld", var->Name.c_str(), header.typeflag[0], fileSize, var->HeaderOffset);
+				debug("Entry: %s, typeflag: %c, size: %zu, offset: %ld", var->Name.c_str(), header.typeflag[0], GetSize(header.size), var->HeaderOffset);
 
 				reclen = (uint16_t)(offsetof(struct kdirent, d_name) + var->Name.size() + 1);
 
@@ -494,7 +493,7 @@ namespace Driver::UnixStandardTAR
 					break;
 				}
 				strncpy(ent->d_name, var->Name.c_str(), strlen(var->Name.c_str()));
-				debug("Added entry: %s, type: %d, size: %zu", var->Name.c_str(), ent->d_type, fileSize);
+				debug("Added entry: %s, type: %d, size: %zu", var->Name.c_str(), ent->d_type, GetSize(header.size));
 				totalSize += reclen;
 				entries++;
 			}

@@ -997,8 +997,10 @@ namespace Driver::OpenHostControllerInterface
 		mmoutl((void *)&regs->HcInterruptEnable, 0);
 		mmoutl((void *)&regs->HcInterruptDisable, (1 << 31));
 
+#ifdef DEBUG
 		uint32_t hcRevision = mminl((void *)&regs->HcRevision) & 0xFF;
 		debug("Host Controller Revision: %d.%d (%#lx)", (hcRevision >> 4) & 0xF, hcRevision & 0xF, hcRevision);
+#endif
 
 		queue = new Queue;
 

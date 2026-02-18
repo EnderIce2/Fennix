@@ -408,7 +408,9 @@ namespace Memory
 			}
 
 			if (Page1GBSupport)
+			{
 				debug("1GB Page Support Enabled");
+			}
 		}
 
 		/* TODO: this could be optimized lol */

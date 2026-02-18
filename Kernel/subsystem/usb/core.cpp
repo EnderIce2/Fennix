@@ -213,7 +213,6 @@ namespace UniversalSerialBus
 		auto_page<uint8_t> configBuf;
 		Memory::Virtual().Map(configBuf.as<void *>(), configBuf.as<void *>(), sizeof(uint8_t), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 		uint8_t pickedConfValue = 0;
-		USBInterfaceDescriptor *pickedIntfDesc = nullptr;
 
 		for (uint8_t confIndex = 0; confIndex < desc->bNumConfigurations; ++confIndex)
 		{
@@ -286,10 +285,12 @@ namespace UniversalSerialBus
 				}
 				case USB_HID_DESCRIPTOR:
 				{
+#ifdef DEBUG
 					USBHIDDescriptor *hidDesc = (USBHIDDescriptor *)data;
 					debug("HID descriptor: %d %d %d %d %d",
 						  hidDesc->bLength, hidDesc->bDescriptorType, hidDesc->bcdHID,
 						  hidDesc->bCountryCode, hidDesc->bNumDescriptors);
+#endif
 					break;
 				}
 				default:

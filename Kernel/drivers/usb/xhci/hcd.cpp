@@ -296,7 +296,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		{
 			uint8_t off = proto->PCT.CompatiblePortOffset();
 			uint8_t offMax = proto->PCT.CompatiblePortOffset() + proto->PCT.CompatiblePortCount();
-			uint8_t cnt = proto->PCT.CompatiblePortCount();
+			// uint8_t cnt = proto->PCT.CompatiblePortCount();
 			uint8_t maxPorts = Cap->HCSPARAMS1.NumberOfPorts();
 
 			for (ssize_t i = off; i < offMax && i < maxPorts + 1; i++)
@@ -382,7 +382,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		CmdRing.EnqueueTRB((TRB *)&eventData);
 		DbManager->RingCommand();
 
-		StatusStageTRB status = {};
+		// StatusStageTRB status = {};
 
 		return ENOSYS;
 	}

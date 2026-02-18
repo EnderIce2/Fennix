@@ -36,7 +36,7 @@ namespace Driver::EnhancedHostControllerInterface
 		for (auto &&dev : Devices)
 		{
 			PCIManager->InitializeDevice(dev, KernelPageTable);
-			PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
+			// PCI::PCIHeader0 *hdr0 = (PCI::PCIHeader0 *)dev.Header;
 		}
 
 		return 0;
