@@ -545,7 +545,7 @@ namespace Tasking
 		PCB *KernelProcess = nullptr;
 		void *Scheduler = nullptr;
 		void *__sched_ctx = nullptr;
-		Memory::VirtualAllocation va = (void *)0xFFFFA00000000000;
+		Memory::VirtualAllocation va = (void *)USER_ALLOC_BASE;
 
 		constexpr TaskArchitecture GetKArch()
 		{

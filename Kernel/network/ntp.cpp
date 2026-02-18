@@ -47,9 +47,9 @@ namespace NetworkNTP
 		netdbg("Requesting time");
 		this->TimeReceived = false;
 
-		NTPHeader ReqPacket;                      // This may require physical memory allocation but Ethernet already has this job.
+		NTPHeader ReqPacket;					  // This may require physical memory allocation but Ethernet already has this job.
 		memset(&ReqPacket, 0, sizeof(NTPHeader)); // Zero out the packet
-		*((char *)&ReqPacket) = 0x1b;             // byteswap nightmare, this is the code below but in little endian
+		*((char *)&ReqPacket) = 0x1b;			  // byteswap nightmare, this is the code below but in little endian
 		// ReqPacket.LeapIndicator = 0;
 		// ReqPacket.VersionNumber = 3;
 		// ReqPacket.Mode = 3;
@@ -70,6 +70,6 @@ namespace NetworkNTP
 
 		uint64_t UnixTimestamp = (b32(this->NTPPacket.TransmitTimestamp[0])) - 2208988800;
 		debug("Unix time: %d", UnixTimestamp);
-		return s_cst(int, UnixTimestamp);
+		return static_cast<int>(UnixTimestamp);
 	}
 }

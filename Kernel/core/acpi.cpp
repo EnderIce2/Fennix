@@ -187,7 +187,7 @@ namespace ACPI
 			warn("%s is not mapped!",
 				 XSDTSupported ? "XSDT" : "RSDT");
 			debug("XSDT: %p", XSDT);
-			Memory::Virtual().Map(XSDT, XSDT, Memory::RW);
+			Memory::Virtual().SingleMap(XSDT, XSDT, Memory::RW);
 		}
 
 		this->SearchTables(XSDT);
@@ -195,9 +195,9 @@ namespace ACPI
 		if (FADT)
 		{
 #if defined(__amd64__) || defined(__i386__)
-			outb(s_cst(uint16_t, FADT->SMI_CommandPort), FADT->AcpiEnable);
+			outb(static_cast<uint16_t>(FADT->SMI_CommandPort), FADT->AcpiEnable);
 			/* TODO: Sleep for ~5 seconds before polling PM1a CB? */
-			while (!(inw(s_cst(uint16_t, FADT->PM1aControlBlock)) & 1))
+			while (!(inw(static_cast<uint16_t>(FADT->PM1aControlBlock)) & 1))
 				CPU::Pause();
 #elif defined(__aarch64__)
 			warn("aarch64 is not supported yet");

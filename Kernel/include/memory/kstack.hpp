@@ -15,8 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_MEMORY_KERNEL_STACK_MANAGER_H__
-#define __FENNIX_KERNEL_MEMORY_KERNEL_STACK_MANAGER_H__
+#pragma once
 
 #include <memory.hpp>
 
@@ -27,8 +26,8 @@ namespace Memory
 	public:
 		struct StackAllocation
 		{
-			void *PhysicalAddress;
-			void *VirtualAddress;
+			fnx::void_t PhysicalAddress;
+			fnx::void_t VirtualAddress;
 			size_t Size;
 		};
 
@@ -36,7 +35,7 @@ namespace Memory
 		NewLock(StackLock);
 		std::list<StackAllocation> AllocatedStacks;
 		size_t TotalSize = 0;
-		uintptr_t CurrentStackTop = KERNEL_STACK_END;
+		uintptr_t CurrentStackTop = KERNEL_STACK_TOP;
 
 	public:
 		/**
@@ -53,17 +52,15 @@ namespace Memory
 		 * @param Size Size in bytes to allocate
 		 * @return Pointer to the BASE of the stack
 		 */
-		void *Allocate(size_t Size);
+		fnx::void_t Allocate(size_t Size) { return this->DetailedAllocate(Size).VirtualAddress; }
 
 		/**
 		 * Free a previously allocated stack
 		 *
 		 * @param Address Virtual Address
 		 */
-		void Free(void *Address);
-		KernelStackManager();
-		~KernelStackManager();
+		void Free(fnx::void_t Address);
+		KernelStackManager() = default;
+		~KernelStackManager() = default;
 	};
 }
-
-#endif // !__FENNIX_KERNEL_MEMORY_KERNEL_STACK_MANAGER_H__

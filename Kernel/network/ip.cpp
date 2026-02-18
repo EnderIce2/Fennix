@@ -44,8 +44,8 @@ namespace NetworkIPv4
 		Packet->Header.IHL = b8(sizeof(IPv4Header) / 4);
 		Packet->Header.TypeOfService = b8(0);
 		/* We don't byteswap. */
-		Packet->Header.TotalLength = s_cst(uint16_t, Length + sizeof(IPv4Header));
-		Packet->Header.TotalLength = s_cst(uint16_t, ((Packet->Header.TotalLength & 0xFF00) >> 8) | ((Packet->Header.TotalLength & 0x00FF) << 8));
+		Packet->Header.TotalLength = static_cast<uint16_t>(Length + sizeof(IPv4Header));
+		Packet->Header.TotalLength = static_cast<uint16_t>(((Packet->Header.TotalLength & 0xFF00) >> 8) | ((Packet->Header.TotalLength & 0x00FF) << 8));
 
 		Packet->Header.Identification = b16(0x0000);
 		Packet->Header.Flags = b8(0x0);

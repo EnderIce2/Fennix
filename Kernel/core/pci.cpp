@@ -35,9 +35,9 @@ namespace PCI
 			{
 				uint8_t Digit = (Value >> (4 - (i * 4))) & 0xF;
 				if (Digit < 10)
-					Buffer[i] = s_cst(char, '0' + Digit);
+					Buffer[i] = static_cast<char>('0' + Digit);
 				else
-					Buffer[i] = s_cst(char, 'A' + (Digit - 10));
+					Buffer[i] = static_cast<char>('A' + (Digit - 10));
 			}
 			return Buffer;
 		}
@@ -50,9 +50,9 @@ namespace PCI
 			{
 				uint8_t Digit = (Value >> (28 - (i * 4))) & 0xF;
 				if (Digit < 10)
-					Buffer[i] = s_cst(char, '0' + Digit);
+					Buffer[i] = static_cast<char>('0' + Digit);
 				else
-					Buffer[i] = s_cst(char, 'A' + (Digit - 10));
+					Buffer[i] = static_cast<char>('A' + (Digit - 10));
 			}
 			return Buffer;
 		}
@@ -1079,7 +1079,7 @@ namespace PCI
 
 		uintptr_t Offset = Function << 12;
 		uint64_t FunctionAddress = DeviceAddress + Offset;
-		Memory::Virtual(KernelPageTable).Map((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
+		Memory::Virtual(KernelPageTable).SingleMap((void *)FunctionAddress, (void *)FunctionAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)FunctionAddress;
 		dev.Header = PCIDeviceHdr;
 
@@ -1100,7 +1100,7 @@ namespace PCI
 
 		uintptr_t Offset = Device << 15;
 		uint64_t DeviceAddress = BusAddress + Offset;
-		Memory::Virtual(KernelPageTable).Map((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
+		Memory::Virtual(KernelPageTable).SingleMap((void *)DeviceAddress, (void *)DeviceAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)DeviceAddress;
 
 		if (PCIDeviceHdr->DeviceID == 0)
@@ -1118,7 +1118,7 @@ namespace PCI
 
 		uintptr_t Offset = Bus << 20;
 		uint64_t BusAddress = BaseAddress + Offset;
-		Memory::Virtual(KernelPageTable).Map((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
+		Memory::Virtual(KernelPageTable).SingleMap((void *)BusAddress, (void *)BusAddress, Memory::PTFlag::RW);
 		PCIDeviceHeader *PCIDeviceHdr = (PCIDeviceHeader *)BusAddress;
 
 		if (Bus != 0) // TODO: VirtualBox workaround (UNTESTED ON REAL HARDWARE!)
@@ -1203,12 +1203,12 @@ namespace PCI
 			return;
 		}
 
-		int Entries = s_cst(int, ((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
+		int Entries = static_cast<int>(((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
 		Memory::Virtual vmm(KernelPageTable);
 		for (int t = 0; t < Entries; t++)
 		{
 			DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
-			vmm.Map((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
+			vmm.SingleMap((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
 			debug("PCI Entry %d Address:%p BUS:%#x-%#x", t, NewDeviceConfig->BaseAddress,
 				  NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
 

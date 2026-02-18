@@ -54,15 +54,15 @@ namespace InterruptDescriptorTable
 		case CALL_GATE_64BIT:
 		{
 			CallGate gate{
-				.TargetOffsetLow = s_cst(uint16_t, ((uint64_t)Base & 0xFFFF)),
+				.TargetOffsetLow = static_cast<uint16_t>(((uint64_t)Base & 0xFFFF)),
 				.TargetSelector = SegmentSelector,
 				.Reserved0 = 0,
 				.Type = Gate,
 				.Zero0 = 0,
 				.DescriptorPrivilegeLevel = Ring,
 				.Present = Present,
-				.TargetOffsetMiddle = s_cst(uint16_t, ((uint64_t)Base >> 16)),
-				.TargetOffsetHigh = s_cst(uint32_t, ((uint64_t)Base >> 32)),
+				.TargetOffsetMiddle = static_cast<uint16_t>(((uint64_t)Base >> 16)),
+				.TargetOffsetHigh = static_cast<uint32_t>(((uint64_t)Base >> 32)),
 				.Reserved1 = 0,
 				.Zero1 = 0,
 				.Reserved2 = 0,
@@ -73,7 +73,7 @@ namespace InterruptDescriptorTable
 		case INTERRUPT_GATE_64BIT:
 		{
 			InterruptGate gate{
-				.TargetOffsetLow = s_cst(uint16_t, ((uint64_t)Base & 0xFFFF)),
+				.TargetOffsetLow = static_cast<uint16_t>(((uint64_t)Base & 0xFFFF)),
 				.TargetSelector = SegmentSelector,
 				.InterruptStackTable = InterruptStackTable,
 				.Reserved0 = 0,
@@ -81,8 +81,8 @@ namespace InterruptDescriptorTable
 				.Zero = 0,
 				.DescriptorPrivilegeLevel = Ring,
 				.Present = Present,
-				.TargetOffsetMiddle = s_cst(uint16_t, ((uint64_t)Base >> 16)),
-				.TargetOffsetHigh = s_cst(uint32_t, ((uint64_t)Base >> 32)),
+				.TargetOffsetMiddle = static_cast<uint16_t>(((uint64_t)Base >> 16)),
+				.TargetOffsetHigh = static_cast<uint32_t>(((uint64_t)Base >> 32)),
 				.Reserved1 = 0,
 			};
 			Entries[Index].Interrupt = gate;
@@ -91,7 +91,7 @@ namespace InterruptDescriptorTable
 		case TRAP_GATE_64BIT:
 		{
 			TrapGate gate{
-				.TargetOffsetLow = s_cst(uint16_t, ((uint64_t)Base & 0xFFFF)),
+				.TargetOffsetLow = static_cast<uint16_t>(((uint64_t)Base & 0xFFFF)),
 				.TargetSelector = SegmentSelector,
 				.InterruptStackTable = InterruptStackTable,
 				.Reserved0 = 0,
@@ -99,8 +99,8 @@ namespace InterruptDescriptorTable
 				.Zero = 0,
 				.DescriptorPrivilegeLevel = Ring,
 				.Present = Present,
-				.TargetOffsetMiddle = s_cst(uint16_t, ((uint64_t)Base >> 16)),
-				.TargetOffsetHigh = s_cst(uint32_t, ((uint64_t)Base >> 32)),
+				.TargetOffsetMiddle = static_cast<uint16_t>(((uint64_t)Base >> 16)),
+				.TargetOffsetHigh = static_cast<uint32_t>(((uint64_t)Base >> 32)),
 				.Reserved1 = 0,
 			};
 			Entries[Index].Trap = gate;

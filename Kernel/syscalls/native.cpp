@@ -346,7 +346,7 @@ uintptr_t HandleNativeSyscalls(SysFrm *Frame)
 	}
 
 	SyscallData sc = scTbl[Frame->ReturnValue()];
-	uintptr_t (*call)(SysFrm *, uintptr_t, ...) = r_cst(uintptr_t (*)(SysFrm *, uintptr_t, ...), sc.Handler);
+	uintptr_t (*call)(SysFrm *, uintptr_t, ...) = reinterpret_cast<uintptr_t (*)(SyscallsFrame *, uintptr_t, ...)>(sc.Handler);
 
 	if (unlikely(!call))
 	{

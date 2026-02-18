@@ -78,7 +78,7 @@ namespace Memory
 			bInfo.Kernel.Symbols.EntSize &&
 			bInfo.Kernel.Symbols.Shndx)
 		{
-			char *sections = r_cst(char *, bInfo.Kernel.Symbols.Sections);
+			char *sections = reinterpret_cast<char *>(bInfo.Kernel.Symbols.Sections);
 			debug("Reserving sections region %#lx-%#lx...",
 				  sections, (uintptr_t)sections + bInfo.Kernel.Symbols.EntSize * bInfo.Kernel.Symbols.Num);
 

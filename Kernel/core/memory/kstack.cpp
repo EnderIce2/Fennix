@@ -27,28 +27,25 @@ namespace Memory
 		Size += 0x10;
 
 		size_t pagesNeeded = TO_PAGES(Size);
-		size_t stackSize = pagesNeeded * PAGE_SIZE;
+		size_t stackSize = FROM_PAGES(pagesNeeded);
 
 		assert((CurrentStackTop - stackSize) > KERNEL_STACK_BASE);
 
-		void *physicalMemory = KernelAllocator.RequestPages(pagesNeeded);
-		void *virtualAddress = (void *)(CurrentStackTop - stackSize);
+		fnx::void_t physicalAddress = KernelAllocator.RequestPages(pagesNeeded);
+		fnx::void_t virtualAddress = CurrentStackTop - stackSize;
 
 		Memory::Virtual vmm(KernelPageTable);
-		vmm.Map(virtualAddress, physicalMemory, stackSize, Memory::RW | Memory::G);
+		vmm.Map(virtualAddress, physicalAddress, stackSize, Memory::RW | Memory::G);
 
-		AllocatedStacks.push_back({physicalMemory, virtualAddress, stackSize});
+		AllocatedStacks.push_back({physicalAddress, virtualAddress, stackSize});
 		CurrentStackTop -= stackSize;
 		TotalSize += stackSize;
-		return {physicalMemory, virtualAddress, stackSize};
+
+		debug("new stack: p:%#lx v:%#lx size:%#lx(req:%#lx) total: %d KiB", physicalAddress.get(), virtualAddress.get(), stackSize, Size, TO_KiB(TotalSize));
+		return {physicalAddress, virtualAddress, stackSize};
 	}
 
-	void *KernelStackManager::Allocate(size_t Size)
-	{
-		return this->DetailedAllocate(Size).VirtualAddress;
-	}
-
-	void KernelStackManager::Free(void *Address)
+	void KernelStackManager::Free(fnx::void_t Address)
 	{
 		SmartLock(StackLock);
 
@@ -61,15 +58,14 @@ namespace Memory
 		if (it == AllocatedStacks.end())
 			return;
 
-		size_t pagesToFree = TO_PAGES(it->Size);
-		Memory::Virtual vmm(KernelPageTable);
-		vmm.Unmap(Address, it->Size);
-		KernelAllocator.FreePages(it->PhysicalAddress, pagesToFree);
+		Memory::Virtual(KernelPageTable).Unmap(Address, it->Size);
+		KernelAllocator.FreePages(it->PhysicalAddress, TO_PAGES(it->Size));
 
+		/* oh uhhhh... CurrentStackTop? */
 		TotalSize -= it->Size;
 		AllocatedStacks.erase(it);
-	}
 
-	KernelStackManager::KernelStackManager() {}
-	KernelStackManager::~KernelStackManager() {}
+		debug("freed stack at v:%#lx, p:%#lx, size:%#lx total size: %d KiB",
+			  it->VirtualAddress.get(), it->PhysicalAddress.get(), it->Size, TO_KiB(TotalSize));
+	}
 }

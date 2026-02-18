@@ -409,8 +409,8 @@ namespace Tasking
 		*pTLSPointer = this->TLS.pBase + this->TLS.Size;
 
 #if defined(__amd64__) || defined(__i386__)
-		this->GSBase = r_cst(uintptr_t, pTLSPointer);
-		this->FSBase = r_cst(uintptr_t, pTLSPointer);
+		this->GSBase = reinterpret_cast<uintptr_t>(pTLSPointer);
+		this->FSBase = reinterpret_cast<uintptr_t>(pTLSPointer);
 #endif
 	}
 

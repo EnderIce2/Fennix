@@ -148,8 +148,8 @@ namespace GlobalDescriptorTable
 			 "1:\n"
 			 "movw $16, %%ax\n"
 			 "movw %%ax, %%ds\n"
-			 "movw %%ax, %%es\n" ::
-				 : "memory", "rax");
+			 "movw %%ax, %%es\n" :: : "memory",
+			 "rax");
 
 		CPUStackPointer[Core] = StackManager.Allocate(STACK_SIZE);
 		memset(CPUStackPointer[Core], 0, STACK_SIZE);
@@ -171,7 +171,7 @@ namespace GlobalDescriptorTable
 		tssDesc->Reserved0 = 0;
 		tssDesc->Granularity = 0;
 		tssDesc->BaseAddressHigh = (Base >> 24) & 0xFF;
-		tssDesc->BaseAddressHigher = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
+		tssDesc->BaseAddressHigher = static_cast<uint32_t>((Base >> 32) & 0xFFFFFFFF);
 		tssDesc->Reserved1 = 0;
 		tssDesc->Zero1 = 0;
 		tssDesc->Reserved2 = 0;
@@ -207,8 +207,7 @@ namespace GlobalDescriptorTable
 		with the current stack pointer, the kernel
 		will crash.
 		*/
-		asmv("mov %%rsp, %0"
-			 : "=r"(tss[CPUID].StackPointer[0]));
+		asmv("mov %%rsp, %0" : "=r"(tss[CPUID].StackPointer[0]));
 	}
 
 	void *GetKernelStack() { return (void *)tss[GetCurrentCPU()->ID].StackPointer[0]; }

@@ -211,7 +211,7 @@ namespace UniversalSerialBus
 		}
 
 		auto_page<uint8_t> configBuf;
-		Memory::Virtual().Map(configBuf, configBuf, sizeof(uint8_t), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		Memory::Virtual().Map(configBuf.as<void *>(), configBuf.as<void *>(), sizeof(uint8_t), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 		uint8_t pickedConfValue = 0;
 		USBInterfaceDescriptor *pickedIntfDesc = nullptr;
 

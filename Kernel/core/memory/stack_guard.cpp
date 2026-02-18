@@ -21,15 +21,15 @@
 
 namespace Memory
 {
-	bool StackGuard::Expand(uintptr_t FaultAddress)
+	bool StackGuard::Expand(fnx::void_t FaultAddress)
 	{
 		if (!this->UserMode)
 			assert(!"Kernel mode stack expansion not implemented");
 
-		if (FaultAddress < USER_STACK_END || FaultAddress > USER_STACK_BASE)
+		if (FaultAddress < USER_STACK_TOP || FaultAddress > USER_STACK_BASE)
 		{
 			info("Fault address %#lx is not in range of stack %#lx - %#lx",
-				 FaultAddress, USER_STACK_END, USER_STACK_BASE);
+				 FaultAddress.get(), USER_STACK_TOP, USER_STACK_BASE);
 			return false; /* It's not about the stack. */
 		}
 
@@ -39,15 +39,15 @@ namespace Memory
 		stackPages = stackPages < 1 ? 1 : stackPages;
 
 		debug("roundFA: %#lx, StackBottom: %#lx, diff: %#lx, stackPages: %d",
-			  roundFA, this->StackBottom, diff, stackPages);
+			  roundFA, this->StackBottom.get(), diff, stackPages);
 
 		void *pPage = vma->RequestPages(stackPages);
 		debug("pPage: %#lx", pPage);
 
 		for (size_t i = 1; i < stackPages + 1; i++)
 		{
-			void *vAddress = (void *)((uintptr_t)this->StackBottom - (i * PAGE_SIZE));
-			void *pAddress = (void *)((uintptr_t)pPage + (i * PAGE_SIZE));
+			fnx::void_t vAddress = (uintptr_t)this->StackBottom - (i * PAGE_SIZE);
+			fnx::void_t pAddress = (uintptr_t)pPage + (i * PAGE_SIZE);
 
 			vma->Map(vAddress, pAddress, PAGE_SIZE, PTFlag::RW | PTFlag::US);
 			AllocatedPages ap = {
@@ -55,12 +55,12 @@ namespace Memory
 				.VirtualAddress = vAddress,
 			};
 			AllocatedPagesList.push_back(ap);
-			debug("Mapped p:%#lx to v:%#lx", pAddress, vAddress);
+			debug("Mapped p:%#lx to v:%#lx", pAddress.get(), vAddress.get());
 		}
 
 		this->StackBottom = (void *)((uintptr_t)this->StackBottom - (stackPages * PAGE_SIZE));
 		this->CurrentSize += stackPages * PAGE_SIZE;
-		debug("Stack expanded to %#lx", this->StackBottom);
+		debug("Stack expanded to %#lx", this->StackBottom.get());
 		this->Expanded = true;
 		return true;
 	}
@@ -102,19 +102,19 @@ namespace Memory
 
 		if (this->UserMode)
 		{
-			void *pPage = vma->RequestPages(TO_PAGES(USER_STACK_SIZE));
-			debug("pPage: %#lx", pPage);
+			fnx::void_t pPage = vma->RequestPages(TO_PAGES(USER_STACK_SIZE));
+			debug("pPage: %#lx", pPage.get());
 
-			this->StackBottom = (void *)USER_STACK_BASE;
-			this->StackTop = (void *)(USER_STACK_BASE + USER_STACK_SIZE);
+			this->StackBottom = USER_STACK_BASE;
+			this->StackTop = USER_STACK_BASE + USER_STACK_SIZE;
 			this->StackPhysicalBottom = pPage;
-			this->StackPhysicalTop = (void *)((uintptr_t)pPage + USER_STACK_SIZE);
+			this->StackPhysicalTop = pPage + USER_STACK_SIZE;
 			this->CurrentSize = USER_STACK_SIZE;
 
 			for (size_t i = 0; i < TO_PAGES(USER_STACK_SIZE); i++)
 			{
-				void *vAddress = (void *)(USER_STACK_BASE + (i * PAGE_SIZE));
-				void *pAddress = (void *)((uintptr_t)pPage + (i * PAGE_SIZE));
+				fnx::void_t vAddress = USER_STACK_BASE + (i * PAGE_SIZE);
+				fnx::void_t pAddress = pPage + (i * PAGE_SIZE);
 				vma->Map(vAddress, pAddress, PAGE_SIZE, PTFlag::RW | PTFlag::US);
 
 				AllocatedPages ap = {
@@ -122,32 +122,32 @@ namespace Memory
 					.VirtualAddress = vAddress,
 				};
 				AllocatedPagesList.push_back(ap);
-				debug("Mapped p:%#lx to v:%#lx", pAddress, vAddress);
+				debug("Mapped p:%#lx to v:%#lx", pAddress.get(), vAddress.get());
 			}
 		}
 		else
 		{
 			Memory::KernelStackManager::StackAllocation sa = StackManager.DetailedAllocate(LARGE_STACK_SIZE);
 			this->StackBottom = sa.VirtualAddress;
-			this->StackTop = (void *)((uintptr_t)this->StackBottom + LARGE_STACK_SIZE);
+			this->StackTop = this->StackBottom + LARGE_STACK_SIZE;
 			this->StackPhysicalBottom = sa.PhysicalAddress;
-			this->StackPhysicalTop = (void *)((uintptr_t)this->StackPhysicalBottom + LARGE_STACK_SIZE);
+			this->StackPhysicalTop = this->StackPhysicalBottom + LARGE_STACK_SIZE;
 			this->CurrentSize = LARGE_STACK_SIZE;
 
-			debug("StackBottom: %#lx", this->StackBottom);
+			debug("StackBottom: %#lx", this->StackBottom.get());
 
 			for (size_t i = 0; i < TO_PAGES(LARGE_STACK_SIZE); i++)
 			{
 				AllocatedPages pa = {
-					.PhysicalAddress = (void *)((uintptr_t)this->StackPhysicalBottom + (i * PAGE_SIZE)),
-					.VirtualAddress = (void *)((uintptr_t)this->StackBottom + (i * PAGE_SIZE)),
+					.PhysicalAddress = this->StackPhysicalBottom + (i * PAGE_SIZE),
+					.VirtualAddress = this->StackBottom + (i * PAGE_SIZE),
 				};
 				AllocatedPagesList.push_back(pa);
 			}
 		}
 
-		debug("Allocated stack at %#lx", this->StackBottom);
-		debug("Stack Range: %#lx - %#lx", this->StackBottom, this->StackTop);
+		debug("Allocated stack at %#lx", this->StackBottom.get());
+		debug("Stack Range: %#lx - %#lx", this->StackBottom.get(), this->StackTop.get());
 	}
 
 	StackGuard::~StackGuard()

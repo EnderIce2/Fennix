@@ -83,7 +83,7 @@ namespace NetworkDHCP
 
 		*(Ptr++) = DHCP_OPTION_HOST_NAME;
 		char *HostName = (char *)KERNEL_NAME;
-		*(Ptr++) = s_cst(uint8_t, 1 + strlen(HostName));
+		*(Ptr++) = static_cast<uint8_t>(1 + strlen(HostName));
 		memcpy(Ptr, HostName, strlen(HostName));
 		Ptr += strlen(HostName);
 

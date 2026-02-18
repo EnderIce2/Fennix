@@ -199,7 +199,7 @@ namespace CPU
 	 * @return Get: The current page table
 	 * @return Set: The old page table
 	 */
-	void *PageTable(void *PT = nullptr);
+	fnx::void_t PageTable(fnx::void_t PT = nullptr);
 
 #define thisPageTable (Memory::PageTable *)CPU::PageTable()
 
@@ -215,15 +215,9 @@ namespace CPU
 		{
 			assert(FXSaveArea != nullptr);
 #if defined(__amd64__)
-			asmv("fxsaveq (%0)"
-				 :
-				 : "r"(FXSaveArea)
-				 : "memory");
+			asmv("fxsaveq (%0)" : : "r"(FXSaveArea) : "memory");
 #elif defined(__i386__)
-			asmv("fxsave (%0)"
-				 :
-				 : "r"(FXSaveArea)
-				 : "memory");
+			asmv("fxsave (%0)" : : "r"(FXSaveArea) : "memory");
 #endif
 		}
 
@@ -231,15 +225,9 @@ namespace CPU
 		{
 			assert(FXRstorArea != nullptr);
 #if defined(__amd64__)
-			asmv("fxrstorq (%0)"
-				 :
-				 : "r"(FXRstorArea)
-				 : "memory");
+			asmv("fxrstorq (%0)" : : "r"(FXRstorArea) : "memory");
 #elif defined(__i386__)
-			asmv("fxrstor (%0)"
-				 :
-				 : "r"(FXRstorArea)
-				 : "memory");
+			asmv("fxrstor (%0)" : : "r"(FXRstorArea) : "memory");
 #endif
 		}
 	}
@@ -615,9 +603,7 @@ namespace CPU
 		static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 		{
 #ifdef __i386__
-			asmv("cpuid"
-				 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
-				 : "a"(Function));
+			asmv("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(Function));
 #else
 			UNUSED(Function);
 			UNUSED(eax);
@@ -630,9 +616,7 @@ namespace CPU
 		nsa static inline void lgdt(void *gdt)
 		{
 #ifdef __i386__
-			asmv("lgdt (%0)"
-				 :
-				 : "r"(gdt));
+			asmv("lgdt (%0)" : : "r"(gdt));
 #else
 			UNUSED(gdt);
 #endif
@@ -641,9 +625,7 @@ namespace CPU
 		nsa static inline void lidt(void *idt)
 		{
 #ifdef __i386__
-			asmv("lidt (%0)"
-				 :
-				 : "r"(idt));
+			asmv("lidt (%0)" : : "r"(idt));
 #else
 			UNUSED(idt);
 #endif
@@ -652,9 +634,7 @@ namespace CPU
 		nsa static inline void ltr(uint16_t Segment)
 		{
 #ifdef __i386__
-			asmv("ltr %0"
-				 :
-				 : "r"(Segment));
+			asmv("ltr %0" : : "r"(Segment));
 #else
 			UNUSED(Segment);
 #endif
@@ -663,10 +643,7 @@ namespace CPU
 		nsa static inline void invlpg(void *Address)
 		{
 #ifdef __i386__
-			asmv("invlpg (%0)"
-				 :
-				 : "r"(Address)
-				 : "memory");
+			asmv("invlpg (%0)" : : "r"(Address) : "memory");
 #else
 			UNUSED(Address);
 #endif
@@ -678,10 +655,7 @@ namespace CPU
 			if (!FXSaveArea)
 				return;
 
-			asmv("fxsave (%0)"
-				 :
-				 : "r"(FXSaveArea)
-				 : "memory");
+			asmv("fxsave (%0)" : : "r"(FXSaveArea) : "memory");
 #else
 			UNUSED(FXSaveArea);
 #endif
@@ -693,10 +667,7 @@ namespace CPU
 			if (!FXRstorArea)
 				return;
 
-			asmv("fxrstor (%0)"
-				 :
-				 : "r"(FXRstorArea)
-				 : "memory");
+			asmv("fxrstor (%0)" : : "r"(FXRstorArea) : "memory");
 #else
 			UNUSED(FXRstorArea);
 #endif
@@ -1187,37 +1158,28 @@ namespace CPU
 		nsa static inline void lgdt(void *gdt)
 		{
 #ifdef __amd64__
-			asmv("lgdt (%0)"
-				 :
-				 : "r"(gdt));
+			asmv("lgdt (%0)" : : "r"(gdt));
 #endif
 		}
 
 		nsa static inline void lidt(void *idt)
 		{
 #ifdef __amd64__
-			asmv("lidt (%0)"
-				 :
-				 : "r"(idt));
+			asmv("lidt (%0)" : : "r"(idt));
 #endif
 		}
 
 		nsa static inline void ltr(uint16_t Segment)
 		{
 #ifdef __amd64__
-			asmv("ltr %0"
-				 :
-				 : "r"(Segment));
+			asmv("ltr %0" : : "r"(Segment));
 #endif
 		}
 
 		nsa static inline void invlpg(void *Address)
 		{
 #ifdef __amd64__
-			asmv("invlpg (%0)"
-				 :
-				 : "r"(Address)
-				 : "memory");
+			asmv("invlpg (%0)" : : "r"(Address) : "memory");
 #endif
 		}
 
@@ -1233,9 +1195,7 @@ namespace CPU
 		nsa static inline void cpuid(uint32_t Function, uint32_t *eax, uint32_t *ebx, uint32_t *ecx, uint32_t *edx)
 		{
 #ifdef __amd64__
-			asmv("cpuid"
-				 : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx)
-				 : "a"(Function));
+			asmv("cpuid" : "=a"(*eax), "=b"(*ebx), "=c"(*ecx), "=d"(*edx) : "a"(Function));
 #endif
 		}
 

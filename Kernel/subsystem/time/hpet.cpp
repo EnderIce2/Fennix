@@ -52,7 +52,7 @@ namespace Time
 #if defined(__amd64__) || defined(__i386__)
 		ACPI::ACPI::HPETHeader *hdr = (ACPI::ACPI::HPETHeader *)hpet;
 		Memory::Virtual vmm;
-		vmm.Map((void *)hdr->Address.Address, (void *)hdr->Address.Address, Memory::RW | Memory::PCD | Memory::PWT);
+		vmm.SingleMap((void *)hdr->Address.Address, (void *)hdr->Address.Address, Memory::RW | Memory::PCD | Memory::PWT);
 		this->hpet = reinterpret_cast<HPET *>(hdr->Address.Address);
 		debug("%s timer is at address %#lx", hdr->Header.OEMID, hdr->Address.Address);
 		uint64_t period_fs = this->hpet->CapabilitiesID >> 32;

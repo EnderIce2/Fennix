@@ -118,7 +118,7 @@ namespace Memory
 
 	VirtualAllocation::VirtualAllocation(void *Base)
 		: BaseAddress(Base), CurrentBase(Base),
-		  Table((PageTable *)CPU::PageTable())
+		  Table(CPU::PageTable())
 	{
 		func("%#lx", Base);
 	}

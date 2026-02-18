@@ -109,7 +109,7 @@ nsa void HaltAllCores()
 	bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
 	if (likely(x2APIC))
 	{
-		icr.x2.VEC = s_cst(uint8_t, CPU::x86::IRQ31);
+		icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
 		icr.x2.MT = APIC::Fixed;
 		icr.x2.L = APIC::Assert;
 
@@ -121,7 +121,7 @@ nsa void HaltAllCores()
 	}
 	else
 	{
-		icr.VEC = s_cst(uint8_t, CPU::x86::IRQ31);
+		icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
 		icr.MT = APIC::Fixed;
 		icr.L = APIC::Assert;
 

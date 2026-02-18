@@ -59,7 +59,7 @@ namespace Memory
 				void *VirtAddr = (void *)(Break + (i * PAGE_SIZE));
 				void *PhysAddr = (void *)(uintptr_t(Allocated) + (i * PAGE_SIZE));
 				debug("Mapping %#lx to %#lx", VirtAddr, PhysAddr);
-				vmm.Map(VirtAddr, PhysAddr, RW | US);
+				vmm.SingleMap(VirtAddr, PhysAddr, RW | US);
 			}
 
 			Break = ROUND_UP(uintptr_t(Address), PAGE_SIZE);

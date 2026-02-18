@@ -49,7 +49,7 @@ namespace Video
 
 			this->Info.PSF2Font->Header = font2;
 			this->Info.PSF2Font->GlyphBuffer =
-				r_cst(void *, r_cst(uintptr_t, Start) + sizeof(PSF2_HEADER));
+				reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF2_HEADER));
 			this->Info.Width = font2->width;
 			this->Info.Height = font2->height;
 		}
@@ -63,7 +63,7 @@ namespace Video
 			if (font1->mode == 1) // 512 glyph mode
 				glyphBufferSize = font1->charsize * 512;
 			void *glyphBuffer =
-				r_cst(void *, r_cst(uintptr_t, Start) + sizeof(PSF1_HEADER));
+				reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(Start) + sizeof(PSF1_HEADER));
 			this->Info.PSF1Font->Header = font1;
 			this->Info.PSF1Font->GlyphBuffer = glyphBuffer;
 			UNUSED(glyphBufferSize); // TODO: Use this in the future?

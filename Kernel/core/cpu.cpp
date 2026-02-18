@@ -155,13 +155,11 @@ namespace CPU
 			uintptr_t Flags;
 #if defined(__amd64__)
 			asmv("pushfq");
-			asmv("popq %0"
-				 : "=r"(Flags));
+			asmv("popq %0" : "=r"(Flags));
 			return Flags & (1 << 9);
 #elif defined(__i386__)
 			asmv("pushfl");
-			asmv("popl %0"
-				 : "=r"(Flags));
+			asmv("popl %0" : "=r"(Flags));
 			return Flags & (1 << 9);
 #else
 #warning "not implemented"
@@ -194,39 +192,32 @@ namespace CPU
 		return false;
 	}
 
-	void *PageTable(void *PT)
+	fnx::void_t PageTable(fnx::void_t PT)
 	{
 		void *ret;
 #if defined(__amd64__)
-		asmv("movq %%cr3, %0"
-			 : "=r"(ret));
+		asmv("movq %%cr3, %0" : "=r"(ret));
 
-		if (PT)
+		if (PT.get())
 		{
-			asmv("movq %0, %%cr3"
-				 :
-				 : "r"(PT)
-				 : "memory");
+			asmv("movq %0, %%cr3" : : "r"(PT.get()) : "memory");
 		}
 #elif defined(__i386__)
-		asmv("movl %%cr3, %0"
-			 : "=r"(ret));
+		asmv("movl %%cr3, %0" : "=r"(ret));
 
-		if (PT)
+		if (PT.get())
 		{
-			asmv("movl %0, %%cr3"
-				 :
-				 : "r"(PT)
-				 : "memory");
+			asmv("movl %0, %%cr3" : : "r"(PT.get()) : "memory");
 		}
 #elif defined(__aarch64__)
-		asmv("mrs %0, ttbr0_el1"
-			 : "=r"(ret));
+		asmv("mrs %0, ttbr0_el1" : "=r"(ret));
 
-		if (PT)
+		if (PT.get())
 		{
 #warning "aarch64 not implemented"
 		}
+#else
+#warning "CPU::PageTable() not implemented for this architecture"
 #endif
 		return ret;
 	}
@@ -393,9 +384,8 @@ namespace CPU
 		uint64_t Counter;
 #if defined(__amd64__) || defined(__i386__)
 		uint32_t eax, edx;
-		asmv("rdtsc"
-			 : "=a"(eax),
-			   "=d"(edx));
+		asmv("rdtsc" : "=a"(eax),
+			 "=d"(edx));
 		Counter = ((uint64_t)eax) | (((uint64_t)edx) << 32);
 #elif defined(__aarch64__)
 #warning "aarch64 not implemented"
@@ -421,10 +411,8 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
-			asmv("cpuid"
-				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw),
-				   "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
-				 : "a"(0x1));
+			asmv("cpuid" : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw),
+				 "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw) : "a"(0x1));
 
 			if (cpuid.ECX.SSE42)
 				SIMDType |= SIMD_SSE42;
@@ -459,9 +447,7 @@ namespace CPU
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 			CPU::x86::Intel::CPUID0x00000001 cpuid;
-			asmv("cpuid"
-				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
-				 : "a"(0x1));
+			asmv("cpuid" : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw) : "a"(0x1));
 
 			if (cpuid.ECX.SSE4_2)
 				SIMDType |= SIMD_SSE42;
@@ -507,9 +493,7 @@ namespace CPU
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{
 			CPU::x86::AMD::CPUID0x00000001 cpuid;
-			asmv("cpuid"
-				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
-				 : "a"(0x1));
+			asmv("cpuid" : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw) : "a"(0x1));
 
 			if (Type == SIMD_SSE42)
 				return cpuid.ECX.SSE42;
@@ -527,9 +511,7 @@ namespace CPU
 		else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
 		{
 			CPU::x86::Intel::CPUID0x00000001 cpuid;
-			asmv("cpuid"
-				 : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw)
-				 : "a"(0x1));
+			asmv("cpuid" : "=a"(cpuid.EAX.raw), "=b"(cpuid.EBX.raw), "=c"(cpuid.ECX.raw), "=d"(cpuid.EDX.raw) : "a"(0x1));
 
 			if (Type == SIMD_SSE42)
 				return cpuid.ECX.SSE4_2;

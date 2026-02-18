@@ -2265,11 +2265,11 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	switch (cmd)
 	{
 	case linux_F_DUPFD:
-		return ConvertErrnoToLinux(fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg)));
+		return ConvertErrnoToLinux(fdt->usr_dup2(fd, static_cast<int>((uintptr_t)arg)));
 	case linux_F_GETFD:
 		return ConvertErrnoToLinux(fdt->GetFlags(fd));
 	case linux_F_SETFD:
-		return ConvertErrnoToLinux(fdt->SetFlags(fd, s_cst(int, (uintptr_t)arg)));
+		return ConvertErrnoToLinux(fdt->SetFlags(fd, static_cast<int>((uintptr_t)arg)));
 	case linux_F_GETFL:
 	{
 		fixme("F_GETFL is stub?");
@@ -2278,7 +2278,7 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	case linux_F_SETFL:
 	{
 		fixme("F_SETFL is stub?");
-		int flags = s_cst(int, (uintptr_t)arg);
+		int flags = static_cast<int>((uintptr_t)arg);
 		if (flags & O_APPEND)
 			fdt->SetFlags(fd, fdt->GetFlags(fd) | O_APPEND);
 		else
@@ -2287,7 +2287,7 @@ static int linux_fcntl(SysFrm *, int fd, int cmd, void *arg)
 	}
 	case linux_F_DUPFD_CLOEXEC:
 	{
-		int ret = fdt->usr_dup2(fd, s_cst(int, (uintptr_t)arg));
+		int ret = fdt->usr_dup2(fd, static_cast<int>((uintptr_t)arg));
 		if (ret < 0)
 			return ConvertErrnoToLinux(ret);
 
@@ -2745,7 +2745,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	case linux_ARCH_GET_FS:
 	{
 #if defined(__amd64__) || defined(__i386__)
-		*r_cst(uint64_t *, addr) =
+		*reinterpret_cast<uint64_t *>(addr) =
 			CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
 #endif
 		return 0;
@@ -2753,7 +2753,7 @@ static int linux_arch_prctl(SysFrm *, int code, unsigned long addr)
 	case linux_ARCH_GET_GS:
 	{
 #if defined(__amd64__) || defined(__i386__)
-		*r_cst(uint64_t *, addr) =
+		*reinterpret_cast<uint64_t *>(addr) =
 			CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
 #endif
 		return 0;
@@ -4497,8 +4497,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	SyscallData Syscall = LinuxSyscallsTableAMD64[Frame->ax];
 
-	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
-											  Syscall.Handler);
+	long (*call)(SysFrm *, long, ...) = reinterpret_cast<long (*)(SyscallsFrame *, long, ...)>(Syscall.Handler);
 
 	if (unlikely(!call))
 	{
@@ -4528,8 +4527,7 @@ uintptr_t HandleLinuxSyscalls(SyscallsFrame *Frame)
 
 	SyscallData Syscall = LinuxSyscallsTableI386[Frame->ax];
 
-	long (*call)(SysFrm *, long, ...) = r_cst(long (*)(SysFrm *, long, ...),
-											  Syscall.Handler);
+	long (*call)(SysFrm *, long, ...) = reinterpret_cast<long (*)(SyscallsFrame *, long, ...)>(Syscall.Handler);
 
 	if (unlikely(!call))
 	{

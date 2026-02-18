@@ -15,26 +15,26 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "Xalloc.hpp"
+#include <memory/physical.hpp>
+#include <memory/virtual.hpp>
 
-#include <memory.hpp>
-
-extern "C" void *Xalloc_REQUEST_PAGES(Xsize_t Pages)
+namespace Memory
 {
-	return KernelAllocator.RequestPages(Pages);
-}
+	class DMA
+	{
+	private:
+	public:
+		DMA() = default;
+		~DMA() = default;
 
-extern "C" void Xalloc_FREE_PAGES(void *Address, Xsize_t Pages)
-{
-	KernelAllocator.FreePages(Address, Pages);
-}
-
-extern "C" void Xalloc_MAP_MEMORY(void *VirtualAddress, void *PhysicalAddress, Xsize_t Flags)
-{
-	Memory::Virtual(KernelPageTable).Map(VirtualAddress, PhysicalAddress, Flags);
-}
-
-extern "C" void Xalloc_UNMAP_MEMORY(void *VirtualAddress)
-{
-	Memory::Virtual(KernelPageTable).Unmap(VirtualAddress);
+		/**
+		 * Allocate a DMA buffer of the specified size and alignment.
+		 *
+		 * @param Size Size of the buffer in bytes
+		 * @param Alignment Alignment of the buffer in bytes (must be a power of 2)
+		 * @param Boundary Boundary for the buffer (must be a power of 2)
+		 * @return Physical address of the allocated buffer, or nullptr on failure
+		 */
+		fnx::void_t Allocate(size_t Size, size_t Alignment, size_t Boundary);
+	};
 }

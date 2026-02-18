@@ -221,7 +221,7 @@ int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, unsigne
 			return -EFAULT;
 
 #if defined(__amd64__) || defined(__i386__)
-		*r_cst(uintptr_t *, arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
+		*reinterpret_cast<uintptr_t *>(arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_GS_BASE);
 #endif
 		return 0;
 	}
@@ -239,7 +239,7 @@ int sys_prctl(SysFrm *Frame, prctl_options_t option, unsigned long arg1, unsigne
 			return -EFAULT;
 
 #if defined(__amd64__) || defined(__i386__)
-		*r_cst(uintptr_t *, arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
+		*reinterpret_cast<uintptr_t *>(arg) = CPU::x86::rdmsr(CPU::x86::MSRID::MSR_FS_BASE);
 #endif
 		return 0;
 	}

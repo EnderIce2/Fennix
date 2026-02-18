@@ -211,7 +211,7 @@ namespace Tasking::Scheduler
 
 			if (likely(x2APIC))
 			{
-				icr.x2.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
 				icr.x2.MT = APIC::Fixed;
 				icr.x2.L = APIC::Assert;
 				icr.x2.DES = 0xFFFFFFFF; /* Broadcast IPI to all local APICs. */
@@ -219,7 +219,7 @@ namespace Tasking::Scheduler
 			}
 			else
 			{
-				icr.VEC = s_cst(uint8_t, CPU::x86::IRQ16);
+				icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
 				icr.MT = APIC::Fixed;
 				icr.L = APIC::Assert;
 

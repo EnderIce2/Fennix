@@ -22,7 +22,7 @@
 
 namespace Memory
 {
-	bool Virtual::Check(void *VirtualAddress, PTFlag Flag, MapType Type)
+	bool Virtual::Check(fnx::void_t VirtualAddress, PTFlag Flag, MapType Type)
 	{
 		uintptr_t Address = (uintptr_t)VirtualAddress;
 		Address &= 0xFFFFFFFFFFFFF000;
@@ -36,14 +36,14 @@ namespace Memory
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
 		{
-			debug("PML4 not present for %#lx", VirtualAddress);
+			debug("PML4 not present for %#lx", VirtualAddress.get());
 			return false;
 		}
 
 		PDPTE = (PageDirectoryPointerTableEntryPtr *)((uintptr_t)PML4->GetAddress() << 12);
 		if (!PDPTE)
 		{
-			debug("Failed to get PDPTE for %#lx", VirtualAddress);
+			debug("Failed to get PDPTE for %#lx", VirtualAddress.get());
 			return false;
 		}
 
@@ -52,7 +52,7 @@ namespace Memory
 			bool result = PDPTE->Entries[Index.PDPTEIndex].raw & Flag;
 			if (!result)
 			{
-				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
+				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress.get(), Flag,
 					  PDPTE->Entries[Index.PDPTEIndex].raw);
 			}
 			return result;
@@ -61,7 +61,7 @@ namespace Memory
 		PDE = (PageDirectoryEntryPtr *)((uintptr_t)PDPTE->Entries[Index.PDPTEIndex].GetAddress() << 12);
 		if (!PDE)
 		{
-			debug("Failed to get PDE for %#lx", VirtualAddress);
+			debug("Failed to get PDE for %#lx", VirtualAddress.get());
 			return false;
 		}
 
@@ -70,7 +70,7 @@ namespace Memory
 			bool result = PDE->Entries[Index.PDEIndex].raw & Flag;
 			if (!result)
 			{
-				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
+				debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress.get(), Flag,
 					  PDE->Entries[Index.PDEIndex].raw);
 			}
 			return result;
@@ -79,22 +79,22 @@ namespace Memory
 		PTE = (PageTableEntryPtr *)((uintptr_t)PDE->Entries[Index.PDEIndex].GetAddress() << 12);
 		if (!PTE)
 		{
-			debug("Failed to get PTE for %#lx", VirtualAddress);
+			debug("Failed to get PTE for %#lx", VirtualAddress.get());
 			return false;
 		}
 
 		bool result = PTE->Entries[Index.PTEIndex].raw & Flag;
 		if (!result)
 		{
-			debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress, Flag,
+			debug("Failed to check %#lx for %#lx (raw: %#lx)", VirtualAddress.get(), Flag,
 				  PTE->Entries[Index.PTEIndex].raw);
 		}
 		return result;
 	}
 
-	void *Virtual::GetPhysical(void *VirtualAddress)
+	fnx::void_t Virtual::GetPhysical(fnx::void_t VirtualAddress)
 	{
-		uintptr_t Address = (uintptr_t)VirtualAddress;
+		uintptr_t Address = VirtualAddress;
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
@@ -136,7 +136,7 @@ namespace Memory
 		return nullptr;
 	}
 
-	Virtual::MapType Virtual::GetMapType(void *VirtualAddress)
+	Virtual::MapType Virtual::GetMapType(fnx::void_t VirtualAddress)
 	{
 		uintptr_t Address = (uintptr_t)VirtualAddress;
 		Address &= 0xFFFFFFFFFFFFF000;
@@ -176,7 +176,7 @@ namespace Memory
 		return MapType::NoMapType;
 	}
 
-	PageMapLevel5 *Virtual::GetPML5(void *VirtualAddress, MapType Type)
+	PageMapLevel5 *Virtual::GetPML5(fnx::void_t VirtualAddress, MapType Type)
 	{
 		UNUSED(VirtualAddress);
 		UNUSED(Type);
@@ -184,10 +184,10 @@ namespace Memory
 		return nullptr;
 	}
 
-	PageMapLevel4 *Virtual::GetPML4(void *VirtualAddress, MapType Type)
+	PageMapLevel4 *Virtual::GetPML4(fnx::void_t VirtualAddress, MapType Type)
 	{
 		UNUSED(Type);
-		uintptr_t Address = (uintptr_t)VirtualAddress;
+		uintptr_t Address = VirtualAddress;
 		Address &= 0xFFFFFFFFFFFFF000;
 
 		PageMapIndexer Index = PageMapIndexer(Address);
@@ -195,11 +195,11 @@ namespace Memory
 		if (PML4->Present)
 			return PML4;
 
-		debug("PML4 not present for %#lx", VirtualAddress);
+		debug("PML4 not present for %#lx", VirtualAddress.get());
 		return nullptr;
 	}
 
-	PageDirectoryPointerTableEntry *Virtual::GetPDPTE(void *VirtualAddress, MapType Type)
+	PageDirectoryPointerTableEntry *Virtual::GetPDPTE(fnx::void_t VirtualAddress, MapType Type)
 	{
 		UNUSED(Type);
 		uintptr_t Address = (uintptr_t)VirtualAddress;
@@ -209,7 +209,7 @@ namespace Memory
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
 		{
-			debug("PML4 not present for %#lx", VirtualAddress);
+			debug("PML4 not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -218,11 +218,11 @@ namespace Memory
 		if (PDPTE->Present)
 			return PDPTE;
 
-		debug("PDPTE not present for %#lx", VirtualAddress);
+		debug("PDPTE not present for %#lx", VirtualAddress.get());
 		return nullptr;
 	}
 
-	PageDirectoryEntry *Virtual::GetPDE(void *VirtualAddress, MapType Type)
+	PageDirectoryEntry *Virtual::GetPDE(fnx::void_t VirtualAddress, MapType Type)
 	{
 		UNUSED(Type);
 		uintptr_t Address = (uintptr_t)VirtualAddress;
@@ -232,7 +232,7 @@ namespace Memory
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
 		{
-			debug("PML4 not present for %#lx", VirtualAddress);
+			debug("PML4 not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -240,7 +240,7 @@ namespace Memory
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (!PDPTE->Present)
 		{
-			debug("PDPTE not present for %#lx", VirtualAddress);
+			debug("PDPTE not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -249,11 +249,11 @@ namespace Memory
 		if (PDE->Present)
 			return PDE;
 
-		debug("PDE not present for %#lx", VirtualAddress);
+		debug("PDE not present for %#lx", VirtualAddress.get());
 		return nullptr;
 	}
 
-	PageTableEntry *Virtual::GetPTE(void *VirtualAddress, MapType Type)
+	PageTableEntry *Virtual::GetPTE(fnx::void_t VirtualAddress, MapType Type)
 	{
 		UNUSED(Type);
 		uintptr_t Address = (uintptr_t)VirtualAddress;
@@ -263,7 +263,7 @@ namespace Memory
 		PageMapLevel4 *PML4 = &this->pTable->Entries[Index.PMLIndex];
 		if (!PML4->Present)
 		{
-			debug("PML4 not present for %#lx", VirtualAddress);
+			debug("PML4 not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -271,7 +271,7 @@ namespace Memory
 		PageDirectoryPointerTableEntry *PDPTE = &PDPTEPtr->Entries[Index.PDPTEIndex];
 		if (!PDPTE->Present)
 		{
-			debug("PDPTE not present for %#lx", VirtualAddress);
+			debug("PDPTE not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -279,7 +279,7 @@ namespace Memory
 		PageDirectoryEntry *PDE = &PDEPtr->Entries[Index.PDEIndex];
 		if (!PDE->Present)
 		{
-			debug("PDE not present for %#lx", VirtualAddress);
+			debug("PDE not present for %#lx", VirtualAddress.get());
 			return nullptr;
 		}
 
@@ -288,11 +288,11 @@ namespace Memory
 		if (PTE->Present)
 			return PTE;
 
-		debug("PTE not present for %#lx", VirtualAddress);
+		debug("PTE not present for %#lx", VirtualAddress.get());
 		return nullptr;
 	}
 
-	void Virtual::Map(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	void Virtual::SingleMap(fnx::void_t VirtualAddress, fnx::void_t PhysicalAddress, uint64_t Flags, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
 		if (unlikely(!this->pTable))
@@ -326,7 +326,7 @@ namespace Memory
 			PDPTE->raw |= Flags;
 			PDPTE->PageSize = true;
 			PDPTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 1GB page at %p to %p", VirtualAddress, PhysicalAddress);
+			debug("Mapped 1GB page at %p to %p", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 
@@ -348,7 +348,7 @@ namespace Memory
 			PDE->raw |= Flags;
 			PDE->PageSize = true;
 			PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 2MB page at %p to %p", VirtualAddress, PhysicalAddress);
+			debug("Mapped 2MB page at %p to %p", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 
@@ -384,11 +384,68 @@ namespace Memory
 		(byte & 0x01 ? '1' : '0')
 
 		if (!this->Check(VirtualAddress, (PTFlag)Flags)) // quick workaround just to see where it fails
-			warn("Failed to map v:%#lx p:%#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress, PhysicalAddress, BYTE_TO_BINARY(Flags));
+			warn("Failed to map v:%#lx p:%#lx with flags: " BYTE_TO_BINARY_PATTERN, VirtualAddress.get(), PhysicalAddress.get(), BYTE_TO_BINARY(Flags));
 #endif
 	}
 
-	void Virtual::Unmap(void *VirtualAddress, MapType Type)
+	void Virtual::OptimizedMap(fnx::void_t VirtualAddress, fnx::void_t PhysicalAddress, size_t Length, uint64_t Flags)
+	{
+		static bool Page1GBSupport = false;
+
+		static int once = 0;
+		if (!once++)
+		{
+			if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+			{
+				CPU::x86::AMD::CPUID0x80000001 cpuid;
+				Page1GBSupport = cpuid.EDX.Page1GB;
+			}
+			else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+			{
+				CPU::x86::AMD::CPUID0x80000001 cpuid;
+				Page1GBSupport = cpuid.EDX.Page1GB;
+				/* FIXME: use the proper CPUID struct for Intel CPUs. */
+			}
+
+			if (Page1GBSupport)
+				debug("1GB Page Support Enabled");
+		}
+
+		/* TODO: this could be optimized lol */
+
+		if (Page1GBSupport)
+		{
+			while (Length >= PAGE_SIZE_1G &&
+				   is_aligned((uintptr_t)VirtualAddress, PAGE_SIZE_1G) &&
+				   is_aligned((uintptr_t)PhysicalAddress, PAGE_SIZE_1G))
+			{
+				this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::OneGiB);
+				VirtualAddress += PAGE_SIZE_1G;
+				PhysicalAddress += PAGE_SIZE_1G;
+				Length -= PAGE_SIZE_1G;
+			}
+		}
+
+		while (Length >= PAGE_SIZE_2M &&
+			   is_aligned((uintptr_t)VirtualAddress, PAGE_SIZE_2M) &&
+			   is_aligned((uintptr_t)PhysicalAddress, PAGE_SIZE_2M))
+		{
+			this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::TwoMiB);
+			VirtualAddress += PAGE_SIZE_2M;
+			PhysicalAddress += PAGE_SIZE_2M;
+			Length -= PAGE_SIZE_2M;
+		}
+
+		while (Length >= PAGE_SIZE_4K)
+		{
+			this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::FourKiB);
+			VirtualAddress += PAGE_SIZE_4K;
+			PhysicalAddress += PAGE_SIZE_4K;
+			Length -= PAGE_SIZE_4K;
+		}
+	}
+
+	void Virtual::Unmap(fnx::void_t VirtualAddress, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
 		if (!this->pTable)
@@ -434,7 +491,7 @@ namespace Memory
 		CPU::x64::invlpg(VirtualAddress);
 	}
 
-	void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	void Virtual::Remap(fnx::void_t VirtualAddress, fnx::void_t PhysicalAddress, uint64_t Flags, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
 		if (unlikely(!this->pTable))
@@ -469,7 +526,7 @@ namespace Memory
 			PDPTE->raw |= Flags;
 			PDPTE->PageSize = true;
 			PDPTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 1GB page at %p to %p", VirtualAddress, PhysicalAddress);
+			debug("Mapped 1GB page at %p to %p", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 
@@ -492,7 +549,7 @@ namespace Memory
 			PDE->raw |= Flags;
 			PDE->PageSize = true;
 			PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 2MB page at %p to %p", VirtualAddress, PhysicalAddress);
+			debug("Mapped 2MB page at %p to %p", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 

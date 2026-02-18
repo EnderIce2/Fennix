@@ -97,7 +97,7 @@ namespace SymbolResolver
 																   __unused uint64_t Shndx,
 																   uintptr_t Sections)
 	{
-		char *sections = r_cst(char *, Sections);
+		char *sections = reinterpret_cast<char *>(Sections);
 
 		Elf_Sym *Symbols = nullptr;
 		uint8_t *StringAddress = nullptr;

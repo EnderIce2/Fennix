@@ -15,8 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_MEMORY_TABLE_H__
-#define __FENNIX_KERNEL_MEMORY_TABLE_H__
+#pragma once
 
 #include <types.h>
 
@@ -599,7 +598,7 @@ namespace Memory
 			Diff = uintptr_t(PhysAddr) + Diff;
 			return (T)Diff;
 		}
+
+		operator PageTable *() { return this; }
 	} __aligned(0x1000);
 }
-
-#endif // !__FENNIX_KERNEL_MEMORY_TABLE_H__

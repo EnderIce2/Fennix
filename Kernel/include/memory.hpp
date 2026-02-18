@@ -15,8 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_INTERNAL_MEMORY_H__
-#define __FENNIX_KERNEL_INTERNAL_MEMORY_H__
+#pragma once
 
 #ifdef __cplusplus
 #include <fs/vfs.hpp>
@@ -43,19 +42,7 @@ namespace Memory
 	enum MemoryAllocatorType
 	{
 		None,
-
-		/** Allocate memory by pages. */
-		Pages,
-
-		XallocV1,
-		XallocV2,
 		liballoc11,
-
-		/**
-		 * @warning Not working as expected.
-		 *
-		 * FIXME: This allocator is not working as expected.
-		 */
 		rpmalloc_,
 	};
 }
@@ -69,6 +56,7 @@ namespace Memory
 #include <memory/stack.hpp>
 #include <memory/vma.hpp>
 #include <memory/brk.hpp>
+#include <memory/dma.hpp>
 
 void InitializeMemoryManagement();
 void CreatePageTable(Memory::PageTable *pt);
@@ -76,9 +64,11 @@ void CreatePageTable(Memory::PageTable *pt);
 extern Memory::Physical KernelAllocator;
 extern Memory::KernelStackManager StackManager;
 extern Memory::PageTable *KernelPageTable;
+extern Memory::DMA dma;
 
 #endif // __cplusplus
 
+#define __FENNIX_KERNEL_INTERNAL_MEMORY_H__ 1
 #ifndef __FENNIX_KERNEL_STDLIB_H__
 
 EXTERNC void *malloc(size_t Size);
@@ -92,5 +82,3 @@ EXTERNC void free(void *Address);
 #define kcalloc(n, Size) calloc(n, Size)
 #define krealloc(Address, Size) realloc(Address, Size)
 #define kfree(Address) free(Address)
-
-#endif // !__FENNIX_KERNEL_INTERNAL_MEMORY_H__

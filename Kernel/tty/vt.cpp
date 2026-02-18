@@ -629,18 +629,18 @@ namespace KernelConsole
 		{
 			com4 = inb(0x2E8);
 			debug("COM4 is available");
-			outb(s_cst(uint16_t, 0x2E8 + 1), 0x00);
-			outb(s_cst(uint16_t, 0x2E8 + 3), 0x80);
-			outb(s_cst(uint16_t, 0x2E8 + 0), 0x01);
-			outb(s_cst(uint16_t, 0x2E8 + 1), 0x00);
-			outb(s_cst(uint16_t, 0x2E8 + 3), 0x03);
-			outb(s_cst(uint16_t, 0x2E8 + 2), 0xC7);
-			outb(s_cst(uint16_t, 0x2E8 + 4), 0x0B);
-			outb(s_cst(uint16_t, 0x2E8 + 4), 0x0F);
+			outb(static_cast<uint16_t>(0x2E8 + 1), 0x00);
+			outb(static_cast<uint16_t>(0x2E8 + 3), 0x80);
+			outb(static_cast<uint16_t>(0x2E8 + 0), 0x01);
+			outb(static_cast<uint16_t>(0x2E8 + 1), 0x00);
+			outb(static_cast<uint16_t>(0x2E8 + 3), 0x03);
+			outb(static_cast<uint16_t>(0x2E8 + 2), 0xC7);
+			outb(static_cast<uint16_t>(0x2E8 + 4), 0x0B);
+			outb(static_cast<uint16_t>(0x2E8 + 4), 0x0F);
 		}
 		if (com4 != 0xFF)
 		{
-			while ((inb(s_cst(uint16_t, 0x2E8 + 5)) & 0x20) == 0)
+			while ((inb(static_cast<uint16_t>(0x2E8 + 5)) & 0x20) == 0)
 				;
 			outb(0x2E8, c);
 		}

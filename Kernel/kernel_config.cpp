@@ -129,25 +129,15 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		case 'a':
 		{
 			value = cag_option_get_value(&context);
-			if (strcmp(value, "xallocv1") == 0)
-			{
-				KPrint("Using XallocV1 as memory allocator");
-				ModConfig->AllocatorType = Memory::XallocV1;
-			}
-			else if (strcmp(value, "xallocv2") == 0)
-			{
-				KPrint("Using XallocV2 as memory allocator");
-				ModConfig->AllocatorType = Memory::XallocV2;
-			}
-			else if (strcmp(value, "liballoc11") == 0)
+			if (strcmp(value, "liballoc11") == 0)
 			{
 				KPrint("Using Liballoc11 as memory allocator");
 				ModConfig->AllocatorType = Memory::liballoc11;
 			}
-			else if (strcmp(value, "pages") == 0)
+			else if (strcmp(value, "rpmalloc") == 0)
 			{
-				KPrint("Using Pages as memory allocator");
-				ModConfig->AllocatorType = Memory::Pages;
+				KPrint("Using Liballoc11 as memory allocator");
+				ModConfig->AllocatorType = Memory::rpmalloc_;
 			}
 			break;
 		}

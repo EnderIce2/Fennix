@@ -28,7 +28,7 @@
 
 namespace Memory
 {
-	__no_sanitize("alignment") void Physical::FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize)
+	/*__no_sanitize("alignment")*/ void Physical::FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize)
 	{
 		size_t BitmapSize = (size_t)(bInfo.Memory.Size / PAGE_SIZE) / 8 + 1;
 
@@ -48,7 +48,7 @@ namespace Memory
 
 		if (bInfo.Kernel.Symbols.Num && bInfo.Kernel.Symbols.EntSize && bInfo.Kernel.Symbols.Shndx)
 		{
-			char *sections = r_cst(char *, bInfo.Kernel.Symbols.Sections);
+			char *sections = reinterpret_cast<char *>(bInfo.Kernel.Symbols.Sections);
 
 			SectionsStart = (uintptr_t)sections;
 			SectionsEnd = (uintptr_t)sections + bInfo.Kernel.Symbols.EntSize * bInfo.Kernel.Symbols.Num;

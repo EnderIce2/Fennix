@@ -49,13 +49,13 @@ EXTERNC void *memchr(const void *ptr, int ch, size_t count)
 
 EXTERNC void backspace(char s[])
 {
-	int len = s_cst(int, strlen(s));
+	int len = static_cast<int>(strlen(s));
 	s[len - 1] = '\0';
 }
 
 EXTERNC void append(char s[], char n)
 {
-	int len = s_cst(int, strlen(s));
+	int len = static_cast<int>(strlen(s));
 	s[len] = n;
 	s[len + 1] = '\0';
 }
@@ -244,7 +244,7 @@ EXTERNC long int strtol(const char *str, char **endptr, int base)
 		base = c == '0' ? 8 : 10;
 
 	cutoff = neg ? LONG_MIN : LONG_MAX;
-	cutlim = s_cst(int, cutoff % base);
+	cutlim = static_cast<int>(cutoff % base);
 	cutoff /= base;
 	for (acc = 0, any = 0;; c = *s++)
 	{
@@ -309,7 +309,7 @@ EXTERNC unsigned long int strtoul(const char *str, char **endptr, int base)
 		base = c == '0' ? 8 : 10;
 
 	cutoff = neg ? LONG_MIN : LONG_MAX;
-	cutlim = s_cst(int, cutoff % base);
+	cutlim = static_cast<int>(cutoff % base);
 	cutoff /= base;
 	for (acc = 0, any = 0;; c = *s++)
 	{
@@ -436,7 +436,7 @@ EXTERNC float smoothstep(float a, float b, float t)
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
-	t = clamp(s_cst(double, t), 0.0, 1.0);
+	t = clamp(static_cast<double>(t), 0.0, 1.0);
 #pragma GCC diagnostic pop
 	return lerp(a, b, t * t * (3 - 2 * t));
 }
@@ -697,16 +697,16 @@ EXTERNC char *itoa(int Value, char *Buffer, int Base)
 	if (Base < 2 || Base > 32)
 		return Buffer;
 
-	int n = s_cst(int, abs(Value));
+	int n = static_cast<int>(abs(Value));
 	int i = 0;
 
 	while (n)
 	{
-		int r = s_cst(int, n % Base);
+		int r = static_cast<int>(n % Base);
 		if (r >= 10)
-			Buffer[i++] = s_cst(char, 65 + (r - 10));
+			Buffer[i++] = static_cast<char>(65 + (r - 10));
 		else
-			Buffer[i++] = s_cst(char, 48 + r);
+			Buffer[i++] = static_cast<char>(48 + r);
 		n = n / Base;
 	}
 
@@ -730,11 +730,11 @@ EXTERNC char *ltoa(long Value, char *Buffer, int Base)
 
 	while (n)
 	{
-		int r = s_cst(int, n % Base);
+		int r = static_cast<int>(n % Base);
 		if (r >= 10)
-			Buffer[i++] = s_cst(char, 65 + (r - 10));
+			Buffer[i++] = static_cast<char>(65 + (r - 10));
 		else
-			Buffer[i++] = s_cst(char, 48 + r);
+			Buffer[i++] = static_cast<char>(48 + r);
 		n = n / Base;
 	}
 
@@ -758,11 +758,11 @@ EXTERNC char *ultoa(unsigned long Value, char *Buffer, int Base)
 
 	while (n)
 	{
-		int r = s_cst(int, n % Base);
+		int r = static_cast<int>(n % Base);
 		if (r >= 10)
-			Buffer[i++] = s_cst(char, 65 + (r - 10));
+			Buffer[i++] = static_cast<char>(65 + (r - 10));
 		else
-			Buffer[i++] = s_cst(char, 48 + r);
+			Buffer[i++] = static_cast<char>(48 + r);
 		n = n / Base;
 	}
 

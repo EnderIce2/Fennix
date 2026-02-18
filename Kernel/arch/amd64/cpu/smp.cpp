@@ -126,7 +126,7 @@ namespace SMP
 
 		uint64_t TrampolineLength = (uintptr_t)&_trampoline_end -
 									(uintptr_t)&_trampoline_start;
-		Memory::Virtual().Map(0x0, 0x0, Memory::PTFlag::RW);
+		Memory::Virtual().SingleMap(0x0, 0x0, Memory::PTFlag::RW);
 		/* We reserved the TRAMPOLINE_START address inside Physical class. */
 		Memory::Virtual().Map((void *)TRAMPOLINE_START,
 							  (void *)TRAMPOLINE_START,

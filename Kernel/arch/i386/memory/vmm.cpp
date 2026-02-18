@@ -188,6 +188,54 @@ namespace Memory
 #endif
 	}
 
+	void Virtual::OptimizedMap(fnx::void_t VirtualAddress, fnx::void_t PhysicalAddress, size_t Length, uint64_t Flags)
+	{
+		static bool PSESupport = false;
+
+		static int once = 0;
+		if (!once++)
+		{
+			if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
+			{
+				CPU::x86::AMD::CPUID0x80000001 cpuid;
+				PSESupport = cpuid.EDX.PSE;
+			}
+			else if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_INTEL) == 0)
+			{
+				CPU::x86::Intel::CPUID0x00000001 cpuid;
+				PSESupport = cpuid.EDX.PSE;
+			}
+
+			if (PSESupport)
+			{
+				CPU::x32::CR4 cr4 = CPU::x32::readcr4();
+				cr4.PSE = 1;
+				CPU::x32::writecr4(cr4);
+			}
+		}
+
+		if (PSESupport)
+		{
+			while (Length >= PAGE_SIZE_4M &&
+				   is_aligned((uintptr_t)VirtualAddress, PAGE_SIZE_4M) &&
+				   is_aligned((uintptr_t)PhysicalAddress, PAGE_SIZE_4M))
+			{
+				this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::FourMiB);
+				VirtualAddress += PAGE_SIZE_4M;
+				PhysicalAddress += PAGE_SIZE_4M;
+				Length -= PAGE_SIZE_4M;
+			}
+		}
+
+		while (Length >= PAGE_SIZE_4K)
+		{
+			this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::FourKiB);
+			VirtualAddress += PAGE_SIZE_4K;
+			PhysicalAddress += PAGE_SIZE_4K;
+			Length -= PAGE_SIZE_4K;
+		}
+	}
+
 	void Virtual::Unmap(void *VirtualAddress, MapType Type)
 	{
 		SmartLock(this->MemoryLock);

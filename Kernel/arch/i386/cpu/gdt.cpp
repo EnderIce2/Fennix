@@ -213,8 +213,8 @@ namespace GlobalDescriptorTable
 			 "1:\n"
 			 "movw $16, %%ax\n"
 			 "movw %%ax, %%ds\n"
-			 "movw %%ax, %%es\n" ::
-				 : "memory", "eax");
+			 "movw %%ax, %%es\n" :: : "memory",
+			 "eax");
 
 		CPUStackPointer[Core] = StackManager.Allocate(STACK_SIZE);
 		memset(CPUStackPointer[Core], 0, STACK_SIZE);
@@ -230,7 +230,7 @@ namespace GlobalDescriptorTable
 		gdt[Core].Entries->TaskStateSegment.BaseHigh = uint8_t((Base >> 24) & 0xFF);
 
 #pragma GCC diagnostic ignored "-Wshift-count-overflow"
-		gdt[Core].Entries->TaskStateSegment.BaseUpper = s_cst(uint32_t, (Base >> 32) & 0xFFFFFFFF);
+		gdt[Core].Entries->TaskStateSegment.BaseUpper = static_cast<uint32_t>((Base >> 32) & 0xFFFFFFFF);
 
 		gdt[Core].Entries->TaskStateSegment.Access = {.A = 1, .RW = 0, .DC = 0, .E = 1, .S = 0, .DPL = 0, .P = 1};
 		gdt[Core].Entries->TaskStateSegment.Granularity = (0 << 4) | ((Limit >> 16) & 0xF);

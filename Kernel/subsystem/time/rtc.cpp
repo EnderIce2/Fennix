@@ -95,17 +95,17 @@ namespace Time
 							 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 		for (result.Month = 0; result.Month < 12; result.Month++)
 		{
-			if (Days < s_cst(uint64_t, (DaysInMonth[result.Month])))
+			if (Days < static_cast<uint64_t>((DaysInMonth[result.Month])))
 				break;
 			Days -= DaysInMonth[result.Month];
 		}
 		result.Month++;
 
-		result.Day = s_cst(int, (Days) + 1);
-		result.Hour = s_cst(int, (Hours % 24));
-		result.Minute = s_cst(int, (Minutes % 60));
-		result.Second = s_cst(int, (Seconds % 60));
-		result.Counter = s_cst(uint64_t, (Timestamp));
+		result.Day = static_cast<int>((Days) + 1);
+		result.Hour = static_cast<int>((Hours % 24));
+		result.Minute = static_cast<int>((Minutes % 60));
+		result.Second = static_cast<int>((Seconds % 60));
+		result.Counter = static_cast<uint64_t>((Timestamp));
 		return result;
 	}
 }

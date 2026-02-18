@@ -188,7 +188,7 @@ namespace APIC
 
 		if (x2APICSupported)
 		{
-			icr.x2.VEC = s_cst(uint8_t, StartupAddress >> 12);
+			icr.x2.VEC = static_cast<uint8_t>(StartupAddress >> 12);
 			icr.x2.MT = Startup;
 			icr.x2.L = Assert;
 			icr.x2.DES = uint8_t(CPU);
@@ -198,7 +198,7 @@ namespace APIC
 		}
 		else
 		{
-			icr.VEC = s_cst(uint8_t, StartupAddress >> 12);
+			icr.VEC = static_cast<uint8_t>(StartupAddress >> 12);
 			icr.MT = Startup;
 			icr.L = Assert;
 			icr.DES = uint8_t(CPU);
@@ -295,9 +295,9 @@ namespace APIC
 		uint64_t BaseHigh = BaseStruct.ABAHigh;
 		this->APICBaseAddress = BaseLow << 12u | BaseHigh << 32u;
 		trace("APIC Address: %#lx", this->APICBaseAddress);
-		Memory::Virtual().Map((void *)this->APICBaseAddress,
-							  (void *)this->APICBaseAddress,
-							  Memory::RW | Memory::PCD);
+		Memory::Virtual().SingleMap((void *)this->APICBaseAddress,
+									(void *)this->APICBaseAddress,
+									Memory::RW | Memory::PCD);
 
 		if (strcmp(CPU::Vendor(), x86_CPUID_VENDOR_AMD) == 0)
 		{

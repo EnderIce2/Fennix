@@ -24,7 +24,7 @@
 
 void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 {
-	multiboot_info *InfoAddress = r_cst(multiboot_info *, Info);
+	multiboot_info *InfoAddress = reinterpret_cast<multiboot_info *>(Info);
 
 	if (InfoAddress->flags & MULTIBOOT_INFO_MEMORY)
 	{
@@ -39,13 +39,13 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 	if (InfoAddress->flags & MULTIBOOT_INFO_CMDLINE)
 	{
 		strncpy(mb2binfo.Kernel.CommandLine,
-				r_cst(const char *, InfoAddress->cmdline),
-				strlen(r_cst(const char *, InfoAddress->cmdline)));
+				reinterpret_cast<const char *>(InfoAddress->cmdline),
+				strlen(reinterpret_cast<const char *>(InfoAddress->cmdline)));
 		debug("Kernel command line: %s", mb2binfo.Kernel.CommandLine);
 	}
 	if (InfoAddress->flags & MULTIBOOT_INFO_MODS)
 	{
-		multiboot_mod_list *module = r_cst(multiboot_mod_list *, InfoAddress->mods_addr);
+		multiboot_mod_list *module = reinterpret_cast<multiboot_mod_list *>(InfoAddress->mods_addr);
 		for (size_t i = 0; i < InfoAddress->mods_count; i++)
 		{
 			if (i > MAX_MODULES)
@@ -56,8 +56,8 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			mb2binfo.Modules[i].Address = (void *)(uint32_t)module[i].mod_start;
 			mb2binfo.Modules[i].Size = module[i].mod_end - module[i].mod_start;
 			strncpy(mb2binfo.Modules[i].Path, "(null)", 6);
-			strncpy(mb2binfo.Modules[i].CommandLine, r_cst(const char *, module[i].cmdline),
-					strlen(r_cst(const char *, module[i].cmdline)));
+			strncpy(mb2binfo.Modules[i].CommandLine, reinterpret_cast<const char *>(module[i].cmdline),
+					strlen(reinterpret_cast<const char *>(module[i].cmdline)));
 			debug("Module: %s", mb2binfo.Modules[i].Path);
 		}
 	}
@@ -72,7 +72,7 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 		mb2binfo.Kernel.Symbols.Num = InfoAddress->u.elf_sec.num;
 		mb2binfo.Kernel.Symbols.EntSize = InfoAddress->u.elf_sec.size;
 		mb2binfo.Kernel.Symbols.Shndx = InfoAddress->u.elf_sec.shndx;
-		mb2binfo.Kernel.Symbols.Sections = s_cst(uintptr_t, InfoAddress->u.elf_sec.addr);
+		mb2binfo.Kernel.Symbols.Sections = static_cast<uintptr_t>(InfoAddress->u.elf_sec.addr);
 	}
 	if (InfoAddress->flags & MULTIBOOT_INFO_MEM_MAP)
 	{
@@ -84,7 +84,7 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 				warn("Too many memory entries, skipping the rest...");
 				break;
 			}
-			multiboot_mmap_entry entry = r_cst(multiboot_mmap_entry *, InfoAddress->mmap_addr)[i];
+			multiboot_mmap_entry entry = reinterpret_cast<multiboot_mmap_entry *>(InfoAddress->mmap_addr)[i];
 			mb2binfo.Memory.Size += (__SIZE_TYPE__)entry.len;
 			switch (entry.type)
 			{
@@ -138,8 +138,8 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 	if (InfoAddress->flags & MULTIBOOT_INFO_BOOT_LOADER_NAME)
 	{
 		strncpy(mb2binfo.Bootloader.Name,
-				r_cst(const char *, InfoAddress->boot_loader_name),
-				strlen(r_cst(const char *, InfoAddress->boot_loader_name)));
+				reinterpret_cast<const char *>(InfoAddress->boot_loader_name),
+				strlen(reinterpret_cast<const char *>(InfoAddress->boot_loader_name)));
 		debug("Bootloader name: %s", mb2binfo.Bootloader.Name);
 	}
 	if (InfoAddress->flags & MULTIBOOT_INFO_APM_TABLE)

@@ -79,7 +79,7 @@ namespace NetworkUDP
 	void UDP::Send(Socket *Socket, uint8_t *Data, size_t Length)
 	{
 		netdbg("Sending %d bytes to %s", Length, Socket->RemoteIP.v4.ToStringLittleEndian(), Socket->RemotePort);
-		uint16_t TotalLength = s_cst(uint16_t, Length + sizeof(UDPHeader));
+		uint16_t TotalLength = static_cast<uint16_t>(Length + sizeof(UDPHeader));
 		UDPPacket *packet = (UDPPacket *)kmalloc(TotalLength);
 		packet->Header.SourcePort = Socket->LocalPort;
 		packet->Header.DestinationPort = Socket->RemotePort;

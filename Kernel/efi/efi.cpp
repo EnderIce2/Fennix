@@ -151,9 +151,9 @@ VOID InitializeMemoryNoBS()
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-	Memory::Virtual va;
-	bool validST = va.Check(SystemTable);
-	bool validIH = va.Check(ImageHandle);
+	Memory::Virtual vmm;
+	bool validST = vmm.Check(SystemTable);
+	bool validIH = vmm.Check(ImageHandle);
 	trace("map: ST:%d IH:%d", validST, validIH);
 
 #ifdef DEBUG

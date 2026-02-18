@@ -45,7 +45,7 @@ namespace UART
 	{
 		if (!DebugAvailable)
 			return;
-		while ((inb(s_cst(uint16_t, COM1 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
+		while ((inb(static_cast<uint16_t>(COM1 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
 			;
 		outb(COM1, Char);
 	}
@@ -54,7 +54,7 @@ namespace UART
 	{
 		if (!DebugAvailable)
 			return 0;
-		while ((inb(s_cst(uint16_t, COM1 + 5)) & 1) == 0)
+		while ((inb(static_cast<uint16_t>(COM1 + 5)) & 1) == 0)
 			;
 		return inb(COM1);
 	}
@@ -63,7 +63,7 @@ namespace UART
 	{
 		if (!TTYAvailable)
 			return;
-		while ((inb(s_cst(uint16_t, COM4 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
+		while ((inb(static_cast<uint16_t>(COM4 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
 			;
 		outb(COM4, Char);
 	}
@@ -72,7 +72,7 @@ namespace UART
 	{
 		if (!TTYAvailable)
 			return 0;
-		while ((inb(s_cst(uint16_t, COM4 + 5)) & 1) == 0)
+		while ((inb(static_cast<uint16_t>(COM4 + 5)) & 1) == 0)
 			;
 		return inb(COM4);
 	}
@@ -82,19 +82,19 @@ namespace UART
 		auto initPort = [](uint16_t Port)
 		{
 			// Initialize the serial port
-			outb(s_cst(uint16_t, Port + 1), 0x00);					// Disable all interrupts
-			outb(s_cst(uint16_t, Port + 3), SERIAL_ENABLE_DLAB);	// Enable DLAB (set baud rate divisor)
-			outb(s_cst(uint16_t, Port + 0), SERIAL_RATE_115200_LO); // Set divisor to 1 (lo byte) 115200 baud
-			outb(s_cst(uint16_t, Port + 1), SERIAL_RATE_115200_HI); //                  (hi byte)
-			outb(s_cst(uint16_t, Port + 3), 0x03);					// 8 bits, no parity, one stop bit
-			outb(s_cst(uint16_t, Port + 2), 0xC7);					// Enable FIFO, clear them, with 14-byte threshold
-			outb(s_cst(uint16_t, Port + 4), 0x0B);					// IRQs enabled, RTS/DSR set
+			outb(static_cast<uint16_t>(Port + 1), 0x00);				  // Disable all interrupts
+			outb(static_cast<uint16_t>(Port + 3), SERIAL_ENABLE_DLAB);	  // Enable DLAB (set baud rate divisor)
+			outb(static_cast<uint16_t>(Port + 0), SERIAL_RATE_115200_LO); // Set divisor to 1 (lo byte) 115200 baud
+			outb(static_cast<uint16_t>(Port + 1), SERIAL_RATE_115200_HI); //                  (hi byte)
+			outb(static_cast<uint16_t>(Port + 3), 0x03);				  // 8 bits, no parity, one stop bit
+			outb(static_cast<uint16_t>(Port + 2), 0xC7);				  // Enable FIFO, clear them, with 14-byte threshold
+			outb(static_cast<uint16_t>(Port + 4), 0x0B);				  // IRQs enabled, RTS/DSR set
 
 			/* FIXME  https://wiki.osdev.org/Serial_Ports */
-			// outb(s_cst(uint16_t, Port + 0), 0x1E);
-			// outb(s_cst(uint16_t, Port + 0), 0xAE);
+			// outb(static_cast<uint16_t>(Port + 0), 0x1E);
+			// outb(static_cast<uint16_t>(Port + 0), 0xAE);
 			// Check if the serial port is faulty.
-			// if (inb(s_cst(uint16_t, Port + 0)) != 0xAE)
+			// if (inb(static_cast<uint16_t>(Port + 0)) != 0xAE)
 			// {
 			//     static int once = 0;
 			//     if (!once++)
@@ -104,7 +104,7 @@ namespace UART
 			// }
 
 			// Set to normal operation mode.
-			outb(s_cst(uint16_t, Port + 4), 0x0F);
+			outb(static_cast<uint16_t>(Port + 4), 0x0F);
 		};
 
 		uint8_t com = inb(COM1);

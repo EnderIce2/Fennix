@@ -68,6 +68,8 @@
 #define UNUSED(x) (void)(x)
 #define CONCAT(x, y) x##y
 
+#define numof(x) (sizeof(x) / sizeof(x[0]))
+
 #ifndef __va_list__
 typedef __builtin_va_list va_list;
 #endif
@@ -82,6 +84,8 @@ typedef __builtin_va_list va_list;
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
 #define RGB_TO_HEX(r, g, b) ((r << 16) | (g << 8) | (b))
+
+#define is_aligned(value, alignment) !(value & (alignment - 1))
 
 #define MAX(a, b)               \
 	({                          \
@@ -534,10 +538,16 @@ namespace fnx
 		{
 			while (try_lock())
 			{
-#if defined(__amd64__)
+#if defined(__amd64__) || defined(__i386__)
 				asmv("pause" :: : "memory");
+#elif defined(__arm__)
+				asmv("nop" :: : "memory");
 #elif defined(__aarch64__)
 				asmv("yield" :: : "memory");
+#elif defined(__riscv) || defined(__riscv64__)
+				asmv("nop" :: : "memory");
+#else
+#warning "spinlock_t hint not implemented for this architecture"
 #endif
 			}
 		}
@@ -560,6 +570,12 @@ namespace fnx
 		Ofast ~spinlock_t() = default;
 	};
 
+	/**
+	 * Casting hell savior, allows implicit conversion to and from pointers and integers,
+	 * and supports pointer arithmetic and bitwise operations.
+	 *
+	 * I hope this will not make my life a living hell.
+	 */
 	template <typename T>
 	class ptr_t
 	{
@@ -571,9 +587,12 @@ namespace fnx
 		ptr_t(int p) : ptr((T)(uintptr_t)p) {}
 		ptr_t(const ptr_t<T> &other) : ptr(other.ptr) {}
 
+		T get() const { return ptr; }
+
 		operator T() { return ptr; }
 		operator uintptr_t() { return (uintptr_t)ptr; }
 		operator bool() { return (void *)(uintptr_t)ptr != nullptr; }
+		operator void *() const { return (void *)(uintptr_t)ptr; }
 
 		ptr_t<T> &operator=(auto p)
 		{
@@ -619,10 +638,43 @@ namespace fnx
 
 		ptr_t<T> operator+(auto offset) const { return ptr_t<T>((void *)((uintptr_t)ptr + offset)); }
 		ptr_t<T> operator-(auto offset) const { return ptr_t<T>((void *)((uintptr_t)ptr - offset)); }
+		ptr_t<T> operator|(auto other) { return ptr_t<T>((uintptr_t)ptr | (uintptr_t)other); }
+		ptr_t<T> operator&(auto other) { return ptr_t<T>((uintptr_t)ptr & (uintptr_t)other); }
+		ptr_t<T> operator^(auto other) { return ptr_t<T>((uintptr_t)ptr ^ (uintptr_t)other); }
 
 		T operator->() { return ptr; }
 		T operator*() { return *ptr; }
+
+		template <typename U>
+		operator U *() const noexcept
+		{
+			// static_assert(std::is_pointer_v<U *>, "Conversion only to pointer types");
+			return reinterpret_cast<U *>(ptr);
+		}
+
+		/*
+		template <typename U>
+		operator U() const noexcept
+			requires std::is_pointer_v<U>
+		{
+			return reinterpret_cast<U>(ptr);
+		}
+		*/
 	};
+
+	typedef ptr_t<void *> void_t;
+
+	typedef ptr_t<uint8_t> uint8_ptr;
+	typedef ptr_t<uint16_t> uint16_ptr;
+	typedef ptr_t<uint32_t> uint32_ptr;
+	typedef ptr_t<uint64_t> uint64_ptr;
+	typedef ptr_t<uintptr_t> uintptr_ptr;
+
+	typedef ptr_t<int8_t> int8_ptr;
+	typedef ptr_t<int16_t> int16_ptr;
+	typedef ptr_t<int32_t> int32_ptr;
+	typedef ptr_t<int64_t> int64_ptr;
+	typedef ptr_t<intptr_t> intptr_ptr;
 }
 #endif // __cplusplus
 

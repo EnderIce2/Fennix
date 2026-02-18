@@ -52,14 +52,14 @@ namespace InterruptDescriptorTable
 		case INTERRUPT_GATE_32BIT:
 		{
 			InterruptGate gate{
-				.TargetCodeSegmentOffsetLow = s_cst(uint16_t, ((uint32_t)Base & 0xFFFF)),
+				.TargetCodeSegmentOffsetLow = static_cast<uint16_t>(((uint32_t)Base & 0xFFFF)),
 				.TargetCodeSegmentSelector = SegmentSelector,
 				.Reserved0 = 0,
 				.Type = Gate,
 				.Zero = 0,
 				.DescriptorPrivilegeLevel = Ring,
 				.Present = Present,
-				.TargetCodeSegmentOffsetHigh = s_cst(uint16_t, ((uint32_t)Base >> 16)),
+				.TargetCodeSegmentOffsetHigh = static_cast<uint16_t>(((uint32_t)Base >> 16)),
 			};
 			Entries[Index].Interrupt = gate;
 			break;
@@ -67,14 +67,14 @@ namespace InterruptDescriptorTable
 		case TRAP_GATE_32BIT:
 		{
 			TrapGate gate{
-				.TargetCodeSegmentOffsetLow = s_cst(uint16_t, ((uint32_t)Base & 0xFFFF)),
+				.TargetCodeSegmentOffsetLow = static_cast<uint16_t>(((uint32_t)Base & 0xFFFF)),
 				.TargetCodeSegmentSelector = SegmentSelector,
 				.Reserved0 = 0,
 				.Type = Gate,
 				.Zero = 0,
 				.DescriptorPrivilegeLevel = Ring,
 				.Present = Present,
-				.TargetCodeSegmentOffsetHigh = s_cst(uint16_t, ((uint32_t)Base >> 16)),
+				.TargetCodeSegmentOffsetHigh = static_cast<uint16_t>(((uint32_t)Base >> 16)),
 			};
 			Entries[Index].Trap = gate;
 			break;
@@ -461,11 +461,11 @@ namespace InterruptDescriptorTable
 		/* ISR */
 
 		bool EnableISRs = true;
-// #ifdef DEBUG
+		// #ifdef DEBUG
 		EnableISRs = !DebuggerIsAttached;
 		if (!EnableISRs)
 			KPrint("\x1b[32mThe debugger is attached, disabling all ISRs.");
-// #endif
+		// #endif
 
 		SetEntry(0x0, InterruptHandler_0x0, TRAP_GATE_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);
 		SetEntry(0x1, InterruptHandler_0x1, TRAP_GATE_32BIT, RING0, EnableISRs, GDT_KERNEL_CODE);

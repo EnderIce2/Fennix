@@ -452,7 +452,7 @@ namespace Tasking
 
 		/* I don't know if this is the best way to do this. */
 		Scheduler::Custom *custom_sched = new Scheduler::Custom(this);
-		Scheduler::Base *sched = r_cst(Scheduler::Base *, custom_sched);
+		Scheduler::Base *sched = reinterpret_cast<Scheduler::Base *>(custom_sched);
 		__sched_ctx = custom_sched;
 		Scheduler = sched;
 

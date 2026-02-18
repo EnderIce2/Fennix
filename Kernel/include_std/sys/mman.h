@@ -43,3 +43,7 @@
 #ifndef POSIX_MADV_DONTNEED
 #define POSIX_MADV_DONTNEED 0x0
 #endif
+
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+int posix_madvise(void *addr, size_t size, int advice);
+int munmap(void *addr, size_t length);

@@ -15,16 +15,12 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _PTHREAD_H
-#define _PTHREAD_H
+#ifndef _UCHAR_H
+#define _UCHAR_H
 
-typedef unsigned pthread_key_t;
+#include <types.h>
 
-int pthread_key_create(pthread_key_t *key, void (*destructor)(void *));
-int pthread_key_delete(pthread_key_t key);
-int pthread_setspecific(pthread_key_t key, const void *pointer);
-void *pthread_getspecific(pthread_key_t key);
+typedef uint_least16_t char16_t;
+typedef uint_least32_t char32_t;
 
-#define __builtin_thread_pointer() ((void *)0) // Placeholder for thread pointer retrieval, to be implemented based on the target architecture
-
-#endif // !_PTHREAD_H
+#endif // !_UCHAR_H

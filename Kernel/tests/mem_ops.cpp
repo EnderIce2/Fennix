@@ -21,7 +21,6 @@
 #include <memory.hpp>
 #include <convert.h>
 
-
 extern bool DebuggerIsAttached;
 extern Memory::MemoryAllocatorType AllocatorType;
 
@@ -30,12 +29,6 @@ __constructor void TestMemoryOperations()
 	if (DebuggerIsAttached)
 	{
 		debug("The test is disabled when the debugger is enabled.");
-		return;
-	}
-
-	if (AllocatorType == Memory::MemoryAllocatorType::Pages)
-	{
-		debug("The test is disabled when the allocator is set to pages.");
 		return;
 	}
 

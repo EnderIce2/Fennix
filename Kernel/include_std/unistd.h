@@ -23,4 +23,6 @@
 #define _SC_PAGESIZE 30
 #define _SC_PAGE_SIZE _SC_PAGESIZE
 
+EXTERNC long sysconf(int name);
+
 #endif // !_UNISTD_H

@@ -232,7 +232,7 @@ namespace UniversalSerialBus
 		auto_page<USBPortStatus> status;
 		for (uint8_t port = 0; port < Descriptor->bNbrPorts; ++port)
 		{
-			Memory::Virtual().Map(status, status, sizeof(USBPortStatus), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+			Memory::Virtual().Map(status.as<void *>(), status.as<void *>(), sizeof(USBPortStatus), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 			// USBPortStatus *status = (USBPortStatus *)KernelAllocator.RequestPages(TO_PAGES(sizeof(USBPortStatus)));
 			for (size_t i = 0; i < 16; i++)
 			{
@@ -299,7 +299,7 @@ namespace UniversalSerialBus
 		new (hub) Hub;
 
 		auto_page<USBHubDescriptor> desc;
-		Memory::Virtual().Map(desc, desc, sizeof(USBHubDescriptor), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
+		Memory::Virtual().Map(desc.as<void *>(), desc.as<void *>(), sizeof(USBHubDescriptor), Memory::P | Memory::RW | Memory::PWT | Memory::PCD);
 		int result = hub->GetHubDescriptor((USB_HUB_DESCRIPTOR << 8) | 0, 0, sizeof(USBHubDescriptor), desc);
 		if (result != 0)
 		{

@@ -57,9 +57,9 @@ namespace APIC
 		if (x2APICSupported)
 		{
 			if (Register != APIC_ICRHI)
-				return s_cst(uint32_t, rdmsr((Register >> 4) + 0x800));
+				return static_cast<uint32_t>(rdmsr((Register >> 4) + 0x800));
 			else
-				return s_cst(uint32_t, rdmsr(0x30 + 0x800));
+				return static_cast<uint32_t>(rdmsr(0x30 + 0x800));
 		}
 		else
 		{
@@ -134,13 +134,13 @@ namespace APIC
 		SmartCriticalSection(APICLock);
 		if (x2APICSupported)
 		{
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			wrmsr(MSR_X2APIC_ICR, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 		else
 		{
 			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			this->Write(APIC_ICRLO, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 	}
@@ -153,7 +153,7 @@ namespace APIC
 			InterruptCommandRegisterLow icr = {.raw = 0};
 			icr.DeliveryMode = INIT;
 			icr.Level = Assert;
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			wrmsr(MSR_X2APIC_ICR, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 		else
@@ -162,7 +162,7 @@ namespace APIC
 			icr.DeliveryMode = INIT;
 			icr.Level = Assert;
 			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			this->Write(APIC_ICRLO, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 	}
@@ -173,20 +173,20 @@ namespace APIC
 		if (x2APICSupported)
 		{
 			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.Vector = s_cst(uint8_t, StartupAddress >> 12);
+			icr.Vector = static_cast<uint8_t>(StartupAddress >> 12);
 			icr.DeliveryMode = Startup;
 			icr.Level = Assert;
-			wrmsr(MSR_X2APIC_ICR, s_cst(uint32_t, icr.raw));
+			wrmsr(MSR_X2APIC_ICR, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 		else
 		{
 			InterruptCommandRegisterLow icr = {.raw = 0};
-			icr.Vector = s_cst(uint8_t, StartupAddress >> 12);
+			icr.Vector = static_cast<uint8_t>(StartupAddress >> 12);
 			icr.DeliveryMode = Startup;
 			icr.Level = Assert;
 			this->Write(APIC_ICRHI, (CPU << 24));
-			this->Write(APIC_ICRLO, s_cst(uint32_t, icr.raw));
+			this->Write(APIC_ICRLO, static_cast<uint32_t>(icr.raw));
 			this->WaitForIPI();
 		}
 	}
@@ -204,7 +204,7 @@ namespace APIC
 		int64_t IOAPICTarget = -1;
 		for (uint64_t i = 0; ((ACPI::MADT *)PowerManager->GetMADT())->ioapic[std::size_t(i)] != 0; i++)
 			if (((ACPI::MADT *)PowerManager->GetMADT())->ioapic[std::size_t(i)]->GSIBase <= GSI)
-				if (((ACPI::MADT *)PowerManager->GetMADT())->ioapic[std::size_t(i)]->GSIBase + IOGetMaxRedirect(s_cst(uint32_t, i)) > GSI)
+				if (((ACPI::MADT *)PowerManager->GetMADT())->ioapic[std::size_t(i)]->GSIBase + IOGetMaxRedirect(static_cast<uint32_t>(i)) > GSI)
 				{
 					IOAPICTarget = i;
 					break;
@@ -339,7 +339,7 @@ namespace APIC
 		Spurious Spurious = {.raw = this->Read(APIC_SVR)};
 		Spurious.Vector = IRQ223; // TODO: Should I map the IRQ to something?
 		Spurious.Software = 1;
-		this->Write(APIC_SVR, s_cst(uint32_t, Spurious.raw));
+		this->Write(APIC_SVR, static_cast<uint32_t>(Spurious.raw));
 
 		static int once = 0;
 		if (!once++)
@@ -356,20 +356,24 @@ namespace APIC
 
 	APIC::~APIC() {}
 
-	int Timer::OnInterruptReceived(CPU::TrapFrame *Frame) { UNUSED(Frame); return EOK; }
+	int Timer::OnInterruptReceived(CPU::TrapFrame *Frame)
+	{
+		UNUSED(Frame);
+		return EOK;
+	}
 
 	void Timer::OneShot(uint32_t Vector, uint64_t Miliseconds)
 	{
 		SmartCriticalSection(APICLock);
 		LVTTimer timer = {.raw = 0};
-		timer.Vector = s_cst(uint8_t, Vector);
+		timer.Vector = static_cast<uint8_t>(Vector);
 		timer.TimerMode = 0;
 		if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) != 0)
 			this->lapic->Write(APIC_TDCR, DivideBy128);
 		else
 			this->lapic->Write(APIC_TDCR, DivideBy16);
-		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks *Miliseconds));
-		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
+		this->lapic->Write(APIC_TICR, static_cast<uint32_t>(Ticks * Miliseconds));
+		this->lapic->Write(APIC_TIMER, static_cast<uint32_t>(timer.raw));
 	}
 
 	Timer::Timer(APIC *apic) : Interrupts::Handler(0) /* IRQ0 */
@@ -397,8 +401,8 @@ namespace APIC
 
 		// Initialize APIC timer
 		this->lapic->Write(APIC_TDCR, Divider);
-		this->lapic->Write(APIC_TICR, s_cst(uint32_t, Ticks));
-		this->lapic->Write(APIC_TIMER, s_cst(uint32_t, timer.raw));
+		this->lapic->Write(APIC_TICR, static_cast<uint32_t>(Ticks));
+		this->lapic->Write(APIC_TIMER, static_cast<uint32_t>(timer.raw));
 		trace("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);
 		KPrint("APIC Timer: \x1b[1;32m%ld\x1b[0m ticks.", Ticks);
 	}

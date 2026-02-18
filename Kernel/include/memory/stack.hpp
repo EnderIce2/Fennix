@@ -35,10 +35,10 @@ namespace Memory
 			void *VirtualAddress;
 		};
 
-		void *StackBottom = nullptr;
-		void *StackTop = nullptr;
-		void *StackPhysicalBottom = nullptr;
-		void *StackPhysicalTop = nullptr;
+		fnx::void_t StackBottom = nullptr;
+		fnx::void_t StackTop = nullptr;
+		fnx::void_t StackPhysicalBottom = nullptr;
+		fnx::void_t StackPhysicalTop = nullptr;
 		uint64_t CurrentSize = 0;
 		bool UserMode = false;
 		bool Expanded = false;
@@ -97,7 +97,7 @@ namespace Memory
 
 		/**
 		 * Called by exception handler */
-		bool Expand(uintptr_t FaultAddress);
+		bool Expand(fnx::void_t FaultAddress);
 
 		/**
 		 * Construct a new Stack Guard object

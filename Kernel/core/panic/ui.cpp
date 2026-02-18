@@ -1092,7 +1092,7 @@ nsa void UserInput(char *Input)
 				ExPrint("\x1b[32m0\x1b[0m");
 			if (i % 128 == 127)
 			{
-				short Percentage = s_cst(short, (i * 100) / bm.Size);
+				short Percentage = static_cast<short>((i * 100) / bm.Size);
 				ExPrint("\n[%03ld%%] %08ld: ", Percentage, i);
 			}
 		}
@@ -1107,8 +1107,8 @@ nsa void UserInput(char *Input)
 		uint64_t Reserved = KernelAllocator.GetReservedMemory();
 
 		ExPrint("\x1b[1;32mTotal: %ld bytes\n\x1b[1;31mUsed: %ld bytes\n\x1b[1;32mFree: %ld bytes\n\x1b[1;35mReserved: %ld bytes\n", Total, Used, Free, Reserved);
-		int Progress = s_cst(int, (Used * 100) / Total);
-		int ReservedProgress = s_cst(int, (Reserved * 100) / Total);
+		int Progress = static_cast<int>((Used * 100) / Total);
+		int ReservedProgress = static_cast<int>((Reserved * 100) / Total);
 		ExPrint("\x1b[1;32m%3d%% \x1b[0m[", Progress);
 		for (int i = 0; i < Progress; i++)
 			ExPrint("\x1b[1;31m|");

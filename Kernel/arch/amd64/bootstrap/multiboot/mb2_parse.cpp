@@ -212,7 +212,7 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			mb2binfo.Kernel.Symbols.Num = elf->num;
 			mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
 			mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
-			mb2binfo.Kernel.Symbols.Sections = r_cst(uintptr_t, elf->sections);
+			mb2binfo.Kernel.Symbols.Sections = reinterpret_cast<uintptr_t>(elf->sections);
 
 			debug("elf_sections->[num: %d, entsize: %d, shndx: %d, sections: %#lx]",
 				  elf->num, elf->entsize, elf->shndx, elf->sections);

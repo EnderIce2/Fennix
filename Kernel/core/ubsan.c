@@ -369,8 +369,6 @@ __noreturn void __asan_handle_no_return(void)
 		;
 }
 
-#define is_aligned(value, alignment) !(value & (alignment - 1))
-
 const char *Type_Check_Kinds[] = {
 	"Load of",
 	"Store to",

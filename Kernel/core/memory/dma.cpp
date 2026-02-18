@@ -15,16 +15,17 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _PTHREAD_H
-#define _PTHREAD_H
+#include <memory.hpp>
 
-typedef unsigned pthread_key_t;
+#include <acpi.hpp>
+#include <debug.h>
+#include <elf.h>
+#ifdef DEBUG
+#include <uart.hpp>
+#endif
 
-int pthread_key_create(pthread_key_t *key, void (*destructor)(void *));
-int pthread_key_delete(pthread_key_t key);
-int pthread_setspecific(pthread_key_t key, const void *pointer);
-void *pthread_getspecific(pthread_key_t key);
+#include "../../kernel.h"
 
-#define __builtin_thread_pointer() ((void *)0) // Placeholder for thread pointer retrieval, to be implemented based on the target architecture
-
-#endif // !_PTHREAD_H
+namespace Memory
+{
+}
