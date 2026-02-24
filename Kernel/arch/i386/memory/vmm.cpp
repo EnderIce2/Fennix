@@ -217,8 +217,8 @@ namespace Memory
 		if (PSESupport)
 		{
 			while (Length >= PAGE_SIZE_4M &&
-				   is_aligned((uintptr_t)VirtualAddress, PAGE_SIZE_4M) &&
-				   is_aligned((uintptr_t)PhysicalAddress, PAGE_SIZE_4M))
+				   is_aligned(VirtualAddress, PAGE_SIZE_4M) &&
+				   is_aligned(PhysicalAddress, PAGE_SIZE_4M))
 			{
 				this->SingleMap(VirtualAddress, PhysicalAddress, Flags, Virtual::MapType::FourMiB);
 				VirtualAddress += PAGE_SIZE_4M;
@@ -236,7 +236,7 @@ namespace Memory
 		}
 	}
 
-	void Virtual::Unmap(void *VirtualAddress, MapType Type)
+	void Virtual::Unmap(fnx::void_t VirtualAddress, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
 		if (!this->pTable)
@@ -245,7 +245,7 @@ namespace Memory
 			return;
 		}
 
-		PageMapIndexer Index = PageMapIndexer((uintptr_t)VirtualAddress);
+		PageMapIndexer Index = PageMapIndexer(VirtualAddress);
 		PageDirectoryEntry *PDE = &this->pTable->Entries[Index.PDEIndex];
 		if (!PDE->Present)
 		{
@@ -272,7 +272,7 @@ namespace Memory
 		CPU::x32::invlpg(VirtualAddress);
 	}
 
-	void Virtual::Remap(void *VirtualAddress, void *PhysicalAddress, uint64_t Flags, MapType Type)
+	void Virtual::Remap(fnx::void_t VirtualAddress, fnx::void_t PhysicalAddress, uint64_t Flags, MapType Type)
 	{
 		SmartLock(this->MemoryLock);
 		if (unlikely(!this->pTable))

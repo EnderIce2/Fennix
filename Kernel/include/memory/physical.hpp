@@ -34,15 +34,23 @@ namespace Memory
 		std::atomic_uint64_t FreeMemory = 0;
 		std::atomic_uint64_t ReservedMemory = 0;
 		std::atomic_uint64_t UsedMemory = 0;
-		uint64_t PageBitmapIndex = 0;
+		size_t PageBitmapIndex = 0;
 		Bitmap PageBitmap;
 
 		void ReserveEssentials();
-		void FindBitmapRegion(uintptr_t &BitmapAddress,
-							  size_t &BitmapAddressSize);
+		void FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize);
+
+		void LockPage(fnx::void_t Address);
+		void LockPages(fnx::void_t Address, size_t PageCount);
+
+		void (*OutOfMemoryHandler)() = nullptr;
+
+		friend class DMA;
 
 	public:
 		Bitmap GetPageBitmap() { return PageBitmap; }
+
+		void SetOutOfMemoryHandler(void (*Handler)()) { OutOfMemoryHandler = Handler; }
 
 		/**
 		 * @brief Get Total Memory
@@ -72,85 +80,34 @@ namespace Memory
 		 */
 		uint64_t GetUsedMemory();
 
-		/**
-		 * @brief Swap page
-		 *
-		 * @param Address Address of the page
-		 * @return true if swap was successful
-		 * @return false if swap was unsuccessful
-		 */
-		bool SwapPage(void *Address);
+		void ReservePage(fnx::void_t Address);
+		void ReservePages(fnx::void_t Address, size_t PageCount);
+		void UnreservePage(fnx::void_t Address);
+		void UnreservePages(fnx::void_t Address, size_t PageCount);
 
 		/**
-		 * @brief Swap pages
+		 * @brief Request page using Next-Fit algorithm
 		 *
-		 * @param Address Address of the pages
-		 * @param PageCount Number of pages
-		 * @return true if swap was successful
-		 * @return false if swap was unsuccessful
-		 */
-		bool SwapPages(void *Address, size_t PageCount);
-
-		/**
-		 * @brief Unswap page
-		 *
-		 * @param Address Address of the page
-		 * @return true if unswap was successful
-		 * @return false if unswap was unsuccessful
-		 */
-		bool UnswapPage(void *Address);
-
-		/**
-		 * @brief Unswap pages
-		 *
-		 * @param Address Address of the pages
-		 * @param PageCount Number of pages
-		 * @return true if unswap was successful
-		 * @return false if unswap was unsuccessful
-		 */
-		bool UnswapPages(void *Address, size_t PageCount);
-
-		/**
-		 * @brief Lock page
-		 *
-		 * @param Address Address of the page
-		 */
-		void LockPage(void *Address);
-
-		/**
-		 * @brief Lock pages
-		 *
-		 * @param Address Address of the pages
-		 * @param PageCount Number of pages
-		 */
-		void LockPages(void *Address, size_t PageCount);
-
-		void ReservePage(void *Address);
-		void ReservePages(void *Address, size_t PageCount);
-		void UnreservePage(void *Address);
-		void UnreservePages(void *Address, size_t PageCount);
-
-		/**
-		 * @brief Request page
-		 *
+		 * @param FirstFit If true, use First-Fit algorithm instead of Next-Fit
 		 * @return void* Allocated page address
 		 */
-		void *RequestPage();
+		fnx::void_t RequestPage(bool FirstFit = false);
 
 		/**
-		 * @brief Request pages
+		 * @brief Request pages using Next-Fit algorithm
 		 *
 		 * @param PageCount Number of pages
+		 * @param FirstFit If true, use First-Fit algorithm instead of Next-Fit
 		 * @return void* Allocated pages address
 		 */
-		void *RequestPages(std::size_t Count);
+		fnx::void_t RequestPages(std::size_t Count, bool FirstFit = false);
 
 		/**
 		 * @brief Free page
 		 *
 		 * @param Address Address of the page
 		 */
-		void FreePage(void *Address);
+		void FreePage(fnx::void_t Address);
 
 		/**
 		 * @brief Free pages
@@ -158,16 +115,11 @@ namespace Memory
 		 * @param Address Address of the pages
 		 * @param PageCount Number of pages
 		 */
-		void FreePages(void *Address, size_t Count);
+		void FreePages(fnx::void_t Address, size_t Count);
 
-		/** @brief Do not use. */
 		void Init();
-
-		/** @brief Do not use. */
-		Physical();
-
-		/** @brief Do not use. */
-		~Physical();
+		Physical() = default;
+		~Physical() = default;
 	};
 }
 

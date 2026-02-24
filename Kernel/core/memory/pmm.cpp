@@ -28,147 +28,217 @@
 
 namespace Memory
 {
-	uint64_t Physical::GetTotalMemory()
+	uint64_t Physical::GetTotalMemory() { return FROM_PAGES(this->TotalMemory.load()); }
+	uint64_t Physical::GetFreeMemory() { return FROM_PAGES(this->FreeMemory.load()); }
+	uint64_t Physical::GetReservedMemory() { return FROM_PAGES(this->ReservedMemory.load()); }
+	uint64_t Physical::GetUsedMemory() { return FROM_PAGES(this->UsedMemory.load()); }
+
+	void Physical::LockPage(fnx::void_t Address)
 	{
-		return this->TotalMemory.load();
+		if (unlikely(Address == nullptr))
+			warn("Trying to lock null address.");
+
+		uintptr_t index = Address / PAGE_SIZE;
+		if (unlikely(PageBitmap[index] == true))
+			return;
+
+		if (PageBitmap.Set(index, true))
+		{
+			FreeMemory.fetch_sub(1);
+			UsedMemory.fetch_add(1);
+		}
 	}
 
-	uint64_t Physical::GetFreeMemory()
+	void Physical::LockPages(fnx::void_t Address, size_t PageCount)
 	{
-		return this->FreeMemory.load();
-	}
+		if (unlikely(Address == nullptr || PageCount == 0))
+			warn("Trying to lock %s%s.", Address ? "null" : "", PageCount ? "0 pages" : "");
 
-	uint64_t Physical::GetReservedMemory()
-	{
-		return this->ReservedMemory.load();
-	}
+		size_t changed = 0;
+		uintptr_t startIndex = Address / PAGE_SIZE;
 
-	uint64_t Physical::GetUsedMemory()
-	{
-		return this->UsedMemory.load();
-	}
-
-	bool Physical::SwapPage(void *Address)
-	{
-		fixme("%p", Address);
-		return false;
-	}
-
-	bool Physical::SwapPages(void *Address, size_t PageCount)
-	{
 		for (size_t i = 0; i < PageCount; i++)
 		{
-			if (!this->SwapPage((void *)((uintptr_t)Address + (i * PAGE_SIZE))))
-				return false;
+			if (PageBitmap.Set(startIndex + i, true))
+				changed++;
 		}
-		return false;
+
+		if (changed > 0)
+		{
+			FreeMemory.fetch_sub(changed);
+			UsedMemory.fetch_add(changed);
+		}
 	}
 
-	bool Physical::UnswapPage(void *Address)
+	void Physical::ReservePage(fnx::void_t Address)
 	{
-		fixme("%p", Address);
-		return false;
+		if (unlikely(Address == nullptr))
+			warn("Trying to reserve null address.");
+
+		uintptr_t index = Address / PAGE_SIZE;
+		if (unlikely(PageBitmap[index] == true))
+			return;
+
+		if (PageBitmap.Set(index, true))
+		{
+			FreeMemory.fetch_sub(1);
+			ReservedMemory.fetch_add(1);
+		}
 	}
 
-	bool Physical::UnswapPages(void *Address, size_t PageCount)
+	void Physical::ReservePages(fnx::void_t Address, size_t PageCount)
 	{
+		if (unlikely(Address == nullptr || PageCount == 0))
+			warn("Trying to reserve %s%s.", Address ? "null" : "", PageCount ? "0 pages" : "");
+
+		size_t changed = 0;
+		uintptr_t startIndex = Address / PAGE_SIZE;
+
 		for (size_t i = 0; i < PageCount; i++)
 		{
-			if (!this->UnswapPage((void *)((uintptr_t)Address + (i * PAGE_SIZE))))
-				return false;
+			if (PageBitmap.Set(startIndex + i, true))
+				changed++;
 		}
-		return false;
+
+		if (changed > 0)
+		{
+			FreeMemory.fetch_sub(changed);
+			ReservedMemory.fetch_add(changed);
+		}
 	}
 
-	void *Physical::RequestPage()
+	void Physical::UnreservePage(fnx::void_t Address)
+	{
+		if (unlikely(Address == nullptr))
+			warn("Trying to unreserve null address.");
+
+		uintptr_t Index = Address / PAGE_SIZE;
+
+		if (unlikely(PageBitmap[Index] == false))
+			return;
+
+		if (PageBitmap.Set(Index, false))
+		{
+			FreeMemory.fetch_add(1);
+			ReservedMemory.fetch_sub(1);
+			if (PageBitmapIndex > Index)
+				PageBitmapIndex = Index;
+		}
+	}
+
+	void Physical::UnreservePages(fnx::void_t Address, size_t PageCount)
+	{
+		if (unlikely(Address == nullptr || PageCount == 0))
+			warn("Trying to unreserve %s%s.", Address ? "null" : "", PageCount ? "0 pages" : "");
+
+		size_t changed = 0;
+		uintptr_t startIndex = Address / PAGE_SIZE;
+
+		for (size_t i = 0; i < PageCount; i++)
+		{
+			if (PageBitmap.Set(startIndex + i, false))
+				changed++;
+		}
+
+		if (changed > 0)
+		{
+			FreeMemory.fetch_add(changed);
+			ReservedMemory.fetch_sub(changed);
+			if (PageBitmapIndex > startIndex)
+				PageBitmapIndex = startIndex;
+		}
+	}
+
+	fnx::void_t Physical::RequestPage(bool FirstFit)
 	{
 		SmartLock(this->MemoryLock);
+	retryWithFirstFit:
+		size_t startIndex = FirstFit ? 0 : PageBitmapIndex;
 
-		for (; PageBitmapIndex < PageBitmap.Size * 8; PageBitmapIndex++)
+		for (; startIndex < PageBitmap.Size * 8; startIndex++)
 		{
-			if (PageBitmap[PageBitmapIndex] == true)
+			if (PageBitmap[startIndex] == true)
 				continue;
 
-			this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
-			return (void *)(PageBitmapIndex * PAGE_SIZE);
+			this->LockPage(startIndex * PAGE_SIZE);
+
+			if (FirstFit == false)
+				PageBitmapIndex = startIndex + 1;
+
+			return startIndex * PAGE_SIZE;
 		}
 
-		if (this->SwapPage((void *)(PageBitmapIndex * PAGE_SIZE)))
+		if (FirstFit == false)
 		{
-			this->LockPage((void *)(PageBitmapIndex * PAGE_SIZE));
-			return (void *)(PageBitmapIndex * PAGE_SIZE);
+			warn("Failed to allocate page using Next-Fit algorithm. Retrying with First-Fit...");
+			FirstFit = true;
+			goto retryWithFirstFit;
 		}
 
-		if (TaskManager && !TaskManager->IsPanic())
-		{
-			error("Out of memory! Killing current process...");
-			TaskManager->KillProcess(thisProcess, Tasking::KILL_OOM);
-			TaskManager->Yield();
-		}
+		if (OutOfMemoryHandler)
+			OutOfMemoryHandler();
 
-		error("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			  TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
-		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			   TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
-		debug("Raw values: free %#lx used %#lx reserved %#lx",
-			  FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
+		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
+		debug("Raw values: free %#lx used %#lx reserved %#lx", FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Stop();
 		__builtin_unreachable();
 	}
 
-	void *Physical::RequestPages(size_t Count)
+	fnx::void_t Physical::RequestPages(size_t Count, bool FirstFit)
 	{
 		SmartLock(this->MemoryLock);
 
-		for (; PageBitmapIndex < PageBitmap.Size * 8; PageBitmapIndex++)
+	retryWithFirstFit:
+		size_t startIndex = FirstFit ? 0 : PageBitmapIndex;
+
+		for (; startIndex < PageBitmap.Size * 8; startIndex++)
 		{
-			if (PageBitmap[PageBitmapIndex] == true)
+			if (PageBitmap[startIndex] == true)
 				continue;
 
-			for (uint64_t Index = PageBitmapIndex; Index < PageBitmap.Size * 8; Index++)
+			if (startIndex + Count > PageBitmap.Size * 8)
+				break;
+
+			size_t i = 0;
+			for (; i < Count; i++)
 			{
-				if (PageBitmap[Index] == true)
-					continue;
-
-				for (size_t i = 0; i < Count; i++)
-				{
-					if (PageBitmap[Index + i] == true)
-						goto NextPage;
-				}
-
-				this->LockPages((void *)(Index * PAGE_SIZE), Count);
-				return (void *)(Index * PAGE_SIZE);
-
-			NextPage:
-				Index += Count;
-				continue;
+				if (PageBitmap[startIndex + i] == true)
+					break;
 			}
+
+			if (i == Count)
+			{
+				uintptr_t foundAddress = startIndex * PAGE_SIZE;
+				this->LockPages(foundAddress, Count);
+
+				startIndex += Count;
+
+				if (FirstFit == false)
+					PageBitmapIndex = startIndex;
+
+				return foundAddress;
+			}
+
+			startIndex += i;
 		}
 
-		if (this->SwapPages((void *)(PageBitmapIndex * PAGE_SIZE), Count))
+		if (FirstFit == false)
 		{
-			this->LockPages((void *)(PageBitmapIndex * PAGE_SIZE), Count);
-			return (void *)(PageBitmapIndex * PAGE_SIZE);
+			warn("Failed to allocate pages using Next-Fit algorithm. Retrying with First-Fit...");
+			FirstFit = true;
+			goto retryWithFirstFit;
 		}
 
-		if (TaskManager && !TaskManager->IsPanic())
-		{
-			error("Out of memory! Killing current process...");
-			TaskManager->KillProcess(thisProcess, Tasking::KILL_OOM);
-			TaskManager->Yield();
-		}
+		if (OutOfMemoryHandler)
+			OutOfMemoryHandler();
 
-		error("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			  TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
-		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)",
-			   TO_MiB(FreeMemory.load()), TO_MiB(UsedMemory.load()), TO_MiB(ReservedMemory.load()));
-		debug("Raw values: free %#lx used %#lx reserved %#lx",
-			  FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
+		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
+		debug("Raw values: free %#lx used %#lx reserved %#lx", FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Halt(true);
 		__builtin_unreachable();
 	}
 
-	void Physical::FreePage(void *Address)
+	void Physical::FreePage(fnx::void_t Address)
 	{
 		SmartLock(this->MemoryLock);
 
@@ -178,142 +248,52 @@ namespace Memory
 			return;
 		}
 
-		size_t Index = (size_t)Address / PAGE_SIZE;
+		size_t Index = Address / PAGE_SIZE;
 
 		if (unlikely(PageBitmap[Index] == false))
 		{
-			warn("Tried to free an already free page. (%p)",
-				 Address);
+			warn("Tried to free an already free page at %#lx.", Address.get());
 			return;
 		}
 
 		if (PageBitmap.Set(Index, false))
 		{
-			FreeMemory.fetch_add(PAGE_SIZE);
-			UsedMemory.fetch_sub(PAGE_SIZE);
+			FreeMemory.fetch_add(1);
+			UsedMemory.fetch_sub(1);
 			if (PageBitmapIndex > Index)
 				PageBitmapIndex = Index;
 		}
 	}
 
-	void Physical::FreePages(void *Address, size_t Count)
+	void Physical::FreePages(fnx::void_t Address, size_t Count)
 	{
 		if (unlikely(Address == nullptr || Count == 0))
 		{
 			warn("%s%s%s passed to FreePages.", Address == nullptr ? "Null pointer " : "", Address == nullptr && Count == 0 ? "and " : "", Count == 0 ? "Zero count" : "");
 			return;
 		}
-		for (size_t t = 0; t < Count; t++)
-			this->FreePage((void *)((uintptr_t)Address + (t * PAGE_SIZE)));
-	}
 
-	void Physical::LockPage(void *Address)
-	{
-		if (unlikely(Address == nullptr))
-			warn("Trying to lock null address.");
+		SmartLock(this->MemoryLock);
+		size_t changed = 0;
+		uintptr_t startIndex = Address / PAGE_SIZE;
+		uintptr_t minFreedIndex = -1;
 
-		uintptr_t Index = (uintptr_t)Address / PAGE_SIZE;
-
-		if (unlikely(PageBitmap[Index] == true))
-			return;
-
-		if (PageBitmap.Set(Index, true))
+		for (size_t i = 0; i < Count; i++)
 		{
-			FreeMemory.fetch_sub(PAGE_SIZE);
-			UsedMemory.fetch_add(PAGE_SIZE);
-		}
-	}
-
-	void Physical::LockPages(void *Address, size_t PageCount)
-	{
-		if (unlikely(Address == nullptr || PageCount == 0))
-			warn("Trying to lock %s%s.",
-				 Address ? "null address" : "",
-				 PageCount ? "0 pages" : "");
-
-		for (size_t i = 0; i < PageCount; i++)
-			this->LockPage((void *)((uintptr_t)Address + (i * PAGE_SIZE)));
-	}
-
-	void Physical::ReservePage(void *Address)
-	{
-		if (unlikely(Address == nullptr))
-			warn("Trying to reserve null address.");
-
-		uintptr_t Index = (Address == NULL) ? 0 : (uintptr_t)Address / PAGE_SIZE;
-
-		if (unlikely(PageBitmap[Index] == true))
-			return;
-
-		if (PageBitmap.Set(Index, true))
-		{
-			FreeMemory.fetch_sub(PAGE_SIZE);
-			ReservedMemory.fetch_add(PAGE_SIZE);
-		}
-	}
-
-	void Physical::ReservePages(void *Address, size_t PageCount)
-	{
-		if (unlikely(Address == nullptr || PageCount == 0))
-			warn("Trying to reserve %s%s.",
-				 Address ? "null address" : "",
-				 PageCount ? "0 pages" : "");
-
-		for (size_t t = 0; t < PageCount; t++)
-		{
-			uintptr_t Index = ((uintptr_t)Address + (t * PAGE_SIZE)) / PAGE_SIZE;
-
-			if (unlikely(PageBitmap[Index] == true))
-				continue;
-
-			if (PageBitmap.Set(Index, true))
+			if (PageBitmap.Set(startIndex + i, false))
 			{
-				FreeMemory.fetch_sub(PAGE_SIZE);
-				ReservedMemory.fetch_add(PAGE_SIZE);
+				changed++;
+				if ((startIndex + i) < minFreedIndex)
+					minFreedIndex = startIndex + i;
 			}
 		}
-	}
 
-	void Physical::UnreservePage(void *Address)
-	{
-		if (unlikely(Address == nullptr))
-			warn("Trying to unreserve null address.");
-
-		uintptr_t Index = (Address == NULL) ? 0 : (uintptr_t)Address / PAGE_SIZE;
-
-		if (unlikely(PageBitmap[Index] == false))
-			return;
-
-		if (PageBitmap.Set(Index, false))
+		if (changed > 0)
 		{
-			FreeMemory.fetch_add(PAGE_SIZE);
-			ReservedMemory.fetch_sub(PAGE_SIZE);
-			if (PageBitmapIndex > Index)
-				PageBitmapIndex = Index;
-		}
-	}
-
-	void Physical::UnreservePages(void *Address, size_t PageCount)
-	{
-		if (unlikely(Address == nullptr || PageCount == 0))
-			warn("Trying to unreserve %s%s.",
-				 Address ? "null address" : "",
-				 PageCount ? "0 pages" : "");
-
-		for (size_t t = 0; t < PageCount; t++)
-		{
-			uintptr_t Index = ((uintptr_t)Address + (t * PAGE_SIZE)) / PAGE_SIZE;
-
-			if (unlikely(PageBitmap[Index] == false))
-				return;
-
-			if (PageBitmap.Set(Index, false))
-			{
-				FreeMemory.fetch_add(PAGE_SIZE);
-				ReservedMemory.fetch_sub(PAGE_SIZE);
-				if (PageBitmapIndex > Index)
-					PageBitmapIndex = Index;
-			}
+			FreeMemory.fetch_add(changed);
+			UsedMemory.fetch_sub(changed);
+			if (PageBitmapIndex > minFreedIndex)
+				PageBitmapIndex = minFreedIndex;
 		}
 	}
 
@@ -321,29 +301,26 @@ namespace Memory
 	{
 		SmartLock(this->MemoryLock);
 
-		uint64_t MemorySize = bInfo.Memory.Size;
-		debug("Memory size: %lld bytes (%ld pages)", MemorySize, TO_PAGES(MemorySize));
-		TotalMemory.store(MemorySize);
-		FreeMemory.store(MemorySize);
+		size_t memSize = bInfo.Memory.Size;
+		debug("Memory size: %lld bytes (%ld pages)", memSize, TO_PAGES(memSize));
+		TotalMemory.store(memSize);
+		FreeMemory.store(memSize);
 
-		size_t BitmapSize = (size_t)(MemorySize / PAGE_SIZE) / 8 + 1;
-		uintptr_t BitmapAddress = 0x0;
-		size_t BitmapAddressSize = 0;
+		size_t bmSize = (memSize / PAGE_SIZE) / 8 + 1;
+		uintptr_t bmAddress = 0x0;
+		size_t bmAddressSize = 0;
 
-		FindBitmapRegion(BitmapAddress, BitmapAddressSize);
-		if (BitmapAddress == 0x0)
+		FindBitmapRegion(bmAddress, bmAddressSize);
+		if (bmAddress == 0x0)
 		{
 			error("No free memory found!");
 			CPU::Stop();
 		}
 
-		debug("Initializing Bitmap at %#lx-%#lx (%zu Bytes)", BitmapAddress, BitmapAddress + BitmapSize, BitmapSize);
-		PageBitmap.Size = BitmapSize;
-		PageBitmap.Buffer = (uint8_t *)BitmapAddress;
-		memset((void *)BitmapAddress, 0, BitmapSize);
+		debug("Initializing Bitmap at %#lx-%#lx (%zu Bytes)", bmAddress, bmAddress + bmSize, bmSize);
+		PageBitmap.Size = bmSize;
+		PageBitmap.Buffer = (fnx::void_t)bmAddress;
+		memset((fnx::void_t)bmAddress, 0, bmSize);
 		ReserveEssentials();
 	}
-
-	Physical::Physical() {}
-	Physical::~Physical() {}
 }

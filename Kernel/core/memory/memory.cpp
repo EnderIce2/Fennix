@@ -74,11 +74,11 @@ nif void MapEntries(PageTable *PT)
 
 	for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
 	{
-		uintptr_t Base = reinterpret_cast<uintptr_t>(bInfo.Memory.Entry[i].BaseAddress);
+		fnx::ptr_t Base = bInfo.Memory.Entry[i].BaseAddress;
 		size_t Length = bInfo.Memory.Entry[i].Length;
 
-		debug("mapping %#lx-%#lx", Base, Base + Length);
-		vmm.Map((void *)Base, (void *)Base, Length, RW);
+		debug("mapping %#lx-%#lx", Base.get(), Base.as<uintptr_t>() + Length);
+		vmm.OptimizedMap(Base, Base, Length, RW);
 	}
 
 	/* Make sure 0x0 is unmapped (so we PF when nullptr is accessed) */

@@ -36,7 +36,7 @@ namespace Memory
 		this->ReservePages(0, TO_PAGES(bInfo.Memory.Size));
 		debug("Unreserving usable pages...");
 
-		for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
+		for (size_t i = 0; i < bInfo.Memory.Entries; i++)
 		{
 			if (bInfo.Memory.Entry[i].Type == Usable)
 			{
@@ -87,10 +87,10 @@ namespace Memory
 			Elf_Sym *Symbols = nullptr;
 			uint8_t *StringAddress = nullptr;
 
-#if defined(__amd64__) || defined(__aarch64__)
+#ifdef __LP64__
 			Elf64_Xword SymbolSize = 0;
 			Elf64_Xword StringSize = 0;
-#elif defined(__i386__) || defined(__arm__)
+#else
 			Elf32_Word SymbolSize = 0;
 			Elf32_Word StringSize = 0;
 #endif
@@ -131,7 +131,7 @@ namespace Memory
 
 		debug("Reserving kernel modules...");
 
-		for (uint64_t i = 0; i < MAX_MODULES; i++)
+		for (size_t i = 0; i < MAX_MODULES; i++)
 		{
 			if (bInfo.Modules[i].Address == 0x0)
 				continue;

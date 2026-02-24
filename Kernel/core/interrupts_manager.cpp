@@ -236,7 +236,7 @@ namespace Interrupts
 		{
 			if (itr->Callback == Callback)
 			{
-				debug("Removing handle %d %#lx", itr->IRQ,
+				debug("Removing handle IRQ-%d cb/data-%#lx", itr->IRQ,
 					  itr->IsHandler
 						  ? itr->Data
 						  : (void *)itr->Callback);

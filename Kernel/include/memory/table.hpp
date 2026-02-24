@@ -319,6 +319,11 @@ namespace Memory
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
+
+		PageTableEntryPtr *GetPTE()
+		{
+			return reinterpret_cast<PageTableEntryPtr *>(this->GetAddress() << 12);
+		}
 	};
 
 	struct __packed PageDirectoryEntryPtr
@@ -414,6 +419,11 @@ namespace Memory
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
 		}
+
+		PageDirectoryEntryPtr *GetPDE()
+		{
+			return reinterpret_cast<PageDirectoryEntryPtr *>(this->GetAddress() << 12);
+		}
 	};
 
 	struct __packed PageDirectoryPointerTableEntryPtr
@@ -480,6 +490,11 @@ namespace Memory
 #elif defined(__aarch64__)
 			return (this->raw & 0x000FFFFFFFFFF000) >> 12;
 #endif
+		}
+
+		PageDirectoryPointerTableEntryPtr *GetPDPTE()
+		{
+			return reinterpret_cast<PageDirectoryPointerTableEntryPtr *>(this->GetAddress() << 12);
 		}
 	};
 

@@ -574,6 +574,8 @@ namespace fnx
 	 * Casting hell savior, allows implicit conversion to and from pointers and integers,
 	 * and supports pointer arithmetic and bitwise operations.
 	 *
+	 * It should work for almost everything pointer-related.
+	 *
 	 * I hope this will not make my life a living hell.
 	 */
 	template <typename T>
@@ -641,9 +643,15 @@ namespace fnx
 		ptr_t<T> operator|(auto other) { return ptr_t<T>((uintptr_t)ptr | (uintptr_t)other); }
 		ptr_t<T> operator&(auto other) { return ptr_t<T>((uintptr_t)ptr & (uintptr_t)other); }
 		ptr_t<T> operator^(auto other) { return ptr_t<T>((uintptr_t)ptr ^ (uintptr_t)other); }
+		uintptr_t operator*(auto other) const { return (uintptr_t)ptr * (uintptr_t)other; }
+		uintptr_t operator/(auto other) const { return (uintptr_t)ptr / (uintptr_t)other; }
+		uintptr_t operator%(auto other) const { return (uintptr_t)ptr % (uintptr_t)other; }
 
 		T operator->() { return ptr; }
 		T operator*() { return *ptr; }
+
+		template <typename U>
+		U as() { return reinterpret_cast<U>(ptr); }
 
 		template <typename U>
 		operator U *() const noexcept
@@ -652,6 +660,8 @@ namespace fnx
 			return reinterpret_cast<U *>(ptr);
 		}
 
+		/* The code below is better but cannot include "std::is_pointer_v" (type_traits header) in types.h
+			not because of circular dependency, but increase in compilation time and complexity. */
 		/*
 		template <typename U>
 		operator U() const noexcept

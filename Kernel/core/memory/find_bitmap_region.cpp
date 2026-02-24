@@ -28,7 +28,7 @@
 
 namespace Memory
 {
-	/*__no_sanitize("alignment")*/ void Physical::FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize)
+	__no_sanitize("alignment") void Physical::FindBitmapRegion(uintptr_t &BitmapAddress, size_t &BitmapAddressSize)
 	{
 		size_t BitmapSize = (size_t)(bInfo.Memory.Size / PAGE_SIZE) / 8 + 1;
 

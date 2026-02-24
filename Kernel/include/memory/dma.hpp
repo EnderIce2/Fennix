@@ -24,17 +24,18 @@ namespace Memory
 	{
 	private:
 	public:
-		DMA() = default;
-		~DMA() = default;
-
 		/**
 		 * Allocate a DMA buffer of the specified size and alignment.
 		 *
 		 * @param Size Size of the buffer in bytes
 		 * @param Alignment Alignment of the buffer in bytes (must be a power of 2)
 		 * @param Boundary Boundary for the buffer (must be a power of 2)
+		 * @param MaxAddress Maximum physical address (optional, 0 = no limit)
 		 * @return Physical address of the allocated buffer, or nullptr on failure
 		 */
-		fnx::void_t Allocate(size_t Size, size_t Alignment, size_t Boundary);
+		fnx::void_t Allocate(size_t Size, size_t Alignment, size_t Boundary, size_t MaxAddress = 0);
+
+		DMA() = default;
+		~DMA() = default;
 	};
 }
