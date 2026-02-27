@@ -20,6 +20,7 @@
 #include <memory.hpp>
 #include <stropts.h>
 #include <string.h>
+#include <log.hpp>
 #include <thread>
 #include <ini.h>
 
@@ -286,6 +287,109 @@ namespace KernelConsole
 	}
 #endif
 
+	static void WriteFromLog(const Log::LogRecord *record)
+	{
+		KernelConsole::VirtualTerminal *vt =
+			KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
+
+		char prefixBuf[128];
+
+		uint64_t nano = record->TimestampNs;
+		uint64_t sec = Time::ToSeconds(nano);
+		uint64_t frac = nano % 10000000;
+
+#if defined(__amd64__) || defined(__aarch64__)
+		snprintf(prefixBuf, sizeof(prefixBuf),
+				 "\x1b[1;30m[\x1b[1;34m%lu.%07lu ", sec, frac);
+#else
+		snprintf(prefixBuf, sizeof(prefixBuf),
+				 "\x1b[1;30m[\x1b[1;34m%llu.%07llu ", sec, frac);
+#endif
+
+		size_t prefixLen = strlen(prefixBuf);
+
+		switch (record->Level)
+		{
+		case Log::LogLevel::LogLevelNone:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[0mL");
+			break;
+		case Log::LogLevel::LogLevelError:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;31mE");
+			break;
+		case Log::LogLevel::LogLevelWarning:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;33mW");
+			break;
+		case Log::LogLevel::LogLevelFixme:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;35mF");
+			break;
+		case Log::LogLevel::LogLevelInfo:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;32mI");
+			break;
+		case Log::LogLevel::LogLevelStub:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;36mS");
+			break;
+		case Log::LogLevel::LogLevelDebug:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;34mD");
+			break;
+		case Log::LogLevel::LogLevelUbsan:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;31mU");
+			break;
+		case Log::LogLevel::LogLevelFunction:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;36mF");
+			break;
+		default:
+			snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[0m?");
+			break;
+		}
+		prefixLen = strlen(prefixBuf);
+
+		snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[0m%u", record->CpuID);
+		prefixLen = strlen(prefixBuf);
+
+		snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;30m]\x1b[0m ");
+
+		if (vt)
+		{
+			if (DebuggerIsAttached == true &&
+				(record->Level == Log::LogLevel::LogLevelUbsan ||
+				 record->Level == Log::LogLevel::LogLevelFunction ||
+				 record->Level == Log::LogLevel::LogLevelStub ||
+				 record->Level == Log::LogLevel::LogLevelDebug ||
+				 record->Level == Log::LogLevel::LogLevelInfo ||
+				 record->Level == Log::LogLevel::LogLevelFixme))
+				return;
+
+			for (char *p = prefixBuf; *p; ++p)
+				vt->Process(*p);
+
+			for (uint32_t i = 0; i < record->MessageLength; ++i)
+				vt->Process(record->Message[i]);
+
+			vt->Process('\x1b');
+			vt->Process('[');
+			vt->Process('0');
+			vt->Process('m');
+			vt->Process('\n');
+		}
+		else
+		{
+			for (char *p = prefixBuf; *p; ++p)
+				uart.DebugWrite(*p);
+
+			for (uint32_t i = 0; i < record->MessageLength; ++i)
+				uart.DebugWrite(record->Message[i]);
+
+			uart.DebugWrite('\x1b');
+			uart.DebugWrite('[');
+			uart.DebugWrite('0');
+			uart.DebugWrite('m');
+			uart.DebugWrite('\n');
+		}
+
+		if (!Config.Quiet && Display)
+			Display->UpdateBuffer();
+	}
+
 	void EarlyInit()
 	{
 		Renderer.CurrentFont = new Video::Font(&_binary_files_tamsyn_font_1_11_Tamsyn7x14r_psf_start,
@@ -299,6 +403,7 @@ namespace KernelConsole
 		Terminals[0]->Term = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
 		Terminals[0]->Term->Clear(0, 0, Rows, Cols - 1);
 		CurrentTerminal.store(Terminals[0], std::memory_order_release);
+		Log::RegisterSink(WriteFromLog);
 	}
 
 	void LoadConsoleConfig(std::string &Config)

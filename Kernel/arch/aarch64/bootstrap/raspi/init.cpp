@@ -22,6 +22,8 @@
 
 using namespace CPU::aarch64;
 
+extern "C" void KernelEntry(struct BootInfo *Info);
+
 extern "C" __attribute__((section(".bootstrap.text"))) void _aarch64_start(uint64_t dtb_ptr32, uint64_t x1, uint64_t x2, uint64_t x3)
 {
 	MIDR_EL1 reg;
@@ -40,5 +42,5 @@ extern "C" __attribute__((section(".bootstrap.text"))) void _aarch64_start(uint6
 	}
 
 	BootInfo *info = nullptr;
-	Entry(info);
+	KernelEntry(info);
 }

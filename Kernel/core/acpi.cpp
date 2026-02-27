@@ -48,11 +48,11 @@ namespace ACPI
 				if (i == 3)
 				{
 #ifdef DEBUG
-					KPrint("ACPI: %.4s [%.6s:%.8s] found at address %#lx",
-						   Signature,
-						   SDTHdr->OEMID,
-						   SDTHdr->OEMTableID,
-						   (uintptr_t)SDTHdr);
+					klog("ACPI: %.4s [%.6s:%.8s] found at address %#lx",
+						 Signature,
+						 SDTHdr->OEMID,
+						 SDTHdr->OEMTableID,
+						 (uintptr_t)SDTHdr);
 #endif
 					trace("%s found at address %#lx", Signature, (uintptr_t)SDTHdr);
 

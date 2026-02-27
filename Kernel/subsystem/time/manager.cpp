@@ -87,7 +87,7 @@ namespace Time
 		}
 		else
 		{
-			KPrint("\x1b[33mACPI not available");
+			klog("\x1b[33mACPI not available");
 		}
 
 		ITimer *tsc = new TimeStampCounter;

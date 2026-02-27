@@ -15,36 +15,18 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_IDT_H__
-#define __FENNIX_KERNEL_IDT_H__
+typedef void (*func_ptr)(void);
+extern func_ptr __init_array_start[0], __init_array_end[0];
+extern func_ptr __fini_array_start[0], __fini_array_end[0];
 
-#include <types.h>
-#include <cpu/x86/x64/SegmentDescriptors.hpp>
-
-namespace InterruptDescriptorTable
+__attribute__((no_stack_protector)) void _init()
 {
-	union IDTGateDescriptor
-	{
-		InterruptGate Interrupt;
-		TrapGate Trap;
-		CallGate Call;
-	};
-
-	struct IDTRegister
-	{
-		uint16_t Limit;
-		IDTGateDescriptor *BaseAddress;
-	} __packed;
-
-	void SetEntry(uint8_t Index,
-				  void (*Base)(),
-				  InterruptStackTableType InterruptStackTable,
-				  GateType Gate,
-				  PrivilegeLevelType Ring,
-				  bool Present,
-				  uint16_t SegmentSelector);
-
-	void Init(int Core);
+	for (func_ptr *func = __init_array_start; func != __init_array_end; func++)
+		(*func)();
 }
 
-#endif // !__FENNIX_KERNEL_IDT_H__
+__attribute__((no_stack_protector)) void _fini()
+{
+	for (func_ptr *func = __fini_array_start; func != __fini_array_end; func++)
+		(*func)();
+}

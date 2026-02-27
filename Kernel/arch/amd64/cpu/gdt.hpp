@@ -23,7 +23,6 @@
 
 namespace GlobalDescriptorTable
 {
-
 	struct TaskStateSegment
 	{
 		uint32_t Reserved0 __aligned(16);

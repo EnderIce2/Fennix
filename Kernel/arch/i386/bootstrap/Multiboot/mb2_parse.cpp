@@ -22,6 +22,8 @@
 #include <boot/protocol/multiboot2.h>
 #include "../../../../kernel.h"
 
+extern "C" void KernelEntry(struct BootInfo *Info);
+
 void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 {
 	if (Info == NULL || Magic == NULL)
@@ -296,5 +298,5 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 		}
 	}
 
-	Entry(&mb2binfo);
+	KernelEntry(&mb2binfo);
 }

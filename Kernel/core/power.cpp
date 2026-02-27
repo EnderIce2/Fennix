@@ -54,7 +54,7 @@ namespace Power
 			if (((ACPI::DSDT *)this->dsdt)->ACPIShutdownSupported)
 				((ACPI::DSDT *)this->dsdt)->Shutdown();
 			else
-				KPrint("Shutdown not supported");
+				klog("Shutdown not supported");
 			/* TODO: If no ACPI, display "It is now safe to turn off your computer"? */
 		}
 		/* FIXME: Detect emulators and use their shutdown methods */

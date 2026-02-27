@@ -38,6 +38,7 @@
 #include <pci.hpp>
 #include <smp.hpp>
 #include <usb.hpp>
+#include <log.hpp>
 #endif
 
 extern struct BootInfo bInfo;
@@ -60,9 +61,6 @@ extern UniversalSerialBus::Manager *usb;
 #endif // __cplusplus
 
 EXTERNC void putchar(char c);
-EXTERNC void _KPrint(const char *Format, va_list Args);
-EXTERNC void KPrint(const char *Format, ...);
-EXTERNC void Entry(struct BootInfo *Info);
 EXTERNC void BeforeShutdown(bool Reboot);
 
 EXTERNC void KernelVFS();

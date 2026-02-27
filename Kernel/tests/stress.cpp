@@ -25,7 +25,7 @@ void killChildren(Tasking::PCB *pcb)
 {
 	if (pcb->Children.empty())
 	{
-		KPrint("Process %s(%d) has no children", pcb->Name, pcb->ID);
+		klog("Process %s(%d) has no children", pcb->Name, pcb->ID);
 		return;
 	}
 
@@ -35,11 +35,11 @@ void killChildren(Tasking::PCB *pcb)
 	{
 		if (child->State.load() == Tasking::Terminated)
 		{
-			KPrint("Process %s(%d) is already dead", child->Name, child->ID);
+			klog("Process %s(%d) is already dead", child->Name, child->ID);
 			continue;
 		}
 
-		KPrint("Killing %s(%d)", child->Name, child->ID);
+		klog("Killing %s(%d)", child->Name, child->ID);
 		killChildren(child);
 		child->SetState(Tasking::Terminated);
 		debug("killed %s(%d)", child->Name, child->ID);
@@ -78,48 +78,48 @@ void StressKernel()
 		Tasking::PCB *pcb = nullptr;
 		if (TO_MiB(KernelAllocator.GetFreeMemory()) < 20)
 		{
-			KPrint("\x1b[1;31;41mNot enough memory left!");
+			klog("\x1b[1;31;41mNot enough memory left!");
 			goto End;
 		}
 
 		ptr = KernelAllocator.RequestPages(TO_PAGES(chunk));
 		if (ptr == nullptr)
 		{
-			KPrint("\x1b[1;31;41mFailed to allocate memory!");
-			KPrint("Score is: %d MiB (current is %d MiB)",
-				   TO_MiB(highestScore.load()), TO_MiB(totalAllocated.load()));
+			klog("\x1b[1;31;41mFailed to allocate memory!");
+			klog("Score is: %d MiB (current is %d MiB)",
+				 TO_MiB(highestScore.load()), TO_MiB(totalAllocated.load()));
 			continue;
 		}
-		KPrint("Allocated %d bytes at %#lx", chunk, ptr);
+		klog("Allocated %d bytes at %#lx", chunk, ptr);
 		allocatedChunks.push_back(ptr);
 		totalAllocated.fetch_add(chunk);
 		if (totalAllocated.load() > highestScore.load())
 			highestScore.store(totalAllocated.load());
-		KPrint("Total allocated: %d MiB [KERNEL: %d MiB free]",
-			   TO_MiB(totalAllocated.load()), TO_MiB(KernelAllocator.GetFreeMemory()));
+		klog("Total allocated: %d MiB [KERNEL: %d MiB free]",
+			 TO_MiB(totalAllocated.load()), TO_MiB(KernelAllocator.GetFreeMemory()));
 
 		if (lastProc == nullptr)
 			lastProc = thisProcess;
 
 		if (halt_fork.load() == false)
 		{
-			KPrint("Forking...");
+			klog("Forking...");
 			pcb = TaskManager->CreateProcess(lastProc, "STRESS TEST", Tasking::Kernel);
 			lastProc = pcb;
 			if (baseProc == nullptr)
 				baseProc = pcb;
 			TaskManager->CreateThread(pcb, Tasking::IP(StressKernel));
-			KPrint("There are %d processes", TaskManager->GetProcessList().size());
+			klog("There are %d processes", TaskManager->GetProcessList().size());
 		}
 
 	End:
 		hold.store(true);
 		if (TO_GiB(totalAllocated.load()) >= 1)
 		{
-			KPrint("Freeing memory...");
+			klog("Freeing memory...");
 			forItr(itr, allocatedChunks)
 			{
-				KPrint("Freeing %#lx", *itr);
+				klog("Freeing %#lx", *itr);
 				KernelAllocator.FreePages(*itr, TO_PAGES(chunk));
 				allocatedChunks.erase(itr);
 			}
@@ -128,9 +128,9 @@ void StressKernel()
 
 		// if (TaskManager->GetProcessList().size() >= 100)
 		// {
-		// 	KPrint("Killing processes...");
+		// 	klog("Killing processes...");
 		// 	killChildren(baseProc->Children.front());
-		// 	KPrint("All processes killed.");
+		// 	klog("All processes killed.");
 		// 	baseProc = nullptr;
 		// }
 		hold.store(false);

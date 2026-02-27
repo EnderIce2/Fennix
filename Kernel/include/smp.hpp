@@ -15,24 +15,23 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_SMP_H__
-#define __FENNIX_KERNEL_SMP_H__
+#pragma once
 
 #include <task.hpp>
 #include <kexcept/cxxabi.h>
 #include <types.h>
+#include <log.hpp>
 #include <atomic>
 
 /** @brief Maximum supported number of CPU cores by the kernel */
 #define MAX_CPU 255
-#define CPU_DATA_CHECKSUM 0xC0FFEE
 
 struct CPUArchData
 {
 #if defined(__amd64__)
-	__aligned(16) CPU::x64::FXState FPU{};
+	__aligned(16) CPU::x64::FXState FPU {};
 #elif defined(__i386__)
-	__aligned(16) CPU::x32::FXState FPU{};
+	__aligned(16) CPU::x32::FXState FPU {};
 #elif defined(__aarch64__)
 #endif
 };
@@ -60,8 +59,9 @@ struct CPUData
 	/** Architecture-specific data. */
 	CPUArchData Data;
 
-	/** Checksum. Used to verify the integrity of the data. Must be equal to CPU_DATA_CHECKSUM (0xC0FFEE). */
-	int Checksum;
+	Log::LogRecord *LogRecords;
+	size_t LogEntries;
+	std::atomic_uint32_t LogWriteIndex;
 
 	/** Is CPU online? */
 	bool IsActive;
@@ -75,5 +75,3 @@ namespace SMP
 	extern int CPUCores;
 	void Initialize(void *madt);
 }
-
-#endif // !__FENNIX_KERNEL_SMP_H__

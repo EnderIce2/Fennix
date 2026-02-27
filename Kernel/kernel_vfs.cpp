@@ -42,7 +42,7 @@ void SearchForInitrd()
 
 		if (strcmp(moduleCommand, "rootfs") == 0)
 		{
-			KPrint("rootfs found at %#lx", moduleAddress);
+			klog("rootfs found at %#lx", moduleAddress);
 			if (TestAndInitializeUSTAR(moduleAddress, moduleSize, 0))
 				continue;
 		}
@@ -51,7 +51,7 @@ void SearchForInitrd()
 
 EXTERNC nif void KernelVFS()
 {
-	KPrint("Initializing Virtual File System");
+	klog("Initializing Virtual File System");
 
 	fs = new vfs::Virtual;
 	SearchForInitrd();

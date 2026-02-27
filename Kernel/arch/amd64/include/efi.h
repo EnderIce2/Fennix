@@ -253,7 +253,7 @@ typedef struct
 	EFI_CONVERT_POINTER ConvertPointer;
 
 	//
-	// Variable serviers
+	// Variable services
 	//
 
 	EFI_GET_VARIABLE GetVariable;

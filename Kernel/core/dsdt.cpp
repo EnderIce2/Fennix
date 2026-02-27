@@ -96,7 +96,7 @@ namespace ACPI
 			strcat(dbgEvStr, "WAKE ");
 		if (Event & ACPI_TIMER)
 			strcat(dbgEvStr, "ACPI_TIMER ");
-		KPrint("SCI Event: %s", dbgEvStr);
+		klog("SCI Event: %s", dbgEvStr);
 #endif
 		if (Event & ACPI_BUSMASTER)
 		{
@@ -149,8 +149,8 @@ namespace ACPI
 		{
 			error("ACPI unknown event %#lx on CPU %d",
 				  Event, GetCurrentCPU()->ID);
-			KPrint("ACPI unknown event %#lx on CPU %d",
-				   Event, GetCurrentCPU()->ID);
+			klog("ACPI unknown event %#lx on CPU %d",
+				 Event, GetCurrentCPU()->ID);
 		}
 
 		return EOK;
@@ -168,11 +168,11 @@ namespace ACPI
 #if defined(__amd64__) || defined(__i386__)
 		if (inw(static_cast<uint16_t>(PM1a_CNT) & SCI_EN) == 0)
 		{
-			KPrint("ACPI was disabled, enabling...");
+			klog("ACPI was disabled, enabling...");
 			if (SMI_CMD == 0 || ACPI_ENABLE == 0)
 			{
 				error("ACPI Shutdown not supported");
-				KPrint("ACPI Shutdown not supported");
+				klog("ACPI Shutdown not supported");
 				return;
 			}
 
@@ -185,7 +185,7 @@ namespace ACPI
 			if (Timeout == 0)
 			{
 				error("ACPI Shutdown not supported");
-				KPrint("ACPI Shutdown not supported");
+				klog("ACPI Shutdown not supported");
 				return;
 			}
 
@@ -303,7 +303,7 @@ namespace ACPI
 			PM1_CNT_LEN = acpi->FADT->PM1ControlLength;
 			SLP_EN = 1 << 13;
 			SCI_EN = 1;
-			KPrint("ACPI Shutdown is supported");
+			klog("ACPI Shutdown is supported");
 			ACPIShutdownSupported = true;
 
 #if defined(__amd64__) || defined(__i386__)

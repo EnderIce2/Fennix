@@ -42,16 +42,19 @@ namespace v0
 	{
 		dbg_api("%d, %s, %#lx", DriverID, Format, args);
 
-		_KPrint(Format, args);
+		/* FIXME! */
+		fctprintf(Log::uart_wrapper, nullptr, "DRVER| %ld: ", DriverID);
+		vfctprintf(Log::uart_wrapper, nullptr, Format, args);
+		Log::uart_wrapper('\n', nullptr);
 	}
 
 	void KernelLog(dev_t DriverID, const char *Format, va_list args)
 	{
 		dbg_api("%d, %s, %#lx", DriverID, Format, args);
 
-		fctprintf(uart_wrapper, nullptr, "DRVER| %ld: ", DriverID);
-		vfctprintf(uart_wrapper, nullptr, Format, args);
-		uart_wrapper('\n', nullptr);
+		fctprintf(Log::uart_wrapper, nullptr, "DRVER| %ld: ", DriverID);
+		vfctprintf(Log::uart_wrapper, nullptr, Format, args);
+		Log::uart_wrapper('\n', nullptr);
 	}
 
 	/* --------- */
@@ -864,6 +867,6 @@ void *GetSymbolByName(const char *Name, int Version)
 	}
 
 	error("Symbol %s not found in API version %d", Name, Version);
-	KPrint("Driver API symbol \"%s\" not found!", Name);
+	klog("Driver API symbol \"%s\" not found!", Name);
 	return (void *)__KernelUndefinedFunction;
 }

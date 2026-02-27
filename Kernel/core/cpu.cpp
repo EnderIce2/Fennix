@@ -280,7 +280,7 @@ namespace CPU
 		{
 			debug("Enabling global pages support...");
 			if (!BSP)
-				KPrint("Global Pages is supported.");
+				klog("Global Pages is supported.");
 			cr4.PGE = true;
 		}
 
@@ -292,7 +292,7 @@ namespace CPU
 		{
 			debug("Enabling SSE support...");
 			if (!BSP)
-				KPrint("SSE is supported.");
+				klog("SSE is supported.");
 			cr0.EM = false;
 			cr0.MP = true;
 			cr4.OSFXSR = true;

@@ -21,12 +21,12 @@
 #include <interface/aip.h>
 #include <cpu.hpp>
 #include <pci.hpp>
+#include <log.hpp>
 
 #include "aip.hpp"
 
 extern Driver::Manager *DriverManager;
 extern PCI::Manager *PCIManager;
-EXTERNC void KPrint(const char *Format, ...);
 namespace Driver::AdvancedIntegratedPeripheral
 {
 	dev_t DriverID;
@@ -242,12 +242,12 @@ namespace Driver::AdvancedIntegratedPeripheral
 			}
 		}
 
-		KPrint("PS/2 Port 1: %s (0x%X 0x%X)",
-			   GetPS2DeviceName(Device1ID[0], Device1ID[1]),
-			   Device1ID[0], Device1ID[1]);
-		KPrint("PS/2 Port 2: %s (0x%X 0x%X)",
-			   GetPS2DeviceName(Device2ID[0], Device2ID[1]),
-			   Device2ID[0], Device2ID[1]);
+		klog("PS/2 Port 1: %s (0x%X 0x%X)",
+			 GetPS2DeviceName(Device1ID[0], Device1ID[1]),
+			 Device1ID[0], Device1ID[1]);
+		klog("PS/2 Port 2: %s (0x%X 0x%X)",
+			 GetPS2DeviceName(Device2ID[0], Device2ID[1]),
+			 Device2ID[0], Device2ID[1]);
 		return 0;
 	}
 

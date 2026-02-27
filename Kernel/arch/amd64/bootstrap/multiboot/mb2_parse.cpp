@@ -22,16 +22,15 @@
 
 #include "../../../../kernel.h"
 
+extern "C" void KernelEntry(struct BootInfo *Info);
+
 void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 {
 	auto infoAddr = Info;
 	for (auto Tag = (struct multiboot_tag *)((uint8_t *)infoAddr + 8);; Tag = (struct multiboot_tag *)((multiboot_uint8_t *)Tag + ((Tag->size + 7) & ~7)))
 	{
 		if (Tag->type == MULTIBOOT_TAG_TYPE_END)
-		{
-			debug("End of multiboot2 tags");
 			break;
-		}
 
 		switch (Tag->type)
 		{
@@ -39,26 +38,19 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 		{
 			multiboot_tag_string *cmdline = (multiboot_tag_string *)Tag;
 			strncpy(mb2binfo.Kernel.CommandLine, cmdline->string, strlen(cmdline->string));
-
-			debug("Kernel command line: %s", mb2binfo.Kernel.CommandLine);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
 		{
 			multiboot_tag_string *blName = (multiboot_tag_string *)Tag;
 			strncpy(mb2binfo.Bootloader.Name, blName->string, strlen(blName->string));
-
-			debug("Bootloader name: %s", mb2binfo.Bootloader.Name);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_MODULE:
 		{
 			static int module_count = 0;
 			if (module_count >= MAX_MODULES)
-			{
-				warn("Too many modules, skipping...");
 				break;
-			}
 
 			multiboot_tag_module *module = (multiboot_tag_module *)Tag;
 
@@ -76,27 +68,17 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 				strncpy(mb2binfo.Modules[module_count].CommandLine, module->cmdline, len);
 			}
 
-			debug("Module: %s", mb2binfo.Modules[module_count].CommandLine);
 			module_count++;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_BASIC_MEMINFO:
 		{
-			multiboot_tag_basic_meminfo *meminfo = (multiboot_tag_basic_meminfo *)Tag;
-
-			fixme("basic_meminfo->[mem_lower: %#x, mem_upper: %#x]",
-				  meminfo->mem_lower,
-				  meminfo->mem_upper);
+			// multiboot_tag_basic_meminfo *meminfo = (multiboot_tag_basic_meminfo *)Tag;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_BOOTDEV:
 		{
-			multiboot_tag_bootdev *bootdev = (multiboot_tag_bootdev *)Tag;
-
-			fixme("bootdev->[biosdev: %#x, slice: %#x, part: %#x]",
-				  bootdev->biosdev,
-				  bootdev->slice,
-				  bootdev->part);
+			// multiboot_tag_bootdev *bootdev = (multiboot_tag_bootdev *)Tag;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_MMAP:
@@ -107,10 +89,7 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			for (uint32_t i = 0; i < EntryCount; i++)
 			{
 				if (i > MAX_MEMORY_ENTRIES)
-				{
-					warn("Too many memory entries, skipping the rest...");
 					break;
-				}
 
 				multiboot_mmap_entry entry = mmap->entries[i];
 				mb2binfo.Memory.Size += entry.len;
@@ -147,23 +126,12 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 					mb2binfo.Memory.Entry[i].Type = Unknown;
 					break;
 				}
-
-				debug("Memory entry: [BaseAddress: %#x, Length: %#x, Type: %d]",
-					  mb2binfo.Memory.Entry[i].BaseAddress,
-					  mb2binfo.Memory.Entry[i].Length,
-					  mb2binfo.Memory.Entry[i].Type);
 			}
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_VBE:
 		{
-			multiboot_tag_vbe *vbe = (multiboot_tag_vbe *)Tag;
-
-			fixme("vbe->[vbe_mode: %#x, vbe_interface_seg: %#x, vbe_interface_off: %#x, vbe_interface_len: %#x]",
-				  vbe->vbe_mode,
-				  vbe->vbe_interface_seg,
-				  vbe->vbe_interface_off,
-				  vbe->vbe_interface_len);
+			// multiboot_tag_vbe *vbe = (multiboot_tag_vbe *)Tag;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
@@ -196,13 +164,6 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 				mb2binfo.Framebuffer[fbCount].Type = Unknown_Framebuffer_Type;
 				break;
 			}
-
-			debug("fb %d: %dx%d %d bpp", fbCount, fb->common.framebuffer_width, fb->common.framebuffer_height, fb->common.framebuffer_bpp);
-			debug("More info: addr:%#lx pitch:%d mm:%d RMSize:%d RMShift:%d GMSize:%d GMShift:%d BMSize:%d BMShift:%d",
-				  fb->common.framebuffer_addr, fb->common.framebuffer_pitch, fb->common.framebuffer_type,
-				  fb->framebuffer_red_mask_size, fb->framebuffer_red_field_position,
-				  fb->framebuffer_green_mask_size, fb->framebuffer_green_field_position,
-				  fb->framebuffer_blue_mask_size, fb->framebuffer_blue_field_position);
 			fbCount++;
 			break;
 		}
@@ -213,18 +174,11 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			mb2binfo.Kernel.Symbols.EntSize = elf->entsize;
 			mb2binfo.Kernel.Symbols.Shndx = elf->shndx;
 			mb2binfo.Kernel.Symbols.Sections = reinterpret_cast<uintptr_t>(elf->sections);
-
-			debug("elf_sections->[num: %d, entsize: %d, shndx: %d, sections: %#lx]",
-				  elf->num, elf->entsize, elf->shndx, elf->sections);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_APM:
 		{
-			multiboot_tag_apm *apm = (multiboot_tag_apm *)Tag;
-
-			fixme("apm->[version:%d, cseg:%d, offset:%d, cseg_16:%d, dseg:%d, flags:%d, cseg_len:%d, cseg_16_len:%d, dseg_len:%d]",
-				  apm->version, apm->cseg, apm->offset, apm->cseg_16, apm->dseg,
-				  apm->flags, apm->cseg_len, apm->cseg_16_len, apm->dseg_len);
+			// multiboot_tag_apm *apm = (multiboot_tag_apm *)Tag;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI32:
@@ -234,8 +188,6 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 
 			multiboot_tag_efi32 *efi32 = (multiboot_tag_efi32 *)Tag;
 			mb2binfo.EFI.SystemTable = (void *)(uintptr_t)efi32->pointer;
-
-			debug("efi32->[pointer: %#lx, size: %d]", efi32->pointer, efi32->size);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI64:
@@ -245,37 +197,27 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 
 			multiboot_tag_efi64 *efi64 = (multiboot_tag_efi64 *)Tag;
 			mb2binfo.EFI.SystemTable = (void *)(uintptr_t)efi64->pointer;
-
-			debug("efi64->[pointer: %#lx, size: %d]", efi64->pointer, efi64->size);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_SMBIOS:
 		{
 			multiboot_tag_smbios *smbios = (multiboot_tag_smbios *)Tag;
 			mb2binfo.SMBIOSPtr = (void *)smbios->tables;
-
-			debug("smbios->[major: %d, minor: %d]", smbios->major, smbios->minor);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_ACPI_OLD:
 		{
 			mb2binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_old_acpi *)Tag)->rsdp;
-
-			debug("OLD ACPI RSDP: %#lx", mb2binfo.RSDP);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_ACPI_NEW:
 		{
 			mb2binfo.RSDP = (BootInfo::RSDPInfo *)((multiboot_tag_new_acpi *)Tag)->rsdp;
-
-			debug("NEW ACPI RSDP: %#lx", mb2binfo.RSDP);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_NETWORK:
 		{
-			multiboot_tag_network *net = (multiboot_tag_network *)Tag;
-
-			fixme("network->[dhcpack: %#lx]", net->dhcpack);
+			// multiboot_tag_network *net = (multiboot_tag_network *)Tag;
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI_MMAP:
@@ -289,17 +231,12 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			mb2binfo.EFI.MemoryMap.DescriptorVersion = efi_mmap->descr_vers;
 			mb2binfo.EFI.MemoryMap.NumberOfEntries = (efi_mmap->size - sizeof(multiboot_tag_efi_mmap)) / efi_mmap->descr_size;
 			// mb2binfo.EFI.MemoryMap.NumberOfEntries = efi_mmap->size / efi_mmap->descr_size;
-
-			debug("efi_mmap->[descr_size: %d, descr_vers: %d, efi_mmap: %#lx]",
-				  efi_mmap->descr_size, efi_mmap->descr_vers, efi_mmap->efi_mmap);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI_BS:
 		{
 			mb2binfo.EFI.Info.Enabled = 1;
 			mb2binfo.EFI.Info.BS = 1;
-
-			debug("efi_bs");
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI32_IH:
@@ -309,8 +246,6 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 
 			multiboot_tag_efi32_ih *efi32_ih = (multiboot_tag_efi32_ih *)Tag;
 			mb2binfo.EFI.ImageHandle = (void *)(uintptr_t)efi32_ih->pointer;
-
-			debug("efi32_ih->[pointer: %#lx]", efi32_ih->pointer);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_EFI64_IH:
@@ -320,8 +255,6 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 
 			multiboot_tag_efi64_ih *efi64_ih = (multiboot_tag_efi64_ih *)Tag;
 			mb2binfo.EFI.ImageHandle = (void *)(uintptr_t)efi64_ih->pointer;
-
-			debug("efi64_ih->[pointer: %#lx]", efi64_ih->pointer);
 			break;
 		}
 		case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
@@ -330,17 +263,12 @@ void multiboot2_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 			mb2binfo.Kernel.PhysicalBase = (void *)(uint64_t)load_base_addr->load_base_addr;
 			mb2binfo.Kernel.VirtualBase = (void *)(uint64_t)(load_base_addr->load_base_addr + 0xFFFFFFFF80000000);
 			mb2binfo.Kernel.Size = ((uint64_t)&_kernel_end - (uint64_t)&_kernel_start) + ((uint64_t)&_bootstrap_end - (uint64_t)&_bootstrap_start);
-
-			debug("Kernel base: %#lx (physical) %#lx (virtual)", mb2binfo.Kernel.PhysicalBase, mb2binfo.Kernel.VirtualBase);
 			break;
 		}
 		default:
-		{
-			error("Unknown multiboot2 tag type: %d", Tag->type);
 			break;
-		}
 		}
 	}
 
-	Entry(&mb2binfo);
+	KernelEntry(&mb2binfo);
 }

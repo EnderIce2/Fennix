@@ -95,6 +95,6 @@ int fprintf(FILE *stream, const char *format, ...)
 int fputs(const char *s, FILE *stream)
 {
 	for (const char *c = s; *c; c++)
-		uart_wrapper(*c, NULL);
+		Log::uart_wrapper(*c, NULL);
 	return 0;
 }

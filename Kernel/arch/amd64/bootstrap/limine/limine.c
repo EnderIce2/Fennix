@@ -24,6 +24,7 @@
 #include "../../../../kernel.h"
 
 void InitLimine();
+void KernelEntry(struct BootInfo *Info);
 
 #define LIMREQ __attribute__((used, section(".limine_requests"))) static volatile
 #define LIMREQ_S __attribute__((used, section(".limine_requests_start"))) static volatile
@@ -66,12 +67,9 @@ LIMREQ struct limine_smbios_request SmbiosRequest = {
 void *TempStackPtr = NULL;
 __naked __used __no_stack_protector void InitLimine()
 {
-	asmv("mov %%rsp, %0"
-		 : "=r"(TempStackPtr));
+	asmv("mov %%rsp, %0" : "=r"(TempStackPtr));
 
-	asmv("mov %0, %%rsp"
-		 :
-		 : "r"((uintptr_t)TempStackPtr - 0xFFFF800000000000));
+	asmv("mov %0, %%rsp" : : "r"((uintptr_t)TempStackPtr - 0xFFFF800000000000));
 
 	asmv("mov $0, %rax\n"
 		 "mov $0, %rbx\n"
@@ -321,5 +319,5 @@ nsa nif void InitLimineAfterStack()
 			BootloaderInfoResponse->version,
 			strlen(BootloaderInfoResponse->version) + 1);
 
-	Entry(&binfo);
+	KernelEntry(&binfo);
 }

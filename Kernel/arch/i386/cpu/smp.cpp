@@ -60,14 +60,7 @@ nsa CPUData *GetCurrentCPU()
 			CoreID = apic->Read(APIC::APIC_ID) >> 24;
 	}
 
-	if (unlikely((&CPUs[CoreID])->IsActive != true))
-	{
-		error("CPU %d is not active!", CoreID);
-		assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
-		return &CPUs[0];
-	}
-
-	assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
+	assert((&CPUs[CoreID])->IsActive == true);
 	return &CPUs[CoreID];
 }
 
@@ -82,7 +75,7 @@ namespace SMP
 		int Cores = madt->CPUCores + 1;
 
 		if (Config.Cores > madt->CPUCores + 1)
-			KPrint("More cores requested than available. Using %d cores", madt->CPUCores + 1);
+			klog("More cores requested than available. Using %d cores", madt->CPUCores + 1);
 		else if (Config.Cores != 0)
 			Cores = Config.Cores;
 

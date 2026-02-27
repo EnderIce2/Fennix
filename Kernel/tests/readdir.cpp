@@ -28,14 +28,14 @@ void TestReadDirectory(Node &Target)
 	off_t off = 0;
 	off_t max = LONG_MAX;
 
-	KPrint("Listing directory: \x1b[1;36m%s\x1b[0m", Target->Name.c_str());
+	klog("Listing directory: \x1b[1;36m%s\x1b[0m", Target->Name.c_str());
 
 	while (true)
 	{
 		ssize_t bytes = fs->ReadDirectory(Target, (kdirent *)buf.get(), bufLen, off, max);
 		if (bytes < 0)
 		{
-			KPrint("ReadDirectory returned error: %d", bytes);
+			klog("ReadDirectory returned error: %d", bytes);
 			break;
 		}
 		if (bytes == 0)
@@ -47,11 +47,11 @@ void TestReadDirectory(Node &Target)
 			kdirent *Entry = (kdirent *)(buf.get() + Pos);
 			if (Entry->d_reclen == 0)
 			{
-				KPrint("Entry with zero length detected at offset %ld!", off + Pos);
+				klog("Entry with zero length detected at offset %ld!", off + Pos);
 				break;
 			}
 
-			KPrint("name=\"%s\" inode=%lu type=%u reclen=%u", Entry->d_name, Entry->d_ino, Entry->d_type, Entry->d_reclen);
+			klog("name=\"%s\" inode=%lu type=%u reclen=%u", Entry->d_name, Entry->d_ino, Entry->d_type, Entry->d_reclen);
 
 			Pos += Entry->d_reclen;
 		}
@@ -68,23 +68,23 @@ void readdir_sanity_tests()
 	Node t3 = fs->Lookup(root, "/var");
 	Node t4 = fs->Lookup(root, "/tmp");
 
-	KPrint("TEST /");
+	klog("TEST /");
 	TestReadDirectory(t0);
 	TaskManager->Sleep(Time::FromMilliseconds(2000));
 
-	KPrint("TEST /dev");
+	klog("TEST /dev");
 	TestReadDirectory(t1);
 	TaskManager->Sleep(Time::FromMilliseconds(2000));
 
-	KPrint("TEST /home");
+	klog("TEST /home");
 	TestReadDirectory(t2);
 	TaskManager->Sleep(Time::FromMilliseconds(2000));
 
-	KPrint("TEST /var");
+	klog("TEST /var");
 	TestReadDirectory(t3);
 	TaskManager->Sleep(Time::FromMilliseconds(2000));
 
-	KPrint("TEST /tmp");
+	klog("TEST /tmp");
 	TestReadDirectory(t4);
 	TaskManager->Sleep(Time::FromMilliseconds(2000));
 

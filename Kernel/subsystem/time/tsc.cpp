@@ -70,7 +70,7 @@ namespace Time
 
 		if (!TSCInvariant)
 		{
-			KPrint("\x1b[33mTSC is not invariant");
+			klog("\x1b[33mTSC is not invariant");
 			return;
 		}
 
@@ -97,7 +97,7 @@ namespace Time
 			total_clk += (tsc_end - tsc_start - overhead) * 1000000000ULL / ns;
 		}
 		this->clk = total_clk / attempts;
-		KPrint("TSC frequency: %lu MHz", this->clk / 1000000);
+		klog("TSC frequency: %lu MHz", this->clk / 1000000);
 		this->ClassCreationTime = this->GetNanoseconds();
 		fixme("tsc not working as expected");
 		this->clk = 0; /* disable */

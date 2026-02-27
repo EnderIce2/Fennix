@@ -40,11 +40,6 @@ CPUData *GetCurrentCPU()
 		return &CPUs[0];
 	}
 
-	if (CPUs[ret].Checksum != CPU_DATA_CHECKSUM)
-	{
-		error("CPU %d data is corrupted!", ret);
-		return &CPUs[0];
-	}
 	return &CPUs[ret];
 }
 

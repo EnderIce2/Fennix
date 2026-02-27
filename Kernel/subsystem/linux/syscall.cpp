@@ -2806,7 +2806,7 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	{
 	case linux_LINUX_REBOOT_CMD_RESTART:
 	{
-		KPrint("Restarting system.");
+		klog("Restarting system.");
 
 		Tasking::Task *ctx = pcb->GetContext();
 		ctx->CreateThread(ctx->GetKernelProcess(),
@@ -2816,14 +2816,14 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 	}
 	case linux_LINUX_REBOOT_CMD_HALT:
 	{
-		KPrint("System halted.");
+		klog("System halted.");
 
 		pcb->GetContext()->Panic();
 		CPU::Stop();
 	}
 	case linux_LINUX_REBOOT_CMD_POWER_OFF:
 	{
-		KPrint("Power down.");
+		klog("Power down.");
 
 		Tasking::Task *ctx = pcb->GetContext();
 		ctx->CreateThread(ctx->GetKernelProcess(),
@@ -2837,8 +2837,8 @@ static int linux_reboot(SysFrm *, int magic, int magic2, int cmd, void *arg)
 		if (pArg == nullptr)
 			return -linux_EFAULT;
 
-		KPrint("Restarting system with command '%s'",
-			   (const char *)pArg);
+		klog("Restarting system with command '%s'",
+			 (const char *)pArg);
 
 		Tasking::Task *ctx = pcb->GetContext();
 		ctx->CreateThread(ctx->GetKernelProcess(),

@@ -15,36 +15,23 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_IDT_H__
-#define __FENNIX_KERNEL_IDT_H__
+#include <log.hpp>
 
-#include <types.h>
-#include <cpu/x86/x64/SegmentDescriptors.hpp>
+#include <task.hpp>
+#include <smp.hpp>
 
-namespace InterruptDescriptorTable
+namespace Log
 {
-	union IDTGateDescriptor
+	void LoggerWorkerThread()
 	{
-		InterruptGate Interrupt;
-		TrapGate Trap;
-		CallGate Call;
-	};
+		while (true)
+		{
+			for (int cpu = 0; cpu < SMP::CPUCores; ++cpu)
+			{
+				// auto &buf = GetCPU(cpu)->LogBuffer;
+			}
 
-	struct IDTRegister
-	{
-		uint16_t Limit;
-		IDTGateDescriptor *BaseAddress;
-	} __packed;
-
-	void SetEntry(uint8_t Index,
-				  void (*Base)(),
-				  InterruptStackTableType InterruptStackTable,
-				  GateType Gate,
-				  PrivilegeLevelType Ring,
-				  bool Present,
-				  uint16_t SegmentSelector);
-
-	void Init(int Core);
+			// TaskManager->Sleep(10);
+		}
+	}
 }
-
-#endif // !__FENNIX_KERNEL_IDT_H__

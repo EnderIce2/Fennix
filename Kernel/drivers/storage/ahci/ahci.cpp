@@ -19,10 +19,10 @@
 #include <interface/block.h>
 #include <cpu.hpp>
 #include <pci.hpp>
+#include <log.hpp>
 
 extern Driver::Manager *DriverManager;
 extern PCI::Manager *PCIManager;
-EXTERNC void KPrint(const char *Format, ...);
 namespace Driver::AHCI
 {
 	dev_t DriverID;
@@ -961,7 +961,7 @@ namespace Driver::AHCI
 				case PortType::SATA:
 				case PortType::SATAPI:
 				{
-					KPrint("%s drive found at port %d", PortTypeName[portType], i);
+					// klog("%s drive found at port %d", PortTypeName[portType], i);
 					Port *port = new Port(portType, &hba->Ports[i], i);
 					port->Configure();
 
@@ -980,8 +980,8 @@ namespace Driver::AHCI
 				case PortType::SEMB:
 				case PortType::PM:
 				{
-					KPrint("Unimplemented drive type %s found at port %d",
-						   PortTypeName[portType], i);
+					klog("Unimplemented drive type %s found at port %d",
+						 PortTypeName[portType], i);
 					break;
 				}
 				default:

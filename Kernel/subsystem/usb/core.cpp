@@ -207,7 +207,7 @@ namespace UniversalSerialBus
 
 			debug("product=\"%s\" vendor=\"%s\" serial=\"%s\"", product, vendor, serial);
 
-			KPrint("USB: v%d.%d %s %s %s", desc->bcdUSB >> 8, (desc->bcdUSB >> 4) & 0xF, vendor, product, serial);
+			klog("USB: v%d.%d %s %s %s", desc->bcdUSB >> 8, (desc->bcdUSB >> 4) & 0xF, vendor, product, serial);
 		}
 
 		auto_page<uint8_t> configBuf;
@@ -245,7 +245,7 @@ namespace UniversalSerialBus
 				continue;
 			}
 
-			KPrint("USB: Configuration %d, value=%d", confIndex, confDesc->bConfigurationValue);
+			klog("USB: Configuration %d, value=%d", confIndex, confDesc->bConfigurationValue);
 
 			if (!pickedConfValue)
 			{
@@ -266,7 +266,7 @@ namespace UniversalSerialBus
 				{
 					USBInterfaceDescriptor *intfDesc = (USBInterfaceDescriptor *)data;
 					Device->Interface = *intfDesc;
-					KPrint("CLASS: %d SUBCLASS: %d PROTOCOL: %d", Device->Interface.bInterfaceClass, Device->Interface.bInterfaceSubClass, Device->Interface.bInterfaceProtocol);
+					klog("CLASS: %d SUBCLASS: %d PROTOCOL: %d", Device->Interface.bInterfaceClass, Device->Interface.bInterfaceSubClass, Device->Interface.bInterfaceProtocol);
 					break;
 				}
 				case USB_ENDPOINT_DESCRIPTOR:

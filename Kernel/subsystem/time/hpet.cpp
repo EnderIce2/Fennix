@@ -64,7 +64,7 @@ namespace Time
 
 		/* Hz = 1e15 / period_fs */
 		this->Period = 1'000'000'000'000'000ULL / period_fs;
-		KPrint("HPET tick period: %lu femtoseconds -> %u Hz", period_fs, this->Period);
+		klog("HPET tick period: %lu femtoseconds -> %u Hz", period_fs, this->Period);
 #ifdef __amd64__
 		mmoutq(&this->hpet->Configuration, 0);
 		mmoutq(&this->hpet->MainCounter, 0);

@@ -178,7 +178,7 @@ namespace Memory
 		if (OutOfMemoryHandler)
 			OutOfMemoryHandler();
 
-		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
+		klog("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
 		debug("Raw values: free %#lx used %#lx reserved %#lx", FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Stop();
 		__builtin_unreachable();
@@ -232,7 +232,7 @@ namespace Memory
 		if (OutOfMemoryHandler)
 			OutOfMemoryHandler();
 
-		KPrint("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
+		klog("Out of memory! (Free: %ld MiB; Used: %ld MiB; Reserved: %ld MiB)", TO_MiB(FROM_PAGES(FreeMemory.load())), TO_MiB(FROM_PAGES(UsedMemory.load())), TO_MiB(FROM_PAGES(ReservedMemory.load())));
 		debug("Raw values: free %#lx used %#lx reserved %#lx", FreeMemory.load(), UsedMemory.load(), ReservedMemory.load());
 		CPU::Halt(true);
 		__builtin_unreachable();

@@ -49,8 +49,7 @@ namespace APIC
 	uint32_t APIC::Read(uint32_t Register)
 	{
 #ifdef DEBUG
-		if (Register != APIC_ICRLO &&
-			Register != APIC_ICRHI &&
+		if (Register != APIC_ICRLO && Register != APIC_ICRHI &&
 			Register != APIC_ID)
 			debug("APIC::Read(%#lx) [x2=%d]",
 				  Register, x2APICSupported ? 1 : 0);
@@ -428,8 +427,7 @@ namespace APIC
 		this->lapic = apic;
 		LVTTimerDivide Divider = DivideBy8;
 
-		trace("Initializing APIC timer on CPU %d",
-			  GetCurrentCPU()->ID);
+		trace("Initializing APIC timer on CPU %d", GetCurrentCPU()->ID);
 
 		if (this->lapic->x2APIC)
 		{
@@ -476,9 +474,7 @@ namespace APIC
 			this->lapic->Write(APIC_TIMER, uint32_t(timer.raw));
 		}
 
-		trace("%d APIC Timer %d ticks in.",
-			  GetCurrentCPU()->ID, Ticks);
-		KPrint("APIC Timer: \x1b[1;32m%ld\x1b[0m ticks.", Ticks);
+		klog("%d APIC Timer %d ticks in.", GetCurrentCPU()->ID, Ticks);
 	}
 
 	Timer::~Timer()

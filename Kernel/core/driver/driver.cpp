@@ -107,7 +107,7 @@ namespace Driver
 		if (!drvDirNode)
 		{
 			error("Failed to open driver directory %s", DriverDirectory);
-			KPrint("Failed to open driver directory %s", DriverDirectory);
+			klog("Failed to open driver directory %s", DriverDirectory);
 			return;
 		}
 
@@ -129,7 +129,7 @@ namespace Driver
 			if (!IsDriverTrusted(drvNode))
 			{
 				error("Driver %s is not trusted", drvNode->GetName().c_str());
-				KPrint("%s is not in the list of trusted drivers", drvNode->GetName().c_str());
+				klog("%s is not in the list of trusted drivers", drvNode->GetName().c_str());
 				continue;
 			}
 
@@ -166,7 +166,7 @@ namespace Driver
 	{
 		if (Drivers.empty())
 		{
-			KPrint("\x1b[1;31;41mNo drivers to load");
+			klog("\x1b[1;31;41mNo drivers to load");
 			return;
 		}
 
@@ -179,8 +179,8 @@ namespace Driver
 			Drv.ErrorCode = DrvInit(Drv.ID);
 			if (Drv.ErrorCode != 0)
 			{
-				KPrint("FATAL: _start() failed for %s: %s",
-					   Drv.Name, strerror(Drv.ErrorCode));
+				klog("FATAL: _start() failed for %s: %s",
+					 Drv.Name, strerror(Drv.ErrorCode));
 				error("Failed to load driver %s: %s",
 					  Drv.Path.c_str(), strerror(Drv.ErrorCode));
 
@@ -188,15 +188,15 @@ namespace Driver
 				continue;
 			}
 
-			KPrint("Loading driver %s (%d)", Drv.Name, Drv.ID);
+			klog("Loading driver %s (%d)", Drv.Name, Drv.ID);
 
 			debug("Calling Probe()=%#lx on driver %s",
 				  Drv.Probe, Drv.Path.c_str());
 			Drv.ErrorCode = Drv.Probe();
 			if (Drv.ErrorCode != 0)
 			{
-				KPrint("Probe() failed for %s: %s",
-					   Drv.Name, strerror(Drv.ErrorCode));
+				klog("Probe() failed for %s: %s",
+					 Drv.Name, strerror(Drv.ErrorCode));
 				error("Failed to probe driver %s: %s",
 					  Drv.Path.c_str(), strerror(Drv.ErrorCode));
 
@@ -209,8 +209,8 @@ namespace Driver
 			Drv.ErrorCode = Drv.Entry();
 			if (Drv.ErrorCode != 0)
 			{
-				KPrint("Entry() failed for %s: %s",
-					   Drv.Name, strerror(Drv.ErrorCode));
+				klog("Entry() failed for %s: %s",
+					 Drv.Name, strerror(Drv.ErrorCode));
 				error("Failed to initialize driver %s: %s",
 					  Drv.Path.c_str(), strerror(Drv.ErrorCode));
 
@@ -656,18 +656,18 @@ namespace Driver
 		newDrvObj.ErrorCode = DrvInit(newDrvObj.ID);
 		if (newDrvObj.ErrorCode != 0)
 		{
-			KPrint("FATAL: _start() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			klog("FATAL: _start() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to load driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
 			newDrvObj.vma->FreeAllPages();
 			return;
 		}
 
-		KPrint("Loading driver %s", newDrvObj.Name);
+		klog("Loading driver %s", newDrvObj.Name);
 
 		newDrvObj.ErrorCode = newDrvObj.Probe();
 		if (newDrvObj.ErrorCode != 0)
 		{
-			KPrint("Probe() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			klog("Probe() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to probe driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
 			newDrvObj.vma->FreeAllPages();
 			return;
@@ -676,7 +676,7 @@ namespace Driver
 		newDrvObj.ErrorCode = newDrvObj.Entry();
 		if (newDrvObj.ErrorCode != 0)
 		{
-			KPrint("Entry() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
+			klog("Entry() failed for %s: %s", newDrvObj.Name, strerror(newDrvObj.ErrorCode));
 			error("Failed to initialize driver %s: %s", newDrvObj.Path.c_str(), strerror(newDrvObj.ErrorCode));
 			newDrvObj.vma->FreeAllPages();
 			return;

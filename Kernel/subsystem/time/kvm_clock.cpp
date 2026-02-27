@@ -61,8 +61,8 @@ namespace Time
 
 		this->Pairing = (kvm_clock_pairing *)KernelAllocator.RequestPages(TO_PAGES(sizeof(kvm_clock_pairing)));
 		kvm_hc_clock_pairing((uint64_t)this->Pairing, KVM_CLOCK_PAIRING_WALLCLOCK);
-		// KPrint("sec: %lld, nsec: %lld, tsc: %lld", this->Pairing->sec, this->Pairing->nsec, this->Pairing->tsc);
-		// KPrint("flags: %x", this->Pairing->flags);
+		// klog("sec: %lld, nsec: %lld, tsc: %lld", this->Pairing->sec, this->Pairing->nsec, this->Pairing->tsc);
+		// klog("flags: %x", this->Pairing->flags);
 	}
 
 	KVMClock::~KVMClock()

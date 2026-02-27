@@ -26,7 +26,6 @@
 #include "../../../kernel.h"
 
 extern PCI::Manager *PCIManager;
-// EXTERNC void KPrint(const char *Format, ...);
 
 namespace Driver::UniversalHostControllerInterface
 {
@@ -59,21 +58,21 @@ namespace Driver::UniversalHostControllerInterface
 			int ret = hc->Reset();
 			if (ret != 0)
 			{
-				KPrint("Failed to reset UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				klog("Failed to reset UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}
 			ret = hc->Start();
 			if (ret != 0)
 			{
-				KPrint("Failed to start UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				klog("Failed to start UHCI controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}
 			ret = hc->Detect();
 			if (ret != 0)
 			{
-				KPrint("Failed to detect UHCI devices on controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
+				klog("Failed to detect UHCI devices on controller %d:%d:%d: %s", dev.Bus, dev.Device, dev.Function, strerror(ret));
 				delete hc;
 				continue;
 			}

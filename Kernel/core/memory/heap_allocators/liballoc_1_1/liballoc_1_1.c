@@ -58,7 +58,7 @@
 // #define FLUSH() fflush(stdout)
 #define FLUSH()
 #define atexit(x)
-#define printf(m, ...) trace(m, ##__VA_ARGS__)
+#define printf(m, ...) info(m, ##__VA_ARGS__)
 
 #endif
 

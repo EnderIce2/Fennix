@@ -120,20 +120,12 @@ namespace Interrupts
 		GlobalDescriptorTable::Init(Core);
 		InterruptDescriptorTable::Init(Core);
 		CPUData *CoreData = GetCPU(Core);
-		CoreData->Checksum = CPU_DATA_CHECKSUM;
 		CPU::x86::wrmsr(CPU::x86::MSR_GS_BASE, (uint64_t)CoreData);
 		CPU::x86::wrmsr(CPU::x86::MSR_SHADOW_GS_BASE, (uint64_t)CoreData);
 		CoreData->ID = Core;
 		CoreData->IsActive = true;
-		CoreData->Stack = (uintptr_t)StackManager.Allocate(STACK_SIZE) + STACK_SIZE;
-		if (CoreData->Checksum != CPU_DATA_CHECKSUM)
-		{
-			KPrint("CPU %d checksum mismatch! %x != %x",
-				   Core, CoreData->Checksum, CPU_DATA_CHECKSUM);
-			CPU::Stop();
-		}
-		debug("Stack for core %d is %#lx (Address: %#lx)",
-			  Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
+		CoreData->Stack = StackManager.Allocate(STACK_SIZE) + STACK_SIZE;
+		debug("Stack for core %d is %#lx (Address: %#lx)", Core, CoreData->Stack, CoreData->Stack - STACK_SIZE);
 		InitializeSystemCalls();
 #elif defined(__aarch64__)
 		warn("aarch64 is not supported yet");

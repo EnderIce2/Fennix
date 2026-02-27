@@ -100,6 +100,7 @@ int SpawnInit()
 
 void KernelMainThread()
 {
+	Log::LateInit();
 	thisThread->SetPriority(Tasking::Critical);
 
 #ifdef DEBUG
@@ -113,21 +114,21 @@ void KernelMainThread()
 	coroutineTest();
 #endif
 
-	KPrint("Kernel compiled using GCC %d.%d.%d as of %s %s with Standard C++ %dL",
-		   __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
-		   __DATE__, __TIME__,
-		   __cplusplus);
+	klog("Kernel compiled using GCC %d.%d.%d as of %s %s with Standard C++ %dL",
+		 __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
+		 __DATE__, __TIME__,
+		 __cplusplus);
 
 	if (IsVirtualizedEnvironment())
-		KPrint("Running in a virtualized environment");
+		klog("Running in a virtualized environment");
 
-	KPrint("Initializing USB Subsystem");
+	klog("Initializing USB Subsystem");
 	usb = new UniversalSerialBus::Manager;
 
-	KPrint("Initializing Driver Manager");
+	klog("Initializing Driver Manager");
 	DriverManager = new Driver::Manager;
 
-	KPrint("Loading Drivers");
+	klog("Loading Drivers");
 	DriverManager->PreloadDrivers();
 	DriverManager->LoadAllDrivers();
 
@@ -138,7 +139,7 @@ void KernelMainThread()
 	// 	->Rename("Kernel Shell");
 #endif
 
-	KPrint("Loading Subsystems");
+	klog("Loading Subsystems");
 	Subsystem::Linux::InitializeSubSystem();
 	Subsystem::Windows::InitializeSubSystem();
 
@@ -146,18 +147,18 @@ void KernelMainThread()
 	__late_playground();
 #endif
 
-	KPrint("Executing %s", Config.InitPath);
+	klog("Executing %s", Config.InitPath);
 	int ExitCode = -1;
 	Tasking::PCB *initProc;
 	Tasking::TCB *initThread;
 	int tid = SpawnInit();
 	if (tid < 0)
 	{
-		KPrint("\x1b[1;37;41mFailed to start init program! Error: %s (%d)", strerror(tid), tid);
+		klog("\x1b[1;37;41mFailed to start init program! Error: %s (%d)", strerror(tid), tid);
 		goto Exit;
 	}
 
-	KPrint("Waiting for init program to start...");
+	klog("Waiting for init program to start...");
 	thisThread->SetPriority(Tasking::Idle);
 
 	initProc = TaskManager->GetProcessByID(tid);
@@ -168,10 +169,10 @@ void KernelMainThread()
 	else
 		ExitCode = 0xEBAD;
 Exit:
-	KPrint("\x1b[31mUserspace process exited with code %d (%#x)",
-		   ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
+	klog("\x1b[31mUserspace process exited with code %d (%#x)",
+		 ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
 
-	KPrint("Dropping to kernel shell");
+	klog("Dropping to kernel shell");
 	TaskManager->Sleep(Time::FromMilliseconds(1000));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(KShellThread))->Rename("Kernel Shell");
 	CPU::Halt(true);
@@ -186,12 +187,12 @@ void __no_stack_protector KernelShutdownThread(bool Reboot)
 	BeforeShutdown(Reboot);
 
 	trace("%s...", Reboot ? "Rebooting" : "Shutting down");
-	KPrint("Waiting for ACPI...");
+	klog("Waiting for ACPI...");
 	if (Reboot)
 		PowerManager->Reboot();
 	else
 		PowerManager->Shutdown();
-	KPrint("CPU Halted");
+	klog("CPU Halted");
 	CPU::Stop();
 }
 

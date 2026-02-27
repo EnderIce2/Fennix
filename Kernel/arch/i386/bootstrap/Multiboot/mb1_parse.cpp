@@ -22,6 +22,8 @@
 
 #include "../../../../kernel.h"
 
+extern "C" void KernelEntry(struct BootInfo *Info);
+
 void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 {
 	multiboot_info *InfoAddress = reinterpret_cast<multiboot_info *>(Info);
@@ -206,5 +208,5 @@ void multiboot_parse(BootInfo &mb2binfo, uintptr_t Magic, uintptr_t Info)
 	mb2binfo.Kernel.Size = ((uint32_t)&_kernel_end - (uint32_t)&_kernel_start) + ((uint32_t)&_bootstrap_end - (uint32_t)&_bootstrap_start);
 	debug("Kernel base: %p (physical) %p (virtual)", mb2binfo.Kernel.PhysicalBase, mb2binfo.Kernel.VirtualBase);
 
-	Entry(&mb2binfo);
+	KernelEntry(&mb2binfo);
 }

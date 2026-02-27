@@ -25,7 +25,7 @@
 
 NewLock(DumperLock);
 
-int vprintf_dumper(const char *format, va_list list) { return vfctprintf(uart_wrapper, NULL, format, list); }
+int vprintf_dumper(const char *format, va_list list) { return vfctprintf(Log::uart_wrapper, NULL, format, list); }
 
 void WriteRaw(const char *format, ...)
 {

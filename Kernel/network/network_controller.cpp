@@ -45,7 +45,7 @@ namespace NetworkInterfaceManager
 		// 			this->FetchNetworkCards(Driver.modUniqueID);
 		// }
 		// else
-		// 	KPrint("\eE85230No network drivers found! Cannot fetch network cards!");
+		// 	klog("\eE85230No network drivers found! Cannot fetch network cards!");
 
 		DbgNetwork();
 	}
@@ -88,7 +88,7 @@ namespace NetworkInterfaceManager
 	}
 
 #ifdef DEBUG_NETWORK
-#define DbgWriteScreen(x, ...) KPrint(x, ##__VA_ARGS__)
+#define DbgWriteScreen(x, ...) klog(x, ##__VA_ARGS__)
 #else
 #define DbgWriteScreen(x, ...) debug(x, ##__VA_ARGS__)
 #endif
@@ -109,13 +109,13 @@ namespace NetworkInterfaceManager
 		if (!DefaultDevice)
 		{
 			error("No network device found!");
-			KPrint("\eE85230No network device found!");
+			klog("\eE85230No network device found!");
 			thisThread->SetPriority(Tasking::TaskPriority::Idle);
 			CPU::Halt(true);
 		}
 
-		KPrint("Using %s (%s) as the default network device",
-			   DefaultDevice->Name, DefaultDevice->MAC.ToString());
+		klog("Using %s (%s) as the default network device",
+			 DefaultDevice->Name, DefaultDevice->MAC.ToString());
 		NetworkEthernet::Ethernet *eth = new NetworkEthernet::Ethernet(DefaultDevice); // Use the first device found as the ethernet device
 		NetworkARP::ARP *arp = new NetworkARP::ARP(eth);
 		NetworkIPv4::IPv4 *ipv4 = new NetworkIPv4::IPv4(arp, eth);

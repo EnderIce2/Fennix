@@ -57,7 +57,7 @@ namespace UniversalSerialBus
 			uint32_t mask = 1 << i;
 			if (modDelta & mask)
 			{
-				KPrint("Modifier key %#lx %s", mask << 8, data[0] & mask ? "pressed" : "released");
+				klog("Modifier key %#lx %s", mask << 8, data[0] & mask ? "pressed" : "released");
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace UniversalSerialBus
 			{
 				if (!memchr(data + 2, usage, 6))
 				{
-					KPrint("Key %#lx released", usage);
+					klog("Key %#lx released", usage);
 				}
 			}
 		}
@@ -84,7 +84,7 @@ namespace UniversalSerialBus
 			{
 				if (!memchr(lastData + 2, usage, 6))
 				{
-					KPrint("Key %#lx pressed", usage);
+					klog("Key %#lx pressed", usage);
 				}
 			}
 			else if (usage > 0)

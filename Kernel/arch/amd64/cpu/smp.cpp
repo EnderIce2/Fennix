@@ -41,7 +41,7 @@ enum SMPTrampolineAddress
 	TRAMPOLINE_START = 0x2000
 };
 
-std::atomic_bool CPUEnabled = false;
+std::atomic_bool SMPEnabled = false;
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
@@ -55,28 +55,20 @@ nsa CPUData *GetCurrentCPU()
 
 	APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
 	int CoreID = 0;
-	if (CPUEnabled.load(std::memory_order_acquire) == true)
+	if (SMPEnabled.load(std::memory_order_acquire) == true)
 	{
-		Memory::SwapPT swap =
-			Memory::SwapPT(KernelPageTable, thisPageTable);
-
+		Memory::SwapPT swap = Memory::SwapPT(KernelPageTable, thisPageTable);
 		if (apic->x2APIC)
 			CoreID = int(CPU::x86::rdmsr(CPU::x86::MSR_X2APIC_APICID));
 		else
 			CoreID = apic->Read(APIC::APIC_ID) >> 24;
 	}
 
-	if (unlikely((&CPUs[CoreID])->IsActive != true))
-	{
-		error("CPU %d is not active!", CoreID);
-		assert((&CPUs[0])->IsActive == true); /* We can't continue without the BSP. */
-		return &CPUs[0];
-	}
-
-	assert((&CPUs[CoreID])->Checksum == CPU_DATA_CHECKSUM); /* This should never happen. */
+	assert((&CPUs[CoreID])->IsActive == true);
 	return &CPUs[CoreID];
 }
 
+std::atomic_bool CPUEnabled = false;
 extern "C" void StartCPU()
 {
 	CPU::Interrupts(CPU::Disable);
@@ -89,8 +81,9 @@ extern "C" void StartCPU()
 	asmv("mov %0, %%rsp" ::"r"((&CPUs[CoreID])->Stack));
 
 	CPU::Interrupts(CPU::Enable);
-	KPrint("CPU %d is online", CoreID);
 	CPUEnabled.store(true, std::memory_order_release);
+	Log::MemoryInit();
+	klog("CPU %d is online", CoreID);
 	CPU::Halt(true);
 }
 
@@ -117,26 +110,20 @@ namespace SMP
 		int Cores = madt->CPUCores + 1;
 
 		if (Config.Cores > madt->CPUCores + 1)
-			KPrint("More cores requested than available. Using %d cores",
-				   madt->CPUCores + 1);
+			klog("More cores requested than available. Using %d cores", madt->CPUCores + 1);
 		else if (Config.Cores != 0)
 			Cores = Config.Cores;
 
 		CPUCores = Cores;
 
-		uint64_t TrampolineLength = (uintptr_t)&_trampoline_end -
-									(uintptr_t)&_trampoline_start;
+		uint64_t trampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
 		Memory::Virtual().SingleMap(0x0, 0x0, Memory::PTFlag::RW);
 		/* We reserved the TRAMPOLINE_START address inside Physical class. */
-		Memory::Virtual().Map((void *)TRAMPOLINE_START,
-							  (void *)TRAMPOLINE_START,
-							  TrampolineLength, Memory::PTFlag::RW);
-		memcpy((void *)TRAMPOLINE_START, &_trampoline_start, TrampolineLength);
-		debug("Trampoline address: %#lx-%#lx",
-			  TRAMPOLINE_START,
-			  TRAMPOLINE_START + TrampolineLength);
+		Memory::Virtual().Map(TRAMPOLINE_START, TRAMPOLINE_START, trampolineLength, Memory::PTFlag::RW);
+		memcpy((void *)TRAMPOLINE_START, &_trampoline_start, trampolineLength);
+		debug("Trampoline address: %#lx-%#lx", TRAMPOLINE_START, TRAMPOLINE_START + trampolineLength);
 
-		void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE + 1));
+		void *CPUTmpStack = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
 		asmv("sgdt [0x580]");
 		asmv("sidt [0x590]");
 		VPOKE(uintptr_t, STACK) = (uintptr_t)CPUTmpStack + STACK_SIZE;
@@ -167,32 +154,29 @@ namespace SMP
 				}
 
 				apic->SendInitIPI(lapic->APICId);
-				TimeManager->Sleep(Time::FromMilliseconds(20));
+				TimeManager->Sleep(Time::FromMilliseconds(50));
 				apic->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
 				debug("Waiting for CPU %d to load...", lapic->APICId);
 
-				uint64_t Timeout = TimeManager->GetTimeNs() + Time::FromSeconds(2);
-				while (CPUEnabled.load(std::memory_order_acquire) == false)
+				// uint64_t timeout = TimeManager->GetTimeNs() + Time::FromSeconds(2);
+				while (CPUEnabled.exchange(false, std::memory_order_acq_rel) == false)
 				{
-					if (TimeManager->GetTimeNs() > Timeout)
-					{
-						error("CPU %d failed to load!", lapic->APICId);
-						KPrint("\x1b[1;37;41mCPU %d failed to load!",
-							   lapic->APICId);
-						break;
-					}
+					// if (TimeManager->GetTimeNs() > timeout)
+					// {
+					// 	error("CPU %d failed to load!", lapic->APICId);
+					// 	break;
+					// }
 					CPU::Pause();
 				}
-				trace("CPU %d loaded.", lapic->APICId);
-				CPUEnabled.store(false, std::memory_order_release);
 			}
 			else
-				KPrint("CPU %d is the BSP", lapic->APICId);
+				klog("CPU %d is the BSP", lapic->APICId);
 		}
 
-		KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE + 1));
+		KernelAllocator.FreePages(CPUTmpStack, TO_PAGES(STACK_SIZE));
 		/* We are going to unmap the page after we are done with it. */
 		Memory::Virtual().Unmap(0x0);
 		CPUEnabled.store(true, std::memory_order_release);
+		SMPEnabled.store(true, std::memory_order_release);
 	}
 }

@@ -86,7 +86,7 @@ void KShellThread()
 	assert(!ShellLock.Locked());
 	ShellLock.Lock(__FUNCTION__);
 
-	KPrint("Starting kernel shell...");
+	klog("Starting kernel shell...");
 	thisThread->SetPriority(Tasking::TaskPriority::Normal);
 	thisProcess->CWD = fs->GetRoot(0);
 
@@ -102,7 +102,7 @@ void KShellThread()
 	Node kfd = fs->Lookup(root, keyDevPath);
 	if (kfd == nullptr)
 	{
-		KPrint("Failed to open keyboard device!");
+		klog("Failed to open keyboard device!");
 		return;
 	}
 
@@ -148,8 +148,8 @@ void KShellThread()
 			}
 			if (nBytes < (ssize_t)sizeof(KeyboardReport))
 			{
-				KPrint("Failed to read from keyboard device: %s",
-					   strerror((int)nBytes));
+				klog("Failed to read from keyboard device: %s",
+					 strerror((int)nBytes));
 				return;
 			}
 

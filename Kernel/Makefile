@@ -48,18 +48,22 @@ CFLAGS :=										\
 	-fno-pic -fno-pie -fno-builtin
 
 ifeq ($(OSARCH), amd64)
-CFLAGS += -march=core2 -mcmodel=kernel -m64 -mno-red-zone
+CFLAGS += -march=core2 -mcmodel=kernel -m64 -mno-red-zone -I./arch/amd64/include
 LDFLAGS += -Tarch/amd64/linker.ld
+HEADERS += $(sort $(dir $(wildcard ./arch/amd64/include/*)))
 else ifeq ($(OSARCH), i386)
-CFLAGS += -march=pentium -m32 -mno-red-zone
+CFLAGS += -march=pentium -m32 -mno-red-zone -I./arch/i386/include
 LDFLAGS += -Tarch/i386/linker.ld
+HEADERS += $(sort $(dir $(wildcard ./arch/i386/include/*)))
 else ifeq ($(OSARCH), arm)
-CFLAGS += -march=armv7-a -mfloat-abi=softfp -ggdb3
+CFLAGS += -march=armv7-a -mfloat-abi=softfp -ggdb3 -I./arch/arm/include
 LDFLAGS += -Tarch/arm/linker.ld
+HEADERS += $(sort $(dir $(wildcard ./arch/arm/include/*)))
 WARNCFLAG += -w
 else ifeq ($(OSARCH), aarch64)
-CFLAGS += -march=armv9.4-a -mtune=cortex-a72 -mlittle-endian -mcmodel=large
+CFLAGS += -march=armv9.4-a -mtune=cortex-a72 -mlittle-endian -mcmodel=large -I./arch/aarch64/include
 LDFLAGS += -Tarch/aarch64/linker.ld
+HEADERS += $(sort $(dir $(wildcard ./arch/aarch64/include/*)))
 endif # OSARCH
 
 # -finstrument-functions for __cyg_profile_func_enter & __cyg_profile_func_exit. Used for profiling and debugging.

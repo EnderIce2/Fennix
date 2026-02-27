@@ -24,7 +24,6 @@
 
 extern Driver::Manager *DriverManager;
 extern PCI::Manager *PCIManager;
-EXTERNC void KPrint(const char *Format, ...);
 
 namespace Driver::EnhancedHostControllerInterface
 {
