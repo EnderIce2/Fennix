@@ -77,8 +77,6 @@ void __stl_vector_begin_cbegin_end_cend()
 	std::vector<int> v1(10, 5);
 	assert(*v1.begin() == 5);
 	assert(*v1.cbegin() == 5);
-	assert(*v1.end() == 0);
-	assert(*v1.cend() == 0);
 }
 
 void __stl_vector_clear_insert_emplace_erase_push_back_emplace_back_pop_back_resize_swap()
