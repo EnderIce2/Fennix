@@ -587,6 +587,7 @@ namespace fnx
 		ptr_t() : ptr(nullptr) {}
 		ptr_t(T p) : ptr(p) {}
 		ptr_t(int p) : ptr((T)(uintptr_t)p) {}
+		ptr_t(uintptr_t p) : ptr((T)p) {}
 		ptr_t(const ptr_t<T> &other) : ptr(other.ptr) {}
 
 		T get() const { return ptr; }
