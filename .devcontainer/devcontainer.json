@@ -37,10 +37,26 @@
 			"source": "/run/user/1000/pulse/native",
 			"target": "/run/user/1000/pulse/native",
 			"type": "bind"
+		},
+		{
+			"source": "${localEnv:XAUTHORITY}",
+			"target": "/home/vscode/.Xauthority",
+			"type": "bind"
+		},
+		{
+			"source": "${localEnv:XDG_RUNTIME_DIR}",
+			"target": "/run/user/1000",
+			"type": "bind"
 		}
 	],
 	"runArgs": [
 		"--privileged",
 		"--network=host"
-	]
+	],
+	"containerEnv": {
+		"XAUTHORITY": "${localEnv:XAUTHORITY}",
+		"DISPLAY": "${localEnv:DISPLAY}",
+		"XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+		"WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}"
+	}
 }

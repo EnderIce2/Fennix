@@ -27,6 +27,12 @@ jobs:
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
         sudo touch /run/user/1000/pulse/native
+        sudo touch /run/user/1000/xauth_ci
+      env:
+        XAUTHORITY: /run/user/1000/xauth_ci
+        XDG_RUNTIME_DIR: /run/user/1000
+        DISPLAY: :0
+        WAYLAND_DISPLAY: wayland-0
 
     - name: Run make ci-setup in dev container
       if: steps.cache-cross.outputs.cache-hit != 'true'
@@ -140,6 +146,12 @@ jobs:
         sudo mkdir -p /tmp/.X11-unix
         sudo mkdir -p /run/user/1000/pulse
         sudo touch /run/user/1000/pulse/native
+        sudo touch /run/user/1000/xauth_ci
+      env:
+        XAUTHORITY: /run/user/1000/xauth_ci
+        XDG_RUNTIME_DIR: /run/user/1000
+        DISPLAY: :0
+        WAYLAND_DISPLAY: wayland-0
 
     - name: Build 🏗️
       uses: devcontainers/ci@v0.3
