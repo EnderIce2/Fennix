@@ -42,11 +42,6 @@
 			"source": "${localEnv:XAUTHORITY}",
 			"target": "/home/vscode/.Xauthority",
 			"type": "bind"
-		},
-		{
-			"source": "${localEnv:XDG_RUNTIME_DIR}",
-			"target": "/run/user/1000",
-			"type": "bind"
 		}
 	],
 	"runArgs": [
