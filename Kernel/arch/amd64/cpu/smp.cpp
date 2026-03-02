@@ -18,16 +18,18 @@
 #include <smp.hpp>
 
 #include <memory.hpp>
+#include <entry.hpp>
 #include <acpi.hpp>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <assert.h>
 #include <cpu.hpp>
 #include <atomic>
 
 #include "../../../kernel.h"
-#include "apic.hpp"
 
 extern "C" uint64_t _trampoline_start, _trampoline_end;
+
+using namespace std::chrono_literals;
 
 /* https://wiki.osdev.org/Memory_Map_(x86) */
 enum SMPTrampolineAddress
@@ -41,80 +43,74 @@ enum SMPTrampolineAddress
 	TRAMPOLINE_START = 0x2000
 };
 
-std::atomic_bool SMPEnabled = false;
+static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {};
 
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-static __aligned(PAGE_SIZE) CPUData CPUs[MAX_CPU] = {0};
+hot CPUData *GetCPU(int id) { return &CPUs[id]; }
 
-nsa CPUData *GetCPU(long id) { return &CPUs[id]; }
-
-nsa CPUData *GetCurrentCPU()
+std::atomic_bool InsideAP = false;
+hot CPUData *GetCurrentCPU()
 {
-	if (unlikely(!Interrupts::apic[0]))
-		return &CPUs[0]; /* No APIC means we are on the BSP. */
-
-	APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
-	int CoreID = 0;
-	if (SMPEnabled.load(std::memory_order_acquire) == true)
-	{
-		Memory::SwapPT swap = Memory::SwapPT(KernelPageTable, thisPageTable);
-		if (apic->x2APIC)
-			CoreID = int(CPU::x86::rdmsr(CPU::x86::MSR_X2APIC_APICID));
-		else
-			CoreID = apic->Read(APIC::APIC_ID) >> 24;
-	}
-
-	assert((&CPUs[CoreID])->IsActive == true);
-	return &CPUs[CoreID];
+	int id;
+	if (unlikely(InsideAP.load(std::memory_order_relaxed)))
+		id = (int)*reinterpret_cast<int *>(CORE);
+	else
+		id = CPU::CurrentID();
+	assert(!(CPUs[id].IsActive == false && id != 0));
+	return &CPUs[id];
 }
 
 std::atomic_bool CPUEnabled = false;
-extern "C" void StartCPU()
-{
-	CPU::Interrupts(CPU::Disable);
-	int CoreID = (int)*reinterpret_cast<int *>(CORE);
-	CPU::InitializeFeatures(CoreID);
-	// Initialize GDT and IDT
-	Interrupts::Initialize(CoreID);
-	Interrupts::Enable(CoreID);
-	Interrupts::InitializeTimer(CoreID);
-	asmv("mov %0, %%rsp" ::"r"((&CPUs[CoreID])->Stack));
 
-	CPU::Interrupts(CPU::Enable);
+extern "C" __noreturn void APHalt()
+{
+	klog("CPU %d is online", thisCPU->ID);
 	CPUEnabled.store(true, std::memory_order_release);
-	Log::MemoryInit();
-	klog("CPU %d is online", CoreID);
-	CPU::Halt(true);
+halt:
+	asmv("hlt");
+	goto halt;
+	__unreachable;
+}
+
+extern "C" __noreturn void StartCPU()
+{
+	asmv("cli");
+	InsideAP.store(true);
+
+	int id = (int)*reinterpret_cast<int *>(CORE);
+	CPU::Initialize(id);
+	CPU::InitializeInterrupts(id);
+	CPU::InitializeTimeSources(id);
+
+	InsideAP.store(false);
+	asmv("mov %0, %%rsp\n"
+		 "xor %%rbp, %%rbp\n"
+		 "jmp *%1\n" : : "r"(GetCPU(id)->Stack),
+		 "r"(APHalt) : "memory");
+	__unreachable;
 }
 
 namespace SMP
 {
 	int CPUCores = 0;
 
-	void Initialize(void *_madt)
+	void Initialize()
 	{
-		if (!_madt)
-		{
-			error("MADT is NULL");
+		if (MADTManager == nullptr)
 			return;
-		}
 
-		ACPI::MADT *madt = (ACPI::MADT *)_madt;
+		Platform::MADT *madt = MADTManager;
 
 		if (madt->lapic.size() < 1)
-		{
-			error("No CPUs found!");
 			return;
-		}
 
-		int Cores = madt->CPUCores + 1;
+		int totalCores = madt->CPUCores + 1;
 
 		if (Config.Cores > madt->CPUCores + 1)
 			klog("More cores requested than available. Using %d cores", madt->CPUCores + 1);
 		else if (Config.Cores != 0)
-			Cores = Config.Cores;
+			totalCores = Config.Cores;
 
-		CPUCores = Cores;
+		CPUCores = totalCores;
 
 		uint64_t trampolineLength = (uintptr_t)&_trampoline_end - (uintptr_t)&_trampoline_start;
 		Memory::Virtual().SingleMap(0x0, 0x0, Memory::PTFlag::RW);
@@ -130,10 +126,10 @@ namespace SMP
 		VPOKE(uintptr_t, PAGE_TABLE) = (uintptr_t)KernelPageTable;
 		VPOKE(uintptr_t, START_ADDR) = (uintptr_t)&StartCPU;
 
-		for (int i = 0; i < Cores; i++)
+		for (int i = 1; i < totalCores; i++)
 		{
-			ACPI::MADT::LocalAPIC *lapic = madt->lapic[i];
-			APIC::APIC *apic = (APIC::APIC *)Interrupts::apic[0];
+			auto lapic = madt->lapic[i];
+			auto apic = APICManager->Locals[0];
 
 			debug("Initializing CPU %d", lapic->APICId);
 			uint8_t APIC_ID = 0;
@@ -153,15 +149,66 @@ namespace SMP
 					apic->ICR(icr);
 				}
 
-				apic->SendInitIPI(lapic->APICId);
-				TimeManager->Sleep(Time::FromMilliseconds(50));
-				apic->SendStartupIPI(lapic->APICId, TRAMPOLINE_START);
-				debug("Waiting for CPU %d to load...", lapic->APICId);
+				/* Init IPI */
+				{
+					APIC::InterruptCommandRegister icr{};
 
-				// uint64_t timeout = TimeManager->GetTimeNs() + Time::FromSeconds(2);
+					if (apic->x2APIC)
+					{
+						icr.x2.MT = APIC::INIT;
+						icr.x2.L = APIC::Assert;
+						icr.x2.DES = uint8_t(i);
+
+						CPU::x86::wrmsr(CPU::x86::MSR_X2APIC_ICR, icr.raw);
+						apic->WaitForIPI();
+					}
+					else
+					{
+						icr.MT = APIC::INIT;
+						icr.L = APIC::Assert;
+						icr.DES = uint8_t(i);
+
+						apic->Write(APIC::APIC_ICRHI, icr.split.High);
+						apic->Write(APIC::APIC_ICRLO, icr.split.Low);
+						apic->WaitForIPI();
+					}
+				}
+
+				thisClock->Sleep(50ms);
+
+				/* Startup IPI */
+				{
+					APIC::InterruptCommandRegister icr{};
+
+					if (apic->x2APIC)
+					{
+						icr.x2.VEC = static_cast<uint8_t>(TRAMPOLINE_START >> 12);
+						icr.x2.MT = APIC::Startup;
+						icr.x2.L = APIC::Assert;
+						icr.x2.DES = uint8_t(i);
+
+						CPU::x86::wrmsr(CPU::x86::MSR_X2APIC_ICR, icr.raw);
+						apic->WaitForIPI();
+					}
+					else
+					{
+						icr.VEC = static_cast<uint8_t>(TRAMPOLINE_START >> 12);
+						icr.MT = APIC::Startup;
+						icr.L = APIC::Assert;
+						icr.DES = uint8_t(i);
+
+						apic->Write(APIC::APIC_ICRHI, icr.split.High);
+						apic->Write(APIC::APIC_ICRLO, icr.split.Low);
+						apic->WaitForIPI();
+					}
+				}
+
+				// debug("Waiting for CPU %d to load...", lapic->APICId);
+
+				// uint64_t timeout = GlobalClock->Now() + Time::FromSeconds(2);
 				while (CPUEnabled.exchange(false, std::memory_order_acq_rel) == false)
 				{
-					// if (TimeManager->GetTimeNs() > timeout)
+					// if (GlobalClock->Now() > timeout)
 					// {
 					// 	error("CPU %d failed to load!", lapic->APICId);
 					// 	break;
@@ -177,6 +224,5 @@ namespace SMP
 		/* We are going to unmap the page after we are done with it. */
 		Memory::Virtual().Unmap(0x0);
 		CPUEnabled.store(true, std::memory_order_release);
-		SMPEnabled.store(true, std::memory_order_release);
 	}
 }

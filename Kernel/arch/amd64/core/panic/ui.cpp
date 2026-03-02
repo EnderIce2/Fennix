@@ -28,7 +28,6 @@
 #include <io.h>
 
 #include "../../cpu/gdt.hpp"
-#include "../../cpu/apic.hpp"
 #include "../../../../kernel.h"
 
 extern void ExPrint(const char *Format, ...);

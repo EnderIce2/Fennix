@@ -17,7 +17,7 @@
 
 #include <smp.hpp>
 
-#include <ints.hpp>
+#include <irq.hpp>
 #include <memory.hpp>
 #include <cpu.hpp>
 

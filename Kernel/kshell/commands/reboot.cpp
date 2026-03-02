@@ -27,6 +27,6 @@ using namespace Tasking;
 
 void cmd_reboot(const char *)
 {
-	KernelShutdownThread(true);
+	PowerManager->Reboot();
 	CPU::Halt(true);
 }

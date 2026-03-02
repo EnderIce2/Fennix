@@ -424,7 +424,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		return ENOSYS;
 	}
 
-	HCD::HCD(PCI::PCIDevice &pciHeader) : Interrupts::Handler(pciHeader), Header(pciHeader)
+	HCD::HCD(PCI::PCIDevice &pciHeader) : Interrupt::Handler(pciHeader), Header(pciHeader)
 	{
 		MMIOBase = pciHeader.GetBAR(0);
 

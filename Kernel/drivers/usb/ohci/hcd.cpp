@@ -989,7 +989,7 @@ namespace Driver::OpenHostControllerInterface
 	}
 
 	HCD::HCD(PCI::PCIDevice &pciHeader)
-		: Interrupts::Handler(pciHeader),
+		: Interrupt::Handler(pciHeader),
 		  regs((OHCIRegisters *)pciHeader.GetBAR(0)),
 		  Header(pciHeader)
 	{

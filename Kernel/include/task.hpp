@@ -25,7 +25,7 @@
 #include <symbols.hpp>
 #include <memory.hpp>
 #include <signal.hpp>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <kexcept/cxxabi.h>
 #include <debug.h>
 #include <cwalk.h>

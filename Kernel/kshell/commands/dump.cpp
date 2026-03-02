@@ -19,6 +19,7 @@
 
 #include <fs/vfs.hpp>
 #include <acpi.hpp>
+#include <stdio.h>
 
 #include "../../kernel.h"
 

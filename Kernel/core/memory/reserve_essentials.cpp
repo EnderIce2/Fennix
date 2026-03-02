@@ -151,16 +151,16 @@ namespace Memory
 
 			this->ReservePages(bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
 
-			ACPI::ACPI::ACPIHeader *ACPIPtr;
+			Platform::ACPIHeader *ACPIPtr;
 			bool XSDT = false;
 
 			if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
 			{
-				ACPIPtr = (ACPI::ACPI::ACPIHeader *)bInfo.RSDP->XSDTAddress;
+				ACPIPtr = (Platform::ACPIHeader *)bInfo.RSDP->XSDTAddress;
 				XSDT = true;
 			}
 			else
-				ACPIPtr = (ACPI::ACPI::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
+				ACPIPtr = (Platform::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
 
 			debug("Reserving RSDT...");
 			this->ReservePages((void *)bInfo.RSDP, TO_PAGES(sizeof(BootInfo::RSDPInfo)));
@@ -171,7 +171,7 @@ namespace Memory
 				return;
 			}
 
-			size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) /
+			size_t TableSize = ((ACPIPtr->Length - sizeof(Platform::ACPIHeader)) /
 								(XSDT ? 8 : 4));
 			debug("Reserving %d ACPI tables...", TableSize);
 
@@ -180,17 +180,17 @@ namespace Memory
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
 				// TODO: Should I be concerned about unaligned memory access?
-				ACPI::ACPI::ACPIHeader *SDTHdr = nullptr;
+				Platform::ACPIHeader *SDTHdr = nullptr;
 				if (XSDT)
 					SDTHdr =
-						(ACPI::ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr +
-																 sizeof(ACPI::ACPI::ACPIHeader) +
-																 (t * 8)));
+						(Platform::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIPtr +
+															   sizeof(Platform::ACPIHeader) +
+															   (t * 8)));
 				else
 					SDTHdr =
-						(ACPI::ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr +
-																 sizeof(ACPI::ACPI::ACPIHeader) +
-																 (t * 4)));
+						(Platform::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIPtr +
+															   sizeof(Platform::ACPIHeader) +
+															   (t * 4)));
 #pragma GCC diagnostic pop
 				this->ReservePages(SDTHdr, TO_PAGES(SDTHdr->Length));
 			}

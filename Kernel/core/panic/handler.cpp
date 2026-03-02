@@ -30,7 +30,6 @@
 
 #if defined(__amd64__)
 #include "../../arch/amd64/cpu/gdt.hpp"
-#include "../arch/amd64/cpu/apic.hpp"
 #elif defined(__i386__)
 #include "../../arch/i386/cpu/gdt.hpp"
 #include "../arch/i386/cpu/apic.hpp"
@@ -101,36 +100,37 @@ nsa void HaltAllCores()
 		return;
 
 #if defined(__amd64__)
-	if (Interrupts::apic[0] == nullptr)
-		return;
+	fixme("HALT ALL CORES");
+	// if (Interrupts::apic[0] == nullptr)
+	// 	return;
 
-	APIC::InterruptCommandRegister icr{};
+	// APIC::InterruptCommandRegister icr{};
 
-	bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
-	if (likely(x2APIC))
-	{
-		icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
-		icr.x2.MT = APIC::Fixed;
-		icr.x2.L = APIC::Assert;
+	// bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
+	// if (likely(x2APIC))
+	// {
+	// 	icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
+	// 	icr.x2.MT = APIC::Fixed;
+	// 	icr.x2.L = APIC::Assert;
 
-		for (int i = 1; i < SMP::CPUCores; i++)
-		{
-			icr.x2.DES = uint8_t(i);
-			((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
-		}
-	}
-	else
-	{
-		icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
-		icr.MT = APIC::Fixed;
-		icr.L = APIC::Assert;
+	// 	for (int i = 1; i < SMP::CPUCores; i++)
+	// 	{
+	// 		icr.x2.DES = uint8_t(i);
+	// 		((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+	// 	}
+	// }
+	// else
+	// {
+	// 	icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ31);
+	// 	icr.MT = APIC::Fixed;
+	// 	icr.L = APIC::Assert;
 
-		for (int i = 1; i < SMP::CPUCores; i++)
-		{
-			icr.DES = uint8_t(i);
-			((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
-		}
-	}
+	// 	for (int i = 1; i < SMP::CPUCores; i++)
+	// 	{
+	// 		icr.DES = uint8_t(i);
+	// 		((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+	// 	}
+	// }
 #elif defined(__aarch64__)
 #endif
 }
@@ -345,7 +345,7 @@ nsa void HandleException(CPU::ExceptionFrame *Frame)
 		DriverManager->Panic();
 	if (TaskManager)
 		TaskManager->Panic();
-	Interrupts::RemoveAll();
+	irq.UnregisterAllHandlers();
 	HaltAllCores();
 	ForceUnlock = true;
 

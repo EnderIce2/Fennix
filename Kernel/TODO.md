@@ -51,3 +51,10 @@
 
 - [x] Improve Remap() function.
 	- Remove Unmap & Map logic. Remove all flags directly.
+
+- [ ] Refactor the entire scheduling system.
+	- Scheduler should not depend on procfs.
+	- procfs should read proc ids from the scheduler and list them dynamically.
+	- Scheduler should not know anything about the /proc.
+	- Add refcount on processes so prevent TOCTOU. (when killed return ESRCH or set process as zombie)
+	- Keep a generation number for every pid to allow pid reuse. (procfs can lookup by generation number to know that the pid has been reused and is not the same process)

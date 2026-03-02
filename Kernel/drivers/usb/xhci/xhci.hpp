@@ -754,7 +754,7 @@ namespace Driver::ExtensibleHostControllerInterface
 		~DoorbellManager() = default;
 	};
 
-	class HCD : public Interrupts::Handler, public USBController
+	class HCD : public Interrupt::Handler, public USBController
 	{
 	private:
 		PCI::PCIDevice Header;

@@ -29,15 +29,6 @@ namespace UART
 		return 0;
 	}
 
-	void Driver::TTYWrite(uint8_t Char)
-	{
-	}
-
-	uint8_t Driver::TTYRead()
-	{
-		return 0;
-	}
-
 	Driver::Driver()
 	{
 	}

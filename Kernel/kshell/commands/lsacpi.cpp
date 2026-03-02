@@ -19,6 +19,7 @@
 
 #include <fs/vfs.hpp>
 #include <acpi.hpp>
+#include <entry.hpp>
 
 #include "../../kernel.h"
 
@@ -26,7 +27,7 @@ using namespace vfs;
 
 void cmd_lsacpi(const char *)
 {
-	ACPI::ACPI *acpi = (ACPI::ACPI *)PowerManager->GetACPI();
+	Platform::ACPI *acpi = (Platform::ACPI *)ACPIManager;
 	for (auto Table : acpi->Tables)
 	{
 		printf("%#lx: %.4s [%.6s:%.8s] %d bytes\n",

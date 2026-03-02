@@ -25,15 +25,12 @@
 #include "gdt.hpp"
 #include "../../../kernel.h"
 
-/* conversion from 'uint64_t' {aka 'long unsigned int'} to 'unsigned char:2' may change value */
-#pragma GCC diagnostic ignored "-Wconversion"
-
-extern "C" void MainInterruptHandler(void *Data);
-extern "C" void SchedulerInterruptHandler(void *Data);
-extern "C" void ExceptionHandler(void *Data);
+extern "C" Ofast hot void interrupt_dispatch(CPU::TrapFrame *Frame) { irq.Dispatch(Frame); }
+extern "C" Ofast hot void scheduler_dispatch(CPU::SchedulerFrame *Frame) { irq.Dispatch(Frame); }
+extern "C" Ofast hot void exception_dispatch(CPU::ExceptionFrame *Frame) { irq.Dispatch(Frame); }
 
 #define __stub_handler \
-	__naked __used __no_stack_protector __aligned(16)
+	__naked __used __no_stack_protector hot __aligned(16)
 
 namespace InterruptDescriptorTable
 {
@@ -162,7 +159,7 @@ namespace InterruptDescriptorTable
 			"movq %cr0, %rax\n pushq %rax\n"
 
 			"movq %rsp, %rdi\n"
-			"call ExceptionHandler\n"
+			"call exception_dispatch\n"
 
 			"popq %rax\n movq %rax, %cr0\n"
 			"popq %rax\n movq %rax, %cr2\n"
@@ -231,7 +228,7 @@ namespace InterruptDescriptorTable
 			"pushq %r15\n"
 
 			"movq %rsp, %rdi\n"
-			"call MainInterruptHandler\n"
+			"call interrupt_dispatch\n"
 
 			"popq %r15\n"
 			"popq %r14\n"
@@ -284,7 +281,7 @@ namespace InterruptDescriptorTable
 			"pushq %rax\n"					 /* Push ppt */
 
 			"movq %rsp, %rdi\n"
-			"call SchedulerInterruptHandler\n"
+			"call scheduler_dispatch\n"
 
 			"popq %rax\n movq %rax, %cr3\n" /* Restore to ppt */
 			"popq %rax\n"					/* Pop opt */
@@ -615,35 +612,12 @@ namespace InterruptDescriptorTable
 
 #pragma endregion Interrupt Macros
 
-	void Init(int Core)
+	void Setup(int Core)
 	{
-		if (Core == 0) /* Disable PIC using BSP */
+		if (Core != 0)
 		{
-			// PIC
-			outb(0x20, 0x10 | 0x1);
-			outb(0x80, 0);
-			outb(0xA0, 0x10 | 0x10);
-			outb(0x80, 0);
-
-			outb(0x21, 0x20);
-			outb(0x80, 0);
-			outb(0xA1, 0x28);
-			outb(0x80, 0);
-
-			outb(0x21, 0x04);
-			outb(0x80, 0);
-			outb(0xA1, 0x02);
-			outb(0x80, 0);
-
-			outb(0x21, 1);
-			outb(0x80, 0);
-			outb(0xA1, 1);
-			outb(0x80, 0);
-
-			// Masking and disabling PIC
-			outb(0x21, 0xff);
-			outb(0x80, 0);
-			outb(0xA1, 0xff);
+			CPU::x64::lidt(&IDTr);
+			return;
 		}
 
 		bool EnableISRs = true;

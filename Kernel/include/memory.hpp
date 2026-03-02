@@ -45,6 +45,8 @@ namespace Memory
 		liballoc11,
 		rpmalloc_,
 	};
+
+	void Initialize();
 }
 
 #include <memory/physical.hpp>
@@ -58,8 +60,10 @@ namespace Memory
 #include <memory/brk.hpp>
 #include <memory/dma.hpp>
 
-void InitializeMemoryManagement();
-void CreatePageTable(Memory::PageTable *pt);
+namespace Memory
+{
+	void CreatePageTable(PageTable *pt);
+}
 
 extern Memory::Physical KernelAllocator;
 extern Memory::KernelStackManager StackManager;

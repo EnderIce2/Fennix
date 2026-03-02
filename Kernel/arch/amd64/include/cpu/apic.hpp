@@ -18,9 +18,8 @@
 #ifndef __FENNIX_KERNEL_APIC_H__
 #define __FENNIX_KERNEL_APIC_H__
 
-#include <types.h>
-
-#include <ints.hpp>
+#include <time.hpp>
+#include <irq.hpp>
 #include <cpu.hpp>
 
 namespace APIC
@@ -342,43 +341,122 @@ namespace APIC
 		uint32_t raw;
 	} __packed IOAPICVersion;
 
-	class APIC
+	/**
+	 * @brief MSR_APIC_BASE structure
+	 * @see MSR_APIC_BASE
+	 */
+	typedef union
+	{
+		struct
+		{
+			/** Reserved */
+			uint64_t Reserved0 : 8;
+			/** Boot Strap CPU Core */
+			uint64_t BSC : 1;
+			/** Reserved */
+			uint64_t Reserved1 : 1;
+			/** x2APIC Mode Enable */
+			uint64_t EXTD : 1;
+			/** APIC Enable */
+			uint64_t AE : 1;
+			/** @brief APIC Base Low Address */
+			uint64_t ABALow : 20;
+			/** @brief APIC Base High Address */
+			uint64_t ABAHigh : 32;
+			/** Reserved */
+			uint64_t Reserved2 : 12;
+		};
+		uint64_t raw;
+	} __packed APIC_BASE;
+
+	typedef union
+	{
+		struct
+		{
+			uint64_t Reserved : 24;
+			uint64_t AID : 8;
+		};
+		uint32_t raw;
+	} __packed APICID;
+
+	class Local
 	{
 	private:
+		fnx::void_t APICBaseAddress = nullptr;
 		bool x2APICSupported = false;
-		uint64_t APICBaseAddress = 0;
+		int Core = -1;
 
 	public:
 		decltype(x2APICSupported) &x2APIC = x2APICSupported;
 
 		uint32_t Read(uint32_t Register);
 		void Write(uint32_t Register, uint32_t Value);
-		void IOWrite(uint64_t Base, uint32_t Register, uint32_t Value);
-		uint32_t IORead(uint64_t Base, uint32_t Register);
+
 		void EOI();
-		void RedirectIRQs(uint8_t CPU = 0);
+
 		void WaitForIPI();
 		void ICR(InterruptCommandRegister icr);
-		void SendInitIPI(int CPU);
-		void SendStartupIPI(int CPU, uint64_t StartupAddress);
-		uint32_t IOGetMaxRedirect(uint32_t APICID);
+		void SendInitIPI();
+		void SendStartupIPI(uint64_t StartupAddress);
+
+		Local(int Core);
+		~Local() = default;
+	};
+
+	class IO
+	{
+	private:
+	public:
+		uint32_t Read(uint64_t Base, uint32_t Register);
+		void Write(uint64_t Base, uint32_t Register, uint32_t Value);
+
+		uint32_t GetMaxRedirect(uint32_t APICID);
+
 		void RawRedirectIRQ(uint8_t Vector, uint32_t GSI, uint16_t Flags, uint8_t CPU, int Status);
 		void RedirectIRQ(uint8_t CPU, uint8_t IRQ, int Status);
-		APIC(int Core);
+		void RedirectIRQs(uint8_t CPU);
+
+		void Mask(uint32_t gsi);
+		void Unmask(uint32_t gsi);
+
+		IO();
+		~IO() = default;
+	};
+
+	class APIC : public Interrupt::Controller
+	{
+	private:
+	public:
+		std::vector<Local *> Locals;
+		IO IOAPIC;
+
+		Local *SetupCore(int ID);
+		int GetID();
+
+		void Mask(uint32_t Line) final;
+		void Unmask(uint32_t Line) final;
+		uint32_t TranslateToLine(uint32_t Vector) final;
+		void EOI(uint32_t Vector) final;
+		bool CanRoute() const final { return true; }
+		void Route(uint32_t Vector, uint32_t Core) final;
+
+		APIC();
 		~APIC();
 	};
 
-	class Timer : public Interrupts::Handler
+	class Timer : public Time::TimerDevice
 	{
 	private:
-		APIC *lapic;
-		uint64_t Ticks = 0;
-		int OnInterruptReceived(CPU::TrapFrame *Frame);
+		Local *lapic;
+		uint64_t TicksPerSecond = 0;
 
 	public:
-		uint64_t GetTicks() { return Ticks; }
-		void OneShot(uint32_t Vector, uint64_t Miliseconds);
-		Timer(APIC *apic);
+		const char *Name() const { return "APIC"; }
+
+		void SetOneShot(std::chrono::nanoseconds ns, Interrupt::IRQLines Line) final;
+		void SetPeriodic(std::chrono::nanoseconds ns, Interrupt::IRQLines Line) final;
+
+		Timer(Local *local);
 		~Timer();
 	};
 }

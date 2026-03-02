@@ -52,6 +52,8 @@ int fprintf(FILE *stream, const char *format, ...) __attribute__((format(__print
 
 int fputs(const char *s, FILE *stream);
 
+void putchar(char c);
+
 END_EXTERNC
 
 #endif // !__FENNIX_KERNEL_STDIO_H__

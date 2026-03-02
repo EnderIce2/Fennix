@@ -22,23 +22,20 @@
 
 #include "../kernel.h"
 
-namespace ACPI
+namespace Platform
 {
-	__no_sanitize("alignment") void *ACPI::FindTable(ACPI::ACPIHeader *ACPIHeader, char *Signature)
+	__no_sanitize("alignment") void *ACPI::FindTable(ACPIHeader *Header, char *Signature)
 	{
-		for (uint64_t t = 0; t < ((ACPIHeader->Length - sizeof(ACPI::ACPIHeader)) / (XSDTSupported ? 8 : 4)); t++)
+		for (uint64_t t = 0; t < ((Header->Length - sizeof(ACPIHeader)) / (XSDTSupported ? 8 : 4)); t++)
 		{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-
 			// TODO: Should I be concerned about unaligned memory access?
-			ACPI::ACPIHeader *SDTHdr = nullptr;
+			ACPIHeader *SDTHdr = nullptr;
+			uintptr_t entry;
 			if (XSDTSupported)
-				SDTHdr = (ACPI::ACPIHeader *)(*(uint64_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 8)));
+				entry = *(uint64_t *)((uintptr_t)Header + sizeof(ACPIHeader) + (t * 8));
 			else
-				SDTHdr = (ACPI::ACPIHeader *)(*(uint32_t *)((uint64_t)ACPIHeader + sizeof(ACPI::ACPIHeader) + (t * 4)));
-
-#pragma GCC diagnostic pop
+				entry = *(uint32_t *)((uintptr_t)Header + sizeof(ACPIHeader) + (t * 4));
+			SDTHdr = (ACPIHeader *)entry;
 
 			size_t signLength = strlen(Signature);
 			for (size_t i = 0; i < signLength; i++)
@@ -47,15 +44,11 @@ namespace ACPI
 					break;
 				if (i == 3)
 				{
-#ifdef DEBUG
 					klog("ACPI: %.4s [%.6s:%.8s] found at address %#lx",
 						 Signature,
 						 SDTHdr->OEMID,
 						 SDTHdr->OEMTableID,
 						 (uintptr_t)SDTHdr);
-#endif
-					trace("%s found at address %#lx", Signature, (uintptr_t)SDTHdr);
-
 					Tables[Signature] = SDTHdr;
 					return SDTHdr;
 				}
@@ -67,9 +60,6 @@ namespace ACPI
 
 	void ACPI::SearchTables(ACPIHeader *Header)
 	{
-		if (!Header)
-			return;
-
 		HPET = (HPETHeader *)FindTable(Header, (char *)"HPET");
 		FADT = (FADTHeader *)FindTable(Header, (char *)"FACP");
 		MCFG = (MCFGHeader *)FindTable(Header, (char *)"MCFG");
@@ -182,30 +172,22 @@ namespace ACPI
 			XSDT = (ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
 		}
 
-		if (!Memory::Virtual().Check(XSDT))
+		Memory::Virtual vmm;
+		if (!vmm.Check(XSDT))
 		{
-			warn("%s is not mapped!",
-				 XSDTSupported ? "XSDT" : "RSDT");
+			warn("%s is not mapped!", XSDTSupported ? "XSDT" : "RSDT");
 			debug("XSDT: %p", XSDT);
-			Memory::Virtual().SingleMap(XSDT, XSDT, Memory::RW);
+			vmm.SingleMap(XSDT, XSDT, Memory::RW | Memory::PCD | Memory::PWT);
 		}
-
-		this->SearchTables(XSDT);
 
 		if (FADT)
 		{
-#if defined(__amd64__) || defined(__i386__)
 			outb(static_cast<uint16_t>(FADT->SMI_CommandPort), FADT->AcpiEnable);
 			/* TODO: Sleep for ~5 seconds before polling PM1a CB? */
 			while (!(inw(static_cast<uint16_t>(FADT->PM1aControlBlock)) & 1))
 				CPU::Pause();
-#elif defined(__aarch64__)
-			warn("aarch64 is not supported yet");
-#endif
 		}
-	}
 
-	ACPI::~ACPI()
-	{
+		this->SearchTables(XSDT);
 	}
 }

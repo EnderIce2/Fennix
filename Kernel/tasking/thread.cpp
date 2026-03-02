@@ -28,7 +28,6 @@
 #include "../kernel.h"
 
 #if defined(__amd64__)
-#include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
@@ -650,7 +649,7 @@ namespace Tasking
 		this->AllocatedMemory += strlen(this->Parent->Name) + 1;
 		this->AllocatedMemory += sizeof(Memory::StackGuard);
 
-		this->Info.SpawnTime = TimeManager->GetTimeNs();
+		this->Info.SpawnTime = GlobalClock->Now();
 		this->Parent->Threads.push_back(this);
 
 		if (this->Parent->Threads.size() == 1 &&

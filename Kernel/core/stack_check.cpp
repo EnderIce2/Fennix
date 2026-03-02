@@ -29,19 +29,18 @@ extern __noreturn void HandleBufferOverflow();
 EXTERNC __no_stack_protector uintptr_t __stack_chk_guard_init(void)
 {
 	int MaxRetries = 0;
-#if UINTPTR_MAX == UINT32_MAX
-	uint32_t num;
-Retry:
-	num = Random::rand32();
-	if (num < 0x1000 && MaxRetries++ < 10)
-		goto Retry;
-	return num;
-
-#else
+#if __LP64__
 	uint64_t num;
 Retry:
 	num = Random::rand64();
 	if (num < 0x100000 && MaxRetries++ < 10)
+		goto Retry;
+	return num;
+#else
+	uint32_t num;
+Retry:
+	num = Random::rand32();
+	if (num < 0x1000 && MaxRetries++ < 10)
 		goto Retry;
 	return num;
 #endif
@@ -61,13 +60,11 @@ EXTERNC __noreturn __no_stack_protector void __stack_chk_fail(void)
 
 	void *Stack = nullptr;
 #if defined(__amd64__)
-	asmv("movq %%rsp, %0"
-		 : "=r"(Stack));
+	asmv("movq %%rsp, %0" : "=r"(Stack));
 #elif defined(__i386__)
-	asmv("movl %%esp, %0"
-		 : "=r"(Stack));
-#elif defined(__aarch64__)
-#warning "aarch64 not implemented"
+	asmv("movl %%esp, %0" : "=r"(Stack));
+#else
+#warning "not implemented for this architecture"
 #endif
 	error("Stack address: %#lx", Stack);
 

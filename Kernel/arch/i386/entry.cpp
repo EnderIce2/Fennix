@@ -99,7 +99,7 @@ extern "C" __no_stack_protector nif cold void KernelEntry(BootInfo *Info)
 	}
 #endif
 
-	InitializeMemoryManagement();
+	Memory::Initialize();
 
 	void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
 	// void *KernelStackAddress = StackManager.Allocate(STACK_SIZE); /* FIXME: This breaks stl tests, how? */

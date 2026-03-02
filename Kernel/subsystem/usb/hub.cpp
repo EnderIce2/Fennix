@@ -20,6 +20,8 @@
 
 #include "../../kernel.h"
 
+using namespace std::chrono_literals;
+
 namespace UniversalSerialBus
 {
 #define req ((USBDeviceRequest *)KernelData)
@@ -217,7 +219,7 @@ namespace UniversalSerialBus
 					debug("failed to power port: %d", result);
 					return result;
 				}
-				TimeManager->Sleep(Time::FromMilliseconds(Descriptor->bPwrOn2PwrGood * 2));
+				thisClock->Sleep(std::chrono::milliseconds(Descriptor->bPwrOn2PwrGood * 2));
 				debug("port %d powered", port);
 
 				result = hub->SetPortFeature(USB_PORT_RESET, 0, port + 1);
@@ -243,7 +245,7 @@ namespace UniversalSerialBus
 					break;
 				}
 
-				TimeManager->Sleep(Time::FromMilliseconds(100));
+				thisClock->Sleep(100ms);
 
 				result = hub->GetPortStatus(port + 1, status);
 				if (result != 0)

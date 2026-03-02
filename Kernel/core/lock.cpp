@@ -195,7 +195,7 @@ void LockClass::TimeoutDeadLock(SpinLockData &Lock, uint64_t Timeout)
 	if (CoreData != nullptr)
 		CCore = CoreData->ID;
 
-	uint64_t Counter = TimeManager->GetTimeNs();
+	uint64_t Counter = GlobalClock->Now();
 
 	warn("Potential deadlock in lock '%s' held by '%s'! %ld %s in queue. Interrupts are %s. Core %ld held by %ld. Timeout in %ld (%ld ticks remaining).",
 		 Lock.AttemptingToGet, Lock.CurrentHolder, Lock.Count, Lock.Count > 1 ? "locks" : "lock",
@@ -217,7 +217,7 @@ void LockClass::TimeoutDeadLock(SpinLockData &Lock, uint64_t Timeout)
 
 int LockClass::TimeoutLock(const char *FunctionName, uint64_t Timeout)
 {
-	if (!TimeManager)
+	if (!GlobalTimer)
 		return Lock(FunctionName);
 
 	LockData.AttemptingToGet.store(FunctionName);
@@ -235,7 +235,7 @@ Retry:
 	if (i >= DEADLOCK_TIMEOUT)
 	{
 		if (Target.load() == 0)
-			Target.store(TimeManager->GetTimeNs() + Timeout);
+			Target.store(GlobalClock->Now() + Timeout);
 		TimeoutDeadLock(LockData, Target.load());
 		goto Retry;
 	}

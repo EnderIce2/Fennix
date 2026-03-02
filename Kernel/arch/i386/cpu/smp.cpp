@@ -19,7 +19,7 @@
 
 #include <memory.hpp>
 #include <acpi.hpp>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <assert.h>
 #include <cpu.hpp>
 #include <atomic>

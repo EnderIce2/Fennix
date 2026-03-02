@@ -294,16 +294,16 @@ namespace KernelConsole
 
 		char prefixBuf[128];
 
-		uint64_t nano = record->TimestampNs;
-		uint64_t sec = Time::ToSeconds(nano);
-		uint64_t frac = nano % 10000000;
+		std::chrono::nanoseconds nano = std::chrono::nanoseconds(record->TimestampNs);
+		std::chrono::seconds sec = nano;
+		uint64_t frac = nano.count() % 10000000;
 
 #if defined(__amd64__) || defined(__aarch64__)
 		snprintf(prefixBuf, sizeof(prefixBuf),
-				 "\x1b[1;30m[\x1b[1;34m%lu.%07lu ", sec, frac);
+				 "\x1b[1;30m[\x1b[1;34m%lu.%07lu ", sec.count(), frac);
 #else
 		snprintf(prefixBuf, sizeof(prefixBuf),
-				 "\x1b[1;30m[\x1b[1;34m%llu.%07llu ", sec, frac);
+				 "\x1b[1;30m[\x1b[1;34m%llu.%07llu ", sec.count(), frac);
 #endif
 
 		size_t prefixLen = strlen(prefixBuf);

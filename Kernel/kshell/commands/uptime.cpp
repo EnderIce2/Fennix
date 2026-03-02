@@ -25,10 +25,9 @@ using namespace vfs;
 
 void cmd_uptime(const char *)
 {
-	if (TimeManager)
+	if (GlobalClock)
 	{
-		uint64_t Nanoseconds =
-			TimeManager->GetTimeNs();
+		uint64_t Nanoseconds = GlobalClock->Now();
 		uint64_t Seconds = Nanoseconds / 10000000;
 		uint64_t Minutes = Seconds / 60;
 		uint64_t Hours = Minutes / 60;

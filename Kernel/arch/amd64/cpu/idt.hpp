@@ -44,7 +44,7 @@ namespace InterruptDescriptorTable
 				  bool Present,
 				  uint16_t SegmentSelector);
 
-	void Init(int Core);
+	void Setup(int Core);
 }
 
 #endif // !__FENNIX_KERNEL_IDT_H__

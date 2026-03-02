@@ -27,7 +27,6 @@ using namespace Tasking;
 
 void cmd_exit(const char *)
 {
-   KernelShutdownThread(false);
-	// TaskManager->KillThread(thisThread, KILL_SUCCESS);
+	TaskManager->KillThread(thisThread, KILL_SUCCESS);
 	CPU::Halt(true);
 }

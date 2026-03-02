@@ -59,24 +59,6 @@ namespace UART
 		return inb(COM1);
 	}
 
-	void Driver::TTYWrite(uint8_t Char)
-	{
-		if (!TTYAvailable)
-			return;
-		while ((inb(static_cast<uint16_t>(COM4 + 5)) & SERIAL_BUFFER_EMPTY) == 0)
-			;
-		outb(COM4, Char);
-	}
-
-	uint8_t Driver::TTYRead()
-	{
-		if (!TTYAvailable)
-			return 0;
-		while ((inb(static_cast<uint16_t>(COM4 + 5)) & 1) == 0)
-			;
-		return inb(COM4);
-	}
-
 	Driver::Driver()
 	{
 		auto initPort = [](uint16_t Port)
@@ -112,13 +94,6 @@ namespace UART
 		{
 			initPort(COM1);
 			DebugAvailable = true;
-		}
-
-		com = inb(COM4);
-		if (com != 0xFF)
-		{
-			initPort(COM4);
-			TTYAvailable = true;
 		}
 	}
 

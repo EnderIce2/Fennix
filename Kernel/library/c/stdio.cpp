@@ -18,6 +18,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <debug.h>
+#include <kcon.hpp>
+#include <uart.hpp>
+
+extern UART::Driver uart;
 
 FILE __local_stdin = {.st = 0};
 FILE __local_stdout = {.st = 1};
@@ -26,6 +30,15 @@ FILE __local_stderr = {.st = 2};
 FILE *stdin = &__local_stdin;
 FILE *stdout = &__local_stdout;
 FILE *stderr = &__local_stderr;
+
+EXTERNC void putchar(char c)
+{
+	KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
+	if (vt != nullptr)
+		vt->Process(c);
+	else
+		uart.DebugWrite(c);
+}
 
 EXTERNC int asprintf(char **strp, const char *fmt, ...)
 {

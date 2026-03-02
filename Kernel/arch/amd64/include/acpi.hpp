@@ -22,28 +22,28 @@
 
 #include <unordered_map>
 #include <boot/binfo.h>
-#include <ints.hpp>
 #include <cpu.hpp>
+#include <irq.hpp>
 #include <vector>
 
-namespace ACPI
+namespace Platform
 {
+	struct ACPIHeader
+	{
+		unsigned char Signature[4];
+		uint32_t Length;
+		uint8_t Revision;
+		uint8_t Checksum;
+		uint8_t OEMID[6];
+		uint8_t OEMTableID[8];
+		uint32_t OEMRevision;
+		uint32_t CreatorID;
+		uint32_t CreatorRevision;
+	} __packed;
+
 	class ACPI
 	{
 	public:
-		struct ACPIHeader
-		{
-			unsigned char Signature[4];
-			uint32_t Length;
-			uint8_t Revision;
-			uint8_t Checksum;
-			uint8_t OEMID[6];
-			uint8_t OEMTableID[8];
-			uint32_t OEMRevision;
-			uint32_t CreatorID;
-			uint32_t CreatorRevision;
-		} __packed;
-
 		struct GenericAddressStructure
 		{
 			uint8_t AddressSpace;
@@ -115,7 +115,7 @@ namespace ACPI
 
 		struct MCFGHeader
 		{
-			struct ACPIHeader Header;
+			ACPIHeader Header;
 			uint64_t Reserved;
 		} __packed;
 
@@ -340,10 +340,13 @@ namespace ACPI
 
 		std::unordered_map<const char *, ACPIHeader *> Tables;
 
-		void *FindTable(ACPIHeader *ACPIHeader, char *Signature);
+		void *FindTable(ACPIHeader *Header, char *Signature);
 		void SearchTables(ACPIHeader *Header);
+
+		bool IsPresent() { return !Tables.empty(); }
+
 		ACPI();
-		~ACPI();
+		~ACPI() = default;
 	};
 
 	class MADT
@@ -404,10 +407,10 @@ namespace ACPI
 		uint16_t CPUCores;
 
 		MADT(ACPI::MADTHeader *madt);
-		~MADT();
+		~MADT() = default;
 	};
 
-	class DSDT : public Interrupts::Handler
+	class DSDT : public Interrupt::Handler
 	{
 	private:
 		uint32_t SMI_CMD = 0;
@@ -431,7 +434,7 @@ namespace ACPI
 		void Shutdown();
 
 		DSDT(ACPI *acpi);
-		~DSDT();
+		~DSDT() = default;
 	};
 }
 

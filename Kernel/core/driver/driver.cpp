@@ -20,7 +20,7 @@
 #include <interface/driver.h>
 #include <interface/input.h>
 #include <memory.hpp>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <task.hpp>
 #include <printf.h>
 #include <exec.hpp>
@@ -243,7 +243,7 @@ namespace Driver
 			{
 				for (auto &rInt : *Drv->InterruptHandlers)
 				{
-					Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))rInt.second);
+					irq.UnregisterHandler((int (*)(CPU::TrapFrame *))rInt.second);
 				}
 				Drv->InterruptHandlers->clear();
 			}

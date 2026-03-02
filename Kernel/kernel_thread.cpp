@@ -98,7 +98,7 @@ int SpawnInit()
 		return SpawnNativeInit();
 }
 
-void KernelMainThread()
+void main_thread()
 {
 	Log::LateInit();
 	thisThread->SetPriority(Tasking::Critical);
@@ -173,28 +173,7 @@ Exit:
 		 ExitCode, ExitCode < 0 ? -ExitCode : ExitCode);
 
 	klog("Dropping to kernel shell");
-	TaskManager->Sleep(Time::FromMilliseconds(1000));
+	TaskManager->Sleep((1000 * 1'000'000ULL));
 	TaskManager->CreateThread(thisProcess, Tasking::IP(KShellThread))->Rename("Kernel Shell");
 	CPU::Halt(true);
 }
-
-NewLock(ShutdownLock);
-void __no_stack_protector KernelShutdownThread(bool Reboot)
-{
-	SmartLock(ShutdownLock);
-	debug("KernelShutdownThread(%s)", Reboot ? "true" : "false");
-
-	BeforeShutdown(Reboot);
-
-	trace("%s...", Reboot ? "Rebooting" : "Shutting down");
-	klog("Waiting for ACPI...");
-	if (Reboot)
-		PowerManager->Reboot();
-	else
-		PowerManager->Shutdown();
-	klog("CPU Halted");
-	CPU::Stop();
-}
-
-void KST_Reboot() { KernelShutdownThread(true); }
-void KST_Shutdown() { KernelShutdownThread(false); }

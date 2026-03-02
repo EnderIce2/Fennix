@@ -20,18 +20,11 @@
 #include <memory.hpp>
 #include <debug.h>
 
-#include "../../kernel.h"
-
-namespace ACPI
+namespace Platform
 {
 	MADT::MADT(ACPI::MADTHeader *madt)
 	{
-		trace("Initializing MADT");
-		if (!madt)
-		{
-			error("MADT is NULL");
-			return;
-		}
+		debug("Initializing MADT");
 
 		CPUCores = 0;
 		LAPICAddress = (LAPIC *)(uintptr_t)madt->LocalControllerAddress;
@@ -46,7 +39,7 @@ namespace ACPI
 				if (ptr[4] & 1)
 				{
 					lapic.push_back((LocalAPIC *)ptr);
-					klog("Local APIC %d (APIC %d) found.", lapic.back()->ACPIProcessorId, lapic.back()->APICId);
+					debug("Local APIC %d (APIC %d) found.", lapic.back()->ACPIProcessorId, lapic.back()->APICId);
 					CPUCores++;
 				}
 				break;
@@ -54,44 +47,42 @@ namespace ACPI
 			case 1:
 			{
 				ioapic.push_back((MADTIOApic *)ptr);
-				klog("I/O APIC %d (Address %#lx) found.", ioapic.back()->APICID, ioapic.back()->Address);
+				debug("I/O APIC %d (Address %#lx) found.", ioapic.back()->APICID, ioapic.back()->Address);
 				Memory::Virtual(KernelPageTable).SingleMap((void *)(uintptr_t)ioapic.back()->Address, (void *)(uintptr_t)ioapic.back()->Address, Memory::PTFlag::RW | Memory::PTFlag::PCD); // Make sure that the address is mapped.
 				break;
 			}
 			case 2:
 			{
 				iso.push_back((MADTIso *)ptr);
-				klog("ISO (IRQ:%#lx, BUS:%#lx, GSI:%#lx, %s/%s) found.",
-					 iso.back()->IRQSource, iso.back()->BuSSource, iso.back()->GSI,
-					 iso.back()->Flags & 0x00000004 ? "Active High" : "Active Low",
-					 iso.back()->Flags & 0x00000100 ? "Edge Triggered" : "Level Triggered");
+				debug("ISO (IRQ:%#lx, BUS:%#lx, GSI:%#lx, %s/%s) found.",
+					  iso.back()->IRQSource, iso.back()->BuSSource, iso.back()->GSI,
+					  iso.back()->Flags & 0x00000004 ? "Active High" : "Active Low",
+					  iso.back()->Flags & 0x00000100 ? "Edge Triggered" : "Level Triggered");
 				break;
 			}
 			case 4:
 			{
 				nmi.push_back((MADTNmi *)ptr);
-				klog("NMI %#lx (lint:%#lx) found.", nmi.back()->processor, nmi.back()->lint);
+				debug("NMI %#lx (lint:%#lx) found.", nmi.back()->processor, nmi.back()->lint);
 				break;
 			}
 			case 5:
 			{
 				LAPICAddress = (LAPIC *)ptr;
-				klog("APIC found at %#lx", LAPICAddress);
+				debug("APIC found at %#lx", LAPICAddress);
 				break;
 			}
 			default:
 			{
-				klog("Unknown MADT entry %#lx", *(ptr));
+				debug("Unknown MADT entry %#lx", *(ptr));
 				break;
 			}
 			}
-			Memory::Virtual(KernelPageTable).SingleMap((void *)LAPICAddress, (void *)LAPICAddress, Memory::PTFlag::RW | Memory::PTFlag::PCD); // I should map more than one page?
+
+			static_assert(sizeof(LAPIC) < PAGE_SIZE);
+			Memory::Virtual().SingleMap(LAPICAddress, LAPICAddress, Memory::RW | Memory::PCD | Memory::PWT);
 		}
 		CPUCores--; // We start at 0 (BSP) and end at 11 (APs), so we have 12 cores.
-		klog("Total CPU cores: %d", CPUCores + 1);
-	}
-
-	MADT::~MADT()
-	{
+		debug("Total CPU cores: %d", CPUCores + 1);
 	}
 }

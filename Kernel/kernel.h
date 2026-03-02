@@ -39,6 +39,7 @@
 #include <smp.hpp>
 #include <usb.hpp>
 #include <log.hpp>
+#include <irq.hpp>
 #endif
 
 extern struct BootInfo bInfo;
@@ -47,26 +48,17 @@ extern bool DebuggerIsAttached;
 
 #ifdef __cplusplus
 
+extern Interrupt::Manager irq;
+extern UART::Driver uart;
 extern Video::Display *Display;
 extern SymbolResolver::Symbols *KernelSymbolTable;
 extern Power::Power *PowerManager;
-extern Time::Manager *TimeManager;
 extern PCI::Manager *PCIManager;
 extern vfs::Virtual *fs;
 extern Tasking::Task *TaskManager;
 extern Driver::Manager *DriverManager;
-extern UART::Driver uart;
 extern UniversalSerialBus::Manager *usb;
 
 #endif // __cplusplus
-
-EXTERNC void putchar(char c);
-EXTERNC void BeforeShutdown(bool Reboot);
-
-EXTERNC void KernelVFS();
-EXTERNC void KernelMainThread();
-EXTERNC void KernelShutdownThread(bool Reboot);
-EXTERNC void KST_Reboot();
-EXTERNC void KST_Shutdown();
 
 #endif // !__FENNIX_KERNEL_KERNEL_H__

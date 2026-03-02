@@ -413,7 +413,7 @@ namespace Driver::UniversalHostControllerInterface
 	}
 
 	HCD::HCD(PCI::PCIDevice &pciHeader)
-		: Interrupts::Handler(pciHeader),
+		: Interrupt::Handler(pciHeader),
 		  io((uint16_t)pciHeader.GetBAR(4)),
 		  Header(pciHeader)
 	{

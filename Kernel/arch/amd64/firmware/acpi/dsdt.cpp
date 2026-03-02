@@ -17,16 +17,12 @@
 
 #include <acpi.hpp>
 
+#include <cpu/apic.hpp>
 #include <time.hpp>
 #include <debug.h>
 #include <smp.hpp>
 #include <io.h>
 
-#if defined(__amd64__)
-#include "../arch/amd64/cpu/apic.hpp"
-#elif defined(__i386__)
-#include "../arch/i386/cpu/apic.hpp"
-#endif
 #include "../kernel.h"
 
 #define ACPI_TIMER 0x0001
@@ -40,7 +36,7 @@
 
 extern std::atomic<bool> ExceptionLock;
 
-namespace ACPI
+namespace Platform
 {
 	__always_inline inline bool IsCanonical(uint64_t Address)
 	{
@@ -114,16 +110,7 @@ namespace ACPI
 				CPU::Stop();
 			}
 
-			Tasking::PCB *pcb = thisProcess;
-			if (pcb && !pcb->GetContext()->IsPanic())
-			{
-				Tasking::Task *ctx = pcb->GetContext();
-				ctx->CreateThread(ctx->GetKernelProcess(),
-								  Tasking::IP(KST_Shutdown))
-					->Rename("Shutdown");
-			}
-			else
-				KernelShutdownThread(false);
+			PowerManager->Shutdown();
 		}
 		else if (Event & ACPI_SLEEP_BUTTON)
 		{
@@ -245,14 +232,14 @@ namespace ACPI
 		}
 	}
 
-	DSDT::DSDT(ACPI *acpi) : Interrupts::Handler(acpi->FADT->SCI_Interrupt, true)
+	DSDT::DSDT(ACPI *acpi) : Interrupt::Handler(acpi->FADT->SCI_Interrupt)
 	{
 		/* TODO: AML Interpreter */
 
 		this->acpi = acpi;
 		uint64_t Address = ((IsCanonical(acpi->FADT->X_Dsdt) && acpi->XSDTSupported) ? acpi->FADT->X_Dsdt : acpi->FADT->Dsdt);
 		uint8_t *S5Address = (uint8_t *)(Address) + 36;
-		ACPI::ACPI::ACPIHeader *Header = (ACPI::ACPI::ACPIHeader *)Address;
+		ACPIHeader *Header = (ACPIHeader *)Address;
 		Memory::Virtual vmm;
 		if (!vmm.Check(Header))
 		{
@@ -334,15 +321,11 @@ namespace ACPI
 				}
 			}
 
-			((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, uint8_t(acpi->FADT->SCI_Interrupt), 1);
+			// ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, uint8_t(acpi->FADT->SCI_Interrupt), 1);
 #endif
 			return;
 		}
 		warn("Failed to parse _S5_ in ACPI");
 		SCI_EN = 0;
-	}
-
-	DSDT::~DSDT()
-	{
 	}
 }

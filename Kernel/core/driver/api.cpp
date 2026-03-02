@@ -121,7 +121,7 @@ namespace v0
 		if (drv->InterruptHandlers->contains(IRQ))
 			return -EEXIST;
 
-		Interrupts::AddHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
+		irq.RegisterHandler((Interrupt::Handle)Handler, IRQ);
 		auto ih = drv->InterruptHandlers;
 		ih->insert(std::pair<uint8_t, void *>(IRQ, Handler));
 		return 0;
@@ -145,7 +145,7 @@ namespace v0
 					continue;
 
 				debug("Removing IRQ %d: %#lx for %s", IRQ, (uintptr_t)ih.second, drv->Path.c_str());
-				Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))ih.second, IRQ);
+				irq.UnregisterHandler((Interrupt::Handle)ih.second, IRQ);
 				drv->InterruptHandlers->erase(IRQ);
 				break;
 			}
@@ -165,7 +165,7 @@ namespace v0
 			ReturnLogError(-EINVAL, "Driver %d not found", DriverID);
 		const Driver::DriverObject *drv = &it->second;
 
-		Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, IRQ);
+		irq.UnregisterHandler((Interrupt::Handle)Handler, IRQ);
 		auto ih = drv->InterruptHandlers;
 		ih->erase(IRQ);
 		return 0;
@@ -184,7 +184,7 @@ namespace v0
 
 		for (auto &i : *drv->InterruptHandlers)
 		{
-			Interrupts::RemoveHandler((void (*)(CPU::TrapFrame *))Handler, i.first);
+			irq.UnregisterHandler((Interrupt::Handle)Handler, i.first);
 			debug("Removed IRQ %d: %#lx for %s", i.first, (uintptr_t)Handler, drv->Path.c_str());
 		}
 		auto ih = drv->InterruptHandlers;
@@ -275,8 +275,7 @@ namespace v0
 	void Sleep(dev_t DriverID, uint64_t Milliseconds)
 	{
 		dbg_api("%d, %d", DriverID, Milliseconds);
-
-		TaskManager->Sleep(Time::FromMilliseconds(Milliseconds));
+		thisClock->Sleep(std::chrono::milliseconds(Milliseconds));
 	}
 
 	/* --------- */

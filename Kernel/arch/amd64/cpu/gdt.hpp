@@ -52,7 +52,8 @@ namespace GlobalDescriptorTable
 
 	extern void *CPUStackPointer[];
 	extern TaskStateSegment tss[];
-	void Init(int Core);
+
+	void Setup(int Core);
 	void SetKernelStack(void *Stack);
 	void *GetKernelStack();
 }

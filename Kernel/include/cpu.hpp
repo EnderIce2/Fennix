@@ -56,48 +56,13 @@ namespace CPU
 		Disable
 	};
 
-	enum x86SIMDType
-	{
-		SIMD_NONE = (1 << 0),
+	void Initialize(int CoreID = 0);
 
-		SIMD_SSE = (1 << 1),
-		SIMD_SSE2 = (1 << 2),
-		SIMD_SSE3 = (1 << 3),
-		SIMD_SSSE3 = (1 << 4),
-		SIMD_SSE41 = (1 << 5),
-		SIMD_SSE42 = (1 << 6),
+	void InitializeInterrupts(int CoreID = 0);
 
-		SIMD_AVX = (1 << 7),
-		SIMD_AVX2 = (1 << 8),
-		SIMD_AVX512 = (1 << 9),
+	void InitializeTimeSources(int CoreID = 0);
 
-		SIMD_AVX512F = (1 << 10),
-		SIMD_AVX512CD = (1 << 11),
-		SIMD_AVX512ER = (1 << 12),
-		SIMD_AVX512PF = (1 << 13),
-
-		SIMD_AVX512VL = (1 << 14),
-		SIMD_AVX512DQ = (1 << 16),
-		SIMD_AVX512BW = (1 << 15),
-
-		SIMD_AVX512IFMA = (1 << 17),
-		SIMD_AVX512VBMI = (1 << 18),
-
-		SIMD_AVX5124VNNIW = (1 << 19),
-		SIMD_AVX5124FMAPS = (1 << 20),
-
-		SIMD_AVX512VPOPCNTDQ = (1 << 21),
-
-		SIMD_AVX512VNNI = (1 << 22),
-		SIMD_AVX512VBMI2 = (1 << 23),
-		SIMD_AVX512BITALG = (1 << 24),
-
-		SIMD_AVX512VP2INTERSECT = (1 << 25),
-
-		SIMD_AVX512GFNI = (1 << 26),
-		SIMD_AVX512VPCLMULQDQ = (1 << 27),
-		SIMD_AVX512VAES = (1 << 28),
-	};
+	uint32_t CurrentID();
 
 	/**
 	 * @brief Get CPU vendor identifier.
@@ -120,21 +85,27 @@ namespace CPU
 	 */
 	const char *Hypervisor();
 
-	/**
-	 * @brief Check SIMD support. It will return the highest supported SIMD type.
-	 *
-	 * @return x86SIMDType flags.
-	 */
-	uint64_t CheckSIMD();
+	/** Get CPU counter value. */
+	uint64_t Counter();
 
 	/**
-	 * @brief Check SIMD support.
+	 * @brief Check if interrupts are enabled
 	 *
-	 * @param Type SIMD type.
-	 * @return true if supported.
-	 * @return false if not supported.
+	 * @return true If InterruptsType::Check and interrupts are enabled, or if other InterruptsType were executed successfully
+	 * @return false If InterruptsType::Check and interrupts are disabled, or if other InterruptsType failed
 	 */
-	bool CheckSIMD(x86SIMDType Type);
+	bool Interrupts(InterruptsType Type = Check);
+
+	/**
+	 * @brief Get/Set the CPU's page table
+	 *
+	 * @param PT The new page table, if empty, the current page table will be returned
+	 * @return Get: The current page table
+	 * @return Set: The old page table
+	 */
+	fnx::void_t PageTable(fnx::void_t PT = nullptr);
+
+#define thisPageTable (Memory::PageTable *)CPU::PageTable()
 
 	/**
 	 * @brief Pause the CPU
@@ -183,31 +154,6 @@ namespace CPU
 #endif
 		} while (Loop);
 	}
-
-	/**
-	 * @brief Check if interrupts are enabled
-	 *
-	 * @return true If InterruptsType::Check and interrupts are enabled, or if other InterruptsType were executed successfully
-	 * @return false If InterruptsType::Check and interrupts are disabled, or if other InterruptsType failed
-	 */
-	bool Interrupts(InterruptsType Type = Check);
-
-	/**
-	 * @brief Get/Set the CPU's page table
-	 *
-	 * @param PT The new page table, if empty, the current page table will be returned
-	 * @return Get: The current page table
-	 * @return Set: The old page table
-	 */
-	fnx::void_t PageTable(fnx::void_t PT = nullptr);
-
-#define thisPageTable (Memory::PageTable *)CPU::PageTable()
-
-	/** @brief To be used only once. */
-	void InitializeFeatures(int Core);
-
-	/** @brief Get CPU counter value. */
-	uint64_t Counter();
 
 	namespace x86
 	{
@@ -676,44 +622,6 @@ namespace CPU
 
 	namespace x64
 	{
-		/**
-		 * @brief MSR_APIC_BASE structure
-		 * @see MSR_APIC_BASE
-		 */
-		typedef union
-		{
-			struct
-			{
-				/** Reserved */
-				uint64_t Reserved0 : 8;
-				/** Boot Strap CPU Core */
-				uint64_t BSC : 1;
-				/** Reserved */
-				uint64_t Reserved1 : 1;
-				/** x2APIC Mode Enable */
-				uint64_t EXTD : 1;
-				/** APIC Enable */
-				uint64_t AE : 1;
-				/** @brief APIC Base Low Address */
-				uint64_t ABALow : 20;
-				/** @brief APIC Base High Address */
-				uint64_t ABAHigh : 32;
-				/** Reserved */
-				uint64_t Reserved2 : 12;
-			};
-			uint64_t raw;
-		} __packed APIC_BASE;
-
-		typedef union
-		{
-			struct
-			{
-				uint64_t Reserved : 24;
-				uint64_t AID : 8;
-			};
-			uint32_t raw;
-		} __packed APIC_ID;
-
 		typedef union
 		{
 			struct

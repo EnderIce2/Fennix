@@ -27,13 +27,13 @@
 #include <fs/vfs.hpp>
 #include <unordered_map>
 #include <memory.hpp>
-#include <ints.hpp>
 #include <lock.hpp>
 #include <task.hpp>
 #include <ring.hpp>
 #include <debug.h>
 #include <cpu.hpp>
 #include <pci.hpp>
+#include <irq.hpp>
 #include <vector>
 #include <bitset>
 #include <elf.h>

@@ -47,27 +47,7 @@ PageTable *KernelPageTable = nullptr;
 
 MemoryAllocatorType AllocatorType = MemoryAllocatorType::liballoc11;
 
-#ifdef DEBUG
-nif void tracepagetable(PageTable *pt)
-{
-	for (int i = 0; i < 512; i++)
-	{
-#if defined(__amd64__)
-		if (pt->Entries[i].Present)
-			debug("Entry %03d: %x %x %x %x %x %x %x %p-%#llx", i,
-				  pt->Entries[i].Present, pt->Entries[i].ReadWrite,
-				  pt->Entries[i].UserSupervisor, pt->Entries[i].WriteThrough,
-				  pt->Entries[i].CacheDisable, pt->Entries[i].Accessed,
-				  pt->Entries[i].ExecuteDisable, pt->Entries[i].Address << 12,
-				  pt->Entries[i]);
-#elif defined(__i386__)
-#elif defined(__aarch64__)
-#endif
-	}
-}
-#endif
-
-nif void MapEntries(PageTable *PT)
+nif static void MapEntries(PageTable *PT)
 {
 	debug("mapping %d memory entries", bInfo.Memory.Entries);
 	Virtual vmm = Virtual(PT);
@@ -85,7 +65,7 @@ nif void MapEntries(PageTable *PT)
 	vmm.Unmap((void *)0);
 }
 
-nif void MapFramebuffer(PageTable *PT)
+nif static void MapFramebuffer(PageTable *PT)
 {
 	debug("Mapping Framebuffer");
 	Virtual vmm = Virtual(PT);
@@ -111,7 +91,7 @@ nif void MapFramebuffer(PageTable *PT)
 	}
 }
 
-nif void MapKernel(PageTable *PT)
+nif static void MapKernel(PageTable *PT)
 {
 	debug("Mapping Kernel");
 
@@ -212,125 +192,121 @@ nif void MapKernel(PageTable *PT)
 		info("Cannot determine kernel file address. Ignoring.");
 }
 
-nif void CreatePageTable(PageTable *pt)
+namespace Memory
 {
-	/* TODO: Map faster */
-	MapEntries(pt);
-	MapFramebuffer(pt);
-	MapKernel(pt);
+	nif void CreatePageTable(PageTable *pt)
+	{
+		MapEntries(pt);
+		MapFramebuffer(pt);
+		MapKernel(pt);
+	}
 
-#ifdef DEBUG
-	tracepagetable(pt);
-#endif
-}
-
-nif void InitializeMemoryManagement()
-{
+	nif void Initialize()
+	{
 #ifdef DEBUG
 #ifndef __i386__
-	for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
-	{
-		uintptr_t Base = reinterpret_cast<uintptr_t>(bInfo.Memory.Entry[i].BaseAddress);
-		size_t Length = bInfo.Memory.Entry[i].Length;
-		uintptr_t End = Base + Length;
-		const char *Type = "Unknown";
-
-		switch (bInfo.Memory.Entry[i].Type)
+		for (uint64_t i = 0; i < bInfo.Memory.Entries; i++)
 		{
-		case likely(Usable):
-			Type = "Usable";
-			break;
-		case Reserved:
-			Type = "Reserved";
-			break;
-		case ACPIReclaimable:
-			Type = "ACPI Reclaimable";
-			break;
-		case ACPINVS:
-			Type = "ACPI NVS";
-			break;
-		case BadMemory:
-			Type = "Bad Memory";
-			break;
-		case BootloaderReclaimable:
-			Type = "Bootloader Reclaimable";
-			break;
-		case KernelAndModules:
-			Type = "Kernel and Modules";
-			break;
-		case Framebuffer:
-			Type = "Framebuffer";
-			break;
-		default:
-			break;
-		}
+			uintptr_t Base = reinterpret_cast<uintptr_t>(bInfo.Memory.Entry[i].BaseAddress);
+			size_t Length = bInfo.Memory.Entry[i].Length;
+			uintptr_t End = Base + Length;
+			const char *Type = "Unknown";
 
-		debug("%02ld: %p-%p %s",
-			  i,
-			  Base,
-			  End,
-			  Type);
-	}
+			switch (bInfo.Memory.Entry[i].Type)
+			{
+			case likely(Usable):
+				Type = "Usable";
+				break;
+			case Reserved:
+				Type = "Reserved";
+				break;
+			case ACPIReclaimable:
+				Type = "ACPI Reclaimable";
+				break;
+			case ACPINVS:
+				Type = "ACPI NVS";
+				break;
+			case BadMemory:
+				Type = "Bad Memory";
+				break;
+			case BootloaderReclaimable:
+				Type = "Bootloader Reclaimable";
+				break;
+			case KernelAndModules:
+				Type = "Kernel and Modules";
+				break;
+			case Framebuffer:
+				Type = "Framebuffer";
+				break;
+			default:
+				break;
+			}
+
+			debug("%02ld: %p-%p %s",
+				  i,
+				  Base,
+				  End,
+				  Type);
+		}
 #endif // __i386__
 #endif // DEBUG
-	trace("Initializing Physical Memory Manager");
-	// KernelAllocator = Physical(); <- Already called in the constructor
-	KernelAllocator.Init();
-	debug("Memory Info:\n\n%lld MiB / %lld MiB (%lld MiB reserved)\n",
-		  TO_MiB(KernelAllocator.GetUsedMemory()),
-		  TO_MiB(KernelAllocator.GetTotalMemory() - KernelAllocator.GetReservedMemory()),
-		  TO_MiB(KernelAllocator.GetReservedMemory()));
+		trace("Initializing Physical Memory Manager");
+		// KernelAllocator = Physical(); <- Already called in the constructor
+		KernelAllocator.Init();
+		debug("Memory Info:\n\n%lld MiB / %lld MiB (%lld MiB reserved)\n",
+			  TO_MiB(KernelAllocator.GetUsedMemory()),
+			  TO_MiB(KernelAllocator.GetTotalMemory() - KernelAllocator.GetReservedMemory()),
+			  TO_MiB(KernelAllocator.GetReservedMemory()));
 
-	/* -- Debugging --
-		size_t bmap_size = KernelAllocator.GetPageBitmap().Size;
-		for (size_t i = 0; i < bmap_size; i++)
+		/* -- Debugging --
+			size_t bmap_size = KernelAllocator.GetPageBitmap().Size;
+			for (size_t i = 0; i < bmap_size; i++)
+			{
+				bool idx = KernelAllocator.GetPageBitmap().Get(i);
+				if (idx == true)
+					debug("Page %04d: %#lx", i, i * PAGE_SIZE);
+			}
+
+			inf_loop debug("Alloc.: %#lx", KernelAllocator.RequestPage());
+		*/
+
+		trace("Initializing Virtual Memory Manager");
+		KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTable)) + 1);
+		memset(KernelPageTable, 0, PAGE_SIZE);
+
+		CreatePageTable(KernelPageTable);
+
+		trace("Applying new page table from address %#lx", KernelPageTable);
+		CPU::PageTable(KernelPageTable);
+		debug("Page table updated");
+
+		/* FIXME: Read kernel params */
+		AllocatorType = Config.AllocatorType;
+
+		switch (AllocatorType)
 		{
-			bool idx = KernelAllocator.GetPageBitmap().Get(i);
-			if (idx == true)
-				debug("Page %04d: %#lx", i, i * PAGE_SIZE);
+		case MemoryAllocatorType::liballoc11:
+			break;
+		case MemoryAllocatorType::rpmalloc_:
+		{
+			rpmalloc_initialize(0);
+			// rpmalloc_config_t config = {
+			// 	.memory_map = nullptr,
+			// 	.memory_unmap = nullptr,
+			// 	.error_callback = nullptr,
+			// 	.map_fail_callback = nullptr,
+			// 	.page_size = PAGE_SIZE,
+			// 	.span_size = 4 * 1024, /* 4 KiB */
+			// 	.span_map_count = 1,
+			// 	.enable_huge_pages = 0,
+			// 	.page_name = nullptr,
+			// 	.huge_page_name = nullptr};
+			// rpmalloc_initialize_config(&config);
+			break;
 		}
-
-		inf_loop debug("Alloc.: %#lx", KernelAllocator.RequestPage());
-	*/
-
-	trace("Initializing Virtual Memory Manager");
-	KernelPageTable = (PageTable *)KernelAllocator.RequestPages(TO_PAGES(sizeof(PageTable)) + 1);
-	memset(KernelPageTable, 0, PAGE_SIZE);
-
-	CreatePageTable(KernelPageTable);
-
-	trace("Applying new page table from address %#lx", KernelPageTable);
-	CPU::PageTable(KernelPageTable);
-	debug("Page table updated.");
-
-	/* FIXME: Read kernel params */
-	AllocatorType = Config.AllocatorType;
-
-	switch (AllocatorType)
-	{
-	case MemoryAllocatorType::liballoc11:
-		break;
-	case MemoryAllocatorType::rpmalloc_:
-	{
-		trace("Using rpmalloc allocator");
-		rpmalloc_initialize(0);
-		break;
-		// rpmalloc_config_t config = {
-		// 	.memory_map = nullptr,
-		// 	.memory_unmap = nullptr,
-		// 	.error_callback = nullptr,
-		// 	.map_fail_callback = nullptr,
-		// 	.page_size = PAGE_SIZE,
-		// 	.span_size = 4 * 1024, /* 4 KiB */
-		// 	.span_map_count = 1,
-		// 	.enable_huge_pages = 0,
-		// 	.page_name = nullptr,
-		// 	.huge_page_name = nullptr};
-		// rpmalloc_initialize_config(&config);
-		// break;
-	}
-	default:
-		assert(!"Unknown allocator type");
+		default:
+			assert(!"Unknown allocator type");
+		}
 	}
 }
 
@@ -348,25 +324,15 @@ hot void *malloc(size_t Size)
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
-	void *ret = nullptr;
 	switch (AllocatorType)
 	{
 	case MemoryAllocatorType::liballoc11:
-	{
-		ret = PREFIX(malloc)(Size);
-		break;
-	}
+		return PREFIX(malloc)(Size);
 	case MemoryAllocatorType::rpmalloc_:
-	{
-		ret = rpmalloc(Size);
-		break;
-	}
+		return rpmalloc(Size);
 	default:
 		assert(!"Unknown allocator type");
 	}
-
-	memset(ret, 0, Size);
-	return ret;
 }
 
 hot void *calloc(size_t n, size_t Size)
@@ -383,25 +349,15 @@ hot void *calloc(size_t n, size_t Size)
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
-	void *ret = nullptr;
 	switch (AllocatorType)
 	{
 	case MemoryAllocatorType::liballoc11:
-	{
-		void *ret = PREFIX(calloc)(n, Size);
-		return ret;
-	}
+		return PREFIX(calloc)(n, Size);
 	case MemoryAllocatorType::rpmalloc_:
-	{
-		ret = rpcalloc(n, Size);
-		break;
-	}
+		return rpcalloc(n, Size);
 	default:
 		assert(!"Unknown allocator type");
 	}
-
-	memset(ret, 0, n * Size);
-	return ret;
 }
 
 hot void *realloc(void *Address, size_t Size)
@@ -418,25 +374,15 @@ hot void *realloc(void *Address, size_t Size)
 		   KernelSymbolTable ? KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0))
 							 : "Unknown");
 
-	void *ret = nullptr;
 	switch (AllocatorType)
 	{
 	case MemoryAllocatorType::liballoc11:
-	{
-		void *ret = PREFIX(realloc)(Address, Size);
-		return ret;
-	}
+		return PREFIX(realloc)(Address, Size);
 	case MemoryAllocatorType::rpmalloc_:
-	{
-		ret = rprealloc(Address, Size);
-		break;
-	}
+		return rprealloc(Address, Size);
 	default:
 		assert(!"Unknown allocator type");
 	}
-
-	memset(ret, 0, Size);
-	return ret;
 }
 
 hot void free(void *Address)
@@ -456,16 +402,11 @@ hot void free(void *Address)
 	switch (AllocatorType)
 	{
 	case MemoryAllocatorType::liballoc11:
-	{
-		PREFIX(free)
-		(Address);
+		PREFIX(free)(Address);
 		break;
-	}
 	case MemoryAllocatorType::rpmalloc_:
-	{
 		rpfree(Address);
 		break;
-	}
 	default:
 		assert(!"Unknown allocator type");
 	}

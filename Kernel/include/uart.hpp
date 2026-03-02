@@ -26,7 +26,6 @@ namespace UART
 	{
 	private:
 		bool DebugAvailable = false;
-		bool TTYAvailable = false;
 
 	public:
 		Driver();
@@ -34,9 +33,6 @@ namespace UART
 
 		void DebugWrite(uint8_t Char);
 		uint8_t DebugRead();
-
-		void TTYWrite(uint8_t Char);
-		uint8_t TTYRead();
 	};
 }
 

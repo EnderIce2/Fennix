@@ -28,7 +28,6 @@
 #include "../kernel.h"
 
 #if defined(__amd64__)
-#include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
@@ -179,11 +178,11 @@ namespace Tasking
 			if (process->Threads.size() == 1)
 				process->SetState(TaskState::Sleeping);
 
-			thread->Info.SleepUntil = TimeManager->GetTimeNs() + Nanoseconds;
+			thread->Info.SleepUntil = GlobalClock->Now() + Nanoseconds;
 		}
 
 		// #ifdef DEBUG
-		// 		uint64_t TicksNow = TimeManager->GetTimeNs();
+		// 		uint64_t TicksNow = GlobalClock->Now();
 		// #endif
 		// 		debug("Thread \"%s\"(%d) is going to sleep until %llu, current %llu, diff %llu",
 		// 			  thread->Name, thread->ID, thread->Info.SleepUntil,

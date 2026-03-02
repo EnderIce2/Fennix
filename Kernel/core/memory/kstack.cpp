@@ -24,7 +24,6 @@ namespace Memory
 	KernelStackManager::StackAllocation KernelStackManager::DetailedAllocate(size_t Size)
 	{
 		SmartLock(StackLock);
-		Size += 0x10;
 
 		size_t pagesNeeded = TO_PAGES(Size);
 		size_t stackSize = FROM_PAGES(pagesNeeded);
@@ -34,8 +33,7 @@ namespace Memory
 		fnx::void_t physicalAddress = KernelAllocator.RequestPages(pagesNeeded);
 		fnx::void_t virtualAddress = CurrentStackTop - stackSize;
 
-		Memory::Virtual vmm(KernelPageTable);
-		vmm.Map(virtualAddress, physicalAddress, stackSize, Memory::RW | Memory::G);
+		Memory::Virtual(KernelPageTable).Map(virtualAddress, physicalAddress, stackSize, Memory::RW | Memory::G);
 
 		AllocatedStacks.push_back({physicalAddress, virtualAddress, stackSize});
 		CurrentStackTop -= stackSize;
@@ -61,7 +59,7 @@ namespace Memory
 		Memory::Virtual(KernelPageTable).Unmap(Address, it->Size);
 		KernelAllocator.FreePages(it->PhysicalAddress, TO_PAGES(it->Size));
 
-		/* oh uhhhh... CurrentStackTop? */
+		/* FIXME: oh uhhhh... CurrentStackTop? */
 		TotalSize -= it->Size;
 		AllocatedStacks.erase(it);
 

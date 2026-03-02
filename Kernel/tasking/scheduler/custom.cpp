@@ -24,13 +24,11 @@
 #include <smp.hpp>
 #include <io.h>
 
-#include "../kernel.h"
+#include "../../kernel.h"
 
 #if defined(__amd64__)
-#include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
-#include "../arch/i386/cpu/apic.hpp"
 #include "../arch/i386/cpu/gdt.hpp"
 #elif defined(__aarch64__)
 #endif
@@ -198,39 +196,38 @@ namespace Tasking::Scheduler
 
 	void Custom::StartScheduler()
 	{
-#if defined(__amd64__)
-		if (Interrupts::apicTimer[0])
-		{
-			((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
+		thisTimer->SetOneShot(std::chrono::nanoseconds(100), Interrupt::IRQ16);
+		// if (Interrupts::apicTimer[0])
+		// {
+		// 	((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
 
-			/* FIXME: The kernel is not ready for multi-core tasking. */
-			return;
+		// 	/* FIXME: The kernel is not ready for multi-core tasking. */
+		// 	return;
 
-			APIC::InterruptCommandRegister icr{};
-			bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
+		// 	APIC::InterruptCommandRegister icr{};
+		// 	bool x2APIC = ((APIC::APIC *)Interrupts::apic[0])->x2APIC;
 
-			if (likely(x2APIC))
-			{
-				icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
-				icr.x2.MT = APIC::Fixed;
-				icr.x2.L = APIC::Assert;
-				icr.x2.DES = 0xFFFFFFFF; /* Broadcast IPI to all local APICs. */
-				((APIC::APIC *)Interrupts::apic[0])->ICR(icr);
-			}
-			else
-			{
-				icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
-				icr.MT = APIC::Fixed;
-				icr.L = APIC::Assert;
+		// 	if (likely(x2APIC))
+		// 	{
+		// 		icr.x2.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
+		// 		icr.x2.MT = APIC::Fixed;
+		// 		icr.x2.L = APIC::Assert;
+		// 		icr.x2.DES = 0xFFFFFFFF; /* Broadcast IPI to all local APICs. */
+		// 		((APIC::APIC *)Interrupts::apic[0])->ICR(icr);
+		// 	}
+		// 	else
+		// 	{
+		// 		icr.VEC = static_cast<uint8_t>(CPU::x86::IRQ16);
+		// 		icr.MT = APIC::Fixed;
+		// 		icr.L = APIC::Assert;
 
-				for (int i = 0; i < SMP::CPUCores; i++)
-				{
-					icr.DES = uint8_t(i);
-					((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
-				}
-			}
-		}
-#endif
+		// 		for (int i = 0; i < SMP::CPUCores; i++)
+		// 		{
+		// 			icr.DES = uint8_t(i);
+		// 			((APIC::APIC *)Interrupts::apic[i])->ICR(icr);
+		// 		}
+		// 	}
+		// }
 	}
 
 	hot void Custom::Yield()
@@ -282,7 +279,8 @@ namespace Tasking::Scheduler
 #endif
 
 #if defined(__amd64__) || defined(__i386__)
-		((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
+		// ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
+		thisTimer->SetOneShot(std::chrono::nanoseconds(TimeSlice), Interrupt::IRQ16);
 #elif defined(__aarch64__)
 #endif
 	}
@@ -290,7 +288,7 @@ namespace Tasking::Scheduler
 	hot nsa void Custom::UpdateUsage(TaskInfo *Info, TaskExecutionMode Mode, int Core)
 	{
 		UNUSED(Core);
-		uint64_t CurrentTime = TimeManager->GetTimeNs();
+		uint64_t CurrentTime = GlobalClock->Now();
 		uint64_t TimePassed = Info->LastUpdateTime - CurrentTime;
 		Info->LastUpdateTime = CurrentTime;
 
@@ -529,7 +527,7 @@ namespace Tasking::Scheduler
 					continue;
 
 				/* Check if the thread is ready to wake up. */
-				if (unlikely(thread->Info.SleepUntil < TimeManager->GetTimeNs()))
+				if (unlikely(thread->Info.SleepUntil < GlobalClock->Now()))
 				{
 					if (pState == TaskState::Sleeping)
 						process->State.store(TaskState::Ready);
@@ -541,7 +539,7 @@ namespace Tasking::Scheduler
 				else
 				{
 					wut_schedbg("Thread \"%s\"(%d) is not ready to wake up. (SleepUntil: %d, Counter: %d)",
-								thread->Name, thread->ID, thread->Info.SleepUntil, TimeManager->GetTimeNs());
+								thread->Name, thread->ID, thread->Info.SleepUntil, GlobalClock->Now());
 				}
 			}
 		}
@@ -574,7 +572,7 @@ namespace Tasking::Scheduler
 			return;
 		}
 		bool ProcessNotChanged = false;
-		uint64_t SchedTmpTicks = TimeManager->GetTimeNs();
+		uint64_t SchedTmpTicks = GlobalClock->Now();
 		this->LastTaskTicks.store(size_t(SchedTmpTicks - this->SchedulerTicks.load()));
 		CPUData *CurrentCPU = GetCurrentCPU();
 		this->LastCore.store(CurrentCPU->ID);
@@ -621,7 +619,7 @@ namespace Tasking::Scheduler
 				CurrentCPU->CurrentProcess->State.store(TaskState::Running);
 				CurrentCPU->CurrentThread->State.store(TaskState::Running);
 				*Frame = CurrentCPU->CurrentThread->Registers;
-				this->SchedulerTicks.store(size_t(TimeManager->GetTimeNs() - SchedTmpTicks));
+				this->SchedulerTicks.store(size_t(GlobalClock->Now() - SchedTmpTicks));
 				return;
 			}
 
@@ -696,8 +694,8 @@ namespace Tasking::Scheduler
 		CurrentCPU->CurrentProcess->Signals.HandleSignal(Frame, CurrentCPU->CurrentThread.load());
 
 		if (!ProcessNotChanged)
-			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = TimeManager->GetTimeNs();
-		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = TimeManager->GetTimeNs();
+			(&CurrentCPU->CurrentProcess->Info)->LastUpdateTime = GlobalClock->Now();
+		(&CurrentCPU->CurrentThread->Info)->LastUpdateTime = GlobalClock->Now();
 		this->OneShot(CurrentCPU->CurrentThread->Info.Priority);
 
 		if (CurrentCPU->CurrentThread->Security.IsDebugEnabled &&
@@ -720,7 +718,7 @@ namespace Tasking::Scheduler
 #endif
 		}
 
-		this->SchedulerTicks.store(size_t(TimeManager->GetTimeNs() - SchedTmpTicks));
+		this->SchedulerTicks.store(size_t(GlobalClock->Now() - SchedTmpTicks));
 	}
 
 	hot nsa nif int Custom::OnInterruptReceived(CPU::SchedulerFrame *Frame)
@@ -730,11 +728,11 @@ namespace Tasking::Scheduler
 		return EOK;
 	}
 
-	Custom::Custom(Task *ctx) : Base(ctx), Interrupts::Handler(16) /* IRQ16 */
+	Custom::Custom(Task *ctx) : Base(ctx), Interrupt::Handler(16) /* IRQ16 */
 	{
 #if defined(__amd64__) || defined(__i386__)
 		// Map the IRQ16 to the first CPU.
-		((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
+		// ((APIC::APIC *)Interrupts::apic[0])->RedirectIRQ(0, CPU::x86::IRQ16 - CPU::x86::IRQ0, 1);
 #endif
 	}
 
@@ -755,7 +753,7 @@ namespace Tasking::Scheduler
 		}
 
 		debug("Waiting for processes to terminate");
-		uint64_t timeout = TimeManager->GetTimeNs() + Time::FromSeconds(20);
+		uint64_t timeout = GlobalClock->Now() + std::chrono::seconds(20).count();
 		while (this->GetProcessList().size() > 0)
 		{
 			trace("Waiting for %d processes to terminate", this->GetProcessList().size());
@@ -777,11 +775,9 @@ namespace Tasking::Scheduler
 				break;
 
 			ctx->Sleep(1000);
-			debug("Current working process is %s(%d)",
-				  ctx->GetCurrentProcess()->Name,
-				  ctx->GetCurrentProcess()->ID);
+			debug("Current working process is %s(%d)", ctx->GetCurrentProcess()->Name, ctx->GetCurrentProcess()->ID);
 
-			if (TimeManager->GetTimeNs() > timeout)
+			if (GlobalClock->Now() > timeout)
 			{
 				error("Timeout waiting for processes to terminate");
 				break;

@@ -217,7 +217,7 @@ namespace Driver::OpenHostControllerInterface
 		~Queue();
 	};
 
-	class HCD : public Interrupts::Handler, public USBController
+	class HCD : public Interrupt::Handler, public USBController
 	{
 	private:
 		OHCIRegisters *regs;

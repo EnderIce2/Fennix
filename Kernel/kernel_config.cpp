@@ -97,9 +97,10 @@ static struct cag_option ConfigOptions[] = {
 	 .value_name = NULL,
 	 .description = "Show help on screen and halt"}};
 
-void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
+void ParseConfig(char *ConfigString)
 {
-	assert(ConfigString != NULL && ModConfig != NULL);
+	assert(ConfigString != NULL);
+
 	if (strlen(ConfigString) == 0)
 		return;
 
@@ -132,12 +133,12 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			if (strcmp(value, "liballoc11") == 0)
 			{
 				klog("Using Liballoc11 as memory allocator");
-				ModConfig->AllocatorType = Memory::liballoc11;
+				Config.AllocatorType = Memory::liballoc11;
 			}
 			else if (strcmp(value, "rpmalloc") == 0)
 			{
 				klog("Using Liballoc11 as memory allocator");
-				ModConfig->AllocatorType = Memory::rpmalloc_;
+				Config.AllocatorType = Memory::rpmalloc_;
 			}
 			break;
 		}
@@ -145,7 +146,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			klog("Using %s cores", atoi(value) ? value : "all");
-			ModConfig->Cores = atoi(value);
+			Config.Cores = atoi(value);
 			break;
 		}
 		case 'p':
@@ -153,7 +154,7 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			value = cag_option_get_value(&context);
 			klog("Redirecting I/O APIC interrupts to %s%s",
 				 atoi(value) ? "core " : "", atoi(value) ? value : "BSP");
-			ModConfig->IOAPICInterruptCore = atoi(value);
+			Config.IOAPICInterruptCore = atoi(value);
 			break;
 		}
 		case 't':
@@ -162,31 +163,31 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 			if (strcmp(value, "multi") == 0)
 			{
 				klog("Using Multi-Tasking Scheduler");
-				ModConfig->SchedulerType = Multi;
+				Config.SchedulerType = Multi;
 			}
 			else if (strcmp(value, "single") == 0)
 			{
 				klog("Using Single-Tasking Scheduler");
-				ModConfig->SchedulerType = Mono;
+				Config.SchedulerType = Mono;
 			}
 			else
 			{
 				klog("Unknown scheduler: %s", value);
-				ModConfig->SchedulerType = Multi;
+				Config.SchedulerType = Multi;
 			}
 			break;
 		}
 		case 'd':
 		{
 			value = cag_option_get_value(&context);
-			strncpy(ModConfig->DriverDirectory, value, strlen(value));
+			strncpy(Config.DriverDirectory, value, strlen(value));
 			klog("Using %s as module directory", value);
 			break;
 		}
 		case 'i':
 		{
 			value = cag_option_get_value(&context);
-			strncpy(ModConfig->InitPath, value, strlen(value));
+			strncpy(Config.InitPath, value, strlen(value));
 			klog("Using %s as init program", value);
 			break;
 		}
@@ -194,8 +195,8 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0
-				? ModConfig->LinuxSubsystem = true
-				: ModConfig->LinuxSubsystem = false;
+				? Config.LinuxSubsystem = true
+				: Config.LinuxSubsystem = false;
 			klog("Use Linux Subsystem by default: %s", value);
 			break;
 		}
@@ -203,8 +204,8 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0
-				? ModConfig->InterruptsOnCrash = true
-				: ModConfig->InterruptsOnCrash = false;
+				? Config.InterruptsOnCrash = true
+				: Config.InterruptsOnCrash = false;
 			klog("Interrupts on crash: %s", value);
 			break;
 		}
@@ -212,24 +213,24 @@ void ParseConfig(char *ConfigString, KernelConfig *ModConfig)
 		{
 			value = cag_option_get_value(&context);
 			strcmp(value, "true") == 0
-				? ModConfig->UnlockDeadLock = true
-				: ModConfig->UnlockDeadLock = false;
+				? Config.UnlockDeadLock = true
+				: Config.UnlockDeadLock = false;
 			klog("Unlocking the deadlock after 10 retries");
 			break;
 		}
 		case 's':
 		{
 			value = cag_option_get_value(&context);
-			strcmp(value, "true") == 0 ? ModConfig->SIMD = true
-									   : ModConfig->SIMD = false;
+			strcmp(value, "true") == 0 ? Config.SIMD = true
+									   : Config.SIMD = false;
 			klog("Single Instruction, Multiple Data (SIMD): %s", value);
 			break;
 		}
 		case 'b':
 		{
 			value = cag_option_get_value(&context);
-			strcmp(value, "true") == 0 ? ModConfig->Quiet = true
-									   : ModConfig->Quiet = false;
+			strcmp(value, "true") == 0 ? Config.Quiet = true
+									   : Config.Quiet = false;
 			klog("Quiet boot: %s", value);
 			break;
 		}

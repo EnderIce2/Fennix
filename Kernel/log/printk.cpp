@@ -116,11 +116,11 @@ namespace Log
 		int len = vsnprintf(localBuffer, sizeof(localBuffer), Format, args);
 		va_end(args);
 
-		/* FIXME: make sure that GetCurrentCPU and TimeManager->GetTimeNs won't create a call loop */
+		/* FIXME: make sure that GetCurrentCPU and GlobalClock won't create a call loop */
 
 		LogRecord record;
 		record.Sequence = SequenceCounter.fetch_add(1, std::memory_order_relaxed);
-		record.TimestampNs = TimeManager ? TimeManager->GetTimeNs() : 0;
+		record.TimestampNs = GlobalClock ? GlobalClock->Now() : 0;
 		record.CpuID = GetCurrentCPU()->ID;
 		record.ThreadID = GetCurrentCPU()->CurrentThread ? GetCurrentCPU()->CurrentThread->ID : 0;
 		record.Level = Level;
@@ -132,8 +132,8 @@ namespace Log
 		record.Message[record.MessageLength] = '\0';
 
 		AddRecord(record);
-		if (EarlyLogging)
-			Dispatch(record);
+		// if (EarlyLogging)
+		Dispatch(record);
 	}
 
 	void EarlyInit()
@@ -141,16 +141,19 @@ namespace Log
 		Log::RegisterSink(UARTWrite);
 	}
 
-	void MemoryInit()
+	void MemoryInit(int CoreID)
 	{
-		CPUData *cpu = GetCurrentCPU();
+		CPUData *cpu = GetCPU(CoreID);
 		cpu->LogEntries = 256;
 		cpu->LogRecords = new LogRecord[cpu->LogEntries];
+		memset(cpu->LogRecords, 0, sizeof(LogRecord) * cpu->LogEntries);
 		cpu->LogWriteIndex.store(0, std::memory_order_relaxed);
 
 		static int MovedToHeap = 0; /* this is thread-safe, changed only on CPU 0 */
 		if (!MovedToHeap++)
 		{
+			EarlyLogging = false;
+
 			/* Flush early logs to the new buffers */
 			for (size_t i = 0; i < EARLY_LOG_CAP; i++)
 			{

@@ -20,7 +20,7 @@
 #include <fs/ustar.hpp>
 #include <memory.hpp>
 #include <convert.h>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <printf.h>
 #include <lock.hpp>
 #include <kcon.hpp>
@@ -29,7 +29,6 @@
 #include <cargs.h>
 #include <io.h>
 
-#include "core/smbios.hpp"
 #include "tests/t.h"
 
 bool DebuggerIsAttached = false;
@@ -51,28 +50,21 @@ struct KernelConfig Config = {
 	.Quiet = false,
 };
 
+Interrupt::Manager irq;
+UART::Driver uart;
 Video::Display *Display = nullptr;
 SymbolResolver::Symbols *KernelSymbolTable = nullptr;
 Power::Power *PowerManager = nullptr;
-Time::Manager *TimeManager = nullptr;
 Tasking::Task *TaskManager = nullptr;
 PCI::Manager *PCIManager = nullptr;
 Driver::Manager *DriverManager = nullptr;
-UART::Driver uart;
 UniversalSerialBus::Manager *usb = nullptr;
 
-EXTERNC void putchar(char c)
-{
-	KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
-	if (vt != nullptr)
-		vt->Process(c);
-	else
-		uart.DebugWrite(c);
-}
+void main_thread();
+void KernelVFS();
 
 int main()
 {
-	Log::MemoryInit();
 	Display = new Video::Display(bInfo.Framebuffer[0]);
 	KernelConsole::EarlyInit();
 	printf("\x1b[H\x1b[2J");
@@ -87,9 +79,6 @@ int main()
 		warn("\x1b[1;31mMinimum supported resolution is 640x480!");
 		warn("\x1b[1;31mSome elements may not be displayed correctly.");
 	}
-
-	if (DebuggerIsAttached)
-		klog("Kernel debugger detected.");
 
 #if defined(__amd64__) || defined(__i386__) && defined(DEBUG)
 	debug("CPU: %s %s %s", CPU::Hypervisor(), CPU::Vendor(), CPU::Name());
@@ -155,13 +144,7 @@ int main()
 	/**************************************************************************************/
 
 	klog("Reading Kernel Parameters");
-	ParseConfig((char *)bInfo.Kernel.CommandLine, &Config);
-
-	klog("Initializing CPU Features");
-	CPU::InitializeFeatures(0);
-
-	klog("Initializing GDT and IDT");
-	Interrupts::Initialize(0);
+	ParseConfig(bInfo.Kernel.CommandLine);
 
 	klog("Loading Kernel Symbols");
 	KernelSymbolTable = new SymbolResolver::Symbols((uintptr_t)bInfo.Kernel.FileBase);
@@ -175,26 +158,8 @@ int main()
 	klog("Initializing Power Manager");
 	PowerManager = new Power::Power;
 
-	klog("Enabling Interrupts on Bootstrap Processor");
-	Interrupts::Enable(0);
-
-#if defined(__amd64__) || defined(__i386__)
-	PowerManager->InitDSDT();
-#elif defined(__aarch64__)
-#endif
-
-	klog("Initializing Timers");
-	TimeManager = new Time::Manager(PowerManager->GetACPI());
-	TimeManager->InitializeTimers();
-
 	klog("Initializing PCI Manager");
 	PCIManager = new PCI::Manager;
-
-	klog("Initializing Bootstrap Processor Timer");
-	Interrupts::InitializeTimer(0);
-
-	klog("Initializing SMP");
-	SMP::Initialize(PowerManager->GetMADT());
 
 	klog("Initializing Filesystem");
 	KernelVFS();
@@ -204,48 +169,7 @@ int main()
 #endif
 
 	klog("\x1b[1;32m################################");
-	TaskManager = new Tasking::Task(Tasking::IP(KernelMainThread));
+	TaskManager = new Tasking::Task(Tasking::IP(main_thread));
 	TaskManager->StartScheduler();
 	CPU::Halt(true);
 }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
-extern "C" void __cxa_finalize(void *);
-extern "C" int _fini();
-
-EXTERNC __no_stack_protector void BeforeShutdown(bool Reboot)
-{
-	/* TODO: Announce shutdown */
-
-	trace("\n\n\n#################### SYSTEM SHUTTING DOWN ####################\n\n");
-
-	klog("%s...", Reboot ? "Rebooting" : "Shutting down");
-
-	klog("Stopping network interfaces");
-
-	klog("Unloading all drivers");
-	if (DriverManager)
-		DriverManager->UnloadAllDrivers();
-
-	klog("Stopping scheduling");
-	if (TaskManager && !TaskManager->IsPanic())
-	{
-		TaskManager->SignalShutdown();
-		delete TaskManager, TaskManager = nullptr;
-	}
-
-	klog("Unloading filesystems");
-	if (fs)
-		delete fs, fs = nullptr;
-
-	klog("Stopping USB Manager");
-	if (usb)
-		delete usb, usb = nullptr;
-
-	klog("Calling destructors");
-	_fini();
-	__cxa_finalize(nullptr);
-	debug("Done.");
-}
-#pragma GCC diagnostic pop

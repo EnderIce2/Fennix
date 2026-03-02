@@ -15,8 +15,7 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef __FENNIX_KERNEL_KERNEL_CONFIG_H__
-#define __FENNIX_KERNEL_KERNEL_CONFIG_H__
+#pragma once
 
 #include <types.h>
 #include <memory.hpp>
@@ -42,6 +41,4 @@ struct KernelConfig
 	bool Quiet;
 };
 
-void ParseConfig(char *ConfigString, KernelConfig *ModConfig);
-
-#endif // !__FENNIX_KERNEL_KERNEL_CONFIG_H__
+void ParseConfig(char *ConfigString);

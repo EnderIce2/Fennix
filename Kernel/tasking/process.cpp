@@ -28,7 +28,6 @@
 #include "../kernel.h"
 
 #if defined(__amd64__)
-#include "../arch/amd64/cpu/apic.hpp"
 #include "../arch/amd64/cpu/gdt.hpp"
 #elif defined(__i386__)
 #include "../arch/i386/cpu/apic.hpp"
@@ -251,7 +250,7 @@ namespace Tasking
 		this->AllocatedMemory += sizeof(Memory::ProgramBreak);
 		this->AllocatedMemory += sizeof(SymbolResolver::Symbols);
 
-		this->Info.SpawnTime = TimeManager->GetTimeNs();
+		this->Info.SpawnTime = GlobalClock->Now();
 
 		if (Parent)
 			Parent->Children.push_back(this);

@@ -65,7 +65,7 @@ namespace Log
 	void EarlyInit();
 
 	/* allocates from heap memory in CPUData, called per-core */
-	void MemoryInit();
+	void MemoryInit(int CoreID = 0);
 
 	/* after everything is done, (sched, vfs, etc...) */
 	void LateInit();

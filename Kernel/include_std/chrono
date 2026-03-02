@@ -29,7 +29,6 @@ namespace std
 		{
 		private:
 			Rep _rep;
-			std::ratio<Period::num, Period::den> _period;
 
 		public:
 			using rep = Rep;
@@ -42,7 +41,24 @@ namespace std
 			constexpr explicit duration(const Rep2 &r) { _rep = r; }
 
 			template <class Rep2, class Period2>
-			constexpr duration(const duration<Rep2, Period2> &d);
+			constexpr duration(const duration<Rep2, Period2> &d)
+			{
+				using CF = std::ratio_divide<Period2, Period>;
+				using CR = std::common_type_t<Rep, Rep2, intmax_t>;
+
+				CR count = static_cast<CR>(d.count());
+				CR num = static_cast<CR>(CF::num);
+				CR den = static_cast<CR>(CF::den);
+
+				if constexpr (CF::num == 1 && CF::den == 1)
+					_rep = static_cast<Rep>(count);
+				else if constexpr (CF::den == 1)
+					_rep = static_cast<Rep>(count * num);
+				else if constexpr (CF::num == 1)
+					_rep = static_cast<Rep>(count / den);
+				else
+					_rep = static_cast<Rep>(count * num / den);
+			}
 
 			duration &operator=(const duration &other) = default;
 

@@ -75,23 +75,65 @@ EXTERNC int strncmp(const char *s1, const char *s2, size_t n)
 
 EXTERNC size_t strlen(const char s[])
 {
-	if (Config.SIMD)
-	{
-		uint64_t simd = CPU::CheckSIMD();
-		if (simd & CPU::x86SIMDType::SIMD_SSE42)
-			return strlen_sse4_2(s);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE41)
-			return strlen_sse4_1(s);
-		else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
-			return strlen_ssse3(s);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE3)
-			return strlen_sse3(s);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE2)
-			return strlen_sse2(s);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE)
-			return strlen_sse(s);
-	}
-	return __strlen(s);
+#if defined(__amd64__) || defined(__i386__)
+	size_t ret = (size_t)s;
+
+	asmv("._strlenLoop:"
+		 "cmpb $0, 0(%1)\n"
+		 "jz ._strlenExit\n"
+		 "cmpb $0, 1(%1)\n"
+		 "jz .scmp1\n"
+		 "cmpb $0, 2(%1)\n"
+		 "jz .scmp2\n"
+		 "cmpb $0, 3(%1)\n"
+		 "jz .scmp3\n"
+		 "cmpb $0, 4(%1)\n"
+		 "jz .scmp4\n"
+		 "cmpb $0, 5(%1)\n"
+		 "jz .scmp5\n"
+		 "cmpb $0, 6(%1)\n"
+		 "jz .scmp6\n"
+		 "cmpb $0, 7(%1)\n"
+		 "jz .scmp7\n"
+
+		 "add $8, %1\n"
+		 "jmp ._strlenLoop\n"
+
+		 ".scmp1:"
+		 "inc %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp2:"
+		 "add $2, %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp3:"
+		 "add $3, %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp4:"
+		 "add $4, %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp5:"
+		 "add $5, %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp6:"
+		 "add $6, %1\n"
+		 "jmp ._strlenExit\n"
+		 ".scmp7:"
+		 "add $7, %1\n"
+
+		 "._strlenExit:"
+		 "mov %1, %0\n" : "=r"(ret) : "0"(ret));
+
+	return ret - (size_t)s;
+#else
+	const char *ptr = s;
+	if (s == NULL)
+		return 0;
+
+	while (*ptr != '\0')
+		ptr++;
+
+	return ptr - s;
+#endif
 }
 
 EXTERNC char *strcat_unsafe(char *destination, const char *source)
@@ -869,33 +911,7 @@ EXTERNC __no_stack_protector void *__memcpy_chk(void *dest, const void *src, siz
 	if (unlikely(len > slen))
 		__chk_fail();
 
-	void *ret = nullptr;
-	if (Config.SIMD)
-	{
-		uint64_t simd = CPU::CheckSIMD();
-		if (simd & CPU::x86SIMDType::SIMD_SSE42)
-			ret = memcpy_sse4_2(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE41)
-			ret = memcpy_sse4_1(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
-			ret = memcpy_ssse3(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE3)
-			ret = memcpy_sse3(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE2)
-			ret = memcpy_sse2(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE)
-			ret = memcpy_sse(dest, src, len);
-		else
-			ret = memcpy_unsafe(dest, src, len);
-	}
-	else
-	{
-		static int once = 0;
-		if (!once++)
-			fixme("SIMD memcpy disabled");
-		ret = memcpy_unsafe(dest, src, len);
-	}
-	return ret;
+	return memcpy_unsafe(dest, src, len);
 }
 
 EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len, size_t slen)
@@ -933,33 +949,7 @@ EXTERNC __no_stack_protector void *__memset_chk(void *dest, int val, size_t len,
 	if (unlikely(len > slen))
 		__chk_fail();
 
-	void *ret = nullptr;
-	if (Config.SIMD)
-	{
-		uint64_t simd = CPU::CheckSIMD();
-		if (simd & CPU::x86SIMDType::SIMD_SSE42)
-			ret = memset_sse4_2(dest, val, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE41)
-			ret = memset_sse4_1(dest, val, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
-			ret = memset_ssse3(dest, val, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE3)
-			ret = memset_sse3(dest, val, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE2)
-			ret = memset_sse2(dest, val, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE)
-			ret = memset_sse(dest, val, len);
-		else
-			ret = memset_unsafe(dest, val, len);
-	}
-	else
-	{
-		static int once = 0;
-		if (!once++)
-			fixme("SIMD memset disabled");
-		ret = memset_unsafe(dest, val, len);
-	}
-	return ret;
+	return memset_unsafe(dest, val, len);
 }
 
 EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, size_t len, size_t slen)
@@ -1007,33 +997,7 @@ EXTERNC __no_stack_protector void *__memmove_chk(void *dest, const void *src, si
 	if (unlikely(len > slen))
 		__chk_fail();
 
-	void *ret = nullptr;
-	if (Config.SIMD)
-	{
-		uint64_t simd = CPU::CheckSIMD();
-		if (simd & CPU::x86SIMDType::SIMD_SSE42)
-			ret = memmove_sse4_2(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE41)
-			ret = memmove_sse4_1(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSSE3)
-			ret = memmove_ssse3(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE3)
-			ret = memmove_sse3(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE2)
-			ret = memmove_sse2(dest, src, len);
-		else if (simd & CPU::x86SIMDType::SIMD_SSE)
-			ret = memmove_sse(dest, src, len);
-		else
-			ret = memmove_unsafe(dest, src, len);
-	}
-	else
-	{
-		static int once = 0;
-		if (!once++)
-			fixme("SIMD memmove disabled");
-		ret = memmove_unsafe(dest, src, len);
-	}
-	return ret;
+	return memmove_unsafe(dest, src, len);
 }
 
 EXTERNC __no_stack_protector char *__strcat_chk(char *dest, const char *src, size_t slen)

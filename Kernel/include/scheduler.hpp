@@ -104,8 +104,7 @@ namespace Tasking::Scheduler
 		~Base() {}
 	};
 
-	class Custom : public Base,
-				   public Interrupts::Handler
+	class Custom : public Base, public Interrupt::Handler
 	{
 	private:
 		NewLock(SchedulerLock);
@@ -149,8 +148,7 @@ namespace Tasking::Scheduler
 		virtual ~Custom();
 	};
 
-	class RoundRobin : public Base,
-					   public Interrupts::Handler
+	class RoundRobin : public Base, public Interrupt::Handler
 	{
 	};
 }

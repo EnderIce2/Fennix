@@ -21,7 +21,7 @@
 #include <interface/input.h>
 #include <memory.hpp>
 #include <stropts.h>
-#include <ints.hpp>
+#include <irq.hpp>
 #include <task.hpp>
 #include <printf.h>
 #include <exec.hpp>

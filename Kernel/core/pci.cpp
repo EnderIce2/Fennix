@@ -1187,40 +1187,4 @@ namespace PCI
 		}
 		return DeviceFound;
 	}
-
-	Manager::Manager()
-	{
-#if defined(__amd64__) || defined(__i386__)
-		if (!PowerManager->GetACPI())
-		{
-			error("ACPI not found");
-			return;
-		}
-
-		if (!((ACPI::ACPI *)PowerManager->GetACPI())->MCFG)
-		{
-			error("MCFG not found");
-			return;
-		}
-
-		int Entries = static_cast<int>(((((ACPI::ACPI *)PowerManager->GetACPI())->MCFG->Header.Length) - sizeof(ACPI::ACPI::MCFGHeader)) / sizeof(DeviceConfig));
-		Memory::Virtual vmm(KernelPageTable);
-		for (int t = 0; t < Entries; t++)
-		{
-			DeviceConfig *NewDeviceConfig = (DeviceConfig *)((uintptr_t)((ACPI::ACPI *)PowerManager->GetACPI())->MCFG + sizeof(ACPI::ACPI::MCFGHeader) + (sizeof(DeviceConfig) * t));
-			vmm.SingleMap((void *)NewDeviceConfig->BaseAddress, (void *)NewDeviceConfig->BaseAddress, Memory::PTFlag::RW);
-			debug("PCI Entry %d Address:%p BUS:%#x-%#x", t, NewDeviceConfig->BaseAddress,
-				  NewDeviceConfig->StartBus, NewDeviceConfig->EndBus);
-
-			PCIDevice dev{};
-			dev.Config = NewDeviceConfig;
-			for (uint32_t Bus = NewDeviceConfig->StartBus; Bus < NewDeviceConfig->EndBus; Bus++)
-				EnumerateBus(NewDeviceConfig->BaseAddress, Bus, dev);
-		}
-#elif defined(__aarch64__)
-		error("PCI not implemented on aarch64");
-#endif
-	}
-
-	Manager::~Manager() {}
 }

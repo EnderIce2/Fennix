@@ -626,7 +626,7 @@ namespace Driver::UniversalHostControllerInterface
 		~TransferQueue();
 	};
 
-	class HCD : public Interrupts::Handler, public USBController
+	class HCD : public Interrupt::Handler, public USBController
 	{
 	private:
 		uint16_t io;

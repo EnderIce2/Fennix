@@ -35,7 +35,7 @@ namespace Memory
 		NewLock(StackLock);
 		std::list<StackAllocation> AllocatedStacks;
 		size_t TotalSize = 0;
-		uintptr_t CurrentStackTop = KERNEL_STACK_TOP;
+		fnx::void_t CurrentStackTop = KERNEL_STACK_TOP;
 
 	public:
 		/**

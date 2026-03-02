@@ -70,23 +70,23 @@ void readdir_sanity_tests()
 
 	klog("TEST /");
 	TestReadDirectory(t0);
-	TaskManager->Sleep(Time::FromMilliseconds(2000));
+	TaskManager->Sleep((2000 * 1'000'000ULL));
 
 	klog("TEST /dev");
 	TestReadDirectory(t1);
-	TaskManager->Sleep(Time::FromMilliseconds(2000));
+	TaskManager->Sleep((2000 * 1'000'000ULL));
 
 	klog("TEST /home");
 	TestReadDirectory(t2);
-	TaskManager->Sleep(Time::FromMilliseconds(2000));
+	TaskManager->Sleep((2000 * 1'000'000ULL));
 
 	klog("TEST /var");
 	TestReadDirectory(t3);
-	TaskManager->Sleep(Time::FromMilliseconds(2000));
+	TaskManager->Sleep((2000 * 1'000'000ULL));
 
 	klog("TEST /tmp");
 	TestReadDirectory(t4);
-	TaskManager->Sleep(Time::FromMilliseconds(2000));
+	TaskManager->Sleep((2000 * 1'000'000ULL));
 
 	CPU::Stop();
 }

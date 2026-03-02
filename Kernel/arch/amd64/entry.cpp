@@ -18,97 +18,81 @@
 #include <types.h>
 
 #include <boot/binfo.h>
+#include <cpu/apic.hpp>
 #include <memory.hpp>
 #include <convert.h>
+#include <acpi.hpp>
+#include <time.hpp>
 #include <log.hpp>
 #include <cpu.hpp>
+#include <smp.hpp>
 #include <efi.h>
 #include <io.h>
 
 extern struct BootInfo bInfo;
 extern bool DebuggerIsAttached;
 
+int main();
 void Test_stl();
 void TestMemoryAllocation();
-int main();
+void *FindSMBIOS();
+BootInfo::RSDPInfo *FindRSDP();
 extern "C" int _init();
-EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable);
+extern "C" int _fini();
+extern "C" void __cxa_finalize(void *);
+
+Platform::ACPI *ACPIManager = nullptr;
+Platform::MADT *MADTManager = nullptr;
+Platform::DSDT *DSDTManager = nullptr;
+APIC::APIC *APICManager = nullptr;
 
 extern "C" __no_stack_protector nif cold void KernelEntry(BootInfo *Info)
 {
 	Log::EarlyInit();
 	memcpy(&bInfo, Info, sizeof(BootInfo));
 
-	_init();
-
 	if (strcmp(CPU::Hypervisor(), x86_CPUID_VENDOR_TCG) == 0)
 		DebuggerIsAttached = true;
 
-	if (bInfo.EFI.Info.IH || bInfo.EFI.Info.ST)
-		efi_main((EFI_HANDLE)bInfo.EFI.ImageHandle, (EFI_SYSTEM_TABLE *)bInfo.EFI.SystemTable);
-
-#if defined(__amd64__) || defined(__i386__)
-	if (!bInfo.SMBIOSPtr)
+	if (bInfo.SMBIOSPtr == nullptr)
 	{
-		trace("SMBIOS was not provided by the bootloader. Trying to find it manually.");
-		for (uintptr_t i = 0xF0000; i < 0x100000; i += 16)
-		{
-			if (memcmp((void *)i, "_SM_", 4) == 0 ||
-				memcmp((void *)i, "_SM3_", 5) == 0)
-			{
-				bInfo.SMBIOSPtr = (void *)i;
-				trace("Found SMBIOS at %#lx", i);
-			}
-		}
+		warn("SMBIOS was not provided by the bootloader. Trying to find it manually.");
+		bInfo.SMBIOSPtr = FindSMBIOS();
 	}
 
-	if (!bInfo.RSDP)
+	if (bInfo.RSDP == nullptr)
 	{
-		trace("RSDP was not provided by the bootloader. Trying to find it manually.");
-		/* FIXME: Not always shifting by 4 will work. */
-		uintptr_t EBDABase = (uintptr_t)mminw((void *)0x40E) << 4;
-
-		for (uintptr_t ptr = EBDABase;
-			 ptr < 0x100000; /* 1MB */
-			 ptr += 16)
-		{
-			if (unlikely(ptr == EBDABase + 0x400))
-			{
-				trace("EBDA is full. Trying to find RSDP in the BIOS area.");
-				break;
-			}
-
-			BootInfo::RSDPInfo *rsdp = (BootInfo::RSDPInfo *)ptr;
-			if (memcmp(rsdp->Signature, "RSD PTR ", 8) == 0)
-			{
-				bInfo.RSDP = (BootInfo::RSDPInfo *)rsdp;
-				trace("Found RSDP at %#lx", rsdp);
-			}
-		}
-
-		for (uintptr_t ptr = 0xE0000;
-			 ptr < 0x100000; /* 1MB */
-			 ptr += 16)
-		{
-			BootInfo::RSDPInfo *rsdp = (BootInfo::RSDPInfo *)ptr;
-			if (memcmp(rsdp->Signature, "RSD PTR ", 8) == 0)
-			{
-				bInfo.RSDP = (BootInfo::RSDPInfo *)rsdp;
-				trace("Found RSDP at %#lx", rsdp);
-			}
-		}
+		warn("RSDP was not provided by the bootloader. Trying to find it manually.");
+		bInfo.RSDP = FindRSDP();
 	}
-#endif
 
-	InitializeMemoryManagement();
+	_init();
 
-	void *KernelStackAddress = KernelAllocator.RequestPages(TO_PAGES(STACK_SIZE));
-	// void *KernelStackAddress = StackManager.Allocate(STACK_SIZE); /* FIXME: This breaks stl tests, how? */
-	uintptr_t KernelStack = (uintptr_t)KernelStackAddress + STACK_SIZE - 0x10;
-	debug("Kernel stack: %#lx-%#lx", KernelStackAddress, KernelStack);
+	Memory::Initialize();
 
-	asmv("mov %0, %%rsp" : : "r"(KernelStack) : "memory");
+	klog("Initializing CPU");
+	CPU::Initialize();
+
+	/* "Stack" is initialized in CPU::Initialize */
+	asmv("mov %0, %%rsp" : : "r"(GetCPU(0)->Stack) : "memory");
 	asmv("mov $0, %rbp");
+
+	klog("Initializing ACPI");
+	ACPIManager = new Platform::ACPI;
+	if (ACPIManager->IsPresent())
+	{
+		MADTManager = new Platform::MADT(ACPIManager->MADT);
+		DSDTManager = new Platform::DSDT(ACPIManager);
+	}
+	else
+		delete ACPIManager, ACPIManager = nullptr;
+
+	klog("Initializing Interrupts");
+	CPU::InitializeInterrupts();
+	klog("Initializing Timer & Clock Sources");
+	CPU::InitializeTimeSources();
+	klog("Initializing SMP");
+	SMP::Initialize();
 
 #ifdef DEBUG
 	/* I had to do this because KernelAllocator
@@ -118,5 +102,12 @@ extern "C" __no_stack_protector nif cold void KernelEntry(BootInfo *Info)
 	TestMemoryAllocation();
 	Test_stl();
 #endif // DEBUG
+
 	main();
+}
+
+cold void KernelExit()
+{
+	_fini();
+	__cxa_finalize(nullptr);
 }

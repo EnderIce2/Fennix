@@ -30,25 +30,22 @@ public:
 	AutoSwitchPageTable()
 	{
 #if defined(__amd64__) || defined(__i386__)
-		asmv("mov %%cr3, %0"
-			 : "=r"(Original));
+		asmv("mov %%cr3, %0" : "=r"(Original));
 
-		asmv("mov %0, %%cr3"
-			 :
-			 : "r"(KernelPageTable));
-		debug(" +    %#lx %s(%d)", Original,
-			  thisProcess->Name, thisProcess->ID);
+		asmv("mov %0, %%cr3" : : "r"(KernelPageTable));
+		debug(" +    %#lx %s(%d)", Original, thisProcess->Name, thisProcess->ID);
+#else
+#warning "AutoSwitchPageTable() not implemented for this architecture"
 #endif
 	}
 
 	~AutoSwitchPageTable()
 	{
 #if defined(__amd64__) || defined(__i386__)
-		debug("-    %#lx %s(%d)", Original,
-			  thisProcess->Name, thisProcess->ID);
-		asmv("mov %0, %%cr3"
-			 :
-			 : "r"(Original));
+		debug("-    %#lx %s(%d)", Original, thisProcess->Name, thisProcess->ID);
+		asmv("mov %0, %%cr3" : : "r"(Original));
+#else
+#warning "~AutoSwitchPageTable() not implemented for this architecture"
 #endif
 	}
 };
@@ -59,7 +56,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 		and switch back when this function returns. */
 	AutoSwitchPageTable PageSwitcher;
 
-	uint64_t _ctime = TimeManager->GetTimeNs();
+	uint64_t _ctime = GlobalClock->Now();
 	Tasking::TaskInfo *Ptinfo = &thisProcess->Info;
 	Tasking::TaskInfo *Ttinfo = &thisThread->Info;
 	uintptr_t ret;
@@ -97,7 +94,7 @@ extern "C" uintptr_t SystemCallsHandler(SyscallsFrame *Frame)
 	}
 
 Ret:
-	Ptinfo->KernelTime += TimeManager->GetTimeNs() - _ctime;
-	Ttinfo->KernelTime += TimeManager->GetTimeNs() - _ctime;
+	Ptinfo->KernelTime += GlobalClock->Now() - _ctime;
+	Ttinfo->KernelTime += GlobalClock->Now() - _ctime;
 	return ret;
 }

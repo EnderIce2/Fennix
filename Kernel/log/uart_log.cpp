@@ -60,8 +60,9 @@ namespace Log
 			return;
 		case LogLevelUbsan:
 		{
-			DbgLvlString = "UBSAN";
-			fctprintf(uart_wrapper, nullptr, "%s| ", DbgLvlString);
+			for (uint32_t i = 0; i < record->MessageLength; ++i)
+				uart.DebugWrite(record->Message[i]);
+			uart.DebugWrite('\n');
 			return;
 		}
 		default:

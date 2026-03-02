@@ -120,7 +120,7 @@ namespace GlobalDescriptorTable
 
 	void *CPUStackPointer[MAX_CPU];
 
-	nsa void Init(int Core)
+	nsa void Setup(int Core)
 	{
 		GDTEntries[Core] = GDTEntriesTemplate;
 		gdt[Core] =
@@ -181,33 +181,35 @@ namespace GlobalDescriptorTable
 		tss[Core].StackPointer[1] = 0x0;
 		tss[Core].StackPointer[2] = 0x0;
 
-		for (size_t i = 0; i < sizeof(tss[Core].InterruptStackTable) / sizeof(tss[Core].InterruptStackTable[7]); i++)
+		for (size_t i = 0; i < numof(tss[Core].InterruptStackTable); i++)
 		{
-			void *NewStack = StackManager.Allocate(STACK_SIZE);
-			tss[Core].InterruptStackTable[i] = (uint64_t)NewStack + STACK_SIZE;
+			void *newStack = StackManager.Allocate(STACK_SIZE);
+			tss[Core].InterruptStackTable[i] = (uint64_t)newStack + STACK_SIZE;
 			memset((void *)(tss[Core].InterruptStackTable[i] - STACK_SIZE), 0, STACK_SIZE);
-			debug("IST-%d: %#lx-%#lx", i, NewStack, (uintptr_t)NewStack + STACK_SIZE);
+			debug("IST-%d: %#lx-%#lx", i, newStack, (uintptr_t)newStack + STACK_SIZE);
 		}
 
 		CPU::x64::ltr(GDT_TSS);
 		debug("Global Descriptor Table initialized");
 	}
 
-	nsa void SetKernelStack(void *Stack)
+	void SetKernelStack(void *Stack)
 	{
-		long CPUID = GetCurrentCPU()->ID;
+		long id = GetCurrentCPU()->ID;
 		if (Stack != nullptr)
-			tss[CPUID].StackPointer[0] = (uint64_t)Stack;
+			tss[id].StackPointer[0] = (uint64_t)Stack;
 		else
-			tss[CPUID].StackPointer[0] = (uint64_t)CPUStackPointer[CPUID] + STACK_SIZE;
+			tss[id].StackPointer[0] = (uint64_t)CPUStackPointer[id] + STACK_SIZE;
 
 		/*
 		FIXME: There's a bug in kernel which if
-		we won't update "tss[CPUID].StackPointer[0]"
+		we won't update "tss[id].StackPointer[0]"
 		with the current stack pointer, the kernel
 		will crash.
+
+		2026 update: i still don't know
 		*/
-		asmv("mov %%rsp, %0" : "=r"(tss[CPUID].StackPointer[0]));
+		asmv("mov %%rsp, %0" : "=r"(tss[id].StackPointer[0]));
 	}
 
 	void *GetKernelStack() { return (void *)tss[GetCurrentCPU()->ID].StackPointer[0]; }

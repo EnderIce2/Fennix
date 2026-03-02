@@ -6,24 +6,21 @@ NewLock(liballocLock);
 
 EXTERNC int liballoc_lock()
 {
-    return liballocLock.Lock(__FUNCTION__);
+	return liballocLock.Lock(__FUNCTION__);
 }
 
 EXTERNC int liballoc_unlock()
 {
-    return liballocLock.Unlock();
+	return liballocLock.Unlock();
 }
 
 EXTERNC void *liballoc_alloc(size_t Pages)
 {
-    void *ret = KernelAllocator.RequestPages(Pages);
-    debug("(%d) = %#lx", Pages, ret);
-    return ret;
+	return KernelAllocator.RequestPages(Pages);
 }
 
 EXTERNC int liballoc_free(void *Address, size_t Pages)
 {
-    debug("(%#lx, %d)", Address, Pages);
-    KernelAllocator.FreePages(Address, Pages);
-    return 0;
+	KernelAllocator.FreePages(Address, Pages);
+	return 0;
 }

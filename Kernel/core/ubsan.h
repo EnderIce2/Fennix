@@ -42,12 +42,12 @@ struct type_mismatch_v1_data
 	uint8_t type_check_kind;
 };
 
-struct out_of_bounds_info
-{
-	struct source_location location;
-	struct type_descriptor left_type;
-	struct type_descriptor right_type;
-};
+// struct out_of_bounds_info
+// {
+// 	struct source_location location;
+// 	struct type_descriptor left_type;
+// 	struct type_descriptor right_type;
+// };
 
 struct overflow_data
 {

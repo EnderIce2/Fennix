@@ -24,6 +24,7 @@
 #include <lock.hpp>
 #include <exec.hpp>
 #include <debug.h>
+#include <stdio.h>
 #include <thread>
 #include <cctype>
 

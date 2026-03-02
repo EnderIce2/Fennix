@@ -19,6 +19,7 @@
 
 #include <task.hpp>
 #include <kexcept/cxxabi.h>
+#include <time.hpp>
 #include <types.h>
 #include <log.hpp>
 #include <atomic>
@@ -39,39 +40,49 @@ struct CPUArchData
 struct CPUData
 {
 	/** Used by CPU */
-	uintptr_t Stack;
+	uintptr_t Stack = 0;
 
 	/** CPU ID. */
-	int ID;
+	int ID = -1;
 
 	/** Local CPU error code. */
-	long ErrorCode;
+	long ErrorCode = 0;
 
 	/** Current running process */
-	std::atomic<Tasking::PCB *> CurrentProcess;
+	std::atomic<Tasking::PCB *> CurrentProcess = nullptr;
 
 	/** Current running thread */
-	std::atomic<Tasking::TCB *> CurrentThread;
+	std::atomic<Tasking::TCB *> CurrentThread = nullptr;
 
 	/** Exception information. */
-	ExceptionInfo Exception;
+	ExceptionInfo Exception{};
 
 	/** Architecture-specific data. */
 	CPUArchData Data;
 
-	Log::LogRecord *LogRecords;
-	size_t LogEntries;
-	std::atomic_uint32_t LogWriteIndex;
+	Log::LogRecord *LogRecords = nullptr;
+	size_t LogEntries = 0;
+	std::atomic_uint32_t LogWriteIndex = 0;
+
+	Time::ClockSource *Clock = nullptr;
+	Time::TimerDevice *Timer = nullptr;
 
 	/** Is CPU online? */
-	bool IsActive;
+	bool IsActive = false;
 } __aligned(16);
 
 CPUData *GetCurrentCPU();
-CPUData *GetCPU(long ID);
+CPUData *GetCPU(int ID);
+
+/** Current CPU */
+#define thisCPU GetCurrentCPU()
+/** Local CPU Clock */
+#define thisClock thisCPU->Clock
+/** Local CPU Timer */
+#define thisTimer thisCPU->Timer
 
 namespace SMP
 {
 	extern int CPUCores;
-	void Initialize(void *madt);
+	void Initialize();
 }

@@ -76,20 +76,20 @@ namespace Memory
 			RSDPEnd = (uintptr_t)bInfo.RSDP + sizeof(BootInfo::RSDPInfo);
 
 #ifdef DEBUG
-			ACPI::ACPI::ACPIHeader *ACPIPtr;
+			Platform::ACPIHeader *ACPIPtr;
 			bool XSDT = false;
 
 			if (bInfo.RSDP->Revision >= 2 && bInfo.RSDP->XSDTAddress)
 			{
-				ACPIPtr = (ACPI::ACPI::ACPIHeader *)bInfo.RSDP->XSDTAddress;
+				ACPIPtr = (Platform::ACPIHeader *)bInfo.RSDP->XSDTAddress;
 				XSDT = true;
 			}
 			else
-				ACPIPtr = (ACPI::ACPI::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
+				ACPIPtr = (Platform::ACPIHeader *)(uintptr_t)bInfo.RSDP->RSDTAddress;
 
 			if (Memory::Virtual().Check(ACPIPtr))
 			{
-				size_t TableSize = ((ACPIPtr->Length - sizeof(ACPI::ACPI::ACPIHeader)) / (XSDT ? 8 : 4));
+				size_t TableSize = ((ACPIPtr->Length - sizeof(Platform::ACPIHeader)) / (XSDT ? 8 : 4));
 				debug("There are %d ACPI tables", TableSize);
 			}
 #endif

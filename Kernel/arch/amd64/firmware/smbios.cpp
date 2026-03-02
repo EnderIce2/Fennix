@@ -17,9 +17,65 @@
 
 #include "smbios.hpp"
 
-#include <debug.h>
+#include <memory/virtual.hpp>
+#include <boot/binfo.h>
+#include <convert.h>
+#include <log.hpp>
+#include <efi.h>
+#include <io.h>
 
-#include "../kernel.h"
+extern struct BootInfo bInfo;
+
+namespace
+{
+	VOID *SearchSMBIOS(EFI_SYSTEM_TABLE *SystemTable)
+	{
+		EFI_GUID Smbios3TableGuid = SMBIOS3_TABLE_GUID;
+		EFI_GUID SmbiosTableGuid = SMBIOS_TABLE_GUID;
+
+		VOID *Smbios2Ptr = NULL;
+		for (UINTN i = 0; i < SystemTable->NumberOfTableEntries; i++)
+		{
+			EFI_CONFIGURATION_TABLE *config = &SystemTable->ConfigurationTable[i];
+
+			if (CompareGuid(&config->VendorGuid, &Smbios3TableGuid))
+			{
+				debug("Found SMBIOS 3.0 at: %#lx", config->VendorTable);
+				return config->VendorTable;
+			}
+
+			if (CompareGuid(&config->VendorGuid, &SmbiosTableGuid))
+			{
+				debug("Found SMBIOS at: %#lx", config->VendorTable);
+				Smbios2Ptr = config->VendorTable;
+			}
+		}
+
+		return Smbios2Ptr;
+	}
+}
+
+void *FindSMBIOS()
+{
+	if (bInfo.EFI.Info.ST == 1 && Memory::Virtual().Check(bInfo.EFI.SystemTable) && bInfo.EFI.SystemTable != nullptr)
+	{
+		debug("Searching for SMBIOS in EFI System Table.");
+		auto smbios = SearchSMBIOS((EFI_SYSTEM_TABLE *)bInfo.EFI.SystemTable);
+		if (smbios)
+			return smbios;
+	}
+
+	for (fnx::void_t i = 0xF0000; i < 0x100000; i += 0x10)
+	{
+		if (memcmp(i, "_SM_", 4) == 0 || memcmp(i, "_SM3_", 5) == 0)
+		{
+			debug("Found SMBIOS at %#lx", i.get());
+			return i;
+		}
+	}
+
+	return nullptr;
+}
 
 namespace SMBIOS
 {

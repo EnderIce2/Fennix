@@ -590,8 +590,6 @@ namespace fnx
 		ptr_t(uintptr_t p) : ptr((T)p) {}
 		ptr_t(const ptr_t<T> &other) : ptr(other.ptr) {}
 
-		T get() const { return ptr; }
-
 		operator T() { return ptr; }
 		operator uintptr_t() { return (uintptr_t)ptr; }
 		operator bool() { return (void *)(uintptr_t)ptr != nullptr; }
@@ -651,6 +649,8 @@ namespace fnx
 		T operator->() { return ptr; }
 		T operator*() { return *ptr; }
 
+		T get() const { return ptr; }
+
 		template <typename U>
 		U as() { return reinterpret_cast<U>(ptr); }
 
@@ -674,18 +674,6 @@ namespace fnx
 	};
 
 	typedef ptr_t<void *> void_t;
-
-	typedef ptr_t<uint8_t> uint8_ptr;
-	typedef ptr_t<uint16_t> uint16_ptr;
-	typedef ptr_t<uint32_t> uint32_ptr;
-	typedef ptr_t<uint64_t> uint64_ptr;
-	typedef ptr_t<uintptr_t> uintptr_ptr;
-
-	typedef ptr_t<int8_t> int8_ptr;
-	typedef ptr_t<int16_t> int16_ptr;
-	typedef ptr_t<int32_t> int32_ptr;
-	typedef ptr_t<int64_t> int64_ptr;
-	typedef ptr_t<intptr_t> intptr_ptr;
 }
 #endif // __cplusplus
 

@@ -97,13 +97,12 @@ bool IsVMwareBackdoorAvailable()
 	cmd.port = VMWARE_PORT;
 
 #if defined(__amd64__) || defined(__i386__)
-	asmv("in %%dx, %0"
-		 : "+a"(cmd.ax),
-		   "+b"(cmd.bx),
-		   "+c"(cmd.cx),
-		   "+d"(cmd.dx),
-		   "+S"(cmd.si),
-		   "+D"(cmd.di));
+	asmv("in %%dx, %0" : "+a"(cmd.ax),
+		 "+b"(cmd.bx),
+		 "+c"(cmd.cx),
+		 "+d"(cmd.dx),
+		 "+S"(cmd.si),
+		 "+D"(cmd.di));
 #endif
 
 	if (cmd.bx != VMWARE_MAGIC || cmd.ax == 0xFFFFFFFF)
@@ -148,31 +147,32 @@ bool DetectByCPUID()
 bool DetectByHPET()
 {
 	assert(PowerManager != nullptr);
+	fixme("Not implemented");
 
-	void *acpi = PowerManager->GetACPI();
-	if (!acpi)
-		return false;
+	// void *acpi = PowerManager->GetACPI();
+	// if (!acpi)
+	// 	return false;
 
-	void *hpet = ((ACPI::ACPI *)acpi)->HPET;
-	if (!hpet)
-		return false;
+	// void *hpet = ((ACPI::ACPI *)acpi)->HPET;
+	// if (!hpet)
+	// 	return false;
 
-	ACPI::ACPI::HPETHeader *HPET = (ACPI::ACPI::HPETHeader *)hpet;
+	// ACPI::ACPI::HPETHeader *HPET = (ACPI::ACPI::HPETHeader *)hpet;
 
-	if (strstr((const char *)HPET->Header.OEMID, "BOCHS BXPC") != NULL)
-		goto Yes;
+	// if (strstr((const char *)HPET->Header.OEMID, "BOCHS BXPC") != NULL)
+	// 	goto Yes;
 
-	if (strstr((const char *)HPET->Header.OEMID, "VBOX") != NULL)
-		goto Yes;
+	// if (strstr((const char *)HPET->Header.OEMID, "VBOX") != NULL)
+	// 	goto Yes;
 
-	if (strstr((const char *)HPET->Header.OEMID, "VMWAREVMW") != NULL)
-		goto Yes;
+	// if (strstr((const char *)HPET->Header.OEMID, "VMWAREVMW") != NULL)
+	// 	goto Yes;
 
 	return false;
 
-Yes:
-	debug("HPET: %s", HPET->Header.OEMID);
-	return true;
+	// Yes:
+	// debug("HPET: %s", HPET->Header.OEMID);
+	// return true;
 }
 
 bool IsVirtualizedEnvironment()

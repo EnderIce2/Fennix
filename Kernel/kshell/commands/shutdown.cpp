@@ -27,6 +27,6 @@ using namespace Tasking;
 
 void cmd_shutdown(const char *)
 {
-	KernelShutdownThread(false);
+	PowerManager->Shutdown();
 	CPU::Halt(true);
 }

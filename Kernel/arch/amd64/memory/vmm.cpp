@@ -400,7 +400,7 @@ namespace Memory
 			PDPTE->raw |= Flags;
 			PDPTE->PageSize = true;
 			PDPTE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 1GB page at %#lx to %#lx", VirtualAddress.get(), PhysicalAddress.get());
+			// debug("Mapped 1GB page at %#lx to %#lx", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 
@@ -428,7 +428,7 @@ namespace Memory
 			PDE->raw |= Flags;
 			PDE->PageSize = true;
 			PDE->SetAddress((uintptr_t)PhysicalAddress >> 12);
-			debug("Mapped 2MB page at %#lx to %#lx", VirtualAddress.get(), PhysicalAddress.get());
+			// debug("Mapped 2MB page at %#lx to %#lx", VirtualAddress.get(), PhysicalAddress.get());
 			return;
 		}
 

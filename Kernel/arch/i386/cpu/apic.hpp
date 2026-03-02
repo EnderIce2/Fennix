@@ -20,7 +20,7 @@
 
 #include <types.h>
 
-#include <ints.hpp>
+#include <irq.hpp>
 #include <cpu.hpp>
 
 namespace APIC
@@ -28,31 +28,31 @@ namespace APIC
 	enum APICRegisters
 	{
 		// source from: https://github.com/pdoane/osdev/blob/master/intr/local_apic.c
-		APIC_ID = 0x20,       // Local APIC ID
-		APIC_VER = 0x30,      // Local APIC Version
-		APIC_TPR = 0x80,      // Task Priority
-		APIC_APR = 0x90,      // Arbitration Priority
-		APIC_PPR = 0xA0,      // Processor Priority
-		APIC_EOI = 0xB0,      // EOI
-		APIC_RRD = 0xC0,      // Remote Read
-		APIC_LDR = 0xD0,      // Logical Destination
-		APIC_DFR = 0xE0,      // Destination Format
-		APIC_SVR = 0xF0,      // Spurious Interrupt Vector
-		APIC_ISR = 0x100,     // In-Service (8 registers)
-		APIC_TMR = 0x180,     // Trigger Mode (8 registers)
-		APIC_IRR = 0x200,     // Interrupt Request (8 registers)
-		APIC_ESR = 0x280,     // Error Status
-		APIC_ICRLO = 0x300,   // Interrupt Command
-		APIC_ICRHI = 0x310,   // Interrupt Command [63:32]
-		APIC_TIMER = 0x320,   // LVT Timer
+		APIC_ID = 0x20,		  // Local APIC ID
+		APIC_VER = 0x30,	  // Local APIC Version
+		APIC_TPR = 0x80,	  // Task Priority
+		APIC_APR = 0x90,	  // Arbitration Priority
+		APIC_PPR = 0xA0,	  // Processor Priority
+		APIC_EOI = 0xB0,	  // EOI
+		APIC_RRD = 0xC0,	  // Remote Read
+		APIC_LDR = 0xD0,	  // Logical Destination
+		APIC_DFR = 0xE0,	  // Destination Format
+		APIC_SVR = 0xF0,	  // Spurious Interrupt Vector
+		APIC_ISR = 0x100,	  // In-Service (8 registers)
+		APIC_TMR = 0x180,	  // Trigger Mode (8 registers)
+		APIC_IRR = 0x200,	  // Interrupt Request (8 registers)
+		APIC_ESR = 0x280,	  // Error Status
+		APIC_ICRLO = 0x300,	  // Interrupt Command
+		APIC_ICRHI = 0x310,	  // Interrupt Command [63:32]
+		APIC_TIMER = 0x320,	  // LVT Timer
 		APIC_THERMAL = 0x330, // LVT Thermal Sensor
-		APIC_PERF = 0x340,    // LVT Performance Counter
-		APIC_LINT0 = 0x350,   // LVT LINT0
-		APIC_LINT1 = 0x360,   // LVT LINT1
-		APIC_ERROR = 0x370,   // LVT Error
-		APIC_TICR = 0x380,    // Initial Count (for Timer)
-		APIC_TCCR = 0x390,    // Current Count (for Timer)
-		APIC_TDCR = 0x3E0,    // Divide Configuration (for Timer)
+		APIC_PERF = 0x340,	  // LVT Performance Counter
+		APIC_LINT0 = 0x350,	  // LVT LINT0
+		APIC_LINT1 = 0x360,	  // LVT LINT1
+		APIC_ERROR = 0x370,	  // LVT Error
+		APIC_TICR = 0x380,	  // Initial Count (for Timer)
+		APIC_TCCR = 0x390,	  // Current Count (for Timer)
+		APIC_TDCR = 0x3E0,	  // Divide Configuration (for Timer)
 	};
 
 	enum IOAPICRegisters
@@ -338,7 +338,7 @@ namespace APIC
 		~APIC();
 	};
 
-	class Timer : public Interrupts::Handler
+	class Timer : public Interrupt::Handler
 	{
 	private:
 		APIC *lapic;
