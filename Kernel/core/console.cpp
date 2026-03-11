@@ -551,8 +551,7 @@ namespace KernelConsole
 			while (in_dispatch.test_and_set(std::memory_order_acquire))
 				CPU::Pause();
 
-			ConsoleTerminal *current = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
-			KernelConsole::VirtualTerminal *vt = current ? current->Term : nullptr;
+			KernelConsole::VirtualTerminal *vt = KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
 
 			for (char *p = prefixBuf; *p; ++p)
 				vt->Process(*p);
