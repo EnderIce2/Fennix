@@ -303,8 +303,8 @@ namespace Memory
 
 		size_t memSize = bInfo.Memory.Size;
 		debug("Memory size: %lld bytes (%ld pages)", memSize, TO_PAGES(memSize));
-		TotalMemory.store(memSize);
-		FreeMemory.store(memSize);
+		TotalMemory.store(TO_PAGES(memSize));
+		FreeMemory.store(TO_PAGES(memSize));
 
 		size_t bmSize = (memSize / PAGE_SIZE) / 8 + 1;
 		uintptr_t bmAddress = 0x0;
