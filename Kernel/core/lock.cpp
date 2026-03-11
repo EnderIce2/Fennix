@@ -54,32 +54,32 @@ void PrintStacktrace(LockClass::SpinLockData *Lock)
 
 	while (Memory::Virtual().Check(FrameAttempt))
 	{
-		DbgAttempt.concat(KernelSymbolTable->GetSymbol(FrameAttempt->ReturnAddress));
-		DbgAttempt.concat("<-");
+		DbgAttempt.append(KernelSymbolTable->GetSymbol(FrameAttempt->ReturnAddress));
+		DbgAttempt.append("<-");
 		FrameAttempt = (StackFrame *)FrameAttempt->BasePointer;
 	}
 	warn("Attempt: %s", DbgAttempt.c_str());
 
 	while (Memory::Virtual().Check(FrameHolder))
 	{
-		DbgHolder.concat(KernelSymbolTable->GetSymbol(FrameHolder->ReturnAddress));
-		DbgHolder.concat("<-");
+		DbgHolder.append(KernelSymbolTable->GetSymbol(FrameHolder->ReturnAddress));
+		DbgHolder.append("<-");
 		FrameHolder = (StackFrame *)FrameHolder->BasePointer;
 	}
 
 	warn("Holder: %s", DbgHolder.c_str());
 
-	// warn("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(1)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(2)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(3)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(4)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(5)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(6)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(7)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(8)),
-	// 	 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(9)));
+	warn("\t\t%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s<-%s",
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(0)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(1)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(2)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(3)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(4)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(5)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(6)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(7)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(8)),
+		 KernelSymbolTable->GetSymbol((uintptr_t)__builtin_return_address(9)));
 }
 #endif
 
