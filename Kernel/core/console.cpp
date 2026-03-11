@@ -479,9 +479,6 @@ namespace KernelConsole
 
 	static void WriteFromLog(const Log::LogRecord *record)
 	{
-		ConsoleTerminal *current = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
-		KernelConsole::VirtualTerminal *vt = current ? current->Term : nullptr;
-
 		char prefixBuf[128];
 
 		std::chrono::nanoseconds nano = std::chrono::nanoseconds(record->TimestampNs);
@@ -538,7 +535,7 @@ namespace KernelConsole
 
 		snprintf(prefixBuf + prefixLen, sizeof(prefixBuf) - prefixLen, "\x1b[1;30m]\x1b[0m ");
 
-		if (vt)
+		if (KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term != nullptr)
 		{
 			if (DebuggerIsAttached == true &&
 				(record->Level == Log::LogLevel::LogLevelUbsan ||
@@ -548,6 +545,14 @@ namespace KernelConsole
 				 record->Level == Log::LogLevel::LogLevelInfo ||
 				 record->Level == Log::LogLevel::LogLevelFixme))
 				return;
+
+			static std::atomic_flag in_dispatch = ATOMIC_FLAG_INIT;
+
+			while (in_dispatch.test_and_set(std::memory_order_acquire))
+				CPU::Pause();
+
+			ConsoleTerminal *current = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
+			KernelConsole::VirtualTerminal *vt = current ? current->Term : nullptr;
 
 			for (char *p = prefixBuf; *p; ++p)
 				vt->Process(*p);
@@ -560,6 +565,11 @@ namespace KernelConsole
 			vt->Process('0');
 			vt->Process('m');
 			vt->Process('\n');
+
+			if (!Config.Quiet && Display)
+				Display->UpdateBuffer();
+
+			in_dispatch.clear(std::memory_order_release);
 		}
 		else
 		{
@@ -575,9 +585,6 @@ namespace KernelConsole
 			uart.DebugWrite('m');
 			uart.DebugWrite('\n');
 		}
-
-		if (!Config.Quiet && Display)
-			Display->UpdateBuffer();
 	}
 
 	void EarlyInit()

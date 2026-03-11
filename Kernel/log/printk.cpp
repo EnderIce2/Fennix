@@ -67,13 +67,6 @@ namespace Log
 
 	void Dispatch(const LogRecord &record)
 	{
-		static std::atomic_flag in_dispatch = ATOMIC_FLAG_INIT;
-		// if (in_dispatch.test_and_set(std::memory_order_acquire))
-		// 	return;
-
-		while (in_dispatch.test_and_set(std::memory_order_acquire))
-			CPU::Pause();
-
 		for (size_t i = 0; i < MAX_SINKS; i++)
 		{
 			LogSink &sink = RegisteredSinks[i];
@@ -82,8 +75,6 @@ namespace Log
 
 			sink.Write(&record);
 		}
-
-		in_dispatch.clear(std::memory_order_release);
 	}
 
 	int RegisterSink(void (*Write)(const LogRecord *))
