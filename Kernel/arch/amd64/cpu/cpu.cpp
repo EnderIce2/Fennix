@@ -29,6 +29,7 @@ using namespace CPU::x64;
 #include "gdt.hpp"
 #include "idt.hpp"
 #include "tsc.hpp"
+#include "pit.hpp"
 #include "../firmware/acpi/hpet.hpp"
 
 Time::ClockSource *GlobalClock = nullptr;
@@ -238,16 +239,23 @@ namespace CPU
 			/* prefer HPET over everything calibrated */
 			Platform::HighPrecisionEventTimer *hpet = nullptr;
 			if (ACPIManager->HPET != nullptr)
+			{
 				hpet = new Platform::HighPrecisionEventTimer(ACPIManager->HPET);
-
-			baseClock = hpet;
-			baseTimer = hpet;
+				baseClock = hpet;
+				baseTimer = hpet;
+			}
 
 			// TODO: ACPI PM Timer fallback
-			// TODO: PIT fallback
 
-			GlobalClock = hpet;
-			GlobalTimer = hpet;
+			ProgrammableIntervalTimer::PIT *pit = nullptr;
+			if (baseClock == nullptr)
+			{
+				pit = new ProgrammableIntervalTimer::PIT;
+				baseClock = pit;
+			}
+
+			GlobalClock = baseClock;
+			GlobalTimer = baseTimer;
 
 			thisClock = baseClock;
 			thisTimer = baseTimer;

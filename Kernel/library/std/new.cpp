@@ -26,7 +26,10 @@ void *operator new(std::size_t count)
 		++count;
 
 	if (void *ptr = kmalloc(count))
+	{
+		memset(ptr, 0, count);
 		return ptr;
+	}
 
 	throw std::bad_alloc{};
 }
@@ -37,7 +40,10 @@ void *operator new[](std::size_t count)
 		++count;
 
 	if (void *ptr = kmalloc(count))
+	{
+		memset(ptr, 0, count);
 		return ptr;
+	}
 
 	throw std::bad_alloc{};
 }
@@ -55,6 +61,8 @@ void *operator new(std::size_t count, std::align_val_t al)
 	void *aligned_ptr = reinterpret_cast<void *>(
 		(reinterpret_cast<std::size_t>(ptr) + sizeof(void *) + alignment - 1) & ~(alignment - 1));
 	reinterpret_cast<void **>(aligned_ptr)[-1] = ptr;
+
+	memset(aligned_ptr, 0, count);
 	return aligned_ptr;
 }
 
@@ -71,6 +79,8 @@ void *operator new[](std::size_t count, std::align_val_t al)
 	void *aligned_ptr = reinterpret_cast<void *>(
 		(reinterpret_cast<std::size_t>(ptr) + sizeof(void *) + alignment - 1) & ~(alignment - 1));
 	reinterpret_cast<void **>(aligned_ptr)[-1] = ptr;
+
+	memset(aligned_ptr, 0, count);
 	return aligned_ptr;
 }
 

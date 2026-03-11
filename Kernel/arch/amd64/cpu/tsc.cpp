@@ -24,6 +24,8 @@
 
 #include "../../../kernel.h"
 
+using namespace std::chrono_literals;
+
 namespace TimeStampCounter
 {
 	static inline uint64_t rdtsc()
@@ -48,30 +50,40 @@ namespace TimeStampCounter
 
 	void TSC::Calibrate()
 	{
-		const int attempts = 5;
-		uint64_t ns = 10'000'000ULL; /* 10 ms */
-		uint64_t total_clk = 0;
-		uint64_t overhead = 0;
+		// const int attempts = 5;
+		// uint64_t ns = 10'000'000ULL; /* 10 ms */
+		// uint64_t total_clk = 0;
+		// uint64_t overhead = 0;
 
-		for (int i = 0; i < attempts; ++i)
-		{
-			uint64_t t0 = rdtsc();
-			uint64_t t1 = rdtsc();
-			overhead += (t1 - t0);
-		}
-		overhead /= attempts;
+		// for (int i = 0; i < attempts; ++i)
+		// {
+		// 	uint64_t t0 = rdtsc();
+		// 	uint64_t t1 = rdtsc();
+		// 	overhead += (t1 - t0);
+		// }
+		// overhead /= attempts;
 
-		for (int i = 0; i < attempts; ++i)
-		{
-			uint64_t tsc_start = rdtsc();
-			uint64_t clock_start = thisClock->Now();
-			while (thisClock->Now() - clock_start < ns)
-				CPU::Pause();
-			uint64_t tsc_end = rdtsc();
-			total_clk += (tsc_end - tsc_start - overhead) * 1'000'000'000ULL / ns;
-		}
-		this->clk = total_clk / attempts;
-		klog("TSC frequency: %lu MHz", this->clk / 1'000'000);
+		// for (int i = 0; i < attempts; ++i)
+		// {
+		// 	uint64_t tsc_start = rdtsc();
+		// 	uint64_t clock_start = thisClock->Now();
+		// 	while (thisClock->Now() - clock_start < ns)
+		// 		CPU::Pause();
+		// 	uint64_t tsc_end = rdtsc();
+		// 	total_clk += (tsc_end - tsc_start - overhead) * 1'000'000'000ULL / ns;
+		// }
+		// this->clk = total_clk / attempts;
+		// klog("TSC frequency: %lu MHz", this->clk / 1'000'000);
+
+		constexpr uint32_t test_ms = 10;
+		uint64_t start = rdtsc();
+		GlobalClock->Sleep(10ms);
+		uint64_t end = rdtsc();
+
+		uint64_t delta = end - start;
+
+		// scale to Hz
+		this->clk = (delta * 1000) / test_ms;
 	}
 
 	bool TSC::Invariant()

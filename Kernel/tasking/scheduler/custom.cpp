@@ -196,7 +196,7 @@ namespace Tasking::Scheduler
 
 	void Custom::StartScheduler()
 	{
-		thisTimer->SetOneShot(std::chrono::nanoseconds(100), Interrupt::IRQ16);
+		thisTimer->SetOneShot(std::chrono::milliseconds(Tasking::TaskPriority::Normal), Interrupt::IRQ16);
 		// if (Interrupts::apicTimer[0])
 		// {
 		// 	((APIC::Timer *)Interrupts::apicTimer[0])->OneShot(CPU::x86::IRQ16, 100);
@@ -280,7 +280,7 @@ namespace Tasking::Scheduler
 
 #if defined(__amd64__) || defined(__i386__)
 		// ((APIC::Timer *)Interrupts::apicTimer[GetCurrentCPU()->ID])->OneShot(CPU::x86::IRQ16, TimeSlice);
-		thisTimer->SetOneShot(std::chrono::nanoseconds(TimeSlice), Interrupt::IRQ16);
+		thisTimer->SetOneShot(std::chrono::milliseconds(TimeSlice), Interrupt::IRQ16);
 #elif defined(__aarch64__)
 #endif
 	}

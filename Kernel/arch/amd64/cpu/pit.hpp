@@ -19,25 +19,20 @@
 
 #include <time.hpp>
 
-namespace TimeStampCounter
+namespace ProgrammableIntervalTimer
 {
-	class TSC : public Time::ClockSource
+	class PIT : public Time::ClockSource
 	{
 	private:
-		uint64_t clk = 0;
+		uint64_t clk = 1193182;
 
 	public:
-		const char *Name() const final { return "TSC"; }
+		const char *Name() const final { return "PIT"; }
 
 		uint64_t Now() const final;
 
 		uint64_t Frequency() const final { return clk; }
 
 		void Sleep(std::chrono::nanoseconds ns) final;
-
-		void Calibrate();
-		bool Invariant();
-
-		virtual ~TSC() = default;
 	};
 }

@@ -67,24 +67,35 @@ namespace Log
 
 	void Dispatch(const LogRecord &record)
 	{
+		static std::atomic_flag in_dispatch = ATOMIC_FLAG_INIT;
+		// if (in_dispatch.test_and_set(std::memory_order_acquire))
+		// 	return;
+
+		while (in_dispatch.test_and_set(std::memory_order_acquire))
+			CPU::Pause();
+
 		for (size_t i = 0; i < MAX_SINKS; i++)
 		{
-			if (RegisteredSinks[i].Flags.Active == 0)
+			LogSink &sink = RegisteredSinks[i];
+			if (sink.Flags.Active == 0)
 				continue;
 
-			RegisteredSinks[i].Write(&record);
+			sink.Write(&record);
 		}
+
+		in_dispatch.clear(std::memory_order_release);
 	}
 
 	int RegisterSink(void (*Write)(const LogRecord *))
 	{
 		for (size_t i = 0; i < MAX_SINKS; i++)
 		{
-			if (RegisteredSinks[i].Flags.Active == 1)
+			LogSink &sink = RegisteredSinks[i];
+			if (sink.Flags.Active == 1)
 				continue;
 
-			RegisteredSinks[i].Write = Write;
-			RegisteredSinks[i].Flags.Active = 1;
+			sink.Write = Write;
+			sink.Flags.Active = 1;
 			return EOK;
 		}
 
@@ -96,10 +107,11 @@ namespace Log
 	{
 		for (size_t i = 0; i < MAX_SINKS; i++)
 		{
-			if (RegisteredSinks[i].Flags.Active == 0 || RegisteredSinks[i].Write != Write)
+			LogSink &sink = RegisteredSinks[i];
+			if (sink.Flags.Active == 0 || sink.Write != Write)
 				continue;
 
-			RegisteredSinks[i].Flags.Active = 0;
+			sink.Flags.Active = 0;
 			return EOK;
 		}
 

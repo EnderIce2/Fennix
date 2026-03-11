@@ -30,6 +30,7 @@ namespace Platform
 
 		/* convert ticks to nanoseconds: counter * period_fs / 1e6 */
 		return (counter * 1'000'000'000ULL) / this->clk;
+		// return mminq(&this->hpet->MainCounter);
 	}
 
 	void HighPrecisionEventTimer::Sleep(std::chrono::nanoseconds ns)

@@ -15,29 +15,34 @@
 	along with Fennix Kernel. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "pit.hpp"
 
-#include <time.hpp>
+#include <io.h>
 
-namespace TimeStampCounter
+#define PIT_CH0_DATA 0x40
+#define PIT_COMMAND 0x43
+#define PIT_PORT61 0x61
+
+namespace ProgrammableIntervalTimer
 {
-	class TSC : public Time::ClockSource
+	uint64_t PIT::Now() const
 	{
-	private:
-		uint64_t clk = 0;
+		return 0;
+	}
 
-	public:
-		const char *Name() const final { return "TSC"; }
+	void PIT::Sleep(std::chrono::nanoseconds ns)
+	{
+		uint16_t count = (uint16_t)((clk / 1000) * std::chrono::milliseconds(ns).count());
 
-		uint64_t Now() const final;
+		outb(PIT_COMMAND, 0b00110000);
 
-		uint64_t Frequency() const final { return clk; }
+		outb(PIT_CH0_DATA, count & 0xFF);
+		outb(PIT_CH0_DATA, (count >> 8) & 0xFF);
 
-		void Sleep(std::chrono::nanoseconds ns) final;
+		uint8_t tmp = inb(PIT_PORT61);
+		outb(PIT_PORT61, tmp & ~1);
 
-		void Calibrate();
-		bool Invariant();
-
-		virtual ~TSC() = default;
-	};
+		while (!(inb(PIT_PORT61) & 0x20))
+			asmv("nop");
+	}
 }

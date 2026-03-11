@@ -289,8 +289,8 @@ namespace KernelConsole
 
 	static void WriteFromLog(const Log::LogRecord *record)
 	{
-		KernelConsole::VirtualTerminal *vt =
-			KernelConsole::CurrentTerminal.load(std::memory_order_acquire)->Term;
+		ConsoleTerminal *current = KernelConsole::CurrentTerminal.load(std::memory_order_acquire);
+		KernelConsole::VirtualTerminal *vt = current ? current->Term : nullptr;
 
 		char prefixBuf[128];
 

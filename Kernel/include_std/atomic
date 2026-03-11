@@ -615,6 +615,50 @@ namespace std
 		bool operator==(T other) const { return this->load() == other; }
 	};
 
+	class atomic_flag
+	{
+	private:
+		_atomic(unsigned char) value;
+
+	public:
+		constexpr atomic_flag() noexcept : value(0) {}
+		atomic_flag(const atomic_flag &) = delete;
+
+		atomic_flag &operator=(const atomic_flag &) = delete;
+		atomic_flag &operator=(const atomic_flag &) volatile = delete;
+
+		void clear(std::memory_order order = std::memory_order_seq_cst) volatile noexcept { builtin_atomic_n(store)(&this->value, 0, static_cast<int>(order)); }
+		void clear(std::memory_order order = std::memory_order_seq_cst) noexcept { builtin_atomic_n(store)(&this->value, 0, static_cast<int>(order)); }
+
+		bool test_and_set(std::memory_order order = std::memory_order_seq_cst) volatile noexcept { return builtin_atomic_n(exchange)(&this->value, 1, static_cast<int>(order)); }
+		bool test_and_set(std::memory_order order = std::memory_order_seq_cst) noexcept { return builtin_atomic_n(exchange)(&this->value, 1, static_cast<int>(order)); }
+
+		bool test(std::memory_order order = std::memory_order_seq_cst) const volatile noexcept { return builtin_atomic_n(load)(&this->value, static_cast<int>(order)); }
+		bool test(std::memory_order order = std::memory_order_seq_cst) const noexcept { return builtin_atomic_n(load)(&this->value, static_cast<int>(order)); }
+
+		void wait(bool old, std::memory_order order = std::memory_order_seq_cst) const noexcept
+		{
+			while (this->test(order) == old)
+				;
+		}
+
+		void wait(bool old, std::memory_order order = std::memory_order_seq_cst) const volatile noexcept
+		{
+			while (this->test(order) == old)
+				;
+		}
+
+		void notify_one() noexcept;
+		void notify_one() volatile noexcept;
+
+		void notify_all() noexcept;
+		void notify_all() volatile noexcept;
+	};
+
+#define ATOMIC_FLAG_INIT \
+	{                    \
+	}
+
 	typedef atomic<bool> atomic_bool;
 	typedef atomic<char> atomic_char;
 	typedef atomic<signed char> atomic_schar;
