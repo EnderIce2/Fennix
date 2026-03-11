@@ -52,8 +52,153 @@ namespace KernelConsole
 		[TerminalColor::GREY] = 0xFFFFFF,
 	};
 
+	struct GlyphCache
+	{
+		Video::Font *Font = nullptr;
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		uint32_t *Pixels = nullptr;
+	};
+
+	static GlyphCache CachedGlyphs;
+
+	static void ResetGlyphCache()
+	{
+		if (CachedGlyphs.Pixels)
+			delete[] CachedGlyphs.Pixels;
+		CachedGlyphs.Pixels = nullptr;
+		CachedGlyphs.Font = nullptr;
+		CachedGlyphs.Width = 0;
+		CachedGlyphs.Height = 0;
+	}
+
+	static bool LookupForeground(uint32_t color, uint8_t &index, bool &bright)
+	{
+		for (uint8_t i = 0; i < 8; ++i)
+		{
+			if (color == (uint32_t)TermColors[i])
+			{
+				index = i;
+				bright = false;
+				return true;
+			}
+		}
+		for (uint8_t i = 0; i < 8; ++i)
+		{
+			if (color == (uint32_t)TermBrightColors[i])
+			{
+				index = i;
+				bright = true;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static void EnsureGlyphCache(FontRenderer &renderer)
+	{
+		if (!renderer.CurrentFont)
+			return;
+
+		Video::FontInfo info = renderer.CurrentFont->GetInfo();
+		if (info.Type != Video::FontType::PCScreenFont2)
+			return;
+
+		if (CachedGlyphs.Font == renderer.CurrentFont &&
+			CachedGlyphs.Width == info.Width &&
+			CachedGlyphs.Height == info.Height &&
+			CachedGlyphs.Pixels != nullptr)
+			return;
+
+		ResetGlyphCache();
+
+		const uint32_t width = info.Width;
+		const uint32_t height = info.Height;
+		if (width == 0 || height == 0)
+			return;
+
+		const size_t glyphPixels = (size_t)width * (size_t)height;
+		const size_t totalPixels = 256u * 16u * glyphPixels;
+		CachedGlyphs.Pixels = new uint32_t[totalPixels];
+		memset(CachedGlyphs.Pixels, 0, totalPixels * sizeof(uint32_t));
+
+		CachedGlyphs.Font = renderer.CurrentFont;
+		CachedGlyphs.Width = width;
+		CachedGlyphs.Height = height;
+
+		char *fontAddress = (char *)info.StartAddress;
+		uint32_t headerSize = info.PSF2Font->Header->headersize;
+		uint32_t charSize = info.PSF2Font->Header->charsize;
+		uint32_t fontLength = info.PSF2Font->Header->length;
+		uint32_t bytesPerLine = (width + 7) / 8;
+
+		for (uint32_t colorIndex = 0; colorIndex < 16; ++colorIndex)
+		{
+			uint32_t fg = (colorIndex < 8) ? (uint32_t)TermColors[colorIndex]
+										   : (uint32_t)TermBrightColors[colorIndex - 8];
+
+			for (uint32_t ch = 0; ch < 256; ++ch)
+			{
+				uint32_t glyphIndex = (ch < fontLength) ? ch : 0;
+				char *glyph = fontAddress + headerSize + (glyphIndex * charSize);
+				uint32_t *dst = CachedGlyphs.Pixels + ((colorIndex * 256u + ch) * glyphPixels);
+
+				for (uint32_t y = 0; y < height; ++y)
+				{
+					for (uint32_t x = 0; x < width; ++x)
+					{
+						uint8_t b = glyph[y * bytesPerLine + (x / 8)];
+						uint8_t mask = (uint8_t)(0x80 >> (x % 8));
+						dst[y * width + x] = (b & mask) ? fg : 0x000000;
+					}
+				}
+			}
+		}
+	}
+
+	static bool PaintCached(FontRenderer &renderer, long CellX, long CellY, char Char, uint32_t Foreground, uint32_t Background)
+	{
+		if (!Display || Display->GetBitsPerPixel() != 32)
+			return false;
+		if (Background != 0x000000)
+			return false;
+
+		uint8_t fgIndex = 0;
+		bool bright = false;
+		if (!LookupForeground(Foreground, fgIndex, bright))
+			return false;
+
+		EnsureGlyphCache(renderer);
+		if (CachedGlyphs.Pixels == nullptr || CachedGlyphs.Font != renderer.CurrentFont)
+			return false;
+
+		const uint32_t width = CachedGlyphs.Width;
+		const uint32_t height = CachedGlyphs.Height;
+		const size_t glyphPixels = (size_t)width * (size_t)height;
+		const uint32_t colorIndex = (bright ? 8u : 0u) + fgIndex;
+		const uint8_t ch = (uint8_t)Char;
+		const uint32_t *src = CachedGlyphs.Pixels + ((colorIndex * 256u + ch) * glyphPixels);
+
+		const uint32_t x = (uint32_t)CellX * width;
+		const uint32_t y = (uint32_t)CellY * height;
+		uint8_t *dst = reinterpret_cast<uint8_t *>(Display->GetBuffer);
+		const size_t pitch = Display->GetPitch();
+
+		for (uint32_t row = 0; row < height; ++row)
+		{
+			memcpy(dst + ((y + row) * pitch) + (x * sizeof(uint32_t)),
+				   src + (row * width),
+				   width * sizeof(uint32_t));
+		}
+
+		return true;
+	}
+
 	__no_sanitize("undefined") char FontRenderer::Paint(long CellX, long CellY, char Char, uint32_t Foreground, uint32_t Background)
 	{
+		if (PaintCached(*this, CellX, CellY, Char, Foreground, Background))
+			return Char;
+
 		uint64_t x = CellX * CurrentFont->GetInfo().Width;
 		uint64_t y = CellY * CurrentFont->GetInfo().Height;
 
@@ -157,6 +302,50 @@ namespace KernelConsole
 		paint_blinker(false);
 	}
 
+	static bool scroll_callback(unsigned short lines)
+	{
+		if (!Display || !Renderer.CurrentFont || lines == 0)
+			return false;
+
+		const uint32_t cellH = Renderer.CurrentFont->GetInfo().Height;
+		const uint32_t shiftPX = cellH * lines;
+		if (shiftPX == 0)
+			return true;
+
+		uint8_t *buf = reinterpret_cast<uint8_t *>(Display->GetBuffer);
+		const size_t pitch = Display->GetPitch();
+		const uint32_t height = Display->GetHeight;
+
+		if (!buf || pitch == 0 || height == 0)
+			return false;
+
+		size_t moveRows = 0;
+		if (shiftPX < height)
+			moveRows = height - shiftPX;
+
+		size_t move_bytes = moveRows * pitch;
+		if (moveRows > 0)
+			memmove(buf, buf + (shiftPX * pitch), move_bytes);
+
+		const uint32_t bg = TermColors[TerminalColor::BLACK];
+		uint8_t *clearPointer = buf + move_bytes;
+		size_t clearBytes = (height * pitch) - move_bytes;
+
+		if (Display->GetBitsPerPixel() == 32)
+		{
+			uint32_t *dst = reinterpret_cast<uint32_t *>(clearPointer);
+			size_t pixels = clearBytes / sizeof(uint32_t);
+			for (size_t i = 0; i < pixels; ++i)
+				dst[i] = bg;
+		}
+		else
+		{
+			memset(clearPointer, 0, clearBytes);
+		}
+
+		return true;
+	}
+
 	bool SetTheme(std::string Theme)
 	{
 		Node rn = fs->Lookup(thisProcess->Info.RootNode, "/sys/cfg/term");
@@ -246,6 +435,7 @@ namespace KernelConsole
 
 		ini_destroy(ini);
 		delete[] sh;
+		ResetGlyphCache();
 		return true;
 	}
 
@@ -400,7 +590,7 @@ namespace KernelConsole
 		size_t Cols = Display->GetHeight / Renderer.CurrentFont->GetInfo().Height;
 		debug("Terminal size: %ux%u", Rows, Cols);
 		Terminals[0] = new ConsoleTerminal;
-		Terminals[0]->Term = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback);
+		Terminals[0]->Term = new VirtualTerminal(Rows, Cols, Display->GetWidth, Display->GetHeight, paint_callback, cursor_callback, scroll_callback);
 		Terminals[0]->Term->Clear(0, 0, Rows, Cols - 1);
 		CurrentTerminal.store(Terminals[0], std::memory_order_release);
 		Log::RegisterSink(WriteFromLog);

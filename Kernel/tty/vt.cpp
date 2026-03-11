@@ -247,19 +247,35 @@ namespace KernelConsole
 
 		Lines = Lines > this->TerminalSize.ws_col ? this->TerminalSize.ws_col : Lines;
 
-		for (int i = 0; i < ((this->TerminalSize.ws_row * this->TerminalSize.ws_col) - (this->TerminalSize.ws_row * Lines)); i++)
+		const size_t rowLength = this->TerminalSize.ws_row;
+		const size_t total = rowLength * this->TerminalSize.ws_col;
+		const size_t shift = rowLength * Lines;
+
+		if (shift < total)
 		{
-			this->Cells[i] = this->Cells[i + (this->TerminalSize.ws_row * Lines)];
-			this->PaintCB(&this->Cells[i], i % this->TerminalSize.ws_row, i / this->TerminalSize.ws_row);
+			memmove(this->Cells, this->Cells + shift, (total - shift) * sizeof(TerminalCell));
 		}
 
-		for (int i = ((this->TerminalSize.ws_row * this->TerminalSize.ws_col) - (this->TerminalSize.ws_row * Lines)); i < this->TerminalSize.ws_row * this->TerminalSize.ws_col; i++)
+		size_t clear_start = (shift >= total) ? 0 : (total - shift);
+		for (size_t i = clear_start; i < total; ++i)
 		{
 			TerminalCell *cell = &this->Cells[i];
 			cell->attr = {};
 			cell->c = ' ';
+		}
 
-			this->PaintCB(cell, i % this->TerminalSize.ws_row, i / this->TerminalSize.ws_row);
+		if (this->ScrollCB && this->ScrollCB(Lines))
+		{
+			if (shift < total)
+			{
+				for (size_t i = clear_start; i < total; ++i)
+					this->PaintCB(&this->Cells[i], i % rowLength, i / rowLength);
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < total; ++i)
+				this->PaintCB(&this->Cells[i], i % rowLength, i / rowLength);
 		}
 
 		// Move the cursor up $lines
@@ -780,8 +796,9 @@ namespace KernelConsole
 
 	VirtualTerminal::VirtualTerminal(unsigned short Rows, unsigned short Columns,
 									 unsigned short XPixels, unsigned short YPixels,
-									 PaintCallback _Paint, CursorCallback _Print)
-		: PaintCB(_Paint), CursorCB(_Print)
+									 PaintCallback _Paint, CursorCallback _Print,
+									 ScrollCallback _Scroll)
+		: PaintCB(_Paint), CursorCB(_Print), ScrollCB(_Scroll)
 	{
 		this->TerminalSize = {
 			.ws_row = Rows,

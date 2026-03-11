@@ -76,6 +76,7 @@ namespace KernelConsole
 
 	typedef void (*PaintCallback)(TerminalCell *Cell, long X, long Y);
 	typedef void (*CursorCallback)(TerminalCursor *Cursor);
+	typedef bool (*ScrollCallback)(unsigned short Lines);
 
 	class FontRenderer
 	{
@@ -96,6 +97,7 @@ namespace KernelConsole
 
 		PaintCallback PaintCB = nullptr;
 		CursorCallback CursorCB = nullptr;
+		ScrollCallback ScrollCB = nullptr;
 
 		std::mutex vt_mutex;
 
@@ -131,7 +133,8 @@ namespace KernelConsole
 
 		VirtualTerminal(unsigned short Rows, unsigned short Columns,
 						unsigned short XPixels, unsigned short YPixels,
-						PaintCallback Paint, CursorCallback Print);
+						PaintCallback Paint, CursorCallback Print,
+						ScrollCallback Scroll = nullptr);
 		~VirtualTerminal();
 	};
 
